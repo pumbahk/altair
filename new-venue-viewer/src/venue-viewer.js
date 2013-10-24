@@ -7,27 +7,6 @@
   var seat = require('seat.js');
   var util = require('util.js');
 
-  var StoreObject = _class("StoreObject", {
-    props: {
-      store: {}
-    },
-    methods: {
-      save: function(id, data) {
-        if (!this.store[id]) this.store[id] = data;
-      },
-      restore: function(id) {
-        var rt = this.store[id];
-        delete this.store[id];
-        return rt;
-      },
-      clear: function() {
-        for (var id in this.store) {
-          delete this.store[id];
-        }
-      }
-    }
-  });
-
   var VenueViewer = _class("VenueViewer", {
 
     props: {
@@ -54,8 +33,7 @@
       startPos: { x: 0, y: 0 },
       drawable: null,
       availableAdjacencies: [ 1 ],
-      originalStyles: new StoreObject(),
-      overlayShapes: new StoreObject(),
+      overlayShapes: {},
       shift: false,
       keyEvents: null,
       uiMode: 'select',
@@ -250,8 +228,7 @@
         if (this.drawable)
           this.drawable.dispose();
 
-        this.originalStyles.clear();
-        this.overlayShapes.clear();
+        this.overlayShapes = {};
 
         this.currentPage = page;
 
@@ -550,11 +527,14 @@
                 mouseover: function(evt) {
                   if (self.pages) {
                     for (var i = siblings.length; --i >= 0;) {
-                      var shape = copyShape(siblings[i]);
-                      if (shape) {
-                        shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
-                        self.drawable.draw(shape);
-                        self.overlayShapes.save(siblings[i].id, shape);
+                      var id = siblings[i].id;
+                      if (self.overlayShapes[id] === void(0)) {
+                        var overlayShape = copyShape(siblings[i]);
+                        if (overlayShape) {
+                          overlayShape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
+                          self.drawable.draw(overlayShape);
+                          self.overlayShapes[id] = overlayShapes;
+                        }
                       }
                     }
                     var pageAndAnchor = link.split('#');
@@ -566,25 +546,16 @@
                   }
                 },
                 mouseout: function(evt) {
-                  if (self.pages) {
-                    self.canvas.css({ cursor: 'default' });
-                    for (var i = siblings.length; --i >= 0;) {
-                      var shape = self.overlayShapes.restore(siblings[i].id);
-                      if (shape)
-                        self.drawable.erase(shape);
+                  self.canvas.css({ cursor: 'default' });
+                  for (var i = siblings.length; --i >= 0;) {
+                    var id = siblings[i].id;
+                    var overlayShape = self.overlayShapes[id];
+                    if (overlayShape !== void(0)) {
+                      self.drawable.erase(overlayShape);
+                      delete self.overlayShapes[id];
                     }
-                    self.callbacks.messageBoard.down.call(self);
                   }
-                },
-                mousedown: function(evt) {
-/*
-                  if (self.pages) {
-                    self.nextSingleClickAction = function() {
-                      self.callbacks.messageBoard.down.call(self);
-                      self.navigate(link);
-                    };
-                  }
-*/
+                  self.callbacks.messageBoard.down.call(self);
                 },
                 mouseup: function(evt) {
                   if (self.pages) {
@@ -898,6 +869,8 @@
             });
           }
 
+          for (var id in self.seats)
+            self.seats[id].detach();
           self.seats = seats;
           self.pagesCoveredBySeatData = 'all-in-one'; // XXX
           next.call(self);

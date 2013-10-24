@@ -94,6 +94,10 @@ Seat.prototype.attach = function Seat_attach(shape) {
 
 Seat.prototype.detach = function Seat_detach(shape) {
   if (this.shape) {
+    if (this.label) {
+      this.parent.drawable.erase(this.label);
+      this.label = null;
+    }
     this.shape.removeEvent();
     this.shape = null;
   }

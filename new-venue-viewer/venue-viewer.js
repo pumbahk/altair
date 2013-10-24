@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['fNEP8G2XY023XLG9'] = (function (exports) { (function () { 
+__LIBS__['g67FQ8Q3A0ZQ1J30'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['B1OXVEFKMNGQ2KQT'] = (function (exports) { (function () { 
+__LIBS__['t9_6NQA1XI04Q9O4'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['uE6BA6JJ5JLBTDML'] = (function (exports) { (function () { 
+__LIBS__['nL6W2CKR5I_BJ8TJ'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['fNEP8G2XY023XLG9'];
-var CONF = __LIBS__['B1OXVEFKMNGQ2KQT'];
+var util = __LIBS__['g67FQ8Q3A0ZQ1J30'];
+var CONF = __LIBS__['t9_6NQA1XI04Q9O4'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -281,6 +281,10 @@ Seat.prototype.attach = function Seat_attach(shape) {
 
 Seat.prototype.detach = function Seat_detach(shape) {
   if (this.shape) {
+    if (this.label) {
+      this.parent.drawable.erase(this.label);
+      this.label = null;
+    }
     this.shape.removeEvent();
     this.shape = null;
   }
@@ -1099,30 +1103,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['B1OXVEFKMNGQ2KQT'];
-  var seat = __LIBS__['uE6BA6JJ5JLBTDML'];
-  var util = __LIBS__['fNEP8G2XY023XLG9'];
-
-  var StoreObject = _class("StoreObject", {
-    props: {
-      store: {}
-    },
-    methods: {
-      save: function(id, data) {
-        if (!this.store[id]) this.store[id] = data;
-      },
-      restore: function(id) {
-        var rt = this.store[id];
-        delete this.store[id];
-        return rt;
-      },
-      clear: function() {
-        for (var id in this.store) {
-          delete this.store[id];
-        }
-      }
-    }
-  });
+  var CONF = __LIBS__['t9_6NQA1XI04Q9O4'];
+  var seat = __LIBS__['nL6W2CKR5I_BJ8TJ'];
+  var util = __LIBS__['g67FQ8Q3A0ZQ1J30'];
 
   var VenueViewer = _class("VenueViewer", {
 
@@ -1150,8 +1133,7 @@ function parseTransform(transform_str) {
       startPos: { x: 0, y: 0 },
       drawable: null,
       availableAdjacencies: [ 1 ],
-      originalStyles: new StoreObject(),
-      overlayShapes: new StoreObject(),
+      overlayShapes: {},
       shift: false,
       keyEvents: null,
       uiMode: 'select',
@@ -1346,8 +1328,7 @@ function parseTransform(transform_str) {
         if (this.drawable)
           this.drawable.dispose();
 
-        this.originalStyles.clear();
-        this.overlayShapes.clear();
+        this.overlayShapes = {};
 
         this.currentPage = page;
 
@@ -1646,11 +1627,14 @@ function parseTransform(transform_str) {
                 mouseover: function(evt) {
                   if (self.pages) {
                     for (var i = siblings.length; --i >= 0;) {
-                      var shape = copyShape(siblings[i]);
-                      if (shape) {
-                        shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
-                        self.drawable.draw(shape);
-                        self.overlayShapes.save(siblings[i].id, shape);
+                      var id = siblings[i].id;
+                      if (self.overlayShapes[id] === void(0)) {
+                        var overlayShape = copyShape(siblings[i]);
+                        if (overlayShape) {
+                          overlayShape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
+                          self.drawable.draw(overlayShape);
+                          self.overlayShapes[id] = overlayShapes;
+                        }
                       }
                     }
                     var pageAndAnchor = link.split('#');
@@ -1662,25 +1646,16 @@ function parseTransform(transform_str) {
                   }
                 },
                 mouseout: function(evt) {
-                  if (self.pages) {
-                    self.canvas.css({ cursor: 'default' });
-                    for (var i = siblings.length; --i >= 0;) {
-                      var shape = self.overlayShapes.restore(siblings[i].id);
-                      if (shape)
-                        self.drawable.erase(shape);
+                  self.canvas.css({ cursor: 'default' });
+                  for (var i = siblings.length; --i >= 0;) {
+                    var id = siblings[i].id;
+                    var overlayShape = self.overlayShapes[id];
+                    if (overlayShape !== void(0)) {
+                      self.drawable.erase(overlayShape);
+                      delete self.overlayShapes[id];
                     }
-                    self.callbacks.messageBoard.down.call(self);
                   }
-                },
-                mousedown: function(evt) {
-/*
-                  if (self.pages) {
-                    self.nextSingleClickAction = function() {
-                      self.callbacks.messageBoard.down.call(self);
-                      self.navigate(link);
-                    };
-                  }
-*/
+                  self.callbacks.messageBoard.down.call(self);
                 },
                 mouseup: function(evt) {
                   if (self.pages) {
@@ -1994,6 +1969,8 @@ function parseTransform(transform_str) {
             });
           }
 
+          for (var id in self.seats)
+            self.seats[id].detach();
           self.seats = seats;
           self.pagesCoveredBySeatData = 'all-in-one'; // XXX
           next.call(self);
