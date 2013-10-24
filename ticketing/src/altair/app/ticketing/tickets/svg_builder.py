@@ -11,6 +11,7 @@ class SimpleControl(object):
 import logging
 logger = logging.getLogger(__name__)
 from altair.app.ticketing.core.models import Order
+from sqlalchemy.exc import InvalidRequestError
 
 class OrderAttributesForOverwriteData(object):
     def __init__(self):
@@ -26,7 +27,11 @@ class OrderAttributesForOverwriteData(object):
         order = Order.query.get(order_id)
         if order is None:
             return {}
-        return {attr.name:attr.value for attr in order._attributes}
+        try:
+            return order.attributes
+        except InvalidRequestError as e:
+            #stale association proxy, parent object has gone out of scope
+            logger.error(repr(e))
 
 class TicketModelControl(object):
     def __init__(self):
