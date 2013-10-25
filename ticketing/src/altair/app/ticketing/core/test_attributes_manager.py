@@ -58,19 +58,17 @@ class AttributesManagerTests(unittest.TestCase):
         return DBSession.merge(self.order)
 
     def _getTarget(self):
-        from altair.app.ticketing.core.models import OrderAttributeManager
+        from altair.app.ticketing.core.modelmanage import OrderAttributeManager
         return OrderAttributeManager
 
     # def test_why_need_this(self):
     #     order = self.order
-    #     attributes = order.attributes
-    #     attributes[u"あ"] = "v"
+    #     order.attributes[u"あ"] = "v"
     #     import transaction
     #     transaction.commit()
 
     #     order = self.refreshed_order()
-    #     attributes = order.attributes
-    #     attributes[u"あ".encode("utf-8")] = "v2"
+    #     order.attributes[u"あ".encode("utf-8")] = "v2"
 
     def test_create(self):
         data = {u"あ": "v"}
