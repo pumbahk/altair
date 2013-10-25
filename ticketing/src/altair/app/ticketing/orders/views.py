@@ -86,6 +86,7 @@ from .api import (
 from .utils import NumberIssuer
 from .models import OrderSummary
 from altair.app.ticketing.tickets.preview.api import SVGPreviewCommunication
+from altair.app.ticketing.tickets.preview.api import get_placeholders_from_ticket
 from altair.app.ticketing.tickets.preview.transform import SVGTransformer
 from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketCover
@@ -1063,6 +1064,27 @@ class OrderDetailView(BaseView):
         preview = SVGPreviewCommunication.get_instance(self.request)
         imgdata_base64 = preview.communicate(self.request, svg)
         return {"order": order, "cover":cover, "data": imgdata_base64}
+
+    @view_config(route_name="orders.ticket.placeholder", request_method="GET", renderer='altair.app.ticketing:templates/orders/_item_preview_dialog.html')
+    def order_ticket_placeholder_data(self):
+        order = self.order
+        tickets = Ticket.query \
+            .filter(OrderedProduct.order_id==order.id)\
+            .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
+            .filter(ProductItem.id==OrderedProductItem.product_item_id)\
+            .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
+            .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
+            .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
+            .options(joinedload(Ticket.ticket_format))\
+            .all()
+        delivery_method = order.payment_delivery_pair.delivery_method
+        tickets = [t for t in tickets if any(dm == delivery_method for dm in t.delivery_methods)]
+
+        placeholders = set()
+        for t in tickets:
+            placeholders = placeholders.union(get_placeholders_from_ticket(t))
+        return {"placeholders": placeholders}
+
 
     @view_config(route_name="orders.item.preview", request_method="GET", renderer='altair.app.ticketing:templates/orders/_item_preview_dialog.html')
     def order_item_preview_dialog(self):

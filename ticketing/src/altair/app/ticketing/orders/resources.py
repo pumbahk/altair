@@ -152,3 +152,6 @@ class OrdersShowResource(OrderResource):
 
     def get_dependents_forms(self, order):
         return OrderShowFormProvider(order)
+
+class OrdersPreviewResource(OrderResource):
+    pass

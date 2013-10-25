@@ -16,6 +16,7 @@ from altair.app.ticketing.payments.payment import get_delivery_plugin
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing import urllib2ext
 from . import TicketPreviewAPIException
+from .fillvalues import template_collect_vars
 
 def as_filelike_response(request, imgdata):
     return FileLikeResponse(StringIO(imgdata), 
@@ -69,3 +70,6 @@ class SEJPreviewCommunication(BaseCommunicationApi):
             logger.exception(str(e))
             logger.warn("*sej.preview: data: %s" % values)
             raise TicketPreviewAPIException(u"SEJサーバとの通信に失敗しました")
+
+def get_placeholders_from_ticket(request, ticket):
+    return template_collect_vars(ticket.drawing)
