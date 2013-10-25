@@ -42,7 +42,7 @@ class PageQueryControl(object):
 
     def static_pageset_query(self, request, url, dt, pagetype):
         qs = request.allowable(StaticPage).filter(StaticPageSet.id==StaticPage.pageset_id)
-        qs = qs.filter(StaticPageSet.pagetype_id==PageType.id, PageType.name==self.pc_pagetype)
+        qs = qs.filter(StaticPageSet.pagetype_id==PageType.id, PageType.name==pagetype)
         qs = qs.filter(StaticPageSet.url==url)
         qs = qs.filter(StaticPage.in_term(dt))
         qs = qs.filter(StaticPage.published==True)
