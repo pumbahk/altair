@@ -239,6 +239,10 @@ class MultiCheckoutOrderStatus(Base, WithTimestamp):
     def is_authorized(self):
         return self.Status == unicode(MultiCheckoutStatusEnum.Authorized)
 
+    @hybrid_property
+    def is_unknown_status(self):
+        return self.Status == None
+
     @hybrid_method
     def past(self, delta):
         now = datetime.now()

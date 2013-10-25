@@ -10,7 +10,7 @@ from datetime import timedelta
 
 from pyramid.paster import bootstrap, setup_logging
 import sqlahelper
-
+from sqlalchemy.sql import or_
 from .. import get_multicheckout_settings
 from altair.multicheckout import models as m
 from altair.multicheckout import api
@@ -35,8 +35,10 @@ def sync_data(request, statuses):
         logger.debug("sync for %s" % order_no)
         inquiry = api.checkout_inquiry(request, order_no)
 
-        if not inquiry.is_authorized:
-            m.MultiCheckoutOrderStatus.set_status(inquiry.OrderNo, inquiry.Storecd, inquiry.Status,
+        if inquiry.Status != st.Status:
+            m.MultiCheckoutOrderStatus.set_status(
+                inquiry.OrderNo,
+                inquiry.Storecd, inquiry.Status,
                 u"by cancel auth batch")
         m._session.commit()
 
@@ -60,12 +62,13 @@ def get_auth_orders(request, shop_id):
     q = m._session.query(m.MultiCheckoutOrderStatus).filter(
             m.MultiCheckoutOrderStatus.Storecd==shop_id
         ).filter(
-            m.MultiCheckoutOrderStatus.is_authorized
+            or_(m.MultiCheckoutOrderStatus.is_authorized,
+                m.MultiCheckoutOrderStatus.is_unknown_status,
+                )
         ).filter(
             m.MultiCheckoutOrderStatus.past(timedelta(hours=1))
         )
-
-    return [s for s in q if is_cancelable(request, s)]
+    return q.all()
 
 def cancel_auth(request, statuses):
     """
@@ -75,8 +78,18 @@ def cancel_auth(request, statuses):
     """
     for st in statuses:
         order_no = st.OrderNo
-        logger.debug('call auth cancel api for %s' % order_no)
-        api.checkout_auth_cancel(request, order_no)
+
+        if not is_cancelable(request, st):
+            continue
+
+        if st.is_authorized:
+            logger.debug('call auth cancel api for %s' % order_no)
+            api.checkout_auth_cancel(request, order_no)
+        else:
+            logger.debug(
+                'not call auth cancel api for %s: status %s' % (order_no,
+                                                                st.Status))
+
         m._session.commit()
 
 def main():
