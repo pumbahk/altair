@@ -1,0 +1,27 @@
+<%page args="topcontents, helper" />
+<%namespace file="tags_smartphone.html" name="m" />
+
+<% topcontents = [(event, content) for event, content in ((helper.get_event_from_linked_page_id(request, content.linked_page_id), content) for content in topcontents)] %>
+
+<h2 class="glitter red">注目のイベント</h2>
+% if topcontents:
+    <ul class="panellist fullwidth navigable">
+    % for event, content in topcontents:
+        <li class="panel condensed">
+            % if content.link:
+                <a href=${content.link}>
+            % elif event:
+                <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">
+            % endif
+                <div class="panel-inner">
+                    <img class="thematic" src="${helper.get_asset_rendering_object(request, content.image_asset).thumbnail_path}" />
+                    <h4>${content.title}</h4>
+                    <p class="first">${content.text}</p>
+                </div>
+            </a>
+        </li>
+    % endfor
+    </ul>
+% else:
+    現在、対象となる公演情報はありません
+% endif
