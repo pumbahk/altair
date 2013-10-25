@@ -1065,9 +1065,9 @@ class OrderDetailView(BaseView):
         imgdata_base64 = preview.communicate(self.request, svg)
         return {"order": order, "cover":cover, "data": imgdata_base64}
 
-    @view_config(route_name="orders.ticket.placeholder", request_method="GET", renderer='altair.app.ticketing:templates/orders/_item_preview_dialog.html')
+    @view_config(route_name="orders.ticket.placeholder", request_method="GET", renderer='json')
     def order_ticket_placeholder_data(self):
-        order = self.order
+        order = self.context.order
         tickets = Ticket.query \
             .filter(OrderedProduct.order_id==order.id)\
             .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
@@ -1077,12 +1077,14 @@ class OrderDetailView(BaseView):
             .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
             .options(joinedload(Ticket.ticket_format))\
             .all()
+
         delivery_method = order.payment_delivery_pair.delivery_method
-        tickets = [t for t in tickets if any(dm == delivery_method for dm in t.delivery_methods)]
+        tickets = [t for t in tickets if any(dm == delivery_method for dm in t.ticket_format.delivery_methods)]
 
         placeholders = set()
         for t in tickets:
-            placeholders = placeholders.union(get_placeholders_from_ticket(t))
+            placeholders = placeholders.union(get_placeholders_from_ticket(self.request, t))
+        placeholders = [ph for ph in placeholders if not "." in ph or ph.startswith("aux.")]
         return {"placeholders": placeholders}
 
 
@@ -1137,7 +1139,7 @@ class OrderDetailView(BaseView):
                 'message':u'不正なデータです',
             }))
         ## todo:validation?
-        params = {k.encode("utf-8"):v for k, v in self.request.POST.items() if not k.startswith("_")}
+        params = {k.decode("utf-8"):v for k, v in self.request.POST.items() if not k.startswith("_")}
         order = OrderAttributeManager.update(order, params)
         order.save()
         self.request.session.flash(u'属性を変更しました')

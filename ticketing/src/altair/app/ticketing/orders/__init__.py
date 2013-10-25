@@ -33,8 +33,8 @@ def includeme(config):
     config.add_route('orders.fraud.clear'               , '/fraud/clear/{order_id}')
 
     config.add_route("orders.cover.preview"             , "/cover/preview/{order_id}/cover")
-    config.add_route("orders.ticket.placeholder"        , "/api/preview/order/{order_id}/placeholders")
-    config.add_route("orders.item.preview"              , "/item/preview/{order_id}/item/{item_id}", factory=".resources.OrderPreviewResource")
+    config.add_route("orders.ticket.placeholder"        , "/api/preview/order/{order_id}/placeholders", factory=".resources.OrdersPreviewResource")
+    config.add_route("orders.item.preview"              , "/item/preview/{order_id}/item/{item_id}")
     config.add_route("orders.item.preview.getdata"      , "/api/item/{item_id}/ticket/{ticket_format_id}")
     config.add_route('orders.print.queue'               , '/print/queue/{order_id}')
     config.add_route('orders.print.queue.each'               , '/print/queue/each/{order_id}', factory=".resources.OrderPrintEachResource")
