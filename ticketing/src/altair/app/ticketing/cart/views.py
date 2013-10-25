@@ -36,7 +36,7 @@ from altair.mobile.interfaces import IMobileRequest
 from . import api
 from . import helpers as h
 from . import schemas
-from .api import set_rendered_event, is_smartphone_organization
+from .api import set_rendered_event, is_smartphone_organization, is_point_input_organization
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -672,7 +672,15 @@ class PaymentView(object):
                 tel_1=form.data['tel_1'],
                 tel_2=None,
                 fax=form.data['fax'],
-                point=form.data['point']
+                )
+        else:
+            return None
+
+    def get_validated_point_data(self):
+        form = self.form
+        if form.validate():
+            return dict(
+                accountno=form.data['accountno'],
                 )
         else:
             return None
@@ -727,14 +735,6 @@ class PaymentView(object):
         cart.payment_delivery_pair = payment_delivery_pair
         cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
 
-        if is_smartphone_organization(self.context, self.request):
-            point = shipping_address_params.pop("point")
-            if point:
-                if not user:
-                    user = get_or_create_user_from_point_no(point)
-                    cart.shipping_address.user_id = user.id
-                create_user_point_account_from_point_no(user.id, point)
-
         DBSession.add(cart)
 
         order = api.new_order_session(
@@ -745,6 +745,9 @@ class PaymentView(object):
         )
 
         self.request.session['payment_confirm_url'] = self.request.route_url('payment.confirm')
+
+        if is_point_input_organization(context=self.context, request=self.request):
+            return HTTPFound(self.request.route_path('cart.point'))
 
         payment = Payment(cart, self.request)
         result = payment.call_prepare()
@@ -778,6 +781,53 @@ class PaymentView(object):
             user=user
         )
 
+    @back(back_to_top, back_to_product_list_for_mobile)
+    @view_config(route_name='cart.point', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/point.html"))
+    @view_config(route_name='cart.point', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
+    @view_config(route_name='cart.point', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
+    def point(self):
+
+        formdata = MultiDict(
+            accountno=""
+            )
+        form = schemas.PointForm(formdata=formdata)
+
+        user = get_or_create_user(self.context.authenticated_user())
+        if user:
+            acc = get_user_point_account(user.id)
+            form['accountno'].data = acc.account_number.replace('-', '') if acc else ""
+        return dict(form=form)
+
+    @back(back_to_top, back_to_product_list_for_mobile)
+    @view_config(route_name='cart.point', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/point.html"))
+    @view_config(route_name='cart.point', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
+    @view_config(route_name='cart.point', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
+    def point_post(self):
+
+        self.form = schemas.PointForm(formdata=self.request.params)
+
+        cart = self.request.context.cart
+        user = get_or_create_user(self.context.authenticated_user())
+        point_params = self.get_validated_point_data()
+
+        if is_point_input_organization(self.context, self.request):
+            point = point_params.pop("accountno")
+            if point:
+                if not user:
+                    user = get_or_create_user_from_point_no(point)
+                    cart.shipping_address.user_id = user.id
+                    DBSession.add(cart)
+                create_user_point_account_from_point_no(user.id, point)
+
+        payment = Payment(cart, self.request)
+        result = payment.call_prepare()
+        if callable(result):
+            return result
+        else:
+            return HTTPFound(self.request.route_url("payment.confirm"))
+        return {}
+
+
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class ConfirmView(object):
     """ 決済確認画面 """
@@ -810,7 +860,7 @@ class ConfirmView(object):
             mailmagazines_to_subscribe=magazines_to_subscribe,
             form=form,
             delegator=delegator,
-            point=acc.account_number if acc else ""
+            accountno=acc.account_number if acc else ""
         )
 
 

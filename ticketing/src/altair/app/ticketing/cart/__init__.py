@@ -90,6 +90,7 @@ def includeme(config):
     # order / payment / release
     config.add_route('cart.order', 'order/sales/{sales_segment_id}', factory='.resources.SalesSegmentOrientedTicketingCartResource')
     config.add_route('cart.payment', 'payment/sales/{sales_segment_id}', factory='.resources.SalesSegmentOrientedTicketingCartResource')
+    config.add_route('cart.point', 'rsp', factory='.resources.SalesSegmentOrientedTicketingCartResource')
     config.add_route('cart.release', 'release')
 
     # 完了／エラー

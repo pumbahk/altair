@@ -123,7 +123,13 @@ ${self.widget.flow_widget(3)}
 		</tr>
 		<tr>
 		  <th scope="row">楽天ポイント口座</th>
-          <td>${point}</td>
+          <td>
+            % if accountno:
+              ${accountno}
+            % else:
+              <span style="color: red">※楽天スーパーポイント口座が入力されていため、ポイント付与されません。</span>
+            % endif
+          </td>
 		</tr>
 		<tr>
 		  <th scope="row">配送先住所 <br />※配送を選択した場合</th>
