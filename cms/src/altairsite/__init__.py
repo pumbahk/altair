@@ -15,10 +15,23 @@ def install_fetcher(config):
     config.include("altaircms.page.staticupload:install_static_page_utility")
     config.include("altaircms.page.staticupload:install_static_page_cache")
     from altairsite.fetcher import ICurrentPageFetcher
-    from altairsite.fetcher import CurrentPageFetcher
-    fetcher = CurrentPageFetcher(settings["altaircms.static.pagetype.pc"], 
-                                 settings["altaircms.static.pagetype.mobile"])
-    config.registry.registerUtility(fetcher, ICurrentPageFetcher)
+    from altair.mobile.interfaces import ISmartphoneRequest
+    from altair.mobile.interfaces import IMobileRequest
+    from pyramid.interfaces import IRequest
+    from altairsite.fetcher import (
+        PageQueryControl, 
+        PageFetcherForPC, 
+        PageFetcherForSmartphone, 
+        PageFetcherForMobile
+    )
+    control = PageQueryControl(settings["altaircms.static.pagetype.pc"], 
+                               settings["altaircms.static.pagetype.mobile"], 
+                               settings["altaircms.static.pagetype.smartphone"], 
+    )
+    config.registry.adapters.register([IRequest], ICurrentPageFetcher, "", PageFetcherForPC(control))
+    config.registry.adapters.register([ISmartphoneRequest], ICurrentPageFetcher, "", PageFetcherForSmartphone(control))
+    config.registry.adapters.register([IMobileRequest], ICurrentPageFetcher, "", PageFetcherForMobile(control))
+
 
 def install_tracking_image_generator(config):
     settings = config.registry.settings

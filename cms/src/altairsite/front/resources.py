@@ -61,7 +61,8 @@ class AccessControlPC(object):
         prefix = url.split("/", 1)[0]
         if prefix == url:
             prefix = ""
-        return get_current_page_fetcher(self.request).pc_static_page(self.request, prefix, dt)
+        fetcher = get_current_page_fetcher(self.request)
+        return fetcher.static_page(self.request, prefix, dt)
 
     def fetch_page_from_params(self, url, dt):
         page = self._fetch_page_from_params(url, dt)

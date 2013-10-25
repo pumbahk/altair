@@ -240,7 +240,13 @@ class Organization(Base):
     auth_source = Column(String(255)) ##nullable=False?
     short_name = Column(String(32),index=True, nullable=False)
     code = Column(String(3))  # 2桁英字大文字のみ
-    use_full_usersite = Column(sa.Boolean, default=False) ## todo:細分化
+
+    use_full_usersite = Column(sa.Boolean, default=False, nullable=False, 
+                               doc=u"これがtrueのときsmartphone, mobile用のviewや検索フォームなどの機能が有効になる"
+    ) ## todo:細分化
+    use_only_one_static_page_type = Column(sa.Boolean, default=True, nullable=False, 
+                                      doc=u"これがtrueのとき、smartphoneアクセスでもpcの静的ページを見に行く"
+    ) ## todo:修正
     name = Column(Unicode(255))
     prefecture = Column(Unicode(255))
     address = Column(Unicode(255))

@@ -320,6 +320,18 @@ class StaticPageView(BaseView):
         FlashMessage.success(u"このページを%sしました" % (u"公開" if static_page.published else u"非公開に"), request=self.request)
         return HTTPFound(self.context.endpoint(static_page))
 
+    @view_config(match_param="action=intercept", request_method="POST", renderer="json")
+    def intercept(self):
+        pk = self.request.matchdict["child_id"]
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
+        interceptr = self.context.creation(creation.StaticPageIntercept)
+        interceptr.intercept(static_page)
+        if static_page.interceptive:
+            FlashMessage.success(u"%sの横取りを有効にしました" % static_page.label, request=self.request)
+        else:
+            FlashMessage.success(u"%sの横取りを無効にしました" % static_page.label, request=self.request)
+        return {"redirect_to": self.context.endpoint(static_page)}
+
     @view_config(match_param="action=delete", request_method="POST", renderer="json")
     def delete(self):
         pk = self.request.matchdict["child_id"]

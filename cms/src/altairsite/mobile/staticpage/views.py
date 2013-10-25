@@ -21,7 +21,7 @@ def staticpage_view(context, request):
     prefix = path.split("/", 1)[0]
     if prefix == path:
         prefix = ""
-    static_page = get_current_page_fetcher(request).mobile_static_page(request, prefix, datetime.now())
+    static_page = get_current_page_fetcher(request).static_page(request, prefix, datetime.now())
     if not static_page:
         raise HTTPNotFound()
     return as_static_page_response(request, static_page, path)
