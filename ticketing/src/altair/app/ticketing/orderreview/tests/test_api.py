@@ -2,15 +2,25 @@
 """The orderreview api tests.
 """
 from unittest import TestCase
-from mock import Mock
+from mock import Mock, patch
+
+from .. import api
+
+
+class _TestException(Exception):
+    """Dummy exception.
+    """
+    pass
 
 
 class GetContactURLTest(TestCase):
     """get_contact_url() test.
     """
+    pc_url = 'http://ticketstar.jp/pc'
+    mobile_url = 'http://ticketstar.jp/mobile'
 
     @staticmethod
-    def _create_request():
+    def _create_request(organization):
         """Create Mock of request object.
         """
         # dummy data
@@ -19,87 +29,114 @@ class GetContactURLTest(TestCase):
                }
 
         request = Mock()
-        request.organization = 'http://ticketstar.jp'
+        request.organization = organization
         request.environ = env
         return request
 
     @staticmethod
-    def _create_setting():
+    def _create_organization():
+        """Create mock of organization object.
+        """
+        organization = Mock()
+        organization.id = 1
+        return organization
+
+    @classmethod
+    def _create_setting(cls):
         """Create mock of organization setting object.
         """
-        pc_url = 'http://ticketstar.jp/pc'
-        mobile_url = 'http://ticketstar.jp/mobile'
         setting = Mock()
-        setting.contact_mobile_url = mobile_url
-        setting.contact_pc_url = pc_url
+        setting.contact_mobile_url = cls.mobile_url
+        setting.contact_pc_url = cls.pc_url
         return setting
 
-    def setUp(self):
-        """Mock setup.
+    @classmethod
+    def _setup_normal_mock(cls, get_organization,
+                           get_organization_setting, is_mobile_request):
+        """Set up normal data to mock objects.
         """
-        self.pc_url = 'http://ticketstar.jp/pc'
-        self.mobile_url = 'http://ticketstar.jp/mobile'
+        get_organization.return_value \
+            = organization = cls._create_organization()
+        get_organization_setting.return_value = setting = cls._create_setting()
+        is_mobile_request.return_value = True
+        request = cls._create_request(organization)
+        return request, organization, setting
 
-        self.request = self._create_request()
-        self.organization = Mock()
-        self.organization.id = 1
-        self.get_organization = Mock(return_value=self.organization)
-        self.setting = self._create_setting()
-        self.mobile_request = Mock(return_value=True)
-
-        from .. import api
-        api.get_organization = self.get_organization
-        api.get_organization_setting = Mock(return_value=self.setting)
-        api.is_mobile_request = self.mobile_request
-
-    def normal_test(self):
+    @patch('altair.app.ticketing.orderreview.api.is_mobile_request')
+    @patch('altair.app.ticketing.orderreview.api.get_organization_setting')
+    @patch('altair.app.ticketing.orderreview.api.get_organization')
+    def normal_test(self, get_organization,
+                    get_organization_setting, is_mobile_request):
         """Normal case.
         """
-        from .. import api
+        request, organization, setting \
+            = self._setup_normal_mock(get_organization,
+                                      get_organization_setting,
+                                      is_mobile_request,
+                                      )
 
         # mobile
-        self.mobile_request.return_value = True
-        url = api.get_contact_url(self.request)
+        is_mobile_request.return_value = True
+        url = api.get_contact_url(request)
         self.assertEqual(url, self.mobile_url)
 
         # pc
-        self.mobile_request.return_value = False
-        url = api.get_contact_url(self.request)
+        is_mobile_request.return_value = False
+        url = api.get_contact_url(request)
         self.assertEqual(url, self.pc_url)
 
-    def invalid_url_test(self):
+    @patch('altair.app.ticketing.orderreview.api.is_mobile_request')
+    @patch('altair.app.ticketing.orderreview.api.get_organization_setting')
+    @patch('altair.app.ticketing.orderreview.api.get_organization')
+    def invalid_url_test(self, get_organization,
+                         get_organization_setting, is_mobile_request):
+
         """Invalid request case.
         """
-        from .. import api
-        error = ValueError
+        request, organization, setting \
+            = self._setup_normal_mock(get_organization,
+                                      get_organization_setting,
+                                      is_mobile_request,
+                                      )
+        error = _TestException
 
         # mobile
-        self.mobile_request.return_value = True
-        self.setting.contact_mobile_url = None
-        with self.assertRaises(error):
-            api.get_contact_url(self.request)
+        is_mobile_request.return_value = True
+        setting.contact_mobile_url = None
+        with self.assertRaises(ValueError):
+            api.get_contact_url(request)
 
         with self.assertRaises(error):
-            api.get_contact_url(self.request, error)
+            api.get_contact_url(request, error)
 
         # pc
-        self.mobile_request.return_value = False
-        self.setting.contact_pc_url = None
-        with self.assertRaises(error):
-            api.get_contact_url(self.request)
+        is_mobile_request.return_value = False
+        setting.contact_pc_url = None
+        with self.assertRaises(ValueError):
+            api.get_contact_url(request)
 
         with self.assertRaises(error):
-            api.get_contact_url(self.request, error)
+            api.get_contact_url(request, error)
 
-    def cannot_get_organization_test(self):
+    @patch('altair.app.ticketing.orderreview.api.is_mobile_request')
+    @patch('altair.app.ticketing.orderreview.api.get_organization_setting')
+    @patch('altair.app.ticketing.orderreview.api.get_organization')
+    def cannot_get_organization_test(self, get_organization,
+                                     get_organization_setting,
+                                     is_mobile_request):
         """No organization case.
         """
-        from .. import api
-        self.get_organization.return_value = None
+        request, organization, setting \
+            = self._setup_normal_mock(get_organization,
+                                      get_organization_setting,
+                                      is_mobile_request,
+                                      )
 
-        error = ValueError
-        with self.assertRaises(error):
-            api.get_contact_url(self.request)
+        get_organization.return_value = None
 
+        with self.assertRaises(ValueError):
+            api.get_contact_url(request)
+
+        error = _TestException
         with self.assertRaises(error):
-            api.get_contact_url(self.request, error)
+            api.get_contact_url(request, error)
