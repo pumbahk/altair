@@ -1467,7 +1467,7 @@
 
 .settlementBox {
 	margin-bottom: 20px;
-	background: url(../img/settlement/bg_box_bottom.gif) no-repeat left bottom;
+	background: url(../img/settlement/bg_box_bottom.gif) no-repeat left bottom #f7f7f0;
 }
 
 .settlementBoxInner {
