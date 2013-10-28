@@ -94,6 +94,8 @@ def main():
     setup_logging(args.config)
     env = bootstrap(args.config)
     request = env['request']
+    request.environ['PATH_INFO'] = "/cancelauth"
+    logger.info("start offline as {request.url}".format(request=request))
 
     # 多重起動防止
     LOCK_NAME = 'cancelauth'
