@@ -294,8 +294,8 @@ class Cart(Base):
             .with_lockmode('update') \
             .filter(CartedProduct.cart_id == self.id) \
             .all()
-        for product in carted_products:
-            if not product.release():
+        for item in carted_products:
+            if not item.release():
                 return False
         return True
 
