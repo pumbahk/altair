@@ -25,53 +25,75 @@
           </a>
         </div>
       </div>
-
-
-      <div class="band">
-        <h1>チケット購入</h1>
-      </div>
     </div>
     <!-- ========== /header ========== -->
 
+
+
     <!-- ========== main ========== -->
-一般の方はこちらから
-<form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
-  <div class="buttonbox">
-    <input type="submit" class="btn btn-primary btn-large" value="チケット購入" />
-  </div>
-</form>
-<br/>
-
-各種会員の方はこちらから<br/>
-ブースタークラブ、
-ゴールドクラブ、
-レギュラークラブ、
-レディースクラブ、
-キッズクラブ、
-ベーシッククラブ、
-SOC、
-スポンサークラブ
-<br/>
-
-<form action="${request.url}" method="post">
-<input type="hidden" name="membership" value="eagles" />
-<div>
-  会員ID<br/>
-  <input type="text" name="username" size="22" value="${username}">
+  <table border="1" class="login_table">
+    <tr>
+      <td>
+        <div class="header">
+          <div class="band">
+            <h1 class="login_header">各種会員の方はこちらから</h1>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        ブースタークラブ、ゴールドクラブ、レギュラークラブ、レディースクラブ、キッズクラブ、ベーシッククラブ、SOC、スポンサークラブ
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <form action="${request.url}" method="post">
+          <input type="hidden" name="membership" value="eagles" />
+          <div>
+            会員ID<br/>
+            <input type="text" name="username" size="22" value="${username}">
+            <br/>
+            パスワード<br/>
+            <input type="password" size="22" name="password">
+            %if message:
+              <br/><font color="red">ID、または、パスワードが一致しません</font>
+            %endif
+            </div>
+            <div class="buttonbox">
+              <input class="btn btn-primary btn-large" type="submit" value="ログイン" />
+          </div>
+          <p>
+            ファンクラブ会員のIDを忘れてしまった方は<br /><a href="mailto:eagles@tstar.jp?body=※ご注意※ファンクラブに登録頂いた携帯アドレスから本アドレスにメールを送信してください。">こちら</a>からお問い合わせください。
+          </p>
+        </form>
+      </td>
+    </tr>
+  </table>
   <br/>
-  パスワード<br/>
-  <input type="password" size="22" name="password">
-%if message:
-<br/><font color="red">ID、または、パスワードが一致しません</font>
-%endif
-</div>
-<div class="buttonbox">
-    <input class="btn btn-primary btn-large" type="submit" value="ログイン" />
-</div>
-<p>
-ファンクラブ会員のIDを忘れてしまった方は<br /><a href="mailto:eagles@tstar.jp?body=※ご注意※ファンクラブに登録頂いた携帯アドレスから本アドレスにメールを送信してください。">こちら</a>からお問い合わせください。
-</p>
-</form>
+
+  <table border="1" class="login_table">
+    <tr>
+      <td>
+        <div class="header">
+          <div class="band">
+            <h1 class="login_header">一般の方はこちらから</h1>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
+          <div class="buttonbox">
+            <input type="submit" class="btn btn-primary btn-large" value="チケット購入" />
+          </div>
+        </form>
+      </td>
+    </tr>
+  </table>
+<br/>
+
     <!-- ========== /main ========== -->
   </div>
   <!-- /container -->
