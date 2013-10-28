@@ -9,8 +9,9 @@ from altaircms.page.staticupload.api import as_static_page_response
 from altairsite.config import usersite_view_config
 from altairsite.front.resources import AccessControlPC
 from datetime import datetime
+from altairsite.front.cache import with_pc_cache
 
-@usersite_view_config(route_name="features")
+@usersite_view_config(route_name="features", decorator=with_pc_cache)
 def features_view(context, request):
     path = request.matchdict["page_name"]
     if os.path.splitext(path)[1] == "":
