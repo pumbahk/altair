@@ -34,10 +34,29 @@
     <!-- ========== /header ========== -->
 
     <!-- ========== main ========== -->
+一般の方はこちらから
+<form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
+  <div class="buttonbox">
+    <input type="submit" class="btn btn-primary btn-large" value="チケット購入" />
+  </div>
+</form>
+<br/>
+
+各種会員の方はこちらから<br/>
+ブースタークラブ、
+ゴールドクラブ、
+レギュラークラブ、
+レディースクラブ、
+キッズクラブ、
+ベーシッククラブ、
+SOC、
+スポンサークラブ
+<br/>
+
 <form action="${request.url}" method="post">
 <input type="hidden" name="membership" value="eagles" />
 <div>
-  ID<br/>
+  会員ID<br/>
   <input type="text" name="username" size="22" value="${username}">
   <br/>
   パスワード<br/>
