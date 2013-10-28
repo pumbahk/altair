@@ -15,8 +15,10 @@ from altairsite.exceptions import UsersiteException
 class ValidationFailure(UsersiteException):
     pass
 
+from altairsite.front.cache import with_mobile_cache
 @mobile_site_view_config(route_name='eventdetail', request_type="altairsite.tweens.IMobileRequest"
-    , renderer='altairsite.mobile:templates/eventdetail/eventdetail.mako')
+    , renderer='altairsite.mobile:templates/eventdetail/eventdetail.mako'
+    , decorator=with_mobile_cache)
 def move_eventdetail(request):
 
     log_info("move_eventdetail", "start")
