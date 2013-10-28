@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 import logging
-from .fanstatic_resources import bj89ers, nh, nh_dev
 from altair.mobile.interfaces import IMobileRequest
 from pyramid.config import ConfigurationError
 from .interfaces import (
