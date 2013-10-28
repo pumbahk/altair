@@ -2144,6 +2144,41 @@
 	width: 400px;
 }
 
+.settlementPayBox td dl.fullwidth {
+	width: 869px;
+}
+
+.settlementPayBox dd dl {
+	margin: 0 0;
+	padding: 0 0;
+	width: auto;
+	overflow: hidden;
+}
+
+.settlementPayBox dd dl dt {
+	margin: 0 16px 0 0;
+	width: 12em;
+	padding: 0 0;
+	float: left;
+	clear: left;
+	border: none;
+	color: #000;
+	font-size: 100%;
+}
+
+.settlementPayBox dd dl dd {
+	margin: 0 0;
+	padding: 0 0;
+	float: left;
+	border: none;
+}
+
+.settlementPayBox dd dl dd .paymentFee {
+	color: #bf191f;
+	font-weight: bold;
+	font-size: 100%;
+}
+
 .settlementPayRadio {
 	width: 45px;
 	text-align: center;
