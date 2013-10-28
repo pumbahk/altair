@@ -204,7 +204,7 @@ def product_name_with_unit(product_items):
             for product_item in product_items))
 
 def get_availability_text(quantity):
-    if quantity == 0:
+    if quantity <= 0:
         return u'×'
     elif quantity < 20: 
         return u'△'
