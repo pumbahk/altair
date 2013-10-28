@@ -31,6 +31,7 @@ import sqlalchemy.orm as orm
 from sqlalchemy import sql
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import object_session
 from zope.deprecation import deprecate, deprecated
 from zope.interface import implementer
 
@@ -289,8 +290,12 @@ class Cart(Base):
         """ カート開放
         """
         logger.info('trying to release Cart (id=%d, order_no=%s)' % (self.id, self._order_no))
-        for item in self.items:
-            if not item.release():
+        carted_products = object_session(self).query(CartedProduct) \
+            .with_lockmode('update') \
+            .filter(CartedProduct.cart_id == self.id) \
+            .all()
+        for product in carted_products:
+            if not product.release():
                 return False
         return True
 
@@ -389,7 +394,11 @@ class CartedProduct(Base):
         """
         logger.info('trying to release CartedProduct (id=%d)' % self.id)
         if not self.finished_at:
-            for element in self.elements:
+            carted_product_items = object_session(self).query(CartedProductItem) \
+                .with_lockmode('update') \
+                .filter(CartedProductItem.carted_product_id == self.id) \
+                .all()
+            for element in carted_product_items:
                 if not element.release():
                     logger.info('returing False to abort. NO FURTHER SQL EXECUTION IS SUPPOSED!')
                     return False
@@ -484,6 +493,7 @@ class CartedProductItem(Base):
     def release(self):
         logger.info('trying to release CartedProductItem (id=%d)' % self.id)
         if not self.finished_at:
+            stock_status = c_models.StockStatus.filter_by(stock_id=self.product_item.stock_id).with_lockmode('update').one()
             # 座席開放
             for seat_status in self.seat_statuses_for_update:
                 logger.info('trying to release seat (id=%d)' % seat_status.seat_id)
@@ -499,7 +509,6 @@ class CartedProductItem(Base):
                 release_quantity = self.quantity
             else:
                 release_quantity = len(self.seats)
-            stock_status = c_models.StockStatus.filter_by(stock_id=self.product_item.stock_id).with_lockmode('update').one()
             logger.info('restoring the quantity of stock (id=%s, quantity=%d) by +%d' % (stock_status.stock_id, stock_status.quantity, release_quantity))
             stock_status.quantity += release_quantity
             stock_status.save()
