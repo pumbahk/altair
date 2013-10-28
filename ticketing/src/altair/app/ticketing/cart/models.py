@@ -469,6 +469,7 @@ class CartedProductItem(Base):
     def release(self):
         logger.info('trying to release CartedProductItem (id=%d)' % self.id)
         if not self.finished_at:
+            stock_status = c_models.StockStatus.filter_by(stock_id=self.product_item.stock_id).with_lockmode('update').one()
             # 座席開放
             for seat_status in self.seat_statuses_for_update:
                 logger.info('trying to release seat (id=%d)' % seat_status.seat_id)
@@ -484,7 +485,6 @@ class CartedProductItem(Base):
                 release_quantity = self.quantity
             else:
                 release_quantity = len(self.seats)
-            stock_status = c_models.StockStatus.filter_by(stock_id=self.product_item.stock_id).with_lockmode('update').one()
             logger.info('restoring the quantity of stock (id=%s, quantity=%d) by +%d' % (stock_status.stock_id, stock_status.quantity, release_quantity))
             stock_status.quantity += release_quantity
             stock_status.save()
