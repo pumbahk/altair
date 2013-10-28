@@ -110,7 +110,7 @@ def back_to_top(request):
 
     ReleaseCartView(request)()
 
-    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or '/')
+    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or request.context.host_base_url or "/")
 
 def back(pc=back_to_top, mobile=None):
     if mobile is None:
@@ -990,8 +990,7 @@ class OutTermSalesView(object):
 @limitter.release
 def logout(request):
     headers = security.forget(request)
-    back = back_to_top(request)
-    res = HTTPFound(location=back.location)
+    res = back_to_top(request)
     res.headerlist.extend(headers)
     return res
 
