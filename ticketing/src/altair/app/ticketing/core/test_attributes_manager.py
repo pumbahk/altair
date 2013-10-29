@@ -122,3 +122,15 @@ class AttributesManagerTests(unittest.TestCase):
         data = {u"あ": ""}
         result = self._getTarget().update(order, data, blank_value="")
         self.assertEquals(result.attributes, {})
+
+    def test_create_with_blank_value(self):
+        import transaction
+
+        data = {}
+        self._getTarget().update(self.order, data, encoding="utf-8")
+        transaction.commit()
+        
+        order = self.refreshed_order()
+        data = {u"あ": ""}
+        result = self._getTarget().update(order, data, blank_value="")
+        self.assertEquals(result.attributes, {})

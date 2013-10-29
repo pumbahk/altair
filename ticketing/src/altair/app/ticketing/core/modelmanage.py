@@ -18,7 +18,8 @@ class AttributesManager(object):
                 if hasattr(k, "decode"):
                     k = k.decode(encoding)
             if v == blank_value:
-                del association[k]
+                if k in association:
+                    del association[k]
             else:
                 association[k] = v
         return parent
