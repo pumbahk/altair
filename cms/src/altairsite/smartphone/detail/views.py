@@ -12,10 +12,9 @@ from altairsite.exceptions import UsersiteException
 
 class ValidationFailure(UsersiteException):
     pass
-from altairsite.front.cache import with_smartphone_cache
+
 @smartphone_site_view_config(route_name='smartphone.detail',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/detail/detail.html'
-             , decorator=with_smartphone_cache)
+             , renderer='altairsite.smartphone:templates/detail/detail.html')
 def moveDetail(context, request):
     form = DetailForm(request.GET)
     event = context.get_event(form.data['event_id'])

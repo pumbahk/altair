@@ -33,19 +33,8 @@ def _rendering_page(context, request, control, page): #todo: refactoring
     return response
     
 EXCLUDE_EXT_LIST = (".ico", ".js", ".css")
-from .cache import (
-    with_pc_cache, 
-    with_smartphone_cache, 
-    with_mobile_cache
-)
 
-def compose(fn1, fn0):
-    def _compose(v):
-        return fn1(fn0(v))
-    return _compose
-
-@usersite_view_config(route_name="front", decorator=compose(with_jquery, with_pc_cache))
-@usersite_view_config(route_name="front", request_type="altairsite.tweens.ISmartphoneRequest", decorator=compose(with_jquery, with_smartphone_cache))
+@usersite_view_config(route_name="front", decorator=with_jquery)
 def rendering_page(context, request):
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
@@ -77,7 +66,7 @@ from altairsite.mobile.dispatch.views import dispatch_view as mobile_dispatch_vi
 from altairsite.smartphone.dispatch.views import dispatch_view as smartphone_dispatch_view
 from pyramid.httpexceptions import HTTPFound
 
-@usersite_view_config(route_name="front", request_type="altairsite.tweens.IMobileRequest", custom_predicates=(enable_mobile, ), decorator=with_mobile_cache)
+@usersite_view_config(route_name="front", request_type="altairsite.tweens.IMobileRequest", custom_predicates=(enable_mobile, ))
 def mobile_rendering_page__rakuten(context, request):
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
@@ -101,7 +90,7 @@ def mobile_rendering_page__rakuten(context, request):
     logger.info(control.error_message)
     return mobile_dispatch_view(context, request)
 
-@usersite_view_config(route_name="front", request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(enable_smartphone, ), decorator=with_smartphone_cache)
+@usersite_view_config(route_name="front", request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(enable_smartphone, ))
 def smartphone_rendering_page(context, request):
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()

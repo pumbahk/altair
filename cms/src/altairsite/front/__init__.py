@@ -23,12 +23,24 @@ def install_lookupwrapper(config, name="intercept"):
     config.registry.adapters.register([IMakoLookup], ILookupWrapperFactory, name=name, value=factory)
    
 def install_pagecache(config):
-    from .cache import IFrontPageCache
-    from .cache import FrontPageCacher
     from beaker.cache import cache_regions #xxx:
+    from altair.mobile.interfaces import ISmartphoneRequest
+    from altair.mobile.interfaces import IMobileRequest
+    from pyramid.interfaces import IRequest
+    from .cache import (
+        ICacheKeyGenerator, 
+        IFrontPageCache, 
+        CacheKeyGenerator, 
+        FrontPageCacher, 
+        WrappedFrontPageCache, 
+        update_browser_id
+    )
+    config.registry.adapters.register([ISmartphoneRequest], ICacheKeyGenerator, "", CacheKeyGenerator("S:"))
+    config.registry.adapters.register([IMobileRequest], ICacheKeyGenerator, "", CacheKeyGenerator("M:"))
+    config.registry.adapters.register([IRequest], ICacheKeyGenerator, "", CacheKeyGenerator("P:"))
     kwargs = cache_regions["altaircms.frontpage.filedata"]
-    cacher = FrontPageCacher(kwargs=kwargs)
-    config.registry.registerUtility(cacher, IFrontPageCache)
+    front_page_cache = WrappedFrontPageCache(FrontPageCacher(kwargs), update_browser_id)
+    config.registry.registerUtility(front_page_cache, IFrontPageCache)
 
 def includeme(config):
     """
@@ -39,7 +51,7 @@ def includeme(config):
     config.include(install_resolver)
     config.include(install_lookupwrapper, "intercept")
     config.include(install_pagecache)
+    config.add_tween('altairsite.front.cache.cached_view_tween', under='altair.preview.tweens.preview_tween')
     config.scan('.views')
-    from altairsite.front.cache import with_mobile_cache
-    config.add_view("altairsite.mobile.staticpage.views.staticpage_view", route_name="front", request_type="altairsite.tweens.IMobileRequest", decorator=with_mobile_cache)
+    config.add_view("altairsite.mobile.staticpage.views.staticpage_view", route_name="front", request_type="altairsite.tweens.IMobileRequest")
 
