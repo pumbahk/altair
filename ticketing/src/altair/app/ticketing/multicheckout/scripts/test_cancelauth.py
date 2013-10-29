@@ -182,6 +182,32 @@ class Testsync_data(unittest.TestCase):
             u"by cancel auth batch",
         )
 
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
+    def test_one_invalid_order(self, mock_models, mock_api):
+        mock_api.checkout_inquiry.return_value = testing.DummyResource(
+            Status='110', OrderNo="testing-order", Storecd="test-shop",
+            CmnErrorCd="001407",
+        )
+        request = testing.DummyRequest()
+        statuses = [
+            testing.DummyModel(
+                OrderNo="testing-order",
+                Status=None,
+            )]
+
+        self._callFUT(request, statuses)
+        mock_models._session.commit.assert_called_once()
+        mock_api.checkout_inquiry.assert_called_with(
+            request,
+            "testing-order")
+        mock_models.MultiCheckoutOrderStatus.set_status.assert_called_with(
+            "testing-order",
+            "test-shop",
+            -100,
+            u"by cancel auth batch",
+        )
+
 class Testrun(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
