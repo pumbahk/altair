@@ -19,11 +19,12 @@ def with_provided_values_iterator(metadata_provider_registry, itr, locale="ja_JP
         if metadata is not None:
             display_name = metadata.get_display_name(locale)
             coerced_value = metadata.get_coercer()(value)
+            show_only = True
         else:
             display_name = key
             coerced_value = value
-
-        attributes.append((display_name, key, coerced_value))
+            show_only = False
+        attributes.append((display_name, key, coerced_value, show_only))
     attributes = sorted(attributes, key=lambda x: x[0])
     return attributes
 

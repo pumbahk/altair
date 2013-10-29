@@ -116,7 +116,7 @@ ${ch.breadcrumbs(
         <div class="span6">
           <h3>購入商品属性</h3>
           <table class="table table-striped table-bordered">
-            % for label, key, value in ordered_product_attributes:
+            % for label, key, value, show_only in ordered_product_attributes:
             <tr>
               <th class="span3">${label} (${key})</th>
               <td class="span2">${value}</td>
@@ -132,11 +132,15 @@ ${ch.breadcrumbs(
           <p>購入情報属性を追加して券面の文面を上書きする事ができます</p>
           <form method="POST" action="${request.route_path("orders.attributes_edit", order_id=order.id)}">
           <table class="table table-striped table-bordered">
-            %for label, key, value in order_attributes:
+            %for label, key, value, show_only in order_attributes:
               %if not key.startswith("memo_on_order"):
               <tr>
                 <th class="span3">${label}</th>
-                <td class="span2"><input name="${key}" data-order_id="${order.id}" placeholder="${value}" value="${value}"/></td>
+                %if show_only:
+                  <td class="span2">${value}</td>
+                %else:
+                  <td class="span2"><input name="${key}" data-order_id="${order.id}" placeholder="${value}" value="${value}"/></td>
+                %endif
               </tr>
               %endif
             %endfor
