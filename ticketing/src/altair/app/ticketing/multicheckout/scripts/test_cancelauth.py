@@ -6,29 +6,69 @@ from pyramid import testing
 from altair.multicheckout.interfaces import IMulticheckoutSettingFactory
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
-# class Testcancel_auth(unittest.TestCase):
-#     def _callFUT(self, *args, **kwargs):
-#         from . cancelauth import cancel_auth
-#         return cancel_auth(*args, **kwargs)
+class Testcancel_auth(unittest.TestCase):
+    def _callFUT(self, *args, **kwargs):
+        from . cancelauth import cancel_auth
+        return cancel_auth(*args, **kwargs)
 
-#     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m.MultiCheckoutOrderStatus')
-#     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api.checkout_auth_cancel')
-#     def test_it(self, mock_session, mock_cancel):
-#         statuses = [
-#             # CancelFilterでキャンセル不可能
-#             # オーソリOKでないのでキャンセル不可能
-#             # オーソリOK,CancelFilterにもひっかからないので、cancelされる
-#         ]
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
+    def test_empty(self, mock_models, mock_api):
+        statuses = []
+        request = testing.DummyRequest()
 
-#         request = testing.DummyRequest()
+        self._callFUT(request, statuses)
 
-#         self._callFUT(request, statuses)
+        self.assertFalse(mock_api.checkout_auth_cancel.called)
+        self.assertFalse(mock_models._session.commit.called)
 
-#         # キャンセルが呼ばれたかチェック
-#         mock_cancel.assert_called_with()
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.is_cancelable')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
+    def test_not_cancelable(self, mock_models, mock_api, mock_cancelable):
+        statuses = [testing.DummyModel(OrderNo="testing-order")]
+        mock_cancelable.return_value = False
+        request = testing.DummyRequest()
 
-#         # コミット回数をチェック
-#         mock_session.commit.assert_called_with()
+        self._callFUT(request, statuses)
+
+        mock_cancelable.assert_called_with(request, statuses[0])
+        self.assertFalse(mock_api.checkout_auth_cancel.called)
+        self.assertFalse(mock_models._session.commit.called)
+
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.is_cancelable')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
+    def test_with_cancelable_without_authorized(self, mock_models, mock_api, mock_cancelable):
+        statuses = [testing.DummyModel(OrderNo="testing-order",
+                                       is_authorized=False,
+                                       Status="100")]
+        mock_cancelable.return_value = True
+        request = testing.DummyRequest()
+
+        self._callFUT(request, statuses)
+
+        mock_cancelable.assert_called_with(request, statuses[0])
+        self.assertFalse(mock_api.checkout_auth_cancel.called)
+        self.assertFalse(mock_models._session.commit.called)
+
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.is_cancelable')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
+    def test_with_cancelable_with_authorized(self, mock_models, mock_api, mock_cancelable):
+        statuses = [testing.DummyModel(OrderNo="testing-order",
+                                       is_authorized=True,
+                                       Status="100")]
+        mock_cancelable.return_value = True
+        request = testing.DummyRequest()
+
+        self._callFUT(request, statuses)
+
+        mock_cancelable.assert_called_with(request, statuses[0])
+        mock_api.checkout_auth_cancel.assert_called_with(request,
+                                                         'testing-order')
+        mock_models._session.commit.assert_called_with()
+
 
 class Testget_auth_orders(unittest.TestCase):
 

@@ -77,18 +77,18 @@ def cancel_auth(request, statuses):
         キャンセル条件にしたがってオーソリ依頼データを取得
     """
     for st in statuses:
-        order_no = st.OrderNo
-
         if not is_cancelable(request, st):
             continue
 
-        if st.is_authorized:
-            logger.debug('call auth cancel api for %s' % order_no)
-            api.checkout_auth_cancel(request, order_no)
-        else:
+        order_no = st.OrderNo
+        if not st.is_authorized:
             logger.debug(
                 'not call auth cancel api for %s: status %s' % (order_no,
                                                                 st.Status))
+            continue
+
+        logger.debug('call auth cancel api for %s' % order_no)
+        api.checkout_auth_cancel(request, order_no)
 
         m._session.commit()
 
