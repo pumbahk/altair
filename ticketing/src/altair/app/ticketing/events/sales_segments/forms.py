@@ -125,7 +125,7 @@ class SalesSegmentForm(OurForm):
         label=u'商品購入上限数',
         default=None,
         filters=[zero_as_none],
-        validators=[SwitchOptional('use_default_product_limit')]
+        validators=[]
     )
     use_default_product_limit = OurBooleanField(
         label=u'グループの値を利用',
