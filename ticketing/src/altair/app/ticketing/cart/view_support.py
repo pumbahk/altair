@@ -118,7 +118,8 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     detail=h.product_name_with_unit(product_items_for_product[product.id]),
                     unit_template=h.build_unit_template(product_items_for_product[product.id]),
                     quantity_power=quantity_power,
-                    upper_limit=min(sales_segment.upper_limit / quantity_power, availability_per_product_map[product.id])
+                    upper_limit=min(sales_segment.upper_limit / quantity_power, availability_per_product_map[product.id]),
+                    product_limit=sales_segment.product_limit
                     )
                 )
         retval.append(dict(

@@ -299,6 +299,12 @@ class IndexView(IndexViewMixin):
                         performance_id=sales_segment.performance.id,
                         sales_segment_id=sales_segment.id,
                         seat_type_id=_dict['id']),
+                    seats_url=self.request.route_url(
+                        'cart.seats',
+                        performance_id=sales_segment.performance_id,
+                        sales_segment_id=sales_segment.id,
+                        _query=dict(seat_type_id=_dict['id'])
+                        ),
                     **_dict
                     )
                 for _dict in seat_type_dicts
@@ -383,20 +389,51 @@ class IndexView(IndexViewMixin):
     def get_seats(self):
         """会場&座席情報"""
         venue = self.context.performance.venue
+        stock_type_id = self.request.params.get('seat_type_id')
 
         sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.context.sales_segment.id).one()
         sales_stocks = sales_segment.stocks
-        seats = []
+        seats_query = None
         if sales_segment.seat_choice:
-            seats = c_models.Seat.query_sales_seats(sales_segment)\
+            seats_query = c_models.Seat.query_sales_seats(sales_segment)\
                 .options(joinedload('areas'), joinedload('status_'))\
                 .join(c_models.SeatStatus)\
                 .join(c_models.Stock)\
                 .filter(c_models.Seat.venue_id==venue.id)\
                 .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))
+            seat_groups_queries = [
+                DBSession.query(c_models.SeatGroup.l0_id, c_models.SeatGroup.name, c_models.Seat.l0_id) \
+                    .join(c_models.Seat, c_models.SeatGroup.l0_id == l0_id_column) \
+                    .join(c_models.Stock, c_models.Seat.stock_id == c_models.Stock.id) \
+                    .filter(c_models.SeatGroup.site_id == venue.site_id) \
+                    .filter(c_models.Seat.venue_id == venue.id)
+                    for l0_id_column in [c_models.Seat.row_l0_id, c_models.Seat.group_l0_id]
+                    ]
+
+            if stock_type_id is not None:
+                seats_query = seats_query.filter(c_models.Stock.stock_type_id == stock_type_id)
+                seat_groups_queries = [
+                    seat_groups_query.filter(c_models.Stock.stock_type_id == stock_type_id) 
+                    for seat_groups_query in seat_groups_queries
+                    ]
+            seats = seats_query.all()
+            seat_groups = {}
+            for seat_group_l0_id, seat_group_name, seat_l0_id in seat_groups_queries[0].union(*seat_groups_queries[1:]):
+                seat_group = seat_groups.get(seat_group_l0_id)
+                if seat_group is None:
+                    seat_group = seat_groups[seat_group_l0_id] = {
+                        'name': seat_group_name,
+                        'seats': [],
+                        }
+                seat_group['seats'].append(seat_l0_id) 
+        else:
+            seats = []
+            seat_groups = {}
+
         stock_map = dict([(s.id, s) for s in sales_stocks])
 
         self.request.add_response_callback(gzip_preferred)
+                
 
         return dict(
             seats=dict(
@@ -412,21 +449,7 @@ class IndexView(IndexViewMixin):
                         )
                     )
                 for seat in seats),
-            areas=dict(
-                (area.id, { 'id': area.id, 'name': area.name }) \
-                for area in DBSession.query(c_models.VenueArea) \
-                            .join(c_models.VenueArea_group_l0_id) \
-                            .filter(c_models.VenueArea_group_l0_id.venue_id==venue.id)
-                ),
-            info=dict(
-                available_adjacencies=[
-                    adjacency_set.seat_count
-                    for adjacency_set in \
-                        DBSession.query(c_models.SeatAdjacencySet) \
-                        .filter_by(site_id=venue.site_id)
-                    ]
-                ),
-            pages=get_venue_site_adapter(self.request, venue.site).get_frontend_pages()
+            seat_groups=seat_groups
             )
 
     @view_config(route_name='cart.seat_adjacencies', renderer="json")
@@ -528,11 +551,18 @@ class ReserveView(object):
         else:
             for product, quantity in order_items:
                 sum_quantity += quantity * product.get_quantity_power(product.seat_stock_type, product.performance_id)
-        logger.debug('sum_quantity=%s' % sum_quantity)
+        sum_product_quantity = sum(quantity for _, quantity in order_items)
+
+        logger.debug('sum_quantity=%d, sum_product_quantity=%d' % (sum_quantity, sum_product_quantity))
 
         if self.context.sales_segment.upper_limit < sum_quantity:
             logger.debug('upper_limit over')
             return dict(result='NG', reason="upper_limit")
+
+        if self.context.sales_segment.product_limit is not None and \
+           self.context.sales_segment.product_limit < sum_product_quantity:
+            logger.debug('product_limit over')
+            return dict(result='NG', reason="product_limit")
 
         try:
             cart = api.order_products(self.request, self.request.context.sales_segment.id, order_items, selected_seats=selected_seats)

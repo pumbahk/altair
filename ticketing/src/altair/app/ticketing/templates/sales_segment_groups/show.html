@@ -95,7 +95,7 @@ ${ch.breadcrumbs(
             <td>${vh.datetime(sales_segment.start_at)}</td>
             <td>${vh.datetime(sales_segment.end_at)}</td>
             <td>${sales_segment.account.name if sales_segment.account else u'(未設定)'}</td>
-            <td>${sales_segment.upper_limit or u'-'}</td>
+            <td>${u'%s枚' % sales_segment.upper_limit if sales_segment.upper_limit else u'-'} / ${u'%s個' % sales_segment.product_limit if sales_segment.product_limit else u'-'}</td>
             <td>${sales_segment.order_limit or u'-'}</td>
             <td>${u'選択可' if sales_segment.seat_choice else u'×選択不可'}</td>
             <td>${u'公開' if sales_segment.public else u'非公開'}</td>
