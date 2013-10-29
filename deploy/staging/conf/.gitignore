@@ -11,7 +11,8 @@ altair.ticketing.booster.89ers.ini
 altair.ticketing.booster.bambitious.ini
 altair.ticketing.booster.bigbulls.ini
 altair.ticketing.cart.ini
-altair.ticketing.lot_worker.ini
+altair.ticketing.worker.lots.ini
+altair.ticketing.worker.cart.ini
 altair.ticketing.lots.ini
 altair.ticketing.mypage.ini
 altair.ticketing.orderreview.ini
