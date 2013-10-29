@@ -101,13 +101,15 @@ def update_browser_id(request, text):
     gen = request.registry.getUtility(ITrackingImageGenerator)
     return gen.replace(request, text)
 
+def get_key_generator(request):
+    return request.registry.adapters.lookup([providedBy(request)], ICacheKeyGenerator)
 
 def cached_view_tween(handler, registry):
     def tween(request):
         if request.method != "GET":
             return handler(request)
 
-        keygen = registry.adapters.lookup([providedBy(request)], ICacheKeyGenerator)
+        keygen = get_key_generator(request)
         k = keygen(request)
         cache = registry.getUtility(IFrontPageCache)
         v = cache.get(request, k)
