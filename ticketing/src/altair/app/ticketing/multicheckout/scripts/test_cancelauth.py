@@ -78,4 +78,4 @@ class Testget_auth_orders(unittest.TestCase):
 
         result = self._callFUT(request, shop_id)
 
-        self.assertEqual(result, [])
+        self.assertEqual(result, [s])
