@@ -785,12 +785,12 @@ cart.OrderFormPresenter.prototype = {
     showOrderForm: function(selected_stock_type_el, stock_type, products) {
         this.stock_type = stock_type;
         this.products = products;
-        var upper_limit = 0, product_limit = 0;
+        var upper_limit = 0, product_limit = null;
         this.products.each(function(product) {
             var ul = product.get('upper_limit') * product.get('quantity_power');
             var pl = product.get('product_limit');
             upper_limit = (ul > upper_limit ? ul : upper_limit);
-            product_limit = (pl > product_limit ? pl: product_limit);
+            product_limit = ((pl !== null && (product_limit === null || pl > product_limit)) ? pl: product_limit);
         })
         this.upper_limit = upper_limit;
         this.product_limit = product_limit;
@@ -817,7 +817,7 @@ cart.OrderFormPresenter.prototype = {
         if (this.upper_limit < this.quantity_to_select) {
             return this.showOverUpperLimitMessage();
         }
-        if (this.product_limit < this.product_quantity_to_select) {
+        if (this.product_limit !== null && this.product_limit < this.product_quantity_to_select) {
             return this.showOverProductLimitMessage();
         }
         this.venuePresenter.setStockType(this.stock_type);
