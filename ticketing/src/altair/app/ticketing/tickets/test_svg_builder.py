@@ -66,8 +66,8 @@ class DataOverWriteTests(unittest.TestCase):
         ## 上書きされている
         self.assertEquals(result["k"], "v is overwriten")
 
-        ## order.idは除去
-        self.assertEquals(result["order"], {})
+        ## order.idは除去 => 無理
+        self.assertEquals(result["order"], {"id": "*Order.id*"})
 
 class OrderAttributesDataTests(unittest.TestCase):
     def setUp(self):

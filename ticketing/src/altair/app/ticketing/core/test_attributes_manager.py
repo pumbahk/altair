@@ -35,11 +35,11 @@ class AttributesManagerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         testing._setup_db(["altair.app.ticketing.core.models"])
+        import transaction
+        transaction.abort()
 
     @classmethod
     def tearDownClass(cls):
-        import transaction
-        transaction.abort()
         testing._teardown_db()
 
     def tearDown(self):
