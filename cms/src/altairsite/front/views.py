@@ -42,11 +42,17 @@ def rendering_page(context, request):
     control = context.pc_access_control()
     try:
         static_page = control.fetch_static_page_from_params(url, dt)
+        if not os.path.splitext(url)[1]:
+            suffix = "index.html"
+            if not url.endswith("/"):
+                suffix = "/" + suffix
+            static_page = control.fetch_static_page_from_params(url + suffix, dt)
+
         if static_page:
             if static_page.interceptive:
-                if url == "": #hmm..
-                    url = "index.html"
-                return as_static_page_response(request, static_page, url)
+                if os.path.splitext(url)[1]:
+                    return as_static_page_response(request, static_page, url)
+                return as_static_page_response(request, static_page, url + suffix)
     except StaticPageNotFound:
         logger.info(u'no corresponding static page found for url=%s; falls back to standard page discovery' % url)
 
