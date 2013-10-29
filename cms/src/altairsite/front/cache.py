@@ -26,6 +26,18 @@ class ICacheValueMutator(Interface):
     def __call__(request, v):
         pass
 
+
+@implementer(IFrontPageCache)
+class OnMemoryFrontPageCacher(object):
+    def __init__(self):
+        self.cache = {}
+
+    def get(self, request, k):
+        return self.cache.get(k)
+
+    def set(self, request, k, v):
+        self.cache[k] = v
+
 @implementer(IFrontPageCache)
 class FrontPageCacher(object):
     def __init__(self, kwargs):
