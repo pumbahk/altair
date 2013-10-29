@@ -1084,7 +1084,7 @@ class OrderDetailView(BaseView):
         placeholders = set()
         for t in tickets:
             placeholders = placeholders.union(get_placeholders_from_ticket(self.request, t))
-        placeholders = [ph for ph in placeholders if not "." in ph or ph.startswith("aux.")]
+        placeholders = sorted([ph for ph in placeholders if not "." in ph or ph.startswith("aux.")])
         return {"placeholders": placeholders}
 
 
