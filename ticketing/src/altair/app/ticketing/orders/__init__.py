@@ -19,6 +19,7 @@ def includeme(config):
     config.add_route('orders.reserve.complete'          , '/reserve/complete/')
     config.add_route('orders.reserve.reselect'          , '/reserve/reselect/')
     config.add_route('orders.memo_on_order'             , '/memo_on_order/{order_id}')
+    config.add_route('orders.attributes_edit'           , '/attributes/edit/{order_id}')
     config.add_route('orders.note'                      , '/note/{order_id}')
     config.add_route('orders.issue_status'              , '/issue_status/{order_id}')
     config.add_route('orders.api.get'                   , '/api/get/')
@@ -32,6 +33,7 @@ def includeme(config):
     config.add_route('orders.fraud.clear'               , '/fraud/clear/{order_id}')
 
     config.add_route("orders.cover.preview"             , "/cover/preview/{order_id}/cover")
+    config.add_route("orders.ticket.placeholder"        , "/api/preview/order/{order_id}/placeholders", factory=".resources.OrdersPreviewResource")
     config.add_route("orders.item.preview"              , "/item/preview/{order_id}/item/{item_id}")
     config.add_route("orders.item.preview.getdata"      , "/api/item/{item_id}/ticket/{ticket_format_id}")
     config.add_route('orders.print.queue'               , '/print/queue/{order_id}')
