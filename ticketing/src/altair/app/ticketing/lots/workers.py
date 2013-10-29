@@ -65,7 +65,6 @@ def includeme(config):
     config.add_publisher_consumer('lots', 'altair.ticketing.lots.mq')
     config.add_subscriber('.workers.on_delivery_error',
                           'altair.app.ticketing.payments.events.DeliveryErrorEvent')
-
     #config.scan(".workers")
     #config.scan(".subscribers")
 
