@@ -45,7 +45,7 @@ class TicketModelControl(object):
         order_dict = build_vals.get("order")
         if order_dict is None:
             return {}
-        order_id = order_dict.pop("id", None) #order.idは露出させないほうがよさそうなのでpop
+        order_id = order_dict.get("id", None) #order.idは露出させないほうがよさそうなのでpop
         if order_id is None:
             return {}
         return self.overwrite_data[order_id]
@@ -54,7 +54,8 @@ class TicketModelControl(object):
         # logger.info(build_vals)
         vals = ticket.vars_defaults
         vals.update(build_vals)
-        vals.update(self.overwrite_attributes(build_vals))
+        overwrite_vals = self.overwrite_attributes(build_vals)
+        vals.update(overwrite_vals)
         return vals
 
 @implementer(ISVGBuilder)
