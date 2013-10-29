@@ -140,7 +140,10 @@ class Testsync_data(unittest.TestCase):
     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
     def test_one_authorized_actualy_authorized(self, mock_models, mock_api):
         import altair.multicheckout.models as m
-        mock_api.checkout_inquiry.return_value = testing.DummyResource(Status='110')
+        mock_api.checkout_inquiry.return_value = testing.DummyResource(
+            Status='110',
+            CmnErrorCd="000000",
+        )
         request = testing.DummyRequest()
         statuses = [
             testing.DummyModel(
@@ -156,7 +159,10 @@ class Testsync_data(unittest.TestCase):
     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
     def test_one_unknown_actualy_authorized(self, mock_models, mock_api):
         import altair.multicheckout.models as m
-        mock_api.checkout_inquiry.return_value = testing.DummyResource(Status='110', OrderNo="testing-order", Storecd="test-shop")
+        mock_api.checkout_inquiry.return_value = testing.DummyResource(
+            Status='110', OrderNo="testing-order", Storecd="test-shop",
+            CmnErrorCd="000000",
+        )
         request = testing.DummyRequest()
         statuses = [
             testing.DummyModel(

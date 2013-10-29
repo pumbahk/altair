@@ -34,6 +34,12 @@ def sync_data(request, statuses):
         logger.debug("sync for %s" % order_no)
         inquiry = api.checkout_inquiry(request, order_no)
 
+        if inquiry.CmnErrorCd == '001407':  # 取引詳細操作不可
+            m.MultiCheckoutOrderStatus.set_status(
+                inquiry.OrderNo,
+                inquiry.Storecd, -100,
+                u"by cancel auth batch")
+
         if inquiry.Status != st.Status:
             m.MultiCheckoutOrderStatus.set_status(
                 inquiry.OrderNo,
