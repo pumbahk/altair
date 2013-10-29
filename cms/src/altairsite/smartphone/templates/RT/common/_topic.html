@@ -1,0 +1,29 @@
+<%page args="topics, helper" />
+<%namespace file="tags_smartphone.html" name="m" />
+
+<% topics = [(event, topic) for event, topic in ((helper.get_event_from_linked_page_id(request, topic.linked_page_id), topic) for topic in topics)] %>
+
+<h2 class="glitter red">トピックス</h2>
+% if topics:
+    % for event, topic in topics:
+        <%
+            link = None
+            if topic.link:
+                link = topic.link
+            elif event:
+                link = request.route_path('smartphone.detail') + "?event_id=" + str(event.id)
+        %>
+
+        % if link:
+            <a href=${link}>
+                <img src="${request.static_url('altaircms:static/RT/img/common/side_nav_icon.gif')}"/>
+                ${topic.text}<br/>
+            </a>
+        % else:
+            <img src="${request.static_url('altaircms:static/RT/img/common/side_nav_icon.gif')}"/>
+            ${topic.text}<br/>
+        % endif
+    % endfor
+% else:
+    現在、対象となる公演情報はありません
+% endif

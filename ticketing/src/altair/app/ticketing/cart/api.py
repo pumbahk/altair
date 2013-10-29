@@ -15,7 +15,7 @@ from pyramid.httpexceptions import HTTPNotFound
 
 from altair.app.ticketing.api.impl import get_communication_api
 from altair.app.ticketing.api.impl import CMSCommunicationApi
-from altair.mobile.interfaces import IMobileRequest
+from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.mobile.api import detect_from_ip_address
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
@@ -54,6 +54,9 @@ def is_checkout_payment(cart):
 
 def is_mobile(request):
     return IMobileRequest.providedBy(request)
+
+def is_smartphone(request):
+    return ISmartphoneRequest.providedBy(request)
 
 def get_event_info_from_cms(request, event_id):
     communication_api = get_communication_api(request, CMSCommunicationApi)
@@ -303,3 +306,11 @@ def get_cart_user_identifiers(request):
             # remote address is *weakest*
             retval.append((remote_addr, 'weak'))
     return retval
+
+def is_smartphone_organization(context, request):
+    organization = c_api.get_organization(request)
+    return organization.id == 15 or organization.id == 24
+
+def is_point_input_organization(context, request):
+    organization = c_api.get_organization(request)
+    return organization.id == 24

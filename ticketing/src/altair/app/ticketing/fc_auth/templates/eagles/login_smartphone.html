@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>チケット販売 - イーグルスチケット</title>
+  <meta name="description" content="チケットの予約はイーグルスチケットで！イーグルスチケットは、野球チケットのオンラインショッピングサイトです。" />
+  <meta name="keywords" content="チケット,野球" />
+  <meta http-equiv="content-style-type" content="text/css" />
+  <meta http-equiv="content-script-type" content="text/javascript" />
+  <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.fc_auth:static/eagles/images/eagles.ico')}" />
+  <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.fc_auth:static/eagles/smartphone_default.css')}" type="text/css" />
+  <%block name="javascript"></%block>
+  <%block name="css"></%block>
+</head>
+
+<body id="settlement">
+  <div id="container" class="page">
+    <!-- ========== header ========== -->
+    <div class="header">
+      <div class="grpheader">
+        <div class="siteID">
+          <a href="/">
+            <img src="${request.static_url('altair.app.ticketing.fc_auth:static/eagles/images/eagles_logo.png')}" width="120" alt="イーグルスチケット" class="serviceLogo" />
+          </a>
+        </div>
+      </div>
+    </div>
+    <!-- ========== /header ========== -->
+
+
+
+    <!-- ========== main ========== -->
+  <table border="1" class="login_table">
+    <tr>
+      <td>
+        <div class="header">
+          <div class="band">
+            <h1 class="login_header">各種会員の方はこちらから</h1>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        ブースタークラブ、ゴールドクラブ、レギュラークラブ、レディースクラブ、キッズクラブ、ベーシッククラブ、SOC、スポンサークラブ
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <form action="${request.url}" method="post">
+          <input type="hidden" name="membership" value="eagles" />
+          <div>
+            会員ID<br/>
+            <input type="text" name="username" size="22" value="${username}">
+            <br/>
+            パスワード<br/>
+            <input type="password" size="22" name="password">
+            %if message:
+              <br/><font color="red">ID、または、パスワードが一致しません</font>
+            %endif
+            </div>
+            <div class="buttonbox">
+              <input class="btn btn-primary btn-large" type="submit" value="ログイン" />
+          </div>
+          <p>
+            ファンクラブ会員のIDを忘れてしまった方は<br /><a href="mailto:eagles@tstar.jp?body=※ご注意※ファンクラブに登録頂いた携帯アドレスから本アドレスにメールを送信してください。">こちら</a>からお問い合わせください。
+          </p>
+        </form>
+      </td>
+    </tr>
+  </table>
+  <br/>
+
+  <table border="1" class="login_table">
+    <tr>
+      <td>
+        <div class="header">
+          <div class="band">
+            <h1 class="login_header">一般の方はこちらから</h1>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
+          <div class="buttonbox">
+            <input type="submit" class="btn btn-primary btn-large" value="チケット購入" />
+          </div>
+        </form>
+      </td>
+    </tr>
+  </table>
+<br/>
+
+    <!-- ========== /main ========== -->
+  </div>
+  <!-- /container -->
+  <%block name="extras" />
+
+<div align="center" style="font-size:x-small">
+  <div>
+    <a href="http://www.ticketstar.jp/corporate">運営会社</a> | <a href="mailto:eagles@tstar.jp">お問い合わせ</a> | <a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
+  </div>
+<div><font color="#888888">2010-2013 &copy; TicketStar, Inc. All rights reserved.</font></div>
+
+</body>
+</html>
