@@ -46,6 +46,11 @@ def sync_data(request, statuses):
                 inquiry.OrderNo,
                 inquiry.Storecd, inquiry.Status,
                 u"by cancel auth batch")
+        else:
+            logger.info('inquiry order=%s CmnErrorCd=%s' % (
+                order_no,
+                inquiry.CmnErrorCd,
+            ))
         m._session.commit()
 
 def get_cancel_filter(request, name):
