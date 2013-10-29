@@ -28,10 +28,11 @@ class OrderAttributesForOverwriteData(object):
         if order is None:
             return {}
         try:
-            return order.attributes
+            return dict(order.attributes)
         except InvalidRequestError as e:
             #stale association proxy, parent object has gone out of scope
             logger.error(repr(e))
+            return {}
 
 class TicketModelControl(object):
     def __init__(self):
