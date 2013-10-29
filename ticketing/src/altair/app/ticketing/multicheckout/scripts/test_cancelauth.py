@@ -3,7 +3,7 @@ from datetime import datetime
 import unittest
 import mock
 from pyramid import testing
-from altair.multicheckout.interfaces import IMulticheckoutSettingFactory
+from altair.multicheckout.interfaces import IMulticheckoutSettingListFactory
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
 class Testcancel_auth(unittest.TestCase):
@@ -175,3 +175,43 @@ class Testsync_data(unittest.TestCase):
             unicode(m.MultiCheckoutStatusEnum.Authorized),
             u"by cancel auth batch",
         )
+
+class Testrun(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def _callFUT(self, *args, **kwargs):
+        from .cancelauth import run
+        return run(*args, **kwargs)
+
+    def test_empty_shops(self):
+        self.config.registry.utilities.register(
+            [],
+            IMulticheckoutSettingListFactory,
+            "",
+            lambda request: [],
+        )
+        request = testing.DummyRequest()
+        result = self._callFUT(request)
+
+        self.assertEqual(result, [])
+
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.process_shop')
+    def test_one_shops(self, mock_process_shop):
+        self.config.registry.utilities.register(
+            [],
+            IMulticheckoutSettingListFactory,
+            "",
+            lambda request: [testing.DummyModel(
+                shop_name='testing-shop',
+                shop_id="testing",
+            )],
+        )
+        request = testing.DummyRequest()
+        result = self._callFUT(request)
+
+        mock_process_shop.assert_called_with(
+            request, 'testing', 'testing-shop')

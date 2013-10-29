@@ -11,7 +11,6 @@ from datetime import timedelta
 from pyramid.paster import bootstrap, setup_logging
 import sqlahelper
 from sqlalchemy.sql import or_
-from .. import get_multicheckout_settings
 from altair.multicheckout import models as m
 from altair.multicheckout import api
 from altair.multicheckout.interfaces import ICancelFilter
@@ -92,6 +91,16 @@ def cancel_auth(request, statuses):
 
         m._session.commit()
 
+def lock(lock_name, timeout):
+    """ 多重起動防止ロック
+    """
+    conn = sqlahelper.get_engine().connect()
+    status = conn.scalar("select get_lock(%s,%s)", (lock_name, timeout))
+    if status != 1:
+        return False
+
+    return True
+
 def main():
     """
     TODO: オプション指定
@@ -105,44 +114,50 @@ def main():
     setup_logging(args.config)
     env = bootstrap(args.config)
     request = env['request']
-
     # 多重起動防止
     LOCK_NAME = 'cancelauth'
     LOCK_TIMEOUT = 10
-    conn = sqlahelper.get_engine().connect()
-    status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
-    if status != 1:
+    if lock(LOCK_NAME, LOCK_TIMEOUT):
+        return run(request)
+    else:
         logger.warn('lock timeout: already running process')
         return
 
+def run(request):
     # multicheckoutsettingsごとに行う
     processed_shops = []
-    for multicheckout_setting in get_multicheckout_settings(request):
+    for multicheckout_setting in api.get_all_multicheckout_settings(request):
         shop_name = multicheckout_setting.shop_name
         shop_id = multicheckout_setting.shop_id
         if shop_id in processed_shops:
             logger.info("%s: shop_id = %s is already processed" % (shop_name, shop_id))
             continue
+        try:
+            process_shop(request, shop_id, shop_name)
+        except Exception, e:
+            logging.error('Multicheckout API error occured: %s' % e.message)
+            break
+        processed_shops.append(shop_id)
+    return processed_shops
 
+def process_shop(request, shop_id, shop_name):
         request.altair_checkout3d_override_shop_name = shop_name
 
         logger.info("starting get_auth_orders %s" % shop_name)
         statuses = get_auth_orders(request, shop_id)
         logger.info("finished get_auth_orders %s" % shop_name)
+        logger.info(
+            "shop:%s auth orders count = %d" % (shop_name, len(statuses)))
+        if not statuses:
+            return 
 
-        if statuses:
-            try:
-                logger.info("starting sync_data %s" % shop_name)
-                sync_data(request, statuses)
-                logger.info("finished sync_data %s" % shop_name)
+        logger.info("starting sync_data %s" % shop_name)
+        sync_data(request, statuses)
+        logger.info("finished sync_data %s" % shop_name)
 
-                logger.info("starting cancel_auth %s" % shop_name)
-                cancel_auth(request, statuses)
-                logger.info("finished cancel_auth %s" % shop_name)
-            except Exception, e:
-                logging.error('Multicheckout API error occured: %s' % e.message)
-                break
-        processed_shops.append(shop_id)
+        logger.info("starting cancel_auth %s" % shop_name)
+        cancel_auth(request, statuses)
+        logger.info("finished cancel_auth %s" % shop_name)
 
 if __name__ == '__main__':
     main()

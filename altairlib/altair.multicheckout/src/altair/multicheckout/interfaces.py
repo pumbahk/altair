@@ -49,3 +49,7 @@ class IMulticheckoutSetting(Interface):
 class IMulticheckoutSettingFactory(Interface):
     def __call__(request, override_name):
         """ get IMultiChekoutSetting """
+
+class IMulticheckoutSettingListFactory(Interface):
+    def __call__(request):
+        """ get list of IMultiChekoutSetting """

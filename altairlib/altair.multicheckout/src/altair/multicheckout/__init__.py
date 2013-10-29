@@ -5,7 +5,11 @@
 
 import logging
 import functools
-from .interfaces import ICardBrandDetecter, IMulticheckoutSettingFactory
+from .interfaces import (
+    ICardBrandDetecter,
+    IMulticheckoutSettingFactory,
+    IMulticheckoutSettingListFactory,
+)
 from .util import ahead_coms
 logger = logging.getLogger(__name__)
 
@@ -63,6 +67,8 @@ def includeme(config):
                         ICardBrandDetecter)
     config.add_directive("set_multicheckout_setting_factory",
                          set_multicheckout_setting_factory)
+    config.add_directive("set_multicheckout_setting_list_factory",
+                         set_multicheckout_setting_list_factory)
 
 def set_multicheckout_setting_factory(config, factory):
     reg = config.registry
@@ -76,6 +82,22 @@ def set_multicheckout_setting_factory(config, factory):
         type_name="altair.multicheckout.interfaces.IMulticheckoutSetting")
 
     config.action("altair.multicheckout.multicheckoutsetting",
+                  register,
+                  introspectables=intr,
+                  )
+
+def set_multicheckout_setting_list_factory(config, factory):
+    reg = config.registry
+    def register():
+        reg.registerUtility(factory, IMulticheckoutSettingListFactory)
+
+    intr = config.introspectable(
+        category_name="altair.multicheckout.multicheckoutsettings",
+        discriminator="altair.multicheckout.multicheckoutsettinglist",
+        title="adapter of Multicheckout Setting List",
+        type_name="altair.multicheckout.interfaces.IMulticheckoutSetting")
+
+    config.action("altair.multicheckout.multicheckoutsettinglist",
                   register,
                   introspectables=intr,
                   )
