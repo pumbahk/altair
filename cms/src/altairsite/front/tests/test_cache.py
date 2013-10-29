@@ -111,3 +111,28 @@ class Tests(unittest.TestCase):
 *result*
 <img src="//rt.example.jp/-/bi/*replaced*.gif" width="0" height="0" />
 """)
+
+    def test_preview_request__not_cached(self):
+        response_body = self.get_reponse_body()
+        def view(request):
+            return Response(response_body)
+
+        ## first
+        target = self._getTarget()
+        fn = target(view, self.config.registry)
+        request = testing.DummyRequest(url="http://rt.example.jp/foo/bar?foo=1")
+        result = fn(request)
+        self.assertEquals(result.text, response_body)
+
+        ## second(cached)
+        with mock.patch("altairsite.front.cache.get_key_generator", autospec=True) as get_key_generator:
+            get_key_generator.side_effect = NotImplementedError("don't call")
+            
+            from altair.preview.api import set_preview_request_condition
+            request2 = testing.DummyRequest(url="http://rt.example.jp/foo/bar?foo=1")
+            request2.headers["X-Altair-Browserid"] = "*replaced*"
+            set_preview_request_condition(request2, True)
+            result = fn(request2)
+
+            self.assertEquals(result.text, response_body)
+            self.assertFalse(get_key_generator.called)

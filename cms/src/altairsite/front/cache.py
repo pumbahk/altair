@@ -11,6 +11,7 @@ from zope.interface import (
 from beaker.cache import Cache
 from pyramid.response import Response
 from ..tracking import ITrackingImageGenerator
+from altair.preview.api import get_preview_request_condition
 
 class IFrontPageCache(Interface):
     def get(request, k):
@@ -106,7 +107,11 @@ def get_key_generator(request):
 
 def cached_view_tween(handler, registry):
     def tween(request):
+        ## getかpreviewリクエストの時はcacheしない
         if request.method != "GET":
+            return handler(request)
+
+        if get_preview_request_condition(request):
             return handler(request)
 
         keygen = get_key_generator(request)
