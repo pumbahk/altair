@@ -17,7 +17,19 @@ h3{
     )}
 
 <div class="circle circle-page circle-top"></div>
-<h2>${static_page.name}</h2>
+
+<h2>
+${static_page.name}
+%if static_page.interceptive:
+<span class="label label-warning">url="${static_pageset.url}"を横取り中</span>
+%endif
+</h2>
+
+%if static_page.interceptive:
+<div class="alert">
+  横取り中では、登録されたURLの*widgetページがあった場合でも*優先して表示されます。
+</div>
+%endif
 
 <table class="table table-striped">
   <tr>
@@ -107,12 +119,21 @@ h3{
 <hr/>
 
 
+
 <ul class="nav nav-tabs">
   %for page in static_pageset.pages:
   %if page.id == static_page.id:
-    <li class="active"><a href="#">${page.label}</a></li>
+    <li class="active"><a href="#">${page.label}
+    %if page.interceptive:
+      <span class="label label-warning">url="${static_pageset.url}"を横取り中</span>
+    %endif
+    </a></li>
   %else:
-    <li><a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}#internal_link_for_tabs">${page.label}</a></li>
+    <li><a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}#internal_link_for_tabs">${page.label}
+    %if page.interceptive:
+      <span class="label label-warning">url="${static_pageset.url}"を横取り中</span>
+    %endif
+    </a></li>
   %endif
   %endfor
 </ul>
@@ -159,8 +180,14 @@ h3{
     <i class="icon-cog"></i> 変更
   </a>
   <a class="do-post btn btn-danger"
-	   href="${request.route_path("static_page",action="delete",static_page_id=static_page.id, child_id=static_page.id ,_query=dict(endpoint=request.url))}">
+     message="本当に登録されたデータを削除しますか?"
+	 href="${request.route_path("static_page",action="delete",static_page_id=static_page.id, child_id=static_page.id ,_query=dict(endpoint=request.url))}">
     <i class="icon-trash"></i> 削除
+  </a>
+  <a class="do-post btn"
+     message="本当に${static_pageset.url}のページを横取りしますか？"
+	 href="${request.route_path("static_page",action="intercept",static_page_id=static_page.id, child_id=static_page.id ,_query=dict(endpoint=request.url))}">
+    <i class="icon-plus"></i> widgetのページを横取り
   </a>
 </div>
 <hr id="internal_link_for_files" />
@@ -231,8 +258,9 @@ h3{
       $this.attr("href", $this.data("href-fmt").replace("__id__", pk));
       return !($this.attr("message")) || window.confirm($this.attr("message"));
     });
-  $("a.do-post").click(function(){
-    if(window.confirm("本当に登録されたデータを削除しますか?")){
+  $("a.do-post").click(function(e){
+    var $this = $(this);
+    if(window.confirm($this.attr("message"))){
 	  $.post($(this).attr("href")).done(function(data){
 		location.href = data["redirect_to"];
 	  }).error(function(e){console.log(e.responseText);});

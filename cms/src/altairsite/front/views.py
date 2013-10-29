@@ -43,6 +43,8 @@ def rendering_page(context, request):
         static_page = control.fetch_static_page_from_params(url, dt)
         if static_page:
             if static_page.interceptive:
+                if url == "": #hmm..
+                    url = "index.html"
                 return as_static_page_response(request, static_page, url)
     except StaticPageNotFound:
         logger.info(u'no corresponding static page found for url=%s; falls back to standard page discovery' % url)
@@ -64,6 +66,10 @@ def rendering_page(context, request):
 from altairsite.mobile.dispatch.views import dispatch_view as mobile_dispatch_view
 from altairsite.smartphone.dispatch.views import dispatch_view as smartphone_dispatch_view
 from pyramid.httpexceptions import HTTPFound
+
+"""
+ここから下はstatic pageを見ていない？
+"""
 
 @usersite_view_config(route_name="front", request_type="altairsite.tweens.IMobileRequest", custom_predicates=(enable_mobile, ))
 def mobile_rendering_page__rakuten(context, request):
