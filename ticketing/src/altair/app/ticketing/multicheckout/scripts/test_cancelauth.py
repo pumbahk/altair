@@ -79,3 +79,59 @@ class Testget_auth_orders(unittest.TestCase):
         result = self._callFUT(request, shop_id)
 
         self.assertEqual(result, [s])
+
+
+class Testsync_data(unittest.TestCase):
+
+    def _callFUT(self, *args, **kwargs):
+        from .cancelauth import sync_data
+        return sync_data(*args, **kwargs)
+
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
+    def test_empty(self, mock_models):
+        request = testing.DummyRequest()
+        statuses = []
+
+        self._callFUT(request, statuses)
+
+        self.assertFalse(mock_models._session.commit.called)
+
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
+    def test_one_authorized_actualy_authorized(self, mock_models, mock_api):
+        import altair.multicheckout.models as m
+        mock_api.checkout_inquiry.return_value = testing.DummyResource(Status='110')
+        request = testing.DummyRequest()
+        statuses = [
+            testing.DummyModel(
+                OrderNo="testing-order",
+                Status=unicode(m.MultiCheckoutStatusEnum.Authorized),
+            )]
+
+        self._callFUT(request, statuses)
+        mock_models._session.commit.assert_called_once()
+        self.assertFalse(mock_models.MultiCheckoutOrderStatus.set_status.called)
+
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
+    def test_one_unknown_actualy_authorized(self, mock_models, mock_api):
+        import altair.multicheckout.models as m
+        mock_api.checkout_inquiry.return_value = testing.DummyResource(Status='110', OrderNo="testing-order", Storecd="test-shop")
+        request = testing.DummyRequest()
+        statuses = [
+            testing.DummyModel(
+                OrderNo="testing-order",
+                Status=None,
+            )]
+
+        self._callFUT(request, statuses)
+        mock_models._session.commit.assert_called_once()
+        mock_api.checkout_inquiry.assert_called_with(
+            request,
+            "testing-order")
+        mock_models.MultiCheckoutOrderStatus.set_status.assert_called_with(
+            "testing-order",
+            "test-shop",
+            unicode(m.MultiCheckoutStatusEnum.Authorized),
+            u"by cancel auth batch",
+        )
