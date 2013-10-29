@@ -39,8 +39,9 @@ def sync_data(request, statuses):
                 inquiry.OrderNo,
                 inquiry.Storecd, -100,
                 u"by cancel auth batch")
-
-        elif inquiry.Status != st.Status:
+        elif (inquiry.CmnErrorCd == '000000'
+              and inquiry.Status
+              and inquiry.Status != st.Status):
             m.MultiCheckoutOrderStatus.set_status(
                 inquiry.OrderNo,
                 inquiry.Storecd, inquiry.Status,
