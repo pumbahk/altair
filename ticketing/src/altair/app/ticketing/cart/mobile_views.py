@@ -355,7 +355,7 @@ class MobileSelectProductView(object):
         if old_cart:
             limitter._release(self.request)
             # !!! ここでトランザクションをコミットする !!!
-            old_cart.release()
+            api.release_cart(self.request, old_cart)
             api.remove_cart(self.request)
             transaction.commit()
             c_api.refresh_organization(self.request)

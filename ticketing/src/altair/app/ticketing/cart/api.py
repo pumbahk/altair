@@ -19,6 +19,7 @@ from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.mobile.api import detect_from_ip_address
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
+from altair.mq import get_publisher
 
 from .interfaces import IPaymentMethodManager
 from .interfaces import IStocker, IReserving, ICartFactory
@@ -98,6 +99,20 @@ def get_cart(request, for_update=True):
 def remove_cart(request):
     if request.session.get("altair.app.ticketing.cart_id"):
         del request.session['altair.app.ticketing.cart_id']
+
+def release_cart(request, cart, async=True):
+    if async:
+        try:
+            get_publisher(request, 'cart').publish(
+                body=json.dumps(dict(cart_id=cart.id)),
+                routing_key='cart',
+                properties=dict(content_type="application/json")
+                )
+        except Exception as e:
+            import sys
+            logger.warning("ignored exception", exc_info=sys.exc_info())
+    else:
+        cart.release()
 
 @deprecate
 def has_cart(request):

@@ -65,7 +65,7 @@ limitter = LimitterDecorators('altair.cart.limit_per_unit_time', TooManyCartsCre
 
 def back_to_product_list_for_mobile(request):
     cart = api.get_cart_safe(request)
-    cart.release()
+    api.release_cart(request, cart)
     api.remove_cart(request)
     return HTTPFound(
         request.route_url(
@@ -616,7 +616,7 @@ class ReleaseCartView(object):
     def __call__(self):
         try:
             cart = self.request.context.cart
-            cart.release()
+            api.release_cart(self.request, cart)
             api.remove_cart(self.request)
         except NoCartError:
             import sys

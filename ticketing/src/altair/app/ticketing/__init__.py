@@ -105,11 +105,13 @@ def main(global_config, **local_config):
         config.include('altair.mobile')
         config.include('altair.sqlahelper')
         config.include('altair.now')
+        config.include('altair.mq')
 
         ### s3 assets
         config.include('altair.pyramid_assets')
         config.include('altair.pyramid_boto')
         config.include('altair.pyramid_boto.s3.assets')
+        config.include('altair.pyramid_tz')
 
         config.include('altair.app.ticketing.core')
         config.include('altair.app.ticketing.mails')
@@ -152,14 +154,13 @@ def main(global_config, **local_config):
 
         ## TBA
         config.add_route("qr.make", "___________") ##xxx:
-        config.include(config.maybe_dotted('altair.app.ticketing.cart.import_mail_module'))
-        # 上からscanされてしまうためしかたなく追加。scanをinclude先に移動させて、このincludeを削除する。
-        #config.include('altair.app.ticketing.cart' , route_prefix='/cart')
+        config.include('altair.app.ticketing.cart.import_mail_module')
+        config.include('altair.app.ticketing.cart.setup_mq')
         config.include('.renderers')
 
+        config.scan('altair.app.ticketing.cart.workers')
     
         config.add_tween('.tweens.session_cleaner_factory', over=EXCVIEW)
-        #config.scan('altair.app.ticketing') # Bad Code
 
         ## cmsとの通信
         from .api.impl import CMSCommunicationApi
@@ -168,9 +169,6 @@ def main(global_config, **local_config):
             settings["altaircms.apikey"]
             )
         event_push_communication.bind_instance(config)
-        config.include('altair.pyramid_assets')
-        config.include('altair.pyramid_boto')
-        config.include('altair.pyramid_tz')
 
         config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
 
