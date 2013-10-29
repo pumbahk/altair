@@ -14,16 +14,7 @@ from altair.app.ticketing.core.models import Order
 from sqlalchemy.exc import InvalidRequestError
 
 class OrderAttributesForOverwriteData(object):
-    def __init__(self):
-        self.attributes_cache = {}
-
     def __getitem__(self, order_id):
-        if order_id in self.attributes_cache:
-            return self.attributes_cache[order_id]
-        v = self.attributes_cache[order_id] = self._get_order_attributes_for_overwrite(order_id)
-        return v
-
-    def _get_order_attributes_for_overwrite(self, order_id):
         order = Order.query.get(order_id)
         if order is None:
             return {}
@@ -45,7 +36,7 @@ class TicketModelControl(object):
         order_dict = build_vals.get("order")
         if order_dict is None:
             return {}
-        order_id = order_dict.get("id", None) #order.idは露出させないほうがよさそうなのでpop
+        order_id = order_dict.get("id", None) #order.idは露出させないほうがよさそうなのでpop => 無理だった
         if order_id is None:
             return {}
         return self.overwrite_data[order_id]
@@ -55,6 +46,7 @@ class TicketModelControl(object):
         vals = ticket.vars_defaults
         vals.update(build_vals)
         overwrite_vals = self.overwrite_attributes(build_vals)
+        # logger.info(overwrite_vals)
         vals.update(overwrite_vals)
         return vals
 
