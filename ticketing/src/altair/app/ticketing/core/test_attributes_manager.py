@@ -40,6 +40,8 @@ class AttributesManagerTests(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        import transaction
+        transaction.abort()
         testing._teardown_db()
 
     def tearDown(self):
