@@ -58,12 +58,13 @@ def setup_components(config):
     from .stocker import Stocker
     from .reserving import Reserving
     from .carting import CartFactory
-    from .performanceselector import MatchUpPerformanceSelector, DatePerformanceSelector
+    from .performanceselector import MatchUpPerformanceSelector, DatePerformanceSelector, MatchUpPerformanceSelector2
     reg = config.registry
     reg.adapters.register([IRequest], IStocker, "", Stocker)
     reg.adapters.register([IRequest], IReserving, "", Reserving)
     reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
     reg.adapters.register([IRequest], IPerformanceSelector, "matchup", MatchUpPerformanceSelector)
+    reg.adapters.register([IRequest], IPerformanceSelector, "matchup2", MatchUpPerformanceSelector2)
     reg.adapters.register([IRequest], IPerformanceSelector, "date", DatePerformanceSelector)
 
 def setup_mq(config):
