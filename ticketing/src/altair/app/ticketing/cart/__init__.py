@@ -66,6 +66,9 @@ def setup_components(config):
     reg.adapters.register([IRequest], IPerformanceSelector, "matchup", MatchUpPerformanceSelector)
     reg.adapters.register([IRequest], IPerformanceSelector, "date", DatePerformanceSelector)
 
+def setup_mq(config):
+    config.add_publisher_consumer('cart', 'altair.ticketing.cart.mq')
+
 def includeme(config):
     # 購入系
     config.add_route('cart.index', 'events/{event_id}', factory='.resources.compat_ticketing_cart_resource_factory')
@@ -90,6 +93,7 @@ def includeme(config):
     # order / payment / release
     config.add_route('cart.order', 'order/sales/{sales_segment_id}', factory='.resources.SalesSegmentOrientedTicketingCartResource')
     config.add_route('cart.payment', 'payment/sales/{sales_segment_id}', factory='.resources.SalesSegmentOrientedTicketingCartResource')
+    config.add_route('cart.point', 'rsp', factory='.resources.SalesSegmentOrientedTicketingCartResource')
     config.add_route('cart.release', 'release')
 
     # 完了／エラー
@@ -158,6 +162,7 @@ def main(global_config, **local_config):
     config.include(import_mail_module)
 
     config.include('.')
+    config.include('altair.mq')
     config.include('altair.app.ticketing.qr')
     config.include('altair.rakuten_auth')
     config.include('altair.app.ticketing.users')
@@ -181,6 +186,7 @@ def main(global_config, **local_config):
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
     config.add_tween('altair.app.ticketing.cart.tweens.response_time_tween_factory', over=MAIN)
     config.add_tween('altair.app.ticketing.cart.tweens.PaymentPluginErrorConverterTween', under=EXCVIEW)
+    config.include(setup_mq)
     config.scan()
 
     ## cmsとの通信

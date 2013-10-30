@@ -243,7 +243,6 @@ def total_result_data_from_performance_id(event_id, performance_id):
     total_qr = _as_total_quantity(_query_filtered_by_delivery_plugin(opi_query, QR_DELIVERY_ID))
 
     token_query = _query_filtered_by_performance(OrderedProductItemToken.query.join(OrderedProductItem), event_id, performance_id)
-    total_tokens = token_query.count()
     total_qr_printed = token_query.filter(OrderedProductItemToken.printed_at != None).count()
 
     total_other_printed = _as_total_quantity(_query_removed_by_delivery_plugin(opi_query, QR_DELIVERY_ID).filter(OrderedProductItem.printed_at != None))
@@ -255,7 +254,7 @@ def total_result_data_from_performance_id(event_id, performance_id):
         "total_other": total - total_qr, 
 
         "qr_printed": total_qr_printed, 
-        "qr_unprinted": total_tokens - total_qr_printed, 
+        "qr_unprinted": total_qr - total_qr_printed, 
 
         "other_printed": total_other_printed, 
         "other_unprinted": total - total_qr - total_other_printed, 

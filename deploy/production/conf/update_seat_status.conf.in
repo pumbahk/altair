@@ -18,9 +18,9 @@ qualname = altair.mq
 propagate = 0
 
 [logger_ticketing]
-level = INFO
+level = DEBUG
 handlers = spool, fluent
-qualname = ticketing
+qualname = altair.app.ticketing
 propagate = 0
 
 [handler_stderr]

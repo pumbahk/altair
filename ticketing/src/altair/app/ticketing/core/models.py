@@ -24,7 +24,8 @@ from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, 
 from sqlalchemy.orm import join, backref, column_property, joinedload, deferred, relationship, aliased
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null, alias
+from sqlalchemy.orm.session import object_session
+from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null, alias, or_
 from sqlalchemy.ext.associationproxy import association_proxy
 from zope.interface import implementer
 from altair.saannotation import AnnotatedColumn
@@ -354,6 +355,28 @@ class SeatStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 else:
                     con_num = 0
         return []
+
+class SeatGroup(Base, BaseModel):
+    __tablename__ = "SeatGroup"
+    __table_args__ = (
+        UniqueConstraint('site_id', 'l0_id', name='ix_SeatGroup_site_id_l0_id'),
+        )
+    query = DBSession.query_property()
+    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
+    name = Column(Unicode(50), nullable=False, default=u"", server_default=u"")
+    site_id = Column(Identifier, ForeignKey("Site.id"), nullable=False)
+    l0_id = Column(Unicode(48), nullable=False, index=True)
+
+    site = relationship("Site", backref="seat_groups")
+
+    def query_seats_for_venue(self, venue):
+        cls = self.__class__
+        session = object_session(self)
+        return session.query(Seat) \
+            .filter(self.l0_id == Seat.row_l0_id, Seat.venue_id == venue.id) \
+            .union(
+                session.query(Seat) \
+                .filter(self.l0_id == Seat.group_l0_id, Seat.venue_id == venue.id))
 
 class SeatAdjacency(Base, BaseModel):
     __tablename__ = "SeatAdjacency"
@@ -1116,6 +1139,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     end_at = AnnotatedColumn(DateTime, _a_label=_(u'販売終了日時'))
     upper_limit = AnnotatedColumn(Integer, _a_label=_(u'購入上限枚数'))
     order_limit = AnnotatedColumn(Integer, _a_label=_(u'購入回数制限'))
+    product_limit = AnnotatedColumn(Integer, _a_label=_(u'商品購入上限数'))
 
     seat_choice = AnnotatedColumn(Boolean, default=True, _a_label=_(u'座席選択可'))
     public = AnnotatedColumn(Boolean, default=True, _a_label=_(u'一般公開'))
@@ -3422,6 +3446,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     upper_limit = AnnotatedColumn(Integer, _a_label=_(u'購入上限枚数'))
     order_limit = AnnotatedColumn(Integer, default=0,
                                   _a_label=_(u'購入回数制限'))
+    product_limit = AnnotatedColumn(Integer, _a_label=_(u'商品購入上限数'))
 
     seat_choice = AnnotatedColumn(Boolean, nullable=True, default=None,
                                   _a_label=_(u'座席選択可'))
@@ -3471,6 +3496,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     use_default_end_at = Column(Boolean)
     use_default_upper_limit = Column(Boolean)
     use_default_order_limit = Column(Boolean)
+    use_default_product_limit = Column(Boolean)
     use_default_account_id = Column(Boolean)
     use_default_margin_ratio = Column(Boolean)
     use_default_refund_ratio = Column(Boolean)

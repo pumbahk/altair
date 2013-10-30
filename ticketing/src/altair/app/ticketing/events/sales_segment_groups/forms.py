@@ -9,7 +9,7 @@ from wtforms.widgets import CheckboxInput
 from altair.formhelpers import (
     OurDateTimeField, Translations, Required, RequiredOnUpdate,
     OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField,
-    OurTimeField, )
+    OurTimeField, zero_as_none)
 from altair.formhelpers.fields.datetime import Min, Max
 from altair.formhelpers.widgets.datetime import OurTimeWidget
 from altair.app.ticketing.helpers import label_text_for
@@ -120,6 +120,13 @@ class SalesSegmentGroupForm(OurForm):
         label=u'購入上限枚数',
         default=10,
         validators=[RequiredOnUpdate()],
+        hide_on_new=True
+    )
+    product_limit = OurIntegerField(
+        label=u'商品購入上限数',
+        default=None,
+        filters=[zero_as_none],
+        validators=[Optional()],
         hide_on_new=True
     )
     order_limit = OurIntegerField(

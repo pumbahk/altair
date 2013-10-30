@@ -3,6 +3,7 @@ import transaction
 import json
 import pika
 from pyramid.threadlocal import get_current_request
+from pyramid.config import ConfigurationError
 from pika.adapters.tornado_connection import TornadoConnection
 from zope.interface import implementer, provider
 from .interfaces import (
@@ -30,7 +31,10 @@ class Message(object):
 
 @provider(IPublisherConsumerFactory)
 def pika_client_factory(config, config_prefix):
-    url = config.registry.settings['%s.url' % config_prefix]
+    setting_name = '%s.url' % config_prefix
+    url = config.registry.settings.get(setting_name)
+    if url is None:
+        raise ConfigurationError('missing configuration: %s' % setting_name)
     parameters = pika.URLParameters(url)
     return PikaClient(parameters)
 

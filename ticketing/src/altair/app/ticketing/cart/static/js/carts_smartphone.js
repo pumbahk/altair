@@ -65,6 +65,12 @@ cart.order_messages = {
             return order_form_presenter.showOverUpperLimitMessage();
         }
     },
+    'product_limit': {
+        title: '購入数上限を超えて購入しようとしています', 
+        message: function(order_form_presenter){
+            return order_form_presenter.showOverProductLimitMessage();
+        }
+    },
     'too many carts': {
         title: '購入エラー',
         message: '誠に申し訳ございませんが、現在ご購入手続を進めることができない状況となっております。しばらく経ってから再度お試しください。'
@@ -718,7 +724,15 @@ cart.OrderFormPresenter.prototype = {
     showOrderForm: function(selected_stock_type_el, stock_type, products) {
         this.stock_type = stock_type;
         this.products = products;
-        this.upper_limit = products.at(0).get('upper_limit');
+        var upper_limit = 0, product_limit = null;
+        this.products.each(function(product) {
+            var ul = product.get('upper_limit') * product.get('quantity_power');
+            var pl = product.get('product_limit');
+            upper_limit = (ul > upper_limit ? ul : upper_limit);
+            product_limit = ((pl !== null && (product_limit === null || pl > product_limit)) ? pl: product_limit);
+        })
+        this.upper_limit = upper_limit;
+        this.product_limit = product_limit;
         this.view.showForm(selected_stock_type_el, stock_type, products);
     },
     calculateQuantityToSelect: function () {
@@ -739,6 +753,9 @@ cart.OrderFormPresenter.prototype = {
         if (this.upper_limit < this.quantity_to_select) {
             return this.showOverUpperLimitMessage()
         }
+        if (this.product_limit !== null && this.product_limit < this.product_quantity_to_select) {
+            return this.showOverProductLimitMessage();
+        }
         this.venuePresenter.setStockType(this.stock_type);
     },
     onEntrustPressed: function () {
@@ -758,6 +775,10 @@ cart.OrderFormPresenter.prototype = {
     }, 
     showOverUpperLimitMessage: function(){
         cart.showErrorDialog(null, '枚数は合計' + this.upper_limit + '枚以内で選択してください', 'btn-close');
+        return;
+    }, 
+    showOverProductLimitMessage: function(){
+        cart.showErrorDialog(null, '商品個数は合計' + this.product_limit + '個以内にしてください', 'btn-close');
         return;
     }, 
     onBuyPressed: function () {

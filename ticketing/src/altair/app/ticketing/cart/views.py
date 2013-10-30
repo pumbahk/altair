@@ -28,14 +28,15 @@ from altair.app.ticketing.views import mobile_request
 from altair.app.ticketing.fanstatic import with_jquery, with_jquery_tools
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
-from altair.app.ticketing.users.api import get_or_create_user
+from altair.app.ticketing.users.api import get_or_create_user, get_or_create_user_from_point_no\
+    , create_user_point_account_from_point_no, get_user_point_account
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
 
 from . import api
 from . import helpers as h
 from . import schemas
-from .api import set_rendered_event
+from .api import set_rendered_event, is_smartphone_organization, is_point_input_organization
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -64,7 +65,7 @@ limitter = LimitterDecorators('altair.cart.limit_per_unit_time', TooManyCartsCre
 
 def back_to_product_list_for_mobile(request):
     cart = api.get_cart_safe(request)
-    cart.release()
+    api.release_cart(request, cart)
     api.remove_cart(request)
     return HTTPFound(
         request.route_url(
@@ -109,7 +110,7 @@ def back_to_top(request):
 
     ReleaseCartView(request)()
 
-    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or '/')
+    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or request.context.host_base_url or "/")
 
 def back(pc=back_to_top, mobile=None):
     if mobile is None:
@@ -130,10 +131,6 @@ def back(pc=back_to_top, mobile=None):
 def gzip_preferred(request, response):
     if 'gzip' in request.accept_encoding:
         response.encode_content('gzip')
-
-def is_organization_rs(context, request):
-    organization = c_api.get_organization(request)
-    return organization.id == 15
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class IndexView(IndexViewMixin):
@@ -173,7 +170,7 @@ class IndexView(IndexViewMixin):
     @view_config(decorator=with_jquery_tools, route_name='cart.index',
                   renderer=selectable_renderer("%(membership)s/pc/index.html"), xhr=False, permission="buy")
     @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
-                 custom_predicates=(is_organization_rs, ), renderer=selectable_renderer("RT/smartphone/index.html"), xhr=False, permission="buy")
+                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/index.html"), xhr=False, permission="buy")
     def event_based_landing_page(self):
         self.check_redirect(mobile=False)
 
@@ -245,7 +242,7 @@ class IndexView(IndexViewMixin):
     @view_config(decorator=with_jquery_tools, route_name='cart.index2',
                   renderer=selectable_renderer("%(membership)s/pc/index.html"), xhr=False, permission="buy")
     @view_config(decorator=with_jquery_tools, route_name='cart.index2',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
-                 custom_predicates=(is_organization_rs, ), renderer=selectable_renderer("RT/smartphone/index.html"), xhr=False, permission="buy")
+                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/index.html"), xhr=False, permission="buy")
     def performance_based_landing_page(self):
         self.check_redirect(mobile=False)
 
@@ -299,6 +296,12 @@ class IndexView(IndexViewMixin):
                         performance_id=sales_segment.performance.id,
                         sales_segment_id=sales_segment.id,
                         seat_type_id=_dict['id']),
+                    seats_url=self.request.route_url(
+                        'cart.seats',
+                        performance_id=sales_segment.performance_id,
+                        sales_segment_id=sales_segment.id,
+                        _query=dict(seat_type_id=_dict['id'])
+                        ),
                     **_dict
                     )
                 for _dict in seat_type_dicts
@@ -383,20 +386,51 @@ class IndexView(IndexViewMixin):
     def get_seats(self):
         """会場&座席情報"""
         venue = self.context.performance.venue
+        stock_type_id = self.request.params.get('seat_type_id')
 
         sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.context.sales_segment.id).one()
         sales_stocks = sales_segment.stocks
-        seats = []
+        seats_query = None
         if sales_segment.seat_choice:
-            seats = c_models.Seat.query_sales_seats(sales_segment)\
+            seats_query = c_models.Seat.query_sales_seats(sales_segment)\
                 .options(joinedload('areas'), joinedload('status_'))\
                 .join(c_models.SeatStatus)\
                 .join(c_models.Stock)\
                 .filter(c_models.Seat.venue_id==venue.id)\
                 .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))
+            seat_groups_queries = [
+                DBSession.query(c_models.SeatGroup.l0_id, c_models.SeatGroup.name, c_models.Seat.l0_id) \
+                    .join(c_models.Seat, c_models.SeatGroup.l0_id == l0_id_column) \
+                    .join(c_models.Stock, c_models.Seat.stock_id == c_models.Stock.id) \
+                    .filter(c_models.SeatGroup.site_id == venue.site_id) \
+                    .filter(c_models.Seat.venue_id == venue.id)
+                    for l0_id_column in [c_models.Seat.row_l0_id, c_models.Seat.group_l0_id]
+                    ]
+
+            if stock_type_id is not None:
+                seats_query = seats_query.filter(c_models.Stock.stock_type_id == stock_type_id)
+                seat_groups_queries = [
+                    seat_groups_query.filter(c_models.Stock.stock_type_id == stock_type_id) 
+                    for seat_groups_query in seat_groups_queries
+                    ]
+            seats = seats_query.all()
+            seat_groups = {}
+            for seat_group_l0_id, seat_group_name, seat_l0_id in seat_groups_queries[0].union(*seat_groups_queries[1:]):
+                seat_group = seat_groups.get(seat_group_l0_id)
+                if seat_group is None:
+                    seat_group = seat_groups[seat_group_l0_id] = {
+                        'name': seat_group_name,
+                        'seats': [],
+                        }
+                seat_group['seats'].append(seat_l0_id) 
+        else:
+            seats = []
+            seat_groups = {}
+
         stock_map = dict([(s.id, s) for s in sales_stocks])
 
         self.request.add_response_callback(gzip_preferred)
+                
 
         return dict(
             seats=dict(
@@ -412,21 +446,7 @@ class IndexView(IndexViewMixin):
                         )
                     )
                 for seat in seats),
-            areas=dict(
-                (area.id, { 'id': area.id, 'name': area.name }) \
-                for area in DBSession.query(c_models.VenueArea) \
-                            .join(c_models.VenueArea_group_l0_id) \
-                            .filter(c_models.VenueArea_group_l0_id.venue_id==venue.id)
-                ),
-            info=dict(
-                available_adjacencies=[
-                    adjacency_set.seat_count
-                    for adjacency_set in \
-                        DBSession.query(c_models.SeatAdjacencySet) \
-                        .filter_by(site_id=venue.site_id)
-                    ]
-                ),
-            pages=get_venue_site_adapter(self.request, venue.site).get_frontend_pages()
+            seat_groups=seat_groups
             )
 
     @view_config(route_name='cart.seat_adjacencies', renderer="json")
@@ -528,11 +548,18 @@ class ReserveView(object):
         else:
             for product, quantity in order_items:
                 sum_quantity += quantity * product.get_quantity_power(product.seat_stock_type, product.performance_id)
-        logger.debug('sum_quantity=%s' % sum_quantity)
+        sum_product_quantity = sum(quantity for _, quantity in order_items)
+
+        logger.debug('sum_quantity=%d, sum_product_quantity=%d' % (sum_quantity, sum_product_quantity))
 
         if self.context.sales_segment.upper_limit < sum_quantity:
             logger.debug('upper_limit over')
             return dict(result='NG', reason="upper_limit")
+
+        if self.context.sales_segment.product_limit is not None and \
+           self.context.sales_segment.product_limit < sum_product_quantity:
+            logger.debug('product_limit over')
+            return dict(result='NG', reason="product_limit")
 
         try:
             cart = api.order_products(self.request, self.request.context.sales_segment.id, order_items, selected_seats=selected_seats)
@@ -589,7 +616,7 @@ class ReleaseCartView(object):
     def __call__(self):
         try:
             cart = self.request.context.cart
-            cart.release()
+            api.release_cart(self.request, cart)
             api.remove_cart(self.request)
         except NoCartError:
             import sys
@@ -612,7 +639,7 @@ class PaymentView(object):
 
     @view_config(route_name='cart.payment', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
     @view_config(route_name='cart.payment', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
-    @view_config(route_name='cart.payment', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/payment.html"), custom_predicates=(is_organization_rs, ))
+    @view_config(route_name='cart.payment', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/payment.html"), custom_predicates=(is_smartphone_organization, ))
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -675,7 +702,15 @@ class PaymentView(object):
                 tel_1=form.data['tel_1'],
                 tel_2=None,
                 fax=form.data['fax'],
-                point=form.data['point']
+                )
+        else:
+            return None
+
+    def get_validated_point_data(self):
+        form = self.form
+        if form.validate():
+            return dict(
+                accountno=form.data['accountno'],
                 )
         else:
             return None
@@ -694,7 +729,7 @@ class PaymentView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
     @view_config(route_name='cart.payment', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
-    @view_config(route_name='cart.payment', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/payment.html"), custom_predicates=(is_organization_rs, ))
+    @view_config(route_name='cart.payment', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/payment.html"), custom_predicates=(is_smartphone_organization, ))
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -729,6 +764,7 @@ class PaymentView(object):
 
         cart.payment_delivery_pair = payment_delivery_pair
         cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
+
         DBSession.add(cart)
 
         order = api.new_order_session(
@@ -739,6 +775,9 @@ class PaymentView(object):
         )
 
         self.request.session['payment_confirm_url'] = self.request.route_url('payment.confirm')
+
+        if is_point_input_organization(context=self.context, request=self.request):
+            return HTTPFound(self.request.route_path('cart.point'))
 
         payment = Payment(cart, self.request)
         result = payment.call_prepare()
@@ -772,6 +811,53 @@ class PaymentView(object):
             user=user
         )
 
+    @back(back_to_top, back_to_product_list_for_mobile)
+    @view_config(route_name='cart.point', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/point.html"))
+    @view_config(route_name='cart.point', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
+    @view_config(route_name='cart.point', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
+    def point(self):
+
+        formdata = MultiDict(
+            accountno=""
+            )
+        form = schemas.PointForm(formdata=formdata)
+
+        user = get_or_create_user(self.context.authenticated_user())
+        if user:
+            acc = get_user_point_account(user.id)
+            form['accountno'].data = acc.account_number.replace('-', '') if acc else ""
+        return dict(form=form)
+
+    @back(back_to_top, back_to_product_list_for_mobile)
+    @view_config(route_name='cart.point', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/point.html"))
+    @view_config(route_name='cart.point', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
+    @view_config(route_name='cart.point', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
+    def point_post(self):
+
+        self.form = schemas.PointForm(formdata=self.request.params)
+
+        cart = self.request.context.cart
+        user = get_or_create_user(self.context.authenticated_user())
+        point_params = self.get_validated_point_data()
+
+        if is_point_input_organization(self.context, self.request):
+            point = point_params.pop("accountno")
+            if point:
+                if not user:
+                    user = get_or_create_user_from_point_no(point)
+                    cart.shipping_address.user_id = user.id
+                    DBSession.add(cart)
+                create_user_point_account_from_point_no(user.id, point)
+
+        payment = Payment(cart, self.request)
+        result = payment.call_prepare()
+        if callable(result):
+            return result
+        else:
+            return HTTPFound(self.request.route_url("payment.confirm"))
+        return {}
+
+
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class ConfirmView(object):
     """ 決済確認画面 """
@@ -781,12 +867,15 @@ class ConfirmView(object):
 
     @view_config(route_name='payment.confirm', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/confirm.html"))
     @view_config(route_name='payment.confirm', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
-    @view_config(route_name='payment.confirm', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/confirm.html"), custom_predicates=(is_organization_rs, ))
+    @view_config(route_name='payment.confirm', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/confirm.html"), custom_predicates=(is_smartphone_organization, ))
     def get(self):
+
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         cart = self.request.context.cart
         if cart.shipping_address is None:
             raise InvalidCartStatusError(cart.id)
+
+        acc = get_user_point_account(cart.shipping_address.user_id)
 
         magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization, cart.shipping_address.emails)
 
@@ -801,6 +890,7 @@ class ConfirmView(object):
             mailmagazines_to_subscribe=magazines_to_subscribe,
             form=form,
             delegator=delegator,
+            accountno=acc.account_number if acc else ""
         )
 
 
@@ -816,7 +906,7 @@ class CompleteView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.finish', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/completion.html"))
     @view_config(route_name='payment.finish', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
-    @view_config(route_name='payment.finish', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/completion.html"), custom_predicates=(is_organization_rs, ))
+    @view_config(route_name='payment.finish', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/completion.html"), custom_predicates=(is_smartphone_organization, ))
     def __call__(self):
         form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
         if not form.validate():
@@ -926,12 +1016,11 @@ class OutTermSalesView(object):
         api.logout(self.request)
         return dict(which=which, outer=self.context, available_sales_segments=available_sales_segments, **datum)
 
-@view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
+@view_config(decorator=with_jquery.not_when(mobile_request), request_method="POST", route_name='cart.logout')
 @limitter.release
 def logout(request):
     headers = security.forget(request)
-    location = c_api.get_host_base_url(request)
-    res = HTTPFound(location=location)
+    res = back_to_top(request)
     res.headerlist.extend(headers)
     return res
 
