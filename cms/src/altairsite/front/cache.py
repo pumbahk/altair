@@ -127,7 +127,8 @@ def cached_view_tween(handler, registry):
             ## cacheするのはhtmlだけ(テキストだけ)
             response = handler(request)
             content_type = response.content_type
-            if content_type.startswith("text/") or content_type == "application/json":
+            app_cands = ("application/json", "application/javascript", "application/xhtml+xml")
+            if content_type.startswith("text/") or any(content_type == x for x in app_cands):
                 # logger.debug("cache:"+request.path)
                 cache.set(request, k, response.body)
             return response
