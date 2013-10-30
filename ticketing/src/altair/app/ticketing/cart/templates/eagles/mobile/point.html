@@ -1,0 +1,23 @@
+<%inherit file="./base.html"/>
+<%namespace file="./tags_mobile.html" name="mobile" />
+<%mobile:header>楽天スーパーポイント口座</%mobile:header>
+<form method="post" action="${request.url}">
+<div>
+お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。
+</div>
+<br/>
+
+<div>
+  ${form['accountno'].label}(半角数字)<br/>
+  ${form['accountno']}<br/>
+  (例: 1111222233334444)ハイフン無し<br/><br/>
+  楽天ポイント口座を確認するには、<a href="https://point.rakuten.co.jp/PointAccount/PointAccountLogin/" target=”_blank”>こちら</a>
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'accountno')}
+  </div>
+</div>
+
+<hr />
+<div style="text-align:center" align="center"><input type="submit" value="次に進む" /></div>
+<div style="text-align:center" align="center"><input type="submit" name="back" value="戻る" /></div>
+</form>

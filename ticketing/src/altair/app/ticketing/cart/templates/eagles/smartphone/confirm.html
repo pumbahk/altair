@@ -176,8 +176,13 @@
               </td>
             </tr>
             <tr>
+            % if accountno:
               <th scope="row">楽天ポイント口座</th>
-              <td>${point}</td>
+              <td>${accountno}</td>
+            % else:
+              <th scope="row">楽天ポイント口座</th>
+              <td><span style="color: red">※楽天スーパーポイント口座が入力されていため、ポイント付与されません。</span></td>
+            % endif
             </tr>
           </table>
         </div>
