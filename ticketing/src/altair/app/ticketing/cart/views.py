@@ -706,14 +706,11 @@ class PaymentView(object):
         else:
             return None
 
-    def get_validated_point_data(self):
+    def get_point_data(self):
         form = self.form
-        if form.validate():
-            return dict(
-                accountno=form.data['accountno'],
-                )
-        else:
-            return None
+        return dict(
+            accountno=form.data['accountno'],
+            )
 
     def _validate_extras(self, cart, payment_delivery_pair, shipping_address_params):
         if not payment_delivery_pair or shipping_address_params is None:
@@ -838,7 +835,12 @@ class PaymentView(object):
 
         cart = self.request.context.cart
         user = get_or_create_user(self.context.authenticated_user())
-        point_params = self.get_validated_point_data()
+
+        form = self.form
+        if not form.validate():
+            return dict(form=form)
+
+        point_params = self.get_point_data()
 
         if is_point_input_organization(self.context, self.request):
             point = point_params.pop("accountno")
