@@ -43,10 +43,12 @@ def install_pagecache(config):
         update_browser_id,
         ICacheTweensSetting
     )
+    fetching_kwargs = cache_regions["altaircms.fetching.filedata"]
     kwargs = cache_regions["altaircms.frontpage.filedata"]
     front_page_cache = WrappedFrontPageCache(FrontPageCacher(kwargs), update_browser_id)
     config.registry.registerUtility(front_page_cache, IFrontPageCache)
-    config.registry.registerUtility(kwargs, ICacheTweensSetting)
+    tween_settings = {"expire": kwargs["expire"], "kwargs": fetching_kwargs}
+    config.registry.registerUtility(tween_settings, ICacheTweensSetting)
 
 def includeme(config):
     """

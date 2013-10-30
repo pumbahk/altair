@@ -163,7 +163,7 @@ def cached_view_tween(handler, registry):
         atomic = DummyAtomic() #xxx:
     else:
         max_age = local_settings.get("expire")
-        atomic = ForAtomic(local_settings)
+        atomic = ForAtomic(local_settings.get("kwargs"))
 
 
     def tween(request):
