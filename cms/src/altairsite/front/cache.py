@@ -62,25 +62,28 @@ def clear_cache(cache, k):
 
 @implementer(IFrontPageCache)
 class FrontPageCacher(object):
+    k = "page"
     def __init__(self, kwargs):
-        self.cache = Cache._get_cache("frontpage", kwargs)
+        self.kwargs = kwargs
 
     def get(self, request, k):
         try:
-            return self.cache[k]
+            cache = Cache._get_cache(k, self.kwargs)
+            return cache[self.k]
         except KeyError as e:
             return None
         except (ValueError, EOFError) as e:
             logger.warn(repr(e))
-            clear_cache(self.cache, k)
+            clear_cache(cache, self.k)
             return None
 
     def set(self, request, k, v):
         try:
-            self.cache[k] = v
+            cache = Cache._get_cache(k, self.kwargs)
+            cache[self.k] = v
         except (KeyError, ValueError, EOFError) as e:
             logger.warn(repr(e))
-            clear_cache(self.cache, k)
+            clear_cache(cache, self.k)
 
 @implementer(IFrontPageCache)
 class WrappedFrontPageCache(object):
@@ -107,21 +110,25 @@ class DummyAtomic(object):
         yield
 
 class ForAtomic(object):
+    k = "fetching"
     def __init__(self, kwargs):
-        self.fetching = Cache._get_cache("fetching", kwargs)
+        self.kwargs = kwargs
 
     def is_requesting(self, k):
-        return k in self.fetching
+        fetching = Cache._get_cache(k, self.kwargs)
+        return "fethcing" in fetching
 
     def start_requsting(self, k):
         try:
-            self.fetching[k] = datetime.now()
+            fetching = Cache._get_cache(k, self.kwargs)
+            fetching[self.k] = datetime.now()
         except (KeyError, ValueError, EOFError) as e:
             logger.warn(repr(e))
-            clear_cache(self.fetching, k)
+            clear_cache(fetching, self.k)
 
     def end_requesting(self, k):
-        clear_cache(self.fetching, k)
+        fetching = Cache._get_cache(k, self.kwargs)
+        clear_cache(fetching, self.k)
 
     @contextlib.contextmanager
     def atomic(self, k):
