@@ -58,7 +58,7 @@ class Tests(unittest.TestCase):
         config.registry.adapters.register([ISmartphoneRequest], ICacheKeyGenerator, "", CacheKeyGenerator("S:"))
         config.registry.adapters.register([IMobileRequest], ICacheKeyGenerator, "", CacheKeyGenerator("M:"))
         config.registry.adapters.register([IRequest], ICacheKeyGenerator, "", CacheKeyGenerator("P:"))
-        front_page_cache = WrappedFrontPageCache(OnMemoryFrontPageCacher(), update_browser_id)
+        self.cache = front_page_cache = WrappedFrontPageCache(OnMemoryFrontPageCacher(), update_browser_id)
         config.registry.registerUtility(front_page_cache, IFrontPageCache)
 
     def get_reponse_body(self):
@@ -80,7 +80,7 @@ class Tests(unittest.TestCase):
         from altairsite.front.cache import cached_view_tween
         return cached_view_tween
 
-    def test_no_cache(self):
+    def test_first_request(self):
         response_body = self.get_reponse_body()
         def view(request):
             return Response(response_body)
@@ -91,6 +91,25 @@ class Tests(unittest.TestCase):
         result = fn(request)
         self.assertEquals(result.text, response_body)
 
+        ## cached
+        self.assertEquals(self.cache.cache.cache, {'P:http://rt.example.jp/foo/bar?foo=1': response_body})
+
+    def test_not_cache__when_not_text_response(self):
+        def view(request):
+            response = Response("*")
+            response.content_type = "image/jpeg" #not text/* or application/json
+            return response
+
+        target = self._getTarget()
+        fn = target(view, self.config.registry)
+        request = testing.DummyRequest(url="http://rt.example.jp/static/image.jpg")
+
+        result = fn(request)
+        self.assertEquals(result.text, "*")
+
+        ## not cache
+        self.assertEquals(self.cache.cache.cache, {})
+        
     def test_it(self):
         response_body = self.get_reponse_body()
         def view(request):

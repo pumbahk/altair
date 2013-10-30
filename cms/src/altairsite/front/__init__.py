@@ -58,5 +58,6 @@ def includeme(config):
     config.include(install_page_key_generator)
     config.add_tween('altairsite.front.cache.cached_view_tween', under='altair.preview.tweens.preview_tween')
     config.scan('.views')
-    config.add_view("altairsite.mobile.staticpage.views.staticpage_view", route_name="front", request_type="altairsite.tweens.IMobileRequest")
+    from .views import not_static_path
+    config.add_view("altairsite.mobile.staticpage.views.staticpage_view", route_name="front", request_type="altairsite.tweens.IMobileRequest", custom_predicates=(not_static_path, ))
 

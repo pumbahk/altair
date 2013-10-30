@@ -104,6 +104,8 @@ def update_browser_id(request, text):
 
 def get_key_generator(request):
     return request.registry.adapters.lookup([providedBy(request)], ICacheKeyGenerator)
+import logging
+logger = logging.getLogger(__name__)
 
 def cached_view_tween(handler, registry):
     def tween(request):
@@ -111,6 +113,7 @@ def cached_view_tween(handler, registry):
         if request.method != "GET":
             return handler(request)
 
+        # logger.debug("req:"+request.path)
         if get_preview_request_condition(request):
             return handler(request)
 
@@ -121,7 +124,12 @@ def cached_view_tween(handler, registry):
         if v:
             return Response(v)
         else:
+            ## cacheするのはhtmlだけ(テキストだけ)
             response = handler(request)
-            cache.set(request, k, response.text)
+            content_type = response.content_type
+            app_cands = ("application/json", "application/javascript", "application/xhtml+xml")
+            if content_type.startswith("text/") or any(content_type == x for x in app_cands):
+                # logger.debug("cache:"+request.path)
+                cache.set(request, k, response.body)
             return response
     return tween
