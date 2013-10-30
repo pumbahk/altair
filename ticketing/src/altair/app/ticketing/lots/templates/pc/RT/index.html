@@ -141,38 +141,50 @@
         <div class="settlementPayBox">
           <div class="settlementPayBoxInner">
             <table>
-              <tr>
-                <% checked = 'checked' if str(m.id) == payment_delivery_method_pair_id else '' %>
-                <td class="settlementPayRadio"><input type="radio" name="payment_delivery_method_pair_id" id="radio" value="${m.id}" ${checked} /></td>
-                <td>
-                  <dl class="left">
-                    <dt>${m.payment_method.name}　${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)})</dt>
-                    <dd>${m.payment_method.description or '' | n}<br /></dd>
-                  </dl>
-                  <dl class="left">
-                    <dt>${m.delivery_method.name}　${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)})</dt>
-                    <dd>${m.delivery_method.description or '' | n}</dd>
-                  </dl>
-                  <dl>
-                    <dt>システム利用料</dt>
-                    <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
-                      <span class="paymentFee">${h.format_currency(m.system_fee)}</span>
-                      <span class="paymentFeeType">(${h.fee_type(m.system_fee_type)})</span>
-                      <div class="description">上記のシステム利用料がかかります。</div>
-                    </dd>
-                  </dl>
-                  %if m.special_fee > 0:
-                  <dl>
-                    <dt>${m.special_fee_name}</dt>
-                    <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
-                      <span class="paymentFee">${h.format_currency(m.special_fee)}</span>
-                      <span class="paymentFeeType">(${h.fee_type(m.special_fee_type)})</span>
-                      <div class="description">上記の ${m.special_fee_name} がかかります。</div>
-                    </dd>
-                  </dl>
-                  %endif
-                </td>
-              </tr>
+              <tbody>
+                <tr>
+                  <% checked = 'checked' if str(m.id) == payment_delivery_method_pair_id else '' %>
+                  <td class="settlementPayRadio"${u' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n}><input type="radio" name="payment_delivery_method_pair_id" id="radio" value="${m.id}" ${checked} /></td>
+                  <td>
+                    <dl class="left">
+                      <dt>${m.payment_method.name}　${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)})</dt>
+                      <dd>${m.payment_method.description or '' | n}<br /></dd>
+                    </dl>
+                    <dl class="left">
+                      <dt>${m.delivery_method.name}　${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)})</dt>
+                      <dd>${m.delivery_method.description or '' | n}</dd>
+                    </dl>
+                  </td>
+                </tr>
+                % if m.system_fee > 0 or m.special_fee > 0:
+                <tr>
+                  <td colspan="2">
+                    <dl>
+                      <dt>利用料・手数料</dt>
+                      <dd>
+                        <dl>
+                        %if m.system_fee > 0:
+                          <dt>システム利用料</dt>
+                          <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                            <span class="paymentFee">${h.format_currency(m.system_fee)}</span>
+                            <span class="paymentFeeType">(${h.fee_type(m.system_fee_type)})</span>
+                          </dd>
+                        %endif
+                        %if m.special_fee > 0:
+                          <dt>${m.special_fee_name}</dt>
+                          <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                            <span class="paymentFee">${h.format_currency(m.special_fee)}</span>
+                            <span class="paymentFeeType">(${h.fee_type(m.special_fee_type)})</span>
+                          </dd>
+                        %endif
+                        </dl>
+                        <div class="description">上記の利用料・利用料がかかります。</div>
+                      </dd>
+                    </dl>
+                  </td>
+                </tr>
+                % endif
+              </tbody>
             </table>
           </div>
         </div>

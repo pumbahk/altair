@@ -30,6 +30,7 @@ from .exceptions import (
     NoSalesSegment,
     InvalidCSRFTokenException, 
     OverQuantityLimitError, 
+    OverProductQuantityLimitError,
     ZeroQuantityError, 
     CartCreationException,
     TooManyCartsCreated,
@@ -354,7 +355,7 @@ class MobileSelectProductView(object):
         if old_cart:
             limitter._release(self.request)
             # !!! ここでトランザクションをコミットする !!!
-            old_cart.release()
+            api.release_cart(self.request, old_cart)
             api.remove_cart(self.request)
             transaction.commit()
             c_api.refresh_organization(self.request)
@@ -389,9 +390,17 @@ class MobileSelectProductView(object):
         sum_quantity = 0
         for product, quantity in order_items:
             sum_quantity += quantity * product.get_quantity_power(product.seat_stock_type, product.performance_id)
-        logger.debug('sum_quantity=%s' % sum_quantity)
+        sum_product_quantity = sum(quantity for _, quantity in order_items)
+
+        logger.debug('sum_quantity=%d, sum_product_quantity=%d' % (sum_quantity, sum_product_quantity))
+
         if sum_quantity > sales_segment.upper_limit:
             raise OverQuantityLimitError(sales_segment.upper_limit)
+
+        if sales_segment.product_limit is not None and \
+           sales_segment.product_limit < sum_product_quantity:
+            logger.debug('product_limit over')
+            raise OverProductQuantityLimitError(sales_segment.product_limit)
 
         if sum_quantity == 0:
             raise ZeroQuantityError

@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['YM5FU9NRFDOO5EY9'] = (function (exports) { (function () { 
+__LIBS__['HBGBXSJ1QE9GBH12'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['r9KUO84IAV4J3_XU'] = (function (exports) { (function () { 
+__LIBS__['kG09JHDN3MR7ZADP'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['u11ZA5ZHHZ1DGIJ2'] = (function (exports) { (function () { 
+__LIBS__['d0B27JRX7SVAF9JB'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['YM5FU9NRFDOO5EY9'];
-var CONF = __LIBS__['r9KUO84IAV4J3_XU'];
+var util = __LIBS__['HBGBXSJ1QE9GBH12'];
+var CONF = __LIBS__['kG09JHDN3MR7ZADP'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -276,14 +276,20 @@ Seat.prototype.attach = function Seat_attach(shape) {
   this.shape = shape;
   this.originalStyle = this.defaultStyle();
   this.refresh();
-  shape.addEvent(this.events);
+  if (shape)
+    shape.addEvent(this.events);
 };
 
 Seat.prototype.detach = function Seat_detach(shape) {
-  if (this.shape) {
-    this.shape.removeEvent();
-    this.shape = null;
+  if (!this.shape)
+    return;
+
+  if (this.label) {
+    this.parent.drawable.erase(this.label);
+    this.label = null;
   }
+  this.shape.removeEvent();
+  this.shape = null;
 };
 
 Seat.prototype.stylize = function Seat_stylize() {
@@ -326,10 +332,12 @@ Seat.prototype.stylize = function Seat_stylize() {
 
 Seat.prototype.addOverlay = function Seat_addOverlay(value) {
   if (!(value in this._overlays)) {
-    var shape = copyShape(this.shape)
-    shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS[value]));
-    this._overlays[value] = shape;
-    this.parent.drawable.draw(shape);
+    if (this.shape) {
+      var shape = copyShape(this.shape)
+      shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS[value]));
+      this._overlays[value] = shape;
+      this.parent.drawable.draw(shape);
+    }
   }
 };
 
@@ -389,63 +397,6 @@ Seat.prototype.selectable = function Seat_selectable() {
     this.parent.callbacks.selectable(this.parent, this);
 };
 
-var SeatAdjacencies = exports.SeatAdjacencies = function SeatAdjacencies(parent) {
-  this.tbl = [];
-  this.src = parent.dataSource.seatAdjacencies;
-  this.availableAdjacencies = parent.availableAdjacencies;
-  this.callbacks = parent.callbacks;
-};
-
-SeatAdjacencies.prototype.getCandidates = function SeatAdjacencies_getCandidates(id, length, next, error) {
-  if (length == 1)
-    return next([[id]]);
-
-  var tbl = this.tbl[length];
-  if (tbl !== void(0)) {
-    next(tbl[id] || []);
-    return;
-  }
-  this.callbacks.loadstart && this.callbacks.loadstart('seatAdjacencies');
-  var self = this;
-  this.src(function (data) {
-    var _data;
-    if (data === void(0) || (_data = data[length]) === void(0)) {
-      error("Invalid adjacency data");
-      return;
-    }
-    tbl = self.tbl[length] = self.convertToTable(length, _data);
-    next(tbl[id] || []);
-  }, error, length);
-};
-
-SeatAdjacencies.prototype.convertToTable = function SeatAdjacencies_convertToTable(len, src) {
-  var rt = {};
-
-  for (var i = 0, l = src.length; i < l; i++) {
-    // sort by string.
-    src[i] = src[i].sort();
-    for (var j = 0;j < len;j++) {
-      var id  =  src[i][j];
-      if (!rt[id]) rt[id] = [];
-      rt[id].push(src[i]);
-    }
-  }
-
-  // sort by string-array.
-  for (var i in rt) rt[i].sort().reverse();
-
-  return rt;
-};
-
-/*
-// test code
-// ad == ad2
-
-var ad = new SeatAdjacencies({"3": [["A1", "A2", "A3"], ["A2", "A3", "A4"], ["A3", "A4", "A5"], ["A4", "A5", "A6"]]});
-var ad2 = new SeatAdjacencies({"3": [["A1", "A3", "A2"], ["A2", "A3", "A4"], ["A4", "A3", "A5"], ["A6", "A5", "A4"]]});
-console.log(ad);
-console.log(ad2);
-*/
 /*
  * vim: sts=2 sw=2 ts=2 et
  */
@@ -1099,49 +1050,29 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['r9KUO84IAV4J3_XU'];
-  var seat = __LIBS__['u11ZA5ZHHZ1DGIJ2'];
-  var util = __LIBS__['YM5FU9NRFDOO5EY9'];
-
-  var StoreObject = _class("StoreObject", {
-    props: {
-      store: {}
-    },
-    methods: {
-      save: function(id, data) {
-        if (!this.store[id]) this.store[id] = data;
-      },
-      restore: function(id) {
-        var rt = this.store[id];
-        delete this.store[id];
-        return rt;
-      },
-      clear: function() {
-        for (var id in this.store) {
-          delete this.store[id];
-        }
-      }
-    }
-  });
+  var CONF = __LIBS__['kG09JHDN3MR7ZADP'];
+  var seat = __LIBS__['d0B27JRX7SVAF9JB'];
+  var util = __LIBS__['HBGBXSJ1QE9GBH12'];
 
   var VenueViewer = _class("VenueViewer", {
 
     props: {
       canvas: null,
       callbacks: {
-        uimodeselect: null,
-        load: null,
-        loadPartStart: null,
-        loadPartEnd: null,
-        loadAbort: null,
-        click: null,
-        selectable: null,
-        select: null,
-        pageChanging: null,
-        message: null,
-        messageBoard: null,
-        zoomRatioChanging: null,
-        zoomRatioChange: null
+        uimodeselect: function () {},
+        load: function () {},
+        loadPartStart: function () {},
+        loadPartEnd: function () {},
+        loadAbort: function () {},
+        click: function () {},
+        selectable: function () {},
+        select: function () {},
+        pageChanging: function () {},
+        message: function () {},
+        messageBoard: function () {},
+        zoomRatioChanging: function () {},
+        zoomRatioChange: function () {},
+        queryAdjacency: null
       },
       dataSource: null,
       zoomRatio: CONF.DEFAULT.ZOOM_RATIO,
@@ -1149,9 +1080,7 @@ function parseTransform(transform_str) {
       dragging: false,
       startPos: { x: 0, y: 0 },
       drawable: null,
-      availableAdjacencies: [ 1 ],
-      originalStyles: new StoreObject(),
-      overlayShapes: new StoreObject(),
+      overlayShapes: {},
       shift: false,
       keyEvents: null,
       uiMode: 'select',
@@ -1186,9 +1115,9 @@ function parseTransform(transform_str) {
       init: function VenueViewer_init(canvas, options) {
         this.canvas = canvas;
         this.stockTypes = null;
-        if (options.callbacks) {
-          for (var k in this.callbacks)
-            this.callbacks[k] = options.callbacks[k] || function () {};
+        for (var k in this.callbacks) {
+          if (options.callbacks[k])
+            this.callbacks[k] = options.callbacks[k];
         }
         this.dataSource = options.dataSource;
         if (options.zoomRatio) zoom(options.zoomRatio);
@@ -1221,7 +1150,6 @@ function parseTransform(transform_str) {
 
       load: function VenueViewer_load() {
         this.loading = true;
-        this.seatAdjacencies = null;
         var self = this;
 
         self.callbacks.loadPartStart.call(self, self, 'pages');
@@ -1259,14 +1187,6 @@ function parseTransform(transform_str) {
               }
               self.loading = true;
               self.callbacks.loadPartEnd.call(self, self, 'info');
-              if (!'available_adjacencies' in data) {
-                self.callbacks.message.call(self, "Invalid data");
-                self.loading = false;
-                return;
-              }
-              self.availableAdjacencies = data.available_adjacencies;
-              self.seatAdjacencies = new seat.SeatAdjacencies(self);
-
               if (self.currentPage) {
                 self.loadDrawing(self.currentPage, function () {
                   self.callbacks.load.call(self, self);
@@ -1320,7 +1240,6 @@ function parseTransform(transform_str) {
           self.seats = null;
           self.selection = null;
           self.highlighted = null;
-          self.availableAdjacencies = [1];
           self.shapes = null;
           self.small_texts = [ ];
           self.link_pairs = null;
@@ -1346,8 +1265,7 @@ function parseTransform(transform_str) {
         if (this.drawable)
           this.drawable.dispose();
 
-        this.originalStyles.clear();
-        this.overlayShapes.clear();
+        this.overlayShapes = {};
 
         this.currentPage = page;
 
@@ -1646,11 +1564,14 @@ function parseTransform(transform_str) {
                 mouseover: function(evt) {
                   if (self.pages) {
                     for (var i = siblings.length; --i >= 0;) {
-                      var shape = copyShape(siblings[i]);
-                      if (shape) {
-                        shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
-                        self.drawable.draw(shape);
-                        self.overlayShapes.save(siblings[i].id, shape);
+                      var id = siblings[i].id;
+                      if (self.overlayShapes[id] === void(0)) {
+                        var overlayShape = copyShape(siblings[i]);
+                        if (overlayShape) {
+                          overlayShape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
+                          self.drawable.draw(overlayShape);
+                          self.overlayShapes[id] = overlayShapes;
+                        }
                       }
                     }
                     var pageAndAnchor = link.split('#');
@@ -1662,25 +1583,16 @@ function parseTransform(transform_str) {
                   }
                 },
                 mouseout: function(evt) {
-                  if (self.pages) {
-                    self.canvas.css({ cursor: 'default' });
-                    for (var i = siblings.length; --i >= 0;) {
-                      var shape = self.overlayShapes.restore(siblings[i].id);
-                      if (shape)
-                        self.drawable.erase(shape);
+                  self.canvas.css({ cursor: 'default' });
+                  for (var i = siblings.length; --i >= 0;) {
+                    var id = siblings[i].id;
+                    var overlayShape = self.overlayShapes[id];
+                    if (overlayShape !== void(0)) {
+                      self.drawable.erase(overlayShape);
+                      delete self.overlayShapes[id];
                     }
-                    self.callbacks.messageBoard.down.call(self);
                   }
-                },
-                mousedown: function(evt) {
-/*
-                  if (self.pages) {
-                    self.nextSingleClickAction = function() {
-                      self.callbacks.messageBoard.down.call(self);
-                      self.navigate(link);
-                    };
-                  }
-*/
+                  self.callbacks.messageBoard.down.call(self);
                 },
                 mouseup: function(evt) {
                   if (self.pages) {
@@ -1955,7 +1867,7 @@ function parseTransform(transform_str) {
             var seat_ = seats[id] = new seat.Seat(id, seatMeta[id], self, {
               mouseover: function(evt) {
                 self.callbacks.messageBoard.up.call(self, self.seatTitles[this.id]);
-                self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
+                self.queryAdjacency(this.id, self.adjacencyLength(), function (candidates) {
                   if (candidates.length == 0)
                     return;
                   var candidate = null;
@@ -1988,12 +1900,14 @@ function parseTransform(transform_str) {
               },
               mousedown: function(evt) {
                 self.nextSingleClickAction = function () {
-                  self.callbacks.click(self, self, self.highlighted);
+                  self.callbacks.click.call(self, self, self.highlighted);
                 };
               }
             });
           }
 
+          for (var id in self.seats)
+            self.seats[id].detach();
           self.seats = seats;
           self.pagesCoveredBySeatData = 'all-in-one'; // XXX
           next.call(self);
@@ -2035,7 +1949,7 @@ function parseTransform(transform_str) {
           }
         }
         this.uiMode = type;
-        this.callbacks.uimodeselect(this, type);
+        this.callbacks.uimodeselect.call(this, this, type);
       },
 
       zoom: function(ratio, anchor) {
@@ -2079,7 +1993,7 @@ function parseTransform(transform_str) {
           return;
         var previousRatio = this.zoomRatio;
         if (this.callbacks.zoomRatioChanging) {
-          var corrected = this.callbacks.zoomRatioChanging(ratio);
+          var corrected = this.callbacks.zoomRatioChanging.call(this, ratio);
           if (corrected === false)
             return;
           if (corrected)
@@ -2087,7 +2001,7 @@ function parseTransform(transform_str) {
         }
         if (!this.drawable) {
           this.zoomRatio = ratio;
-          this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
+          this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange.call(this, ratio);
           return;
         }
         this.drawable.transform(Fashion.Matrix.scale(ratio)
@@ -2096,7 +2010,7 @@ function parseTransform(transform_str) {
 
         this.drawable.scrollPosition(scrollPos);
         this.zoomRatio = ratio;
-        this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
+        this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange.call(this, ratio);
       },
 
       unselectAll: function VenueViewer_unselectAll() {
@@ -2183,6 +2097,12 @@ function parseTransform(transform_str) {
             this.small_texts[i].visibility(false);
           this._smallTextsShown = false;
         }
+      },
+
+      queryAdjacency: function VenueViewer_queryAdjacency(id, adjacency, success, failure) {
+        if (this.callbacks.queryAdjacency)
+          return this.callbacks.queryAdjacency(id, adjacency, success, failure);
+        success([[id]]);
       }
     }
   });
@@ -2243,7 +2163,6 @@ function parseTransform(transform_str) {
             [ 'seats', 'seats' ],
             [ 'areas', 'areas' ],
             [ 'info', 'info' ],
-            [ 'seatAdjacencies', 'seat_adjacencies' ],
             [ 'pages', 'pages' ]
           ],
           function(n, k) {

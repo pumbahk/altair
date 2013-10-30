@@ -59,7 +59,7 @@ from altair.app.ticketing.orders.forms import (OrderForm, OrderSearchForm, Order
                                     PerformanceSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
                                     SalesSegmentGroupSearchForm, PreviewTicketSelectForm, CartSearchForm, 
                                                )
-from altair.app.ticketing.orders.forms import OrderAttributesEditFormFactory
+from altair.app.ticketing.orders.forms import OrderMemoEditFormFactory
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.orders.events import notify_order_canceled
@@ -86,10 +86,11 @@ from .api import (
 from .utils import NumberIssuer
 from .models import OrderSummary
 from altair.app.ticketing.tickets.preview.api import SVGPreviewCommunication
+from altair.app.ticketing.tickets.preview.api import get_placeholders_from_ticket
 from altair.app.ticketing.tickets.preview.transform import SVGTransformer
 from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketCover
-
+from altair.app.ticketing.core.modelmanage import OrderAttributeManager
 
 logger = logging.getLogger(__name__)
 
@@ -1064,6 +1065,29 @@ class OrderDetailView(BaseView):
         imgdata_base64 = preview.communicate(self.request, svg)
         return {"order": order, "cover":cover, "data": imgdata_base64}
 
+    @view_config(route_name="orders.ticket.placeholder", request_method="GET", renderer='json')
+    def order_ticket_placeholder_data(self):
+        order = self.context.order
+        tickets = Ticket.query \
+            .filter(OrderedProduct.order_id==order.id)\
+            .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
+            .filter(ProductItem.id==OrderedProductItem.product_item_id)\
+            .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
+            .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
+            .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
+            .options(joinedload(Ticket.ticket_format))\
+            .all()
+
+        delivery_method = order.payment_delivery_pair.delivery_method
+        tickets = [t for t in tickets if any(dm == delivery_method for dm in t.ticket_format.delivery_methods)]
+
+        placeholders = set()
+        for t in tickets:
+            placeholders = placeholders.union(get_placeholders_from_ticket(self.request, t))
+        placeholders = sorted([ph for ph in placeholders if not "." in ph or ph.startswith("aux.")])
+        return {"placeholders": placeholders}
+
+
     @view_config(route_name="orders.item.preview", request_method="GET", renderer='altair.app.ticketing:templates/orders/_item_preview_dialog.html')
     def order_item_preview_dialog(self):
         item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).first()
@@ -1101,7 +1125,25 @@ class OrderDetailView(BaseView):
                 r["preview_type"] = preview_type
                 r.update(drawing=svg)
                 results.append(r)
-        return {"results": results, "names": names}
+
+        ticket_dicts = [{"name": t.name, "id": t.id, "url": self.request.route_path("events.tickets.boundtickets.show", event_id=t.event_id, id=t.id)}
+                        for t in tickets]
+        return {"results": results, "names": names, "ticket_dicts": ticket_dicts}
+
+    @view_config(route_name="orders.attributes_edit", request_method="POST")
+    def edit_order_attributes(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        if order is None:
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'不正なデータです',
+            }))
+        ## todo:validation?
+        params = {k.decode("utf-8"):v for k, v in self.request.POST.items() if not k.startswith("_")}
+        order = OrderAttributeManager.update(order, params)
+        order.save()
+        self.request.session.flash(u'属性を変更しました')
+        return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order_id)+"#order_attributes")
 
     @view_config(route_name="orders.memo_on_order", request_method="POST", renderer="json")
     def edit_memo_on_order(self):
@@ -1112,7 +1154,7 @@ class OrderDetailView(BaseView):
                 'message':u'不正なデータです',
             }))
 
-        f = OrderAttributesEditFormFactory(3)(MultiDict(self.request.json_body))
+        f = OrderMemoEditFormFactory(3)(MultiDict(self.request.json_body))
         if not f.validate():
             raise HTTPBadRequest(body=json.dumps({
                 'message':f.get_error_messages(), 
@@ -1401,7 +1443,7 @@ class OrdersReserveView(BaseView):
         return {
             'seats':seats,
             'form':form_reserve,
-            'form_order_edit_attribute': OrderAttributesEditFormFactory(3)(), 
+            'form_order_edit_attribute': OrderMemoEditFormFactory(3)(), 
             'performance':performance,
         }
 
@@ -1421,7 +1463,7 @@ class OrdersReserveView(BaseView):
         return {
             'seats':selected_seats,
             'form':f,
-            'form_order_edit_attribute': OrderAttributesEditFormFactory(3)(post_data), 
+            'form_order_edit_attribute': OrderMemoEditFormFactory(3)(post_data), 
             'performance':performance,
         }
 
@@ -1447,7 +1489,7 @@ class OrdersReserveView(BaseView):
                 raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(), []))
 
             ## memo
-            form_order_edit_attribute = OrderAttributesEditFormFactory(3)(post_data)
+            form_order_edit_attribute = OrderMemoEditFormFactory(3)(post_data)
             if not form_order_edit_attribute.validate():
                 raise ValidationError(form_order_edit_attribute.get_error_messages())
 
@@ -1551,7 +1593,7 @@ class OrdersReserveView(BaseView):
                     order.paid_at = datetime.now()
 
             ## memo
-            form_order_edit_attribute = OrderAttributesEditFormFactory(3)(post_data)
+            form_order_edit_attribute = OrderMemoEditFormFactory(3)(post_data)
             if not form_order_edit_attribute.validate():
                 raise HTTPBadRequest(body=json.dumps({
                     "message": u"文言・メモの設定でエラーが発生しました",

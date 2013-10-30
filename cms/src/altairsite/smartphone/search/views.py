@@ -5,11 +5,12 @@ from .search_query import SearchQuery, AreaSearchQuery, HotwordSearchQuery, Deta
 from ..common.const import SalesEnum
 from ..common.helper import SmartPhoneHelper
 from altairsite.config import smartphone_site_view_config
+from altairsite.separation import selectable_renderer
 
 from pyramid.renderers import render_to_response
 
 @smartphone_site_view_config(route_name='smartphone.search',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/searchresult/search.html')
+             , renderer=selectable_renderer('altairsite.smartphone:templates/searchresult/search.html'))
 def search(context, request):
     # トップ画面の検索
     form = TopSearchForm(request.GET)
@@ -17,7 +18,7 @@ def search(context, request):
     if not form.validate():
         render_param = context.get_top_render_param()
         render_param['form'] = form
-        return render_to_response('altairsite.smartphone:templates/top.html', render_param, request=request)
+        return render_to_response(selectable_renderer('altairsite.smartphone:templates/top.html'), render_param, request=request)
 
     query = SearchQuery(form.data['word'], None, form.data['sale'], None)
     page = form.data['page'] if form.data['page'] else 1
@@ -30,7 +31,7 @@ def search(context, request):
     }
 
 @smartphone_site_view_config(route_name='smartphone.search_genre',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/searchresult/genre.html')
+             , renderer=selectable_renderer('altairsite.smartphone:templates/searchresult/genre.html'))
 def genre_search(context, request):
     # ジャンル画面の検索
     form = GenreSearchForm(request.GET)
@@ -41,7 +42,7 @@ def genre_search(context, request):
     if not form.validate():
         render_param = context.get_genre_render_param(genre_id)
         render_param['form'] = form
-        return render_to_response('altairsite.smartphone:templates/genre/genre.html', render_param, request=request)
+        return render_to_response(selectable_renderer('altairsite.smartphone:templates/genre/genre.html'), render_param, request=request)
 
     if form.data['sale'] == SalesEnum.GENRE.v:
         query = SearchQuery(search_word, genre, SalesEnum.GENRE.v, None)
@@ -59,13 +60,13 @@ def genre_search(context, request):
     }
 
 @smartphone_site_view_config(route_name='smartphone.search_subsubgenre',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/searchresult/subgenre.html')
+             , renderer=selectable_renderer('altairsite.smartphone:templates/searchresult/subgenre.html'))
 def subsubgenre_search(context, request):
     # サブサブジャンルは検索結果
     return context.get_subsubgenre_render_param(genre_id=None)
 
 @smartphone_site_view_config(route_name='smartphone.search_area',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/searchresult/area.html')
+             , renderer=selectable_renderer('altairsite.smartphone:templates/searchresult/area.html'))
 def search_area(context, request):
     # トップ画面のエリア検索
     form = AreaSearchForm(request.GET)
@@ -78,7 +79,7 @@ def search_area(context, request):
     }
 
 @smartphone_site_view_config(route_name='smartphone.search_genre_area',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/searchresult/genre_area.html')
+             , renderer=selectable_renderer('altairsite.smartphone:templates/searchresult/genre_area.html'))
 def search_genre_area(context, request):
     # ジャンル画面のエリア検索
     form = AreaSearchForm(request.GET)
@@ -93,7 +94,7 @@ def search_genre_area(context, request):
     }
 
 @smartphone_site_view_config(route_name='smartphone.init_detail',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/searchresult/detail_search.html')
+             , renderer=selectable_renderer('altairsite.smartphone:templates/searchresult/detail_search.html'))
 def init_detail_search(context, request):
     # 詳細検索画面表示
     form = DetailSearchForm()
@@ -105,7 +106,7 @@ def init_detail_search(context, request):
     }
 
 @smartphone_site_view_config(route_name='smartphone.search_detail',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/searchresult/detail_search.html')
+             , renderer=selectable_renderer('altairsite.smartphone:templates/searchresult/detail_search.html'))
 def detail_search(context, request):
     # 詳細検索
     form = DetailSearchForm(request.GET)
@@ -140,7 +141,7 @@ def detail_search(context, request):
     }
 
 @smartphone_site_view_config(route_name='smartphone.hotword',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/searchresult/hotword.html')
+             , renderer=selectable_renderer('altairsite.smartphone:templates/searchresult/hotword.html'))
 def move_hotword(context, request):
     form = HotwordSearchForm(request.GET)
     hotword = context.get_hotword_from_id(form.data['hotword_id'])

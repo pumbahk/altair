@@ -2,21 +2,20 @@
 <% from altair.app.ticketing.orderreview.api import safe_get_contact_url %>
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <title>楽天チケット 購入確認ページ</title>
+  <title>イーグルスチケット 購入確認ページ</title>
 </head>
 <body>
-      <a href="http://ticket.rakuten.co.jp/">
-	<img src="${request.static_url('altair.app.ticketing.orderreview:static/images/RT/header_logo_01.gif')}" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a>
-      <a href="http://ticket.rakuten.co.jp/">
-	<img src="${request.static_url('altair.app.ticketing.orderreview:static/images/RT/header_logo_02.gif')}" alt="チケット" class="serviceTitle" width="88" height="23" /></a>
-
-
+  <div style="text-align: center">
+      <a href="http://eagles.tstar.jp/">
+        <img src="${request.static_url('altair.app.ticketing.orderreview:static/images/eagles/logo.gif')}" alt="イーグルスチケット" class="serviceLogo" width="100%" />
+      </a>
+  </div>
   <%block name="header">
 </%block>
 </div>
   ${next.body()}
   <hr />
-  <a href="${safe_get_contact_url(request, default="")}">お問い合わせ</a> / <a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a> / <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
+  <a href="${safe_get_contact_url(request, default="")}">お問い合わせ</a> / <a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a> / <a href="http://eagles.tstar.jp/legal/">特定商取引法に基づく表示</a>
   <div>
     Copyright (C) 2010-2013 TicketStar, Inc. All Rights Reserved. 
   </div>

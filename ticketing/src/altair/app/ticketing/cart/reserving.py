@@ -11,6 +11,7 @@ from altair.app.ticketing.core.models import (
     Venue,
     Stock,
     Seat,
+    SeatGroup,
     SeatStatus,
     SeatStatusEnum,
     SeatIndex,
@@ -39,6 +40,7 @@ class Reserving(object):
         """ ユーザー選択座席予約 """
         logger.debug('user select seats %s, performance_id %s' % (selected_seat_l0_ids, performance_id))
         logger.debug('stock %s' % [s[0].stock_id for s in stockstatus])
+
         selected_seats = Seat.query.filter(
             Seat.l0_id.in_(selected_seat_l0_ids),
         ).filter(
@@ -50,6 +52,46 @@ class Reserving(object):
         ).filter(
             Stock.id.in_([s[0].stock_id for s in stockstatus])
         ).all()
+
+        seat_group_ids = [
+            t[0] for t in DBSession.query(SeatGroup.id) \
+                .join(Seat, SeatGroup.l0_id == Seat.row_l0_id) \
+                .join(Venue, Seat.venue_id == Venue.id) \
+                .filter(SeatGroup.site_id == Venue.site_id) \
+                .filter(Seat.id.in_(seat.id for seat in selected_seats)) \
+                .filter(Venue.performance_id == performance_id) \
+                .distinct() \
+                .union(
+                    DBSession.query(SeatGroup.id) \
+                    .join(Seat, SeatGroup.l0_id == Seat.group_l0_id) \
+                    .join(Venue, Seat.venue_id == Venue.id) \
+                    .filter(SeatGroup.site_id == Venue.site_id) \
+                    .filter(Seat.id.in_(seat.id for seat in selected_seats)) \
+                    .filter(Venue.performance_id == performance_id) \
+                    .distinct() \
+                    ) \
+            ]
+
+        if len(seat_group_ids) > 0:
+            logger.debug('seat_group_ids=%r' % seat_group_ids)
+            seats_in_group = DBSession.query(Seat) \
+                .join(Venue, Seat.venue_id == Venue.id) \
+                .join(SeatGroup, SeatGroup.l0_id == Seat.row_l0_id) \
+                .filter(SeatGroup.site_id == Venue.site_id) \
+                .filter(SeatGroup.id.in_(seat_group_ids)) \
+                .filter(Venue.performance_id == performance_id) \
+                .union(
+                    DBSession.query(Seat) \
+                        .join(Venue, Seat.venue_id == Venue.id) \
+                        .join(SeatGroup, SeatGroup.l0_id == Seat.group_l0_id) \
+                        .filter(SeatGroup.site_id == Venue.site_id) \
+                        .filter(SeatGroup.id.in_(seat_group_ids)) \
+                        .filter(Venue.performance_id == performance_id) \
+                    ) \
+                .count()
+            if seats_in_group != len(selected_seats):
+                logger.debug("selected_seats (%d) != seats_in_group (%d)" % (len(selected_seats), seats_in_group))
+                raise InvalidSeatSelectionException
 
         if len(selected_seats) != len(selected_seat_l0_ids):
             logger.debug("seats %s" % selected_seats)

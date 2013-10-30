@@ -198,6 +198,21 @@ function get_performance_id() {
         % endif
       </td>
     </tr>
+    <tr class="SalesSegment_product_limit">
+      <th>
+        ${form.product_limit.label}
+        ${form.use_default_product_limit(_widget=LabelledCheckboxInput())}
+      </th>
+      <td>
+        ${form.product_limit}
+        ${ch.validate_errors(form.product_limit)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${form.context.sales_segment_group.product_limit or u'-'}
+        % endif
+      </td>
+    </tr>
     <tr class="SalesSegment_order_limit">
       <th>
         ${form.order_limit.label}

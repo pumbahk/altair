@@ -1079,7 +1079,7 @@ class CartSearchForm(SearchFormBase):
         ]
     )
 
-def OrderAttributesEditFormFactory(N, memo_field_name_fmt="memo_on_order{}", 
+def OrderMemoEditFormFactory(N, memo_field_name_fmt="memo_on_order{}", 
                                    memo_field_label_fmt=u"補助文言{}(最大20文字)"):
     attrs = {}
     for i in range(1, N+1):
@@ -1101,6 +1101,5 @@ def OrderAttributesEditFormFactory(N, memo_field_name_fmt="memo_on_order{}",
             result.append((field.name, field.data))
         return result
     attrs["get_result"] = get_result
-    return type("OrderAttributesEditForm", (Form, ), attrs)
+    return type("OrderMemoEditForm", (Form, ), attrs)
 
-    

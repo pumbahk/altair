@@ -5,6 +5,7 @@ from altairsite.config import smartphone_site_view_config
 from altairsite.inquiry.message import CustomerMail, SupportMail
 from altairsite.inquiry.api import send_inquiry_mail
 from altairsite.inquiry.session import InquirySession
+from altairsite.separation import selectable_renderer
 from pyramid.view import view_defaults
 
 @view_defaults(route_name="smartphone.page",request_type="altairsite.tweens.ISmartphoneRequest")
@@ -13,15 +14,15 @@ class StaticKindView(object):
         self.request = request
         self.context = context
 
-    @smartphone_site_view_config(match_param="kind=orderreview", renderer='altairsite.smartphone:templates/page/orderreview.html')
+    @smartphone_site_view_config(match_param="kind=orderreview", renderer=selectable_renderer('altairsite.smartphone:templates/page/orderreview.html'))
     def move_orderreview(self):
         orderreview_url = self.context.get_orderreview_url()
         return {
             'orderreview_url':orderreview_url
         }
 
-    @smartphone_site_view_config(match_param="kind=canceled", renderer='altairsite.smartphone:templates/page/canceled.html')
-    @smartphone_site_view_config(match_param="kind=canceled_detail", renderer='altairsite.smartphone:templates/page/canceled_detail.html')
+    @smartphone_site_view_config(match_param="kind=canceled", renderer=selectable_renderer('altairsite.smartphone:templates/page/canceled.html'))
+    @smartphone_site_view_config(match_param="kind=canceled_detail", renderer=selectable_renderer('altairsite.smartphone:templates/page/canceled_detail.html'))
     def move_canceled(self):
         canceled_events = self.context.getInfo(kind="canceled", system_tag_id=None)
 
@@ -34,7 +35,7 @@ class StaticKindView(object):
             }
         }
 
-    @smartphone_site_view_config(match_param="kind=help", renderer='altairsite.smartphone:templates/page/help.html')
+    @smartphone_site_view_config(match_param="kind=help", renderer=selectable_renderer('altairsite.smartphone:templates/page/help.html'))
     def move_help(self):
         helps = self.context.getInfo(kind="help", system_tag_id=None)
 
@@ -47,7 +48,7 @@ class StaticKindView(object):
             }
         }
 
-    @smartphone_site_view_config(match_param="kind=company", renderer='altairsite.smartphone:templates/page/company.html')
+    @smartphone_site_view_config(match_param="kind=company", renderer=selectable_renderer('altairsite.smartphone:templates/page/company.html'))
     def move_company(self):
         return {
             'sns':{
@@ -56,7 +57,7 @@ class StaticKindView(object):
             }
         }
 
-    @smartphone_site_view_config(match_param="kind=inquiry", request_method="GET", renderer='altairsite.smartphone:templates/page/inquiry.html')
+    @smartphone_site_view_config(match_param="kind=inquiry", request_method="GET", renderer=selectable_renderer('altairsite.smartphone:templates/page/inquiry.html'))
     def move_inquiry(self):
         session = InquirySession(request=self.request)
         session.put_inquiry_session();
@@ -68,7 +69,7 @@ class StaticKindView(object):
             }
         }
 
-    @smartphone_site_view_config(match_param="kind=inquiry", request_method="POST", renderer='altairsite.smartphone:templates/page/inquiry.html')
+    @smartphone_site_view_config(match_param="kind=inquiry", request_method="POST", renderer=selectable_renderer('altairsite.smartphone:templates/page/inquiry.html'))
     def move_inquiry_post(self):
         form = InquiryForm(self.request.POST)
 
@@ -101,7 +102,7 @@ class StaticKindView(object):
             }
         }
 
-    @smartphone_site_view_config(match_param="kind=privacy", renderer='altairsite.smartphone:templates/page/privacy.html')
+    @smartphone_site_view_config(match_param="kind=privacy", renderer=selectable_renderer('altairsite.smartphone:templates/page/privacy.html'))
     def move_privacy(self):
         return {
             'sns':{
@@ -110,7 +111,7 @@ class StaticKindView(object):
             }
         }
 
-    @smartphone_site_view_config(match_param="kind=legal", renderer='altairsite.smartphone:templates/page/legal.html')
+    @smartphone_site_view_config(match_param="kind=legal", renderer=selectable_renderer('altairsite.smartphone:templates/page/legal.html'))
     def move_legal(self):
         return {
             'sns':{
@@ -119,6 +120,6 @@ class StaticKindView(object):
             }
         }
 
-    @smartphone_site_view_config(match_param="kind=information", renderer='altairsite.smartphone:templates/page/information.html')
+    @smartphone_site_view_config(match_param="kind=information", renderer=selectable_renderer('altairsite.smartphone:templates/page/information.html'))
     def move_information(self):
         return {}

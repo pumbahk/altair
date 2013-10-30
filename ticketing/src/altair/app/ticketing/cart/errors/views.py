@@ -11,6 +11,7 @@ from ..exceptions import (
     NoPerformanceError,
     InvalidCSRFTokenException,
     OverQuantityLimitError,
+    OverProductQuantityLimitError,
     ZeroQuantityError,
     CartCreationException,
     InvalidCartStatusError,
@@ -166,6 +167,11 @@ class MobileOnlyExcView(object):
     def over_quantity_limit_error(self):
         upper_limit = self.context.upper_limit
         return dict(message=u"枚数は合計%d枚以内で選択してください" % upper_limit)
+
+    @view_config(context=OverProductQuantityLimitError)
+    def over_product_quantity_limit_error(self):
+        product_limit = self.context.product_limit
+        return dict(message=u"商品個数は合計%d個以内で選択してください" % product_limit)
 
     @view_config(context=ZeroQuantityError)
     def zero_quantity_error(self):
