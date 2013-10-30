@@ -1,4 +1,4 @@
-# -*- encoding:utf-8 -*-
+# -*- coding:utf-8 -*-
 from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
 from pyramid_beaker import set_cache_regions_from_settings

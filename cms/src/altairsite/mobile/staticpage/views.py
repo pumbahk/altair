@@ -10,8 +10,13 @@ from altairsite.config import usersite_view_config
 from altairsite.fetcher import get_current_page_fetcher
 from datetime import datetime
 
-@usersite_view_config(route_name="staticpage", request_type="altairsite.tweens.IMobileRequest")
+def not_static_path(info, request):
+    return not request.path.startswith("static")
+
+## deprecated view?
+@usersite_view_config(route_name="staticpage", request_type="altairsite.tweens.IMobileRequest", custom_predicates=(not_static_path, ))
 def staticpage_view(context, request):
+    # logger.debug("req2:"+request.path)
     path = request.matchdict["page_name"]
     if os.path.splitext(path)[1] == "":
         path=os.path.join(path.rstrip("/"), "index.html")
