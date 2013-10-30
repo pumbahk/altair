@@ -33,6 +33,7 @@ def _rendering_page(context, request, control, page): #todo: refactoring
     return response
     
 EXCLUDE_EXT_LIST = (".ico", ".js", ".css")
+
 @usersite_view_config(route_name="front", decorator=with_jquery)
 def rendering_page(context, request):
     url = request.matchdict["page_name"]
