@@ -37,14 +37,16 @@ def install_page_key_generator(config):
 def install_pagecache(config):
     from beaker.cache import cache_regions #xxx:
     from .cache import (
-        IFrontPageCache, 
-        FrontPageCacher, 
-        WrappedFrontPageCache, 
-        update_browser_id
+        IFrontPageCache,
+        FrontPageCacher,
+        WrappedFrontPageCache,
+        update_browser_id,
+        ICacheTweensSetting
     )
     kwargs = cache_regions["altaircms.frontpage.filedata"]
     front_page_cache = WrappedFrontPageCache(FrontPageCacher(kwargs), update_browser_id)
     config.registry.registerUtility(front_page_cache, IFrontPageCache)
+    config.registry.registerUtility(kwargs.copy(), ICacheTweensSetting)
 
 def includeme(config):
     """

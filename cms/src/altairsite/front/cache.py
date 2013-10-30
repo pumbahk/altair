@@ -3,15 +3,20 @@ import logging
 logger = logging.getLogger(__name__)
 
 from zope.interface import (
-    Interface, 
-    implementer, 
-    provider, 
+    Interface,
+    implementer,
+    provider,
     providedBy
 )
 from beaker.cache import Cache
 from pyramid.response import Response
 from ..tracking import ITrackingImageGenerator
 from altair.preview.api import get_preview_request_condition
+from pyramid.interfaces import IDict
+
+class ICacheTweensSetting(IDict):
+    pass
+    # expired_at = Attribute("expired")
 
 class IFrontPageCache(Interface):
     def get(request, k):
@@ -56,12 +61,12 @@ class FrontPageCacher(object):
             logger.warn("clear_cache: k={k} insecure string found. remove".format(k=k))
             handler = self.cache._get_value(k).namespace
             handler.do_remove()
-  
+ 
     def get(self, request, k):
         try:
             return self.cache[k]
         except KeyError as e:
-            return None            
+            return None
         except (ValueError, EOFError) as e:
             logger.warn(repr(e))
             self.clear_cache(k)
@@ -79,7 +84,7 @@ class WrappedFrontPageCache(object):
     def __init__(self, cache, mutator):
         self.cache = cache
         self.mutator = mutator
-        
+
     def get(self, request, k):
         v = self.cache.get(request, k)
         if v is None:
@@ -108,6 +113,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 def cached_view_tween(handler, registry):
+    local_settings = registry.queryUtility(ICacheTweensSetting)
+    max_age = None
+    if local_settings is None:
+        logger.warn("ICacheTweensSettings is not found")
+    else:
+        max_age = local_settings.get("expire")
+
     def tween(request):
         ## getかpreviewリクエストの時はcacheしない
         if request.method != "GET":
@@ -122,7 +134,10 @@ def cached_view_tween(handler, registry):
         cache = registry.getUtility(IFrontPageCache)
         v = cache.get(request, k)
         if v:
-            return Response(v)
+            response = Response(v)
+            if max_age:
+                response.cache_control.max_age = max_age
+            return response
         else:
             ## cacheするのはhtmlだけ(テキストだけ)
             response = handler(request)
@@ -131,5 +146,7 @@ def cached_view_tween(handler, registry):
             if content_type.startswith("text/") or any(content_type == x for x in app_cands):
                 # logger.debug("cache:"+request.path)
                 cache.set(request, k, response.body)
+                if max_age:
+                    response.cache_control.max_age = max_age
             return response
     return tween
