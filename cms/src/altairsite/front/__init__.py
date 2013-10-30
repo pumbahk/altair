@@ -46,7 +46,7 @@ def install_pagecache(config):
     kwargs = cache_regions["altaircms.frontpage.filedata"]
     front_page_cache = WrappedFrontPageCache(FrontPageCacher(kwargs), update_browser_id)
     config.registry.registerUtility(front_page_cache, IFrontPageCache)
-    config.registry.registerUtility(kwargs.copy(), ICacheTweensSetting)
+    config.registry.registerUtility(kwargs, ICacheTweensSetting)
 
 def includeme(config):
     """
