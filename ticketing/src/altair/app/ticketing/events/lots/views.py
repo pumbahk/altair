@@ -343,7 +343,7 @@ class Lots(BaseView):
             return HTTPFound(self.request.route_url('lots.show', lot_id=lot.id))
         return dict(form=form, lot=lot)
 
-    @view_config(route_name='lots.product_edit', renderer='altair.app.ticketing:templates/lots/product_new.html', permission='event_viewer')
+    @view_config(route_name='lots.product_edit', renderer='altair.app.ticketing:templates/lots/product_edit.html', permission='event_viewer')
     def product_edit(self):
         self.check_organization(self.context.event)
         product = self.context.product

@@ -222,7 +222,6 @@ class ProductForm(Form):
         product.display_order = self.data["display_order"]
         product.description = self.data["description"]
         product.seat_stock_type_id = self.data["seat_stock_type_id"]
-        product.performance_id = self.data["performance_id"]
 
         return product
 
