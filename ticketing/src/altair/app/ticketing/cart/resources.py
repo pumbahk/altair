@@ -9,6 +9,7 @@ from pyramid.security import Everyone, Authenticated
 from pyramid.security import Allow
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPNotFound
+from sqlalchemy.orm import joinedload, joinedload_all
 from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
 from .interfaces import ICartPayment, ICartDelivery
@@ -325,6 +326,7 @@ class EventOrientedTicketingCartResource(TicketingCartResourceBase):
             event = None
             try:
                 event = c_models.Event.query \
+                    .options(joinedload(c_models.Event.settings)) \
                     .filter(c_models.Event.id==self._event_id) \
                     .filter(c_models.Event.organization==organization) \
                     .one()
@@ -386,6 +388,7 @@ class PerformanceOrientedTicketingCartResource(TicketingCartResourceBase):
                 performance = None
                 try:
                     performance = c_models.Performance.query \
+                        .options(joinedload_all(c_models.Performance.event, c_models.Event.settings)) \
                         .join(c_models.Performance.event) \
                         .filter(c_models.Performance.id == self._performance_id) \
                         .filter(c_models.Event.organization_id == organization.id) \

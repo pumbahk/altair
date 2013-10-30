@@ -6,7 +6,7 @@
 
 from collections import OrderedDict
 from zope.interface import implementer
-from .interfaces import IPerformanceSelector
+from .interfaces import IPerformanceSelector, ICartContext
 from .helpers import create_date_label, create_time_label, create_time_only_label
 
 class _PerformanceSelector(object):
@@ -109,6 +109,21 @@ class MatchUpPerformanceSelector(_PerformanceSelector):
                 for sales_segment in sales_segments
                 ]))
         return selection
+
+@implementer(IPerformanceSelector)
+class MatchUpPerformanceSelector2(MatchUpPerformanceSelector):
+    def __init__(self, request):
+        super(MatchUpPerformanceSelector2, self).__init__(request)
+        context = request.context
+        if ICartContext.providedBy(context):
+            event_setting = context.event.setting
+            if event_setting is not None: 
+                label1 = event_setting.performance_selector_label1_override
+                label2 = event_setting.performance_selector_label2_override
+                if label1 is not None:
+                    self.label = label1
+                if label2 is not None:
+                    self.second_label = second_label
 
 @implementer(IPerformanceSelector)
 class DatePerformanceSelector(_PerformanceSelector):

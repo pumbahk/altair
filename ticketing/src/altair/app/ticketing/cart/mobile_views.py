@@ -95,7 +95,7 @@ class MobileIndexView(IndexViewMixin):
                     sales_segment_id=sales_segment.id))
 
 
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.context.event.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
         key_to_formatted_sales_segments_map = performance_selector()
 
@@ -144,7 +144,7 @@ class MobileIndexView(IndexViewMixin):
                     sales_segment_id=sales_segment.id))
 
 
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.context.event.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
         key_to_formatted_sales_segments_map = performance_selector()
 
@@ -166,7 +166,7 @@ class MobileSelectSeatTypeView(object):
 
     @view_config(route_name='cart.seat_types')
     def seat_type(self):
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.context.event.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
 
         try:
@@ -208,7 +208,7 @@ class MobileSelectSeatTypeView(object):
 
     @view_config(route_name='cart.seat_types2')
     def seat_type2(self):
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.context.event.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
 
         try:

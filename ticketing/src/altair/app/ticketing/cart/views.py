@@ -181,7 +181,7 @@ class IndexView(IndexViewMixin):
             performance_id = None
 
         sales_segments = self.context.available_sales_segments
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.context.event.performance_selector
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
@@ -247,7 +247,7 @@ class IndexView(IndexViewMixin):
         self.check_redirect(mobile=False)
 
         sales_segments = self.context.available_sales_segments
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.context.event.performance_selector
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
