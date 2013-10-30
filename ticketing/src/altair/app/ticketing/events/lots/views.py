@@ -283,6 +283,9 @@ class Lots(BaseView):
                  "width": 80, 
                  "editable": True,
                  "sortable":False},
+                {"hidden": True,
+                 "name": 'deleted',
+                 "editable": False},
             ],
         }
 
