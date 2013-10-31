@@ -8,6 +8,13 @@ def get_preview_secret(request):
     return request.registry.queryUtility(IPreviewSecret)
 
 
+def set_preview_request_condition(request, boolean):
+    request._is_altair_preview_request = boolean
+
+def get_preview_request_condition(request):
+    return getattr(request, "_is_altair_preview_request", False)
+
+
 _force_request_type = "altair.preview.force.request_type"
 class FORCE_REQUEST_TYPE:
     mobile = "mb"

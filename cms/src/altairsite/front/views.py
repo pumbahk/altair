@@ -33,8 +33,13 @@ def _rendering_page(context, request, control, page): #todo: refactoring
     return response
     
 EXCLUDE_EXT_LIST = (".ico", ".js", ".css")
+
+def not_static_path(info, request):
+    return not request.path.startswith("static")
+
 @usersite_view_config(route_name="front", decorator=with_jquery)
 def rendering_page(context, request):
+    # logger.debug("req2:"+request.path)
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
 
@@ -77,8 +82,9 @@ from pyramid.httpexceptions import HTTPFound
 ここから下はstatic pageを見ていない？
 """
 
-@usersite_view_config(route_name="front", request_type="altairsite.tweens.IMobileRequest", custom_predicates=(enable_mobile, ))
+@usersite_view_config(route_name="front", request_type="altairsite.tweens.IMobileRequest", custom_predicates=(not_static_path, enable_mobile, ))
 def mobile_rendering_page__rakuten(context, request):
+    # logger.debug("req2:"+request.path)
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
 
@@ -101,8 +107,9 @@ def mobile_rendering_page__rakuten(context, request):
     logger.info(control.error_message)
     return mobile_dispatch_view(context, request)
 
-@usersite_view_config(route_name="front", request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(enable_smartphone, ))
+@usersite_view_config(route_name="front", request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(not_static_path, enable_smartphone, ))
 def smartphone_rendering_page(context, request):
+    # logger.debug("req2:"+request.path)
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
 
