@@ -36,7 +36,7 @@ from altair.mobile.interfaces import IMobileRequest
 from . import api
 from . import helpers as h
 from . import schemas
-from .api import set_rendered_event, is_smartphone_organization, is_point_input_organization
+from .api import set_rendered_event, is_mobile, is_smartphone, is_smartphone_organization, is_point_input_organization
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -706,14 +706,11 @@ class PaymentView(object):
         else:
             return None
 
-    def get_validated_point_data(self):
+    def get_point_data(self):
         form = self.form
-        if form.validate():
-            return dict(
-                accountno=form.data['accountno'],
-                )
-        else:
-            return None
+        return dict(
+            accountno=form.data['accountno'],
+            )
 
     def _validate_extras(self, cart, payment_delivery_pair, shipping_address_params):
         if not payment_delivery_pair or shipping_address_params is None:
@@ -822,11 +819,26 @@ class PaymentView(object):
             )
         form = schemas.PointForm(formdata=formdata)
 
-        user = get_or_create_user(self.context.authenticated_user())
-        if user:
-            acc = get_user_point_account(user.id)
-            form['accountno'].data = acc.account_number.replace('-', '') if acc else ""
-        return dict(form=form)
+        asid = None
+        if is_mobile(self.request):
+            asid = self.request.altair_mobile_asid
+
+        if is_smartphone(self.request):
+            asid = self.request.altair_smartphone_asid
+
+        accountno = self.request.params.get('account')
+        if accountno:
+            form['accountno'].data = accountno.replace('-', '')
+        else:
+            user = get_or_create_user(self.context.authenticated_user())
+            if user:
+                acc = get_user_point_account(user.id)
+                form['accountno'].data = acc.account_number.replace('-', '') if acc else ""
+
+        return dict(
+            form=form,
+            asid=asid
+        )
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='cart.point', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/point.html"))
@@ -838,7 +850,12 @@ class PaymentView(object):
 
         cart = self.request.context.cart
         user = get_or_create_user(self.context.authenticated_user())
-        point_params = self.get_validated_point_data()
+
+        form = self.form
+        if not form.validate():
+            return dict(form=form)
+
+        point_params = self.get_point_data()
 
         if is_point_input_organization(self.context, self.request):
             point = point_params.pop("accountno")
