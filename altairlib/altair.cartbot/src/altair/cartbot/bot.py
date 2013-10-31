@@ -1,5 +1,9 @@
 # encoding: utf-8
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
 import os
 import re
 from dateutil.parser import parse as parsedate
@@ -153,7 +157,7 @@ class CartBot(object):
             shuffle(seat_type_choices)
             self.seat_type_choices_map[sales_segment_detail['sales_segment_id']] = seat_type_choices
         if seat_type_choices:
-            return seat_type_choices.pop()
+            return seat_type_choices[0]
         else:
             return None
 
@@ -241,7 +245,7 @@ class CartBot(object):
             print
         else:
             print 'Items could not be bought. Out of stock?'
-            return None
+            return True
 
         # 決済フォーム
         payment_url = result['payment_url']
