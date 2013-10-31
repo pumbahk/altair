@@ -59,6 +59,7 @@ def clear_cache(cache, k):
         logger.warn("clear_cache: k={k} insecure string found. remove".format(k=k))
         handler = cache._get_value(k).namespace
         handler.do_remove()
+        raise
 
 @implementer(IFrontPageCache)
 class FrontPageCacher(object):
@@ -197,6 +198,8 @@ def cached_view_tween(handler, registry):
             with atomic.atomic(k):
                 response = handler(request)
                 content_type = response.content_type
+                if response.status_int != 200:
+                    return response
                 app_cands = ("application/json", "application/javascript", "application/xhtml+xml")
                 if content_type.startswith("text/") or any(content_type == x for x in app_cands):
                     # logger.debug("cache:"+request.path)
