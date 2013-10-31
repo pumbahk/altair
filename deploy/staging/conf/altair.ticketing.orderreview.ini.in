@@ -9,10 +9,6 @@ altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 session.type = ${altair:beaker_backend_type}
 cache.type = ${altair:beaker_backend_type}
 
-; asid
-altair.mobile.asid = NTI2NzgxYTc1YjJhYbPaxbelwaWxpcOlyA
-altair.smartphone.asid = NTI2NzgxMjJhMzRlM7PaxbelwaWxpcOlyA
-
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s

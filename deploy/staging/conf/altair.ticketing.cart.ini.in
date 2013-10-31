@@ -29,10 +29,6 @@ cache.type = ${altair:beaker_backend_type}
 
 altair.queryprofile.summary_path = cart/__queryprofile
 
-; asid
-altair.mobile.asid = NTI2NzgxYTc1YjJhYbPaxbelwaWxpcOlyA
-altair.smartphone.asid = NTI2NzgxMjJhMzRlM7PaxbelwaWxpcOlyA
-
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s
