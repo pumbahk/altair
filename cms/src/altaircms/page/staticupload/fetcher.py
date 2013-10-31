@@ -161,7 +161,11 @@ from pyramid.httpexceptions import HTTPNotFound
 
 @implementer(IStaticPageCache)
 class StaticPageCache(object):
-    def __init__(self, kwargs):
+    k = "content"
+    def __init__(self, kwargs, fetching_kwargs):
+        self.kwargs = kwargs
+        self.fetching_kwargs = fetching_kwargs
+
         self.file_data = Cache._get_cache("file_data", kwargs) #xxx:
         self.fetching = Cache._get_cache("fetching", kwargs) #xxx:
 
@@ -171,15 +175,17 @@ class StaticPageCache(object):
 
     def on_fetching_self(self, k, fetch_function):
         now = datetime.now()
-        self.fetching[k] = now
+        fetching = Cache._get_cache(k, self.fetching_kwargs) #xxx:
+        fetching[self.k] = now
         logger.debug("StaticPageCache: fetch -- {k}, fetching={now}".format(k=k, now=now))
         try:
             v = fetch_function(self, k)
             logger.debug("StaticPageCache: setitem and remove sentinel -- {k}, fetching=removed".format(k=k))
             if v is None:
                 raise ValueError("404 --- {k} is None".format(k=k))
-            self.file_data[k] = v
-            self.fetching.remove_value(k)
+            file_data = Cache._get_cache(k, self.kwargs) #xxx:
+            file_data[self.k] = v
+            fetching.remove_value(self.k)
             return v
         except (ValueError, EOFError) as e:
             logger.warn(repr(e)) #insecure string
@@ -192,26 +198,32 @@ class StaticPageCache(object):
 
     def clear_cache(self, k):
         try:
-            self.file_data.remove_value(k)
+            file_data = Cache._get_cache(k, self.kwargs) #xxx:
+            file_data.remove_value(self.k)
         except (ValueError, EOFError): #insecure string
             logger.warn("clear_cache: k={k} insecure string found. remove".format(k=k))
-            handler = self.file_data._get_value(k).namespace
+            file_data = Cache._get_cache(k, self.kwargs) #xxx:
+            handler = file_data._get_value(self.k).namespace
             handler.do_remove()
         except Exception as e:
             logger.error(repr(e))
             logger.warn("clear_cache: k={k} insecure string found. remove".format(k=k))
-            handler = self.file_data._get_value(k).namespace
+            file_data = Cache._get_cache(k, self.kwargs) #xxx:
+            handler = file_data._get_value(self.k).namespace
             handler.do_remove()
-        self.fetching.remove_value(k) #call multiplly is ok?
+        fetching = Cache._get_cache(k, self.fetching_kwargs) #xxx:
+        fetching.remove_value(self.k) #call multiplly is ok?
 
     def __getitem__(self, k):
         try:
             logger.debug("StaticPageCache: getitem -- {k}".format(k=k))
-            return self.file_data[k]
+            file_data = Cache._get_cache(k, self.kwargs) #xxx:
+            return file_data[self.k]
         except (KeyError, ValueError, EOFError):
             ## value error is "insecure string pickle"
             logger.debug("StaticPageCache: notfound -- {k}".format(k=k))
-            if k in self.fetching:
+            fetching = Cache._get_cache(k, self.fetching_kwargs) #xxx:
+            if self.k in fetching:
                 logger.debug("StaticPageCache: fetching is exists -- {k}".format(k=k))
                 return self.on_fetching_another(k)
             raise

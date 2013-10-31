@@ -54,6 +54,8 @@ from .utils import ApplicableTicketsProducer
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_PERFORMANCE_SELECTOR = 'date'
+
 class FeeTypeEnum(StandardEnum):
     Once = (0, u'1件あたりの手数料')
     PerUnit = (1, u'1枚あたりの手数料')
@@ -810,6 +812,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     _final_performance = None
 
     @property
+    def setting(self):
+        return self.settings[0] if self.settings else None
+
+    @property
     def accounts(self):
         return Account.filter().join(Account.stock_holders).filter(StockHolder.event_id==self.id).all()
 
@@ -906,6 +912,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 - Ticket
               - Performance
                 - (この階層以下はPerformance.add()を参照)
+              - EventSetting
             """
             template_event = Event.get(self.original_id)
 
@@ -952,6 +959,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # create Performance
             for template_performance in template_event.performances:
                 Performance.create_from_template(template=template_performance, event_id=self.id)
+
+            # create EventSettings
+            for template_event_setting in template_event.settings:
+                EventSetting.create_from_template(template=template_event.setting, event_id=self.id)
 
             convert_map['payment_delivery_method_pair'] = {}
             for org_id, new_id in convert_map['sales_segment_group'].iteritems():
@@ -1104,6 +1115,16 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.find_next_and_last_sales_segment_period(
             self.query_sales_segments(user=user, now=now, type='all'),
             now)
+
+    @property
+    def performance_selector(self):
+        event_setting = self.setting
+        if event_setting is not None and event_setting.performance_selector:
+            return event_setting.performance_selector
+        organization_setting = self.organization.setting
+        if organization_setting is not None and organization_setting.performance_selector:
+            return organization_setting.performance_selector
+        return DEFAULT_PERFORMANCE_SELECTOR
 
 class SalesSegmentKindEnum(StandardEnum):
     normal          = u'一般発売'
@@ -3720,6 +3741,23 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     bcc_recipient = Column(Unicode(255), nullable=True)
 
+class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "EventSetting"
+    id = Column(Identifier, primary_key=True)
+    event_id = Column(Identifier, ForeignKey('Event.id'))
+    event = relationship('Event', backref='settings')
+
+    performance_selector = Column(Unicode(255), doc=u"カートでの公演絞り込み方法")
+    performance_selector_label1_override = Column(Unicode(255), nullable=True)
+    performance_selector_label2_override = Column(Unicode(255), nullable=True)
+
+    @classmethod
+    def create_from_template(cls, template, event_id=None, **kwargs):
+        setting = cls.clone(template)
+        setting.event_id = event_id
+        setting.save() # XXX
+        return setting
+
 class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PerformanceSetting"
     id = Column(Identifier, primary_key=True)
@@ -3756,6 +3794,7 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @classmethod
     def create_from_template(cls, template, **kwargs):
         setting = cls.clone(template)
+        setting.save() # XXX
         return setting
 
 

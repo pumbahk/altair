@@ -58,13 +58,25 @@ def setup_components(config):
     from .stocker import Stocker
     from .reserving import Reserving
     from .carting import CartFactory
-    from .performanceselector import MatchUpPerformanceSelector, DatePerformanceSelector
+    from .performanceselector import MatchUpPerformanceSelector, DatePerformanceSelector, MatchUpPerformanceSelector2
     reg = config.registry
     reg.adapters.register([IRequest], IStocker, "", Stocker)
     reg.adapters.register([IRequest], IReserving, "", Reserving)
     reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
     reg.adapters.register([IRequest], IPerformanceSelector, "matchup", MatchUpPerformanceSelector)
+    reg.adapters.register([IRequest], IPerformanceSelector, "matchup2", MatchUpPerformanceSelector2)
     reg.adapters.register([IRequest], IPerformanceSelector, "date", DatePerformanceSelector)
+
+    assert config.registry.settings["altair.mobile.asid"]
+    def altair_mobile_asid(request):
+        return config.registry.settings["altair.mobile.asid"]
+
+    assert config.registry.settings["altair.smartphone.asid"]
+    def altair_smartphone_asid(request):
+        return config.registry.settings["altair.smartphone.asid"]
+
+    config.set_request_property(altair_mobile_asid, "altair_mobile_asid", reify=True)
+    config.set_request_property(altair_smartphone_asid, "altair_smartphone_asid", reify=True)
 
 def setup_mq(config):
     config.add_publisher_consumer('cart', 'altair.ticketing.cart.mq')

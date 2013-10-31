@@ -38,7 +38,6 @@ class PointForm(OurForm):
         validators=[
             Optional(),
             Regexp(r'^\d{16}$', message=u'16桁の数字を入れて下さい。'),
-            Length(min=16, max=16, message=u'確認してください'),
         ]
     )
 
