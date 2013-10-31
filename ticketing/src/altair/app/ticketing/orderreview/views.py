@@ -126,7 +126,11 @@ def order_review_qr_image(context, request):
 @view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def order_review_qr_print(context, request):
     ticket = build_qr_by_token_id(request, request.params['order_no'], request.params['token'])
-    
+    ## historical reason. ticket variable is one of TicketPrintHistory object.
+    if ticket.seat is None:
+        gate = None
+    else:
+        gate = ticket.seat.attributes.get("gate", None)
     issued_setter = IssuedAtBubblingSetter(datetime.now())
     issued_setter.issued_token(ticket.item_token)
     issued_setter.start_bubbling()
@@ -138,6 +142,7 @@ def order_review_qr_print(context, request):
         performance = ticket.performance,
         event = ticket.event,
         product = ticket.product,
+        gate = gate
         )
 
 @mobile_view_config(route_name='order_review.qr_send', request_method="POST", 
