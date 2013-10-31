@@ -142,6 +142,10 @@ class CartBot(object):
         form = self.m.page.root.find('.//form')
         self.m.submit_form(form)
 
+    def do_rsp_form(self):
+        form = self.m.page.root.find('.//form[@name="form1"]')
+        self.m.submit_form(form)
+
     def choose_seat_type(self, sales_segment_detail):
         seat_type_choices = self.seat_type_choices_map.get(sales_segment_detail['sales_segment_id'])
         if seat_type_choices is None:
@@ -245,7 +249,7 @@ class CartBot(object):
         self.m.navigate(payment_url)
 
         pdmps = []
-        form = self.m.page.root.find('.//form')
+        form = self.m.page.root.find('.//form[@name="form1"]')
         pdmp_elems = form.xpath('..//*[@class="settlementPayBox"]//*[@class="settlementPayRadio"]/..')
         for pdmp_elem in pdmp_elems:
             tmp = pdmp_elem.findall('.//dl')
@@ -291,6 +295,10 @@ class CartBot(object):
 
         self.m.submit_form(form)
 
+        path = urlparse(self.m.location).path
+        if path == '/cart/rsp':
+            self.do_rsp_form()
+
         # 確認ページ
         path = urlparse(self.m.location).path
         if path == urlparse(payment_url).path:
@@ -300,7 +308,7 @@ class CartBot(object):
         elif path != '/cart/confirm':
             raise NotImplementedError(self.m.location)
 
-        form = self.m.page.root.find('.//form')
+        form = self.m.page.root.find('.//form[@id="form1"]')
         self.m.submit_form(form, submit=form.find('.//input[@id="btn-complete"]'))
         path = urlparse(self.m.location).path
         if path != '/cart/completed':
