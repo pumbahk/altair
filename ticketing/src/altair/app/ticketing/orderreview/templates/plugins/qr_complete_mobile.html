@@ -1,8 +1,9 @@
 <div>
 <!-- mobile -->
-
-
+<% from altair.app.ticketing.core.api import get_organization %>
+% if not get_organization(request).id == 24:
 試合当日会場専用窓口でのお受け取りです。<br/>
+
 %if paid:
  表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、チケット窓口にてQRコード（印刷したもの、あるいは携帯画面）をお見せください。
 <br/>
@@ -43,4 +44,9 @@
 
 %endif
 
+% else:
+QRコードでの入場<br/>
+
+QRコードを印刷、あるいは携帯へメール送信の上、試合当日、指定の入場ゲートにてご提示ください。
+% endif
 </div>
