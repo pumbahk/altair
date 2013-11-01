@@ -1,12 +1,4 @@
-<div>
-<!-- mobile -->
-
-
-試合当日会場専用窓口でのお受け取りです。<br/>
-%if paid:
- 表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、チケット窓口にてQRコード（印刷したもの、あるいは携帯画面）をお見せください。
-<br/>
-
+<%def name="qr_print()">
    % for ticket in tickets:
         <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
             商品名 ${ticket.product.name} (${ticket.product.id}) <br />
@@ -34,6 +26,19 @@
             </form>
         </div>
     % endfor
+</%def>
+
+<div>
+<!-- mobile -->
+<% from altair.app.ticketing.core.api import get_organization %>
+% if not get_organization(request).id == 24:
+試合当日会場専用窓口でのお受け取りです。<br/>
+
+%if paid:
+ 表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、チケット窓口にてQRコード（印刷したもの、あるいは携帯画面）をお見せください。
+<br/>
+
+${qr_print()}
 
 %else:
 
@@ -43,4 +48,12 @@
 
 %endif
 
+% else:
+QRコードでの入場<br/>
+
+QRコードを印刷、あるいは携帯へメール送信の上、試合当日、指定の入場ゲートにてご提示ください。
+    % if paid:
+        ${qr_print()}
+    % endif
+% endif
 </div>

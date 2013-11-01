@@ -27,7 +27,7 @@ class DataOverWriteTests(unittest.TestCase):
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
-    
+
     def test_it(self):
         target = self._makeOne()
         data = {"k": "v"}
@@ -68,6 +68,25 @@ class DataOverWriteTests(unittest.TestCase):
 
         ## order.idは除去 => 無理
         self.assertEquals(result["order"], {"id": "*Order.id*"})
+
+    def test_with_overwrite__order_is_found__aux(self):
+        target = self._makeOne()
+        target.overwrite_data = {"*Order.id*": {
+            "aux": {"a": {"b": "c"}}
+        }}
+        data = {
+            "aux": {"x": "y"}, 
+            "order": {"id": "*Order.id*"},
+        }
+
+        ticket = setup_ticket(data={})
+        result = target.get_vals(ticket, data)
+        ## 上書きされている
+        self.assertEquals(result["aux"], {"a": {"b": "c"}, "x": "y"})
+
+        ## order.idは除去 => 無理
+        self.assertEquals(result["order"], {"id": "*Order.id*"})
+
 
 class OrderAttributesDataTests(unittest.TestCase):
     def setUp(self):
@@ -114,6 +133,10 @@ class OrderAttributesDataTests(unittest.TestCase):
         DBSession.add(order)
 
         order.attributes[u"venue"] = u"overwriten venue"
+        order.attributes[u"aux.税込み表記"] = u"[o_o]"
         target = self._makeOne()
         result = target[order_id]
-        self.assertEquals(result, {u"venue": "overwriten venue"})
+        self.assertEquals(result, {
+            u"venue": "overwriten venue",
+            u"aux": {u"税込み表記": u"[o_o]"}
+        })

@@ -10,6 +10,33 @@ from .modelmanage import (
     IssuedPrintedAtSetter, 
 )
 
+def tree_dict_from_flatten(d, sep):
+    result = {}
+    for master_key in d:
+        ks = sep(master_key)
+        if len(ks) <= 1:
+            result[master_key] = d[master_key]
+        else:
+            target = result
+            for k in ks[:-1]:
+                if not k in target:
+                    target[k] = {}
+                target = target[k]
+            target[ks[-1]] = d[master_key]
+    return result
+
+def merge_dict_recursive(d1, d2): #muttable!. not support list. only atom and dict.
+    for k, v in d2.iteritems():
+        if not hasattr(v, "iteritems") or not k in d1:
+            d1[k] = v
+        else:
+            sub = d1[k]
+            if not hasattr(sub, "iteritems"):
+                d1[k] = v
+            else:
+                merge_dict_recursive(sub, v)
+    return d1
+
 class PageURL_WebOb_Ex(object):
     def __init__(self, request, encode_type="utf-8", qualified=False):
         self.request = request
