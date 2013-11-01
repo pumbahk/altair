@@ -13,7 +13,9 @@ from altair.app.ticketing.core.models import (
     Host,
     TicketPrintHistory
 )
+from altair.app.ticketing.qr.image import qrdata_as_image_response
 from altair.app.ticketing.qr.utils import build_qr_by_history
+
 
 def overwrite_request_organization(fn):
     @wraps(fn)
@@ -37,31 +39,42 @@ class DummyQRMaker(qr):
         return "qr image"
     key = "k"
 
+class DummyModels:
+    @staticmethod
+    def ticket(request):
+        ticket = mock.MagicMock("*QRSeed*")
+        ticket.id = -10000
+        ticket.mock_add_spec(TicketPrintHistory)
+        with mock.patch("altair.app.ticketing.qr.utils.get_qrdata_builder", new=DummyQRMaker):
+            ticket = build_qr_by_history(request, ticket)
+
+        ticket.ordered_product_item.product_item.performance.event.title = u"ダミーイベント"
+        ticket.ordered_product_item.product_item.performance.name = u'ダミー公演'
+
+        ticket.ordered_product_item.ordered_product.order.order_no = "DM01010101"
+        ticket.ordered_product_item.product_item.performance.code = "DMCODE"
+        ticket.ordered_product_item.ordered_product.product.name = u"ダミー商品"
+        ticket.ordered_product_item.ordered_product.product.id = -1000
+        ticket.seat.name = u"ダミー：座席"
+        ticket.seat.l0_id = -123
+        ticket.ordered_product_item.product_item.performance.start_on = datetime(2000, 1, 1)
+        return ticket
+
 @view_config(route_name="dummy.orderreview.index", renderer="altair.app.ticketing.orderreview:templates/dummy/index.html")
 def dummy_index(context, request):
     organizations = Organization.query.filter_by(deleted_at=None).filter(Host.organization_id==Organization.id).all()
     return {"organizations": organizations}
 
+@view_config(route_name="dummy.orderreview.qrdraw", xhr=False, permission="view")
+def dummy_qr_draw(context, request):
+    ## qr builderを一時的に切り替えられれば不要
+    ticket = DummyModels.ticket(request)
+    return qrdata_as_image_response(ticket)
+
 @mobile_view_config(route_name='dummy.orderreview.qr', decorator=overwrite_request_organization, renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 @view_config(route_name='dummy.orderreview.qr', decorator=overwrite_request_organization, renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def dummy_qr(context, request):
-    ticket = mock.MagicMock("*QRSeed*")
-    ticket.id = -10000
-    ticket.mock_add_spec(TicketPrintHistory)
-    with mock.patch("altair.app.ticketing.qr.utils.get_qrdata_builder", new=DummyQRMaker):
-        ticket = build_qr_by_history(request, ticket)
-
-    ticket.ordered_product_item.product_item.performance.event.title = u"ダミーイベント"
-    ticket.ordered_product_item.product_item.performance.name = u'ダミー公演'
-
-    ticket.ordered_product_item.ordered_product.order.order_no = "DM01010101"
-    ticket.ordered_product_item.product_item.performance.code = "DMCODE"
-    ticket.ordered_product_item.ordered_product.product.name = u"ダミー商品"
-    ticket.ordered_product_item.ordered_product.product.id = -1000
-    ticket.seat.name = u"ダミー：座席"
-    ticket.seat.l0_id = -123
-    ticket.ordered_product_item.product_item.performance.start_on = datetime(2000, 1, 1)
-
+    ticket = DummyModels.ticket(request)
 
     ## historical reason. ticket variable is one of TicketPrintHistory object.
     gate = u"*ゲート名*"
@@ -73,6 +86,7 @@ def dummy_qr(context, request):
         event=ticket.event,
         product=ticket.product,
         gate=gate,
+        _overwrite_generate_qrimage_route_name="dummy.orderreview.qrdraw"
         )
 
 
