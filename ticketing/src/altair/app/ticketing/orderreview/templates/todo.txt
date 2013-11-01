@@ -1,0 +1,10 @@
+* pc
+ * 89ers
+   * show.html
+   * mail.html
+ * NH
+ * ....
+* mobile
+* smartphone
+
+などのように分けたい
