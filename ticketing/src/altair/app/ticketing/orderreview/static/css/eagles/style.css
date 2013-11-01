@@ -504,7 +504,6 @@ border-right:1px solid #860010;
 table tr td {
 border-bottom:1px solid #860010;
 border-left:1px solid #860010;
-text-align:center;
 padding:8px 15px;
 cursor: default;
 }
@@ -582,6 +581,11 @@ background: #efefef;
 
 table.default tr:hover {
 background: #f8dde2;
+}
+
+table.purchasedContents td,
+table.purchasedContents th {
+text-align: center;
 }
 
 .notes{
@@ -845,4 +849,17 @@ margin-left: 20px;
 
 .red{
 	color:#f00;
+}
+
+ul.cancel-list-style {
+    margin: 1em 0 0 1em;
+    padding: 0 0 0 1em;
+}
+
+div.section-inner {
+    margin-left: 1em;
+}
+
+div.section-inner h4 {
+    margin-left: -1em;
 }
