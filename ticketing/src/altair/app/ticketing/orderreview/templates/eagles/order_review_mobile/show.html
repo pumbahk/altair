@@ -103,7 +103,10 @@ ${shipping.address_2}
 % elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 3:
 <div>窓口受取</div>
 % elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 4:
+    <% from altair.app.ticketing.core.api import get_organization %>
+    % if not get_organization(request).id == 24:
 <div>QRコード</div>
+    % endif
 ${h.render_delivery_finished_viewlet(request, order)}
 %endif
 % endif
