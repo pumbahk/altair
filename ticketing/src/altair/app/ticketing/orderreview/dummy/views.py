@@ -73,7 +73,6 @@ def dummy_qr(context, request):
         event=ticket.event,
         product=ticket.product,
         gate=gate,
-        _overwrite_generate_qrimage_route_name=""
         )
 
 
