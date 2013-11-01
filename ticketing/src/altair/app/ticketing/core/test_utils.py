@@ -45,6 +45,13 @@ class MergeDictRecursiveTests(unittest.TestCase):
         result = self._callFUT(d1, d2)
         self.assertEqual(result, {"k": "v"})
 
+    def test_simple3(self):
+        d1 = {"k": {"x": "y"}}
+        d2 = {"k": {"a": {"b": "c"}}}
+        result = self._callFUT(d1, d2)
+        self.assertEqual(result, {"k": {"x": "y", "a": {"b": "c"}}})
+
+
     def test_it(self):
         d1 = {'k1': {'k2': 2, 'k5': 5}}
         d2 = {'k1': {'k2': {'k3': 3}}, 'k4': 4}

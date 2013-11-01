@@ -26,13 +26,15 @@ def tree_dict_from_flatten(d, sep):
     return result
 
 def merge_dict_recursive(d1, d2): #muttable!. not support list. only atom and dict.
-    target = d1
     for k, v in d2.iteritems():
-        sub = target.get(k, {})
-        if hasattr(v, "iteritems") and hasattr(sub, "iteritems"):
-            merge_dict_recursive(sub, v)
+        if not hasattr(v, "iteritems") or not k in d1:
+            d1[k] = v
         else:
-            target[k] = v
+            sub = d1[k]
+            if not hasattr(sub, "iteritems"):
+                d1[k] = v
+            else:
+                merge_dict_recursive(sub, v)
     return d1
 
 class PageURL_WebOb_Ex(object):

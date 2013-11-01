@@ -1,5 +1,14 @@
 # -*- coding:utf-8 -*-
 from zope.interface import implementer
+import logging
+logger = logging.getLogger(__name__)
+
+from sqlalchemy.exc import InvalidRequestError
+from altair.app.ticketing.core.models import Order
+from altair.app.ticketing.core.utils import (
+    merge_dict_recursive,
+    tree_dict_from_flatten
+)
 from .interfaces import ISVGBuilder
 
 class SimpleControl(object):
@@ -8,18 +17,16 @@ class SimpleControl(object):
     def get_vals(self, template, vals):
         return vals
 
-import logging
-logger = logging.getLogger(__name__)
-from altair.app.ticketing.core.models import Order
-from sqlalchemy.exc import InvalidRequestError
-
 class OrderAttributesForOverwriteData(object):
+    def sep(self, s):
+        return s.split(".")
+
     def __getitem__(self, order_id):
         order = Order.query.get(order_id)
         if order is None:
             return {}
         try:
-            return dict(order.attributes)
+            return tree_dict_from_flatten(order.attributes, self.sep)
         except InvalidRequestError as e:
             #stale association proxy, parent object has gone out of scope
             logger.error(repr(e))
@@ -47,8 +54,7 @@ class TicketModelControl(object):
         vals.update(build_vals)
         overwrite_vals = self.overwrite_attributes(build_vals)
         # logger.info(overwrite_vals)
-        vals.update(overwrite_vals)
-        return vals
+        return merge_dict_recursive(vals, overwrite_vals)
 
 @implementer(ISVGBuilder)
 class SVGBuilder(object):
