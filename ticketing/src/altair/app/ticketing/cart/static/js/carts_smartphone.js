@@ -935,13 +935,15 @@ cart.OrderFormView = Backbone.View.extend({
     },
     buildProduct: function(product) {
         var upper_limit = product.get('upper_limit');
+        var product_limit = product.get('product_limit');
+        var limit = product_limit !== null && product_limit < upper_limit ? product_limit: upper_limit;
         var name = $('<span class="productName"></span>');
         name.text(product.get("name"));
         var payment = $('<span class="productPrice"></span>');
         payment.text(' ￥' + product.get("price") + " ");
         var quantity = $('<span class="productQuantity"></span>');
         var pullDown = $('<select />').attr('name', 'product-' + product.id);
-        for (var i = 0; i < upper_limit+1; i++) {
+        for (var i = 0; i < limit + 1; i++) {
             $('<option></option>').text(i).val(i).appendTo(pullDown);
         }
         var descriptionText = product.get('description');
