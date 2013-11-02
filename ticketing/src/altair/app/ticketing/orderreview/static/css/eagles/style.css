@@ -512,15 +512,16 @@ table tr td:last-child {
 border-right:1px solid #860010;
 }
 
-table tr {
-background:#fff;
+table tr td{
 }
 
-table tr:hover {
-background:#fff;
+table tr td:hover {
 cursor:pointer;
 }
 
+table tr td {
+background-color:#fff;
+}
 
 table.pricelist{
 font-size: 12px;
@@ -863,3 +864,87 @@ div.section-inner {
 div.section-inner h4 {
     margin-left: -1em;
 }
+
+/* added */
+
+.red {
+color: #f00;
+}
+
+table.formeagles{
+border-collapse: collapse;
+margin: 0px auto 20px auto;
+padding: 10px;
+width: 100%;
+border: 5px solid #811527;
+}
+
+table.formeagles tbody th{
+background-color: #efefef;
+border-collapse: collapse;
+padding: 10px;
+border-bottom: 1px solid #860010;
+text-align: right;
+color: #000;
+}
+
+
+table.formeagles thead th{
+background-color: #efefef;
+border-collapse: collapse;
+padding: 10px;
+border-bottom: 1px solid #860010;
+font-size: 16px;
+color: #000;
+}
+
+
+table.formeagles td{
+background-color: #fff;
+padding: 20px 10px;
+border-bottom: 1px solid #860010;
+text-align: left;
+
+}
+
+table.formeagles tfoot td{
+background-color: #fff;
+padding: 10px;
+border-top: 2px solid #860010;
+font-size: 16px;
+text-align: left;
+}
+
+table.formeagles input{
+border: 1px solid #860010;
+font-size: 20px;
+line-height: 120%;
+height: 30px;
+}
+
+table.formeagles input.submit {
+text-align: center;
+color: #fff;
+padding: 5px;
+border:1px solid #eeb44f;
+margin: 10px auto;
+font-size: 20px;
+font-weight: bold;
+display: inline-block;
+-moz-box-shadow:inset 0px 1px 0px 0px #fce2c1;
+-webkit-box-shadow:inset 0px 1px 0px 0px #fce2c1;
+box-shadow:inset 0px 1px 0px 0px #fce2c1;
+background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ffcc00), color-stop(1, #fb9e25) );
+background:-moz-linear-gradient( center top, #ffcc00 5%, #fb9e25 100% );
+filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffcc00', endColorstr='#fb9e25');
+background-color:#ffcc00;
+}
+
+table.formeagles input.submit:hover {
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #fb9e25), color-stop(1, #ffcc00) );
+	background:-moz-linear-gradient( center top, #fb9e25 5%, #ffcc00 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fb9e25', endColorstr='#ffcc00');
+	background-color:#fb9e25;
+}
+
+
