@@ -243,10 +243,6 @@ def main(global_config, **local_config):
     config.include('altair.browserid')
     config.include('altair.sqlahelper')
 
-    ### selectable renderer
-    domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
-    config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
-
     ## mail
     config.include(import_mail_module)
 
