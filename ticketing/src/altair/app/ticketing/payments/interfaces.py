@@ -120,3 +120,7 @@ class IDeliveryErrorEvent(Interface):
     exception = Attribute(u"error")
     request = Attribute(u"request")
     order = Attribute(u"order caused error")
+
+class IPaymentViewRendererLookup(Interface):
+    def __call__(path_or_renderer_name, info, for_, plugin_type, plugin_id, **kwargs):
+        pass

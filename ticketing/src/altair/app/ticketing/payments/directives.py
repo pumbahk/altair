@@ -4,6 +4,7 @@ from .interfaces import IOrderDelivery, IOrderPayment
 from .interfaces import IGetCart
 from .interfaces import IPaymentDeliveryPlugin
 from .interfaces import IPaymentPlugin, IDeliveryPlugin
+from .interfaces import IPaymentViewRendererLookup
 
 logger = logging.getLogger(__name__)
 
@@ -30,3 +31,6 @@ def set_cart_getter(config, getter):
     getter = config.maybe_dotted(getter)
     reg = config.registry
     reg.registerUtility(getter, IGetCart)
+
+def add_payment_view_renderer_lookup(config, impl, type):
+    config.registry.utilities.register([], IPaymentViewRendererLookup, type, impl)

@@ -8,3 +8,4 @@ def includeme(config):
     config.add_directive("add_payment_delivery_plugin", ".directives.add_payment_delivery_plugin")
 
     config.add_directive("set_cart_getter", ".directives.set_cart_getter")
+    config.add_directive("add_payment_view_renderer_lookup", ".directives.add_payment_view_renderer_lookup")
