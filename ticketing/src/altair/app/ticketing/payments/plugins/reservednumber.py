@@ -35,10 +35,16 @@ def includeme(config):
     config.scan(__name__)
 
 def _overridable_payment(path):
-    return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_PLUGIN_ID)
+    if _template is None:
+        return 'templates/%s' % path
+    else:
+        return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_PLUGIN_ID)
 
 def _overridable_delivery(path):
-    return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=PLUGIN_ID)
+    if _template is None:
+        return 'templates/%s' % path
+    else:
+        return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=PLUGIN_ID)
 
 @view_config(context=IOrderDelivery, name="delivery-%d" % PLUGIN_ID, renderer=_overridable_delivery("reserved_number_completion.html"))
 def reserved_number_viewlet(context, request):

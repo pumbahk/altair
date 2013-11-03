@@ -73,10 +73,16 @@ def includeme(config):
     config.scan(__name__)
 
 def _selectable_renderer(path_fmt):
-    return _template(path_fmt, type='select_by_organization', for_='payments', plugin_type='payment', plugin_id=PAYMENT_ID)
+    if _template is None:
+        return None
+    else:
+        return _template(path_fmt, type='select_by_organization', for_='payments', plugin_type='payment', plugin_id=PAYMENT_ID)
 
 def _overridable(path):
-    return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_ID)
+    if _template is None:
+        return 'templates/%s' % path
+    else:
+        return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_ID)
 
 error_messages = {
     '001002': u'注文が不正です最初からお試しください。',

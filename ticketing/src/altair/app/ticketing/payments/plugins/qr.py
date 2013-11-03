@@ -29,7 +29,10 @@ def includeme(config):
     config.scan(__name__)
 
 def _overridable(path):
-    return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=DELIVERY_PLUGIN_ID)
+    if _template is None:
+        return 'templates/%s' % path
+    else:
+        return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=DELIVERY_PLUGIN_ID)
 
 @view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("qr_confirm.html"))
 def deliver_confirm_viewlet(context, request):
