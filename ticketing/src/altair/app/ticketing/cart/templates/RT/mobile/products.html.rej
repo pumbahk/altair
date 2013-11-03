@@ -1,0 +1,17 @@
+***************
+*** 20,26 ****
+        金額: &yen;${product['price']}<br />
+        数量:
+        <select name="product-${product['id']}">
+-         % for num in range(product['upper_limit'] + 1):
+          <option value="${num}">${num}</option>
+          % endfor
+        </select>
+--- 20,26 ----
+        金額: &yen;${product['price']}<br />
+        数量:
+        <select name="product-${product['id']}">
++         % for num in range(product['limit'] + 1):
+          <option value="${num}">${num}</option>
+          % endfor
+        </select>
