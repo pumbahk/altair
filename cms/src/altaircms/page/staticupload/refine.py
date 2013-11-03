@@ -16,7 +16,10 @@ def _make_links_absolute(doc, base_url, resolve_base_href=True, convert=urljoin)
         elif is_html_filename(href) or href.endswith("/") or os.path.splitext(href)[1] == "":
             return href
         else:
-            return convert(base_url, href)
+            absolute_href = convert(base_url, href)
+            if href.startswith("//"):
+                absolute_href = absolute_href.replace("http:", "")
+            return absolute_href
     doc.rewrite_links(link_repl)
 
 _PARSERS = {}
