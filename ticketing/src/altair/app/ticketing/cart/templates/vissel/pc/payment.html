@@ -34,6 +34,7 @@ ${self.widget.flow_widget(2)}
                 <dl>
                   <dt>${m.payment_method.name}</dt>
                   <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                    <span class="paymentFeeLabel">手数料</span>
                     <span class="paymentFee">${h.format_currency(m.transaction_fee)}</span>
                     <span class="paymentFeeType">(${h.fee_type(m.payment_method.fee_type)})</span>
                     <div class="description">${m.payment_method.description or '' | n}</div>
@@ -44,6 +45,7 @@ ${self.widget.flow_widget(2)}
                 <dl>
                   <dt>${m.delivery_method.name}</dt>
                   <dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
+                    <span class="deliveryFeeLabel">手数料</span>
                     <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
                     <span class="deliveryFeeType">(${h.fee_type(m.delivery_method.fee_type)})</span>
                     <div class="description">${m.delivery_method.description or '' | n}</div>
@@ -55,7 +57,7 @@ ${self.widget.flow_widget(2)}
             <tr>
               <td colspan="2">
                 <dl class="fullwidth">
-                  <dt>利用料・手数料</dt>
+                  <dt>上記以外の利用料・手数料</dt>
                   <dd>
                     <dl>
                       %if m.system_fee > 0:
