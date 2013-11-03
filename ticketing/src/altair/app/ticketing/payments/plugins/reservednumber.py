@@ -22,6 +22,7 @@ from altair.app.ticketing.mails.interfaces import (
 )
 from altair.app.ticketing.utils import sensible_alnum_decode
 
+from . import _template
 from . import models as m
 from . import logger
 
@@ -33,7 +34,13 @@ def includeme(config):
     config.add_payment_plugin(ReservedNumberPaymentPlugin(), PAYMENT_PLUGIN_ID)
     config.scan(__name__)
 
-@view_config(context=IOrderDelivery, name="delivery-%d" % PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/reserved_number_completion.html")
+def _overridable_payment(path):
+    return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_PLUGIN_ID)
+
+def _overridable_delivery(path):
+    return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=PLUGIN_ID)
+
+@view_config(context=IOrderDelivery, name="delivery-%d" % PLUGIN_ID, renderer=_overridable_delivery("reserved_number_completion.html"))
 def reserved_number_viewlet(context, request):
     logger.debug(u"窓口")
     order = context.order
@@ -41,12 +48,12 @@ def reserved_number_viewlet(context, request):
     reserved_number = m.ReservedNumber.query.filter_by(order_no=order.order_no).one()
     return dict(reserved_number=reserved_number)
 
-@view_config(context=ICartDelivery, name="delivery-%d" % PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/reserved_number_confirm.html")
+@view_config(context=ICartDelivery, name="delivery-%d" % PLUGIN_ID, renderer=_overridable_delivery("reserved_number_confirm.html"))
 def reserved_number_confirm_viewlet(context, request):
     logger.debug(u"窓口")
     return dict()
 
-@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/reserved_number_payment_completion.html")
+@view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment("reserved_number_payment_completion.html"))
 def reserved_number_payment_viewlet(context, request):
     logger.debug(u"窓口")
     order = context.order
@@ -54,7 +61,7 @@ def reserved_number_payment_viewlet(context, request):
     reserved_number = m.PaymentReservedNumber.query.filter_by(order_no=order.order_no).first()
     return dict(reserved_number=reserved_number)
 
-@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/reserved_number_payment_confirm.html")
+@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment("reserved_number_payment_confirm.html"))
 def reserved_number_payment_confirm_viewlet(context, request):
     logger.debug(u"窓口")
     return dict()
@@ -82,8 +89,8 @@ class ReservedNumberDeliveryPlugin(object):
         return bool(reserved_number)
 
 
-@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/reserved_number_payment_mail_complete.html")
-@view_config(context=ICompleteMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/reserved_number_mail_complete.html")
+@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment("reserved_number_payment_mail_complete.html"))
+@view_config(context=ICompleteMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer=_overridable_delivery("reserved_number_mail_complete.html"))
 def completion_delivery_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailDelivery
