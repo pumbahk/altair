@@ -394,6 +394,10 @@ class MobileSelectProductView(object):
 
         logger.debug('sum_quantity=%d, sum_product_quantity=%d' % (sum_quantity, sum_product_quantity))
 
+        if sales_segment.product_limit:
+            for product, quantity in order_items:
+                if quantity > sales_segment.product_limit:
+                    raise OverProductQuantityLimitError(sales_segment.product_limit)
         if sum_quantity > sales_segment.upper_limit:
             raise OverQuantityLimitError(sales_segment.upper_limit)
 
