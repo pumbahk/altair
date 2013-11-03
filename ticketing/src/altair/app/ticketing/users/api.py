@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 import logging
-
+import re
 from altair.app.ticketing.models import DBSession
 from . import models as user_models
 
@@ -67,11 +67,12 @@ def get_or_create_user_from_point_no(point):
     ).first()
     return credential.user
 
-def create_user_point_account_from_point_no(user_id, point):
-    account_number = ""
-    if point != "":
-        format = "%s-%s-%s-%s"
-        account_number = format % (point[:4], point[4:8], point[8:12], point[12:16])
+def create_user_point_account_from_point_no(user_id, type, account_number):
+    assert account_number is not None and account_number != ""
+
+    if int(type) == int(user_models.UserPointAccountTypeEnum.Rakuten.v) and \
+       not re.match(r'^\d{4}-\d{4}-\d{4}-\d{4}$', account_number):
+        raise ValueError('invalid account number format; %s' % account_number)
 
     acc = user_models.UserPointAccount.query.filter(
         user_models.UserPointAccount.user_id==user_id
@@ -82,7 +83,7 @@ def create_user_point_account_from_point_no(user_id, point):
 
     acc.user_id = user_id
     acc.account_number = account_number
-    acc.type = user_models.UserPointAccountTypeEnum.Rakuten.v
+    acc.type = int(type)
     acc.status = user_models.UserPointAccountStatusEnum.Valid.v
     DBSession.add(acc)
     return acc
