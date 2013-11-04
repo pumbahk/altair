@@ -523,7 +523,7 @@
                         if (overlayShape) {
                           overlayShape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
                           self.drawable.draw(overlayShape);
-                          self.overlayShapes[id] = overlayShapes;
+                          self.overlayShapes[id] = overlayShape;
                         }
                       }
                     }
