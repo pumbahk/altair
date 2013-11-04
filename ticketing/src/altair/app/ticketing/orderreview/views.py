@@ -92,11 +92,12 @@ def order_review_qr_confirm(context, request):
         event = ticket.event,
         product = ticket.product,
         )
+
 @view_config(route_name='order_review.qr', renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def order_review_qr_html(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
     sign = request.matchdict.get('sign', 0)
-    
+
     ticket = build_qr_by_history_id(request, ticket_id)
     
     if ticket == None or ticket.sign != sign:
@@ -163,7 +164,6 @@ def order_review_send_mail(context, request):
     try:
         sender = context.membership.organization.contact_email
         api.send_qr_mail(request, context, mail, sender)
-        
     except Exception, e:
         logger.error(e.message, exc_info=1)
         ## この例外は違う...
