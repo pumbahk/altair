@@ -28,8 +28,13 @@ from altair.app.ticketing.views import mobile_request
 from altair.app.ticketing.fanstatic import with_jquery, with_jquery_tools
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
-from altair.app.ticketing.users.api import get_or_create_user, get_or_create_user_from_point_no\
-    , create_user_point_account_from_point_no, get_user_point_account
+from altair.app.ticketing.users.models import UserPointAccountTypeEnum
+from altair.app.ticketing.users.api import (
+    get_or_create_user,
+    get_or_create_user_from_point_no,
+    create_user_point_account_from_point_no,
+    get_user_point_account
+    )
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
 
@@ -858,13 +863,17 @@ class PaymentView(object):
         point_params = self.get_point_data()
 
         if is_point_input_organization(self.context, self.request):
-            point = point_params.pop("accountno")
+            point = point_params.pop("accountno", None)
             if point:
                 if not user:
                     user = get_or_create_user_from_point_no(point)
                     cart.shipping_address.user_id = user.id
                     DBSession.add(cart)
-                create_user_point_account_from_point_no(user.id, point)
+                create_user_point_account_from_point_no(
+                    user.id,
+                    type=UserPointAccountTypeEnum.Rakuten,
+                    account_number=point
+                    )
 
         payment = Payment(cart, self.request)
         result = payment.call_prepare()
