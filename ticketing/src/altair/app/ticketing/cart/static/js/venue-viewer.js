@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['HBGBXSJ1QE9GBH12'] = (function (exports) { (function () { 
+__LIBS__['JAA_1_5GUGL8114V'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['kG09JHDN3MR7ZADP'] = (function (exports) { (function () { 
+__LIBS__['lVR7VACN_0M5JFQC'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['d0B27JRX7SVAF9JB'] = (function (exports) { (function () { 
+__LIBS__['z_551A4LU7XHFSVE'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['HBGBXSJ1QE9GBH12'];
-var CONF = __LIBS__['kG09JHDN3MR7ZADP'];
+var util = __LIBS__['JAA_1_5GUGL8114V'];
+var CONF = __LIBS__['lVR7VACN_0M5JFQC'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1050,9 +1050,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['kG09JHDN3MR7ZADP'];
-  var seat = __LIBS__['d0B27JRX7SVAF9JB'];
-  var util = __LIBS__['HBGBXSJ1QE9GBH12'];
+  var CONF = __LIBS__['lVR7VACN_0M5JFQC'];
+  var seat = __LIBS__['z_551A4LU7XHFSVE'];
+  var util = __LIBS__['JAA_1_5GUGL8114V'];
 
   var VenueViewer = _class("VenueViewer", {
 
@@ -1570,7 +1570,7 @@ function parseTransform(transform_str) {
                         if (overlayShape) {
                           overlayShape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
                           self.drawable.draw(overlayShape);
-                          self.overlayShapes[id] = overlayShapes;
+                          self.overlayShapes[id] = overlayShape;
                         }
                       }
                     }
