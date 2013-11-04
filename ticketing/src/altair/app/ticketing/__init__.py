@@ -87,10 +87,6 @@ def main(global_config, **local_config):
             )
         config.set_authorization_policy(ACLAuthorizationPolicy())
     
-        # multicheckout
-        domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
-        config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
-    
         config.add_static_view('static', 'altair.app.ticketing:static', cache_max_age=3600)
     
         config.add_view('pyramid.view.append_slash_notfound_view',

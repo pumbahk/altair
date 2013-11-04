@@ -16,7 +16,6 @@
 #         'sqlalchemy.url': 'sqlite:///',
 #         'mako.directories': ['altair.app.ticketing.lots:templates'],
 #         'pyramid.includes': ['altair.app.ticketing.lots.tests.test_functional'],
-#         'altair.cart.domain.mapping': '{}',
 #         'altair.auth.decider': 'altair.app.ticketing.lots:WhoDecider',
 #         'altair.rakuten_auth.token_secret': 'very-secret',
 #     }

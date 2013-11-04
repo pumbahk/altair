@@ -8,49 +8,42 @@
   <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.orderreview:static/css/eagles/style.css')}" media="all" />
 </head>
 <body>
-
-    <div class="header" id="top">
-      <div class="header-inner">
-            <a href="http://eagles.tstar.jp/">
-              <h1>
-                <img src="${request.static_url('altair.app.ticketing.orderreview:static/images/eagles/eticket_logo.png')}" alt="イーグルスチケット" height="70"/>
-              </h1>
-            </a>
-      </div>
-    </div>
+<div class="header" id="top">
+  <div class="header-inner">
+    <a href="http://eagles.tstar.jp/">
+      <h1>
+        <img src="${request.static_url('altair.app.ticketing.orderreview:static/images/eagles/eticket_logo.png')}" alt="イーグルスチケット" height="70"/>
+      </h1>
+    </a>
+  </div>
+</div>
 
 <div class="gnavi">
-    <ul>
-      <li><a href="">TOP</a></li>
-    </ul>
+  <ul>
+    <li><a href="">TOP</a></li>
+  </ul>
 </div>
 
-  <table class="layout" style="width:760px" class="wrapper">
-    <tbody>
-      <tr>
-        <td>
-          ${next.body()}
-        </td>
-      </tr>
-    </tbody>
-  </table>
+<div class="wrapper">
+  <div class="kadomaru">
+${next.body()}
+  </div>
 </div>
-	<div class="footer">
-	    <div class="footer-inner">
-	        <div class="footernav">
-              <ul>
 
-	                <li><a class="first" href="http://www.ticketstar.jp" target="_blank">運営会社</a></li>
-	                        <li><a href="https://f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&clientid=13074&databaseid=wit" target="_blank">お問い合わせ</a></li>
-	                        <li><a href="http://privacy.rakuten.co.jp/" target="_blank">個人情報保護方針</a></li>
-	                <li><a class="last" href="/legal" target="_blank">特定商取引法に基づく表示</a></li>
-	          </ul>
-	        </div>
-	        <br class="clear">
-	        <div class="copyright">
-	            Copyright © 2010-2013 TicketStar Inc. All Rights Reserved.
-	        </div>
-	    </div>
-	</div>
+<div class="footer">
+  <div class="footer-inner">
+    <div class="footernav">
+      <ul>
+        <li><a class="first" href="http://www.ticketstar.jp" target="_blank">運営会社</a></li>
+        <li><a href="https://f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&clientid=13074&databaseid=wit" target="_blank">お問い合わせ</a></li>
+        <li><a href="http://privacy.rakuten.co.jp/" target="_blank">個人情報保護方針</a></li>
+        <li><a class="last" href="/legal" target="_blank">特定商取引法に基づく表示</a></li>
+      </ul>
+    </div>
+    <div class="copyright clear">
+        Copyright © 2010-2013 TicketStar Inc. All Rights Reserved.
+    </div>
+  </div>
+</div>
 </body>
 </html>

@@ -26,7 +26,6 @@ Booster リグレッションテスト
 ...     '89ers.performance_id':          "1",
 ...     '89ers.start_at':                format(yesterday, '%Y-%m-%d %H:%M:%S'),
 ...     '89ers.end_at':                  format(tommorow, '%Y-%m-%d %H:%M:%S'),
-...     'altair.cart.domain.mapping':    "{}",
 ...     'sqlalchemy.url':                'sqlite:///{0}'.format(dbfile),
 ...     'sqlalchemy.echo':               False,
 ...     'mako.directories':              'altair.app.ticketing.booster.89ers:templates',

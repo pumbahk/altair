@@ -81,17 +81,61 @@ def setup_views(config):
     config.add_view('.views.contact_view', route_name='contact', renderer='base/mobile/static/contact.html', request_type='altair.mobile.interfaces.IMobileRequest')
 
 def setup_plugins_views(config):
-    PAYMENT_PLUGIN_ID_SEJ = 3
-    PAYMENT_PLUGIN_ID_CARD = 1
+    from altair.app.ticketing.payments.plugins import (
+        MULTICHECKOUT_PAYMENT_PLUGIN_ID,
+        SEJ_PAYMENT_PLUGIN_ID
+        )
+    import os
+    import functools
+    from zope.interface import implementer
+    from pyramid.interfaces import IRendererFactory
+    from pyramid.renderers import RendererHelper
+    from pyramid.path import AssetResolver
+    from pyramid_selectable_renderer import SelectableRendererFactory
+    from altair.app.ticketing.payments.interfaces import IPaymentViewRendererLookup
+    from altair.app.ticketing.cart import selectable_renderer
 
-    config.add_view('altair.app.ticketing.payments.plugins.sej.sej_payment_viewlet', context=IOrderPayment, name='payment-%d' % PAYMENT_PLUGIN_ID_SEJ,
+    @implementer(IPaymentViewRendererLookup)
+    class SelectByOrganization(object):
+        def __init__(self, selectable_renderer_factory, key_factory):
+            self.selectable_renderer_factory = selectable_renderer_factory
+            self.key_factory = key_factory
+
+        def __call__(self, path_or_renderer_name, info, for_, plugin_type, plugin_id, **kwargs):
+            info_ = RendererHelper(
+                name=self.key_factory(path_or_renderer_name),
+                package=None,
+                registry=info.registry
+                )
+            return self.selectable_renderer_factory(info_)
+
+    config.include(selectable_renderer)
+
+    renderer_factory = functools.partial(
+        SelectableRendererFactory,
+        selectable_renderer.selectable_renderer.select_fn
+        ) # XXX
+
+    config.add_payment_view_renderer_lookup(
+        SelectByOrganization(
+            renderer_factory,
+            selectable_renderer.selectable_renderer
+            ),
+        'select_by_organization'
+        )
+
+    from altair.app.ticketing.payments.plugins import (
+        MULTICHECKOUT_PAYMENT_PLUGIN_ID,
+        SEJ_PAYMENT_PLUGIN_ID
+        )
+    config.add_view('altair.app.ticketing.payments.plugins.sej.sej_payment_viewlet', context=IOrderPayment, name='payment-%d' % SEJ_PAYMENT_PLUGIN_ID,
                     renderer='base/pc/cart/sej_payment_complete.html')
-    config.add_view('altair.app.ticketing.payments.plugins.sej.sej_payment_viewlet', context=IOrderPayment, name='payment-%d' % PAYMENT_PLUGIN_ID_SEJ, request_type='altair.mobile.interfaces.IMobileRequest',
+    config.add_view('altair.app.ticketing.payments.plugins.sej.sej_payment_viewlet', context=IOrderPayment, name='payment-%d' % SEJ_PAYMENT_PLUGIN_ID, request_type='altair.mobile.interfaces.IMobileRequest',
                     renderer='base/mobile/cart/sej_payment_complete.html')
 
-    config.add_view('altair.app.ticketing.payments.plugins.multicheckout.completion_viewlet', context=IOrderPayment, name='payment-%d' % PAYMENT_PLUGIN_ID_CARD,
+    config.add_view('altair.app.ticketing.payments.plugins.multicheckout.completion_viewlet', context=IOrderPayment, name='payment-%d' % MULTICHECKOUT_PAYMENT_PLUGIN_ID,
                     renderer='base/pc/cart/multicheckout_payment_complete.html')
-    config.add_view('altair.app.ticketing.payments.plugins.multicheckout.completion_viewlet', context=IOrderPayment, name='payment-%d' % PAYMENT_PLUGIN_ID_CARD, request_type='altair.mobile.interfaces.IMobileRequest',
+    config.add_view('altair.app.ticketing.payments.plugins.multicheckout.completion_viewlet', context=IOrderPayment, name='payment-%d' % MULTICHECKOUT_PAYMENT_PLUGIN_ID, request_type='altair.mobile.interfaces.IMobileRequest',
                     renderer='base/mobile/cart/multicheckout_payment_complete.html')
 
 def setup_order_product_attribute_metadata(config):

@@ -166,9 +166,6 @@ class StaticPageCache(object):
         self.kwargs = kwargs
         self.fetching_kwargs = fetching_kwargs
 
-        self.file_data = Cache._get_cache("file_data", kwargs) #xxx:
-        self.fetching = Cache._get_cache("fetching", kwargs) #xxx:
-
     def on_fetching_another(self, k):
         logger.info("fetching: fetching another process. '{k}'".format(k=k))
         raise HTTPNotFound("fetching another") #hmm.

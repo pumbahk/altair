@@ -6,6 +6,7 @@ from datetime import datetime
 from time import mktime, time
 from email.utils import formatdate
 from sqlalchemy.orm import joinedload
+from pyramid.httpexceptions import HTTPFound
 from altair.app.ticketing.payments.exceptions import PaymentPluginException
 from .exceptions import PaymentError
 
@@ -92,4 +93,7 @@ class PaymentPluginErrorConverterTween(object):
         try:
             return self.handler(request)
         except PaymentPluginException as e:
-            raise PaymentError.from_resource(request.context, request, cause=e)
+            if e.back_url:
+                return HTTPFound(location=e.back_url) 
+            else:
+                raise PaymentError.from_resource(request.context, request, cause=e)
