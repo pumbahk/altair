@@ -230,22 +230,16 @@ cart.proceedToCheckout = function proceedToCheckout(performance, reservationData
     }
     body += "合計金額 ¥" + reservationData.cart.total_amount
 
-    if(confirm(body)) {
+    if (confirm(body)) {
         window.location.href = reservationData.payment_url;
+    } else {
+        $.ajax({
+            url: cartReleaseUrl, // global
+            dataType: 'json',
+            type: 'POST',  
+            success: function() {}
+        });
     }
-
-    /*
-    dialog.header(
-        $('<h2>')
-            .append(
-                $('<span id="performance-date"></span>')
-                .text(performance.get('performance_start')))
-            .append(' ')
-            .append(
-                $('<span id="performance-name"></span>')
-                .text(performance.get('performance_name'))));
-    dialog.load();
-    */
 }
 
 cart.showErrorDialog = function showErrorDialog(title, message, footer_button_class) {
@@ -265,16 +259,7 @@ cart.showErrorDialog = function showErrorDialog(title, message, footer_button_cl
     if (message) {
         body += message;
     }
-    if(confirm(body)) {
-        // ダイアログを閉じるのみ
-    }
-
-    /*
-    errorDialog.header(title ? $('<h2></h2>').text(title): null);
-    errorDialog.body($('<div style="text-align:center"></div>').text(message));
-    errorDialog.footer($('<a class="ok-button">閉じる</a>').addClass(footer_button_class));
-    errorDialog.load();
-    */
+    alert(body);
 };
 
 cart.ApplicationController = function() {

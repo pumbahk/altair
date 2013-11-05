@@ -85,27 +85,35 @@ cart.Dialog.prototype = {
     initialize: function (n, callbacks) {
         this.n = n.clone();
         this.callbacks = callbacks;
+        this.ok = false;
         n.parent().append(this.n);
         this.n.overlay({
             mask: !$.browser.msie || parseInt($.browser.version) >= 8 ? {
                 color: "#999",
                 opacity: 0.5
             }: null,
-            closeOnClick: false
+            closeOnClick: false,
+            onClose: function () {
+                var ok = self.ok;
+                self.ok = false;
+                if (!ok)
+                    self.callbacks.cancel && self.callbacks.cancel.call(self);
+                self.callbacks.close && self.callbacks.close.call(self);
+                this.n.remove();
+            }
         });
         var self = this;
         this.n.on('click', '.cancel-button', function() {
-            callbacks.cancel.call(self);
+            self.n.overlay().close(); 
         });
         this.n.on('click', '.ok-button', function() {
+            self.ok = true;
             callbacks.ok.call(self);
         });
     },
 
     close: function () {
         this.n.overlay().close();
-        this.callbacks.close && this.callbacks.close();
-        this.n.remove();
     },
 
     load: function () {
