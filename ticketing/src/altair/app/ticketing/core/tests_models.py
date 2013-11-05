@@ -43,6 +43,7 @@ class SalesSegmentTests(unittest.TestCase):
         from altair.app.ticketing.core.models import Order
         from altair.app.ticketing.cart.models import Cart
         from altair.app.ticketing.users.models import User
+        from datetime import datetime
 
         target = self._makeOne()
 
@@ -65,7 +66,6 @@ class SalesSegmentTests(unittest.TestCase):
             others.append(order)
 
         cancels = []
-        from datetime import datetime
         for i in range(2):
             cart = Cart(sales_segment=target)
             order = Order(user=user, cart=cart, canceled_at=datetime.now(),
@@ -85,6 +85,7 @@ class SalesSegmentTests(unittest.TestCase):
     def test_query_orders_by_mailaddress(self):
         from altair.app.ticketing.core.models import Order, ShippingAddress
         from altair.app.ticketing.cart.models import Cart
+        from datetime import datetime
 
         target = self._makeOne()
 
@@ -100,6 +101,7 @@ class SalesSegmentTests(unittest.TestCase):
                           total_amount=0,
                           system_fee=0, transaction_fee=0, delivery_fee=0)
             orders.append(order)
+        
         for i in range(2):
             shipping_address = ShippingAddress(email_2=mail_addr)
             cart = Cart(sales_segment=target)
@@ -108,6 +110,16 @@ class SalesSegmentTests(unittest.TestCase):
                           total_amount=0,
                           system_fee=0, transaction_fee=0, delivery_fee=0)
             orders.append(order)
+
+        cancels = []
+        for i in range(2):
+            shipping_address = ShippingAddress(email_1=mail_addr)
+            cart = Cart(sales_segment=target)
+            order = Order(cart=cart, canceled_at=datetime.now(),
+                          shipping_address=shipping_address,
+                          total_amount=0,
+                          system_fee=0, transaction_fee=0, delivery_fee=0)
+            cancels.append(order)
 
         others = []
         for i in range(2):
@@ -123,9 +135,8 @@ class SalesSegmentTests(unittest.TestCase):
         self.session.add(target)
         self.session.flush()
 
-        result = target.query_orders_by_mailaddress("testing@example.com").all()
-
-        self.assertEqual(result, orders)
+        result = target.query_orders_by_mailaddress(mail_addr).all()
+        self.assertEqual(result, orders+cancels)
 
 
 class SalesSegmentGroupTests(unittest.TestCase):
