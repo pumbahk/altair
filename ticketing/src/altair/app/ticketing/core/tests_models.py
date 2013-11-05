@@ -64,11 +64,22 @@ class SalesSegmentTests(unittest.TestCase):
                           system_fee=0, transaction_fee=0, delivery_fee=0)
             others.append(order)
 
+        cancels = []
+        from datetime import datetime
+        for i in range(2):
+            cart = Cart(sales_segment=target)
+            order = Order(user=user, cart=cart, canceled_at=datetime.now(),
+                          total_amount=0,
+                          system_fee=0, transaction_fee=0, delivery_fee=0)
+            cancels.append(order)
+
         self.session.add(target)
         self.session.flush()
 
         result = target.query_orders_by_user(user).all()
+        self.assertEqual(result, orders + cancels)
 
+        result = target.query_orders_by_user(user, filter_cancel=True).all()
         self.assertEqual(result, orders)
 
     def test_query_orders_by_mailaddress(self):
