@@ -78,6 +78,8 @@ class ExtraMailInfoAccessor(object):
             ## {"use": True, "value": ""}. this value is found as falsy value(but bool(this) is True).
             if result and isinstance(result, basestring):
                 return result
+            elif result and not "value" in result:
+                return result
             elif result and result.get("value"):
                 return result
             else:
