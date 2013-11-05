@@ -30,6 +30,7 @@ def main(global_config, **local_config):
     config.add_static_view('img', 'altair.app.ticketing.cart:static', cache_max_age=3600)
 
     ### include altair.*
+    config.include('altair.sqlahelper')
     config.include('altair.exclog')
     config.include('altair.browserid')
 

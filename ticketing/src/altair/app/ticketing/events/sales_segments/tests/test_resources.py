@@ -94,7 +94,8 @@ class UpdateSalesSegmentTests(unittest.TestCase):
             end_day_prior_to_performance=1,
             end_time=time(23, 59),
             upper_limit=10,
-            order_limit=20,
+            order_limit=20, 
+            product_limit=0,
             account_id=1,
             margin_ratio=150,
             refund_ratio=250,
@@ -123,6 +124,7 @@ class UpdateSalesSegmentTests(unittest.TestCase):
             use_default_printing_fee=True,
             use_default_registration_fee=True,
             use_default_auth3d_notice=True,
+            use_default_product_limit=True,
         )
 
         self._callFUT(ssg, ss)
@@ -155,6 +157,7 @@ class UpdateSalesSegmentTests(unittest.TestCase):
             end_time=time(23, 59),
             upper_limit=10,
             order_limit=20,
+            product_limit=0,            
             account_id=1,
             margin_ratio=150,
             refund_ratio=250,
@@ -177,7 +180,8 @@ class UpdateSalesSegmentTests(unittest.TestCase):
             use_default_refund_ratio=False,
             use_default_printing_fee=False,
             use_default_registration_fee=False,
-            use_default_auth3d_notice=False,
+            use_default_auth3d_notice=False, 
+            use_default_product_limit=False,           
             seat_choice=True,
             public=False,
             reporting=True,
