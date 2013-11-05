@@ -101,6 +101,11 @@ def order_review_qr_html(context, request):
     
     if ticket == None or ticket.sign != sign:
         raise HTTPNotFound()
+
+    if ticket.seat is None:
+        gate = None
+    else:
+        gate = ticket.seat.attributes.get("gate", None)
     
     return dict(
         sign = sign,
@@ -109,6 +114,7 @@ def order_review_qr_html(context, request):
         performance = ticket.performance,
         event = ticket.event,
         product = ticket.product,
+        gate = gate
     )
 
 @view_config(route_name='order_review.qrdraw', xhr=False, permission="view")
