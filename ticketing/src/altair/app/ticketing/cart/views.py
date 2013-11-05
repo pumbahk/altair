@@ -948,6 +948,10 @@ class CompleteView(object):
         if not cart.is_valid():
             raise NoCartError()
 
+        user = get_or_create_user(self.context.authenticated_user())
+        if not self.context.check_order_limit(cart.sales_segment, user, None):
+            raise OverOrderLimitException.from_resource(self.context, self.request, order_limit=cart.sales_segment.order_limit)
+
         payment = Payment(cart, self.request)
         order = payment.call_payment()
         order_id = order.id
@@ -961,7 +965,7 @@ class CompleteView(object):
         order = c_models.Order.query.filter_by(id=order_id).one() # transaction をコミットしたので、再度読み直し
 
         # メール購読
-        user = get_or_create_user(self.context.authenticated_user())
+        user = get_or_create_user(self.context.authenticated_user()) # これも読み直し
         emails = cart.shipping_address.emails
         magazine_ids = self.request.params.getall('mailmagazine')
         multi_subscribe(user, emails, magazine_ids)

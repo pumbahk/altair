@@ -3547,14 +3547,18 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         )
 
 
+    @deprecation.deprecate(u"メールアドレスは複数与えられるものなので、このメソッドは使うべきではない")
     def query_orders_by_mailaddress(self, mailaddress):
+        return self.query_orders_by_mailaddresses([mailaddress])
+
+    def query_orders_by_mailaddresses(self, mailaddresses):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
         from altair.app.ticketing.cart.models import Cart
         return DBSession.query(Order).filter(
             Order.shipping_address_id==ShippingAddress.id
         ).filter(
-            or_(ShippingAddress.email_1 == mailaddress,
-                ShippingAddress.email_2 == mailaddress)
+            or_(ShippingAddress.email_1.in_(mailaddresses),
+                ShippingAddress.email_2.in_(mailaddresses))
         ).filter(
             Cart.order_id==Order.id
         ).filter(
