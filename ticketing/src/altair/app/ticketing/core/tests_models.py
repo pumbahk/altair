@@ -88,9 +88,12 @@ class SalesSegmentTests(unittest.TestCase):
 
         target = self._makeOne()
 
+        mail_addr  = 'testing@example.com'
+        mail_addr_other = 'other@example.com'
+
         orders = []
         for i in range(2):
-            shipping_address = ShippingAddress(email_1="testing@example.com")
+            shipping_address = ShippingAddress(email_1=mail_addr)
             cart = Cart(sales_segment=target)
             order = Order(cart=cart,
                           shipping_address=shipping_address,
@@ -98,7 +101,7 @@ class SalesSegmentTests(unittest.TestCase):
                           system_fee=0, transaction_fee=0, delivery_fee=0)
             orders.append(order)
         for i in range(2):
-            shipping_address = ShippingAddress(email_2="testing@example.com")
+            shipping_address = ShippingAddress(email_2=mail_addr)
             cart = Cart(sales_segment=target)
             order = Order(cart=cart,
                           shipping_address=shipping_address,
@@ -108,13 +111,14 @@ class SalesSegmentTests(unittest.TestCase):
 
         others = []
         for i in range(2):
-            shipping_address = ShippingAddress(email_1="other@example.com")
+            shipping_address = ShippingAddress(email_1=mail_addr_other)
             cart = Cart(sales_segment=target)
             order = Order(cart=cart,
                           shipping_address=shipping_address,
                           total_amount=0,
                           system_fee=0, transaction_fee=0, delivery_fee=0)
             others.append(order)
+
 
         self.session.add(target)
         self.session.flush()
