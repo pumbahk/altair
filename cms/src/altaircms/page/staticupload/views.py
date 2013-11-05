@@ -348,8 +348,11 @@ class StaticPageView(BaseView):
         static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
         static_directory = get_static_page_utility(self.request)
         s3prefix = os.path.join(static_directory.prefix, self.request.organization.short_name, static_page.prefix, unicode(static_page.id))
+
         downloader = S3Downloader(self.request, static_page, prefix=s3prefix) ## xxx:
-        downloader.add_filter(lambda write_name, io : localize_filter(write_name, io, static_directory))
+        root_url = static_directory.get_root_url(static_page)
+        downloader.add_filter(lambda write_name, io : localize_filter(write_name, io, root_url))
+        logger.info("download: uns3lize: '{}' -> ''".format(root_url))
         zm = ZippedStaticFileManager(self.request, static_page, static_directory.tmpdir, downloader=downloader)
         return zm.download_response(static_directory.get_rootname(static_page))
 

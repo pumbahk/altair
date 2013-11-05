@@ -1,7 +1,7 @@
 import os
 from lxml import html
+from StringIO import StringIO
 from urlparse import urljoin
-# utility = IDirectoryResource
 
 def is_html_filename(filename):
     return filename.lower().endswith((".html", ".htm"))
@@ -49,15 +49,12 @@ def refine_link_as_string(filename, dirname, utility, encoding=DEFAULT_ENCODING,
     doc = refine_link(filename, dirname, utility, encoding=encoding, convert=convert)
     return html.tostring(doc, pretty_print=True, encoding=encoding) if doc is not None else ""
 
-def localize_filter(write_name, io, utility, encoding=DEFAULT_ENCODING):
+def localize_filter(write_name, io, base_url, encoding=DEFAULT_ENCODING):
     if not is_html_filename(write_name):
         return io
     doc = html.parse(io, parser=get_html_parser(encoding)).getroot()
-    base_url = utility.get_url("")
     if doc is not None:
         _make_links_relative(doc, base_url)
-    return html.tostring(doc, pretty_print=True, encoding=encoding) if doc is not None else ""
+    #hmm
+    return StringIO(html.tostring(doc, pretty_print=True, encoding=encoding) if doc is not None else "")
 
-def localize_link_as_string(filename, dirname, utility, encoding=DEFAULT_ENCODING, convert=urljoin):
-    doc = localize_link(filename, dirname, utility, encoding=encoding, convert=convert)
-    return html.tostring(doc, pretty_print=True, encoding=encoding) if doc is not None else ""

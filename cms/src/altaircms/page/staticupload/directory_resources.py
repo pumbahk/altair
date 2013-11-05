@@ -147,6 +147,12 @@ class S3StaticPageDirectory(StaticPageDirectory):
     def s3utility(self):
         return get_s3_utility_factory(self.request)
 
+    def get_root_url(self, static_page):
+        bucket_name = self.s3utility.bucket_name
+        short_name = self.request.organization.short_name
+        fmt = u"http://{0}.s3.amazonaws.com/{1}/{2}/{3}/{4}"
+        return fmt.format(bucket_name, self.prefix, short_name, static_page.prefix, unicode(static_page.id))
+
     def get_base_url(self, dirname, filename):
         bucket_name = self.s3utility.bucket_name
         return "http://{0}.s3.amazonaws.com/{1}{2}/".format(bucket_name, self.prefix, dirname.replace(self.basedir, ""))
