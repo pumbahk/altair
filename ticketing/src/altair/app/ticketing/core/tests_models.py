@@ -138,6 +138,9 @@ class SalesSegmentTests(unittest.TestCase):
         result = target.query_orders_by_mailaddress(mail_addr).all()
         self.assertEqual(result, orders+cancels)
 
+        result = target.query_orders_by_mailaddress(mail_addr, filter_cancel=True).all()
+        self.assertEqual(result, orders)
+
 
 class SalesSegmentGroupTests(unittest.TestCase):
     def _getTarget(self):
