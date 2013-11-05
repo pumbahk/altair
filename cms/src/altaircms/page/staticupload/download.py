@@ -69,6 +69,10 @@ class S3Downloader(object):
         self.request = request
         self.static_page = static_page
         self.prefix = prefix
+        self.filters = []
+
+    def add_filter(self, fn):
+        self.filters.append(fn)
 
     def download_recursively(self, absroot):
         if self.static_page.uploaded_at is None:
@@ -92,4 +96,6 @@ class S3Downloader(object):
             if not os.path.exists(dirname):
                 os.makedirs(dirname)
             with open(writepath, "w") as wf:
+                for f in self.filters:
+                    io = f(writepath, io) #encoding?
                 shutil.copyfileobj(io, wf)

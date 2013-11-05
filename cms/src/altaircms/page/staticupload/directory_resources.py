@@ -168,7 +168,7 @@ class S3StaticPageDirectory(StaticPageDirectory):
             keyname = self.get_name(root, f)
             logger.info("*debug upload file:{0}".format(keyname))
             uploader.upload_file(rf, keyname)
-        
+
     def upload_directory(self, d):
         uploader = self.s3utility.uploader
         logger.info("upload_directory: {0}".format(d))

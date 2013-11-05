@@ -17,6 +17,7 @@ from . import forms
 from . import creation
 from .download import ZippedStaticFileManager, S3Downloader
 from .renderable import static_page_directory_renderer
+from .refine import localize_filter
 import logging
 logger = logging.getLogger(__name__)
 from altaircms.viewlib import BaseView
@@ -348,6 +349,7 @@ class StaticPageView(BaseView):
         static_directory = get_static_page_utility(self.request)
         s3prefix = os.path.join(static_directory.prefix, self.request.organization.short_name, static_page.prefix, unicode(static_page.id))
         downloader = S3Downloader(self.request, static_page, prefix=s3prefix) ## xxx:
+        downloader.add_filter(lambda write_name, io : localize_filter(write_name, io, static_directory))
         zm = ZippedStaticFileManager(self.request, static_page, static_directory.tmpdir, downloader=downloader)
         return zm.download_response(static_directory.get_rootname(static_page))
 
