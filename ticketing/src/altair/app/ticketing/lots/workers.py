@@ -56,6 +56,7 @@ def includeme(config):
     config.include('altair.app.ticketing.payments.plugins.qr')
     # 配送
     config.include('altair.app.ticketing.payments.plugins.shipping')
+    config.include('altair.app.ticketing.cart.setup_renderers')
     config.include(".sendmail")
 
     reg = config.registry
