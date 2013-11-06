@@ -152,6 +152,7 @@ def main(global_config, **local_config):
         config.add_route("qr.make", "___________") ##xxx:
         config.include('altair.app.ticketing.cart.import_mail_module')
         config.include('altair.app.ticketing.cart.setup_mq')
+        config.include('altair.app.ticketing.cart.setup_renderers')
         config.include('.renderers')
 
         config.scan('altair.app.ticketing.cart.workers')
