@@ -19,9 +19,9 @@ class LinkRewriteTests(unittest.TestCase):
 <link rel="stylesheet" href="/css/top.css" type="text/css" media="all">
 """
         result = self._callFUT(self.base_url, html)
-        self.assertIn(u"""<link rel="stylesheet" href="http://foo.bar.jp/css/base.css" type="text/css" media="all">""", result)
-        self.assertIn(u"""<link rel="stylesheet" href="http://sample-foo/uploaded/:test:/10/css/base.css" type="text/css" media="all">""", result)
-        self.assertIn(u"""<link rel="stylesheet" href="http://sample-foo/css/top.css" type="text/css" media="all">""", result)
+        self.assertIn(u"""<link rel="stylesheet" href="//foo.bar.jp/css/base.css" type="text/css" media="all">""", result)
+        self.assertIn(u"""<link rel="stylesheet" href="//sample-foo/uploaded/:test:/10/css/base.css" type="text/css" media="all">""", result)
+        self.assertIn(u"""<link rel="stylesheet" href="//sample-foo/css/top.css" type="text/css" media="all">""", result)
 
     def test_link(self):
         html = u"""
@@ -42,7 +42,7 @@ class LinkRewriteTests(unittest.TestCase):
 <img src="img/a.png"/>
 """
         result = self._callFUT(self.base_url, html)
-        self.assertIn(u"""<img src="http://sample-foo/uploaded/:test:/10/img/a.png">""", result)
+        self.assertIn(u"""<img src="//sample-foo/uploaded/:test:/10/img/a.png">""", result)
 
     def test_background_url(self):
         html = u"""
@@ -53,7 +53,7 @@ table.layout {
 </style>
 """
         result = self._callFUT(self.base_url, html)
-        self.assertIn(u"""http://sample-foo/uploaded/:test:/10/img/bg.jpg""", result)
+        self.assertIn(u"""//sample-foo/uploaded/:test:/10/img/bg.jpg""", result)
 
 
     def _callFUT(self, base_url, html_string):
@@ -84,7 +84,7 @@ class UnS3lizeTests(unittest.TestCase):
 """
         result = self._callFUT(self.base_url, html, "http://sample-foo/uploaded/:test:/10/howto.html")
         self.assertIn('href="./index.html"', result)
-        self.assertNotIn('href="http://sample-foo/uploaded/:test:/10/howto.html"', result)
+        self.assertIn('href="http://sample-foo/uploaded/:test:/10/howto.html"', result)
         self.assertIn('href="http://another.com/link.html"', result)
 
     def test_img__top_page(self):
@@ -172,7 +172,7 @@ class IntegrationTests(unittest.TestCase):
             self.assertIn(u'href="foo/../link2.html"', result)
             self.assertIn(u'href="http://www.google.co.jp"', result)
 
-            self.assertIn(u'href="http://sample-foo/uploaded/:test:/10/css/style.css"', result)
+            self.assertIn(u'href="//sample-foo/uploaded/:test:/10/css/style.css"', result)
 
 if __name__ == "__main__":
     unittest.main()

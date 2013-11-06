@@ -9,29 +9,62 @@ logger = logging.getLogger(__name__)
 def is_html_filename(filename):
     return filename.lower().endswith((".html", ".htm"))
 
+def rewrite_links_with_el(doc, link_repl_func, resolve_base_href=True,
+                      base_href=None):
+    if base_href is not None:
+        # FIXME: this can be done in one pass with a wrapper
+        # around link_repl_func
+        doc.make_links_absolute(base_href, resolve_base_href=resolve_base_href)
+    elif resolve_base_href:
+        doc.resolve_base_href()
+    for el, attrib, link, pos in doc.iterlinks():
+        new_link = link_repl_func(el, link.strip())
+        if new_link == link:
+            continue
+        if new_link is None:
+            # Remove the attribute or element content
+            if attrib is None:
+                el.text = ''
+            else:
+                del el.attrib[attrib]
+            continue
+        if attrib is None:
+            new = el.text[:pos] + new_link + el.text[pos+len(link):]
+            el.text = new
+        else:
+            cur = el.attrib[attrib]
+            if not pos and len(cur) == len(link):
+                # Most common case
+                el.attrib[attrib] = new_link
+            else:
+                new = cur[:pos] + new_link + cur[pos+len(link):]
+                el.attrib[attrib] = new
+
 
 ## convert function
 def doc_convert_from_s3link(doc, base_url, current_url):
-    def link_repl(href):
+    def link_repl(el, href):
+        tag = el.tag.lower()
+        if tag == "a" or tag == "script":
+            return href
+
         if href.startswith("//"):
             href = "http:"+href
         if href.startswith(base_url):
             return os.path.relpath(href, os.path.dirname(current_url))
         return href
-    doc.rewrite_links(link_repl)
+    rewrite_links_with_el(doc, link_repl)
 
 def doc_convert_to_s3link(doc, base_url, convert=urljoin):
-    def link_repl(href):
-        if href.endswith(".js"):
-            return href
-        elif is_html_filename(href) or href.endswith("/") or os.path.splitext(href)[1] == "":
+    def link_repl(el, href):
+        tag = el.tag.lower()
+        if tag == "a" or tag == "script":
             return href
         else:
             absolute_href = convert(base_url, href)
-            if href.startswith("//"):
-                absolute_href = absolute_href.replace("http:", "")
+            absolute_href = absolute_href.replace("http:", "") #to: //foo.bar
             return absolute_href
-    doc.rewrite_links(link_repl)
+    rewrite_links_with_el(doc, link_repl)
 
 _PARSERS = {}
 DEFAULT_ENCODING = "utf-8" #xxx:
