@@ -59,10 +59,10 @@ table.layout {
     def _callFUT(self, base_url, html_string):
         from io import StringIO
         from lxml import html
-        from altaircms.page.staticupload.refine import _make_links_absolute
+        from altaircms.page.staticupload.refine import doc_convert_to_s3link
 
         doc = html.parse(StringIO(html_string)).getroot()
-        _make_links_absolute(doc, base_url)
+        doc_convert_to_s3link(doc, base_url)
         return html.tostring(doc)
 
 class UnS3lizeTests(unittest.TestCase):
@@ -70,10 +70,10 @@ class UnS3lizeTests(unittest.TestCase):
     def _callFUT(self, base_url, html_string, current_url):
         from io import StringIO
         from lxml import html
-        from altaircms.page.staticupload.refine import _make_links_relative
+        from altaircms.page.staticupload.refine import doc_convert_from_s3link
 
         doc = html.parse(StringIO(html_string)).getroot()
-        _make_links_relative(doc, base_url, current_url)
+        doc_convert_from_s3link(doc, base_url, current_url)
         return html.tostring(doc)
 
     def test_link(self):
@@ -115,21 +115,22 @@ class UnS3lizeTests(unittest.TestCase):
         result = self._callFUT(self.base_url, html, "http://sample-foo/uploaded/:test:/10/top.html")
         self.assertIn('src="http://another/images/FreshFlower.jpg"', result)
 
-    def test_another_img__top_page__hasnot_protocol(self):
+    def test_img__top_page__hasnot_protocol(self):
         html = u"""
     <img src="//another/images/FreshFlower.jpg" width=100 height=100">
+    <img src="//sample-foo/uploaded/:test:/10/images/FreshFlower.jpg" width=100 height=100">
 """
         result = self._callFUT(self.base_url, html, "http://sample-foo/uploaded/:test:/10/top.html")
         self.assertIn('src="http://another/images/FreshFlower.jpg"', result)
-
+        self.assertIn('src="images/FreshFlower.jpg"', result)
 
 
 import contextlib
 @contextlib.contextmanager
-def temporary_file():
+def temporary_file(suffix):
     import os
     import tempfile
-    _, filename = tempfile.mkstemp()
+    _, filename = tempfile.mkstemp(suffix=suffix)
     yield filename
     os.remove(filename)
 
@@ -154,17 +155,18 @@ class IntegrationTests(unittest.TestCase):
   </body>
 </html>
 """
+    def _callFUT(self, *args, **kwargs):
+        from altaircms.page.staticupload.refine import refine_link_on_upload
+        return refine_link_on_upload(*args, **kwargs)
 
     def test_it(self):
         import os
-        with temporary_file() as filename:
+        with temporary_file(suffix=".html") as filename:
             with open(filename, "w") as wf:
                 wf.write(self.html_string)
 
             dirname, filename = os.path.split(filename)
-            from altaircms.page.staticupload.refine import refine_link_as_string
-            result = refine_link_as_string(filename, dirname, self.Utility)
-
+            result = self._callFUT(filename, dirname, self.Utility)
             self.assertIn(u'href="./link0.html"', result)
             self.assertIn(u'href="link1.html"', result)
             self.assertIn(u'href="foo/../link2.html"', result)

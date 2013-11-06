@@ -2,12 +2,16 @@ import os
 from lxml import html
 from StringIO import StringIO
 from urlparse import urljoin
+from functools import partial
+import logging
+logger = logging.getLogger(__name__)
 
 def is_html_filename(filename):
     return filename.lower().endswith((".html", ".htm"))
 
-## todo: support absolute url.
-def _make_links_relative(doc, base_url, current_url):
+
+## convert function
+def doc_convert_from_s3link(doc, base_url, current_url):
     def link_repl(href):
         if href.startswith("//"):
             href = "http:"+href
@@ -16,9 +20,7 @@ def _make_links_relative(doc, base_url, current_url):
         return href
     doc.rewrite_links(link_repl)
 
-def _make_links_absolute(doc, base_url, resolve_base_href=True, convert=urljoin):
-    if resolve_base_href:
-        doc.resolve_base_href()
+def doc_convert_to_s3link(doc, base_url, convert=urljoin):
     def link_repl(href):
         if href.endswith(".js"):
             return href
@@ -41,27 +43,61 @@ def get_html_parser(encoding=DEFAULT_ENCODING):
         parser = _PARSERS[encoding] = html.HTMLParser(encoding=encoding)
     return parser
 
-# string, string, <utility> -> <dom>
-def refine_link(filename, dirname, utility, encoding=DEFAULT_ENCODING, convert=urljoin):
-    path = os.path.join(dirname, filename)
+## serialize/deserialize
+def doc_from_filepath(path, subname, encoding):
+    return html.parse(path, parser=get_html_parser(encoding)).getroot()
+
+def doc_from_io(io, subname, encoding):
+    return html.parse(io, parser=get_html_parser(encoding)).getroot()
+
+def io_from_doc(doc, subname, encoding):
+    return StringIO(html.tostring(doc, pretty_print=True, encoding=encoding))
+
+def string_from_doc(doc, subname, encoding):
+    return html.tostring(doc, pretty_print=True, encoding=encoding)
+
+
+## apply refine function(a -> (dom -*> dom) -> b)
+class HTMLFilter(object):
+    def __init__(self, q, deserialize, serialize, encoding=DEFAULT_ENCODING):
+        self.deserialize = deserialize
+        self.serialize = serialize
+        self.q = q or []
+        self.encoding = encoding
+
+    def add(self, f): # f is dom -> dom
+        self.q.append(f)
+
+    def __call__(self, io, subname, encoding=None):
+        if not is_html_filename(subname):
+            return io
+        else:
+            encoding = encoding or self.encoding
+            doc = self.deserialize(io, subname, encoding=encoding)
+            if doc is None:
+                logger.warn("creating doc object is failure, from {subname}".format(subname=subname))
+            for fn in self.q:
+                doc = fn(doc, subname)
+            return self.serialize(doc, subname, encoding=encoding)
+
+HTMLFilterOutputIO = partial(HTMLFilter, deserialize=doc_from_io, serialize=io_from_doc)
+HTMLFilterInputFilePathOutputString = partial(HTMLFilter, deserialize=doc_from_filepath, serialize=string_from_doc)
+
+
+## api
+def refine_link_on_upload(filename, dirname, utility, encoding=DEFAULT_ENCODING, convert=urljoin):
     base_url = utility.get_base_url(dirname, filename)
-    doc = html.parse(path, base_url=base_url, parser=get_html_parser(encoding)).getroot()
-    if doc is not None:
-        _make_links_absolute(doc, base_url, convert=convert)
-    return doc
+    def html_update(doc, subname):
+        doc_convert_to_s3link(doc, base_url, convert=convert)
+        return doc
+    fil = HTMLFilterInputFilePathOutputString([html_update], encoding=encoding)
+    path = os.path.join(dirname, filename)
+    return fil(path, filename)
 
-# string, string, <utility> -> string
-def refine_link_as_string(filename, dirname, utility, encoding=DEFAULT_ENCODING, convert=urljoin):
-    doc = refine_link(filename, dirname, utility, encoding=encoding, convert=convert)
-    return html.tostring(doc, pretty_print=True, encoding=encoding) if doc is not None else ""
-
-# string,  io, string -> string
-def localize_filter(subname, io, base_url, encoding=DEFAULT_ENCODING):
-    if not is_html_filename(subname):
-        return io
-    doc = html.parse(io, parser=get_html_parser(encoding)).getroot()
-    if doc is not None:
-        _make_links_relative(doc, base_url, os.path.join(base_url, subname))
-    #hmm
-    return StringIO(html.tostring(doc, pretty_print=True, encoding=encoding) if doc is not None else "")
-
+def refine_link_on_download_factory(static_page, utility, encoding=DEFAULT_ENCODING):
+    root_url = utility.get_root_url(static_page)
+    logger.info("download: uns3lize: '{}' -> ''".format(root_url))
+    def html_update(doc, subname):
+        doc_convert_from_s3link(doc, root_url, os.path.join(root_url, subname))
+        return doc
+    return HTMLFilterOutputIO([html_update])

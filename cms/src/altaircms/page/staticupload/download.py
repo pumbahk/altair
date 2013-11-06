@@ -99,5 +99,5 @@ class S3Downloader(object):
             with open(writepath, "w") as wf:
                 for f in self.filters:
                     # logger.debug("*debug subname: {}".format(subname))
-                    io = f(subname, io) #encoding?
+                    io = f(io, subname) #encoding?
                 shutil.copyfileobj(io, wf)
