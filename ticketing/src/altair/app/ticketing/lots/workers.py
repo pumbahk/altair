@@ -50,12 +50,7 @@ def on_delivery_error(event):
 def includeme(config):
     # payment
     config.include('altair.app.ticketing.payments')
-    # マルチ決済
-    config.include('altair.app.ticketing.payments.plugins.multicheckout')
-    # QRコード
-    config.include('altair.app.ticketing.payments.plugins.qr')
-    # 配送
-    config.include('altair.app.ticketing.payments.plugins.shipping')
+    config.include('altair.app.ticketing.payments.plugins')
     config.include('altair.app.ticketing.cart.setup_renderers')
     config.include(".sendmail")
 
