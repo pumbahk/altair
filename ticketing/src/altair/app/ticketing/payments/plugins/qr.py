@@ -20,8 +20,6 @@ from altair.app.ticketing.cart import helpers as cart_helper
 from altair.app.ticketing.core import models as c_models
 from collections import namedtuple
 
-from . import _template
-
 from . import QR_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
 
 def includeme(config):
@@ -29,8 +27,9 @@ def includeme(config):
     config.scan(__name__)
 
 def _overridable(path):
+    from . import _template
     if _template is None:
-        return 'templates/%s' % path
+        return '%s:templates/%s' % (__name__, path)
     else:
         return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=DELIVERY_PLUGIN_ID)
 

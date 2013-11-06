@@ -50,8 +50,6 @@ from ..exceptions import PaymentPluginException
 from . import SEJ_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import SEJ_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
 
-from . import _template
-
 logger = logging.getLogger(__name__)
 
 class SejPluginFailure(PaymentPluginException):
@@ -66,14 +64,16 @@ def includeme(config):
     config.scan(__name__)
 
 def _overridable_payment(path):
+    from . import _template
     if _template is None:
-        return 'templates/%s' % path
+        return '%s:templates/%s' % (__name__, path)
     else:
         return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_PLUGIN_ID)
 
 def _overridable_delivery(path):
+    from . import _template
     if _template is None:
-        return 'templates/%s' % path
+        return '%s:templates/%s' % (__name__, path)
     else:
         return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=DELIVERY_PLUGIN_ID)
 
