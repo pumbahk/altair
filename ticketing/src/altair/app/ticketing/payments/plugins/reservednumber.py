@@ -22,7 +22,6 @@ from altair.app.ticketing.mails.interfaces import (
 )
 from altair.app.ticketing.utils import sensible_alnum_decode
 
-from . import _template
 from . import models as m
 from . import logger
 
@@ -35,14 +34,16 @@ def includeme(config):
     config.scan(__name__)
 
 def _overridable_payment(path):
+    from . import _template
     if _template is None:
-        return 'templates/%s' % path
+        return '%s:templates/%s' % (__name__, path)
     else:
         return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_PLUGIN_ID)
 
 def _overridable_delivery(path):
+    from . import _template
     if _template is None:
-        return 'templates/%s' % path
+        return '%s:templates/%s' % (__name__, path)
     else:
         return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=PLUGIN_ID)
 
