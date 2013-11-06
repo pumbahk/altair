@@ -84,10 +84,15 @@ def doc_from_io(io, subname, encoding):
     return html.parse(io, parser=get_html_parser(encoding)).getroot()
 
 def io_from_doc(doc, subname, encoding):
-    return StringIO(html.tostring(doc, pretty_print=True, encoding=encoding))
+    doctype = doc.getroottree().docinfo.doctype
+    io = StringIO(doctype)
+    io.write(html.tostring(doc, pretty_print=True, encoding=encoding))
+    return io
 
 def string_from_doc(doc, subname, encoding):
-    return html.tostring(doc, pretty_print=True, encoding=encoding)
+    doctype = doc.getroottree().docinfo.doctype
+    body = html.tostring(doc, pretty_print=True, encoding=encoding)
+    return u"\n".join([doctype, body])
 
 
 ## apply refine function(a -> (dom -*> dom) -> b)

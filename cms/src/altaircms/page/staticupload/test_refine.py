@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import unittest
+import os
 
 class LinkRewriteTests(unittest.TestCase):
     base_url = "http://sample-foo/uploaded/:test:/10/"
@@ -160,7 +161,6 @@ class IntegrationTests(unittest.TestCase):
         return refine_link_on_upload(*args, **kwargs)
 
     def test_it(self):
-        import os
         with temporary_file(suffix=".html") as filename:
             with open(filename, "w") as wf:
                 wf.write(self.html_string)
@@ -173,6 +173,20 @@ class IntegrationTests(unittest.TestCase):
             self.assertIn(u'href="http://www.google.co.jp"', result)
 
             self.assertIn(u'href="//sample-foo/uploaded/:test:/10/css/style.css"', result)
+
+    def test_doctype(self):
+        html_string = """\
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+hello!
+"""
+        with temporary_file(suffix=".html") as filename:
+            with open(filename, "w") as wf:
+                wf.write(html_string)
+
+            dirname, filename = os.path.split(filename)
+            result = self._callFUT(filename, dirname, self.Utility)
+
+            self.assertIn(u'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">', result)
 
 if __name__ == "__main__":
     unittest.main()
