@@ -62,8 +62,67 @@ table.layout {
         from altaircms.page.staticupload.refine import _make_links_absolute
 
         doc = html.parse(StringIO(html_string)).getroot()
-        _make_links_absolute(doc, self.base_url)
+        _make_links_absolute(doc, base_url)
         return html.tostring(doc)
+
+class UnS3lizeTests(unittest.TestCase):
+    base_url = "http://sample-foo/uploaded/:test:/10/"
+    def _callFUT(self, base_url, html_string, current_url):
+        from io import StringIO
+        from lxml import html
+        from altaircms.page.staticupload.refine import _make_links_relative
+
+        doc = html.parse(StringIO(html_string)).getroot()
+        _make_links_relative(doc, base_url, current_url)
+        return html.tostring(doc)
+
+    def test_link(self):
+        html = u"""
+<a href="./index.html"/>
+<a href="http://sample-foo/uploaded/:test:/10/howto.html"/>
+<a href="http://another.com/link.html"/>
+"""
+        result = self._callFUT(self.base_url, html, "http://sample-foo/uploaded/:test:/10/howto.html")
+        self.assertIn('href="./index.html"', result)
+        self.assertNotIn('href="http://sample-foo/uploaded/:test:/10/howto.html"', result)
+        self.assertIn('href="http://another.com/link.html"', result)
+
+    def test_img__top_page(self):
+        html = u"""
+    <img src="http://sample-foo/uploaded/:test:/10/images/FreshFlower.jpg" width=100 height=100">
+"""
+        result = self._callFUT(self.base_url, html, "http://sample-foo/uploaded/:test:/10/top.html")
+        self.assertIn('src="images/FreshFlower.jpg"', result)
+
+    def test_img__child_page(self):
+        html = u"""
+    <img src="http://sample-foo/uploaded/:test:/10/images/FreshFlower.jpg" width=100 height=100">
+"""
+        result = self._callFUT(self.base_url, html, "http://sample-foo/uploaded/:test:/10/child/detail.html")
+        self.assertIn('src="../images/FreshFlower.jpg"', result)
+
+    def test_img__grand_child_page(self):
+        html = u"""
+    <img src="http://sample-foo/uploaded/:test:/10/images/FreshFlower.jpg" width=100 height=100">
+"""
+        result = self._callFUT(self.base_url, html, "http://sample-foo/uploaded/:test:/10/children/20/detail.html")
+        self.assertIn('src="../../images/FreshFlower.jpg"', result)
+
+    def test_another_img__top_page(self):
+        html = u"""
+    <img src="http://another/images/FreshFlower.jpg" width=100 height=100">
+"""
+        result = self._callFUT(self.base_url, html, "http://sample-foo/uploaded/:test:/10/top.html")
+        self.assertIn('src="http://another/images/FreshFlower.jpg"', result)
+
+    def test_another_img__top_page__hasnot_protocol(self):
+        html = u"""
+    <img src="//another/images/FreshFlower.jpg" width=100 height=100">
+"""
+        result = self._callFUT(self.base_url, html, "http://sample-foo/uploaded/:test:/10/top.html")
+        self.assertIn('src="http://another/images/FreshFlower.jpg"', result)
+
+
 
 import contextlib
 @contextlib.contextmanager

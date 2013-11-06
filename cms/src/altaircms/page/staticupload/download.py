@@ -91,11 +91,13 @@ class S3Downloader(object):
         bucket = self.bucket
         logger.info("download: bucket={bucket} prefix={prefix}".format(bucket=bucket.name, prefix=self.prefix))
         for io in bucket.list(prefix=self.prefix):
-            writepath = os.path.join(absroot, io.name.replace(self.prefix, "").lstrip("/"))
+            subname = io.name.replace(self.prefix, "").lstrip("/")
+            writepath = os.path.join(absroot, subname)
             dirname = os.path.dirname(writepath)
             if not os.path.exists(dirname):
                 os.makedirs(dirname)
             with open(writepath, "w") as wf:
                 for f in self.filters:
-                    io = f(writepath, io) #encoding?
+                    # logger.debug("*debug subname: {}".format(subname))
+                    io = f(subname, io) #encoding?
                 shutil.copyfileobj(io, wf)
