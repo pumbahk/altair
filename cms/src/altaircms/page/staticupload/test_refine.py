@@ -129,13 +129,13 @@ class UnS3lizeTests(unittest.TestCase):
 import contextlib
 @contextlib.contextmanager
 def temporary_file(suffix):
-    import os
     import tempfile
     _, filename = tempfile.mkstemp(suffix=suffix)
     yield filename
     os.remove(filename)
 
-class IntegrationTests(unittest.TestCase):
+
+class UploadIntegrationTests(unittest.TestCase):
     class Utility:
         @classmethod
         def get_base_url(cls, dirname, fname):
@@ -161,32 +161,94 @@ class IntegrationTests(unittest.TestCase):
         return refine_link_on_upload(*args, **kwargs)
 
     def test_it(self):
-        with temporary_file(suffix=".html") as filename:
-            with open(filename, "w") as wf:
+        with temporary_file(suffix=".html") as tmpname:
+            with open(tmpname, "w") as wf:
                 wf.write(self.html_string)
 
-            dirname, filename = os.path.split(filename)
+            dirname, filename = os.path.split(tmpname)
             result = self._callFUT(filename, dirname, self.Utility)
             self.assertIn(u'href="./link0.html"', result)
             self.assertIn(u'href="link1.html"', result)
             self.assertIn(u'href="foo/../link2.html"', result)
             self.assertIn(u'href="http://www.google.co.jp"', result)
 
+            self.assertIn(u'<img src="//sample-foo/uploaded/:test:/10/images/FreshFlower.jpg"', result)
+
             self.assertIn(u'href="//sample-foo/uploaded/:test:/10/css/style.css"', result)
 
-    def test_doctype(self):
+    def test_doctype_is_found(self):
         html_string = """\
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 hello!
 """
-        with temporary_file(suffix=".html") as filename:
-            with open(filename, "w") as wf:
+        with temporary_file(suffix=".html") as tmpname:
+            with open(tmpname, "w") as wf:
                 wf.write(html_string)
 
-            dirname, filename = os.path.split(filename)
+            dirname, filename = os.path.split(tmpname)
             result = self._callFUT(filename, dirname, self.Utility)
 
             self.assertIn(u'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">', result)
+
+
+
+    def test_doctype_is_notfound(self):
+        html_string = """\
+hello!
+"""
+        with temporary_file(suffix=".html") as tmpname:
+            with open(tmpname, "w") as wf:
+                wf.write(html_string)
+
+            dirname, filename = os.path.split(tmpname)
+            result = self._callFUT(filename, dirname, self.Utility)
+            self.assertNotIn(u'<!DOCTYPE', result)
+
+
+class DownloadIntegrationTests(unittest.TestCase):
+    class Utility:
+        @classmethod
+        def get_root_url(cls, static_page):
+            return "http://sample-foo/uploaded/:test:/10/top.html"
+
+    html_string = u"""
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+  </head>
+  <body>
+    <img src="./images/FreshFlower.jpg" width=100 height=100>
+    <a href="./link0.html">link0</a>
+    <a href="link1.html">link1</a>
+    <a href="foo/../link2.html">link2</a>
+    <a href="http://www.google.co.jp">google</a>
+  </body>
+</html>
+"""
+    def _callFUT(self, *args, **kwargs):
+        from altaircms.page.staticupload.refine import refine_link_on_download_factory
+        return refine_link_on_download_factory(*args, **kwargs)
+
+    def test_it(self):
+        class StaticPage:
+            pass
+        with temporary_file(suffix=".html") as tmpname:
+            with open(tmpname, "w") as wf:
+                wf.write(self.html_string)
+
+            with open(tmpname) as rf:
+                result = self._callFUT(StaticPage, self.Utility)(rf, "top.html").read()
+
+            self.assertIn(u'href="./link0.html"', result)
+            self.assertIn(u'href="link1.html"', result)
+            self.assertIn(u'href="foo/../link2.html"', result)
+            self.assertIn(u'href="http://www.google.co.jp"', result)
+
+            self.assertIn(u'<img src="./images/FreshFlower.jpg"', result)
+
+            self.assertIn(u'href="css/style.css"', result)
 
 if __name__ == "__main__":
     unittest.main()

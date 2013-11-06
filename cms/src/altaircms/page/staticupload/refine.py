@@ -1,6 +1,6 @@
 import os
 from lxml import html
-from StringIO import StringIO
+from io import BytesIO
 from urlparse import urljoin
 from functools import partial
 import logging
@@ -84,15 +84,22 @@ def doc_from_io(io, subname, encoding):
     return html.parse(io, parser=get_html_parser(encoding)).getroot()
 
 def io_from_doc(doc, subname, encoding):
-    doctype = doc.getroottree().docinfo.doctype
-    io = StringIO(doctype)
+    doctype = doc.getroottree().docinfo.doctype.encode(encoding)
+    io = BytesIO()
+    io.write(doctype)
+    io.write("\n")
     io.write(html.tostring(doc, pretty_print=True, encoding=encoding))
+    io.seek(0)
     return io
 
 def string_from_doc(doc, subname, encoding):
-    doctype = doc.getroottree().docinfo.doctype
+    doctype = doc.getroottree().docinfo.doctype.encode(encoding)
+    r = []
+    if doctype != '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">':
+        r.append(doctype)
     body = html.tostring(doc, pretty_print=True, encoding=encoding)
-    return u"\n".join([doctype, body])
+    r.append(body)
+    return "\n".join(r)
 
 
 ## apply refine function(a -> (dom -*> dom) -> b)
