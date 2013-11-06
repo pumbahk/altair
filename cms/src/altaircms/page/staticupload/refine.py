@@ -9,6 +9,9 @@ logger = logging.getLogger(__name__)
 def is_html_filename(filename):
     return filename.lower().endswith((".html", ".htm"))
 
+def has_doctype(doctype):
+    return doctype != '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">'
+
 def rewrite_links_with_el(doc, link_repl_func, resolve_base_href=True,
                       base_href=None):
     if base_href is not None:
@@ -86,7 +89,8 @@ def doc_from_io(io, subname, encoding):
 def io_from_doc(doc, subname, encoding):
     doctype = doc.getroottree().docinfo.doctype.encode(encoding)
     io = BytesIO()
-    io.write(doctype)
+    if has_doctype(doctype):
+        io.write(doctype)
     io.write("\n")
     io.write(html.tostring(doc, pretty_print=True, encoding=encoding))
     io.seek(0)
@@ -95,7 +99,7 @@ def io_from_doc(doc, subname, encoding):
 def string_from_doc(doc, subname, encoding):
     doctype = doc.getroottree().docinfo.doctype.encode(encoding)
     r = []
-    if doctype != '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">':
+    if has_doctype(doctype):
         r.append(doctype)
     body = html.tostring(doc, pretty_print=True, encoding=encoding)
     r.append(body)

@@ -250,5 +250,7 @@ class DownloadIntegrationTests(unittest.TestCase):
 
             self.assertIn(u'href="css/style.css"', result)
 
+            self.assertIn(u'<!DOCTYPE', result)
+
 if __name__ == "__main__":
     unittest.main()
