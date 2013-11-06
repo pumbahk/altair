@@ -42,8 +42,6 @@ from altair.app.ticketing.views import mobile_request
 from altair.app.ticketing.fanstatic import with_jquery
 from altair.app.ticketing.payments.api import get_cart
 
-from . import _template
-
 logger = logging.getLogger(__name__)
 
 from . import MULTICHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_ID
@@ -73,14 +71,16 @@ def includeme(config):
     config.scan(__name__)
 
 def _selectable_renderer(path_fmt):
+    from . import _template
     if _template is None:
         return None
     else:
         return _template(path_fmt, type='select_by_organization', for_='payments', plugin_type='payment', plugin_id=PAYMENT_ID)
 
 def _overridable(path):
+    from . import _template
     if _template is None:
-        return 'templates/%s' % path
+        return '%s:templates/%s' % (__name__, path)
     else:
         return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_ID)
 
