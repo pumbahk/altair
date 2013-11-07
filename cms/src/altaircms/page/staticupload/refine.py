@@ -1,3 +1,4 @@
+import re
 import os
 from lxml import html
 from io import BytesIO
@@ -21,20 +22,20 @@ def get_doctype(doc, encoding):
     else:
         return None
 
-def strip_extra_tags_if_just_text(output):
+STRIP_BEGIN_RX = re.compile('^\n?<html>\n?<body>(?:\n?<p>)?')
+STRIP_END_RX = re.compile('(?:</p>\n?)?</body>\n?</html>\n?$')
+def strip_extra_tags_if_just_text(output, begin_rx=STRIP_BEGIN_RX, end_rx=STRIP_END_RX):
+    # logger.info("***{}".format(output[:20]))
+    # logger.info("***{}".format(output[-20:]))
     # hmm.
-    left = "<html><body>"
-    right = "</body></html>\n"
-    if output.startswith(left) and output.endswith(right):
-        output = output[len(left):-len(right)]
-        left = "<p>"
-        right = "</p>"
-        if output.startswith(left) and output.endswith(right):
-            return output[len(left):-len(right)]
-        else:
-            return output
-    else:
+    bm = begin_rx.search(output)
+    if not bm:
         return output
+
+    em = end_rx.search(output)
+    if not em:
+        return output
+    return output[(bm.end()-bm.start()):-(em.end()-em.start())]
 
 def rewrite_links_with_el(doc, link_repl_func, resolve_base_href=True,
                       base_href=None):

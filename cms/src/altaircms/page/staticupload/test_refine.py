@@ -223,6 +223,16 @@ hello!
             result = self._callFUT(filename, dirname, self.Utility)
             self.assertEquals(u'hello!', result)
 
+    def test_not_wrapped_tag3(self):
+        html_string = """<div><style type="text/css"></style><br><br></div>"""
+        with temporary_file(suffix=".html") as tmpname:
+            with open(tmpname, "w") as wf:
+                wf.write(html_string)
+
+            dirname, filename = os.path.split(tmpname)
+            result = self._callFUT(filename, dirname, self.Utility)
+            self.assertEquals(result.replace("\n", ""), '<div><style type="text/css"></style><br><br></div>')
+
 
 class DownloadIntegrationTests(unittest.TestCase):
     class Utility:
