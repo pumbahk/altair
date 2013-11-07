@@ -213,17 +213,13 @@ class EntryLotView(object):
 
     @view_config(request_method="POST", custom_predicates=(is_nogizaka, ))
     def nogizaka_auth(self):
-        KEYWORD = 'gA8du3dfAKdjasd0aeFdafcdERs2dkd0'
+        KEYWORD = '1AkdIcUy923eaCak7Q64kDu9ydjGe8S3'
         keyword = self.request.POST.get('keyword', None)
         if keyword or self.request.session.get('lots.passed.keyword') != KEYWORD:
             if keyword != KEYWORD:
                 raise HTTPNotFound()
             self.request.session['lots.passed.keyword'] = keyword
             return self.get()
-            #render_param = self.get()
-            #render_param.update(dict(view=self))
-            #from pyramid.renderers import render_to_response
-            #return render_to_response(selectable_renderer("pc/%(membership)s/index.html"), render_param, request=self.request)
         else:
             return self.post()
 
