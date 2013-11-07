@@ -1,10 +1,9 @@
 import os
 from lxml import html
 from urlparse import urljoin
+from . import is_html_filename
 # utility = IDirectoryResource
 
-def is_html_filename(filename):
-    return filename.lower().endswith((".html", ".htm"))
 
 ## todo: support absolute url.
 def _make_links_absolute(doc, base_url, resolve_base_href=True, convert=urljoin):

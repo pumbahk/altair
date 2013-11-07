@@ -134,7 +134,7 @@ class StaticPageDirectory(object):
         try:
             return self.create(src, io)
         except Exception as e:
-            logger.exception(e)
+            logger.exception(repr(e))
             zipupload.snapshot_rollback(src, backup_path)
             raise 
 
