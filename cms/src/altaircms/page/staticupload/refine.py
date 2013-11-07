@@ -10,7 +10,16 @@ def is_html_filename(filename):
     return filename.lower().endswith((".html", ".htm"))
 
 def has_doctype(doctype):
+    ## lxml default doctype is below stmt.
+    ## this is bad personally, but lxml always return doctype.
     return doctype != '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">'
+
+def get_doctype(doc, encoding):
+    doctype = doc.getroottree().docinfo.doctype.encode(encoding)
+    if has_doctype(doctype):
+        return doctype
+    else:
+        return ""
 
 def rewrite_links_with_el(doc, link_repl_func, resolve_base_href=True,
                       base_href=None):
@@ -87,23 +96,12 @@ def doc_from_io(io, subname, encoding):
     return html.parse(io, parser=get_html_parser(encoding)).getroot()
 
 def io_from_doc(doc, subname, encoding):
-    doctype = doc.getroottree().docinfo.doctype.encode(encoding)
-    io = BytesIO()
-    if has_doctype(doctype):
-        io.write(doctype)
-    io.write("\n")
-    io.write(html.tostring(doc, pretty_print=True, encoding=encoding))
-    io.seek(0)
-    return io
+    doctype = get_doctype(doc, encoding)
+    return BytesIO(html.tostring(doc, pretty_print=True, encoding=encoding, doctype=doctype))
 
 def string_from_doc(doc, subname, encoding):
-    doctype = doc.getroottree().docinfo.doctype.encode(encoding)
-    r = []
-    if has_doctype(doctype):
-        r.append(doctype)
-    body = html.tostring(doc, pretty_print=True, encoding=encoding)
-    r.append(body)
-    return "\n".join(r)
+    doctype = get_doctype(doc, encoding)
+    return html.tostring(doc, pretty_print=True, encoding=encoding, doctype=doctype)
 
 
 ## apply refine function(a -> (dom -*> dom) -> b)
