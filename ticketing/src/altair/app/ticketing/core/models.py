@@ -3901,3 +3901,7 @@ class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if e.v[0] == status:
                 return e.v[1]
         return u''
+
+class CooperationTypeEnum(StandardEnum):
+    augus = (0, u'オーガス')
+    gettie = (0, u'Gettie')

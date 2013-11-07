@@ -1,0 +1,12 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<div class="page-header">
+  <h3>外部連携 - ${site.name}</h3>
+</div>
+
+<%include file="/cooperation/_action_button.html" />
+<%include file="/cooperation/_update_form.html" 
+          args="form=update_form, display_modal=display_modal" />
+<%include file="/cooperation/_download_form.html" args="form=download_form" />

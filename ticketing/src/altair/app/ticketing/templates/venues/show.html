@@ -14,6 +14,10 @@
       <a class="btn" href="/venues/edit/${venue.id}">
         <i class="icon-edit"></i>編集
       </a>
+      <a class="btn"
+         href="${request.route_path('cooperation.show', venue_id=venue.id)}">
+        <i class="icon-edit"></i>連携
+      </a>
     </div>
   </span>
   <h3>${venue.name} (venue id=${venue.id})</h3>
