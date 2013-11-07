@@ -193,9 +193,7 @@ hello!
 
 
     def test_doctype_is_notfound(self):
-        html_string = """\
-hello!
-"""
+        html_string = """hello!"""
         with temporary_file(suffix=".html") as tmpname:
             with open(tmpname, "w") as wf:
                 wf.write(html_string)
@@ -203,6 +201,27 @@ hello!
             dirname, filename = os.path.split(tmpname)
             result = self._callFUT(filename, dirname, self.Utility)
             self.assertNotIn(u'<!DOCTYPE', result)
+
+
+    def test_not_wrapped_tag(self):
+        html_string = """<div>hello!</div>"""
+        with temporary_file(suffix=".html") as tmpname:
+            with open(tmpname, "w") as wf:
+                wf.write(html_string)
+
+            dirname, filename = os.path.split(tmpname)
+            result = self._callFUT(filename, dirname, self.Utility)
+            self.assertEquals(u'<div>hello!</div>', result)
+
+    def test_not_wrapped_tag2(self):
+        html_string = """hello!"""
+        with temporary_file(suffix=".html") as tmpname:
+            with open(tmpname, "w") as wf:
+                wf.write(html_string)
+
+            dirname, filename = os.path.split(tmpname)
+            result = self._callFUT(filename, dirname, self.Utility)
+            self.assertEquals(u'hello!', result)
 
 
 class DownloadIntegrationTests(unittest.TestCase):

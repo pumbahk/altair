@@ -19,7 +19,22 @@ def get_doctype(doc, encoding):
     if has_doctype(doctype):
         return doctype
     else:
-        return ""
+        return None
+
+def strip_extra_tags_if_just_text(output):
+    # hmm.
+    left = "<html><body>"
+    right = "</body></html>\n"
+    if output.startswith(left) and output.endswith(right):
+        output = output[len(left):-len(right)]
+        left = "<p>"
+        right = "</p>"
+        if output.startswith(left) and output.endswith(right):
+            return output[len(left):-len(right)]
+        else:
+            return output
+    else:
+        return output
 
 def rewrite_links_with_el(doc, link_repl_func, resolve_base_href=True,
                       base_href=None):
@@ -97,12 +112,15 @@ def doc_from_io(io, subname, encoding):
 
 def io_from_doc(doc, subname, encoding):
     doctype = get_doctype(doc, encoding)
-    return BytesIO(html.tostring(doc, pretty_print=True, encoding=encoding, doctype=doctype))
+    result = html.tostring(doc, pretty_print=True, encoding=encoding, doctype=doctype)
+    result = strip_extra_tags_if_just_text(result)
+    return BytesIO(result)
 
 def string_from_doc(doc, subname, encoding):
     doctype = get_doctype(doc, encoding)
-    return html.tostring(doc, pretty_print=True, encoding=encoding, doctype=doctype)
-
+    result = html.tostring(doc, pretty_print=True, encoding=encoding, doctype=doctype)
+    result = strip_extra_tags_if_just_text(result)
+    return result
 
 ## apply refine function(a -> (dom -*> dom) -> b)
 class HTMLFilter(object):
