@@ -22,14 +22,17 @@ class ZippedStaticFileManager(object):
         self.downloader = downloader
 
     @property
+    def normalname(self):
+        static_page = self.static_page
+        return u"{prefix}.{id}.{suffix}.zip".format(prefix=static_page.pageset.url, id=static_page.id, suffix=static_page.updated_at.strftime("%Y%m%d%H%M"))
+
+    @property
     def filename(self):
-        return self.static_page.pageset.url+".zip"
+        return self.normalname.replace("/", "-")
 
     @property
     def zippath(self):
-        static_page = self.static_page
-        filename = u"{prefix}-{name}-{suffix}.zip".format(prefix=static_page.pageset.url, name=static_page.name, suffix=static_page.updated_at.strftime("%Y%m%d%H%M"))
-        return os.path.join(self.tmpdir, filename)
+        return os.path.join(self.tmpdir, self.normalname)
 
     def exists(self, path):
         return os.path.exists(path)
