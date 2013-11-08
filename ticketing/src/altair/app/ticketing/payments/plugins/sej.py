@@ -136,7 +136,7 @@ def get_tickets_from_cart(cart, now):
                     tickets.append(ticket)
     return tickets
 
-def refresh_order(order, update_reason):
+def refresh_order(order, update_reason, api_key, api_url):
     sej_order = get_sej_order(order.order_no)
     if sej_order is None:
         raise Exception('no corresponding SejOrder found for order %s' % order.order_no)
@@ -154,7 +154,12 @@ def refresh_order(order, update_reason):
     DBSession.add(new_sej_order)
 
     try:
-        request_update_order(new_sej_order, update_reason)
+        request_update_order(
+            new_sej_order,
+            update_reason,
+            secret_key=api_key,
+            hostname=api_url
+            )
     except SejErrorBase:
         raise SejPluginFailure('refresh_order', order_no=order.order_no, back_url=None)
 
@@ -255,7 +260,18 @@ class SejPaymentPlugin(object):
     def refresh(self, request, order):
         if order.paid_at is not None:
             raise Exception('order %s is already paid' % order.order_no)
-        refresh_order(order, SejOrderUpdateReason.Change)
+
+        settings = request.registry.settings
+        tenant = SejTenant.filter_by(organization_id = order.performance.event.organization.id).first()
+        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
+        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
+
+        refresh_order(
+            order,
+            SejOrderUpdateReason.Change,
+            api_key=api_key,
+            api_url=api_url
+            )
  
 @implementer(IDeliveryPlugin)
 class SejDeliveryPlugin(object):
@@ -302,7 +318,18 @@ class SejDeliveryPlugin(object):
     def refresh(self, request, order):
         if order.delivered_at is not None:
             raise Exception('order %s is already delivered' % order.order_no)
-        refresh_order(order, SejOrderUpdateReason.Change)
+
+        settings = request.registry.settings
+        tenant = SejTenant.filter_by(organization_id = order.performance.event.organization.id).first()
+        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
+        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
+
+        refresh_order(
+            order,
+            SejOrderUpdateReason.Change,
+            api_key=api_key,
+            api_url=api_url
+            )
 
 @implementer(IDeliveryPlugin)
 class SejPaymentDeliveryPlugin(object):
@@ -349,7 +376,18 @@ class SejPaymentDeliveryPlugin(object):
     def refresh(self, request, order):
         if order.paid_at is not None or order.delivered_at is not None:
             raise Exception('order %s is already paid / delivered' % order.order_no)
-        refresh_order(order, SejOrderUpdateReason.Change)
+
+        settings = request.registry.settings
+        tenant = SejTenant.filter_by(organization_id = order.performance.event.organization.id).first()
+        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
+        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
+
+        refresh_order(
+            order,
+            SejOrderUpdateReason.Change,
+            api_key=api_key,
+            api_url=api_url
+            )
 
 
 @view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_complete.html'))
