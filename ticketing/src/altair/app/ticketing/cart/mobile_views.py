@@ -8,12 +8,12 @@ import transaction
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.renderers import render_to_response
 
 import sqlalchemy as sa
 
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
-#from altair.mobile.interfaces import IMobileRequest
 from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
 from altair.app.ticketing.models import DBSession
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -385,6 +385,7 @@ class MobileSelectProductView(object):
             self.request.session.persist()
 
         order_items = self.ordered_items
+        separate_seats = (self.request.params.get('separate_seats') == 'true')
 
         # 購入枚数の制限
         sum_quantity = 0
@@ -414,7 +415,8 @@ class MobileSelectProductView(object):
             cart = api.order_products(
                 self.request,
                 sales_segment.id,
-                order_items)
+                order_items,
+                separate_seats=separate_seats)
             cart.sales_segment = sales_segment
             if cart is None:
                 transaction.abort()
@@ -422,6 +424,15 @@ class MobileSelectProductView(object):
         except NotEnoughAdjacencyException as e:
             transaction.abort()
             logger.debug("not enough adjacency")
+
+            # バラ席でのおすすめが可能なら確認画面を挟む
+            organization = c_api.get_organization(self.request)
+            if organization.setting.entrust_separate_seats:
+                data = dict(
+                    form=schemas.CSRFSecureForm(csrf_context=self.request.session),
+                    params=dict([(k, v) for k, v in self.request.params.items() if k != 'csrf_token'])
+                )
+                return render_to_response(selectable_renderer('%(membership)s/mobile/separate_seat.html'), data, request=self.request)
             raise e
         except InvalidSeatSelectionException as e:
             # モバイルだとここにはこないかも
@@ -437,7 +448,10 @@ class MobileSelectProductView(object):
         DBSession.flush()
         api.set_cart(self.request, cart)
         # 購入確認画面へ
-        query = { 'seat_type_id': seat_type_id }
+        query = {
+            'seat_type_id': seat_type_id,
+            'separate_seats': 'true' if separate_seats else 'false'
+        }
         if isinstance(self.context, PerformanceOrientedTicketingCartResource):
             query['performance_id'] = performance_id
         else:
@@ -502,6 +516,7 @@ class MobileReserveView(object):
                     ],
                 total_amount=h.format_number(get_amount_without_pdmp(cart)),
                 ),
-            back_url=back_url
+            back_url=back_url,
+            separate_seats=(self.request.params.get('separate_seats') == 'true')
             )
         return data
