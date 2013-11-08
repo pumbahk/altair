@@ -99,7 +99,7 @@ cart.Dialog.prototype = {
                 if (!ok)
                     self.callbacks.cancel && self.callbacks.cancel.call(self);
                 self.callbacks.close && self.callbacks.close.call(self);
-                this.n.remove();
+                self.n.remove();
             }
         });
         var self = this;
