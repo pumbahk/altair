@@ -279,8 +279,8 @@ cart.showSeparateSeatOrderDialog = function showSeparateSeatOrderDialog(title, p
     dialog.body($('<div style="text-align:center"></div>').html(message));
     dialog.footer(
         $('<div>')
-            .append($('<a class="ok-button btn-buy">購入する</a>'))
             .append($('<a class="cancel-button btn-redo">座席・枚数を選びなおす</a>'))
+            .append($('<a class="ok-button btn-buy">購入する</a>'))
     );
     dialog.load();
 };

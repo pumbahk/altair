@@ -290,6 +290,12 @@ class IndexView(IndexViewMixin):
     def get_seat_types(self):
         sales_segment = self.request.context.sales_segment # XXX: matchdict から取得していることを期待
 
+        order_separate_seats_url = u''
+        organization = c_api.get_organization(self.request)
+        if organization.setting.entrust_separate_seats:
+            qs = {'separate_seats': 'true'}
+            order_separate_seats_url = self.request.route_url('cart.order', sales_segment_id=sales_segment.id, _query=qs)
+
         seat_type_dicts = get_seat_type_dicts(self.request, sales_segment)
 
         data = dict(
@@ -317,7 +323,7 @@ class IndexView(IndexViewMixin):
             performance_id=sales_segment.performance.id,
             sales_segment_id=sales_segment.id,
             order_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id),
-            order_separate_seats_url=api.get_order_separate_seats_url(self.request),
+            order_separate_seats_url=order_separate_seats_url,
             venue_name=sales_segment.performance.venue.name,
             event_id=self.request.context.event.id,
             venue_id=sales_segment.performance.venue.id,
@@ -1098,4 +1104,3 @@ def _create_performance_param(performance):
     if performance:
         param = "?performance=" + str(performance)
     return param
-
