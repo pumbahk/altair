@@ -26,7 +26,9 @@ class CacheControlTween(object):
             response.content_type.startswith("application/xhtml+xml") or \
             response.content_type.startswith("application/json")) and \
            not (response.content_type.startswith("application/javascript") or
-                response.content_type.startswith("text/css")):
+                response.content_type.startswith("text/css")) and \
+           'Cache-Control' not in response.headers and \
+           'Expires' not in response.headers:
             response.headers['Pragma'] = "no-cache"
             response.headers['Cache-Control'] = "no-cache,no-store"
             response.headers['Expires'] = formatdate(mktime(datetime.now().timetuple()), localtime=False)
