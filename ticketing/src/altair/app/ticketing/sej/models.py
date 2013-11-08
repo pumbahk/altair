@@ -211,11 +211,14 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
             .filter_by(order_no=self.order_no, branch_no=(self.branch_no + 1)) \
             .one()
 
-    def new_branch(self, payment_type=None, ticketing_due_at=None, exchange_number=None, billing_number=None, processed_at=None):
+    def new_branch(self, payment_type=None, ticketing_start_at=None, ticketing_due_at=None, exchange_number=None, billing_number=None, processed_at=None):
         if payment_type is None: 
             payment_type = int(self.payment_type)
         if ticketing_due_at is None:
             ticketing_due_at = self.ticketing_due_at
+        if ticketing_start_at is None:
+            ticketing_start_at = self.ticketing_start_at
+
         # payment_type は文字列になり得る (MySQLのENUM型をDBAPIは文字列として扱う)
         if int(payment_type) == int(SejPaymentType.Paid):
             # 再付番の際、代済に変更になるということは、必ず支払済のはずのため
@@ -259,7 +262,7 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
             cancel_reason=self.cancel_reason,
             ticketing_store_number=self.ticketing_store_number,
             ticketing_store_name=self.ticketing_store_name,
-            ticketing_start_at=self.ticketing_start_at,
+            ticketing_start_at=ticketing_start_at,
             regrant_number_due_at=self.regrant_number_due_at,
             order_at=self.order_at,
             pay_at=self.pay_at,
