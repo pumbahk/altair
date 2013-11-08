@@ -93,3 +93,21 @@ def get_user_point_account(user_id):
         user_models.UserPointAccount.user_id==user_id
     ).first()
     return acc
+
+def create_user_profile(user, data):
+    profile = user_models.UserProfile()
+
+    profile.first_name=data['first_name'],
+    profile.last_name=data['last_name'],
+    profile.first_name_kana=data['first_name_kana'],
+    profile.last_name_kana=data['last_name_kana'],
+    profile.zip=data['zip'],
+    profile.prefecture=data['prefecture'],
+    profile.city=data['city'],
+    profile.address_1=data['address_1'],
+    profile.address_2=data['address_2'],
+    profile.email_1=data['email_1'],
+    profile.tel_1=data['tel_1'],
+
+    user.user_profile = profile
+    DBSession.add(user)
