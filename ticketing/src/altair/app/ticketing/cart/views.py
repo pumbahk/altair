@@ -316,8 +316,8 @@ class IndexView(IndexViewMixin):
             performance_start=h.performance_date(sales_segment.performance),
             performance_id=sales_segment.performance.id,
             sales_segment_id=sales_segment.id,
-            order_url=self.request.route_url("cart.order", 
-                    sales_segment_id=sales_segment.id),
+            order_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id),
+            order_no_adjacency_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id, _query={'adjacency': 'false'}),
             venue_name=sales_segment.performance.venue.name,
             event_id=self.request.context.event.id,
             venue_id=sales_segment.performance.venue.id,
@@ -567,7 +567,8 @@ class ReserveView(object):
             return dict(result='NG', reason="product_limit")
 
         try:
-            cart = api.order_products(self.request, self.request.context.sales_segment.id, order_items, selected_seats=selected_seats)
+            adjacency = False if self.request.params.get('adjacency') == 'false' else True
+            cart = api.order_products(self.request, self.request.context.sales_segment.id, order_items, selected_seats=selected_seats, adjacency=adjacency)
             cart.sales_segment = self.context.sales_segment
             if cart is None:
                 transaction.abort()

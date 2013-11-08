@@ -212,7 +212,7 @@ def get_cart_factory(request):
     stocker_cls = reg.adapters.lookup([IRequest], ICartFactory, "")
     return stocker_cls(request)
 
-def order_products(request, sales_segment_id, product_requires, selected_seats=[]):
+def order_products(request, sales_segment_id, product_requires, selected_seats=[], adjacency=True):
     stocker = get_stocker(request)
     reserving = get_reserving(request)
     cart_factory = get_cart_factory(request)
@@ -234,7 +234,7 @@ def order_products(request, sales_segment_id, product_requires, selected_seats=[
             if is_quantity_only(stockstatus.stock):
                 logger.debug('stock %d quantity only' % stockstatus.stock.id)
                 continue
-            seats += reserving.reserve_seats(stockstatus.stock_id, quantity)        
+            seats += reserving.reserve_seats(stockstatus.stock_id, quantity, adjacency=adjacency)
 
     logger.debug(seats)
     cart = cart_factory.create_cart(performance_id, seats, product_requires)
