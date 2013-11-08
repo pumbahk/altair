@@ -329,3 +329,9 @@ def is_smartphone_organization(context, request):
 def is_point_input_organization(context, request):
     organization = c_api.get_organization(request)
     return organization.id == 24
+
+def get_no_adjacency_url(request):
+    organization = c_api.get_organization(request)
+    if organization.setting.entrust_separate_seats:
+        return request.route_url('cart.order', sales_segment_id=request.context.sales_segment.id, _query={'adjacency': 'false'})
+    return u''

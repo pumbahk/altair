@@ -317,7 +317,7 @@ class IndexView(IndexViewMixin):
             performance_id=sales_segment.performance.id,
             sales_segment_id=sales_segment.id,
             order_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id),
-            order_no_adjacency_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id, _query={'adjacency': 'false'}),
+            order_no_adjacency_url=api.get_no_adjacency_url(self.request),
             venue_name=sales_segment.performance.venue.name,
             event_id=self.request.context.event.id,
             venue_id=sales_segment.performance.venue.id,

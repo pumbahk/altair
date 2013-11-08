@@ -3744,6 +3744,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     point_rate = Column(Float, nullable=True)
 
     bcc_recipient = Column(Unicode(255), nullable=True)
+    entrust_separate_seats = Column(Boolean, nullable=False, default=False, doc=u"バラ席のおすすめが有効")
 
 class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "EventSetting"

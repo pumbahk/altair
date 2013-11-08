@@ -909,7 +909,7 @@ cart.OrderFormPresenter.prototype = {
                         alert(data.reason);
                     } else if (typeof japanized_message.message == "function") {
                         japanized_message.message(self, data);
-                    } else if (data.reason == 'adjacency') {
+                    } else if (data.reason == 'adjacency' && performance.get('order_no_adjacency_url')) {
                         cart.showRetryDialog(japanized_message.title, self);
                     } else {
                         cart.showErrorDialog(japanized_message.title, japanized_message.message, 'btn-redo');
