@@ -4,6 +4,9 @@ import venusian
 from beaker.cache import CacheManager, cache_regions
 from pyramid.threadlocal import get_current_request
 from pyramid.config.views import requestonly
+from zope.interface import implementer
+import transaction as zope_transaction
+from transaction.interfaces import IDataManager
 import logging
 
 from .exceptions import TooManyCartsCreated
@@ -24,6 +27,40 @@ def gen_callback(limits, setting_name):
         for k in limits.keys():
             limits[k] = int(settings.get(setting_name + '.' + k, default))
     return _
+
+@implementer(IDataManager)
+class LimitterDataManager(object):
+    def __init__(self, cache, counts, transaction_manager):
+        self.transaction_manager = transaction_manager
+        self.cache = cache
+        self.counts = counts
+
+    def abort(self, tx):
+        pass
+
+    def tpc_begin(self, tx):
+        pass
+
+    def commit(self, tx):
+        try:
+            for id_, count in self.counts:
+                self.cache.put(id_, count)
+        except exception as e:
+            import sys
+            logger.error('failed to store counter values', exc_info=sys.exc_info())
+
+    def tpc_vote(self, tx):
+        pass
+
+    def tpc_finish(self, tx):
+        pass
+
+    def tpc_abort(self, tx):
+        pass
+
+    def sortKey(self):
+        return "~~%s" % __name__
+
 
 class LimitterDecorators(object):
     venusian = venusian
@@ -58,18 +95,13 @@ class LimitterDecorators(object):
             except Exception as e:
                 import sys
                 logger.error('failed to acquire counter', exc_info=sys.exc_info())
+            zope_transaction.manager.get().join(
+                LimitterDataManager(
+                    self.cache,
+                    counts,
+                    zope_transaction.manager))
 
-            resp = func_(*args, **kwargs)
-
-            # INGRESSで例外が出なかったときのみコミットする
-            try:
-                for id_, count in counts:
-                    self.cache.put(id_, count)
-            except Exception as e:
-                import sys
-                logger.error('failed to store counter values', exc_info=sys.exc_info())
-
-            return resp
+            return func_(*args, **kwargs)
 
         info = self.venusian.attach(
             func,

@@ -290,6 +290,12 @@ class IndexView(IndexViewMixin):
     def get_seat_types(self):
         sales_segment = self.request.context.sales_segment # XXX: matchdict から取得していることを期待
 
+        order_separate_seats_url = u''
+        organization = c_api.get_organization(self.request)
+        if organization.setting.entrust_separate_seats:
+            qs = {'separate_seats': 'true'}
+            order_separate_seats_url = self.request.route_url('cart.order', sales_segment_id=sales_segment.id, _query=qs)
+
         seat_type_dicts = get_seat_type_dicts(self.request, sales_segment)
 
         data = dict(
@@ -316,8 +322,8 @@ class IndexView(IndexViewMixin):
             performance_start=h.performance_date(sales_segment.performance),
             performance_id=sales_segment.performance.id,
             sales_segment_id=sales_segment.id,
-            order_url=self.request.route_url("cart.order", 
-                    sales_segment_id=sales_segment.id),
+            order_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id),
+            order_separate_seats_url=order_separate_seats_url,
             venue_name=sales_segment.performance.venue.name,
             event_id=self.request.context.event.id,
             venue_id=sales_segment.performance.venue.id,
@@ -545,6 +551,7 @@ class ReserveView(object):
             return dict(result='NG', reason="no products")
 
         selected_seats = self.request.params.getall('selected_seat')
+        separate_seats = True if self.request.params.get('separate_seats') == 'true' else False
         logger.debug('order_items %s' % order_items)
 
         sum_quantity = 0
@@ -567,7 +574,7 @@ class ReserveView(object):
             return dict(result='NG', reason="product_limit")
 
         try:
-            cart = api.order_products(self.request, self.request.context.sales_segment.id, order_items, selected_seats=selected_seats)
+            cart = api.order_products(self.request, self.request.context.sales_segment.id, order_items, selected_seats=selected_seats, separate_seats=separate_seats)
             cart.sales_segment = self.context.sales_segment
             if cart is None:
                 transaction.abort()
@@ -605,7 +612,8 @@ class ReserveView(object):
                                              unit_template=h.build_unit_template(p.product.items),
                                         )
                                         for p in cart.products],
-                              total_amount=h.format_number(get_amount_without_pdmp(cart))
+                              total_amount=h.format_number(get_amount_without_pdmp(cart)),
+                              separate_seats=separate_seats
                              )
                     )
 
@@ -1102,4 +1110,3 @@ def _create_performance_param(performance):
     if performance:
         param = "?performance=" + str(performance)
     return param
-
