@@ -262,6 +262,16 @@ cart.showErrorDialog = function showErrorDialog(title, message, footer_button_cl
     alert(body);
 };
 
+cart.showSeparateSeatOrderDialog = function showSeparateSeatOrderDialog(title, presenter) {
+    var message = '連席でお席をご用意することができません。\n'
+                + 'それでもお席を確保したい場合は「OK」を、\n'
+                + '改めて席を選び直す場合は「キャンセル」をお選びください。';
+    body = message;
+    if (confirm(body)) {
+        presenter.onEntrustSeparateSeatPressed();
+    }
+};
+
 cart.ApplicationController = function() {
 };
 
@@ -743,7 +753,7 @@ cart.OrderFormPresenter.prototype = {
         }
         this.venuePresenter.setStockType(this.stock_type);
     },
-    onEntrustPressed: function () {
+    onEntrustPressed: function (order_url) {
         this.calculateQuantityToSelect();
         if (this.quantity_to_select == 0) {
             return this.showNoSelectProductMessage();
@@ -752,7 +762,10 @@ cart.OrderFormPresenter.prototype = {
             return this.showOverUpperLimitMessage()
         }
         this.setSeats([]);
-        this.doOrder();
+        this.doOrder(order_url);
+    },
+    onEntrustSeparateSeatPressed: function () {
+        this.onEntrustPressed(cart.app.performance.get('order_separate_seats_url'));
     },
     showNoSelectProductMessage: function(){
         cart.showErrorDialog(null, '商品を1つ以上選択してください', 'btn-close');
@@ -777,13 +790,13 @@ cart.OrderFormPresenter.prototype = {
             orderForm.append($('<input type="hidden" name="selected_seat" />').val(v.id));
         });
     },
-    doOrder: function () {
+    doOrder: function (order_url) {
         var self = this;
         var performance = cart.app.performance;
         var values = this.orderForm.serialize();
         $.ajax({
             //url: order_url, //this is global variable
-            url: performance.get('order_url'),
+            url: order_url || performance.get('order_url'),
             dataType: 'json',
             data: values,
             type: 'POST',
@@ -795,9 +808,10 @@ cart.OrderFormPresenter.prototype = {
                     var japanized_message = cart.order_messages[data.reason];
                     if(!japanized_message){
                         alert(data.reason);
-                    }
-                    else if (typeof japanized_message.message == "function"){
+                    } else if (typeof japanized_message.message == "function"){
                         japanized_message.message(self, data);
+                    } else if (data.reason == 'adjacency' && performance.get('order_separate_seats_url')) {
+                        cart.showSeparateSeatOrderDialog(japanized_message.title, self);
                     } else {
                         cart.showErrorDialog(japanized_message.title, japanized_message.message, 'btn-redo');
                     }
