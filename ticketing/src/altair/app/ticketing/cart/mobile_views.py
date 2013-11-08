@@ -30,6 +30,7 @@ from .exceptions import (
     NoSalesSegment,
     InvalidCSRFTokenException, 
     OverQuantityLimitError, 
+    OverProductQuantityLimitError,
     ZeroQuantityError, 
     CartCreationException,
     TooManyCartsCreated,
@@ -94,7 +95,7 @@ class MobileIndexView(IndexViewMixin):
                     sales_segment_id=sales_segment.id))
 
 
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.context.event.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
         key_to_formatted_sales_segments_map = performance_selector()
 
@@ -143,7 +144,7 @@ class MobileIndexView(IndexViewMixin):
                     sales_segment_id=sales_segment.id))
 
 
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.context.event.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
         key_to_formatted_sales_segments_map = performance_selector()
 
@@ -165,7 +166,7 @@ class MobileSelectSeatTypeView(object):
 
     @view_config(route_name='cart.seat_types')
     def seat_type(self):
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.context.event.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
 
         try:
@@ -207,7 +208,7 @@ class MobileSelectSeatTypeView(object):
 
     @view_config(route_name='cart.seat_types2')
     def seat_type2(self):
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.context.event.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
 
         try:
@@ -354,7 +355,7 @@ class MobileSelectProductView(object):
         if old_cart:
             limitter._release(self.request)
             # !!! ここでトランザクションをコミットする !!!
-            old_cart.release()
+            api.release_cart(self.request, old_cart)
             api.remove_cart(self.request)
             transaction.commit()
             c_api.refresh_organization(self.request)
@@ -389,9 +390,21 @@ class MobileSelectProductView(object):
         sum_quantity = 0
         for product, quantity in order_items:
             sum_quantity += quantity * product.get_quantity_power(product.seat_stock_type, product.performance_id)
-        logger.debug('sum_quantity=%s' % sum_quantity)
+        sum_product_quantity = sum(quantity for _, quantity in order_items)
+
+        logger.debug('sum_quantity=%d, sum_product_quantity=%d' % (sum_quantity, sum_product_quantity))
+
+        if sales_segment.product_limit:
+            for product, quantity in order_items:
+                if quantity > sales_segment.product_limit:
+                    raise OverProductQuantityLimitError(sales_segment.product_limit)
         if sum_quantity > sales_segment.upper_limit:
             raise OverQuantityLimitError(sales_segment.upper_limit)
+
+        if sales_segment.product_limit is not None and \
+           sales_segment.product_limit < sum_product_quantity:
+            logger.debug('product_limit over')
+            raise OverProductQuantityLimitError(sales_segment.product_limit)
 
         if sum_quantity == 0:
             raise ZeroQuantityError

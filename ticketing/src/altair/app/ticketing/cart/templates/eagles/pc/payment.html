@@ -27,13 +27,14 @@ ${self.widget.flow_widget(2)}
           <table>
             <tr>
               <% checked = 'checked' if str(m.id) == checked_id else '' %>
-              <td class="settlementPayRadio">
+              <td class="settlementPayRadio"${' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n}>
                 <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" autocomplete="off" ${checked} />
               </td>
               <td onclick="$(this).parents('tr').find('input').click();">
                 <dl>
                   <dt>${m.payment_method.name}</dt>
                   <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                    <span class="paymentFeeLabel">手数料</span>
                     <span class="paymentFee">${h.format_currency(m.transaction_fee)}</span>
                     <span class="paymentFeeType">(${h.fee_type(m.payment_method.fee_type)})</span>
                     <div class="description">${m.payment_method.description or '' | n}</div>
@@ -44,12 +45,44 @@ ${self.widget.flow_widget(2)}
                 <dl>
                   <dt>${m.delivery_method.name}</dt>
                   <dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
+                    <span class="deliveryFeeLabel">手数料</span>
                     <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
                     <span class="deliveryFeeType">(${h.fee_type(m.delivery_method.fee_type)})</span>
                     <div class="description">${m.delivery_method.description or '' | n}</div>
                   </dd>
-              </dl></td>
+                </dl>
+              </td>
             </tr>
+            % if m.system_fee > 0 or m.special_fee > 0:
+            <tr>
+              <td colspan="2">
+                <dl class="fullwidth">
+                  <dt>上記以外の利用料・手数料</dt>
+                  <dd>
+                    <dl>
+                      %if m.system_fee > 0:
+                      <dt>システム利用料</dt>
+                      <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                        <span class="paymentFee">${h.format_currency(m.system_fee)}</span>
+                        <span class="paymentFeeType">(${h.fee_type(m.system_fee_type)})</span>
+                      </dd>
+                      %endif
+                      %if m.special_fee > 0:
+                      <dt>${m.special_fee_name}</dt>
+                      <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                        <span class="paymentFee">${h.format_currency(m.special_fee)}</span>
+                        <span class="paymentFeeType">(${h.fee_type(m.special_fee_type)})</span>
+                      </dd>
+                      %endif
+                    </dl>
+                    <div class="description">
+                      上記の利用料・手数料がかかります。
+                    </div>
+                  </dd>
+                </dl>
+              </td>
+            </tr>
+            % endif
           </table>
         </div>
       </div>
@@ -172,20 +205,6 @@ ${self.widget.flow_widget(2)}
                    !--   ${form['fax']}
                    !--   ${h.error_list(request, form, 'fax')}
                    !-- </li> -->
-            </ul>
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">楽天スーパーポイント口座(半角数字)</th>
-          <td>
-            <ul>
-              <li>${form['point'].label}
-                ${form['point']}(例: 1111222233334444)ハイフン無し
-                ${h.error_list(request, form, 'point')}
-              </li>
-              <li>
-                  楽天ポイント口座を確認するには、<a href="https://point.rakuten.co.jp/PointAccount/PointAccountLogin/" target=”_blank”>こちら</a>
-              </li>
             </ul>
           </td>
         </tr>

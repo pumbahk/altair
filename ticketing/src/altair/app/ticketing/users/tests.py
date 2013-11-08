@@ -3,8 +3,12 @@ from pyramid import testing
 from ..testing import _setup_db, _teardown_db, DummyRequest
 
 class UserApiTest(unittest.TestCase):
+    _settings = {'altair.mobile.asid': 'test',
+                'altair.smartphone.asid': 'test',
+                }
+        
     def setUp(self):
-        self.config = testing.setUp()
+        self.config = testing.setUp(settings=self._settings)
         self.config.include('altair.app.ticketing.cart')
         self.session = _setup_db(['altair.app.ticketing.core.models', 'altair.app.ticketing.users.models'])
 

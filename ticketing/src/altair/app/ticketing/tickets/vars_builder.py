@@ -397,6 +397,7 @@ class TicketDictBuilder(object):
             return retval
         return {
             u'order': {
+                u'id': order.id, #hmm.(using svg_builder.SVGBuilder)
                 u'total_amount': order.total_amount,
                 u'system_fee': order.system_fee,
                 u'transaction_fee': order.transaction_fee,

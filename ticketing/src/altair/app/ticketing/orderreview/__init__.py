@@ -30,6 +30,7 @@ def main(global_config, **local_config):
     config.add_static_view('img', 'altair.app.ticketing.cart:static', cache_max_age=3600)
 
     ### include altair.*
+    config.include('altair.sqlahelper')
     config.include('altair.exclog')
     config.include('altair.browserid')
 
@@ -54,7 +55,7 @@ def main(global_config, **local_config):
     config.include(".plugin_override")
     config.include('altair.mobile')
 
-    config.include(import_selectable_renderer)
+    config.include('altair.app.ticketing.cart.selectable_renderer')
     config.include(import_view)
     config.include(import_exc_view)
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
@@ -62,13 +63,6 @@ def main(global_config, **local_config):
     config.scan(".views")
     
     return config.make_wsgi_app()
-
-def import_selectable_renderer(config):
-    ### selectable renderer
-    from pyramid.interfaces import IDict
-    config.include('altair.app.ticketing.cart.selectable_renderer')
-    domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
-    config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
 
 def import_view(config):
     ## reivew

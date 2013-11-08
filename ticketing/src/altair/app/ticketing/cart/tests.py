@@ -18,8 +18,12 @@ def _setup_db(echo=False):
         )
 
 class TestIt(unittest.TestCase):
+    _settings = {'altair.mobile.asid': 'test',
+                 'altair.smartphone.asid': 'test',
+                 }
+    
     def setUp(self):
-        self.config = testing.setUp()
+        self.config = testing.setUp(settings=self._settings)
         self.config.include('altair.app.ticketing.cart')
         self.session = _setup_db()
 
@@ -303,8 +307,11 @@ class CartedProductItemTests(unittest.TestCase):
 
 
 class TicketingCartResourceTestBase(object):
+    _settings = {'altair.mobile.asid': 'test',
+                 'altair.smartphone.asid': 'test',
+                 }        
     def setUp(self):
-        self.config = testing.setUp()
+        self.config = testing.setUp(settings=self._settings)
         self.config.include('altair.app.ticketing.cart')
         self.config.registry.settings['altair_cart.expire_time'] = '10'
         self.session = _setup_db()

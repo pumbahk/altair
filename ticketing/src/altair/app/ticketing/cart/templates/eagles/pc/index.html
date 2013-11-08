@@ -69,6 +69,18 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true);
     </div>
   </div>
 </%block>
+    <%
+        from altair.mobile import PC_ACCESS_COOKIE_NAME
+        link = request.route_url('cart.switchsp', event_id=event['id'])
+        if performance:
+            link = request.route_url('cart.switchsp.perf', event_id=event['id'], performance=performance)
+    %>
+    % if request.cookies.get(PC_ACCESS_COOKIE_NAME):
+        <a href="${link}">
+          <button class="switch_pc">スマホサイトで購入する</button>
+        </a>
+    % endif
+
     ${self.widget.flow_widget(1)}
     <h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
     % if preferred_performance:
@@ -197,7 +209,9 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true);
                       <p>3. 購入方法をお選びください。</p>
                       <p>4. [座席を選んで購入] の場合、右側 (この欄) に会場図が表示されます。選択した席種名の横に記載されたブロックを選択してください。</p>
                       <p>5. ご希望席を選択/解除してください。</p>
-                      <p>※席種・ブロックを選び直す際は、「キャンセル」ボタンを押してください。</p>
+                      <p>※色のついている座席が選択可能です。<br/>
+                         ※左上のスケールを使って拡大縮小できます。<br/>
+                         ※席種・ブロックを選び直す際は、「キャンセル」ボタンを押してください。</p>
                     </div>
                   </div>
                   <div class="guidance without-venue" style="display: none;">

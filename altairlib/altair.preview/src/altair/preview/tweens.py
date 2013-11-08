@@ -4,6 +4,7 @@ from .interfaces import IPreviewPermission
 from .interfaces import IPreviewRedirect
 from .api import FORCE_REQUEST_TYPE
 from .api import get_force_request_type
+from .api import set_preview_request_condition
 from altair.mobile.interfaces import IMobileRequest
 from altair.mobile.interfaces import ISmartphoneRequest
 from altair.mobile.tweens import make_mobile_request
@@ -36,7 +37,8 @@ def preview_tween(handler, registry):
         ## usually, user-access-request cannot preview.
         if not checking.can_preview(request):
             return handler(request)
-
+            
+        set_preview_request_condition(request, True)
 
         req_type = get_force_request_type(request)
         if req_type == FORCE_REQUEST_TYPE.mobile and not IMobileRequest.providedBy(request):

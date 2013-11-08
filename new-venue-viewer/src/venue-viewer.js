@@ -7,45 +7,25 @@
   var seat = require('seat.js');
   var util = require('util.js');
 
-  var StoreObject = _class("StoreObject", {
-    props: {
-      store: {}
-    },
-    methods: {
-      save: function(id, data) {
-        if (!this.store[id]) this.store[id] = data;
-      },
-      restore: function(id) {
-        var rt = this.store[id];
-        delete this.store[id];
-        return rt;
-      },
-      clear: function() {
-        for (var id in this.store) {
-          delete this.store[id];
-        }
-      }
-    }
-  });
-
   var VenueViewer = _class("VenueViewer", {
 
     props: {
       canvas: null,
       callbacks: {
-        uimodeselect: null,
-        load: null,
-        loadPartStart: null,
-        loadPartEnd: null,
-        loadAbort: null,
-        click: null,
-        selectable: null,
-        select: null,
-        pageChanging: null,
-        message: null,
-        messageBoard: null,
-        zoomRatioChanging: null,
-        zoomRatioChange: null
+        uimodeselect: function () {},
+        load: function () {},
+        loadPartStart: function () {},
+        loadPartEnd: function () {},
+        loadAbort: function () {},
+        click: function () {},
+        selectable: function () {},
+        select: function () {},
+        pageChanging: function () {},
+        message: function () {},
+        messageBoard: function () {},
+        zoomRatioChanging: function () {},
+        zoomRatioChange: function () {},
+        queryAdjacency: null
       },
       dataSource: null,
       zoomRatio: CONF.DEFAULT.ZOOM_RATIO,
@@ -53,9 +33,7 @@
       dragging: false,
       startPos: { x: 0, y: 0 },
       drawable: null,
-      availableAdjacencies: [ 1 ],
-      originalStyles: new StoreObject(),
-      overlayShapes: new StoreObject(),
+      overlayShapes: {},
       shift: false,
       keyEvents: null,
       uiMode: 'select',
@@ -90,9 +68,9 @@
       init: function VenueViewer_init(canvas, options) {
         this.canvas = canvas;
         this.stockTypes = null;
-        if (options.callbacks) {
-          for (var k in this.callbacks)
-            this.callbacks[k] = options.callbacks[k] || function () {};
+        for (var k in this.callbacks) {
+          if (options.callbacks[k])
+            this.callbacks[k] = options.callbacks[k];
         }
         this.dataSource = options.dataSource;
         if (options.zoomRatio) zoom(options.zoomRatio);
@@ -125,7 +103,6 @@
 
       load: function VenueViewer_load() {
         this.loading = true;
-        this.seatAdjacencies = null;
         var self = this;
 
         self.callbacks.loadPartStart.call(self, self, 'pages');
@@ -163,14 +140,6 @@
               }
               self.loading = true;
               self.callbacks.loadPartEnd.call(self, self, 'info');
-              if (!'available_adjacencies' in data) {
-                self.callbacks.message.call(self, "Invalid data");
-                self.loading = false;
-                return;
-              }
-              self.availableAdjacencies = data.available_adjacencies;
-              self.seatAdjacencies = new seat.SeatAdjacencies(self);
-
               if (self.currentPage) {
                 self.loadDrawing(self.currentPage, function () {
                   self.callbacks.load.call(self, self);
@@ -224,7 +193,6 @@
           self.seats = null;
           self.selection = null;
           self.highlighted = null;
-          self.availableAdjacencies = [1];
           self.shapes = null;
           self.small_texts = [ ];
           self.link_pairs = null;
@@ -250,8 +218,7 @@
         if (this.drawable)
           this.drawable.dispose();
 
-        this.originalStyles.clear();
-        this.overlayShapes.clear();
+        this.overlayShapes = {};
 
         this.currentPage = page;
 
@@ -550,11 +517,14 @@
                 mouseover: function(evt) {
                   if (self.pages) {
                     for (var i = siblings.length; --i >= 0;) {
-                      var shape = copyShape(siblings[i]);
-                      if (shape) {
-                        shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
-                        self.drawable.draw(shape);
-                        self.overlayShapes.save(siblings[i].id, shape);
+                      var id = siblings[i].id;
+                      if (self.overlayShapes[id] === void(0)) {
+                        var overlayShape = copyShape(siblings[i]);
+                        if (overlayShape) {
+                          overlayShape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
+                          self.drawable.draw(overlayShape);
+                          self.overlayShapes[id] = overlayShape;
+                        }
                       }
                     }
                     var pageAndAnchor = link.split('#');
@@ -566,25 +536,16 @@
                   }
                 },
                 mouseout: function(evt) {
-                  if (self.pages) {
-                    self.canvas.css({ cursor: 'default' });
-                    for (var i = siblings.length; --i >= 0;) {
-                      var shape = self.overlayShapes.restore(siblings[i].id);
-                      if (shape)
-                        self.drawable.erase(shape);
+                  self.canvas.css({ cursor: 'default' });
+                  for (var i = siblings.length; --i >= 0;) {
+                    var id = siblings[i].id;
+                    var overlayShape = self.overlayShapes[id];
+                    if (overlayShape !== void(0)) {
+                      self.drawable.erase(overlayShape);
+                      delete self.overlayShapes[id];
                     }
-                    self.callbacks.messageBoard.down.call(self);
                   }
-                },
-                mousedown: function(evt) {
-/*
-                  if (self.pages) {
-                    self.nextSingleClickAction = function() {
-                      self.callbacks.messageBoard.down.call(self);
-                      self.navigate(link);
-                    };
-                  }
-*/
+                  self.callbacks.messageBoard.down.call(self);
                 },
                 mouseup: function(evt) {
                   if (self.pages) {
@@ -859,7 +820,7 @@
             var seat_ = seats[id] = new seat.Seat(id, seatMeta[id], self, {
               mouseover: function(evt) {
                 self.callbacks.messageBoard.up.call(self, self.seatTitles[this.id]);
-                self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
+                self.queryAdjacency(this.id, self.adjacencyLength(), function (candidates) {
                   if (candidates.length == 0)
                     return;
                   var candidate = null;
@@ -892,12 +853,14 @@
               },
               mousedown: function(evt) {
                 self.nextSingleClickAction = function () {
-                  self.callbacks.click(self, self, self.highlighted);
+                  self.callbacks.click.call(self, self, self.highlighted);
                 };
               }
             });
           }
 
+          for (var id in self.seats)
+            self.seats[id].detach();
           self.seats = seats;
           self.pagesCoveredBySeatData = 'all-in-one'; // XXX
           next.call(self);
@@ -939,7 +902,7 @@
           }
         }
         this.uiMode = type;
-        this.callbacks.uimodeselect(this, type);
+        this.callbacks.uimodeselect.call(this, this, type);
       },
 
       zoom: function(ratio, anchor) {
@@ -983,7 +946,7 @@
           return;
         var previousRatio = this.zoomRatio;
         if (this.callbacks.zoomRatioChanging) {
-          var corrected = this.callbacks.zoomRatioChanging(ratio);
+          var corrected = this.callbacks.zoomRatioChanging.call(this, ratio);
           if (corrected === false)
             return;
           if (corrected)
@@ -991,7 +954,7 @@
         }
         if (!this.drawable) {
           this.zoomRatio = ratio;
-          this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
+          this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange.call(this, ratio);
           return;
         }
         this.drawable.transform(Fashion.Matrix.scale(ratio)
@@ -1000,7 +963,7 @@
 
         this.drawable.scrollPosition(scrollPos);
         this.zoomRatio = ratio;
-        this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
+        this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange.call(this, ratio);
       },
 
       unselectAll: function VenueViewer_unselectAll() {
@@ -1087,6 +1050,12 @@
             this.small_texts[i].visibility(false);
           this._smallTextsShown = false;
         }
+      },
+
+      queryAdjacency: function VenueViewer_queryAdjacency(id, adjacency, success, failure) {
+        if (this.callbacks.queryAdjacency)
+          return this.callbacks.queryAdjacency(id, adjacency, success, failure);
+        success([[id]]);
       }
     }
   });
@@ -1147,7 +1116,6 @@
             [ 'seats', 'seats' ],
             [ 'areas', 'areas' ],
             [ 'info', 'info' ],
-            [ 'seatAdjacencies', 'seat_adjacencies' ],
             [ 'pages', 'pages' ]
           ],
           function(n, k) {

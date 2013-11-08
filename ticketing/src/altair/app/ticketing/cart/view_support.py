@@ -109,6 +109,9 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
         product_dicts = []
         for product in products_for_stock_type[stock_type.id].itervalues():
             quantity_power = sum([product_item.quantity for product_item in product_items_for_product[product.id] if stock_for_product_item[product_item.id].stock_type_id == product.seat_stock_type_id])
+            upper_limit = min(sales_segment.upper_limit / quantity_power, availability_per_product_map[product.id])
+            product_limit = sales_segment.product_limit
+            limit = upper_limit if product_limit is None else min(upper_limit, product_limit)
             product_dicts.append(
                 dict(
                     id=product.id,
@@ -118,7 +121,9 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     detail=h.product_name_with_unit(product_items_for_product[product.id]),
                     unit_template=h.build_unit_template(product_items_for_product[product.id]),
                     quantity_power=quantity_power,
-                    upper_limit=min(sales_segment.upper_limit / quantity_power, availability_per_product_map[product.id])
+                    upper_limit=upper_limit,
+                    product_limit=product_limit,
+                    limit=limit
                     )
                 )
         retval.append(dict(

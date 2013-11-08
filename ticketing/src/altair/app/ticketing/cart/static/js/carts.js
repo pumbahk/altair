@@ -65,6 +65,12 @@ cart.order_messages = {
             return order_form_presenter.showOverUpperLimitMessage();
         }
     },
+    'product_limit': {
+        title: '購入数上限を超えて購入しようとしています', 
+        message: function(order_form_presenter){
+            return order_form_presenter.showOverProductLimitMessage();
+        }
+    },
     'too many carts': {
         title: '購入エラー',
         message: '誠に申し訳ございませんが、現在ご購入手続を進めることができない状況となっております。しばらく経ってから再度お試しください。'
@@ -79,27 +85,35 @@ cart.Dialog.prototype = {
     initialize: function (n, callbacks) {
         this.n = n.clone();
         this.callbacks = callbacks;
+        this.ok = false;
         n.parent().append(this.n);
         this.n.overlay({
             mask: !$.browser.msie || parseInt($.browser.version) >= 8 ? {
                 color: "#999",
                 opacity: 0.5
             }: null,
-            closeOnClick: false
+            closeOnClick: false,
+            onClose: function () {
+                var ok = self.ok;
+                self.ok = false;
+                if (!ok)
+                    self.callbacks.cancel && self.callbacks.cancel.call(self);
+                self.callbacks.close && self.callbacks.close.call(self);
+                self.n.remove();
+            }
         });
         var self = this;
         this.n.on('click', '.cancel-button', function() {
-            callbacks.cancel.call(self);
+            self.n.overlay().close(); 
         });
         this.n.on('click', '.ok-button', function() {
+            self.ok = true;
             callbacks.ok.call(self);
         });
     },
 
     close: function () {
         this.n.overlay().close();
-        this.callbacks.close && this.callbacks.close();
-        this.n.remove();
     },
 
     load: function () {
@@ -245,7 +259,7 @@ cart.ApplicationController.prototype.init = function(salesSegmentsSelection, sel
     this.performance = new cart.Performance({
     });
     this.venue = new cart.Venue({
-            data_source: null
+        data_source: null
     });
     // 絞込み
     this.performanceSearchPresenter = new cart.PerformanceSearchPresenter({
@@ -409,6 +423,22 @@ cart.VenuePresenter.prototype = {
             click: function () { self.click.apply(self, arguments); },
             error: function (err) {
                 alert(err);
+            },
+            queryAdjacency: function (id, adjacency, success, failure) {
+                var candidates = null;
+                if (self.seatGroups) {
+                    var seatGroupId = self.seatIdToSeatGroup[id];
+                    if (seatGroupId !== void(0)) {
+                        var seatGroup = self.seatGroups[seatGroupId];
+                        if (seatGroup['seats'].length <= adjacency)
+                            candidates = [seatGroup['seats']];
+                        else
+                            candidates = [];
+                    }
+                }
+                if (candidates === null)
+                    candidates = [[id]];
+                success(candidates);
             }
         };
         this.view = new this.viewType({
@@ -417,13 +447,15 @@ cart.VenuePresenter.prototype = {
         this.performance.on("change",
             function() {self.onPerformanceChanged();});
         this.selectedStockType = null;
+        this.seatGroups = {};
+        this.seatIdToSeatGroup = {};
     },
     onPerformanceChanged: function() {
         if (!this.view.readOnly) {
             this.setStockType(null);
             this.view.reset();
         }
-        var dataSource = this.performance.createDataSource();
+        var dataSource = this.performance.createDataSource(this);
         this.view.updateVenueViewer(dataSource, this.callbacks);
     },
     onCancelPressed: function () {
@@ -447,12 +479,26 @@ cart.VenuePresenter.prototype = {
         this.selectedStockType = stock_type;
         var self = this;
         if (this.selectedStockType) {
-          self.stockTypeListPresenter.setActivePane('venue');
-          this.view.currentViewer.venueviewer('loadSeats', function() {
-            self.view.render();
-          });
+            self.stockTypeListPresenter.setActivePane('venue');
+            if (self.view.currentDataSource._reset !== void(0))
+                self.view.currentDataSource._reset();
+            this.view.currentViewer.venueviewer('loadSeats', function() {
+                self.view.setAdjacency(self.orderFormPresenter.quantity_to_select);
+                self.view.render();
+                self.view.currentDataSource.seatGroups(function (data) {
+                    self.seatGroups = data;
+                    var seatIdToSeatGroup = {};
+                    for (var k in data) {
+                        var seatGroup = data[k];
+                        var seats = seatGroup['seats'];
+                        for (var i = seats.length; --i >= 0; )
+                            seatIdToSeatGroup[seats[i]] = k;
+                    }
+                    self.seatIdToSeatGroup = seatIdToSeatGroup;
+                });
+            });
         } else {
-          self.stockTypeListPresenter.setActivePane('stockTypeList');
+            self.stockTypeListPresenter.setActivePane('stockTypeList');
         }
     },
     selectable: function (viewer, seat) {
@@ -464,15 +510,28 @@ cart.VenuePresenter.prototype = {
         return isValidStockType && isVacant && seat.meta.is_hold;
     },
 
-    click: function (viewer, seat, highlighted) {
+    click: function (viewer, highlighted) {
         // クリック位置から、座席選択をする
         var self = this;
+        var seatsToSelect = {};
         $.each(highlighted, function (id, seat) {
+            var seatGroupId = self.seatIdToSeatGroup[id];
+            var seatsInGroup = [id];
+            if (seatGroupId !== void(0))
+                seatsInGroup = self.seatGroups[seatGroupId]['seats'];
+            for (var i = seatsInGroup.length; --i >= 0; )
+                seatsToSelect[seatsInGroup[i]] = true;
+        });
+
+        for (var id in seatsToSelect)
+            seatsToSelect[id] = viewer.seats[id];
+
+        $.each(seatsToSelect, function (id, seat) {
             if (seat.selected()) {
                 seat.selected(false);
             } else {
-                var selectable = viewer.selectionCount < self.orderFormPresenter.quantity_to_select;
-                seat.selected(selectable);
+                if (viewer.selectionCount < self.orderFormPresenter.quantity_to_select)
+                    seat.selected(true);
             }
         });
     }
@@ -575,8 +634,62 @@ cart.PerformanceSearch = Backbone.Model.extend({
 });
 
 cart.Performance = Backbone.Model.extend({
-    createDataSource: function() {
-        return createDataSource(this.attributes);
+    createDataSource: function(venuePresenter) {
+        var params = this.attributes;
+        var factory_i = newMetadataLoaderFactory(params['data_source']['info']);
+        var factory_s = newMetadataLoaderFactory(function () { return venuePresenter.selectedStockType.get('seats_url') });
+        var drawingCache = {};
+        return {
+            drawing: function (page) {
+                return function (next, error) {
+                    var data = drawingCache[page];
+                    if (data) {
+                        next(data);
+                        return;
+                    }
+                    $.ajax({
+                        url: params['data_source']['venue_drawings'][page],
+                        dataType: 'xml',
+                        headers: {
+                            'X-Dummy': true
+                        },
+                        success: function (data) {
+                            drawingCache[page] = data;
+                            next(data);
+                        },
+                        error: function (xhr, text, status) {
+                            error("Failed to load drawing data (" + text + " - " + status + ")");
+                        }
+                    });
+                }
+            },
+            stockTypes: function (next, error) {
+                var stock_types = {};
+                for (var i = params.seat_types.length; --i >= 0;)
+                    stock_types[params.seat_types[i].id] = params.seat_types[i];
+                next(stock_types);
+            },
+            info: factory_i.create(function (data) { return data['info']; }),
+            seats: factory_s.create(function (data) { return data['seats']; }),
+            areas: factory_i.create(function (data) { return data['areas']; }),
+            seatGroups: factory_s.create(function (data) { return data['seat_groups'] }),
+            seatAdjacencies: function (next, error, length) {
+                var _params = $.extend(params, { length_or_range: length });
+                $.ajax({
+                    url: util.build_route_path(params.data_source.seat_adjacencies._params),
+                    dataType: 'json',
+                    success: function (data) { next(data); },
+                    error: function (xhr, text) {
+                        error("Failed to load adjacency data (" + text + ")");
+                    }
+                });
+            },
+            pages: factory_i.create(function (data) { return data['pages']; }),
+            _reset: function () {
+                factory_i.reset();
+                factory_s.reset();
+            }
+        };
     }
 });
 
@@ -668,6 +781,7 @@ cart.OrderFormPresenter.prototype = {
         this.stock_type = null;
         this.products = null;
         this.quantity_to_select = null;
+        this.product_quantity_to_select = null;
         this.orderForm = $('#selectSeatType form');
     },
     hideOrderForm: function() {
@@ -679,23 +793,29 @@ cart.OrderFormPresenter.prototype = {
     showOrderForm: function(selected_stock_type_el, stock_type, products) {
         this.stock_type = stock_type;
         this.products = products;
-        var upper_limit = 0;
+        var upper_limit = 0, product_limit = null;
         this.products.each(function(product) {
             var ul = product.get('upper_limit') * product.get('quantity_power');
+            var pl = product.get('product_limit');
             upper_limit = (ul > upper_limit ? ul : upper_limit);
+            product_limit = ((pl !== null && (product_limit === null || pl > product_limit)) ? pl: product_limit);
         })
         this.upper_limit = upper_limit;
+        this.product_limit = product_limit;
         this.view.showForm(selected_stock_type_el, stock_type, products);
     },
     calculateQuantityToSelect: function () {
         var quantity_to_select = 0;
+        var product_quantity_to_select = 0;
         var selection = this.view.getChoices();
         for (var product_id in selection) {
             var multiple = selection[product_id];
             var product = this.products.get(product_id);
             quantity_to_select += product.get('quantity_power') * multiple;
+            product_quantity_to_select += multiple;
         }
         this.quantity_to_select = quantity_to_select;
+        this.product_quantity_to_select = product_quantity_to_select;
     },
     onSelectSeatPressed: function () {
         this.calculateQuantityToSelect();
@@ -704,6 +824,9 @@ cart.OrderFormPresenter.prototype = {
         }
         if (this.upper_limit < this.quantity_to_select) {
             return this.showOverUpperLimitMessage();
+        }
+        if (this.product_limit !== null && this.product_limit < this.product_quantity_to_select) {
+            return this.showOverProductLimitMessage();
         }
         this.venuePresenter.setStockType(this.stock_type);
     },
@@ -724,6 +847,10 @@ cart.OrderFormPresenter.prototype = {
     }, 
     showOverUpperLimitMessage: function(){
         cart.showErrorDialog(null, '枚数は合計' + this.upper_limit + '枚以内で選択してください', 'btn-close');
+        return;
+    }, 
+    showOverProductLimitMessage: function(){
+        cart.showErrorDialog(null, '商品個数は合計' + this.product_limit + '個以内にしてください', 'btn-close');
         return;
     }, 
     onBuyPressed: function () {
@@ -882,13 +1009,15 @@ cart.OrderFormView = Backbone.View.extend({
     },
     buildProduct: function(product) {
         var upper_limit = product.get('upper_limit');
+        var product_limit = product.get('product_limit');
+        var limit = product_limit !== null && product_limit < upper_limit ? product_limit: upper_limit;
         var name = $('<span class="productName"></span>');
         name.text(product.get("name"));
         var payment = $('<span class="productPrice"></span>');
         payment.text('￥' + product.get("price"));
         var quantity = $('<span class="productQuantity"></span>');
         var pullDown = $('<select />').attr('name', 'product-' + product.id);
-        for (var i = 0; i < upper_limit+1; i++) {
+        for (var i = 0; i < limit + 1; i++) {
             $('<option></option>').text(i).val(i).appendTo(pullDown);
         }
         var descriptionText = product.get('description');
@@ -945,6 +1074,7 @@ cart.VenueView = Backbone.View.extend({
         this.zoomRatioMin = 1;
         this.zoomRatioMax = 2.5;
         this.updateQueue = [];
+        this.currentDataSource = null;
 
         var self = this;
         $('#selectSeat .btn-select-seat').click(function () {
@@ -981,6 +1111,9 @@ cart.VenueView = Backbone.View.extend({
                 'position': 'absolute'
             })
             .appendTo(document.body);
+    },
+    setAdjacency: function (adjacency) {
+        this.currentViewer.venueviewer('adjacency', adjacency);
     },
     getChoices: function () {
         var selection = this.currentViewer.venueviewer('selection');
@@ -1169,6 +1302,7 @@ cart.VenueView = Backbone.View.extend({
             viewportSize: { x: 490, y: 430 },
             deferSeatLoading: true
         });
+        this.currentDataSource = dataSource;
         this.currentViewer.venueviewer("load");
     },
     updateUIState: function () {
@@ -1253,9 +1387,9 @@ cart.Venue = Backbone.Model.extend({
               stock_types[params.seat_types[i].id] = params.seat_types[i];
             next(stock_types);
           },
-          info: factory(function (data) { return data['info']; }),
-          seats: factory(function (data) { return data['seats']; }),
-          areas: factory(function (data) { return data['areas']; }),
+          info: factory.create(function (data) { return data['info']; }),
+          seats: factory.create(function (data) { return data['seats']; }),
+          areas: factory.create(function (data) { return data['areas']; }),
           seatAdjacencies: function (next, error, length) {
             var _params = $.extend(params, { length_or_range: length });
             $.ajax({
@@ -1282,88 +1416,48 @@ cart.Venue = Backbone.Model.extend({
 
 
 function newMetadataLoaderFactory(url) {
-  var conts = [], allData = null, first = true;
-  return function createMetadataLoader(fetch) {
-    return function metadataLoader(next, error) {
-      conts.push({ fetch: fetch, next: next, error: error });
-      if (first) {
-        $.ajax({
-          url: url,
-          dataType: 'json',
-          success: function(data) {
-            allData = data;
-            var _conts = conts;
-            conts = [];
-            for (var i = 0; i < _conts.length; i++)
-              _conts[i].next(_conts[i].fetch(data));
-          },
-          error: function(xhr, text) {
-            var message = "Failed to load " + url + " (reason: " + text + ")";
-            var _conts = conts;
-            conts = [];
-            for (var i = 0; i < _conts.length; i++)
-              _conts[i].error && _conts[i].error(message);
-          }
-        });
-        first = false;
-        return;
-      } else {
-        if (allData)
-          next(fetch(allData));
-      }
+    var ctx = {
+        conts: null,
+        data: null,
+        first: null,
+        reset: function reset() {
+            this.conts = [];
+            this.data = null;
+            this.first = true;
+        },
+        create: function createMetadataLoader(fetch) {
+            return function metadataLoader(next, error) {
+                ctx.conts.push({ fetch: fetch, next: next, error: error });
+                if (ctx.first) {
+                    var _url = typeof url == 'function' ? url(): url;
+                    $.ajax({
+                        url: _url,
+                        dataType: 'json',
+                        success: function(data) {
+                            ctx.data = data;
+                            var _conts = ctx.conts;
+                            ctx.conts = [];
+                            for (var i = 0; i < _conts.length; i++)
+                                _conts[i].next(_conts[i].fetch(data));
+                        },
+                        error: function(xhr, text) {
+                            var message = "Failed to load " + _url + " (reason: " + text + ")";
+                            var _conts = ctx.conts;
+                            ctx.conts = [];
+                            for (var i = 0; i < _conts.length; i++)
+                                _conts[i].error && _conts[i].error(message);
+                        }
+                    });
+                    ctx.first = false;
+                    return;
+                } else {
+                    if (ctx.data)
+                        next(fetch(ctx.data));
+                }
+            }
+        }
     };
-  };
-}
-
-function createDataSource(params) {
-  var factory_i = newMetadataLoaderFactory(params['data_source']['info']);
-  var factory_s = newMetadataLoaderFactory(params['data_source']['seats']);
-  var drawingCache = {};
-  return {
-    drawing: function (page) {
-      return function (next, error) {
-        var data = drawingCache[page];
-        if (data) {
-          next(data);
-          return;
-        }
-        $.ajax({
-          url: params['data_source']['venue_drawings'][page],
-          dataType: 'xml',
-          headers: {
-            'X-Dummy': true
-          },
-          success: function (data) {
-            drawingCache[page] = data;
-            next(data);
-          },
-          error: function (xhr, text, status) {
-            error("Failed to load drawing data (" + text + " - " + status + ")");
-          }
-        });
-      }
-    },
-    stockTypes: function (next, error) {
-      var stock_types = {};
-      for (var i = params.seat_types.length; --i >= 0;)
-        stock_types[params.seat_types[i].id] = params.seat_types[i];
-      next(stock_types);
-    },
-    info: factory_i(function (data) { return data['info']; }),
-    seats: factory_s(function (data) { return data['seats']; }),
-    areas: factory_i(function (data) { return data['areas']; }),
-    seatAdjacencies: function (next, error, length) {
-      var _params = $.extend(params, { length_or_range: length });
-      $.ajax({
-        url: util.build_route_path(params.data_source.seat_adjacencies._params),
-        dataType: 'json',
-        success: function (data) { next(data); },
-        error: function (xhr, text) {
-          error("Failed to load adjacency data (" + text + ")");
-        }
-      });
-    },
-    pages: factory_i(function (data) { return data['pages']; })
-  };
+    ctx.reset();
+    return ctx;
 }
 

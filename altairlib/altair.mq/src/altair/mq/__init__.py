@@ -72,7 +72,7 @@ def add_task(config, task,
                                                                    queue_settings=queue_settings))
         reg.registerUtility(task, ITask)
 
-    config.action("altair.mq.task-{name}".format(name=name),
+    config.action("altair.mq.task-{name}-{queue}".format(name=name, queue=queue),
                   register)
 
 

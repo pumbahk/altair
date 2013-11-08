@@ -50,12 +50,8 @@ def on_delivery_error(event):
 def includeme(config):
     # payment
     config.include('altair.app.ticketing.payments')
-    # マルチ決済
-    config.include('altair.app.ticketing.payments.plugins.multicheckout')
-    # QRコード
-    config.include('altair.app.ticketing.payments.plugins.qr')
-    # 配送
-    config.include('altair.app.ticketing.payments.plugins.shipping')
+    config.include('altair.app.ticketing.payments.plugins')
+    config.include('altair.app.ticketing.cart.setup_renderers')
     config.include(".sendmail")
 
     reg = config.registry
@@ -65,7 +61,6 @@ def includeme(config):
     config.add_publisher_consumer('lots', 'altair.ticketing.lots.mq')
     config.add_subscriber('.workers.on_delivery_error',
                           'altair.app.ticketing.payments.events.DeliveryErrorEvent')
-
     #config.scan(".workers")
     #config.scan(".subscribers")
 

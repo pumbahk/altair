@@ -7,9 +7,11 @@ def install_static_page_cache(config):
     from .interfaces import IStaticPageCache
     from beaker.cache import cache_regions #xxx:
     k = "altaircms.staticpage.filedata"
+    fetching_k = "altaircms.fetching.filedata"
     try:
         kwargs = cache_regions[k]
-        config.registry.registerUtility(StaticPageCache(kwargs), IStaticPageCache)
+        fetching_kwargs = cache_regions[fetching_k]
+        config.registry.registerUtility(StaticPageCache(kwargs, fetching_kwargs), IStaticPageCache)
     except KeyError:
         import sys
         sys.stderr.write("cache_regions[{k}] is not found\n".format(k=k))

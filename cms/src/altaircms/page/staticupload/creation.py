@@ -46,6 +46,14 @@ class AfterDeleteCompletely(object):
 def get_staticupload_filesession(request):
     return get_adapts_filesession(request, name=SESSION_NAME)
 
+class StaticPageIntercept(object):
+    def __init__(self, request, utility):
+        self.request = request
+        self.utility = utility
+
+    def intercept(self, static_page):
+        static_page.interceptive = not static_page.interceptive
+
 class StaticPageDelete(object):
     def __init__(self, request, utility):
         self.request = request

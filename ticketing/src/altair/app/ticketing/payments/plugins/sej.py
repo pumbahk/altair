@@ -63,6 +63,20 @@ def includeme(config):
     config.add_payment_delivery_plugin(SejPaymentDeliveryPlugin(), PAYMENT_PLUGIN_ID, DELIVERY_PLUGIN_ID)
     config.scan(__name__)
 
+def _overridable_payment(path):
+    from . import _template
+    if _template is None:
+        return '%s:templates/%s' % (__name__, path)
+    else:
+        return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_PLUGIN_ID)
+
+def _overridable_delivery(path):
+    from . import _template
+    if _template is None:
+        return '%s:templates/%s' % (__name__, path)
+    else:
+        return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=DELIVERY_PLUGIN_ID)
+
 def get_payment_due_at(current_date, cart):
     payment_period_days = cart.payment_delivery_pair.payment_period_days or 3
     payment_due_at = current_date + timedelta(days=payment_period_days)
@@ -338,9 +352,9 @@ class SejPaymentDeliveryPlugin(object):
         refresh_order(order, SejOrderUpdateReason.Change)
 
 
-@view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='altair.app.ticketing.payments.plugins:templates/sej_delivery_complete.html')
+@view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_complete.html'))
 @view_config(context=IOrderDelivery, request_type='altair.mobile.interfaces.IMobileRequest',
-             name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='altair.app.ticketing.payments.plugins:templates/sej_delivery_complete_mobile.html')
+             name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_complete_mobile.html'))
 def sej_delivery_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order.order_no)
@@ -355,14 +369,14 @@ def sej_delivery_viewlet(context, request):
     )
 
 @view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, 
-             renderer='altair.app.ticketing.payments.plugins:templates/sej_delivery_confirm.html')
+             renderer=_overridable_delivery('sej_delivery_confirm.html'))
 def sej_delivery_confirm_viewlet(context, request):
     return Response(text=u'セブン-イレブン受け取り')
 
 @view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, 
-             renderer='altair.app.ticketing.payments.plugins:templates/sej_payment_complete.html')
+             renderer=_overridable_delivery('sej_payment_complete.html'))
 @view_config(context=IOrderPayment, request_type='altair.mobile.interfaces.IMobileRequest',
-             name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='altair.app.ticketing.payments.plugins:templates/sej_payment_complete_mobile.html')
+             name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_complete_mobile.html'))
 def sej_payment_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order.order_no)
@@ -373,13 +387,13 @@ def sej_payment_viewlet(context, request):
         payment_method=payment_method,
     )
 
-@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='altair.app.ticketing.payments.plugins:templates/sej_payment_confirm.html')
+@view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_confirm.html'))
 def sej_payment_confirm_viewlet(context, request):
     return Response(text=u'セブン-イレブン支払い')
 
 
-@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/sej_payment_mail_complete.html")
-@view_config(context=ILotsElectedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/sej_payment_mail_complete.html")
+@view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_mail_complete.html'))
+@view_config(context=ILotsElectedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_mail_complete.html'))
 def payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
@@ -391,8 +405,8 @@ def payment_mail_viewlet(context, request):
                 payment_method=payment_method,
     )
 
-@view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/sej_delivery_mail_complete.html")
-@view_config(context=ILotsElectedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/sej_delivery_mail_complete.html")
+@view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_mail_complete.html'))
+@view_config(context=ILotsElectedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_mail_complete.html'))
 def delivery_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailDelivery

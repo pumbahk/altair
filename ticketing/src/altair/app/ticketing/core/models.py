@@ -24,7 +24,8 @@ from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, 
 from sqlalchemy.orm import join, backref, column_property, joinedload, deferred, relationship, aliased
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null, alias
+from sqlalchemy.orm.session import object_session
+from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null, alias, or_
 from sqlalchemy.ext.associationproxy import association_proxy
 from zope.interface import implementer
 from altair.saannotation import AnnotatedColumn
@@ -57,6 +58,8 @@ from altair.app.ticketing.venues.interfaces import ITentativeVenueSite
 from .utils import ApplicableTicketsProducer
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_PERFORMANCE_SELECTOR = 'date'
 
 class FeeTypeEnum(StandardEnum):
     Once = (0, u'1件あたりの手数料')
@@ -359,6 +362,28 @@ class SeatStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 else:
                     con_num = 0
         return []
+
+class SeatGroup(Base, BaseModel):
+    __tablename__ = "SeatGroup"
+    __table_args__ = (
+        UniqueConstraint('site_id', 'l0_id', name='ix_SeatGroup_site_id_l0_id'),
+        )
+    query = DBSession.query_property()
+    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
+    name = Column(Unicode(50), nullable=False, default=u"", server_default=u"")
+    site_id = Column(Identifier, ForeignKey("Site.id"), nullable=False)
+    l0_id = Column(Unicode(48), nullable=False, index=True)
+
+    site = relationship("Site", backref="seat_groups")
+
+    def query_seats_for_venue(self, venue):
+        cls = self.__class__
+        session = object_session(self)
+        return session.query(Seat) \
+            .filter(self.l0_id == Seat.row_l0_id, Seat.venue_id == venue.id) \
+            .union(
+                session.query(Seat) \
+                .filter(self.l0_id == Seat.group_l0_id, Seat.venue_id == venue.id))
 
 class SeatAdjacency(Base, BaseModel):
     __tablename__ = "SeatAdjacency"
@@ -792,6 +817,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     _final_performance = None
 
     @property
+    def setting(self):
+        return self.settings[0] if self.settings else None
+
+    @property
     def accounts(self):
         return Account.filter().join(Account.stock_holders).filter(StockHolder.event_id==self.id).all()
 
@@ -888,6 +917,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 - Ticket
               - Performance
                 - (この階層以下はPerformance.add()を参照)
+              - EventSetting
             """
             template_event = Event.get(self.original_id)
 
@@ -934,6 +964,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # create Performance
             for template_performance in template_event.performances:
                 Performance.create_from_template(template=template_performance, event_id=self.id)
+
+            # create EventSettings
+            for template_event_setting in template_event.settings:
+                EventSetting.create_from_template(template=template_event.setting, event_id=self.id)
 
             convert_map['payment_delivery_method_pair'] = {}
             for org_id, new_id in convert_map['sales_segment_group'].iteritems():
@@ -1087,6 +1121,16 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             self.query_sales_segments(user=user, now=now, type='all'),
             now)
 
+    @property
+    def performance_selector(self):
+        event_setting = self.setting
+        if event_setting is not None and event_setting.performance_selector:
+            return event_setting.performance_selector
+        organization_setting = self.organization.setting
+        if organization_setting is not None and organization_setting.performance_selector:
+            return organization_setting.performance_selector
+        return DEFAULT_PERFORMANCE_SELECTOR
+
 class SalesSegmentKindEnum(StandardEnum):
     normal          = u'一般発売'
     same_day        = u'当日券'
@@ -1121,6 +1165,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     end_at = AnnotatedColumn(DateTime, _a_label=_(u'販売終了日時'))
     upper_limit = AnnotatedColumn(Integer, _a_label=_(u'購入上限枚数'))
     order_limit = AnnotatedColumn(Integer, _a_label=_(u'購入回数制限'))
+    product_limit = AnnotatedColumn(Integer, _a_label=_(u'商品購入上限数'))
 
     seat_choice = AnnotatedColumn(Boolean, default=True, _a_label=_(u'座席選択可'))
     public = AnnotatedColumn(Boolean, default=True, _a_label=_(u'一般公開'))
@@ -3449,6 +3494,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     upper_limit = AnnotatedColumn(Integer, _a_label=_(u'購入上限枚数'))
     order_limit = AnnotatedColumn(Integer, default=0,
                                   _a_label=_(u'購入回数制限'))
+    product_limit = AnnotatedColumn(Integer, _a_label=_(u'商品購入上限数'))
 
     seat_choice = AnnotatedColumn(Boolean, nullable=True, default=None,
                                   _a_label=_(u'座席選択可'))
@@ -3498,6 +3544,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     use_default_end_at = Column(Boolean)
     use_default_upper_limit = Column(Boolean)
     use_default_order_limit = Column(Boolean)
+    use_default_product_limit = Column(Boolean)
     use_default_account_id = Column(Boolean)
     use_default_margin_ratio = Column(Boolean)
     use_default_refund_ratio = Column(Boolean)
@@ -3527,14 +3574,18 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         )
 
 
+    @deprecation.deprecate(u"メールアドレスは複数与えられるものなので、このメソッドは使うべきではない")
     def query_orders_by_mailaddress(self, mailaddress):
+        return self.query_orders_by_mailaddresses([mailaddress])
+
+    def query_orders_by_mailaddresses(self, mailaddresses):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
         from altair.app.ticketing.cart.models import Cart
         return DBSession.query(Order).filter(
             Order.shipping_address_id==ShippingAddress.id
         ).filter(
-            or_(ShippingAddress.email_1 == mailaddress,
-                ShippingAddress.email_2 == mailaddress)
+            or_(ShippingAddress.email_1.in_(mailaddresses),
+                ShippingAddress.email_2.in_(mailaddresses))
         ).filter(
             Cart.order_id==Order.id
         ).filter(
@@ -3721,6 +3772,23 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     bcc_recipient = Column(Unicode(255), nullable=True)
 
+class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "EventSetting"
+    id = Column(Identifier, primary_key=True)
+    event_id = Column(Identifier, ForeignKey('Event.id'))
+    event = relationship('Event', backref='settings')
+
+    performance_selector = Column(Unicode(255), doc=u"カートでの公演絞り込み方法")
+    performance_selector_label1_override = Column(Unicode(255), nullable=True)
+    performance_selector_label2_override = Column(Unicode(255), nullable=True)
+
+    @classmethod
+    def create_from_template(cls, template, event_id=None, **kwargs):
+        setting = cls.clone(template)
+        setting.event_id = event_id
+        setting.save() # XXX
+        return setting
+
 class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PerformanceSetting"
     id = Column(Identifier, primary_key=True)
@@ -3757,6 +3825,7 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @classmethod
     def create_from_template(cls, template, **kwargs):
         setting = cls.clone(template)
+        setting.save() # XXX
         return setting
 
 

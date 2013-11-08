@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="jp">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.fc_auth:static/lakestars/css/style.css')}" media="all" />
+	<title>レイクスオンラインチケット</title>
+
+	<!--[if lte IE 6]>  
+    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.fc_auth:static/lakestars/js/DD_belatedPNG.js')}"></script>  
+    <script type="text/javascript"> DD_belatedPNG.fix( '.header,.sparkle');</script>  
+    <![endif]-->  
+
+</head>
+<body>
+	<!-- wrapper -->	
+	<div class="wrapper">
+		<!-- メインカラム -->
+		<div class="maincol">
+			<div class="header">
+				<div class="gnavi">
+				</div>
+			</div>
+      <div class="kadomaru">
+        <table cellpadding="0" cellspacing="0" class="textC" style="margin:0 auto;">
+          <tr>
+            <td>
+              <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
+                <table class="login" style="margin-right:5px; height: 290px;">
+                  <thead>
+                    <tr>
+                      <th>
+                        一般販売
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="text-align:center;"> 
+                        <input type="submit" class="redBtn" style="margin-top: 30px;" value="チケット購入" />
+                        %if guest_message:
+                        <div class="small red">${guest_message}</div>
+                        %endif
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </form>
+            </td>
+            <td>
+              <form action="${request.url}" method="post">
+                <table class="login" style="margin-right:5px; height: 290px;">
+                  <thead>
+                    <tr>
+                      <th>
+			会員販売・その他特別販売
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <table>
+                          <tbody>
+                            <tr>
+                              <td>
+				ID
+                                <br /><span class="small red">※ 半角英数</span>
+                              </td>
+                              <td>
+                                <input type="text" class="text" name="username" size="20" maxlength="8" value="${username}">
+                                %if message:
+                                <br/><span class="small red">${message}</span>
+                                %endif
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                パスワード
+                                <br /><span class="small red">※ 半角英数</span>
+                              </td>
+                              <td>
+                                <input type="password" class="text" name="password" size="20" maxlength="8" value="">
+                              </td>
+                            </tr>
+                            <tr>
+                              <!-- <td colspan="2" class="textC"> <input type="submit" name="login" value="ログイン"  class="redBtn" /> </td> -->
+                              <td colspan="2" class="textC"><input type="submit" class="redBtn" value="ログイン" /></td>
+                            </tr>
+                          </tbody>
+                        </table>							
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </form>
+            </td>
+          </tr>
+        </table>
+        <div class="kadomaru" style="margin:10px 20px 0 20px; font-size: 10px; border: 2px #CCC solid; width: 560px; padding: 10px;">
+            <p>快適にご利用していただくために、以下のブラウザでのご利用を推奨します。</p>
+            <div style="margin:5px; font-size: 10px;">
+              <p>
+                Windows
+                <ul>
+                  <li>Google Chrome</li>
+                  <li>Mozilla Firefox 13.0以降</li>
+                  <li>Internet Explorer 9.x</li>
+                </ul>
+                Mac
+                <ul>
+                  <li>Safari 5.0以降</li>
+                </ul>
+              </p>
+              <p><br /><br /></p>
+              <div style="font-size: 12px; font-weight: bold; margin: 8px 25px 0 25px; color: red; background-color: #eedcb3;">
+                <p>
+                  ※Internet Explorer 8.x, 7.x, 6x をお使いの方は、座席を選んでの購入が出来ません。「おまかせ」のみの購入となります。
+                </p>
+                <p>上記対応ブラウザのご利用をお勧めいたします。対応ブラウザは下記よりダウンロードしてください。</p>
+                <ul>
+                  <li><a href="https://www.google.com/intl/ja/chrome/browser/">Google Chrome</a></li>
+                  <li><a href="http://www.mozilla.jp/firefox/">Mozilla Firefox</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer">
+          <div class="footernav">
+            <ul>
+              <li><a href="http://www.ticketstar.jp/corporate">運営会社</a></li>
+              <li><a href="mailto:lakestars@tstar.jp">お問い合わせ</a></li>
+              <li><a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a></li>
+              <li class="last"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+            </ul>
+          </div>
+          <div class="copyright">
+            Copyright &copy; 2010-2013 TicketStar Inc. All Rights Reserved. 
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- メインカラムおわり -->
+    <!-- サイドバー -->
+    <div class="sidebar">
+    </div>    
+    <!-- サイドバーおわり -->
+  </div>
+  <!-- wrapperおわり -->
+</body>
+</html>

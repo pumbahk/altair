@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 class LoginView(object):
     renderer_tmpl = "altair.app.ticketing.fc_auth:templates/{membership}/login.html"
     renderer_tmpl_mobile = "altair.app.ticketing.fc_auth:templates/{membership}/login_mobile.html"
+    renderer_tmpl_smartphone = "altair.app.ticketing.fc_auth:templates/{membership}/login_smartphone.html"
 
     def __init__(self, request):
         self.request = request
@@ -22,6 +23,8 @@ class LoginView(object):
     def select_renderer(self, membership):
         if cart_api.is_mobile(self.request):
             self.request.override_renderer = self.renderer_tmpl_mobile.format(membership=membership)
+        elif cart_api.is_smartphone(self.request):
+            self.request.override_renderer = self.renderer_tmpl_smartphone.format(membership=membership)
         else:
             self.request.override_renderer = self.renderer_tmpl.format(membership=membership)
 

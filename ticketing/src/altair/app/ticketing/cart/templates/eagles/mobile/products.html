@@ -20,7 +20,7 @@
       金額: &yen;${product['price']}<br />
       数量:
       <select name="product-${product['id']}">
-        % for num in range(product['upper_limit'] + 1):
+        % for num in range(product['limit'] + 1):
         <option value="${num}">${num}</option>
         % endfor
       </select>
@@ -41,6 +41,6 @@
 <%mobile:form_header>会場</%mobile:form_header>
 <div>${venue.name}</div>
 <%mobile:form_header>日程</%mobile:form_header>
-<div>${h.performance_date(performance)}(予定)</div>
+<div>${h.performance_date(performance)}</div>
 <%mobile:form_header>席種</%mobile:form_header>
 <div>${seat_type.name}</div>

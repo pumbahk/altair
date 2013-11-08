@@ -33,17 +33,30 @@ def _rendering_page(context, request, control, page): #todo: refactoring
     return response
     
 EXCLUDE_EXT_LIST = (".ico", ".js", ".css")
+
+def not_static_path(info, request):
+    return not request.path.startswith("static")
+
 @usersite_view_config(route_name="front", decorator=with_jquery)
 def rendering_page(context, request):
+    # logger.debug("req2:"+request.path)
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
 
     control = context.pc_access_control()
     try:
         static_page = control.fetch_static_page_from_params(url, dt)
+        if not os.path.splitext(url)[1]:
+            suffix = "index.html"
+            if not url.endswith("/"):
+                suffix = "/" + suffix
+            static_page = control.fetch_static_page_from_params(url + suffix, dt)
+
         if static_page:
             if static_page.interceptive:
-                return as_static_page_response(request, static_page, url)
+                if os.path.splitext(url)[1]:
+                    return as_static_page_response(request, static_page, url)
+                return as_static_page_response(request, static_page, url + suffix)
     except StaticPageNotFound:
         logger.info(u'no corresponding static page found for url=%s; falls back to standard page discovery' % url)
 
@@ -65,8 +78,13 @@ from altairsite.mobile.dispatch.views import dispatch_view as mobile_dispatch_vi
 from altairsite.smartphone.dispatch.views import dispatch_view as smartphone_dispatch_view
 from pyramid.httpexceptions import HTTPFound
 
-@usersite_view_config(route_name="front", request_type="altairsite.tweens.IMobileRequest", custom_predicates=(enable_mobile, ))
+"""
+ここから下はstatic pageを見ていない？
+"""
+
+@usersite_view_config(route_name="front", request_type="altairsite.tweens.IMobileRequest", custom_predicates=(not_static_path, enable_mobile, ))
 def mobile_rendering_page__rakuten(context, request):
+    # logger.debug("req2:"+request.path)
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
 
@@ -89,8 +107,9 @@ def mobile_rendering_page__rakuten(context, request):
     logger.info(control.error_message)
     return mobile_dispatch_view(context, request)
 
-@usersite_view_config(route_name="front", request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(enable_smartphone, ))
+@usersite_view_config(route_name="front", request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(not_static_path, enable_smartphone, ))
 def smartphone_rendering_page(context, request):
+    # logger.debug("req2:"+request.path)
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
 

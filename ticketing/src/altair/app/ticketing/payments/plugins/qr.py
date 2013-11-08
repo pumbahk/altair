@@ -26,14 +26,21 @@ def includeme(config):
     config.add_delivery_plugin(QRTicketDeliveryPlugin(), DELIVERY_PLUGIN_ID)
     config.scan(__name__)
 
-@view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/qr_confirm.html")
+def _overridable(path):
+    from . import _template
+    if _template is None:
+        return '%s:templates/%s' % (__name__, path)
+    else:
+        return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=DELIVERY_PLUGIN_ID)
+
+@view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("qr_confirm.html"))
 def deliver_confirm_viewlet(context, request):
     return dict()
 
 QRTicket = namedtuple("QRTicket", "order performance product seat token printed_at")
 
-@view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/qr_complete.html")
-@mobile_view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/qr_complete_mobile.html")
+@view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("qr_complete.html"))
+@mobile_view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("qr_complete_mobile.html"))
 def deliver_completion_viewlet(context, request):
     tickets = [ ]
     order = context.order
@@ -59,7 +66,7 @@ def deliver_completion_viewlet(context, request):
         tickets = tickets,
         )
 
-@view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/qr_mail_complete.html")
+@view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("qr_mail_complete.html"))
 def deliver_completion_mail_viewlet(context, request):
     shipping_address = context.order.shipping_address
     return dict(h=cart_helper, shipping_address=shipping_address, 

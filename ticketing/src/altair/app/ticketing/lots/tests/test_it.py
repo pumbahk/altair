@@ -16,7 +16,7 @@ dependency_modules = [
 testing_settings = {
     'makotxt.default_filters': 'unicode',    
     'mako.directories': ['altair.app.ticketing.lots:templates'],
-    'altair.cart.domain.mapping': '{}',
+    'altair.sej.template_file': '',
 }
 
 

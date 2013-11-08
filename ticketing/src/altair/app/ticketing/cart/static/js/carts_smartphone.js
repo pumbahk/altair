@@ -65,6 +65,12 @@ cart.order_messages = {
             return order_form_presenter.showOverUpperLimitMessage();
         }
     },
+    'product_limit': {
+        title: '購入数上限を超えて購入しようとしています', 
+        message: function(order_form_presenter){
+            return order_form_presenter.showOverProductLimitMessage();
+        }
+    },
     'too many carts': {
         title: '購入エラー',
         message: '誠に申し訳ございませんが、現在ご購入手続を進めることができない状況となっております。しばらく経ってから再度お試しください。'
@@ -224,22 +230,16 @@ cart.proceedToCheckout = function proceedToCheckout(performance, reservationData
     }
     body += "合計金額 ¥" + reservationData.cart.total_amount
 
-    if(confirm(body)) {
+    if (confirm(body)) {
         window.location.href = reservationData.payment_url;
+    } else {
+        $.ajax({
+            url: cartReleaseUrl, // global
+            dataType: 'json',
+            type: 'POST',  
+            success: function() {}
+        });
     }
-
-    /*
-    dialog.header(
-        $('<h2>')
-            .append(
-                $('<span id="performance-date"></span>')
-                .text(performance.get('performance_start')))
-            .append(' ')
-            .append(
-                $('<span id="performance-name"></span>')
-                .text(performance.get('performance_name'))));
-    dialog.load();
-    */
 }
 
 cart.showErrorDialog = function showErrorDialog(title, message, footer_button_class) {
@@ -259,16 +259,7 @@ cart.showErrorDialog = function showErrorDialog(title, message, footer_button_cl
     if (message) {
         body += message;
     }
-    if(confirm(body)) {
-        // ダイアログを閉じるのみ
-    }
-
-    /*
-    errorDialog.header(title ? $('<h2></h2>').text(title): null);
-    errorDialog.body($('<div style="text-align:center"></div>').text(message));
-    errorDialog.footer($('<a class="ok-button">閉じる</a>').addClass(footer_button_class));
-    errorDialog.load();
-    */
+    alert(body);
 };
 
 cart.ApplicationController = function() {
@@ -718,7 +709,15 @@ cart.OrderFormPresenter.prototype = {
     showOrderForm: function(selected_stock_type_el, stock_type, products) {
         this.stock_type = stock_type;
         this.products = products;
-        this.upper_limit = products.at(0).get('upper_limit');
+        var upper_limit = 0, product_limit = null;
+        this.products.each(function(product) {
+            var ul = product.get('upper_limit') * product.get('quantity_power');
+            var pl = product.get('product_limit');
+            upper_limit = (ul > upper_limit ? ul : upper_limit);
+            product_limit = ((pl !== null && (product_limit === null || pl > product_limit)) ? pl: product_limit);
+        })
+        this.upper_limit = upper_limit;
+        this.product_limit = product_limit;
         this.view.showForm(selected_stock_type_el, stock_type, products);
     },
     calculateQuantityToSelect: function () {
@@ -739,6 +738,9 @@ cart.OrderFormPresenter.prototype = {
         if (this.upper_limit < this.quantity_to_select) {
             return this.showOverUpperLimitMessage()
         }
+        if (this.product_limit !== null && this.product_limit < this.product_quantity_to_select) {
+            return this.showOverProductLimitMessage();
+        }
         this.venuePresenter.setStockType(this.stock_type);
     },
     onEntrustPressed: function () {
@@ -758,6 +760,10 @@ cart.OrderFormPresenter.prototype = {
     }, 
     showOverUpperLimitMessage: function(){
         cart.showErrorDialog(null, '枚数は合計' + this.upper_limit + '枚以内で選択してください', 'btn-close');
+        return;
+    }, 
+    showOverProductLimitMessage: function(){
+        cart.showErrorDialog(null, '商品個数は合計' + this.product_limit + '個以内にしてください', 'btn-close');
         return;
     }, 
     onBuyPressed: function () {
@@ -914,13 +920,15 @@ cart.OrderFormView = Backbone.View.extend({
     },
     buildProduct: function(product) {
         var upper_limit = product.get('upper_limit');
+        var product_limit = product.get('product_limit');
+        var limit = product_limit !== null && product_limit < upper_limit ? product_limit: upper_limit;
         var name = $('<span class="productName"></span>');
         name.text(product.get("name"));
         var payment = $('<span class="productPrice"></span>');
         payment.text(' ￥' + product.get("price") + " ");
         var quantity = $('<span class="productQuantity"></span>');
         var pullDown = $('<select />').attr('name', 'product-' + product.id);
-        for (var i = 0; i < upper_limit+1; i++) {
+        for (var i = 0; i < limit + 1; i++) {
             $('<option></option>').text(i).val(i).appendTo(pullDown);
         }
         var descriptionText = product.get('description');

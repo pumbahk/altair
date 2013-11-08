@@ -30,6 +30,22 @@ from altair.formhelpers import (
 class CSRFSecureForm(SessionSecureForm):
     SECRET_KEY = 'EPj00jpfj8Gx1SjnyLxwBBSQfnQ9DJYe0Ym'
 
+def normalize_point_account_number(value):
+    import re
+    if value is not None and re.match(r'^\d{16}$', value):
+        return '%s-%s-%s-%s' % (value[0:4], value[4:8], value[8:12], value[12:16])
+    return value
+
+class PointForm(OurForm):
+    accountno = fields.TextField(
+        label=u"楽天スーパーポイント口座",
+        filters=[NFKC, normalize_point_account_number],
+        validators=[
+            Optional(),
+            Regexp(r'^(?:\d{4}-\d{4}-\d{4}-\d{4}|\d{16})$', message=u'16桁の数字を入れて下さい。'),
+        ]
+    )
+
 class ClientForm(OurForm):
     def _get_translations(self):
         return Translations()
@@ -171,15 +187,6 @@ class ClientForm(OurForm):
                 ]
             )
         )
-    point = fields.TextField(
-        label=u"楽天スーパーポイント口座",
-        filters=[NFKC],
-        validators=[
-            Optional(),
-            Regexp(r'^\d{16}$', message=u'16桁の数字を入れて下さい。'),
-            Length(min=16, max=16, message=u'確認してください'),
-        ]
-    )
 
     def _validate_email_addresses(self, *args, **kwargs):
         status = True

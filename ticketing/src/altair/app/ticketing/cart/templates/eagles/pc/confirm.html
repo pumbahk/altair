@@ -35,7 +35,7 @@ ${self.widget.flow_widget(3)}
   <div class="confirmBox">
 	<div class="confirmBoxInner">
 	  <h2><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
-      <h3 id="name">${cart.performance.event.title} ${cart.performance.name} ${h.performance_date(cart.performance)}(予定) ${cart.performance.venue.name}</h3>
+      <h3 id="name">${cart.performance.event.title} ${cart.performance.name} ${h.performance_date(cart.performance)} ${cart.performance.venue.name}</h3>
 	  <table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
     % for product in cart.items:
 		<tr>
@@ -123,7 +123,13 @@ ${self.widget.flow_widget(3)}
 		</tr>
 		<tr>
 		  <th scope="row">楽天ポイント口座</th>
-          <td>1111222233334444</td>
+          <td>
+            % if accountno:
+              ${accountno}
+            % else:
+              <span style="color: red">※楽天スーパーポイント口座が入力されていため、ポイント付与されません。</span>
+            % endif
+          </td>
 		</tr>
 		<tr>
 		  <th scope="row">配送先住所 <br />※配送を選択した場合</th>

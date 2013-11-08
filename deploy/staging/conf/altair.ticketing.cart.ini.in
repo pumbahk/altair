@@ -11,6 +11,11 @@ altair.sej.template_file = %(here)s/../../../ticketing/misc/sej/template.html
 ; altair:site-data
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 
+; altair.mq
+altair.ticketing.cart.mq = altair.mq.consumer.pika_client_factory
+                           altair.mq.publisher.pika_publisher_factory
+altair.ticketing.cart.mq.url = amqp://guest:guest@localhost:5672/%2F
+
 ; altair.rakuten_auth
 altair.rakuten_auth.return_to = ${altair:rakuten_auth.return_to}
 altair.rakuten_auth.error_to = ${altair:rakuten_auth.error_to}

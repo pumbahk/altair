@@ -28,6 +28,11 @@ class OverQuantityLimitError(CartException):
         super(OverQuantityLimitError, self).__init__()
         self.upper_limit = upper_limit
 
+class OverProductQuantityLimitError(CartException):
+    def __init__(self, product_limit):
+        super(OverProductQuantityLimitError, self).__init__()
+        self.product_limit = product_limit
+
 class ZeroQuantityError(CartException):
     pass
 

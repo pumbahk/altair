@@ -2,6 +2,7 @@
 <html lang="jp">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <link rel="shortcut icon" href="http://tstar.s3.amazonaws.com/cart/static/img/common/eagles.ico" />
   <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.fc_auth:static/eagles/style.css')}" media="all" />
   <title>イーグルスチケット</title>
 </head>
@@ -21,9 +22,6 @@
         <div class="gnavi">
             <ul>
               <li><a href="/">TOP</a></li>
-              <li><a href="/schedule">試合日程</a></li>
-              <li><a href="/payment">支払・受取方法</a></li>
-              <li class="last"><a href="/faq">FAQ</a></li>
             </ul>
         </div>
     <!-- wrapper -->
@@ -82,7 +80,7 @@
                                         <div class="tal">
                                             <input type="text" class="text" name="username">
                                             %if message:
-                                            <br/><span class="small red">IDが一致しません</span>
+                                            <br/><span class="small red">IDまたはパスワードが一致しません</span>
                                             %endif
                                         </div>
                                       </td>
@@ -100,13 +98,6 @@
                                           <input type="submit" value="ログイン" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
                                       </td>
                                     </tr>
-                                    <tr>
-                                      <td colspan="2" id="forget_p" align="center">
-                                        <a href="#">【パスワードをお忘れの場合】
-                                          <br>こちらをクリックしてください。
-                                        </a>
-                                      </td>
-                                    </tr>
                                   </tbody>
                                 </table>
                             </td>
@@ -122,19 +113,14 @@
 <span style="color:#f00;">eagles@tstar.jpのドメイン指定受信許可設定を行ってください</span>。</li>
     <li>2012年ファンクラブ会員IDはご使用できません。2013年の会員IDにてログインしてください。</li>
     <li>発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。（セブン-イレブンでも多くのチケットをお取り扱いしております。）
-        <ul>
-            <li>Eウィングペアシート、Eウィング4はイーグルスチケット限定販売</li>
-            <li>コカ・コーラボックスシート5、セブン-イレブン・グループシート5、外野ライトトリプルシートはセブン-イレブン限定販売</li>
-        </ul>
     </li>
     <li>会員ID・パスワードは半角でご入力ください。</li>
-    <li>楽天イーグルスベンチは3塁側になります。</li>
     <li>4歳以上は入場チケットが必要です。ただし3歳以下でも一人で着席の場合はチケットが必要です。</li>
 </ul>
 <h3>その他</h3>
 <ul class="notes">
-    <li>購入履歴の確認・QRコードの発行は<a href="#" target="_blank">こちら</a>から行ってください。</li>
-    <li>パスワードをお忘れの場合<a href="#" target="_blank">こちら</a>からお問合せください。</li>
+    <li>購入履歴の確認・QRコードの発行は<a href="/orderreview" target="_blank">こちら</a>から行ってください。</li>
+    <li>パスワードをお忘れの場合<a href="https://f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&clientid=13074&databaseid=wit" target="_blank">こちら</a>からお問合せください。</li>
 </ul>
 
 <h3>お問い合わせ</h3>
@@ -152,10 +138,10 @@
 	        <div class="footernav">
 	          <ul>
 
-	                <li><a class="first" href="http://www.ticketstar.jp/corporate" target="_blank">運営会社</a></li>
-	                        <li><a href="mailto:eagles@tstar.jp" target="_blank">お問い合わせ</a></li>
-	                        <li><a href="http://www.ticketstar.jp/privacy" target="_blank">個人情報保護方針</a></li>
-	                <li><a class="last" href="http://www.ticketstar.jp/legal" target="_blank">特定商取引法に基づく表示</a></li>
+	                <li><a class="first" href="http://www.ticketstar.jp" target="_blank">運営会社</a></li>
+	                        <li><a href="https://f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&clientid=13074&databaseid=wit" target="_blank">お問い合わせ</a></li>
+	                        <li><a href="http://privacy.rakuten.co.jp/" target="_blank">個人情報保護方針</a></li>
+	                <li><a class="last" href="/legal" target="_blank">特定商取引法に基づく表示</a></li>
 	          </ul>
 	        </div>
 	        <br class="clear">

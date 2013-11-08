@@ -1,0 +1,13 @@
+<%!
+links = [("dummy.orderreview.qr", u"QR確認画面"),
+]
+%>
+
+%for organization in organizations:
+<h3>${organization.name}</h3>
+<ul>
+%for route_name, description in links:
+  <li><a href="${request.route_path(route_name, _query=dict(organization_id=organization.id))}">${description}</a></li>
+%endfor
+</ul>
+%endfor

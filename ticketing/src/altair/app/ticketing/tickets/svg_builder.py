@@ -1,5 +1,14 @@
 # -*- coding:utf-8 -*-
 from zope.interface import implementer
+import logging
+logger = logging.getLogger(__name__)
+
+from sqlalchemy.exc import InvalidRequestError
+from altair.app.ticketing.core.models import Order
+from altair.app.ticketing.core.utils import (
+    merge_dict_recursive,
+    tree_dict_from_flatten
+)
 from .interfaces import ISVGBuilder
 
 class SimpleControl(object):
@@ -8,18 +17,44 @@ class SimpleControl(object):
     def get_vals(self, template, vals):
         return vals
 
-import logging
-logger = logging.getLogger(__name__)
+class OrderAttributesForOverwriteData(object):
+    def sep(self, s):
+        return s.split(".")
+
+    def __getitem__(self, order_id):
+        order = Order.query.get(order_id)
+        if order is None:
+            return {}
+        try:
+            return tree_dict_from_flatten(order.attributes, self.sep)
+        except InvalidRequestError as e:
+            #stale association proxy, parent object has gone out of scope
+            logger.error(repr(e))
+            return {}
 
 class TicketModelControl(object):
+    def __init__(self):
+        self.overwrite_data = OrderAttributesForOverwriteData()
+
     def get_template(self, ticket):
         return ticket.drawing
+
+    def overwrite_attributes(self, build_vals):
+        order_dict = build_vals.get("order")
+        if order_dict is None:
+            return {}
+        order_id = order_dict.get("id", None) #order.idは露出させないほうがよさそうなのでpop => 無理だった
+        if order_id is None:
+            return {}
+        return self.overwrite_data[order_id]
 
     def get_vals(self, ticket, build_vals):
         # logger.info(build_vals)
         vals = ticket.vars_defaults
         vals.update(build_vals)
-        return vals
+        overwrite_vals = self.overwrite_attributes(build_vals)
+        # logger.info(overwrite_vals)
+        return merge_dict_recursive(vals, overwrite_vals)
 
 @implementer(ISVGBuilder)
 class SVGBuilder(object):

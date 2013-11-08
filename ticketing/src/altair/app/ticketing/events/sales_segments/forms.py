@@ -121,7 +121,16 @@ class SalesSegmentForm(OurForm):
         label=u'グループの値を利用',
         widget=CheckboxInput()
     )
-
+    product_limit = OurIntegerField(
+        label=u'商品購入上限数',
+        default=None,
+        filters=[zero_as_none],
+        validators=[Optional()]
+    )
+    use_default_product_limit = OurBooleanField(
+        label=u'グループの値を利用',
+        widget=CheckboxInput()
+    )
     order_limit = OurIntegerField(
         label=u'購入回数制限',
         default=None,
