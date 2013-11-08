@@ -32,7 +32,7 @@ class LoginView(object):
     def return_to_url(self):
         return self.request.session.get(SESSION_KEY, {}).get('return_url') or core_api.get_host_base_url(self.request)
 
-    @view_config(request_method="GET", route_name='fc_auth.login', renderer='json')
+    @view_config(request_method="GET", route_name='fc_auth.login', renderer='json', http_cache=60)
     def login_form(self):
         membership = self.request.matchdict['membership']
         self.select_renderer(membership)
