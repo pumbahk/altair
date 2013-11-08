@@ -20,6 +20,9 @@
   % for seat in product['seats']:
 ・${seat['name']}<br/>
   % endfor
+  % if separate_seats:
+  <span style="color:red">※お並びの座席ではありません</span>
+  % endif
   % endif
 </div>
 % endfor
