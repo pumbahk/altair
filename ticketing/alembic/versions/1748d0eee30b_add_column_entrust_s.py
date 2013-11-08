@@ -20,7 +20,7 @@ Identifier = sa.BigInteger
 
 def upgrade():
     op.add_column('OrganizationSetting', sa.Column('entrust_separate_seats', sa.Boolean(), nullable=False, default=False, server_default=text('0')))
-    op.execute("UPDATE OrganizationSetting SET entrust_separate_seats = '1' WHERE organization_id = 23")
+    op.execute("UPDATE OrganizationSetting SET entrust_separate_seats = '1' WHERE organization_id = 24")
 
 def downgrade():
     op.drop_column('OrganizationSetting', 'entrust_separate_seats')
