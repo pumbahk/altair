@@ -110,11 +110,43 @@ class Reserving(object):
             s.status = int(reserve_status)
         return selected_seats
 
-    def reserve_seats(self, stock_id, quantity, reserve_status=SeatStatusEnum.InCart):
-        seats = self.get_vacant_seats(stock_id, quantity)
-        logger.debug('reserving %d seats for stock %s' % (len(seats), stock_id))
-        self._reserve(seats, reserve_status)
+    def reserve_seats(self, stock_id, quantity, reserve_status=SeatStatusEnum.InCart, separate_seats=False):
+        try:
+            seats = self.get_vacant_seats(stock_id, quantity)
+            logger.debug('reserving %d seats for stock %s' % (len(seats), stock_id))
+            self._reserve(seats, reserve_status)
+        except NotEnoughAdjacencyException, e:
+            # 連席が必須なら例外を返す
+            if not separate_seats:
+                raise e
+            # 連席でなくてよいならバラ席で確保して返す
+            logger.debug('try to reserve %d seats' % quantity)
+            seats = self._reserve_not_adjacent_seats(stock_id, quantity, reserve_status)
         return seats
+
+    def _reserve_not_adjacent_seats(self, stock_id, quantity, reserve_status):
+        retval = []
+        skip_quantities = [quantity]
+        divisor = 2
+        while quantity > len(retval):
+            rest = quantity - len(retval)
+            reserve_quantity = (rest / divisor) + (rest % divisor)
+            if reserve_quantity >= min(skip_quantities):
+                reserve_quantity = min(skip_quantities) - 1
+            logger.debug('total=%s, rest=%s, reserve_quantity=%s' % (quantity, rest, reserve_quantity))
+            try:
+                seats = self.get_vacant_seats(stock_id, reserve_quantity)
+                logger.debug('reserving %d seats for stock %s' % (len(seats), stock_id))
+                self._reserve(seats, reserve_status)
+                retval.extend(seats)
+                divisor = 1
+            except NotEnoughAdjacencyException, e:
+                logger.debug('Not enough adjacency')
+                skip_quantities.append(reserve_quantity)
+                divisor += 1
+                if rest < divisor:
+                    raise e
+        return retval
 
     def _reserve(self, seats, reserve_status):
         statuses = SeatStatus.query.filter(
