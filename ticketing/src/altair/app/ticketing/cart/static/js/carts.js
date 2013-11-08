@@ -97,10 +97,14 @@ cart.Dialog.prototype = {
             onClose: function () {
                 var ok = self.ok;
                 self.ok = false;
-                if (!ok)
-                    self.callbacks.cancel && self.callbacks.cancel.call(self);
-                self.callbacks.close && self.callbacks.close.call(self);
-                self.n.remove();
+                $.mask.getConf().onClose = function () {
+                    setTimeout(function () {
+                        if (!ok)
+                            self.callbacks.cancel && self.callbacks.cancel.call(self);
+                        self.callbacks.close && self.callbacks.close.call(self);
+                        self.n.remove();
+                    }, 100);
+                };
             }
         });
         this.n.on('click', '.cancel-button', function() {
@@ -260,10 +264,15 @@ cart.showSeparateSeatOrderDialog = function showSeparateSeatOrderDialog(title, p
     var error_modal = $('#order-error-template');
     var retry_modal = error_modal.clone().attr('id', 'order-retry-template');
     error_modal.parent().append(retry_modal);
+    var okPressed = false;
     var dialog = new this.Dialog(retry_modal, {
         ok: function () {
+            okPressed = true;
             this.close();
-            presenter.onEntrustSeparateSeatPressed();
+        },
+        close: function () {
+            if (okPressed)
+                presenter.onEntrustSeparateSeatPressed();
         }
     });
     dialog.header(title ? $('<h2></h2>').text(title): null);
