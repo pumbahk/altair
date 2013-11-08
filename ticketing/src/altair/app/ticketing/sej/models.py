@@ -3,6 +3,7 @@
 from altair.app.ticketing.models import BaseModel, LogicallyDeleted, WithTimestamp, MutationDict, JSONEncodedDict, Identifier
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Date, ForeignKey, Enum, DECIMAL, Binary, UniqueConstraint
 from sqlalchemy.orm import relationship, join, column_property, mapper, backref
+from sqlalchemy.orm.session import object_session
 from sqlalchemy.sql.expression import asc
 import sqlahelper
 from datetime import datetime
@@ -200,13 +201,13 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
 
     @property
     def prev(self):
-        return DBSession.query(self.__class__, include_deleted=True) \
+        return object_session(self).query(self.__class__, include_deleted=True) \
             .filter_by(order_no=self.order_no, branch_no=(self.branch_no - 1)) \
             .one()
 
     @property
     def next(self):
-        return DBSession.query(self.__class__, include_deleted=True) \
+        return object_session(self).query(self.__class__, include_deleted=True) \
             .filter_by(order_no=self.order_no, branch_no=(self.branch_no + 1)) \
             .one()
 
