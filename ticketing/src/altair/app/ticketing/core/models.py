@@ -3902,6 +3902,41 @@ class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 return e.v[1]
         return u''
 
+
 class CooperationTypeEnum(StandardEnum):
     augus = (0, u'オーガス')
     gettie = (0, u'Gettie')
+
+
+class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'AugusVenue'
+    
+    id = Column(Identifier, primary_key=True)
+    code = AnnotatedColumn(Unicode(32), primary_key=True, nullable=False, _a_label=(u'会場コード'))
+    venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+
+    @property
+    def site_id(self):
+        site_id = 1
+        return site_id
+
+
+class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'AugusSeat'
+
+    id = Column(Identifier, primary_key=True)
+    area_code = AnnotatedColumn(Integer, nullable=False,  _a_label=(u"エリアコード"))
+    info_code = AnnotatedColumn(Integer, nullable=False,  _a_label=(u"付加情報コード"))
+    floor = AnnotatedColumn(Unicode(32), nullable=False,  _a_label=(u"階"))
+    column = AnnotatedColumn(Unicode(32), nullable=False,  _a_label=(u"列"))
+    num = AnnotatedColumn(Unicode(32), nullable=False,  _a_label=(u"番"))
+
+    augus_venue_id = Column(Identifier, ForeignKey('AugusVenue.id', ondelete='CASCADE'), nullable=False)
+    seat_id = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+
+
+class AugusPerformance(object):
+    __tablename__ = 'AugusPerformance'
+    augus_event_code = None
+    augus_peformance_code = None
+    performance_id = None
