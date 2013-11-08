@@ -858,7 +858,13 @@ class PaymentView(object):
 
         form = self.form
         if not form.validate():
-            return dict(form=form)
+            asid = None
+            if is_mobile(self.request):
+                asid = self.request.altair_mobile_asid
+
+            if is_smartphone(self.request):
+                asid = self.request.altair_smartphone_asid
+            return dict(form=form, asid=asid)
 
         point_params = self.get_point_data()
 
