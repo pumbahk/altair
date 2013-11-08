@@ -212,7 +212,7 @@ def get_cart_factory(request):
     stocker_cls = reg.adapters.lookup([IRequest], ICartFactory, "")
     return stocker_cls(request)
 
-def order_products(request, sales_segment_id, product_requires, selected_seats=[], adjacency=True):
+def order_products(request, sales_segment_id, product_requires, selected_seats=[], separate_seats=False):
     stocker = get_stocker(request)
     reserving = get_reserving(request)
     cart_factory = get_cart_factory(request)
@@ -234,7 +234,7 @@ def order_products(request, sales_segment_id, product_requires, selected_seats=[
             if is_quantity_only(stockstatus.stock):
                 logger.debug('stock %d quantity only' % stockstatus.stock.id)
                 continue
-            seats += reserving.reserve_seats(stockstatus.stock_id, quantity, adjacency=adjacency)
+            seats += reserving.reserve_seats(stockstatus.stock_id, quantity, separate_seats=separate_seats)
 
     logger.debug(seats)
     cart = cart_factory.create_cart(performance_id, seats, product_requires)
@@ -330,8 +330,8 @@ def is_point_input_organization(context, request):
     organization = c_api.get_organization(request)
     return organization.id == 24
 
-def get_no_adjacency_url(request):
+def get_order_separate_seats_url(request):
     organization = c_api.get_organization(request)
     if organization.setting.entrust_separate_seats:
-        return request.route_url('cart.order', sales_segment_id=request.context.sales_segment.id, _query={'adjacency': 'false'})
+        return request.route_url('cart.order', sales_segment_id=request.context.sales_segment.id, _query={'separate_seats': 'true'})
     return u''

@@ -110,14 +110,14 @@ class Reserving(object):
             s.status = int(reserve_status)
         return selected_seats
 
-    def reserve_seats(self, stock_id, quantity, reserve_status=SeatStatusEnum.InCart, adjacency=True):
+    def reserve_seats(self, stock_id, quantity, reserve_status=SeatStatusEnum.InCart, separate_seats=False):
         try:
             seats = self.get_vacant_seats(stock_id, quantity)
             logger.debug('reserving %d seats for stock %s' % (len(seats), stock_id))
             self._reserve(seats, reserve_status)
         except NotEnoughAdjacencyException, e:
             # 連席が必須なら例外を返す
-            if adjacency:
+            if not separate_seats:
                 raise e
             # 連席でなくてよいならバラ席で確保して返す
             logger.debug('try to reserve %d seats' % quantity)

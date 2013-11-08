@@ -317,7 +317,7 @@ class IndexView(IndexViewMixin):
             performance_id=sales_segment.performance.id,
             sales_segment_id=sales_segment.id,
             order_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id),
-            order_no_adjacency_url=api.get_no_adjacency_url(self.request),
+            order_separate_seats_url=api.get_order_separate_seats_url(self.request),
             venue_name=sales_segment.performance.venue.name,
             event_id=self.request.context.event.id,
             venue_id=sales_segment.performance.venue.id,
@@ -545,6 +545,7 @@ class ReserveView(object):
             return dict(result='NG', reason="no products")
 
         selected_seats = self.request.params.getall('selected_seat')
+        separate_seats = True if self.request.params.get('separate_seats') == 'true' else False
         logger.debug('order_items %s' % order_items)
 
         sum_quantity = 0
@@ -567,8 +568,7 @@ class ReserveView(object):
             return dict(result='NG', reason="product_limit")
 
         try:
-            adjacency = False if self.request.params.get('adjacency') == 'false' else True
-            cart = api.order_products(self.request, self.request.context.sales_segment.id, order_items, selected_seats=selected_seats, adjacency=adjacency)
+            cart = api.order_products(self.request, self.request.context.sales_segment.id, order_items, selected_seats=selected_seats, separate_seats=separate_seats)
             cart.sales_segment = self.context.sales_segment
             if cart is None:
                 transaction.abort()
@@ -606,7 +606,8 @@ class ReserveView(object):
                                              unit_template=h.build_unit_template(p.product.items),
                                         )
                                         for p in cart.products],
-                              total_amount=h.format_number(get_amount_without_pdmp(cart))
+                              total_amount=h.format_number(get_amount_without_pdmp(cart)),
+                              separate_seats=separate_seats
                              )
                     )
 
