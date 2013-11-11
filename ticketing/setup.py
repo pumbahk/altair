@@ -168,6 +168,7 @@ setup(name='altair.app.ticketing',
       inquiry_demo=altair.app.ticketing.cart.commands:inquiry_demo
       release_carts=altair.app.ticketing.cart.commands:release_carts
       venue_import=altair.app.ticketing.scripts.venue_import:main
+      frontend_venue_import=altair.app.ticketing.scripts.frontend_venue_import:main
       update_seat_status=altair.app.ticketing.orders.scripts:update_seat_status
       join_cart_and_order=altair.app.ticketing.cart.commands:join_cart_and_order
       sej_notification=altair.app.ticketing.sej.scripts.sej_notification:main
