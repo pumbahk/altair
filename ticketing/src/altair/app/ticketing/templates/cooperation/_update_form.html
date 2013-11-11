@@ -1,4 +1,4 @@
-<%page args="form, display_modal" />
+<%page args="form, upload_url, display_modal" />
 <%namespace file="/common/helpers.html" name="ch" />
 
 <script "text/javascript">
@@ -20,7 +20,7 @@
 
   <div class="modal-body">
     <form method="POST" enctype="multipart/form-data"
-          action="${request.route_path('cooperation.update', venue_id=2)}">
+          action="${upload_url}">
       ${ch.form_item(form.id)}
       ${ch.form_item(form.cooperation_type)}
       ${ch.form_item(form.cooperation_file)}

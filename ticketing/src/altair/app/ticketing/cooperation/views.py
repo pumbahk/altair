@@ -21,6 +21,7 @@ class CooperationView(BaseView):
     @view_config(route_name='cooperation.show', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/show.html')
     def show(self):
+        venue_id = int(self.request.matchdict.get('venue_id', 0))        
         from mock import Mock
         site = Mock()
         site.name = u'テスト'
@@ -30,6 +31,7 @@ class CooperationView(BaseView):
                 'update_form': update_form,
                 'download_form': download_form,
                 'display_modal': False,
+                'upload_url': self._upload_url(venue_id)
                 }
 
     @view_config(route_name='cooperation.download', request_method='GET')
@@ -49,11 +51,11 @@ class CooperationView(BaseView):
     @view_config(route_name='cooperation.update', request_method='POST',
                  renderer='altair.app.ticketing:templates/cooperation/show.html')
     def update(self):
+        venue_id = int(self.request.matchdict.get('venue_id', 0))
+        organization_id = self.context.organization.id
         form = CooperationUpdateForm(self.request.params)
         display_modal = False
         if form.validate() and hasattr(form.cooperation_file.data, 'file'):
-            venue_id = form.venue_id.data
-            organization_id = form.organization_id.data
             cooperation_type = form.cooperation_type.data
             csv_file = form.cooperation_file.data.file
             update_augus_cooperation(venue_id, organization_id, csv_file)
@@ -69,11 +71,42 @@ class CooperationView(BaseView):
                 'update_form': update_form,
                 'download_form': download_form,
                 'display_modal': display_modal,
+                'upload_url': self._upload_url(venue_id)
                 }
 
+    def _upload_url(self, venue_id):
+        return self.request.route_path('cooperation.update', venue_id=venue_id)        
+    def _download_url(self, venue_id):
+        return self.request.route_path('cooperation.download', venue_id=venue_id)
+        
+class DeterminateError(Exception):
+    pass
+
+class NotFound(DeterminateError):
+    pass
+
+class MultipleFound(DeterminateError):
+    pass
+    
+
+class DoesNotExist(Exception):
+    pass
 
 class VenueDoesNotExist(Exception):
-    pass
+
+    def __init__(self, venue_id, organization_id, msg=None):
+        self.venue_id = venue_id
+        self.organization_id = organization_id
+        self.msg = msg
+
+    def __str__(self):
+        msg = 'Not found a venue: ' \
+              'venue_id={0}, organization_id={1}'.format(
+                  self.venue_id, self.organization_id)
+        if self.msg:
+            msg += '({0})'.format(self.msg)
+        return msg
+        
 
 class AugusVenueDoesNotExist(Exception):
     pass
@@ -87,6 +120,19 @@ class InvalidStatus(Exception):
 import csv
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.app.ticketing.core.models import Venue, Seat, AugusVenue, AugusSeat
+
+def get_or_create_augus_venue(venue_id, code):
+    try:
+        return AugusVenue.query.filter(AugusVenue.venue_id==venue_id,
+                                       AugusVenue.code==code).one()
+    except NoResultFound as err:
+        augus_venue = AugusVenue()
+        augus_venue.venue_id = venue_id
+        augus_venue.code = code
+        augus_venue.save()
+        return get_or_create_augus_venue(venue_id, code)
+    except MultipleResultsFound as err:
+        raise
 
 def update_augus_cooperation(venue_id, organization_id, csvfile):
     venue = get_original_venue(venue_id, organization_id)
@@ -110,17 +156,16 @@ def update_augus_cooperation(venue_id, organization_id, csvfile):
         floor = unicode(row[6]) # G
         column = unicode(row[7]) # H
         num = unicode(row[8]) # I
-        area_code = int(row[7]) # H
-        info_code = int(row[8]) # I
+        area_code = int(row[14]) # O
+        info_code = int(row[15]) # P
         seat_id = int(row[18]) # S
-        
-        augus_venue.code = augus_venue_code
-        augus_venue.venue_id = venue.id
-        augus_venue.save()
+
+        augus_venue = get_or_create_augus_venue(venue.id, augus_venue_code)
         seat = Seat.query.get(seat_id)
         if seat is None:
             raise SeatDoesNotExist()
-            
+        
+        augus_seat = None
         try:
             augus_seat = augus_seats.filter(
                 AugusSeat.augus_venue_id==augus_venue.id,
@@ -155,22 +200,31 @@ def update_augus_cooperation(venue_id, organization_id, csvfile):
         augus_seat.seat_id = seat.id
         augus_seat.save()
 
+
+
     
 def get_original_venue(venue_id, organization_id=None):
     venue = Venue.query.get(venue_id)
     if not venue:
-        raise VenueDoesNotExist('Not found input venue: id={0}'.format(venue_id))
+        raise VenueDoesNotExist(venue_id, organization_id)
+
     qs = Venue.query.filter(Venue.site_id==venue.site_id,
                             Venue.performance_id==None,
                             )
 
     if not organization_id is None:
         qs = qs.filter(Venue.organization_id==organization_id)
-    
-    original_venue = qs.one() # raise sqlalchemy.orm.exc.NoResultFound or sqlalchemy.orm.exc.MultipleResultsFound
+
+    try:
+        original_venue = qs.one() # raise sqlalchemy.orm.exc.NoResultFound or sqlalchemy.orm.exc.MultipleResultsFound
+    except NoResultFound as err:
+        raise NotFound('Venue does not found: venue_id={0} organization_id={0}'.format(
+            venue_id, organization_id))
+    except MultipleResultsFound as err:
+        raise MultipleFound('Venue does multiple found: venue_id={0} organization_id={0}'.format(
+            venue_id, organization_id))
     
     if original_venue:
         return original_venue
     else:
-        raise VenueDoesNotExist(
-            'Not found original venue: input venue id={0})'.format(venue_id))
+        raise VenueDoesNotExist(venue_id, organization_id, 'original venue')        
