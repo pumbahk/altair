@@ -5,7 +5,6 @@
 
 import unittest
 from pyramid import testing
-from mock import patch
 
 def _setup_db():
     from sqlalchemy import create_engine
@@ -25,98 +24,17 @@ def _teardown_db():
     session.remove()
     sqlahelper.get_base().metadata.drop_all(bind=session.bind)
 
-
-
-# class set_user_profile_for_orderTests(unittest.TestCase):
-
-#     def setUp(self):
-#         self.session = _setup_db()
-
-#     def tearDown(self):
-#         _teardown_db()
-
-#     def _callFUT(self, *args, **kwargs):
-#         from .api import set_user_profile_for_order
-#         return set_user_profile_for_order(*args, **kwargs)
-
-
-#     def _add_order(self, product_id):
-#         from altair.app.ticketing.core.models import Order
-#         # from altair.app.ticketing.core.models import OrderedProduct
-#         order = Order(total_amount=0, system_fee=0, transaction_fee=0, delivery_fee=0)
-#         # ordered_product = OrderedProduct(product_id=product_id, order=order, price=0)
-#         self.session.add(order)
-#         return order
-
-#     def assertAttributes(self, attributes, expected):
-#         self.assertEqual(len(attributes), len(expected), msg='length %d != %d' % (len(attributes), len(expected)))
-#         for i, kv in enumerate(expected):
-#             self.assertEqual(attributes[i].name, kv[0], msg="[OrderedProductAttribute[%d].name] (%s) %s != %s" % (i, kv[0], attributes[i].name, kv[0]))
-#             self.assertEqual(attributes[i].value, kv[1], msg="[OrderedProductAttribute[%d].value] (%s) %s != %s" % (i, kv[0], attributes[i].value, kv[1]))
-
-#     def test_it(self):
-#         bj89er_user_profile = {
-#             'cont': '1',
-#             'member_type': '10',
-#             u'number': "1",
-#             u'first_name': u"太郎",
-#             u'last_name': u"楽天",
-#             u'first_name_kana': u"たろう",
-#             u'last_name_kana': u"らくてん",
-#             u'year': "1980",
-#             u'month': "01",
-#             u'day': "02",
-#             u'sex': "1",
-#             u'zipcode1': "123",
-#             u'zipcode2': "4567",
-#             u'prefecture': u"東京都",
-#             u'city': u"港区",
-#             u'address1': u"品川",
-#             u'address2': u"",
-#             u'tel1_1': u"123",
-#             u'tel1_2': u"123",
-#             u'tel1_3': u"123",
-#             u'tel2_1': u"123",
-#             u'tel2_2': u"123",
-#             u'tel2_3': u"123",
-#             u'email_1': u"ticketstar@example.com",
-#         }
-#         request = testing.DummyRequest(session=dict(bj89er_user_profile=bj89er_user_profile))
-#         order = self._add_order(product_id=10)
-#         self._callFUT(request, order, bj89er_user_profile)
-
-#         self.assertAttributes(order.ordered_products[0].attributes,
-#             sorted([
-#                 (u'cont', '1'),
-#                 (u'member_type', '10'),
-#                 (u'number', "1"),
-#                 (u'first_name', u"太郎"),
-#                 (u'last_name', u"楽天"),
-#                 (u'first_name_kana', u"たろう"),
-#                 (u'last_name_kana', u"らくてん"),
-#                 (u'year', u"1980"),
-#                 (u'month', u"01"),
-#                 (u'day', u"02"),
-#                 (u'sex', u"1"),
-#                 (u'zipcode1', u"123"),
-#                 (u'zipcode2', u"4567"),
-#                 (u'prefecture', u"東京都"),
-#                 (u'city', u"港区"),
-#                 (u'address1', u"品川"),
-#                 (u'address2', u""),
-#                 (u'tel1_1', u"123"),
-#                 (u'tel1_2', u"123"),
-#                 (u'tel1_3', u"123"),
-#                 (u'tel2_1', u"123"),
-#                 (u'tel2_2', u"123"),
-#                 (u'tel2_3', u"123"),
-#                 (u'email_1', u"ticketstar@example.com"),
-#             ]))
-
-class Bj89erCartResourceTests(unittest.TestCase):
+class OrderReviewResourceTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
         self.session = _setup_db()
+        from altair.sqlahelper import register_sessionmaker_with_engine
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind,
+            self.session.session_factory
+            )
 
     def tearDown(self):
         _teardown_db()
@@ -129,13 +47,9 @@ class Bj89erCartResourceTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
-    @patch('altair.app.ticketing.cart.api.get_cart')
-    def test_get_or_create_user(self, get_cart):
+    def test_organization_id(self):
         from altair.app.ticketing.core.models import Host, Organization
         from altair.app.ticketing.users.models import Membership
-
-        get_cart.return_value = testing.DummyModel(id="this-is-cart-id")
-
         request = testing.DummyRequest()
         host = Host(host_name=request.host,
                     organization=Organization(short_name="testing"))
@@ -143,11 +57,24 @@ class Bj89erCartResourceTests(unittest.TestCase):
         membership = Membership(organization=organization, name="89ers")
         self.session.add(host)
         self.session.add(membership)
+        self.session.flush()
 
-        request.registry.settings['89ers.event_id'] = '10'
-        request.registry.settings['89ers.performance_id'] = '100'
         target = self._makeOne(request)
-        result = target.get_or_create_user()
+        self.assertEqual(target.organization_id, host.organization.id)
+        self.assertEqual(target.membership.id, membership.id)
 
-        self.assertEqual(result.user_credential[0].membership.name, '89ers')
-        self.assertEqual(result.user_credential[0].auth_identifier, 'this-is-cart-id')
+    def test_order_no(self):
+        from altair.app.ticketing.core.models import Host, Organization
+        from altair.app.ticketing.users.models import Membership
+        request = testing.DummyRequest(params=dict(order_no='000000000001'))
+        host = Host(host_name=request.host,
+                    organization=Organization(short_name="testing"))
+        organization = host.organization
+        membership = Membership(organization=organization, name="89ers")
+        self.session.add(host)
+        self.session.add(membership)
+        self.session.flush()
+
+        target = self._makeOne(request)
+        self.assertEqual(target.order_no, '000000000001')
+        self.assertEqual(target.membership.id, membership.id)
