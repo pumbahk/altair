@@ -744,7 +744,7 @@ class DummyReserving(object):
     def __init__(self, request):
         self.request = request
 
-    def reserve_seats(self, stock_id, quantity):
+    def reserve_seats(self, stock_id, quantity, separate_seats=False):
         return [testing.DummyModel()] * quantity
 
 class DummyCartFactory(object):

@@ -771,10 +771,11 @@ class ReserveViewTests(unittest.TestCase):
                         'unit_template': u'{{num}}枚',
                         }
                     ],
-                'total_amount': '200'
+                'total_amount': '200',
+                'separate_seats': False,
                 },
             'result': 'OK',
-            'payment_url': 'http://example.com/payment'
+            'payment_url': 'http://example.com/payment',
             })
         cart_id = request.session['altair.app.ticketing.cart_id']
 
