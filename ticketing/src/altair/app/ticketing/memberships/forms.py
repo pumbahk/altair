@@ -8,7 +8,6 @@ from altair.app.ticketing.core import models as cmodels
 
 
 class MembershipForm(Form):
-
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
         if obj:

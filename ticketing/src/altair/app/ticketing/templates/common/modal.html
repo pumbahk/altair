@@ -10,6 +10,9 @@
 
     <div class="modal-body">
       <p id="message"></p>
+      %if caller:
+        caller.body()
+      %endif
     </div>
 
     <div class="modal-footer">

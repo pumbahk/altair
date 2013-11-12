@@ -17,6 +17,7 @@ def verify_static_renderer(config, renderer):
     config.action((Interface, renderer), register)
 
 def static_renderer(renderer, venusian_=venusian):
+    """decoratorで渡したtemplateが存在することをconfiguration timeに確認する"""
     def _static_renderer(fn):
         def wrapped(request, kwargs):
             return fn(request, kwargs, renderer)
