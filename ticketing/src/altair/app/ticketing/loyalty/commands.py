@@ -67,6 +67,13 @@ def do_import_point_grant_results(registry, organization, file, now, type, force
             except ValueError:
                 raise RecordError(u'Invalid point amount', cols[5])
 
+            try:
+                order = Order.query \
+                    .filter_by(order_no=order_no, organization_id=organization.id) \
+                    .one()
+            except NoResultFound:
+                raise RecordError("Order(order_no=%s) does not exist" % order_no)
+
             point_grant_history_entry = None
             point_grant_history_entry_id = None
 
@@ -136,6 +143,7 @@ def import_point_grant_results():
     parser.add_argument('-e', '--encoding')
     parser.add_argument('-f', '--force', action='store_true')
     parser.add_argument('-t', '--type')
+    parser.add_argument('-O', '--organization-id', required=True)
     parser.add_argument('config')
     parser.add_argument('file', nargs='+')
 
@@ -190,7 +198,7 @@ def import_point_grant_results():
         transaction.abort()
         raise
 
-def do_import_point_grant_data(registry, type, submitted_on, file, reason_code, shop_name, encoding, force):
+def do_import_point_grant_data(registry, organization_id, type, submitted_on, file, reason_code, shop_name, encoding, force):
     from .models import PointGrantHistoryEntry
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.users.models import UserPointAccount, UserPointAccountTypeEnum
@@ -218,7 +226,7 @@ def do_import_point_grant_data(registry, type, submitted_on, file, reason_code, 
 
             try:
                 order = Order.query \
-                    .filter_by(order_no = order_no) \
+                    .filter_by(order_no=order_no, organization_id=organization_id) \
                     .one()
             except NoResultFound:
                 raise RecordError("Order(order_no=%s) does not exist" % order_no)
@@ -289,6 +297,7 @@ def import_point_grant_data():
     parser.add_argument('-R', '--reason-code')
     parser.add_argument('-S', '--shop-name')
     parser.add_argument('-f', '--force', action='store_true')
+    parser.add_argument('-O', '--organization-id', required=True)
     parser.add_argument('config')
     parser.add_argument('submitted_on')
     parser.add_argument('file', nargs='+')
@@ -321,6 +330,7 @@ def import_point_grant_data():
         for file in args.file:
             do_import_point_grant_data(
                 env['registry'],
+                args.organization_id,
                 type,
                 submitted_on,
                 file,
@@ -350,7 +360,7 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
 
     for organization in organizations:
         if organization.setting.point_type is None:
-            logger.info("Organization(id=%ld) doesn't have point granting feature enabled. Skipping" % organization.id)
+            logger.info("Organization(id=%ld, name=%s) doesn't have point granting feature enabled. Skipping" % (organization.id, organization.name))
             continue
 
         logger.info("start processing orders for Organization(id=%ld)" % organization.id)
@@ -361,6 +371,8 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
             .filter(Event.organization_id == organization.id) \
             .filter(Order.canceled_at == None) \
             .filter(Order.paid_at != None)
+        if organization_id:
+            query = query.filter(Event.organization_id == organization_id)
         if start_date:
             query = query.filter(Performance.start_on >= start_date)
         if end_date:
@@ -420,6 +432,7 @@ def make_point_grant_data():
     parser.add_argument('-s', '--start-date')
     parser.add_argument('-e', '--end-date')
     parser.add_argument('-d', '--date')
+    parser.add_argument('-O', '--organization-id')
     parser.add_argument('config')
     parser.add_argument('submitted_on')
 
@@ -555,6 +568,7 @@ def export_point_grant_data():
     parser.add_argument('-s', '--include-submitted', action='store_true')
     parser.add_argument('-R', '--reason-code', required=True)
     parser.add_argument('-S', '--shop-name', required=True)
+    parser.add_argument('-O', '--organization-id', required=True)
     parser.add_argument('config')
     parser.add_argument('submitted_on')
 
