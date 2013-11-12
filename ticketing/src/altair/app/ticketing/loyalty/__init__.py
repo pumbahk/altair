@@ -10,4 +10,5 @@ def includeme(config):
     config.add_route('point_grant_settings.edit', '/point_grant_settings/{point_grant_setting_id}/edit', factory=factory)
     config.add_route('point_grant_settings.show', '/point_grant_settings/{point_grant_setting_id}', factory=factory)
     config.add_route('point_grant_settings.index', '/point_grant_settings/', factory=factory)
+    config.add_subscriber('.mail.on_point_granting_failed', '.events.PointGrantingFailed')
     config.scan('.')

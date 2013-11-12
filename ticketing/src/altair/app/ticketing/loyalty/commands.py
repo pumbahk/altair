@@ -122,6 +122,7 @@ def do_import_point_grant_results(registry, organization, file, now, type, force
             if not grant_status:
                 logger.info('%d point(s) marked granted for PointGrantHistoryEntry(id=%ld)' % (points_granted, point_grant_history_entry_id))
             else:
+                notify_point_granting_failed(request, point_grant_history_entry)
                 logger.info('Point not granted for PointGrantHistoryEntry(id=%ld) (status: %s)' % (point_grant_history_entry_id, grant_status))
             DBSession.add(point_grant_history_entry)
 

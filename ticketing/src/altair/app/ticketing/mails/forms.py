@@ -113,6 +113,7 @@ class SubjectInfoRenderer(object):
                 setattr(self, k, RenderVal(label="", status=False, body=getattr(val, "body", u"")))
         return getattr(self, k)
 
+
 def MailInfoFormFactory(template, mutil=None, request=None):
     attrs = OrderedDict()
     attrs["subject"] = fields.TextField(label=u"メール件名")

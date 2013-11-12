@@ -51,6 +51,18 @@ class ICancelMail(IPurchaseInfoMail):
     """ 購入キャンセルメールを送る
     """
 
+class IPointGrantHistoryEntryInfoMail(Interface):
+    request = Attribute("request")
+
+    def build_mail_body(point_grant_history_entry, traverser):
+        pass
+
+    def build_message_from_mail_body(point_grant_history_entry, traverser, mail_body):
+        pass
+
+    def build_message(point_grant_history_entry, traverser):
+        pass
+
 class ICompleteMailPayment(Interface):
     """ 完了メールの配送ビューレットのコンテキスト"""
     request = Attribute("r")

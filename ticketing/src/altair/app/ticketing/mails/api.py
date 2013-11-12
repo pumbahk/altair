@@ -115,6 +115,14 @@ class MailTraverserFromLotsEntry(object):
         event = lots_entry.lot.event
         return EmailInfoTraverser(access=self.access, default=self.default).visit(event)
 
+@implementer(ITraverserFactory)
+class MailTraverserFromPointGrantHistoryEntry(object):
+    def __init__(self, mtype, default=""):
+        self.order_mail_traverser = MailTraverserFromOrder(mtype, default)
+
+    def __call__(self, point_grant_history_entry):
+        return self.order_mail_traverser(point_grant_history_entry.order)
+
 @implementer(IMailUtility)
 class MailUtility(object):
     def __init__(self, module, mtype, factory):
@@ -307,6 +315,18 @@ def create_fake_elected_wish(request, performance=None):
     if performance:
         elected_wish.performance = performance
     return elected_wish
+
+def create_fake_point_grant_history_entry(request, organization, payment_method_id, delivery_method_id, event=None, performance=None):
+    ## must not save models 
+    point_grant_history_entry = FakeObject("PointGrantHistoryEntry")
+    point_grant_history_entry.order = create_fake_order(
+        request,
+        organization,
+        payment_method_id,
+        delivery_method_id,
+        event,
+        performance)
+    return point_grant_history_entry
 
 @implementer(IMessagePartFactory)
 class MessagePartFactory(object):

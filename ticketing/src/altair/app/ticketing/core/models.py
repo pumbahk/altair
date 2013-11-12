@@ -3382,8 +3382,9 @@ class MailTypeEnum(StandardEnum):
     LotsAcceptedMail = 11
     LotsElectedMail = 12
     LotsRejectedMail = 13
+    PointGrantingFailureMail = 21
 
-MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール", u"抽選申し込み完了メール", u"抽選当選通知メール", u"抽選落選通知メール")
+MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール", u"抽選申し込み完了メール", u"抽選当選通知メール", u"抽選落選通知メール", u"ポイント付与失敗通知メール")
 assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
 MailTypeChoices = [(str(e) , label) for e, label in zip([enum.v for enum in sorted(iter(MailTypeEnum), key=lambda e: e.v)], MailTypeLabels)]
 MailTypeEnum.dict = dict(MailTypeChoices)
@@ -3781,6 +3782,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     bcc_recipient = Column(Unicode(255), nullable=True)
     entrust_separate_seats = Column(Boolean, nullable=False, default=False, doc=u"バラ席のおすすめが有効")
+    notify_point_granting_failure = Column(Boolean, nullable=False, default=False, doc=u"ポイント付与失敗時のメール通知on/off")
 
 class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "EventSetting"
