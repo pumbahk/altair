@@ -170,7 +170,7 @@ def import_point_grant_results():
         transaction.abort()
         raise
 
-def do_import_point_grant_data(registry, type, submitted_on, file, reason_code, shop_name, encoding):
+def do_import_point_grant_data(registry, type, submitted_on, file, reason_code, shop_name, encoding, force):
     from .models import PointGrantHistoryEntry
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.users.models import UserPointAccount, UserPointAccountTypeEnum
@@ -210,13 +210,14 @@ def do_import_point_grant_data(registry, type, submitted_on, file, reason_code, 
             except NoResultFound:
                 raise RecordError("UserPointAccount(type=%d, account_number=%s) does not exist" % (type, account_number))
 
-            point_grant_history_entry = PointGrantHistoryEntry.query \
-                .filter(PointGrantHistoryEntry.order_id == order.id) \
-                .filter(PointGrantHistoryEntry.user_point_account_id == user_point_account.id) \
-                .first()
+            if not force:
+                point_grant_history_entry = PointGrantHistoryEntry.query \
+                    .filter(PointGrantHistoryEntry.order_id == order.id) \
+                    .filter(PointGrantHistoryEntry.user_point_account_id == user_point_account.id) \
+                    .first()
 
-            if point_grant_history_entry is not None:
-                raise RecordError("PointAcountHistoryEntry(id=%ld) already exists for Order(id=%ld, order_No=%s)" % (point_grant_history_entry.id, order.id, order_no))
+                if point_grant_history_entry is not None:
+                    raise RecordError("PointAcountHistoryEntry(id=%ld) already exists for Order(id=%ld, order_No=%s). Use -f option to forcefully create a new entry" % (point_grant_history_entry.id, order.id, order_no))
 
             point_grant_history_entry = PointGrantHistoryEntry(
                 user_point_account=user_point_account,
@@ -267,6 +268,7 @@ def import_point_grant_data():
     parser.add_argument('-t', '--type')
     parser.add_argument('-R', '--reason-code')
     parser.add_argument('-S', '--shop-name')
+    parser.add_argument('-f', '--force', action='store_true')
     parser.add_argument('config')
     parser.add_argument('submitted_on')
     parser.add_argument('file', nargs='+')
@@ -304,7 +306,8 @@ def import_point_grant_data():
                 file,
                 reason_code,
                 shop_name,
-                args.encoding or default_encoding
+                args.encoding or default_encoding,
+                args.force
                 )
         transaction.commit()
     except:
