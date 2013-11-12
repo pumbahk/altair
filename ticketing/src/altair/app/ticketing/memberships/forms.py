@@ -59,8 +59,8 @@ class MemberGroupDeleteForm(Form):
         membergroup = self.membergroup
         if len(membergroup.users) > 0:
             self.membership_id.errors = [u"{membergroup.name}には１つ以上の会員が存在しています。消せません。".format(membergroup=membergroup)]
-        if len(membergroup.sales_segments) > 0:
-            self.membership_id.errors = [u"{membergroup.name}には１つ以上の販売区分が紐ついていますが。消せません。".format(membergroup=membergroup)]
+        if len(membergroup.sales_segment_groups) > 0:
+            self.membership_id.errors = [u"{membergroup.name}には１つ以上の販売区分グループが紐ついています。消せません。".format(membergroup=membergroup)]
         return not bool(self.errors)
 
     membership_id = HiddenField(
