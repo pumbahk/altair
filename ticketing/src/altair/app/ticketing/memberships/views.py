@@ -103,13 +103,13 @@ class MemberGroupView(BaseView):
         membergroup = umodels.MemberGroup.query.filter_by(id=self.request.matchdict["membergroup_id"]).first()
         if membergroup is None:
             raise HTTPNotFound
-        salessegments = membergroup.sales_segments
+        sales_segment_groups = membergroup.sales_segment_groups
         redirect_to = self.request.url
         return {"membergroup": membergroup, 
                 "form": forms.MemberGroupForm(),
                 "delete_form": forms.MemberGroupDeleteForm(obj=membergroup, redirect_to=""), 
                 "redirect_to": redirect_to, 
-                "salessegments": salessegments}
+                "sales_segment_groups": sales_segment_groups}
 
     @view_config(match_param="action=new", renderer="altair.app.ticketing:templates/memberships/groups/new.html", 
                  request_param="membership_id", request_method="GET")
@@ -181,52 +181,23 @@ class MemberGroupView(BaseView):
         dummy_url = self.request.route_path("memberships", action="show", membership_id=membership_id) ## this is dummy
         return refresh_response(self.request, {"redirect_to": self.request.POST.get("redirect_to") or dummy_url})
 
-@view_config(route_name="membergrups.api.salessegments.candidates", permission="administrator", 
+@view_config(route_name="membergrups.api.sales_segment_groups.candidates", permission="administrator", 
              request_method="GET", xhr=True, renderer="json")
-def candidates_sales_segment(context, request):
-    qs = cmodels.SalesSegment.query
+def candidates_sales_segment_group(context, request):
+    qs = cmodels.SalesSegmentGroup.query
     event_id = request.matchdict["event_id"]
     if event_id != "*":
-        qs = qs.filter(cmodels.Event.id==event_id, cmodels.SalesSegment.event_id==cmodels.Event.id)
-    salessegments = [{"id": s.id, "name": s.name} for s in qs]
-    return {"status": "success", "salessegments": salessegments}
+        qs = qs.filter(cmodels.Event.id==event_id, cmodels.SalesSegmentGroup.event_id==cmodels.Event.id)
+    sales_segment_groups = [{"id": s.id, "name": s.name} for s in qs]
+    return {"status": "success", "sales_segment_groups": sales_segment_groups}
 
-@view_defaults(decorator=with_bootstrap, route_name="membergroups.salessegments", permission="administrator")
+@view_defaults(decorator=with_bootstrap, route_name="membergroups.sales_segment_groups", permission="administrator")
 class SalesSegmentView(BaseView):
-    # @view_config(match_param="action=new", renderer="altair.app.ticketing:templates/memberships/salessegments/new.html", 
-    #              request_param="membergroup_id", request_method="GET")
-    # def new_get(self):
-    #     form = SalesSegmentForm()
-    #     return {"form": form, 
-    #             "redirect_to": self.request.params["redirect_to"], 
-    #             "membergroup_id": self.request.params["membergroup_id"], 
-    #             }
-
-    # @view_config(match_param="action=new", renderer="altair.app.ticketing:templates/memberships/salessegments/new.html", 
-    #              request_param="membergroup_id", request_method="POST")
-    # def new_post(self):
-    #     form = SalesSegmentForm(self.request.POST)
-    #     if not form.validate():
-    #         return {"form": form, 
-    #                 "redirect_to": self.request.params["redirect_to"], 
-    #                 "membergroup_id": self.request.params["membergroup_id"], 
-    #                 }
-
-    #     membergroup = umodels.MemberGroup.query.filter_by(id=self.request.params["membergroup_id"]).first()
-    #     sales_segment = merge_session_with_post(cmodels.SalesSegment(), form.data)
-    #     membergroup.sales_segments.append(sales_segment)
-
-    #     DBSession.add(membergroup)        
-    #     DBSession.add(sales_segment)
-
-    #     self.request.session.flash(u'販売区分を保存しました')
-    #     return HTTPFound(self.request.POST["redirect_to"])
-
     @view_config(match_param="action=edit", renderer="altair.app.ticketing:templates/memberships/salessegments/edit.html", 
                  request_method="GET")
     def edit_get(self):
         membergroup = umodels.MemberGroup.query.filter_by(id=self.request.matchdict["membergroup_id"]).first()
-        candidates_salessegments = []
+        candidates_sales_segment_groups = []
         events = cmodels.Event.query.filter_by(organization_id=self.context.user.organization_id)
 
         ## optinal
@@ -234,13 +205,13 @@ class SalesSegmentView(BaseView):
         if event_id:
             events.filter_by(id=event_id)
 
-        form = forms.SalesSegmentToMemberGroupForm(obj=membergroup, 
-                                                   salessegments=candidates_salessegments,
+        form = forms.SalesSegmentGroupToMemberGroupForm(obj=membergroup, 
+                                                   sales_segment_groups=candidates_sales_segment_groups,
                                                    events=events)
         return {"form": form, 
                 "redirect_to": self.request.params["redirect_to"], 
                 "membergroup_id": self.request.params["membergroup_id"], 
-                "salessegments_source": self.request.route_path("membergrups.api.salessegments.candidates", event_id="__id__"), 
+                "sales_segment_groups_source": self.request.route_path("membergrups.api.sales_segment_groups.candidates", event_id="__id__"), 
                 "membergroup": membergroup, 
                 "form_mg": forms.MemberGroupForm()}
 
@@ -250,11 +221,11 @@ class SalesSegmentView(BaseView):
     def edit_post(self):
         membergroup = umodels.MemberGroup.query.filter_by(id=self.request.matchdict["membergroup_id"]).first()
         event_id = unicode(self.request.POST["event_id"])
-        candidates_salessegments = cmodels.SalesSegment.query
-        will_bounds = candidates_salessegments.filter(cmodels.SalesSegment.id.in_(self.request.POST.getall("salessegments")))
+        candidates_sales_segment_groups = cmodels.SalesSegmentGroup.query
+        will_bounds = candidates_sales_segment_groups.filter(cmodels.SalesSegmentGroup.id.in_(self.request.POST.getall("sales_segment_groups")))
 
         will_removes = {}
-        for s in membergroup.sales_segments:
+        for s in membergroup.sales_segment_groups:
             if unicode(s.event_id) == event_id:
                 will_removes[unicode(s.id)] = s
 
@@ -262,10 +233,10 @@ class SalesSegmentView(BaseView):
             if unicode(s.id) in will_removes:
                 del will_removes[unicode(s.id)]
             else:
-                membergroup.sales_segments.append(s)
+                membergroup.sales_segment_groups.append(s)
         for s in will_removes.values():
-            membergroup.sales_segments.remove(s)
+            membergroup.sales_segment_groups.remove(s)
 
         DBSession.add(membergroup)
-        self.request.session.flash(u'販売区分の結びつき変更しました')
+        self.request.session.flash(u'販売区分グループの結びつき変更しました')
         return HTTPFound(self.request.POST["redirect_to"])

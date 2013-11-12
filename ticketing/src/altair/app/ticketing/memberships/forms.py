@@ -102,21 +102,21 @@ class MemberGroupForm(Form):
         validators=[Optional()]
     )
 
-class SalesSegmentToMemberGroupForm(Form):
+class SalesSegmentGroupToMemberGroupForm(Form):
     def _get_translations(self):
         return Translations()
 
-    def __init__(self, formdata=None, obj=None, prefix='', salessegments=None, events=None, **kwargs):
+    def __init__(self, formdata=None, obj=None, prefix='', sales_segment_groups=None, events=None, **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
-        salessegments = list(salessegments)
-        self.salessegments.choices = [(unicode(s.id), s.name) for s in salessegments or []]
+        sales_segment_groups = list(sales_segment_groups)
+        self.sales_segment_groups.choices = [(unicode(s.id), s.name) for s in sales_segment_groups or []]
         self.event_id.choices = [(unicode(s.id), s.title) for s in events or []]
-        self.salessegments_height = "%spx" % (len(salessegments)*20)
+        self.sales_segment_groups_height = "%spx" % (len(sales_segment_groups)*20)
         if obj:
-            self.salessegments.data = [unicode(s.id) for s in obj.sales_segments]
+            self.sales_segment_groups.data = [unicode(s.id) for s in obj.sales_segments]
 
-    salessegments = SelectMultipleField(
-        label=u"販売区分", 
+    sales_segment_groups = SelectMultipleField(
+        label=u"販売区分グループ",
         choices=[], 
         coerce=unicode, 
     )
