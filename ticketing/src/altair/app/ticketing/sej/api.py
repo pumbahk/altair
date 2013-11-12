@@ -21,7 +21,7 @@ from pyramid.threadlocal import get_current_registry
 
 DBSession = sqlahelper.get_session()
 
-def cancel_sej_order(sej_order, organization_id):
+def cancel_sej_order(sej_order, organization_id, now=None):
     if not sej_order:
         logger.error(u'sej_order is None')
         return False
@@ -47,7 +47,8 @@ def cancel_sej_order(sej_order, organization_id):
             exchange_number=sej_order.exchange_number,
             shop_id=shop_id,
             secret_key=api_key,
-            hostname=inticket_api_url
+            hostname=inticket_api_url,
+			now=now
         )
         return True
     except SejServerError as e:

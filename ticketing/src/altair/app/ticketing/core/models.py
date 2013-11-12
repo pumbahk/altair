@@ -2619,7 +2619,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             # 未入金ならコンビニ決済のキャンセル通知
             if self.payment_status == 'unpaid':
-                result = sej_api.cancel_sej_order(sej_order, self.organization_id)
+                result = sej_api.cancel_sej_order(sej_order, self.organization_id, now)
                 if not result:
                     return False
 

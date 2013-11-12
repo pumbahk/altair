@@ -393,7 +393,8 @@ def request_cancel_order(
         exchange_number,
         shop_id = u'30520',
         secret_key = u'E6PuZ7Vhe7nWraFW',
-        hostname = sej_hostname
+        hostname = sej_hostname,
+        now=None
     ):
     '''
     注文キャンセル https://inticket.sej.co.jp/order/cancelorder.do
@@ -419,11 +420,16 @@ def request_cancel_order(
             error_field=ret.get('Error_Field', None)
             )
 
-    sej_order = SejOrder.query.filter_by(
-        order_no=order_no,
-        billing_number=billing_number,
-        exchange_number=exchange_number).one()
-    sej_order.cancel_at = datetime.now()
+    from .api import get_sej_order
+    sej_order = get_sej_order(order_no)
+    if sej_order.billing_number != billing_number or \
+       sej_order.exchange_number != exchange_number:
+        raise ValueError('validation error: billing_number or exchange_number is different from SejOrder(order_no=%s): billing_number=%s (expected %s), exchange_number=%s (expected %s)' % (
+            order_no,
+            exchange_number, sej_order.exchange_number,
+            billing_number, sej_order.billing_number,
+            ))
+    sej_order.mark_canceled(now)
     DBSession.merge(sej_order)
     DBSession.flush()
 
