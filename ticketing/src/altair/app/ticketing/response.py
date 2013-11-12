@@ -3,18 +3,21 @@ import venusian
 from pyramid.exceptions import ConfigurationError
 from pyramid.renderers import (
     render_to_response,
-    get_renderer
+    RendererHelper
 )
+from pyramid.interfaces import PHASE2_CONFIG
 from zope.interface import Interface
 
 def verify_static_renderer(config, renderer):
     def register():
         try:
-            get_renderer(renderer).implementation() #xxx.
+            assert RendererHelper(renderer, registry=config.registry).renderer.implementation()
+        except ConfigurationError:
+            raise
         except Exception as e:
             raise ConfigurationError(repr(e))
     ## renderer factory registration on PHASE1_CONFIG(=-20). so.
-    config.action((Interface, renderer), register)
+    config.action((Interface, renderer), register, order=PHASE2_CONFIG)
 
 def static_renderer(renderer, venusian_=venusian):
     """decoratorで渡したtemplateが存在することをconfiguration timeに確認する"""

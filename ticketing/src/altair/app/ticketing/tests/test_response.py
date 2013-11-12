@@ -15,7 +15,7 @@ class DummyVenusian(object):
 
 class RefreshResponseTests(unittest.TestCase):
     def setUp(self):
-        self.config = testing.setUp()
+        self.config = testing.setUp(autocommit=False)
     def tearDown(self):
         testing.tearDown()
 
@@ -28,7 +28,6 @@ class RefreshResponseTests(unittest.TestCase):
 
     def test__missing_template(self):
         self.config.include('altair.app.ticketing.renderers')
-        self.config.scan("altair.app.ticketing.response")
 
         venusian = DummyVenusian(self.config)
         self._callFUT("altair.app.ticketing:templates/missing__missing.html", venusian_=venusian)
@@ -36,12 +35,13 @@ class RefreshResponseTests(unittest.TestCase):
         from pyramid.exceptions import ConfigurationError
         with self.assertRaises(ConfigurationError):
             venusian.scan(".")
+            self.config.commit()
 
     def test__exists_template(self):
         self.config.include('altair.app.ticketing.renderers')
-        self.config.scan("altair.app.ticketing.response")
 
         venusian = DummyVenusian(self.config)
         response_function = self._callFUT("altair.app.ticketing:templates/refresh.html", venusian_=venusian)
         venusian.scan(".")
+        self.config.commit()
         self.assertEquals(response_function(request=None, kwargs={}), "ok")
