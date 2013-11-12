@@ -13,6 +13,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from . import forms
 from altair.app.ticketing.response import refresh_response
+from pyramid.response import Response
 ## admin権限を持っている人以外見れない想定。
 
 @view_defaults(permission="administrator", decorator=with_bootstrap, route_name="memberships")
@@ -78,13 +79,17 @@ class MembershipView(BaseView):
         self.request.session.flash(u"membershipを編集しました")
         return HTTPFound(self.request.route_url("memberships", action="index", membership_id="*"))
 
-    @view_config(match_param="action=delete", renderer="altair.app.ticketing:templates/memberships/_delete_modal.html")
+    @view_config(match_param="action=delete")
     def delete(self):
         membership = umodels.Membership.query.filter_by(id=self.request.matchdict["membership_id"]).first()
         if membership is None:
             raise HTTPNotFound
         if len(membership.membergroups) > 0:
-            return {"message": u"{membership.name}には１つ以上の設定が存在しています。消せません。"}
+            return Response(u"""
+            <div class="alert alert-error">
+            {membership.name}には１つ以上の会員種別が存在しています。消せません。
+            </div>
+            """.format(membership=membership))
         membership.delete()
         self.request.session.flash(u"membershipを削除しました")
         return refresh_response(self.request, {"redirect_to": self.request.route_url("memberships", action="index", membership_id="*")})
