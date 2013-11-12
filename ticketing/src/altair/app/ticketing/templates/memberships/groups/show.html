@@ -1,24 +1,5 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch" />
-<%namespace file="/common/modal.html" import="delete_modal" />
-
-<script type="text/javascript">
-  function delete_membership(baseurl) {
-    var modal = $('#modal-delete');
-    modal.find('#message').text('この会員区分を削除します。よろしいですか？');
-    modal.find("#delete").click(function(){
-      $("#delet form").append($("<input type='hidden'>").attr("name", "membership_id").attr("value", "${membergroup.membership_id}"));
-      $("#delet form").append($("<input type='hidden'>").attr("name", "redirect_to").attr("value", "${request.route_path("memberships",action="show", membership_id="membergroup.membership_id")}"));
-      $("#delete_form").attr("action", "${request.route_path("membergroups", action="delete", membergroup_id=membergroup.id)}").submit();
-      return false;
-    })
-    modal.modal("toggle");
-  };
-  $(function(){  $("#delete_link").click(delete_membership);  })
-</script>
-
-<form id="delete_form" method="POST">
-</form>
 
 <%doc>
 ## breadcrumbs are not supported yet
@@ -36,7 +17,7 @@
 
 <div>
   <a href="${request.route_path('membergroups',action="edit", membergroup_id=membergroup.id, _query=dict(membership_id=membergroup.membership_id,redirect_to=redirect_to))}" class="btn">編集</a>
-  <a id="delete_link" href="#" class="btn">削除</a>
+  <a id="delete_link" href="javascript:popup_membergroup_delete_modal(${membergroup.id});" class="btn">削除</a>
 </div>
 
 <%include file="./_detail.html" args="form=form, membergroup=membergroup" /> 
@@ -50,8 +31,9 @@
 <div class="row-fluid">
   <div class="span12">
     <%include file="/sales_segment_groups/_list.html" args="sales_segment_groups=sales_segment_groups" />
-    <%include file="/memberships/salessegments/_action_button.html" args="membergroup=membergroup,redirect_to=redirect_to,order=None,event_id=None" />
+    ## <%include file="/memberships/salessegments/_action_button.html" args="membergroup=membergroup,redirect_to=redirect_to,order=None,event_id=None" />
   </div>
 </div>
 
-${delete_modal()}
+<% post_url = request.route_path("membergroups",membergroup_id="__id__",action="delete") %>
+<%include file="./_delete_modal.html" args="request=request,delete_form=delete_form,post_url=post_url"/>

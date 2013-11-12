@@ -27,7 +27,9 @@
 <div class="row-fluid">
   <div class="span12">
   <%include file="/memberships/groups/_list.html" args="member_groups=membergroups, form=form_mg" />
-  <%include file="/memberships/groups/_action_button.html" args="membership=membership,order=None,redirect_to=redirect_to" />
+  <%include file="/memberships/groups/_action_button.html" args="membership=membership,order=None," />
+  <% post_url = request.route_path("membergroups",membergroup_id="__id__",action="delete") %>
+  <%include file="/memberships/groups/_delete_modal.html" args="request=request,delete_form=form_mg_delete,post_url=post_url"/>
   </div>
 </div>
 

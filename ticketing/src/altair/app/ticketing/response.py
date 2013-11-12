@@ -35,3 +35,6 @@ def static_renderer(renderer, venusian_=venusian):
 def refresh_response(request, kwargs, renderer):
     return render_to_response(renderer, kwargs, request=request)
 
+@static_renderer("altair.app.ticketing:templates/common/simpleform.html")
+def formbody_response(request, form, renderer):
+    return render_to_response(renderer, {"form": form}, request=request)

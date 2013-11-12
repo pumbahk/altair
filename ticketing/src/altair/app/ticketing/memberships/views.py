@@ -35,8 +35,9 @@ class MembershipView(BaseView):
         redirect_to = self.request.url
         return {"membership": membership,
                 "form": forms.MembershipForm(organization_id=organization_id),
-                "form_mg": forms.MemberGroupForm(), 
-                "membergroups": membergroups, 
+                "form_mg": forms.MemberGroupForm(),
+                "form_mg_delete": forms.MemberGroupDeleteForm(membership_id=membership.id, redirect_to=self.request.url),
+                "membergroups": membergroups,
                 "redirect_to": redirect_to}
 
     @view_config(match_param="action=new", renderer="altair.app.ticketing:templates/memberships/new.html", request_method="GET")
@@ -87,7 +88,7 @@ class MembershipView(BaseView):
         if len(membership.membergroups) > 0:
             return Response(u"""
             <div class="alert alert-error">
-            {membership.name}には１つ以上の会員種別が存在しています。消せません。
+            {membership.name}には１つ以上の会員区分が存在しています。消せません。
             </div>
             """.format(membership=membership))
         membership.delete()
@@ -105,7 +106,8 @@ class MemberGroupView(BaseView):
         salessegments = membergroup.sales_segments
         redirect_to = self.request.url
         return {"membergroup": membergroup, 
-                "form": forms.MemberGroupForm(), 
+                "form": forms.MemberGroupForm(),
+                "delete_form": forms.MemberGroupDeleteForm(obj=membergroup, redirect_to=""), 
                 "redirect_to": redirect_to, 
                 "salessegments": salessegments}
 
@@ -164,18 +166,20 @@ class MemberGroupView(BaseView):
         dummy_url = self.request.route_path("memberships", action="index", membership_id="*") ## this is dummy
         return HTTPFound(self.request.POST.get("redirect_to") or dummy_url)
 
-    @view_config(match_param="action=delete", 
-                 request_method="POST")
+    @view_config(match_param="action=delete", request_method="POST", renderer="altair.app.ticketing:templates/common/simpleform.html")
     def delete_post(self):
         membergroup = umodels.MemberGroup.query.filter_by(id=self.request.matchdict["membergroup_id"]).first()
         if membergroup is None:
             raise HTTPNotFound("member group not found")
-
+        form = forms.MemberGroupDeleteForm(self.request.POST, obj=membergroup)
+        if not form.validate():
+            return {"form": form}
+        membership_id=membergroup.membership_id
         membergroup.delete()
 
         self.request.session.flash(u"membergroupを削除しました")
-        dummy_url = self.request.route_path("memberships", action="index", membership_id="*") ## this is dummy
-        return HTTPFound(self.request.POST.get("redirect_to") or dummy_url)
+        dummy_url = self.request.route_path("memberships", action="show", membership_id=membership_id) ## this is dummy
+        return refresh_response(self.request, {"redirect_to": self.request.POST.get("redirect_to") or dummy_url})
 
 @view_config(route_name="membergrups.api.salessegments.candidates", permission="administrator", 
              request_method="GET", xhr=True, renderer="json")

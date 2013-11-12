@@ -12,7 +12,7 @@
       modal.data("*click.bound", true)
       modal.find("#delete").click(function(e){
         var href=modal.find("#delete").attr("href");
-        post_modal_form("#modal-delete", "#message", href);
+        post_modal_form("#modal-delete", "#modal-delete #message", href);
         return false;
       });
     }

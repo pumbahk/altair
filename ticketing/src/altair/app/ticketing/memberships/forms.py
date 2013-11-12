@@ -40,6 +40,38 @@ class MembershipForm(Form):
         validators=[Optional()],
     )
 
+class MemberGroupDeleteForm(Form):
+    def _get_translations(self):
+        return Translations()
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        if obj:
+            self.membership_id.data = obj.membership_id
+            self.membergroup = obj
+
+    def validate(self):
+        status = super(MemberGroupDeleteForm, self).validate()
+        if not status:
+            return status
+        if not hasattr(self, "membergroup"):
+            return status
+        membergroup = self.membergroup
+        if len(membergroup.users) > 0:
+            self.membership_id.errors = [u"{membergroup.name}には１つ以上の会員が存在しています。消せません。".format(membergroup=membergroup)]
+        if len(membergroup.sales_segments) > 0:
+            self.membership_id.errors = [u"{membergroup.name}には１つ以上の販売区分が紐ついていますが。消せません。".format(membergroup=membergroup)]
+        return not bool(self.errors)
+
+    membership_id = HiddenField(
+        label=u"",
+    )
+    redirect_to = HiddenField(
+        label=u"",
+        validators=[Optional()]
+    )
+
+
 class MemberGroupForm(Form):
     def _get_translations(self):
         return Translations()
