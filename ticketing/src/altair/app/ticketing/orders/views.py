@@ -1245,11 +1245,11 @@ class OrderDetailView(BaseView):
         qs = DBSession.query(Order)\
             .filter(Order.deleted_at==None).filter(Order.id.in_(ords))\
             .filter(Order.issued==False)\
-            .options(joinedload(Order.operator))
 
         for order in qs:
-            if not order.operator.is_member_of_organization(self.context.user.organization):
-                continue
+            if not self.context.user.is_member_of_organization(order):
+                self.request.session.flash(u'異なる組織({operator.organization.name})の管理者で作業したようです。「{order.organization.name}」の注文を対象にした操作はスキップされました。'.format(order=order, operator=self.context.user))
+                raise HTTPFound(location=self.request.route_path("orders.index"))
             if not order.queued:
                 utils.enqueue_cover(operator=self.context.user, order=order)
                 utils.enqueue_for_order(operator=self.context.user, order=order)
