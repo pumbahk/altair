@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .const import SalesEnum
+from .const import SalesEnum, get_prefectures
 
 from altaircms.asset.models import ImageAsset
 from altaircms.helpers.asset import rendering_object as asset_rendering_object
@@ -172,3 +172,20 @@ class SmartPhoneHelper(object):
                 if item['label'].find(label) != -1:
                     contents.append((item['label'], item['content']))
         return contents
+
+    def get_venue_cnt(self, event):
+        venues = []
+        for perf in event.performances:
+            if not perf.venue in venues:
+                venues.append(perf.venue)
+        return len(venues)
+
+    def get_venue_name(self, event, query):
+        venue = event.performances[0].venue
+        prefectures = get_prefectures(query.area)
+        if hasattr(query, "area"):
+            for perf in event.performances:
+                for pref in prefectures:
+                    if perf.prefecture == pref:
+                        return perf.venue
+        return venue
