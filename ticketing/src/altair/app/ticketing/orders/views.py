@@ -1246,20 +1246,27 @@ class OrderDetailView(BaseView):
             .filter(Order.deleted_at==None).filter(Order.id.in_(ords))\
             .filter(Order.issued==False)\
 
+        will_removes = []
+        break_p = False
         for order in qs:
+            will_removes.append(order)
             if not self.context.user.is_member_of_organization(order):
-                self.request.session.flash(u'異なる組織({operator.organization.name})の管理者で作業したようです。「{order.organization.name}」の注文を対象にした操作はスキップされました。'.format(order=order, operator=self.context.user))
-                raise HTTPFound(location=self.request.route_path("orders.index"))
-            if not order.queued:
+                if not break_p:
+                    self.request.session.flash(u'異なる組織({operator.organization.name})の管理者で作業したようです。「{order.organization.name}」の注文を対象にした操作はスキップされました。'.format(order=order, operator=self.context.user))
+                    break_p = True
+            elif not order.queued:
                 utils.enqueue_cover(operator=self.context.user, order=order)
                 utils.enqueue_for_order(operator=self.context.user, order=order)
 
-        # def clean_session_callback(request):
         logger.info("*ticketing print queue many* clean session")
         session_values = self.request.session.get("orders", [])
-        for order in qs:
+        for order in will_removes:
             session_values.remove("o:%s" % order.id)
         self.request.session["orders"] = session_values
+
+        if break_p:
+            raise HTTPFound(location=self.request.route_path("orders.index"))
+
         # self.request.add_finished_callback(clean_session_callback)
         self.request.session.flash(u'券面を印刷キューに追加しました. (既に印刷済みの注文は印刷キューに追加されません)')
         if self.request.POST.get("redirect_url"):
