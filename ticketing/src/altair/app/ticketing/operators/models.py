@@ -8,6 +8,9 @@ from sqlalchemy.orm import join, column_property, mapper
 from altair.app.ticketing.utils import StandardEnum
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession, Identifier, relationship
 
+import logging
+logger = logging.getLogger(__name__)
+
 class OperatorRole_Operator(Base):
     __tablename__   = 'OperatorRole_Operator'
     id = Column(Identifier, primary_key=True, nullable=False)
@@ -132,5 +135,11 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def is_superuser(self):
         return any(r.name == "superuser" for r in self.roles)
+
+    def is_member_of_organization(self, organization):
+        if unicode(self.organization_id) == unicode(organization.id):
+            logger.warn("operator(id={id}). is not organization({short_name})'s operator.".format(id=self.id, short_name=organization.short_name))
+            return False
+        return True
 
 from ..core.models import TicketPrintQueueEntry

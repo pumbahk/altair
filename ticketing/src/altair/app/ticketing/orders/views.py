@@ -1244,9 +1244,12 @@ class OrderDetailView(BaseView):
 
         qs = DBSession.query(Order)\
             .filter(Order.deleted_at==None).filter(Order.id.in_(ords))\
-            .filter(Order.issued==False)
+            .filter(Order.issued==False)\
+            .options(joinedload(Order.operator))
 
         for order in qs:
+            if not order.operator.is_member_of_organization(self.context.user.organization):
+                continue
             if not order.queued:
                 utils.enqueue_cover(operator=self.context.user, order=order)
                 utils.enqueue_for_order(operator=self.context.user, order=order)
