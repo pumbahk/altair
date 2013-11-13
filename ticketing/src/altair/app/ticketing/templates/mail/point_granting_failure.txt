@@ -3,6 +3,8 @@ ${name}　様
 
 「${title}」のご購入につきまして、${get("failure_reason").body if get("failure_reason").status else u''}楽天スーパーポイントの付与を行うことができませんでした。
 
+付与予定日: ${h.japanese_date(point_submitted_on)}
+付与予定ポイント数: ${point_amount.quantize(0)}ポイント
 
 お手数でございますが、下記URLにてポイント口座番号の確認をいただき、
 お知らせいただくようお願いいたします。
@@ -33,9 +35,6 @@ ${get("delivery_method").label} ${get("delivery_method").body}
 %endif
 
 ==========
-%if get("address").status:
-${get("address").body}
-%endif
 %if get("event_name").status:
 ${get("event_name").label}
 ${get("event_name").body}

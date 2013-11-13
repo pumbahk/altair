@@ -5,6 +5,7 @@ def install_mail_utility(config):
     config.include('pyramid_mailer')
     config.include('altair.mobile')
     config.include(".config")
+    config.include(".fake")
 
     from .api import MailSettingDefaultGetter
     from .interfaces import IMailSettingDefault
@@ -15,7 +16,7 @@ def install_mail_utility(config):
     
     from .interfaces import IMailDataStoreGetter
     config.registry.registerUtility(config.maybe_dotted(".resources.get_mail_data_store"), IMailDataStoreGetter)
-   
+
     # from altair.app.ticketing.mails.simple import SimpleMail
     # config.add_mail_utility(MailTypeEnum.PurchaseCompleteMail, ".simple", SimpleMail)
 

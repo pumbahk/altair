@@ -7,7 +7,7 @@ import re
 import unicodedata
 from datetime import datetime
 
-from zope.interface import implementer
+from zope.interface import implementer, directlyProvides
 
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Attachment
@@ -15,15 +15,17 @@ from pyramid_mailer.message import Attachment
 from altair.mobile.api import detect_from_email_address
 from altair.mobile import carriers
 
-from altair.app.ticketing.core.models import ExtraMailInfo, PaymentMethod, DeliveryMethod
+from altair.app.ticketing.core.models import ExtraMailInfo
 
 from .interfaces import (
     IMailUtility, 
     ITraverserFactory, 
     IMailSettingDefault,
-    IMessagePartFactory
+    IMessagePartFactory,
+    IFakeObjectFactory,
 )
 from .fake import FakeObject
+from .fake import create_fake_order as _create_fake_order
 from .traverser import EmailInfoTraverser
 
 logger = logging.getLogger(__name__)
@@ -33,7 +35,7 @@ def get_mail_utility(request, mailtype):
 
 def get_cached_traverser(request, mtype, subject):
     trv = getattr(subject, "_cached_mail_traverser", None)
-    if trv is None:
+    if trv is None or not ITraverserFactory.providedBy(trv):
         factory = request.registry.getUtility(ITraverserFactory, name=mtype)
         trv = subject._cached_mail_traverser = factory(subject)
     return trv
@@ -120,15 +122,39 @@ class MailTraverserFromPointGrantHistoryEntry(object):
     def __init__(self, mtype, default=""):
         self.order_mail_traverser = MailTraverserFromOrder(mtype, default)
 
+    @property
+    def mtype(self):
+        return self.order_mail_traverser.mtype
+
+    @property
+    def default(self):
+        return self.order_mail_traverser.default
+
+    @property
+    def access(self):
+        return self.order_mail_traverser.access
+
     def __call__(self, point_grant_history_entry):
         return self.order_mail_traverser(point_grant_history_entry.order)
 
 @implementer(IMailUtility)
 class MailUtility(object):
-    def __init__(self, module, mtype, factory):
+    def __init__(self, module, mtype, builder):
         self.module = module
-        self.factory = factory
         self.mtype = mtype
+        self.builder = builder
+
+    def get_mailtype_description(self):
+        return self.module.get_mailtype_description()
+
+    def get_subject_info_default(self):
+        return self.module.get_subject_info_default()
+
+    def create_or_update_mailinfo(self, request, data, organization=None, event=None, performance=None, kind=None):
+        return self.module.create_or_update_mailinfo(request, data, organization, event, performance, kind)
+
+    def create_fake_object(self, request, **kwargs):
+        return request.registry.queryAdapter(self.builder, IFakeObjectFactory)(request, kwargs)
 
     def get_traverser(self, request, subject):
         if isinstance(subject, (list, tuple)):
@@ -136,9 +162,8 @@ class MailUtility(object):
         return get_cached_traverser(request, self.mtype, subject)
 
     def build_message(self, request, subject):
-        mail = self.factory(request)
         traverser = self.get_traverser(request, subject)
-        message = mail.build_message(subject, traverser)
+        message = self.builder.build_message(request, subject, traverser)
         return message
 
     def send_mail(self, request, subject, override=None):
@@ -158,15 +183,14 @@ class MailUtility(object):
         return message
 
     def preview_text(self, request, subject, limit=100):
-        mail = self.factory(request)
         traverser = self.get_traverser(request, subject)
         try:
-            mail_body = mail.build_mail_body(subject, traverser)
+            mail_body = self.builder.build_mail_body(request, subject, traverser)
         except:
             etype, value, tb = sys.exc_info()
             mail_body = u''.join(s.decode("utf-8", errors="replace") for s in traceback.format_exception(etype, value, tb, limit))
 
-        message = mail.build_message_from_mail_body(subject, traverser, mail_body)
+        message = self.builder.build_message_from_mail_body(request, subject, traverser, mail_body)
         return preview_text_from_message(message)
 
     def __getattr__(self, k, default=None):
@@ -242,91 +266,15 @@ def message_settings_override(message, override):
     return message
 
 
-## fake
-### TODO:refactroing
 def create_fake_order(request, organization, payment_method_id, delivery_method_id, event=None, performance=None):
-    ## must not save models 
-    now = datetime.now()
-    order = FakeObject("T")
-    order.ordered_from = organization
-    order.order_no = None
-    order.created_at = now
-    order._cached_mail_traverser = None
-
-    if event:
-        order.performance._fake_root = event
-    else:
-        order.performance._fake_root = organization
-
-    order.payment_delivery_pair.payment_method.payment_plugin_id = 1 #dummy
-    payment_method = PaymentMethod.query.filter_by(id=payment_method_id).first()
-    if payment_method:
-        order.payment_delivery_pair.payment_method = payment_method
-
-    order.payment_delivery_pair.delivery_method.delivery_plugin_id = 1 #dummy
-    delivery_method = DeliveryMethod.query.filter_by(id=delivery_method_id).first()
-    if delivery_method:
-        order.payment_delivery_pair.delivery_method = delivery_method
-
-    order.performance.start_on = datetime.now()
-
-    if event:
-        order.performance.event = event
-    if performance:
-        order.performance = performance
-    return order
-
-def create_fake_lot_entry(request, organization, payment_method_id, delivery_method_id, event=None, performance=None):
-    ## must not save models 
-    now = datetime.now()
-    lot_entry = FakeObject("T")
-    lot_entry.entry_no = lot_entry.order_no = None
-    lot_entry.lot_entryed_from = organization
-    lot_entry.created_at = now
-    lot_entry._cached_mail_traverser = None
-
-    if performance:
-        pass
-    elif event:
-        pass
-    else:
-        lot_entry.lot.event._fake_root = organization #lot_entry
-
-
-    lot_entry.payment_delivery_method_pair.payment_method.payment_plugin_id = 1 #dummy
-    payment_method = PaymentMethod.query.filter_by(id=payment_method_id).first()
-    if payment_method:
-        lot_entry.payment_delivery_method_pair.payment_method = payment_method
-
-    lot_entry.payment_delivery_method_pair.delivery_method.delivery_plugin_id = 1 #dummy
-    delivery_method = DeliveryMethod.query.filter_by(id=delivery_method_id).first()
-    if delivery_method:
-        lot_entry.payment_delivery_method_pair.delivery_method = delivery_method
-
-    if event:
-        lot_entry.lot.event = event #lot_entry
-    if performance:
-        lot_entry.lot.event = performance.event #lot_entry
-    return lot_entry
-
-def create_fake_elected_wish(request, performance=None):
-    ## must not save models 
-    elected_wish = FakeObject("ElectedWish")
-    if performance:
-        elected_wish.performance = performance
-    return elected_wish
-
-def create_fake_point_grant_history_entry(request, organization, payment_method_id, delivery_method_id, event=None, performance=None):
-    ## must not save models 
-    point_grant_history_entry = FakeObject("PointGrantHistoryEntry")
-    point_grant_history_entry.order = create_fake_order(
-        request,
-        organization,
-        payment_method_id,
-        delivery_method_id,
-        event,
-        performance)
-    return point_grant_history_entry
+    args = {
+        "organization": organization,
+        "payment_method_id": payment_method_id,
+        "delivery_method_id": delivery_method_id,
+        "event": event,
+        "performance": performance,
+        }
+    return _create_fake_order(request, args)
 
 @implementer(IMessagePartFactory)
 class MessagePartFactory(object):

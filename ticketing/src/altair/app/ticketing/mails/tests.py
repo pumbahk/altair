@@ -125,14 +125,14 @@ class CreateMailFromFakeOrderTests(unittest.TestCase):
 
     def test_it(self):
         from altair.app.ticketing.core.models import Organization, MailTypeEnum, OrganizationSetting
-        from altair.app.ticketing.mails.api import create_fake_order
+        from altair.app.ticketing.mails.fake import FakeOrderFactory
         from altair.app.ticketing.mails.api import get_mail_utility
 
         org = Organization()
         org.settings.append(OrganizationSetting(name="default"))
         org.extra_mail_info=None
         request = testing.DummyRequest()
-        order = create_fake_order(request, org, 2, 1)
+        order = FakeOrderFactory(object())(request, { "organization": org })
 
         mutil = get_mail_utility(request, MailTypeEnum.PurchaseCompleteMail)
         mutil.build_message(request, order).body
@@ -141,8 +141,7 @@ class CreateMailFromFakeOrderTests(unittest.TestCase):
 
     def test_lot_entry(self):
         from altair.app.ticketing.core.models import Organization, MailTypeEnum, OrganizationSetting
-        from altair.app.ticketing.mails.api import create_fake_lot_entry
-        from altair.app.ticketing.mails.api import create_fake_elected_wish
+        from altair.app.ticketing.mails.fake import FakeLotEntryElectedWishPairFactory
         from altair.app.ticketing.mails.api import get_mail_utility
 
         org = Organization()
@@ -151,9 +150,7 @@ class CreateMailFromFakeOrderTests(unittest.TestCase):
         request = testing.DummyRequest()
         request.context = testing.DummyResource(organization=org)
 
-        lot_entry = create_fake_lot_entry(request, org, 2, 1)
-        elected_wish = create_fake_elected_wish(request)
-        subject = (lot_entry, elected_wish)
+        subject = FakeLotEntryElectedWishPairFactory(object())(request, { "organization": org })
 
         mutil = get_mail_utility(request, MailTypeEnum.LotsAcceptedMail)
         mutil.build_message(request, subject).body
