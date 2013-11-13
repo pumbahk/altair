@@ -22,7 +22,7 @@
       <div class="span6">
         <form class="form-inline" id="search_form" action="${request.route_path('image_widget_search_first')}" method="POST" style="display: inline">
           検索文字列
-          <input type="hidden" name="pk" value="${pk}"/>
+          <input type="hidden" name="pk" value="${pk or "null"}"/>
           <input class="search-query" name="search_word" value="" style="min-width: 0px;" type="text" placeholder="アセット名検索">
           <input type="submit" value="検索" style="width: 50px" style="min-width: 0px">
         </form>
@@ -31,7 +31,7 @@
       <div class="span6">
         <form class="form-inline" id="tag_search_form" action="${request.route_path('image_widget_tag_search_first')}" method="POST" style="display: inline">
           検索タグ
-          <input type="hidden" name="pk" value="${pk}"/>
+          <input type="hidden" name="pk" value="${pk or "null"}"/>
           <input class="search-query" placeholder="タグ名検索" type="text" name="tags" value="" style="min-width: 0px"/>
           <input type="submit" value="タグ検索" style="min-width: 0px">
         </form>
