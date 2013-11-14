@@ -58,36 +58,39 @@ def set_form_value(form, k, v):
         raise ValueError('%s for %s' % (elem.tag, k))
 
 class CartBot(object):
+    def print_(self, *msgs):
+        print(u' '.join(msgs))
+
     def show_sales_segment_summary(self, sales_segment_selection):
-        print 'Available sales segments'
-        print '------------------------'
+        self.print_(u'Available sales segments')
+        self.print_(u'------------------------')
         for date_part, sales_segments in sales_segment_selection:
-            print '* %s' % date_part
+            self.print_(u'* %s' % date_part)
             for sales_segment in sales_segments:
-                print '  id: %d' % sales_segment['id']
-                print '  name: %s' % sales_segment['name']
-                print '  seat_types_url: %s' % sales_segment['seat_types_url']
-                print '  order_url: %s' % sales_segment['order_url']
-                print '  upper_limit: %s' % sales_segment['upper_limit']
-        print
+                self.print_(u'  id: %d' % sales_segment['id'])
+                self.print_(u'  name: %s' % sales_segment['name'])
+                self.print_(u'  seat_types_url: %s' % sales_segment['seat_types_url'])
+                self.print_(u'  order_url: %s' % sales_segment['order_url'])
+                self.print_(u'  upper_limit: %s' % sales_segment['upper_limit'])
+        self.print_()
 
     def show_sales_segment_detail(self, sales_segment_detail):
-        print '  venue_name: %s' % sales_segment_detail['venue_name']
-        print '  performance_name: %s' % sales_segment_detail['performance_name']
-        print '  event_name: %s' % sales_segment_detail['event_name']
-        print '  seat_types:'
+        self.print_(u'  venue_name: %s' % sales_segment_detail['venue_name'])
+        self.print_(u'  performance_name: %s' % sales_segment_detail['performance_name'])
+        self.print_(u'  event_name: %s' % sales_segment_detail['event_name'])
+        self.print_(u'  seat_types:')
         for seat_type in sales_segment_detail['seat_types']:
-            print '  * %s' % seat_type['name']
-            print '    color: %s' % seat_type['style'].get('fill', {}).get('color')
-            print '    description: %s' % seat_type['description']
-            print '    products_url: %s' % seat_type['products_url']
+            self.print_(u'  * %s' % seat_type['name'])
+            self.print_(u'    color: %s' % seat_type['style'].get('fill', {}).get('color'))
+            self.print_(u'    description: %s' % seat_type['description'])
+            self.print_(u'    products_url: %s' % seat_type['products_url'])
 
     def show_pdmp_choices(self, pdmps):
         for pdmp in pdmps:
-            print '* %s - %s' % (pdmp['payment_method']['name'], pdmp['delivery_method']['name'])
-            print '  payment: %(fee)s (%(fee_type)s)' % pdmp['payment_method']
-            print '  delivery: %(fee)s (%(fee_type)s)' % pdmp['delivery_method']
-            print '  description: %s' % pdmp['description']
+            self.print_(u'* %s - %s' % (pdmp['payment_method']['name'], pdmp['delivery_method']['name']))
+            self.print_(u'  payment: %(fee)s (%(fee_type)s)' % pdmp['payment_method'])
+            self.print_(u'  delivery: %(fee)s (%(fee_type)s)' % pdmp['delivery_method'])
+            self.print_(u'  description: %s' % pdmp['description'])
 
     def fill_shipping_address_form(self, form):
         for k in ('last_name', 'first_name', 'last_name_kana', 'first_name_kana', 'email_1', 'email_1_confirm', 'zip', 'prefecture', 'city', 'address_1', 'address_2', 'tel_1'):
@@ -133,17 +136,33 @@ class CartBot(object):
                 raise CartBotError('Failed to authorize credit card: %s' % ' / '.join('%s: %s' % pair for pair in errors))
 
     def do_open_id_login(self):
+        if self.rakuten_auth_credentials is None:
+            raise CartBotError('No Rakuten auth credentials provided')
         form = self.m.page.root.find('.//form[@name="LoginForm"]')
-        set_form_value(form, 'u', self.credentials['username'])
-        set_form_value(form, 'p', self.credentials['password'])
+        set_form_value(form, 'u', self.rakuten_auth_credentials['username'])
+        set_form_value(form, 'p', self.rakuten_auth_credentials['password'])
+        self.m.submit_form(form)
+
+    def do_fc_auth_nonguest_login(self):
+        if self.fc_auth_credentials is None:
+            raise CartBotError('No fc_auth credentials provided')
+        form = self.m.page.root.xpath('.//form[substring(@action,string-length(@action)-5)="/login"]')[0]
+        set_form_value(form, 'username', self.fc_auth_credentials['username'])
+        set_form_value(form, 'password', self.fc_auth_credentials['password'])
         self.m.submit_form(form)
 
     def do_fc_auth_guest_login(self):
-        form = self.m.page.root.find('.//form')
+        form = self.m.page.root.xpath('.//form[substring(@action,string-length(@action)-5)="/guest"]')[0]
         self.m.submit_form(form)
 
+    def do_fc_auth_login(self):
+        if self.fc_auth_credentials is not None:
+            self.do_fc_auth_nonguest_login()
+        else:
+            self.do_fc_auth_guest_login()
+
     def do_rsp_form(self):
-        form = self.m.page.root.find('.//form[@name="form1"]')
+        form = self.m.page.root.find('.//form[1]')
         self.m.submit_form(form)
 
     def choose_seat_type(self, sales_segment_detail):
@@ -187,7 +206,7 @@ class CartBot(object):
         self.m.navigate(self.first_page_url)
         actual_first_page_url = urlparse(self.m.location)
         if re.match("/cart/fc/.*/login", actual_first_page_url.path) is not None:
-            self.do_fc_auth_guest_login()
+            self.do_fc_auth_login()
         if actual_first_page_url.netloc.endswith('.id.rakuten.co.jp') and \
                actual_first_page_url.path == '/rms/nid/login':
             self.do_open_id_login()
@@ -211,41 +230,46 @@ class CartBot(object):
             self.show_sales_segment_summary(sales_segment_selection)
 
         sales_segment = all_sales_segments.pop(0)
-        print 'Trying to buy some products that belong to %s' % sales_segment['name']
-        print 
+        self.print_(u'Trying to buy some products that belong to %s' % sales_segment['name'])
+        self.print_()
         sales_segment_detail = json.load(self.m.opener.open(sales_segment['seat_types_url']))
         self.show_sales_segment_detail(sales_segment_detail)
 
-        print 
+        self.print_()
 
         seat_type = self.choose_seat_type(sales_segment_detail)
         if not seat_type:
-            print "It looks like we're done with %s" % sales_segment['name']
+            self.print_(u"It looks like we're done with %s" % sales_segment['name'])
             return None
 
         product_info = json.load(self.m.opener.open(seat_type['products_url']))
         products = product_info['products']
         products_to_buy = [(product, 1) for product in sample(products, randint(1, len(products)))]
-        result = json.load(self.m.opener.open(
-            urllib2.Request(
-                sales_segment['order_url'],
-                data=encode_urlencoded_form_data(self.build_order_post_data(sales_segment_detail, products_to_buy), 'utf-8'),
-                headers={ 'Content-Type': FORM_URLENCODE_MIME_TYPE }
-                ))
+        result = json.load(
+            self.m.opener.open(
+                urllib2.Request(
+                    sales_segment['order_url'],
+                    data=encode_urlencoded_form_data(self.build_order_post_data(sales_segment_detail, products_to_buy), 'utf-8'),
+                    headers={
+                        'Content-Type': FORM_URLENCODE_MIME_TYPE,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        }
+                    )
+                )
             )
         if result['result'] == 'OK':
-            print 'Items bought'
-            print '------------'
+            self.print_(u'Items bought')
+            self.print_(u'------------')
             for item in result['cart']['products']:
-                print '* %(name)s (%(price)s): %(quantity)d' % item
-            print
+                self.print_(u'* %(name)s (%(price)s): %(quantity)d' % item)
+            self.print_()
         else:
-            print 'Items could not be bought. Out of stock?'
+            self.print_(u'Items could not be bought. Reason: %s' % result['reason'])
             return None
 
         # 決済フォーム
         payment_url = result['payment_url']
-        print 'Navigating to %s...' % payment_url
+        self.print_(u'Navigating to %s...' % payment_url)
         self.m.navigate(payment_url)
 
         pdmps = []
@@ -274,21 +298,21 @@ class CartBot(object):
                 description=(pdmp_elem.find('.//dl/dd').text or '').strip()
                 ))
 
-        print 'Available payment-delivery-method-pairs'
-        print '---------------------------------------'
+        self.print_(u'Available payment-delivery-method-pairs')
+        self.print_(u'---------------------------------------')
         self.show_pdmp_choices(pdmps)
-        print
+        self.print_()
 
         pdmp = self.choose_pdmp(sales_segment['id'], pdmps)
         if pdmp is None:
-            print "No applicable PDMP for %s" % sales_segment['name']
+            self.print_(u"No applicable PDMP for %s" % sales_segment['name'])
             return None
 
 
-        print 'Selected payment-delivery-method-pair'
-        print '-------------------------------------'
+        self.print_(u'Selected payment-delivery-method-pair')
+        self.print_(u'-------------------------------------')
         self.show_pdmp_choices([pdmp])
-        print
+        self.print_()
 
         pdmp['radio'].set('checked', 'checked')
         self.fill_shipping_address_form(form)
@@ -302,7 +326,13 @@ class CartBot(object):
         # 確認ページ
         path = urlparse(self.m.location).path
         if path == urlparse(payment_url).path:
-            raise CartBotError('Failed to proceed checkout: %s' % (self.m.page.root.find('.//*[@class="error"]').text.encode('utf-8')))
+            try:
+                raise CartBotError('Failed to proceed checkout: %s' % (self.m.page.root.find('.//*[@class="error"]').text.encode('utf-8')))
+            except CartBotError:
+                raise
+            except Exception as e:
+                error = self.m.page.root.find('.//*[@id="main"]').text_content().strip()
+                raise CartBotError('Failed to complete an order: %s' % error.encode('utf-8'))
         elif path == '/cart/payment/3d':
             self.do_payment_with_credit_card()
         elif path != '/cart/confirm':
@@ -315,21 +345,23 @@ class CartBot(object):
             raise CartBotError('Checkout failure')
 
         order_no = self.m.page.root.xpath('.//*[@class="confirmBox"][1]//*[@class="confirm-message"]')[0].text_content().strip()
-        print 'Checkout successful: order_no=%s' % order_no
+        self.print_(u'Checkout successful: order_no=%s' % order_no)
         return order_no
 
-    def __init__(self, url, credentials, shipping_address, credit_card_info, http_auth_credentials=None):
+    def __init__(self, url, shipping_address, credit_card_info, rakuten_auth_credentials=None, fc_auth_credentials=None, http_auth_credentials=None):
         keychain = KeyChain()
         if http_auth_credentials:
             keychain.add(Credentials(strip_path_part(url), http_auth_credentials.get('realm', None), http_auth_credentials['user'], http_auth_credentials['password']))
         opener = urllib2.build_opener(
+            urllib2.ProxyHandler(),
             KeyChainBackedAuthHandler(keychain),
             urllib2.HTTPCookieProcessor(CookieJar()))
         self.m = Mechanize(opener=opener)
-        self.credentials = credentials
         self.shipping_address = shipping_address
         self.credit_card_info = credit_card_info
         self.first_page_url = url
         self.all_sales_segments = None
+        self.rakuten_auth_credentials = rakuten_auth_credentials
+        self.fc_auth_credentials = fc_auth_credentials
         self.seat_type_choices_map = {}
         self.pdmp_choices_map = {}
