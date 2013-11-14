@@ -340,6 +340,7 @@ class MobileSelectProductView(object):
             back_url=back_url
         )
 
+    @limitter.acquire
     @view_config(route_name='cart.products', request_method="POST")
     @view_config(route_name='cart.products2', request_method="POST")
     def products_form(self):
