@@ -38,11 +38,12 @@ setup(name='altair.cartbot',
           'lxml',
           'lxmlmechanize',
           'python-dateutil',
+          'gevent',
           # -*- Extra requirements: -*-
       ],
       entry_points="""
       # -*- Entry points: -*-
       [console_scripts]
-      altair_cartbot = altair.cartbot:main
+      altair_cartbot = altair.cartbot.scripts:main
       """,
       )
