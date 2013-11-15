@@ -115,12 +115,12 @@ class CartBot(object):
         
     def do_payment_with_credit_card(self):
         initial_location = self.m.location
-        form = self.m.page.root.find('.//form')
+        form = self.m.page.root.xpath('.//form[@action!="/cart/logout"]')[0]
         for k in ('card_number', 'exp_month', 'exp_year', 'card_holder_name', 'secure_code'):
             set_form_value(form, k, self.credit_card_info[k].decode('utf-8'))
         self.m.submit_form(form)
         if self.m.location == initial_location:
-            form = self.m.page.root.find('.//form')
+            form = self.m.page.root.xpath('.//form[@action!="/cart/logout"]')[0]
             action = form.get('action')
             if action and urlparse(action).netloc != urlparse(initial_location).netloc:
                 self.m.submit_form(form)
@@ -164,7 +164,7 @@ class CartBot(object):
             self.do_fc_auth_guest_login()
 
     def do_rsp_form(self):
-        form = self.m.page.root.find('.//form[1]')
+        form = self.m.page.root.xpath('.//form[@action!="/cart/logout"]')[0]
         self.m.submit_form(form)
 
     def choose_seat_type(self, sales_segment_detail):
