@@ -11,6 +11,30 @@
   ]
 %>
 
+<script>
+  $(document).ready(function(){
+    var event_rows = event_table.rows.length - 1;
+    if (event_rows < 0) event_rows = 0;
+
+    for (var cnt=0; cnt<event_rows; cnt++) {
+      $(".deal_range" + cnt).hide();
+      $(".performance_range" + cnt).hide();
+    }
+  });
+
+  function toggle_detail(cnt) {
+      if ($(".deal_range" + cnt).css("display") == "block") {
+        $(".deal_range" + cnt).hide();
+        $(".performance_range" + cnt).hide();
+      } else {
+        $(".deal_range" + cnt).show();
+        $(".performance_range" + cnt).show();
+      }
+  }
+
+</script>
+
+
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
       names=[u'トップ', u'イベント'],
@@ -35,15 +59,24 @@
 </span>
 
 <div class="events" style="clear: both">
-  <table class="table bordered">
+  % if search_query:
+    ${search_query}
+  % endif
+  <table id="event_table" class="table bordered">
     <thead>
       <tr>
         <th>イベント名</th>
+        % if search_query:
+          <th>公演期間</th>
+          <th>販売期間</th>
+          <th></th>
+        % endif
         <th>登録公演数</th>
         <th>-</th>
       </tr>
     </thead>
     <tbody>
+    <% row_no = 0 %>
     % for event, perf_count in events.items:
       <tr>
         <td>
@@ -52,6 +85,39 @@
             <span class="label ${label_classes[i%6]}">${sales_segment_group.name}</span>
           % endfor
         </td>
+        % if search_query:
+          <td>
+            % for cnt, range in enumerate(h.get_performance_range(event)):
+              % if cnt == 0:
+                ${range}<br/>
+                <div class="performance_range${row_no}">
+              % else:
+                ${range}<br/>
+              % endif
+            % endfor
+            </div>
+          </td>
+          <td>
+            % for cnt, range in enumerate(h.get_deal_range(event)):
+              % if cnt == 0:
+                ${range}<br/>
+                <div class="deal_range${row_no}">
+              % else:
+                ${range}<br/>
+              % endif
+            % endfor
+            </div>
+          </td>
+          <td>
+            % if (len(h.get_deal_range(event)) > 1) or (len(h.get_performance_range(event)) > 1):
+            <div class="btn-group">
+              <a href="javascript:toggle_detail(${row_no});" class="btn">
+                <i class=""></i> 開く
+              </a>
+            </div>
+            % endif
+          </td>
+        % endif
         <td class="span1">${perf_count}</td>
         <td class="span3">
           <%include file="./_action_button.html" args="event=event, order=['edit', 'copy', 'delete'], small=True" />
@@ -72,6 +138,7 @@
           % endif
         </td>
       </tr>
+      <% row_no += 1 %>
     % endfor
     </tbody>
   </table>
