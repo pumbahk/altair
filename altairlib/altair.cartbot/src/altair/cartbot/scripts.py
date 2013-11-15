@@ -1,4 +1,5 @@
 from gevent import monkey
+monkey.patch_time()
 monkey.patch_socket()
 monkey.patch_ssl()
 monkey.patch_select()
@@ -7,8 +8,11 @@ monkey.patch_thread()
 import sys
 from argparse import ArgumentParser
 from ConfigParser import ConfigParser, NoSectionError
+from lxmlmechanize import Mechanize
 from .bot import CartBot
+from urllib2 import HTTPError
 import threading
+import time
 import logging
 import logging.config
 
@@ -21,6 +25,31 @@ class LoggableCartBot(CartBot):
         else:
             super(LoggableCartBot, self).print_(*msgs)
 
+    def __init__(self, *args, **kwargs):
+        retry_count = kwargs.pop('retry_count', 1)
+        if retry_count is not None:
+            class RetryingMechanize(Mechanize):
+                def reload(self):
+                    i = 0
+                    while True:
+                        try:
+                            super(RetryingMechanize, self).reload()
+                        except HTTPError as e:
+                            if e.code >= 500 and e.code <= 599:
+                                i += 1
+                                if i >= retry_count:
+                                    raise
+                                else:
+                                    time.sleep(1)
+                                    continue
+                            else:
+                                raise
+                        break
+            self.Mechanize = RetryingMechanize
+        else:
+            self.Mechanize = Mechanize
+        super(LoggableCartBot, self).__init__(*args, **kwargs)
+
 def main():
     logging.basicConfig(level=logging.INFO)
 
@@ -31,6 +60,7 @@ def main():
                         help="Use Python's logging facility instead of print")
     parser.add_argument('-n', '--repeat', dest='repeat', help="Repeat n times")
     parser.add_argument('-C', '--concurrency', dest='concurrency', help="Stress mode; make n concurrent requests")
+    parser.add_argument('-r', '--retry-count', dest='retry_count', help='retry count')
     parser.add_argument('url', nargs=1, help='cart url')
     options = parser.parse_args()
     if not options.config:
@@ -38,6 +68,7 @@ def main():
         sys.exit(255)
     repeat = 1
     concurrency = 1
+    retry_count = None
     if options.repeat:
         try:
             repeat = int(options.repeat)
@@ -48,6 +79,13 @@ def main():
     if options.concurrency:
         try:
             concurrency = int(options.concurrency)
+        except:
+            parse.help()
+            sys.exit(255)
+
+    if options.retry_count:
+        try:
+            retry_count = int(options.retry_count)
         except:
             parse.help()
             sys.exit(255)
@@ -86,7 +124,8 @@ def main():
             fc_auth_credentials=fc_auth_credentials,
             shipping_address=dict(config.items('shipping_address')),
             credit_card_info=dict(config.items('credit_card_info')),
-            http_auth_credentials=http_auth_credentials
+            http_auth_credentials=http_auth_credentials,
+            retry_count=retry_count
             )
         bot.log_output = options.logging
 

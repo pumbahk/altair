@@ -58,6 +58,8 @@ def set_form_value(form, k, v):
         raise ValueError('%s for %s' % (elem.tag, k))
 
 class CartBot(object):
+    Mechanize = Mechanize
+
     def print_(self, *msgs):
         print(u' '.join(msgs))
 
@@ -356,7 +358,7 @@ class CartBot(object):
             urllib2.ProxyHandler(),
             KeyChainBackedAuthHandler(keychain),
             urllib2.HTTPCookieProcessor(CookieJar()))
-        self.m = Mechanize(opener=opener)
+        self.m = self.Mechanize(opener=opener)
         self.shipping_address = shipping_address
         self.credit_card_info = credit_card_info
         self.first_page_url = url
