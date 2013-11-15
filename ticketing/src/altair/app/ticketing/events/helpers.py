@@ -1,22 +1,35 @@
 # -*- coding: utf-8 -*-
-class EventHelper(object):
-    def get_performance_range(self, event):
-        perf_range = []
-        for perf in event.performances:
-            range = perf.start_on.strftime('%Y/%m/%d %H:%M')
-            if perf.end_on:
-                range += u" 〜 " + perf.end_on.strftime('%Y/%m/%d %H:%M')
-            perf_range.append(range)
-        return perf_range
+from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment
 
-    def get_deal_range(self, event):
-        sales_segment_range = []
-        for segment in event.sales_segments:
-            range = segment.start_at.strftime('%Y/%m/%d %H:%M') + u" 〜 "
-            if segment.end_at:
-                range += segment.end_at.strftime('%Y/%m/%d %H:%M')
-            sales_segment_range.append(range)
-        return sales_segment_range
+class EventHelper(object):
+    def get_sales_segment_group_name(self, segment):
+        #group = DBSession.query(SalesSegmentGroup).query.filter(SalesSegment.id==segment.id).first()
+        group = SalesSegmentGroup.filter_by(SalesSegment=segment.id).first()
+        name = ""
+        if group:
+            name = group.name
+        return name
+
+    def get_performance_range(self, perf):
+        range = perf.start_on.strftime('%Y/%m/%d %H:%M')
+        if perf.end_on:
+            range += u" 〜 " + perf.end_on.strftime('%Y/%m/%d %H:%M')
+        return range
+
+    def get_deal_range(self, segment):
+        range = segment.start_at.strftime('%Y/%m/%d %H:%M') + u" 〜 "
+        if segment.end_at:
+            range += segment.end_at.strftime('%Y/%m/%d %H:%M')
+        if segment.performance_id:
+            return range
+
+    def get_performance_count(self, event):
+        count = 0
+        for perf in event.performances:
+            if not perf.deleted_at:
+                count+=1
+        return count
 
     def get_performance_start(self, event):
         min = None
