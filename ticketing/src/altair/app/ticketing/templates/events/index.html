@@ -16,26 +16,21 @@
     var event_rows = event_table.rows.length - 1;
     if (event_rows < 0) event_rows = 0;
 
-    for (var cnt=0; cnt<event_rows; cnt++) {
-      $(".deal_range" + cnt).hide();
-      $(".performance_range" + cnt).hide();
-      $(".perf_names" + cnt).hide();
-      $(".salessegment" + cnt).hide();
+    for (var sec_no=0; sec_no<50; sec_no++) {
+      for (var row_no=1; row_no<200; row_no++) {
+        $("." + sec_no + "_" + row_no).hide();
+      }
     }
   });
 
-  function toggle_detail(cnt) {
-      if ($(".deal_range" + cnt).css("display") == "block") {
-        $(".deal_range" + cnt).hide();
-        $(".performance_range" + cnt).hide();
-        $(".perf_names" + cnt).hide();
-        $(".salessegment" + cnt).hide();
+  function toggle_detail(section_no) {
+    for (var row_no=1; row_no<200; row_no++) {
+      if ($("." + section_no + "_" + row_no).css("display") != "none") {
+        $("." + section_no + "_" + row_no).hide();
       } else {
-        $(".deal_range" + cnt).show();
-        $(".performance_range" + cnt).show();
-        $(".perf_names" + cnt).show();
-        $(".salessegment" + cnt).show();
+        $("." + section_no + "_" + row_no).show();
       }
+    }
   }
 
 </script>
@@ -90,20 +85,21 @@
   <table id="event_table" class="table bordered">
     <thead>
       <tr>
-          <th>イベント名（公演名）</th>
-          <th>販売区分</th>
-          <th>公演期間</th>
-          <th>販売期間</th>
+        <th>イベント名（公演名）</th>
+        <th>販売区分</th>
+        <th>公演期間</th>
+        <th>販売期間</th>
         <th>登録公演数</th>
         <th>-</th>
       </tr>
     </thead>
     <tbody>
+    <% section_no = 0 %>
     % for event, perf_count in events.items:
       <% row_no = 0 %>
       % for perf in event.performances:
         % for segment in perf.sales_segments:
-        <tr class="${event.id}_${row_no}">
+        <tr class="${section_no}_${row_no}">
           <td>
             % if row_no == 0:
                 <a href="${request.route_path('events.show', event_id=event.id)}">${event.title}</a>
@@ -129,7 +125,7 @@
             % if row_no == 0:
               % if h.get_performance_count(event) > 1 or len(event.sales_segments) > 1:
               <div class="btn-group">
-                <a href="javascript:toggle_detail(${event.id});" class="btn">
+                <a href="javascript:toggle_detail(${section_no});" class="btn">
                   <i class=""></i> ${h.get_performance_count(event)}公演開く
                 </a>
               </div>
@@ -160,6 +156,7 @@
         <% row_no += 1 %>
       % endfor
     % endfor
+    <% section_no += 1 %>
   % endfor
     </tbody>
   </table>
