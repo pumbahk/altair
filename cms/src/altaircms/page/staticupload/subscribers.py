@@ -8,7 +8,7 @@ from altaircms.models import DBSession
 import logging
 logger = logging.getLogger(__name__)
 
-from .refine import refine_link_as_string, is_html_filename
+from .refine import refine_link_on_upload, is_html_filename
 
 def _delete_ignorefile_after_staticupload(ignore_directories, ignore_files, after_create):
     event = after_create
@@ -32,7 +32,7 @@ def refine_html_files_after_staticupload(after_create):
     for root, dirs, files in os.walk(event.root):
         for f in files:
             if is_html_filename(f):
-                output = refine_link_as_string(f, root, event.static_directory)
+                output = refine_link_on_upload(f, root, event.static_directory)
                 path = os.path.join(root, f)
                 os.rename(path, path+".original")
                 with open(path, "w") as wf:
@@ -42,7 +42,7 @@ def refine_html_file_after_staticupload(partial_create):
     event = partial_create
     path = event.root
     dirname, f = os.path.split(path)
-    output = refine_link_as_string(f, dirname, event.static_directory)
+    output = refine_link_on_upload(f, dirname, event.static_directory)
     os.rename(path, path+".original")
     with open(path, "w") as wf:
         wf.write(output)
