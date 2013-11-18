@@ -341,8 +341,9 @@ class Lots(BaseView):
         form.performance_id.choices = performance_choices
 
         if self.request.POST and form.validate():
-            product = form.create_product(lot)
-            DBSession.add(product)
+            products = form.create_products(lot)
+            for product in products:
+                DBSession.add(product)
             return HTTPFound(self.request.route_url('lots.show', lot_id=lot.id))
         return dict(form=form, lot=lot)
 
