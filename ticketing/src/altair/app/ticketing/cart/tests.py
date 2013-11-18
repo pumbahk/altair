@@ -18,7 +18,8 @@ def _setup_db(echo=False):
         )
 
 class TestIt(unittest.TestCase):
-    _settings = {'altair.mobile.asid': 'test',
+    _settings = {'altair.pc.asid': 'test',
+                 'altair.mobile.asid': 'test',
                  'altair.smartphone.asid': 'test',
                  }
     
@@ -307,7 +308,8 @@ class CartedProductItemTests(unittest.TestCase):
 
 
 class TicketingCartResourceTestBase(object):
-    _settings = {'altair.mobile.asid': 'test',
+    _settings = {'altair.pc.asid': 'test',
+                 'altair.mobile.asid': 'test',
                  'altair.smartphone.asid': 'test',
                  }        
     def setUp(self):

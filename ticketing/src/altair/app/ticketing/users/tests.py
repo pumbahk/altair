@@ -3,8 +3,9 @@ from pyramid import testing
 from ..testing import _setup_db, _teardown_db, DummyRequest
 
 class UserApiTest(unittest.TestCase):
-    _settings = {'altair.mobile.asid': 'test',
-                'altair.smartphone.asid': 'test',
+    _settings = {'altair.pc.asid': 'test',
+                 'altair.mobile.asid': 'test',
+                 'altair.smartphone.asid': 'test',
                 }
         
     def setUp(self):
