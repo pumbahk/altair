@@ -15,7 +15,8 @@ from altair.app.ticketing.events.sales_reports.reports import EventReporter, Per
 logger = logging.getLogger(__name__)
 
 def main(argv=sys.argv):
-    from altair.app.ticketing.core.models import ReportSetting, ReportFrequencyEnum, ReportPeriodEnum
+    from altair.app.ticketing.core.models import ReportSetting,\
+        ReportFrequencyEnum, ReportPeriodEnum, Organization, Event
     from altair.app.ticketing.events.sales_reports.forms import SalesReportForm
     from altair.app.ticketing.events.sales_reports.reports import sendmail
 
@@ -90,6 +91,8 @@ def main(argv=sys.argv):
                 render_param = dict(performance_reporter=reporter)
                 reports[form] = render_to_response('altair.app.ticketing:templates/sales_reports/performance_mail.html', render_param)
             subject = u'%s (開催日:%s)' % (performance.name, performance.start_on.strftime('%Y-%m-%d %H:%M'))
+            _event = Event.get(id=performance.event_id)
+            organization = Organization.get(id=_event.organization_id)
         elif event:
             if (from_date and event.sales_end_on < from_date) or\
                (form.limited_to.data and form.limited_to.data < event.sales_start_on) or\
@@ -103,11 +106,12 @@ def main(argv=sys.argv):
                 render_param = dict(event_reporter=reporter)
                 reports[form] = render_to_response('altair.app.ticketing:templates/sales_reports/event_mail.html', render_param)
             subject = event.title
+            organization = Organization.get(id=event.organization_id)
         else:
             logging.error('event/performance not found (report_setting_id=%s)' % report_setting.id)
             continue
 
-        sendmail(settings, report_setting.recipient, u'[売上レポート] %s' % subject, reports[form])
+        sendmail(settings, report_setting.recipient, u'[売上レポート|%s] %s' % (organization.name, subject), reports[form])
         i += 1
 
     logger.info('end send_sales_report batch (sent=%s)' % i)
