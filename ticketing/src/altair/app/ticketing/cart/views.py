@@ -832,7 +832,7 @@ class PaymentView(object):
             )
         form = schemas.PointForm(formdata=formdata)
 
-        asid = None
+        asid = self.request.altair_pc_asid
         if is_mobile(self.request):
             asid = self.request.altair_mobile_asid
 
