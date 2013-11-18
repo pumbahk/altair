@@ -13,8 +13,8 @@ class candidates_sales_segmentTests(unittest.TestCase):
         _teardown_db()
 
     def _callFUT(self, *args, **kwargs):
-        from ..views import candidates_sales_segment
-        return candidates_sales_segment(*args, **kwargs)
+        from ..views import candidates_sales_segment_group
+        return candidates_sales_segment_group(*args, **kwargs)
 
     def test_no_set(self):
         context = testing.DummyResource()
@@ -25,19 +25,19 @@ class candidates_sales_segmentTests(unittest.TestCase):
         result = self._callFUT(context, request)
 
         self.assertEqual(result['status'], 'success')
-        self.assertEqual(result['salessegments'], [])
+        self.assertEqual(result['sales_segment_groups'], [])
 
     def test_it(self):
         from altair.app.ticketing.core.models import (
             Event,
-            SalesSegment,
             SalesSegmentGroup,
         )
 
         event = Event()
-        sales_segment = SalesSegment(event=event,
-                                     sales_segment_group=SalesSegmentGroup(name='testing'))
+        sales_segment_group = SalesSegmentGroup(event=event,
+                                                name='testing')
         self.session.add(event)
+        self.session.add(sales_segment_group)
         self.session.flush()
 
         context = testing.DummyResource()
@@ -48,6 +48,6 @@ class candidates_sales_segmentTests(unittest.TestCase):
         result = self._callFUT(context, request)
 
         self.assertEqual(result['status'], 'success')
-        self.assertEqual(result['salessegments'],
-                         [{'id': sales_segment.id,
+        self.assertEqual(result['sales_segment_groups'],
+                         [{'id': sales_segment_group.id,
                            'name': 'testing'}])
