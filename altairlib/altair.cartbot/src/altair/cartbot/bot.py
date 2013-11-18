@@ -346,7 +346,12 @@ class CartBot(object):
         if path != '/cart/completed':
             raise CartBotError('Checkout failure')
 
-        order_no = self.m.page.root.xpath('.//*[@class="confirmBox"][1]//*[@class="confirm-message"]')[0].text_content().strip()
+        confirm_message = self.m.page.root.xpath('.//*[@class="confirmBox"][1]//*[@class="confirm-message"]')
+        if not confirm_message:
+            error = self.m.page.root.find('.//*[@id="main"]').text_content().strip()
+            raise CartBotError('Failed to complete an order: %s' % error.encode('utf-8'))
+
+        confirm_message[0].text_content().strip()
         self.print_(u'Checkout successful: order_no=%s' % order_no)
         return order_no
 

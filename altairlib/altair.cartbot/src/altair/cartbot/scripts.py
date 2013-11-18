@@ -17,11 +17,12 @@ import logging
 import logging.config
 
 class LoggableCartBot(CartBot):
+    logger = logging.getLogger('altair.cartbot')
     log_output = False
 
     def print_(self, *msgs):
         if self.log_output:
-            logging.info(u' '.join(msgs))
+            self.logger.info(u' '.join(msgs))
         else:
             super(LoggableCartBot, self).print_(*msgs)
 
@@ -29,11 +30,16 @@ class LoggableCartBot(CartBot):
         retry_count = kwargs.pop('retry_count', 1)
         if retry_count is not None:
             class RetryingMechanize(Mechanize):
+                logger = logging.getLogger('mechanize')
+
                 def reload(self):
                     i = 0
+                    elapsed = None
                     while True:
                         try:
+                            s = time.time() 
                             super(RetryingMechanize, self).reload()
+                            elapsed = time.time() - s
                         except HTTPError as e:
                             if e.code >= 500 and e.code <= 599:
                                 i += 1
@@ -45,6 +51,8 @@ class LoggableCartBot(CartBot):
                             else:
                                 raise
                         break
+                    if elapsed is not None:
+                        self.logger.info("%s processed in %g seconds", self.location, elapsed)
             self.Mechanize = RetryingMechanize
         else:
             self.Mechanize = Mechanize
