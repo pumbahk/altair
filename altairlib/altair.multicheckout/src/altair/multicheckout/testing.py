@@ -148,3 +148,10 @@ class DummyHTTPLib(object):
     def close(self):
         self.called.append(('close', []))
         self.response_body.close()
+
+class DummyMultichekoutSettingFactory(object):
+    def __init__(self, result):
+        self.result = result
+
+    def __call__(self, request, override_name):
+        return self.result

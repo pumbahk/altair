@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 def includeme(config):
     config.include('altair.multicheckout')
     config.set_multicheckout_setting_factory(get_multicheckout_setting)
+    config.set_multicheckout_setting_list_factory(get_multicheckout_settings)
 
 # appの実装
 def get_multicheckout_setting(request, override_name):
     import altair.app.ticketing.core.api as core_api
-    import altair.app.ticketing.core.models as core_models
 
     logger.info('get_multicheckout_setting override_name = %s, request_host = %s' % (override_name, request.host))
     if override_name:
