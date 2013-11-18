@@ -351,7 +351,7 @@ class CartBot(object):
             error = self.m.page.root.find('.//*[@id="main"]').text_content().strip()
             raise CartBotError('Failed to complete an order: %s' % error.encode('utf-8'))
 
-        confirm_message[0].text_content().strip()
+        order_no = confirm_message[0].text_content().strip()
         self.print_(u'Checkout successful: order_no=%s' % order_no)
         return order_no
 
