@@ -142,17 +142,19 @@ $(function () {
         <div class="sectionbox">
             <div class="sectionbox-inner">
                 <table>
-                    % for segment in event.salessegment_groups:
-                        % if segment.publicp:
+                    % for group in event.salessegment_groups:
+                      % for segment in group.salessegments:
+                        % if group.publicp and segment.publicp:
                             <tr>
                                 <td>
-                                    ${render_sale(segment.name)}
+                                    ${render_sale(group.name)}
                                 </td>
                                 <td>
                                     ${helper.disp_date(segment.start_on)}〜${helper.disp_date(segment.end_on)}<br/>
                                 </td>
                             </tr>
                         % endif
+                      % endfor
                     % endfor
                 </table>
             </div>
