@@ -780,25 +780,6 @@ def setup_product_item(quantity, quantity_only, organization):
             site=Site()
         )
     )
-    order = Order(shipping_address=shipping_address, 
-                  total_amount=600, 
-                  system_fee=100, 
-                  special_fee=400,
-                  special_fee_name=u'特別手数料',
-                  transaction_fee=200, 
-                  delivery_fee=300, 
-                  multicheckout_approval_no=":multicheckout_approval_no", 
-                  order_no=":order_no", 
-                  paid_at=datetime(2000, 1, 1, 1, 10), 
-                  delivered_at=None, 
-                  canceled_at=None, 
-                  created_at=datetime(2000, 1, 1, 1), 
-                  issued_at=datetime(2000, 1, 1, 1, 13),                                        
-                  )
-    payment_delivery_method_pair = order.payment_delivery_pair = PaymentDeliveryMethodPair(system_fee=100, transaction_fee=200, delivery_fee=300,
-                                                                                           special_fee=400, special_fee_name=u'特別手数料',
-                                                                                           special_fee_type=FeeTypeEnum.PerUnit.v[0])
-
     payment_method = payment_delivery_method_pair.payment_method = PaymentMethod(name=":PaymentMethod:name", 
                           fee=300, 
                           fee_type=1, 
@@ -807,27 +788,6 @@ def setup_product_item(quantity, quantity_only, organization):
                           fee=300, 
                           fee_type=1, 
                           delivery_plugin_id=2)
-    ordered_product = OrderedProduct(price=12000, 
-                                     quantity=quantity)
-    ordered_product.order = order
-    ordered_product_item = OrderedProductItem(id=1, price=14000, quantity=quantity)
-    ordered_product_item.ordered_product = ordered_product
-    product_item = ordered_product_item.product_item = ProductItem(name=":ProductItem:name", 
-                        price=12000, 
-                        quantity=quantity, 
-                        )
-    product = product_item.product = Product(name=":Product:name", 
-                                             price=10000)
-    ordered_product.product = product
-    product_item.product.sales_segment = sales_segment
-    performance = product_item.performance = Performance(name=":Performance:name",
-                       code=":code", 
-                       open_on=datetime(2000, 1, 1), 
-                       start_on=datetime(2000, 1, 1, 10), 
-                       end_on=datetime(2000, 1, 1, 23), 
-                       abbreviated_title=":PerformanceSetting:abbreviated_title", 
-                       subtitle=":PerformanceSetting:subtitle", 
-                       note=":PerformanceSetting:note")
     performance.settings.append(PerformanceSetting())
 
     product_item = ProductItem(
