@@ -37,7 +37,6 @@ class SejTest(unittest.TestCase):
 
         sej_order = SejOrder()
 
-        sej_order.process_type     = SejOrderUpdateReason.Change.v
         sej_order.billing_number  = u'00000001'
         sej_order.exchange_number = u'12345678'
         sej_order.ticket_count  = 1
@@ -108,13 +107,13 @@ class SejTest(unittest.TestCase):
             contact_01      = u'contact',
             contact_02      = u'連絡先2',
             order_no        = u"orderid00001",
-            username        = u"お客様氏名",
-            username_kana   = u'コイズミモリヨシ',
+            user_name       = u"お客様氏名",
+            user_name_kana  = u'コイズミモリヨシ',
             tel             = u'0312341234',
-            zip             = u'1070062',
+            zip_code        = u'1070062',
             email           = u'dev@ticketstar.jp',
-            total           = 15000,
-            ticket_total    = 13000,
+            total_price     = 15000,
+            ticket_price    = 13000,
             commission_fee  = 1000,
             ticketing_fee   = 1000,
             payment_type    = SejPaymentType.CashOnDelivery,
@@ -217,7 +216,6 @@ class SejTest(unittest.TestCase):
         assert sej_tickets[1].barcode_number == '00002'
         assert sej_tickets[2].barcode_number == '00003'
 
-
     def test_request_order_prepayment(self):
         '''2-1.決済要求 支払い済み'''
         import sqlahelper
@@ -260,13 +258,13 @@ class SejTest(unittest.TestCase):
              contact_01      = u'contact',
              contact_02      = u'連絡先2',
              order_no        = u"orderid00001",
-             username        = u"お客様氏名",
-             username_kana   = u'コイズミモリヨシ',
+             user_name       = u"お客様氏名",
+             user_name_kana  = u'コイズミモリヨシ',
              tel             = u'0312341234',
-             zip             = u'1070062',
+             zip_code        = u'1070062',
              email           = u'dev@ticketstar.jp',
-             total           = 15000,
-             ticket_total    = 13000,
+             total_price     = 15000,
+             ticket_price    = 13000,
              commission_fee  = 1000,
              ticketing_fee   = 1000,
              payment_type    = SejPaymentType.Paid,
@@ -380,18 +378,17 @@ class SejTest(unittest.TestCase):
         import webob.util
         import sqlahelper
         from altair.app.ticketing.sej.models import SejOrder, SejTicket
-        from altair.app.ticketing.sej.payment import SejOrderUpdateReason, request_cancel_order
+        from altair.app.ticketing.sej.payment import request_cancel_order
         webob.util.status_reasons[800] = 'OK'
 
         target = self._makeServer(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38002, status=800)
 
         sej_order = SejOrder()
 
-        sej_order.process_type     = SejOrderUpdateReason.Change.v
         sej_order.billing_number    = u'00000001'
         sej_order.exchange_number   = u'00001111'
         sej_order.ticket_count      = 1
-        sej_order.exchange_sheet_url      = u'https://www.r1test.com/order/hi.do&iraihyo_id_00=11111111'
+        sej_order.exchange_sheet_url      = u'https://www.r1test.com/order/hi.do'
         sej_order.order_no      = u'orderid00001'
         sej_order.exchange_sheet_number = u'11111111'
         sej_order.order_at      = datetime.datetime.now()
@@ -416,6 +413,64 @@ class SejTest(unittest.TestCase):
 
         sej_order = SejOrder.query.filter_by(order_no=u'orderid00001', billing_number=u'00000001').one()
         assert sej_order.cancel_at is not None
+
+    def test_request_order_update(self):
+        import webob.util
+        import sqlahelper
+        from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejTicketType, SejOrderUpdateReason, SejPaymentType
+        from altair.app.ticketing.sej.payment import request_update_order
+        webob.util.status_reasons[800] = 'OK'
+
+        target = self._makeServer(lambda environ: '<SENBDATA>X_haraikomi_no=00000001&X_hikikae_no=00001111&X_ticket_cnt=01&X_ticket_hon_cnt=01&X_url_info=https://www.r1test.com/order/hi.do&X_shop_order_id=orderid00001&iraihyo_id_00=11111111&X_barcode_no_01=00002000</SENBDATA><SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38002, status=800)
+
+        sej_order = SejOrder(
+            payment_type='%d' % SejPaymentType.CashOnDelivery.v,
+            shop_id           = u'30520',
+            billing_number    = u'00000001',
+            exchange_number   = u'00001111',
+            ticket_count      = 1,
+            total_ticket_count = 1,
+            total_price       = 15000,
+            ticket_price      = 13000,
+            commission_fee    = 1000,
+            ticketing_fee     = 1000,
+            exchange_sheet_url      = u'https://www.r1test.com/order/hi.do',
+            order_no      = u'orderid00001',
+            exchange_sheet_number = u'11111111',
+            order_at      = datetime.datetime.now(),
+            regrant_number_due_at = datetime.datetime(2012,7,30,7,00) # u'201207300700'
+            )
+
+        ticket = SejTicket(
+            order=sej_order,
+            ticket_idx=1,
+            ticket_type=('%d' % SejTicketType.TicketWithBarcode.v),
+            barcode_number='00001000',
+            event_name=u'イベント',
+            performance_name=u'パフォーマンス',
+            performance_datetime=datetime.datetime(2012,8,30,19,00),
+            ticket_template_id='TTTS0001',
+            ticket_data_xml=u'<?xml version="1.0" encoding="Shift_JIS" ?><TICKET></TICKET>',
+            product_item_id=12345
+            )
+
+        DBSession = sqlahelper.get_session()
+        DBSession.add(sej_order)
+        DBSession.add(ticket)
+        DBSession.flush()
+
+        request_update_order(
+            new_order=sej_order, 
+            update_reason=SejOrderUpdateReason.Change,
+            hostname=u"http://127.0.0.1:38002"
+        )
+
+        self.server.poll()
+
+        self.assertEqual(self.server.request.body, 'X_hakken_daikin=001000&X_ticket_cnt=01&X_ticket_hon_cnt=01&xcode=37ec9c530172b72093ff15ee60880854&X_hikikae_no=00001111&X_shop_order_id=orderid00001&X_shop_id=30520&X_goukei_kingaku=015000&X_saifuban_hakken_lmt=201207300700&X_ticket_kbn_01=1&X_upd_riyu=01&ticket_text_01=%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22Shift_JIS%22%20%3F%3E%3CTICKET%3E%3C/TICKET%3E&X_ticket_kounyu_daikin=001000&X_haraikomi_no=00000001&X_ticket_daikin=013000&X_kouen_date_01=201208301900&kougyo_mei_01=%83C%83x%83%93%83g&X_ticket_template_01=TTTS0001&kouen_mei_01=%83p%83t%83H%81%5B%83%7D%83%93%83X')
+        self.assertEqual(self.server.request.method, 'POST')
+        self.assertEqual(self.server.request.url, 'http://127.0.0.1:38002/order/updateorder.do')
+        self.assertEqual(ticket.barcode_number, '00002000')
 
     def test_create_ticket_template(self):
         from altair.app.ticketing.sej.models import SejTicketTemplateFile

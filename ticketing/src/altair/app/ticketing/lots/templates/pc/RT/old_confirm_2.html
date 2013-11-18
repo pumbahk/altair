@@ -20,7 +20,7 @@
         <tr>
           <td colspan="2" scope="row">
             <table border="0">
-              %for cp in cart.products:
+              %for cp in cart.items:
               <tr>
                 <th>${cp.product.name}　${cp.quantity}枚</th>
                 <td>${cp.product.price}</td>

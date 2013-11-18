@@ -64,7 +64,8 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.orders.events import notify_order_canceled
 from altair.app.ticketing.orders.exceptions import InnerCartSessionException
-from altair.app.ticketing.payments.payment import Payment, get_delivery_plugin
+from altair.app.ticketing.payments.payment import Payment
+from altair.app.ticketing.payments.api import get_delivery_plugin
 from altair.app.ticketing.payments import plugins as payments_plugins
 from altair.app.ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from altair.app.ticketing.cart import api
