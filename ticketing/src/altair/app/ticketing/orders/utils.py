@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 ## TODO: move to enqueue.py
-
 import re
 import logging
 from altair.app.ticketing.tickets.utils import build_dict_from_ordered_product_item_token
@@ -106,7 +105,6 @@ def compare_by_comfortable_order((seat, dicts_)):
     else:
         return [(int(x) if x.isdigit() else x) for x in re.split(DIGIT_RX, seat.name) if x]
 
-        
 def comfortable_sorted_built_dicts(ordered_product_item):
     dicts = build_dicts_from_ordered_product_item(ordered_product_item, ticket_number_issuer=NumberIssuer())
     return sorted(dicts, key=compare_by_comfortable_order)

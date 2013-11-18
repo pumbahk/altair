@@ -107,7 +107,7 @@ class TicketDictListBuilder(object):
         else:
             for seat in carted_product_item.seats:
                 d = builder.build_dict_from_seat(seat, ticket_number_issuer=ticket_number_issuer)
-                d[u'発券番号'] = ""
+                d[u'発券番号'] = ticket_number_issuer(carted_product_item.product_item.id) if ticket_number_issuer else ""
                 d.update(extra)
                 retval.append((seat, d))
         return retval
