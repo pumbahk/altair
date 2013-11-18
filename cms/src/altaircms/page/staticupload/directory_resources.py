@@ -81,7 +81,7 @@ class StaticPageDirectory(object):
                             )
 
     def get_rootname(self, static_page, name=None):
-        assert static_page.id
+        assert static_page is not None #weak contract
         return os.path.join(self.get_base_directory(), 
                             name or static_page.prefix, 
                             unicode(static_page.id), 

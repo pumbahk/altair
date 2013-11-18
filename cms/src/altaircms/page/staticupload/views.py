@@ -21,6 +21,7 @@ import logging
 logger = logging.getLogger(__name__)
 from altaircms.viewlib import BaseView
 from altaircms.datelib import get_now
+from altaircms.modellib import first_or_nullmodel
 
 @view_defaults(route_name="static_page_create", permission="authenticated")
 class StaticPageCreateView(BaseView):
@@ -59,15 +60,15 @@ class StaticPageSetView(BaseView):
         static_pageset = get_or_404(self.request.allowable(StaticPageSet), StaticPageSet.id==pk)
         static_directory = get_static_page_utility(self.request)
         static_page = StaticPage.query.filter_by(pageset=static_pageset, id=self.request.GET.get("child_id")).first()
-        static_page = static_page or static_pageset.pages[0]
-        return {"static_pageset": static_pageset, 
-                "static_page": static_page,                 
-                "pagetype": static_pageset.pagetype, 
-                "static_directory": static_directory, 
-                "current_page": static_pageset.current(dt=get_now(self.request)), 
-                "tree_renderer": static_page_directory_renderer(self.request, static_page, static_directory, self.request.GET.get("management")), 
+        static_page = static_page or first_or_nullmodel(static_pageset, "pages") #hmm..
+        return {"static_pageset": static_pageset,
+                "static_page": static_page,
+                "pagetype": static_pageset.pagetype,
+                "static_directory": static_directory,
+                "current_page": static_pageset.current(dt=get_now(self.request)),
+                "tree_renderer": static_page_directory_renderer(self.request, static_page, static_directory, self.request.GET.get("management")),
                 "now": get_now(self.request)}
-    
+
     @view_config(match_param="action=preview", request_param="path", decorator=with_bootstrap)
     def preview(self):
         pk = self.request.matchdict["static_page_id"]
