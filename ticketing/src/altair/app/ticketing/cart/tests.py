@@ -488,6 +488,7 @@ class TicketingCartResourceTestBase(object):
         from altair.app.ticketing.core.models import Order, SalesSegment
         from altair.app.ticketing.cart.models import Cart
         from altair.app.ticketing.users.models import User
+        from datetime import datetime
         sales_segment = SalesSegment(order_limit=order_limit)
         user = User()
         other = User()
@@ -498,6 +499,14 @@ class TicketingCartResourceTestBase(object):
                           total_amount=0,
                           system_fee=0, transaction_fee=0, delivery_fee=0)
             orders.append(order)
+
+        cancels = []
+        for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
+            order = Order(user=user, cart=cart,
+                          total_amount=0, canceled_at=datetime.now(),
+                          system_fee=0, transaction_fee=0, delivery_fee=0)
+            cancels.append(order)
 
         others = []
         for i in range(2):
@@ -544,6 +553,7 @@ class TicketingCartResourceTestBase(object):
     def _add_orders_email(self, order_limit=0):
         from altair.app.ticketing.core.models import Order, SalesSegment, ShippingAddress
         from altair.app.ticketing.cart.models import Cart
+        from datetime import datetime
         sales_segment = SalesSegment(order_limit=order_limit)
         orders = []
         for i in range(2):
@@ -551,6 +561,15 @@ class TicketingCartResourceTestBase(object):
             order = Order(cart=cart,
                           shipping_address=ShippingAddress(email_1="testing@example.com"),
                           total_amount=0,
+                          system_fee=0, transaction_fee=0, delivery_fee=0)
+            orders.append(order)
+
+        cancel = []
+        for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
+            order = Order(cart=cart,
+                          shipping_address=ShippingAddress(email_1="testing@example.com"),
+                          total_amount=0, canceled_at=datetime.now(),
                           system_fee=0, transaction_fee=0, delivery_fee=0)
             orders.append(order)
 

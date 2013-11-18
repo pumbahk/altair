@@ -3535,26 +3535,29 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         return [pdmp for pdmp in self.payment_delivery_method_pairs if pdmp.is_available_for(self, now)]
 
 
-    def query_orders_by_user(self, user):
+    def query_orders_by_user(self, user, filter_cancel=False):
         """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
         from altair.app.ticketing.cart.models import Cart
-        return DBSession.query(Order).filter(
+        
+        qs = DBSession.query(Order).filter(
             Order.user_id==user.id
         ).filter(
             Cart.order_id==Order.id
         ).filter(
             Cart.sales_segment_id==self.id
         )
-
-
+        if filter_cancel:
+            qs = qs.filter(Order.canceled_at==None)
+        return qs
+        
     @deprecation.deprecate(u"メールアドレスは複数与えられるものなので、このメソッドは使うべきではない")
-    def query_orders_by_mailaddress(self, mailaddress):
-        return self.query_orders_by_mailaddresses([mailaddress])
+    def query_orders_by_mailaddress(self, mailaddress, filter_cancel=False):
+        return self.query_orders_by_mailaddresses([mailaddress], filter_cancel)
 
-    def query_orders_by_mailaddresses(self, mailaddresses):
+    def query_orders_by_mailaddresses(self, mailaddresses, filter_cancel=False):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
         from altair.app.ticketing.cart.models import Cart
-        return DBSession.query(Order).filter(
+        qs = DBSession.query(Order).filter(
             Order.shipping_address_id==ShippingAddress.id
         ).filter(
             or_(ShippingAddress.email_1.in_(mailaddresses),
@@ -3564,7 +3567,10 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         ).filter(
             Cart.sales_segment_id==self.id
         )
-
+        
+        if filter_cancel:
+            qs = qs.filter(Order.canceled_at==None)
+        return qs
 
     @hybrid_property
     def name(self):
