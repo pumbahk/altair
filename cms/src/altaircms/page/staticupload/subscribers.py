@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import os
 import shutil
 import json
@@ -9,6 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from .refine import refine_link_on_upload, is_html_filename
+from . import validate_uploaded_file, is_html_filename
 
 def _delete_ignorefile_after_staticupload(ignore_directories, ignore_files, after_create):
     event = after_create
@@ -33,6 +35,8 @@ def refine_html_files_after_staticupload(after_create):
         for f in files:
             if is_html_filename(f):
                 output = refine_link_on_upload(f, root, event.static_directory)
+                validate_uploaded_file(f, output)
+
                 path = os.path.join(root, f)
                 os.rename(path, path+".original")
                 with open(path, "w") as wf:
@@ -42,10 +46,12 @@ def refine_html_file_after_staticupload(partial_create):
     event = partial_create
     path = event.root
     dirname, f = os.path.split(path)
-    output = refine_link_on_upload(f, dirname, event.static_directory)
-    os.rename(path, path+".original")
-    with open(path, "w") as wf:
-        wf.write(output)
+    if is_html_filename(f):
+        output = refine_link_on_upload(f, dirname, event.static_directory)
+        validate_uploaded_file(f, output)
+        os.rename(path, path+".original")
+        with open(path, "w") as wf:
+            wf.write(output)
 
 ## after create -> (s3upload) -> after zipupload
 def s3upload_directory(after_zipupload):

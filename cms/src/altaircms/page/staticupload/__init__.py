@@ -2,6 +2,28 @@
 SESSION_NAME = "staticupload"
 from pyramid.path import AssetResolver
 
+import logging
+logger = logging.getLogger(__name__)
+
+class StaticUploadAssertionError(Exception):
+    pass
+
+def is_html_filename(filename):
+    return filename.lower().endswith((".html", ".htm"))
+
+def validate_uploaded_file(filename, output):
+    try:
+        output.decode("utf-8")
+    except UnicodeDecodeError as e:
+        logger.warn("unicode decode error: filename {}: error({})".format(filename, repr(e)))
+        raise StaticUploadAssertionError(u"以下のファイルが壊れている。あるいはエンコーディングがutf-8ではありません。 ファイル:{}".format(filename))
+
+def validate_uploaded_io(filename, io):
+    if not is_html_filename(filename):
+        return
+    validate_uploaded_file(filename, io.read()) #xxx:
+    io.seek(0)
+
 def install_static_page_cache(config):
     from .fetcher import StaticPageCache
     from .interfaces import IStaticPageCache

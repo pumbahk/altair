@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 from altaircms.viewlib import BaseView
 from altaircms.datelib import get_now
 from altaircms.modellib import first_or_nullmodel
+from . import StaticUploadAssertionError
 
 @view_defaults(route_name="static_page_create", permission="authenticated")
 class StaticPageCreateView(BaseView):
@@ -46,6 +47,10 @@ class StaticPageCreateView(BaseView):
             static_page.pageset.pagetype = pagetype
             FlashMessage.success(u"%sが作成されました" % static_page.label, request=self.request)
             return HTTPFound(self.context.endpoint(static_page))
+        except StaticUploadAssertionError as e:
+            FlashMessage.error(unicode(e.args[0]), request=self.request)
+            creator.rollback()
+            return {"form": form}
         except Exception as e:
             logger.exception(e)
             FlashMessage.error(u"作成に失敗しました。(ファイル名に日本語などのマルチバイト文字が含まれている時に失敗することがあります)", request=self.request)
@@ -162,6 +167,8 @@ class StaticPagePartFileView(BaseView):
             changer.create_file(static_page)
             self.context.touch(static_page)
             return HTTPFound(self.context.endpoint(static_page))
+        except StaticUploadAssertionError as e:
+            return _retry(unicode(e.args[0]))
         except Exception as e:
             logger.exception(str(e))
             return _retry(unicode(e))
@@ -183,10 +190,10 @@ class StaticPagePartFileView(BaseView):
         static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==self.request.matchdict["child_id"])
         def _retry(message=None):
             if message:
-                form.errors["name", "file"] = [message]
+                form.errors["file"] = [message]
             return {"title": u"ファイルの更新", 
                     "form": form, 
-                    "fields": ["file"], 
+                    "fields": ["name", "file"], 
                     "submit_message": u"ファイルを更新"
                     }
         try:
@@ -196,6 +203,9 @@ class StaticPagePartFileView(BaseView):
             changer.update_file(static_page)
             self.context.touch(static_page)
             return HTTPFound(self.context.endpoint(static_page))
+
+        except StaticUploadAssertionError as e:
+            return _retry(unicode(e.args[0]))
         except Exception as e:
             logger.exception(str(e))
             return _retry(unicode(e))
@@ -367,6 +377,9 @@ class StaticPageView(BaseView):
         creator = self.context.creation(creation.StaticPageCreate, form.data)
         try:
             creator.update_underlying_something(static_page)
+        except StaticUploadAssertionError as e:
+            FlashMessage.error(unicode(e.args[0]), request=self.request)
+            raise HTTPFound(self.context.endpoint(static_page))
         except Exception as e:
             logger.error(str(e))
             FlashMessage.error(u"更新に失敗しました。(ファイル名に日本語などのマルチバイト文字が含まれている時に失敗することがあります)", request=self.request)

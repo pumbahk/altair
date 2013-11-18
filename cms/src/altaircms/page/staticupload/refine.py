@@ -6,9 +6,9 @@ from urlparse import urljoin
 from functools import partial
 import logging
 logger = logging.getLogger(__name__)
+from . import is_html_filename
+# utility = IDirectoryResource
 
-def is_html_filename(filename):
-    return filename.lower().endswith((".html", ".htm"))
 
 def has_doctype(doctype):
     ## lxml default doctype is below stmt.
