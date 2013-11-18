@@ -17,19 +17,30 @@
     if (event_rows < 0) event_rows = 0;
 
     for (var sec_no=0; sec_no<50; sec_no++) {
-      for (var row_no=1; row_no<200; row_no++) {
+      var row_no=1;
+      while(1) {
+        if (!$("." + sec_no + "_" + row_no).length) {
+          break;
+        }
         $("." + sec_no + "_" + row_no).hide();
+        row_no++;
       }
     }
   });
 
   function toggle_detail(section_no) {
-    for (var row_no=1; row_no<200; row_no++) {
+    var row_no=1;
+    while(1) {
+      if (!$("." + section_no + "_" + row_no).length) {
+        break;
+      }
+
       if ($("." + section_no + "_" + row_no).css("display") != "none") {
         $("." + section_no + "_" + row_no).hide();
       } else {
         $("." + section_no + "_" + row_no).show();
       }
+      row_no++;
     }
   }
 
