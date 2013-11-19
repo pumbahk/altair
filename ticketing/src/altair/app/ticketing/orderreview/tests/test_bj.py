@@ -123,7 +123,7 @@ class Bj89erCartResourceTests(unittest.TestCase):
         testing.tearDown()
 
     def _getTarget(self):
-        from .resources import OrderReviewResource
+        from ..resources import OrderReviewResource
         return OrderReviewResource
 
     def _makeOne(self, *args, **kwargs):

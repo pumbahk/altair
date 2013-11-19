@@ -1,8 +1,8 @@
 <%doc>
   delete confirm dialog with confirm question
 </%doc>
-<%def name="delete_modal(label_delete=u'削除', label_cancel=u'キャンセル')">
-  <div id="modal-delete" class="modal hide">
+<%def name="delete_modal(label_delete=u'削除', label_cancel=u'キャンセル', id='modal-delete')">
+  <div id="${id}" class="modal hide">
     <div class="modal-header">
       <a href="#" class="close" data-dismiss="modal">&times;</a>
       <h3>確認</h3>
@@ -10,10 +10,13 @@
 
     <div class="modal-body">
       <p id="message"></p>
+      %if caller:
+        ${caller.body()}
+      %endif
     </div>
 
     <div class="modal-footer">
-      <a href="javascript:void(0);" onclick="$('#modal-delete').modal('hide');" class="btn secondary">${label_cancel}</a>
+      <a href="javascript:void(0);" onclick="$('#${id}').modal('hide');" class="btn secondary">${label_cancel}</a>
       <a id="delete" href="" class="btn btn-danger">${label_delete}</a>
     </div>
   </div>

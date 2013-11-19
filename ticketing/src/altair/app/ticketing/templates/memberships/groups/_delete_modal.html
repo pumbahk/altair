@@ -1,0 +1,27 @@
+<%page args="request,delete_form,post_url"/>
+<%namespace file="/common/modal.html" name="m"/>
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%m:delete_modal id="modal-membergroup-delete">
+<form id="delete_form" method="POST" action="${post_url}">
+   ${ch.form_item(delete_form.membership_id)}
+   ${ch.form_item(delete_form.redirect_to)}
+</form>
+<script type="text/javascript">
+  function popup_membergroup_delete_modal(id) {
+    var modal = $('#modal-membergroup-delete');
+    modal.find('#message').text('選択した会員区分を削除します。よろしいですか？');
+    modal.modal('toggle');
+    if(!modal.data("*click.bound")){
+      modal.data("*click.bound", true)
+      modal.find("#delete").click(function(e){
+        var href = modal.find("#delete_form").attr("action").replace("__id__", id);
+        post_modal_form("#modal-membergroup-delete", "#delete_form", href);
+        return false;
+      });
+    }
+  }
+</script>
+</%m:delete_modal>
+
+

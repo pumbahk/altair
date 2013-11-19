@@ -18,7 +18,8 @@ def _setup_db(echo=False):
         )
 
 class TestIt(unittest.TestCase):
-    _settings = {'altair.mobile.asid': 'test',
+    _settings = {'altair.pc.asid': 'test',
+                 'altair.mobile.asid': 'test',
                  'altair.smartphone.asid': 'test',
                  }
     
@@ -175,9 +176,9 @@ class CartTests(unittest.TestCase):
         target = self._makeOne(performance_id=1)
         target.add_seat(seats, ordered_products)
 
-        self.assertEqual(target.products[0].product.id, 0)
-        self.assertEqual(target.products[0].quantity, 1)
-        self.assertEqual(len(target.products[0].items), 1)
+        self.assertEqual(target.items[0].product.id, 0)
+        self.assertEqual(target.items[0].quantity, 1)
+        self.assertEqual(len(target.items[0].elements), 1)
 
     def test_add_products(self):
         from altair.app.ticketing.core.models import Product, ProductItem
@@ -195,9 +196,9 @@ class CartTests(unittest.TestCase):
         target = self._makeOne(performance_id=1)
         target.add_products(ordered_products)
 
-        self.assertEqual(target.products[0].product.id, 0)
-        self.assertEqual(target.products[0].quantity, 1)
-        self.assertEqual(len(target.products[0].items), 1)
+        self.assertEqual(target.items[0].product.id, 0)
+        self.assertEqual(target.items[0].quantity, 1)
+        self.assertEqual(len(target.items[0].elements), 1)
 
 
 class CartedProductTests(unittest.TestCase):
@@ -235,7 +236,7 @@ class CartedProductTests(unittest.TestCase):
             performance_id=1
             )
 
-        self.assertEqual(len(target.items), 2)
+        self.assertEqual(len(target.elements), 2)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].stock_id, 1)
 
@@ -307,7 +308,8 @@ class CartedProductItemTests(unittest.TestCase):
 
 
 class TicketingCartResourceTestBase(object):
-    _settings = {'altair.mobile.asid': 'test',
+    _settings = {'altair.pc.asid': 'test',
+                 'altair.mobile.asid': 'test',
                  'altair.smartphone.asid': 'test',
                  }        
     def setUp(self):
@@ -488,6 +490,7 @@ class TicketingCartResourceTestBase(object):
         from altair.app.ticketing.core.models import Order, SalesSegment
         from altair.app.ticketing.cart.models import Cart
         from altair.app.ticketing.users.models import User
+        from datetime import datetime
         sales_segment = SalesSegment(order_limit=order_limit)
         user = User()
         other = User()
@@ -498,6 +501,14 @@ class TicketingCartResourceTestBase(object):
                           total_amount=0,
                           system_fee=0, transaction_fee=0, delivery_fee=0)
             orders.append(order)
+
+        cancels = []
+        for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
+            order = Order(user=user, cart=cart,
+                          total_amount=0, canceled_at=datetime.now(),
+                          system_fee=0, transaction_fee=0, delivery_fee=0)
+            cancels.append(order)
 
         others = []
         for i in range(2):
@@ -544,6 +555,7 @@ class TicketingCartResourceTestBase(object):
     def _add_orders_email(self, order_limit=0):
         from altair.app.ticketing.core.models import Order, SalesSegment, ShippingAddress
         from altair.app.ticketing.cart.models import Cart
+        from datetime import datetime
         sales_segment = SalesSegment(order_limit=order_limit)
         orders = []
         for i in range(2):
@@ -551,6 +563,15 @@ class TicketingCartResourceTestBase(object):
             order = Order(cart=cart,
                           shipping_address=ShippingAddress(email_1="testing@example.com"),
                           total_amount=0,
+                          system_fee=0, transaction_fee=0, delivery_fee=0)
+            orders.append(order)
+
+        cancel = []
+        for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
+            order = Order(cart=cart,
+                          shipping_address=ShippingAddress(email_1="testing@example.com"),
+                          total_amount=0, canceled_at=datetime.now(),
                           system_fee=0, transaction_fee=0, delivery_fee=0)
             orders.append(order)
 
@@ -771,10 +792,11 @@ class ReserveViewTests(unittest.TestCase):
                         'unit_template': u'{{num}}枚',
                         }
                     ],
-                'total_amount': '200'
+                'total_amount': '200',
+                'separate_seats': False,
                 },
             'result': 'OK',
-            'payment_url': 'http://example.com/payment'
+            'payment_url': 'http://example.com/payment',
             })
         cart_id = request.session['altair.app.ticketing.cart_id']
 
@@ -782,9 +804,9 @@ class ReserveViewTests(unittest.TestCase):
         cart = self.session.query(Cart).filter(Cart.id==cart_id).one()
 
         self.assertIsNotNone(cart)
-        self.assertEqual(len(cart.products), 1)
-        self.assertEqual(len(cart.products[0].items), 1)
-        self.assertEqual(cart.products[0].items[0].quantity, 2)
+        self.assertEqual(len(cart.items), 1)
+        self.assertEqual(len(cart.items[0].elements), 1)
+        self.assertEqual(cart.items[0].elements[0].quantity, 2)
 
         from sqlalchemy import sql
         stock_statuses = self.session.bind.execute(sql.select([StockStatus.quantity]).where(StockStatus.stock_id==stock_id))

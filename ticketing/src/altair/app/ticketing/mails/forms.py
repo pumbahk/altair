@@ -63,7 +63,7 @@ class OrderInfoDefault(SubjectInfoDefault):
 
     def get_seat_no(order):
         seat_no = []
-        for p in order.ordered_products:
+        for p in order.items:
             if p.product.sales_segment.seat_choice:
                 seat_no += [u"* {0}".format(seat["name"]) for seat in p.seats]
             elif p.product.seat_stock_type:
@@ -74,7 +74,7 @@ class OrderInfoDefault(SubjectInfoDefault):
         return u"\n".join((u"{0} {1} x{2}".format(op.product.name,
                                                     ch.format_currency(op.product.price),
                                                     op.quantity)
-                           for op in order.ordered_products))
+                           for op in order.items))
 
 
     order_no = SubjectInfo(name="order_no", label=u"受付番号", getval=lambda subject : subject.order_no)

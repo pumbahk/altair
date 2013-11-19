@@ -12,6 +12,7 @@ from altair.formhelpers import (
     DateTimeField, Translations, Required, DateField, Max, OurDateWidget,
     after1900, CheckboxMultipleSelect, BugFreeSelectMultipleField,
     NFKC, Zenkaku, Katakana, strip_spaces, ignore_space_hyphen,
+    LazySelectMultipleField,
 )
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator
@@ -192,7 +193,7 @@ class ProductForm(Form):
         coerce=int,
     )
 
-    performance_id = SelectField(
+    performance_id = LazySelectMultipleField(
         label=u'公演',
         validators=[
             Required(),
@@ -205,16 +206,19 @@ class ProductForm(Form):
         super(type(self), self).__init__(formdata, obj, **kwargs)
         self.obj = obj
 
-    def create_product(self, lot):
-        product = Product(
-            name=self.data["name"],
-            price=self.data["price"],
-            display_order=self.data["display_order"],
-            description=self.data["description"],
-            seat_stock_type_id=self.data["seat_stock_type_id"],
-            performance_id=self.data["performance_id"],
-            sales_segment=lot.sales_segment)
-        return product
+    def create_products(self, lot):
+        performance_ids = self.data["performance_id"]
+        if not isinstance(performance_ids, list):
+            performance_ids = [performance_ids]
+
+        return [Product(name=self.data["name"],
+                        price=self.data["price"],
+                        display_order=self.data["display_order"],
+                        description=self.data["description"],
+                        seat_stock_type_id=self.data["seat_stock_type_id"],
+                        performance_id=performance_id,
+                        sales_segment=lot.sales_segment)
+                for performance_id in performance_ids]
 
     def apply_product(self, product):
         product.name = self.data["name"]
@@ -222,7 +226,6 @@ class ProductForm(Form):
         product.display_order = self.data["display_order"]
         product.description = self.data["description"]
         product.seat_stock_type_id = self.data["seat_stock_type_id"]
-        product.performance_id = self.data["performance_id"]
 
         return product
 

@@ -242,7 +242,7 @@ class CheckoutTests(unittest.TestCase):
             total_amount=1000,
             system_fee=80,
             delivery_fee=60,
-            products=[]
+            items=[]
         )
         result = target.create_checkout_request_xml(cart)
 
@@ -278,7 +278,7 @@ class CheckoutTests(unittest.TestCase):
             total_amount=1000,
             system_fee=80,
             delivery_fee=60,
-            products=[
+            items=[
                 testing.DummyResource(
                     product=testing.DummyResource(
                         id='item-%02d' % i,
@@ -345,17 +345,17 @@ class CheckoutTests(unittest.TestCase):
             total_amount=1000,
             system_fee=80,
             delivery_fee=60,
-            products=[
-            testing.DummyResource(
-                product=testing.DummyResource(
-                    id='item-%02d' % i,
-                    name='item %d' % i,
-                    price=i*10
-                ),
-                quantity=i,
-                amount=20 + i * 10
-            ) for i in range(2)
-            ]
+            items=[
+                testing.DummyResource(
+                    product=testing.DummyResource(
+                        id='item-%02d' % i,
+                        name='item %d' % i,
+                        price=i*10
+                        ),
+                    quantity=i,
+                    amount=20 + i * 10
+                    ) for i in range(2)
+                ]
         )
         result = target.create_checkout_request_xml(cart)
 

@@ -1,3 +1,4 @@
+import mock
 from datetime import datetime
 import json
 import sqlahelper
@@ -7,9 +8,53 @@ from sqlalchemy.types import TypeDecorator, VARCHAR
 from sqlalchemy.sql.operators import ColumnOperators
 import logging
 
-logger = logging.getLogger()    
+logger = logging.getLogger()
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
+
+class ForDisplayByHelperMixin(object):
+    def __int__(self):
+        return 0
+
+    def weekday(self): #for datetime
+        return 0
+
+    def encode(self, *args, **kwargs):
+        return repr(self)
+
+    def decode(self, *args, **kwargs):
+        return repr(self).decode(*args, **kwargs)
+
+    def __radd__(self, x):
+        return x + repr(self)
+
+class QuietMock(ForDisplayByHelperMixin, mock.Mock):
+    _m_message = u"-"
+    def __repr__(self):
+        return self._m_message
+
+    def __iter__(self):
+        return iter([])
+
+    def __nonzero__(self):
+        return False
+    __bool__ = __nonzero__
+
+def null_model(model): #xxx:
+    m = QuietMock("Null{}".format(model.__name__))
+    m.mock_add_spec(model)
+    # if hasattr(m,  "id"):
+    #     m.id = -1
+    return m
+
+def first_or_nullmodel(parent, relation_name):
+    children = getattr(parent, relation_name)
+    try:
+        return children[0]
+    except IndexError as e:
+        logger.warn("first_or_nullmodel {}:{} -- {}".format(parent, relation_name, repr(e)))
+        child_class = getattr(parent.__class__, relation_name).property.mapper.class_
+        return null_model(child_class)
 
 def model_to_dict(obj):
     return {k: getattr(obj, k) for k, v in obj.__class__.__dict__.iteritems() \

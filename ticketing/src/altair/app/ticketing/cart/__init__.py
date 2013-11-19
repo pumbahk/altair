@@ -11,7 +11,7 @@ from pyramid.interfaces import IDict
 from pyramid.tweens import INGRESS, MAIN, EXCVIEW
 from pyramid_beaker import session_factory_from_settings
 from pyramid_beaker import set_cache_regions_from_settings
-
+from pyramid.exceptions import ConfigurationError
 
 from sqlalchemy import engine_from_config
 
@@ -67,6 +67,24 @@ def setup_components(config):
     reg.adapters.register([IRequest], IPerformanceSelector, "matchup2", MatchUpPerformanceSelector2)
     reg.adapters.register([IRequest], IPerformanceSelector, "date", DatePerformanceSelector)
 
+    setup_asid(config)
+
+def setup_asid(config):
+    pc = config.registry.settings.get('altair.pc.asid')
+    mobile = config.registry.settings.get('altair.mobile.asid')
+    smartphone = config.registry.settings.get('altair.smartphone.asid')
+
+    if not pc:
+        raise ConfigurationError('altair.pc.asid is not found in settings')
+    if not mobile:
+        raise ConfigurationError('altair.mobile.asid is not found in settings')
+    if not smartphone:
+        raise ConfigurationError('altair.smartphone.asid is not found in settings')
+
+    assert config.registry.settings["altair.pc.asid"]
+    def altair_pc_asid(request):
+        return config.registry.settings["altair.pc.asid"]
+
     assert config.registry.settings["altair.mobile.asid"]
     def altair_mobile_asid(request):
         return config.registry.settings["altair.mobile.asid"]
@@ -75,6 +93,7 @@ def setup_components(config):
     def altair_smartphone_asid(request):
         return config.registry.settings["altair.smartphone.asid"]
 
+    config.set_request_property(altair_pc_asid, "altair_pc_asid", reify=True)
     config.set_request_property(altair_mobile_asid, "altair_mobile_asid", reify=True)
     config.set_request_property(altair_smartphone_asid, "altair_smartphone_asid", reify=True)
 

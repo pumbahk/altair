@@ -28,7 +28,7 @@ def _send_mail_simple(request, recipient, sender, mail_body, subject=u"QRチケ�
             sender=sender)
     return get_mailer(request).send(message)
 
-def get_contact_url(request, fail_exc=None):
+def get_contact_url(request, fail_exc=ValueError):
     organization = get_organization(request)
     if organization is None:
         raise fail_exc("organization is not found")

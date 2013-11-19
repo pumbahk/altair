@@ -34,7 +34,12 @@ from pyramid.i18n import TranslationString as _
 from zope.deprecation import deprecation
 
 from .exceptions import InvalidStockStateError
-from .interfaces import ISalesSegmentQueryable
+from .interfaces import (
+    ISalesSegmentQueryable,
+    IOrderLike,
+    IOrderedProductLike,
+    IOrderedProductItemLike
+)
 
 from altair.app.ticketing.models import (
     Base, DBSession, 
@@ -2310,6 +2315,7 @@ class OrderCancelReasonEnum(StandardEnum):
     Promoter = (2, u'主催者都合')
     CallOff = (3, u'中止')
 
+@implementer(IOrderLike)
 class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Order'
     __table_args__= (
@@ -2324,11 +2330,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     shipping_address = relationship('ShippingAddress', backref='order')
     organization_id = Column(Identifier, ForeignKey("Organization.id"))
     ordered_from = relationship('Organization', backref='orders')
+    @property
+    def organization(self):
+        return self.ordered_from
     operator_id = Column(Identifier, ForeignKey("Operator.id"))
     operator = relationship('Operator', uselist=False)
     channel = Column(Integer, nullable=True)
 
-    items = relationship('OrderedProduct')
     total_amount = Column(Numeric(precision=16, scale=2), nullable=False)
     system_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     
@@ -2372,6 +2380,16 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
     sales_segment = relationship('SalesSegment', backref='orders')
+
+    @property
+    def ordered_products(self):
+        return self.items
+
+    @ordered_products.setter
+    def ordered_products(self, value):
+        self.items = value
+
+    ordered_products = deprecation.deprecated(ordered_products, 'use items property instead')
 
     def is_canceled(self):
         return bool(self.canceled_at)
@@ -2492,7 +2510,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def can_refund(self):
         # 入金済または払戻予約のみ払戻可能
-        return (self.status == 'ordered' and self.payment_status in ['paid', 'refunding'])
+        return (self.status in ['ordered', 'delivered'] and self.payment_status in ['paid', 'refunding'])
 
     def can_deliver(self):
         # 受付済のみ配送済に変更可能
@@ -2604,7 +2622,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             # 未入金ならコンビニ決済のキャンセル通知
             if self.payment_status == 'unpaid':
-                result = sej_api.cancel_sej_order(sej_order, self.organization_id)
+                result = sej_api.cancel_sej_order(sej_order, self.organization_id, now)
                 if not result:
                     return False
 
@@ -2718,7 +2736,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def release(self):
         # 在庫を解放する
-        for product in self.ordered_products:
+        for product in self.items:
             product.release()
 
     def change_status(self, status):
@@ -2799,18 +2817,18 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             user=cart.shipping_address and cart.shipping_address.user
             )
 
-        for product in cart.products:
+        for product in cart.items:
             # この ordered_product はコンストラクタに order を指定しているので
             # 勝手に order.ordered_products に追加されるから、append は不要
             ordered_product = OrderedProduct(
                 order=order, product=product.product, price=product.product.price, quantity=product.quantity)
-            for item in product.items:
+            for element in product.elements:
                 ordered_product_item = OrderedProductItem(
                     ordered_product=ordered_product,
-                    product_item=item.product_item,
-                    price=item.product_item.price,
-                    quantity=item.product_item.quantity * product.quantity,
-                    seats=item.seats
+                    product_item=element.product_item,
+                    price=element.product_item.price,
+                    quantity=element.product_item.quantity * product.quantity,
+                    seats=element.seats
                     )
                 for i, seat in ordered_product_item.iterate_serial_and_seat():
                     token = OrderedProductItemToken(
@@ -2850,17 +2868,28 @@ class OrderedProductAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     name = Column(String(255), primary_key=True, nullable=False)
     value = Column(String(1023))
 
+@implementer(IOrderedProductLike)
 class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProduct'
     __clone_excluded__ = ['order_id', 'product']
 
     id = Column(Identifier, primary_key=True)
     order_id = Column(Identifier, ForeignKey("Order.id"))
-    order = relationship('Order', backref='ordered_products')
+    order = relationship('Order', backref='items')
     product_id = Column(Identifier, ForeignKey("Product.id"))
     product = relationship('Product', backref='ordered_products')
     price = Column(Numeric(precision=16, scale=2), nullable=False)
     quantity = Column(Integer)
+
+    @property
+    def ordered_product_items(self):
+        return self.elements
+
+    @ordered_product_items.setter
+    def ordered_product_items(self, value):
+        self.elements = value 
+
+    ordered_product_items = deprecation.deprecated(ordered_product_items, 'use elements property instead')
 
     @property
     def seats(self):
@@ -2870,30 +2899,31 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def seat_quantity(self):
         quantity = 0
-        for item in self.ordered_product_items:
-            if item.product_item.stock_type.is_seat:
-                quantity += item.quantity
+        for element in self.elements:
+            if element.product_item.stock_type.is_seat:
+                quantity += element.quantity
         return quantity
 
     def release(self):
         # 在庫を解放する
-        for item in self.ordered_product_items:
-            item.release()
+        for element in self.elements:
+            element.release()
 
     def delete(self):
         # delete OrderedProductItem
-        for ordered_product_item in self.ordered_product_items:
-            ordered_product_item.delete()
+        for element in self.elements:
+            element.delete()
 
         super(OrderedProduct, self).delete()
 
+@implementer(IOrderedProductItemLike)
 class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProductItem'
     __clone_excluded__ = ['ordered_product_id', 'product_item', 'seats', '_attributes']
 
     id = Column(Identifier, primary_key=True)
     ordered_product_id = Column(Identifier, ForeignKey("OrderedProduct.id"))
-    ordered_product = relationship('OrderedProduct', backref='ordered_product_items')
+    ordered_product = relationship('OrderedProduct', backref='elements')
     product_item_id = Column(Identifier, ForeignKey("ProductItem.id"))
     product_item = relationship('ProductItem', backref='ordered_product_items')
     issued_at = Column(DateTime, nullable=True, default=None)
@@ -3535,26 +3565,29 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         return [pdmp for pdmp in self.payment_delivery_method_pairs if pdmp.is_available_for(self, now)]
 
 
-    def query_orders_by_user(self, user):
+    def query_orders_by_user(self, user, filter_cancel=False):
         """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
         from altair.app.ticketing.cart.models import Cart
-        return DBSession.query(Order).filter(
+        
+        qs = DBSession.query(Order).filter(
             Order.user_id==user.id
         ).filter(
             Cart.order_id==Order.id
         ).filter(
             Cart.sales_segment_id==self.id
         )
-
-
+        if filter_cancel:
+            qs = qs.filter(Order.canceled_at==None)
+        return qs
+        
     @deprecation.deprecate(u"メールアドレスは複数与えられるものなので、このメソッドは使うべきではない")
-    def query_orders_by_mailaddress(self, mailaddress):
-        return self.query_orders_by_mailaddresses([mailaddress])
+    def query_orders_by_mailaddress(self, mailaddress, filter_cancel=False):
+        return self.query_orders_by_mailaddresses([mailaddress], filter_cancel)
 
-    def query_orders_by_mailaddresses(self, mailaddresses):
+    def query_orders_by_mailaddresses(self, mailaddresses, filter_cancel=False):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
         from altair.app.ticketing.cart.models import Cart
-        return DBSession.query(Order).filter(
+        qs = DBSession.query(Order).filter(
             Order.shipping_address_id==ShippingAddress.id
         ).filter(
             or_(ShippingAddress.email_1.in_(mailaddresses),
@@ -3564,7 +3597,10 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         ).filter(
             Cart.sales_segment_id==self.id
         )
-
+        
+        if filter_cancel:
+            qs = qs.filter(Order.canceled_at==None)
+        return qs
 
     @hybrid_property
     def name(self):

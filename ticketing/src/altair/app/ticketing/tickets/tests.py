@@ -326,7 +326,7 @@ class TicketsUtilsTest(TestCase):
                         )
                     ]
                 )
-            cart.products.append(carted_product)
+            cart.items.append(carted_product)
             for k, v in locals().iteritems():
                 setattr(self, k, v)
         _()
@@ -483,7 +483,7 @@ class TicketsUtilsTest(TestCase):
             u"発券日時s": u"2012/11/01 (木) 12:34",
             u"発券番号": "",
             }
-        out = build_dicts_from_ordered_product_item(self.order.items[0].ordered_product_items[0])
+        out = build_dicts_from_ordered_product_item(self.order.items[0].elements[0])
         self.assertEqual(1, len(out))
         self.assertEqual(self.seat, out[0][0])
         for k in expected:
@@ -562,7 +562,7 @@ class TicketsUtilsTest(TestCase):
             u"発券日時": u"\ufeff{{発券日時}}\ufeff",
             u"発券日時s": u"\ufeff{{発券日時s}}\ufeff",
             }
-        out = build_dicts_from_carted_product_item(self.cart.products[0].items[0], now=datetime(2012, 10, 30, 12, 34, 56))
+        out = build_dicts_from_carted_product_item(self.cart.items[0].elements[0], now=datetime(2012, 10, 30, 12, 34, 56))
         self.assertEqual(1, len(out))
         self.assertEqual(self.seat, out[0][0])
         for k in expected:

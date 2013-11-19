@@ -148,8 +148,9 @@ class SalesSegmentForm(Form):
                                                allow_blank=False, label=u"販売区分名", get_label=lambda obj: obj.name)
     start_on = fields.DateTimeField(label=u"開始時間",validators=[])
     end_on = fields.DateTimeField(label=u"終了時間",validators=[])
-    backend_id = fields.IntegerField(validators=[validators.Optional()], label=u"バックエンド管理番号")       
-    __display_fields__ = [u"performance", u"group", u"start_on", u"end_on", u"backend_id"]
+    backend_id = fields.IntegerField(validators=[validators.Optional()], label=u"バックエンド管理番号")
+    publicp = fields.BooleanField(label=u"表示／非表示", default=True)
+    __display_fields__ = [u"performance", u"group", u"start_on", u"end_on", u"backend_id", u"publicp"]
 
     def validate(self, **kwargs):
         if super(SalesSegmentForm, self).validate():

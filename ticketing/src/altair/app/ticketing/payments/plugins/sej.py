@@ -31,12 +31,13 @@ from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.sej.api import get_sej_order
 from altair.app.ticketing.sej.exceptions import SejErrorBase
 from altair.app.ticketing.sej.ticket import SejTicketDataXml
-from altair.app.ticketing.sej.models import SejOrder, SejTenant, SejPaymentType, SejTicketType
-from altair.app.ticketing.sej.payment import request_order
+from altair.app.ticketing.sej.models import SejOrder, SejTenant, SejPaymentType, SejTicketType, SejOrderUpdateReason
+from altair.app.ticketing.sej.payment import request_order, request_update_order, build_sej_tickets_from_dicts
 from altair.app.ticketing.sej.utils import han2zen
 
 from altair.app.ticketing.tickets.convert import convert_svg
 from altair.app.ticketing.tickets.utils import (
+    NumberIssuer, 
     as_user_unit,
     build_dicts_from_ordered_product_item,
     build_dicts_from_carted_product_item,
@@ -106,11 +107,13 @@ def get_sej_ticket_data(product_item, svg):
 def applicable_tickets_iter(bundle):
     return ApplicableTicketsProducer(bundle).sej_only_tickets()
 
+
 def get_tickets(order):
     tickets = []
-    for ordered_product in order.ordered_products:
-        for ordered_product_item in ordered_product.ordered_product_items:
-            dicts = build_dicts_from_ordered_product_item(ordered_product_item)
+    issuer = NumberIssuer()
+    for ordered_product in order.items:
+        for ordered_product_item in ordered_product.elements:
+            dicts = build_dicts_from_ordered_product_item(ordered_product_item, ticket_number_issuer=issuer)
             bundle = ordered_product_item.product_item.ticket_bundle
             for seat, dict_ in dicts:
                 for ticket in applicable_tickets_iter(bundle):
@@ -123,10 +126,11 @@ def get_tickets(order):
 
 def get_tickets_from_cart(cart, now):
     tickets = []
-    for carted_product in cart.products:
-        for carted_product_item in carted_product.items:
+    issuer = NumberIssuer()
+    for carted_product in cart.items:
+        for carted_product_item in carted_product.elements:
             bundle = carted_product_item.product_item.ticket_bundle
-            dicts = build_dicts_from_carted_product_item(carted_product_item, now=now)
+            dicts = build_dicts_from_carted_product_item(carted_product_item, now=now, ticket_number_issuer=issuer)
             for (seat, dict_) in dicts:
                 for ticket in applicable_tickets_iter(bundle):
                     ticket_format = ticket.ticket_format
@@ -136,6 +140,84 @@ def get_tickets_from_cart(cart, now):
                     tickets.append(ticket)
     return tickets
 
+def refresh_order(order, update_reason, api_key, api_url):
+    sej_order = get_sej_order(order.order_no)
+    if sej_order is None:
+        raise Exception('no corresponding SejOrder found for order %s' % order.order_no)
+
+    new_sej_order = sej_order.new_branch()
+    new_sej_order.tickets = build_sej_tickets_from_dicts(
+        sej_order,
+        get_tickets(order),
+        lambda idx: None
+        )
+    for k, v in build_sej_args(sej_order.payment_type, order, sej_order.created_at).items():
+        setattr(new_sej_order, k, v)
+    new_sej_order.total_ticket_count = new_sej_order.ticket_count = len(new_sej_order.tickets)
+
+    DBSession.add(new_sej_order)
+
+    try:
+        request_update_order(
+            new_sej_order,
+            update_reason,
+            secret_key=api_key,
+            hostname=api_url
+            )
+    except SejErrorBase:
+        raise SejPluginFailure('refresh_order', order_no=order.order_no, back_url=None)
+
+
+def build_sej_args(payment_type, order_like, now):
+    shipping_address = order_like.shipping_address
+    tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')
+    tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
+    ticketing_start_at = get_ticketing_start_at(now, order_like)
+    ticketing_due_at = order_like.payment_delivery_pair.issuing_end_at
+    performance = order_like.performance
+    if int(payment_type) == int(SejPaymentType.Paid):
+        total_price         = 0
+        ticket_price        = 0
+        commission_fee      = 0
+        ticketing_fee       = 0
+        payment_due_at      = None
+        if ticketing_due_at is None:
+            # この処理は代済発券のみでよい
+            # 発券期限はつねに確定させておかなければ再付番できない
+            ticketing_due_at = now + timedelta(days=365)
+    elif int(payment_type) == int(SejPaymentType.PrepaymentOnly):
+        # 支払いのみの場合は、ticketing_fee が無視されるので、commission に算入してあげないといけない。
+        total_price         = order_like.total_amount
+        ticket_price        = order_like.total_amount - (order_like.system_fee + order_like.special_fee + order_like.transaction_fee + order_like.delivery_fee)
+        commission_fee      = order_like.system_fee + order_like.special_fee + order_like.transaction_fee + order_like.delivery_fee
+        ticketing_fee       = 0
+        payment_due_at      = get_payment_due_at(now, order_like)
+    elif int(payment_type) in (int(SejPaymentType.CashOnDelivery), int(payment_type) == int(SejPaymentType.Prepayment)):
+        total_price         = order_like.total_amount
+        ticket_price        = order_like.total_amount - (order_like.system_fee + order_like.special_fee + order_like.transaction_fee + order_like.delivery_fee)
+        commission_fee      = order_like.system_fee + order_like.special_fee + order_like.transaction_fee
+        ticketing_fee       = order_like.delivery_fee
+        payment_due_at      = get_payment_due_at(now, order_like)
+    else:
+        raise SejPluginFailure('unknown payment type %s' % payment_type, order_link.order_no, None)
+
+    return dict(
+        payment_type        = payment_type,
+        order_no            = order_like.order_no,
+        user_name           = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
+        user_name_kana      = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
+        tel                 = tel1 if tel1 else tel2,
+        zip_code            = shipping_address.zip.replace('-', '') if shipping_address.zip else '',
+        email               = shipping_address.email_1 or shipping_address.email_2 or '',
+        total_price         = total_price,
+        ticket_price        = ticket_price,
+        commission_fee      = commission_fee,
+        ticketing_fee       = ticketing_fee,
+        payment_due_at      = payment_due_at,
+        ticketing_start_at  = ticketing_start_at,
+        ticketing_due_at    = ticketing_due_at,
+        regrant_number_due_at = performance.start_on + timedelta(days=1) if performance and performance.start_on else now + timedelta(days=365)
+        )
 
 @implementer(IPaymentPlugin)
 class SejPaymentPlugin(object):
@@ -149,52 +231,27 @@ class SejPaymentPlugin(object):
         order = c_models.Order.create_from_cart(cart)
         cart.finish()
 
-        shipping_address = order.shipping_address
-        performance = order.performance
         current_date = datetime.now()
 
-        payment_due_at = get_payment_due_at(current_date,order)
-        ticketing_start_at = get_ticketing_start_at(current_date,order)
-        ticketing_due_at = order.payment_delivery_pair.issuing_end_at
-        tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')
-        tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
-
         settings = request.registry.settings
-        tenant = SejTenant.filter_by(organization_id = performance.event.organization.id).first()
+        tenant = SejTenant.filter_by(organization_id = cart.performance.event.organization.id).first()
         api_key = (tenant and tenant.api_key) or settings['sej.api_key']
         api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
 
         try:
             request_order(
-                shop_name           = tenant.shop_name,
-                shop_id             = tenant.shop_id,
-                contact_01          = tenant.contact_01,
-                contact_02          = tenant.contact_02,
-                order_no            = order.order_no,
-                username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
-                username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
-                tel                 = tel1 if tel1 else tel2,
-                zip                 = shipping_address.zip.replace('-', '') if shipping_address.zip else '',
-                email               = shipping_address.email_1 or '',
-                total               = order.total_amount,
-                ticket_total        = order.total_amount - (order.system_fee + order.special_fee + order.transaction_fee + order.delivery_fee),
-                # 支払いのみの場合は、ticketing_fee が無視されるので、commission に算入してあげないといけない。
-                commission_fee      = order.system_fee + order.special_fee + order.transaction_fee + order.delivery_fee,
-                payment_type        = SejPaymentType.PrepaymentOnly,
-                ticketing_fee       = 0,
-                payment_due_at      = payment_due_at,
-                ticketing_start_at  = ticketing_start_at,
-                ticketing_due_at    = ticketing_due_at,
-                regrant_number_due_at = performance.start_on + timedelta(days=1) if performance.start_on else
-                current_date + timedelta(days=365),
-                secret_key = api_key,
-                hostname = api_url
+                shop_name=tenant.shop_name,
+                shop_id=tenant.shop_id,
+                contact_01=tenant.contact_01,
+                contact_02=tenant.contact_02,
+                secret_key=api_key,
+                hostname=api_url,
+                **build_sej_args(SejPaymentType.PrepaymentOnly, cart, current_date)
                 )
         except SejErrorBase:
             raise SejPluginFailure('payment plugin', order_no=order.order_no, back_url=None)
 
         return order
-
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """
@@ -204,6 +261,22 @@ class SejPaymentPlugin(object):
 
         return bool(sej_order.billing_number)
 
+    def refresh(self, request, order):
+        if order.paid_at is not None:
+            raise Exception('order %s is already paid' % order.order_no)
+
+        settings = request.registry.settings
+        tenant = SejTenant.filter_by(organization_id = order.performance.event.organization.id).first()
+        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
+        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
+
+        refresh_order(
+            order,
+            SejOrderUpdateReason.Change,
+            api_key=api_key,
+            api_url=api_url
+            )
+ 
 @implementer(IDeliveryPlugin)
 class SejDeliveryPlugin(object):
     def __init__(self, template=None):
@@ -216,53 +289,27 @@ class SejDeliveryPlugin(object):
         logger.debug('Sej Delivery')
 
         shipping_address = cart.shipping_address
-        performance = cart.performance
         current_date = datetime.now()
 
-        payment_due_at = get_payment_due_at(current_date,cart)
-        ticketing_start_at = get_ticketing_start_at(current_date,cart)
-        ticketing_due_at = cart.payment_delivery_pair.issuing_end_at
-        if ticketing_due_at is None:
-            # この処理は代済発券のみでよい
-            # 発券期限はつねに確定させておかなければ再付番できない
-            ticketing_due_at = current_date + timedelta(days=365)
-        tickets = get_tickets_from_cart(cart, current_date)
-        order_no = cart.order_no
-        tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')
-        tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
-
         settings = request.registry.settings
-        tenant = SejTenant.filter_by(organization_id = performance.event.organization.id).first()
+        tenant = SejTenant.filter_by(organization_id = cart.performance.event.organization.id).first()
         api_key = (tenant and tenant.api_key) or settings['sej.api_key']
         api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
 
         try:
+            tickets = get_tickets_from_cart(cart, current_date)
             request_order(
-                shop_name           = tenant.shop_name,
-                shop_id             = tenant.shop_id,
-                contact_01          = tenant.contact_01,
-                contact_02          = tenant.contact_02,
-                order_no            = order_no,
-                username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
-                username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
-                tel                 = tel1 if tel1 else tel2,
-                zip                 = shipping_address.zip.replace('-', '') if shipping_address.zip else '',
-                email               = shipping_address.email_1 or '',
-                total               = 0,
-                ticket_total        = 0,
-                commission_fee      = 0,
-                payment_type        = SejPaymentType.Paid,
-                ticketing_fee       = 0,
-                payment_due_at      = payment_due_at,
-                ticketing_start_at  = ticketing_start_at,
-                ticketing_due_at    = ticketing_due_at,
-                regrant_number_due_at = performance.start_on + timedelta(days=1),
+                shop_name=tenant.shop_name,
+                shop_id=tenant.shop_id,
+                contact_01=tenant.contact_01,
+                contact_02=tenant.contact_02,
                 tickets=tickets,
-                secret_key = api_key,
-                hostname = api_url
+                secret_key=api_key,
+                hostname=api_url,
+                **build_sej_args(SejPaymentType.Paid, cart, current_date)
                 )
         except SejErrorBase:
-            raise SejPluginFailure('payment plugin', order_no=cart.order_no, back_url=None)
+            raise SejPluginFailure('delivery plugin', order_no=cart.order_no, back_url=None)
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """
@@ -271,6 +318,22 @@ class SejDeliveryPlugin(object):
             return False
 
         return bool(sej_order.exchange_number)
+
+    def refresh(self, request, order):
+        if order.delivered_at is not None:
+            raise Exception('order %s is already delivered' % order.order_no)
+
+        settings = request.registry.settings
+        tenant = SejTenant.filter_by(organization_id = order.performance.event.organization.id).first()
+        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
+        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
+
+        refresh_order(
+            order,
+            SejOrderUpdateReason.Change,
+            api_key=api_key,
+            api_url=api_url
+            )
 
 @implementer(IDeliveryPlugin)
 class SejPaymentDeliveryPlugin(object):
@@ -283,49 +346,26 @@ class SejPaymentDeliveryPlugin(object):
         order = c_models.Order.create_from_cart(cart)
         cart.finish()
 
-        performance = cart.performance
-
         settings = request.registry.settings
-        tenant = SejTenant.filter_by(organization_id = performance.event.organization.id).first()
+        tenant = SejTenant.filter_by(organization_id = order.performance.event.organization.id).first()
         api_key = (tenant and tenant.api_key) or settings['sej.api_key']
         api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
+        current_date = datetime.now()
 
         try:
-            shipping_address = cart.shipping_address
-            performance = cart.performance
-            current_date = datetime.now()
-            payment_due_at = get_payment_due_at(current_date,order)
-            ticketing_start_at = get_ticketing_start_at(current_date,order)
-            ticketing_due_at = cart.payment_delivery_pair.issuing_end_at
-            tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')
-            tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
             tickets = get_tickets(order)
             request_order(
-                shop_name           = tenant.shop_name,
-                shop_id             = tenant.shop_id,
-                contact_01          = tenant.contact_01,
-                contact_02          = tenant.contact_02,
-                order_no            = order.order_no,
-                username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
-                username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
-                tel                 = tel1 if tel1 else tel2,
-                zip                 = shipping_address.zip.replace('-', '') if shipping_address.zip else '',
-                email               = shipping_address.email_1 or '',
-                total               = order.total_amount,
-                ticket_total        = order.total_amount - (order.system_fee + order.special_fee + order.transaction_fee + order.delivery_fee),
-                commission_fee      = order.system_fee + order.special_fee + order.transaction_fee,
-                payment_type        = SejPaymentType.CashOnDelivery,
-                ticketing_fee       = order.delivery_fee,
-                payment_due_at      = payment_due_at,
-                ticketing_start_at  = ticketing_start_at,
-                ticketing_due_at    = ticketing_due_at,
-                regrant_number_due_at = performance.start_on + timedelta(days=1),
+                shop_name=tenant.shop_name,
+                shop_id=tenant.shop_id,
+                contact_01=tenant.contact_01,
+                contact_02=tenant.contact_02,
                 tickets=tickets,
-                secret_key = api_key,
-                hostname = api_url
+                secret_key=api_key,
+                hostname=api_url,
+                **build_sej_args(SejPaymentType.CashOnDelivery, cart, current_date)
                 )
         except SejErrorBase:
-            raise SejPluginFailure('payment plugin', order_no=order.order_no, back_url=None)
+            raise SejPluginFailure('payment/delivery plugin', order_no=order.order_no, back_url=None)
 
         return order
 
@@ -336,6 +376,22 @@ class SejPaymentDeliveryPlugin(object):
             return False
 
         return bool(sej_order.billing_number)
+
+    def refresh(self, request, order):
+        if order.paid_at is not None or order.delivered_at is not None:
+            raise Exception('order %s is already paid / delivered' % order.order_no)
+
+        settings = request.registry.settings
+        tenant = SejTenant.filter_by(organization_id = order.performance.event.organization.id).first()
+        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
+        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
+
+        refresh_order(
+            order,
+            SejOrderUpdateReason.Change,
+            api_key=api_key,
+            api_url=api_url
+            )
 
 
 @view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_complete.html'))

@@ -3,6 +3,7 @@
 from altair.app.ticketing.models import BaseModel, LogicallyDeleted, WithTimestamp, MutationDict, JSONEncodedDict, Identifier
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Date, ForeignKey, Enum, DECIMAL, Binary, UniqueConstraint
 from sqlalchemy.orm import relationship, join, column_property, mapper, backref
+from sqlalchemy.orm.session import object_session
 from sqlalchemy.sql.expression import asc
 import sqlahelper
 from datetime import datetime
@@ -200,29 +201,40 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
 
     @property
     def prev(self):
-        return DBSession.query(self.__class__, include_deleted=True) \
+        return object_session(self).query(self.__class__, include_deleted=True) \
             .filter_by(order_no=self.order_no, branch_no=(self.branch_no - 1)) \
             .one()
 
     @property
     def next(self):
-        return DBSession.query(self.__class__, include_deleted=True) \
+        return object_session(self).query(self.__class__, include_deleted=True) \
             .filter_by(order_no=self.order_no, branch_no=(self.branch_no + 1)) \
             .one()
 
-    @property
-    def tickets(self):
-        return SejTicket.query.filter_by(sej_order_id=self.id).order_by(SejTicket.ticket_idx).all()
+    def new_branch(self, payment_type=None, ticketing_start_at=None, ticketing_due_at=None, exchange_number=None, billing_number=None, processed_at=None):
+        if payment_type is None: 
+            payment_type = int(self.payment_type)
+        if ticketing_due_at is None:
+            ticketing_due_at = self.ticketing_due_at
+        if ticketing_start_at is None:
+            ticketing_start_at = self.ticketing_start_at
 
-    def new_branch(self, payment_type, ticketing_due_at, exchange_number=None, billing_number=None, processed_at=None):
         # payment_type は文字列になり得る (MySQLのENUM型をDBAPIは文字列として扱う)
-        if int(payment_type) == SejPaymentType.Paid:
+        if int(payment_type) == int(SejPaymentType.Paid):
             # 再付番の際、代済に変更になるということは、必ず支払済のはずのため
             # (これはSEJ側の想定)、payment_due_atは変更してはならない
             payment_due_at_new = self.payment_due_at
-        else:
+        elif int(payment_type) == int(SejPaymentType.CashOnDelivery):
             # 代引の場合は payment_due_at は ticketing_due_at と必ず等しくなるはずである
-            payment_due_at_new = ticketing_due_at
+            payment_due_at_new = ticketing_due_at or self.payment_due_at
+        elif int(payment_type) == int(SejPaymentType.Prepayment):
+            # 前払後日発券
+            payment_due_at_new = self.payment_due_at
+        elif int(payment_type) == int(SejPaymentType.PrepaymentOnly):
+            # 前払のみ
+            payment_due_at_new = self.payment_due_at
+            ticketing_due_at = None
+
         return self.__class__(
             shop_id=self.shop_id,
             shop_name=self.shop_name,
@@ -250,7 +262,7 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
             cancel_reason=self.cancel_reason,
             ticketing_store_number=self.ticketing_store_number,
             ticketing_store_name=self.ticketing_store_name,
-            ticketing_start_at=self.ticketing_start_at,
+            ticketing_start_at=ticketing_start_at,
             regrant_number_due_at=self.regrant_number_due_at,
             order_at=self.order_at,
             pay_at=self.pay_at,
@@ -281,7 +293,7 @@ class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     ticket_template_id      = Column(String(10))
     ticket_data_xml         = Column(String(5000))
     sej_order_id            = Column(Identifier, ForeignKey("SejOrder.id"), nullable=False)
-    order                   = relationship("SejOrder", primaryjoin='SejOrder.id==SejTicket.sej_order_id', foreign_keys=[sej_order_id])
+    order                   = relationship("SejOrder", primaryjoin='SejOrder.id==SejTicket.sej_order_id', foreign_keys=[sej_order_id], backref='tickets')
     order_no                = Column(String(12), ForeignKey("SejOrder.order_no"), nullable=True)
     ticket_idx              = Column(Integer)
     product_item_id         = Column(Identifier, ForeignKey("ProductItem.id"), nullable=True)

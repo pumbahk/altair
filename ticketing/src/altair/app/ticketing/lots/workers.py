@@ -209,7 +209,7 @@ def elect_lot_wish(request, wish, order=None):
         # 在庫処理
         performance = cart.performance
         product_requires = [(p.product, p.quantity)
-                    for p in cart.products]
+                    for p in cart.items]
         if order is None:
             order = Order.query.filter(Order.order_no==wish.lot_entry.entry_no).first()
         if order is None:

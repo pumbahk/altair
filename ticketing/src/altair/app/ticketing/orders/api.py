@@ -38,7 +38,8 @@ from altair.app.ticketing.users.models import (
 from altair.app.ticketing.sej.models import (
     SejOrder,
     )
-from altair.app.ticketing.payments.payment import Payment, get_delivery_plugin
+from altair.app.ticketing.payments.payment import Payment
+from altair.app.ticketing.payments.api import get_delivery_plugin
 from altair.app.ticketing.payments import plugins as payments_plugins
 from .models import OrderSummary
 

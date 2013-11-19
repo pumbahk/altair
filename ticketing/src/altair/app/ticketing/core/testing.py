@@ -205,7 +205,7 @@ class CoreTestMixin(object):
                     for ticket in ordered_product_item.product_item.ticket_bundle.tickets
                     )
                 for ordered_product in items
-                for ordered_product_item in ordered_product.ordered_product_items)
+                for ordered_product_item in ordered_product.elements)
             system_fee = pdmp.system_fee if pdmp.system_fee_type == FeeTypeEnum.Once.v[0] else pdmp.system_fee * num_tickets
             special_fee = pdmp.special_fee if pdmp.special_fee_type == FeeTypeEnum.Once.v[0] else pdmp.special_fee * num_tickets
         else:
@@ -214,8 +214,10 @@ class CoreTestMixin(object):
 
         return Order(
             organization_id=self.organization.id,
+            shipping_address=self._create_shipping_address(),
             total_amount=sum(product.price for product, _ in product_quantity_pairs),
             payment_delivery_pair=pdmp,
+            sales_segment=sales_segment,
             system_fee=Decimal(system_fee),
             transaction_fee=Decimal(pdmp and pdmp.transaction_fee or 0.),
             delivery_fee=Decimal(pdmp and pdmp.delivery_fee or 0.),

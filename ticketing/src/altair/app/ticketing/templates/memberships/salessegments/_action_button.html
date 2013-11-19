@@ -1,6 +1,5 @@
 <%page args="membergroup,redirect_to,event_id"/>
 <%namespace file="/common/helpers.html" name="ch" />
-<%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
   function edit_member_group(baseurl){
@@ -8,40 +7,21 @@
     if (!id) return;
     location.href = baseurl.replace("__id__", pk);
   };
-  function delete_member_group(baseurl) {
-    var id = $('input.[name="sales_segment_id"]:checked').val();
-    if (!id) return;
-    var modal = $('#modal-delete');
-    modal.find('#message').text('選択したmembershipを削除します。よろしいですか？');
-    modal.find("#delete").click(function(){
-      $("#delete_form").attr("action", baseurl.replace("__id__", id)).submit();
-      return false;
-    })
-    modal.modal("toggle");
-  };
 </script>
-
-<form id="delete_form" method="POST">
-  <input type="hidden" name="membergroup_id" value="${membergroup.id}">
-  <input type="hidden" name="redirect_to" value="${redirect_to}">
-</form>
 
 <%
   actions = {
     'new':dict(
-      label=u'新しい販売条件を作成して追加',
-      url=request.route_path("membergroups.salessegments",membergroup_id="*", action="new",_query={"redirect_to":redirect_to}),
+      label=u'新しい販売区分グループを作成して追加',
+      url=request.route_path("membergroups.sales_segment_groups",membergroup_id="*", action="new",_query={"redirect_to":redirect_to}),
       icon='icon-plus',
     ),
    'edit':dict(
-      label=u'販売条件の結びつき変更',
-      url=request.route_path("membergroups.salessegments",membergroup_id=membergroup.id, action="edit",_query={"event_id": event_id, "membergroup_id": membergroup.id,"redirect_to":redirect_to}),
+      label=u'販売区分グループの結びつき変更',
+      url=request.route_path("membergroups.sales_segment_groups",membergroup_id=membergroup.id, action="edit",_query={"event_id": event_id, "membergroup_id": membergroup.id,"redirect_to":redirect_to}),
       icon='icon-pencil',
     ),
   }
   order = iter(['edit'])
 %>
 ${HH.action_button(actions, order)}
-
-${delete_modal()}
-

@@ -93,8 +93,7 @@ class FanstaticDecoratorFactory(object):
 """
 how to use decolator
 
-@with_fanstatic_jqueries
-@view_config(...)
+@view_config(decorator=with_fanstatic_jqueries, ...)
 def view_function(request):
     pass
 """

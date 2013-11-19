@@ -12,7 +12,10 @@ from . import models as m
 from datetime import date
 from . import logger
 from . import events
-from .interfaces import IMulticheckoutSettingFactory
+from .interfaces import (
+    IMulticheckoutSettingFactory,
+    IMulticheckoutSettingListFactory,
+)
 from .exceptions import MultiCheckoutAPIError, MultiCheckoutAPITimeoutError
 
 DEFAULT_ITEM_CODE = "120"  # 通販
@@ -39,6 +42,10 @@ def save_api_response(request, res):
 def get_multicheckout_setting(request, override_name):
     reg = request.registry
     return reg.getUtility(IMulticheckoutSettingFactory)(request, override_name)
+
+def get_all_multicheckout_settings(request):
+    reg = request.registry
+    return reg.getUtility(IMulticheckoutSettingListFactory)(request)
 
 
 def is_enable_secure3d(request, card_number):

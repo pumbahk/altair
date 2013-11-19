@@ -7,7 +7,7 @@ def static_page_directory_renderer(request, static_page, static_directory, manag
     if static_page.uploaded_at:
         return StaticPageDirectoryRendererFromDB(request, static_page, static_directory, management=management)
     else:
-        return StaticPageDirectoryRenderer(request, static_page, static_directory, management=management)        
+        return StaticPageDirectoryRenderer(request, static_page, static_directory, management=management)
 
 ## helper structure
 class _Node(object):

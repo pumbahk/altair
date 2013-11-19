@@ -15,6 +15,6 @@
 </div>
 <%
 route_name=u'登録'
-route_path=request.route_path('membergroups.salessegments',action='new', salessegment_id='*')
+route_path=request.route_path('membergroups.sales_segment_groups',action='new', salessegment_id='*')
 %>
 <%include file="./_form.html" args="form=form,route_name=route_name,route_path=route_path,redirect_to=redirect_to,membergroup_id=membergroup_id" />

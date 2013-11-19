@@ -230,15 +230,18 @@ class TicketingCartResourceBase(object):
         return core_api.get_host_base_url(self.request)
 
     def check_order_limit(self, sales_segment, user, email):
-        """ 購入回数制限チェック """
-
+        """ 購入回数制限チェック
+        設定なしの場合は何度でも購入可能です。
+        カウントするOrder数にcancelされたOrderは含まれません。
+        """
+        kwds = {'filter_cancel': True}
         if sales_segment.order_limit:
             # 設定なしの場合は何度でも購入可能
             if user:
-                if sales_segment.query_orders_by_user(user).count() >= sales_segment.order_limit:
+                if sales_segment.query_orders_by_user(user, **kwds).count() < sales_segment.order_limit:
                     return False
             elif email:
-                if sales_segment.query_orders_by_mailaddress(email).count() >= sales_segment.order_limit:
+                if sales_segment.query_orders_by_mailaddress(email, **kwds).count() < sales_segment.order_limit:
                     return False
         return True
 

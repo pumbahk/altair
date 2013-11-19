@@ -16,8 +16,17 @@ from .vars_builder import (
     TicketDictBuilder, 
     TicketDictListBuilder
     )
+
 I = numpy.matrix('1 0 0; 0 1 0; 0 0 1', dtype=numpy.float64)
 
+class NumberIssuer(object):
+    def __init__(self):
+        self.counter = Counter()
+
+    def __call__(self, k):
+        v = self.counter[k] + 1
+        self.counter[k] = v
+        return v
 
 class NumberIssuer(object):
     def __init__(self):

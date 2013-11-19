@@ -1,5 +1,9 @@
 <script type="text/javascript">
   $(function() {
+%if redirect_to:
+    location.href = "${redirect_to}";
+%else:
     location.reload(true);
+%endif
   });
 </script>

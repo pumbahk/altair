@@ -22,14 +22,17 @@ class ZippedStaticFileManager(object):
         self.downloader = downloader
 
     @property
+    def normalname(self):
+        static_page = self.static_page
+        return u"{prefix}.{id}.{suffix}.zip".format(prefix=static_page.pageset.url, id=static_page.id, suffix=static_page.updated_at.strftime("%Y%m%d%H%M"))
+
+    @property
     def filename(self):
-        return self.static_page.pageset.url+".zip"
+        return self.normalname.replace("/", "-")
 
     @property
     def zippath(self):
-        static_page = self.static_page
-        filename = u"{prefix}-{name}-{suffix}.zip".format(prefix=static_page.pageset.url, name=static_page.name, suffix=static_page.updated_at.strftime("%Y%m%d%H%M"))
-        return os.path.join(self.tmpdir, filename)
+        return os.path.join(self.tmpdir, self.normalname)
 
     def exists(self, path):
         return os.path.exists(path)
@@ -69,6 +72,10 @@ class S3Downloader(object):
         self.request = request
         self.static_page = static_page
         self.prefix = prefix
+        self.filters = []
+
+    def add_filter(self, fn):
+        self.filters.append(fn)
 
     def download_recursively(self, absroot):
         if self.static_page.uploaded_at is None:
@@ -87,9 +94,13 @@ class S3Downloader(object):
         bucket = self.bucket
         logger.info("download: bucket={bucket} prefix={prefix}".format(bucket=bucket.name, prefix=self.prefix))
         for io in bucket.list(prefix=self.prefix):
-            writepath = os.path.join(absroot, io.name.replace(self.prefix, "").lstrip("/"))
+            subname = io.name.replace(self.prefix, "").lstrip("/")
+            writepath = os.path.join(absroot, subname)
             dirname = os.path.dirname(writepath)
             if not os.path.exists(dirname):
                 os.makedirs(dirname)
             with open(writepath, "w") as wf:
+                for f in self.filters:
+                    # logger.debug("*debug subname: {}".format(subname))
+                    io = f(io, subname) #encoding?
                 shutil.copyfileobj(io, wf)

@@ -102,11 +102,37 @@ grid = json.dumps(product_grid)
 
 %>
 <script>
-var productGrid = ${grid|n};
-
 $(function() {
 
+    $.fn.linkFormatter = function(cellvalue, options, rowObject) {
+      var link = '';
+/*
+      if (!rowObject.level) {
+        link += '<a href="javascript:addRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-plus"></i></a>';
+      }
+*/
+      if (rowObject.product_item) {
+        link += '<a href="javascript:deleteRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-trash"></i></a>';
+      }
+/*
+      if (rowObject.ticket_bundle && rowObject.ticket_bundle.id) {
+        link += '<a href="javascript:preview_ticket(' + rowObject.product_item.id + ')"><i class="icon-eye-open"></i></a>';
+      }
+*/
+      return link;
+    };
+
+
+  var productGrid = ${grid|n};
   var grid = $('#products-grid')
+
+productGrid.colModel.push(
+{"label": ' ',
+"name": 'link',
+"width": 80,
+formatter:grid.linkFormatter}
+);
+
   productGrid['afterSaveCell'] = function (id, name, val, iRow, iCol){
     grid.setCell(id, name, '', {background:'#F89406'});
     grid.setRetainChanges();
@@ -127,6 +153,22 @@ $(function() {
      var msg = '編集内容を保存しました';
      showDialog(title, msg);
   };
+
+  function deleteRow(gid, rowId) {
+    var grid = $('#' + gid);
+    grid.setCell(rowId, 'stock_holder_id', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'product_item_name', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'product_item_price', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'product_item_quantity', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'stock_quantity', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'stock_status_quantity', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'ticket_bundle_id', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'deleted', true);
+    var row = new Object();
+    row['id'] = rowId;
+    grid.setRetainChanges([row]);
+  }
+
 
   $('#sales-segment-clear_button').click(function(){
     grid.clearRetainChanges();

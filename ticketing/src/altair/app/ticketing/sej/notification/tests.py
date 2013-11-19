@@ -79,6 +79,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
             [(product, 1) for product in self.products],
+            sales_segment=None,
             pdmp=PaymentDeliveryMethodPair(
                 system_fee=0.,
                 transaction_fee=0.,
@@ -111,8 +112,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         assert order.issued
         assert order.issued_at == notification.processed_at
         assert order.printed_at == notification.processed_at
-        assert all(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
-        assert all(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
+        assert all(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.elements)
+        assert all(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.elements)
 
     def test_payment_complete_prepayment_1(self):
         from ..models import SejOrder, SejPaymentType
@@ -120,6 +121,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
             [(product, 1) for product in self.products],
+            sales_segment=None,
             pdmp=PaymentDeliveryMethodPair(
                 system_fee=0.,
                 transaction_fee=0.,
@@ -153,8 +155,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         assert order.issued == False
         assert order.issued_at is None
         assert order.printed_at is None
-        assert not any(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
-        assert not any(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
+        assert not any(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.elements)
+        assert not any(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.elements)
 
     def test_payment_complete_prepayment_2(self):
         from ..models import SejOrder, SejPaymentType
@@ -162,6 +164,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
             [(product, 1) for product in self.products],
+            sales_segment=None,
             pdmp=PaymentDeliveryMethodPair(
                 system_fee=0.,
                 transaction_fee=0.,
@@ -204,6 +207,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
             [(product, 1) for product in self.products],
+            sales_segment=None,
             pdmp=PaymentDeliveryMethodPair(
                 system_fee=0.,
                 transaction_fee=0.,
@@ -234,8 +238,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         assert order.issued
         assert order.issued_at == notification.processed_at
         assert order.printed_at == notification.processed_at
-        assert all(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
-        assert all(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
+        assert all(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.elements)
+        assert all(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.elements)
 
     def test_payment_complete_prepayment_only(self):
         from ..models import SejOrder, SejPaymentType
@@ -243,6 +247,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
             [(product, 1) for product in self.products],
+            sales_segment=None,
             pdmp=PaymentDeliveryMethodPair(
                 system_fee=0.,
                 transaction_fee=0.,
@@ -284,6 +289,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
             [(product, 1) for product in self.products],
+            sales_segment=None,
             pdmp=PaymentDeliveryMethodPair(
                 system_fee=0.,
                 transaction_fee=0.,
@@ -296,6 +302,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
                 delivery_method=self.delivery_methods[SEJ_DELIVERY_PLUGIN_ID]
                 )
             )
+        self.session.add(order)
+        self.session.flush()
         order.order_no = '012301230123'
         sej_order = SejOrder(
             order_no=order.order_no,
@@ -319,6 +327,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
             [(product, 1) for product in self.products],
+            sales_segment=None,
             pdmp=PaymentDeliveryMethodPair(
                 system_fee=0.,
                 transaction_fee=0.,

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 import logging
 
 from zope.interface import directlyProvides
@@ -55,3 +57,15 @@ def get_preparer(request, payment_delivery_pair):
             return payment_plugin
 
 directlyProvides(get_preparer, IPaymentPreparerFactory)
+
+def lookup_plugin(request, payment_delivery_pair):
+    assert payment_delivery_pair is not None
+    payment_delivery_plugin = get_payment_delivery_plugin(request,
+        payment_delivery_pair.payment_method.payment_plugin_id,
+        payment_delivery_pair.delivery_method.delivery_plugin_id,)
+    payment_plugin = get_payment_plugin(request, payment_delivery_pair.payment_method.payment_plugin_id)
+    delivery_plugin = get_delivery_plugin(request, payment_delivery_pair.delivery_method.delivery_plugin_id)
+    if payment_delivery_plugin is None and \
+       (payment_plugin is None or delivery_plugin is None):
+        raise PaymentDeliveryMethodPairNotFound(u"対応する決済プラグインか配送プラグインが見つかりませんでした")
+    return payment_delivery_plugin, payment_plugin, delivery_plugin
