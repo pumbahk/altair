@@ -205,6 +205,8 @@ class ProductForm(Form):
     def __init__(self, formdata=None, obj=None, **kwargs):
         super(type(self), self).__init__(formdata, obj, **kwargs)
         self.obj = obj
+        if self.obj and not self.performance_id.data:
+            self.performance_id.data = [self.obj.performance_id]
 
     def create_products(self, lot):
         performance_ids = self.data["performance_id"]
