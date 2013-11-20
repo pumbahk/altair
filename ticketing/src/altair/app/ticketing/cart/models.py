@@ -32,16 +32,17 @@ from sqlalchemy import sql
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import object_session
-from zope.deprecation import deprecate
+from zope.deprecation import deprecate, deprecated
+from zope.interface import implementer
 
 from pyramid.i18n import TranslationString as _
 from altair.saannotation import AnnotatedColumn
 
 from altair.app.ticketing.utils import sensible_alnum_encode
-#from altair.app.ticketing.utils import sensible_alnum_decode
 from altair.app.ticketing.models import Identifier
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
+from altair.app.ticketing.core.interfaces import IOrderLike, IOrderedProductLike, IOrderedProductItemLike
 from . import logger
 from .exceptions import NoCartError, CartCreationException, InvalidCartStatusError
 
@@ -67,6 +68,7 @@ cart_seat_table = sa.Table("CartedProductItem_Seat", Base.metadata,
     sa.Column("carted_product_item_id", Identifier, sa.ForeignKey("CartedProductItem.id")),
 )
 
+@implementer(IOrderLike)
 class Cart(Base):
     __tablename__ = 'Cart'
 
@@ -111,6 +113,16 @@ class Cart(Base):
 
     has_different_amount = False  ## 差額(オーソリ時と売上確定処理で差額がある場合にTrue)
     different_amount = 0
+
+    @property
+    def products(self):
+        return self.items
+
+    @products.setter
+    def products(self, value):
+        self.items = value
+
+    products = deprecated(products, "use items property instead")
 
     @property
     def name(self):
@@ -169,8 +181,8 @@ class Cart(Base):
             sales_segment_group_id=that.sales_segment_group_id
             )
         # translate all the products in the specified cart to the new cart
-        for carted_product in that.products:
-            new_cart.products.append(carted_product) 
+        for carted_product in that.items:
+            new_cart.items.append(carted_product) 
         that.disposed = True
         that.products = []
         return new_cart
@@ -193,35 +205,35 @@ class Cart(Base):
             raise InvalidCartStatusError(self.id)
         return self.sales_segment.get_amount(
             self.payment_delivery_pair,
-            [(p.product, p.quantity) for p in self.products])
+            [(p.product, p.quantity) for p in self.items])
 
     @property
     def delivery_fee(self):
         """ 引取手数料 """
         return self.sales_segment.get_delivery_fee(
             self.payment_delivery_pair,
-            [(p.product, p.quantity) for p in self.products])
+            [(p.product, p.quantity) for p in self.items])
 
     @property
     def transaction_fee(self):
         """ 決済手数料 """
         return self.sales_segment.get_transaction_fee(
             self.payment_delivery_pair,
-            [(p.product, p.quantity) for p in self.products])
+            [(p.product, p.quantity) for p in self.items])
 
     @property
     def system_fee(self):
         """システム利用料"""
         return self.sales_segment.get_system_fee(
             self.payment_delivery_pair,
-            [(p.product, p.quantity) for p in self.products])
+            [(p.product, p.quantity) for p in self.items])
 
     @property
     def special_fee(self):
         """特別手数料"""
         return self.sales_segment.get_special_fee(
             self.payment_delivery_pair,
-            [(p.product, p.quantity) for p in self.products])
+            [(p.product, p.quantity) for p in self.items])
 
     @property
     def special_fee_name(self):
@@ -270,8 +282,8 @@ class Cart(Base):
     def finish(self):
         """ 決済完了
         """
-        for product in self.products:
-            product.finish()
+        for item in self.items:
+            item.finish()
         self.finished_at = datetime.now() # SAFE TO USE datetime.now() HERE
 
     def release(self):
@@ -282,18 +294,19 @@ class Cart(Base):
             .with_lockmode('update') \
             .filter(CartedProduct.cart_id == self.id) \
             .all()
-        for product in carted_products:
-            if not product.release():
+        for item in carted_products:
+            if not item.release():
                 return False
         return True
 
     def is_valid(self):
-        return all([p.is_valid() for p in self.products])
+        return all(item.is_valid() for item in self.items)
 
     @classmethod
     def from_order_no(cls, order_no):
         return Cart.query.filter_by(_order_no=order_no).one()
 
+@implementer(IOrderedProductLike)
 class CartedProduct(Base):
     __tablename__ = 'CartedProduct'
 
@@ -302,7 +315,7 @@ class CartedProduct(Base):
     id = sa.Column(Identifier, primary_key=True)
     quantity = sa.Column(sa.Integer)
     cart_id = sa.Column(Identifier, sa.ForeignKey(Cart.id, onupdate='cascade', ondelete='cascade'))
-    cart = orm.relationship("Cart", backref="products", cascade='all')
+    cart = orm.relationship("Cart", backref="items", cascade='all')
 
     product_id = sa.Column(Identifier, sa.ForeignKey("Product.id"))
     product = orm.relationship("Product")
@@ -317,6 +330,16 @@ class CartedProduct(Base):
     organization = orm.relationship('Organization', backref='carted_products')
 
     @property
+    def items(self):
+        return self.elements
+
+    @items.setter
+    def items(self, value):
+        self.elements = value
+
+    items = deprecated(items, 'use elements property instead')
+
+    @property
     def amount(self):
         """ 購入額小計
         """
@@ -324,7 +347,7 @@ class CartedProduct(Base):
 
     @property
     def seats(self):
-        return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.items), 
+        return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.elements), 
             key=operator.itemgetter('l0_id'))
 
     @property
@@ -362,8 +385,8 @@ class CartedProduct(Base):
     def finish(self):
         """ 決済処理
         """
-        for item in self.items:
-            item.finish()
+        for element in self.elements:
+            element.finish()
         self._mark_finished()
 
     def release(self):
@@ -375,8 +398,8 @@ class CartedProduct(Base):
                 .with_lockmode('update') \
                 .filter(CartedProductItem.carted_product_id == self.id) \
                 .all()
-            for item in carted_product_items:
-                if not item.release():
+            for element in carted_product_items:
+                if not element.release():
                     logger.info('returing False to abort. NO FURTHER SQL EXECUTION IS SUPPOSED!')
                     return False
             self._mark_finished()
@@ -386,9 +409,10 @@ class CartedProduct(Base):
         return True
 
     def is_valid(self):
-        return all([i.is_valid() for i in self.items])
-        
+        return all(element.is_valid() for element in self.elements)
 
+
+@implementer(IOrderedProductItemLike)
 class CartedProductItem(Base):
     """ カート内プロダクトアイテム + 座席 + 座席状況
     """
@@ -408,7 +432,7 @@ class CartedProductItem(Base):
     #seat_status = orm.relationship("SeatStatus")
 
     carted_product_id = sa.Column(Identifier, sa.ForeignKey(CartedProduct.id, onupdate='cascade', ondelete='cascade'))
-    carted_product = orm.relationship("CartedProduct", backref="items", cascade='all')
+    carted_product = orm.relationship("CartedProduct", backref="elements", cascade='all')
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)

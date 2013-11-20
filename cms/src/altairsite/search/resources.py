@@ -59,14 +59,14 @@ class SearchPageResource(object):
     def __init__(self, request):
         self.request = request
 
-    def result_sequence_from_query(self, query):
+    def result_sequence_from_query(self, query, query_params):
         """
         ここでは、検索結果のqueryを表示に適した形式に直す
         """
         today = get_now(self.request)    
         # for pageset in query:
         #     yield SearchResultRender(pageset, today, self.request)
-        return [SearchResultRender(pageset, today, self.request) for pageset in query]
+        return [SearchResultRender(pageset, today, self.request, query_params) for pageset in query]
 
     def get_query_params_as_html(self, query_params):
         return QueryParamsRender(self.request, query_params)
@@ -92,7 +92,7 @@ class SearchPageResource(object):
 
     def get_result_sequence_from_query_params(self, query_params, searchfn=_get_mocked_pageset_query):
         query = searchfn(self.request, query_params)
-        return self.result_sequence_from_query(query)
+        return self.result_sequence_from_query(query, query_params)
 
 class QueryParamsRender(object):
     """ 渡された検索式をhtmlとしてレンダリング
@@ -178,10 +178,11 @@ class QueryParamsRender(object):
 class SearchResultRender(object):
     """検索結果をhtmlとしてレンダリング
     """
-    def __init__(self, pageset, today, request):
+    def __init__(self, pageset, today, request, query_params):
         self.pageset = pageset
         self.today = today
         self.request = request
+        self.query_params = query_params
 
     def __html__(self):
         return u"""\
@@ -232,6 +233,17 @@ class SearchResultRender(object):
         link_label = self.pageset.event.title #xx?
         event = self.pageset.event
         performances = [p for p in event.performances if p.start_on >= self.today]
+
+        if "prefectures" in self.query_params:
+            if self.query_params['prefectures']:
+                area_performances = []
+
+                for area in self.query_params["prefectures"]:
+                    for perf in performances:
+                        if perf.prefecture == area:
+                            area_performances.append(perf)
+                performances = area_performances
+
         performances = performances if len(performances) < 3 else performances[:3]
         performances = u"</p><p class='align1'>".join([u"%s %s(%s)" %
             (p.start_on.strftime("%Y-%m-%d %H:%M"), p.venue, p.jprefecture) for p in performances])

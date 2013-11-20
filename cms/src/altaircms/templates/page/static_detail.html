@@ -30,6 +30,11 @@ ${static_page.name}
   横取り中では、登録されたURLの*widgetページがあった場合でも*優先して表示されます。
 </div>
 %endif
+%if not static_page:
+<div class="alert alert-error">
+  このページセットは管理しているページを持っていないようです
+</div>
+%endif
 
 <table class="table table-striped">
   <tr>

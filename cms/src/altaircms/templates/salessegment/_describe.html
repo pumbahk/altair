@@ -2,7 +2,7 @@
 <table class="table table-describe table-bordered">
   <tbody>
     <tr>
-      <th rowspan="3">販売区分情報</th>
+      <th rowspan="4">販売区分情報</th>
       <th>販売区分名</th><td>
         <a href="#">${salessegment.group.name}</a>
       </td>
@@ -14,6 +14,16 @@
     </tr>
     <tr>
       <th>販売期間</th><td colspan="3">${h.term_datetime(salessegment.start_on, salessegment.end_on)}</td>
+    </tr>
+    <tr>
+      <th>表示/非表示</th>
+      <td colspan="3">
+        % if salessegment.publicp and salessegment.group.publicp:
+          表示中
+        % else:
+          非表示中（販売区分：${salessegment.publicp}、販売区分グループ：${salessegment.group.publicp})
+        % endif
+      </td>
     </tr>
   </tbody>
 </table>

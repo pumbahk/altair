@@ -283,6 +283,9 @@ class Lots(BaseView):
                  "width": 80, 
                  "editable": True,
                  "sortable":False},
+                {"hidden": True,
+                 "name": 'deleted',
+                 "editable": False},
             ],
         }
 
@@ -338,12 +341,13 @@ class Lots(BaseView):
         form.performance_id.choices = performance_choices
 
         if self.request.POST and form.validate():
-            product = form.create_product(lot)
-            DBSession.add(product)
+            products = form.create_products(lot)
+            for product in products:
+                DBSession.add(product)
             return HTTPFound(self.request.route_url('lots.show', lot_id=lot.id))
         return dict(form=form, lot=lot)
 
-    @view_config(route_name='lots.product_edit', renderer='altair.app.ticketing:templates/lots/product_new.html', permission='event_viewer')
+    @view_config(route_name='lots.product_edit', renderer='altair.app.ticketing:templates/lots/product_edit.html', permission='event_viewer')
     def product_edit(self):
         self.check_organization(self.context.event)
         product = self.context.product

@@ -22,7 +22,13 @@ propagate = 0
 
 [handler_rotate]
 class = logging.handlers.RotatingFileHandler
-args = ("${buildout:directory}/log/send_sales_reports",)
+args = ("${buildout:directory}/log/%s.log" % os.path.basename(sys.argv[0]),)
+level = NOTSET
+formatter = generic
+
+[handler_fluent]
+class = fluent.handler.FluentHandler
+args = ('altair.ticketing.batch.%s' % os.path.basename(sys.argv[0]), '127.0.0.1', 24224)
 level = NOTSET
 formatter = generic
 

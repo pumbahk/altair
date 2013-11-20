@@ -170,5 +170,5 @@ def main(global_config, **local_config):
         config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
 
         config.scan(".views")
-    
+        config.scan(".response")
         return config.make_wsgi_app()

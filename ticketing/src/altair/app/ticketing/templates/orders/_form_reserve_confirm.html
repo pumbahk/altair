@@ -62,7 +62,7 @@
           <th style="width: 80px; text-align: right;">単価</th>
           <th style="width: 80px; text-align: right;">個数</th>
         </tr>
-        % for carted_product in cart.products:
+        % for carted_product in cart.items:
         <tr>
           <td colspan="2">${carted_product.product.name}</td>
           <td style="text-align: right;">

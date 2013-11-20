@@ -90,8 +90,8 @@ def _build_order(*args, **kwargs):
             sales_segment=SalesSegment(seat_choice=kwargs.get("product0__seat_choice", True))))
     ordered_product_item0 = OrderedProductItem()
     ordered_product_item0.seats.append(Seat(name=kwargs.get("seat0__name")))
-    ordererd_product0.ordered_product_items.append(ordered_product_item0)
-    order.ordered_products.append(ordererd_product0)
+    ordererd_product0.elements.append(ordered_product_item0)
+    order.items.append(ordererd_product0)
 
     ordererd_product1 = OrderedProduct(
         quantity=kwargs.get("product1__quantity", "product-quantity"), 
@@ -101,8 +101,8 @@ def _build_order(*args, **kwargs):
             sales_segment=SalesSegment(seat_choice=kwargs.get("product1__seat_choice", True))))
     ordered_product_item1 = OrderedProductItem()
     ordered_product_item1.seats.append(Seat(name=kwargs.get("seat1__name")))
-    ordererd_product1.ordered_product_items.append(ordered_product_item1)
-    order.ordered_products.append(ordererd_product1)
+    ordererd_product1.elements.append(ordered_product_item1)
+    order.items.append(ordererd_product1)
     return order
 
 def _build_sej(*args, **kwargs):

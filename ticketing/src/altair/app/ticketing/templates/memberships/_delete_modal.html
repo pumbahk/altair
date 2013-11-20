@@ -1,0 +1,23 @@
+<%page args="request"/>
+
+<%namespace file="/common/modal.html" name="m" />
+<%m:delete_modal>
+<script type="text/javascript">
+  function popup_delete_modal(id) {
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '${request.route_path('memberships', action="delete",membership_id="__id__")}'.replace("__id__", id));
+    modal.find('#message').text('選択した会員種別を削除します。よろしいですか？');
+    modal.modal('toggle');
+    if(!modal.data("*click.bound")){
+      modal.data("*click.bound", true)
+      modal.find("#delete").click(function(e){
+        var href=modal.find("#delete").attr("href");
+        post_modal_form("#modal-delete", "#modal-delete #message", href);
+        return false;
+      });
+    }
+  }
+</script>
+</%m:delete_modal>
+
+

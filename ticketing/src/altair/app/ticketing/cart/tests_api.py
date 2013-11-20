@@ -463,13 +463,13 @@ class CartFactoryTests(unittest.TestCase):
 
         target = self._makeOne(request)
         result = target.create_cart(performance_id, seats, ordered_products)
-        self.assertEqual(len(result.products), 3)
-        self.assertEqual(result.products[0].items[0].seats, [seat1, seat3])
-        self.assertEqual(result.products[0].quantity, 2)
-        self.assertEqual(result.products[1].items[0].seats, [seat2, seat4, seat5])
-        self.assertEqual(result.products[1].quantity, 3)
-        self.assertEqual(result.products[2].items[0].seats, [])
-        self.assertEqual(result.products[2].quantity, 10)
+        self.assertEqual(len(result.items), 3)
+        self.assertEqual(result.items[0].elements[0].seats, [seat1, seat3])
+        self.assertEqual(result.items[0].quantity, 2)
+        self.assertEqual(result.items[1].elements[0].seats, [seat2, seat4, seat5])
+        self.assertEqual(result.items[1].quantity, 3)
+        self.assertEqual(result.items[2].elements[0].seats, [])
+        self.assertEqual(result.items[2].quantity, 10)
 
     def test_create_cart_invalid_product(self):
         import altair.app.ticketing.core.models as c_m
@@ -638,10 +638,10 @@ class order_productsTests(unittest.TestCase):
         cart1 = self._callFUT(request, sales_segment_id, ordered_products)
 
         self.assertIsNotNone(cart1)
-        self.assertEqual(len(cart1.products), 1)
-        self.assertEqual(len(cart1.products[0].items), 1)
-        self.assertEqual(cart1.products[0].product, product)
-        self.assertEqual(cart1.products[0].items[0].quantity, 2)
+        self.assertEqual(len(cart1.items), 1)
+        self.assertEqual(len(cart1.items[0].elements), 1)
+        self.assertEqual(cart1.items[0].product, product)
+        self.assertEqual(cart1.items[0].elements[0].quantity, 2)
 
         def assertQuantity(quantity):
             from sqlalchemy import sql
@@ -652,10 +652,10 @@ class order_productsTests(unittest.TestCase):
         cart2 = self._callFUT(request, sales_segment_id, ordered_products)
 
         self.assertIsNotNone(cart2)
-        self.assertEqual(len(cart2.products), 1)
-        self.assertEqual(len(cart2.products[0].items), 1)
-        self.assertEqual(cart2.products[0].product, product)
-        self.assertEqual(cart2.products[0].items[0].quantity, 2)
+        self.assertEqual(len(cart2.items), 1)
+        self.assertEqual(len(cart2.items[0].elements), 1)
+        self.assertEqual(cart2.items[0].product, product)
+        self.assertEqual(cart2.items[0].elements[0].quantity, 2)
 
         assertQuantity(1)
 
@@ -744,7 +744,7 @@ class DummyReserving(object):
     def __init__(self, request):
         self.request = request
 
-    def reserve_seats(self, stock_id, quantity):
+    def reserve_seats(self, stock_id, quantity, separate_seats=False):
         return [testing.DummyModel()] * quantity
 
 class DummyCartFactory(object):

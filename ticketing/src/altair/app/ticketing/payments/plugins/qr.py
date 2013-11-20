@@ -95,3 +95,7 @@ class QRTicketDeliveryPlugin(object):
             for opi in op.ordered_product_items:
                 result = result and opi.tokens
         return result
+
+    def refresh(self, request, order):
+        # 座席番号などが変わっている可能性があるので、何かすべきような...
+        pass

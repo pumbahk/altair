@@ -81,7 +81,7 @@ class StaticPageDirectory(object):
                             )
 
     def get_rootname(self, static_page, name=None):
-        assert static_page.id
+        assert static_page is not None #weak contract
         return os.path.join(self.get_base_directory(), 
                             name or static_page.prefix, 
                             unicode(static_page.id), 
@@ -134,7 +134,7 @@ class StaticPageDirectory(object):
         try:
             return self.create(src, io)
         except Exception as e:
-            logger.exception(e)
+            logger.exception(repr(e))
             zipupload.snapshot_rollback(src, backup_path)
             raise 
 
@@ -146,6 +146,12 @@ class S3StaticPageDirectory(StaticPageDirectory):
     @reify
     def s3utility(self):
         return get_s3_utility_factory(self.request)
+
+    def get_root_url(self, static_page):
+        bucket_name = self.s3utility.bucket_name
+        short_name = self.request.organization.short_name
+        fmt = u"http://{0}.s3.amazonaws.com/{1}/{2}/{3}/{4}"
+        return fmt.format(bucket_name, self.prefix, short_name, static_page.prefix, unicode(static_page.id))
 
     def get_base_url(self, dirname, filename):
         bucket_name = self.s3utility.bucket_name
@@ -168,7 +174,7 @@ class S3StaticPageDirectory(StaticPageDirectory):
             keyname = self.get_name(root, f)
             logger.info("*debug upload file:{0}".format(keyname))
             uploader.upload_file(rf, keyname)
-        
+
     def upload_directory(self, d):
         uploader = self.s3utility.uploader
         logger.info("upload_directory: {0}".format(d))

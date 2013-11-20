@@ -43,6 +43,7 @@ class SalesSegmentTests(unittest.TestCase):
         from altair.app.ticketing.core.models import Order
         from altair.app.ticketing.cart.models import Cart
         from altair.app.ticketing.users.models import User
+        from datetime import datetime
 
         target = self._makeOne()
 
@@ -64,30 +65,45 @@ class SalesSegmentTests(unittest.TestCase):
                           system_fee=0, transaction_fee=0, delivery_fee=0)
             others.append(order)
 
+        cancels = []
+        for i in range(2):
+            cart = Cart(sales_segment=target)
+            order = Order(user=user, cart=cart, canceled_at=datetime.now(),
+                          total_amount=0,
+                          system_fee=0, transaction_fee=0, delivery_fee=0)
+            cancels.append(order)
+
         self.session.add(target)
         self.session.flush()
 
         result = target.query_orders_by_user(user).all()
+        self.assertEqual(result, orders + cancels)
 
+        result = target.query_orders_by_user(user, filter_cancel=True).all()
         self.assertEqual(result, orders)
 
     def test_query_orders_by_mailaddress(self):
         from altair.app.ticketing.core.models import Order, ShippingAddress
         from altair.app.ticketing.cart.models import Cart
+        from datetime import datetime
 
         target = self._makeOne()
 
+        mail_addr  = 'testing@example.com'
+        mail_addr_other = 'other@example.com'
+
         orders = []
         for i in range(2):
-            shipping_address = ShippingAddress(email_1="testing@example.com")
+            shipping_address = ShippingAddress(email_1=mail_addr)
             cart = Cart(sales_segment=target)
             order = Order(cart=cart,
                           shipping_address=shipping_address,
                           total_amount=0,
                           system_fee=0, transaction_fee=0, delivery_fee=0)
             orders.append(order)
+        
         for i in range(2):
-            shipping_address = ShippingAddress(email_2="testing@example.com")
+            shipping_address = ShippingAddress(email_2=mail_addr)
             cart = Cart(sales_segment=target)
             order = Order(cart=cart,
                           shipping_address=shipping_address,
@@ -95,9 +111,19 @@ class SalesSegmentTests(unittest.TestCase):
                           system_fee=0, transaction_fee=0, delivery_fee=0)
             orders.append(order)
 
+        cancels = []
+        for i in range(2):
+            shipping_address = ShippingAddress(email_1=mail_addr)
+            cart = Cart(sales_segment=target)
+            order = Order(cart=cart, canceled_at=datetime.now(),
+                          shipping_address=shipping_address,
+                          total_amount=0,
+                          system_fee=0, transaction_fee=0, delivery_fee=0)
+            cancels.append(order)
+
         others = []
         for i in range(2):
-            shipping_address = ShippingAddress(email_1="other@example.com")
+            shipping_address = ShippingAddress(email_1=mail_addr_other)
             cart = Cart(sales_segment=target)
             order = Order(cart=cart,
                           shipping_address=shipping_address,
@@ -105,11 +131,14 @@ class SalesSegmentTests(unittest.TestCase):
                           system_fee=0, transaction_fee=0, delivery_fee=0)
             others.append(order)
 
+
         self.session.add(target)
         self.session.flush()
 
-        result = target.query_orders_by_mailaddress("testing@example.com").all()
+        result = target.query_orders_by_mailaddress(mail_addr).all()
+        self.assertEqual(result, orders+cancels)
 
+        result = target.query_orders_by_mailaddress(mail_addr, filter_cancel=True).all()
         self.assertEqual(result, orders)
 
 

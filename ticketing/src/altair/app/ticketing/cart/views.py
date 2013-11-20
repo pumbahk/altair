@@ -33,7 +33,8 @@ from altair.app.ticketing.users.api import (
     get_or_create_user,
     get_or_create_user_from_point_no,
     create_user_point_account_from_point_no,
-    get_user_point_account
+    get_user_point_account,
+    create_user_profile
     )
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
@@ -78,7 +79,7 @@ def back_to_product_list_for_mobile(request):
             event_id=cart.performance.event_id,
             performance_id=cart.performance_id,
             sales_segment_id=cart.sales_segment_id,
-            seat_type_id=cart.products[0].product.items[0].stock.stock_type_id))
+            seat_type_id=cart.items[0].product.items[0].stock.stock_type_id))
 
 def back_to_top(request):
     event_id = None
@@ -611,7 +612,7 @@ class ReserveView(object):
                                              seats=p.seats if self.context.sales_segment.seat_choice else [],
                                              unit_template=h.build_unit_template(p.product.items),
                                         )
-                                        for p in cart.products],
+                                        for p in cart.items],
                               total_amount=h.format_number(get_amount_without_pdmp(cart)),
                               separate_seats=separate_seats
                              )
@@ -787,6 +788,8 @@ class PaymentView(object):
         self.request.session['payment_confirm_url'] = self.request.route_url('payment.confirm')
 
         if is_point_input_organization(context=self.context, request=self.request):
+            if user:
+                create_user_profile(user, shipping_address_params)
             return HTTPFound(self.request.route_path('cart.point'))
 
         payment = Payment(cart, self.request)
@@ -832,7 +835,7 @@ class PaymentView(object):
             )
         form = schemas.PointForm(formdata=formdata)
 
-        asid = None
+        asid = self.request.altair_pc_asid
         if is_mobile(self.request):
             asid = self.request.altair_mobile_asid
 

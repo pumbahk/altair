@@ -11,6 +11,7 @@ from ...models import DBSession
 from ...filelib import get_adapts_filesession
 from . import SESSION_NAME
 from altaircms.helpers.viewhelpers import FlashMessage
+from . import validate_uploaded_io
 
 class StaticPageEvent(object):
     def __init__(self, request, root, static_directory, static_page):
@@ -159,6 +160,7 @@ class PartialChange(object):
         dirname = os.path.dirname(path)
         if not os.path.lexists(dirname):
             os.makedirs(dirname)
+        validate_uploaded_io(self.data["name"], self.data["file"].file)
         with open(path, "wb") as wf:
             shutil.copyfileobj(self.data["file"].file, wf)
         self.request.registry.notify(AfterPartialCreateFile(self.request, path, self.utility, static_page))
@@ -171,6 +173,7 @@ class PartialChange(object):
         dirname = os.path.dirname(path)
         if not os.path.lexists(dirname):
             os.makedirs(dirname)
+        validate_uploaded_io(self.data["name"], self.data["file"].file)
         with open(path, "wb") as wf:
             shutil.copyfileobj(self.data["file"].file, wf)
         self.request.registry.notify(AfterPartialUpdateFile(self.request, path, self.utility, static_page))

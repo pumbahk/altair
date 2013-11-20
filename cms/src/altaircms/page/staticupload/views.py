@@ -17,10 +17,13 @@ from . import forms
 from . import creation
 from .download import ZippedStaticFileManager, S3Downloader
 from .renderable import static_page_directory_renderer
+from .refine import refine_link_on_download_factory
 import logging
 logger = logging.getLogger(__name__)
 from altaircms.viewlib import BaseView
 from altaircms.datelib import get_now
+from altaircms.modellib import first_or_nullmodel
+from . import StaticUploadAssertionError
 
 @view_defaults(route_name="static_page_create", permission="authenticated")
 class StaticPageCreateView(BaseView):
@@ -44,6 +47,10 @@ class StaticPageCreateView(BaseView):
             static_page.pageset.pagetype = pagetype
             FlashMessage.success(u"%sが作成されました" % static_page.label, request=self.request)
             return HTTPFound(self.context.endpoint(static_page))
+        except StaticUploadAssertionError as e:
+            FlashMessage.error(unicode(e.args[0]), request=self.request)
+            creator.rollback()
+            return {"form": form}
         except Exception as e:
             logger.exception(e)
             FlashMessage.error(u"作成に失敗しました。(ファイル名に日本語などのマルチバイト文字が含まれている時に失敗することがあります)", request=self.request)
@@ -59,15 +66,15 @@ class StaticPageSetView(BaseView):
         static_pageset = get_or_404(self.request.allowable(StaticPageSet), StaticPageSet.id==pk)
         static_directory = get_static_page_utility(self.request)
         static_page = StaticPage.query.filter_by(pageset=static_pageset, id=self.request.GET.get("child_id")).first()
-        static_page = static_page or static_pageset.pages[0]
-        return {"static_pageset": static_pageset, 
-                "static_page": static_page,                 
-                "pagetype": static_pageset.pagetype, 
-                "static_directory": static_directory, 
-                "current_page": static_pageset.current(dt=get_now(self.request)), 
-                "tree_renderer": static_page_directory_renderer(self.request, static_page, static_directory, self.request.GET.get("management")), 
+        static_page = static_page or first_or_nullmodel(static_pageset, "pages") #hmm..
+        return {"static_pageset": static_pageset,
+                "static_page": static_page,
+                "pagetype": static_pageset.pagetype,
+                "static_directory": static_directory,
+                "current_page": static_pageset.current(dt=get_now(self.request)),
+                "tree_renderer": static_page_directory_renderer(self.request, static_page, static_directory, self.request.GET.get("management")),
                 "now": get_now(self.request)}
-    
+
     @view_config(match_param="action=preview", request_param="path", decorator=with_bootstrap)
     def preview(self):
         pk = self.request.matchdict["static_page_id"]
@@ -160,6 +167,8 @@ class StaticPagePartFileView(BaseView):
             changer.create_file(static_page)
             self.context.touch(static_page)
             return HTTPFound(self.context.endpoint(static_page))
+        except StaticUploadAssertionError as e:
+            return _retry(unicode(e.args[0]))
         except Exception as e:
             logger.exception(str(e))
             return _retry(unicode(e))
@@ -181,10 +190,10 @@ class StaticPagePartFileView(BaseView):
         static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==self.request.matchdict["child_id"])
         def _retry(message=None):
             if message:
-                form.errors["name", "file"] = [message]
+                form.errors["file"] = [message]
             return {"title": u"ファイルの更新", 
                     "form": form, 
-                    "fields": ["file"], 
+                    "fields": ["name", "file"], 
                     "submit_message": u"ファイルを更新"
                     }
         try:
@@ -194,6 +203,9 @@ class StaticPagePartFileView(BaseView):
             changer.update_file(static_page)
             self.context.touch(static_page)
             return HTTPFound(self.context.endpoint(static_page))
+
+        except StaticUploadAssertionError as e:
+            return _retry(unicode(e.args[0]))
         except Exception as e:
             logger.exception(str(e))
             return _retry(unicode(e))
@@ -347,7 +359,9 @@ class StaticPageView(BaseView):
         static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
         static_directory = get_static_page_utility(self.request)
         s3prefix = os.path.join(static_directory.prefix, self.request.organization.short_name, static_page.prefix, unicode(static_page.id))
+
         downloader = S3Downloader(self.request, static_page, prefix=s3prefix) ## xxx:
+        downloader.add_filter(refine_link_on_download_factory(static_page, static_directory))
         zm = ZippedStaticFileManager(self.request, static_page, static_directory.tmpdir, downloader=downloader)
         return zm.download_response(static_directory.get_rootname(static_page))
 
@@ -363,6 +377,9 @@ class StaticPageView(BaseView):
         creator = self.context.creation(creation.StaticPageCreate, form.data)
         try:
             creator.update_underlying_something(static_page)
+        except StaticUploadAssertionError as e:
+            FlashMessage.error(unicode(e.args[0]), request=self.request)
+            raise HTTPFound(self.context.endpoint(static_page))
         except Exception as e:
             logger.error(str(e))
             FlashMessage.error(u"更新に失敗しました。(ファイル名に日本語などのマルチバイト文字が含まれている時に失敗することがあります)", request=self.request)

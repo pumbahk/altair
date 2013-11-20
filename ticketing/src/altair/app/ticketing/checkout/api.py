@@ -153,7 +153,7 @@ class Checkout(object):
 
         # 商品
         itemsInfo = et.SubElement(root, 'itemsInfo')
-        for carted_product in cart.products:
+        for carted_product in cart.items:
             self._create_checkout_item_xml(itemsInfo, **dict(
                 itemId=carted_product.product.id,
                 itemName=carted_product.product.name,
