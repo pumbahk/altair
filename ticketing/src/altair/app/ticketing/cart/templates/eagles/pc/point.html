@@ -4,10 +4,10 @@
     <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
     <script type="text/javascript">
     <!--
-        $(function () {
+        (function() {
             var g = /^\?.*account=([^&=]*)/.exec(location.search);
             if (g) {
-                window.opener.form["form1"].accountno.value = g[1];
+                window.opener.document.forms["form1"].accountno.value = g[1];
                 window.close();
             }
         })();

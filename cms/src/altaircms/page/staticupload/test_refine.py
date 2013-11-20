@@ -281,5 +281,18 @@ class DownloadIntegrationTests(unittest.TestCase):
 
             self.assertIn(u'<!DOCTYPE', result)
 
+
+    def test_it_empty(self):
+        class StaticPage:
+            pass
+        with temporary_file(suffix=".html") as tmpname:
+            with open(tmpname, "w") as wf:
+                wf.write(u"")
+
+            with open(tmpname) as rf:
+                result = self._callFUT(StaticPage, self.Utility)(rf, "top.html").read()
+
+            self.assertEqual(result, "")
+
 if __name__ == "__main__":
     unittest.main()

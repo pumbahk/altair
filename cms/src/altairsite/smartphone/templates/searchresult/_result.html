@@ -27,7 +27,7 @@ $(window).bind("load resize",function() {
                             <p class="first">公演期間：${event.event_open}〜${event.event_close}</p>
                             % if event.performances and not hasattr(result.query, "area"):
                               % if event.performances[0].venue:
-                                <p class="first">会場：${helper.get_venue_name(event, result.query)}　
+                                <p class="first">会場：${event.performances[0].venue}　
                                   <% venue_cnt = helper.get_venue_cnt(event) %>
                                   % if venue_cnt > 1:
                                     他${venue_cnt-1}会場
