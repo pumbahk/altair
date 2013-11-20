@@ -46,13 +46,20 @@ def register_sessionmakers(config, urls):
         engine = create_engine(url, echo=echo,
                                pool_recycle=0)
 
-        kwargs = {}
         if session_class_name is not None:
-            kwargs['class_'] = config.maybe_dotted(session_class_name)
+            session_class = config.maybe_dotted(session_class_name)
+        else:
+            session_class = None
 
-        Session = sessionmaker(bind=engine, **kwargs)
-        directlyProvides(Session, ISessionMaker)
-        config.registry.registerUtility(Session, name=name)
+        register_sessionmaker_with_engine(config.registry, name, engine, session_class)
+
+def register_sessionmaker_with_engine(registry, name, engine, class_=None):
+    kwargs = {}
+    if class_ is not None:
+        kwargs['class_'] = class_
+    Session = sessionmaker(bind=engine, **kwargs)
+    directlyProvides(Session, ISessionMaker)
+    registry.registerUtility(Session, name=name)
 
 def includeme(config):
     results = from_settings(config.registry.settings)

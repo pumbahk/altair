@@ -136,8 +136,8 @@ def detect_fraud():
     query = query.filter(period_from<=Order.created_at, Order.created_at<=period_to)
     # 同一人物(user_idまたはメールアドレス)による同一公演の予約枚数が8枚以上、または合計金額が10万以上
     query = query.join(Order.shipping_address)
-    query = query.join(Order.ordered_products)
-    query = query.join(OrderedProduct.ordered_product_items)
+    query = query.join(Order.items)
+    query = query.join(OrderedProduct.elements)
     query = query.group_by(Order.performance_id, func.ifnull(Order.user_id, ShippingAddress.email_1))
     query = query.having(or_(
         func.sum(OrderedProductItem.quantity) >= 8,
