@@ -112,6 +112,7 @@ class CoreTestMixin(object):
             Product(
                 name=stock.stock_type.name,
                 price=price,
+                performance=self.performance, 
                 items=[ProductItem(stock=stock, price=price,
                                    performance=self.performance,
                                    quantity=1,
@@ -178,8 +179,14 @@ class CoreTestMixin(object):
             return seat
 
         items = []
+        performance = None
         for product, quantity in product_quantity_pairs:
             elements = []
+
+            if performance is not None:
+                assert performance == product.performance
+            performance = product.performance
+
             for product_item in product.items:
                 seats = [ 
                     mark_ordered(seat)
@@ -223,6 +230,7 @@ class CoreTestMixin(object):
             delivery_fee=Decimal(pdmp and pdmp.delivery_fee or 0.),
             special_fee=Decimal(special_fee),
             issued=False,
-            items=items
+            items=items,
+            performance=performance
             )
 
