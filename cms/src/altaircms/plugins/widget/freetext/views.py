@@ -1,12 +1,9 @@
-# -*- coding:utf-8 -*-
 from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import get_or_404, require_login, get_authenticated_user
 from . import models
 from . import forms
-import logging
-logger = logging.getLogger(__name__)
+
 import lxml.html
-from lxml.etree import ParserError
 
 def strip_unnecessary_tags(unistr):
     if not unistr:
@@ -26,13 +23,7 @@ class FreetextWidgetView(object):
         self.request = request
 
     def _create_or_update(self):
-        try:
-            freetext = strip_unnecessary_tags(self.request.json_body["data"]["freetext"])
-        except ParserError as e:
-            logger.exception(repr(e))
-            return {"status" : "ng", "message": u"入力内容が有効ではありません。保存に失敗しました。error({})".format(repr(e))}
-
-        # logger.info("freetext: {}".format(freetext))
+        freetext = strip_unnecessary_tags(self.request.json_body["data"]["freetext"])
         page_id = self.request.json_body["page_id"]
         context = self.request.context
         widget = context.get_widget(self.request.json_body.get("pk"))
@@ -42,7 +33,6 @@ class FreetextWidgetView(object):
         r = self.request.json_body.copy()
         r.update(pk=widget.id)
         return r
-
 
     @view_config(route_name="freetext_widget_create", renderer="json", request_method="POST")
     def create(self):
@@ -69,7 +59,7 @@ class FreetextWidgetView(object):
         choice_form = forms.FreeTextChoiceForm()
         user = get_authenticated_user(self.request)
         return {"widget": widget, "choice_form": choice_form, "org_id": user.organization_id}
-
+    
     @view_config(route_name="api_get_default_text", request_method="GET", renderer="json", request_param="default_body_id")
     def get_data(self):
         params = self.request.GET
