@@ -233,6 +233,16 @@ hello!
             result = self._callFUT(filename, dirname, self.Utility)
             self.assertEquals(result.replace("\n", ""), '<div><style type="text/css"></style><br><br></div>')
 
+    def test_empty_doctype_only(self):
+        html_string = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">"""
+        with temporary_file(suffix=".html") as tmpname:
+            with open(tmpname, "w") as wf:
+                wf.write(html_string)
+
+            dirname, filename = os.path.split(tmpname)
+            result = self._callFUT(filename, dirname, self.Utility)
+            self.assertEquals(result.replace("\n", ""), '')
+
 
 class DownloadIntegrationTests(unittest.TestCase):
     class Utility:
