@@ -2847,8 +2847,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return None
 
         return Order.filter_by(organization_id=performance.event.organization_id)\
-            .join(Order.ordered_products)\
-            .join(OrderedProduct.ordered_product_items)\
+            .join(Order.items)\
+            .join(OrderedProduct.elements)\
             .join(OrderedProductItem.product_item)\
             .filter(ProductItem.performance_id==id)\
             .distinct()
