@@ -200,26 +200,13 @@ var WidgetDialogView = Backbone.View.extend({
         if(!!wmodule){
             var data = wmodule("collect_data", choiced_elt);
             this.model.set("data", data);
-            if(this.model.has("status")){
-                this.model.set("status", null); //hmm.
-            }
-            this.model.set("pk", data.pk) // pk
-            this.model.id = this.model.get("pk");
+            this.close_dialog();
             var self = this;
-            this.model.save().pipe(function(data){
-                var dfd = $.Deferred();
-                if(data["status"] == "ng"){
-                    dfd.rejectWith(this, [data]);
-                } else {
-                    dfd.resolveWith(this, [data]);
-                }
-                return dfd.promise();
-            }).done(function(data){
+            this.model.save().done(function(data){
+                self.model.set("pk", data.pk) // pk
+                self.model.id = self.model.get("pk");
                 self.model.trigger("update_widget", self.model);
-                self.close_dialog();
-            }).fail(function(data){
-                alert(!!data.message ? data.message : (!!data.responseText ? data.responseText : data));
-            });
+            })
         }
     }, 
     update_widget_layout_edit: function(){
