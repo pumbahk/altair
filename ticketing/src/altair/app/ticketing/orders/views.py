@@ -1381,8 +1381,8 @@ class OrdersReserveView(BaseView):
         order = Order.filter_by(organization_id=self.context.organization.id)\
             .filter(Order.performance_id==performance_id)\
             .filter(Order.canceled_at==None)\
-            .join(Order.ordered_products)\
-            .join(OrderedProduct.ordered_product_items)\
+            .join(Order.items)\
+            .join(OrderedProduct.elements)\
             .join(OrderedProductItem.seats)\
             .filter(Seat.l0_id==l0_id).first()
         if not order:
