@@ -112,12 +112,16 @@ def doc_from_io(io, subname, encoding):
     return html.parse(io, parser=get_html_parser(encoding)).getroot()
 
 def io_from_doc(doc, subname, encoding):
+    if doc is None:
+        return BytesIO()
     doctype = get_doctype(doc, encoding)
     result = html.tostring(doc, pretty_print=True, encoding=encoding, doctype=doctype)
     result = strip_extra_tags_if_just_text(result)
     return BytesIO(result)
 
 def string_from_doc(doc, subname, encoding):
+    if doc is None:
+        ""
     doctype = get_doctype(doc, encoding)
     result = html.tostring(doc, pretty_print=True, encoding=encoding, doctype=doctype)
     result = strip_extra_tags_if_just_text(result)
@@ -141,7 +145,7 @@ class HTMLFilter(object):
             encoding = encoding or self.encoding
             doc = self.deserialize(io, subname, encoding=encoding)
             if doc is None:
-                logger.warn("creating doc object is failure, from {subname}".format(subname=subname))
+                logger.error("creating doc object is failure, from {subname}".format(subname=subname))
             for fn in self.q:
                 doc = fn(doc, subname)
             return self.serialize(doc, subname, encoding=encoding)
