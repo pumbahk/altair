@@ -439,6 +439,7 @@ class BuildSejArgsTest(unittest.TestCase):
         ]
     
     expectations_prepayment_only = [
+        #
         dict(
             order_no              = '00000001',
             user_name             = u'last_namefirst_name',
@@ -448,16 +449,387 @@ class BuildSejArgsTest(unittest.TestCase):
             email                 = 'test1@test.com',
             total_price           = 1000,
             ticket_price          = 100,
-            commission_fee        = 700,
-            ticketing_fee         = 200,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
             payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
             ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
             ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test2@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000001',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = u'',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        #
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test2@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000001',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = u'',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = None,
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        #
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test2@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000001',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = u'',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 2, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 4, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        #
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test2@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000001',
+            zip_code              = '1234567',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
+        dict(
+            order_no              = '00000001',
+            user_name             = u'last_namefirst_name',
+            user_name_kana        = u'last_name_kanafirst_name_kana',
+            tel                   = '0300000000',
+            zip_code              = u'',
+            email                 = 'test1@test.com',
+            total_price           = 1000,
+            ticket_price          = 100,
+            commission_fee        = 900,
+            ticketing_fee         = 0,
+            payment_due_at        = datetime(2013, 1, 4, 23, 59, 59),
+            ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
+            ticketing_due_at      = datetime(2013, 1, 8, 0, 0, 0),
+            regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
+            ),
         ]
-
-    expectations_prepayment_only = [
+    
+    expectations_prepayment = [
         #
         dict(
             order_no              = '00000001',
@@ -1365,17 +1737,41 @@ class BuildSejArgsTest(unittest.TestCase):
             args = self._callFUT(SejPaymentType.Paid, order, self.now)
             for k, v in expectation.items():
                 self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
-        for i, (expectation, order) in enumerate(zip(self.expectations_prepayment_only, self.orders)):
+        for i, (expectation, order) in enumerate(zip(self.expectations_paid, self.orders)):
             order.performance.start_on = None
-            args = self._callFUT(SejPaymentType.PrepaymentOnly, order, self.now)
+            args = self._callFUT(SejPaymentType.Paid, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
                     self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
                 else:
                     self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
-        for i, (expectation, order) in enumerate(zip(self.expectations_prepayment_only, self.orders)):
+        for i, (expectation, order) in enumerate(zip(self.expectations_paid, self.orders)):
             order.performance = None
-            args = self._callFUT(SejPaymentType.PrepaymentOnly, order, self.now)
+            args = self._callFUT(SejPaymentType.Paid, order, self.now)
+            for k, v in expectation.items():
+                if k != 'regrant_number_due_at':
+                    self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+                else:
+                    self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+
+    def testPrepayment(self):
+        from altair.app.ticketing.sej.models import SejPaymentType
+        self.assertEqual(len(self.orders), len(self.expectations_prepayment))
+        for i, (expectation, order) in enumerate(zip(self.expectations_prepayment, self.orders)):
+            args = self._callFUT(SejPaymentType.Prepayment, order, self.now)
+            for k, v in expectation.items():
+                self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+        for i, (expectation, order) in enumerate(zip(self.expectations_prepayment, self.orders)):
+            order.performance.start_on = None
+            args = self._callFUT(SejPaymentType.Prepayment, order, self.now)
+            for k, v in expectation.items():
+                if k != 'regrant_number_due_at':
+                    self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+                else:
+                    self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+        for i, (expectation, order) in enumerate(zip(self.expectations_prepayment, self.orders)):
+            order.performance = None
+            args = self._callFUT(SejPaymentType.Prepayment, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
                     self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
@@ -1413,17 +1809,17 @@ class BuildSejArgsTest(unittest.TestCase):
             args = self._callFUT(SejPaymentType.CashOnDelivery, order, self.now)
             for k, v in expectation.items():
                 self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
-        for i, (expectation, order) in enumerate(zip(self.expectations_prepayment_only, self.orders)):
+        for i, (expectation, order) in enumerate(zip(self.expectations_cash_on_delivery, self.orders)):
             order.performance.start_on = None
-            args = self._callFUT(SejPaymentType.PrepaymentOnly, order, self.now)
+            args = self._callFUT(SejPaymentType.CashOnDelivery, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
                     self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
                 else:
                     self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
-        for i, (expectation, order) in enumerate(zip(self.expectations_prepayment_only, self.orders)):
+        for i, (expectation, order) in enumerate(zip(self.expectations_cash_on_delivery, self.orders)):
             order.performance = None
-            args = self._callFUT(SejPaymentType.PrepaymentOnly, order, self.now)
+            args = self._callFUT(SejPaymentType.CashOnDelivery, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
                     self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))

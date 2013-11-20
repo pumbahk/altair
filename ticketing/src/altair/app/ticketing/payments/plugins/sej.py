@@ -192,7 +192,7 @@ def build_sej_args(payment_type, order_like, now):
         commission_fee      = order_like.system_fee + order_like.special_fee + order_like.transaction_fee + order_like.delivery_fee
         ticketing_fee       = 0
         payment_due_at      = get_payment_due_at(now, order_like)
-    elif int(payment_type) in (int(SejPaymentType.CashOnDelivery), int(payment_type) == int(SejPaymentType.Prepayment)):
+    elif int(payment_type) in (int(SejPaymentType.CashOnDelivery), int(SejPaymentType.Prepayment)):
         total_price         = order_like.total_amount
         ticket_price        = order_like.total_amount - (order_like.system_fee + order_like.special_fee + order_like.transaction_fee + order_like.delivery_fee)
         commission_fee      = order_like.system_fee + order_like.special_fee + order_like.transaction_fee
