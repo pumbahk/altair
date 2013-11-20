@@ -95,6 +95,32 @@ class register_sessionmakersTests(unittest.TestCase):
         sessionmaker = self.config.registry.queryUtility(ISessionMaker, name='testing')
         self.assertIsInstance(sessionmaker(), DummySession)
         
+class register_sessionmaker_with_engine(unittest.TestCase):
+    def _callFUT(self, *args, **kwargs):
+        from . import register_sessionmaker_with_engine
+        return register_sessionmaker_with_engine(*args, **kwargs)
+
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def test_with_default(self):
+        from sqlalchemy import create_engine
+        from .interfaces import ISessionMaker
+        engine = create_engine('sqlite:///')
+        self._callFUT(self.config.registry, 'testing', engine)
+        sessionmaker = self.config.registry.queryUtility(ISessionMaker, name='testing')
+        self.assertEqual(str(sessionmaker().bind.url), 'sqlite:///')
+
+    def test_custom_session_class(self):
+        from sqlalchemy import create_engine
+        from .interfaces import ISessionMaker
+        engine = create_engine('sqlite:///')
+        self._callFUT(self.config.registry, 'testing', engine, DummySession)
+        sessionmaker = self.config.registry.queryUtility(ISessionMaker, name='testing')
+        self.assertIsInstance(sessionmaker(), DummySession)
 
 
 class get_db_sessionTests(unittest.TestCase):
