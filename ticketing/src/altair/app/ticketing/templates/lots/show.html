@@ -49,6 +49,10 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
           <th>認証方法</th>
           <td>${lot.auth_type or u'なし'}</td>
         </tr>
+        <tr>
+          <th>抽選カートURL</th>
+          <td><a href="${lots_cart_url}">${lots_cart_url}</a></td>
+        </tr>
        </tbody>
     </table>
     <a class="btn" href="${request.route_url('lots.edit', lot_id=lot.id)}">編集</a>

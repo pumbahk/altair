@@ -78,3 +78,30 @@ class CartURLBuilder(object):
         path = self.build_path(event)
         query = self.build_query(performance)
         return _url_builder(scheme, host_name, path, query)
+
+@implementer(IURLBuilder)
+class LotsCartURLBuilder(object):
+    def __init__(self, path_prefix):
+        self.path_prefix = path_prefix.rstrip("/")
+
+    def build_path(self, event, lot):
+        suffix = unicode(event.id)
+        lot_id = unicode(lot.id)
+        return u"{0}/{1}/entry/{2}".format(self.path_prefix, suffix.lstrip("/"), lot_id)
+
+    def build_hostname(self, request, organization):
+        return guess_host_name_from_request(request, organization=organization)
+
+    def build_query(self, performance):
+        query = {}
+        if performance:
+            query["performance"] = performance.id
+        return query
+
+    def build(self, request, event, lot, performance=None, organization=None):
+        organization = organization or request.context.organization
+        scheme = _get_scheme_from_request(request)
+        host_name = self.build_hostname(request, organization)
+        path = self.build_path(event, lot)
+        query = self.build_query(performance)
+        return _url_builder(scheme, host_name, path, query)
