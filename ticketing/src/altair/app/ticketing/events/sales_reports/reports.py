@@ -9,6 +9,8 @@ from sqlalchemy import distinct
 from sqlalchemy.sql import func, and_, or_
 from sqlalchemy.orm import aliased
 
+from datetime import date, timedelta
+
 from altair.app.ticketing.core.models import Event, Mailer
 from altair.app.ticketing.core.models import StockType, StockHolder, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
 from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem
@@ -114,8 +116,16 @@ class SalesTotalReporter(object):
         # イベント名称/公演名称、販売期間
         # 一般公開されている販売区分のみ対象
         query = Event.query.filter(Event.organization_id==self.organization.id)\
-            .join(Performance).filter(Performance.deleted_at==None)\
-            .join(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.reporting==True)\
+            .join(Performance).filter(Performance.deleted_at==None)
+
+        if self.form.recent_report.data:
+            today = date.today()
+            query = query.filter(
+                ((Performance.end_on==None) & (Performance.start_on > today + timedelta(days=-31))) |
+                (Performance.start_on > today + timedelta(days=-31))
+            )
+
+        query = query.join(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.reporting==True)\
             .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(self.stock_holder_ids))
         query = self.add_form_filter(query)
 

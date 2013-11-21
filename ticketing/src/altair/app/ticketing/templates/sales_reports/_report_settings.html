@@ -26,6 +26,9 @@
     <div class="controls">
       ${form.limited_from} 〜 ${form.limited_to}
       <input type="submit" class="btn" value="集計期間を絞り込む" >
+      <a href="${request.route_path('sales_reports.index_all')}">
+          <input type="button" class="btn" value="全て表示する" />
+      </a>
     </div>
     <input name="event_id" type="hidden" value="${event_id}">
     <input name="performance_id" type="hidden" value="${performance_id}">
