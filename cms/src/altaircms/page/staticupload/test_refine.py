@@ -233,6 +233,41 @@ hello!
             result = self._callFUT(filename, dirname, self.Utility)
             self.assertEquals(result.replace("\n", ""), '<div><style type="text/css"></style><br><br></div>')
 
+    def test_empty_doctype_only(self):
+        html_string = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">"""
+        with temporary_file(suffix=".html") as tmpname:
+            with open(tmpname, "w") as wf:
+                wf.write(html_string)
+
+            dirname, filename = os.path.split(tmpname)
+            result = self._callFUT(filename, dirname, self.Utility)
+            self.assertEquals(result.replace("\n", ""), '')
+
+    def test_with_content_type(self):
+        html_string = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="ja">
+<head>
+<script type="text/javascript" src="/fanstatic/jquery/jquery.js"></script><meta http-equiv="X-UA-Compatible" content="IE=8">
+<meta http-equiv="Content-Language" content="ja">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="imagetoolbar" content="no">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>my title</title>
+<link rel="stylesheet" type="text/css" href="main.css" media="all">
+<link rel="shortcut icon" href="http://tstar.s3.amazonaws.com/cart/static/img/common/eagles.ico">
+</head>
+<body>
+</body>
+</html>
+"""
+        with temporary_file(suffix=".html") as tmpname:
+            with open(tmpname, "w") as wf:
+                wf.write(html_string)
+
+            dirname, filename = os.path.split(tmpname)
+            result = self._callFUT(filename, dirname, self.Utility)
+            self.assertIn("Content-Type", result)
 
 class DownloadIntegrationTests(unittest.TestCase):
     class Utility:

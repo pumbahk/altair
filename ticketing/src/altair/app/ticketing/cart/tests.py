@@ -529,7 +529,6 @@ class TicketingCartResourceTestBase(object):
         sales_segment, user = self._add_orders_user()
 
         result = target.check_order_limit(sales_segment, user, "testing@example.com")
-
         self.assertTrue(result)
 
     def test_check_order_limit_user_over(self):
