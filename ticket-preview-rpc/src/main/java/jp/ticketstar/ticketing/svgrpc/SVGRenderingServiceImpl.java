@@ -3,6 +3,7 @@ package jp.ticketstar.ticketing.svgrpc;
 import java.io.StringReader;
 import java.io.ByteArrayOutputStream;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.batik.swing.gvt.font.FontFamilyResolverPatch;
 
 class Helper {
     protected static SVGRasterizer selectRasterizer(String filetype){
@@ -14,6 +15,11 @@ class Helper {
 }
 
 public class SVGRenderingServiceImpl implements SVGRenderingService{
+    static {
+        //reason:: https://redmine.ticketstar.jp/issues/6179
+        Class.forName("org.apache.batik.swing.gvt.font.FontFamilyResolverPatch");
+    }
+
     public int inc(int x){
         return x + 1;
     }
