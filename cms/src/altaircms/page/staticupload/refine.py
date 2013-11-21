@@ -119,7 +119,7 @@ def io_from_doc(doc, subname, encoding):
     if doc is None:
         return BytesIO()
     doctype = get_doctype(doc, encoding)
-    result = html.tostring(doc, pretty_print=True, encoding=encoding, doctype=doctype)
+    result = html.tostring(doc, pretty_print=True, include_meta_content_type=True, encoding=encoding, doctype=doctype)
     result = strip_extra_tags_if_just_text(result)
     return BytesIO(result)
 
@@ -127,7 +127,7 @@ def string_from_doc(doc, subname, encoding):
     if doc is None:
         return ""
     doctype = get_doctype(doc, encoding)
-    result = html.tostring(doc, pretty_print=True, encoding=encoding, doctype=doctype)
+    result = html.tostring(doc, pretty_print=True, include_meta_content_type=True, encoding=encoding, doctype=doctype)
     result = strip_extra_tags_if_just_text(result)
     return result
 
