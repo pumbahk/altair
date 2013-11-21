@@ -35,7 +35,7 @@ class SalesReports(BaseView):
         }
 
     @view_config(route_name='sales_reports.index', request_method='POST', renderer='altair.app.ticketing:templates/sales_reports/index.html')
-    def index(self):
+    def index_post(self):
         form = SalesReportForm(self.request.params)
         event_total_reporter = SalesTotalReporter(form, self.context.organization)
 
@@ -45,7 +45,7 @@ class SalesReports(BaseView):
         }
 
     @view_config(route_name='sales_reports.index_all', renderer='altair.app.ticketing:templates/sales_reports/index_all.html')
-    def index(self):
+    def index_all(self):
         form = SalesReportForm(self.request.params)
         form.recent_report.data = False
         event_total_reporter = SalesTotalReporter(form, self.context.organization)

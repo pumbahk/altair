@@ -125,6 +125,9 @@ class SalesTotalReporter(object):
                 (Performance.start_on > today + timedelta(days=-31))
             )
 
+        if self.form.event_title.data:
+            query = query.filter(Event.title.like('%' + self.form.event_title.data + '%'))
+
         query = query.join(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.reporting==True)\
             .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(self.stock_holder_ids))
         query = self.add_form_filter(query)

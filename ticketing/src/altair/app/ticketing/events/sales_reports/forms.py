@@ -30,6 +30,40 @@ class SalesReportForm(Form):
     sales_segment_group_id = HiddenField(
         validators=[Optional()],
     )
+    event_title = TextField(
+        label=u'イベント名',
+        validators=[Optional()],
+    )
+    event_from = DateTimeField(
+        label=u'公演期間',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    event_to = DateTimeField(
+        label=u'公演期間',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    event_start_from = DateTimeField(
+        label=u'公演開始日',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    event_start_to = DateTimeField(
+        label=u'公演開始日',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    event_end_from = DateTimeField(
+        label=u'公演終了日',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    event_end_to = DateTimeField(
+        label=u'公演終了日',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
     limited_from = DateTimeField(
         label=u'絞り込み期間',
         validators=[Optional(), after1900],
