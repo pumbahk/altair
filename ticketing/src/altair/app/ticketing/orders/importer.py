@@ -94,13 +94,13 @@ class TemporaryCart(TemporaryModel):
         return Operator.query.filter_by(id=self.operator_id).one()
 
     @property
-    def products(self):
+    def items(self):
         return self._carted_product.values()
 
     @property
     def calculated_total_amount(self):
         return (self.transaction_fee + self.delivery_fee + self.system_fee + self.special_fee
-                + sum([p.price * p.quantity for p in self.products]))
+                + sum([p.price * p.quantity for p in self.items]))
 
     def finish(self):
         pass
@@ -108,7 +108,6 @@ class TemporaryCart(TemporaryModel):
 
 @implementer(IOrderedProductLike)
 class TemporaryCartedProduct(TemporaryModel):
-
     def __init__(self, **kwargs):
         self.price = 0
         self.quantity = 0
@@ -119,7 +118,7 @@ class TemporaryCartedProduct(TemporaryModel):
         return Product.query.filter_by(id=self.product_id).one()
 
     @property
-    def items(self):
+    def elements(self):
         return self._carted_product_item.values()
 
     @property
@@ -129,7 +128,6 @@ class TemporaryCartedProduct(TemporaryModel):
 
 @implementer(IOrderedProductItemLike)
 class TemporaryCartedProductItem(TemporaryModel):
-
     def __init__(self, **kwargs):
         self.price = 0
         self.quantity = 0
@@ -329,7 +327,7 @@ class OrderImporter(object):
             # - 実際に配席しないと連席判定も含めた在庫の過不足は分からない為
             try:
                 for cp in cart.items:
-                    for cpi in cp.items:
+                    for cpi in cp.elements:
                         product_item = cpi.product_item
                         stock = product_item.stock
                         if stock.id not in sum_quantity:
@@ -517,7 +515,7 @@ class OrderImporter(object):
         count = 0
         for cart in carts.values():
             for cp in cart.items:
-                count += sum([cpi.quantity for cpi in cp.items])
+                count += sum([cpi.quantity for cpi in cp.elements])
         return count
 
     def get_seat_per_product(self, carts):
@@ -527,7 +525,7 @@ class OrderImporter(object):
                 p = cp.product
                 if p not in seat_per_product:
                     seat_per_product[p] = 0
-                seat_per_product[p] += sum([int(cpi.quantity) for cpi in cp.items])
+                seat_per_product[p] += sum([int(cpi.quantity) for cpi in cp.elements])
         return seat_per_product
 
     def get_order_per_pdmp(self, carts):
@@ -608,7 +606,7 @@ class OrderImporter(object):
             # 配席/在庫更新
             try:
                 for temp_cp in temp_cart.items:
-                    for temp_cpi in temp_cp.items:
+                    for temp_cpi in temp_cp.elements:
                         product_item = temp_cpi.product_item
                         stock = temp_cpi.product_item.stock
 
