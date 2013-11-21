@@ -267,7 +267,7 @@ hello!
 
             dirname, filename = os.path.split(tmpname)
             result = self._callFUT(filename, dirname, self.Utility)
-            self.assertIn("Content-type", result)
+            self.assertIn("Content-Type", result)
 
 class DownloadIntegrationTests(unittest.TestCase):
     class Utility:
