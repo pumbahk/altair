@@ -58,9 +58,9 @@ import jp.ticketstar.ticketing.printing.StandardAppService;
 import jp.ticketstar.ticketing.printing.TicketFormat;
 import jp.ticketstar.ticketing.URLConnectionFactory;
 import jp.ticketstar.ticketing.printing.gui.liveconnect.JSObjectPropertyChangeListenerProxy;
+import jp.ticketstar.ticketing.gvt.font.FontFamilyResolverPatch;
 
 import org.apache.batik.swing.gvt.Overlay;
-import org.apache.batik.swing.gvt.font.FontFamilyResolverPatch;
 
 import netscape.javascript.JSObject;
 
@@ -81,7 +81,11 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
     /* patch */
     static {
         //reason:: https://redmine.ticketstar.jp/issues/6179
-        Class.forName("org.apache.batik.swing.gvt.font.FontFamilyResolverPatch");
+        try {
+            Class.forName("jp.ticketstar.ticketing.gvt.font.FontFamilyResolverPatch");
+        } catch(ClassNotFoundException ex){
+            ex.printStackTrace();
+        }
     }
 
 	private static final long serialVersionUID = 1L;
