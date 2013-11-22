@@ -128,6 +128,11 @@ class SalesTotalReporter(object):
         if self.form.event_title.data:
             query = query.filter(Event.title.like('%' + self.form.event_title.data + '%'))
 
+        query = self._create_range_where(query, self.form.event_from.data, self.form.event_to.data, \
+            Performance.start_on, Performance.end_on)
+        query = self._create_where(query, self.form.event_start_from.data, self.form.event_start_to.data, Performance.start_on)
+        query = self._create_where(query, self.form.event_end_from.data, self.form.event_end_to.data, Performance.end_on)
+
         query = query.join(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.reporting==True)\
             .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(self.stock_holder_ids))
         query = self.add_form_filter(query)
@@ -154,6 +159,40 @@ class SalesTotalReporter(object):
                 sales_start_day=sales_start_day,
                 sales_end_day=sales_end_day,
             )
+
+    def _create_where(self, query, from_date, to_date, target):
+        if from_date and to_date:
+            where = (
+                (from_date <= target) & (target <= to_date))
+            query = query.filter(where)
+        elif from_date:
+            where = (from_date <= target)
+            query = query.filter(where)
+        elif to_date:
+            where = (target <= to_date)
+            query = query.filter(where)
+        return query
+
+    def _create_range_where(self, query, from_date, to_date, from_target, to_target):
+        if from_date and to_date:
+            where = (
+                (from_date <= from_target) & (from_target <= to_date) |
+                (from_date <= to_target) & (to_target <= to_date) |
+                (from_target <= from_date) & (to_date <= to_target))
+            query = query.filter(where)
+        elif from_date:
+            where = (
+                (from_date <= from_target) |
+                (from_date <= from_target) & (from_target <= (from_date + timedelta(days=1))) & (to_target is None) |
+                (from_target <= from_date) & (from_date <= to_target))
+            query = query.filter(where)
+        elif to_date:
+            where = (
+                (to_target <= to_date.data) |
+                (from_target <= to_date.data) & (to_date.data <= to_target) |
+                ((to_date + timedelta(days=-1)) <= from_target) & (from_target <= to_date) & (to_target is None))
+            query = query.filter(where)
+        return query
 
     def get_stock_data(self):
         # 配席数、残席数
