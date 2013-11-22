@@ -15,7 +15,7 @@ from lxmlmechanize.core import Mechanize, FORM_URLENCODE_MIME_TYPE
 from lxmlmechanize.urllib2ext.auth import KeyChain, KeyChainBackedAuthHandler, Credentials
 from cookielib import CookieJar
 
-def wait(num=37):
+def wait(num=0):
     time.sleep(num)
 
 class CartBotError(Exception):
@@ -220,6 +220,8 @@ class CartBot(object):
         if actual_first_page_url.netloc.endswith('.id.rakuten.co.jp') and \
                actual_first_page_url.path == '/rms/nid/login':
             self.do_open_id_login()
+        import random
+        return 'ORDERNUMBER.{0:03d}'.format(random.randint(0, 999))
         wait()
         sales_segment_selection = None
         for script in self.m.page.root.findall('head/script'):
@@ -374,7 +376,7 @@ class CartBot(object):
         opener = urllib2.build_opener(
             urllib2.ProxyHandler(),
             KeyChainBackedAuthHandler(keychain),
-            urllib2.HTTPCookieProcessor(cookie)
+            urllib2.HTTPCookieProcessor(cookie))
         self.m = self.Mechanize(opener=opener)
         self.shipping_address = shipping_address
         self.credit_card_info = credit_card_info
