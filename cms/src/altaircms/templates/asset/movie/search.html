@@ -30,6 +30,7 @@
 	<form action="${request.route_path("asset_search_movie")}" method="GET">
       ${fco.formfield(search_form, "created_by")}
       ${fco.formfield(search_form, "updated_by")}
+      ${fco.formfield(search_form, "title")}
       ${fco.formfield(search_form, "tags")}
 	  <button type="submit" class="btn btn-info"><i class="icon-cog icon-white"></i> Search</button>
     </form>
