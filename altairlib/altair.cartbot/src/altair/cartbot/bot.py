@@ -15,7 +15,7 @@ from lxmlmechanize.core import Mechanize, FORM_URLENCODE_MIME_TYPE
 from lxmlmechanize.urllib2ext.auth import KeyChain, KeyChainBackedAuthHandler, Credentials
 from cookielib import CookieJar
 
-def wait(num=0):
+def wait(num=37):
     time.sleep(num)
 
 class CartBotError(Exception):

@@ -153,7 +153,7 @@ def main():
     threads = [threading.Thread(target=run, name='%d' % i) for i in range(concurrency)]
     for thread in threads:
         thread.start()
-        #time.sleep(1)
+        time.sleep(1)
 
     for thread in threads:
         thread.join()
