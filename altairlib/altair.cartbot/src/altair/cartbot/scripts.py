@@ -15,7 +15,6 @@ import threading
 import time
 import logging
 import logging.config
-from cookielib import CookieJar
 
 class LoggableCartBot(CartBot):
     logger = logging.getLogger('altair.cartbot')
@@ -28,8 +27,6 @@ class LoggableCartBot(CartBot):
             super(LoggableCartBot, self).print_(*msgs)
 
     def __init__(self, *args, **kwargs):
-        self._cookie = CookieJar()
-        kwargs['cookie'] = self._cookie
         retry_count = kwargs.pop('retry_count', 1)
         if retry_count is not None:
             class RetryingMechanize(Mechanize):
@@ -148,11 +145,9 @@ def main():
                 if order_no is not None:
                     print order_no
 
-    import time
     threads = [threading.Thread(target=run, name='%d' % i) for i in range(concurrency)]
     for thread in threads:
         thread.start()
-        time.sleep(1)
 
     for thread in threads:
         thread.join()
