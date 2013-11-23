@@ -13,7 +13,7 @@ from .exceptions import TooManyCartsCreated
 from .api import get_cart_user_identifiers
 
 __all__ = (
-    'LimitterDecorators',
+    'LimiterDecorators',
     )
 
 logger = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ def gen_callback(limits, setting_name):
     return _
 
 @implementer(IDataManager)
-class LimitterDataManager(object):
+class LimiterDataManager(object):
     def __init__(self, cache, counts, transaction_manager):
         self.transaction_manager = transaction_manager
         self.cache = cache
@@ -62,11 +62,11 @@ class LimitterDataManager(object):
         return "~~%s" % __name__
 
 
-class LimitterDecorators(object):
+class LimiterDecorators(object):
     venusian = venusian
     cache_manager = cache_manager
 
-    def __init__(self, setting_name, exc_class, cache_region=(__name__ + '.limitter')):
+    def __init__(self, setting_name, exc_class, cache_region=(__name__ + '.limiter')):
         self.setting_name = setting_name
         self.exc_class = exc_class
         cache = None
@@ -96,7 +96,7 @@ class LimitterDecorators(object):
                 import sys
                 logger.error('failed to acquire counter', exc_info=sys.exc_info())
             zope_transaction.manager.get().join(
-                LimitterDataManager(
+                LimiterDataManager(
                     self.cache,
                     counts,
                     zope_transaction.manager))
