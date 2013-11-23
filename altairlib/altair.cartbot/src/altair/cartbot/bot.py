@@ -220,6 +220,8 @@ class CartBot(object):
         if actual_first_page_url.netloc.endswith('.id.rakuten.co.jp') and \
                actual_first_page_url.path == '/rms/nid/login':
             self.do_open_id_login()
+        import random
+        return 'ORDERNUMBER.{0:03d}'.format(random.randint(0, 999))
         wait()
         sales_segment_selection = None
         for script in self.m.page.root.findall('head/script'):
