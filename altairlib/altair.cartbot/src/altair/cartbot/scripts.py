@@ -28,35 +28,37 @@ class LoggableCartBot(CartBot):
 
     def __init__(self, *args, **kwargs):
         retry_count = kwargs.pop('retry_count', 1)
-        if retry_count is not None:
-            class RetryingMechanize(Mechanize):
-                logger = logging.getLogger('mechanize')
+        class RetryingMechanize(Mechanize):
+            logger = logging.getLogger('mechanize')
 
-                def reload(self):
+            def create_loader(self, request):
+                fn = super(RetryingMechanize, self).create_loader(request)
+                def _():
+                    s = time.time()
                     i = 0
-                    elapsed = None
                     while True:
                         try:
-                            s = time.time() 
-                            super(RetryingMechanize, self).reload()
-                            elapsed = time.time() - s
+                            retval = fn()
                         except HTTPError as e:
                             if e.code >= 500 and e.code <= 599:
                                 i += 1
                                 if i >= retry_count:
                                     raise
                                 else:
+                                    self.logger.info("got error %s for %s. attempt to retry in %g seconds", e.code, e.url, 1.)
                                     time.sleep(1)
                                     continue
                             else:
                                 raise
                         break
-                    if elapsed is not None:
-                        self.logger.info("%s processed in %g seconds", self.location, elapsed)
-            self.Mechanize = RetryingMechanize
-        else:
-            self.Mechanize = Mechanize
+                    elapsed = time.time() - s
+                    self.logger.info("%s processed in %g seconds", request.get_full_url(), elapsed)
+                    return retval
+                return _
+
+        self.Mechanize = RetryingMechanize
         super(LoggableCartBot, self).__init__(*args, **kwargs)
+
 
 def main():
     logging.basicConfig(level=logging.INFO)

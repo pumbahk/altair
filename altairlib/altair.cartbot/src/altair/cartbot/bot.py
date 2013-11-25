@@ -234,7 +234,7 @@ class CartBot(object):
         sales_segment = all_sales_segments.pop(0)
         self.print_(u'Trying to buy some products that belong to %s' % sales_segment['name'])
         self.print_()
-        sales_segment_detail = json.load(self.m.opener.open(sales_segment['seat_types_url']))
+        sales_segment_detail = json.load(self.m.create_loader(urllib2.Request(sales_segment['seat_types_url']))())
         self.show_sales_segment_detail(sales_segment_detail)
 
         self.print_()
@@ -244,11 +244,11 @@ class CartBot(object):
             self.print_(u"It looks like we're done with %s" % sales_segment['name'])
             return None
 
-        product_info = json.load(self.m.opener.open(seat_type['products_url']))
+        product_info = json.load(self.m.create_loader(urllib2.Request(seat_type['products_url']))())
         products = product_info['products']
         products_to_buy = [(product, 1) for product in sample(products, randint(1, len(products)))]
         result = json.load(
-            self.m.opener.open(
+            self.m.create_loader(
                 urllib2.Request(
                     sales_segment['order_url'],
                     data=encode_urlencoded_form_data(self.build_order_post_data(sales_segment_detail, products_to_buy), 'utf-8'),
@@ -257,7 +257,7 @@ class CartBot(object):
                         'X-Requested-With': 'XMLHttpRequest',
                         }
                     )
-                )
+                )()
             )
         if result['result'] == 'OK':
             self.print_(u'Items bought')
