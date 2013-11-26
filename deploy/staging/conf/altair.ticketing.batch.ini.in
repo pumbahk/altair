@@ -5,6 +5,9 @@ use = config:altair.ticketing.admin.ini#ticketing
 session.type = ${altair:beaker_backend_type}
 cache.type = ${altair:beaker_backend_type}
 
+; altair.httpsession
+altair.httpsession.persistence.type = ${altair:beaker_backend_type}
+
 [loggers]
 keys = root, ticketing
 

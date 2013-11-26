@@ -6,10 +6,16 @@ from urlparse import urljoin
 import logging
 import uuid
 from zope.interface import implementer
-from beaker.session import Session
+from altair.httpsession.api import (
+    HTTPSession,
+    BasicHTTPSessionManager,
+    DummyHTTPBackend,
+    )
+from altair.httpsession.idgen import _generate_id
 
 from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
 from pyramid.response import Response
+from pyramid.path import DottedNameResolver
 from pyramid import security
 
 from altair.auth import who_api as get_who_api
@@ -19,6 +25,43 @@ from .events import Authenticated
 
 logger = logging.getLogger(__name__)
 
+
+class RakutenOpenIDHTTPSessionContext(object):
+    http_backend = None
+
+    def __init__(self, persistence_backend):
+        self.persistence_backend = persistence_backend
+
+    def on_load(self, id_, data):
+        pass
+
+    def on_new(self, id_, data):
+        pass
+
+    def on_save(self, id_, data):
+        pass
+
+    def on_delete(self, id_, data):
+        pass
+
+    def generate_id(self):
+        return _generate_id()
+
+
+class RakutenOpenIDHTTPSessionFactory(object):
+    def __init__(self, persistence_backend, session_args):
+        import altair.httpsession
+        self.persistence_backend_factory = DottedNameResolver(altair.httpsession).maybe_resolve(persistence_backend)
+        self.session_args = session_args
+
+    def __call__(self, request, id=None):
+        persistence_backend = self.persistence_backend_factory(request, **self.session_args)
+        return HTTPSession(
+            RakutenOpenIDHTTPSessionContext(persistence_backend),
+            id
+            )
+
+
 @implementer(IRakutenOpenID)
 class RakutenOpenID(object):
     def __init__(self,
@@ -27,7 +70,7 @@ class RakutenOpenID(object):
             extra_verify_url,
             error_to,
             consumer_key,
-            session_args,
+            session_factory,
             return_to=None,
             timeout=10):
         self.endpoint = endpoint
@@ -35,7 +78,7 @@ class RakutenOpenID(object):
         self.extra_verify_url = extra_verify_url
         self.error_to = error_to
         self.consumer_key = consumer_key
-        self.session_args = session_args
+        self.session_factory = session_factory
         self.return_to = return_to or verify_url
         self.timeout = int(timeout)
 
@@ -43,11 +86,11 @@ class RakutenOpenID(object):
         return request.params.get('ak')
 
     def new_session(self, request):
-        return Session(request, id=None, **self.session_args)
+        return self.session_factory(request, id=None)
 
     def get_session(self, request):
         id = self.get_session_id(request)
-        return id and Session(request, id=id, **self.session_args)
+        return id and self.session_factory(request, id=id)
 
     def combine_session_id(self, url, session):
         return urljoin(url, '?ak=' + urllib.quote(session.id))
@@ -158,7 +201,7 @@ class RakutenOpenID(object):
             if not return_url:
                 # TODO: デフォルトURLをHostからひいてくる
                 return_url = "/"
-            session.clear()
+            session.invalidate()
             headers = identity['identifier'].remember(request.environ, identity)
             return HTTPFound(location=return_url, headers=headers)
         else:
@@ -170,6 +213,7 @@ def openid_consumer_from_settings(settings, prefix):
     for k, v in settings.items():
         if k.startswith(prefix + 'session.'):
             session_args[k[len(prefix + 'session.'):]] = v
+    persistence_backend = settings[prefix + 'session']
 
     return RakutenOpenID(
         endpoint=settings[prefix + 'endpoint'],
@@ -177,7 +221,10 @@ def openid_consumer_from_settings(settings, prefix):
         extra_verify_url=settings[prefix + 'extra_verify_url'],
         error_to=settings[prefix + 'error_to'],
         consumer_key=settings[prefix + 'oauth.consumer_key'],
-        session_args=session_args,
+        session_factory=RakutenOpenIDHTTPSessionFactory(
+            persistence_backend,
+            session_args
+            ),
         return_to=settings.get(prefix + 'return_to'),
         timeout=settings.get(prefix + 'timeout')
         )
