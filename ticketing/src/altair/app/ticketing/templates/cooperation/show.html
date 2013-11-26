@@ -6,7 +6,74 @@
   <h3>外部連携 - ${site.name}</h3>
 </div>
 
-<%include file="/cooperation/_action_button.html" />
-<%include file="/cooperation/_update_form.html" 
-          args="form=update_form, upload_url=upload_url, display_modal=display_modal" />
-<%include file="/cooperation/_download_form.html" args="form=download_form" />
+<div class="container">
+    ${ch.form_item(cooperation_type_form.cooperation_type)}
+</div>
+
+<div class="container">
+  <button class="btn" onclick="javascript: enable_upload_dialog();">
+    <i class="glyphicon icon-upload"></i>アップロード</button>
+  <button class="btn" onclick="javascript: enable_download_dialog();">
+    <i class="glyphicon icon-download"></i>ダウンロード</button>
+</div>
+
+<script type="text/javascript">
+  <!--
+      function enable_upload_dialog(){
+          var modal = $('#modal-cooperation-update');
+          modal.find('#display').attr('checked', 'checked');
+          modal.modal('toggle');
+      }
+
+      function enable_download_dialog(){
+          var modal = $('#modal-cooperation-download');
+          modal.find('#display').attr('checked', 'checked');
+          modal.modal('toggle');
+      }
+      function submit_form(selector){
+          $(selector)[0].getElementsByTagName('form')[0].submit();
+      }
+    -->
+</script>
+
+<div id="modal-cooperation-update" class="modal hide">
+  <div class="modal-header">
+    <h3>アップロード</h3>
+  </div>
+
+  <div class="modal-body">
+    <form method="POST" enctype="multipart/form-data"
+          action="${upload_url}">
+      ${ch.form_item(update_form.id)}
+      ${ch.form_item(update_form.cooperation_type)}
+      ${ch.form_item(update_form.cooperation_file)}
+    </form>
+  </div>
+  
+  <div class="modal-footer">
+    <a onclick="javascript:submit_form('#modal-cooperation-update');"
+       class="btn" data-dismiss="modal">アップロード</a>
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+  </div>
+</div>
+
+<div id="modal-cooperation-download" class="modal hide">
+  <div class="modal-header">
+    <h3>ダウンロード</h3>
+  </div>
+
+  <div class="modal-body">
+    <form method="POST" action="${download_url}">
+      ${ch.form_item(download_form.id)}
+      ${ch.form_item(download_form.cooperation_type)}
+    </form>
+  </div>
+  
+  <div class="modal-footer">
+    <a onclick="javascript:submit_form('#modal-cooperation-download');"
+       class="btn" data-dismiss="modal">ダウンロード</a>
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+  </div>
+</div>
+
+${delete_modal()}

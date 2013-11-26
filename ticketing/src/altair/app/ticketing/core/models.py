@@ -3904,8 +3904,8 @@ class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 
 class CooperationTypeEnum(StandardEnum):
-    augus = (0, u'オーガス')
-    gettie = (0, u'Gettie')
+    augus = (1, u'オーガス')
+    gettie = (2, u'Gettie')
 
 
 class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
