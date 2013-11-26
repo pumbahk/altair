@@ -4,6 +4,7 @@ import re
 import contextlib
 
 from sqlalchemy import create_engine
+from sqlalchemy.pool import NullPool
 from sqlalchemy.orm import sessionmaker
 from zope.interface import directlyProvides
 from pyramid.settings import asbool
@@ -43,8 +44,7 @@ def register_sessionmakers(config, urls):
         echo = c.get('echo', False)
         session_class_name = c.get('session_class', None)
 
-        engine = create_engine(url, echo=echo,
-                               pool_recycle=0)
+        engine = create_engine(url, echo=echo, poolclass=NullPool)
 
         if session_class_name is not None:
             session_class = config.maybe_dotted(session_class_name)

@@ -4,6 +4,7 @@ import sqlahelper
 from pyramid.tweens import INGRESS
 from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
+from sqlalchemy.pool import NullPool
 from altairsite import PC_ACCESS_COOKIE_NAME
 from altairsite.separation import selectable_renderer
 
@@ -39,7 +40,7 @@ def install_app(config):
 
 def main(config, **settings):
     """ don't use this on production. this is development app."""    
-    engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
+    engine = engine_from_config(settings, 'sqlalchemy.', poolclass=NullPool)
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
 
