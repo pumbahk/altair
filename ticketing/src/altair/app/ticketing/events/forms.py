@@ -91,14 +91,13 @@ class EventForm(Form):
 
     def validate_code(form, field):
         if field.data:
-            expect_len = 7
+            expected_len = {7}
             query = Event.filter(Event.code==field.data)
             if form.id and form.id.data:
-                event = Event.get(form.id.data)
-                # 古いコード体系(5桁)と新しいコード体系(7桁)のどちらも許容する
-                expect_len = len(event.code)
-                query = query.filter(Event.id!=form.id.data)
-            if len(field.data) not in [expect_len, 7]:
-                raise ValidationError(u'7文字入力してください')
-            if query.count():
+                event = Event.query.filter_by(id=form.id.data).one()
+                expected_len.add(len(event.code)) # 古いコード体系(7桁)と新しいコード体系(5桁)のどちらも許容する
+                query = query.filter(Event.id!=form.id.data) # いま編集中のもの以外で
+            if len(field.data) not in expected_len:
+                raise ValidationError(u'%s入力してください' % u'もしくは'.join(u'%d文字' % l for l in expected_len))
+            if query.count() > 0:
                 raise ValidationError(u'既に使用されています')

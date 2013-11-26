@@ -144,11 +144,11 @@ class Events(BaseView):
         else:
             route_name = u'コピー'
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id, organization_id=self.context.user.organization_id)
+        event = Event.get(event_id, organization_id=self.context.organization.id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        f = EventForm(organization_id=self.context.user.organization.id)
+        f = EventForm(organization_id=self.context.organization.id)
         f.process(record_to_multidict(event))
 
         if self.request.matched_route.name == 'events.copy':
@@ -170,14 +170,14 @@ class Events(BaseView):
         else:
             route_name = u'コピー'
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id, organization_id=self.context.user.organization_id)
+        event = Event.get(event_id, organization_id=self.context.organization.id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        f = EventForm(self.request.POST, organization_id=self.context.user.organization.id)
+        f = EventForm(self.request.POST, organization_id=self.context.organization.id)
         if f.validate():
             if self.request.matched_route.name == 'events.copy':
-                event = merge_session_with_post(Event(organization_id=self.context.user.organization_id), f.data)
+                event = merge_session_with_post(Event(organization_id=self.context.organization.id), f.data)
             else:
                 event = merge_session_with_post(event, f.data)
             event.save()

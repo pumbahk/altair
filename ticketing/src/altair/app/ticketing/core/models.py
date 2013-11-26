@@ -459,7 +459,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     id = Column(Identifier, primary_key=True)
     name = AnnotatedColumn(String(255), _a_label=(u'名称'))
-    code = Column(String(12))  # Organization.code(2桁) + Event.code(3桁) + 7桁(デフォルトはstart.onのYYMMDD+ランダム1桁)
+    # see #2042
+    # 旧仕様: Event.code(5桁) + 7桁(デフォルトはstart.onのYYMMDD+ランダム1桁)
+    # 新仕様: Event.code(7桁) + 5桁(デフォルトはstart.onのMMDD+ランダム1桁)
+    code = Column(String(12))
     abbreviated_title = Column(Unicode(255), doc=u"公演名略称", default=u"")
     subtitle = Column(Unicode(255), doc=u"公演名副題", default=u"")
     note = Column(UnicodeText, doc=u"公演名備考", default=u"")
@@ -686,7 +689,15 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if 'event_id' in kwargs:
             event = Event.get(kwargs['event_id'])
             performance.event_id = event.id
-            performance.code = event.code + performance.code[5:]
+            if len(event.code) == 7:
+                # 新仕様
+                performance.code = event.code + performance.code[7:]
+            elif len(event.code) == 5:
+                # 旧仕様
+                performance.code = event.code + performance.code[5:]
+            else:
+                raise ValueError("Invalid event code length: event_id=%d, code=%s" % (event.id, event.code))
+            assert len(performance.code) == 12
         performance.original_id = template.id
         performance.venue_id = template.venue.id
         performance.create_venue_id = template.venue.id       
@@ -796,7 +807,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
 
     id = Column(Identifier, primary_key=True)
-    code = Column(String(12))  # Organization.code(2桁) + 3桁英数字大文字のみ
+    # see #2042
+    # 旧仕様: Organization.code(2桁) + 3桁の英数字
+    # 新仕様: Organization.code(2桁) + 5桁の英数字
+    code = Column(String(12))
     title = AnnotatedColumn(String(1024), _a_label=(u'名称'))
     abbreviated_title = AnnotatedColumn(String(1024), _a_label=(u'略称'))
 
