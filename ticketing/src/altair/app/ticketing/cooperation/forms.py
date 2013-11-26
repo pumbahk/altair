@@ -4,6 +4,25 @@ from wtforms.validators import Optional
 from altair.formhelpers import Required, Translations
 from altair.app.ticketing.core.models import CooperationTypeEnum
 
+class CooperationTypeForm(Form):
+
+    def _get_translations(self):
+        return Translations()
+
+    id = HiddenField(
+        label=u'ID',
+        validators=[Optional()],
+    )
+
+
+    cooperation_type = SelectField(
+        label=u'連携タイプ',
+        validators=[],
+        choices=[coop_type.v for coop_type in CooperationTypeEnum],
+        coerce=int,
+    )
+
+
 class CooperationUpdateForm(Form):
     def _get_translations(self):
         return Translations()

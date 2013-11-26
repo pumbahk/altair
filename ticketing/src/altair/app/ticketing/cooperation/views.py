@@ -5,8 +5,7 @@ from pyramid.httpexceptions import HTTPFound
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 
-from .forms import CooperationUpdateForm, CooperationDownloadForm
-GOOGLE = 'http://www.google.com'
+from .forms import CooperationUpdateForm, CooperationDownloadForm, CooperationTypeForm
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
@@ -27,11 +26,14 @@ class CooperationView(BaseView):
         site.name = u'テスト'
         update_form = CooperationUpdateForm()
         download_form = CooperationDownloadForm()
+        cooperation_type_form = CooperationTypeForm()
         return {'site': site,
                 'update_form': update_form,
                 'download_form': download_form,
                 'display_modal': False,
-                'upload_url': self._upload_url(venue_id)
+                'upload_url': self._upload_url(venue_id),
+                'download_url': self._download_url(venue_id),
+                'cooperation_type_form': cooperation_type_form,
                 }
 
     @view_config(route_name='cooperation.download', request_method='GET')
@@ -48,9 +50,8 @@ class CooperationView(BaseView):
         res.cache_for = 3600
         return res
 
-    @view_config(route_name='cooperation.update', request_method='POST',
-                 renderer='altair.app.ticketing:templates/cooperation/show.html')
-    def update(self):
+    @view_config(route_name='cooperation.upload', request_method='POST')
+    def upload(self):
         venue_id = int(self.request.matchdict.get('venue_id', 0))
         organization_id = self.context.organization.id
         form = CooperationUpdateForm(self.request.params)
@@ -67,15 +68,18 @@ class CooperationView(BaseView):
         site.name = u'テスト'
         update_form = form
         download_form = CooperationDownloadForm()
-        return {'site': site,
-                'update_form': update_form,
-                'download_form': download_form,
-                'display_modal': display_modal,
-                'upload_url': self._upload_url(venue_id)
-                }
+        raise HTTPFound(self.request.route_path('cooperation.upload', venue_id=venue_id))
+        
+        #return {'site': site,
+        #        'update_form': update_form,
+        #        'download_form': download_form,
+        #        'display_modal': display_modal,
+        #        'upload_url': self._upload_url(venue_id)
+        #        }
 
     def _upload_url(self, venue_id):
-        return self.request.route_path('cooperation.update', venue_id=venue_id)        
+        return self.request.route_path('cooperation.upload', venue_id=venue_id)
+
     def _download_url(self, venue_id):
         return self.request.route_path('cooperation.download', venue_id=venue_id)
         
@@ -87,7 +91,6 @@ class NotFound(DeterminateError):
 
 class MultipleFound(DeterminateError):
     pass
-    
 
 class DoesNotExist(Exception):
     pass
