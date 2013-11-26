@@ -111,6 +111,7 @@ def mobile_rendering_page__rakuten(context, request):
 def smartphone_rendering_page(context, request):
     # logger.debug("req2:"+request.path)
     url = request.matchdict["page_name"]
+    params = dict(request.params)
     dt = context.get_preview_date()
 
     path = get_smartphone_route_path(request=request, pcurl=url)
@@ -126,7 +127,9 @@ def smartphone_rendering_page(context, request):
         logger.info(control.error_message)
         return smartphone_dispatch_view(context, request)
     if page.event_id or page.pageset.event_id:
-        return HTTPFound(request.route_path("smartphone.detail", _query=dict(event_id=page.event_id or page.pageset.event_id)))
+        query = dict(event_id=page.event_id or page.pageset.event_id)
+        query.update(params)
+        return HTTPFound(request.route_path("smartphone.detail", _query=query))
     if page.url.startswith("special"):
         return _rendering_page(context, request, control, page)
     if page.pageset.genre_id:
