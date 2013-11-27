@@ -49,6 +49,73 @@ class from_settingsTests(unittest.TestCase):
 
         self.assertEqual(result, {'testing': {'url': 'sqlite:///', 'echo': True}})
 
+    def test_with_pool_class(self):
+        settings = {
+            'altair.sqlahelper.sessions.testing.url': 'sqlite:///',
+            'altair.sqlahelper.sessions.testing.pool_class': 'blah',
+        }
+        result = self._callFUT(settings)
+
+        self.assertEqual(result, {'testing': {'url': 'sqlite:///', 'pool_class': 'blah' }})
+
+        settings = {
+            'altair.sqlahelper.sessions.testing.url': 'sqlite:///',
+            'altair.sqlahelper.sessions.testing.poolclass': 'blah',
+        }
+        result = self._callFUT(settings)
+
+        self.assertEqual(result, {'testing': {'url': 'sqlite:///', 'pool_class': 'blah' }})
+
+    def test_with_pool_size(self):
+        settings = {
+            'altair.sqlahelper.sessions.testing.url': 'sqlite:///',
+            'altair.sqlahelper.sessions.testing.pool_size': '',
+        }
+        result = self._callFUT(settings)
+
+        self.assertEqual(result, {'testing': {'url': 'sqlite:///', 'pool_size': None }})
+
+        settings = {
+            'altair.sqlahelper.sessions.testing.url': 'sqlite:///',
+            'altair.sqlahelper.sessions.testing.pool_size': '1',
+        }
+        result = self._callFUT(settings)
+
+        self.assertEqual(result, {'testing': {'url': 'sqlite:///', 'pool_size': 1 }})
+
+    def test_with_pool_recycle(self):
+        settings = {
+            'altair.sqlahelper.sessions.testing.url': 'sqlite:///',
+            'altair.sqlahelper.sessions.testing.pool_recycle': '',
+        }
+        result = self._callFUT(settings)
+
+        self.assertEqual(result, {'testing': {'url': 'sqlite:///', 'pool_recycle': None }})
+
+        settings = {
+            'altair.sqlahelper.sessions.testing.url': 'sqlite:///',
+            'altair.sqlahelper.sessions.testing.pool_recycle': '1',
+        }
+        result = self._callFUT(settings)
+
+        self.assertEqual(result, {'testing': {'url': 'sqlite:///', 'pool_recycle': 1 }})
+
+    def test_with_pool_timeout(self):
+        settings = {
+            'altair.sqlahelper.sessions.testing.url': 'sqlite:///',
+            'altair.sqlahelper.sessions.testing.pool_timeout': '',
+        }
+        result = self._callFUT(settings)
+
+        self.assertEqual(result, {'testing': {'url': 'sqlite:///', 'pool_timeout': None }})
+
+        settings = {
+            'altair.sqlahelper.sessions.testing.url': 'sqlite:///',
+            'altair.sqlahelper.sessions.testing.pool_timeout': '1',
+        }
+        result = self._callFUT(settings)
+
+        self.assertEqual(result, {'testing': {'url': 'sqlite:///', 'pool_timeout': 1 }})
 
     def test_with_many(self):
         settings = {
@@ -94,6 +161,30 @@ class register_sessionmakersTests(unittest.TestCase):
         self._callFUT(self.config, urls)
         sessionmaker = self.config.registry.queryUtility(ISessionMaker, name='testing')
         self.assertIsInstance(sessionmaker(), DummySession)
+
+    def test_null_pool(self):
+        from sqlalchemy.pool import NullPool
+        from .interfaces import ISessionMaker
+        urls = {'testing': {'url': 'sqlite:///', 'pool_class': 'null'}}
+        self._callFUT(self.config, urls)
+        sessionmaker = self.config.registry.queryUtility(ISessionMaker, name='testing')
+        self.assertIsInstance(sessionmaker().bind.pool, NullPool)
+
+    def test_queue_pool(self):
+        from sqlalchemy.pool import QueuePool
+        from .interfaces import ISessionMaker
+        urls = {'testing': {'url': 'sqlite:///', 'pool_class': 'queue'}}
+        self._callFUT(self.config, urls)
+        sessionmaker = self.config.registry.queryUtility(ISessionMaker, name='testing')
+        self.assertIsInstance(sessionmaker().bind.pool, QueuePool)
+
+    def test_custom_pool_class(self):
+        from sqlalchemy.pool import NullPool 
+        from .interfaces import ISessionMaker
+        urls = {'testing': {'url': 'sqlite:///', 'pool_class': 'sqlalchemy.pool.NullPool'}}
+        self._callFUT(self.config, urls)
+        sessionmaker = self.config.registry.queryUtility(ISessionMaker, name='testing')
+        self.assertIsInstance(sessionmaker().bind.pool, NullPool)
         
 class register_sessionmaker_with_engine(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
