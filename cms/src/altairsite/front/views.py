@@ -86,6 +86,7 @@ from pyramid.httpexceptions import HTTPFound
 def mobile_rendering_page__rakuten(context, request):
     # logger.debug("req2:"+request.path)
     url = request.matchdict["page_name"]
+    params = dict(request.params)
     dt = context.get_preview_date()
 
     path = get_mobile_route_path(request=request, pcurl=url)
@@ -101,7 +102,9 @@ def mobile_rendering_page__rakuten(context, request):
         logger.info(control.error_message)
         return mobile_dispatch_view(context, request)
     if page.event_id or page.pageset.event_id:
-        return HTTPFound(request.route_path("eventdetail", _query=dict(event_id=page.event_id or page.pageset.event_id)))
+        query = dict(event_id=page.event_id or page.pageset.event_id)
+        query.update(params)
+        return HTTPFound(request.route_path("eventdetail", _query=query))
     if page.pageset.genre_id:
         return HTTPFound(request.route_path("genre") + "?genre=" + str(page.pageset.genre_id))
     logger.info(control.error_message)
