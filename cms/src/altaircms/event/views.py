@@ -29,6 +29,7 @@ from altaircms.linklib import (
     get_backend_url_builder, 
     get_cms_url_builder, 
     )
+from altair.sqlahelper import get_db_session
 ## CMS view
 ##
 @view_defaults(route_name="event_takein_pageset", renderer="altaircms:templates/event/takein_pageset.html", 
@@ -156,6 +157,7 @@ def _tmp_save(data):
 def event_info(request):
     apikey = request.headers.get('X-Altair-Authorization', None)
     backend_id = request.matchdict["event_id"]
+    session = get_db_session(request, name="slave")
 
     if apikey is None:
         logger.info("*api* event info: apikey not found (backend event_id=%s)" % backend_id)
@@ -164,13 +166,13 @@ def event_info(request):
         logger.warn("*api* event info: invalid api key %s (backend event id=%s)" % (apikey, backend_id))
         return HTTPForbidden(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
 
-    event = Event.query.filter_by(backend_id=backend_id).first()
+    event = session.query(Event).filter_by(backend_id=backend_id).first()
 
     if event is None:
         logger.info("*api* event info: event not found (backend event_id=%s)" % backend_id)
         return dict(event=[])
     try:
-        return get_event_notify_info(event)
+        return get_event_notify_info(event, session=session)
     except ValueError as e:
         logger.exception(e)
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
