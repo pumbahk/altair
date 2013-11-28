@@ -40,13 +40,13 @@ def decode_point_grant_history_entry_id(s):
     except ValueError:
         raise PointGrantHistoryEntryIdDecodeError(s)
 
-def do_import_point_grant_results(registry, file, now, type, force, encoding):
+def do_import_point_grant_results(registry, organization, file, now, type, force, encoding):
     from .models import PointGrantHistoryEntry
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.core.models import Order
     from altair.app.ticketing.users.models import User, UserPointAccount, UserPointAccountTypeEnum
 
-    logger.info("start processing %s" % file)
+    logger.info("start importing point granting results for Organization(id=%ld)" % (file, organization.id))
     for line_no, line in enumerate(open(file)):
         try:
             line = line.rstrip('\r\n').decode(encoding)
@@ -83,6 +83,7 @@ def do_import_point_grant_results(registry, file, now, type, force, encoding):
                         .join(Order.user) \
                         .join(User.user_point_accounts) \
                         .filter(Order.order_no == order_no) \
+                        .filter(Order.organization_id == organization.id) \
                         .filter(UserPointAccount.type == type) \
                         .filter(UserPointAccount.account_number == account_number) \
                         .one()
@@ -119,7 +120,7 @@ def do_import_point_grant_results(registry, file, now, type, force, encoding):
 
         except RecordError as e:
             logger.warning("invalid record at line %d skipped (reason: %r)\n" % (line_no + 1, e))
-    logger.info('end processing %s' % file)
+    logger.info("end importing point granting results for Organization(id=%ld)" % (file, organization.id))
 
 def import_point_grant_results():
     import locale
@@ -131,6 +132,7 @@ def import_point_grant_results():
         default_encoding = 'ascii'
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('-O', '--organization', required=True)
     parser.add_argument('-e', '--encoding')
     parser.add_argument('-f', '--force', action='store_true')
     parser.add_argument('-t', '--type')
@@ -156,9 +158,27 @@ def import_point_grant_results():
 
     transaction.begin()
     try:
+        from altair.app.ticketing.models import DBSession
+        from altair.app.ticketing.core.models import Organization
+        organization = None
+        try:
+            organization = DBSession.query(Organization) \
+                .filter(
+                    (Organization.name == args.organization) \
+                    | (Organization.code == args.organization) \
+                    | (Organization.short_name == args.organization) \
+                    | (Organization.id == args.organization)
+                    ) \
+                .one()
+        except:
+            sys.stderr.write("no such organization: %s\n" % args.organization)
+            sys.stderr.flush()
+            sys.exit(255)
+
         for file in args.file:
             do_import_point_grant_results(
                 env['registry'],
+                organization,
                 file,
                 now,
                 type,
@@ -314,15 +334,21 @@ def import_point_grant_data():
         transaction.abort()
         raise
 
-def do_make_point_grant_data(registry, start_date, end_date, submitted_on):
+def do_make_point_grant_data(registry, organization, start_date, end_date, submitted_on):
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.core.models import Order, Performance, Event, Organization, OrganizationSetting
     from altair.app.ticketing.users.models import UserPointAccount
     from .models import PointGrantHistoryEntry
     from .api import calculate_point_for_order
+
     logger.info("start processing for orders whose performance has ended in the period %s to %s" % (start_date, end_date))
 
-    for organization in DBSession.query(Organization).all():
+    if organization is not None:
+        organizations = [organization]
+    else:
+        organizations = DBSession.query(Organization).all()
+
+    for organization in organizations:
         if organization.setting.point_type is None:
             logger.info("Organization(id=%ld) doesn't have point granting feature enabled. Skipping" % organization.id)
             continue
@@ -390,6 +416,7 @@ def make_point_grant_data():
     locale.setlocale(locale.LC_ALL, '')
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('-O', '--organization')
     parser.add_argument('-s', '--start-date')
     parser.add_argument('-e', '--end-date')
     parser.add_argument('-d', '--date')
@@ -447,8 +474,27 @@ def make_point_grant_data():
 
     transaction.begin()
     try:
+        from altair.app.ticketing.models import DBSession
+        from altair.app.ticketing.core.models import Organization
+        organization = None
+        if args.organization:
+            try:
+                organization = DBSession.query(Organization) \
+                    .filter(
+                        (Organization.name == args.organization) \
+                        | (Organization.code == args.organization) \
+                        | (Organization.short_name == args.organization) \
+                        | (Organization.id == args.organization)
+                        ) \
+                    .one()
+            except:
+                sys.stderr.write("no such organization: %s\n" % args.organization)
+                sys.stderr.flush()
+                sys.exit(255)
+
         do_make_point_grant_data(
             env['registry'],
+            organization,
             start_date,
             end_date,
             submitted_on
@@ -458,18 +504,20 @@ def make_point_grant_data():
         transaction.abort()
         raise
 
-def do_export_point_grant_data(registry, type, reason_code, shop_name, submitted_on, include_granted_data, encoding):
+def do_export_point_grant_data(registry, organization, type, reason_code, shop_name, submitted_on, include_granted_data, encoding):
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.users.models import UserPointAccount
-    from altair.app.ticketing.core.models import Order
+    from altair.app.ticketing.core.models import Order, Organization
     from .models import PointGrantHistoryEntry
-    logger.info("start exporting point granting data scheduled for submission on %s" % (submitted_on))
+
+    logger.info("start exporting point granting data scheduled for submission on %s, for Organization(id=%ld)" % (submitted_on, organization.id))
 
     query = DBSession.query(PointGrantHistoryEntry) \
         .filter(PointGrantHistoryEntry.submitted_on == submitted_on) \
         .join(PointGrantHistoryEntry.order) \
         .join(PointGrantHistoryEntry.user_point_account) \
         .filter(UserPointAccount.type == type) \
+        .filter(Order.organization_id == organization.id) \
         .filter(Order.deleted_at == None)
 
     if not include_granted_data:
@@ -489,7 +537,7 @@ def do_export_point_grant_data(registry, type, reason_code, shop_name, submitted
         sys.stdout.write(u'\t'.join(cols).encode(encoding))
         sys.stdout.write("\n")
 
-    logger.info("end exporting point granting data scheduled for submission on %s" % (submitted_on))
+    logger.info("end exporting point granting data scheduled for submission on %s, for Organization(id=%ld)" % (submitted_on, organization.id))
 
 def export_point_grant_data():
     import locale
@@ -501,6 +549,7 @@ def export_point_grant_data():
         default_encoding = 'ascii'
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('-O', '--organization', required=True)
     parser.add_argument('-e', '--encoding')
     parser.add_argument('-t', '--type')
     parser.add_argument('-s', '--include-submitted', action='store_true')
@@ -532,8 +581,26 @@ def export_point_grant_data():
     setup_logging(args.config)
     env = bootstrap(args.config)
 
+    from altair.app.ticketing.models import DBSession
+    from altair.app.ticketing.core.models import Organization
+    organization = None
+    try:
+        organization = DBSession.query(Organization) \
+            .filter(
+                (Organization.name == args.organization) \
+                | (Organization.code == args.organization) \
+                | (Organization.short_name == args.organization) \
+                | (Organization.id == args.organization)
+                ) \
+            .one()
+    except:
+        sys.stderr.write("No such organization: %s" % args.organization)
+        sys.stderr.flush()
+        sys.exit(255)
+
     do_export_point_grant_data(
         env['registry'],
+        organization,
         type,
         reason_code,
         shop_name,
