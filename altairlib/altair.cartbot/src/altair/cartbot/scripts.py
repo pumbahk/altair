@@ -9,7 +9,7 @@ import sys
 from argparse import ArgumentParser
 from ConfigParser import ConfigParser, NoSectionError
 from lxmlmechanize import Mechanize
-from .bot import CartBot
+from .bot import CartBot, Status
 from urllib2 import HTTPError
 import threading
 import time
@@ -27,7 +27,18 @@ class LoggableCartBot(CartBot):
             super(LoggableCartBot, self).print_(*msgs)
 
     def __init__(self, *args, **kwargs):
+        self._cookie = cookie = CookieJar()
+        
+        def browserid():
+            try:
+                return cookie._cookies['.tstar.jp']['/']['browserid'].value
+            except (KeyError, AttributeError) as err:
+                return 'NO BROWSER ID'
+        
+        print 'NEW CARTBOT: {0}'.format(repr(self))
+        kwargs['cookie'] =  self._cookie
         retry_count = kwargs.pop('retry_count', 1)
+
         class RetryingMechanize(Mechanize):
             logger = logging.getLogger('mechanize')
 
@@ -45,14 +56,20 @@ class LoggableCartBot(CartBot):
                                 if i >= retry_count:
                                     raise
                                 else:
+                                    print 'RETRY: {0}: {1}'.format(repr(self), browserid())
                                     self.logger.info("got error %s for %s. attempt to retry in %g seconds", e.code, e.url, 1.)
                                     time.sleep(1)
                                     continue
                             else:
-                                raise
+                                #raise
+                                print 'OTHER STATUS: {0}: {1}'.format(e.code, browserid())
+                                continue
+                        except Exception as err:
+                            print 'OTHER ERROR: {0}: {1}'.format(err, browserid())
+                            continue
                         break
                     elapsed = time.time() - s
-                    self.logger.info("%s processed in %g seconds", request.get_full_url(), elapsed)
+                    self.logger.info("%s processed in %g seconds (%s)", request.get_full_url(), elapsed, browserid())
                     return retval
                 return _
 
@@ -128,24 +145,41 @@ def main():
         pass
 
     def run():
-        bot = LoggableCartBot(
-            url = options.url[0],
-            rakuten_auth_credentials=rakuten_auth_credentials,
-            fc_auth_credentials=fc_auth_credentials,
-            shipping_address=dict(config.items('shipping_address')),
-            credit_card_info=dict(config.items('credit_card_info')),
-            http_auth_credentials=http_auth_credentials,
-            retry_count=retry_count
-            )
-        bot.log_output = options.logging
-
         for _ in range(repeat):
-            while True:
-                order_no = bot.buy_something()
-                if order_no is None and not bot.all_sales_segments:
-                    break
-                if order_no is not None:
-                    print order_no
+            bot = LoggableCartBot(
+                url = options.url[0],
+                rakuten_auth_credentials=rakuten_auth_credentials,
+                fc_auth_credentials=fc_auth_credentials,
+                shipping_address=dict(config.items('shipping_address')),
+                credit_card_info=dict(config.items('credit_card_info')),
+                http_auth_credentials=http_auth_credentials,
+                retry_count=retry_count
+                )
+            print 'REPEAT: {0}'.format(repr(bot))            
+            bot.log_output = options.logging 
+            order_no = bot.buy_something()
+            print 'ORDER NUMBER:', order_no
+
+    # def run():
+    #     bot = LoggableCartBot(
+    #         url = options.url[0],
+    #         rakuten_auth_credentials=rakuten_auth_credentials,
+    #         fc_auth_credentials=fc_auth_credentials,
+    #         shipping_address=dict(config.items('shipping_address')),
+    #         credit_card_info=dict(config.items('credit_card_info')),
+    #         http_auth_credentials=http_auth_credentials,
+    #         retry_count=retry_count
+    #         )
+    #     bot.log_output = options.logging
+    #     for _ in range(repeat):
+    #         print 'REPEAT: {0}'.format(repr(bot))
+    #         while True:
+    #             order_no = bot.buy_something()
+    #             if order_no is None and not bot.all_sales_segments:
+    #                 break
+    #             if order_no is not None:
+    #                 print order_no
+    #             break
 
     threads = [threading.Thread(target=run, name='%d' % i) for i in range(concurrency)]
     for thread in threads:

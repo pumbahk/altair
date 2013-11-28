@@ -1,5 +1,6 @@
 # encoding: utf-8
-
+import time
+#import random
 import os
 import re
 from dateutil.parser import parse as parsedate
@@ -8,7 +9,7 @@ from urlparse import urlparse, urlunparse
 import urllib2
 import lxml.html
 import json
-from random import shuffle, sample, randint
+from random import shuffle, sample, randint, choice
 from lxmlmechanize.form import encode_urlencoded_form_data
 from lxmlmechanize.core import Mechanize, FORM_URLENCODE_MIME_TYPE
 from lxmlmechanize.urllib2ext.auth import KeyChain, KeyChainBackedAuthHandler, Credentials
@@ -16,6 +17,17 @@ from cookielib import CookieJar
 
 class CartBotError(Exception):
     pass
+
+
+class Status(object):
+    NO_SEAT = 'NO_SEAT'
+    NO_STOCK = 'NO_STOCK'
+    NO_PDMP = 'NO_PDMP'
+
+    @classmethod
+    def is_status(cls, code):
+        return code in (cls.NO_SEAT, cls.NO_STOCK, cls.NO_PDMP)
+    
 
 def strip_path_part(url):
     parsed_url = urlparse(url)
@@ -173,10 +185,16 @@ class CartBot(object):
             seat_type_choices = list(sales_segment_detail['seat_types'])
             shuffle(seat_type_choices)
             self.seat_type_choices_map[sales_segment_detail['sales_segment_id']] = seat_type_choices
+
         if seat_type_choices:
-            return seat_type_choices.pop()
-        else:
-            return None
+            while seat_type_choices:
+                retval = seat_type_choices.pop()
+                # 在庫がないseat_typeは選択しない
+                for retrieved_seat_type_info in sales_segment_detail['seat_types']:
+                    if retrieved_seat_type_info['name'] == retval['name']:
+                        if retrieved_seat_type_info['availability_text'] != u'\u00d7':
+                            return retval
+        return None
 
     def choose_pdmp(self, sales_segment_id, pdmps):
         if not pdmps:
@@ -192,7 +210,7 @@ class CartBot(object):
             pdmp_id = sample(choices, 1)[0]
         else:
             pdmp_id = sample(eligible_choices, 1)[0]
-
+        
         pdmp_choices_made.add(pdmp_id)
         return choices[pdmp_id]
 
@@ -204,7 +222,9 @@ class CartBot(object):
             data['product-%d' % product['id']] = str(quantity)
         return data
 
-    def buy_something(self): 
+    def buy_something(self):
+        print 'BUY SOMETHING START'
+        self.print_('buy something start')
         self.m.navigate(self.first_page_url)
         actual_first_page_url = urlparse(self.m.location)
         if re.match("/cart/fc/.*/login", actual_first_page_url.path) is not None:
@@ -231,7 +251,9 @@ class CartBot(object):
 
             self.show_sales_segment_summary(sales_segment_selection)
 
-        sales_segment = all_sales_segments.pop(0)
+        #sales_segment = all_sales_segments.pop(0) # why use a first element.
+        sales_segment = choice(all_sales_segments)
+            
         self.print_(u'Trying to buy some products that belong to %s' % sales_segment['name'])
         self.print_()
         sales_segment_detail = json.load(self.m.create_loader(urllib2.Request(sales_segment['seat_types_url']))())
@@ -247,6 +269,19 @@ class CartBot(object):
         product_info = json.load(self.m.create_loader(urllib2.Request(seat_type['products_url']))())
         products = product_info['products']
         products_to_buy = [(product, 1) for product in sample(products, randint(1, len(products)))]
+
+        url = sales_segment['order_url']
+        data = self.build_order_post_data(sales_segment_detail, products_to_buy)
+        payload = encode_urlencoded_form_data(data, 'utf-8')
+        headers={'Content-Type': FORM_URLENCODE_MIME_TYPE,
+                 'X-Requested-With': 'XMLHttpRequest',
+                 }
+        req = urllib2.Request(url, payload, headers=headers)
+        loader = self.m.create_loader(req)
+        json_data = loader()
+        result = json.load(json_data)
+
+        """
         result = json.load(
             self.m.create_loader(
                 urllib2.Request(
@@ -259,6 +294,8 @@ class CartBot(object):
                     )
                 )()
             )
+        """
+
         if result['result'] == 'OK':
             self.print_(u'Items bought')
             self.print_(u'------------')
@@ -267,6 +304,8 @@ class CartBot(object):
             self.print_()
         else:
             self.print_(u'Items could not be bought. Reason: %s' % result['reason'])
+            print u'Items could not be bought. Reason: %s' % repr(result['reason'])
+            print result['result']
             return None
 
         # 決済フォーム
