@@ -96,10 +96,12 @@ def get_user_point_account(user_id):
 
 def get_or_create_user_profile(user, data):
 
+    profile = None
     if user.user_profile:
-        return user.user_profile
+        profile = user.user_profile
 
-    profile = user_models.UserProfile()
+    if not profile:
+        profile = user_models.UserProfile()
 
     profile.first_name=data['first_name'],
     profile.last_name=data['last_name'],
