@@ -531,6 +531,7 @@ class TicketingCartResourceTestBase(object):
             )
         self.session.add(performance)
         sales_segment = SalesSegment(
+            event=performance.event,
             performance=performance,
             setting=SalesSegmentSetting(
                 order_limit=order_limit,
@@ -542,42 +543,53 @@ class TicketingCartResourceTestBase(object):
         self.session.add(user)
         other = User()
         self.session.add(other)
+        orders = []
         for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
             order = Order(
-                user=user,
-                performance=performance,
+                user=user, cart=cart,
                 sales_segment=sales_segment,
                 total_amount=0,
-                system_fee=0,
-                transaction_fee=0,
-                delivery_fee=0
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_start_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
                 )
             self.session.add(order)
+            orders.append(order)
 
+        cancels = []
         for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
             order = Order(
-                user=user,
-                performance=performance,
+                user=user, cart=cart,
                 sales_segment=sales_segment,
-                total_amount=0,
-                canceled_at=datetime(1970, 1, 1),
-                system_fee=0,
-                transaction_fee=0,
-                delivery_fee=0
+                total_amount=0, canceled_at=datetime.now(),
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_start_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
                 )
             self.session.add(order)
+            cancels.append(order)
 
+        others = []
         for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
             order = Order(
-                user=other,
-                performance=performance,
+                user=other, cart=cart,
                 sales_segment=sales_segment,
                 total_amount=0,
-                system_fee=0,
-                transaction_fee=0,
-                delivery_fee=0
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_start_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
                 )
             self.session.add(order)
+            others.append(order)
 
         self.session.add(sales_segment)
         self.session.flush()
@@ -650,6 +662,7 @@ class TicketingCartResourceTestBase(object):
             self.fail() 
 
     def _add_orders_email(self, order_limit=None, max_quantity_per_user=None):
+        from .models import Cart
         from altair.app.ticketing.core.models import (
             Order,
             SalesSegment,
@@ -666,50 +679,63 @@ class TicketingCartResourceTestBase(object):
             event=Event(setting=EventSetting())
             )
         sales_segment = SalesSegment(
+            event=performance.event,
             performance=performance,
             setting=SalesSegmentSetting(
                 order_limit=order_limit,
                 max_quantity_per_user=max_quantity_per_user
                 )
             )
+        self.session.add(sales_segment)
         orders = []
         for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
             order = Order(
+                cart=cart,
                 sales_segment=sales_segment,
-                performance=performance,
                 shipping_address=ShippingAddress(email_1="testing@example.com"),
                 total_amount=0,
-                system_fee=0,
-                transaction_fee=0,
-                delivery_fee=0
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_start_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
                 )
+            self.session.add(order)
             orders.append(order)
 
         cancel = []
         for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
             order = Order(
+                cart=cart,
                 sales_segment=sales_segment,
-                performance=performance,
                 shipping_address=ShippingAddress(email_1="testing@example.com"),
-                total_amount=0,
-                canceled_at=datetime(1970, 1, 1),
-                system_fee=0,
-                transaction_fee=0,
-                delivery_fee=0
+                total_amount=0, canceled_at=datetime.now(),
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_start_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
                 )
+            self.session.add(order)
             orders.append(order)
 
         others = []
         for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
             order = Order(
+                cart=cart,
                 sales_segment=sales_segment,
-                performance=performance,
                 shipping_address=ShippingAddress(email_1="other@example.com"),
                 total_amount=0,
-                system_fee=0,
-                transaction_fee=0,
-                delivery_fee=0
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_start_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
                 )
+            self.session.add(order)
             others.append(order)
 
         self.session.add(sales_segment)
@@ -729,6 +755,8 @@ class TicketingCartResourceTestBase(object):
                 email_1="testing@example.com"
                 )
             )
+        self.session.add(get_cart_safe.return_value)
+        self.session.flush()
         request = testing.DummyRequest()
         target = self._makeOne(request)
         with self.assertRaises(OverOrderLimitException):
@@ -746,6 +774,8 @@ class TicketingCartResourceTestBase(object):
                 email_1="testing@example.com"
                 )
             )
+        self.session.add(get_cart_safe.return_value)
+        self.session.flush()
         request = testing.DummyRequest()
         target = self._makeOne(request)
 
@@ -1013,7 +1043,7 @@ class ReserveViewTests(unittest.TestCase):
             SeatIndex,
             SeatIndexType,
             )
-        from .models import Cart
+        from altair.app.ticketing.cart.models import Cart
         from .resources import EventOrientedTicketingCartResource
         from webob.multidict import MultiDict
         from datetime import datetime, timedelta

@@ -156,6 +156,10 @@ class CheckoutTests(unittest.TestCase):
             system_fee=10,
             transaction_fee=20,
             delivery_fee=30,
+            issuing_start_at=datetime(1970, 1, 1),
+            issuing_end_at=datetime(1970, 1, 1),
+            payment_start_at=datetime(1970, 1, 1),
+            payment_due_at=datetime(1970, 1, 1),
             created_at=datetime.now(),
             updated_at=datetime.now()
         )
