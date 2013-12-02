@@ -381,14 +381,20 @@ class CartBot(object):
         self.print_(u'Checkout successful: order_no=%s' % order_no)
         return order_no
 
-    def __init__(self, url, shipping_address, credit_card_info, rakuten_auth_credentials=None, fc_auth_credentials=None, http_auth_credentials=None):
+    def __init__(self, url, shipping_address, credit_card_info, rakuten_auth_credentials=None,
+                 fc_auth_credentials=None, http_auth_credentials=None, cookiejar=None):
         keychain = KeyChain()
+
+        if cookiejar is None:
+            cookiejar = CookieJar()
+
         if http_auth_credentials:
             keychain.add(Credentials(strip_path_part(url), http_auth_credentials.get('realm', None), http_auth_credentials['user'], http_auth_credentials['password']))
         opener = urllib2.build_opener(
             urllib2.ProxyHandler(),
             KeyChainBackedAuthHandler(keychain),
-            urllib2.HTTPCookieProcessor(CookieJar()))
+            urllib2.HTTPCookieProcessor(cookiejar))
+
         self.m = self.Mechanize(opener=opener)
         self.shipping_address = shipping_address
         self.credit_card_info = credit_card_info

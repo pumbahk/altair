@@ -27,15 +27,15 @@ class LoggableCartBot(CartBot):
             super(LoggableCartBot, self).print_(*msgs)
 
     def __init__(self, *args, **kwargs):
-        self._cookie = cookie = CookieJar()
-        
+        self._cj = cj = CookieJar()
+
         def browserid():
             try:
-                return cookie._cookies['.tstar.jp']['/']['browserid'].value
+                return cj._cookies['.tstar.jp']['/']['browserid'].value
             except (KeyError, AttributeError) as err:
                 return 'NO BROWSER ID'
         
-        kwargs['cookie'] =  self._cookie
+        kwargs['cookiejar'] =  self._cj
         retry_count = kwargs.pop('retry_count', 1)
 
         class RetryingMechanize(Mechanize):
