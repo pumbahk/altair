@@ -29,11 +29,11 @@ class OrderCompleteInfoDefault(OrderInfoDefault):
                 form.template_body.use.data = False
                 return True
             try:
-                mail = PurchaseCompleteMail(None, request)
+                mail = PurchaseCompleteMail(None)
                 payment_id, delivery_id = 1, 1 #xxx
                 fake_order = create_fake_order(request, request.context.user.organization, payment_id, delivery_id)
                 traverser = mutil.get_traverser(request, fake_order)
-                mail.build_mail_body(fake_order, traverser, template_body=template_body)
+                mail.build_mail_body(request, fake_order, traverser, template_body=template_body)
                 ##xx:
             except Exception as e:
                 etype, value, tb = sys.exc_info()
