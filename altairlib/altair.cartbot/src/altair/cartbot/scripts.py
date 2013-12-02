@@ -56,16 +56,12 @@ class LoggableCartBot(CartBot):
                                 if i >= retry_count:
                                     raise
                                 else:
-                                    print 'RETRY: {0}: {1}'.format(repr(self), browserid())
                                     self.logger.info("got error %s for %s. attempt to retry in %g seconds", e.code, e.url, 1.)
                                     time.sleep(1)
                                     continue
                             else:
-                                #raise
-                                print 'OTHER STATUS: {0}: {1}'.format(e.code, browserid())
                                 continue
                         except Exception as err:
-                            print 'OTHER ERROR: {0}: {1}'.format(err, browserid())
                             continue
                         break
                     elapsed = time.time() - s
@@ -155,10 +151,8 @@ def main():
                 http_auth_credentials=http_auth_credentials,
                 retry_count=retry_count
                 )
-            print 'REPEAT: {0}'.format(repr(bot))            
             bot.log_output = options.logging 
             order_no = bot.buy_something()
-            print 'ORDER NUMBER:', order_no
 
     # def run():
     #     bot = LoggableCartBot(
