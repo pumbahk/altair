@@ -55,7 +55,7 @@ class Events(BaseView):
         from sqlalchemy.sql.expression import func
 
         query = slave_session.query(Event, func.count(Performance.id)) \
-            .outerjoin(Performance) \
+            .outerjoin(Event.performances) \
             .group_by(Event.id) \
             .filter(Event.organization_id==int(self.context.organization.id))
         query = query.order_by(sort + ' ' + direction)
@@ -67,12 +67,11 @@ class Events(BaseView):
                 query = query.filter(or_(Event.code.like(pattern), Event.title.like(pattern)))
             if form_search.performance_name_or_code.data:
                 pattern = '%' + form_search.performance_name_or_code.data + '%'
-                query = query.join(Event.performances)\
-                            .filter(or_(Performance.code.like(pattern), Performance.name.like(pattern)))
+                query = query.filter(or_(Performance.code.like(pattern), Performance.name.like(pattern)))
             if form_search.performance_date.data:
-                query = query.join(Event.performances)\
-                        .filter(Performance.start_on >= form_search.performance_date.data) \
-                        .filter(Performance.end_on < (form_search.performance_date.data + timedelta(days=1)))
+                query = query \
+                    .filter(Performance.start_on >= form_search.performance_date.data) \
+                    .filter(Performance.end_on < (form_search.performance_date.data + timedelta(days=1)))
             if form_search.lot_only.data:
                 query = query.join(Event.lots)
 
