@@ -113,6 +113,9 @@ class FCAuthPlugin(object):
         if user is None:
             return
 
+        if user.member is None:
+            return
+
         data = {'username': username, 
             'membergroup': user.member.membergroup.name,
             'membership': user.member.membergroup.membership.name,
