@@ -35,7 +35,6 @@ class LoggableCartBot(CartBot):
             except (KeyError, AttributeError) as err:
                 return 'NO BROWSER ID'
         
-        print 'NEW CARTBOT: {0}'.format(repr(self))
         kwargs['cookie'] =  self._cookie
         retry_count = kwargs.pop('retry_count', 1)
 
@@ -181,5 +180,3 @@ def main():
 
     for thread in threads:
         thread.join()
-
-
