@@ -6,15 +6,19 @@ monkey.patch_select()
 monkey.patch_thread()
 
 import sys
+import time
 from argparse import ArgumentParser
 from ConfigParser import ConfigParser, NoSectionError
 from lxmlmechanize import Mechanize
-from .bot import CartBot, Status
+from .bot import CartBot
 from urllib2 import HTTPError
 import threading
 import time
 import logging
 import logging.config
+
+HUMANIC_SLEEP_SECOND = 37 # 5 minutes / 1 order, is humanic
+THREAD_START_INTERVAL = 1
 
 class LoggableCartBot(CartBot):
     logger = logging.getLogger('altair.cartbot')
@@ -83,6 +87,10 @@ def main():
     parser.add_argument('-n', '--repeat', dest='repeat', help="Repeat n times")
     parser.add_argument('-C', '--concurrency', dest='concurrency', help="Stress mode; make n concurrent requests")
     parser.add_argument('-r', '--retry-count', dest='retry_count', help='retry count')
+    parser.add_argument('-s', '--sleep', dest='sleep_sec', type=float, default=HUMANIC_SLEEP_SECOND,
+                        help='sleep second.(default: {0})'.format(HUMANIC_SLEEP_SECOND))
+    parser.add_argument('-i', '--interval', dest='interval', type=float, default=THREAD_START_INTERVAL,
+                        help='threads start interval.(default: {0})'.format(THREAD_START_INTERVAL))
     parser.add_argument('url', nargs=1, help='cart url')
     options = parser.parse_args()
     if not options.config:
@@ -148,7 +156,8 @@ def main():
                 shipping_address=dict(config.items('shipping_address')),
                 credit_card_info=dict(config.items('credit_card_info')),
                 http_auth_credentials=http_auth_credentials,
-                retry_count=retry_count
+                retry_count=retry_count,
+                sleep_sec=options.sleep_sec,
                 )
             bot.log_output = options.logging 
             order_no = bot.buy_something()
@@ -177,6 +186,7 @@ def main():
     threads = [threading.Thread(target=run, name='%d' % i) for i in range(concurrency)]
     for thread in threads:
         thread.start()
+        time.sleep(options.interval)
 
     for thread in threads:
         thread.join()
