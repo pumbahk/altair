@@ -19,16 +19,6 @@ class CartBotError(Exception):
     pass
 
 
-class Status(object):
-    NO_SEAT = 'NO_SEAT'
-    NO_STOCK = 'NO_STOCK'
-    NO_PDMP = 'NO_PDMP'
-
-    @classmethod
-    def is_status(cls, code):
-        return code in (cls.NO_SEAT, cls.NO_STOCK, cls.NO_PDMP)
-    
-
 def strip_path_part(url):
     parsed_url = urlparse(url)
     return urlunparse((parsed_url[0], parsed_url[1], '', parsed_url[3], parsed_url[4], parsed_url[5]))
@@ -223,7 +213,6 @@ class CartBot(object):
         return data
 
     def buy_something(self):
-        print 'BUY SOMETHING START'
         self.print_('buy something start')
         self.m.navigate(self.first_page_url)
         actual_first_page_url = urlparse(self.m.location)
@@ -304,8 +293,6 @@ class CartBot(object):
             self.print_()
         else:
             self.print_(u'Items could not be bought. Reason: %s' % result['reason'])
-            print u'Items could not be bought. Reason: %s' % repr(result['reason'])
-            print result['result']
             return None
 
         # 決済フォーム
