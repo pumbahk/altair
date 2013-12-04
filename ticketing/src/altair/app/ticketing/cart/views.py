@@ -34,7 +34,7 @@ from altair.app.ticketing.users.api import (
     get_or_create_user_from_point_no,
     create_user_point_account_from_point_no,
     get_user_point_account,
-    create_user_profile
+    get_or_create_user_profile
     )
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
@@ -789,7 +789,7 @@ class PaymentView(object):
 
         if is_point_input_organization(context=self.context, request=self.request):
             if user:
-                create_user_profile(user, shipping_address_params)
+                get_or_create_user_profile(user, shipping_address_params)
             return HTTPFound(self.request.route_path('cart.point'))
 
         payment = Payment(cart, self.request)
