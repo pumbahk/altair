@@ -71,6 +71,8 @@ def rewrite_links_with_el(doc, link_repl_func, resolve_base_href=True,
 
 ## convert function
 def doc_convert_from_s3link(doc, base_url, current_url):
+    if doc is None:
+        return
     def link_repl(el, href):
         tag = el.tag.lower()
         if tag == "a" or tag == "script":
@@ -84,6 +86,8 @@ def doc_convert_from_s3link(doc, base_url, current_url):
     rewrite_links_with_el(doc, link_repl)
 
 def doc_convert_to_s3link(doc, base_url, convert=urljoin):
+    if doc is None:
+        return
     def link_repl(el, href):
         tag = el.tag.lower()
         if tag == "a" or tag == "script":
@@ -115,15 +119,15 @@ def io_from_doc(doc, subname, encoding):
     if doc is None:
         return BytesIO()
     doctype = get_doctype(doc, encoding)
-    result = html.tostring(doc, pretty_print=True, encoding=encoding, doctype=doctype)
+    result = html.tostring(doc, pretty_print=True, include_meta_content_type=True, encoding=encoding, doctype=doctype)
     result = strip_extra_tags_if_just_text(result)
     return BytesIO(result)
 
 def string_from_doc(doc, subname, encoding):
     if doc is None:
-        ""
+        return ""
     doctype = get_doctype(doc, encoding)
-    result = html.tostring(doc, pretty_print=True, encoding=encoding, doctype=doctype)
+    result = html.tostring(doc, pretty_print=True, include_meta_content_type=True, encoding=encoding, doctype=doctype)
     result = strip_extra_tags_if_just_text(result)
     return result
 

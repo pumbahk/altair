@@ -249,12 +249,14 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true);
               <th scope="row">会場</th>
               <td id="venue"> ${", ".join(set(event['venues']))}</td>
             </tr>
+<%doc>
             <tr>
               <th scope="row">販売期間</th>
               <td id="descSalesTerm">
                 ${event['sales_start_on']} 〜 ${event['sales_end_on']}
               </td>
             </tr>
+</%doc>
           %for v in event_extra_info:
             <tr>
               <th scope="row">${v['label']}</th>
