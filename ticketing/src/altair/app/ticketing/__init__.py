@@ -60,9 +60,7 @@ def main(global_config, **local_config):
         from .authentication.apikey.impl import newDBAPIKeyEntryResolver
         from sqlalchemy.pool import NullPool
 
-        engine = engine_from_config(settings, poolclass=NullPool,
-                                    isolation_level='READ COMMITTED',
-                                    pool_recycle=60)
+        engine = engine_from_config(settings, poolclass=NullPool, isolation_level='READ COMMITTED')
         sqlahelper.add_engine(engine)
 
         session_factory = session_factory_from_settings(settings)

@@ -111,6 +111,7 @@ def main(global_config, **local_config):
 
     import sqlahelper
     from sqlalchemy import engine_from_config
+    from sqlalchemy.pool import NullPool
     from altaircms.formhelpers import datetime_pick_patch
     datetime_pick_patch()
     from altaircms.security import RootFactory
@@ -154,7 +155,7 @@ def main(global_config, **local_config):
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
     config.add_static_view("staticasset", settings["altaircms.asset.storepath"], cache_max_age=3600)
 
-    engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
+    engine = engine_from_config(settings, 'sqlalchemy.', poolclass=NullPool)
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
     config.add_tween("altaircms.tweens.cms_request_factory")

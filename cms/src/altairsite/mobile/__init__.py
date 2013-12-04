@@ -9,6 +9,7 @@ import altaircms.tag.models
 import altaircms.auth.models
 import sqlahelper
 from sqlalchemy import engine_from_config
+from sqlalchemy.pool import NullPool
 from core.helper import log_info
 
 def includeme(config):
@@ -27,7 +28,7 @@ def install_app(config):
 
 def main(global_config, **settings):
     """ don't use this on production. this is development app."""
-    engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
+    engine = engine_from_config(settings, 'sqlalchemy.', poolclass=NullPool)
     sqlahelper.get_session().remove()
     sqlahelper.add_engine(engine)
 

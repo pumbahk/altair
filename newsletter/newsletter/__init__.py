@@ -6,6 +6,7 @@ from pyramid.config import Configurator
 from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
 from sqlalchemy import engine_from_config
+from sqlalchemy.pool import NullPool
 from resources import RootFactory, groupfinder
 import sqlahelper
 
@@ -25,7 +26,7 @@ def main(global_config, **local_config):
     settings = dict(global_config)
     settings.update(local_config)
 
-    engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=0)
+    engine = engine_from_config(settings, 'sqlalchemy.', poolclass=NullPool)
     sqlahelper.add_engine(engine)
 
     authn_policy = AuthTktAuthenticationPolicy('secretstring', callback=groupfinder)
