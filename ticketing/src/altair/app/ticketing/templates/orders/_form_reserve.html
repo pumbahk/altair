@@ -180,15 +180,15 @@
         <div class="control-group">
           <label class="control-label">氏名</label>
           <div class="controls">
-            ${form.last_name}
-            ${form.first_name}
+            ${form.last_name(maxlength=u'10')}
+            ${form.first_name(maxlength=u'10')}
           </div>
         </div>
         <div class="control-group">
           <label class="control-label">氏名(カナ)</label>
           <div class="controls">
-            ${form.last_name_kana}
-            ${form.first_name_kana}
+            ${form.last_name_kana(maxlength=u'10')}
+            ${form.first_name_kana(maxlength=u'10')}
           </div>
         </div>
         ${ch.form_item(form.tel_1)}
