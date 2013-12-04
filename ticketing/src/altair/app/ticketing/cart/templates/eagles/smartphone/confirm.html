@@ -82,11 +82,13 @@
                   <td>&nbsp;</td>
                   <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
                 </tr>
-                % for seat in product.seats:
-                <tr id="commission">
-                  <th scope="row" colspan="4">　　${seat['name']}</th>
-                </tr>
-                % endfor
+                % if product.product.sales_segment.seat_choice:
+                  % for seat in product.seats:
+                    <tr id="commission">
+                      <th scope="row" colspan="4">　　${seat['name']}</th>
+                    </tr>
+                  % endfor
+                % endif
             %endfor
             <tr id="commission">
               <th scope="row">決済手数料</th>
