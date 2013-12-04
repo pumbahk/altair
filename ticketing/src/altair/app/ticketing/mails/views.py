@@ -10,9 +10,9 @@ class ExtraMailInfoNotInitialized(Exception):
         self.mutil = mutil
         self.organization_id = organization_id
 
-def check_initialized_or_not(request, mutil, fake_order):
+def check_initialized_or_not(request, mutil, fake_object):
     organization_id = request.context.user.organization_id
-    if not mutil.get_traverser(request, fake_order).exists_at_least_one():
+    if not mutil.get_traverser(request, fake_object).exists_at_least_one():
         raise ExtraMailInfoNotInitialized(mutil, organization_id)
 
 
@@ -25,13 +25,18 @@ def mail_preview_preorder_with_organization(context, request):
     delivery_id = request.params["delivery_methods"]
     organization_id = int(request.matchdict.get("organization_id", 0))
     organization = Organization.get(organization_id)
-    fake_order = mutil.create_fake_order(request, organization, payment_id, delivery_id)
-    check_initialized_or_not(request, mutil, fake_order)
+    fake_object = mutil.create_fake_object(
+        request,
+        organization=organization,
+        payment_method_id=payment_id,
+        delivery_method_id=delivery_id
+        )
+    check_initialized_or_not(request, mutil, fake_object)
     form = forms.MailInfoTemplate(request, organization, mutil=mutil).as_choice_formclass()(
         payment_methods=payment_id, 
         delivery_methods=delivery_id, 
         )
-    return {"preview_text": mutil.preview_text(request, fake_order), 
+    return {"preview_text": mutil.preview_text(request, fake_object),
             "mutil": mutil, "form": form}
 
 @view_config(route_name="mails.preview.event", 
@@ -44,14 +49,19 @@ def mail_preview_preorder_with_event(context, request):
 
     event_id = int(request.matchdict.get("event_id", 0))
     event = Event.get(event_id)
-    fake_order = mutil.create_fake_order(request, event.organization, 
-                                         payment_id, delivery_id, event=event)
-    check_initialized_or_not(request, mutil, fake_order)
+    fake_object = mutil.create_fake_object(
+        request,
+        organization=event.organization,
+        payment_method_id=payment_id,
+        delivery_method_id=delivery_id,
+        event=event
+        )
+    check_initialized_or_not(request, mutil, fake_object)
     form = forms.MailInfoTemplate(request, event.organization, mutil=mutil).as_choice_formclass()(
         payment_methods=payment_id, 
         delivery_methods=delivery_id, 
         )
-    return {"preview_text": mutil.preview_text(request, fake_order), 
+    return {"preview_text": mutil.preview_text(request, fake_object), 
             "mutil": mutil, "form": form}
 
 @view_config(route_name="mails.preview.performance", 
@@ -64,14 +74,19 @@ def mail_preview_preorder_with_performance(context, request):
 
     performance_id = int(request.matchdict.get("performance_id", 0))
     performance = Performance.get(performance_id, context.user.organization_id)
-    fake_order = mutil.create_fake_order(request, performance.event.organization,
-                                         payment_id, delivery_id, performance=performance)
-    check_initialized_or_not(request, mutil, fake_order)
+    fake_object = mutil.create_fake_object(
+        request,
+        organization=performance.event.organization,
+        payment_method_id=payment_id,
+        delivery_method_id=delivery_id,
+        performance=performance
+        )
+    check_initialized_or_not(request, mutil, fake_object)
     form = forms.MailInfoTemplate(request, performance.event.organization, mutil=mutil).as_choice_formclass()(
         payment_methods=payment_id, 
         delivery_methods=delivery_id, 
         )
-    return {"preview_text": mutil.preview_text(request, fake_order), 
+    return {"preview_text": mutil.preview_text(request, fake_object), 
             "mutil": mutil, "form": form}
 
 @view_config(route_name="mails.preview.organization", 

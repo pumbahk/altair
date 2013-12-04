@@ -3,19 +3,14 @@ from altair.app.ticketing.payments import plugins
 from pyramid_mailer.message import Message
 from pyramid.compat import text_type
 from zope.interface import implementer
-from .interfaces import IPurchaseInfoMail
+from .interfaces import ILotEntryInfoMail
 from pyramid.renderers import render
-from .api import create_or_update_mailinfo,  create_fake_lot_entry,  create_fake_elected_wish, get_mail_setting_default, get_appropriate_message_part
+from .api import create_or_update_mailinfo, get_mail_setting_default, get_appropriate_message_part
 from .forms import SubjectInfoWithValue, SubjectInfo, SubjectInfoDefault
 from .forms import SubjectInfoRenderer
 import logging
 from altair.app.ticketing.cart import helpers as ch
 logger = logging.getLogger(__name__)
-
-def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_id, event=None, performance=None):
-    lot_entry = create_fake_lot_entry(request, organization, payment_plugin_id, delivery_plugin_id, event=event, performance=performance)
-    elected_wish = create_fake_elected_wish(request, performance)
-    return lot_entry, elected_wish
 
 def get_mailtype_description():
     return u"抽選メール"
@@ -48,13 +43,12 @@ class LotsInfoDefault(SubjectInfoDefault):
     total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda _: "") #xxx:
     entry_no = SubjectInfo(name="entry_no", label=u"受付番号", getval=lambda subject : subject.entry_no)
 
-@implementer(IPurchaseInfoMail)
+@implementer(ILotEntryInfoMail)
 class LotsMail(object):
-    def __init__(self, mail_template, request):
+    def __init__(self, mail_template):
         self.mail_template = mail_template
-        self.request = request
 
-    def get_mail_subject(self, organization, traverser):
+    def get_mail_subject(self, request, organization, traverser):
         raise NotImplementedError
 
     def validate(self, lot_entry):
@@ -62,27 +56,27 @@ class LotsMail(object):
             logger.info('lot_entry has not shipping_address or email id=%s' % lot_entry.id)
         return True
 
-    def build_message_from_mail_body(self, (lot_entry, elected_wish), traverser, mail_body):
+    def build_message_from_mail_body(self, request, (lot_entry, elected_wish), traverser, mail_body):
         if not self.validate(lot_entry):
             logger.warn("validation error")
             return 
 
-        organization = lot_entry.lot.event.organization or self.request.context.organization
-        mail_setting_default = get_mail_setting_default(self.request)
-        subject = self.get_mail_subject(organization, traverser)
-        sender = mail_setting_default.get_sender(self.request, traverser, organization)
-        bcc = mail_setting_default.get_bcc(self.request, traverser, organization)
+        organization = lot_entry.lot.event.organization or request.context.organization
+        mail_setting_default = get_mail_setting_default(request)
+        subject = self.get_mail_subject(request, organization, traverser)
+        sender = mail_setting_default.get_sender(request, traverser, organization)
+        bcc = mail_setting_default.get_bcc(request, traverser, organization)
         mail_body = mail_body
         return Message(
             subject=subject,
             recipients=[lot_entry.shipping_address.email_1],
             bcc=bcc,
-            body=get_appropriate_message_part(self.request, lot_entry.shipping_address.email_1, mail_body),
+            body=get_appropriate_message_part(request, lot_entry.shipping_address.email_1, mail_body),
             sender=sender)
 
-    def build_message(self, subject, traverser):
-        mail_body = self.build_mail_body(subject, traverser)
-        return self.build_message_from_mail_body(subject, traverser, mail_body)
+    def build_message(self, request, subject, traverser):
+        mail_body = self.build_mail_body(request, subject, traverser)
+        return self.build_message_from_mail_body(request, subject, traverser, mail_body)
 
     def _body_tmpl_vars(self, (lot_entry, elected_wish), traverser):
         shipping_address = lot_entry.shipping_address 
@@ -105,26 +99,24 @@ class LotsMail(object):
                      )
         return value
 
-    def build_mail_body(self, subject, traverser):
+    def build_mail_body(self, request, subject, traverser):
         value = self._body_tmpl_vars(subject, traverser)
-        retval = render(self.mail_template, value, request=self.request)
+        retval = render(self.mail_template, value, request=request)
         assert isinstance(retval, text_type)
         return retval
 
 
 class LotsAcceptedMail(LotsMail):
-    def get_mail_subject(self, organization, traverser):
+    def get_mail_subject(self, request, organization, traverser):
         return (traverser.data["subject"] or 
                 u'抽選申込受付完了のお知らせ 【{organization}】'.format(organization=organization.name))
 
 class LotsElectedMail(LotsMail):
-    def get_mail_subject(self, organization, traverser):
+    def get_mail_subject(self, request, organization, traverser):
         return (traverser.data["subject"] or 
                 u'抽選当選のお知らせ 【{organization}】'.format(organization=organization.name))
 
 class LotsRejectedMail(LotsMail):
-    def get_mail_subject(self, organization, traverser):
+    def get_mail_subject(self, request, organization, traverser):
         return (traverser.data["subject"] or 
                 u'抽選予約結果のお知らせ 【{organization}】'.format(organization=organization.name))
-
-

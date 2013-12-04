@@ -137,7 +137,5 @@ class PointGrantSettings(BaseView):
     @view_config(route_name='point_grant_settings.products.remove', request_method='POST', renderer='altair.app.ticketing:templates/refresh.html')
     def remove_product(self):
         product_ids = [long(id) for id in self.request.POST.getall('product_id')]
-        import sys
-        print >>sys.stderr, product_ids
         self.context.point_grant_setting.target_products.difference_update(Product.query.filter(Product.id.in_(product_ids)))
         return HTTPFound(location=self.request.route_path('point_grant_settings.show', point_grant_setting_id=self.context.point_grant_setting.id))

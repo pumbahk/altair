@@ -26,7 +26,18 @@ class SubjectInfoWithValueForm(Form):
     value = fields.TextField(label=u"内容", widget=widgets.TextArea(), 
                              validators=[validators.Optional()])
 
-class SubjectInfoDefault(object):
+
+class SubjectInfoDefaultBase(object):
+    @classmethod
+    def get_form_field_candidates(cls):
+        hist = {}
+        for c in cls.__mro__:
+            for k, v in c.__dict__.iteritems():
+                if isinstance(v, (SubjectInfo, SubjectInfoWithValue)) and not k in hist:
+                    hist[k] = 1
+                    yield (k, v)
+
+class SubjectInfoDefaultMixin(object):
     ## subject = order or lots_entry
     def get_name_kana(subject):
         sa = subject.shipping_address
@@ -39,17 +50,8 @@ class SubjectInfoDefault(object):
     mail = SubjectInfo(name="mail", label=u"メールアドレス", getval=lambda subject : subject.shipping_address.email_1 if subject.shipping_address else u"")
     order_datetime = SubjectInfo(name="order_datetime", label=u"受付日", getval=lambda order: ch.mail_date(order.created_at))
     bcc = SubjectInfoWithValue(name="bcc", label=u"bcc", getval=lambda order: None, value=None)
-
-    @classmethod
-    def get_form_field_candidates(cls):
-        hist = {}
-        for c in cls.__mro__:
-            for k, v in c.__dict__.iteritems():
-                if isinstance(v, (SubjectInfo, SubjectInfoWithValue)) and not k in hist:
-                    hist[k] = 1
-                    yield (k, v)
     
-class OrderInfoDefault(SubjectInfoDefault):
+class OrderInfoDefaultMixin(object):
     """ 
     以下の情報のデフォルトの値。ラベル名が変えられ、表示するかしないか選択できる。
     #注文情報 受付番号、受付日時、公演タイトル、商品名、座席番号、商品代金、サービス利用料・手数料、合計金額
@@ -90,6 +92,11 @@ class OrderInfoDefault(SubjectInfoDefault):
     delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda order: ch.format_currency(order.delivery_fee))
     total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda order: ch.format_currency(order.total_amount))
 
+class SubjectInfoDefault(SubjectInfoDefaultBase, SubjectInfoDefaultMixin):
+    pass
+
+class OrderInfoDefault(SubjectInfoDefaultBase, SubjectInfoDefaultMixin, OrderInfoDefaultMixin):
+    pass
 
 class SubjectInfoRenderer(object):
     def __init__(self, order, data, default_impl=SubjectInfoDefault):
@@ -112,6 +119,7 @@ class SubjectInfoRenderer(object):
             else:
                 setattr(self, k, RenderVal(label="", status=False, body=getattr(val, "body", u"")))
         return getattr(self, k)
+
 
 def MailInfoFormFactory(template, mutil=None, request=None):
     attrs = OrderedDict()
