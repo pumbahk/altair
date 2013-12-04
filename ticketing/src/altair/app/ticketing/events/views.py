@@ -25,11 +25,10 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict, merge_and_flush
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.core.models import Event, Performance, StockType, StockTypeEnum
+from altair.app.ticketing.core.models import Event, Performance, StockType, StockTypeEnum, SalesSegment
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.events.performances.forms import PerformanceForm
-from altair.app.ticketing.events.sales_segment_groups.forms import SalesSegmentGroupForm
 from altair.app.ticketing.events.stock_types.forms import StockTypeForm
 from altair.app.ticketing.events.stock_holders.forms import StockHolderForm
 
@@ -37,6 +36,7 @@ from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .api import get_cms_data
 from .forms import EventForm, EventSearchForm
+from .helpers import EventHelper
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder
 logger = logging.getLogger()
 
@@ -52,27 +52,25 @@ class Events(BaseView):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        from sqlalchemy.sql.expression import func
-
-        query = slave_session.query(Event, func.count(Performance.id)) \
-            .outerjoin(Performance) \
+        query = slave_session.query(Event) \
             .group_by(Event.id) \
             .filter(Event.organization_id==int(self.context.organization.id))
         query = query.order_by(sort + ' ' + direction)
 
         form_search = EventSearchForm(self.request.params)
+        search_query = None
         if form_search.validate():
-            if form_search.event_name_or_code.data:
-                pattern = '%' + form_search.event_name_or_code.data + '%'
-                query = query.filter(or_(Event.code.like(pattern), Event.title.like(pattern)))
-            if form_search.performance_name_or_code.data:
-                pattern = '%' + form_search.performance_name_or_code.data + '%'
-                query = query.join(Event.performances)\
-                            .filter(or_(Performance.code.like(pattern), Performance.name.like(pattern)))
-            if form_search.performance_date.data:
-                query = query.join(Event.performances)\
-                        .filter(Performance.start_on >= form_search.performance_date.data) \
-                        .filter(Performance.end_on < (form_search.performance_date.data + timedelta(days=1)))
+            query = self.context.need_join(query, form_search)
+            query = self.context.create_like_where(query, form_search.event_name_or_code.data, Event.code, Event.title)
+            query = self.context.create_like_where(query, form_search.performance_name_or_code.data, Performance.code, Performance.name)
+            query = self.context.create_range_where(query, form_search.perf_range_start.data, form_search.perf_range_end.data, Performance.start_on, Performance.end_on)
+            query = self.context.create_range_where(query, form_search.deal_range_start.data, form_search.deal_range_end.data, SalesSegment.start_at, SalesSegment.end_at)
+            query = self.context.create_where(query, form_search.perf_open_start.data, form_search.perf_open_end.data, Performance.start_on)
+            query = self.context.create_where(query, form_search.perf_close_start.data, form_search.perf_close_end.data, Performance.end_on)
+            query = self.context.create_where(query, form_search.deal_open_start.data, form_search.deal_open_end.data, SalesSegment.start_at)
+            query = self.context.create_where(query, form_search.deal_close_start.data, form_search.deal_close_end.data, SalesSegment.end_at)
+            search_query = self.context.create_search_query(form_search)
+
             if form_search.lot_only.data:
                 query = query.join(Event.lots)
 
@@ -88,6 +86,8 @@ class Events(BaseView):
             'form':EventForm(),
             'form_performance':PerformanceForm(organization_id=self.context.user.organization_id),
             'events':events,
+            'search_query':search_query,
+            'h':EventHelper()
         }
 
     @view_config(route_name='events.show', renderer='altair.app.ticketing:templates/events/show.html', permission='event_viewer')
