@@ -52,10 +52,7 @@ class Events(BaseView):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        from sqlalchemy.sql.expression import func
-
-        query = slave_session.query(Event, func.count(Performance.id)) \
-            .outerjoin(Performance) \
+        query = slave_session.query(Event) \
             .group_by(Event.id) \
             .filter(Event.organization_id==int(self.context.organization.id))
         query = query.order_by(sort + ' ' + direction)
@@ -63,11 +60,9 @@ class Events(BaseView):
         form_search = EventSearchForm(self.request.params)
         search_query = None
         if form_search.validate():
+            query = self.context.need_join(query, form_search)
             query = self.context.create_like_where(query, form_search.event_name_or_code.data, Event.code, Event.title)
             query = self.context.create_like_where(query, form_search.performance_name_or_code.data, Performance.code, Performance.name)
-            query = self.context.need_sales_segment(query, form_search.deal_range_start.data, form_search.deal_range_end.data
-                , form_search.deal_open_start.data, form_search.deal_open_end.data
-                , form_search.deal_close_start.data, form_search.deal_close_end.data)
             query = self.context.create_range_where(query, form_search.perf_range_start.data, form_search.perf_range_end.data, Performance.start_on, Performance.end_on)
             query = self.context.create_range_where(query, form_search.deal_range_start.data, form_search.deal_range_end.data, SalesSegment.start_at, SalesSegment.end_at)
             query = self.context.create_where(query, form_search.perf_open_start.data, form_search.perf_open_end.data, Performance.start_on)

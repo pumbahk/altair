@@ -57,7 +57,7 @@
     </thead>
     <tbody>
     <% row_no = 0 %>
-    % for event, perf_count in events.items:
+    % for event in events:
       <tr>
         <td>
           <a href="${request.route_path('events.show', event_id=event.id)}">${event.title}</a>
@@ -106,9 +106,95 @@
     </thead>
     <tbody>
     <% section_no = 0 %>
-    % for event, perf_count in events.items:
+    % for event in events:
       <% row_no = 0 %>
+
+      % if len(event.performances) <= 0:
+        <tr class="${section_no}_0">
+          <td>
+            <a href="${request.route_path('events.show', event_id=event.id)}">${event.title}</a>
+            <br/>
+          </td>
+          <td>
+          </td>
+          <td>
+          </td>
+          <td>
+          </td>
+          <td>
+          </td>
+          <td class="span3">
+            <%include file="./_action_button.html" args="event=event, order=['edit', 'copy', 'delete'], small=True" />
+            % if event.cms_send_at:
+              % if event.updated_at > event.cms_send_at:
+                <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
+                  <i class="icon-refresh icon-white"></i> CMSへ送信
+                </a>
+              % else:
+                <a class="btn btn-small btn-inverse" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
+                  <i class="icon-refresh icon-white"></i> CMSへ送信
+                </a>
+              % endif
+            % else:
+              <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
+                <i class="icon-refresh icon-white"></i> CMSへ送信
+              </a>
+            % endif
+          </td>
+        </tr>
+        <% section_no += 1 %>
+      % endif
+
       % for perf in event.performances:
+
+        % if len(perf.sales_segments) <= 0:
+          <tr class="${section_no}_${row_no}">
+            <td>
+              <a href="${request.route_path('events.show', event_id=event.id)}">${event.title}</a><br/>
+              ${perf.name}
+            </td>
+            <td>
+            </td>
+            <td>
+              ${h.get_performance_range(perf)}
+            </td>
+            <td>
+            </td>
+            <td>
+              % if row_no == 0:
+                % if h.get_performance_count(event) > 1:
+                  <div class="btn-group">
+                    <a href="javascript:toggle_detail(${section_no});" class="btn">
+                      <i class=""></i> ${h.get_performance_count(event)}公演開く
+                    </a>
+                  </div>
+                % endif
+              % endif
+            </td>
+            <td class="span3">
+              % if row_no == 0:
+                <%include file="./_action_button.html" args="event=event, order=['edit', 'copy', 'delete'], small=True" />
+                % if event.cms_send_at:
+                  % if event.updated_at > event.cms_send_at:
+                    <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
+                      <i class="icon-refresh icon-white"></i> CMSへ送信
+                    </a>
+                  % else:
+                    <a class="btn btn-small btn-inverse" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
+                      <i class="icon-refresh icon-white"></i> CMSへ送信
+                    </a>
+                  % endif
+                % else:
+                  <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
+                    <i class="icon-refresh icon-white"></i> CMSへ送信
+                  </a>
+                % endif
+              % endif
+            </td>
+          </tr>
+        % endif
+
+
         % for segment in perf.sales_segments:
         <tr class="${section_no}_${row_no}">
           <td>

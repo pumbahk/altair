@@ -8,9 +8,20 @@ class EventAdminResource(TicketingAdminResource):
     def __init__(self, request):
         super(EventAdminResource, self).__init__(request)
 
-    def need_sales_segment(self, query, *args):
-        if len(args):
+    def need_join(self, query, form):
+        if form.deal_range_start.data or form.deal_range_end.data or \
+            form.deal_open_start.data or form.deal_open_end.data or \
+            form.deal_close_start.data or form.deal_close_end.data:
+
+            query = query.outerjoin(Performance)
             query = query.join(SalesSegment, Performance.id == SalesSegment.performance_id)
+
+        elif form.performance_name_or_code.data or \
+            form.perf_range_start.data or form.perf_range_end.data or \
+            form.perf_open_start.data or form.perf_open_end.data or \
+            form.perf_close_start.data or form.perf_close_end.data:
+
+            query = query.outerjoin(Performance)
         return query
 
     def create_like_where(self, query, target, code, title):
