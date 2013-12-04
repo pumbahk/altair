@@ -390,6 +390,9 @@ class ImageSearcher(object):
 
     def search(self, qs, data):
         qs = query_filter_by_users(qs, data)
+        if "title" in data:
+            qs = qs.filter(models.Asset.title.like('%' + data['title'] + '%'))
+
         if not "tags" in data:
             return qs
         
@@ -406,6 +409,9 @@ class MovieSearcher(object):
 
     def search(self, qs, data):
         qs = query_filter_by_users(qs, data)
+        if "title" in data:
+            qs = qs.filter(models.Asset.title.like('%' + data['title'] + '%'))
+
         if not "tags" in data:
             return qs
         
@@ -422,6 +428,9 @@ class FlashSearcher(object):
 
     def search(self, qs, data):
         qs = query_filter_by_users(qs, data)
+        if "title" in data:
+            qs = qs.filter(models.Asset.title.like('%' + data['title'] + '%'))
+
         if not "tags" in data:
             return qs
         

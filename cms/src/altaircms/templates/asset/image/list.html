@@ -41,7 +41,7 @@
   
   <div class="span5">
 	<form action="${request.route_path("asset_search_image")}" method="GET">
-      ${fco.form_as_table_strict(search_form, ["created_by","updated_by","tags"])}
+      ${fco.form_as_table_strict(search_form, ["created_by","updated_by","title","tags"])}
 	  <button type="submit" class="btn btn-info"><i class="icon-cog icon-white"></i> Search</button>
     </form>
   </div>
