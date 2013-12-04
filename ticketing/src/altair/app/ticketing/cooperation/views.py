@@ -1,11 +1,28 @@
 # -*- coding: utf-8 -*-
+import csv
+import time
+import os.path
+import collections
+
 from pyramid.view import view_defaults, view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
+
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-
+from altair.app.ticketing.core.models import Seat
 from .forms import CooperationUpdateForm, CooperationDownloadForm, CooperationTypeForm
+
+
+CSV_NAME = 'cooperation.csv'
+
+CSVHEADER_VALUEGETTER = collections.OrderedDict((
+    ('id', lambda seat: seat.id),
+    ('seat_no', lambda seat: seat.seat_no),
+    ('l0_id', lambda seat: seat.l0_id),
+    ('group_l0_id', lambda seat: seat.group_l0_id),
+    ('row_l0_id', lambda seat: seat.row_l0_id),
+    ))
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
@@ -36,19 +53,34 @@ class CooperationView(BaseView):
                 'cooperation_type_form': cooperation_type_form,
                 }
 
+
+    @staticmethod
+    def _create_file_download_response_header(filename, timestamp=False, fmt='-%Y%m%d%H%M%S'):
+        import time
+        if timestamp:
+            stamp = time.strftime(fmt) # raise TypeError
+            name, ext = os.path.splitext(filename)
+            filename = name + time.strftime(fmt) + ext
+
+        return [('Content-Type', 'application/octet-stream; charset=cp932'),
+                ('Content-Disposition', 'attachment; filename={0}'.format(filename)),
+                ]
+
     @view_config(route_name='cooperation.download', request_method='GET')
-    def download(self):
-        res = Response()
-        res.status = '200 OK'
-        res.status_int = 200
-        res.content_type = 'text/plain'
-        res.charset = 'utf-8'
-        res.headerlist = [
-            ('Set-Cookie', 'abc=123'),
-            ('X-My-Header', 'foo'),
-            ]
-        res.cache_for = 3600
-        return res
+    def download(self):        
+        venue_id = 4678
+        seats = Seat.query.filter(Seat.venue_id==venue_id)
+        headers = self._create_file_download_response_header(CSV_NAME, timestamp=True)
+        res = Response(headers=headers)
+        writer = csv.writer(res, delimiter=',')
+        writer.writerow(CSVHEADER_VALUEGETTER.keys()) # write header
+        try:
+            for seat in seats: # write body
+                row = [getter(seat) for getter in CSVHEADER_VALUEGETTER.values()]
+                writer.writerow(row)
+            return res                
+        except AttributeError as err:
+            raise # AttributeError の場合 CSVHEADER_VALUEGETTERに何らかの問題がある
 
     @view_config(route_name='cooperation.upload', request_method='POST')
     def upload(self):
