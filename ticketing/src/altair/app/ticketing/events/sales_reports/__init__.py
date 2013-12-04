@@ -2,6 +2,7 @@
 
 def includeme(config):
     config.add_route('sales_reports.index', '/')
+    config.add_route('sales_reports.index_all', '/all')
     config.add_route('sales_reports.event','/event/{event_id}')
     config.add_route('sales_reports.performance', '/performance/{performance_id}')
     config.add_route('sales_reports.preview','/preview/')

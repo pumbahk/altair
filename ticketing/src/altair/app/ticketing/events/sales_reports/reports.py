@@ -9,6 +9,8 @@ from sqlalchemy import distinct
 from sqlalchemy.sql import func, and_, or_
 from sqlalchemy.orm import aliased
 
+from datetime import date, timedelta
+
 from altair.app.ticketing.core.models import Event, Mailer
 from altair.app.ticketing.core.models import StockType, StockHolder, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
 from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem
@@ -114,8 +116,24 @@ class SalesTotalReporter(object):
         # イベント名称/公演名称、販売期間
         # 一般公開されている販売区分のみ対象
         query = Event.query.filter(Event.organization_id==self.organization.id)\
-            .join(Performance).filter(Performance.deleted_at==None)\
-            .join(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.reporting==True)\
+            .join(Performance).filter(Performance.deleted_at==None)
+
+        if self.form.recent_report.data:
+            today = date.today()
+            query = query.filter(
+                ((Performance.end_on==None) & (Performance.start_on > today + timedelta(days=-31))) |
+                (Performance.start_on > today + timedelta(days=-31))
+            )
+
+        if self.form.event_title.data:
+            query = query.filter(Event.title.like('%' + self.form.event_title.data + '%'))
+
+        query = self._create_range_where(query, self.form.event_from.data, self.form.event_to.data, \
+            Performance.start_on, Performance.end_on)
+        query = self._create_where(query, self.form.event_start_from.data, self.form.event_start_to.data, Performance.start_on)
+        query = self._create_where(query, self.form.event_end_from.data, self.form.event_end_to.data, Performance.end_on)
+
+        query = query.join(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.reporting==True)\
             .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(self.stock_holder_ids))
         query = self.add_form_filter(query)
 
@@ -141,6 +159,40 @@ class SalesTotalReporter(object):
                 sales_start_day=sales_start_day,
                 sales_end_day=sales_end_day,
             )
+
+    def _create_where(self, query, from_date, to_date, target):
+        if from_date and to_date:
+            where = (
+                (from_date <= target) & (target <= to_date))
+            query = query.filter(where)
+        elif from_date:
+            where = (from_date <= target)
+            query = query.filter(where)
+        elif to_date:
+            where = (target <= to_date)
+            query = query.filter(where)
+        return query
+
+    def _create_range_where(self, query, from_date, to_date, from_target, to_target):
+        if from_date and to_date:
+            where = (
+                (from_date <= from_target) & (from_target <= to_date) |
+                (from_date <= to_target) & (to_target <= to_date) |
+                (from_target <= from_date) & (to_date <= to_target))
+            query = query.filter(where)
+        elif from_date:
+            where = (
+                (from_date <= from_target) |
+                (from_date <= from_target) & (from_target <= (from_date + timedelta(days=1))) & (to_target is None) |
+                (from_target <= from_date) & (from_date <= to_target))
+            query = query.filter(where)
+        elif to_date:
+            where = (
+                (to_target <= to_date.data) |
+                (from_target <= to_date.data) & (to_date.data <= to_target) |
+                ((to_date + timedelta(days=-1)) <= from_target) & (from_target <= to_date) & (to_target is None))
+            query = query.filter(where)
+        return query
 
     def get_stock_data(self):
         # 配席数、残席数
