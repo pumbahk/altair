@@ -35,7 +35,7 @@ from .exceptions import (
     CartCreationException,
     TooManyCartsCreated,
 )
-from .views import limitter
+from .views import limiter
 
 logger = logging.getLogger(__name__)
 
@@ -340,7 +340,7 @@ class MobileSelectProductView(object):
             back_url=back_url
         )
 
-    @limitter.acquire
+    @limiter.acquire
     @view_config(route_name='cart.products', request_method="POST")
     @view_config(route_name='cart.products2', request_method="POST")
     def products_form(self):
@@ -353,7 +353,7 @@ class MobileSelectProductView(object):
         # 古いカートを削除
         old_cart = api.get_cart(self.request) # これは get_cart でよい
         if old_cart:
-            limitter._release(self.request)
+            limiter._release(self.request)
             # !!! ここでトランザクションをコミットする !!!
             api.release_cart(self.request, old_cart)
             api.remove_cart(self.request)
