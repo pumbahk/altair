@@ -4,6 +4,7 @@ import time
 import collections
 from abc import ABCMeta, abstractmethod
 from zope.interface import Interface, Attribute, implementer
+from pyramid.decorator import reify
 from altair.app.ticketing.core.models import Venue, Seat, AugusVenue, AugusSeat
 
 class SeatAugusSeatPairs(object):
@@ -54,6 +55,7 @@ class SeatAugusSeatPairs(object):
                 continue
         while True: # StopIterasion free
             yield None
+
 class _TableBase(object):
     __metaclass__ = ABCMeta
     
@@ -93,21 +95,30 @@ class AugusTable(_TableBase):
     def get_ext_entry(self, augus_seat, *args, **kwds):
         return [getter(augus_seat) for getter in self.EXT_HEADER_GETTER.values()]
 
+class AbormalTimestampFormatError(Exception):
+    pass
+
+
 class _CSVEditorBase(object):
     __metaclass__ = ABCMeta
 
     NAME = 'cooperation.csv'
     TIMESTAMP_FORMAT = '-%Y%m%d%H%M%S'
-    
-    @property
-    def name(self):
-        filename = self.NAME
-        fmt = self.TIMESTAMP_FORMAT
-        stamp = time.strftime(fmt) # raise TypeError
+
+    @reify
+    def name(self, name=None, timestamp=False, fmt=None):
+        fmt = fmt if fmt is not None else self.TIMESTAMP_FORMAT
+        filename = name if name is not None else self.NAME
+        stamp = ''
+        try:
+            stamp = time.strftime(fmt)
+        except TypeError as err:
+            raise AbnormalTimestampFormatError(
+                'Illigal timestamp format: {0}'.format(repr(fmt)))
         name, ext = os.path.splitext(filename)
-        filename = name + time.strftime(fmt) + ext
+        filename = name + stamp + ext
         return filename
-    
+
     @abstractmethod
     def write(self, csvlike, pairs):
         pass
