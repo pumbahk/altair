@@ -9,13 +9,14 @@ from pyramid.exceptions import PredicateMismatch
 #from altair.app.ticketing import txt_renderer_factory
 
 from sqlalchemy import engine_from_config
+from sqlalchemy.pool import NullPool
 import sqlahelper
 
 def main(global_config, **local_config):
     settings = dict(global_config)
     settings.update(local_config)
 
-    engine = engine_from_config(settings)
+    engine = engine_from_config(settings, poolclass=NullPool)
     sqlahelper.add_engine(engine)
 
     my_session_factory = session_factory_from_settings(settings)

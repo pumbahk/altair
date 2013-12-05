@@ -58,6 +58,7 @@ from .models import CSVExporter
 from .reporting import LotEntryReporter
 
 from altair.app.ticketing.payments import helpers as payment_helpers
+from altair.app.ticketing.carturl.api import get_lots_cart_url_builder
 
 logger = logging.getLogger(__name__)
 
@@ -291,6 +292,7 @@ class Lots(BaseView):
 
         return dict(
             lot=lot,
+            lots_cart_url=self.context.lots_cart_url,
             product_grid=product_grid,
             )
 

@@ -101,15 +101,17 @@ class Charset(object):
         if bad_chars:
             raise validators.ValidationError(field.gettext(self.message) % dict(characters=u'「' + u'」「'.join(bad_chars) + u'」'))
 
-    def get_error_chars(self, *args, **kwds):
-        return [ch for ch in self.generate_error_chars(*args, **kwds)]
+    def get_error_chars(self, data):
+        return [ch for ch in self.generate_error_chars(data)]
 
     def generate_error_chars(self, data):
+        if data is None:
+            return
         for c in data:
-                try:
-                    c.encode(self.encoding)
-                except UnicodeEncodeError:
-                    yield c
+            try:
+                c.encode(self.encoding)
+            except UnicodeEncodeError:
+                yield c
 
 JISX0208 = Charset('Shift_JIS')
 CP932 = Charset('CP932')

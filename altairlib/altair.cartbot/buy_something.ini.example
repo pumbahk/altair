@@ -1,6 +1,10 @@
-[credentials]
+[rakuten_auth]
 username = rakuten_id
 password = rakuten_id_password
+
+[fc_auth]
+username = boostertest003
+password = boostertest003
 
 [shipping_address]
 last_name = テスト

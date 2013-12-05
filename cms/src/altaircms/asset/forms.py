@@ -128,5 +128,6 @@ class AssetSearchForm(Form):
         Operator, allow_blank=True, 
         get_label=lambda user: user.screen_name
         )
+    title = fields.TextField(label=u"タイトル")
     tags = fields.TextField(label=u"タグ")
-    
+
