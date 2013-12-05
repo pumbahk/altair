@@ -1,47 +1,103 @@
 #-*- coding: utf-8 -*-
 from zope.interface import Interface, Attribute, implementer
 from sqlalchemy.orm.exc import NoResultFound
-from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import (
+    HTTPBadRequest,
+    HTTPNotFound,
+    )
 from altair.app.ticketing.resources import TicketingAdminResource
-from altair.app.ticketing.core.models import Venue, Seat, AugusVenue, AugusSeat, Organization
+from altair.app.ticketing.core.models import (
+    Venue,
+    Seat,
+    AugusVenue,
+    AugusSeat,
+    Organization,
+    )
 from .augus import SeatAugusSeatPairs
+
 
 class IDownloadResource(Interface):
     cooperation_type = Attribute('')
     venue = Attribute('')
     pairs = Attribute('')
 
+
+class IUploadResource(Interface):
+    cooperation_type = Attribute('')
+    venue = Attribute('')
+
+
+class BadRequest(Exception):
+    pass
+
+
+class NotFound(Exception):
+    pass
+
+
+class _CooperationResourceMixin(object):
+    def _load_common(self, request):
+        accessor = RequestAccessor(request)
+        organization_id = self.user.organization_id
+        try:
+            self.cooperation_type = accessor.get_cooperation_type()
+            self.venue = accessor.get_venue(organization_id=organization_id)
+        except BadRequest as err:
+            raise HTTPBadRequest(err.message)
+        except NotFound as err:
+            raise HTTPNotFound(err.message)
+
+@implementer(IUploadResource)
+class UploadResource(TicketingAdminResource, _CooperationResourceMixin):
+    def __init__(self, request):
+        super(UploadResource, self).__init__(request)
+        self._load_common(request)
+        
 @implementer(IDownloadResource)
-class DownloadResource(TicketingAdminResource):
+class DownloadResource(TicketingAdminResource, _CooperationResourceMixin):
     def __init__(self, request):
         super(DownloadResource, self).__init__(request)
-        self.cooperation_type = None
-        venue_id = None
-        try:
-            self.cooperation_type = long(request.params['cooperation_type'])
-            venue_id = long(request.matchdict['venue_id'])
-        except KeyError as err:
-            raise HTTPBadRequest('Should be input parameter: {0}'.format(err))
-        except (ValueError, TypeError) as err:
-            raise HTTPBadRequest('Invalid type of parameter: {0}'.format(err))
-
-        try:
-            self.venue = self._get_venue(venue_id)
-        except NoResultFound as err:
-            raise HTTPNotFound('Not found venue: venue_id={0}'.format(venue_id))
-
+        self._load_common(request)        
         self.pairs = SeatAugusSeatPairs(self.venue.id)
         self.pairs.load()
-        
-    def _get_venue(self, venue_id):
-        if venue_id is None:
-            raise NoResultFound('Oh! venue_id is invalid: {0}'.format(venue_id))
+
+
+class RequestAccessor(object):
+    def __init__(self, request):
+        self._request = request
+
+    def _get_value(self, getter, key, type_=None):
+        try:
+            value = getter(key)
+            if type_:
+                value = type_(value)
+            return value
+        except KeyError as err:
+            raise BadRequest('Should input parameter: {0}'.format(key))
+        except (TypeError, ValueError) as err:
+            raise BadRequest('Illegal type: {0} ({1})'.format(type_, key))
+        assert False
+
+    def _get_matchdict(self, key, *args, **kwds):
+        getter = lambda _key: self._request.matchdict[_key]
+        return self._get_value(getter, key, *args, **kwds)        
+
+    def _get_params(self, key, *args, **kwds):
+        getter = lambda _key: self._request.params[_key]        
+        return self._get_value(getter, key, *args, **kwds)
+
+    def get_cooperation_type(self):
+        return self._get_params('cooperation_type')
             
+    def get_venue(self, organization_id):
+        key = 'venue_id'
+        venue_id = self._get_matchdict(key)
         try:
             return Venue.query\
                         .join(Venue.organization)\
-                        .filter(Organization.id==self.user.organization_id)\
+                        .filter(Organization.id==organization_id)\
                         .filter(Venue.id==venue_id)\
                         .one()
         except NoResultFound as err:
-            raise
+            raise NotFound('Not found venue: {0}={1}'.format(key, venue_id))
+
