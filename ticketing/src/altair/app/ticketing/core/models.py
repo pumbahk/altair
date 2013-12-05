@@ -459,7 +459,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     id = Column(Identifier, primary_key=True)
     name = AnnotatedColumn(String(255), _a_label=(u'名称'))
-    code = Column(String(12))  # Organization.code(2桁) + Event.code(3桁) + 7桁(デフォルトはstart.onのYYMMDD+ランダム1桁)
+    # see #2042
+    # 旧仕様: Event.code(5桁) + 7桁(デフォルトはstart.onのYYMMDD+ランダム1桁)
+    # 新仕様: Event.code(7桁) + 5桁(デフォルトはstart.onのMMDD+ランダム1桁)
+    code = Column(String(12))
     abbreviated_title = Column(Unicode(255), doc=u"公演名略称", default=u"")
     subtitle = Column(Unicode(255), doc=u"公演名副題", default=u"")
     note = Column(UnicodeText, doc=u"公演名備考", default=u"")
@@ -686,7 +689,15 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if 'event_id' in kwargs:
             event = Event.get(kwargs['event_id'])
             performance.event_id = event.id
-            performance.code = event.code + performance.code[5:]
+            if len(event.code) == 7:
+                # 新仕様
+                performance.code = event.code + performance.code[7:]
+            elif len(event.code) == 5:
+                # 旧仕様
+                performance.code = event.code + performance.code[5:]
+            else:
+                raise ValueError("Invalid event code length: event_id=%d, code=%s" % (event.id, event.code))
+            assert len(performance.code) == 12
         performance.original_id = template.id
         performance.venue_id = template.venue.id
         performance.create_venue_id = template.venue.id       
@@ -796,7 +807,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
 
     id = Column(Identifier, primary_key=True)
-    code = Column(String(12))  # Organization.code(2桁) + 3桁英数字大文字のみ
+    # see #2042
+    # 旧仕様: Organization.code(2桁) + 3桁の英数字
+    # 新仕様: Organization.code(2桁) + 5桁の英数字
+    code = Column(String(12))
     title = AnnotatedColumn(String(1024), _a_label=(u'名称'))
     abbreviated_title = AnnotatedColumn(String(1024), _a_label=(u'略称'))
 
@@ -3382,8 +3396,9 @@ class MailTypeEnum(StandardEnum):
     LotsAcceptedMail = 11
     LotsElectedMail = 12
     LotsRejectedMail = 13
+    PointGrantingFailureMail = 21
 
-MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール", u"抽選申し込み完了メール", u"抽選当選通知メール", u"抽選落選通知メール")
+MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール", u"抽選申し込み完了メール", u"抽選当選通知メール", u"抽選落選通知メール", u"ポイント付与失敗通知メール")
 assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
 MailTypeChoices = [(str(e) , label) for e, label in zip([enum.v for enum in sorted(iter(MailTypeEnum), key=lambda e: e.v)], MailTypeLabels)]
 MailTypeEnum.dict = dict(MailTypeChoices)
@@ -3781,6 +3796,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     bcc_recipient = Column(Unicode(255), nullable=True)
     entrust_separate_seats = Column(Boolean, nullable=False, default=False, doc=u"バラ席のおすすめが有効")
+    notify_point_granting_failure = Column(Boolean, nullable=False, default=False, doc=u"ポイント付与失敗時のメール通知on/off")
 
 class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "EventSetting"

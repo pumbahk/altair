@@ -22,26 +22,40 @@ class IMailSettingDefault(Interface):
         pass
 
 class IMailUtility(Interface):
-    def build_message(request, order):
+    def get_mailtype_description():
+        """メールの種別"""
+
+    def get_subject_info_default():
+        """デフォルト値を格納するオブジェクト"""
+
+    def create_or_update_mailinfo(request, data, organization=None, event=None, performance=None, kind=None):
+        pass
+
+    def create_fake_object(request, **kwargs):
+        """fake object (something) を生成"""
+
+    def build_message(request, something):
         """orderからメールオブジェクト作成"""
         
-    def send_mail(request, order, override=None):
+    def send_mail(request, something, override=None):
         """ orderからメールを作成して送信"""
         
-    def preview_text(request, order):
+    def preview_text(request, something):
         """ orderから送信されるメールのpreviewを作成"""
 
-class IPurchaseInfoMail(Interface):
-    request = Attribute("request")
 
-    def build_mail_body(order, traverser):
+class IMailBuilder(Interface):
+    def build_mail_body(request, something, traverser):
         pass
 
-    def build_message_from_mail_body(order, traverser, mail_body):
+    def build_message_from_mail_body(request, something, traverser, mail_body):
         pass
 
-    def build_message(order, traverser):
+    def build_message(request, something, traverser):
         pass
+
+class IPurchaseInfoMail(IMailBuilder):
+    pass
 
 class ICompleteMail(IPurchaseInfoMail):
     """完了メールを送る
@@ -50,6 +64,12 @@ class ICompleteMail(IPurchaseInfoMail):
 class ICancelMail(IPurchaseInfoMail):
     """ 購入キャンセルメールを送る
     """
+
+class IPointGrantHistoryEntryInfoMail(IMailBuilder):
+    pass
+
+class ILotEntryInfoMail(IMailBuilder):
+    pass
 
 class ICompleteMailPayment(Interface):
     """ 完了メールの配送ビューレットのコンテキスト"""
@@ -105,4 +125,8 @@ class IMessagePartFactory(Interface):
     """ 送信されるメールのメッセージパートを生成する factory """
 
     def __call__(request, text_body):
+        pass
+
+class IFakeObjectFactory(Interface):
+    def __call__(request, interface, args):
         pass

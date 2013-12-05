@@ -29,11 +29,11 @@ class OrderCompleteInfoDefault(OrderInfoDefault):
                 form.template_body.use.data = False
                 return True
             try:
-                mail = PurchaseCompleteMail(None, request)
+                mail = PurchaseCompleteMail(None)
                 payment_id, delivery_id = 1, 1 #xxx
                 fake_order = create_fake_order(request, request.context.user.organization, payment_id, delivery_id)
                 traverser = mutil.get_traverser(request, fake_order)
-                mail.build_mail_body(fake_order, traverser, template_body=template_body)
+                mail.build_mail_body(request, fake_order, traverser, template_body=template_body)
                 ##xx:
             except Exception as e:
                 etype, value, tb = sys.exc_info()
@@ -51,32 +51,31 @@ def get_subject_info_default():
    
 @implementer(IPurchaseInfoMail)
 class PurchaseCompleteMail(object):
-    def __init__(self, mail_template, request):
+    def __init__(self, mail_template):
         self.mail_template = mail_template
-        self.request = request
 
-    def get_mail_subject(self, organization, traverser):
+    def get_mail_subject(self, request, organization, traverser):
         return (traverser.data["subject"] or 
                 u"チケット予約受付完了のお知らせ 【{organization}】".format(organization=organization.name))
         
-    def build_message_from_mail_body(self, order, traverser, mail_body):
-        organization = order.ordered_from or self.request.organization
-        mail_setting_default = get_mail_setting_default(self.request)
-        subject = self.get_mail_subject(organization, traverser)
-        sender = mail_setting_default.get_sender(self.request, traverser, organization)
-        bcc = mail_setting_default.get_bcc(self.request, traverser, organization)
+    def build_message_from_mail_body(self, request, order, traverser, mail_body):
+        organization = order.ordered_from or request.organization
+        mail_setting_default = get_mail_setting_default(request)
+        subject = self.get_mail_subject(request, organization, traverser)
+        sender = mail_setting_default.get_sender(request, traverser, organization)
+        bcc = mail_setting_default.get_bcc(request, traverser, organization)
         return Message(
             subject=subject,
             recipients=[order.shipping_address.email_1],
             bcc=bcc,
-            body=get_appropriate_message_part(self.request, order.shipping_address.email_1, mail_body),
+            body=get_appropriate_message_part(request, order.shipping_address.email_1, mail_body),
             sender=sender)
 
-    def build_message(self, subject, traverser):
-        mail_body = self.build_mail_body(subject, traverser)
-        return self.build_message_from_mail_body(subject, traverser, mail_body)
+    def build_message(self, request, subject, traverser):
+        mail_body = self.build_mail_body(request, subject, traverser)
+        return self.build_message_from_mail_body(request, subject, traverser, mail_body)
         
-    def _body_tmpl_vars(self, order, traverser):
+    def _body_tmpl_vars(self, request, order, traverser):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
         info_renderder = SubjectInfoRenderer(order, traverser.data, default_impl=get_subject_info_default())
@@ -94,15 +93,15 @@ class PurchaseCompleteMail(object):
                      )
         return value
 
-    def build_mail_body(self, order, traverser, template_body=None):
-        value = self._body_tmpl_vars(order, traverser)
+    def build_mail_body(self, request, order, traverser, template_body=None):
+        value = self._body_tmpl_vars(request, order, traverser)
         template_body = template_body or value.get("template_body")
         try:
             if template_body and template_body.get("use") and template_body.get("value"):
-                value = build_value_with_render_event(self.request, value)
+                value = build_value_with_render_event(request, value)
                 return Template(template_body["value"]).render(**value)
             else:
-                retval = render(self.mail_template, value, request=self.request)
+                retval = render(self.mail_template, value, request=request)
                 assert isinstance(retval, text_type)
                 return retval
         except:

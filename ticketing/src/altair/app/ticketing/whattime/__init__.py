@@ -45,9 +45,7 @@ def main(global_config, **local_config):
     settings.update(local_config)
 
     from sqlalchemy.pool import NullPool
-    engine = engine_from_config(settings, poolclass=NullPool,
-                                isolation_level='READ COMMITTED',
-                                pool_recycle=60)
+    engine = engine_from_config(settings, poolclass=NullPool, isolation_level='READ COMMITTED')
     session_factory = session_factory_from_settings(settings)
     set_cache_regions_from_settings(settings) 
     sqlahelper.add_engine(engine)

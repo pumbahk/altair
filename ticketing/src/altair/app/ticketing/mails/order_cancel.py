@@ -56,15 +56,14 @@ def get_mailtype_description():
 
 @implementer(IPurchaseInfoMail)    
 class CancelMail(object):
-    def __init__(self, mail_template, request):
+    def __init__(self, mail_template):
         self.mail_template = mail_template
-        self.request = request
 
-    def get_mail_subject(self, organization, traverser):
+    def get_mail_subject(self, request, organization, traverser):
         return (traverser.data["subject"] or 
                 u'ご注文キャンセルについて 【{organization}】'.format(organization=organization.name))
 
-    def get_mail_sender(self, organization, traverser):
+    def get_mail_sender(self, request, organization, traverser):
         return (traverser.data["sender"] or organization.contact_email)
 
     def validate(self, order):
@@ -72,28 +71,28 @@ class CancelMail(object):
             logger.info('order has not shipping_address or email id=%s' % order.id)
         return True
 
-    def build_message(self, subject, traverser):
-        mail_body = self.build_mail_body(subject, traverser)
-        return self.build_message_from_mail_body(subject, traverser, mail_body)
+    def build_message(self, request, subject, traverser):
+        mail_body = self.build_mail_body(request, subject, traverser)
+        return self.build_message_from_mail_body(request, subject, traverser, mail_body)
 
-    def build_message_from_mail_body(self, order, traverser, mail_body):
+    def build_message_from_mail_body(self, request, order, traverser, mail_body):
         if not self.validate(order):
             logger.warn("validation error")
             return 
-        organization = order.ordered_from or self.request.context.organization
-        mail_setting_default = get_mail_setting_default(self.request)
-        subject = self.get_mail_subject(organization, traverser)
-        sender = mail_setting_default.get_sender(self.request, traverser, organization)
-        bcc = mail_setting_default.get_bcc(self.request, traverser, organization)
+        organization = order.ordered_from or request.context.organization
+        mail_setting_default = get_mail_setting_default(request)
+        subject = self.get_mail_subject(request, organization, traverser)
+        sender = mail_setting_default.get_sender(request, traverser, organization)
+        bcc = mail_setting_default.get_bcc(request, traverser, organization)
         primary_recipient = order.shipping_address.email_1 if order.shipping_address else None
         return Message(
             subject=subject,
             recipients=[primary_recipient] if primary_recipient else [],
             bcc=bcc,
-            body=get_appropriate_message_part(self.request, primary_recipient, mail_body),
+            body=get_appropriate_message_part(request, primary_recipient, mail_body),
             sender=sender)
 
-    def _body_tmpl_vars(self, order, traverser):
+    def _body_tmpl_vars(self, request, order, traverser):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
         info_renderder = SubjectInfoRenderer(order, traverser.data, default_impl=OrderCancelInfoDefault)
@@ -112,8 +111,8 @@ class CancelMail(object):
                      )
         return value
 
-    def build_mail_body(self, order, traverser):
-        value = self._body_tmpl_vars(order, traverser)
-        retval = render(self.mail_template, value, request=self.request)
+    def build_mail_body(self, request, order, traverser):
+        value = self._body_tmpl_vars(request, order, traverser)
+        retval = render(self.mail_template, value, request=request)
         assert isinstance(retval, text_type)
         return retval

@@ -4,7 +4,7 @@ from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstra
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText, TIMESTAMP
 from sqlalchemy import util as sautil
 from sqlalchemy.schema import Table, Column, ForeignKey
-from sqlalchemy.orm import relationship, aliased
+from sqlalchemy.orm import relationship, aliased, configure_mappers
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -82,6 +82,8 @@ class PointGrantSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if other is not None and other.end_at is not None:
                 return 1
         return cmp(self.id, other.id)
+
+configure_mappers()
 
 def sales_segment_added_to_point_grant_setting(target, value, initiator):
     target.target_products.update(value.products)

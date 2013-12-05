@@ -45,6 +45,20 @@ class SwitchOptionalTests(unittest.TestCase):
         target(form, DummyField(data=""))
 
 
+class CharsetTest(unittest.TestCase):
+    def _get_target(self):
+        from ..validators import Charset
+        return Charset
+
+    def _make_one(self, *args, **kwargs):
+        return self._get_target()(*args, **kwargs)
+
+    def test_none(self):
+        from collections import namedtuple
+        x = self._make_one('ascii')
+        x(None, namedtuple('_', 'data')(data=None))
+
+
 class JISX0208Test(unittest.TestCase):
     VALID_CHARS = unicode(string.printable) + u'日本語'
     INVALID_CHARS = u'㈱ⅰ①⑴⒈❶'

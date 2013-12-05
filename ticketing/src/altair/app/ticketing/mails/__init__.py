@@ -5,6 +5,7 @@ def install_mail_utility(config):
     config.include('pyramid_mailer')
     config.include('altair.mobile')
     config.include(".config")
+    config.include(".fake")
 
     from .api import MailSettingDefaultGetter
     from .interfaces import IMailSettingDefault
@@ -15,7 +16,7 @@ def install_mail_utility(config):
     
     from .interfaces import IMailDataStoreGetter
     config.registry.registerUtility(config.maybe_dotted(".resources.get_mail_data_store"), IMailDataStoreGetter)
-   
+
     # from altair.app.ticketing.mails.simple import SimpleMail
     # config.add_mail_utility(MailTypeEnum.PurchaseCompleteMail, ".simple", SimpleMail)
 
@@ -36,6 +37,15 @@ def install_mail_utility(config):
     from altair.app.ticketing.mails.lots_mail import LotsRejectedMail
     config.add_lot_entry_mail_utility(MailTypeEnum.LotsRejectedMail, 
                                   ".lots_mail", LotsRejectedMail, "altair.app.ticketing:templates/mail/lot_reject_entry.txt")
+
+    ## point granting
+    from altair.app.ticketing.mails.point_granting_failure import PointGrantingFailureMail
+    config.add_point_grant_history_entry_mail_utility(
+        MailTypeEnum.PointGrantingFailureMail,
+        ".point_granting_failure",
+        PointGrantingFailureMail,
+        "altair.app.ticketing:templates/mail/point_granting_failure.txt"
+        )
 
     ## message_part_factory
     config.add_message_part_factory('nonmobile.plain', 'text/plain')

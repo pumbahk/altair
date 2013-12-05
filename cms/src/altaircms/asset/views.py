@@ -345,7 +345,8 @@ class AssetSearchView(object):
     def movie_asset_search(self):
         search_form = forms.AssetSearchForm(self.request.GET)
         try:
-            search_result = creation.MovieSearcher(self.request).search(search_form.data, form=search_form)
+            assets = self.request.allowable(models.MovieAsset)
+            search_result = creation.MovieSearcher(self.request).search(assets, search_form.data)
             return {"search_form": search_form, "search_result": search_result}
         except Exception, e:
             logger.exception(e.message.encode("utf-8"))
@@ -355,7 +356,8 @@ class AssetSearchView(object):
     def flash_asset_search(self):
         search_form = forms.AssetSearchForm(self.request.GET)
         try:
-            search_result = creation.FlashSearcher(self.request).search(search_form.data, form=search_form)
+            assets = self.request.allowable(models.FlashAsset)
+            search_result = creation.FlashSearcher(self.request).search(assets, search_form.data)
             return {"search_form": search_form, "search_result": search_result}
         except Exception, e:
             logger.exception(e.message.encode("utf-8"))

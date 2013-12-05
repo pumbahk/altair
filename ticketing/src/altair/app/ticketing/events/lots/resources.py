@@ -3,6 +3,7 @@
 from pyramid.decorator import reify
 from altair.app.ticketing.core.models import Event, Product
 from altair.app.ticketing.lots.models import Lot
+from altair.app.ticketing.carturl.api import get_lots_cart_url_builder
 
 from altair.app.ticketing.resources import TicketingAdminResource
 
@@ -53,3 +54,8 @@ class LotResource(TicketingAdminResource):
             else:
                 event = None
         return event
+
+    @reify
+    def lots_cart_url(self):
+        cart_url = get_lots_cart_url_builder(self.request).build(self.request, self.event, self.lot)
+        return cart_url

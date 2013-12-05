@@ -6,7 +6,7 @@ Revision ID: 17984d0ecfd2
 Revises: ada129db897
 Create Date: 2013-03-22 17:22:03.927687
 
-楽天チケットカートの認証方法と公演絞り込み方法を設定する
+Add two new columns; auth_type is for determining how to authenticate a comer in the cart and performance_selector is for determining in which way the performance is chosen.
 """
 
 # revision identifiers, used by Alembic.

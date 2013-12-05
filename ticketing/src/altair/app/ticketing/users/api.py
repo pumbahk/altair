@@ -94,8 +94,14 @@ def get_user_point_account(user_id):
     ).first()
     return acc
 
-def create_user_profile(user, data):
-    profile = user_models.UserProfile()
+def get_or_create_user_profile(user, data):
+
+    profile = None
+    if user.user_profile:
+        profile = user.user_profile
+
+    if not profile:
+        profile = user_models.UserProfile()
 
     profile.first_name=data['first_name'],
     profile.last_name=data['last_name'],
@@ -111,3 +117,4 @@ def create_user_profile(user, data):
 
     user.user_profile = profile
     DBSession.add(user)
+    return user.user_profile
