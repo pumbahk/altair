@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 import csv
-import time
-import os.path
-import collections
-
 from pyramid.view import view_defaults, view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
@@ -12,18 +8,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Seat
 from .forms import CooperationUpdateForm, CooperationDownloadForm, CooperationTypeForm
-
-
-CSV_NAME = 'cooperation.csv'
-
-CSVHEADER_VALUEGETTER = collections.OrderedDict((
-    ('id', lambda seat: seat.id),
-    ('seat_no', lambda seat: seat.seat_no),
-    ('l0_id', lambda seat: seat.l0_id),
-    ('group_l0_id', lambda seat: seat.group_l0_id),
-    ('row_l0_id', lambda seat: seat.row_l0_id),
-    ))
-
+from .augus import CSVEditorFactory
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class CooperationView(BaseView):
@@ -53,7 +38,6 @@ class CooperationView(BaseView):
                 'cooperation_type_form': cooperation_type_form,
                 }
 
-
     @staticmethod
     def _create_file_download_response_header(filename, timestamp=False, fmt='-%Y%m%d%H%M%S'):
         import time
@@ -62,26 +46,22 @@ class CooperationView(BaseView):
             name, ext = os.path.splitext(filename)
             filename = name + time.strftime(fmt) + ext
 
+    @staticmethod
+    def _create_res_headers(filename=None):
         return [('Content-Type', 'application/octet-stream; charset=cp932'),
                 ('Content-Disposition', 'attachment; filename={0}'.format(filename)),
                 ]
 
     @view_config(route_name='cooperation.download', request_method='GET')
-    def download(self):        
-        venue_id = 4678
-        seats = Seat.query.filter(Seat.venue_id==venue_id)
-        headers = self._create_file_download_response_header(CSV_NAME, timestamp=True)
-        res = Response(headers=headers)
-        writer = csv.writer(res, delimiter=',')
-        writer.writerow(CSVHEADER_VALUEGETTER.keys()) # write header
-        try:
-            for seat in seats: # write body
-                row = [getter(seat) for getter in CSVHEADER_VALUEGETTER.values()]
-                writer.writerow(row)
-            return res                
-        except AttributeError as err:
-            raise # AttributeError の場合 CSVHEADER_VALUEGETTERに何らかの問題がある
-
+    def download(self):
+        res = Response()
+        writer = csv.writer(res, delimiter=',')        
+        csveditor = CSVEditorFactory.create(self.context.cooperation_type)
+        csveditor.write(writer, self.context.pairs)
+        headers = self._create_res_headers(filename=csveditor.name)
+        res.headers = headers
+        return res
+        
     @view_config(route_name='cooperation.upload', request_method='POST')
     def upload(self):
         venue_id = int(self.request.matchdict.get('venue_id', 0))
