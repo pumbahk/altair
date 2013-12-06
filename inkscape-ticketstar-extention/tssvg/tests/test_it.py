@@ -66,16 +66,15 @@ class InputExtensionTests(unittest.TestCase):
 
         io = StringIO()
         stdout_old, sys.stdout = sys.stdout, io
-        app.affect([targetfile])
-        # try:
-        #     app.affect([targetfile])
-        # finally:
-        #     sys.stdout = stdout_old
+        try:
+            app.affect([targetfile])
+        finally:
+            sys.stdout = stdout_old
 
-        # result = io.getvalue().decode("utf-8")
-        # print(result)
-        # self.assertIn(u"font-family:ＭＳ Ｐゴシック", result)
-        # self.assertNotIn(u"font-family: MS PGothic", result)
+        result = io.getvalue().decode("utf-8")
+        print(result)
+        self.assertIn(u"font-family:ＭＳ Ｐゴシック", result)
+        self.assertNotIn(u"font-family: MS PGothic", result)
 
 if __name__ == '__main__':
     unittest.main()

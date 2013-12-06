@@ -25,8 +25,8 @@ class StyleReplacerTests(unittest.TestCase):
     def _getReplacer(self, target_keys):
         from tssvg import ReplaceMapping
         mapping = {
-            u"MS PGothic": u"MS PGothic",
-            u"ＭＳ Ｐゴシック": u"MS PGothic"
+            "MS PGothic": "MS PGothic",
+            u"ＭＳ Ｐゴシック".encode("utf-8"): "MS PGothic"
         }
         def convert(x):
             return mapping[x]
@@ -38,7 +38,7 @@ class StyleReplacerTests(unittest.TestCase):
 
     def test_it__en(self):
         target_keys = ["font-family", "-inkscape-font-specification"]
-        style_attr = u"""line-height: 125%; fill: #000; fill-opacity: 1; stroke: none; font-family: MS PGothic; -inkscape-font-specification: MS PGothic"""
+        style_attr = u"""line-height: 125%; fill: #000; fill-opacity: 1; stroke: none; font-family: MS PGothic; -inkscape-font-specification: MS PGothic""".encode("utf-8")
 
         mapping = self._getReplacer(target_keys)
         target = self._makeOne(mapping)
@@ -48,7 +48,7 @@ class StyleReplacerTests(unittest.TestCase):
 
     def test_it__ja(self):
         target_keys = ["font-family", "-inkscape-font-specification"]
-        style_attr = u"""line-height: 125%; fill: #000; fill-opacity: 1; stroke: none; font-family: ＭＳ Ｐゴシック; -inkscape-font-specification: ＭＳ Ｐゴシック"""
+        style_attr = u"""line-height: 125%; fill: #000; fill-opacity: 1; stroke: none; font-family: ＭＳ Ｐゴシック; -inkscape-font-specification: ＭＳ Ｐゴシック""".encode("utf-8")
 
         mapping = self._getReplacer(target_keys)
         target = self._makeOne(mapping)

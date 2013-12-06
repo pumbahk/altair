@@ -2,7 +2,7 @@
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-from collections import OrderedDict
+# from collections import OrderedDict 
 import inkex
 
 def is_system_windows(system_name):
@@ -112,11 +112,13 @@ class StyleReplacer(object):
         self.use = use
 
     def __call__(self, style_string):
-        return self.string_from_dict(self.use(self.dict_from_string(style_string)))
+        return self.string_from_pairs(self.use(self.pairs_from_string(style_string)))
 
-    def dict_from_string(self, string):
-        return OrderedDict([[x.strip() for x in pair.split(":")]
-                     for pair in string.split(";") if pair])
+    def pairs_from_string(self, string):
+        return [[x.strip() for x in pair.split(":")]
+                     for pair in string.split(";") if pair]
 
-    def string_from_dict(self, D):
-        return u"; ".join(u":".join((unicode(k), unicode(v))) for k, v in D.items())
+    def string_from_pairs(self, pairs):
+        for k, v in pairs:
+            sys.stderr.write(str((type(k), type(v), k, v)))
+        return u"; ".join(u":".join((k.encode("utf-8"), v.encode("utf-8"))) for k, v in pairs)
