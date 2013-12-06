@@ -71,8 +71,8 @@ class SeatAugusSeatPairs(object):
 def _sjis(unistr):
     try:
         return unistr.encode('sjis')
-    except UnicodeEncodeError as err:
-        raise UnicodeEncodeErorr(repr(unistr))
+    except (UnicodeEncodeError, UnicodeDecodeError) as err:
+        raise err.__class__(repr(unistr), *err.args[1:])
 
         
 class _TableBase(object):
