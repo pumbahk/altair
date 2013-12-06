@@ -6,10 +6,9 @@ import os
 
 def setUpModule():
     sys.path.append(os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), 
-        "../../"
+        os.path.abspath(os.path.dirname(os.path.dirname(__file__))),
+        "../"
     ))
-    print(sys.path[-1])
 
 class OutputExtensionTests(unittest.TestCase):
     def _getTarget(self):

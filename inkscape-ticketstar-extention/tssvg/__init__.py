@@ -119,6 +119,4 @@ class StyleReplacer(object):
                      for pair in string.split(";") if pair]
 
     def string_from_pairs(self, pairs):
-        for k, v in pairs:
-            sys.stderr.write(str((type(k), type(v), k, v)))
-        return u"; ".join(u":".join((k.encode("utf-8"), v.encode("utf-8"))) for k, v in pairs)
+        return u"; ".join(u":".join((k, v)) for k, v in pairs)

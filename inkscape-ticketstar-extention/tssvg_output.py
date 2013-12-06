@@ -13,7 +13,7 @@ from tssvg import (
 
 
 mapping = {
-    "MS PGothic": u"ＭＳ Ｐゴシック"
+    "MS PGothic": u"ＭＳ Ｐゴシック".encode("utf-8")
 }
 def convert(familyname, mapping=mapping):
     if familyname in mapping:
