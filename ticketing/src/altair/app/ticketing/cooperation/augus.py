@@ -223,7 +223,6 @@ def get_or_create_augus_venue_from_code(code, venue_id):
 
 
 class AugusVenueImporter(object):
-
             
     def import_(self, csvlike, pairs):
         csvlike.next() # ignore header
@@ -239,7 +238,8 @@ class AugusVenueImporter(object):
             AugusSeatImportError('mupliple augus venue codes: {0}'.format(
                 [augus_venue_code] + list(augus_venue_codes)))
 
-        augus_venue = get_or_create_augus_venue_from_code(augus_venue_code, pairs.venue_id)
+        augus_venue = get_or_create_augus_venue_from_code(augus_venue_code,
+                                                          pairs.venue_id)
         for data in datas:
             seat, augus_seat = pairs.find_pair(data.seat_id)
 
