@@ -193,22 +193,6 @@ class AugusSeatImportError(Exception):
     pass
 
 
-def row_importer_(pairs):
-    augus_venue = None
-    while True:
-        row = yield
-
-        data = EntryData(row)
-        if data.is_enable():
-            if augus_venue is None:
-                augus_venue = AugusVenue.get(code=data.augus_venue_code)
-
-            if augus_venue is None:
-                augus_venue = AugusVenue()
-                augus_venue.code = data.augus_venue_code
-                augus_venue.venue_id = pairs.venue.idn
-
-
 def get_or_create_augus_venue_from_code(code, venue_id):
     augus_venue = AugusVenue.get(code=code)
     if augus_venue is None:
