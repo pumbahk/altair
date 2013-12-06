@@ -3912,7 +3912,7 @@ class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusVenue'
     
     id = Column(Identifier, primary_key=True)
-    code = AnnotatedColumn(Unicode(32), primary_key=True, nullable=False, _a_label=(u'会場コード'))
+    code = AnnotatedColumn(Integer, primary_key=True, nullable=False, _a_label=(u'会場コード'))
     venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), primary_key=True, nullable=False)
 
     @property
@@ -3933,6 +3933,9 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     augus_venue_id = Column(Identifier, ForeignKey('AugusVenue.id', ondelete='CASCADE'), nullable=False)
     seat_id = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+
+    organization = relationship('AugusVenue')    
+    organization = relationship('Seat')    
 
 
 class AugusPerformance(object):

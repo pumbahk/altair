@@ -21,7 +21,7 @@ def upgrade():
     op.create_table(
         'AugusVenue',
         sa.Column('id', Identifier, nullable=False),
-        sa.Column('code', sa.Unicode(length=32), nullable=False),
+        sa.Column('code', sa.Integer, nullable=False),
         sa.Column('venue_id', Identifier, nullable=False),
         # for super class
         sa.Column('created_at', sa.TIMESTAMP(),
