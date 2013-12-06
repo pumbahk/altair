@@ -265,6 +265,7 @@ class IncludeFFI(object):
                 gobject.g_object_unref(self.context)
 
             def resolve(self, family_name, lang=None):
+                family_name = family_name.encode("utf-8")
                 gobject = self.gobject
                 pango = self.pango
                 lang = lang or self.lang
