@@ -46,7 +46,7 @@ def do_import_point_grant_results(registry, organization, file, now, type, force
     from altair.app.ticketing.core.models import Order
     from altair.app.ticketing.users.models import User, UserPointAccount, UserPointAccountTypeEnum
 
-    logger.info("start importing point granting results for Organization(id=%ld)" % (file, organization.id))
+    logger.info("start importing point granting results for Organization(id=%ld) from %s" % (organization.id, file))
     for line_no, line in enumerate(open(file)):
         try:
             line = line.rstrip('\r\n').decode(encoding)
@@ -128,7 +128,7 @@ def do_import_point_grant_results(registry, organization, file, now, type, force
 
         except RecordError as e:
             logger.warning("invalid record at line %d skipped (reason: %r)\n" % (line_no + 1, e))
-    logger.info("end importing point granting results for Organization(id=%ld)" % (file, organization.id))
+    logger.info("end importing point granting results for Organization(id=%ld) from %s" % (organization.id, file))
 
 def import_point_grant_results():
     import locale
@@ -144,7 +144,6 @@ def import_point_grant_results():
     parser.add_argument('-e', '--encoding')
     parser.add_argument('-f', '--force', action='store_true')
     parser.add_argument('-t', '--type')
-    parser.add_argument('-O', '--organization-id', required=True)
     parser.add_argument('config')
     parser.add_argument('file', nargs='+')
 
@@ -298,7 +297,6 @@ def import_point_grant_data():
     parser.add_argument('-R', '--reason-code')
     parser.add_argument('-S', '--shop-name')
     parser.add_argument('-f', '--force', action='store_true')
-    parser.add_argument('-O', '--organization-id', required=True)
     parser.add_argument('config')
     parser.add_argument('submitted_on')
     parser.add_argument('file', nargs='+')
@@ -433,7 +431,6 @@ def make_point_grant_data():
     parser.add_argument('-s', '--start-date')
     parser.add_argument('-e', '--end-date')
     parser.add_argument('-d', '--date')
-    parser.add_argument('-O', '--organization-id')
     parser.add_argument('config')
     parser.add_argument('submitted_on')
 
@@ -569,7 +566,6 @@ def export_point_grant_data():
     parser.add_argument('-s', '--include-submitted', action='store_true')
     parser.add_argument('-R', '--reason-code', required=True)
     parser.add_argument('-S', '--shop-name', required=True)
-    parser.add_argument('-O', '--organization-id', required=True)
     parser.add_argument('config')
     parser.add_argument('submitted_on')
 
