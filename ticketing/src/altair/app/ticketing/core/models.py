@@ -3932,7 +3932,7 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     num = AnnotatedColumn(Unicode(32), nullable=False,  _a_label=(u"番"))
 
     augus_venue_id = Column(Identifier, ForeignKey('AugusVenue.id', ondelete='CASCADE'), nullable=False)
-    seat_id = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+    seat_id = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'), primary_key=True)
 
     organization = relationship('AugusVenue')    
     organization = relationship('Seat')    

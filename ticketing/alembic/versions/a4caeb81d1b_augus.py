@@ -40,7 +40,7 @@ def upgrade():
         sa.Column('column', sa.Unicode(32), nullable=False),
         sa.Column('num', sa.Unicode(32), nullable=False),
         sa.Column('augus_venue_id', Identifier, nullable=False),
-        sa.Column('seat_id', Identifier, nullable=False),
+        sa.Column('seat_id', Identifier),
         # for super class
         sa.Column('created_at', sa.TIMESTAMP(),
                   server_default=text('CURRENT_TIMESTAMP'), nullable=False),
