@@ -7,8 +7,15 @@ from pyramid.httpexceptions import HTTPFound
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Seat
-from .forms import CooperationUpdateForm, CooperationDownloadForm, CooperationTypeForm
-from .augus import CSVEditorFactory
+from .forms import (
+    CooperationUpdateForm,
+    CooperationDownloadForm,
+    CooperationTypeForm,
+    )
+from .augus import (
+    CSVEditorFactory,
+    ImporterFactory,
+    )
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class CooperationView(BaseView):
@@ -64,6 +71,23 @@ class CooperationView(BaseView):
         
     @view_config(route_name='cooperation.upload', request_method='POST')
     def upload(self):
+        return_url = self.request.route_path('cooperation.show',
+                                             venue_id=self.context.venue.id)
+        form = CooperationUpdateForm(self.request.params)
+        if form.validate() and hasattr(form.cooperation_file.data, 'file'):
+            reader = csv.reader(form.cooperation_file.data.file)
+            importer = ImporterFactory.create(self.context.cooperation_type)
+            try:
+                importer.import_(reader, self.context.pairs)
+            except:
+                raise
+            else:
+                return HTTPFound(return_url)
+        else:# validate error
+            raise HTTPFound(return_url)
+                
+    
+    def _upload(self):
         venue_id = int(self.request.matchdict.get('venue_id', 0))
         organization_id = self.context.organization.id
         form = CooperationUpdateForm(self.request.params)

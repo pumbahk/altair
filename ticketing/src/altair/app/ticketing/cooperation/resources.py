@@ -44,7 +44,7 @@ class _CooperationResourceMixin(object):
 @implementer(ICooperationResource)
 class CooperationResource(TicketingAdminResource, _CooperationResourceMixin):
     def __init__(self, request):
-        super(DownloadResource, self).__init__(request)
+        super(CooperationResource, self).__init__(request)
         self._load_common(request)        
         self.pairs = SeatAugusSeatPairs(self.venue.id)
         self.pairs.load()
