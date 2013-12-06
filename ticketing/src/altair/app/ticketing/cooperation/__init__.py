@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
 from altair.app.ticketing import newRootFactory
-from .resources import (
-    DownloadResource,
-    UploadResource,
-    )
-
+from .resources import CooperationResource
 
 ROUTE_URL_RESOURCE = {
     'cooperation.index': ('/', None),
     'cooperation.show': ('/show/{venue_id}', None),
-    'cooperation.upload': ('/upload/{venue_id}', UploadResource),
-    'cooperation.download': ('/download/{venue_id}', DownloadResource),
+    'cooperation.upload': ('/upload/{venue_id}', CooperationResource),
+    'cooperation.download': ('/download/{venue_id}', CooperationResource),
     }
 
 

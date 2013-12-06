@@ -16,20 +16,14 @@ from altair.app.ticketing.core.models import (
 from .augus import SeatAugusSeatPairs
 
 
-class IDownloadResource(Interface):
+class ICooperationResource(Interface):
     cooperation_type = Attribute('')
     venue = Attribute('')
     pairs = Attribute('')
 
 
-class IUploadResource(Interface):
-    cooperation_type = Attribute('')
-    venue = Attribute('')
-
-
 class BadRequest(Exception):
     pass
-
 
 class NotFound(Exception):
     pass
@@ -46,15 +40,9 @@ class _CooperationResourceMixin(object):
             raise HTTPBadRequest(err.message)
         except NotFound as err:
             raise HTTPNotFound(err.message)
-
-@implementer(IUploadResource)
-class UploadResource(TicketingAdminResource, _CooperationResourceMixin):
-    def __init__(self, request):
-        super(UploadResource, self).__init__(request)
-        self._load_common(request)
         
-@implementer(IDownloadResource)
-class DownloadResource(TicketingAdminResource, _CooperationResourceMixin):
+@implementer(ICooperationResource)
+class CooperationResource(TicketingAdminResource, _CooperationResourceMixin):
     def __init__(self, request):
         super(DownloadResource, self).__init__(request)
         self._load_common(request)        
