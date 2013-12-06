@@ -33,7 +33,7 @@ class InternalFamilyNameResolver(object):
             return self.cache[family_name]
         except KeyError:
             self.propose()
-            family_name_internal = self.control.resolve(family_name.encode("utf-8"))
+            family_name_internal = self.control.resolve(family_name)
             family_name_internal = force_unicode(family_name_internal)
             self.cache[family_name] = family_name_internal
             return family_name_internal
@@ -81,9 +81,11 @@ class ReplaceMapping(object):
         self.convert = convert
 
     def __call__(self, style_dict):
-        for k in self.target_keys:
-            if k in style_dict:
-                style_dict[k] = self.convert(style_dict[k])
+        arr = []
+        for k, v in style_dict:
+            if k in self.target_keys:
+                v = self.convert(v)
+            arr.append((k,v))
         return style_dict
 
 class TSSVGEffect(inkex.Effect):

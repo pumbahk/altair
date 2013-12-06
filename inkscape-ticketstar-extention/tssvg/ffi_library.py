@@ -290,6 +290,7 @@ class IncludeFFI(object):
 
     @classmethod
     def include_windows(cls, config, pango, gobject, win32):
+        from ctypes import wintypes
         assert win32
         cls.include_common(config, pango, gobject)
         ## definition
@@ -303,9 +304,9 @@ class IncludeFFI(object):
 
         ## http://www.math.uiuc.edu/~gfrancis/illimath/windows/aszgard_mini/bin/MinGW/include/wingdi.h
         LF_FACESIZE = 32
-        LF_FULLFACESIZE	= 64
-        DEFAULT_CHARSET	 = 1
-        SYMBOL_CHARSET	= 2
+        LF_FULLFACESIZE        = 64
+        DEFAULT_CHARSET         = 1
+        SYMBOL_CHARSET        = 2
         SHIFTJIS_CHARSET = 128
 
         class _LOGFONT(Structure):
@@ -462,13 +463,13 @@ class IncludeFFI(object):
         win32.pango_win32_font_cache_free.restype = None
 
         win32.pango_win32_font_description_from_logfontw.argstype = [POINTER(_LOGFONTW)]
-        win32.pango_win32_font_description_from_logfontw.restype = POINTER[_PangoFontDescription]
+        win32.pango_win32_font_description_from_logfontw.restype = POINTER(_PangoFontDescription)
 
         class WindowsNameResolver(object):
             def __init__(self, pango, gobject, win32):
                 self.pango = pango
                 self.gobject = gobject
-                self.win32 = win
+                self.win32 = win32
                 self.lang = None
                 self.cache = None
                 self.hdc = None
@@ -477,8 +478,8 @@ class IncludeFFI(object):
             def propose(self):
                 self.fontmap = win32.pango_win32_font_map_for_display()
                 self.context = win32.pango_win32_get_context()
-                self.cache = self.private.pango_win32_font_map_get_font_cache(self.fontmap)
-                self.hdc = self.private.pango_win32_get_dc()
+                self.cache = win32.pango_win32_font_map_get_font_cache(self.fontmap)
+                self.hdc = win32.pango_win32_get_dc()
 
             def dispose(self):
                 gobject = self.gobject
@@ -501,8 +502,9 @@ class IncludeFFI(object):
                     if facename.startswith("@"):
                         return 1
                     logfontw = lpelf.contents.lpelf
-                    desc = win32.pango_win32_font_description_from_logfontw(logfontw)
+                    desc = win32.pango_win32_font_description_from_logfontw(byref(logfontw))
                     ref[familyname] = pango.pango_font_description_get_family(desc)
+                    
                     return 0
                 return FONTENUMPROC(lookup_internal_family_name)
 
@@ -511,9 +513,9 @@ class IncludeFFI(object):
                 lf = make_logical_font(familyname, charset=charset)
                 ref = {}
                 try:
-                    enum_font_families(hdc, byref(lf), self.get_lookup_callback(ref, familyname), c_int(0))
+                    enum_font_families(self.hdc, byref(lf), self.get_lookup_callback(ref, familyname), c_int(0))
                 except ValueError as e: #todo fix Procedure probably called with too many arguments (579920 bytes in excess)
-                    print(e)
-                return ref[familyname]
+                    pass
+                return ref.get(familyname, familyname)
 
         return WindowsNameResolver(pango=pango, gobject=gobject, win32=win32)

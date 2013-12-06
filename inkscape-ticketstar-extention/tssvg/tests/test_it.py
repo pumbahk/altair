@@ -6,6 +6,10 @@ import os
 
 sys.path.append(os.path.join(
    os.path.abspath(os.path.dirname(os.path.dirname(__file__))),
+    "../"
+   ))
+sys.path.append(os.path.join(
+   os.path.abspath(os.path.dirname(os.path.dirname(__file__))),
     "../../"
    ))
 
@@ -55,7 +59,6 @@ class InputExtensionTests(unittest.TestCase):
         cache = {}
         app = self._getTarget()(cache)
         targetfile = os.path.join(os.path.dirname(__file__), "sample.svg")
-
         ## check file format
         with open(targetfile) as rf:
             content = rf.read().decode("utf-8")
@@ -70,7 +73,7 @@ class InputExtensionTests(unittest.TestCase):
             sys.stdout = stdout_old
 
         result = io.getvalue().decode("utf-8")
-	self.assertTrue(u"font-family:ＭＳ Ｐゴシック" in result)
+        self.assertTrue(u"font-family:ＭＳ Ｐゴシック" in result)
         self.assertFalse(u"font-family: MS PGothic" in result)
 
 if __name__ == '__main__':
