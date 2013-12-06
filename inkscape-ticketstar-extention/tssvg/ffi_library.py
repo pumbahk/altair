@@ -265,11 +265,6 @@ class IncludeFFI(object):
                 gobject.g_object_unref(self.context)
 
             def resolve(self, family_name, lang=None):
-                sys.stderr.write("**")
-                sys.stderr.write(family_name)
-                sys.stderr.write(str(type(family_name)))
-                sys.stderr.write("**\n")
-
                 gobject = self.gobject
                 pango = self.pango
                 lang = lang or self.lang
@@ -478,19 +473,19 @@ class IncludeFFI(object):
             def propose(self):
                 self.fontmap = win32.pango_win32_font_map_for_display()
                 self.context = win32.pango_win32_get_context()
-                self.cache = win32.pango_win32_font_map_get_font_cache(self.fontmap)
+                # self.cache = win32.pango_win32_font_map_get_font_cache(self.fontmap)
                 self.hdc = win32.pango_win32_get_dc()
 
             def dispose(self):
-                gobject = self.gobject
+                # gobject = self.gobject
                 win32 = self.win32
 
-                gobject.g_object_unref(self.fontmap)
-                gobject.g_object_unref(self.context)
-                for target in self.release_targets:
-                    gobject.g_object_unref(target)
+                # gobject.g_object_unref(self.fontmap)
+                # gobject.g_object_unref(self.context)
+                # for target in self.release_targets:
+                #     gobject.g_object_unref(target)
                 self.release_targets = []
-                win32.pango_win32_font_cache_free(self.cache)
+                # win32.pango_win32_font_cache_free(self.cache)
                 win32.pango_win32_shutdown_display()
 
 
@@ -504,7 +499,6 @@ class IncludeFFI(object):
                     logfontw = lpelf.contents.lpelf
                     desc = win32.pango_win32_font_description_from_logfontw(byref(logfontw))
                     ref[familyname] = pango.pango_font_description_get_family(desc)
-                    
                     return 0
                 return FONTENUMPROC(lookup_internal_family_name)
 
