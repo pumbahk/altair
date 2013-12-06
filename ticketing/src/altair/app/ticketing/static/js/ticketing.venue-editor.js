@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['TZS3B9OSI3PO0HXY'] = (function (exports) { (function () { 
+__LIBS__['EXL4E9W61VV5_F32'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['BPJ2B92TH0LKWR3Y'] = (function (exports) { (function () { 
+__LIBS__['rFDY7_3VHZ_1WAQJ'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -97,7 +97,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['GVXD1YLKAB0Y0RLH'] = (function (exports) { (function () { 
+__LIBS__['YVAQT8HF_0TPHDPH'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -276,7 +276,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['eVPPIDWW1H86BFFK'] = (function (exports) { (function () { 
+__LIBS__['v0YDHFUU5Z7DD_C5'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -325,78 +325,80 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['mTKJVV18S3LW33EZ'] = (function (exports) { (function () { 
+__LIBS__['WGP_V7OWI35VLONY'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['GVXD1YLKAB0Y0RLH'];
-var CONF = __LIBS__['BPJ2B92TH0LKWR3Y'];
-var IdentifiableSet = __LIBS__['eVPPIDWW1H86BFFK'].IdentifiableSet;
+var util = __LIBS__['YVAQT8HF_0TPHDPH'];
+var CONF = __LIBS__['rFDY7_3VHZ_1WAQJ'];
+var IdentifiableSet = __LIBS__['v0YDHFUU5Z7DD_C5'].IdentifiableSet;
+
+var use_altair_collection = true;
 
 var AltairCollection = function (models, options) {
+  options || (options = {});
   if (options.model) this.model = options.model;
   this.initialize.apply(this, arguments);
 };
 
-AltairCollection.extend = function(protoProps, staticProps) {
-  var parent = this;
-  var child;
-
-  if (protoProps && _.has(protoProps, 'constructor')) {
-    child = protoProps.constructor;
-  } else {
-    child = function(){ return parent.apply(this, arguments); };
-  }
-
-  _.extend(child, parent, staticProps);
-
-  var Surrogate = function(){ this.constructor = child; };
-  Surrogate.prototype = parent.prototype;
-  child.prototype = new Surrogate;
-
-  if (protoProps) _.extend(child.prototype, protoProps);
-
-  child.__super__ = parent.prototype;
-
-  return child;
-};
+AltairCollection.extend = Backbone.Collection.extend;
 
 _.extend(AltairCollection.prototype, {
-  model: null,
-  models: null,
-  _byId: null,
+  model: Backbone.Model,
+  models: [],
+  _byId: {},
   length: 0,
-  idx: 0,
 
   initialize: function(){
-    this.models = [];
-    this._byId = {};
-  },
-
-  each: function(args) {
-    return _.each(this.models, args);
+    this.reset();
   },
 
   add: function(models, options) {
     return this.set(models, options);
   },
 
+  remove: function(models, options) {
+    var singular = !_.isArray(models);
+    models = singular ? [models] : models;
+    var i, l, index, model;
+    for (i = 0, l = models.length; i < l; i++) {
+      model = models[i] = this.get(models[i]);
+      if (!model) continue;
+      index = this.indexOf(model);
+      this.models.splice(index, 1);
+      this.length--;
+      this._removeReference(model, options);
+    }
+    return singular ? models[0] : models;
+  },
+
   set: function(models, options) {
-    var _models = models;
-    if (!_.isArray(_models)) {
-      _models = [models];
-    }
-    for (var i = 0; i < _models.length; i++) {
-      var model = _models[i];
-      this.length += 1;
+    var singular = !_.isArray(models);
+    models = singular ? (models ? [models] : []) : models;
+    var i, l, model, existing;
+    for (i = 0, l = models.length; i < l; i++) {
+      model = models[i];
+      if (!model) continue;
+      if (existing = this.get(model)) {
+        existing.set(model.attributes, options);
+        model = existing;
+        this.remove(existing, options);
+      }
       this.models.push(model);
-      this._byId[model.cid] = model;
-      if (model.id != null) this._byId[model.id] = model;
+      this.length++;
+      this._addReference(model, options);
     }
+    return singular ? models[0] : models;
   },
 
   reset: function(models, options) {
+    for (var i = 0, l = this.models.length; i < l; i++) {
+      this._removeReference(this.models[i], options);
+    }
     this.models = [];
-    return this.models;
+    this._byId  = {};
+    this.length = 0;
+    models = this.add(models, options);
+    return models;
   },
 
   push: function(model, options) {
@@ -409,26 +411,70 @@ _.extend(AltairCollection.prototype, {
     return model;
   },
 
+  get: function(obj) {
+    if (obj == null) return void 0;
+    return (obj.id && this._byId[obj.id]) || (obj.cid && this._byId[obj.cid]) || this._byId[obj];
+  },
+
   at: function(index) {
     return this.models[index];
   },
 
-  get: function(obj) {
-    if (obj == null) return void 0;
-    return (obj.id && this._byId[obj.id]) || (obj.cid && this._byId[obj.cid]) || this._byId[obj];
+  _prepareModel: function(attrs, options) {
+    if (attrs instanceof this.model) return attrs;
+    options = options ? _.clone(options) : {};
+    options.collection = this;
+    var model = new this.model(attrs, options);
+    if (!model.validationError) return model;
+    return false;
+  },
+
+  _addReference: function(model, options) {
+    this._byId[model.cid] = model;
+    if (model.id != null) this._byId[model.id] = model;
+    if (!model.collection) model.collection = this;
+  },
+
+  _removeReference: function(model, options) {
+    delete this._byId[model.id];
+    delete this._byId[model.cid];
+    if (this === model.collection) delete model.collection;
   }
+});
+
+var methods = ['forEach', 'each', 'map', 'collect', 'reduce', 'foldl',
+  'inject', 'reduceRight', 'foldr', 'find', 'detect', 'filter', 'select',
+  'reject', 'every', 'all', 'some', 'any', 'include', 'contains', 'invoke',
+  'max', 'min', 'toArray', 'size', 'first', 'head', 'take', 'initial', 'rest',
+  'tail', 'drop', 'last', 'without', 'difference', 'indexOf', 'shuffle',
+  'lastIndexOf', 'isEmpty', 'chain', 'sample'];
+
+_.each(methods, function(method) {
+  AltairCollection.prototype[method] = function() {
+    var args = [].slice.call(arguments);
+    args.unshift(this.models);
+    return _[method].apply(_, args);
+  };
 });
 
 var VenueItemCollectionMixin = {
   venue: null,
 
   initialize: function VenueItemCollectionMixin_initialize(models, options) {
-    AltairCollection.prototype.initialize.apply(this, arguments);
+    if (use_altair_collection) {
+      AltairCollection.prototype.initialize.apply(this, arguments);
+    } else {
+      Backbone.Collection.prototype.initialize.apply(this, arguments);
+    }
     this.venue = options.venue;
   },
 
   _prepareModel: function VenueItemCollectionMixin__prepareModel(model, options) {
-    model = AltairCollection.prototype._prepareModel.call(this, model, options);
+    if (use_altair_collection) {
+      model = AltairCollection.prototype._prepareModel.call(this, model, options);
+    } else {
+      model = Backbone.Collection.prototype._prepareModel.call(this, model, options);
+    }
     if (!model)
       return model;
     model.set('venue', this.venue);
@@ -465,15 +511,12 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
       name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
       isSeat: true,
       quantityOnly: false,
-      quantity: 0,
-      style: {},
-      venue: this
+      style: {}
     }));
     this.stockHolders.add(new StockHolder({
       id: "",
       name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
-      style: {},
-      venue: this
+      style: {}
     }));
   }
 
@@ -496,8 +539,7 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
           name: stockTypeDatum.name,
           isSeat: stockTypeDatum.is_seat,
           quantityOnly: stockTypeDatum.quantity_only,
-          style: stockTypeDatum.style,
-          venue: this
+          style: stockTypeDatum.style
         });
       } else {
         stockType.set('name', stockTypeDatum.name);
@@ -519,8 +561,7 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
         stockHolder = new StockHolder({
           id: stockHolderDatum.id,
           name: stockHolderDatum.name,
-          style: stockHolderDatum.style,
-          venue: this
+          style: stockHolderDatum.style
         });
       } else {
         stockHolder.set('name', stockHolderDatum.name);
@@ -690,7 +731,6 @@ var ProvidesStyle = exports.ProvidesStyle = Backbone.Model.extend({
 var StockType = exports.StockType = ProvidesStyle.extend({
   defaults: {
     id: null,
-    venue: null,
     name: '',
     isSeat: false,
     quantityOnly: false,
@@ -707,7 +747,7 @@ var StockType = exports.StockType = ProvidesStyle.extend({
   },
 
   keyedStocks: function StockType_stocks() {
-    return this.get('venue').perStockTypeStockMap[this.id];
+    return this.collection.venue.perStockTypeStockMap[this.id];
   },
 
   recalculateQuantity: function StockType_recalculateQuantity() {
@@ -725,7 +765,6 @@ var StockType = exports.StockType = ProvidesStyle.extend({
 var StockHolder = exports.StockHolder = ProvidesStyle.extend({
   defaults: {
     id: null,
-    venue: null,
     name: '',
     assigned: 0,
     available: 0
@@ -740,7 +779,7 @@ var StockHolder = exports.StockHolder = ProvidesStyle.extend({
   },
 
   keyedStocks: function StockHolder_stocks() {
-    return this.get('venue').perStockHolderStockMap[this.id];
+    return this.collection.venue.perStockHolderStockMap[this.id];
   },
 
   recalculateQuantity: function StockHolder_recalculateQuantity() {
@@ -922,10 +961,17 @@ var Seat = exports.Seat = Backbone.Model.extend({
   }
 });
 
-var SeatCollection = exports.SeatCollection = AltairCollection.extend(_.extend({ model: Seat }, VenueItemCollectionMixin));
-var StockTypeCollection = exports.StockTypeCollection = AltairCollection.extend(_.extend({ model: StockType }, VenueItemCollectionMixin));
-var StockHolderCollection = exports.StockHolderCollection = AltairCollection.extend(_.extend({ model: StockHolder }, VenueItemCollectionMixin));
-var StockCollection = exports.StockCollection = AltairCollection.extend(_.extend({ model: Stock }, VenueItemCollectionMixin));
+if (use_altair_collection) {
+  var SeatCollection = exports.SeatCollection = AltairCollection.extend(_.extend({ model: Seat }, VenueItemCollectionMixin));
+  var StockTypeCollection = exports.StockTypeCollection = AltairCollection.extend(_.extend({ model: StockType }, VenueItemCollectionMixin));
+  var StockHolderCollection = exports.StockHolderCollection = AltairCollection.extend(_.extend({ model: StockHolder }, VenueItemCollectionMixin));
+  var StockCollection = exports.StockCollection = AltairCollection.extend(_.extend({ model: Stock }, VenueItemCollectionMixin));
+} else {
+  var SeatCollection = exports.SeatCollection = Backbone.Collection.extend(_.extend({ model: Seat }, VenueItemCollectionMixin));
+  var StockTypeCollection = exports.StockTypeCollection = Backbone.Collection.extend(_.extend({ model: StockType }, VenueItemCollectionMixin));
+  var StockHolderCollection = exports.StockHolderCollection = Backbone.Collection.extend(_.extend({ model: StockHolder }, VenueItemCollectionMixin));
+  var StockCollection = exports.StockCollection = Backbone.Collection.extend(_.extend({ model: Stock }, VenueItemCollectionMixin));
+}
 
 var SeatAdjacencies = exports.SeatAdjacencies = function SeatAdjacencies(src) {
   this.tbl = {};
@@ -989,12 +1035,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['_9UGBXC1PNZ0IKUX'] = (function (exports) { (function () { 
+__LIBS__['_S186P_RROWQE886'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['GVXD1YLKAB0Y0RLH'];
-var CONF = __LIBS__['BPJ2B92TH0LKWR3Y'];
-var models = __LIBS__['mTKJVV18S3LW33EZ'];
+var util = __LIBS__['YVAQT8HF_0TPHDPH'];
+var CONF = __LIBS__['rFDY7_3VHZ_1WAQJ'];
+var models = __LIBS__['WGP_V7OWI35VLONY'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -1174,13 +1220,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['BPJ2B92TH0LKWR3Y'];
-  var models = __LIBS__['mTKJVV18S3LW33EZ'];
-  var util = __LIBS__['GVXD1YLKAB0Y0RLH'];
-  var viewobjects = __LIBS__['_9UGBXC1PNZ0IKUX'];
-  var IdentifiableSet = __LIBS__['eVPPIDWW1H86BFFK'].IdentifiableSet;
+  var CONF = __LIBS__['rFDY7_3VHZ_1WAQJ'];
+  var models = __LIBS__['WGP_V7OWI35VLONY'];
+  var util = __LIBS__['YVAQT8HF_0TPHDPH'];
+  var viewobjects = __LIBS__['_S186P_RROWQE886'];
+  var IdentifiableSet = __LIBS__['v0YDHFUU5Z7DD_C5'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['TZS3B9OSI3PO0HXY'];
+    I18n.translations = __LIBS__['EXL4E9W61VV5_F32'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1540,21 +1586,27 @@ var Seat = exports.Seat = Backbone.Model.extend({
     var shapes = {};
     var styleClasses = CONF.DEFAULT.STYLES;
 
+    //for debug vvvv
     var shapes_count = 0;
     var seats_count = 0;
     var node_count = {};
+    //for debug ^^^^
     console.log(new Date() + ' create shape start');
     (function iter(svgStyle, defs, nodeList) {
       outer:
         for (var i = 0; i < nodeList.length; i++) {
+          //for debug vvvv
           shapes_count++;
+          //for debug ^^^^
           var n = nodeList[i];
           if (n.nodeType != 1) continue;
 
           var shape = null;
           var attrs = util.allAttributes(n);
+          //for debug vvvv
           var seat = this.metadata.seats[attrs.id];
           if (seat) seats_count++;
+          //for debug ^^^^
 
           var currentSvgStyle = _.clone(svgStyle);
           if (attrs['class']) {
@@ -1575,8 +1627,10 @@ var Seat = exports.Seat = Backbone.Model.extend({
             }
           }
 
+          //for debug vvvv
           if (!node_count[n.nodeName]) node_count[n.nodeName] = 0;
           node_count[n.nodeName]++;
+          //for debug ^^^^
           switch (n.nodeName) {
             case 'defs':
               parseDefs(n, defs);
@@ -1664,8 +1718,10 @@ var Seat = exports.Seat = Backbone.Model.extend({
       drawing.documentElement.childNodes);
     console.log(new Date() + ' create shape end');
 
+    //for debug vvvv
     var shapes_length = 0;
     for (aaa in shapes) {shapes_length++;}
+    //for debug ^^^^
     console.log('shapes count =' + shapes_count);
     console.log('shapes length=' + shapes_length);
     console.log('seats  count =' + seats_count);

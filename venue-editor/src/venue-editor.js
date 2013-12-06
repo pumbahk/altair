@@ -366,21 +366,27 @@
     var shapes = {};
     var styleClasses = CONF.DEFAULT.STYLES;
 
+    //for debug vvvv
     var shapes_count = 0;
     var seats_count = 0;
     var node_count = {};
+    //for debug ^^^^
     console.log(new Date() + ' create shape start');
     (function iter(svgStyle, defs, nodeList) {
       outer:
         for (var i = 0; i < nodeList.length; i++) {
+          //for debug vvvv
           shapes_count++;
+          //for debug ^^^^
           var n = nodeList[i];
           if (n.nodeType != 1) continue;
 
           var shape = null;
           var attrs = util.allAttributes(n);
+          //for debug vvvv
           var seat = this.metadata.seats[attrs.id];
           if (seat) seats_count++;
+          //for debug ^^^^
 
           var currentSvgStyle = _.clone(svgStyle);
           if (attrs['class']) {
@@ -401,8 +407,10 @@
             }
           }
 
+          //for debug vvvv
           if (!node_count[n.nodeName]) node_count[n.nodeName] = 0;
           node_count[n.nodeName]++;
+          //for debug ^^^^
           switch (n.nodeName) {
             case 'defs':
               parseDefs(n, defs);
@@ -490,8 +498,10 @@
       drawing.documentElement.childNodes);
     console.log(new Date() + ' create shape end');
 
+    //for debug vvvv
     var shapes_length = 0;
     for (aaa in shapes) {shapes_length++;}
+    //for debug ^^^^
     console.log('shapes count =' + shapes_count);
     console.log('shapes length=' + shapes_length);
     console.log('seats  count =' + seats_count);
