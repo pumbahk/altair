@@ -3,8 +3,9 @@
 
 import sys
 import os
-sys.path.append(os.path.absname(os.path.dirname(__name__)))
-from .tssvg import (
+from functools import partial
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from tssvg import (
     TSSVGEffect, 
     ReplaceMapping, 
 )
@@ -14,7 +15,7 @@ from .tssvg import (
 mapping = {
     "MS PGothic": u"ＭＳ Ｐゴシック"
 }
-def convert(familyname):
+def convert(familyname, mapping=mapping):
     if familyname in mapping:
         return mapping[familyname]
     else:
@@ -22,8 +23,10 @@ def convert(familyname):
 
 target_keys = ["font-family", "-inkscape-font-specification"]
 
+def getapp(mapping=mapping):
+    return TSSVGEffect(ReplaceMapping(target_keys, partial(convert, mapping=mapping)))
 
 if __name__ == '__main__':
-    e = TSSVGEffect(ReplaceMapping(target_keys, convert))
+    e = getapp()
     # e.affect(["./sample.win.xml"])
     e.affect()

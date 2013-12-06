@@ -1,9 +1,8 @@
 # -*- coding:utf-8 -*-
 import os
 import sys
-sys.path.append(os.path.absname(os.path.dirname(__name__)))
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from collections import OrderedDict
-
 import inkex
 
 def is_system_windows(system_name):
@@ -20,21 +19,34 @@ class InternalFamilyNameResolver(object):
         return self.control is not None
 
     def propose(self):
-        self.control = self.factory()
-        self.control.propose()
+        if not self.has_control:
+            self.control = self.factory()
+            self.control.propose()
 
-    def clean(self):
+    def clean(self, wrapper):
         if self.has_control:
             self.control.dispose()
 
     def resolve(self, family_name):
+        family_name = force_unicode(family_name)
         try:
             return self.cache[family_name]
         except KeyError:
             self.propose()
-            self.control.resolve(family_name)
+            family_name_internal = self.control.resolve(family_name.encode("utf-8"))
+            family_name_internal = force_unicode(family_name_internal)
+            self.cache[family_name] = family_name_internal
+            return family_name_internal
 
-class Configrator(object):
+def force_unicode(s):
+    if isinstance(s, unicode):
+        return s
+    elif hasattr(s, "decode"):
+        return s.decode("utf-8")
+    else:
+        raise Exception("Invalida arguments: %s",  s)
+
+class Configurator(object):
     def __init__(self, loader, finder):
         self.loader=loader
         self.finder = finder
@@ -45,29 +57,23 @@ class Configrator(object):
         else:
             return dll_path_string
 
-    def setup_ffi(self, module, *args, **kwargs):
-        env = {"args": args, "kwargs": kwargs}
-        code = """
-import {module}
-{module}.setup_ffi(*args, **kwargs)
-        """.format(module=module)
-        exec code in env
+    def include_resolver(self, fn, *args, **kwargs):
+        resolver = fn(self, *args, **kwargs)
+        for ffi in kwargs.keys():
+            assert getattr(self, ffi)
+        return resolver
 
 def get_control(config, system_name):
+    from .ffi_library import IncludeFFI
     pango = config.maybe_ffi("libpango-1.0")
     gobject = config.maybe_ffi("libgobject-2.0")
-    config.setup_ffi("ts_common_library", pango=pango, gobject=gobject)
-
     if is_system_windows(system_name):
         win32 = config.maybe_ffi("libpangowin32-1.0")
-        config.setup_ffi("ts_win32_library", gobject=gobject, pango=pango, win32=win32)
-        from .ts_win32_library import WindowsNameResolver
-        return WindowsNameResolver(pango=pango, gobject=gobject, win32=win32)
+        assert win32
+        return config.include_resolver(IncludeFFI.include_windows, pango=pango, gobject=gobject, win32=win32)
     else:
         ft2 = config.maybe_ffi("libpangoft2-1.0")
-        from .ts_unix_library import UnixNameResolver
-        return UnixNameResolver(pango=pango, gobject=gobject, ft2=ft2)
-
+        return config.include_resolver(IncludeFFI.include_unix, pango=pango, gobject=gobject, ft2=ft2)
 
 class ReplaceMapping(object):
     def __init__(self, target_keys, convert):
