@@ -4,11 +4,10 @@ import unittest
 import sys
 import os
 
-def setUpModule():
-    sys.path.append(os.path.join(
-        os.path.abspath(os.path.dirname(os.path.dirname(__file__))),
-        "../"
-    ))
+sys.path.append(os.path.join(
+   os.path.abspath(os.path.dirname(os.path.dirname(__file__))),
+    "../../"
+   ))
 
 class OutputExtensionTests(unittest.TestCase):
     def _getTarget(self):
@@ -29,8 +28,8 @@ class OutputExtensionTests(unittest.TestCase):
         ## check file format
         with open(targetfile) as rf:
             content = rf.read().decode("utf-8")
-            self.assertIn(u"font-family: MS PGothic", content)
-            self.assertIn(u"font-family: ＭＳ Ｐゴシック", content)
+            self.assertTrue(u"font-family: MS PGothic" in content)
+            self.assertTrue(u"font-family: ＭＳ Ｐゴシック" in content)
 
         io = StringIO()
         stdout_old, sys.stdout = sys.stdout, io
@@ -40,8 +39,8 @@ class OutputExtensionTests(unittest.TestCase):
             sys.stdout = stdout_old
 
         result = io.getvalue().decode("utf-8")
-        self.assertIn(u"font-family:ＭＳ Ｐゴシック", result)
-        self.assertNotIn(u"font-family: MS PGothic", result)
+        self.assertTrue(u"font-family:ＭＳ Ｐゴシック" in result)
+        self.assertFalse(u"font-family: MS PGothic" in result)
 
 class InputExtensionTests(unittest.TestCase):
     def _getTarget(self):
@@ -60,8 +59,8 @@ class InputExtensionTests(unittest.TestCase):
         ## check file format
         with open(targetfile) as rf:
             content = rf.read().decode("utf-8")
-            self.assertIn(u"font-family: MS PGothic", content)
-            self.assertIn(u"font-family: ＭＳ Ｐゴシック", content)
+            self.assertTrue(u"font-family: MS PGothic" in content)
+            self.assertTrue(u"font-family: ＭＳ Ｐゴシック" in  content)
 
         io = StringIO()
         stdout_old, sys.stdout = sys.stdout, io
@@ -71,9 +70,8 @@ class InputExtensionTests(unittest.TestCase):
             sys.stdout = stdout_old
 
         result = io.getvalue().decode("utf-8")
-        print(result)
-        self.assertIn(u"font-family:ＭＳ Ｐゴシック", result)
-        self.assertNotIn(u"font-family: MS PGothic", result)
+	self.assertTrue(u"font-family:ＭＳ Ｐゴシック" in result)
+        self.assertFalse(u"font-family: MS PGothic" in result)
 
 if __name__ == '__main__':
     unittest.main()

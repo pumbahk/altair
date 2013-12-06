@@ -3,11 +3,12 @@ import unittest
 import sys
 import os
 
-def setUpModule():
-    sys.path.append(os.path.join(
-        os.path.abspath(os.path.dirname(os.path.dirname(__file__))),
-        "../"
-    ))
+sys.path.append(os.path.join(
+   os.path.abspath(os.path.dirname(os.path.dirname(__file__))),
+    "../../"
+   ))
+
+
 
 class ConfiguratorTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):

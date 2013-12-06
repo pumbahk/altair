@@ -3,11 +3,10 @@ import unittest
 import sys
 import os
 
-def setUpModule():
-    sys.path.append(os.path.join(
-        os.path.abspath(os.path.dirname(os.path.dirname(__file__))),
-        "../"
-    ))
+sys.path.append(os.path.join(
+      os.path.abspath(os.path.dirname(os.path.dirname(__file__))),
+      "../../"
+      ))
 
 class ReplaceMappingTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
@@ -43,8 +42,8 @@ class StyleReplacerTests(unittest.TestCase):
         mapping = self._getReplacer(target_keys)
         target = self._makeOne(mapping)
         result = target(style_attr)
-        self.assertIn("font-family:MS PGothic", result)
-        self.assertIn("-inkscape-font-specification:MS PGothic", result)
+        self.assertTrue("font-family:MS PGothic" in result)
+        self.assertTrue("-inkscape-font-specification:MS PGothic" in result)
 
     def test_it__ja(self):
         target_keys = ["font-family", "-inkscape-font-specification"]
@@ -53,8 +52,8 @@ class StyleReplacerTests(unittest.TestCase):
         mapping = self._getReplacer(target_keys)
         target = self._makeOne(mapping)
         result = target(style_attr)
-        self.assertIn("font-family:MS PGothic", result)
-        self.assertIn("-inkscape-font-specification:MS PGothic", result)
+        self.assertTrue("font-family:MS PGothic" in result)
+        self.assertTrue("-inkscape-font-specification:MS PGothic" in result)
 
 
 
