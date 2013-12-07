@@ -33,14 +33,14 @@ def upgrade():
     
     op.create_table(
         'AugusSeat',
-        sa.Column('id', Identifier, nullable=False, primary_key=True),
+        sa.Column('id', Identifier, primary_key=True),
         sa.Column('area_code', sa.Integer, nullable=False),
         sa.Column('info_code', sa.Integer, nullable=False),
         sa.Column('floor', sa.Unicode(32), nullable=False),
         sa.Column('column', sa.Unicode(32), nullable=False),
         sa.Column('num', sa.Unicode(32), nullable=False),
         sa.Column('augus_venue_id', Identifier, nullable=False),
-        sa.Column('seat_id', Identifier, unique=True),
+        sa.Column('seat_id', Identifier),
         # for super class
         sa.Column('created_at', sa.TIMESTAMP(),
                   server_default=text('CURRENT_TIMESTAMP'), nullable=False),
