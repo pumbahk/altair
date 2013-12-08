@@ -1,12 +1,16 @@
 #-*- coding: utf-8 -*-
 import os.path
 import time
+import itertools
 import collections
 from abc import ABCMeta, abstractmethod
 from zope.interface import Interface, Attribute, implementer
 from sqlalchemy.orm.exc import NoResultFound
 from pyramid.decorator import reify
 from altair.app.ticketing.core.models import Venue, Seat, AugusVenue, AugusSeat
+
+class NoSeat(Exception):
+    pass
 
 
 class SeatAugusSeatPairs(object):
@@ -32,10 +36,21 @@ class SeatAugusSeatPairs(object):
                                      .order_by(AugusSeat.seat_id)\
                                      .all()
 
+    def find_augus_seat(self, seat):
+        for augus_seat in self._augus_seats:
+            if seat.id == augus_seat.seat_id:
+                return augus_seat
+        return None
+
     def next(self):
         return self.__iter__
 
     def __iter__(self):
+        for seat in self._seats:
+            augus_seat = self.find_augus_seat(seat)
+            yield seat, augus_seat
+
+    def ___iter__(self):
         finder = self._find_augus_seat()
         finder.next() # ignore
         for seat in self._seats:
@@ -60,12 +75,22 @@ class SeatAugusSeatPairs(object):
         while True: # StopIterasion free
             yield None
 
+    def get_seat(self, *args, **kwds):
+        seats = [seat for seat in self._find_seat(*args, **kwds)] # raise NoSeat
+        return seats[0]
 
-    def find_pair(self, seat_id):
-        for seat, augus_seat in self:
+    def _find_seat(self, seat_id):
+        for seat in self._seats:
             if seat.id == seat_id:
-                return seat, augus_seat
-        raise ValueError('Not found pair: seat_id={0}'.format(seat_id))
+                yield seat
+                break
+        else:
+            raise NoSeat('no seat: {0}'.format(seat_id))
+                         
+    def find_pair(self, seat_id):
+        seat = self.get_seat(seat_id)
+        augus_seat = self.find_augus_seat(seat)        
+        return seat, augus_seat
 
 
 def _sjis(unistr):
@@ -158,7 +183,8 @@ class AugusCSVEditor(_CSVEditorBase):
         for seat, external_seat in pairs:
             entry = table.get_entry(seat, external_seat)
             csvlike.writerow(entry)
-    
+
+
 class CSVEditorFactory(object):
     @classmethod
     def create(cls, type_):
@@ -209,9 +235,8 @@ def get_or_create_augus_venue_from_code(code, venue_id):
 class AugusVenueImporter(object):
     def import_(self, csvlike, pairs):
         csvlike.next() # ignore header
-        datas = filter(lambda data: data.is_enable(),
-                       [EntryData(row) for row in csvlike])
-        augus_venue_codes = set([data.augus_venue_code for data in datas])
+        datas = [EntryData(row) for row in csvlike]
+        augus_venue_codes = set([data.augus_venue_code for data in datas if data.augus_venue_code != ''])
         augus_venue_code = None
         try:
             augus_venue_code = augus_venue_codes.pop()
@@ -225,22 +250,28 @@ class AugusVenueImporter(object):
                                                           pairs.venue_id)
         for data in datas:
             seat, augus_seat = pairs.find_pair(data.seat_id)
-
             other_augus_seat = AugusSeat.get(seat_id=seat.id)
-            if other_augus_seat and other_augus_seat.id != augus_seat.id: # remove link
-                other_augus_seat.seat_id = None
-                other_augus_seat.save()
-            
-            if augus_seat is None:
-                augus_seat = AugusSeat()
-            augus_seat.augus_venue_id = augus_venue.id
-            augus_seat.area_code = data.augus_seat_area_code
-            augus_seat.info_code = data.augus_seat_info_code
-            augus_seat.floor = data.augus_seat_floor
-            augus_seat.column = data.augus_seat_column
-            augus_seat.num = data.augus_seat_num
-            augus_seat.seat_id = seat.id
-            augus_seat.save()
+        
+            if data.is_enable():
+                # remove link
+                if other_augus_seat and other_augus_seat.id != augus_seat.id:
+                    other_augus_seat.seat_id = None
+                    other_augus_seat.save()
+                # make link
+                if augus_seat is None:
+                    augus_seat = AugusSeat()
+                augus_seat.augus_venue_id = augus_venue.id
+                augus_seat.area_code = data.augus_seat_area_code
+                augus_seat.info_code = data.augus_seat_info_code
+                augus_seat.floor = data.augus_seat_floor
+                augus_seat.column = data.augus_seat_column
+                augus_seat.num = data.augus_seat_num
+                augus_seat.seat_id = seat.id
+                augus_seat.save()
+            elif augus_seat:
+                # remove link
+                augus_seat.seat_id = None
+                augus_seat.save()
 
 
 class ImporterFactory(object):
