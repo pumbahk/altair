@@ -109,7 +109,7 @@ class AugusTable(_TableBase):
         ('augus_venue_code', lambda ag_seat: getattr(getattr(ag_seat, 'augus_venue', ''), 'code', '')),
         ('augus_seat_area_code', lambda ag_seat: getattr(ag_seat, 'area_code', '')),
         ('augus_seat_info_code', lambda ag_seat: getattr(ag_seat, 'info_code', '')),
-        ('augus_seat_floor', lambda ag_seat: getattr(ag_seat, 'foor', '')),
+        ('augus_seat_floor', lambda ag_seat: getattr(ag_seat, 'floor', '')),
         ('augus_seat_column', lambda ag_seat: getattr(ag_seat, 'column', '')),
         ('augus_seat_num', lambda ag_seat: getattr(ag_seat, 'num', '')),
         ))
@@ -207,7 +207,6 @@ def get_or_create_augus_venue_from_code(code, venue_id):
 
 
 class AugusVenueImporter(object):
-            
     def import_(self, csvlike, pairs):
         csvlike.next() # ignore header
         datas = filter(lambda data: data.is_enable(),
