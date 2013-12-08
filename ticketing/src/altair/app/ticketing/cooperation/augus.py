@@ -227,18 +227,18 @@ class AugusVenueImporter(object):
             seat, augus_seat = pairs.find_pair(data.seat_id)
 
             other_augus_seat = AugusSeat.get(seat_id=seat.id)
-            if other_augus_seat: # remove link
+            if other_augus_seat and other_augus_seat.id != augus_seat.id: # remove link
                 other_augus_seat.seat_id = None
                 other_augus_seat.save()
             
             if augus_seat is None:
                 augus_seat = AugusSeat()
-                augus_seat.augus_venue_id = augus_venue.id
-                augus_seat.area_code = data.augus_seat_area_code
-                augus_seat.info_code = data.augus_seat_info_code
-                augus_seat.floor = data.augus_seat_floor
-                augus_seat.column = data.augus_seat_column
-                augus_seat.num = data.augus_seat_num
+            augus_seat.augus_venue_id = augus_venue.id
+            augus_seat.area_code = data.augus_seat_area_code
+            augus_seat.info_code = data.augus_seat_info_code
+            augus_seat.floor = data.augus_seat_floor
+            augus_seat.column = data.augus_seat_column
+            augus_seat.num = data.augus_seat_num
             augus_seat.seat_id = seat.id
             augus_seat.save()
 
