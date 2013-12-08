@@ -3943,8 +3943,8 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_venue_id = Column(Identifier, ForeignKey('AugusVenue.id', ondelete='CASCADE'),
                             nullable=False)
     seat_id = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'))
-    organization = relationship('AugusVenue')
-    organization = relationship('Seat')    
+    augus_venue = relationship('AugusVenue', backref='augus_seats')
+    seat = relationship('Seat')
 
     created_at = Column(TIMESTAMP, nullable=False)
     updated_at = Column(TIMESTAMP, nullable=False)
