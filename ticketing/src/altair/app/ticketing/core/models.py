@@ -3905,7 +3905,7 @@ class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class CooperationTypeEnum(StandardEnum):
     augus = (1, u'オーガス')
-    gettie = (2, u'Gettie')
+    #gettie = (2, u'Gettie')
 
 
 class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -3920,11 +3920,6 @@ class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     created_at = Column(TIMESTAMP, nullable=False)
     updated_at = Column(TIMESTAMP, nullable=False)
     deleted_at = Column(TIMESTAMP, nullable=True)
-
-    @property
-    def site_id(self):
-        site_id = 1
-        return site_id
 
 
 class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
