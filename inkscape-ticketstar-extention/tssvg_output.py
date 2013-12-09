@@ -118,14 +118,9 @@ mapping = {
     "Webdings": u"Webdings",
     "Wingdings": u"Wingdings",
 }
-for k in mapping:
-    mapping[k] = mapping[k].encode("utf-8")
 
 def convert(familyname, mapping=mapping):
-    if familyname in mapping:
-        return mapping[familyname]
-    else:
-        return familyname
+    return mapping.get(familyname) or familyname
 
 target_keys = ["font-family", "-inkscape-font-specification"]
 
