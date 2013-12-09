@@ -5,9 +5,10 @@ import sys
 import os
 from functools import partial
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+import inkex
 from tssvg import (
-    TSSVGEffect, 
     ReplaceMapping, 
+    StyleReplacer
 )
 
 
@@ -127,6 +128,28 @@ def convert(familyname, mapping=mapping):
         return familyname
 
 target_keys = ["font-family", "-inkscape-font-specification"]
+
+
+class TSSVGEffect(inkex.Effect):
+    def __init__(self, mapping):
+        inkex.Effect.__init__(self, mapping)
+        self.replacer = StyleReplacer(mapping)
+        self.before_output_callbacks = []
+
+    def effect(self):
+        for e in self.document.iter():
+            if "style" in e.attrib:
+                new_attrib = self.replacer(e.attrib["style"])
+                e.attrib["style"] = new_attrib
+
+    def add_befoure_output(self, fn):
+        self.before_output_callbacks.append(fn)
+
+    def output(self):
+        """Serialize document into XML on stdout"""
+        for cb in self.before_output_callbacks:
+            cb(self)
+        self.document.write(sys.stdout, encoding="utf-8")
 
 def getapp(mapping=mapping):
     return TSSVGEffect(ReplaceMapping(target_keys, partial(convert, mapping=mapping)))

@@ -3,7 +3,6 @@ import os
 import sys
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 # from collections import OrderedDict 
-import inkex
 
 def is_system_windows(system_name):
     return system_name == "Windows"
@@ -87,27 +86,6 @@ class ReplaceMapping(object):
                 v = self.convert(v)
             arr.append((k,v))
         return arr
-
-class TSSVGEffect(inkex.Effect):
-    def __init__(self, mapping):
-        inkex.Effect.__init__(self, mapping)
-        self.replacer = StyleReplacer(mapping)
-        self.before_output_callbacks = []
-
-    def effect(self):
-        for e in self.document.iter():
-            if "style" in e.attrib:
-                new_attrib = self.replacer(e.attrib["style"])
-                e.attrib["style"] = new_attrib
-
-    def add_befoure_output(self, fn):
-        self.before_output_callbacks.append(fn)
-
-    def output(self):
-        """Serialize document into XML on stdout"""
-        for cb in self.before_output_callbacks:
-            cb(self)
-        self.document.write(sys.stdout, encoding="utf-8")
 
 class StyleReplacer(object):
     def __init__(self, use):
