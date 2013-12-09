@@ -98,6 +98,9 @@ def _sjis(unistr):
         return unistr.encode('sjis')
     except (UnicodeEncodeError, UnicodeDecodeError) as err:
         raise err.__class__(repr(unistr), *err.args[1:])
+    except AttributeError as err:
+        raise ValueError('The `unistr` should be unicode object: {0}'\
+                         .format(repr(unistr)))
 
         
 class _TableBase(object):

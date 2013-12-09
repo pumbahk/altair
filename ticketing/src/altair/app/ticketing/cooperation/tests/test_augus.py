@@ -52,8 +52,11 @@ class EncodeTest(TestCase):
         word = u'あるたいる'
         self.assertEqual(_sjis(word), word.encode('sjis'))
         
-        with self.assertRaises(UnicodeEncodeError):
-            _sjis('あるたいる'.encode('sjis'))
+        with self.assertRaises(UnicodeDecodeError):
+            _sjis(u'あるたいる'.encode('sjis'))
+            
+        with self.assertRaises(UnicodeDecodeError):
+            _sjis('あるたいる')
             
         with self.assertRaises(ValueError):
             _sjis(None)
@@ -76,7 +79,7 @@ class AugusTableTest(TestCase):
 
     def test_get_header(self):
         table = AugusTable()
-        header = table.get_heaer()
+        header = table.get_header()
         for header_elm, header_tmpl in zip(header, self.header_templates):
             self.assertEqual(header_elm, header_tmpl,
                              'invalid header: {0} (tempaltes={1})'\
