@@ -93,6 +93,7 @@ class SeatAugusSeatPairs(object):
         return seat, augus_seat
 
 
+
 def _sjis(unistr):
     try:
         return unistr.encode('sjis')
@@ -102,7 +103,16 @@ def _sjis(unistr):
         raise ValueError('The `unistr` should be unicode object: {0}'\
                          .format(repr(unistr)))
 
-        
+def _unsjis(msg):
+    try:
+        return msg.decode('sjis')
+    except (UnicodeEncodeError, UnicodeDecodeError) as err:
+        raise err.__class__(repr(msg), *err.args[1:])
+    except AttributeError as err:
+        raise ValueError('The `msg` should be encoded sjis string object: {0}'\
+                         .format(repr(msg)))
+
+
 class _TableBase(object):
     __metaclass__ = ABCMeta
     
@@ -137,9 +147,9 @@ class AugusTable(_TableBase):
         ('augus_venue_code', lambda ag_seat: getattr(getattr(ag_seat, 'augus_venue', ''), 'code', '')),
         ('augus_seat_area_code', lambda ag_seat: getattr(ag_seat, 'area_code', '')),
         ('augus_seat_info_code', lambda ag_seat: getattr(ag_seat, 'info_code', '')),
-        ('augus_seat_floor', lambda ag_seat: getattr(ag_seat, 'floor', '')),
-        ('augus_seat_column', lambda ag_seat: getattr(ag_seat, 'column', '')),
-        ('augus_seat_num', lambda ag_seat: getattr(ag_seat, 'num', '')),
+        ('augus_seat_floor', lambda ag_seat: _sjis(getattr(ag_seat, 'floor', ''))),
+        ('augus_seat_column', lambda ag_seat: _sjis(getattr(ag_seat, 'column', ''))),
+        ('augus_seat_num', lambda ag_seat: _sjis(getattr(ag_seat, 'num', ''))),
         ))
 
     def get_ext_entry(self, augus_seat, *args, **kwds):
@@ -203,16 +213,23 @@ def _long(word, default=None):
         else:
             return default
 
+class EntryFormatError(Exception):
+    pass
 
 class EntryData(object):
     def __init__(self, row):
-        self.seat_id = long(row[0])
-        self.augus_venue_code = _long(row[6], '')
-        self.augus_seat_area_code = _long(row[7], '')
-        self.augus_seat_info_code = _long(row[8], '')
-        self.augus_seat_floor = _sjis(row[9])
-        self.augus_seat_column = _sjis(row[10])
-        self.augus_seat_num = _sjis(row[11])
+        try:
+            self.seat_id = long(row[0])
+            self.augus_venue_code = _long(row[6], '')
+            self.augus_seat_area_code = _long(row[7], '')
+            self.augus_seat_info_code = _long(row[8], '')
+            self.augus_seat_floor = _unsjis(row[9])
+            self.augus_seat_column = _unsjis(row[10])
+            self.augus_seat_num = _unsjis(row[11])
+        except (ValueError, TypeError, IndexError,
+                UnicodeDecodeError, UnicodeEncodeError) as err:
+            raise EntryFormatError('Illegal format entry: {0}: {1}'\
+                                   .format(repr(row), repr(err)))
 
     def is_enable(self):
         return self.augus_venue_code != ''
@@ -238,7 +255,7 @@ def get_or_create_augus_venue_from_code(code, venue_id):
 class AugusVenueImporter(object):
     def import_(self, csvlike, pairs):
         csvlike.next() # ignore header
-        datas = [EntryData(row) for row in csvlike]
+        datas = [EntryData(row) for row in csvlike] # raise EntryFormatError
         augus_venue_codes = set([data.augus_venue_code for data in datas if data.augus_venue_code != ''])
         augus_venue_code = None
         try:
