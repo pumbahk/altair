@@ -1,6 +1,13 @@
 #-*- coding: utf-8 -*-
 from unittest import TestCase
+from mock import Mock
 from StringIO import StringIO
+
+from altair.app.ticketing.core.models import (
+    Seat,
+    AugusVenue,
+    AugusSeat,
+    )
 
 from altair.app.ticketing.cooperation.augus import (
     _sjis,
@@ -18,6 +25,54 @@ CSVDATA = """2500003,20130927164400,1917,,,,,,,,,,,,,,,,
 3,梅田芸術劇場メインホール,,,,0,1,1,29,1,6,47,6,47,0,0,0,1,1028958
 """
 
+class SamplePairsFactory(object):
+    def create(self):
+        venue_id = 1
+        seats = [Seat() for ii in range(0xff)]
+        augus_venue = AugusVenue()
+        augus_venue.save = Mock(return_value=None) # castration
+        augus_venue.id = 1
+        augus_venue.code = 555
+        augus_seats = []        
+        for ii, seat in enumerate(seats):
+            seat.save = Mock(return_value=None) # castration
+            seat.id = ii
+            seat.name = u'座席 {0}'.format(ii)
+            seat.seat_no = u'{0}'.format(ii)
+            seat.l0_id = u'l0-{0}'.format(ii)
+            seat.row_l0_id = u'row-l0-{0}'.format(ii)
+            seat.group_l0_id = u'group-l0-{0}'.format(ii)
+            if ii % 2:
+                augus_seat = AugusSeat()
+                augus_seat.id = ii
+                augus_seat.save = Mock(return_value=None) # castration
+                augus_seat.seat_id = seat.id
+                augus_seat.area_code = 999
+                augus_seat.info_code = 888
+                augus_seat.floor = '1'
+                augus_seat.column = u'あ'
+                augus_seat.num = u'{0}'.format(ii)
+                augus_seat.augus_venue = augus_venue
+                augus_seats.append(augus_seat)
+
+        for ii in range(len(seats), len(seats)+30):
+            augus_seat = AugusSeat()
+            augus_seat.id = ii
+            augus_seat.save = Mock(return_value=None)
+            augus_seat.seat_id = None
+            augus_seat.area_code = 999
+            augus_seat.info_code = 888
+            augus_seat.floor = '1'
+            augus_seat.column = u'あ'
+            augus_seat.num = u'{0}'.format(ii)
+            augus_seats.append(augus_seat)
+            
+        pairs = SeatAugusSeatPairs(venue_id)
+        pairs.load = Mock(return_value=None)
+        pairs._seats = seats
+        pairs._augus_seats = augus_seats
+        return pairs
+
 class AugusCSVImportTest(TestCase):
     def _test_get_original_venue(self):
         from altair.app.ticketing.cooperation.views import get_original_venue        
@@ -28,7 +83,6 @@ class AugusCSVImportTest(TestCase):
         self.assertEqual(venue.id, original_venue_id)
         self.assertEqual(venue.organization_id, organization_id)        
         self.assertEqual(venue.performance, None)
-    
 
     def _test_csv_import(self):
         """
@@ -86,3 +140,32 @@ class AugusTableTest(TestCase):
                              .format(header_elm, header_tmpl))
         self.assertEqual(len(header), len(self.header_templates),
                          'The number of header did not match.')
+
+    def test_get_entry(self):
+        factory = SamplePairsFactory()
+        pairs = factory.create()
+        table = AugusTable()
+        for seat, augus_seat in pairs:
+            entry = table.get_entry(seat, augus_seat)
+            self.assertEqual(entry[0], seat.id)
+            self.assertEqual(entry[1], _sjis(seat.name))
+            self.assertEqual(entry[2], _sjis(seat.seat_no))
+            self.assertEqual(entry[3], _sjis(seat.l0_id))
+            self.assertEqual(entry[4], _sjis(seat.group_l0_id))
+            self.assertEqual(entry[5], _sjis(seat.row_l0_id))
+            if augus_seat:
+                self.assertEqual(entry[6], augus_seat.augus_venue.code)
+                self.assertEqual(entry[7], augus_seat.area_code)
+                self.assertEqual(entry[8], augus_seat.info_code)
+                self.assertEqual(entry[9], augus_seat.floor)
+                self.assertEqual(entry[10], augus_seat.column)
+                self.assertEqual(entry[11], augus_seat.num)
+            else:
+                self.assertEqual(entry[6], '')
+                self.assertEqual(entry[7], '')
+                self.assertEqual(entry[8], '')
+                self.assertEqual(entry[9], '')
+                self.assertEqual(entry[10], '')
+                self.assertEqual(entry[11], '')
+
+
