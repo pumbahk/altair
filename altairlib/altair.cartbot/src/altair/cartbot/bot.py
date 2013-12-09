@@ -1,6 +1,5 @@
 # encoding: utf-8
 import time
-#import random
 import os
 import re
 from dateutil.parser import parse as parsedate
@@ -14,6 +13,7 @@ from lxmlmechanize.form import encode_urlencoded_form_data
 from lxmlmechanize.core import Mechanize, FORM_URLENCODE_MIME_TYPE
 from lxmlmechanize.urllib2ext.auth import KeyChain, KeyChainBackedAuthHandler, Credentials
 from cookielib import CookieJar
+
 
 class CartBotError(Exception):
     pass

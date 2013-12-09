@@ -162,27 +162,6 @@ def main():
             bot.log_output = options.logging 
             order_no = bot.buy_something()
 
-    # def run():
-    #     bot = LoggableCartBot(
-    #         url = options.url[0],
-    #         rakuten_auth_credentials=rakuten_auth_credentials,
-    #         fc_auth_credentials=fc_auth_credentials,
-    #         shipping_address=dict(config.items('shipping_address')),
-    #         credit_card_info=dict(config.items('credit_card_info')),
-    #         http_auth_credentials=http_auth_credentials,
-    #         retry_count=retry_count
-    #         )
-    #     bot.log_output = options.logging
-    #     for _ in range(repeat):
-    #         print 'REPEAT: {0}'.format(repr(bot))
-    #         while True:
-    #             order_no = bot.buy_something()
-    #             if order_no is None and not bot.all_sales_segments:
-    #                 break
-    #             if order_no is not None:
-    #                 print order_no
-    #             break
-
     threads = [threading.Thread(target=run, name='%d' % i) for i in range(concurrency)]
     for thread in threads:
         thread.start()
