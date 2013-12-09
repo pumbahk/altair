@@ -25,28 +25,19 @@ from .augus import (
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class CooperationView(BaseView):
 
-    @view_config(route_name='cooperation.index', request_method='GET',
-                 renderer='altair.app.ticketing:templates/cooperation/index.html')
-    def index(self):
-        sitename_venueid = (('google', 'http://www.goolge.com'),)
-        return {'sitename_venueid': sitename_venueid}
-
     @view_config(route_name='cooperation.show', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/show.html')
     def show(self):
-        venue_id = int(self.request.matchdict.get('venue_id', 0))        
-        from mock import Mock
-        site = Mock()
-        site.name = u'テスト'
+        venue = self.context.venue
         update_form = CooperationUpdateForm()
         download_form = CooperationDownloadForm()
         cooperation_type_form = CooperationTypeForm()
-        return {'site': site,
+        return {'venue': venue,
                 'update_form': update_form,
                 'download_form': download_form,
                 'display_modal': False,
-                'upload_url': self._upload_url(venue_id),
-                'download_url': self._download_url(venue_id),
+                'upload_url': self._upload_url(venue.id),
+                'download_url': self._download_url(venue.id),
                 'cooperation_type_form': cooperation_type_form,
                 }
 
