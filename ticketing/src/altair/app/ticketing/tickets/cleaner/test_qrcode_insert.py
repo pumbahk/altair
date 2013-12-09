@@ -49,7 +49,7 @@ class QRCodeInsertTests(unittest.TestCase):
 
     def test_not_qr_rect(self):
         from lxml import etree
-        from altair.app.ticketing.tickets.constants import SVG_NAMESPACE
+        from altair.svg.constants import SVG_NAMESPACE
 
         tree = etree.fromstring(self.svg)
         for x in tree.xpath("//n:rect", namespaces={"n": SVG_NAMESPACE}):
@@ -64,7 +64,7 @@ class QRCodeInsertTests(unittest.TestCase):
 
     def test_style_is_deleted(self):
         from lxml import etree
-        from altair.app.ticketing.tickets.constants import SVG_NAMESPACE
+        from altair.svg.constants import SVG_NAMESPACE
 
         tree = etree.fromstring(self.svg)
         for x in tree.xpath("//n:rect", namespaces={"n": SVG_NAMESPACE}):

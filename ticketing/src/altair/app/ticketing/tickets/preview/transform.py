@@ -6,14 +6,15 @@ logger = logging.getLogger(__name__)
 import re
 import ast
 from lxml import etree
-from altair.app.ticketing.tickets.utils import build_dict_from_product_item, as_user_unit
+from altair.app.ticketing.tickets.utils import build_dict_from_product_item
 from altair.app.ticketing.tickets.preview.materialize import svg_with_ticketformat
 from altair.app.ticketing.tickets.preview.fillvalues import template_fillvalues
 from altair.app.ticketing.tickets.preview.validators import parse, SVGTransformValidator, FillValuesFromModelsValidator
 
 from altair.app.ticketing.tickets.preview.fillvalues import TicketPreviewFillValuesException
 from . import TicketPreviewTransformException
-from ..constants import SVG_NAMESPACE
+from altair.svg.constants import SVG_NAMESPACE
+from altair.svg.geometry import as_user_unit
 
 def wrap_element(parent, tag, attrs):
     """

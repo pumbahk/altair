@@ -88,6 +88,23 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     _frontend_metadata_url = Column('metadata_url', String(255))
     _backend_metadata_url = Column('backend_metadata_url', String(255))
 
+class L0Seat(Base, BaseModel):
+    __tablename__  = 'L0Seat'
+    site_id = Column(Identifier, ForeignKey('Site.id', ondelete='CASCADE'), nullable=False)
+    l0_id       = Column(Unicode(48), nullable=False)
+    row_l0_id   = Column(Unicode(48), nullable=True)
+    group_l0_id = Column(Unicode(48), nullable=True)
+    name        = Column(Unicode(48), nullable=False, default=u'', server_default='')
+    seat_no     = Column(Unicode(50), nullable=True)
+    row_no      = Column(Unicode(50), nullable=True)
+    block_name  = Column(Unicode(50), nullable=True)
+    floor_name  = Column(Unicode(50), nullable=True)
+    gate_name   = Column(Unicode(50), nullable=True)
+
+    __table_args__ = (
+        PrimaryKeyConstraint(site_id, l0_id),
+        )
+
 class VenueArea_group_l0_id(Base):
     __tablename__   = "VenueArea_group_l0_id"
     venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), primary_key=True, nullable=False)

@@ -8,9 +8,11 @@ logger = logging.getLogger(__name__)
 from lxml import etree
 from StringIO import StringIO
 
+from altair.svg.constants import SVG_NAMESPACE
+
 from . import cleanup_svg
 from .normalize import normalize
-from ..constants import SVG_NAMESPACE, TS_SVG_EXT_NAMESPACE, INKSCAPE_NAMESPACE
+from ..constants import TS_SVG_EXT_NAMESPACE, INKSCAPE_NAMESPACE
 from ..convert import convert_svg
 from altair.app.ticketing.sej.ticket import SejTicketDataXml
 

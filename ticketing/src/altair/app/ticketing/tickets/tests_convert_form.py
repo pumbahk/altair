@@ -20,7 +20,7 @@ class FormTests(unittest.TestCase):
         m.query.filter_by.return_value.one.return_value = DummyResource(delivery_methods=[])
         from StringIO import StringIO
         from lxml.etree import fromstring
-        from .constants import SVG_NAMESPACE
+        from altair.svg.constants import SVG_NAMESPACE
 
         svg = u"""\
 <?xml version="1.0" encoding="UTF-8" ?>

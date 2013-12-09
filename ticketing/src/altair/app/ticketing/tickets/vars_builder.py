@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from lxml import etree
-from .constants import SVG_NAMESPACE
+from altair.svg.constants import SVG_NAMESPACE
 from datetime import datetime
 
 def safe_format(formatter, target, default=u""):

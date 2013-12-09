@@ -2,7 +2,6 @@
 
 from ..utils import StandardEnum
 
-SVG_NAMESPACE = u'http://www.w3.org/2000/svg'
 TS_SVG_EXT_NAMESPACE = u'http://xmlns.ticketstar.jp/svg-extension'
 INKSCAPE_NAMESPACE = u"http://www.inkscape.org/namespaces/inkscape"
 ORIENTATIONS = [ u'portrait', u'landscape' ]

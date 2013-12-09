@@ -18,11 +18,13 @@ from altair.pyramid_assets import get_resolver
 from altair.pyramid_assets.interfaces import IWritableAssetDescriptor
 
 from altair.app.ticketing.utils import myurljoin
-from altair.formhelpers.validators import JISX0208
+
+from altair.svg.constants import SVG_NAMESPACE
+
+from altair.app.ticketing.venues.parser import ObjectRetriever
 
 io_encoding = locale.getpreferredencoding()
 
-SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
 SITE_INFO_NAMESPACE = 'http://xmlns.ticketstar.jp/2012/site-info'
 
 verbose = False
@@ -48,124 +50,7 @@ def relativate(a, b):
     else:
         return abs_b[len(pfx) + 1:]
 
-class ObjectRetriever(object):
-    def __init__(self, doc):
-        self.prototype_cache = {}
-        self.doc = doc
-        self.object_cache = {}
-
-    def get_prototype(self, id):
-        proto = self.prototype_cache.get(id)
-        if proto is None:
-            proto_node = self.doc.find('.//{%s}prototype[@id="%s"]' % (SITE_INFO_NAMESPACE, id))
-            if proto_node is None:
-                raise FormatError("Prototype %s not found" % id)
-
-            proto = self.create_si_object_from_node(proto_node)
-            self.prototype_cache[id] = proto
-        return proto
-
-    def create_si_object_from_node(self, node):
-        object_ = {}
-        id = node.get('id')
-        if id is not None:
-            self.object_cache[id] = object_
-
-        proto_id = node.get('prototype')
-        proto = self.get_prototype(proto_id) if proto_id is not None else None
-
-        class_node = node.find('{%s}class' % SITE_INFO_NAMESPACE)
-        if class_node is None:
-            raise FormatError('<si:class> element does not exist under %s' % node)
-        class_name = class_node.text
-
-        if proto is not None:
-            if proto['class'] != class_name:
-                raise FormatError("the class name '%s' is not the same as that of the prototype '%s'" % class_name, proto['class']);
-            props = dict(proto['properties'])
-            colls = dict(proto['collections'])
-        else:
-            props = {}
-            colls = {}
-
-        for prop_node in node.findall('{%s}property' % SITE_INFO_NAMESPACE):
-            ref_id = prop_node.get('refid')
-            if ref_id is not None:
-                object__ = self.object_cache[ref_id]
-                props[prop_node.get('name')] = object__
-            else:
-                if prop_node.text is not None:
-                    props[prop_node.get('name')] = unicode(prop_node.text)
-                else:
-                    props[prop_node.get('name')] = ''
-
-        for coll_node in node.findall('{%s}collection' % SITE_INFO_NAMESPACE):
-            coll = []
-            for node_ in coll_node.findall('{%s}object' % SITE_INFO_NAMESPACE):
-                coll.append(self.create_si_object_from_node(node_))
-            colls[coll_node.get('name')] = coll
-
-        object_['id'] = id
-        object_['class'] = class_name
-        object_['properties'] = props
-        object_['collections'] = colls
-        return object_
-
-    def si_object_from_meta(self, node):
-        metadata = node.findall('{%s}metadata' % SVG_NAMESPACE)
-        if not metadata:
-            return None
-
-        obj = None
-
-        for m in metadata:
-            o = m.find('{%s}object' % SITE_INFO_NAMESPACE)
-            if o is not None:
-                if obj is not None:
-                    raise FormatError("Multiple <si:object> present under the metadata elements of the same level")
-                obj = self.create_si_object_from_node(o)
-                obj['_node'] = node
-                break
-
-        return obj
-
-    def retrieve_si_objects(self, nodes):
-        retval = []
-        for node in nodes:
-            if not node.tag.startswith('{%s}' % SVG_NAMESPACE):
-                continue
-            obj = self.si_object_from_meta(node)
-            child_objs = self.retrieve_si_objects(node.getchildren())
-            if obj is not None:
-                obj.setdefault('children', []).extend(child_objs)
-                retval.append(obj)
-            else:
-                retval.extend(child_objs)
-        return retval
-
-    def __call__(self):
-        self.check_error_chars()
-        objects = self.retrieve_si_objects([self.doc.getroot()])
-        if len(objects) == 0:
-            raise FormatError("No object defined in the root metadata element")
-        return self.retrieve_si_objects([self.doc.getroot()])[0]
-
-    def check_error_chars(self):
-        error_chars = set([ch for ch in self.generate_fail_characters()])
-        if error_chars:
-            raise ValidationError('Cannot use characters: {0}'.format(error_chars))
-
-    def generate_fail_characters(self):
-        root = self.doc.getroot()
-        nodes = root.xpath('//si:object', namespaces={'si': SITE_INFO_NAMESPACE})
-        for node in nodes:
-            obj = self.create_si_object_from_node(node)            
-            if obj['class'] in ('Block', 'Seat'):
-                name = obj['properties']['name']
-                for ch in JISX0208.generate_error_chars(name):
-                    yield ch
-
-def import_tree(registry, update, organization, tree, file, bundle_base_url=None, venue_id=None, max_adjacency=None):
+def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=None, venue_id=None, max_adjacency=None):
     # 論理削除をインストールする都合でコードの先頭でセッションが初期化
     # されてほしくないので、ここで import する
     from altair.app.ticketing.models import DBSession
@@ -179,9 +64,11 @@ def import_tree(registry, update, organization, tree, file, bundle_base_url=None
         SeatIndexType,
         SeatIndex,
         SeatAdjacencySet,
-        SeatAdjacency
+        SeatAdjacency,
+        L0Seat,
         )
 
+    tree = ObjectRetriever(xmldoc)()
     if tree['class'] != 'Venue':
         raise FormatError('The root object is not a Venue')
 
@@ -201,10 +88,12 @@ def import_tree(registry, update, organization, tree, file, bundle_base_url=None
         except MultipleResultsFound:
             print "More than one venues with the same name found; venue_id (--venue) needs to be given in order to specify the venue"
             return
+        l0_seats = dict((l0_seat.l0_id, l0_seat) for l0_seat in DBSession.query(L0Seat).filter_by(site_id=venue.site.id))
         venue.site.delete() # 論理削除
         venue.site = site
     else:
         site = Site(name=tree['properties']['name'], _backend_metadata_url=backend_metadata_url)
+        l0_seats = dict()
         venue = Venue(site=site, name=tree['properties']['name'])
         venue.organization = organization
 
@@ -275,12 +164,15 @@ def import_tree(registry, update, organization, tree, file, bundle_base_url=None
 
     new_seat_count = 0
     deleted_seat_count = 0
+    updated_seat_count = 0
     seats_given = set()
 
     seat_names_given = set()
 
     if update:
         seats = dict((seat.l0_id, seat) for seat in venue.seats)
+        if len(l0_seats) != len(seats):
+            raise ValidationError("ERROR: Number of existing l0 seats doesn't match to that of existing seats")
         print 'Number of existing seats: %d' % len(seats)
     else:
         seats = dict()
@@ -321,7 +213,7 @@ def import_tree(registry, update, organization, tree, file, bundle_base_url=None
                 seat_l0_id = seat_obj['_node'].get('id')
                 if seat_l0_id in seats_given:
                     # id重複
-                    raise LogicalError("Dupliate seat_l0_id: %s" % seat_l0_id)
+                    raise LogicalError("Duplicate seat_l0_id: %s" % seat_l0_id)
                 seats_given.add(seat_l0_id)
                 seat = seats.get(seat_l0_id)
                 if seat is None:
@@ -340,6 +232,33 @@ def import_tree(registry, update, organization, tree, file, bundle_base_url=None
                 floor = seat_obj['properties'].get('floor')
                 indexes = seat_obj['collections'].get('indexes')
                 seat_index = seat_obj['properties'].get('seat_index')
+
+                old_l0_seat = l0_seats.get(seat_l0_id)
+                if old_l0_seat.name != name or \
+                    old_l0_seat.row_l0_id != row_l0_id or \
+                    old_l0_seat.group_l0_id != group_l0_id or \
+                    old_l0_seat.seat_no != seat_no or \
+                    old_l0_seat.row_no != row_name or \
+                    old_l0_seat.block_name != block.name or \
+                    old_l0_seat.floor_name != floor or \
+                    old_l0_seat.gate_name != gate:
+                    print '[UPDATE] Seat(l0_id=%s)' % seat.l0_id
+                    updated_seat_count += 1
+
+                l0_seat = L0Seat(
+                    site_id=site.id,
+                    l0_id=seat_l0_id,
+                    row_l0_id=row_l0_id,
+                    group_l0_id=group_l0_id,
+                    name=name,
+                    seat_no=seat_no,
+                    row_no=row_name,
+                    block_name=block.name,
+                    floor_name=floor,
+                    gate_name=gate
+                    )
+                DBSession.add(l0_seat)
+
                 if seat_index is not None:
                     seat_order[seat_l0_id] = int(seat_index)    # for build adjacencies
                 if name is not None:
@@ -390,6 +309,7 @@ def import_tree(registry, update, organization, tree, file, bundle_base_url=None
         seat.delete() # 論理削除
 
     print 'Number of seats to be added: %d' % new_seat_count
+    print 'Number of seats to be updated: %d' % updated_seat_count 
     print 'Number of seats to be deleted: %d' % len(seats_to_be_deleted)
 
     for venue_area in venue_areas:
@@ -427,9 +347,8 @@ def import_or_update_svg(env, update, organization_name, file, bundle_base_url, 
         raise FormatError("The document element is not a SVG root element")
     title = root.find('{%s}title' % SVG_NAMESPACE)
     print '  Title: %s' % title.text.encode(io_encoding)
-    object_tree = ObjectRetriever(xmldoc)()
     try:
-        import_tree(env['registry'], update, organization, object_tree, file, bundle_base_url, venue_id, max_adjacency)
+        import_tree(env['registry'], update, organization, xmldoc, file, bundle_base_url, venue_id, max_adjacency)
         if dry_run:
             transaction.abort()
         else:
@@ -440,7 +359,7 @@ def import_or_update_svg(env, update, organization_name, file, bundle_base_url, 
  
 def main():
     parser = argparse.ArgumentParser(description='import venue data')
-    parser.add_argument('config_uri', metavar='config', type=str, nargs=1,
+    parser.add_argument('config_uri', metavar='config', type=str,
                         help='config file')
     parser.add_argument('svg_files', metavar='svg', type=str, nargs='+',
                         help='an svg file')
@@ -460,7 +379,7 @@ def main():
                         help='base url under which the site data will be put')
     parsed_args = parser.parse_args()
 
-    env = bootstrap(parsed_args.config_uri[0])
+    env = bootstrap(parsed_args.config_uri)
 
     if parsed_args.verbose:
         global verbose

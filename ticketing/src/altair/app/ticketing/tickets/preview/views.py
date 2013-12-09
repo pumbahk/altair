@@ -35,7 +35,8 @@ from .fetchsvg import fetch_svg_from_postdata
 from ..cleaner.api import get_validated_svg_cleaner
 from ..response import FileLikeResponse
 # todo: refactoring
-from ..utils import build_dict_from_product_item, parse_transform
+from ..utils import build_dict_from_product_item
+from altair.svg.geometry import parse_transform
 
 from . import TicketPreviewAPIException
 from . import TicketPreviewTransformException
