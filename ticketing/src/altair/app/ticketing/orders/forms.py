@@ -543,7 +543,7 @@ class OrderReserveForm(Form):
         validators=[
             Optional(),
             Zenkaku,
-            Length(max=255, message=u'255文字以内で入力してください'),
+            Length(max=10, message=u'10文字以内で入力してください'),
         ],
     )
     last_name_kana = TextField(
@@ -552,7 +552,7 @@ class OrderReserveForm(Form):
         validators=[
             Optional(),
             Katakana,
-            Length(max=255, message=u'255文字以内で入力してください'),
+            Length(max=10, message=u'10文字以内で入力してください'),
         ]
     )
     first_name = TextField(
@@ -561,7 +561,7 @@ class OrderReserveForm(Form):
         validators=[
             Optional(),
             Zenkaku,
-            Length(max=255, message=u'255文字以内で入力してください'),
+            Length(max=10, message=u'10文字以内で入力してください'),
         ]
     )
     first_name_kana = TextField(
@@ -570,7 +570,7 @@ class OrderReserveForm(Form):
         validators=[
             Optional(),
             Katakana,
-            Length(max=255, message=u'255文字以内で入力してください'),
+            Length(max=10, message=u'10文字以内で入力してください'),
         ]
     )
     tel_1 = TextField(
