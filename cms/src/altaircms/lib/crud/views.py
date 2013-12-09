@@ -43,6 +43,7 @@ class CRUDResource(RootFactory): ## fixme
                  override_templates=None, 
                  create_event=None, update_event=None, delete_event=None, 
                  circle_type="circle-master"):
+        super(RootFactory, self).__init__(request)
         self.override_templates = override_templates or {}
         self.prefix = prefix
         self.title = title
@@ -51,7 +52,6 @@ class CRUDResource(RootFactory): ## fixme
         self.mapper = mapper
         self.endpoint = endpoint
         self.filter_form = filter_form
-        self.request = request
 
         self.create_event = create_event
         self.update_event = update_event

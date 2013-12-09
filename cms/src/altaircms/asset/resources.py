@@ -4,4 +4,4 @@ from altaircms.security import RootFactory
 
 class AssetResource(RootFactory):
     def __init__(self, request):
-        self.request = request
+        super(RootFactory, self).__init__()
