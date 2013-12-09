@@ -86,7 +86,7 @@ class ReplaceMapping(object):
             if k in self.target_keys:
                 v = self.convert(v)
             arr.append((k,v))
-        return style_dict
+        return arr
 
 class TSSVGEffect(inkex.Effect):
     def __init__(self, mapping):

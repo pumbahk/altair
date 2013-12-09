@@ -14,11 +14,11 @@ class ReplaceMappingTests(unittest.TestCase):
         return ReplaceMapping(*args, **kwargs)
 
     def test_it(self):
-        D = {"x": "x", "y": "y", "z": "z"}
+        vals = [("x", "x"), ("y", "y"),( "z", "z")]
         target = self._makeOne(["x", "z"], lambda k: "*replaced*")
-        result = target(D)
+        result = target(vals)
         self.assertEqual(result, 
-                         {"x": "*replaced*", "y": "y", "z": "*replaced*"})
+                         [("x", "*replaced*"), ("y", "y"), ("z", "*replaced*")])
 
 class StyleReplacerTests(unittest.TestCase):
     def _getReplacer(self, target_keys):
