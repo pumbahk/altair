@@ -9,6 +9,7 @@ from altairsite.mobile.core.helper import get_week_map, get_performances_month_u
     , get_tickets, exist_value, get_sales_date
 from altairsite.mobile.core.helper import log_info, Markup
 from altairsite.mobile.core.disphelper import DispHelper
+from altairsite.mobile.core.eventhelper import EventHelper
 from altairsite.exceptions import UsersiteException
 
 
@@ -46,6 +47,7 @@ def move_eventdetail(request):
         , 'event_info':event_info
         , 'stock_status':stock_status
         , 'helper':DispHelper()
+        , 'event_helper':EventHelper()
     }
 
 @mobile_site_view_config(route_name='eventdetail', context=ValidationFailure

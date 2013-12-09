@@ -142,19 +142,15 @@ $(function () {
         <div class="sectionbox">
             <div class="sectionbox-inner">
                 <table>
-                    % for group in event.salessegment_groups:
-                      % for segment in group.salessegments:
-                        % if group.publicp and segment.publicp:
-                            <tr>
-                                <td>
-                                    ${render_sale(group.name)}
-                                </td>
-                                <td>
-                                    ${helper.disp_date(segment.start_on)}〜${helper.disp_date(segment.end_on)}<br/>
-                                </td>
-                            </tr>
-                        % endif
-                      % endfor
+                    % for sales_info in helper.get_summary_salessegment_group(event):
+                        <tr>
+                            <td>
+                                ${render_sale(sales_info['group_name'])}
+                            </td>
+                            <td>
+                                ${helper.disp_date(sales_info['start'])}〜${helper.disp_date(sales_info['end'])}<br/>
+                            </td>
+                        </tr>
                     % endfor
                 </table>
             </div>

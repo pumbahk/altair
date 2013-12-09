@@ -189,3 +189,7 @@ class SmartPhoneHelper(object):
                     if perf.prefecture == pref:
                         return perf.venue
         return venue
+
+    def get_summary_salessegment_group(self, event):
+        helper = EventHelper()
+        return helper.get_summary_salessegment_group(event)
