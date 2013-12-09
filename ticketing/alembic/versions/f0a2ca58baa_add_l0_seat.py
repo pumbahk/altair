@@ -1,14 +1,14 @@
 """add_l0_seat
 
 Revision ID: f0a2ca58baa
-Revises: 1748d0eee30b
+Revises: 34e2d99d2c90
 Create Date: 2013-11-07 21:37:23.727949
 
 """
 
 # revision identifiers, used by Alembic.
 revision = 'f0a2ca58baa'
-down_revision = '1748d0eee30b'
+down_revision = '34e2d99d2c90'
 
 from alembic import op
 import sqlalchemy as sa
