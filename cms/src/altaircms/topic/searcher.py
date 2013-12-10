@@ -32,7 +32,7 @@ PromotionPageListSearchSchemaList = [
     ]
 
 PromotionListTagOnly = [
-    sl.LikeSearchSchema(Promotion, "search", model_attribute="text"),
+    sl.LikeSearchSchema(PromotionTag, "search", model_attribute="label"), 
     ]
 TopcontentUnitListSearchSchemaList = [
     sl.LikeSearchSchema(TopcontentTag, "search", model_attribute="label"), 
@@ -49,7 +49,7 @@ TopcontentPageListSearchSchemaList = [
     ]
 
 TopcontentListTagOnly = [
-    sl.LikeSearchSchema(Topcontent, "search", model_attribute="title"),
+    sl.LikeSearchSchema(TopcontentTag, "search", model_attribute="label"), 
     ]
 
 TopicUnitListSearchSchemaList = [
@@ -67,7 +67,7 @@ TopicPageListSearchSchemaList = [
     ]
 
 TopicListTagOnly = [
-    sl.LikeSearchSchema(Topic, "search", model_attribute="title"),
+    sl.LikeSearchSchema(TopicTag, "search", model_attribute="label"), 
     ]
 
 class TopicUnitListSearcher(object):
