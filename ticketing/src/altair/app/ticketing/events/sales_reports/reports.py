@@ -135,6 +135,9 @@ class SalesTotalReporter(object):
 
         query = query.join(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.reporting==True)\
             .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(self.stock_holder_ids))
+        query = self._create_range_where(query, self.form.limited_from.data, self.form.limited_to.data, \
+            SalesSegment.start_at, SalesSegment.end_at)
+
         query = self.add_form_filter(query)
 
         if self.group_by == Performance.id:
@@ -182,15 +185,15 @@ class SalesTotalReporter(object):
             query = query.filter(where)
         elif from_date:
             where = (
-                (from_date <= from_target) |
-                (from_date <= from_target) & (from_target <= (from_date + timedelta(days=1))) & (to_target is None) |
-                (from_target <= from_date) & (from_date <= to_target))
+                (from_target <= from_date) & (from_date <= to_target) & (from_target <= (from_date + timedelta(days=1))) & (from_date <= (from_date + timedelta(days=1))) |
+                (from_date <= to_target) & (to_target <= (from_date + timedelta(days=1))) |
+                (from_date <= from_target) & (from_target <= (from_date + timedelta(days=1))))
             query = query.filter(where)
         elif to_date:
             where = (
-                (to_target <= to_date.data) |
-                (from_target <= to_date.data) & (to_date.data <= to_target) |
-                ((to_date + timedelta(days=-1)) <= from_target) & (from_target <= to_date) & (to_target is None))
+                (from_target <= (to_date + timedelta(days=-1))) & ((to_date + timedelta(days=-1)) <= to_target) & (from_target <= to_date) & ((to_date + timedelta(days=-1)) <= to_date) |
+                ((to_date + timedelta(days=-1)) <= to_target) & (to_target <= to_date) |
+                ((to_date + timedelta(days=-1)) <= from_target) & (from_target <= to_date))
             query = query.filter(where)
         return query
 
