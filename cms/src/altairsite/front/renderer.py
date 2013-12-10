@@ -2,7 +2,7 @@
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from pyramid.renderers import RendererHelper    
+from pyramid.renderers import RendererHelper
 from pyramid.mako_templating import IMakoLookup
 from pyramid.decorator import reify
 from zope.interface import Interface, implementer, Attribute
@@ -12,14 +12,15 @@ from altair.pyramid_boto.s3.connection import DefaultS3ConnectionFactory, Key
 import logging
 logger = logging.getLogger(__file__)
 
-from altaircms.widget.tree.proxy import WidgetTreeProxy
-from .bsettings import BlockSettings
-from altaircms.models import Performance
-from .. import pyramidlayout
-from ..pyramidlayout import get_subcategories_from_page #obsolete
 from mako.template import Template
 from pyramid.httpexceptions import HTTPNotFound
 
+from altaircms.cachelib import FileCacheStore, ForAtomic
+from altaircms.widget.tree.proxy import WidgetTreeProxy
+from altaircms.models import Performance
+from .. import pyramidlayout
+from ..pyramidlayout import get_subcategories_from_page #obsolete
+from .bsettings import BlockSettings
 
 class IInterceptHandler(Interface):
     def need_refresh(last_modified_at):
@@ -57,6 +58,42 @@ class LayoutModelLookupWrapperFactory(object):
             self.prefix, self.directory_spec, layout.updated_at, self.loader)
         return LookupInterceptWrapper(lookup, handler)
 
+class CompositeLoader(object):
+    def __init__(self, cache_loader, loader):
+        self.cache_loader = cache_loader
+        self.loader = loader
+        self.queue = []
+
+    def __call__(self, env, name, normalized_key):
+        v = self.cache_loader(env, name, normalized_key)
+        # logger.info("** cached value: {}, {}".format(v[:20] if v else v, normalized_key))
+        if v is not None:
+            return v
+        logger.warn("loader:%s, normalized_key:%s 's cache is not found", self.cache_loader.__class__.__name__, normalized_key)
+        v = self.loader(env, name, normalized_key)
+        if v is not None:
+            self.cache_loader.create(env, name, normalized_key, v)
+        return v
+
+class FileCacheLoader(object):
+    def __init__(self, kwargs, atomic_kwargs):
+        self.cache = FileCacheStore(kwargs)
+        self.atomic = ForAtomic(atomic_kwargs)
+
+    def create(self, env, name, normalized_key, v):
+        # logger.info("*****store data {}".format(normalized_key))
+        with self.atomic.atomic(normalized_key):
+            self.cache.set(normalized_key, v)
+
+    def __call__(self, env, name, normalized_key):
+        status = self.atomic.is_requesting(normalized_key)
+        # logger.info("** requesting: {}, {}".format(status, normalized_key))
+        if status:
+            return None
+        with self.atomic.atomic(normalized_key):
+            # logger.info("** get from cache. {}".format(normalized_key))
+            return self.cache.get(normalized_key)
+
 class S3Loader(object):
     def __init__(self, bucket_name, access_key, secret_key):
         self.connection_factory = DefaultS3ConnectionFactory(access_key, secret_key)
@@ -65,16 +102,17 @@ class S3Loader(object):
     @reify
     def connection(self):
         return self.connection_factory()
-        
+
     @reify
     def bucket(self):
         return self.connection.get_bucket(self.bucket_name)
 
-    def __call__(self, uri):
+    def __call__(self, env, name, normalized_key):
+        uri = env.build_url(name) #xxx:
         k = Key(self.bucket)
         k.key = uri
         return k.get_contents_as_string()
-        
+
 
 @implementer(IInterceptHandler)
 class LayoutModelLookupInterceptHandler(object):
@@ -86,7 +124,7 @@ class LayoutModelLookupInterceptHandler(object):
 
     def need_intercept(self, uri):
         return self.layout_spec in uri and self.uploaded_at
-        
+
     def need_refresh(self, last_modified_at):
         return last_modified_at and self.uploaded_at and self.uploaded_at_as_time > last_modified_at
 
@@ -96,10 +134,10 @@ class LayoutModelLookupInterceptHandler(object):
             return "{}@{}".format(adjusted, self.uploaded_at_as_string)
         return adjusted
 
-    def load_template(self, lookup, name, uri, module_filename=None):
+    def load_template(self, lookup, name, normalized_key, module_filename=None):
         try:
-            logger.info("load template -- name: {name}".format(name=name))
-            string = self.loader(self.build_url(name))
+            logger.info("load template -- normalized_key: {normalized_key}".format(normalized_key=normalized_key))
+            string = self.loader(self, name, normalized_key)
             return Template(
                 text=string, 
                 lookup=lookup,
@@ -155,7 +193,7 @@ class LookupInterceptWrapper(object):
         else:
             return template
 
-    def _load(self, name, uri):
+    def _load(self, uri, adjusted):
         self._mutex.acquire()
         try:
             try:
@@ -165,7 +203,7 @@ class LookupInterceptWrapper(object):
             except KeyError:
                 pass
             try:
-                self._collection[uri] = template = self.handler.load_template(self, name, uri)
+                self._collection[adjusted] = template = self.handler.load_template(self, uri, adjusted)
                 return template
             except:
                 # if compilation fails etc, ensure

@@ -35,26 +35,14 @@ def directory_validate(basedir, tmpdir):
     return True
 
 from .fetcher import CACHE_MAX_AGE
-from .fetcher import FetcherFromFileSystem
-from .fetcher import FetcherFromNetwork
-from .fetcher import CachedFetcher
 from .fetcher import ResponseMaker
-from .interfaces import IStaticPageCache
-
-def get_static_page_cache(request):
-    return request.registry.queryUtility(IStaticPageCache)
+from .interfaces import IStaticPageDataFetcherFactory
 
 def get_static_page_fetcher(request, static_page):
     static_page_utility = get_static_page_utility(request)
-    cache = get_static_page_cache(request)
-    if static_page.uploaded_at:
-        fetcher = FetcherFromNetwork(request, static_page, static_page_utility) 
-    else:
-        fetcher = FetcherFromFileSystem(request, static_page, static_page_utility)
-    if cache:
-        return CachedFetcher(fetcher, cache)
-    else:
-        return fetcher
+    k = "network" if static_page.uploaded_at else "filesystem"
+    factory = request.registry.queryUtility(IStaticPageDataFetcherFactory, name=k)
+    return factory(request, static_page, static_page_utility)
 
 def as_static_page_response(request, static_page, url, force_original=False, path=None, cache_max_age=CACHE_MAX_AGE):
     data = get_static_page_fetcher(request, static_page).fetch(url, path)

@@ -1,8 +1,6 @@
 # -*- coding:utf-8 -*-
 import logging
 logger = logging.getLogger(__name__)
-from datetime import datetime
-import contextlib
 
 from zope.interface import (
     Interface,
@@ -10,21 +8,28 @@ from zope.interface import (
     provider,
     providedBy
 )
-from beaker.cache import Cache
 from pyramid.response import Response
 from ..tracking import ITrackingImageGenerator
+from altaircms.cachelib import (
+    ICacheStore,
+    DummyAtomic,
+    ForAtomic,
+    clear_cache,
+    FileCacheStore, 
+    OnMemoryCacheStore
+)
 from altair.preview.api import get_preview_request_condition
 from pyramid.interfaces import IDict
 
-class ICacheTweensSetting(IDict):
-    pass
-    # expired_at = Attribute("expired")
-
-class IFrontPageCache(Interface):
+class IFrontPageCache(ICacheStore):
     def get(request, k):
         pass
     def set(request, k, v):
         pass
+
+class ICacheTweensSetting(IDict):
+    pass
+    # expired_at = Attribute("expired")
 
 class ICacheKeyGenerator(Interface):
     def __call__(request):
@@ -34,58 +39,6 @@ class ICacheValueMutator(Interface):
     def __call__(request, v):
         pass
 
-
-@implementer(IFrontPageCache)
-class OnMemoryFrontPageCacher(object):
-    def __init__(self):
-        self.cache = {}
-
-    def get(self, request, k):
-        return self.cache.get(k)
-
-    def set(self, request, k, v):
-        self.cache[k] = v
-
-
-def clear_cache(cache, k):
-    try:
-        cache.remove_value(k)
-    except (ValueError, EOFError): #insecure string
-        logger.warn("clear_cache: k={k} insecure string found. front page remove".format(k=k))
-        handler = cache._get_value(k).namespace
-        handler.do_remove()
-    except Exception as e:
-        logger.error(repr(e))
-        logger.warn("clear_cache: k={k} insecure string found. remove".format(k=k))
-        handler = cache._get_value(k).namespace
-        handler.do_remove()
-        raise
-
-@implementer(IFrontPageCache)
-class FrontPageCacher(object):
-    k = "page"
-    def __init__(self, kwargs):
-        self.kwargs = kwargs
-
-    def get(self, request, k):
-        try:
-            cache = Cache._get_cache(k, self.kwargs)
-            return cache[self.k]
-        except KeyError as e:
-            return None
-        except (ValueError, EOFError) as e:
-            logger.warn(repr(e))
-            clear_cache(cache, self.k)
-            return None
-
-    def set(self, request, k, v):
-        try:
-            cache = Cache._get_cache(k, self.kwargs)
-            cache[self.k] = v
-        except (KeyError, ValueError, EOFError) as e:
-            logger.warn(repr(e))
-            clear_cache(cache, self.k)
-
 @implementer(IFrontPageCache)
 class WrappedFrontPageCache(object):
     def __init__(self, cache, mutator):
@@ -93,52 +46,13 @@ class WrappedFrontPageCache(object):
         self.mutator = mutator
 
     def get(self, request, k):
-        v = self.cache.get(request, k)
+        v = self.cache.get(k)
         if v is None:
             return None
         return self.mutator(request, v)
 
     def set(self, request, k, v):
-        self.cache.set(request, k, v)
-
-# todo:rename
-class DummyAtomic(object):
-    def is_requesting(self, k):
-        return False
-
-    @contextlib.contextmanager
-    def atomic(self, k):
-        yield
-
-class ForAtomic(object):
-    k = "fetching"
-    def __init__(self, kwargs):
-        self.kwargs = kwargs
-
-    def is_requesting(self, k):
-        fetching = Cache._get_cache(k, self.kwargs)
-        return "fethcing" in fetching
-
-    def start_requsting(self, k):
-        try:
-            fetching = Cache._get_cache(k, self.kwargs)
-            fetching[self.k] = datetime.now()
-        except (KeyError, ValueError, EOFError) as e:
-            logger.warn(repr(e))
-            clear_cache(fetching, self.k)
-
-    def end_requesting(self, k):
-        fetching = Cache._get_cache(k, self.kwargs)
-        clear_cache(fetching, self.k)
-
-    @contextlib.contextmanager
-    def atomic(self, k):
-        try:
-            self.start_requsting(k)
-            yield
-        finally:
-            self.end_requesting(k)
-
+        self.cache.set(k, v)
 
 @implementer(ICacheKeyGenerator)
 class CacheKeyGenerator(object):
@@ -153,6 +67,8 @@ def update_browser_id(request, text):
     gen = request.registry.getUtility(ITrackingImageGenerator)
     return gen.replace(request, text)
 
+
+## api
 def get_key_generator(request):
     return request.registry.adapters.lookup([providedBy(request)], ICacheKeyGenerator)
 
@@ -170,6 +86,9 @@ def cached_view_tween(handler, registry):
     def tween(request):
         ## getかpreviewリクエストの時はcacheしない
         if request.method != "GET":
+            return handler(request)
+
+        if "_nocache" in request.GET:
             return handler(request)
 
         # logger.debug("req:"+request.path)

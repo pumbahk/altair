@@ -9,16 +9,24 @@ def install_resolver(config):
     config.registry.registerUtility(layout_lookup, ILayoutModelResolver)
 
 def install_lookupwrapper(config, name="intercept"):
+    from beaker.cache import cache_regions #xxx:
     from pyramid.mako_templating import IMakoLookup
-    from altairsite.front.renderer import ILookupWrapperFactory
-    from altairsite.front.renderer import LayoutModelLookupWrapperFactory
-    from altairsite.front.renderer import S3Loader
+    from altairsite.front.renderer import (
+        ILookupWrapperFactory,
+        LayoutModelLookupWrapperFactory,
+        S3Loader,
+        FileCacheLoader,
+        CompositeLoader
+    )
     settings = config.registry.settings
-    factory = LayoutModelLookupWrapperFactory(directory_spec=settings["altaircms.layout_directory"], 
-                                              loader=S3Loader(bucket_name=settings["s3.bucket_name"], 
-                                                              access_key=settings["s3.access_key"],                                               
-                                                              secret_key=settings["s3.secret_key"], 
-                                                              ), 
+    #assert cache_regions["altaircms.layout.filedata"]["expire"] == 5724000
+    loader = CompositeLoader(FileCacheLoader(cache_regions["altaircms.layout.filedata"],
+                                             cache_regions["altaircms.fetching.filedata"]),
+                             S3Loader(bucket_name=settings["s3.bucket_name"],
+                                      access_key=settings["s3.access_key"],
+                                      secret_key=settings["s3.secret_key"],))
+    factory = LayoutModelLookupWrapperFactory(directory_spec=settings["altaircms.layout_directory"],
+                                              loader=loader,
                                               prefix=settings["altaircms.layout_s3prefix"])
     config.registry.adapters.register([IMakoLookup], ILookupWrapperFactory, name=name, value=factory)
 
@@ -38,14 +46,14 @@ def install_pagecache(config):
     from beaker.cache import cache_regions #xxx:
     from .cache import (
         IFrontPageCache,
-        FrontPageCacher,
+        FileCacheStore,
         WrappedFrontPageCache,
         update_browser_id,
         ICacheTweensSetting
     )
     fetching_kwargs = cache_regions["altaircms.fetching.filedata"]
     kwargs = cache_regions["altaircms.frontpage.filedata"]
-    front_page_cache = WrappedFrontPageCache(FrontPageCacher(kwargs), update_browser_id)
+    front_page_cache = WrappedFrontPageCache(FileCacheStore(kwargs), update_browser_id)
     config.registry.registerUtility(front_page_cache, IFrontPageCache)
     tween_settings = {"expire": kwargs["expire"], "kwargs": fetching_kwargs}
     config.registry.registerUtility(tween_settings, ICacheTweensSetting)

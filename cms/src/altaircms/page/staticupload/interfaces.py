@@ -9,5 +9,6 @@ class IStaticPageDataFetcher(Interface):
     def fetch(url, path):
         pass
 
-class IStaticPageCache(Interface):
-    cache = Attribute("beacker.cache.Cache")
+class IStaticPageDataFetcherFactory(Interface):
+    def __call__(request, static_page, utility):
+        pass
