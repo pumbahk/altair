@@ -14,6 +14,8 @@ from altair.app.ticketing.cooperation.augus import (
     _sjis,
     SeatAugusSeatPairs,
     AugusTable,
+    ImporterFactory,
+    AugusVenueImporter,
     )
 
 class SamplePairsFactory(object):
@@ -148,9 +150,9 @@ class AugusTableTest(TestCase):
                 self.assertEqual(entry[6], augus_seat.augus_venue.code)
                 self.assertEqual(entry[7], augus_seat.area_code)
                 self.assertEqual(entry[8], augus_seat.info_code)
-                self.assertEqual(entry[9], augus_seat.floor)
-                self.assertEqual(entry[10], augus_seat.column)
-                self.assertEqual(entry[11], augus_seat.num)
+                self.assertEqual(entry[9], _sjis(augus_seat.floor))
+                self.assertEqual(entry[10], _sjis(augus_seat.column))
+                self.assertEqual(entry[11], _sjis(augus_seat.num))
             else:
                 self.assertEqual(entry[6], '')
                 self.assertEqual(entry[7], '')
@@ -165,5 +167,5 @@ class ImporterFactoryTest(TestCase):
                       )
         
         for typ, class_ in type_class:
-            importer = ImporterFactory(typ)
+            importer = ImporterFactory.create(typ)
             self.assertIsInstance(importer, class_)
