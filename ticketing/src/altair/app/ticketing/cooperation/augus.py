@@ -261,7 +261,7 @@ class AugusVenueImporter(object):
         try:
             augus_venue_code = augus_venue_codes.pop()
         except KeyError:
-            AugusSeatImportError('No augus venue codes')
+            raise AugusSeatImportError('No augus venue codes')
         if augus_venue_codes:
             AugusSeatImportError('mupliple augus venue codes: {0}'.format(
                 [augus_venue_code] + list(augus_venue_codes)))
