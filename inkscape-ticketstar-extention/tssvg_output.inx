@@ -3,10 +3,10 @@
     <_name>TS.SVG Output</_name>
     <id>jp.ticketstar.output.tssvg</id>
     <output>
-        <extension>.ts.svg</extension>
+        <extension>.tssvg</extension>
         <mimetype>text/xml+svg</mimetype>
-        <_filetypename>TS.SVG (*.ts.svg)</_filetypename>
-        <_filetypetooltip>TS.SVG format</_filetypetooltip>
+        <_filetypename>TSSVG (*.ts.svg)</_filetypename>
+        <_filetypetooltip>チケットスター券面フォーマット</_filetypetooltip>
     </output>
     <script>
       <command reldir="extensions" interpreter="python">tssvg_output.py</command>

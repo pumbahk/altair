@@ -5,10 +5,10 @@
 	<dependency type="executable" location="extensions">inkex.py</dependency>
 	<dependency type="executable" location="extensions">tssvg_input.py</dependency>
     <input>
-        <extension>.ts.svg</extension>
+        <extension>.tssvg</extension>
         <mimetype>text/xml+svg</mimetype>
-        <_filetypename>TS.SVG (*.ts.svg)</_filetypename>
-        <_filetypetooltip>TS.SVG format</_filetypetooltip>
+        <_filetypename>TSSVG (*.tssvg)</_filetypename>
+        <_filetypetooltip>チケットスター券面フォーマット</_filetypetooltip>
     </input>
     <script>
       <command reldir="extensions" interpreter="python">tssvg_input.py</command>
