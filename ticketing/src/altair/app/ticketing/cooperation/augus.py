@@ -9,8 +9,20 @@ from sqlalchemy.orm.exc import NoResultFound
 from pyramid.decorator import reify
 from altair.app.ticketing.core.models import Venue, Seat, AugusVenue, AugusSeat
 
-class NoSeat(Exception):
+class AugusError(Exception):
     pass
+
+class NoSeatError(AugusError):
+    pass
+
+class AbnormalTimestampFormatError(AugusError):
+    pass
+
+class EntryFormatError(AugusError):
+    pass
+
+class SeatImportError(AugusError):
+    pass    
 
 
 class SeatAugusSeatPairs(object):
@@ -76,7 +88,7 @@ class SeatAugusSeatPairs(object):
             yield None
 
     def get_seat(self, *args, **kwds):
-        seats = [seat for seat in self._find_seat(*args, **kwds)] # raise NoSeat
+        seats = [seat for seat in self._find_seat(*args, **kwds)] # raise NoSeatError
         return seats[0]
 
     def _find_seat(self, seat_id):
@@ -85,7 +97,7 @@ class SeatAugusSeatPairs(object):
                 yield seat
                 break
         else:
-            raise NoSeat('no seat: {0}'.format(seat_id))
+            raise NoSeatError('no seat: {0}'.format(seat_id))
                          
     def find_pair(self, seat_id):
         seat = self.get_seat(seat_id)
@@ -101,7 +113,7 @@ def _sjis(unistr):
         raise err.__class__(repr(unistr), *err.args[1:])
     except AttributeError as err:
         raise ValueError('The `unistr` should be unicode object: {0}'\
-                         .format(repr(unistr)))
+                        .format(repr(unistr)))                        
 
 def _unsjis(msg):
     try:
@@ -155,9 +167,6 @@ class AugusTable(_TableBase):
     def get_ext_entry(self, augus_seat, *args, **kwds):
         return [getter(augus_seat) for getter in self.EXT_HEADER_GETTER.values()]
 
-
-class AbormalTimestampFormatError(Exception):
-    pass
 
 
 class _CSVEditorBase(object):
@@ -213,9 +222,6 @@ def _long(word, default=None):
         else:
             return default
 
-class EntryFormatError(Exception):
-    pass
-
 class EntryData(object):
     def __init__(self, row):
         try:
@@ -234,9 +240,6 @@ class EntryData(object):
     def is_enable(self):
         return self.augus_venue_code != ''
 
-
-class AugusSeatImportError(Exception):
-    pass
 
 
 def get_or_create_augus_venue_from_code(code, venue_id):
@@ -261,9 +264,9 @@ class AugusVenueImporter(object):
         try:
             augus_venue_code = augus_venue_codes.pop()
         except KeyError:
-            AugusSeatImportError('No augus venue codes')
+            raise SeatImportError('No augus venue codes')
         if augus_venue_codes:
-            AugusSeatImportError('mupliple augus venue codes: {0}'.format(
+            raise SeatImportError('mupliple augus venue codes: {0}'.format(
                 [augus_venue_code] + list(augus_venue_codes)))
 
         augus_venue = get_or_create_augus_venue_from_code(augus_venue_code,

@@ -7,23 +7,16 @@ from altair.app.ticketing.core.models import (
     Seat,
     AugusVenue,
     AugusSeat,
+    CooperationTypeEnum,
     )
 
 from altair.app.ticketing.cooperation.augus import (
     _sjis,
     SeatAugusSeatPairs,
     AugusTable,
+    ImporterFactory,
+    AugusVenueImporter,
     )
-
-CSVDATA = """2500003,20130927164400,1917,,,,,,,,,,,,,,,,
-3,梅田芸術劇場メインホール,,,,0,1,1,23,1,6,40,6,40,0,0,0,1,1028952
-3,梅田芸術劇場メインホール,,,,0,1,1,24,1,6,41,6,41,0,0,0,1,1028953
-3,梅田芸術劇場メインホール,,,,0,1,1,25,1,6,42,6,42,0,0,0,1,1028954
-3,梅田芸術劇場メインホール,,,,0,1,1,26,1,6,44,6,44,0,0,0,1,1028955
-3,梅田芸術劇場メインホール,,,,0,1,1,27,1,6,45,6,45,0,0,0,1,1028956
-3,梅田芸術劇場メインホール,,,,0,1,1,28,1,6,46,6,46,0,0,0,1,1028957
-3,梅田芸術劇場メインホール,,,,0,1,1,29,1,6,47,6,47,0,0,0,1,1028958
-"""
 
 class SamplePairsFactory(object):
     def create(self):
@@ -157,9 +150,9 @@ class AugusTableTest(TestCase):
                 self.assertEqual(entry[6], augus_seat.augus_venue.code)
                 self.assertEqual(entry[7], augus_seat.area_code)
                 self.assertEqual(entry[8], augus_seat.info_code)
-                self.assertEqual(entry[9], augus_seat.floor)
-                self.assertEqual(entry[10], augus_seat.column)
-                self.assertEqual(entry[11], augus_seat.num)
+                self.assertEqual(entry[9], _sjis(augus_seat.floor))
+                self.assertEqual(entry[10], _sjis(augus_seat.column))
+                self.assertEqual(entry[11], _sjis(augus_seat.num))
             else:
                 self.assertEqual(entry[6], '')
                 self.assertEqual(entry[7], '')
@@ -168,4 +161,11 @@ class AugusTableTest(TestCase):
                 self.assertEqual(entry[10], '')
                 self.assertEqual(entry[11], '')
 
-
+class ImporterFactoryTest(TestCase):
+    def test_create(self):
+        type_class = ((CooperationTypeEnum.augus.v[0], AugusVenueImporter),
+                      )
+        
+        for typ, class_ in type_class:
+            importer = ImporterFactory.create(typ)
+            self.assertIsInstance(importer, class_)

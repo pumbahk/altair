@@ -2,7 +2,7 @@
 import csv
 from pyramid.view import view_defaults, view_config
 from pyramid.response import Response
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
 
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -15,7 +15,12 @@ from .forms import (
 from .augus import (
     CSVEditorFactory,
     ImporterFactory,
+    NoSeatError,
+    EntryFormatError,
+    SeatImportError,
     )
+
+
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class CooperationView(BaseView):
@@ -64,7 +69,10 @@ class CooperationView(BaseView):
         res = Response()
         writer = csv.writer(res, delimiter=',')        
         csveditor = CSVEditorFactory.create(self.context.cooperation_type)
-        csveditor.write(writer, self.context.pairs)
+        try:
+            csveditor.write(writer, self.context.pairs)
+        except (NoSeatError, EntryFormatError, SeatImportError) as err:
+            raise HTTPBadRequest(err)
         headers = self._create_res_headers(filename=csveditor.name)
         res.headers = headers
         return res
@@ -79,8 +87,8 @@ class CooperationView(BaseView):
             importer = ImporterFactory.create(self.context.cooperation_type)
             try:
                 importer.import_(reader, self.context.pairs)
-            except:
-                raise
+            except (NoSeatError, EntryFormatError, SeatImportError) as err:
+                raise HTTPBadRequest(err)
             else:
                 return HTTPFound(return_url)
         else:# validate error
