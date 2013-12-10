@@ -10,7 +10,6 @@
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
-
     var regexp_for_values = /(?:((?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+)|"((?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)"|'((?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)')(?:\s+|$)/g;
 
     function unescape(escaped) {
@@ -245,6 +244,8 @@
       throw new Error('invalid transform function: ' + f);
   }
 
+  var tracker = new util.timer('start');
+
   var VenueEditor = function VenueEditor(canvas, options) {
     this.canvas = canvas;
     this.callbacks = {
@@ -302,22 +303,22 @@
   };
 
   VenueEditor.prototype.load = function VenueEditor_load(data) {
-    console.log(new Date() + ' load start');
+    tracker.lap('load start');
     if (this.drawable !== null)
       this.drawable.dispose();
     this.drawing = data.drawing;
     this.metadata = data.metadata;
     if (data.metadata.seat_adjacencies)
       this.seatAdjacencies = new models.SeatAdjacencies(data.metadata.seat_adjacencies);
-    console.log(new Date() + ' initDrawable start');
+    tracker.lap('initDrawable start');
     this.initDrawable();
-    console.log(new Date() + ' initModel start');
+    tracker.lap('initModel start');
     this.initModel();
-    console.log(new Date() + ' initSeats start');
+    tracker.lap('initSeats start');
     this.initSeats();
-    console.log(new Date() + ' callback.load start');
+    tracker.lap('callback.load start');
     this.callbacks.load && this.callbacks.load(this);
-    console.log(new Date() + ' load end');
+    tracker.lap('load end');
   };
 
   VenueEditor.prototype.refresh = function VenueEditor_refresh(data) {
@@ -366,27 +367,15 @@
     var shapes = {};
     var styleClasses = CONF.DEFAULT.STYLES;
 
-    //for debug vvvv
-    var shapes_count = 0;
-    var seats_count = 0;
-    var node_count = {};
-    //for debug ^^^^
-    console.log(new Date() + ' create shape start');
+    tracker.lap('create shape start');
     (function iter(svgStyle, defs, nodeList) {
       outer:
         for (var i = 0; i < nodeList.length; i++) {
-          //for debug vvvv
-          shapes_count++;
-          //for debug ^^^^
           var n = nodeList[i];
           if (n.nodeType != 1) continue;
 
           var shape = null;
           var attrs = util.allAttributes(n);
-          //for debug vvvv
-          var seat = this.metadata.seats[attrs.id];
-          if (seat) seats_count++;
-          //for debug ^^^^
 
           var currentSvgStyle = _.clone(svgStyle);
           if (attrs['class']) {
@@ -407,10 +396,6 @@
             }
           }
 
-          //for debug vvvv
-          if (!node_count[n.nodeName]) node_count[n.nodeName] = 0;
-          node_count[n.nodeName]++;
-          //for debug ^^^^
           switch (n.nodeName) {
             case 'defs':
               parseDefs(n, defs);
@@ -496,17 +481,8 @@
       },
       {},
       drawing.documentElement.childNodes);
-    console.log(new Date() + ' create shape end');
+    tracker.lap('create shape end');
 
-    //for debug vvvv
-    var shapes_length = 0;
-    for (aaa in shapes) {shapes_length++;}
-    //for debug ^^^^
-    console.log('shapes count =' + shapes_count);
-    console.log('shapes length=' + shapes_length);
-    console.log('seats  count =' + seats_count);
-    console.log('node   count =');
-    console.log(node_count);
     drawable.addEvent({
       mousewheel: function (evt) {
         if (self.shift) {
@@ -519,9 +495,9 @@
     self.drawable = drawable;
     self.shapes = shapes;
 
-    console.log(new Date() + ' zoom start');
+    tracker.lap('zoom start');
     self.zoom(self.zoomRatio);
-    console.log(new Date() + ' changeUIMode start');
+    tracker.lap('changeUIMode start');
     self.changeUIMode(self.uiMode);
   };
 
@@ -866,22 +842,17 @@
   };
 
   VenueEditor.prototype.zoom = function VenueEditor_zoom(ratio, center) {
-    console.log(new Date() + ' zoom start');
-    console.log(new Date() + ' scroll1');
+    tracker.lap('zoom start');
     var sp = this.drawable.scrollPosition();
     var lvs;
 
-    console.log(new Date() + ' apply1');
     lvs = this.drawable._inverse_transform.apply(this.drawable.viewportInnerSize());
     center = center || { x: sp.x + lvs.x / 2, y: sp.y + lvs.y / 2 };
     this.zoomRatio = ratio;
-    console.log(new Date() + ' transform');
     this.drawable.transform(Fashion.Matrix.scale(this.zoomRatio));
-    console.log(new Date() + ' apply2');
     lvs = this.drawable._inverse_transform.apply(this.drawable.viewportInnerSize());
-    console.log(new Date() + ' scroll2');
     this.drawable.scrollPosition({ x: center.x - lvs.x / 2, y: center.y - lvs.y / 2 });
-    console.log(new Date() + ' zoom end');
+    tracker.lap('zoom end');
   };
 
   $.fn.venueeditor = function (options) {
@@ -920,14 +891,14 @@
               }
             });
             // Load drawing
-            console.log(new Date() + ' ajax get drawing start');
+            tracker.lap('ajax get drawing start');
             if (aux.dataSource.drawing) {
               $.ajax({
                 type: 'get',
                 url: aux.dataSource.drawing,
                 dataType: 'xml',
                 success: function(xml) {
-                  console.log(new Date() + ' ajax get drawing success');
+                  tracker.lap('ajax get drawing success');
                   waiter.charge('drawing', xml);
                 },
                 error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
@@ -935,12 +906,12 @@
             }
 
             // Load metadata
-            console.log(new Date() + ' ajax get metadata start');
+            tracker.lap('ajax get metadata start');
             $.ajax({
               url: aux.dataSource.metadata,
               dataType: 'json',
               success: function(data) {
-                console.log(new Date() + ' ajax get metadata success');
+                tracker.lap('ajax get metadata success');
                 waiter.charge('metadata', data);
               },
               error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }

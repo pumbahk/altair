@@ -165,7 +165,6 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
 Venue.prototype.load_data = function Venue_load_data(data, options) {
   data = data || { seats: {}, stock_types: [], stock_holders: [], stocks: [] };
 
-  console.log(new Date() + ' load_data initialize');
   if (!options || !options.update) {
     this.stockHolders = new StockTypeCollection(null, { venue: this });
     this.stockTypes = new StockHolderCollection(null, { venue: this });
@@ -198,7 +197,6 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
   var perStockHolderStockMap = this.perStockHolderStockMap;
   var perStockTypeStockMap = this.perStockTypeStockMap;
 
-  console.log(new Date() + ' load_data stock_type');
   if (data.stock_types) {
     for (var i = 0; i < data.stock_types.length; i++) {
       var stockTypeDatum = data.stock_types[i];
@@ -222,7 +220,6 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
     }
   }
 
-  console.log(new Date() + ' load_data stock_holder');
   if (data.stock_holders) {
     for (var i = 0; i < data.stock_holders.length; i++) {
       var stockHolderDatum = data.stock_holders[i];
@@ -242,7 +239,6 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
     }
   }
 
-  console.log(new Date() + ' load_data stock');
   function normalizedId(id) { return id === null ? "": "" + id; }
   for (var i = 0; i < data.stocks.length; i++) {
     var stockDatum = data.stocks[i];
@@ -270,7 +266,6 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
     stocks.add(stock);
   }
 
-  console.log(new Date() + ' load_data seat');
   for (var id in data.seats) {
     var seatDatum = data.seats[id];
     var stock = stocks.get(seatDatum.stock_id);
@@ -299,7 +294,6 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
     seats.add(seat);
   }
 
-  console.log(new Date() + ' load_data before end');
   this.stockHolders = stockHolders;
   this.stockTypes = stockTypes;
   this.stocks = stocks;
@@ -308,7 +302,6 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
   this.perStockHolderStockMap = perStockHolderStockMap;
   this.perStockTypeStockMap = perStockTypeStockMap;
   this.callbacks = options && options.callbacks ? _.clone(options.callbacks) : {};
-  console.log(new Date() + ' load_data end');
 };
 
 Venue.prototype.setCallback = function Venue_setCallback(name, value) {

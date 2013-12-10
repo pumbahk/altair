@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['kYHCARNZLW9MGBQJ'] = (function (exports) { (function () { 
+__LIBS__['uNUET9RE9Y2WB5OM'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['XTOP1U1U5CPA2CC7'] = (function (exports) { (function () { 
+__LIBS__['EHLV48D_PEW3FB1O'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -97,7 +97,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['EIDVU0CA3ROICQ1G'] = (function (exports) { (function () { 
+__LIBS__['KHLRY7RKUFSAO8DO'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -261,22 +261,22 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
 
-timer = function(msg) {
-    this.start = (new Date()).getTime();
-	if(msg) {
-		console.log(msg);
-	}
+var timer = exports.timer = function(msg) {
+  this.start = (new Date()).getTime();
+  if(msg) {
+    console.log(msg);
+  }
 };
 timer.prototype.lap = function(msg) {
-	var lap = (new Date()).getTime()-this.start;
-    this.start = (new Date()).getTime();
-	if(msg) {
-		console.log(msg+": "+lap+"msec");
-	}
-    return lap;
+  var lap = (new Date()).getTime()-this.start;
+  this.start = (new Date()).getTime();
+  if(msg) {
+    console.log(msg+": "+lap+" msec");
+  }
+  return lap;
 };
  })(); return exports; })({});
-__LIBS__['FESL7FHT4MC_HZ6X'] = (function (exports) { (function () { 
+__LIBS__['J0YF6ZX8Z29CL931'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -325,12 +325,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['JQXFBYCW_Q5ASB1O'] = (function (exports) { (function () { 
+__LIBS__['sPOLICSPUU1HZF4U'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['EIDVU0CA3ROICQ1G'];
-var CONF = __LIBS__['XTOP1U1U5CPA2CC7'];
-var IdentifiableSet = __LIBS__['FESL7FHT4MC_HZ6X'].IdentifiableSet;
+var util = __LIBS__['KHLRY7RKUFSAO8DO'];
+var CONF = __LIBS__['EHLV48D_PEW3FB1O'];
+var IdentifiableSet = __LIBS__['J0YF6ZX8Z29CL931'].IdentifiableSet;
 
 var use_altair_collection = true;
 
@@ -495,7 +495,6 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
 Venue.prototype.load_data = function Venue_load_data(data, options) {
   data = data || { seats: {}, stock_types: [], stock_holders: [], stocks: [] };
 
-  console.log(new Date() + ' load_data initialize');
   if (!options || !options.update) {
     this.stockHolders = new StockTypeCollection(null, { venue: this });
     this.stockTypes = new StockHolderCollection(null, { venue: this });
@@ -528,7 +527,6 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
   var perStockHolderStockMap = this.perStockHolderStockMap;
   var perStockTypeStockMap = this.perStockTypeStockMap;
 
-  console.log(new Date() + ' load_data stock_type');
   if (data.stock_types) {
     for (var i = 0; i < data.stock_types.length; i++) {
       var stockTypeDatum = data.stock_types[i];
@@ -552,7 +550,6 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
     }
   }
 
-  console.log(new Date() + ' load_data stock_holder');
   if (data.stock_holders) {
     for (var i = 0; i < data.stock_holders.length; i++) {
       var stockHolderDatum = data.stock_holders[i];
@@ -572,7 +569,6 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
     }
   }
 
-  console.log(new Date() + ' load_data stock');
   function normalizedId(id) { return id === null ? "": "" + id; }
   for (var i = 0; i < data.stocks.length; i++) {
     var stockDatum = data.stocks[i];
@@ -600,7 +596,6 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
     stocks.add(stock);
   }
 
-  console.log(new Date() + ' load_data seat');
   for (var id in data.seats) {
     var seatDatum = data.seats[id];
     var stock = stocks.get(seatDatum.stock_id);
@@ -629,7 +624,6 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
     seats.add(seat);
   }
 
-  console.log(new Date() + ' load_data before end');
   this.stockHolders = stockHolders;
   this.stockTypes = stockTypes;
   this.stocks = stocks;
@@ -638,7 +632,6 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
   this.perStockHolderStockMap = perStockHolderStockMap;
   this.perStockTypeStockMap = perStockTypeStockMap;
   this.callbacks = options && options.callbacks ? _.clone(options.callbacks) : {};
-  console.log(new Date() + ' load_data end');
 };
 
 Venue.prototype.setCallback = function Venue_setCallback(name, value) {
@@ -1035,12 +1028,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['xDT0WL_Y5YNHAFQP'] = (function (exports) { (function () { 
+__LIBS__['A80KGKA_A64S18BU'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['EIDVU0CA3ROICQ1G'];
-var CONF = __LIBS__['XTOP1U1U5CPA2CC7'];
-var models = __LIBS__['JQXFBYCW_Q5ASB1O'];
+var util = __LIBS__['KHLRY7RKUFSAO8DO'];
+var CONF = __LIBS__['EHLV48D_PEW3FB1O'];
+var models = __LIBS__['sPOLICSPUU1HZF4U'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -1223,17 +1216,16 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['XTOP1U1U5CPA2CC7'];
-  var models = __LIBS__['JQXFBYCW_Q5ASB1O'];
-  var util = __LIBS__['EIDVU0CA3ROICQ1G'];
-  var viewobjects = __LIBS__['xDT0WL_Y5YNHAFQP'];
-  var IdentifiableSet = __LIBS__['FESL7FHT4MC_HZ6X'].IdentifiableSet;
+  var CONF = __LIBS__['EHLV48D_PEW3FB1O'];
+  var models = __LIBS__['sPOLICSPUU1HZF4U'];
+  var util = __LIBS__['KHLRY7RKUFSAO8DO'];
+  var viewobjects = __LIBS__['A80KGKA_A64S18BU'];
+  var IdentifiableSet = __LIBS__['J0YF6ZX8Z29CL931'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['kYHCARNZLW9MGBQJ'];
+    I18n.translations = __LIBS__['uNUET9RE9Y2WB5OM'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
-
     var regexp_for_values = /(?:((?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+)|"((?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)"|'((?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)')(?:\s+|$)/g;
 
     function unescape(escaped) {
@@ -1468,6 +1460,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
       throw new Error('invalid transform function: ' + f);
   }
 
+  var tracker = new util.timer('start');
+
   var VenueEditor = function VenueEditor(canvas, options) {
     this.canvas = canvas;
     this.callbacks = {
@@ -1525,22 +1519,22 @@ var Seat = exports.Seat = Backbone.Model.extend({
   };
 
   VenueEditor.prototype.load = function VenueEditor_load(data) {
-    console.log(new Date() + ' load start');
+    tracker.lap('load start');
     if (this.drawable !== null)
       this.drawable.dispose();
     this.drawing = data.drawing;
     this.metadata = data.metadata;
     if (data.metadata.seat_adjacencies)
       this.seatAdjacencies = new models.SeatAdjacencies(data.metadata.seat_adjacencies);
-    console.log(new Date() + ' initDrawable start');
+    tracker.lap('initDrawable start');
     this.initDrawable();
-    console.log(new Date() + ' initModel start');
+    tracker.lap('initModel start');
     this.initModel();
-    console.log(new Date() + ' initSeats start');
+    tracker.lap('initSeats start');
     this.initSeats();
-    console.log(new Date() + ' callback.load start');
+    tracker.lap('callback.load start');
     this.callbacks.load && this.callbacks.load(this);
-    console.log(new Date() + ' load end');
+    tracker.lap('load end');
   };
 
   VenueEditor.prototype.refresh = function VenueEditor_refresh(data) {
@@ -1589,27 +1583,15 @@ var Seat = exports.Seat = Backbone.Model.extend({
     var shapes = {};
     var styleClasses = CONF.DEFAULT.STYLES;
 
-    //for debug vvvv
-    var shapes_count = 0;
-    var seats_count = 0;
-    var node_count = {};
-    //for debug ^^^^
-    console.log(new Date() + ' create shape start');
+    tracker.lap('create shape start');
     (function iter(svgStyle, defs, nodeList) {
       outer:
         for (var i = 0; i < nodeList.length; i++) {
-          //for debug vvvv
-          shapes_count++;
-          //for debug ^^^^
           var n = nodeList[i];
           if (n.nodeType != 1) continue;
 
           var shape = null;
           var attrs = util.allAttributes(n);
-          //for debug vvvv
-          var seat = this.metadata.seats[attrs.id];
-          if (seat) seats_count++;
-          //for debug ^^^^
 
           var currentSvgStyle = _.clone(svgStyle);
           if (attrs['class']) {
@@ -1630,10 +1612,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
             }
           }
 
-          //for debug vvvv
-          if (!node_count[n.nodeName]) node_count[n.nodeName] = 0;
-          node_count[n.nodeName]++;
-          //for debug ^^^^
           switch (n.nodeName) {
             case 'defs':
               parseDefs(n, defs);
@@ -1719,17 +1697,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
       },
       {},
       drawing.documentElement.childNodes);
-    console.log(new Date() + ' create shape end');
+    tracker.lap('create shape end');
 
-    //for debug vvvv
-    var shapes_length = 0;
-    for (aaa in shapes) {shapes_length++;}
-    //for debug ^^^^
-    console.log('shapes count =' + shapes_count);
-    console.log('shapes length=' + shapes_length);
-    console.log('seats  count =' + seats_count);
-    console.log('node   count =');
-    console.log(node_count);
     drawable.addEvent({
       mousewheel: function (evt) {
         if (self.shift) {
@@ -1742,9 +1711,9 @@ var Seat = exports.Seat = Backbone.Model.extend({
     self.drawable = drawable;
     self.shapes = shapes;
 
-    console.log(new Date() + ' zoom start');
+    tracker.lap('zoom start');
     self.zoom(self.zoomRatio);
-    console.log(new Date() + ' changeUIMode start');
+    tracker.lap('changeUIMode start');
     self.changeUIMode(self.uiMode);
   };
 
@@ -2089,22 +2058,17 @@ var Seat = exports.Seat = Backbone.Model.extend({
   };
 
   VenueEditor.prototype.zoom = function VenueEditor_zoom(ratio, center) {
-    console.log(new Date() + ' zoom start');
-    console.log(new Date() + ' scroll1');
+    tracker.lap('zoom start');
     var sp = this.drawable.scrollPosition();
     var lvs;
 
-    console.log(new Date() + ' apply1');
     lvs = this.drawable._inverse_transform.apply(this.drawable.viewportInnerSize());
     center = center || { x: sp.x + lvs.x / 2, y: sp.y + lvs.y / 2 };
     this.zoomRatio = ratio;
-    console.log(new Date() + ' transform');
     this.drawable.transform(Fashion.Matrix.scale(this.zoomRatio));
-    console.log(new Date() + ' apply2');
     lvs = this.drawable._inverse_transform.apply(this.drawable.viewportInnerSize());
-    console.log(new Date() + ' scroll2');
     this.drawable.scrollPosition({ x: center.x - lvs.x / 2, y: center.y - lvs.y / 2 });
-    console.log(new Date() + ' zoom end');
+    tracker.lap('zoom end');
   };
 
   $.fn.venueeditor = function (options) {
@@ -2143,14 +2107,14 @@ var Seat = exports.Seat = Backbone.Model.extend({
               }
             });
             // Load drawing
-            console.log(new Date() + ' ajax get drawing start');
+            tracker.lap('ajax get drawing start');
             if (aux.dataSource.drawing) {
               $.ajax({
                 type: 'get',
                 url: aux.dataSource.drawing,
                 dataType: 'xml',
                 success: function(xml) {
-                  console.log(new Date() + ' ajax get drawing success');
+                  tracker.lap('ajax get drawing success');
                   waiter.charge('drawing', xml);
                 },
                 error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
@@ -2158,12 +2122,12 @@ var Seat = exports.Seat = Backbone.Model.extend({
             }
 
             // Load metadata
-            console.log(new Date() + ' ajax get metadata start');
+            tracker.lap('ajax get metadata start');
             $.ajax({
               url: aux.dataSource.metadata,
               dataType: 'json',
               success: function(data) {
-                console.log(new Date() + ' ajax get metadata success');
+                tracker.lap('ajax get metadata success');
                 waiter.charge('metadata', data);
               },
               error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
