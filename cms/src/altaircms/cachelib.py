@@ -59,7 +59,6 @@ class FileCacheStore(object):
             cache = self.get_cache(k)
             return cache[self.k]
         except KeyError as e:
-            logger.warn("cachelib {}:{}".format(repr(e), k))
             return None
         except (ValueError, EOFError) as e:
             logger.exception("cachelib {}:{}".format(repr(e), k))
@@ -122,7 +121,9 @@ class ForAtomic(object):
         try:
             fetching = self.get_cache(k)
             fetching[self.k] = datetime.now()
-        except (KeyError, ValueError, EOFError) as e:
+        except KeyError as e:
+            pass
+        except (ValueError, EOFError) as e:
             logger.warn(repr(e))
             clear_cache(fetching, self.k)
 

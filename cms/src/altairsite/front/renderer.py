@@ -108,6 +108,7 @@ class S3Loader(object):
         return self.connection.get_bucket(self.bucket_name)
 
     def __call__(self, env, name, normalized_key):
+        logger.info("** S3: get layout template: {}".format(normalized_key))
         uri = env.build_url(name) #xxx:
         k = Key(self.bucket)
         k.key = uri

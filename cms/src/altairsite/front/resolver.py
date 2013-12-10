@@ -42,7 +42,7 @@ class LayoutModelDescriptor(object):
         path = os.path.join(self.layout_spec, self.filename)
         module, path = path.split(":")
         return u"{0}:{1}".format(module, os.path.normpath(path)).encode("utf-8")
-        
+
 
 @implementer(ILayoutModelResolver)
 class LayoutModelResolver(object):
