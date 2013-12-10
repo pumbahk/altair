@@ -7,6 +7,7 @@ from altair.app.ticketing.core.models import (
     Seat,
     AugusVenue,
     AugusSeat,
+    CooperationTypeEnum,
     )
 
 from altair.app.ticketing.cooperation.augus import (
@@ -168,4 +169,11 @@ class AugusTableTest(TestCase):
                 self.assertEqual(entry[10], '')
                 self.assertEqual(entry[11], '')
 
-
+class ImporterFactoryTest(TestCase):
+    def test_create(self):
+        type_class = ((CooperationTypeEnum.augus.v[0], AugusVenueImporter),
+                      )
+        
+        for typ, class_ in type_class:
+            importer = ImporterFactory(typ)
+            self.assertIsInstance(importer, class_)
