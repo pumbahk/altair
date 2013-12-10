@@ -1,14 +1,14 @@
 """augus
 
 Revision ID: a4caeb81d1b
-Revises: f58218c5f54
+Revises: f0a2ca58baa
 Create Date: 2013-11-05 10:38:15.551115
 
 """
 
 # revision identifiers, used by Alembic.
 revision = 'a4caeb81d1b'
-down_revision = '34e2d99d2c90'
+down_revision = 'f0a2ca58baa'
 
 from alembic import op
 import sqlalchemy as sa
