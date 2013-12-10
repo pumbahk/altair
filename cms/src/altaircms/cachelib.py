@@ -111,8 +111,12 @@ class ForAtomic(object):
         return Cache._get_cache(k, self.kwargs)
 
     def is_requesting(self, k):
-        fetching = self.get_cache(k)
-        return self.k in fetching
+        try:
+            fetching = self.get_cache(k)
+            return self.k in fetching
+        except (ValueError, EOFError) as e:
+            logger.warn(repr(e))
+            clear_cache(fetching, self.k)
 
     def start_requesting(self, k):
         try:
@@ -123,8 +127,10 @@ class ForAtomic(object):
             clear_cache(fetching, self.k)
 
     def end_requesting(self, k):
-        fetching = self.get_cache(k)
-        clear_cache(fetching, self.k)
+        try:
+            fetching = self.get_cache(k)
+        finally:
+            clear_cache(fetching, self.k)
 
     @contextlib.contextmanager
     def atomic(self, k):
