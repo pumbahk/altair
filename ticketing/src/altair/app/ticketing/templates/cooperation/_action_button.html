@@ -1,0 +1,32 @@
+<%namespace file="/common/modal.html" import="delete_modal" />
+<script type="text/javascript">
+  function update_cooperation(){
+      var modal = $('#modal-cooperation-update');
+      modal.find('#display').attr('checked', 'checked');
+      modal.modal('toggle');
+  }
+  function download_cooperation(){
+      var modal = $('#modal-cooperation-download');
+      modal.find('#display').attr('checked', 'checked');
+      modal.modal('toggle');
+  }
+</script>
+
+<%
+actions = {
+    'update':dict(
+        label=u'作成/更新',
+        url='javascript:update_cooperation();',
+        icon='icon-plus',
+        ),
+    'download':dict(
+        label=u'ダウンロード',
+        url='javascript:download_cooperation();',
+        icon='icon-pencil',
+        ),
+    }
+btns = ['update', 'download']
+%>
+
+${HH.action_button(actions, btns)}
+${delete_modal()}
