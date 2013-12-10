@@ -110,7 +110,7 @@ def _sjis(unistr):
     try:
         return unistr.encode('sjis')
     except (UnicodeEncodeError, UnicodeDecodeError) as err:
-        raise self.__class__(repr(unistr), *err.args[1:])
+        raise err.__class__(repr(unistr), *err.args[1:])
     except AttributeError as err:
         raise ValueError('The `unistr` should be unicode object: {0}'\
                         .format(repr(unistr)))                        
@@ -119,7 +119,7 @@ def _unsjis(msg):
     try:
         return msg.decode('sjis')
     except (UnicodeEncodeError, UnicodeDecodeError) as err:
-        raise self.__class__(repr(msg), *err.args[1:])
+        raise err.__class__(repr(msg), *err.args[1:])
     except AttributeError as err:
         raise ValueError('The `msg` should be encoded sjis string object: {0}'\
                          .format(repr(msg)))
