@@ -73,40 +73,40 @@ class OrderCancelMailPayment(MailForOrderContext):
 class LotsAcceptedMailDelivery(MailForOrderContext):
     """ 申し込み完了メール delivery
     """
-    mtype = c_models.MailTypeEnum.PurchaseCancelMail
+    mtype = c_models.MailTypeEnum.LotsAcceptedMail
     get_key = staticmethod(delivery_key)
 
 @implementer(ILotsAcceptedMailPayment)
 class LotsAcceptedMailPayment(MailForOrderContext):
     """ 申し込み完了メール payment
     """
-    mtype = c_models.MailTypeEnum.PurchaseCancelMail
+    mtype = c_models.MailTypeEnum.LotsAcceptedMail
     get_key = staticmethod(payment_key)
 
 @implementer(ILotsElectedMailDelivery)
 class LotsElectedMailDelivery(MailForOrderContext):
     """ 当選メール delivery
     """
-    mtype = c_models.MailTypeEnum.PurchaseCancelMail
+    mtype = c_models.MailTypeEnum.LotsElectedMail
     get_key = staticmethod(delivery_key)
 
 @implementer(ILotsElectedMailPayment)
 class LotsElectedMailPayment(MailForOrderContext):
     """ 当選メール payment
     """
-    mtype = c_models.MailTypeEnum.PurchaseCancelMail
+    mtype = c_models.MailTypeEnum.LotsElectedMail
     get_key = staticmethod(payment_key)
 
 @implementer(ILotsRejectedMailDelivery)
 class LotsRejectedMailDelivery(MailForOrderContext):
     """ 落選メール delivery
     """
-    mtype = c_models.MailTypeEnum.PurchaseCancelMail
+    mtype = c_models.MailTypeEnum.LotsRejectedMail
     get_key = staticmethod(delivery_key)
 
 @implementer(ILotsRejectedMailPayment)
 class LotsRejectedMailPayment(MailForOrderContext):
     """ 落選メール payment
     """
-    mtype = c_models.MailTypeEnum.PurchaseCancelMail
+    mtype = c_models.MailTypeEnum.LotsRejectedMail
     get_key = staticmethod(payment_key)
