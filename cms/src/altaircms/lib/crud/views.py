@@ -43,7 +43,7 @@ class CRUDResource(RootFactory): ## fixme
                  override_templates=None, 
                  create_event=None, update_event=None, delete_event=None, 
                  circle_type="circle-master"):
-        super(RootFactory, self).__init__(request)
+        RootFactory.__init__(self, request)
         self.override_templates = override_templates or {}
         self.prefix = prefix
         self.title = title
