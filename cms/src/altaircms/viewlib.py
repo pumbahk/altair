@@ -53,7 +53,7 @@ def success_result(data={}):
 
 def validate_apikey(request, apikey):
     reg = request.registry
-    validator = reg.getUtility(IAPIKeyValidator)
+    validator = reg.getAdapter(request, IAPIKeyValidator)
     return validator(apikey)
 
 def apikey_required(tag="*api view condition*"):
