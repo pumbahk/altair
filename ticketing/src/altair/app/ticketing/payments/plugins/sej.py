@@ -38,7 +38,6 @@ from altair.app.ticketing.sej.utils import han2zen
 from altair.app.ticketing.tickets.convert import convert_svg
 from altair.app.ticketing.tickets.utils import (
     NumberIssuer, 
-    as_user_unit,
     build_dicts_from_ordered_product_item,
     build_dicts_from_carted_product_item,
     transform_matrix_from_ticket_format

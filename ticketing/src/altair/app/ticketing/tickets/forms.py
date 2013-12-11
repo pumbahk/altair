@@ -13,7 +13,7 @@ from altair.formhelpers.form import OurForm
 from altair.formhelpers.fields import OurBooleanField
 from altair.app.ticketing.core.models import Event, Account, DeliveryMethod, TicketFormat
 from altair.app.ticketing.core.models import TicketFormat, Ticket
-from .utils import as_user_unit
+from altair.svg.geometry import as_user_unit
 from .convert import to_opcodes
 from .constants import PAPERS, ORIENTATIONS
 from .cleaner.api import get_validated_svg_cleaner

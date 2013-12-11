@@ -1,0 +1,36 @@
+<%page args="form, upload_url, display_modal" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<script "text/javascript">
+  function submit_modal_form(selector){
+      $(selector)[0].getElementsByTagName('form')[0].submit();
+  }
+
+%if display_modal:
+  $(window).load(function(){
+       update_cooperation();
+  });  
+%endif
+</script>
+
+<div id="modal-cooperation-update" class="modal hide">
+  <div class="modal-header">
+    <h3>作成/更新</h3>
+  </div>
+
+  <div class="modal-body">
+    <form method="POST" enctype="multipart/form-data"
+          action="${upload_url}">
+      ${ch.form_item(form.id)}
+      ${ch.form_item(form.cooperation_type)}
+      ${ch.form_item(form.cooperation_file)}
+    </form>
+  </div>
+  
+  <div class="modal-footer">
+    <a onclick="javascript:submit_modal_form('#modal-cooperation-update');"
+       class="btn" data-dismiss="modal">更新</a>
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+  </div>
+</div>
+

@@ -6,6 +6,7 @@ def _get_policies(settings):
     from altaircms.security import rolefinder
     from pyramid.authentication import AuthTktAuthenticationPolicy
     from pyramid.authorization import ACLAuthorizationPolicy
+    from altair.sqlahelper import get_db_session
     import re
     skip_rx = re.compile("^(?:/static|/fanstatic|/staticasset|/plugins/static)/")
 
@@ -13,7 +14,7 @@ def _get_policies(settings):
         if skip_rx.search(request.path):
             return []
         else:
-            return rolefinder(userid, request)
+            return rolefinder(userid, request, session=get_db_session(request, 'slave'))
     authentication = AuthTktAuthenticationPolicy(settings.get('authtkt.secret'), callback=static_path_skiped, cookie_name='cmstkt')
     authorization = ACLAuthorizationPolicy()
     return authentication, authorization
@@ -128,6 +129,7 @@ def main(global_config, **local_config):
         authentication_policy=authn_policy,
         authorization_policy=authz_policy
     )
+    config.include("altair.sqlahelper")
     config.include("altair.browserid")
     config.include("altair.exclog")
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import locale
-from datetime import datetime
+import logging
 
 from pyramid.security import has_permission, ACLAllowed
+from paste.util.multidict import MultiDict
 from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, BooleanField,
                      RadioField, FieldList, FormField, DecimalField, IntegerField, FileField)
@@ -24,6 +24,8 @@ from altair.app.ticketing.core import helpers as core_helpers
 from altair.app.ticketing.orders.importer import ImportTypeEnum, ImportCSVReader
 from altair.app.ticketing.orders.export import OrderCSV
 from altair.app.ticketing.csvutils import AttributeRenderer
+
+logger = logging.getLogger(__name__)
 
 
 class OrderForm(Form):
@@ -543,7 +545,7 @@ class OrderReserveForm(Form):
         validators=[
             Optional(),
             Zenkaku,
-            Length(max=255, message=u'255文字以内で入力してください'),
+            Length(max=10, message=u'10文字以内で入力してください'),
         ],
     )
     last_name_kana = TextField(
@@ -552,7 +554,7 @@ class OrderReserveForm(Form):
         validators=[
             Optional(),
             Katakana,
-            Length(max=255, message=u'255文字以内で入力してください'),
+            Length(max=10, message=u'10文字以内で入力してください'),
         ]
     )
     first_name = TextField(
@@ -561,7 +563,7 @@ class OrderReserveForm(Form):
         validators=[
             Optional(),
             Zenkaku,
-            Length(max=255, message=u'255文字以内で入力してください'),
+            Length(max=10, message=u'10文字以内で入力してください'),
         ]
     )
     first_name_kana = TextField(
@@ -570,7 +572,7 @@ class OrderReserveForm(Form):
         validators=[
             Optional(),
             Katakana,
-            Length(max=255, message=u'255文字以内で入力してください'),
+            Length(max=10, message=u'10文字以内で入力してください'),
         ]
     )
     tel_1 = TextField(
@@ -605,6 +607,27 @@ class OrderReserveForm(Form):
                 and pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID\
                 and not isinstance(has_permission('administrator', form.request.context, form.request), ACLAllowed):
                     raise ValidationError(u'この決済引取方法を選択する権限がありません')
+
+            # Sej発券の場合は20枚まで
+            if pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
+                count = 0
+                post_data = MultiDict(form.request.json_body)
+                for product_id, product_name in form.products.choices:
+                    product = Product.query.filter_by(id=product_id).one()
+                    quantity = None
+                    try:
+                        quantity_str = post_data.get('product_quantity-%d' % product_id)
+                        if quantity_str is not None:
+                            quantity_str = quantity_str.strip()
+                            if quantity_str:
+                                quantity = int(quantity_str)
+                    except (ValueError, TypeError):
+                        raise ValidationError(u'個数には正しい数値を入力してください')
+                    if not quantity:
+                        continue
+                    count += product.num_tickets(pdmp) * quantity
+                if count > 20:
+                    raise ValidationError(u'コンビニ引取の場合、1予約あたり発券枚数が20枚以内になるよう指定してください')
 
 
 class OrderRefundForm(Form):

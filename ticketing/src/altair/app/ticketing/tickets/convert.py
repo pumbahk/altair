@@ -2,8 +2,11 @@
 
 from lxml import html, etree
 from lxml.builder import E
+from altair.svg.constants import *
 from altair.app.ticketing.tickets.constants import *
-from altair.app.ticketing.tickets.utils import parse_transform, tokenize_path_data, parse_poly_data, PathDataScanner, as_user_unit, I
+from altair.svg.reader import Scanner, VisitorBase
+from altair.svg.geometry import parse_transform, as_user_unit, I
+from altair.svg.path import tokenize_path_data, parse_poly_data, PathDataScanner
 import re
 import cssutils
 import numpy

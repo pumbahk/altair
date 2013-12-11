@@ -37,3 +37,29 @@ class EventHelper(object):
             .filter(MobileTag.id == mobile_tag_id)
         log_info("get_events_from_mobile_tag_id", "start")
         return qs
+
+    @classmethod
+    def get_summary_salessegment_group(cls, event):
+        groups = []
+        for group in event.salessegment_groups:
+            start = None
+            end = None
+            salessegment_public = True
+            for segment in group.salessegments:
+                if not segment.publicp:
+                    salessegment_public = False
+                    break
+
+                if not start:
+                    start = segment.start_on
+                if not end:
+                    end = segment.end_on
+
+                if start > segment.start_on:
+                    start = segment.start_on
+                if end < segment.end_on:
+                    end = segment.end_on
+
+            if group.publicp and salessegment_public and start and end:
+                groups.append(dict(group_name=group.name, start=start, end=end))
+        return groups

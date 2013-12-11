@@ -1,0 +1,7 @@
+<%page args="sitename_venueid" />
+
+<ul>
+% for site_name, venue_id in sitename_venueid:
+  <li><a href="${venue_id}">${site_name}</a></li>
+% endfor
+</ul>

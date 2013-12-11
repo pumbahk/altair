@@ -411,7 +411,8 @@ class ListView(object):
 
 from altaircms import security
 class EventPageFound(Exception, security.RootFactory):
-    def __init__(self, pageset):
+    def __init__(self, request, pageset):
+        security.RootFactory.__init__(self, request)
         self.pageset = pageset
 
 @view_defaults(permission="page_read", route_name="pageset_detail", decorator=with_bootstrap, request_method="GET")
@@ -450,7 +451,7 @@ class PageSetDetailView(object):
         if pagetype is None:
             raise HTTPNotFound("pagetype is not found")
         if pagetype.is_event_detail:
-            raise EventPageFound(pageset)
+            raise EventPageFound(self.request, pageset)
         if not page_viewable_from_pagetype(self.context, pagetype):
             raise HTTPForbidden("not enough permission to view it")
 

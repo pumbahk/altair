@@ -88,6 +88,23 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     _frontend_metadata_url = Column('metadata_url', String(255))
     _backend_metadata_url = Column('backend_metadata_url', String(255))
 
+class L0Seat(Base, BaseModel):
+    __tablename__  = 'L0Seat'
+    site_id = Column(Identifier, ForeignKey('Site.id', ondelete='CASCADE'), nullable=False)
+    l0_id       = Column(Unicode(48), nullable=False)
+    row_l0_id   = Column(Unicode(48), nullable=True)
+    group_l0_id = Column(Unicode(48), nullable=True)
+    name        = Column(Unicode(48), nullable=False, default=u'', server_default='')
+    seat_no     = Column(Unicode(50), nullable=True)
+    row_no      = Column(Unicode(50), nullable=True)
+    block_name  = Column(Unicode(50), nullable=True)
+    floor_name  = Column(Unicode(50), nullable=True)
+    gate_name   = Column(Unicode(50), nullable=True)
+
+    __table_args__ = (
+        PrimaryKeyConstraint(site_id, l0_id),
+        )
+
 class VenueArea_group_l0_id(Base):
     __tablename__   = "VenueArea_group_l0_id"
     venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), primary_key=True, nullable=False)
@@ -3884,3 +3901,53 @@ class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if e.v[0] == status:
                 return e.v[1]
         return u''
+
+
+class CooperationTypeEnum(StandardEnum):
+    augus = (1, u'オーガス')
+    #gettie = (2, u'Gettie')
+
+
+class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'AugusVenue'
+    
+    id = Column(Identifier, primary_key=True)
+    code = AnnotatedColumn(Integer, unique=True, nullable=False,
+                           _a_label=(u'会場コード'))
+    venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'),
+                      unique=True, nullable=False)
+
+    created_at = Column(TIMESTAMP, nullable=False)
+    updated_at = Column(TIMESTAMP, nullable=False)
+    deleted_at = Column(TIMESTAMP, nullable=True)
+
+
+class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'AugusSeat'
+    __table_args__= (
+        UniqueConstraint('area_code', 'info_code', 'floor', 
+                         'column', 'num', 'augus_venue_id',
+                         name="uix_AugusSeat"),
+    )
+    id = Column(Identifier, primary_key=True)
+    area_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u"エリアコード"))
+    info_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u"付加情報コード"))
+    floor = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"階"))
+    column = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"列"))
+    num = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"番"))
+    augus_venue_id = Column(Identifier, ForeignKey('AugusVenue.id', ondelete='CASCADE'),
+                            nullable=False)
+    seat_id = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'))
+    augus_venue = relationship('AugusVenue', backref='augus_seats')
+    seat = relationship('Seat')
+
+    created_at = Column(TIMESTAMP, nullable=False)
+    updated_at = Column(TIMESTAMP, nullable=False)
+    deleted_at = Column(TIMESTAMP, nullable=True)
+
+
+class AugusPerformance(object):
+    __tablename__ = 'AugusPerformance'
+    augus_event_code = None
+    augus_peformance_code = None
+    performance_id = None

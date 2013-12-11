@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from lxml import etree
-from ..constants import SVG_NAMESPACE
+from altair.svg.constants import SVG_NAMESPACE
 """
 本当は中間状態持っていて後でrenderingする形の方が良い。
 scaleとかtransformとかできる。

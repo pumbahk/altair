@@ -18,6 +18,7 @@ from pyramid.security import unauthenticated_userid
 
 from pyramid.path import AssetResolver
 from pyramid.exceptions import ConfigurationError
+from altair.sqlahelper import get_db_session
 
 def require_login(info, request):
     """custom predicates"""
@@ -171,6 +172,10 @@ def get_or_404(qs, *criteria):
         raise HTTPNotFound("----")
     return r
 
-def validate_apikey(apikey):
-    return bool(APIKey.query.filter_by(apikey=apikey).first())
+class APIKeyValidator(object):
+    def __init__(self, request):
+        self.request = request
 
+    def __call__(self, apikey):
+        session = get_db_session(self.request, 'slave')
+        return bool(session.query(APIKey).filter_by(apikey=apikey).first())

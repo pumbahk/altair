@@ -6,6 +6,7 @@ update_seat_status.conf
 import_orders.conf
 altair.cms.admin.ini
 altair.cms.usersite.ini
+altair.newsletter.admin.ini
 altair.ticketing.admin.ini
 altair.ticketing.booster.89ers.ini
 altair.ticketing.booster.bambitious.ini
@@ -19,3 +20,4 @@ altair.ticketing.orderreview.ini
 altair.ticketing.qrreader.ini
 altair.ticketing.sej.ini
 altair.ticketing.whattime.ini
+altair.ticketing.batch.ini
