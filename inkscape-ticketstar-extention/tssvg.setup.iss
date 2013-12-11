@@ -134,7 +134,7 @@ begin
    DisplayPath('uninstall before');
    if RegQueryStringValue(HKEY_CURRENT_USER, 'Environment', 'PATH', Path) then
    begin
-      Path := RemoveFromString(NewBinPath(''), Path);
+      Path := RemoveFromString(';'+NewBinPath(''), Path);
       if not RegWriteStringValue(HKEY_CURRENT_USER, 'Environment', 'PATH', Path) then
       begin
 	 Log('PATH overwrite failured. why?');
