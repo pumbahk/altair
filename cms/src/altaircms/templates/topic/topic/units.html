@@ -28,24 +28,34 @@
 
 <div class="navbar navbar-inverse">
   <div class="navbar-inner">
+
     <div class="container">
-      <form name="published_form" class="pull-left navbar-search" action="${request.current_route_path()}">
+      <form name="all_item_form" class="pull-left navbar-search" action="${request.current_route_path()}">
         <input name="search" type="text" class="search-query">
-        <input type="hidden" name="published" value="True">
+        <input type="hidden" name="item_search" value="True">
       </form>
       <ul class="nav">
         <div class="btn-group">
-          <a class="btn" onclick="document.published_form.submit()"><i class="icon-search"></i>掲載中を検索</a>
+          <a class="btn" onclick="document.all_item_form.submit()"><i class="icon-search"></i>アイテムを全て検索　　</a>
           <a class="btn" data-toggle="modal" data-backdrop="" href="#TopicTagCreateModal"><i class="icon-plus"></i>分類の追加</a>
         </div>
       </ul>
     </div>
-  </div><!-- /navbar-inner -->
-  
-</div><!-- /navbar -->
 
-<div class="navbar navbar-inverse">
-  <div class="navbar-inner">
+    <div class="container">
+      <form name="published_item_form" class="pull-left navbar-search" action="${request.current_route_path()}">
+        <input name="search" type="text" class="search-query">
+        <input type="hidden" name="item_search" value="True">
+        <input type="hidden" name="published" value="True">
+      </form>
+      <ul class="nav">
+        <div class="btn-group">
+          <a class="btn" onclick="document.published_item_form.submit()"><i class="icon-search"></i>アイテムの掲載中を検索</a>
+          <a class="btn" data-toggle="modal" data-backdrop="" href="#TopicTagCreateModal"><i class="icon-plus"></i>分類の追加</a>
+        </div>
+      </ul>
+    </div>
+
     <div class="container">
       <form name="all_form" class="pull-left navbar-search" action="${request.current_route_path()}">
         <input name="search" type="text" class="search-query">
@@ -53,7 +63,20 @@
       </form>
       <ul class="nav">
         <div class="btn-group">
-          <a class="btn" onclick="document.all_form.submit()"><i class="icon-search"></i>全て検索　　</a>
+          <a class="btn" onclick="document.all_form.submit()"><i class="icon-search"></i>分類を全て検索　　</a>
+          <a class="btn" data-toggle="modal" data-backdrop="" href="#TopicTagCreateModal"><i class="icon-plus"></i>分類の追加</a>
+        </div>
+      </ul>
+    </div>
+
+    <div class="container">
+      <form name="published_form" class="pull-left navbar-search" action="${request.current_route_path()}">
+        <input name="search" type="text" class="search-query">
+        <input type="hidden" name="published" value="True">
+      </form>
+      <ul class="nav">
+        <div class="btn-group">
+          <a class="btn" onclick="document.published_form.submit()"><i class="icon-search"></i>分類の掲載中を検索</a>
           <a class="btn" data-toggle="modal" data-backdrop="" href="#TopicTagCreateModal"><i class="icon-plus"></i>分類の追加</a>
         </div>
       </ul>
