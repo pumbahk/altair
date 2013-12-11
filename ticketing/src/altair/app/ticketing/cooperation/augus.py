@@ -241,7 +241,6 @@ class EntryData(object):
         return self.augus_venue_code != ''
 
 
-
 def get_or_create_augus_venue_from_code(code, venue_id):
     augus_venue = AugusVenue.get(code=code)
     if augus_venue is None:
@@ -259,7 +258,8 @@ class AugusVenueImporter(object):
     def import_(self, csvlike, pairs):
         csvlike.next() # ignore header
         datas = [EntryData(row) for row in csvlike] # raise EntryFormatError
-        augus_venue_codes = set([data.augus_venue_code for data in datas if data.augus_venue_code != ''])
+        augus_venue_codes = set([data.augus_venue_code
+                                 for data in datas if data.augus_venue_code != ''])
         augus_venue_code = None
         try:
             augus_venue_code = augus_venue_codes.pop()
