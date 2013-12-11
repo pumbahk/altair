@@ -927,7 +927,10 @@
                   tracker.lap('ajax get drawing success');
                   waiter.charge('drawing', xml);
                 },
-                error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
+                error: function(xhr, text) {
+                  tracker.lap('ajax get drawing error:' + text + ", status:" + xhr.status);
+                  aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (" + text + ")");
+                }
               });
             }
 
@@ -940,7 +943,10 @@
                 tracker.lap('ajax get metadata success');
                 waiter.charge('metadata', data);
               },
-              error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
+              error: function(xhr, text) {
+                tracker.lap('ajax get metadata error:' + text + ", status:" + xhr.status);
+                aux.callbacks.message && aux.callbacks.message("Failed to load seat data (" + text + ")");
+              }
             });
             aux.callbacks.loading && aux.callbacks.loading(aux.manager);
             break;
