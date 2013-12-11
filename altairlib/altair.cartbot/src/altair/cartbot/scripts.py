@@ -6,6 +6,7 @@ monkey.patch_select()
 monkey.patch_thread()
 
 import sys
+import time
 from argparse import ArgumentParser
 from ConfigParser import ConfigParser, NoSectionError
 from lxmlmechanize import Mechanize
@@ -15,6 +16,9 @@ import threading
 import time
 import logging
 import logging.config
+
+HUMANIC_SLEEP_SECOND = 37 # 5 minutes / 1 order, is humanic
+THREAD_START_INTERVAL = 1
 
 class LoggableCartBot(CartBot):
     logger = logging.getLogger('altair.cartbot')
@@ -27,7 +31,17 @@ class LoggableCartBot(CartBot):
             super(LoggableCartBot, self).print_(*msgs)
 
     def __init__(self, *args, **kwargs):
+        self._cj = cj = CookieJar()
+
+        def browserid():
+            try:
+                return cj._cookies['.tstar.jp']['/']['browserid'].value
+            except (KeyError, AttributeError) as err:
+                return 'NO BROWSER ID'
+        
+        kwargs['cookiejar'] =  self._cj
         retry_count = kwargs.pop('retry_count', 1)
+
         class RetryingMechanize(Mechanize):
             logger = logging.getLogger('mechanize')
 
@@ -49,10 +63,12 @@ class LoggableCartBot(CartBot):
                                     time.sleep(1)
                                     continue
                             else:
-                                raise
+                                continue
+                        except Exception as err:
+                            continue
                         break
                     elapsed = time.time() - s
-                    self.logger.info("%s processed in %g seconds", request.get_full_url(), elapsed)
+                    self.logger.info("%s processed in %g seconds (%s)", request.get_full_url(), elapsed, browserid())
                     return retval
                 return _
 
@@ -71,6 +87,10 @@ def main():
     parser.add_argument('-n', '--repeat', dest='repeat', help="Repeat n times")
     parser.add_argument('-C', '--concurrency', dest='concurrency', help="Stress mode; make n concurrent requests")
     parser.add_argument('-r', '--retry-count', dest='retry_count', help='retry count')
+    parser.add_argument('-s', '--sleep', dest='sleep_sec', type=float, default=HUMANIC_SLEEP_SECOND,
+                        help='sleep second.(default: {0})'.format(HUMANIC_SLEEP_SECOND))
+    parser.add_argument('-i', '--interval', dest='interval', type=float, default=THREAD_START_INTERVAL,
+                        help='threads start interval.(default: {0})'.format(THREAD_START_INTERVAL))
     parser.add_argument('url', nargs=1, help='cart url')
     options = parser.parse_args()
     if not options.config:
@@ -128,30 +148,24 @@ def main():
         pass
 
     def run():
-        bot = LoggableCartBot(
-            url = options.url[0],
-            rakuten_auth_credentials=rakuten_auth_credentials,
-            fc_auth_credentials=fc_auth_credentials,
-            shipping_address=dict(config.items('shipping_address')),
-            credit_card_info=dict(config.items('credit_card_info')),
-            http_auth_credentials=http_auth_credentials,
-            retry_count=retry_count
-            )
-        bot.log_output = options.logging
-
         for _ in range(repeat):
-            while True:
-                order_no = bot.buy_something()
-                if order_no is None and not bot.all_sales_segments:
-                    break
-                if order_no is not None:
-                    print order_no
+            bot = LoggableCartBot(
+                url = options.url[0],
+                rakuten_auth_credentials=rakuten_auth_credentials,
+                fc_auth_credentials=fc_auth_credentials,
+                shipping_address=dict(config.items('shipping_address')),
+                credit_card_info=dict(config.items('credit_card_info')),
+                http_auth_credentials=http_auth_credentials,
+                retry_count=retry_count,
+                sleep_sec=options.sleep_sec,
+                )
+            bot.log_output = options.logging 
+            order_no = bot.buy_something()
 
     threads = [threading.Thread(target=run, name='%d' % i) for i in range(concurrency)]
     for thread in threads:
         thread.start()
+        time.sleep(options.interval)
 
     for thread in threads:
         thread.join()
-
-

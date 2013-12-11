@@ -1,0 +1,21 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<div id="modal-cooperation-download" class="modal hide">
+  <div class="modal-header">
+    <h3>ダウンロード</h3>
+  </div>
+
+  <div class="modal-body">
+    <form action="javascript:download_cooperation();" method="POST">
+      ${ch.form_item(form.id)}
+      ${ch.form_item(form.cooperation_type)}
+    </form>
+  </div>
+  
+  <div class="modal-footer">
+    <a href="javascript:void($('#modal-cooperation-download).find('form').submit())"
+       class="btn" data-dismiss="modal">ダウンロード</a>
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+  </div>
+</div>

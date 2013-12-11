@@ -52,16 +52,12 @@ ${helper.nl2br(info['performance_period'])|n}<br/>
     % endfor
     <br />
 % else:
+
     % if event.salessegment_groups:
-        % for group in event.salessegment_groups:
-          % for segment in group.salessegments:
-            % if group.publicp and segment.publicp:
-                ${group.name}:${segment.start_on.year}/${segment.start_on.month}/${segment.start_on.day}〜${segment.end_on.year}/${segment.end_on.month}/${segment.end_on.day}
-                <br/>
-            % endif
-          % endfor
+        % for sales_info in event_helper.get_summary_salessegment_group(event):
+            ${sales_info['group_name']}:${sales_info['start'].year}/${sales_info['start'].month}/${sales_info['start'].day}〜${sales_info['end'].year}/${sales_info['end'].month}/${sales_info['end'].day}
+            <br />
         % endfor
-        <br />
     % else:
         ${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}〜${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}
     % endif

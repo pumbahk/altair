@@ -14,7 +14,7 @@ from altaircms.solr.api import pageset_id_list_from_word
 
 def validate_apikey(request, apikey):
     reg = request.registry
-    validator = reg.getUtility(IAPIKeyValidator)
+    validator = reg.queryAdapter(request, IAPIKeyValidator)
     return validator(apikey)
     
 def parse_and_save_event(request, data):

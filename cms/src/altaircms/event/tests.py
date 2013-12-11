@@ -2,6 +2,7 @@
 import unittest
 import json
 from pyramid import testing
+from pyramid.interfaces import IRequest
 from altaircms import testing as a_testing
 from altaircms.event.api import EventRepositry
 from altaircms.event.interfaces import IAPIKeyValidator, IEventRepository
@@ -601,17 +602,28 @@ class ParseAndSaveEventTests(unittest.TestCase):
 
 class ValidateAPIKeyTests(unittest.TestCase):
     def setUp(self):
+        config = testing.setUp()
         import sqlahelper
         self.session = sqlahelper.get_session()
+        from altair.sqlahelper import register_sessionmaker_with_engine
+        register_sessionmaker_with_engine(
+            config.registry,
+            'slave',
+            self.session.bind,
+            self.session.session_factory
+            )
 
     def tearDown(self):
         import transaction
         transaction.abort()
         self.session.remove()
 
-    def _callFUT(self, *args, **kwargs):
-        from altaircms.auth.api import validate_apikey
-        return validate_apikey(*args, **kwargs)
+    def _getTarget(self):
+        from altaircms.auth.api import APIKeyValidator
+        return APIKeyValidator
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
 
     def test_ok(self):
         from altaircms.auth.models import APIKey
@@ -619,14 +631,17 @@ class ValidateAPIKeyTests(unittest.TestCase):
         apikey = "hogehoge"
         d = APIKey(apikey=apikey)
         self.session.add(d)
+        self.session.flush()
 
-        result = self._callFUT(apikey)
+        target = self._makeOne(testing.DummyRequest())
+        result = target(apikey)
 
         self.assertTrue(result)
 
     def test_ng(self):
         apikey = "hogehoge"
-        result = self._callFUT(apikey)
+        target = self._makeOne(testing.DummyRequest())
+        result = target(apikey)
 
         self.assertFalse(result)
 
@@ -650,7 +665,7 @@ class TestEventRegister(unittest.TestCase):
         import sqlahelper
         self.session = sqlahelper.get_session()
         self.validator = DummyValidator('hogehoge')
-        self.config.registry.registerUtility(self.validator, IAPIKeyValidator)
+        self.config.registry.registerAdapter(lambda request: self.validator, (IRequest, ), IAPIKeyValidator)
 
     def tearDown(self):
         testing.tearDown()

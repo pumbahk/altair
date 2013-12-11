@@ -32,8 +32,13 @@
     <th colspan="4"></th>
     <th colspan="2">累計</th>
     <th colspan="2">
-    % if form.limited_from.data or form.limited_to.data:
-      ${vh.term(form.limited_from.data, form.limited_to.data)}
+    <% from datetime import timedelta %>
+    % if form.limited_from.data and form.limited_to.data:
+      ${form.limited_from.data} 〜 ${form.limited_to.data}
+    % elif form.limited_from.data:
+      ${form.limited_from.data} 〜 ${form.limited_from.data + timedelta(days=1)}
+    % elif form.limited_to.data:
+      ${form.limited_to.data + timedelta(days=-1)} 〜 ${form.limited_to.data}
     % else:
       全期間
     % endif

@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import json
+from altaircms.modellib import DBSession
 from ..page.models import Page
 from ..plugins.widget.summary.models import SummaryWidget
 
@@ -67,10 +68,10 @@ class SummaryWidgetGetEventInfoAdapter(object):
                 appender.append(v.get("name", u""), v["label"], v["content"], nl_to_br)
         return {"event": appender.content}    
 
-def get_event_notify_info(event):
+def get_event_notify_info(event, session=DBSession):
     ## summary widgetで「購入ページのイベント詳細として利用する」の欄を有効にしたwidgetが購入画面(カート)
     ## のイベント詳細に利用される
-    summary_widget = SummaryWidget.query.filter_by(bound_event=event).first()
+    summary_widget = session.query(SummaryWidget).filter_by(bound_event=event).first()
 
     ## 本当はregistryのadaptersから引っ張る
     if summary_widget:

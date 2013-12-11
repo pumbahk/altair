@@ -233,6 +233,8 @@ class EntryLotView(object):
                 raise ValidationError(u"希望数の合計値が上限を越えています")
             elif total_quantity == 0:
                 raise ValidationError(u"希望数が指定されていません")
+            elif len(wished_products) > 1:
+                raise ValidationError(u"複数席種の選択はできません")
         except ValidationError as e:
             self.request.session.flash(e.message)
             return HTTPFound(self.request.route_path(

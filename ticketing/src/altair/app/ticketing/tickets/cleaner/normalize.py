@@ -6,7 +6,7 @@ from collections import namedtuple
 from xml.sax import ContentHandler
 from lxml.sax import ElementTreeContentHandler, saxify
 from lxml import etree
-from ..constants import SVG_NAMESPACE
+from altair.svg.constants import SVG_NAMESPACE
 
 import logging
 logger = logging.getLogger(__name__)

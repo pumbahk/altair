@@ -79,6 +79,10 @@ def do_import_point_grant_results(registry, organization, file, now, type, force
 
             try: 
                 point_grant_history_entry_id = decode_point_grant_history_entry_id(cols[4])
+                try:
+                    point_grant_history_entry = PointGrantHistoryEntry.query.filter_by(id=point_grant_history_entry_id).one()
+                except NoResultFound:
+                    raise RecordError(u'No corresponding point grant history record found for %ld' % point_grant_history_entry_id)
             except:
                 if not force:
                     raise
@@ -99,13 +103,7 @@ def do_import_point_grant_results(registry, organization, file, now, type, force
                     pass
 
             if point_grant_history_entry is None:
-                if point_grant_history_entry_id is not None:
-                    try:
-                        point_grant_history_entry = PointGrantHistoryEntry.query.filter_by(id=point_grant_history_entry_id).one()
-                    except NoResultFound:
-                        raise RecordError(u'No corresponding point grant history record found for %ld' % point_grant_history_entry_id)
-                else:
-                    raise RecordError(u'Could not determine point grant history record')
+                raise RecordError(u'Could not determine point grant history record')
 
             if point_grant_history_entry.user_point_account.type != UserPointAccountTypeEnum.Rakuten.v:
                 raise RecordError(u'UserPointAccount(id=%ld).account_type is not Rakuten' % (point_grant_history_entry.user_point_account.id))

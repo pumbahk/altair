@@ -136,7 +136,7 @@ class EliminatedTagNormalizeUnitTests(NormalizerTestCase):
         import pystache
         from lxml.etree import fromstring, tostring, XMLSyntaxError
         from altair.app.ticketing.tickets.cleaner.normalize import normalize_etree
-        from ..constants import SVG_NAMESPACE
+        from altair.svg.constants import SVG_NAMESPACE
         svg_file = open(os.path.join(os.path.dirname(__file__), "sample.svg")).read().decode("utf-8")
 
         ## occur xml syntax error using non normalized svg 

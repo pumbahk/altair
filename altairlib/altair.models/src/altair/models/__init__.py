@@ -28,7 +28,13 @@ class Identifier(Integer):
     @property
     def inner(self):
         if self._inner is None:
-            self._inner = (BigInteger if sqlahelper.get_engine().dialect.name != 'sqlite' else Integer)(*self._args, **self._kwargs)
+            type_ = BigInteger
+            try:
+                if sqlahelper.get_engine().dialect.name == 'sqlite':
+                    type_ = Integer
+            except:
+                pass
+            self._inner = type_(*self._args, **self._kwargs)
         return self._inner
 
     def get_dbapi_type(self, dbapi):
@@ -57,3 +63,11 @@ class WithTimestamp(object):
                                server_default=text('0'),
                                onupdate=datetime.now,
                                server_onupdate=sqlf.current_timestamp()))
+
+class LogicallyDeleted(object):
+    __clone_excluded__ = ['deleted_at']
+
+    @declared_attr
+    def deleted_at(self):
+        return deferred(Column(TIMESTAMP, nullable=True, index=True))
+

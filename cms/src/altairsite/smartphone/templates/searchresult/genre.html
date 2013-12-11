@@ -3,7 +3,9 @@
 <%block name="title">検索結果一覧</%block>
 <%block name="fnavi">
     <hr/>
-    <a href="${request.route_path('smartphone.genre', genre_id=genre.id)}"><button class="btn-secondary btn-large">戻る</button></a>
+    % if genre:
+      <a href="${request.route_path('smartphone.genre', genre_id=genre.id)}"><button class="btn-secondary btn-large">戻る</button></a>
+    % endif
     <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
 </%block>
 
