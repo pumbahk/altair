@@ -34,6 +34,26 @@ class StockTypeForm(OurForm):
         default=0,
         widget=CheckboxInput(),
     )
+    min_quantity = NullableIntegerField(
+        label=u'席種毎の最小購入数',
+        default=None,
+        hide_on_new=True
+    )
+    max_quantity = NullableIntegerField(
+        label=u'席種毎の最大購入数',
+        default=None,
+        hide_on_new=True
+    )
+    min_product_quantity = NullableIntegerField(
+        label=u'席種毎の最小商品購入数',
+        default=None,
+        hide_on_new=True
+    )
+    max_product_quantity = NullableIntegerField(
+        label=u'席種毎の最大商品購入数',
+        default=None,
+        hide_on_new=True
+    )
     type = OurIntegerField(
         label=u'座席以外(駐車場、グッズ等)を登録する',
         default=StockTypeEnum.Seat.v,
@@ -79,3 +99,54 @@ class StockTypeForm(OurForm):
                     if stock.quantity > 0:
                         p = stock.performance
                         raise ValidationError(u'既に配席されている為、変更できません (%s席 @ %s %s)' % (stock.quantity, p.name, p.start_on.strftime("%m/%d")))
+
+    def validate(self, *args, **kwargs):
+        if not super(StockTypeForm, self).validate(*args, **kwargs):
+            return False
+        validity = True
+        if self.min_quantity.data is not None and \
+           self.max_quantity.data is not None and \
+           self.min_quantity.data > self.max_quantity.data:
+            errors = self.max_quantity.errors
+            if errors is None:
+                errors = []
+            else:
+                errors = list(errors)
+            errors.append(u'最大購入数には最小購入数以上の値を指定してください')
+            self.max_quantity.errors = errors
+            validity = False
+        if self.min_product_quantity.data is not None and \
+           self.max_product_quantity.data is not None and \
+           self.min_product_quantity.data > self.max_product_quantity.data:
+            errors = self.max_product_quantity.errors
+            if errors is None:
+                errors = []
+            else:
+                errors = list(errors)
+            errors.append(u'最大商品購入数には最小商品購入数以上の値を指定してください')
+            self.max_product_quantity.errors = errors
+            validity = False
+        if self.min_quantity.data is not None and \
+           self.min_product_quantity.data is not None and \
+           self.min_quantity.data < self.min_product_quantity.data:
+            errors = self.min_quantity.errors
+            if errors is None:
+                errors = []
+            else:
+                errors = list(errors)
+            errors.append(u'最小購入数には最小商品購入数以上の値を指定してください')
+            self.min_quantity.errors = errors
+            validity = False
+        if self.max_quantity.data is not None and \
+           self.max_product_quantity.data is not None and \
+           self.max_quantity.data < self.max_product_quantity.data:
+            errors = self.max_quantity.errors
+            if errors is None:
+                errors = []
+            else:
+                errors = list(errors)
+            errors.append(u'最大購入数には最大商品購入数以上の値を指定してください')
+            self.max_quantity.errors = errors
+            validity = False
+        return validity
+           

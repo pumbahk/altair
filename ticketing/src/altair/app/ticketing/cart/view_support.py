@@ -10,7 +10,13 @@ from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.models import DBSession
 from . import helpers as h
 from collections import OrderedDict
-from .exceptions import NoEventError
+from .exceptions import (
+    NoEventError,
+    QuantityOutOfBoundsError,
+    ProductQuantityOutOfBoundsError,
+    PerStockTypeQuantityOutOfBoundsError,
+    PerStockTypeProductQuantityOutOfBoundsError,
+    )
 from .resources import PerformanceOrientedTicketingCartResource
 
 logger = logging.getLogger(__name__)
@@ -105,13 +111,60 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
 
     retval = []
     for stock_type in stock_types.itervalues():
-        availability_for_stock_type = max(availability_per_product_map[product_id] for product_id in products_for_stock_type[stock_type.id])
+        availability_for_stock_type = 0
+        actual_availability_for_stock_type = 0
         product_dicts = []
+        min_product_quantity = stock_type.min_product_quantity
+        max_product_quantity = stock_type.max_product_quantity
+        min_quantity = stock_type.min_quantity
+        max_quantity = stock_type.max_quantity
         for product in products_for_stock_type[stock_type.id].itervalues():
-            quantity_power = sum([product_item.quantity for product_item in product_items_for_product[product.id] if stock_for_product_item[product_item.id].stock_type_id == product.seat_stock_type_id])
-            upper_limit = min(sales_segment.upper_limit / quantity_power, availability_per_product_map[product.id])
+            # XXX: 券種導入時に直す
+            quantity_power = sum(
+                product_item.quantity
+                for product_item in product_items_for_product[product.id]
+                if stock_for_product_item[product_item.id].stock_type_id == \
+                        product.seat_stock_type_id \
+                   or product.seat_stock_type_id is None
+                )
+            availability = availability_per_product_map[product.id]
             product_limit = sales_segment.product_limit
-            limit = upper_limit if product_limit is None else min(upper_limit, product_limit)
+
+            # 現在のところ、商品毎に下限枚数や上限枚数は指定できないので
+            min_quantity_per_product = min_quantity or 0
+            max_quantity_per_product = availability * quantity_power
+            if max_quantity is not None:
+                max_quantity_per_product = min(max_quantity_per_product, max_quantity)
+
+            # 購入上限枚数は販売区分ごとに設定できる
+            if sales_segment.upper_limit is not None:
+                max_quantity_per_product = min(max_quantity_per_product, sales_segment.upper_limit)
+
+            # 商品毎の商品購入下限数を計算する
+            min_product_quantity_per_product = (min_quantity_per_product + quantity_power - 1) / quantity_power
+            if min_product_quantity is not None:
+                min_product_quantity_per_product = max(min_product_quantity_per_product, min_product_quantity)
+
+            # 商品毎の商品購入上限数を計算する
+            max_product_quantity_per_product = max_quantity_per_product / quantity_power
+            if product_limit is not None:
+                max_product_quantity_per_product = min(max_product_quantity_per_product, product_limit)
+            if max_product_quantity is not None:
+                max_product_quantity_per_product = min(max_product_quantity_per_product, max_product_quantity)
+
+            # 席種毎の残数は商品在庫の最大値
+            availability_for_stock_type = max(availability_for_stock_type, availability)
+
+            # 下限や上限を加味した在庫数
+            actual_availability = availability
+            # 購入下限が購入上限を超えてしまっていたり下限数を割っている席種は購入不可にしたい
+            if max_product_quantity_per_product < min_product_quantity_per_product or \
+               max_quantity_per_product < min_quantity_per_product or \
+               actual_availability * quantity_power < min_quantity_per_product or \
+               actual_availability < min_product_quantity_per_product:
+                actual_availability = 0
+            actual_availability_for_stock_type = max(actual_availability_for_stock_type, actual_availability)
+
             product_dicts.append(
                 dict(
                     id=product.id,
@@ -121,9 +174,10 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     detail=h.product_name_with_unit(product_items_for_product[product.id]),
                     unit_template=h.build_unit_template(product_items_for_product[product.id]),
                     quantity_power=quantity_power,
-                    upper_limit=upper_limit,
+                    upper_limit=max_product_quantity_per_product,
                     product_limit=product_limit,
-                    limit=limit
+                    min_product_quantity_per_product=min_product_quantity_per_product,
+                    max_product_quantity_per_product=max_product_quantity_per_product
                     )
                 )
         retval.append(dict(
@@ -132,13 +186,86 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             description=stock_type.description,
             style=stock_type.style,
             availability=availability_for_stock_type,
-            availability_text=h.get_availability_text(availability_for_stock_type),
+            actual_availability=actual_availability_for_stock_type,
+            availability_text=h.get_availability_text(actual_availability_for_stock_type),
             quantity_only=stock_type.quantity_only,
             seat_choice=sales_segment.seat_choice,
-            products=product_dicts
+            products=product_dicts,
+            min_quantity=min_quantity,
+            max_quantity=max_quantity,
+            min_product_quantity=min_product_quantity,
+            max_product_quantity=max_product_quantity
             ))
 
     if seat_type_id is not None:
         retval = [stock_type_dict for stock_type_dict in retval if stock_type_dict['id'] == seat_type_id]
 
     return retval
+
+
+def assert_quantity_within_bounds(sales_segment, order_items):
+    # 購入枚数の制限
+    sum_quantity = 0
+    sum_product_quantity = 0
+    quantities_per_stock_type = {}
+    stock_types = {}
+    for product, quantity in order_items:
+        stock_type = product.seat_stock_type # XXX: 券種導入時になんとかする
+        quantity_power = product.get_quantity_power(stock_type, product.performance_id)
+        sum_quantity += quantity * quantity_power
+        sum_product_quantity += quantity
+        if stock_type is not None:
+            # 券種が特定できる商品のみ検証する
+            quantity_per_stock_type = quantities_per_stock_type.get(stock_type.id)
+            if quantity_per_stock_type is None:
+                quantities_per_stock_type[stock_type.id] = quantity_per_stock_type = {
+                    'quantity': 0,
+                    'product_quantity': 0
+                    }
+            stock_types[stock_type.id] = stock_type
+            quantity_per_stock_type['quantity'] += quantity * quantity_power
+            quantity_per_stock_type['product_quantity'] += quantity
+
+    logger.debug('sum_quantity=%d, sum_product_quantity=%d' % (sum_quantity, sum_product_quantity))
+
+    if sum_quantity == 0:
+        raise QuantityOutOfBoundsError(sum_quantity, 1, sales_segment.upper_limit)
+
+    if sales_segment.upper_limit is not None and \
+       sales_segment.upper_limit < sum_quantity:
+        raise QuantityOutOfBoundsError(sum_quantity, 1, sales_segment.upper_limit)
+
+    if sales_segment.product_limit is not None and \
+       sales_segment.product_limit < sum_product_quantity:
+        raise ProductQuantityOutOfBoundsError(sum_product_quantity, 1, sales_segment.product_limit)
+
+    for stock_type_id, quantity_per_stock_type in quantities_per_stock_type.items():
+        stock_type = stock_types[stock_type_id]
+        if stock_type.min_quantity is not None and \
+           stock_type.min_quantity > quantity_per_stock_type['quantity']:
+            raise PerStockTypeQuantityOutOfBoundsError(
+                quantity_per_stock_type['quantity'],
+                stock_type.min_quantity,
+                stock_type.max_quantity
+                )
+        if stock_type.max_quantity is not None and \
+           stock_type.max_quantity < quantity_per_stock_type['quantity']:
+            raise PerStockTypeQuantityOutOfBoundsError(
+                quantity_per_stock_type['quantity'],
+                stock_type.max_quantity,
+                stock_type.max_quantity
+                )
+        if stock_type.min_product_quantity is not None and \
+           stock_type.min_product_quantity > quantity_per_stock_type['product_quantity']:
+            raise PerStockTypeProductQuantityOutOfBoundsError(
+                quantity_per_stock_type['product_quantity'],
+                stock_type.min_product_quantity,
+                stock_type.max_product_quantity
+                )
+        if stock_type.max_product_quantity is not None and \
+           stock_type.max_product_quantity < quantity_per_stock_type['product_quantity']:
+            raise PerStockTypeProductQuantityOutOfBoundsError(
+                quantity_per_stock_type['product_quantity'],
+                stock_type.max_product_quantity,
+                stock_type.max_product_quantity
+                )

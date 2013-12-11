@@ -48,7 +48,7 @@ from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
 from .selectable_renderer import selectable_renderer
-from .view_support import IndexViewMixin, get_amount_without_pdmp, get_seat_type_dicts
+from .view_support import IndexViewMixin, get_amount_without_pdmp, get_seat_type_dicts, assert_quantity_within_bounds
 from .exceptions import (
     NoSalesSegment,
     NoCartError, 
@@ -61,6 +61,10 @@ from .exceptions import (
     OutTermSalesException,
     TooManyCartsCreated,
     PaymentError,
+    QuantityOutOfBoundsError,
+    ProductQuantityOutOfBoundsError,
+    PerStockTypeQuantityOutOfBoundsError,
+    PerStockTypeProductQuantityOutOfBoundsError,
 )
 from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource
 from .limiting import LimiterDecorators
@@ -537,7 +541,12 @@ class ReserveView(object):
         if len(controls) == 0:
             return []
 
-        products = dict([(p.id, p) for p in DBSession.query(c_models.Product).filter(c_models.Product.id.in_([c[0] for c in controls]))])
+        products = dict(
+            (p.id, p)
+            for p in DBSession.query(c_models.Product) \
+                    .options(joinedload(c_models.Product.seat_stock_type)) \
+                    .filter(c_models.Product.id.in_([c[0] for c in controls]))
+            )
         logger.debug('order %s' % products)
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
@@ -547,39 +556,88 @@ class ReserveView(object):
     @view_config(route_name='cart.order', request_method="POST", renderer='json')
     def reserve(self):
         h.form_log(self.request, "received order")
-        order_items = self.ordered_items
-        if not order_items:
+        ordered_items = self.ordered_items
+        if not ordered_items:
             return dict(result='NG', reason="no products")
 
         selected_seats = self.request.params.getall('selected_seat')
         separate_seats = True if self.request.params.get('separate_seats') == 'true' else False
-        logger.debug('order_items %s' % order_items)
+        logger.debug('ordered_items %s' % ordered_items)
 
-        sum_quantity = 0
-        if selected_seats:
-            sum_quantity = len(selected_seats)
-        else:
-            for product, quantity in order_items:
-                sum_quantity += quantity * product.get_quantity_power(product.seat_stock_type, product.performance_id)
-        sum_product_quantity = sum(quantity for _, quantity in order_items)
-
-        logger.debug('sum_quantity=%d, sum_product_quantity=%d' % (sum_quantity, sum_product_quantity))
-
-        if self.context.sales_segment.upper_limit < sum_quantity:
-            logger.debug('upper_limit over')
-            return dict(result='NG', reason="upper_limit")
-
-        if self.context.sales_segment.product_limit is not None and \
-           self.context.sales_segment.product_limit < sum_product_quantity:
-            logger.debug('product_limit over')
-            return dict(result='NG', reason="product_limit")
+        sales_segment = self.context.sales_segment
 
         try:
-            cart = api.order_products(self.request, self.request.context.sales_segment.id, order_items, selected_seats=selected_seats, separate_seats=separate_seats)
-            cart.sales_segment = self.context.sales_segment
+            assert_quantity_within_bounds(sales_segment, ordered_items)
+            cart = api.order_products(
+                self.request,
+                sales_segment.id,
+                ordered_items,
+                selected_seats=selected_seats,
+                separate_seats=separate_seats)
+            cart.sales_segment = sales_segment
             if cart is None:
                 transaction.abort()
                 return dict(result='NG')
+        except QuantityOutOfBoundsError as e:
+            transaction.abort()
+            logger.debug("quantity limit")
+            if e.quantity_given < e.min_quantity:
+                return dict(
+                    result='NG',
+                    reason="ticket_count_below_lower_bound",
+                    message="枚数は合計{.min_quantity}以上で選択してください".format(e)
+                    )
+            else:
+                return dict(
+                    result='NG',
+                    reason="ticket_count_over_upper_bound",
+                    message="枚数は合計{.max_quantity}以内で選択してください".format(e)
+                    )
+        except ProductQuantityOutOfBoundsError as e:
+            transaction.abort()
+            logger.debug("product limit")
+            if e.quantity_given < e.min_quantity:
+                return dict(
+                    result='NG',
+                    reason="product_count_below_lower_bound",
+                    message="商品個数は合計{.min_quantity}以上で選択してください".format(e)
+                    )
+            else:
+                return dict(
+                    result='NG',
+                    reason="product_count_over_upper_bound",
+                    message="商品個数は合計{.max_quantity}以内で選択してください".format(e)
+                    )
+        except PerStockTypeQuantityOutOfBoundsError as e:
+            transaction.abort()
+            logger.debug("per-stock-type quantity limit")
+            if e.quantity_given < e.min_quantity:
+                return dict(
+                    result='NG',
+                    reason="ticket_count_below_lower_bound",
+                    message="枚数は合計{.min_quantity}以上で選択してください".format(e)
+                    )
+            else:
+                return dict(
+                    result='NG',
+                    reason="ticket_count_over_upper_bound",
+                    message="枚数は合計{.max_quantity}以内で選択してください".format(e)
+                    )
+        except PerStockTypeProductQuantityOutOfBoundsError as e:
+            transaction.abort()
+            logger.debug("per-stock-type product limit")
+            if e.quantity_given < e.min_quantity:
+                return dict(
+                    result='NG',
+                    reason="product_count_below_lower_bound",
+                    message="商品個数は合計{.min_quantity}以上で選択してください".format(e)
+                    )
+            else:
+                return dict(
+                    result='NG',
+                    reason="product_count_over_upper_bound",
+                    message="商品個数は合計{.max_quantity}以内で選択してください".format(e)
+                    )
         except NotEnoughAdjacencyException:
             transaction.abort()
             logger.debug("not enough adjacency")
@@ -605,11 +663,11 @@ class ReserveView(object):
         DBSession.flush()
         api.set_cart(self.request, cart)
         return dict(result='OK', 
-                    payment_url=self.request.route_url("cart.payment", sales_segment_id=self.context.sales_segment.id),
+                    payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
                     cart=dict(products=[dict(name=p.product.name, 
                                              quantity=p.quantity,
                                              price=int(p.product.price),
-                                             seats=p.seats if self.context.sales_segment.seat_choice else [],
+                                             seats=p.seats if sales_segment.seat_choice else [],
                                              unit_template=h.build_unit_template(p.product.items),
                                         )
                                         for p in cart.items],

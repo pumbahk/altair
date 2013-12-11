@@ -26,6 +26,14 @@
       modal.find('#quantity_only').attr('checked', 'checked');
     }
     modal.find('#quantity_only').change();
+    var min_quantity = $(el).attr('min_quantity'),
+        max_quantity = $(el).attr('max_quantity'),
+        min_product_quantity = $(el).attr('min_product_quantity'),
+        max_product_quantity = $(el).attr('max_product_quantity');
+    modal.find('#min_quantity').val(min_quantity);
+    modal.find('#max_quantity').val(max_quantity);
+    modal.find('#min_product_quantity').val(min_product_quantity);
+    modal.find('#max_product_quantity').val(max_product_quantity);
     if ($(el).attr('type') == '1') {
       modal.find('#type').attr('checked', 'checked');
     }
