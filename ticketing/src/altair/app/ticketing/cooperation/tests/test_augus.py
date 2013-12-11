@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 from unittest import TestCase
 from mock import Mock
+import csv
 from StringIO import StringIO
 
 from altair.app.ticketing.core.models import (
@@ -168,7 +169,19 @@ class AugusVenueImporterTest(TestCase):
     def test_import_(self):
         factory = SamplePairsFactory()
         pairs = factory.create()
-        io = StringIO()
+        io = StringIO()        
+
+        # create csv
+        writer = csv.writer(io)
+        typ = CooperationTypeEnum.augus.v[0]
+        editor = CSVEditorFactory.create(typ)
+        editor.write(writer, pairs)
+        
+        # test improter
+        io.seek(0)
+        reader = csv.reader(io)
+        
+
 
 class _FactoryTestBase(object):
     factory_class = None # need override
