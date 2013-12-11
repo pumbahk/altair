@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['uNUET9RE9Y2WB5OM'] = (function (exports) { (function () { 
+__LIBS__['QXDDDGDKSEBWEEFW'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['EHLV48D_PEW3FB1O'] = (function (exports) { (function () { 
+__LIBS__['K63C9J94TSXHYKEJ'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -97,7 +97,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['KHLRY7RKUFSAO8DO'] = (function (exports) { (function () { 
+__LIBS__['wII7M0L04T43M1AZ'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -276,7 +276,7 @@ timer.prototype.lap = function(msg) {
   return lap;
 };
  })(); return exports; })({});
-__LIBS__['J0YF6ZX8Z29CL931'] = (function (exports) { (function () { 
+__LIBS__['mNAVX9XZ94F_H9W7'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -325,12 +325,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['sPOLICSPUU1HZF4U'] = (function (exports) { (function () { 
+__LIBS__['SARMTPFSADT8RUZ2'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['KHLRY7RKUFSAO8DO'];
-var CONF = __LIBS__['EHLV48D_PEW3FB1O'];
-var IdentifiableSet = __LIBS__['J0YF6ZX8Z29CL931'].IdentifiableSet;
+var util = __LIBS__['wII7M0L04T43M1AZ'];
+var CONF = __LIBS__['K63C9J94TSXHYKEJ'];
+var IdentifiableSet = __LIBS__['mNAVX9XZ94F_H9W7'].IdentifiableSet;
 
 var use_altair_collection = true;
 
@@ -1028,12 +1028,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['A80KGKA_A64S18BU'] = (function (exports) { (function () { 
+__LIBS__['FD8OD9KKN_OFNA9I'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['KHLRY7RKUFSAO8DO'];
-var CONF = __LIBS__['EHLV48D_PEW3FB1O'];
-var models = __LIBS__['sPOLICSPUU1HZF4U'];
+var util = __LIBS__['wII7M0L04T43M1AZ'];
+var CONF = __LIBS__['K63C9J94TSXHYKEJ'];
+var models = __LIBS__['SARMTPFSADT8RUZ2'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -1216,13 +1216,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['EHLV48D_PEW3FB1O'];
-  var models = __LIBS__['sPOLICSPUU1HZF4U'];
-  var util = __LIBS__['KHLRY7RKUFSAO8DO'];
-  var viewobjects = __LIBS__['A80KGKA_A64S18BU'];
-  var IdentifiableSet = __LIBS__['J0YF6ZX8Z29CL931'].IdentifiableSet;
+  var CONF = __LIBS__['K63C9J94TSXHYKEJ'];
+  var models = __LIBS__['SARMTPFSADT8RUZ2'];
+  var util = __LIBS__['wII7M0L04T43M1AZ'];
+  var viewobjects = __LIBS__['FD8OD9KKN_OFNA9I'];
+  var IdentifiableSet = __LIBS__['mNAVX9XZ94F_H9W7'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['uNUET9RE9Y2WB5OM'];
+    I18n.translations = __LIBS__['QXDDDGDKSEBWEEFW'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1531,7 +1531,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
     tracker.lap('initModel start');
     this.initModel();
     tracker.lap('initSeats start');
-    this.initSeats();
+    //this.initSeats();
     tracker.lap('callback.load start');
     this.callbacks.load && this.callbacks.load(this);
     tracker.lap('load end');
@@ -1744,20 +1744,42 @@ var Seat = exports.Seat = Backbone.Model.extend({
       seats = {};
       target_seats = this.shapes;
     }
-    for (var id in target_seats) {
-      var shape = this.shapes[id];
-      var seat = this.venue.seats.get(id);
-      if (!seat)
-        continue;
+
+    count = 0;
+    target_seats_keys = [];
+    for(ts in target_seats) {
+      target_seats_keys.push(ts);
+    }
+    total_count = target_seats_keys.length;
+    var callback = function() {
+      var id = target_seats_keys[count];
+      var shape = self.shapes[id];
+      var seat = self.venue.seats.get(id);
+      if (!seat) {
+        count++;
+        if (count < total_count) {
+          setTimeout(callback, 0);
+        }
+        return;
+      }
 
       var seat_vo = seats[id];
       if (seat_vo) {
         seat_vo.set('model', seat);
         seat_vo.trigger('change:shape');
-        continue;
+        count++;
+        if (count < total_count) {
+          setTimeout(callback, 0);
+        }
+        return;
       } else {
-        if (metadata && !seat.get('stock').get('assignable'))
-          continue;
+        if (metadata && !seat.get('stock').get('assignable')) {
+          count++;
+          if (count < total_count) {
+            setTimeout(callback, 0);
+          }
+          return;
+        }
       }
 
       seats[id] = (function (id) {
@@ -1829,8 +1851,14 @@ var Seat = exports.Seat = Backbone.Model.extend({
           }
         });
       })(id);
+      self.seats = seats;
+
+      count++;
+      if (count < total_count) {
+        setTimeout(callback, 0);
+      }
     }
-    this.seats = seats;
+    setTimeout(callback, 0);
   };
 
   VenueEditor.prototype.addKeyEvent = function VenueEditor_addKeyEvent() {
@@ -2191,6 +2219,10 @@ var Seat = exports.Seat = Backbone.Model.extend({
                 { x: arguments[1].width, y: arguments[1].height }
               );
             }
+            break;
+
+          case 'initSeats':
+            aux.manager.initSeats();
             break;
         }
       }

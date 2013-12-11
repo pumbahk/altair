@@ -345,6 +345,13 @@ venueEditorRoot.venueeditor({
   }
 }).venueeditor("load");
 
+setTimeout(function () {
+  setTimeout(function () {
+    $(window).resize();
+    venueEditorRoot.venueeditor('initSeats');
+    }, 0)
+}, 15000);
+
 venueEditor.find(".action-zoomin").click(function () {
   venueEditorRoot.venueeditor("uimode", "zoomin");
 });

@@ -315,7 +315,7 @@
     tracker.lap('initModel start');
     this.initModel();
     tracker.lap('initSeats start');
-    this.initSeats();
+    //this.initSeats();
     tracker.lap('callback.load start');
     this.callbacks.load && this.callbacks.load(this);
     tracker.lap('load end');
@@ -528,20 +528,42 @@
       seats = {};
       target_seats = this.shapes;
     }
-    for (var id in target_seats) {
-      var shape = this.shapes[id];
-      var seat = this.venue.seats.get(id);
-      if (!seat)
-        continue;
+
+    count = 0;
+    target_seats_keys = [];
+    for(ts in target_seats) {
+      target_seats_keys.push(ts);
+    }
+    total_count = target_seats_keys.length;
+    var callback = function() {
+      var id = target_seats_keys[count];
+      var shape = self.shapes[id];
+      var seat = self.venue.seats.get(id);
+      if (!seat) {
+        count++;
+        if (count < total_count) {
+          setTimeout(callback, 0);
+        }
+        return;
+      }
 
       var seat_vo = seats[id];
       if (seat_vo) {
         seat_vo.set('model', seat);
         seat_vo.trigger('change:shape');
-        continue;
+        count++;
+        if (count < total_count) {
+          setTimeout(callback, 0);
+        }
+        return;
       } else {
-        if (metadata && !seat.get('stock').get('assignable'))
-          continue;
+        if (metadata && !seat.get('stock').get('assignable')) {
+          count++;
+          if (count < total_count) {
+            setTimeout(callback, 0);
+          }
+          return;
+        }
       }
 
       seats[id] = (function (id) {
@@ -613,8 +635,14 @@
           }
         });
       })(id);
+      self.seats = seats;
+
+      count++;
+      if (count < total_count) {
+        setTimeout(callback, 0);
+      }
     }
-    this.seats = seats;
+    setTimeout(callback, 0);
   };
 
   VenueEditor.prototype.addKeyEvent = function VenueEditor_addKeyEvent() {
@@ -975,6 +1003,10 @@
                 { x: arguments[1].width, y: arguments[1].height }
               );
             }
+            break;
+
+          case 'initSeats':
+            aux.manager.initSeats();
             break;
         }
       }
