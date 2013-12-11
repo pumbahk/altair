@@ -531,115 +531,107 @@
 
     count = 0;
     target_seats_keys = [];
-    for(ts in target_seats) {
+    for (var ts in target_seats) {
       target_seats_keys.push(ts);
     }
     total_count = target_seats_keys.length;
     var callback = function() {
-      var id = target_seats_keys[count];
-      var shape = self.shapes[id];
-      var seat = self.venue.seats.get(id);
-      if (!seat) {
-        count++;
-        if (count < total_count) {
-          setTimeout(callback, 0);
+      // 1000席単位で描画
+      for (var cnt = 0; count < total_count && cnt < 1000; cnt++, count++) {
+        var id = target_seats_keys[count];
+        var shape = self.shapes[id];
+        var seat = self.venue.seats.get(id);
+        if (!seat) {
+          continue;
         }
-        return;
-      }
 
-      var seat_vo = seats[id];
-      if (seat_vo) {
-        seat_vo.set('model', seat);
-        seat_vo.trigger('change:shape');
-        count++;
-        if (count < total_count) {
-          setTimeout(callback, 0);
-        }
-        return;
-      } else {
-        if (metadata && !seat.get('stock').get('assignable')) {
-          count++;
-          if (count < total_count) {
-            setTimeout(callback, 0);
+        var seat_vo = seats[id];
+        if (seat_vo) {
+          seat_vo.set('model', seat);
+          seat_vo.trigger('change:shape');
+          continue;
+        } else {
+          if (metadata && !seat.get('stock').get('assignable')) {
+            continue;
           }
-          return;
         }
-      }
 
-      seats[id] = (function (id) {
-        seat.on('change:selected', function () {
-          var value = this.get('selected');
-          if (value)
-            self.selection.add(this);
-          else
-            self.selection.remove(this);
-        });
-        return new viewobjects.Seat({
-          model: seat,
-          shape: shape,
-          events: {
-            mouseover: function(evt) {
-              var candidate = null;
-              if (self.seatAdjacencies) {
-                var candidates = self.seatAdjacencies.getCandidates(id, self.adjacencyLength());
-                if (candidates.length == 0)
-                  return;
-                for (var i = 0; i < candidates.length; i++) {
-                  candidate = candidates[i];
-                  for (var j = 0; j < candidate.length; j++) {
-                    if (!seats[candidate[j]].get('model').selectable()) {
-                      candidate = null;
+        seats[id] = (function (id) {
+          seat.on('change:selected', function () {
+            var value = this.get('selected');
+            if (value)
+              self.selection.add(this);
+            else
+              self.selection.remove(this);
+          });
+          return new viewobjects.Seat({
+            model: seat,
+            shape: shape,
+            events: {
+              mouseover: function(evt) {
+                var candidate = null;
+                if (self.seatAdjacencies) {
+                  var candidates = self.seatAdjacencies.getCandidates(id, self.adjacencyLength());
+                  if (candidates.length == 0)
+                    return;
+                  for (var i = 0; i < candidates.length; i++) {
+                    candidate = candidates[i];
+                    for (var j = 0; j < candidate.length; j++) {
+                      if (!seats[candidate[j]].get('model').selectable()) {
+                        candidate = null;
+                        break;
+                      }
+                    }
+                    if (candidate) {
                       break;
                     }
                   }
-                  if (candidate) {
-                    break;
+                } else {
+                  candidate = [id];
+                }
+                if (!candidate)
+                  return;
+                for (var i = 0; i < candidate.length; i++) {
+                  var _id = candidate[i];
+                  var seat = seats[_id];
+                  if (seat.get('model').selectable()) {
+                    seat.addStyleType('highlighted');
+                  } else {
+                    seat.addStyleType('tooltip');
                   }
+                  self.highlighted[_id] = seat;
+                  self.callbacks.tooltip && self.callbacks.tooltip(seat, evt);
                 }
-              } else {
-                candidate = [id];
-              }
-              if (!candidate)
-                return;
-              for (var i = 0; i < candidate.length; i++) {
-                var _id = candidate[i];
-                var seat = seats[_id];
-                if (seat.get('model').selectable()) {
-                  seat.addStyleType('highlighted');
-                } else {
-                  seat.addStyleType('tooltip');
+              },
+              mouseout: function(evt) {
+                var highlighted = self.highlighted;
+                self.highlighted = {};
+                for (var i in highlighted) {
+                  var seat = highlighted[i];
+                  if (seat.get('model').selectable()) {
+                    seat.removeStyleType('highlighted');
+                  } else {
+                    seat.removeStyleType('tooltip');
+                  }
+                  self.callbacks.tooltip && self.callbacks.tooltip(null, evt);
                 }
-                self.highlighted[_id] = seat;
-                self.callbacks.tooltip && self.callbacks.tooltip(seat, evt);
-              }
-            },
-            mouseout: function(evt) {
-              var highlighted = self.highlighted;
-              self.highlighted = {};
-              for (var i in highlighted) {
-                var seat = highlighted[i];
-                if (seat.get('model').selectable()) {
-                  seat.removeStyleType('highlighted');
-                } else {
-                  seat.removeStyleType('tooltip');
+              },
+              mousedown: function(evt) {
+                var seat = seats[id];
+                if (seat.get('model').get('sold')) {
+                  self.callbacks.click && self.callbacks.click(seat.get('model'), evt);
                 }
-                self.callbacks.tooltip && self.callbacks.tooltip(null, evt);
-              }
-            },
-            mousedown: function(evt) {
-              var seat = seats[id];
-              if (seat.get('model').get('sold')) {
-                self.callbacks.click && self.callbacks.click(seat.get('model'), evt);
               }
             }
-          }
-        });
-      })(id);
-      self.seats = seats;
+          });
+        })(id);
+        self.seats = seats;
+      }
 
-      count++;
       if (count < total_count) {
         setTimeout(callback, 0);
+      } else {
+        console.log('init Seats end ' + new Date());
       }
     }
     setTimeout(callback, 0);

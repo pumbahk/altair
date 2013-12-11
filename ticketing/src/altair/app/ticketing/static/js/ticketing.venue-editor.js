@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['QXDDDGDKSEBWEEFW'] = (function (exports) { (function () { 
+__LIBS__['S_FDM5T9YLYQO1J5'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['K63C9J94TSXHYKEJ'] = (function (exports) { (function () { 
+__LIBS__['nY92X5RGLIBLQ7D9'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -97,7 +97,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['wII7M0L04T43M1AZ'] = (function (exports) { (function () { 
+__LIBS__['IIFXE0E0R_1592LM'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -276,7 +276,7 @@ timer.prototype.lap = function(msg) {
   return lap;
 };
  })(); return exports; })({});
-__LIBS__['mNAVX9XZ94F_H9W7'] = (function (exports) { (function () { 
+__LIBS__['ARNR33UBVUKFZBQ4'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -325,12 +325,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['SARMTPFSADT8RUZ2'] = (function (exports) { (function () { 
+__LIBS__['NC7W5S_KGUY5FM8H'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['wII7M0L04T43M1AZ'];
-var CONF = __LIBS__['K63C9J94TSXHYKEJ'];
-var IdentifiableSet = __LIBS__['mNAVX9XZ94F_H9W7'].IdentifiableSet;
+var util = __LIBS__['IIFXE0E0R_1592LM'];
+var CONF = __LIBS__['nY92X5RGLIBLQ7D9'];
+var IdentifiableSet = __LIBS__['ARNR33UBVUKFZBQ4'].IdentifiableSet;
 
 var use_altair_collection = true;
 
@@ -1028,12 +1028,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['FD8OD9KKN_OFNA9I'] = (function (exports) { (function () { 
+__LIBS__['oVPLZXT5PHX_T3RM'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['wII7M0L04T43M1AZ'];
-var CONF = __LIBS__['K63C9J94TSXHYKEJ'];
-var models = __LIBS__['SARMTPFSADT8RUZ2'];
+var util = __LIBS__['IIFXE0E0R_1592LM'];
+var CONF = __LIBS__['nY92X5RGLIBLQ7D9'];
+var models = __LIBS__['NC7W5S_KGUY5FM8H'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -1216,13 +1216,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['K63C9J94TSXHYKEJ'];
-  var models = __LIBS__['SARMTPFSADT8RUZ2'];
-  var util = __LIBS__['wII7M0L04T43M1AZ'];
-  var viewobjects = __LIBS__['FD8OD9KKN_OFNA9I'];
-  var IdentifiableSet = __LIBS__['mNAVX9XZ94F_H9W7'].IdentifiableSet;
+  var CONF = __LIBS__['nY92X5RGLIBLQ7D9'];
+  var models = __LIBS__['NC7W5S_KGUY5FM8H'];
+  var util = __LIBS__['IIFXE0E0R_1592LM'];
+  var viewobjects = __LIBS__['oVPLZXT5PHX_T3RM'];
+  var IdentifiableSet = __LIBS__['ARNR33UBVUKFZBQ4'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['QXDDDGDKSEBWEEFW'];
+    I18n.translations = __LIBS__['S_FDM5T9YLYQO1J5'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1747,115 +1747,107 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
     count = 0;
     target_seats_keys = [];
-    for(ts in target_seats) {
+    for (var ts in target_seats) {
       target_seats_keys.push(ts);
     }
     total_count = target_seats_keys.length;
     var callback = function() {
-      var id = target_seats_keys[count];
-      var shape = self.shapes[id];
-      var seat = self.venue.seats.get(id);
-      if (!seat) {
-        count++;
-        if (count < total_count) {
-          setTimeout(callback, 0);
+      // 1000席単位で描画
+      for (var cnt = 0; count < total_count && cnt < 1000; cnt++, count++) {
+        var id = target_seats_keys[count];
+        var shape = self.shapes[id];
+        var seat = self.venue.seats.get(id);
+        if (!seat) {
+          continue;
         }
-        return;
-      }
 
-      var seat_vo = seats[id];
-      if (seat_vo) {
-        seat_vo.set('model', seat);
-        seat_vo.trigger('change:shape');
-        count++;
-        if (count < total_count) {
-          setTimeout(callback, 0);
-        }
-        return;
-      } else {
-        if (metadata && !seat.get('stock').get('assignable')) {
-          count++;
-          if (count < total_count) {
-            setTimeout(callback, 0);
+        var seat_vo = seats[id];
+        if (seat_vo) {
+          seat_vo.set('model', seat);
+          seat_vo.trigger('change:shape');
+          continue;
+        } else {
+          if (metadata && !seat.get('stock').get('assignable')) {
+            continue;
           }
-          return;
         }
-      }
 
-      seats[id] = (function (id) {
-        seat.on('change:selected', function () {
-          var value = this.get('selected');
-          if (value)
-            self.selection.add(this);
-          else
-            self.selection.remove(this);
-        });
-        return new viewobjects.Seat({
-          model: seat,
-          shape: shape,
-          events: {
-            mouseover: function(evt) {
-              var candidate = null;
-              if (self.seatAdjacencies) {
-                var candidates = self.seatAdjacencies.getCandidates(id, self.adjacencyLength());
-                if (candidates.length == 0)
-                  return;
-                for (var i = 0; i < candidates.length; i++) {
-                  candidate = candidates[i];
-                  for (var j = 0; j < candidate.length; j++) {
-                    if (!seats[candidate[j]].get('model').selectable()) {
-                      candidate = null;
+        seats[id] = (function (id) {
+          seat.on('change:selected', function () {
+            var value = this.get('selected');
+            if (value)
+              self.selection.add(this);
+            else
+              self.selection.remove(this);
+          });
+          return new viewobjects.Seat({
+            model: seat,
+            shape: shape,
+            events: {
+              mouseover: function(evt) {
+                var candidate = null;
+                if (self.seatAdjacencies) {
+                  var candidates = self.seatAdjacencies.getCandidates(id, self.adjacencyLength());
+                  if (candidates.length == 0)
+                    return;
+                  for (var i = 0; i < candidates.length; i++) {
+                    candidate = candidates[i];
+                    for (var j = 0; j < candidate.length; j++) {
+                      if (!seats[candidate[j]].get('model').selectable()) {
+                        candidate = null;
+                        break;
+                      }
+                    }
+                    if (candidate) {
                       break;
                     }
                   }
-                  if (candidate) {
-                    break;
+                } else {
+                  candidate = [id];
+                }
+                if (!candidate)
+                  return;
+                for (var i = 0; i < candidate.length; i++) {
+                  var _id = candidate[i];
+                  var seat = seats[_id];
+                  if (seat.get('model').selectable()) {
+                    seat.addStyleType('highlighted');
+                  } else {
+                    seat.addStyleType('tooltip');
                   }
+                  self.highlighted[_id] = seat;
+                  self.callbacks.tooltip && self.callbacks.tooltip(seat, evt);
                 }
-              } else {
-                candidate = [id];
-              }
-              if (!candidate)
-                return;
-              for (var i = 0; i < candidate.length; i++) {
-                var _id = candidate[i];
-                var seat = seats[_id];
-                if (seat.get('model').selectable()) {
-                  seat.addStyleType('highlighted');
-                } else {
-                  seat.addStyleType('tooltip');
+              },
+              mouseout: function(evt) {
+                var highlighted = self.highlighted;
+                self.highlighted = {};
+                for (var i in highlighted) {
+                  var seat = highlighted[i];
+                  if (seat.get('model').selectable()) {
+                    seat.removeStyleType('highlighted');
+                  } else {
+                    seat.removeStyleType('tooltip');
+                  }
+                  self.callbacks.tooltip && self.callbacks.tooltip(null, evt);
                 }
-                self.highlighted[_id] = seat;
-                self.callbacks.tooltip && self.callbacks.tooltip(seat, evt);
-              }
-            },
-            mouseout: function(evt) {
-              var highlighted = self.highlighted;
-              self.highlighted = {};
-              for (var i in highlighted) {
-                var seat = highlighted[i];
-                if (seat.get('model').selectable()) {
-                  seat.removeStyleType('highlighted');
-                } else {
-                  seat.removeStyleType('tooltip');
+              },
+              mousedown: function(evt) {
+                var seat = seats[id];
+                if (seat.get('model').get('sold')) {
+                  self.callbacks.click && self.callbacks.click(seat.get('model'), evt);
                 }
-                self.callbacks.tooltip && self.callbacks.tooltip(null, evt);
-              }
-            },
-            mousedown: function(evt) {
-              var seat = seats[id];
-              if (seat.get('model').get('sold')) {
-                self.callbacks.click && self.callbacks.click(seat.get('model'), evt);
               }
             }
-          }
-        });
-      })(id);
-      self.seats = seats;
+          });
+        })(id);
+        self.seats = seats;
+      }
 
-      count++;
       if (count < total_count) {
         setTimeout(callback, 0);
+      } else {
+        console.log('init Seats end ' + new Date());
       }
     }
     setTimeout(callback, 0);
