@@ -1,0 +1,73 @@
+<%inherit file="${context['main_template'].uri}" />
+<div id="main">
+  <h1><img src="${request.static_url('altair.app.ticketing.lots:static/img/order/title_settlement.gif')}" alt="チケット申込" width="950" height="40" /></h1>
+  %if request.session.peek_flash():
+  <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+    <ul>
+      %for message in request.session.pop_flash():
+      <li>${message}</li>
+      %endfor
+    </ul>
+  </div>
+  %endif
+  <div class="settlementBox2" id="settlementEventDetail">
+    <div class="settlementBoxInner2">
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
+      <table summary="イベント詳細情報">
+        <tr>
+          <th scope="row">スマホイベント名</th>
+          <td>${event.title}</td>
+        </tr>
+        <tr>
+          <th scope="row">申込受付期間</th>
+          <td>${h.japanese_datetime(sales_segment.start_at)}～${h.japanese_datetime(sales_segment.end_at)}</td>
+        </tr>
+        %if sales_segment.upper_limit:
+        <tr>
+          <th scope="row">制限枚数</th>
+          <td>1希望の申込で${sales_segment.upper_limit}枚まで</td>
+        </tr>
+        %endif
+        <tr>
+          <th scope="row">申込回数制限</th>
+          <td>${u"{0} 回".format(lot.entry_limit) if lot.entry_limit else u"無制限"}</td>
+        </tr>
+        <tr>
+          <th scope="row">受付希望数</th>
+          <td>一度の申込で第${lot.limit_wishes}希望まで</td>
+        </tr>
+        %if lot.description:
+        <tr>
+          <th scope="row">注意事項</th>
+          <td>${view.cr2br(lot.description)|n}</td>
+        </tr>
+        %endif
+      </table>
+    </div>
+  </div>
+  <div class="settlementBox2">
+    <div class="settlementBoxInner2">
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/img/order/title_public.gif')}" alt="公演一覧" width="106" height="29" /></h2>
+      %for performance in performances:
+      <table class="border" summary="イベント詳細情報">
+        <tr>
+          <th colspan="2" class="title" scope="row">${performance.name}</th>
+        </tr>
+        <tr class="none">
+          <th scope="row">公演日</th>
+          <td>${h.japanese_datetime(performance.start_on)}開演</td>
+        </tr>
+        <tr>
+          <th scope="row">会場</th>
+          <td>${performance.venue.name}</td>
+        </tr>                    
+      </table>
+      %endfor
+    </div>
+  </div>
+  <p class="align2">
+    <a href="${request.route_path('lots.entry.sp_step1', event_id=event.id, lot_id=lot.id)}">
+      <input type="image" src="${request.static_url('altair.app.ticketing.lots:static/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" />
+    </a>
+  </p>
+</div>

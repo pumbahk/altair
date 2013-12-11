@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>チケット販売・イベントの予約 [音楽 / コンサート / 舞台 / スポーツ] - 楽天チケット</title>
+<meta name="description" content="チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。" />
+<meta name="keywords" content="チケット,演劇,クラシック,オペラ,コンサート,バレエ,ミュージカル,野球,サッカー,格闘技" />
+<meta http-equiv="content-style-type" content="text/css" />
+<meta http-equiv="content-script-type" content="text/javascript" />
+<link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.lots:static/img/common/favicon.ico')}" />
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.lots:static/css/import.css')}" type="text/css" media="all" />
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/js/jquery.js')}"></script>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/js/underscore-min.js')}"></script>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+<script type="text/javascript">
+  $(function() {
+    $('form').disableOnSubmit('input[type=image][name!="back"]');
+  });
+</script>
+</head>
+<body id="settlement">
+<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.lots:static/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
+<div id="container">
+  <!-- ========== header ========== -->
+  <div id="grpheader">
+        <p id="siteID"><a href="http://ticket.rakuten.co.jp/"><img src="${request.static_url('altair.app.ticketing.lots:static/img/common/header_logo_03.gif')}" alt="楽天チケット" class="serviceLogo" width="70" height="34" /></a></p>
+  </div>
+  <!-- ========== /header ========== -->
+  
+  <hr />
+
+  <!-- ========== main ========== -->
+    ${next.body()}
+  <!-- ========== /main ========== -->
+  <div class="footerCopy">
+    <div class="footernav">
+      <ul>
+        <li class="first"><a href="mailto:support@ticket.rakuten.co.jp">お問い合わせ</a></li>
+        <li><a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a></li>
+        <li class="last"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+      </ul>
+    </div>
+    <div class="copyright">
+      Copyright &copy; 2010-2013 TicketStar Inc. All Rights Reserved. 
+    </div>
+  </div>
+</div>
+<!-- /container -->
+
+<%def name="error(form, field, enclose=False)">
+%if form.errors.get(field):
+  %if enclose:
+  <div>
+  %endif
+  %for e in form.errors[field]:
+  <span class="validation-error">${e}</span>
+  %endfor
+  %if enclose:
+  </div>
+  %endif
+%endif
+</%def>
+</body>
+</html>
