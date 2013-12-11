@@ -314,11 +314,16 @@
     this.initDrawable();
     tracker.lap('initModel start');
     this.initModel();
-    tracker.lap('initSeats start');
-    //this.initSeats();
-    tracker.lap('callback.load start');
-    this.callbacks.load && this.callbacks.load(this);
     tracker.lap('load end');
+
+    // 座席データの描画は別スレッドで行う
+    var self = this;
+    setTimeout(function() {
+      tracker.lap('initSeats start');
+      self.initSeats();
+      tracker.lap('callback.load start');
+      self.callbacks.load && self.callbacks.load(self);
+    }, 0)
   };
 
   VenueEditor.prototype.refresh = function VenueEditor_refresh(data) {
@@ -529,15 +534,15 @@
       target_seats = this.shapes;
     }
 
-    count = 0;
-    target_seats_keys = [];
+    var target_seats_keys = [];
     for (var ts in target_seats) {
-      target_seats_keys.push(ts);
+      if (target_seats.hasOwnProperty(ts)) target_seats_keys.push(ts);
     }
-    total_count = target_seats_keys.length;
-    var callback = function() {
-      // 1000席単位で描画
-      for (var cnt = 0; count < total_count && cnt < 1000; cnt++, count++) {
+    var total_count = target_seats_keys.length;
+    var count = 0;
+
+    var set_seat_callback = function() {
+      for (var i = 0; count < total_count && i < CONF.DEFAULT.SEAT_RENDER_UNITS; i++, count++) {
         var id = target_seats_keys[count];
         var shape = self.shapes[id];
         var seat = self.venue.seats.get(id);
@@ -629,12 +634,13 @@
       }
 
       if (count < total_count) {
-        setTimeout(callback, 0);
+        setTimeout(set_seat_callback, 0);
       } else {
-        console.log('init Seats end ' + new Date());
+        tracker.lap('initSeats end');
       }
-    }
-    setTimeout(callback, 0);
+    };
+
+    setTimeout(set_seat_callback, 0);
   };
 
   VenueEditor.prototype.addKeyEvent = function VenueEditor_addKeyEvent() {
@@ -995,10 +1001,6 @@
                 { x: arguments[1].width, y: arguments[1].height }
               );
             }
-            break;
-
-          case 'initSeats':
-            aux.manager.initSeats();
             break;
         }
       }

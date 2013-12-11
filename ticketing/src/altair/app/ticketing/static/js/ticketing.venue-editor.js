@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['S_FDM5T9YLYQO1J5'] = (function (exports) { (function () { 
+__LIBS__['sGMZRRA_RGVDGCPS'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['nY92X5RGLIBLQ7D9'] = (function (exports) { (function () { 
+__LIBS__['CRAZUG5LFG8S4KBB'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -94,10 +94,12 @@ exports.DEFAULT = {
     6: { stroke: { color: "#ff4040", width: 3, pattern: 'solid' } },
     7: { stroke: { color: "#9f9fec", width: 3, pattern: 'solid' } },
     8: { stroke: { color: "#ff8c40", width: 3, pattern: 'solid' } }
-  }
+  },
+
+  SEAT_RENDER_UNITS: 1000
 };
  })(); return exports; })({});
-__LIBS__['IIFXE0E0R_1592LM'] = (function (exports) { (function () { 
+__LIBS__['XFHTVVADG8E8MOMR'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -262,21 +264,19 @@ exports.mergeStyle = function mergeStyle(a, b) {
 };
 
 var timer = exports.timer = function(msg) {
-  this.start = (new Date()).getTime();
-  if(msg) {
-    console.log(msg);
-  }
+  this.start = new Date();
+  if (msg) console.log(this.start+" "+msg);
 };
+
 timer.prototype.lap = function(msg) {
-  var lap = (new Date()).getTime()-this.start;
-  this.start = (new Date()).getTime();
-  if(msg) {
-    console.log(msg+": "+lap+" msec");
-  }
+  var now = new Date();
+  var lap = now.getTime()-this.start.getTime();
+  this.start = now;
+  if (msg) console.log(now+" "+msg+": "+lap+" msec");
   return lap;
 };
  })(); return exports; })({});
-__LIBS__['ARNR33UBVUKFZBQ4'] = (function (exports) { (function () { 
+__LIBS__['uIC78Q6LC9TCO9QP'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -325,12 +325,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['NC7W5S_KGUY5FM8H'] = (function (exports) { (function () { 
+__LIBS__['kIJHFRW7HMDRGP5N'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['IIFXE0E0R_1592LM'];
-var CONF = __LIBS__['nY92X5RGLIBLQ7D9'];
-var IdentifiableSet = __LIBS__['ARNR33UBVUKFZBQ4'].IdentifiableSet;
+var util = __LIBS__['XFHTVVADG8E8MOMR'];
+var CONF = __LIBS__['CRAZUG5LFG8S4KBB'];
+var IdentifiableSet = __LIBS__['uIC78Q6LC9TCO9QP'].IdentifiableSet;
 
 var use_altair_collection = true;
 
@@ -1028,12 +1028,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['oVPLZXT5PHX_T3RM'] = (function (exports) { (function () { 
+__LIBS__['A7DA1CUEKBKW480F'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['IIFXE0E0R_1592LM'];
-var CONF = __LIBS__['nY92X5RGLIBLQ7D9'];
-var models = __LIBS__['NC7W5S_KGUY5FM8H'];
+var util = __LIBS__['XFHTVVADG8E8MOMR'];
+var CONF = __LIBS__['CRAZUG5LFG8S4KBB'];
+var models = __LIBS__['kIJHFRW7HMDRGP5N'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -1216,13 +1216,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['nY92X5RGLIBLQ7D9'];
-  var models = __LIBS__['NC7W5S_KGUY5FM8H'];
-  var util = __LIBS__['IIFXE0E0R_1592LM'];
-  var viewobjects = __LIBS__['oVPLZXT5PHX_T3RM'];
-  var IdentifiableSet = __LIBS__['ARNR33UBVUKFZBQ4'].IdentifiableSet;
+  var CONF = __LIBS__['CRAZUG5LFG8S4KBB'];
+  var models = __LIBS__['kIJHFRW7HMDRGP5N'];
+  var util = __LIBS__['XFHTVVADG8E8MOMR'];
+  var viewobjects = __LIBS__['A7DA1CUEKBKW480F'];
+  var IdentifiableSet = __LIBS__['uIC78Q6LC9TCO9QP'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['S_FDM5T9YLYQO1J5'];
+    I18n.translations = __LIBS__['sGMZRRA_RGVDGCPS'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1530,11 +1530,16 @@ var Seat = exports.Seat = Backbone.Model.extend({
     this.initDrawable();
     tracker.lap('initModel start');
     this.initModel();
-    tracker.lap('initSeats start');
-    //this.initSeats();
-    tracker.lap('callback.load start');
-    this.callbacks.load && this.callbacks.load(this);
     tracker.lap('load end');
+
+    // 座席データの描画は別スレッドで行う
+    var self = this;
+    setTimeout(function() {
+      tracker.lap('initSeats start');
+      self.initSeats();
+      tracker.lap('callback.load start');
+      self.callbacks.load && self.callbacks.load(self);
+    }, 0)
   };
 
   VenueEditor.prototype.refresh = function VenueEditor_refresh(data) {
@@ -1745,15 +1750,15 @@ var Seat = exports.Seat = Backbone.Model.extend({
       target_seats = this.shapes;
     }
 
-    count = 0;
-    target_seats_keys = [];
+    var target_seats_keys = [];
     for (var ts in target_seats) {
-      target_seats_keys.push(ts);
+      if (target_seats.hasOwnProperty(ts)) target_seats_keys.push(ts);
     }
-    total_count = target_seats_keys.length;
-    var callback = function() {
-      // 1000席単位で描画
-      for (var cnt = 0; count < total_count && cnt < 1000; cnt++, count++) {
+    var total_count = target_seats_keys.length;
+    var count = 0;
+
+    var set_seat_callback = function() {
+      for (var i = 0; count < total_count && i < CONF.DEFAULT.SEAT_RENDER_UNITS; i++, count++) {
         var id = target_seats_keys[count];
         var shape = self.shapes[id];
         var seat = self.venue.seats.get(id);
@@ -1845,12 +1850,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
       }
 
       if (count < total_count) {
-        setTimeout(callback, 0);
+        setTimeout(set_seat_callback, 0);
       } else {
-        console.log('init Seats end ' + new Date());
+        tracker.lap('initSeats end');
       }
-    }
-    setTimeout(callback, 0);
+    };
+
+    setTimeout(set_seat_callback, 0);
   };
 
   VenueEditor.prototype.addKeyEvent = function VenueEditor_addKeyEvent() {
@@ -2211,10 +2217,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
                 { x: arguments[1].width, y: arguments[1].height }
               );
             }
-            break;
-
-          case 'initSeats':
-            aux.manager.initSeats();
             break;
         }
       }

@@ -63,5 +63,7 @@ exports.DEFAULT = {
     6: { stroke: { color: "#ff4040", width: 3, pattern: 'solid' } },
     7: { stroke: { color: "#9f9fec", width: 3, pattern: 'solid' } },
     8: { stroke: { color: "#ff8c40", width: 3, pattern: 'solid' } }
-  }
+  },
+
+  SEAT_RENDER_UNITS: 1000
 };

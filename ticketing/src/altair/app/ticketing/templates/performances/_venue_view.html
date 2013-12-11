@@ -345,14 +345,6 @@ venueEditorRoot.venueeditor({
   }
 }).venueeditor("load");
 
-setTimeout(function () {
-  setTimeout(function () {
-    console.log('init Seats start ' + new Date());
-    $(window).resize();
-    venueEditorRoot.venueeditor('initSeats');
-    }, 0)
-}, 40000);
-
 venueEditor.find(".action-zoomin").click(function () {
   venueEditorRoot.venueeditor("uimode", "zoomin");
 });
