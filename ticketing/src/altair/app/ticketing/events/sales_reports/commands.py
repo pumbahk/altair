@@ -94,7 +94,9 @@ def main(argv=sys.argv):
             _event = Event.get(id=performance.event_id)
             organization = Organization.get(id=_event.organization_id)
         elif event:
-            if (from_date and event.sales_end_on < from_date) or\
+            # 販売終了日の翌日まで自動レポートの送信対象に含める
+            sales_end_on = event.sales_end_on + timedelta(days=1)
+            if (from_date and sales_end_on < from_date) or\
                (form.limited_to.data and form.limited_to.data < event.sales_start_on) or\
                (from_date and event.final_start_on and event.final_start_on < from_date):
                 continue
