@@ -11,6 +11,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
 
 import sqlalchemy as sa
+from sqlalchemy.orm import joinedload
 
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
@@ -22,16 +23,17 @@ from .stocker import NotEnoughStockException
 from . import api
 from . import helpers as h
 from . import schemas
-from .view_support import IndexViewMixin, get_amount_without_pdmp, get_seat_type_dicts
+from .view_support import IndexViewMixin, get_amount_without_pdmp, get_seat_type_dicts, assert_quantity_within_bounds
 from .resources import PerformanceOrientedTicketingCartResource
 from .exceptions import (
     NoEventError,
     NoPerformanceError,
     NoSalesSegment,
     InvalidCSRFTokenException, 
-    OverQuantityLimitError, 
-    OverProductQuantityLimitError,
-    ZeroQuantityError, 
+    QuantityOutOfBoundsError,
+    ProductQuantityOutOfBoundsError,
+    PerStockTypeQuantityOutOfBoundsError,
+    PerStockTypeProductQuantityOutOfBoundsError,
     CartCreationException,
     TooManyCartsCreated,
 )
@@ -281,7 +283,12 @@ class MobileSelectProductView(object):
         if len(controls) == 0:
             return []
 
-        products = dict([(p.id, p) for p in DBSession.query(c_models.Product).filter(c_models.Product.id.in_([c[0] for c in controls]))])
+        products = dict(
+            (p.id, p)
+            for p in DBSession.query(c_models.Product) \
+                    .options(joinedload(c_models.Product.seat_stock_type)) \
+                    .filter(c_models.Product.id.in_([c[0] for c in controls]))
+            )
         logger.debug('order %s' % products)
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
@@ -384,38 +391,17 @@ class MobileSelectProductView(object):
             del self.request.session['csrf']
             self.request.session.persist()
 
-        order_items = self.ordered_items
+        ordered_items = self.ordered_items
+
+        assert_quantity_within_bounds(sales_segment, ordered_items)
+
         separate_seats = (self.request.params.get('separate_seats') == 'true')
-
-        # 購入枚数の制限
-        sum_quantity = 0
-        for product, quantity in order_items:
-            sum_quantity += quantity * product.get_quantity_power(product.seat_stock_type, product.performance_id)
-        sum_product_quantity = sum(quantity for _, quantity in order_items)
-
-        logger.debug('sum_quantity=%d, sum_product_quantity=%d' % (sum_quantity, sum_product_quantity))
-
-        if sales_segment.product_limit:
-            for product, quantity in order_items:
-                if quantity > sales_segment.product_limit:
-                    raise OverProductQuantityLimitError(sales_segment.product_limit)
-        if sum_quantity > sales_segment.upper_limit:
-            raise OverQuantityLimitError(sales_segment.upper_limit)
-
-        if sales_segment.product_limit is not None and \
-           sales_segment.product_limit < sum_product_quantity:
-            logger.debug('product_limit over')
-            raise OverProductQuantityLimitError(sales_segment.product_limit)
-
-        if sum_quantity == 0:
-            raise ZeroQuantityError
-
         try:
             # カート生成(席はおまかせ)
             cart = api.order_products(
                 self.request,
                 sales_segment.id,
-                order_items,
+                ordered_items,
                 separate_seats=separate_seats)
             cart.sales_segment = sales_segment
             if cart is None:

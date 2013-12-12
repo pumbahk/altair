@@ -23,18 +23,33 @@ class TooManyCartsCreated(CartException):
         super(TooManyCartsCreated, self).__init__()
         self.id_ = id_
 
-class OverQuantityLimitError(CartException):
-    def __init__(self, upper_limit):
-        super(OverQuantityLimitError, self).__init__()
-        self.upper_limit = upper_limit
+class QuantityOutOfBoundsError(CartException):
+    def __init__(self, quantity_given, min_quantity, max_quantity):
+        super(QuantityOutOfBoundsError, self).__init__()
+        self.quantity_given = quantity_given
+        self.min_quantity = min_quantity
+        self.max_quantity = max_quantity
 
-class OverProductQuantityLimitError(CartException):
-    def __init__(self, product_limit):
-        super(OverProductQuantityLimitError, self).__init__()
-        self.product_limit = product_limit
+class ProductQuantityOutOfBoundsError(CartException):
+    def __init__(self, quantity_given, min_product_quantity, max_product_quantity):
+        super(ProductQuantityOutOfBoundsError, self).__init__()
+        self.quantity_given = quantity_given
+        self.min_quantity = min_product_quantity
+        self.max_quantity = max_product_quantity
 
-class ZeroQuantityError(CartException):
-    pass
+class PerStockTypeQuantityOutOfBoundsError(CartException):
+    def __init__(self, quantity_given, min_quantity, max_quantity):
+        super(PerStockTypeQuantityOutOfBoundsError, self).__init__()
+        self.quantity_given = quantity_given
+        self.min_quantity = min_quantity
+        self.max_quantity = max_quantity
+
+class PerStockTypeProductQuantityOutOfBoundsError(CartException):
+    def __init__(self, quantity_given, min_product_quantity, max_product_quantity):
+        super(PerStockTypeProductQuantityOutOfBoundsError, self).__init__()
+        self.quantity_given = quantity_given
+        self.min_quantity = min_product_quantity
+        self.max_quantity = max_product_quantity
 
 class InvalidCartStatusError(CartException):
     def __init__(self, cart_id):

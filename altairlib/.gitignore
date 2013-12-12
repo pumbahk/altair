@@ -1,2 +1,5 @@
 cover
 htmlcov
+bin/
+parts/
+develop-eggs/
