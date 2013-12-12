@@ -33,6 +33,9 @@ altair.ticketing.cart.mq.url = amqp://guest:guest@localhost:5672/%2F
 ;altair.ticketing.lots.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory
 ;altair.ticketing.lots.mq.routes = lots:lots
 
+altair.ticketing.cooperation.augus.bucket = tstar
+altair.ticketing.cooperation.augus.tort = cooperation/ftp/augus/upload/test
+
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s
