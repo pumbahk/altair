@@ -252,7 +252,7 @@ def assert_quantity_within_bounds(sales_segment, order_items):
            stock_type.max_quantity < quantity_per_stock_type['quantity']:
             raise PerStockTypeQuantityOutOfBoundsError(
                 quantity_per_stock_type['quantity'],
-                stock_type.max_quantity,
+                stock_type.min_quantity,
                 stock_type.max_quantity
                 )
         if stock_type.min_product_quantity is not None and \
@@ -266,6 +266,6 @@ def assert_quantity_within_bounds(sales_segment, order_items):
            stock_type.max_product_quantity < quantity_per_stock_type['product_quantity']:
             raise PerStockTypeProductQuantityOutOfBoundsError(
                 quantity_per_stock_type['product_quantity'],
-                stock_type.max_product_quantity,
+                stock_type.min_product_quantity,
                 stock_type.max_product_quantity
                 )
