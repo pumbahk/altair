@@ -17,6 +17,8 @@ cms/doc/source
 *.egg
 .tox
 .coverage
+cover/
+coverage-ticketing
 coverage.xml
 nosetests.xml
 *.orig

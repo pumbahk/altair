@@ -3,6 +3,7 @@
 from pyramid import testing
 from zope.interface import implementer
 from altair.app.ticketing.cart.interfaces import IStocker
+from datetime import datetime
 
 
 class DummySession(dict):
@@ -35,7 +36,7 @@ def _add_lots(session, product_data, membergroups):
     event = Event()
     venue = Venue(name="testing-venue", site=Site(),
                   organization=organization)
-    performance = Performance(event=event, id=123, venue=venue)
+    performance = Performance(event=event, id=123, venue=venue, start_on=datetime(2013, 1, 1, 0, 0, 0))
     session.add(performance)
     sales_segment = SalesSegment(id=12345)
     lot = _add_lot(session, event.id, sales_segment.id, 5, 3, membergroups=membergroups,

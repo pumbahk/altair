@@ -752,7 +752,6 @@ class ReserveViewTests(unittest.TestCase):
             )
         self.session.add(adjacency_set)
         self.session.flush()
-        self.session.flush()
         for seat in seats:
             self.session.add(Seat_SeatAdjacency(seat_adjacency_id=adjacency.id, l0_id=seat.l0_id))
         self.assertEqual(adjacency.seats_filter_by_venue(venue.id), seats)

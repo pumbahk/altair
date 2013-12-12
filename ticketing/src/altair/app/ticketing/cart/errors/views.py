@@ -10,9 +10,10 @@ from ..exceptions import (
     NoSalesSegment,
     NoPerformanceError,
     InvalidCSRFTokenException,
-    OverQuantityLimitError,
-    OverProductQuantityLimitError,
-    ZeroQuantityError,
+    QuantityOutOfBoundsError,
+    ProductQuantityOutOfBoundsError,
+    PerStockTypeQuantityOutOfBoundsError,
+    PerStockTypeProductQuantityOutOfBoundsError,
     CartCreationException,
     InvalidCartStatusError,
     OverOrderLimitException,
@@ -163,19 +164,39 @@ class MobileOnlyExcView(object):
         self.context = context
         self.request = request
 
-    @view_config(context=OverQuantityLimitError)
-    def over_quantity_limit_error(self):
-        upper_limit = self.context.upper_limit
-        return dict(message=u"枚数は合計%d枚以内で選択してください" % upper_limit)
+    @view_config(context=QuantityOutOfBoundsError)
+    def quantity_out_of_bounds_error(self):
+        if self.context.quantity_given < self.context.min_quantity:
+            return dict(message=u"枚数は合計%d枚以上で選択してください" % self.context.min_quantity)
+        else:
+            return dict(message=u"枚数は合計%d枚以内で選択してください" % self.context.max_quantity)
 
-    @view_config(context=OverProductQuantityLimitError)
-    def over_product_quantity_limit_error(self):
-        product_limit = self.context.product_limit
-        return dict(message=u"商品個数は合計%d個以内で選択してください" % product_limit)
+    @view_config(context=ProductQuantityOutOfBoundsError)
+    def product_quantity_out_of_bounds_error(self):
+        if self.context.quantity_given < self.context.min_quantity:
+            return dict(message=u"商品個数は合計%d個以上で選択してください" % self.context.min_quantity)
+        else:
+            return dict(message=u"商品個数は合計%d個以内で選択してください" % self.context.max_quantity)
 
-    @view_config(context=ZeroQuantityError)
-    def zero_quantity_error(self):
-        return dict(message=u"枚数は1枚以上で選択してください")
+    @view_config(context=PerStockTypeQuantityOutOfBoundsError)
+    def per_stock_type_quantity_out_of_bounds_error(self):
+        if self.context.max_quantity is not None:
+            if self.context.min_quantity is not None:
+                return dict(message=u"枚数は合計%d〜%d枚の範囲内で選択してください" % (self.context.min_quantity, self.context.max_quantity))
+            else:
+                return dict(message=u"枚数は合計%d枚以内で選択してください" % (self.context.max_quantity, ))
+        else:
+            return dict(message=u"枚数は合計%d枚以上で選択してください" % (self.context.min_quantity, ))
+
+    @view_config(context=PerStockTypeProductQuantityOutOfBoundsError)
+    def per_stock_type_product_quantity_out_of_bounds_error(self):
+        if self.context.max_quantity is not None:
+            if self.context.min_quantity is not None:
+                return dict(message=u"商品個数は合計%d〜%d個の範囲内で選択してください" % (self.context.min_quantity, self.context.max_quantity))
+            else:
+                return dict(message=u"商品個数は合計%d個以内で選択してください" % (self.context.max_quantity, ))
+        else:
+            return dict(message=u"商品個数は合計%d個以上で選択してください" % (self.context.min_quantity, ))
 
     @view_config(context=NotEnoughStockException)
     def not_enough_stock_exception(self):

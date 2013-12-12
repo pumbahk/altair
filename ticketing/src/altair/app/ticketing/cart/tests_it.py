@@ -156,11 +156,11 @@ class ReserveViewTests(unittest.TestCase):
 
         results = target.reserve()
 
-        self.assertEqual(results['result'], 'OK')
-        self.assertEqual(len(results['cart']['products']), 1)
+        self.assertEqual(results['result'], 'OK', results)
+        self.assertEqual(len(results['cart']['products']), 1, results)
         self.assertEqual(results['cart']['products'][0]['seats'], 
             [{'l0_id': 'test-1', 'name': u'テスト１'},
-             {'l0_id': 'test-3', 'name': u'テスト３'}])
+             {'l0_id': 'test-3', 'name': u'テスト３'}], results)
 
     def test_it_reserving_selected(self):
         from webob.multidict import MultiDict

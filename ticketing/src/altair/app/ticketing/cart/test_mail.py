@@ -162,16 +162,16 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
             _called = None
             _order = None
 
-            def __init__(self, mail_template, request):
-                self.request = request
-
-            def build_mail_body(self, order, traverser):
+            def __init__(self, mail_template):
                 pass
 
-            def build_message_from_mail_body(self, order, traverser, mail_body):
+            def build_mail_body(self, request, order, traverser):
                 pass
 
-            def build_message(self, order, traverser):
+            def build_message_from_mail_body(self, request, order, traverser, mail_body):
+                pass
+
+            def build_message(self, request, order, traverser):
                 self.__class__._called = "build_message"
                 self.__class__._order = order
                 return testing.DummyResource(recipients="")

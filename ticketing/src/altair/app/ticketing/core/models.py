@@ -1738,6 +1738,10 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
     description=Column(Unicode(2000), nullable=True, default=None)
     stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.display_order'))
+    min_quantity = Column(Integer, nullable=True, default=None)
+    max_quantity = Column(Integer, nullable=True, default=None)
+    min_product_quantity = Column(Integer, nullable=True, default=None)
+    max_product_quantity = Column(Integer, nullable=True, default=None)
 
     @property
     def is_seat(self):
@@ -2100,10 +2104,15 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         super(Product, self).delete()
 
-    def get_quantity_power(self, stock_type, performance_id):
+    def get_quantity_power(self, stock_type=None, performance_id=None):
         """ 数量倍率 """
-        perform_items = ProductItem.query.filter(ProductItem.product==self).filter(ProductItem.performance_id==performance_id).all()
-        return sum([pi.quantity for pi in perform_items if pi.stock.stock_type == stock_type])
+        query = ProductItem.query \
+            .filter(ProductItem.product==self)
+        if performance_id is not None:
+            query = query.filter(ProductItem.performance_id==performance_id)
+        if stock_type is not None:
+            query = query.join(ProductItem.stock).filter(Stock.stock_type == stock_type)
+        return sum(pi.quantity for pi in query)
 
 
     @deprecation.deprecate(u"商品が公演づきになったので、このクエリは不要")
