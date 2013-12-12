@@ -65,7 +65,7 @@ class LayoutModelResolver(object):
         if descriptor.exists():
             return descriptor
         if verbose:
-            logger.info("layout template file %s is not found. lookup in default template path" % descriptor.abspath)
+            logger.info("layout template file %s is not found. lookup in default template path" % descriptor.abspath())
 
         descriptor = self.from_layout_default(request, layout)
         if verbose:
