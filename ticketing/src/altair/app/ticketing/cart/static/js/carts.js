@@ -59,16 +59,28 @@ cart.order_messages = {
         title: '連席で座席を確保できません',
         message: '座席を選んで購入してください'
     },
-    'upper_limit': {
+    'ticket_count_over_upper_bound': {
         title: '上限枚数を超えて購入しようとしています', 
-        message: function(order_form_presenter){
-            return order_form_presenter.showOverUpperLimitMessage();
+        message: function(order_form_presenter, data) {
+            return cart.showErrorDialog(null, data.message, 'btn-close');
         }
     },
-    'product_limit': {
+    'ticket_count_below_lower_bound': {
+        title: '購入枚数が少なすぎます', 
+        message: function(order_form_presenter, data) {
+            return cart.showErrorDialog(null, data.message, 'btn-close');
+        }
+    },
+    'product_count_over_upper_bound': {
         title: '購入数上限を超えて購入しようとしています', 
-        message: function(order_form_presenter){
-            return order_form_presenter.showOverProductLimitMessage();
+        message: function(order_form_presenter, data) {
+            return cart.showErrorDialog(null, data.message, 'btn-close');
+        }
+    },
+    'product_count_below_lower_bound': {
+        title: '購入数が少なすぎます', 
+        message: function(order_form_presenter, data) {
+            return cart.showErrorDialog(null, data.message, 'btn-close');
         }
     },
     'too many carts': {
@@ -502,26 +514,26 @@ cart.VenuePresenter.prototype = {
     },
     onSelectPressed: function () {
         var selection = this.view.getChoices();
-        var quantity_to_select = this.orderFormPresenter.quantity_to_select;
-        if (selection.length < quantity_to_select) {
-            cart.showErrorDialog(null, "あと " + (quantity_to_select - selection.length) + " 席選んでください", "btn-close");
+        if (selection.length < this.quantityToSelect.total_quantity) {
+            cart.showErrorDialog(null, "あと " + (this.quantityToSelect.total_quantity - selection.length) + " 席選んでください", "btn-close");
             return;
-        } else if (selection.length != quantity_to_select) {
+        } else if (selection.length != this.quantityToSelect.total_quantity) {
             cart.showErrorDialog("エラー", "購入枚数と選択した席の数が一致していません。", "btn-close");
             return;
         }
         this.orderFormPresenter.setSeats(selection);
         this.orderFormPresenter.doOrder();
     },
-    setStockType: function (stock_type) {
+    setStockType: function (stock_type, quantity_to_select) {
         this.selectedStockType = stock_type;
+        this.quantityToSelect = quantity_to_select;
         var self = this;
         if (this.selectedStockType) {
             self.stockTypeListPresenter.setActivePane('venue');
             if (self.view.currentDataSource._reset !== void(0))
                 self.view.currentDataSource._reset();
             this.view.currentViewer.venueviewer('loadSeats', function() {
-                self.view.setAdjacency(self.orderFormPresenter.quantity_to_select);
+                self.view.setAdjacency(self.quantityToSelect.total_quantity);
                 self.view.render();
                 self.view.currentDataSource.seatGroups(function (data) {
                     self.seatGroups = data;
@@ -568,7 +580,7 @@ cart.VenuePresenter.prototype = {
             if (seat.selected()) {
                 seat.selected(false);
             } else {
-                if (viewer.selectionCount < self.orderFormPresenter.quantity_to_select)
+                if (viewer.selectionCount < self.quantityToSelect.total_quantity)
                     seat.selected(true);
             }
         });
@@ -831,51 +843,63 @@ cart.OrderFormPresenter.prototype = {
     showOrderForm: function(selected_stock_type_el, stock_type, products) {
         this.stock_type = stock_type;
         this.products = products;
-        var upper_limit = 0, product_limit = null;
-        this.products.each(function(product) {
-            var ul = product.get('upper_limit') * product.get('quantity_power');
-            var pl = product.get('product_limit');
-            upper_limit = (ul > upper_limit ? ul : upper_limit);
-            product_limit = ((pl !== null && (product_limit === null || pl > product_limit)) ? pl: product_limit);
-        })
-        this.upper_limit = upper_limit;
-        this.product_limit = product_limit;
         this.view.showForm(selected_stock_type_el, stock_type, products);
     },
     calculateQuantityToSelect: function () {
-        var quantity_to_select = 0;
-        var product_quantity_to_select = 0;
+        var total_quantity = 0;
+        var total_product_quantity = 0;
+        var quantities = {};
         var selection = this.view.getChoices();
         for (var product_id in selection) {
-            var multiple = selection[product_id];
+            var product_quantity = selection[product_id];
             var product = this.products.get(product_id);
-            quantity_to_select += product.get('quantity_power') * multiple;
-            product_quantity_to_select += multiple;
+            var quantity = product.get('quantity_power') * product_quantity;
+            quantities[product_id] = {
+                quantity: quantity,
+                product_quantity: product_quantity
+            };
+            total_quantity += quantity;
+            total_product_quantity += product_quantity;
         }
-        this.quantity_to_select = quantity_to_select;
-        this.product_quantity_to_select = product_quantity_to_select;
+        return {
+            total_quantity: total_quantity,
+            total_product_quantity: total_product_quantity,
+            quantities: quantities
+        };
+    },
+    assertQuantityWithinBounds: function () {
+        var result = this.calculateQuantityToSelect();
+        if (result.total_quantity == 0) {
+            this.showNoSelectProductMessage();
+            return false;
+        }
+        if (this.stock_type.min_quantity != null && this.stock_type.min_quantity > result.total_quantity) {
+            this.showTicketCountBelowLowerBoundMessage(this.stock_type.min_quantity);
+            return false;
+        }
+        if (this.stock_type.max_quantity != null && this.stock_type.max_quantity < result.total_quantity) {
+            this.showTicketCountAboveUpperBoundMessage(this.stock_type.max_quantity);
+            return false;
+        }
+        if (this.stock_type.min_product_quantity != null && this.stock_type.min_product_quantity > result.total_product_quantity) {
+            this.showProductCountBelowLowerBoundMessage(this.stock_type.min_product_quantity);
+            return false;
+        }
+        if (this.stock_type.max_product_quantity != null && this.stock_type.max_product_quantity < result.total_product_quantity) {
+            this.showProductCountAboveUpperBoundMessage(this.stock_type.max_product_quantity);
+            return false;
+        }
+        return result;
     },
     onSelectSeatPressed: function () {
-        this.calculateQuantityToSelect();
-        if (this.quantity_to_select == 0) {
-            return this.showNoSelectProductMessage();
-        }
-        if (this.upper_limit < this.quantity_to_select) {
-            return this.showOverUpperLimitMessage();
-        }
-        if (this.product_limit !== null && this.product_limit < this.product_quantity_to_select) {
-            return this.showOverProductLimitMessage();
-        }
-        this.venuePresenter.setStockType(this.stock_type);
+        var quantity_to_select = this.assertQuantityWithinBounds();
+        if (!quantity_to_select)
+            return;
+        this.venuePresenter.setStockType(this.stock_type, quantity_to_select);
     },
     onEntrustPressed: function (order_url) {
-        this.calculateQuantityToSelect();
-        if (this.quantity_to_select == 0) {
-            return this.showNoSelectProductMessage();
-        }
-        if (this.upper_limit < this.quantity_to_select) {
-            return this.showOverUpperLimitMessage();
-        }
+        if (!this.assertQuantityWithinBounds())
+            return;
         this.setSeats([]);
         this.doOrder(order_url);
     },
@@ -886,12 +910,20 @@ cart.OrderFormPresenter.prototype = {
         cart.showErrorDialog(null, '商品を1つ以上選択してください', 'btn-close');
         return;
     }, 
-    showOverUpperLimitMessage: function(){
-        cart.showErrorDialog(null, '枚数は合計' + this.upper_limit + '枚以内で選択してください', 'btn-close');
+    showTicketCountAboveUpperBoundMessage: function(min_quantity) {
+        cart.showErrorDialog(null, '枚数は合計' + min_quantity + '枚以内で選択してください', 'btn-close');
         return;
     }, 
-    showOverProductLimitMessage: function(){
-        cart.showErrorDialog(null, '商品個数は合計' + this.product_limit + '個以内にしてください', 'btn-close');
+    showTicketCountBelowLowerBoundMessage: function(max_quantity) {
+        cart.showErrorDialog(null, '枚数は合計' + max_quantity + '枚以上で選択してください', 'btn-close');
+        return;
+    }, 
+    showProductCountAboveUpperBoundMessage: function(min_quantity) {
+        cart.showErrorDialog(null, '商品個数は合計' + min_quantity + '個以内にしてください', 'btn-close');
+        return;
+    }, 
+    showProductCountBelowLowerBoundMessage: function(max_quantity) {
+        cart.showErrorDialog(null, '商品個数は合計' + max_quantity + '個以上にしてください', 'btn-close');
         return;
     }, 
     onBuyPressed: function () {
@@ -978,7 +1010,7 @@ cart.OrderFormView = Backbone.View.extend({
         );
     },
     showForm: function(selected_stock_type_el, stock_type, products, done) {
-        if (!stock_type.get('availability'))
+        if (!stock_type.get('actual_availability'))
             return false;
         if (this.selected_stock_type_el && selected_stock_type_el[0] == this.selected_stock_type_el[0]) {
             return false;
@@ -1050,25 +1082,28 @@ cart.OrderFormView = Backbone.View.extend({
         return orderForm;
     },
     buildProduct: function(product) {
-        var upper_limit = product.get('upper_limit');
-        var product_limit = product.get('product_limit');
-        var limit = product_limit !== null && product_limit < upper_limit ? product_limit: upper_limit;
+        var min_product_quantity_per_product = product.get('min_product_quantity_per_product');
+        var max_product_quantity_per_product = product.get('max_product_quantity_per_product');
         var name = $('<span class="productName"></span>');
         name.text(product.get("name"));
         var payment = $('<span class="productPrice"></span>');
         payment.text('￥' + product.get("price"));
-        var quantity = $('<span class="productQuantity"></span>');
+        var quantityBox = $('<span class="productQuantity"></span>');
         var pullDown = $('<select />').attr('name', 'product-' + product.id);
-        for (var i = 0; i < limit + 1; i++) {
-            $('<option></option>').text(i).val(i).appendTo(pullDown);
+        var possible_quantities = [];
+        for (var i = 0; i <= max_product_quantity_per_product; i++)
+            possible_quantities.push(i);
+        for (var i = 0; i < possible_quantities.length; i++) {
+            var quantity = possible_quantities[i];
+            $('<option></option>').text(quantity).val(quantity).appendTo(pullDown);
         }
         var descriptionText = product.get('description');
         var description = descriptionText ?
             $('<div class="productListItem-description"></div>').html(product.get('description')): //xxx.
             $();
-        cart.util.render_template_into(quantity, product.get("unit_template"), { num: pullDown });
+        cart.util.render_template_into(quantityBox, product.get("unit_template"), { num: pullDown });
         return $('<li class="productListItem"></li>')
-            .append(quantity)
+            .append(quantityBox)
             .append(payment)
             .append(name)
             .append(description);
