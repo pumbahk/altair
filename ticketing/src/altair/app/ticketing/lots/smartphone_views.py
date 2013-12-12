@@ -19,6 +19,7 @@ from altair.app.ticketing.utils import toutc
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
+from altair.app.ticketing.cart.api import is_smartphone, is_smartphone_organization
 
 from . import api
 from . import helpers as h
@@ -84,7 +85,7 @@ def nogizaka_auth(context, request):
     return False
 
 @view_defaults(request_type='altair.mobile.interfaces.ISmartphoneRequest',
-               permission="lots")
+               permission="lots", custom_predicates=(is_smartphone_organization))
 class EntryLotView(object):
     """
     申し込み画面
@@ -126,6 +127,9 @@ class EntryLotView(object):
 
     @view_config(route_name='lots.entry.index', renderer=selectable_renderer("smartphone/%(membership)s/index.html"), custom_predicates=(nogizaka_auth, ))
     def index(self):
+        """
+        イベント詳細
+        """
         event = self.context.event
         lot = self.context.lot
 
@@ -143,11 +147,9 @@ class EntryLotView(object):
     @view_config(route_name='lots.entry.sp_step1', renderer=selectable_renderer("smartphone/%(membership)s/step1.html"), custom_predicates=(nogizaka_auth, ))
     def step1(self, form=None):
         """
-
+        抽選第N希望まで選択
         """
-        if form is None:
-            form = self._create_form()
-
+        form = self._create_form()
         event = self.context.event
         lot = self.context.lot
 
@@ -163,8 +165,6 @@ class EntryLotView(object):
 
         performance_map = make_performance_map(self.request, performances)
 
-        stocks = lot.stock_types
-
         performance_id = self.request.params.get('performance')
         selected_performance = None
         if performance_id:
@@ -173,9 +173,7 @@ class EntryLotView(object):
                     selected_performance = p
                     break
 
-
         sales_segment = lot.sales_segment
-        payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         performance_product_map = self._create_performance_product_map(sales_segment.products)
         stock_types = [
             dict(
@@ -199,29 +197,51 @@ class EntryLotView(object):
             ]
 
         return dict(form=form, event=event, sales_segment=sales_segment,
-            payment_delivery_pairs=payment_delivery_pairs,
             posted_values=dict(self.request.POST),
             performance_product_map=performance_product_map,
             stock_types=stock_types,
             selected_performance=selected_performance,
-            payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
-            lot=lot, performances=performances, performance_map=performance_map, stocks=stocks)
+            lot=lot, performances=performances, performance_map=performance_map)
 
 
     @view_config(route_name='lots.entry.sp_step2', renderer=selectable_renderer("smartphone/%(membership)s/step2.html"), custom_predicates=(nogizaka_auth, ))
     def step2(self, form=None):
-        """
-
-        """
-        if form is None:
-            form = self._create_form()
-
         event = self.context.event
         lot = self.context.lot
-
         if not lot:
             logger.debug('lot not not found')
             raise HTTPNotFound()
+
+        performances = lot.performances
+        if not performances:
+            logger.debug('lot performances not found')
+            raise HTTPNotFound()
+
+        wishes = h.convert_wishes(self.request.params, lot.limit_wishes)
+
+        validated = True
+
+        # 商品チェック
+        if not wishes:
+            self.request.session.flash(u"申し込み内容に入力不備があります")
+            validated = False
+        elif not h.check_duplicated_products(wishes):
+            self.request.session.flash(u"同一商品が複数回希望されています。")
+            validated = False
+        elif not h.check_quantities(wishes, lot.upper_limit):
+            self.request.session.flash(u"各希望ごとの合計枚数は最大{0}枚までにしてください".format(lot.upper_limit))
+            validated = False
+
+        if not validated:
+            return HTTPFound(self.request.route_path(
+                'lots.entry.sp_step1', event_id=event.id, lot_id=lot.id))
+
+
+        """
+        必要ない処理もあるかも
+        """
+        form = self._create_form()
+
 
         performances = lot.performances
         if not performances:
@@ -240,7 +260,6 @@ class EntryLotView(object):
                 if str(p.id) == performance_id:
                     selected_performance = p
                     break
-
 
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
@@ -278,8 +297,9 @@ class EntryLotView(object):
     @view_config(route_name='lots.entry.sp_step3', renderer=selectable_renderer("smartphone/%(membership)s/step3.html"), custom_predicates=(nogizaka_auth, ))
     def step3(self, form=None):
         """
-
+        購入情報入力
         """
+
         if form is None:
             form = self._create_form()
 
