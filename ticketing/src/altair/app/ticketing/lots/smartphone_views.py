@@ -206,8 +206,12 @@ class EntryLotView(object):
 
     @view_config(route_name='lots.entry.sp_step2', renderer=selectable_renderer("smartphone/%(membership)s/step2.html"), custom_predicates=(nogizaka_auth, ))
     def step2(self, form=None):
+        """
+        購入情報入力
+        """
         event = self.context.event
         lot = self.context.lot
+
         if not lot:
             logger.debug('lot not not found')
             raise HTTPNotFound()
@@ -221,6 +225,7 @@ class EntryLotView(object):
 
         validated = True
 
+        """
         # 商品チェック
         if not wishes:
             self.request.session.flash(u"申し込み内容に入力不備があります")
@@ -236,7 +241,7 @@ class EntryLotView(object):
             return HTTPFound(self.request.route_path(
                 'lots.entry.sp_step1', event_id=event.id, lot_id=lot.id))
 
-
+        """
         """
         必要ない処理もあるかも
         """
@@ -289,7 +294,7 @@ class EntryLotView(object):
             payment_delivery_pairs=payment_delivery_pairs,
             posted_values=dict(self.request.POST),
             performance_product_map=performance_product_map,
-            stock_types=stock_types,
+            stock_types=stock_types, wishes=wishes,
             selected_performance=selected_performance,
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
             lot=lot, performances=performances, performance_map=performance_map, stocks=stocks)
@@ -297,15 +302,9 @@ class EntryLotView(object):
     @view_config(route_name='lots.entry.sp_step3', renderer=selectable_renderer("smartphone/%(membership)s/step3.html"), custom_predicates=(nogizaka_auth, ))
     def step3(self, form=None):
         """
-        購入情報入力
+        申し込み確認
         """
-
-        if form is None:
-            form = self._create_form()
-
-        event = self.context.event
         lot = self.context.lot
-
         if not lot:
             logger.debug('lot not not found')
             raise HTTPNotFound()
@@ -314,50 +313,71 @@ class EntryLotView(object):
         if not performances:
             logger.debug('lot performances not found')
             raise HTTPNotFound()
-        performances = sorted(performances, key=operator.attrgetter('start_on'))
-
-        performance_map = make_performance_map(self.request, performances)
-
-        stocks = lot.stock_types
-
-        performance_id = self.request.params.get('performance')
-        selected_performance = None
-        if performance_id:
-            for p in lot.performances:
-                if str(p.id) == performance_id:
-                    selected_performance = p
-                    break
 
 
+        cform = schemas.ClientForm(formdata=self.request.params)
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
-        performance_product_map = self._create_performance_product_map(sales_segment.products)
-        stock_types = [
-            dict(
-                id=rec[0],
-                name=rec[1],
-                display_order=rec[2],
-                description=rec[3]
-                )
-            for rec in sorted(
-                set(
-                    (
-                        product.seat_stock_type_id,
-                        product.seat_stock_type.name,
-                        product.seat_stock_type.display_order,
-                        product.seat_stock_type.description
-                        )
-                    for product in sales_segment.products
-                    ),
-                lambda a, b: cmp(a[2], b[2])
-                )
-            ]
+        payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id')
+        wishes = h.convert_sp_wishes(self.request.params, lot.limit_wishes)
 
-        return dict(form=form, event=event, sales_segment=sales_segment,
-            payment_delivery_pairs=payment_delivery_pairs,
-            posted_values=dict(self.request.POST),
-            performance_product_map=performance_product_map,
-            stock_types=stock_types,
-            selected_performance=selected_performance,
-            payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
-            lot=lot, performances=performances, performance_map=performance_map, stocks=stocks)
+        validated = True
+        email = self.request.params.get('email_1')
+        # 申込回数チェック
+        if not lot.check_entry_limit(email):
+            self.request.session.flash(u"抽選への申込は{0}回までとなっております。".format(lot.entry_limit))
+            validated = False
+
+        # 決済・引取方法選択
+        if payment_delivery_method_pair_id not in [str(m.id) for m in payment_delivery_pairs]:
+            self.request.session.flash(u"お支払お引き取り方法を選択してください")
+            validated = False
+
+        birthday = None
+        try:
+            birthday = datetime(int(cform['year'].data),
+                                int(cform['month'].data),
+                                int(cform['day'].data))
+        except (ValueError, TypeError):
+            pass
+
+        # 購入者情報
+        if not cform.validate() or not birthday:
+            self.request.session.flash(u"購入者情報に入力不備があります")
+            if not birthday:
+                cform['year'].errors = [u'日付が正しくありません']
+            validated = False
+
+        if not validated:
+            return self.get(form=cform)
+
+        entry_no = api.generate_entry_no(self.request, self.context.organization)
+
+        shipping_address_dict = cform.get_validated_address_data()
+        api.new_lot_entry(
+            self.request,
+            entry_no=entry_no,
+            wishes=wishes,
+            payment_delivery_method_pair_id=payment_delivery_method_pair_id,
+            shipping_address_dict=shipping_address_dict,
+            gender=cform['sex'].data,
+            birthday=birthday,
+            memo=cform['memo'].data)
+
+        entry = self.request.session.get('lots.entry')
+        if entry is None:
+            self.request.session.flash(u"セッションに問題が発生しました。")
+            return self.back_to_form()
+
+        self.request.session['lots.entry.time'] = datetime.now()
+        cart = LotSessionCart(entry, self.request, self.context.lot)
+
+        payment = Payment(cart, self.request)
+        self.request.session['payment_confirm_url'] = urls.entry_confirm(self.request)
+
+        result = payment.call_prepare()
+        if callable(result):
+            return result
+
+        location = urls.entry_confirm(self.request)
+        return HTTPFound(location=location)
