@@ -7,7 +7,13 @@ from abc import ABCMeta, abstractmethod
 from zope.interface import Interface, Attribute, implementer
 from sqlalchemy.orm.exc import NoResultFound
 from pyramid.decorator import reify
-from altair.app.ticketing.core.models import Venue, Seat, AugusVenue, AugusSeat
+from altair.app.ticketing.core.models import (
+    Venue,
+    Seat,
+    AugusVenue,
+    AugusSeat,
+    AugusPerformance,
+    )
 
 class AugusError(Exception):
     pass
@@ -301,3 +307,20 @@ class ImporterFactory(object):
     @classmethod
     def create(cls, type_):
         return AugusVenueImporter()
+
+class AugusPerformanceImpoter(object):
+    def import_(self, csvlike):
+        csvlike.next() # ignore header
+        for row in csvlike:
+            augus_event_code = int(row[0])
+            augus_performance_code = int(row[1])
+            ag_performance = AugusPerformance.get(code=augus_performance_code)
+            if not ag_performance:
+                ag_performance = AugusPerformance()
+                ag_performance.code = augus_performance_code
+                ag_performance.augus_event_code = augus_event_code
+                ag_performance.save()
+            else: # already exist
+                pass
+
+            

@@ -3964,8 +3964,9 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                            unique=True, _a_label=(u"公演コード"))
     augus_event_code = AnnotatedColumn(Integer, nullable=False,
                                        _a_label=(u"事業コード"))
-    performance_id = Column(Identifier, ForeignKey("Performance.id", ondelete='CASCADE'),
-                            nullable=False, unique=True)
+    performance_id = Column(Identifier, 
+                            ForeignKey("Performance.id", ondelete='CASCADE'),
+                            nullable=True, unique=True)
     performance = relationship('Performance')
     created_at = Column(TIMESTAMP, nullable=False)
     updated_at = Column(TIMESTAMP, nullable=False)
