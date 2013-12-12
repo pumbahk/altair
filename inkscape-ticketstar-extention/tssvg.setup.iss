@@ -24,6 +24,16 @@ Type:filesandordirs; Name: "{app}\tssvg}"
 
 [Registry]
 Root:HKCU; SubKey: "Environment"; ValueType: String; ValueName: "PATH"; ValueData: "{olddata};{code:NewBinPath}"; Check: NotOnPathAlready(); Flags: preservestringtype
+Root: HKCR; Subkey: ".tssvg"; ValueType: string; ValueName: ""; ValueData: "tssvgfile"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "tssvgfile"; ValueType: string; ValueName: ""; ValueData: "Scale Vector Graphics file(ts)"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "tssvgfile\shell\edit\command"; ValueType: string; ValueName: ""; ValueData: "{code:getInkscapeCommand}"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "tssvgfile\shell\open\command"; ValueType: string; ValueName: ""; ValueData: "{code:getInkscapeCommand}"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "tssvgfile\shell\Inkscape\command"; ValueType: string; ValueName: ""; ValueData: "{code:getInkscapeCommand}"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".svg"; ValueType: string; ValueName: ""; ValueData: "svgfile"; Flags: createvalueifdoesntexist
+Root: HKCR; Subkey: "svgfile"; ValueType: string; ValueName: ""; ValueData: "Scale Vector Graphics file(ts)"; Flags: createvalueifdoesntexist
+Root: HKCR; Subkey: "svgfile\shell\edit\command"; ValueType: string; ValueName: ""; ValueData: "{code:getInkscapeCommand}"; Flags: createvalueifdoesntexist
+Root:HKCR; Subkey: "svgfile\shell\open\command"; ValueType: string; ValueName: ""; ValueData: "{code:getInkscapeCommand}"; Flags: createvalueifdoesntexist
+Root: HKCR; Subkey: "svgfile\shell\Inkscape\command"; ValueType: string; ValueName: ""; ValueData: "{code:getInkscapeCommand}"; Flags: createvalueifdoesntexist
 
 [Code]
 //debug
@@ -39,15 +49,27 @@ begin
    *)
 end;
 
+function getInkscapeCommand(suffix :String): String;
+var
+   path	: String;
+begin
+   if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Classes\Applications\Inkscape.exe\shell\edit\command', '', path) then
+   begin
+      Result := path;
+   end
+   else
+   begin
+      Result := '';
+   end
+end;
 
 function InkscapeDir(suffix :String ): String;
 var
   installedPath: String;
 begin
-  if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Classes\Applications\Inkscape.exe\shell\Inkscape\Command', '', installedPath) then
+   if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Inkscape', 'InstallLocation', installedPath) then
   begin
-    // installedPath = '"foo/bar/inkscape.exe" "%1"'
-    Result := Copy(installedPath, 2, pos('Inkscape.exe', installedPath)-1-pos('"', installedPath)-1);
+    Result := installedPath
     if(Length(suffix) > 0) then
     begin
        Result := Result + '\' + suffix;
