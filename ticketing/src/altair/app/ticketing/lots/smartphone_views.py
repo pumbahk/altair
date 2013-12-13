@@ -137,9 +137,12 @@ class EntryLotView(object):
             logger.debug('lot not found')
             raise HTTPNotFound()
 
+        performance_id = self.request.params.get('performance')
+
         return dict(
             event=event,
             lot=lot,
+            performance_id = performance_id,
             sales_segment=lot.sales_segment,
             performances=sorted(lot.performances, lambda a, b: cmp(a.start_on, b.start_on)),
             )
@@ -225,7 +228,6 @@ class EntryLotView(object):
 
         validated = True
 
-        """
         # 商品チェック
         if not wishes:
             self.request.session.flash(u"申し込み内容に入力不備があります")
@@ -241,63 +243,14 @@ class EntryLotView(object):
             return HTTPFound(self.request.route_path(
                 'lots.entry.sp_step1', event_id=event.id, lot_id=lot.id))
 
-        """
-        """
-        必要ない処理もあるかも
-        """
         form = self._create_form()
-
-
-        performances = lot.performances
-        if not performances:
-            logger.debug('lot performances not found')
-            raise HTTPNotFound()
-        performances = sorted(performances, key=operator.attrgetter('start_on'))
-
-        performance_map = make_performance_map(self.request, performances)
-
-        stocks = lot.stock_types
-
-        performance_id = self.request.params.get('performance')
-        selected_performance = None
-        if performance_id:
-            for p in lot.performances:
-                if str(p.id) == performance_id:
-                    selected_performance = p
-                    break
 
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
-        performance_product_map = self._create_performance_product_map(sales_segment.products)
-        stock_types = [
-            dict(
-                id=rec[0],
-                name=rec[1],
-                display_order=rec[2],
-                description=rec[3]
-                )
-            for rec in sorted(
-                set(
-                    (
-                        product.seat_stock_type_id,
-                        product.seat_stock_type.name,
-                        product.seat_stock_type.display_order,
-                        product.seat_stock_type.description
-                        )
-                    for product in sales_segment.products
-                    ),
-                lambda a, b: cmp(a[2], b[2])
-                )
-            ]
 
-        return dict(form=form, event=event, sales_segment=sales_segment,
-            payment_delivery_pairs=payment_delivery_pairs,
-            posted_values=dict(self.request.POST),
-            performance_product_map=performance_product_map,
-            stock_types=stock_types, wishes=wishes,
-            selected_performance=selected_performance,
-            payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
-            lot=lot, performances=performances, performance_map=performance_map, stocks=stocks)
+        return dict(form=form, event=event, lot=lot,
+            payment_delivery_pairs=payment_delivery_pairs, wishes=wishes,
+            payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'))
 
     @view_config(route_name='lots.entry.sp_step3', renderer=selectable_renderer("smartphone/%(membership)s/step3.html"), custom_predicates=(nogizaka_auth, ))
     def step3(self, form=None):
