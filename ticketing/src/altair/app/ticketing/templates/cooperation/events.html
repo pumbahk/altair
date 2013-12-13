@@ -1,0 +1,104 @@
+<%inherit file="/layout_2cols.html" />
+<div class="page-header">
+  <h3>外部イベント連携 - ${event.title}</h3>
+</div>
+
+<div class="table-wrapper">
+<table id="sample1"></table>
+<button type="submit" class="btn btn-info pull-left">変更を保存する</button>  
+</div>
+
+<script type="text/javascript">
+    <!--
+$(function(){ 
+    var date = [
+    %for performance in performances:
+        {
+            perf_id: ${performance.id},
+            perf_name: "${performance.name}",
+            perf_code: "${performance.code}",
+            perf_start_on: "${performance.start_on}",
+            perf_venue: "${performance.venue.name}",
+            external_performance_code: "",
+            external_performance_description: "",
+        },
+    %endfor
+    ];
+
+    var colNames = [
+        "公演ID",
+        "公演名",
+        "公演コード",
+        "公演日時",
+        "会場",
+        "外部公演コード",
+        "外部公演情報",
+        ]
+
+    var colModelSettings= [
+        {name: "perf_id",
+         index: "perf_id",
+         width: 60,
+         align:"left",
+         classes: "hobby_class",
+        },
+　　　　{name: "perf_name",
+         index: "perf_name",
+         width: 200,
+         align:"left",
+         classes: "radio_class",
+        },
+        {name: "perf_code",
+         index: "perf_code",
+         width: 100,
+         align: "center",
+         classes: "no_class",
+        },
+        {name: "perf_start_on",
+         index: "perf_start_on",
+         width: 100,
+         align: "center",
+         classes: "name_class",
+        },
+        {name: "perf_venue",
+         index: "perf_venue",
+         width: 100,
+         align:"left",
+         classes: "age_class",
+        },
+        {name: "external_performance_code",
+         index: "external_performance_code",
+         width: 80,
+         align:"left",
+         classes: "age_class",
+         editable: true,
+        },
+        {name: "external_performance_description",
+         index: "external_performance_description",
+         width: 200,
+         align:"left",
+         classes: "age_class",
+        },
+    ]
+
+    $("#sample1").jqGrid({
+        data: date,
+        datatype: "local",
+        colNames: colNames,
+        colModel: colModelSettings,
+        rowNum: 100,
+        rowList: [1, 10, 20],
+        height: "auto",
+        width : "auto",
+        //pager: 'pager1',   //footerのページャー要素のid
+        //shrinkToFit : true,//画面サイズに依存せず固定の大きさを表示する設定
+        //viewrecords: true,   //footerの右下に表示する。
+        cellEdit: true,
+        cellsubmit: "clientArray",
+        edit: true,
+        add: false, 
+        del: false,
+    });
+});
+      -->
+</script>

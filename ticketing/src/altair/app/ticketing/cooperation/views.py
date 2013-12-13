@@ -2,11 +2,15 @@
 import csv
 from pyramid.view import view_defaults, view_config
 from pyramid.response import Response
-from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
+from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPNotFound
 
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.core.models import Seat
+from altair.app.ticketing.core.models import (
+    Seat,
+    Event,
+    AugusPerformance,
+    )
 from .forms import (
     CooperationUpdateForm,
     CooperationDownloadForm,
@@ -21,6 +25,17 @@ from .augus import (
     )
 
 
+@view_defaults(permission='event_editor')
+class CooperationAPIView(BaseView):
+
+    @view_config(route_name='cooperation.api.performances.get', request_method='GET')
+    def load_performances(self):
+        raise HTTPNotFound()
+
+
+    @view_config(route_name='cooperation.api.performances.save', request_method='POST')
+    def save_performances(self):
+        raise HTTPNotFound()
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class CooperationView(BaseView):
@@ -84,8 +99,24 @@ class CooperationView(BaseView):
                 return HTTPFound(return_url)
         else:# validate error
             raise HTTPFound(return_url)
-                
-    
+
+    @view_config(route_name='cooperation.events', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/events.html')
+    def events_get(self):
+        event_id = self.request.matchdict['event_id']
+        event_id = long(event_id) # raise TypeError, ValueError
+        event = Event.get(event_id)
+        if event:
+            pairs = []
+            for performance in event.performances:
+                external_performance = AugusPerformance.get(performance.id)
+                pairs.append((performance, external_performance))
+            return {'event': event,
+                    'performances': event.performances,
+                    }
+        else:
+            raise HTTPNotFound('event_id: {0}'.format(event_id))
+            
     def _upload(self):
         venue_id = int(self.request.matchdict.get('venue_id', 0))
         organization_id = self.context.organization.id
