@@ -234,16 +234,17 @@ def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=No
                 seat_index = seat_obj['properties'].get('seat_index')
 
                 old_l0_seat = l0_seats.get(seat_l0_id)
-                if old_l0_seat.name != name or \
-                    old_l0_seat.row_l0_id != row_l0_id or \
-                    old_l0_seat.group_l0_id != group_l0_id or \
-                    old_l0_seat.seat_no != seat_no or \
-                    old_l0_seat.row_no != row_name or \
-                    old_l0_seat.block_name != block.name or \
-                    old_l0_seat.floor_name != floor or \
-                    old_l0_seat.gate_name != gate:
-                    print '[UPDATE] Seat(l0_id=%s)' % seat.l0_id
-                    updated_seat_count += 1
+                if not old_l0_seat is None:
+                    if old_l0_seat.name != name or \
+                        old_l0_seat.row_l0_id != row_l0_id or \
+                        old_l0_seat.group_l0_id != group_l0_id or \
+                        old_l0_seat.seat_no != seat_no or \
+                        old_l0_seat.row_no != row_name or \
+                        old_l0_seat.block_name != block.name or \
+                        old_l0_seat.floor_name != floor or \
+                        old_l0_seat.gate_name != gate:
+                        print '[UPDATE] Seat(l0_id=%s)' % seat.l0_id
+                        updated_seat_count += 1
 
                 l0_seat = L0Seat(
                     site_id=site.id,
