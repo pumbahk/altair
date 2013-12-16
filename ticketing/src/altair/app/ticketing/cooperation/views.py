@@ -30,7 +30,7 @@ class CooperationAPIView(BaseView):
 
     @view_config(route_name='cooperation.api.performances.get', request_method='GET')
     def load_performances(self):
-        raise HTTPNotFound()
+        raise HTTPNotFound('A')
 
 
     @view_config(route_name='cooperation.api.performances.save', request_method='POST')
