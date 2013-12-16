@@ -31,7 +31,7 @@ var load = function(url, next) {
 				var b = $('metadata', $(this).parents('g').eq(1)).eq(0);
 				var r = $('metadata', $(this).parents('g').eq(0)).eq(0);
 				var block = svgfind($('*', b), 'si:property', 'name', 'name');
-				$('#block').text(block ? block.childNodes.item(0).data : '?');
+				$('#block').text(block ? (0 < block.childNodes.length ? block.childNodes.item(0).data : '') : '?');
 				var row = svgfind($('*', r), 'si:property', 'name', 'name');
 				$('#row').text(row ? (0 < row.childNodes.length ? row.childNodes.item(0).data : '') : '?');
 				$('#row_id').text($(this).parents('g').eq(0).attr('id'));
