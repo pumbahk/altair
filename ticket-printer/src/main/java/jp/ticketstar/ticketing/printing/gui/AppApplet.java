@@ -58,6 +58,7 @@ import jp.ticketstar.ticketing.printing.StandardAppService;
 import jp.ticketstar.ticketing.printing.TicketFormat;
 import jp.ticketstar.ticketing.URLConnectionFactory;
 import jp.ticketstar.ticketing.printing.gui.liveconnect.JSObjectPropertyChangeListenerProxy;
+import jp.ticketstar.ticketing.gvt.font.FontFamilyResolverPatch;
 
 import org.apache.batik.swing.gvt.Overlay;
 
@@ -77,6 +78,16 @@ import javax.swing.SwingConstants;
  * To change this template use File | Settings | File Templates.
  */
 public class AppApplet extends JApplet implements IAppWindow, URLConnectionFactory, ThreadFactory {
+    /* patch */
+    static {
+        //reason:: https://redmine.ticketstar.jp/issues/6179
+        try {
+            Class.forName("jp.ticketstar.ticketing.gvt.font.FontFamilyResolverPatch");
+        } catch(ClassNotFoundException ex){
+            ex.printStackTrace();
+        }
+    }
+
 	private static final long serialVersionUID = 1L;
 	protected AppAppletService appService;
 	protected AppAppletServiceImpl appServiceImpl;
@@ -520,7 +531,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 			throw new IllegalStateException(e);
 		}
 	}
-	
+
 	public AppApplet() {
 		setPreferredSize(new Dimension(2147483647, 2147483647));
 		threadGenerator.start();
