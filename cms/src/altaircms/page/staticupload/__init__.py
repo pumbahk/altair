@@ -24,19 +24,30 @@ def validate_uploaded_io(filename, io):
     validate_uploaded_file(filename, io.read()) #xxx:
     io.seek(0)
 
-def install_static_page_cache(config):
-    from .fetcher import StaticPageCache
-    from .interfaces import IStaticPageCache
+def install_static_page_fetcher(config):
     from beaker.cache import cache_regions #xxx:
-    k = "altaircms.staticpage.filedata"
-    fetching_k = "altaircms.fetching.filedata"
+    from altaircms.cachelib import (
+        FileCacheStore,
+        ForAtomic
+    )
+    from .fetcher import (
+        FetcherFromFileSystem,
+        FetcherFromNetwork,
+        cached_fetcher_factory,
+    )
+    from .interfaces import IStaticPageDataFetcherFactory
     try:
-        kwargs = cache_regions[k]
-        fetching_kwargs = cache_regions[fetching_k]
-        config.registry.registerUtility(StaticPageCache(kwargs, fetching_kwargs), IStaticPageCache)
-    except KeyError:
+        cache = FileCacheStore(cache_regions["altaircms.staticpage.filedata"])
+        atomic = ForAtomic(cache_regions["altaircms.fetching.filedata"])
+        fetcher_network_factory = cached_fetcher_factory(FetcherFromNetwork, cache=cache, atomic=atomic)
+        fetcher_filesystem_factory = cached_fetcher_factory(FetcherFromFileSystem, cache=cache, atomic=atomic)
+    except KeyError as e:
         import sys
-        sys.stderr.write("cache_regions[{k}] is not found\n".format(k=k))
+        sys.stderr.write("cache_regions[{k}] is not found\n".format(k=repr(e)))
+        fetcher_network_factory = FetcherFromNetwork
+        fetcher_filesystem_factory = FetcherFromFileSystem
+    config.registry.registerUtility(fetcher_network_factory, IStaticPageDataFetcherFactory, name="network")
+    config.registry.registerUtility(fetcher_filesystem_factory, IStaticPageDataFetcherFactory, name="filesystem")
 
 def install_filesession(config):
     from ..filelib.core import on_file_exists_try_rename
@@ -72,6 +83,6 @@ def includeme(config):
     ## this is first..
     config.add_subscriber(".subscribers.delete_ignorefile_after_staticupload", ".directory_resources.AfterCreate")
     config.include(install_static_page_utility)
-    config.include(install_static_page_cache)
+    config.include(install_static_page_fetcher)
     config.scan(".views")
 

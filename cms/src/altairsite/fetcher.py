@@ -86,7 +86,7 @@ class PageFetcherForMobile(object):
 
     def front_page(self, request, url, dt):
         return self.control.widget_pageset_query(request, url, dt).first()
- 
+
     ## mobileアクセスは常にstaticpage(name="mobile")を見る
     def static_page(self, request, url, dt):
         control = self.control

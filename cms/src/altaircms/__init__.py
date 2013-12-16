@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 logger = logging.getLogger(__name__)
+from pyramid_beaker import set_cache_regions_from_settings
 
 def _get_policies(settings):
     from altaircms.security import rolefinder
@@ -130,6 +131,7 @@ def main(global_config, **local_config):
         authorization_policy=authz_policy
     )
     config.include("altair.sqlahelper")
+    set_cache_regions_from_settings(settings)
     config.include("altair.browserid")
     config.include("altair.exclog")
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')

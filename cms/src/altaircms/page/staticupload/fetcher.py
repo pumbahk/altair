@@ -4,7 +4,7 @@ import os
 import urllib
 from datetime import datetime
 from collections import namedtuple
-from zope.interface import implementer
+from zope.interface import implementer, provider
 from pyramid.response import FileResponse
 from pyramid.response import Response
 from pyramid.interfaces import IRendererFactory
@@ -14,12 +14,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 from .interfaces import IStaticPageDataFetcher
-from .interfaces import IStaticPageCache
+from .interfaces import IStaticPageDataFetcherFactory
 from .. import StaticPageNotFound
 from altairsite.front.api import get_frontpage_discriptor_resolver
 from altairsite.front.api import get_frontpage_renderer
 from altaircms.response import FileLikeResponse
 
+
+class StaticPageRequestFailure(StaticPageNotFound):
+    pass
 
 CACHE_MAX_AGE=60
 
@@ -52,7 +55,7 @@ class FetcherFromFileSystem(object):
                     url_parts = url
                     url_parts = "/".join(url_parts.split("/")[1:]) #foo/bar -> bar
                 path = os.path.join(self.utility.get_rootname(self.static_page), url_parts)
-        return FetchData(code=unknown, size=unknown, path=path, data=path, type="filepath", content_type=unknown, group_id=unicode(self.static_page.id))
+        return FetchData(code=200, size=unknown, path=path, data=path, type="filepath", content_type=unknown, group_id=unicode(self.static_page.id))
 
 @implementer(IStaticPageDataFetcher)
 class FetcherFromNetwork(object):
@@ -68,6 +71,7 @@ class FetcherFromNetwork(object):
     #         return filepath + ".html"
     #     else:
     #         return filepath
+
     def _split_page_prefix(self,file_path):
         try:
             prefix, file_path = file_path.split("/", 1)
@@ -99,17 +103,25 @@ class FetcherFromNetwork(object):
         except ValueError:
             size = 0
         if io.getcode() != 200:
-            logger.info("static page response not success: url={0}, code={1}".format(io.geturl(), io.getcode()))
-            return FetchData(code=io.getcode(), size=size, data=io, type="socket", content_type=io.info().typeheader, path=url_parts, group_id=unicode(self.static_page.id))
-        return FetchData(code=200, size=size, data=io, type="socket", content_type=io.info().typeheader, path=url_parts, group_id=unicode(self.static_page.id))
+            logger.warn("static page response not success: url={0}, code={1}".format(io.geturl(), io.getcode()))
+        return FetchData(code=io.getcode(), size=size, data=io, type="socket", content_type=io.info().typeheader, path=url_parts, group_id=unicode(self.static_page.id))
 
 CHARSET_RX = re.compile(r"charset=([^ ]+)")
 
+
+@provider(IStaticPageDataFetcherFactory)
+def cached_fetcher_factory(Fetcher, cache, atomic):
+    def factory(request, static_page, utility):
+        fetcher = Fetcher(request, static_page, utility)
+        return CachedFetcher(fetcher, cache, atomic)
+    return factory
+
 @implementer(IStaticPageDataFetcher)
 class CachedFetcher(object):
-    def __init__(self, fetcher, cache_impl):
+    def __init__(self, fetcher, cache, atomic):
         self.fetcher = fetcher
-        self.cache_impl = cache_impl
+        self.cache = cache
+        self.atomic = atomic
 
     @property
     def request(self):
@@ -126,104 +138,46 @@ class CachedFetcher(object):
         url = self.utility.get_url(path) if path else url
         return '{id}@{version}@{url}'.format(id=static_page.id, version=static_page.uploaded_at, url=url)
 
+    def _fetch(self, k, url, path):
+        data = self.fetcher.fetch(url, path)
+        content_type = data.content_type
+
+        ### takeout from webob.response
+        if content_type and (content_type == 'text/html'
+                             or content_type.startswith(('text/', 'application/xml', 'application/json'))
+                             or (content_type.startswith('application/')
+                                 and (content_type.endswith('+xml') or content_type.endswith('+json')))):
+
+            if 'charset=' in content_type:
+                encoding = CHARSET_RX.match(content_type).group(1).strip()
+            else:
+                encoding = 'utf-8' #xxx:
+            content = data.data.read().decode(encoding)
+        else:
+            content = data.data.read()
+        data = FetchData(code=data.code, size=data.size, data=content,
+                         type="string", content_type=data.content_type, path=data.path, group_id=data.group_id)
+        return data
+
     def fetch(self, url, path):
         k = self.make_key(url, path)
         if hasattr(self.fetcher, "check_skip_fetch"):
             self.fetcher.check_skip_fetch(url, path)
-        try:
-            return self.cache_impl[k]
-        except (KeyError, ValueError, EOFError):
-            def fetch_function(cache, k):
-                data = self.fetcher.fetch(url, path)
-                content_type = data.content_type
-
-                ### takeout from webob.response
-                if content_type and (content_type == 'text/html'
-                                     or content_type.startswith(('text/', 'application/xml', 'application/json'))
-                                     or (content_type.startswith('application/')
-                                         and (content_type.endswith('+xml') or content_type.endswith('+json')))):
-
-                    if 'charset=' in content_type:
-                        encoding = CHARSET_RX.match(content_type).group(1).strip()
-                    else:
-                        encoding = 'utf-8' #xxx:
-                    content = data.data.read().decode(encoding)
-                else:
-                    content = data.data.read()
-                data = FetchData(code=data.code, size=data.size, data=content,
-                                 type="string", content_type=data.content_type, path=data.path, group_id=data.group_id)
-                return data
-            return self.cache_impl.on_fetching_self(k, fetch_function)
-
-## cache
-from beaker.cache import Cache
-from pyramid.httpexceptions import HTTPNotFound
-
-@implementer(IStaticPageCache)
-class StaticPageCache(object):
-    k = "content"
-    def __init__(self, kwargs, fetching_kwargs):
-        self.kwargs = kwargs
-        self.fetching_kwargs = fetching_kwargs
-
-    def on_fetching_another(self, k):
-        logger.info("fetching: fetching another process. '{k}'".format(k=k))
-        raise HTTPNotFound("fetching another") #hmm.
-
-    def on_fetching_self(self, k, fetch_function):
-        now = datetime.now()
-        fetching = Cache._get_cache(k, self.fetching_kwargs) #xxx:
-        fetching[self.k] = now
-        logger.debug("StaticPageCache: fetch -- {k}, fetching={now}".format(k=k, now=now))
-        try:
-            v = fetch_function(self, k)
-            logger.debug("StaticPageCache: setitem and remove sentinel -- {k}, fetching=removed".format(k=k))
-            if v is None:
-                raise ValueError("404 --- {k} is None".format(k=k))
-            file_data = Cache._get_cache(k, self.kwargs) #xxx:
-            file_data[self.k] = v
-            fetching.remove_value(self.k)
+        if self.atomic.is_requesting(k):
+            logger.warn("staticupload.fetcher {k}: another process is touched. so requesting through cache.".format(k=k))
+            return self.fetcher.fetch(url, path)
+        v = self.cache.get(k)
+        if v:
             return v
-        except (ValueError, EOFError) as e:
-            logger.warn(repr(e)) #insecure string
-            self.clear_cache(k)
-        except Exception as e:
-            logger.exception(repr(e))
-            self.clear_cache(k)
-            logger.warn("fetching: exception found. on fetching data. release for '{k}'".format(k=k))
-        raise HTTPNotFound
+        with self.atomic.atomic(k):
+            logger.warn("staticupload.fetcher {k}: is not found. fetching..".format(k=k))
+            data = self._fetch(k, url, path)
+            if data.code == 200:
+                self.cache.set(k, data)
+            else:
+                raise StaticPageRequestFailure(data)
+            return data
 
-    def clear_cache(self, k):
-        try:
-            file_data = Cache._get_cache(k, self.kwargs) #xxx:
-            file_data.remove_value(self.k)
-        except (ValueError, EOFError): #insecure string
-            logger.warn("clear_cache: k={k} insecure string found. remove".format(k=k))
-            file_data = Cache._get_cache(k, self.kwargs) #xxx:
-            handler = file_data._get_value(self.k).namespace
-            handler.do_remove()
-        except Exception as e:
-            logger.error(repr(e))
-            logger.warn("clear_cache: k={k} insecure string found. remove".format(k=k))
-            file_data = Cache._get_cache(k, self.kwargs) #xxx:
-            handler = file_data._get_value(self.k).namespace
-            handler.do_remove()
-        fetching = Cache._get_cache(k, self.fetching_kwargs) #xxx:
-        fetching.remove_value(self.k) #call multiplly is ok?
-
-    def __getitem__(self, k):
-        try:
-            logger.debug("StaticPageCache: getitem -- {k}".format(k=k))
-            file_data = Cache._get_cache(k, self.kwargs) #xxx:
-            return file_data[self.k]
-        except (KeyError, ValueError, EOFError):
-            ## value error is "insecure string pickle"
-            logger.debug("StaticPageCache: notfound -- {k}".format(k=k))
-            fetching = Cache._get_cache(k, self.fetching_kwargs) #xxx:
-            if self.k in fetching:
-                logger.debug("StaticPageCache: fetching is exists -- {k}".format(k=k))
-                return self.on_fetching_another(k)
-            raise
 
 class ResponseMaker(object):
     NotFound = StaticPageNotFound

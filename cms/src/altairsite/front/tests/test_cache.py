@@ -51,14 +51,14 @@ class Tests(unittest.TestCase):
             ICacheKeyGenerator, 
             IFrontPageCache, 
             CacheKeyGenerator, 
-            OnMemoryFrontPageCacher, 
+            OnMemoryCacheStore, 
             WrappedFrontPageCache, 
             update_browser_id
         )
         config.registry.adapters.register([ISmartphoneRequest], ICacheKeyGenerator, "", CacheKeyGenerator("S:"))
         config.registry.adapters.register([IMobileRequest], ICacheKeyGenerator, "", CacheKeyGenerator("M:"))
         config.registry.adapters.register([IRequest], ICacheKeyGenerator, "", CacheKeyGenerator("P:"))
-        self.cache = front_page_cache = WrappedFrontPageCache(OnMemoryFrontPageCacher(), update_browser_id)
+        self.cache = front_page_cache = WrappedFrontPageCache(OnMemoryCacheStore(), update_browser_id)
         config.registry.registerUtility(front_page_cache, IFrontPageCache)
 
     def get_reponse_body(self):
@@ -146,7 +146,7 @@ class Tests(unittest.TestCase):
         ## second(cached)
         with mock.patch("altairsite.front.cache.get_key_generator", autospec=True) as get_key_generator:
             get_key_generator.side_effect = NotImplementedError("don't call")
-            
+
             from altair.preview.api import set_preview_request_condition
             request2 = testing.DummyRequest(url="http://rt.example.jp/foo/bar?foo=1")
             request2.headers["X-Altair-Browserid"] = "*replaced*"

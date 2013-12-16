@@ -13,7 +13,7 @@ def install_fetcher(config):
     settings = config.registry.settings
     config.include("altaircms:install_upload_file") #xxx:
     config.include("altaircms.page.staticupload:install_static_page_utility")
-    config.include("altaircms.page.staticupload:install_static_page_cache")
+    config.include("altaircms.page.staticupload:install_static_page_fetcher")
     from altairsite.fetcher import ICurrentPageFetcher
     from altair.mobile.interfaces import ISmartphoneRequest
     from altair.mobile.interfaces import IMobileRequest

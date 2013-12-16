@@ -9,7 +9,7 @@ def mktime(h, m, s):
 def mkdatetime(h, m, s):
     from datetime import datetime
     return datetime(2013, 8, 23, h, m, s, 0)
-    
+
 class HandlerTest(unittest.TestCase):
     def _getTarget(self):
         from altairsite.front.renderer import LayoutModelLookupInterceptHandler
@@ -79,8 +79,9 @@ class HandlerTest(unittest.TestCase):
         prefix = "cms-layout-templates"
         layout_spec = "altaircms:templates/front/layout"
 
-        def dummy_loader(key):
-            self.assertEquals(key, "cms-layout-templates/RT/index.html")
+        def dummy_loader(env, name, key):
+            url = env.build_url(name)
+            self.assertEquals(url, "cms-layout-templates/RT/index.html")
             return "ok:${status}"
 
         target = self._makeOne(prefix, layout_spec, None, dummy_loader)
@@ -189,7 +190,8 @@ class IntegrationTest(unittest.TestCase):
         prefix = "cms-layout-templates"
         layout_spec = "altaircms:templates/front/layout"
         uploaded_at = mkdatetime(10, 0, 0)
-        def dummy_loader(url):
+        def dummy_loader(env, name, normalize_for_key):
+            url = env.build_url(name)
             if url == expected_url:
                 return response_message
             raise Exception
