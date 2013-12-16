@@ -240,6 +240,7 @@ ${ch.breadcrumbs(
     <tr>
       <th class="minwidth"></th>
       <th><a href="${sortable(request, "name")}" class="sortable">名前</a></th>
+      <th><a href="${sortable(request, "filename")}" class="sortable">ファイル名</a></th>
       <th><a href="#" class="sortable">チケット様式</a></th>
       <th><a href="${sortable(request, "updated_at", direction="desc")}" class="sortable">更新日時</a></th>
       <th><a href="${sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
@@ -250,6 +251,7 @@ ${ch.breadcrumbs(
     <tr>
       <td class="ticketTemplate"><input type="radio" name="template_id" value="${template.id}" /></td>
       <td><a href="${request.route_url('tickets.templates.show', id=template.id)}">${template.name}</a></td>
+      <td>${template.filename}</td>
       <td>${template.ticket_format.name}</td>
       <td>${template.updated_at}</td>
       <td>${template.created_at}</td>

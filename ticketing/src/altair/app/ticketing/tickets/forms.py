@@ -194,7 +194,8 @@ class TicketTemplateForm(OurForm):
         )
 
     def validate(self):
-        super(type(self), self).validate()
+        if not super(type(self), self).validate():
+            return False
 
         svgio = self.drawing.data.file
         try:
@@ -258,7 +259,8 @@ class TicketTemplateEditForm(OurForm):
      )    
 
     def validate(self):
-        super(type(self), self).validate()
+        if not super(type(self), self).validate():
+            return False
 
         validate_only = False
 

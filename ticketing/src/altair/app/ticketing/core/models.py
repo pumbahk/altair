@@ -3105,6 +3105,7 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     original_ticket_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='SET NULL'), nullable=True)
     derived_tickets = relationship('Ticket', backref=backref('original_ticket', remote_side=[id]))
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+    filename = Column(Unicode(255), nullable=False, default=u"uploaded.svg")
 
     def before_insert_or_update(self):
         if self.original_ticket and self.data != self.original_ticket.data:
