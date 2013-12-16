@@ -3,6 +3,7 @@ from zope.interface import provider
 from .interfaces import IS3UtilityFactory
 from altair.pyramid_boto.s3.connection import DefaultS3ConnectionFactory
 from altair.pyramid_boto.s3.connection import DefaultS3Uploader
+from boto.s3.key import Key
 from pyramid.exceptions import ConfigurationError
 
 import logging
@@ -15,6 +16,19 @@ def add_s3utility(config, factory):
 
 def get_s3_utility_factory(request):
     return request.registry.queryUtility(IS3UtilityFactory)
+
+def s3load_as_string(request, uri):
+    return s3load(request, uri).get_contents_as_string()
+
+def s3load_to_filename(request, uri, filename):
+    return s3load(request, uri).get_contents_to_filename(filename)
+
+def s3load(request, uri):
+    bucket = get_s3_utility_factory(request).uploader.bucket #xxx:
+    k = Key(bucket)
+    k.key = uri
+    return k
+
 
 class S3Event(object):
     def __init__(self, request, session, files, uploader, extra_args):
