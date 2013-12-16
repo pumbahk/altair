@@ -138,14 +138,7 @@ class ConvertXmlForTicketTemplateAttrsHook(object):
     def startElementNS(cls, name, qname, attrs):
         if name[0] == SVG_NAMESPACE and name[1] == "svg":
             attrs._attrs[(None, "version")] = "1.2"
-        return cls.replace_attrs(attrs._attrs)
-
-    @classmethod
-    def replace_attrs(cls, attrs):
-        if "style" in attrs:
-            if "font-family:" in attrs["style"]:
-                attrs["style"] = font_family_rx.sub("font-family: MS PGothic;",  attrs["style"])
-        return attrs
+        return attrs._attrs
 
 class ConvertXmlForTicketTemplateRenderingFilter(ContentHandler):
     def __init__(self, eliminate=False, attrs_hook=ConvertXmlForTicketTemplateAttrsHook):
