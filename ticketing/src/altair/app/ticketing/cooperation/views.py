@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import csv
+import json
 from pyramid.view import view_defaults, view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPNotFound
@@ -11,6 +12,7 @@ from altair.app.ticketing.core.models import (
     Event,
     AugusPerformance,
     )
+
 from .forms import (
     CooperationUpdateForm,
     CooperationDownloadForm,
@@ -26,16 +28,38 @@ from .augus import (
 
 
 @view_defaults(permission='event_editor')
-class CooperationAPIView(BaseView):
+class EventView(BaseView):
+    @view_config(route_name='cooperation.events', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/events.html')
+    def events_get(self):
+        event_id = self.request.matchdict['event_id']
+        event_id = long(event_id) # raise TypeError, ValueError
+        event = Event.get(event_id)
+        if event:
+            pairs = []
+            for performance in event.performances:
+                external_performance = AugusPerformance.get(performance.id)
+                pairs.append((performance, external_performance))
+            return {'event': event,
+                    'performances': event.performances,
+                    }
+        else:
+            raise HTTPNotFound('event_id: {0}'.format(event_id))
 
     @view_config(route_name='cooperation.api.performances.get', request_method='GET')
-    def load_performances(self):
-        raise HTTPNotFound('A')
-
+    def get_performances(self):
+        event_id = self.request.matchdict('event_id') # raise KeyError
+        event_id = long(event_id) # raise TypeError or ValueError
+        event = Event.get(event_id)
+        if event:
+            data = {}
+        else: # No Event
+            raise HTTPNotFound('Not found event: event_id={0}'.format(repr(event_id)))
 
     @view_config(route_name='cooperation.api.performances.save', request_method='POST')
     def save_performances(self):
         raise HTTPNotFound()
+        
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class CooperationView(BaseView):
@@ -100,23 +124,6 @@ class CooperationView(BaseView):
         else:# validate error
             raise HTTPFound(return_url)
 
-    @view_config(route_name='cooperation.events', request_method='GET',
-                 renderer='altair.app.ticketing:templates/cooperation/events.html')
-    def events_get(self):
-        event_id = self.request.matchdict['event_id']
-        event_id = long(event_id) # raise TypeError, ValueError
-        event = Event.get(event_id)
-        if event:
-            pairs = []
-            for performance in event.performances:
-                external_performance = AugusPerformance.get(performance.id)
-                pairs.append((performance, external_performance))
-            return {'event': event,
-                    'performances': event.performances,
-                    }
-        else:
-            raise HTTPNotFound('event_id: {0}'.format(event_id))
-            
     def _upload(self):
         venue_id = int(self.request.matchdict.get('venue_id', 0))
         organization_id = self.context.organization.id
