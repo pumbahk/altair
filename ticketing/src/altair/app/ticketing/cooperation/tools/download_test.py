@@ -101,7 +101,7 @@ def main():
     target = None
     try:
         target = args[0]
-    except KeyError:
+    except IndexError:
         target = 'stg2'
 
     server_data = Pit.get('{0}_backend'.format(target),
