@@ -66,9 +66,14 @@
       %endfor
     </div>
   </div>
-  <p class="align2">
-    <a href="${request.route_path('lots.entry.sp_step1', event_id=event.id, lot_id=lot.id)}">
-      <input type="image" src="${request.static_url('altair.app.ticketing.lots:static/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" />
-    </a>
-  </p>
+  <form name="form1" method="get" action="${request.route_path('lots.entry.sp_step1', event_id=event.id, lot_id=lot.id)}">
+    % if performance_id:
+      <input type="hidden" name="performance" value="${performance_id}"/>
+    % endif
+    <p class="align2">
+      <a href="javaScript:document.form1.submit();">
+        <input type="image" src="${request.static_url('altair.app.ticketing.lots:static/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" />
+      </a>
+    </p>
+  </form>
 </div>
