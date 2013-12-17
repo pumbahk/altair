@@ -181,7 +181,7 @@ class TicketTemplateForm(OurForm):
     drawing = FileField(
         label=u"券面データ", 
         validators=[
-            FileRequired([".xml", ".svg"])
+            FileRequired([".xml", ".svg", ".tssvg"])
         ]
      )    
 
@@ -254,7 +254,7 @@ class TicketTemplateEditForm(OurForm):
     drawing = FileField(
         label=u"券面データ", 
         validators=[
-            FileRequired([".xml", ".svg"]).none_is_ok
+            FileRequired([".xml", ".svg", ".tssvg"]).none_is_ok
         ]
      )    
 
