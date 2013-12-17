@@ -7,7 +7,7 @@ from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.sql.expression import desc, asc
 from sqlalchemy.orm import joinedload, aliased
 from altair.app.ticketing.core import models as c_models
-from altair.app.ticketing.models import DBSession
+from altair.sqlahelper import get_db_session
 from . import helpers as h
 from collections import OrderedDict
 from .exceptions import (
@@ -50,7 +50,8 @@ def get_amount_without_pdmp(cart):
 
 def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
     # TODO: cachable
-    q = DBSession.query(c_models.StockType, c_models.Product, c_models.ProductItem, c_models.Stock, c_models.StockStatus.quantity) \
+    slave_session = get_db_session(request, 'slave')
+    q = slave_session.query(c_models.StockType, c_models.Product, c_models.ProductItem, c_models.Stock, c_models.StockStatus.quantity) \
         .filter(c_models.StockType.display == True) \
         .filter(c_models.Product.public == True) \
         .filter(c_models.Product.deleted_at == None) \
@@ -74,7 +75,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
         _Product = aliased(c_models.Product)
         _Stock = aliased(c_models.Stock)
         q = q.filter(c_models.Product.id.in_(
-            DBSession.query(_Product.id) \
+            slave_session.query(_Product.id) \
             .filter(_Product.id == _ProductItem.product_id) \
             .filter(_ProductItem.stock_id == _Stock.id) \
             .filter(_Stock.stock_type_id == seat_type_id) \

@@ -312,8 +312,9 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.stock.stock_holder == stock_holder
 
     @classmethod
-    def query_sales_seats(cls, sales_segment):
-        return cls.query.filter(
+    def query_sales_seats(cls, sales_segment, session=None):
+        session = session or DBSession
+        return session.query(cls).filter(
                 cls.stock_id==ProductItem.stock_id
             ).filter(
                 ProductItem.product_id==Product.id
