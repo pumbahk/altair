@@ -40,50 +40,16 @@ class AttributeForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix="", **kwargs):
         Form.__init__(self, formdata=formdata, obj=obj, prefix=prefix, **kwargs)
-        if 'bundle_id' in kwargs:
-            self.bundle_id = kwargs["bundle_id"]
-        else:
-            self.bundle_id = None
-
-    def validate_name(form, field):
-        qs = TicketBundleAttribute.filter(TicketBundleAttribute.name==field.data)
-        qs = qs.filter(TicketBundleAttribute.ticket_bundle_id==form.bundle_id)
-        if qs.with_entities("id").first():
-            raise ValidationError(u"既にその名前(%s)で属性(TicketBundleAttribute)が登録されています" % field.data)
-
-    name = TextField(
-        label = u'名前(key)',
-        validators=[
-            Required(),
-            Length(max=255, message=u'255文字以内で入力してください'),
-        ]
-    )
-
-    value = TextField(
-        label = u"データ(value)", 
-        validators=[
-            Required(), 
-            ## json?
-            ], 
-        widget=TextArea()
-        )
-
-class AttributeEditForm(Form):
-    def _get_translations(self):
-        return Translations()
-
-    def __init__(self, formdata=None, obj=None, prefix="", **kwargs):
-        Form.__init__(self, formdata=formdata, obj=obj, prefix=prefix, **kwargs)
         self.bundle_id = kwargs["bundle_id"] if 'bundle_id' in kwargs else None
         self.attribute_id = kwargs["attribute_id"] if 'attribute_id' in kwargs else None
 
     def validate_name(form, field):
         qs = TicketBundleAttribute.filter(TicketBundleAttribute.name==field.data)\
-            .filter(TicketBundleAttribute.ticket_bundle_id==form.bundle_id)\
-            .filter(TicketBundleAttribute.id!=form.attribute_id)
-        
-        if qs.with_entities("id").first():
-            raise ValidationError(u"自分以外で既にその名前(%s)で属性(TicketBundleAttribute)が登録されています" % field.data)
+            .filter(TicketBundleAttribute.ticket_bundle_id==form.bundle_id)
+        if form.attribute_id:
+            qs = qs.filter(TicketBundleAttribute.id!=form.attribute_id)
+        if qs.count() >= 1:
+            raise ValidationError(u"既にその名前(%s)で属性(TicketBundleAttribute)が登録されています" % field.data)
 
     name = TextField(
         label = u'名前(key)',
@@ -112,7 +78,8 @@ class BundleForm(Form):
             self.tickets.choices = [
                 (ticket.id, ticket.name) for ticket in Ticket.filter_by(event_id=kwargs['event_id'])
             ]
-            qs = ProductItem.query.filter_by(deleted_at=None).join(Product).filter(Product.event_id==kwargs["event_id"])
+            ## これの必要性がわからない
+            ## qs = ProductItem.query.filter_by(deleted_at=None).join(Product).filter(Product.event_id==kwargs["event_id"])
 
     name = TextField(
         label=u"名称", 
