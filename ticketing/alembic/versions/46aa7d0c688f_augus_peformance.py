@@ -1,14 +1,14 @@
 """augus performance
 
 Revision ID: 46aa7d0c688f
-Revises: a4caeb81d1b
+Revises: 40001eedf727
 Create Date: 2013-12-09 15:50:06.426967
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '46aa7d0c688f'
-down_revision = 'a4caeb81d1b'
+down_revision = '40001eedf727'
 
 from alembic import op
 import sqlalchemy as sa
