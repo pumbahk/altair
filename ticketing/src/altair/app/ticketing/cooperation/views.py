@@ -10,6 +10,7 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
     Seat,
     Event,
+    Performance,
     AugusPerformance,
     )
 
@@ -26,15 +27,15 @@ from .augus import (
     SeatImportError,
     )
 
-
-@view_defaults(permission='event_editor')
-class EventView(BaseView):
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
+class CooperationView(BaseView):
+    # events
     @view_config(route_name='cooperation.events', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/events.html')
     def events_get(self):
-        event_id = self.request.matchdict['event_id']
-        event_id = long(event_id) # raise TypeError, ValueError
+        event_id = long(self.request.matchdict['event_id']) # raise KeyError, ValueError, TypeError
         event = Event.get(event_id)
+        url = self.request.route_path('cooperation.api.performances', event_id=event.id)        
         if event:
             pairs = []
             for performance in event.performances:
@@ -42,28 +43,80 @@ class EventView(BaseView):
                 pairs.append((performance, external_performance))
             return {'event': event,
                     'performances': event.performances,
+                    'save_url': url,
                     }
         else:
             raise HTTPNotFound('event_id: {0}'.format(event_id))
 
-    @view_config(route_name='cooperation.api.performances.get', request_method='GET')
+    @view_config(route_name='cooperation.api.performances',
+                 request_method='GET', renderer='json')
     def get_performances(self):
-        event_id = self.request.matchdict('event_id') # raise KeyError
+        event_id = self.request.matchdict['event_id'] # raise KeyError
         event_id = long(event_id) # raise TypeError or ValueError
         event = Event.get(event_id)
-        if event:
-            data = {}
-        else: # No Event
-            raise HTTPNotFound('Not found event: event_id={0}'.format(repr(event_id)))
+        entries = []
+        if not event:
+            raise HTTPNotFound('Not found event: event_id={0}'.format(repr(event_id)))            
+        for performance in event.performances:
+            entry = {'id': performance.id,
+                     'name': performance.name,
+                     'code': performance.code,
+                     'start_on': str(performance.start_on),
+                     'venue': performance.venue.name,
+                     'external_code': '',
+                     'external_detail': '',
+                     }
+            external = AugusPerformance.get(performance_id=performance.id)
+            if external:
+                entry['external_code'] = external.code
+                entry['external_detail'] = external.code
+            entries.append(entry)
+        return {'total': len(entries),
+                'page': 1,
+                'records': len(entries),
+                'rows': entries,
+                }
 
-    @view_config(route_name='cooperation.api.performances.save', request_method='POST')
+    @view_config(route_name='cooperation.api.performances',
+                 request_method='POST', renderer='json')
     def save_performances(self):
-        raise HTTPNotFound()
+        success = {}
+        illegal = {}
         
+        for performance_id, external_performance_code in self.request.json.items():
+            try:
+                performance_id = long(performance_id)
+            except (ValueError, TypeError) as err:
+                illegal[performance_id] = external_performance_code
 
-@view_defaults(decorator=with_bootstrap, permission='event_editor')
-class CooperationView(BaseView):
+            performance = Performance.get(performance_id)
+            if not performance:
+                illegal[performance_id] = external_performance_code                
+                
+            if external_performance_code:
+                try:
+                    external_performance_code = long(external_performance_code)
+                except (ValueError, TypeError) as err: 
+                    illegal[performance_id] = external_performance_code
+                external_performance = AugusPerformance.get(code=external_performance_code)
+                if external_performance:
+                    if external_performance.performance_id != performance.id:
+                        external_performance.performance_id = performance.id;
+                        external_performance.save() 
+                        success[performance_id] = external_performance_code                       
+                else:
+                    illegal[performance_id] = external_performance_code
+            else: # delete link
+                external_performance = AugusPerformance.get(performance_id=performance.id)
+                if external_performance:
+                    external_performance.performance_id = None
+                    external_performance.save()
+                else:
+                    illegal[performance_id] = external_performance_code
+        return {'illegal': illegal}
 
+        
+    # venues
     @view_config(route_name='cooperation.show', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/show.html')
     def show(self):

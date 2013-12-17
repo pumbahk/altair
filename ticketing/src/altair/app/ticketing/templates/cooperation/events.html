@@ -6,14 +6,66 @@
   <h3>外部イベント連携 - ${event.title}</h3>
 </div>
 <div class="table-wrapper">
-<table id="performances-table"></table>
-<a id="save-performances" class="btn btn-info pull-left">変更を保存する</a>
+  <table id="performances-table"></table>
+  <a id="save-performances" class="btn btn-info pull-left">変更を保存する</a>
 </div>
 
 <script type="text/javascript">
     <!--
 $(function(){
-    var event_id = ${event.id};
+    var table = $('#performances-table');
+    var save_btn = $('#save-performances');
+
+    function create_table(){
+        columns = ['id',
+                   '公演名',
+                   '公演コード',
+                   '公演日時',
+                   '開場',
+                   '外部公演コード',
+                   '外部公演詳細'
+                  ];
+
+        table.jqGrid({
+            url: '/cooperation/api/events/${event.id}/performances',
+            datatype: "json",
+            colNames: columns,
+            colModel: [
+                {name:'id',index:'id', width:55},
+                {name:'name',index:'name', width:90},
+                {name:'code',index:'code', width:100},
+                {name:'start_on',index:'start_on', width:80, align:"right"},
+                {name:'venue',index:'venue', width:80, align:"right"},
+                {name:'external_code', index:'external_code', width:80, align:"right", editable:true},
+                {name:'external_detail',index:'external_detail', width:150, sortable:false}
+            ],
+            rowNum:1000,
+            //rowList:[10,20,30],
+            // pager: '#pjmap',
+            sortname: 'id',
+            // viewrecords: true,
+            // sortorder: "desc",
+            // jsonReader: {
+            //     repeatitems : false,
+            //     id: "0"
+            // },
+            height: 'auto',
+            width: 'auto',
+            cellEdit: true,
+            cellsubmit: "clientArray",
+            edit: true,
+            add: false, 
+            del: false
+        });
+    }
+    create_table();
+
+    function draw_table(){
+        table.GridUnload();
+        //create_tables();
+    }
+
+    /*
     var date = [
     %for performance in performances:
         {
@@ -103,32 +155,30 @@ $(function(){
         del: false,
     });
 
-    $("#save-performances").on("click", function (){
+    */
+
+
+    save_btn.on("click", function (){
         var performance_external = {};
-        table = $('#performances-table');
         table.jqGrid('saveCell', 'saveRow', 'saveCol'); // save
         row_ids = table.jqGrid('getDataIDs');
         for (var ii=0; ii<row_ids.length; ii++){
             _id = row_ids[ii];
             row = table.getRowData(_id);
-            performance_external[row.perf_id] = row.external_performance_code;
+            performance_external[row.id] = row.external_code;
         }
-        url = '/cooperation/events/' + event_id + '/performances';
         data = JSON.stringify(performance_external);
         $.ajax({
             type: "POST",
-            url: url,
+            url: "${save_url}",
             data: data,
             contentType: 'application/json',
             dataType: 'json',
             success: function (json_data){
-                alert("OK");
+                alert("保存完了");
             },
-            error: function (){
-                alert("NG");
-            },
-            complete: function (){
-                alert("finish");
+            error: function (json_data){
+                alert("通信に失敗しました");
             }
         });
     });

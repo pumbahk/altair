@@ -7,8 +7,7 @@ ROUTE_URL_RESOURCE = {
     # cooperation events
     'cooperation.events': ('/events/{event_id}', None),
     # cooperation performance web api
-    'cooperation.api.performances.get': ('/api/events/{event_id}/performances', None),
-    'cooperation.api.performances.save': ('/api/events/{event_id}/performances', None),
+    'cooperation.api.performances': ('/api/events/{event_id}/performances', None),
     # cooperation venue    
     'cooperation.show': ('/show/{venue_id}', VenueAdminResource),
     'cooperation.upload': ('/upload/{venue_id}', CooperationResource),
