@@ -2,16 +2,149 @@ var util = require('util.js');
 var CONF = require('CONF.js');
 var IdentifiableSet = require('identifiableset.js').IdentifiableSet;
 
+var use_altair_collection = true;
+
+var AltairCollection = function (models, options) {
+  options || (options = {});
+  if (options.model) this.model = options.model;
+  this.initialize.apply(this, arguments);
+};
+
+AltairCollection.extend = Backbone.Collection.extend;
+
+_.extend(AltairCollection.prototype, {
+  model: Backbone.Model,
+  models: [],
+  _byId: {},
+  length: 0,
+
+  initialize: function(){
+    this.reset();
+  },
+
+  add: function(models, options) {
+    return this.set(models, options);
+  },
+
+  remove: function(models, options) {
+    var singular = !_.isArray(models);
+    models = singular ? [models] : models;
+    var i, l, index, model;
+    for (i = 0, l = models.length; i < l; i++) {
+      model = models[i] = this.get(models[i]);
+      if (!model) continue;
+      index = this.indexOf(model);
+      this.models.splice(index, 1);
+      this.length--;
+      this._removeReference(model, options);
+    }
+    return singular ? models[0] : models;
+  },
+
+  set: function(models, options) {
+    var singular = !_.isArray(models);
+    models = singular ? (models ? [models] : []) : models;
+    var i, l, model, existing;
+    for (i = 0, l = models.length; i < l; i++) {
+      model = models[i];
+      if (!model) continue;
+      if (existing = this.get(model)) {
+        existing.set(model.attributes, options);
+        model = existing;
+        this.remove(existing, options);
+      }
+      this.models.push(model);
+      this.length++;
+      this._addReference(model, options);
+    }
+    return singular ? models[0] : models;
+  },
+
+  reset: function(models, options) {
+    for (var i = 0, l = this.models.length; i < l; i++) {
+      this._removeReference(this.models[i], options);
+    }
+    this.models = [];
+    this._byId  = {};
+    this.length = 0;
+    models = this.add(models, options);
+    return models;
+  },
+
+  push: function(model, options) {
+    return this.set(model, options);
+  },
+
+  pop: function(options) {
+    var model = this.at(this.length - 1);
+    this.remove(model, options);
+    return model;
+  },
+
+  get: function(obj) {
+    if (obj == null) return void 0;
+    return (obj.id && this._byId[obj.id]) || (obj.cid && this._byId[obj.cid]) || this._byId[obj];
+  },
+
+  at: function(index) {
+    return this.models[index];
+  },
+
+  _prepareModel: function(attrs, options) {
+    if (attrs instanceof this.model) return attrs;
+    options = options ? _.clone(options) : {};
+    options.collection = this;
+    var model = new this.model(attrs, options);
+    if (!model.validationError) return model;
+    return false;
+  },
+
+  _addReference: function(model, options) {
+    this._byId[model.cid] = model;
+    if (model.id != null) this._byId[model.id] = model;
+    if (!model.collection) model.collection = this;
+  },
+
+  _removeReference: function(model, options) {
+    delete this._byId[model.id];
+    delete this._byId[model.cid];
+    if (this === model.collection) delete model.collection;
+  }
+});
+
+var methods = ['forEach', 'each', 'map', 'collect', 'reduce', 'foldl',
+  'inject', 'reduceRight', 'foldr', 'find', 'detect', 'filter', 'select',
+  'reject', 'every', 'all', 'some', 'any', 'include', 'contains', 'invoke',
+  'max', 'min', 'toArray', 'size', 'first', 'head', 'take', 'initial', 'rest',
+  'tail', 'drop', 'last', 'without', 'difference', 'indexOf', 'shuffle',
+  'lastIndexOf', 'isEmpty', 'chain', 'sample'];
+
+_.each(methods, function(method) {
+  AltairCollection.prototype[method] = function() {
+    var args = [].slice.call(arguments);
+    args.unshift(this.models);
+    return _[method].apply(_, args);
+  };
+});
+
 var VenueItemCollectionMixin = {
   venue: null,
 
   initialize: function VenueItemCollectionMixin_initialize(models, options) {
-    Backbone.Collection.prototype.initialize.apply(this, arguments);
+    if (use_altair_collection) {
+      AltairCollection.prototype.initialize.apply(this, arguments);
+    } else {
+      Backbone.Collection.prototype.initialize.apply(this, arguments);
+    }
     this.venue = options.venue;
   },
 
   _prepareModel: function VenueItemCollectionMixin__prepareModel(model, options) {
-    model = Backbone.Collection.prototype._prepareModel.call(this, model, options);
+    if (use_altair_collection) {
+      model = AltairCollection.prototype._prepareModel.call(this, model, options);
+    } else {
+      model = Backbone.Collection.prototype._prepareModel.call(this, model, options);
+    }
     if (!model)
       return model;
     model.set('venue', this.venue);
@@ -42,19 +175,18 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
     this.perStockTypeStockMap = {};
     this.callbacks = options && options.callbacks ? _.clone(options.callbacks) : {};
 
-    this.stockTypes.add({
+    this.stockTypes.add(new StockType({
       id: "",
       name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
       isSeat: true,
       quantityOnly: false,
-      quantity: 0,
       style: {}
-    });
-    this.stockHolders.add({
+    }));
+    this.stockHolders.add(new StockHolder({
       id: "",
       name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
       style: {}
-    });
+    }));
   }
 
   var stockTypes = this.stockTypes;
@@ -329,9 +461,9 @@ var Stock = exports.Stock = Backbone.Model.extend({
   idAttribute: "id",
 
   defaults: {
+    venue: null,
     stockHolder: null,
     stockType: null,
-    venue: null,
     assigned: 0,
     available: 0,
     style: CONF.DEFAULT.SEAT_STYLE,
@@ -492,10 +624,17 @@ var Seat = exports.Seat = Backbone.Model.extend({
   }
 });
 
-var SeatCollection = exports.SeatCollection = Backbone.Collection.extend(_.extend({ model: Seat }, VenueItemCollectionMixin));
-var StockTypeCollection = exports.StockTypeCollection = Backbone.Collection.extend(_.extend({ model: StockType }, VenueItemCollectionMixin));
-var StockHolderCollection = exports.StockHolderCollection = Backbone.Collection.extend(_.extend({ model: StockHolder }, VenueItemCollectionMixin));
-var StockCollection = exports.StockCollection = Backbone.Collection.extend(_.extend({ model: Stock }, VenueItemCollectionMixin));
+if (use_altair_collection) {
+  var SeatCollection = exports.SeatCollection = AltairCollection.extend(_.extend({ model: Seat }, VenueItemCollectionMixin));
+  var StockTypeCollection = exports.StockTypeCollection = AltairCollection.extend(_.extend({ model: StockType }, VenueItemCollectionMixin));
+  var StockHolderCollection = exports.StockHolderCollection = AltairCollection.extend(_.extend({ model: StockHolder }, VenueItemCollectionMixin));
+  var StockCollection = exports.StockCollection = AltairCollection.extend(_.extend({ model: Stock }, VenueItemCollectionMixin));
+} else {
+  var SeatCollection = exports.SeatCollection = Backbone.Collection.extend(_.extend({ model: Seat }, VenueItemCollectionMixin));
+  var StockTypeCollection = exports.StockTypeCollection = Backbone.Collection.extend(_.extend({ model: StockType }, VenueItemCollectionMixin));
+  var StockHolderCollection = exports.StockHolderCollection = Backbone.Collection.extend(_.extend({ model: StockHolder }, VenueItemCollectionMixin));
+  var StockCollection = exports.StockCollection = Backbone.Collection.extend(_.extend({ model: Stock }, VenueItemCollectionMixin));
+}
 
 var SeatAdjacencies = exports.SeatAdjacencies = function SeatAdjacencies(src) {
   this.tbl = {};

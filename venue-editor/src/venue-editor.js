@@ -10,7 +10,6 @@
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
-
     var regexp_for_values = /(?:((?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+)|"((?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)"|'((?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)')(?:\s+|$)/g;
 
     function unescape(escaped) {
@@ -245,6 +244,8 @@
       throw new Error('invalid transform function: ' + f);
   }
 
+  var tracker = new util.timer('start');
+
   var VenueEditor = function VenueEditor(canvas, options) {
     this.canvas = canvas;
     this.callbacks = {
@@ -302,16 +303,22 @@
   };
 
   VenueEditor.prototype.load = function VenueEditor_load(data) {
+    tracker.lap('load start');
     if (this.drawable !== null)
       this.drawable.dispose();
     this.drawing = data.drawing;
     this.metadata = data.metadata;
     if (data.metadata.seat_adjacencies)
       this.seatAdjacencies = new models.SeatAdjacencies(data.metadata.seat_adjacencies);
+    tracker.lap('initDrawable start');
     this.initDrawable();
+    tracker.lap('initModel start');
     this.initModel();
+    tracker.lap('initSeats start');
     this.initSeats();
+    tracker.lap('callback.load start');
     this.callbacks.load && this.callbacks.load(this);
+    tracker.lap('load end');
   };
 
   VenueEditor.prototype.refresh = function VenueEditor_refresh(data) {
@@ -360,6 +367,7 @@
     var shapes = {};
     var styleClasses = CONF.DEFAULT.STYLES;
 
+    tracker.lap('create shape start');
     (function iter(svgStyle, defs, nodeList) {
       outer:
         for (var i = 0; i < nodeList.length; i++) {
@@ -382,7 +390,7 @@
             if (matrix) {
               if (currentSvgStyle._transform) {
                 currentSvgStyle._transform = currentSvgStyle._transform.multiply(matrix);
-	  		} else {
+              } else {
                 currentSvgStyle._transform = matrix;
               }
             }
@@ -473,6 +481,7 @@
       },
       {},
       drawing.documentElement.childNodes);
+    tracker.lap('create shape end');
 
     drawable.addEvent({
       mousewheel: function (evt) {
@@ -486,7 +495,9 @@
     self.drawable = drawable;
     self.shapes = shapes;
 
+    tracker.lap('zoom start');
     self.zoom(self.zoomRatio);
+    tracker.lap('changeUIMode start');
     self.changeUIMode(self.uiMode);
   };
 
@@ -831,6 +842,7 @@
   };
 
   VenueEditor.prototype.zoom = function VenueEditor_zoom(ratio, center) {
+    tracker.lap('zoom start');
     var sp = this.drawable.scrollPosition();
     var lvs;
 
@@ -840,6 +852,7 @@
     this.drawable.transform(Fashion.Matrix.scale(this.zoomRatio));
     lvs = this.drawable._inverse_transform.apply(this.drawable.viewportInnerSize());
     this.drawable.scrollPosition({ x: center.x - lvs.x / 2, y: center.y - lvs.y / 2 });
+    tracker.lap('zoom end');
   };
 
   $.fn.venueeditor = function (options) {
@@ -878,21 +891,29 @@
               }
             });
             // Load drawing
+            tracker.lap('ajax get drawing start');
             if (aux.dataSource.drawing) {
               $.ajax({
                 type: 'get',
                 url: aux.dataSource.drawing,
                 dataType: 'xml',
-                success: function(xml) { waiter.charge('drawing', xml); },
+                success: function(xml) {
+                  tracker.lap('ajax get drawing success');
+                  waiter.charge('drawing', xml);
+                },
                 error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
               });
             }
 
             // Load metadata
+            tracker.lap('ajax get metadata start');
             $.ajax({
               url: aux.dataSource.metadata,
               dataType: 'json',
-              success: function(data) { waiter.charge('metadata', data); },
+              success: function(data) {
+                tracker.lap('ajax get metadata success');
+                waiter.charge('metadata', data);
+              },
               error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
             });
             aux.callbacks.loading && aux.callbacks.loading(aux.manager);

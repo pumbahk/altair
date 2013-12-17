@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['Z7AOCE59TSU9ZFLL'] = (function (exports) { (function () { 
+__LIBS__['uNUET9RE9Y2WB5OM'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['_Y5VJJSGMV1G5W7D'] = (function (exports) { (function () { 
+__LIBS__['EHLV48D_PEW3FB1O'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -97,7 +97,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['TW5YGAVJ72V6K49U'] = (function (exports) { (function () { 
+__LIBS__['KHLRY7RKUFSAO8DO'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -261,22 +261,22 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
 
-timer = function(msg) {
-    this.start = (new Date()).getTime();
-	if(msg) {
-		console.log(msg);
-	}
+var timer = exports.timer = function(msg) {
+  this.start = (new Date()).getTime();
+  if(msg) {
+    console.log(msg);
+  }
 };
 timer.prototype.lap = function(msg) {
-	var lap = (new Date()).getTime()-this.start;
-    this.start = (new Date()).getTime();
-	if(msg) {
-		console.log(msg+": "+lap+"msec");
-	}
-    return lap;
+  var lap = (new Date()).getTime()-this.start;
+  this.start = (new Date()).getTime();
+  if(msg) {
+    console.log(msg+": "+lap+" msec");
+  }
+  return lap;
 };
  })(); return exports; })({});
-__LIBS__['qUD1RKPLABR6VZ12'] = (function (exports) { (function () { 
+__LIBS__['J0YF6ZX8Z29CL931'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -325,23 +325,156 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['TJUKPLS3TOLFS3BY'] = (function (exports) { (function () { 
+__LIBS__['sPOLICSPUU1HZF4U'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['TW5YGAVJ72V6K49U'];
-var CONF = __LIBS__['_Y5VJJSGMV1G5W7D'];
-var IdentifiableSet = __LIBS__['qUD1RKPLABR6VZ12'].IdentifiableSet;
+var util = __LIBS__['KHLRY7RKUFSAO8DO'];
+var CONF = __LIBS__['EHLV48D_PEW3FB1O'];
+var IdentifiableSet = __LIBS__['J0YF6ZX8Z29CL931'].IdentifiableSet;
+
+var use_altair_collection = true;
+
+var AltairCollection = function (models, options) {
+  options || (options = {});
+  if (options.model) this.model = options.model;
+  this.initialize.apply(this, arguments);
+};
+
+AltairCollection.extend = Backbone.Collection.extend;
+
+_.extend(AltairCollection.prototype, {
+  model: Backbone.Model,
+  models: [],
+  _byId: {},
+  length: 0,
+
+  initialize: function(){
+    this.reset();
+  },
+
+  add: function(models, options) {
+    return this.set(models, options);
+  },
+
+  remove: function(models, options) {
+    var singular = !_.isArray(models);
+    models = singular ? [models] : models;
+    var i, l, index, model;
+    for (i = 0, l = models.length; i < l; i++) {
+      model = models[i] = this.get(models[i]);
+      if (!model) continue;
+      index = this.indexOf(model);
+      this.models.splice(index, 1);
+      this.length--;
+      this._removeReference(model, options);
+    }
+    return singular ? models[0] : models;
+  },
+
+  set: function(models, options) {
+    var singular = !_.isArray(models);
+    models = singular ? (models ? [models] : []) : models;
+    var i, l, model, existing;
+    for (i = 0, l = models.length; i < l; i++) {
+      model = models[i];
+      if (!model) continue;
+      if (existing = this.get(model)) {
+        existing.set(model.attributes, options);
+        model = existing;
+        this.remove(existing, options);
+      }
+      this.models.push(model);
+      this.length++;
+      this._addReference(model, options);
+    }
+    return singular ? models[0] : models;
+  },
+
+  reset: function(models, options) {
+    for (var i = 0, l = this.models.length; i < l; i++) {
+      this._removeReference(this.models[i], options);
+    }
+    this.models = [];
+    this._byId  = {};
+    this.length = 0;
+    models = this.add(models, options);
+    return models;
+  },
+
+  push: function(model, options) {
+    return this.set(model, options);
+  },
+
+  pop: function(options) {
+    var model = this.at(this.length - 1);
+    this.remove(model, options);
+    return model;
+  },
+
+  get: function(obj) {
+    if (obj == null) return void 0;
+    return (obj.id && this._byId[obj.id]) || (obj.cid && this._byId[obj.cid]) || this._byId[obj];
+  },
+
+  at: function(index) {
+    return this.models[index];
+  },
+
+  _prepareModel: function(attrs, options) {
+    if (attrs instanceof this.model) return attrs;
+    options = options ? _.clone(options) : {};
+    options.collection = this;
+    var model = new this.model(attrs, options);
+    if (!model.validationError) return model;
+    return false;
+  },
+
+  _addReference: function(model, options) {
+    this._byId[model.cid] = model;
+    if (model.id != null) this._byId[model.id] = model;
+    if (!model.collection) model.collection = this;
+  },
+
+  _removeReference: function(model, options) {
+    delete this._byId[model.id];
+    delete this._byId[model.cid];
+    if (this === model.collection) delete model.collection;
+  }
+});
+
+var methods = ['forEach', 'each', 'map', 'collect', 'reduce', 'foldl',
+  'inject', 'reduceRight', 'foldr', 'find', 'detect', 'filter', 'select',
+  'reject', 'every', 'all', 'some', 'any', 'include', 'contains', 'invoke',
+  'max', 'min', 'toArray', 'size', 'first', 'head', 'take', 'initial', 'rest',
+  'tail', 'drop', 'last', 'without', 'difference', 'indexOf', 'shuffle',
+  'lastIndexOf', 'isEmpty', 'chain', 'sample'];
+
+_.each(methods, function(method) {
+  AltairCollection.prototype[method] = function() {
+    var args = [].slice.call(arguments);
+    args.unshift(this.models);
+    return _[method].apply(_, args);
+  };
+});
 
 var VenueItemCollectionMixin = {
   venue: null,
 
   initialize: function VenueItemCollectionMixin_initialize(models, options) {
-    Backbone.Collection.prototype.initialize.apply(this, arguments);
+    if (use_altair_collection) {
+      AltairCollection.prototype.initialize.apply(this, arguments);
+    } else {
+      Backbone.Collection.prototype.initialize.apply(this, arguments);
+    }
     this.venue = options.venue;
   },
 
   _prepareModel: function VenueItemCollectionMixin__prepareModel(model, options) {
-    model = Backbone.Collection.prototype._prepareModel.call(this, model, options);
+    if (use_altair_collection) {
+      model = AltairCollection.prototype._prepareModel.call(this, model, options);
+    } else {
+      model = Backbone.Collection.prototype._prepareModel.call(this, model, options);
+    }
     if (!model)
       return model;
     model.set('venue', this.venue);
@@ -372,19 +505,18 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
     this.perStockTypeStockMap = {};
     this.callbacks = options && options.callbacks ? _.clone(options.callbacks) : {};
 
-    this.stockTypes.add({
+    this.stockTypes.add(new StockType({
       id: "",
       name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
       isSeat: true,
       quantityOnly: false,
-      quantity: 0,
       style: {}
-    });
-    this.stockHolders.add({
+    }));
+    this.stockHolders.add(new StockHolder({
       id: "",
       name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
       style: {}
-    });
+    }));
   }
 
   var stockTypes = this.stockTypes;
@@ -659,9 +791,9 @@ var Stock = exports.Stock = Backbone.Model.extend({
   idAttribute: "id",
 
   defaults: {
+    venue: null,
     stockHolder: null,
     stockType: null,
-    venue: null,
     assigned: 0,
     available: 0,
     style: CONF.DEFAULT.SEAT_STYLE,
@@ -822,10 +954,17 @@ var Seat = exports.Seat = Backbone.Model.extend({
   }
 });
 
-var SeatCollection = exports.SeatCollection = Backbone.Collection.extend(_.extend({ model: Seat }, VenueItemCollectionMixin));
-var StockTypeCollection = exports.StockTypeCollection = Backbone.Collection.extend(_.extend({ model: StockType }, VenueItemCollectionMixin));
-var StockHolderCollection = exports.StockHolderCollection = Backbone.Collection.extend(_.extend({ model: StockHolder }, VenueItemCollectionMixin));
-var StockCollection = exports.StockCollection = Backbone.Collection.extend(_.extend({ model: Stock }, VenueItemCollectionMixin));
+if (use_altair_collection) {
+  var SeatCollection = exports.SeatCollection = AltairCollection.extend(_.extend({ model: Seat }, VenueItemCollectionMixin));
+  var StockTypeCollection = exports.StockTypeCollection = AltairCollection.extend(_.extend({ model: StockType }, VenueItemCollectionMixin));
+  var StockHolderCollection = exports.StockHolderCollection = AltairCollection.extend(_.extend({ model: StockHolder }, VenueItemCollectionMixin));
+  var StockCollection = exports.StockCollection = AltairCollection.extend(_.extend({ model: Stock }, VenueItemCollectionMixin));
+} else {
+  var SeatCollection = exports.SeatCollection = Backbone.Collection.extend(_.extend({ model: Seat }, VenueItemCollectionMixin));
+  var StockTypeCollection = exports.StockTypeCollection = Backbone.Collection.extend(_.extend({ model: StockType }, VenueItemCollectionMixin));
+  var StockHolderCollection = exports.StockHolderCollection = Backbone.Collection.extend(_.extend({ model: StockHolder }, VenueItemCollectionMixin));
+  var StockCollection = exports.StockCollection = Backbone.Collection.extend(_.extend({ model: Stock }, VenueItemCollectionMixin));
+}
 
 var SeatAdjacencies = exports.SeatAdjacencies = function SeatAdjacencies(src) {
   this.tbl = {};
@@ -889,12 +1028,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['y_5Z8BSDUWLNAY8L'] = (function (exports) { (function () { 
+__LIBS__['A80KGKA_A64S18BU'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['TW5YGAVJ72V6K49U'];
-var CONF = __LIBS__['_Y5VJJSGMV1G5W7D'];
-var models = __LIBS__['TJUKPLS3TOLFS3BY'];
+var util = __LIBS__['KHLRY7RKUFSAO8DO'];
+var CONF = __LIBS__['EHLV48D_PEW3FB1O'];
+var models = __LIBS__['sPOLICSPUU1HZF4U'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -905,6 +1044,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   label: null,
   styleTypes: null,
+  initialized: false,
 
   initialize: function Seat_initialize(attrs, options) {
     var self = this;
@@ -1005,6 +1145,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
     onModelChange();
     onEventsChange();
     onShapeChange();
+
+    this.initialized = true;
   },
 
   _refreshStyle: function Seat__refreshStyle() {
@@ -1051,7 +1193,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   addStyleType: function Seat_addStyleType(value) {
     this.styleTypes.push(value);
-    this._refreshStyle();
+    if (this.initialized) this._refreshStyle();
   },
 
   removeStyleType: function Seat_removeStyleType(value) {
@@ -1061,7 +1203,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
       else
         i++;
     }
-    this._refreshStyle();
+    if (this.initialized) this._refreshStyle();
   }
 });
 
@@ -1074,17 +1216,16 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['_Y5VJJSGMV1G5W7D'];
-  var models = __LIBS__['TJUKPLS3TOLFS3BY'];
-  var util = __LIBS__['TW5YGAVJ72V6K49U'];
-  var viewobjects = __LIBS__['y_5Z8BSDUWLNAY8L'];
-  var IdentifiableSet = __LIBS__['qUD1RKPLABR6VZ12'].IdentifiableSet;
+  var CONF = __LIBS__['EHLV48D_PEW3FB1O'];
+  var models = __LIBS__['sPOLICSPUU1HZF4U'];
+  var util = __LIBS__['KHLRY7RKUFSAO8DO'];
+  var viewobjects = __LIBS__['A80KGKA_A64S18BU'];
+  var IdentifiableSet = __LIBS__['J0YF6ZX8Z29CL931'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['Z7AOCE59TSU9ZFLL'];
+    I18n.translations = __LIBS__['uNUET9RE9Y2WB5OM'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
-
     var regexp_for_values = /(?:((?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+)|"((?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)"|'((?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)')(?:\s+|$)/g;
 
     function unescape(escaped) {
@@ -1319,6 +1460,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
       throw new Error('invalid transform function: ' + f);
   }
 
+  var tracker = new util.timer('start');
+
   var VenueEditor = function VenueEditor(canvas, options) {
     this.canvas = canvas;
     this.callbacks = {
@@ -1376,16 +1519,22 @@ var Seat = exports.Seat = Backbone.Model.extend({
   };
 
   VenueEditor.prototype.load = function VenueEditor_load(data) {
+    tracker.lap('load start');
     if (this.drawable !== null)
       this.drawable.dispose();
     this.drawing = data.drawing;
     this.metadata = data.metadata;
     if (data.metadata.seat_adjacencies)
       this.seatAdjacencies = new models.SeatAdjacencies(data.metadata.seat_adjacencies);
+    tracker.lap('initDrawable start');
     this.initDrawable();
+    tracker.lap('initModel start');
     this.initModel();
+    tracker.lap('initSeats start');
     this.initSeats();
+    tracker.lap('callback.load start');
     this.callbacks.load && this.callbacks.load(this);
+    tracker.lap('load end');
   };
 
   VenueEditor.prototype.refresh = function VenueEditor_refresh(data) {
@@ -1434,6 +1583,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
     var shapes = {};
     var styleClasses = CONF.DEFAULT.STYLES;
 
+    tracker.lap('create shape start');
     (function iter(svgStyle, defs, nodeList) {
       outer:
         for (var i = 0; i < nodeList.length; i++) {
@@ -1456,7 +1606,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
             if (matrix) {
               if (currentSvgStyle._transform) {
                 currentSvgStyle._transform = currentSvgStyle._transform.multiply(matrix);
-	  		} else {
+              } else {
                 currentSvgStyle._transform = matrix;
               }
             }
@@ -1547,6 +1697,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
       },
       {},
       drawing.documentElement.childNodes);
+    tracker.lap('create shape end');
 
     drawable.addEvent({
       mousewheel: function (evt) {
@@ -1560,7 +1711,9 @@ var Seat = exports.Seat = Backbone.Model.extend({
     self.drawable = drawable;
     self.shapes = shapes;
 
+    tracker.lap('zoom start');
     self.zoom(self.zoomRatio);
+    tracker.lap('changeUIMode start');
     self.changeUIMode(self.uiMode);
   };
 
@@ -1905,6 +2058,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
   };
 
   VenueEditor.prototype.zoom = function VenueEditor_zoom(ratio, center) {
+    tracker.lap('zoom start');
     var sp = this.drawable.scrollPosition();
     var lvs;
 
@@ -1914,6 +2068,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
     this.drawable.transform(Fashion.Matrix.scale(this.zoomRatio));
     lvs = this.drawable._inverse_transform.apply(this.drawable.viewportInnerSize());
     this.drawable.scrollPosition({ x: center.x - lvs.x / 2, y: center.y - lvs.y / 2 });
+    tracker.lap('zoom end');
   };
 
   $.fn.venueeditor = function (options) {
@@ -1952,21 +2107,29 @@ var Seat = exports.Seat = Backbone.Model.extend({
               }
             });
             // Load drawing
+            tracker.lap('ajax get drawing start');
             if (aux.dataSource.drawing) {
               $.ajax({
                 type: 'get',
                 url: aux.dataSource.drawing,
                 dataType: 'xml',
-                success: function(xml) { waiter.charge('drawing', xml); },
+                success: function(xml) {
+                  tracker.lap('ajax get drawing success');
+                  waiter.charge('drawing', xml);
+                },
                 error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
               });
             }
 
             // Load metadata
+            tracker.lap('ajax get metadata start');
             $.ajax({
               url: aux.dataSource.metadata,
               dataType: 'json',
-              success: function(data) { waiter.charge('metadata', data); },
+              success: function(data) {
+                tracker.lap('ajax get metadata success');
+                waiter.charge('metadata', data);
+              },
               error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
             });
             aux.callbacks.loading && aux.callbacks.loading(aux.manager);

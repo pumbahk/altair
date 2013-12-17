@@ -11,6 +11,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   label: null,
   styleTypes: null,
+  initialized: false,
 
   initialize: function Seat_initialize(attrs, options) {
     var self = this;
@@ -111,6 +112,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
     onModelChange();
     onEventsChange();
     onShapeChange();
+
+    this.initialized = true;
   },
 
   _refreshStyle: function Seat__refreshStyle() {
@@ -157,7 +160,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   addStyleType: function Seat_addStyleType(value) {
     this.styleTypes.push(value);
-    this._refreshStyle();
+    if (this.initialized) this._refreshStyle();
   },
 
   removeStyleType: function Seat_removeStyleType(value) {
@@ -167,7 +170,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
       else
         i++;
     }
-    this._refreshStyle();
+    if (this.initialized) this._refreshStyle();
   }
 });
 
