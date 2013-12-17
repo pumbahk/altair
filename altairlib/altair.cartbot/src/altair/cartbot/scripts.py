@@ -9,6 +9,7 @@ import sys
 import time
 from argparse import ArgumentParser
 from ConfigParser import ConfigParser, NoSectionError
+from cookielib import CookieJar
 from lxmlmechanize import Mechanize
 from .bot import CartBot
 from urllib2 import HTTPError
