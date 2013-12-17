@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['uNUET9RE9Y2WB5OM'] = (function (exports) { (function () { 
+__LIBS__['vNEFATTCHDHSEQ39'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['EHLV48D_PEW3FB1O'] = (function (exports) { (function () { 
+__LIBS__['ABFBG_2I_KWVQEI3'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -94,10 +94,12 @@ exports.DEFAULT = {
     6: { stroke: { color: "#ff4040", width: 3, pattern: 'solid' } },
     7: { stroke: { color: "#9f9fec", width: 3, pattern: 'solid' } },
     8: { stroke: { color: "#ff8c40", width: 3, pattern: 'solid' } }
-  }
+  },
+
+  SEAT_RENDER_UNITS: 1000
 };
  })(); return exports; })({});
-__LIBS__['KHLRY7RKUFSAO8DO'] = (function (exports) { (function () { 
+__LIBS__['uCVW9B1GRP4TF_KX'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -262,21 +264,19 @@ exports.mergeStyle = function mergeStyle(a, b) {
 };
 
 var timer = exports.timer = function(msg) {
-  this.start = (new Date()).getTime();
-  if(msg) {
-    console.log(msg);
-  }
+  this.start = new Date();
+  if (msg) console.log(this.start+" "+msg);
 };
+
 timer.prototype.lap = function(msg) {
-  var lap = (new Date()).getTime()-this.start;
-  this.start = (new Date()).getTime();
-  if(msg) {
-    console.log(msg+": "+lap+" msec");
-  }
+  var now = new Date();
+  var lap = now.getTime()-this.start.getTime();
+  this.start = now;
+  if (msg) console.log(now+" "+msg+": "+lap+" msec");
   return lap;
 };
  })(); return exports; })({});
-__LIBS__['J0YF6ZX8Z29CL931'] = (function (exports) { (function () { 
+__LIBS__['P60DWQNWMWQSA86N'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -325,12 +325,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['sPOLICSPUU1HZF4U'] = (function (exports) { (function () { 
+__LIBS__['wCOBYTLZAF79MOH4'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['KHLRY7RKUFSAO8DO'];
-var CONF = __LIBS__['EHLV48D_PEW3FB1O'];
-var IdentifiableSet = __LIBS__['J0YF6ZX8Z29CL931'].IdentifiableSet;
+var util = __LIBS__['uCVW9B1GRP4TF_KX'];
+var CONF = __LIBS__['ABFBG_2I_KWVQEI3'];
+var IdentifiableSet = __LIBS__['P60DWQNWMWQSA86N'].IdentifiableSet;
 
 var use_altair_collection = true;
 
@@ -1028,12 +1028,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['A80KGKA_A64S18BU'] = (function (exports) { (function () { 
+__LIBS__['UZJC5AU34EDKWXVV'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['KHLRY7RKUFSAO8DO'];
-var CONF = __LIBS__['EHLV48D_PEW3FB1O'];
-var models = __LIBS__['sPOLICSPUU1HZF4U'];
+var util = __LIBS__['uCVW9B1GRP4TF_KX'];
+var CONF = __LIBS__['ABFBG_2I_KWVQEI3'];
+var models = __LIBS__['wCOBYTLZAF79MOH4'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -1216,13 +1216,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['EHLV48D_PEW3FB1O'];
-  var models = __LIBS__['sPOLICSPUU1HZF4U'];
-  var util = __LIBS__['KHLRY7RKUFSAO8DO'];
-  var viewobjects = __LIBS__['A80KGKA_A64S18BU'];
-  var IdentifiableSet = __LIBS__['J0YF6ZX8Z29CL931'].IdentifiableSet;
+  var CONF = __LIBS__['ABFBG_2I_KWVQEI3'];
+  var models = __LIBS__['wCOBYTLZAF79MOH4'];
+  var util = __LIBS__['uCVW9B1GRP4TF_KX'];
+  var viewobjects = __LIBS__['UZJC5AU34EDKWXVV'];
+  var IdentifiableSet = __LIBS__['P60DWQNWMWQSA86N'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['uNUET9RE9Y2WB5OM'];
+    I18n.translations = __LIBS__['vNEFATTCHDHSEQ39'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1530,11 +1530,16 @@ var Seat = exports.Seat = Backbone.Model.extend({
     this.initDrawable();
     tracker.lap('initModel start');
     this.initModel();
-    tracker.lap('initSeats start');
-    this.initSeats();
-    tracker.lap('callback.load start');
-    this.callbacks.load && this.callbacks.load(this);
     tracker.lap('load end');
+
+    // 座席データの描画は別スレッドで行う
+    var self = this;
+    setTimeout(function() {
+      tracker.lap('initSeats start');
+      self.initSeats();
+      tracker.lap('callback.load start');
+      self.callbacks.load && self.callbacks.load(self);
+    }, 0)
   };
 
   VenueEditor.prototype.refresh = function VenueEditor_refresh(data) {
@@ -1744,93 +1749,114 @@ var Seat = exports.Seat = Backbone.Model.extend({
       seats = {};
       target_seats = this.shapes;
     }
-    for (var id in target_seats) {
-      var shape = this.shapes[id];
-      var seat = this.venue.seats.get(id);
-      if (!seat)
-        continue;
 
-      var seat_vo = seats[id];
-      if (seat_vo) {
-        seat_vo.set('model', seat);
-        seat_vo.trigger('change:shape');
-        continue;
-      } else {
-        if (metadata && !seat.get('stock').get('assignable'))
+    var target_seats_keys = [];
+    for (var ts in target_seats) {
+      if (target_seats.hasOwnProperty(ts)) target_seats_keys.push(ts);
+    }
+    var total_count = target_seats_keys.length;
+    var count = 0;
+
+    var set_seat_callback = function() {
+      for (var i = 0; count < total_count && i < CONF.DEFAULT.SEAT_RENDER_UNITS; i++, count++) {
+        var id = target_seats_keys[count];
+        var shape = self.shapes[id];
+        var seat = self.venue.seats.get(id);
+        if (!seat) {
           continue;
-      }
+        }
 
-      seats[id] = (function (id) {
-        seat.on('change:selected', function () {
-          var value = this.get('selected');
-          if (value)
-            self.selection.add(this);
-          else
-            self.selection.remove(this);
-        });
-        return new viewobjects.Seat({
-          model: seat,
-          shape: shape,
-          events: {
-            mouseover: function(evt) {
-              var candidate = null;
-              if (self.seatAdjacencies) {
-                var candidates = self.seatAdjacencies.getCandidates(id, self.adjacencyLength());
-                if (candidates.length == 0)
-                  return;
-                for (var i = 0; i < candidates.length; i++) {
-                  candidate = candidates[i];
-                  for (var j = 0; j < candidate.length; j++) {
-                    if (!seats[candidate[j]].get('model').selectable()) {
-                      candidate = null;
+        var seat_vo = seats[id];
+        if (seat_vo) {
+          seat_vo.set('model', seat);
+          seat_vo.trigger('change:shape');
+          continue;
+        } else {
+          if (metadata && !seat.get('stock').get('assignable')) {
+            continue;
+          }
+        }
+
+        seats[id] = (function (id) {
+          seat.on('change:selected', function () {
+            var value = this.get('selected');
+            if (value)
+              self.selection.add(this);
+            else
+              self.selection.remove(this);
+          });
+          return new viewobjects.Seat({
+            model: seat,
+            shape: shape,
+            events: {
+              mouseover: function(evt) {
+                var candidate = null;
+                if (self.seatAdjacencies) {
+                  var candidates = self.seatAdjacencies.getCandidates(id, self.adjacencyLength());
+                  if (candidates.length == 0)
+                    return;
+                  for (var i = 0; i < candidates.length; i++) {
+                    candidate = candidates[i];
+                    for (var j = 0; j < candidate.length; j++) {
+                      if (!seats[candidate[j]].get('model').selectable()) {
+                        candidate = null;
+                        break;
+                      }
+                    }
+                    if (candidate) {
                       break;
                     }
                   }
-                  if (candidate) {
-                    break;
+                } else {
+                  candidate = [id];
+                }
+                if (!candidate)
+                  return;
+                for (var i = 0; i < candidate.length; i++) {
+                  var _id = candidate[i];
+                  var seat = seats[_id];
+                  if (seat.get('model').selectable()) {
+                    seat.addStyleType('highlighted');
+                  } else {
+                    seat.addStyleType('tooltip');
                   }
+                  self.highlighted[_id] = seat;
+                  self.callbacks.tooltip && self.callbacks.tooltip(seat, evt);
                 }
-              } else {
-                candidate = [id];
-              }
-              if (!candidate)
-                return;
-              for (var i = 0; i < candidate.length; i++) {
-                var _id = candidate[i];
-                var seat = seats[_id];
-                if (seat.get('model').selectable()) {
-                  seat.addStyleType('highlighted');
-                } else {
-                  seat.addStyleType('tooltip');
+              },
+              mouseout: function(evt) {
+                var highlighted = self.highlighted;
+                self.highlighted = {};
+                for (var i in highlighted) {
+                  var seat = highlighted[i];
+                  if (seat.get('model').selectable()) {
+                    seat.removeStyleType('highlighted');
+                  } else {
+                    seat.removeStyleType('tooltip');
+                  }
+                  self.callbacks.tooltip && self.callbacks.tooltip(null, evt);
                 }
-                self.highlighted[_id] = seat;
-                self.callbacks.tooltip && self.callbacks.tooltip(seat, evt);
-              }
-            },
-            mouseout: function(evt) {
-              var highlighted = self.highlighted;
-              self.highlighted = {};
-              for (var i in highlighted) {
-                var seat = highlighted[i];
-                if (seat.get('model').selectable()) {
-                  seat.removeStyleType('highlighted');
-                } else {
-                  seat.removeStyleType('tooltip');
+              },
+              mousedown: function(evt) {
+                var seat = seats[id];
+                if (seat.get('model').get('sold')) {
+                  self.callbacks.click && self.callbacks.click(seat.get('model'), evt);
                 }
-                self.callbacks.tooltip && self.callbacks.tooltip(null, evt);
-              }
-            },
-            mousedown: function(evt) {
-              var seat = seats[id];
-              if (seat.get('model').get('sold')) {
-                self.callbacks.click && self.callbacks.click(seat.get('model'), evt);
               }
             }
-          }
-        });
-      })(id);
-    }
-    this.seats = seats;
+          });
+        })(id);
+        self.seats = seats;
+      }
+
+      if (count < total_count) {
+        setTimeout(set_seat_callback, 0);
+      } else {
+        tracker.lap('initSeats end');
+      }
+    };
+
+    setTimeout(set_seat_callback, 0);
   };
 
   VenueEditor.prototype.addKeyEvent = function VenueEditor_addKeyEvent() {
@@ -2117,7 +2143,10 @@ var Seat = exports.Seat = Backbone.Model.extend({
                   tracker.lap('ajax get drawing success');
                   waiter.charge('drawing', xml);
                 },
-                error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
+                error: function(xhr, text) {
+                  tracker.lap('ajax get drawing error:' + text + ", status:" + xhr.status);
+                  aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (" + text + ")");
+                }
               });
             }
 
@@ -2130,7 +2159,10 @@ var Seat = exports.Seat = Backbone.Model.extend({
                 tracker.lap('ajax get metadata success');
                 waiter.charge('metadata', data);
               },
-              error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
+              error: function(xhr, text) {
+                tracker.lap('ajax get metadata error:' + text + ", status:" + xhr.status);
+                aux.callbacks.message && aux.callbacks.message("Failed to load seat data (" + text + ")");
+              }
             });
             aux.callbacks.loading && aux.callbacks.loading(aux.manager);
             break;
