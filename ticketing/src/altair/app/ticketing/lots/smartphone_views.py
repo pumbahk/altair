@@ -26,6 +26,7 @@ from . import helpers as h
 from . import schemas
 from . import selectable_renderer
 from .exceptions import NotElectedException
+from .views import nogizaka_auth, is_nogizaka
 from .models import (
     LotEntry,
 )
@@ -67,22 +68,6 @@ def get_nogizaka_lot_ids(request):
         return [long(id) for id in request.registry.settings.get('altair.lots.nogizaka_lot_id').split(',')]
     except:
         return []
-
-def is_nogizaka(context, request):
-    if request.method != 'POST':
-        return False
-    lot = getattr(context, 'lot')
-    if not lot or lot.id not in get_nogizaka_lot_ids(request):
-        return False
-    return True
-
-def nogizaka_auth(context, request):
-    lot = getattr(context, 'lot')
-    if not lot or lot.id not in get_nogizaka_lot_ids(request):
-        return True
-    if request.session.get('lots.passed.keyword'):
-        return True
-    return False
 
 @view_defaults(request_type='altair.mobile.interfaces.ISmartphoneRequest',
                permission="lots", custom_predicates=(is_smartphone_organization))
@@ -147,7 +132,18 @@ class EntryLotView(object):
             performances=sorted(lot.performances, lambda a, b: cmp(a.start_on, b.start_on)),
             )
 
-    @view_config(route_name='lots.entry.sp_step1', renderer=selectable_renderer("smartphone/%(membership)s/step1.html"), custom_predicates=(nogizaka_auth, ))
+    @view_config(route_name='lots.entry.index', renderer=selectable_renderer("smartphone/%(membership)s/index.html"), request_method="POST", custom_predicates=(is_nogizaka, ))
+    def nogizaka_auth(self):
+        KEYWORD = '1AkdIcUy923eaCak7Q64kDu9ydjGe8S3'
+        keyword = self.request.POST.get('keyword', None)
+        if keyword or self.request.session.get('lots.passed.keyword') != KEYWORD:
+            if keyword != KEYWORD:
+                raise HTTPNotFound()
+            self.request.session['lots.passed.keyword'] = keyword
+            return self.index()
+        raise HTTPNotFound()
+
+    @view_config(route_name='lots.entry.sp_step1', renderer=selectable_renderer("smartphone/%(membership)s/step1.html"), custom_predicates=())
     def step1(self, form=None):
         """
         抽選第N希望まで選択
@@ -207,7 +203,7 @@ class EntryLotView(object):
             lot=lot, performances=performances, performance_map=performance_map)
 
 
-    @view_config(route_name='lots.entry.sp_step2', renderer=selectable_renderer("smartphone/%(membership)s/step2.html"), custom_predicates=(nogizaka_auth, ))
+    @view_config(route_name='lots.entry.sp_step2', renderer=selectable_renderer("smartphone/%(membership)s/step2.html"), custom_predicates=())
     def step2(self, form=None):
         """
         購入情報入力
@@ -254,7 +250,7 @@ class EntryLotView(object):
             payment_delivery_pairs=payment_delivery_pairs, wishes=wishes,
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'))
 
-    @view_config(route_name='lots.entry.sp_step3', renderer=selectable_renderer("smartphone/%(membership)s/step3.html"), custom_predicates=(nogizaka_auth, ))
+    @view_config(route_name='lots.entry.sp_step3', renderer=selectable_renderer("smartphone/%(membership)s/step3.html"), custom_predicates=())
     def step3(self, form=None):
         """
         申し込み確認
