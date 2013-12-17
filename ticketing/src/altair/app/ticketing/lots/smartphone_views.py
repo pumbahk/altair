@@ -230,8 +230,10 @@ class EntryLotView(object):
 
         # 商品チェック
         if not wishes:
-            self.request.session.flash(u"申し込み内容に入力不備があります")
-            validated = False
+            wishes = h.convert_sp_wishes(self.request.params, lot.limit_wishes)
+            if not wishes:
+                self.request.session.flash(u"申し込み内容に入力不備があります")
+                validated = False
         elif not h.check_duplicated_products(wishes):
             self.request.session.flash(u"同一商品が複数回希望されています。")
             validated = False
@@ -257,6 +259,7 @@ class EntryLotView(object):
         """
         申し込み確認
         """
+        event = self.context.event
         lot = self.context.lot
         if not lot:
             logger.debug('lot not not found')
@@ -302,7 +305,18 @@ class EntryLotView(object):
             validated = False
 
         if not validated:
-            return self.get(form=cform)
+
+            query = dict()
+            for cnt, wish in enumerate(wishes):
+                wish_order = wish['wished_products'][0]['wish_order']
+                performance_id = wishes[cnt]['performance_id']
+                product_id = wish['wished_products'][0]['product_id']
+                quantity = wish['wished_products'][0]['quantity']
+                query.update({'wish_order-' + str(wish_order) + '-performance_id' : performance_id})
+                query.update({'wish_order-' + str(wish_order) + '-product_id' : product_id})
+                query.update({'wish_order-' + str(wish_order) + '-quantity' : quantity})
+            return HTTPFound(self.request.route_path(
+                'lots.entry.sp_step2', event_id=event.id, lot_id=lot.id, _query=query))
 
         entry_no = api.generate_entry_no(self.request, self.context.organization)
 
