@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
 import csv
+import json
 from pyramid.view import view_defaults, view_config
 from pyramid.response import Response
-from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
+from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPNotFound
 
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.core.models import Seat
+from altair.app.ticketing.core.models import (
+    Seat,
+    Event,
+    Performance,
+    AugusPerformance,
+    )
+
 from .forms import (
     CooperationUpdateForm,
     CooperationDownloadForm,
@@ -20,33 +27,109 @@ from .augus import (
     SeatImportError,
     )
 
-
-
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class CooperationView(BaseView):
+    # events
+    @view_config(route_name='cooperation.events', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/events.html')
+    def events_get(self):
+        event_id = long(self.request.matchdict['event_id']) # raise KeyError, ValueError, TypeError
+        event = Event.get(event_id)
+        url = self.request.route_path('cooperation.api.performances', event_id=event.id)        
+        if event:
+            pairs = []
+            for performance in event.performances:
+                external_performance = AugusPerformance.get(performance.id)
+                pairs.append((performance, external_performance))
+            return {'event': event,
+                    'performances': event.performances,
+                    'save_url': url,
+                    }
+        else:
+            raise HTTPNotFound('event_id: {0}'.format(event_id))
 
-    @view_config(route_name='cooperation.index', request_method='GET',
-                 renderer='altair.app.ticketing:templates/cooperation/index.html')
-    def index(self):
-        sitename_venueid = (('google', 'http://www.goolge.com'),)
-        return {'sitename_venueid': sitename_venueid}
+    @view_config(route_name='cooperation.api.performances',
+                 request_method='GET', renderer='json')
+    def get_performances(self):
+        event_id = self.request.matchdict['event_id'] # raise KeyError
+        event_id = long(event_id) # raise TypeError or ValueError
+        event = Event.get(event_id)
+        entries = []
+        if not event:
+            raise HTTPNotFound('Not found event: event_id={0}'.format(repr(event_id)))            
+        for performance in event.performances:
+            entry = {'id': performance.id,
+                     'name': performance.name,
+                     'code': performance.code,
+                     'start_on': str(performance.start_on),
+                     'venue': performance.venue.name,
+                     'external_code': '',
+                     'external_detail': '',
+                     }
+            external = AugusPerformance.get(performance_id=performance.id)
+            if external:
+                entry['external_code'] = external.code
+                entry['external_detail'] = external.code
+            entries.append(entry)
+        return {'total': len(entries),
+                'page': 1,
+                'records': len(entries),
+                'rows': entries,
+                }
 
+    @view_config(route_name='cooperation.api.performances',
+                 request_method='POST', renderer='json')
+    def save_performances(self):
+        success = {}
+        illegal = {}
+        
+        for performance_id, external_performance_code in self.request.json.items():
+            try:
+                performance_id = long(performance_id)
+            except (ValueError, TypeError) as err:
+                illegal[performance_id] = external_performance_code
+
+            performance = Performance.get(performance_id)
+            if not performance:
+                illegal[performance_id] = external_performance_code                
+                
+            if external_performance_code:
+                try:
+                    external_performance_code = long(external_performance_code)
+                except (ValueError, TypeError) as err: 
+                    illegal[performance_id] = external_performance_code
+                external_performance = AugusPerformance.get(code=external_performance_code)
+                if external_performance:
+                    if external_performance.performance_id != performance.id:
+                        external_performance.performance_id = performance.id;
+                        external_performance.save() 
+                        success[performance_id] = external_performance_code                       
+                else:
+                    illegal[performance_id] = external_performance_code
+            else: # delete link
+                external_performance = AugusPerformance.get(performance_id=performance.id)
+                if external_performance:
+                    external_performance.performance_id = None
+                    external_performance.save()
+                else:
+                    illegal[performance_id] = external_performance_code
+        return {'illegal': illegal}
+
+        
+    # venues
     @view_config(route_name='cooperation.show', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/show.html')
     def show(self):
-        venue_id = int(self.request.matchdict.get('venue_id', 0))        
-        from mock import Mock
-        site = Mock()
-        site.name = u'テスト'
+        venue = self.context.venue
         update_form = CooperationUpdateForm()
         download_form = CooperationDownloadForm()
         cooperation_type_form = CooperationTypeForm()
-        return {'site': site,
+        return {'venue': venue,
                 'update_form': update_form,
                 'download_form': download_form,
                 'display_modal': False,
-                'upload_url': self._upload_url(venue_id),
-                'download_url': self._download_url(venue_id),
+                'upload_url': self._upload_url(venue.id),
+                'download_url': self._download_url(venue.id),
                 'cooperation_type_form': cooperation_type_form,
                 }
 
@@ -93,8 +176,7 @@ class CooperationView(BaseView):
                 return HTTPFound(return_url)
         else:# validate error
             raise HTTPFound(return_url)
-                
-    
+
     def _upload(self):
         venue_id = int(self.request.matchdict.get('venue_id', 0))
         organization_id = self.context.organization.id

@@ -3946,8 +3946,8 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     floor = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"階"))
     column = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"列"))
     num = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"番"))
-    augus_venue_id = Column(Identifier, ForeignKey('AugusVenue.id', ondelete='CASCADE'),
-                            nullable=False)
+    augus_venue_id = Column(Identifier, ForeignKey('AugusVenue.id',
+                            ondelete='CASCADE'), nullable=False)
     seat_id = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'))
     augus_venue = relationship('AugusVenue', backref='augus_seats')
     seat = relationship('Seat')
@@ -3957,8 +3957,18 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     deleted_at = Column(TIMESTAMP, nullable=True)
 
 
-class AugusPerformance(object):
+class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusPerformance'
-    augus_event_code = None
-    augus_peformance_code = None
-    performance_id = None
+    id = Column(Identifier, primary_key=True)    
+    code = AnnotatedColumn(Integer, nullable=False, 
+                           unique=True, _a_label=(u"公演コード"))
+    augus_event_code = AnnotatedColumn(Integer, nullable=False,
+                                       _a_label=(u"事業コード"))
+    performance_id = Column(Identifier, 
+                            ForeignKey("Performance.id", ondelete='CASCADE'),
+                            nullable=True, unique=True)
+    performance = relationship('Performance')
+    created_at = Column(TIMESTAMP, nullable=False)
+    updated_at = Column(TIMESTAMP, nullable=False)
+    deleted_at = Column(TIMESTAMP, nullable=True)
+    

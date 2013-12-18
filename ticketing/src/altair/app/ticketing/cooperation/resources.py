@@ -50,6 +50,9 @@ class CooperationResource(TicketingAdminResource, _CooperationResourceMixin):
         self.pairs.load()
 
 
+
+
+
 class RequestAccessor(object):
     def __init__(self, request):
         self._request = request
