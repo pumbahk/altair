@@ -50,7 +50,7 @@ class TicketModelControl(object):
 
     def get_vals(self, ticket, build_vals):
         # logger.info(build_vals)
-        vals = ticket.vars_defaults
+        vals = ticket.vars_defaults.copy()
         vals.update(build_vals)
         overwrite_vals = self.overwrite_attributes(build_vals)
         # logger.info(overwrite_vals)
