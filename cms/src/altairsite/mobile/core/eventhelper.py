@@ -44,6 +44,7 @@ class EventHelper(object):
         for group in event.salessegment_groups:
             start = None
             end = None
+            salessegment_public = True            
             for segment in group.salessegments:
                 salessegment_public = True
                 if not segment.publicp:
