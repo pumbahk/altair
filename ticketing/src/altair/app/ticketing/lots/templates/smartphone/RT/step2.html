@@ -1,0 +1,260 @@
+<%inherit file="${context['main_template'].uri}" />
+<%block name="javascript">
+    <script type="text/javascript">
+    $(document).ready(function(){
+        $(".methodExplanation").hide();
+        $("input:radio").click(function() {
+            $(".methodExplanation").hide();
+            var index = $("input:radio[name='payment_delivery_method_pair_id']").index(this);
+            console.log(index);
+            $(".methodExplanation:eq(" + index + ")").show();
+        });
+    });
+    </script>
+</%block>
+<div id="main">
+
+  %if request.session.peek_flash():
+  <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+    <ul>
+      %for message in request.session.pop_flash():
+      <li>${message}</li>
+      %endfor
+    </ul>
+  </div>
+  %endif
+
+<form method="post" id="wishForm" action="${request.route_path('lots.entry.sp_step3', event_id=event.id, lot_id=lot.id)}">
+    % for cnt, wish in enumerate(wishes):
+      <%
+        wish_order = wish['wished_products'][0]['wish_order']
+        performance_id = wishes[cnt]['performance_id']
+        product_id = wish['wished_products'][0]['product_id']
+        quantity = wish['wished_products'][0]['quantity']
+      %>
+      <input type="hidden" name="wish_order-${wish_order}-performance_id" value="${performance_id}"/>
+      <input type="hidden" name="wish_order-${wish_order}-product_id" value="${product_id}"/>
+      <input type="hidden" name="wish_order-${wish_order}-quantity" value="${quantity}"/>
+    % endfor
+
+
+
+<div class="subbox">
+<dl>
+<dt><p class="lineRed">お支払・お引取方法選択</p></dt>
+<dd>
+<div class="subInner">
+<dl class="creditList">
+<dt>
+% for m in payment_delivery_pairs:
+<%
+    checked = 'checked' if str(m.id) == payment_delivery_method_pair_id else ''
+
+    fee = ''
+    if m.system_fee > 0:
+        fee = fee + u' & システム利用料'
+    endif
+
+    if m.special_fee > 0:
+        fee = fee + u' & ' + m.special_fee_name
+    endif
+%>
+<p>
+  <input id="radio" type="radio" name="payment_delivery_method_pair_id" value="${m.id}" ${checked} />
+  <label for="radio">${m.payment_method.name} &amp; ${m.delivery_method.name} ${fee}</label>
+</p>
+% endfor
+
+</dt>
+</dl>
+
+% for m in payment_delivery_pairs:
+<dl class="methodExplanation">
+<dt class="creditHl">${m.payment_method.name}</dt>
+<dd>
+<p>手数料 <strong>${h.format_currency(m.transaction_fee)}</strong> (${h.fee_type(m.payment_method.fee_type)})<br>
+${m.payment_method.description or '' | n}
+</dd>
+
+<dt class="creditHl">${m.delivery_method.name}</dt>
+<dd>
+<p>${m.delivery_method.name}&nbsp;<strong>${h.format_currency(m.delivery_fee)}</strong> (${h.fee_type(m.delivery_method.fee_type)})<br>
+${m.delivery_method.description or '' | n}
+</dd>
+
+%if m.system_fee > 0:
+<dt class="creditHl">システム利用料</dt>
+<dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+<p>システム利用料&nbsp;<strong>${h.format_currency(m.system_fee)}</strong>(${h.fee_type(m.system_fee_type)})<br>
+上記の利用料・手数料がかかります。</p>
+</dd>
+%endif
+
+%if m.special_fee > 0:
+<dt class="creditHl">${m.special_fee_name}</dt>
+<dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+<p>${m.special_fee_name}&nbsp;<strong>${h.format_currency(m.special_fee)}</strong>(${h.fee_type(m.special_fee_type)})<br>
+上記の利用料・手数料がかかります。</p>
+</dd>
+%endif
+
+</dl>
+</div>
+% endfor
+
+</dd>
+</dl>
+</div>
+
+<p>※ 予約受付完了メール等をメールでご案内します。「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
+
+
+<div class="subbox">
+<dl>
+<dt><p class="lineRed">購入者情報</p></dt>
+<dd>
+
+<div class="subInner2">
+<dl class="creditList">
+
+<dt class="creditHl">購入者氏名（全角）</dt>
+<dd>
+<p>
+${form['last_name'].label}<br/>
+${form['last_name']}<br/>
+${self.error(form, 'last_name')}
+(例：山田)
+</p>
+<p>
+${form['first_name'].label}<br/>
+${form['first_name']}<br/>
+${self.error(form, 'first_name')}
+(例：太郎)
+</p>
+</dd>
+
+<dt class="creditHl">購入者氏名（全角カナ）</dt>
+<dd>
+<p>
+${form['last_name_kana'].label}<br/>
+${form['last_name_kana']}<br/>
+${self.error(form, 'last_name_kana')}
+(例：ヤマダ)
+</p>
+<p>
+${form['first_name_kana'].label}<br/>
+${form['first_name_kana']}<br/>
+${self.error(form, 'first_name_kana')}
+(例：タロウ)
+</p>
+</dd>
+
+<dt class="creditHl">メールアドレス(半角英数)</dt>
+<dd>
+<p>
+${form['email_1'].label}<br/>
+${form['email_1']}<br/>
+${self.error(form, 'email_1')}
+(例：mail@example.ne.jp)
+</p>
+<p>
+${form['email_1_confirm'].label}<br/>
+${form['email_1_confirm']}<br/>
+${self.error(form, 'email_1_confirm')}
+(例：mail@example.ne.jp)
+</p>
+<p><span class="tyuui">予約受付完了メール等をメールでご案内します。「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</span></p>
+</dd>
+
+<dt class="creditHl">電話番号(半角数字)</dt>
+<dd>
+<p>
+${form['tel_1'].label}<br/>
+${form['tel_1']}<br/>
+${self.error(form, 'tel_1')}
+(例: 03xxxxyyyy)
+</p>
+<p>
+${form['tel_2'].label}<br/>
+${form['tel_2']}<br/>
+${self.error(form, 'tel_2')}
+(例: 080xxxxyyyy)
+</p>
+</dd>
+
+<dt class="creditHl">配送先住所</dt>
+<dd>
+<p>
+<% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
+${form['zip'].label}<br/>
+${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}<br/>
+${self.error(form, 'zip')}
+(例: 1030001)
+</p>
+<p>
+${form['prefecture'].label}<br/>
+${form['prefecture']}<br/>
+${self.error(form, 'prefecture')}
+(例: 東京都)
+</p>
+</p>
+<p>
+${form['city'].label}<br/>
+${form['city']}<br/>
+${self.error(form, 'city')}
+(例: 中央区)
+</p>
+</p>
+<p>
+${form['address_1'].label}<br/>
+${form['address_1'](style="width: 30em")}<br/>
+${self.error(form, 'address_1')}
+(例: 日本橋x-xx-xx)
+</p>
+</p>
+<p>
+${form['address_2'].label}<br/>
+${form['address_2'](style="width: 30em")}<br/>
+${self.error(form, 'address_2')}
+(例: yyビルz階)
+</p>
+</dd>
+
+<dt class="creditHl">生年月日</dt>
+<dd>
+<p>
+${form['year']} 年
+${form['month']} 月
+${form['day']} 日
+${self.error(form, 'year')}
+</p>
+</dd>
+
+<dt class="creditHl">性別</dt>
+<dd>
+<p>
+${form['sex'].label}<br/>
+${form['sex']}
+${self.error(form, 'sex')}
+</p>
+</dd>
+
+<dt class="creditHl">メモ欄</dt>
+<dd>
+<p>
+${form['memo'](cols=50, rows=5)} ${self.error(form, 'error')}
+</p>
+</dd>
+
+
+
+</dl>
+</div>
+
+</dd>
+</dl>
+</div>
+<p class="nextBtn"><input type="submit" value="次へ"></p>
+
+</form>
+</div>
