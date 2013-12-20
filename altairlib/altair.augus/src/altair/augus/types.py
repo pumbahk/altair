@@ -5,7 +5,7 @@ from enum import Enum
 class _ValueType(object):
     @classmethod
     def get(cls, value):
-        return value
+        return value # pragma: no cover
 
     @classmethod
     def validate(cls, value):
