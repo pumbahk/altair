@@ -201,8 +201,8 @@ def build_sej_args(payment_type, order_like, now):
         raise SejPluginFailure('unknown payment type %s' % payment_type, order_link.order_no, None)
 
     regrant_number_due_at = None
-    if performance:
-        regrant_number_due_at = performance.end_on + timedelta(days=1) if performance.end_on else performance.start_on + timedelta(days=1)
+    if performance and (performance.start_on or performance.end_on):
+        regrant_number_due_at = (performance.end_on or performance.start_on) + timedelta(days=1)
     regrant_number_due_at = regrant_number_due_at or now + timedelta(days=365)
 
     return dict(
