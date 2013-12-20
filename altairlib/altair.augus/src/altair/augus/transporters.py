@@ -1,4 +1,5 @@
 #-*- coding: utf-8 -*-
+import os.path
 import ftplib
 import ftputil
 
@@ -22,7 +23,7 @@ class FTPTransporter(_Transporter):
 
     def _create_session(self, *args, **kwds):
         session = ftplib.FTP(*args, **kwds)
-        session.set_pasv(self.passive) # self... (--;) 
+        session.set_pasv(self.passive) # self... (--;)
         return session
         
     def connect(self):
@@ -55,15 +56,11 @@ class FTPTransporter(_Transporter):
         # mkdir -p
         if parents:
             dirname = os.path.dirname(dst)
-            self.makedirs(dirname)            
+            self.makedirs(dirname)
         
         # upload
         upload = self._conn.upload if force else self._conn.upload_if_newer
-        status = upload(src, dst)
-        if status: # success
-            print 'OK'
-        else: # fail
-            print 'NG'
+        return upload(src, dst)
 
     @reconnect
     def remove(self, path, recursive=False, force=False):
@@ -83,24 +80,3 @@ class FTPTransporter(_Transporter):
     def listdir(self, path=None):
         path = self._conn.curdir if path is None else path
         return self._conn.listdir(path)
-
-def main():
-    import urlparse
-    from pit import Pit
-    config = Pit.get('augus_ftp',
-                     {'require': {'url': '',
-                                  'username': '',
-                                  'password': '',
-                              }})
-    url = urlparse.urlparse(config['url'])
-    username = config['username']
-    password = config['password']
-    transporter = FTPTransporter(url.netloc, username, password)
-    transporter.chdir(url.path)
-    #name = transporter.listdir()[0]
-    #transporter.get(name, 'A.csv')
-    transporter.put('A.csv', 'A.csv')
-    print transporter.listdir()
-
-if __name__ == '__main__':
-    main()
