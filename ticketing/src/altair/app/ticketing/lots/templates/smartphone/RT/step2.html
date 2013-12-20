@@ -60,8 +60,8 @@
     endif
 %>
 <p>
-  <input id="radio" type="radio" name="payment_delivery_method_pair_id" value="${m.id}" ${checked} />
-  <label for="radio">${m.payment_method.name} &amp; ${m.delivery_method.name} ${fee}</label>
+  <input id="radio${m.id}" type="radio" name="payment_delivery_method_pair_id" value="${m.id}" ${checked} />
+  <label for="radio${m.id}">${m.payment_method.name} &amp; ${m.delivery_method.name} ${fee}</label>
 </p>
 % endfor
 
@@ -99,14 +99,13 @@ ${m.delivery_method.description or '' | n}
 %endif
 
 </dl>
-</div>
 % endfor
-
+</div>
 </dd>
 </dl>
 </div>
 
-<p>※ 予約受付完了メール等をメールでご案内します。「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
+<p class="tyuui2">※ 予約受付完了メール等をメールでご案内します。「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
 
 
 <div class="subbox">
