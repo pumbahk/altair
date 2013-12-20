@@ -1,0 +1,26 @@
+<%text>
+<% _.each(products, function(product, j) { %>
+<%
+    var quantityField = "product-quantity-" + wishOrder + "-" + j + "";
+%>
+<div class="product-select-div<%= j + 1 == products.length ? ' settlementSelectEnd': '' %>">
+<dt>券種</dt>
+<dd>
+<span class="product-name"><%= product.name %></span><br>
+<input type="hidden" name="product-id-<%= wishOrder %>-<%= j %>" value="<%= product.id %>" />
+<span class="product-price"><%= product.formatted_price %></span>×
+      <select name="<%= quantityField %>" >
+        <option></option>
+        <% for (var k=0; k < upperLimit; k++) { %>
+        <option value="<%= k + 1 %>"><%= k + 1 %></option>
+        <% } %>
+      </select>枚
+    <% if (product.description) { %>
+    <span class="tyuui"><%= product.description %></span>
+    <% } %>
+</dd>
+
+
+<% }); %>
+</div>
+</%text>

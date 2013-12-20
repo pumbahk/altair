@@ -74,6 +74,10 @@ def includeme(config):
     add_route('lots.entry.step2', 'events/{event_id}/entry/{lot_id}/options/{option_index}/step2', factory='.resources.LotOptionSelectionResource')
     add_route('lots.entry.step3', 'events/{event_id}/entry/{lot_id}/step3', factory='.resources.LotOptionSelectionResource')
     add_route('lots.entry.step4', 'events/{event_id}/entry/{lot_id}/step4')
+    add_route('lots.entry.sp_step1', 'events/{event_id}/entry/{lot_id}/sp_step1')
+    add_route('lots.entry.sp_step2', 'events/{event_id}/entry/{lot_id}/sp_step2')
+    add_route('lots.entry.sp_step3', 'events/{event_id}/entry/{lot_id}/sp_step3')
+    add_route('lots.entry.sp_step4', 'events/{event_id}/entry/{lot_id}/sp_step4')
     add_route('lots.entry.confirm', 'events/{event_id}/entry/{lot_id}/confirm')
     add_route('lots.entry.completion', 'events/{event_id}/entry/{lot_id}/completion')
 
@@ -94,6 +98,7 @@ def includeme(config):
     config.scan(".subscribers")
     config.scan(".views")
     config.scan(".mobile_views")
+    config.scan(".smartphone_views")
     config.scan(".layouts")
 
 # TODO: carts.includemeに移動
