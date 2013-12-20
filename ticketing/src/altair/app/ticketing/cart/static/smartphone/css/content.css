@@ -148,6 +148,11 @@
 	color:#888888;
 }
 
+.tyuui2{
+	font-size:11px;
+	color:#FF0000;
+}
+
 /* お支払・お引取方法選択
 ----------------------------------------------------------- */
 
@@ -315,6 +320,19 @@
 
 .detailBox table{
 	width:100%;
+    boxer:collapse;
+}
+
+.detailBox table tr{
+    border-bottom:1px solid #fff;
+}
+
+.detailBox table tr:nth-child(odd){
+    border-bottom: none;
+}
+
+.detailBox table tr:nth-child(odd) td{
+    text-align: left;
 }
 
 .detailBox table th{
@@ -326,7 +344,6 @@
 .detailBox table td{
 	text-align:right;
 	font-weight:bold;
-	border-bottom:1px solid #fff;
 	padding:3px 0;
 }
 

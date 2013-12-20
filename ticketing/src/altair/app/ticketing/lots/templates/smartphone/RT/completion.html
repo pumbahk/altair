@@ -1,6 +1,6 @@
 <%inherit file="${context['main_template'].uri}" />
 <div id="main">
-<form method="post" action="1.html">
+<form method="post" action="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}">
 
 <div class="subbox">
 <dl>
@@ -25,36 +25,42 @@
 <table>
 %for i, lot_product in enumerate(wish.products):
 <tr>
-<th>${lot_product.product.name}</th>
-<td>${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)</td>
+<td>${lot_product.product.name}</td>
+</tr><tr>
+<td>${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)}</td>
 </tr>
 %endfor
 
 <tr>
-<th>決済手数料(${wish.lot_entry.payment_delivery_method_pair.payment_method.name})</th>
+<td>決済手数料(${wish.lot_entry.payment_delivery_method_pair.payment_method.name})</td>
+</tr><tr>
 <td>${h.format_currency(wish.transaction_fee)}</td>
 </tr>
 
 <tr>
-<th>引取手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</th>
+<td>引取手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</td>
+</tr><tr>
 <td>${h.format_currency(wish.delivery_fee)}</td>
 </tr>
 
 <tr>
-<th>システム手数料</th>
+<td>システム手数料</td>
+</tr><tr>
 <td>${h.format_currency(wish.system_fee)}</td>
 </tr>
 
 % if wish.special_fee > 0:
 <tr>
-<th>${wish.special_fee_name}</th>
+<td>${wish.special_fee_name}</td>
+</tr><tr>
 <td>${h.format_currency(wish.special_fee)}</td>
 </tr>
 % endif
 
 <tr>
-<th>合計</th>
-<td>${h.format_currency(wish.total_amount)} (税込)</td>
+<td>合計(税込)</td>
+</tr><tr>
+<td>${h.format_currency(wish.total_amount)}</td>
 </tr>
 
 </table>
@@ -105,7 +111,12 @@ ${shipping_address.address_2}
 </div>
 
 <dl class="selbtnList">
-<dt><input type="submit" value="チケットTOP"></dt><dd><input type="submit" value="他のチケットを購入"></dd>
+<dd><input type="submit" value="他のチケットを購入"></dd><p/>
+<dt>
+  <a href="/">
+    <input type="button" value="チケットTOP">
+  </a>
+</dt>
 </dl>
 
 

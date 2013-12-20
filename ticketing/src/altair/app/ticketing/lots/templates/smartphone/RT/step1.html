@@ -25,7 +25,7 @@
 <input type="hidden" name="performanceName-${i}" value="${performance_map[0][1]}" />
 %else:
 <dd>
-<select class="selStyle1 performance-name-select" name="performanceName-${i}" data-wishOrder="${i}">
+<select class="selStyle1 performance-name-select" name="performanceName-${i}" data-wishOrder="${i}" style="width: 100%">
 %for performance_name, _ in performance_map:
 % if selected_performance:
   % if (_[0]['name'] == selected_performance.name) and (i == 0):
@@ -46,7 +46,7 @@
 <div id="wish-cell-table-${i}">
 <dt>公演日・会場</dt>
 <dd>
-<select class="selStyle1 performance-date-select" name="performanceDate-${i}" data-wishOrder="${i}">
+<select class="selStyle1 performance-date-select" name="performanceDate-${i}" data-wishOrder="${i}" style="width: 100%">
 %for performance in performances:
 % if selected_performance:
   % if (performance.id == selected_performance.id) and (i == 0):
@@ -64,7 +64,7 @@
 
 <dt>席種</dt>
 <dd>
-<select name="stockType-${i}" data-wishOrder="${i}" class="stock-type-select">
+<select name="stockType-${i}" data-wishOrder="${i}" class="stock-type-select" style="width: 100%">
 %for rec in stock_types:
 <option value="${rec['id']}">${rec['name']}</option>
 %endfor
