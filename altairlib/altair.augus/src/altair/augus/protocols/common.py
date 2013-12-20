@@ -344,7 +344,7 @@ class RecordAttribute(object):
 
     @start_on.setter
     def start_on(self, value):
-        self._date = HourMinType.validate(value)
+        self._start_on = HourMinType.validate(value)
         
     @property
     def status(self):
@@ -456,7 +456,7 @@ class RecordBase(RecordAttribute):
     attributes = []
     
     def dump(self):
-        return [geattr(self, name)for name in self.attributes]
+        return [getattr(self, name)for name in self.attributes]
 
     def load(self, row):
         try:
