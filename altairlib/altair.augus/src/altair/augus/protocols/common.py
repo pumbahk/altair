@@ -464,8 +464,8 @@ class RecordBase(RecordAttribute):
                 data = row[ii]
                 setattr(self, name, data)
         except IndexError:
-            raise ProtocolFormantError('Illegal format: length={0} (need={1})'\
-                                       .format(len(row), len(self.attributes)))
+            raise ProtocolFormatError('Illegal format: length={0} (need={1})'\
+                                      .format(len(row), len(self.attributes)))
         
 class ProtocolBase(list):
     record = RecordBase
