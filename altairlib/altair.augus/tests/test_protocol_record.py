@@ -15,7 +15,7 @@ from altair.augus.protocols import ( # protocols
     AchievementResponse,
     ALL,
     )
-from augus.types import (
+from altair.augus.types import (
     PutbackType,
     SeatTypeClassif,
     Status,
