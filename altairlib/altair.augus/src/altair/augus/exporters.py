@@ -2,7 +2,6 @@
 import csv
 
 class AugusExporter(object):
-    
     @classmethod
     def export(cls, protocol, path):
         with open(path, 'rb') as fp:
