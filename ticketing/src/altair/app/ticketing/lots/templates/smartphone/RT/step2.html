@@ -207,14 +207,14 @@ ${self.error(form, 'city')}
 </p>
 <p>
 ${form['address_1'].label}<br/>
-${form['address_1'](style="width: 30em")}<br/>
+${form['address_1']}<br/>
 ${self.error(form, 'address_1')}
 (例: 日本橋x-xx-xx)
 </p>
 </p>
 <p>
 ${form['address_2'].label}<br/>
-${form['address_2'](style="width: 30em")}<br/>
+${form['address_2']}<br/>
 ${self.error(form, 'address_2')}
 (例: yyビルz階)
 </p>
@@ -242,7 +242,7 @@ ${self.error(form, 'sex')}
 <dt class="creditHl">メモ欄</dt>
 <dd>
 <p>
-${form['memo'](cols=50, rows=5)} ${self.error(form, 'error')}
+${form['memo'](style="width: 98%")} ${self.error(form, 'error')}
 </p>
 </dd>
 
