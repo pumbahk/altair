@@ -241,7 +241,7 @@ class EntryLotView(object):
             return HTTPFound(self.request.route_path(
                 'lots.entry.sp_step1', event_id=event.id, lot_id=lot.id))
 
-        form = self._create_form()
+        form = schemas.ClientForm(formdata=self.request.params)
 
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
@@ -302,7 +302,7 @@ class EntryLotView(object):
 
         if not validated:
 
-            query = dict()
+            query = dict(self.request.params)
             for cnt, wish in enumerate(wishes):
                 wish_order = wish['wished_products'][0]['wish_order']
                 performance_id = wishes[cnt]['performance_id']
