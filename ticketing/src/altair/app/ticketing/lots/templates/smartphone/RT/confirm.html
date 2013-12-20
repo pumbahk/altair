@@ -113,9 +113,10 @@ ${shipping_address['address_2']}
 </div>
 
 <dl class="selbtnList">
-<dt><input type="submit" value="確定する"></dt><dd><input type="submit" value="座席選択に戻る"></dd>
+<dt><input type="submit" value="確定する"></dt><p/>
+<dd><a href="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}"><input type="button" value="初めに戻る"></a></dd>
 </dl>
 
-<p>※座席選択に戻るボタンを押すと、ここまでのお申込みがキャンセルになります。</p>
+<p>※初めに戻るボタンを押すと、ここまでのお申込みがキャンセルになります。</p>
 </form>
 </div>

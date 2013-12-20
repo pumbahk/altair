@@ -1,6 +1,6 @@
 <%inherit file="${context['main_template'].uri}" />
 <div id="main">
-<form method="post" action="1.html">
+<form method="post" action="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}">
 
 <div class="subbox">
 <dl>
@@ -111,7 +111,12 @@ ${shipping_address.address_2}
 </div>
 
 <dl class="selbtnList">
-<dt><input type="submit" value="チケットTOP"></dt><dd><input type="submit" value="他のチケットを購入"></dd>
+<dd><input type="submit" value="他のチケットを購入"></dd><p/>
+<dt>
+  <a href="/">
+    <input type="button" value="チケットTOP">
+  </a>
+</dt>
 </dl>
 
 
