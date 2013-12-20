@@ -1,3 +1,4 @@
+import transaction
 import logging
 logger = logging.getLogger(__name__)
 
@@ -28,3 +29,4 @@ def cancel_on_delivery_error(event):
     
     DBSession = sqlahelper.get_session()
     DBSession.expunge_all()
+    transaction.commit()
