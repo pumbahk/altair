@@ -178,19 +178,18 @@ class MultiCheckoutPlugin(object):
                     back_url=back_url(request),
                     error_code=checkout_sales_result.CmnErrorCd
                     )
-        except MultiCheckoutSettlementFailure as e:
-            # XXX: これは本当は呼び出し元でやってほしい
-            logger.info(u'finish_secure: 決済エラー order_no = %s, error_code = %s' % (e.order_no, e.error_code))
-            request.session.flash(get_error_message(request, e.error_code))
-            raise
-        except Exception:
-            # MultiCheckoutSettlementFailure 以外の例外 (通信エラーなど)
-            logger.exception('multicheckout plugin')
-            raise MultiCheckoutSettlementFailure(
-                message='uncaught exception',
-                order_no=order_no,
-                back_url=back_url(request))
-        finally:
+        except Exception as e:
+            if isinstance(e, MultiCheckoutSettlementFailure):
+                # XXX: これは本当は呼び出し元でやってほしい
+                logger.info(u'finish_secure: 決済エラー order_no = %s, error_code = %s' % (e.order_no, e.error_code))
+                request.session.flash(get_error_message(request, e.error_code))
+            else:
+                # MultiCheckoutSettlementFailure 以外の例外 (通信エラーなど)
+                logger.exception('multicheckout plugin')
+                e = MultiCheckoutSettlementFailure(
+                    message='uncaught exception',
+                    order_no=order_no,
+                    back_url=back_url(request))
             # checkout_auth_cancel が失敗する可能性があるので、try-finally必要
             try:
                 if cart.has_different_amount:
@@ -200,6 +199,7 @@ class MultiCheckoutPlugin(object):
                     multicheckout_api.checkout_auth_cancel(request, get_order_no(request, cart))
             finally:
                 transaction.commit()
+            raise e
 
         ahead_com_code = checkout_sales_result.AheadComCd
 
