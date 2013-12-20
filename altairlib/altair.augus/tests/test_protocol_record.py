@@ -16,6 +16,11 @@ from altair.augus.protocols import ( # protocols
     ALL,
     )
 from altair.augus.types import (
+    NumberType,
+    StringType,
+    DateType,
+    HourMinType,
+    DateTimeType,
     PutbackType,
     SeatTypeClassif,
     Status,
@@ -23,7 +28,6 @@ from altair.augus.types import (
     AchievementStatus,
     )
 
-DATE_TYPE, HOURMIN_TYPE, DATETIME_TYPE = range(3)
 
 protocol_attribute_type = {
     VenueSyncRequest: (
@@ -59,9 +63,9 @@ protocol_attribute_type = {
         ('venue_name', str),
         ('event_name', str),
         ('performance_name', str),
-        ('date', DATE_TYPE),
-        ('open_on', HOURMIN_TYPE),
-        ('start_on', HOURMIN_TYPE),
+        ('date', DateType),
+        ('open_on', HourMinType),
+        ('start_on', HourMinType),
         ('venue_version', int),
     ),
     TicketSyncRequest: (
@@ -81,8 +85,8 @@ protocol_attribute_type = {
         ('distribution_code', int),
         ('seat_type_code', int),
         ('unit_value_code', int),
-        ('date', DATE_TYPE),
-        ('start_on', HOURMIN_TYPE),
+        ('date', DateType),
+        ('start_on', HourMinType),
         ('block', int),
         ('coordy', int),
         ('coordx', int),
@@ -106,8 +110,8 @@ protocol_attribute_type = {
         ('distribution_code', int),
         ('seat_type_code', int),
         ('unit_value_code', int),
-        ('date', DATE_TYPE),
-        ('start_on', HOURMIN_TYPE),
+        ('date', DateType),
+        ('start_on', HourMinType),
         ('block', int),
         ('coordy', int),
         ('coordx', int),
@@ -126,8 +130,8 @@ protocol_attribute_type = {
         ('putback_code', int),
         ('seat_type_code', int),
         ('unit_value_code', int),
-        ('date', DATE_TYPE),
-        ('start_on', HOURMIN_TYPE),
+        ('date', DateType),
+        ('start_on', HourMinType),
         ('block', int),
         ('coordy', int),
         ('coordx', int),
@@ -164,8 +168,8 @@ protocol_attribute_type = {
     AchievementRequest: (
         ('event_code', int),
         ('performance_code', int),
-        ('date', DATE_TYPE),
-        ('start_on', HOURMIN_TYPE),
+        ('date', DateType),
+        ('start_on', HourMinType),
         ('event_name', str),
         ('performance_name', str),
         ('venue_name', str),
@@ -177,8 +181,8 @@ protocol_attribute_type = {
         ('distribution_code', int),
         ('seat_type_code', int),
         ('unit_value_code', int),
-        ('date', DATE_TYPE),
-        ('start_on', HOURMIN_TYPE),
+        ('date', DateType),
+        ('start_on', HourMinType),
         ('reservation_number', str),
         ('block', int),
         ('coordy', int),
@@ -191,7 +195,7 @@ protocol_attribute_type = {
         ('seat_type_classif', SeatTypeClassif),
         ('seat_count', int),
         ('unit_value', int),
-        ('processed_at', DATETIME_TYPE),
+        ('processed_at', DateTimeType),
         ('achievement_status', AchievementStatus),
     ),
 }
@@ -288,17 +292,33 @@ class ProtocolRecordAttributeTypeTest(TestCase):
                                  'Mismatch: {} != {} ({})'.format(
                                      repr(value), repr(rc), name))
 
+    def _testing_datetime_it(self, typ):
+        """The datetime type test success case
+        """
+        for protocol, attr in self._generate_protocol_attribute(typ):
+            record = protocol.record
+            name = '{}.{}'.format(record.__name__, attr)
+            rec = record()
+
+            value = typ.now()
+            setattr(rec, attr, value)
+            rc = getattr(rec, attr)
+            self.assertEqual(value, rc,
+                             'Mismatch: {} != {} ({})'.format(
+                                 repr(value), repr(rc), name))
+            
         
+    def test_date_type(self):
+        self._testing_datetime_it(DateType)
+
+    def test_hourmin_type(self):
+        self._testing_datetime_it(HourMinType)        
+
+    def test_date_time_type(self):
+        self._testing_datetime_it(DateTimeType)
+
     def test_status_type(self):
         self._testing_type_it(Status)
-
-    @skip
-    def test_date_type(self):
-        self._testing_type_it(Status)
-
-    @skip
-    def test_hourmin_type(self):
-        self._testing_type_it(Status)        
 
     def test_seat_type_classif_type(self):
         self._testing_type_it(SeatTypeClassif)        

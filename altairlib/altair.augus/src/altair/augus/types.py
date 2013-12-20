@@ -1,5 +1,6 @@
 #-*- coding: utf-8 -*-
 import time
+import datetime
 from enum import Enum
 
 class _ValueType(object):
@@ -32,6 +33,10 @@ class _TimeType(_ValueType):
     @classmethod
     def get(cls, value):
         return time.strptime(value, cls.FORMAT)
+
+    @classmethod
+    def now(cls):
+        return time.strftime(cls.FORMAT)
 
 class NumberType(_ValueType):
     @classmethod
