@@ -18,6 +18,7 @@ requires = ['enum34',
             ]
 test_requires = ['nose',
                  'coverage',
+                 'pit'
                   ]
 
 setup(
