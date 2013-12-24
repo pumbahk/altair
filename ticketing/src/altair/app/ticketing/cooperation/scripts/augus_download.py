@@ -6,30 +6,19 @@ import urlparse
 from altair.augus.transporters import FTPTransporter
 from altair.augus.parsers import AugusParser
 
-def get_settings(conf=None):
-    if conf:
-        raise NotImplementedError()
-    else:
-        from pit import Pit
-        return Pit.get('augus_ftp',
-                       {'require': {'url': '',
-                                    'username': '',
-                                    'password': '',
-                                    'local': '',
-                                    }})
-
-def mkdir_p(path):
-    if not os.path.isdir(path):
-        os.makedirs(path)
+from .utils import (
+    get_argument_parser,
+    get_settings,
+    mkdir_p,
+    )
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--conf', default=None)
+    parser = get_argument_parser()
     args = parser.parse_args()
     settings = get_settings(args.conf)
 
-    local = settings['local']
-    mkdir_p(local)
+    staging = settings['staging']
+    mkdir_p(staging)
 
     url = urlparse.urlparse(settings['url'])
     transporter = FTPTransporter(hostname=url.netloc,
@@ -39,7 +28,7 @@ def main():
     transporter.chdir(url.path)
     for name in transporter.listdir():
         if AugusParser.is_protocol(name):
-            transporter.get(name, os.path.join(local, name), remove=True)
+            transporter.get(name, os.path.join(staging, name), remove=True)
 
 if __name__ == '__main__':
     main()
