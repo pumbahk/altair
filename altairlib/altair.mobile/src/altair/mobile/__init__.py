@@ -33,4 +33,8 @@ def mobile_view_config(**kwargs):
     return view_config(request_type=__name__ + '.interfaces.IMobileRequest', 
                        **kwargs)    
 
+def smartphone_view_config(**kwargs):
+    return view_config(request_type=__name__ + '.interfaces.ISmartphoneRequest',
+                       **kwargs)
+
 PC_ACCESS_COOKIE_NAME = "_pcaccess"

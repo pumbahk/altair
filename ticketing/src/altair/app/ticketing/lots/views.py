@@ -9,7 +9,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from sqlalchemy.orm.exc import NoResultFound
 
 from wtforms.validators import ValidationError
-from altair.mobile import mobile_view_config
+from altair.mobile import mobile_view_config, smartphone_view_config
 from altair.pyramid_tz.api import get_timezone
 
 from altair.app.ticketing.models import DBSession
@@ -213,7 +213,7 @@ class EntryLotView(object):
 
     @view_config(request_method="POST", custom_predicates=(is_nogizaka, ))
     def nogizaka_auth(self):
-        KEYWORD = '1AkdIcUy923eaCak7Q64kDu9ydjGe8S3'
+        KEYWORD = 'thYsXctE2q8UbnZKCqs7QZjBdcgpVq3a'
         keyword = self.request.POST.get('keyword', None)
         if keyword or self.request.session.get('lots.passed.keyword') != KEYWORD:
             if keyword != KEYWORD:
@@ -329,6 +329,7 @@ class ConfirmLotEntryView(object):
 
     @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/confirm.html"))
     @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/confirm.html"))
+    @smartphone_view_config(request_method="GET", renderer=selectable_renderer("smartphone/%(membership)s/confirm.html"))
     def get(self):
         # セッションから表示
         entry = self.request.session.get('lots.entry')
@@ -449,6 +450,7 @@ class CompletionLotEntryView(object):
 
     @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/completion.html"))
     @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/completion.html"))
+    @smartphone_view_config(request_method="GET", renderer=selectable_renderer("smartphone/%(membership)s/completion.html"))
     def get(self):
         """ 完了画面 """
         if 'lots.entry_no' not in self.request.session:
