@@ -183,3 +183,6 @@ class PaymentError(ContextualCartException):
         cause = kwargs.pop('cause')
         super(PaymentError, self).__init__(*args, **kwargs)
         self.cause = cause
+
+class CompletionPageNotRenderered(CartException):
+    pass

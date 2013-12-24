@@ -54,7 +54,6 @@ class MobileIndexView(IndexViewMixin):
     @view_config(route_name='cart.index')
     def event_based_landing_page(self):
         logger.debug('mobile index')
-        self.check_redirect(mobile=True)
 
         try:
             performance_id = long(self.request.params.get('pid') or self.request.params.get('performance'))
@@ -121,7 +120,6 @@ class MobileIndexView(IndexViewMixin):
     @view_config(route_name='cart.index2')
     def performance_based_landing_page(self):
         logger.debug('mobile index')
-        self.check_redirect(mobile=True)
 
         try:
             sales_segment = self.context.sales_segment

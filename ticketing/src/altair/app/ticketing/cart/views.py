@@ -39,6 +39,7 @@ from altair.app.ticketing.users.api import (
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
 from altair.sqlahelper import get_db_session
+from altair.app.ticketing.temp_store import TemporaryStoreError
 
 from . import api
 from . import helpers as h
@@ -66,6 +67,7 @@ from .exceptions import (
     ProductQuantityOutOfBoundsError,
     PerStockTypeQuantityOutOfBoundsError,
     PerStockTypeProductQuantityOutOfBoundsError,
+    CompletionPageNotRenderered,
 )
 from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource
 from .limiting import LimiterDecorators
@@ -149,42 +151,13 @@ class IndexView(IndexViewMixin):
     def __init__(self, request):
         self.request = request
         self.context = request.context
-
         self.prepare()
-
-    def get_frontend_drawing_urls(self, venue):
-        sales_segment = self.request.context.sales_segment
-        retval = {}
-        drawings = get_venue_site_adapter(self.request, venue.site).get_frontend_drawings()
-        if drawings:
-            for name, drawing in drawings.items():
-                if IS3KeyProvider.providedBy(drawing):
-                    key = drawing.get_key()
-                    headers = {}
-                    if re.match('^.+\.(svgz|gz)$', drawing.path):
-                        headers['response-content-encoding'] = 'gzip'
-                    cache_minutes = 30
-                    expire_date = datetime.now() + timedelta(minutes=cache_minutes)
-                    expire_date = expire_date.replace(minute=(expire_date.minute/cache_minutes*cache_minutes), second=0)
-                    expire_epoch = time.mktime(expire_date.timetuple())
-                    url = key.generate_url(expires_in=expire_epoch, expires_in_absolute=True, response_headers=headers)
-                else:
-                    url = self.request.route_url(
-                        'cart.venue_drawing',
-                        event_id=self.request.context.event.id,
-                        performance_id=sales_segment.performance.id,
-                        venue_id=sales_segment.performance.venue.id,
-                        part=name)
-                retval[name] = url
-        return retval
 
     @view_config(decorator=with_jquery_tools, route_name='cart.index',
                   renderer=selectable_renderer("%(membership)s/pc/index.html"), xhr=False, permission="buy")
     @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
                  custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/index.html"), xhr=False, permission="buy")
     def event_based_landing_page(self):
-        self.check_redirect(mobile=False)
-
         # 会場
         try:
             performance_id = long(self.request.params.get('pid') or self.request.params.get('performance'))
@@ -255,8 +228,6 @@ class IndexView(IndexViewMixin):
     @view_config(decorator=with_jquery_tools, route_name='cart.index2',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
                  custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/index.html"), xhr=False, permission="buy")
     def performance_based_landing_page(self):
-        self.check_redirect(mobile=False)
-
         sales_segments = self.context.available_sales_segments
         selector_name = self.context.event.performance_selector
 
@@ -291,6 +262,38 @@ class IndexView(IndexViewMixin):
             second_selection_label=performance_selector.second_label,
             preferred_performance=None
             )
+
+
+class IndexAjaxView(object):
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    def get_frontend_drawing_urls(self, venue):
+        sales_segment = self.request.context.sales_segment
+        retval = {}
+        drawings = get_venue_site_adapter(self.request, venue.site).get_frontend_drawings()
+        if drawings:
+            for name, drawing in drawings.items():
+                if IS3KeyProvider.providedBy(drawing):
+                    key = drawing.get_key()
+                    headers = {}
+                    if re.match('^.+\.(svgz|gz)$', drawing.path):
+                        headers['response-content-encoding'] = 'gzip'
+                    cache_minutes = 30
+                    expire_date = datetime.now() + timedelta(minutes=cache_minutes)
+                    expire_date = expire_date.replace(minute=(expire_date.minute/cache_minutes*cache_minutes), second=0)
+                    expire_epoch = time.mktime(expire_date.timetuple())
+                    url = key.generate_url(expires_in=expire_epoch, expires_in_absolute=True, response_headers=headers)
+                else:
+                    url = self.request.route_url(
+                        'cart.venue_drawing',
+                        event_id=self.request.context.event.id,
+                        performance_id=sales_segment.performance.id,
+                        venue_id=sales_segment.performance.venue.id,
+                        part=name)
+                retval[name] = url
+        return retval
 
     @view_config(route_name='cart.seat_types2', renderer="json")
     def get_seat_types(self):
@@ -507,6 +510,7 @@ class IndexView(IndexViewMixin):
         if resp.content_encoding is None:
             resp.encode_content()
         return resp
+
 
 @view_defaults(decorator=with_jquery)
 class ReserveView(object):
@@ -1008,20 +1012,34 @@ class CompleteView(object):
     @view_config(route_name='payment.finish', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/completion.html"))
     @view_config(route_name='payment.finish', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
     @view_config(route_name='payment.finish', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/completion.html"), custom_predicates=(is_smartphone_organization, ))
-    def __call__(self):
-        form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
-        if not form.validate():
-            logger.info('invalid csrf token: %s' % form.errors)
-            raise InvalidCSRFTokenException
+    def complete_post(self):
+        try:
+            form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
+            if not form.validate():
+                logger.info('invalid csrf token: %s' % form.errors)
+                raise InvalidCSRFTokenException
 
-        # セッションからCSRFトークンを削除して再利用不可にしておく
-        if 'csrf' in self.request.session:
-            del self.request.session['csrf']
-            self.request.session.persist()
+            # セッションからCSRFトークンを削除して再利用不可にしておく
+            if 'csrf' in self.request.session:
+                del self.request.session['csrf']
+                self.request.session.persist()
 
-        cart = self.request.context.cart
-        if not cart.is_valid():
-            raise NoCartError()
+            cart = self.request.context.cart
+            if not cart.is_valid():
+                raise NoCartError()
+        except (InvalidCSRFTokenException, NoCartError):
+            # 後で再度raiseするときに、現在の例外の状態をtry-exceptで
+            # 撹乱されたくないので、副作用を呼び出しフレームの中に閉じ込める
+            def _():
+                try:
+                    return self.complete_get()
+                except:
+                    return None
+            retval = _()
+            if retval is not None:
+                return retval
+            else:
+                raise
 
         user = get_or_create_user(self.context.authenticated_user())
         if not self.context.check_order_limit(cart.sales_segment, user, None):
@@ -1030,6 +1048,7 @@ class CompleteView(object):
         payment = Payment(cart, self.request)
         order = payment.call_payment()
         order_id = order.id
+        order_no = order.order_no
 
         notify_order_completed(self.request, order)
 
@@ -1037,7 +1056,6 @@ class CompleteView(object):
         transaction.commit()
 
         cart = api.get_cart(self.request) # これは get_cart でよい
-        order = c_models.Order.query.filter_by(id=order_id).one() # transaction をコミットしたので、再度読み直し
 
         # メール購読
         user = get_or_create_user(self.context.authenticated_user()) # これも読み直し
@@ -1048,8 +1066,29 @@ class CompleteView(object):
         api.remove_cart(self.request)
         api.logout(self.request)
 
-        return dict(order=order)
+        self.request.response.expires = datetime.now() + timedelta(seconds=3600)
+        api.get_temporary_store(self.request).set(self.request, order_no)
+        if IMobileRequest.providedBy(self.request):
+            # モバイルの場合はHTTPリダイレクトの際のSet-Cookieに対応していないと
+            # 思われるので、直接ページをレンダリングする
+            # transaction をコミットしたので、再度読み直し
+            order = c_models.Order.query.filter_by(id=order_id).one()
+            return dict(order=order)
+        else:
+            # PC/スマートフォンでは、HTTPリダイレクト時にクッキーをセット
+            return HTTPFound(self.request.current_route_path(), headers=self.request.response.headers)
 
+    @view_config(route_name='payment.finish', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/completion.html"))
+    @view_config(route_name='payment.finish', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
+    @view_config(route_name='payment.finish', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/completion.html"), custom_predicates=(is_smartphone_organization, ))
+    def complete_get(self):
+        try:
+            order_no = api.get_temporary_store(self.request).get(self.request)
+        except:
+            logger.exception('oops')
+            raise CompletionPageNotRenderered()
+        order = api.get_order_for_read_by_order_no(self.request, order_no)
+        return dict(order=order)
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class InvalidMemberGroupView(object):

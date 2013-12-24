@@ -8,6 +8,7 @@ from sqlalchemy.sql.expression import desc, asc
 from sqlalchemy.orm import joinedload, aliased
 from altair.app.ticketing.core import models as c_models
 from altair.sqlahelper import get_db_session
+from altair.mobile.interfaces import IMobileRequest
 from . import helpers as h
 from collections import OrderedDict
 from .exceptions import (
@@ -23,6 +24,11 @@ logger = logging.getLogger(__name__)
 
 class IndexViewMixin(object):
     def prepare(self):
+        self._fetch_event_info()
+        self._clear_temporary_store()
+        self._check_redirect()
+
+    def _fetch_event_info(self):
         if self.context.event is None:
             raise NoEventError()
 
@@ -30,8 +36,13 @@ class IndexViewMixin(object):
         self.event_extra_info = get_event_info_from_cms(self.request, self.context.event.id)
         logger.info(self.event_extra_info)
 
-    def check_redirect(self, mobile):
-        if isinstance(self.request, PerformanceOrientedTicketingCartResource):
+    def _clear_temporary_store(self):
+        from .api import get_temporary_store
+        get_temporary_store(self.request).clear(self.request)
+
+    def _check_redirect(self):
+        mobile = IMobileRequest.providedBy(self.request)
+        if isinstance(self.request.context, PerformanceOrientedTicketingCartResource):
             performance_id = self.request.context.performance.id
         else:
             performance_id = self.request.params.get('pid') or self.request.params.get('performance')

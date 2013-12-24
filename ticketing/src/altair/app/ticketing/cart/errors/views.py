@@ -20,6 +20,7 @@ from ..exceptions import (
     PaymentMethodEmptyError,
     TooManyCartsCreated,
     PaymentError,
+    CompletionPageNotRenderered,
 )
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -77,6 +78,11 @@ def csrf(request):
     api.logout(request)
     return {}
 
+@mobile_view_config(context=CompletionPageNotRenderered, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/errors/completion.html'))
+@view_config(context=CompletionPageNotRenderered, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/errors/completion.html'))
+def completion_page_not_rendered(request):
+    request.response.status = 404
+    return {}
 
 def _mobile(**kwargs):
     return mobile_view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'), **kwargs)
