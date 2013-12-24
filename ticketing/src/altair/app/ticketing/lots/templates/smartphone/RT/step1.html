@@ -59,6 +59,7 @@
 % endif
 %endfor
 </select>
+<div class="all_performance_name-${i}"></div>
 </dd>
 
 
@@ -223,6 +224,10 @@ var selected_performance_id = 0;
             }
         }
     }
+    function refreshAllPerformanceName(wishOrder, allPerformanceName) {
+        $('.all_performance_name-' + wishOrder).empty();
+        $('.all_performance_name-' + wishOrder).html(allPerformanceName);
+    }
 
     $(".performance-name-select").change(function() {
         var performanceNameSelect = $(this);
@@ -232,6 +237,12 @@ var selected_performance_id = 0;
         refreshDateSelection(performanceNameSelect, dateSelect, 0);
         refreshStockTypeSelection(dateSelect, stockTypeSelect);
         refreshProducts(dateSelect, stockTypeSelect);
+        refreshAllPerformanceName(wishOrder, $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"] option:selected').text());
+    });
+    $(".performance-date-select").change(function() {
+        var performanceNameSelect = $(this);
+        var wishOrder = performanceNameSelect.data('wishorder');
+        refreshAllPerformanceName(wishOrder, $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"] option:selected').text());
     });
     $wishForm.find(".performance-date-select").change(function() {
         var dateSelect = $(this);
@@ -253,6 +264,7 @@ var selected_performance_id = 0;
             var wishOrder = performanceNameSelect.data('wishorder');
             var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
             refreshDateSelection(performanceNameSelect, dateSelect, selected_performance_id);
+            refreshAllPerformanceName(wishOrder, $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"] option:selected').text());
         });
         $wishForm.find("select.performance-date-select").each(function(_, n) {
             var dateSelect = $(n);
