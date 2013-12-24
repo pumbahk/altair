@@ -8,7 +8,14 @@ class AugusParser(object):
     protocols = ALL
 
     @classmethod
-    def _get_protocol(cls, path):
+    def is_protocol(cls, path):
+        try:
+            return cls.get_protocol(path)
+        except ProtocolNotFound:
+            return False
+
+    @classmethod
+    def get_protocol(cls, path):
         name = os.path.basename(path)
         for protocol in cls.protocols:
             if protocol.match_name(name):
@@ -23,7 +30,7 @@ class AugusParser(object):
     @classmethod
     def parsefp(cls, fp, protocol=None):
         if protocol is None:
-            protocol = cls._get_protocol(fp.name)
+            protocol = cls.get_protocol(fp.name)
         reader = csv.reader(fp)
         return cls.parserows(reader, protocol)
                 
