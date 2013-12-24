@@ -29,6 +29,55 @@ from .augus import (
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class CooperationView(BaseView):
+    def _stub(self):
+        event_id = long(self.request.matchdict['event_id']) # raise KeyError, ValueError, TypeError
+        event = Event.get(event_id)
+        url = self.request.route_path('cooperation.api.performances', event_id=event.id)        
+        if event:
+            pairs = []
+            for performance in event.performances:
+                external_performance = AugusPerformance.get(performance.id)
+                pairs.append((performance, external_performance))
+            return {'event': event,
+                    'performances': event.performances,
+                    'save_url': url,
+                    }
+        else:
+            raise HTTPNotFound('event_id: {0}'.format(event_id))
+    
+    # distribution
+    @view_config(route_name='cooperation.distribution', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/distribution.html')
+    def distribution_get(self):
+        return self._stub()
+
+    @view_config(route_name='cooperation.distribution', request_method='POST',
+                 renderer='altair.app.ticketing:templates/cooperation/distribution.html')
+    def distribution_post(self):
+        return self._stub()
+
+    # putback
+    @view_config(route_name='cooperation.putback', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/putback.html')
+    def putback_get(self):
+        return self._stub()
+
+    @view_config(route_name='cooperation.putback', request_method='POST',
+                 renderer='altair.app.ticketing:templates/cooperation/putback.html')
+    def putback_post(self):
+        return self._stub()
+
+    # achievement
+    @view_config(route_name='cooperation.achievement', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/achievement.html')
+    def achievement_get(self):
+        return self._stub()
+
+    @view_config(route_name='cooperation.putback', request_method='POST',
+                 renderer='altair.app.ticketing:templates/cooperation/achievement.html')
+    def achievement_post(self):
+        return self._stub()
+    
     # events
     @view_config(route_name='cooperation.events', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/events.html')

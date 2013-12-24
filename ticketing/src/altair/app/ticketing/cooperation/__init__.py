@@ -12,6 +12,10 @@ ROUTE_URL_RESOURCE = {
     'cooperation.show': ('/show/{venue_id}', VenueAdminResource),
     'cooperation.upload': ('/upload/{venue_id}', CooperationResource),
     'cooperation.download': ('/download/{venue_id}', CooperationResource),
+    # 
+    'cooperation.distribution': ('/event/{event_id}/distribution', None),
+    'cooperation.putback': ('/event/{event_id}/putback', None),
+    'cooperation.achievement': ('/event/{event_id}/achievement', None),
     }
 
 
