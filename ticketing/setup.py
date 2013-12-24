@@ -196,7 +196,7 @@ setup(name='altair.app.ticketing',
       augus_download=altair.app.ticketing.cooperation.scripts.augus_download:main
       augus_upload=altair.app.ticketing.cooperation.scripts.augus_upload:main
       augus_performance=altair.app.ticketing.cooperation.scripts.augus_performance:main
-      augus_distribution=altair.app.ticketing.cooperation.scripts.augus_distributio:main
+      augus_distribution=altair.app.ticketing.cooperation.scripts.augus_distribution:main
       augus_putback=altair.app.ticketing.cooperation.scripts.augus_putback:main
       augus_achievement=altair.app.ticketing.cooperation.scripts.augus_achievement:main
       """,
