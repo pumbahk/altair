@@ -14,7 +14,7 @@ namespace QR
 		public ICase Case { get; set; }
 		//		public FlowState State { get; set; }
 		public FlowManager Manager { get; set; }
-		
+
 		public virtual bool Verify ()
 		{
 			return Case.Verify ();
@@ -26,13 +26,16 @@ namespace QR
 			Case = _case;
 		}
 
-		public IFlowDefinition GetFlowDefinition(){
+		public IFlowDefinition GetFlowDefinition ()
+		{
 			return Manager.FlowDefinition;
 		}
 
 		public ICase NextCase ()
 		{
-			Case.Configure (Manager.GetInternalEvent()); //ここでUIから情報を取得できるようにする必要がある。
+			//TODO:直す
+			//FIXME:これやばい。なぜかNullReferenceExceptionが出る
+			//Case.Configure (Manager.GetInternalEvent ()); //ここでUIから情報を取得できるようにする必要がある。
 			if (Verify ()) {
 				return Case.OnSuccess (this);
 			} else {
@@ -42,7 +45,7 @@ namespace QR
 
 		public virtual IFlow Forward ()
 		{
-			var nextCase = NextCase();
+			var nextCase = NextCase ();
 			return new Flow (Manager, nextCase);
 		}
 

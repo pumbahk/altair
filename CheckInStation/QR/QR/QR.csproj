@@ -81,6 +81,16 @@
     <Compile Include="auth\Authentication.cs" />
     <Compile Include="auth\FakeAuthentication.cs" />
     <Compile Include="auth\IAuthentication.cs" />
+    <Compile Include="web\IHTTPWrapper.cs" />
+    <Compile Include="web\IUrlBuilder.cs" />
+    <Compile Include="web\TrasparentUrlBuilder.cs" />
+    <Compile Include="web\FakeHttpContent.cs" />
+    <Compile Include="web\FakeHttpMessageHandler.cs" />
+    <Compile Include="web\HttpWrapperFactory.cs" />
+    <Compile Include="web\IHttpWrapperFactory.cs" />
+    <Compile Include="web\FakeHttpWrapperFactory.cs" />
+    <Compile Include="web\tests\FakeGetUrlTests.cs" />
+    <Compile Include="web\HttpWrapper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -90,5 +100,7 @@
     <Folder Include="tests\flow\" />
     <Folder Include="auth\" />
     <Folder Include="events\" />
+    <Folder Include="web\" />
+    <Folder Include="web\tests\" />
   </ItemGroup>
 </Project>
