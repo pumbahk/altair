@@ -1088,6 +1088,8 @@ class CompleteView(object):
             logger.exception('oops')
             raise CompletionPageNotRenderered()
         order = api.get_order_for_read_by_order_no(self.request, order_no)
+        self.request.response.expires = datetime.utcnow() + timedelta(seconds=3600) # XXX
+        self.request.response.cache_control = 'max-age=3600'
         return dict(order=order)
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
