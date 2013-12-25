@@ -11,7 +11,7 @@ namespace QR
 			Resource = resource;
 		}
 
-		public void Configure()
+		public virtual void Configure()
 		{
 		}
 

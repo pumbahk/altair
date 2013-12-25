@@ -10,7 +10,7 @@ namespace QR
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			throw new NotImplementedException ();
+			return new CaseQRPrintFinish (Resource);
 		}
 	}
 }

@@ -55,11 +55,21 @@
     <Compile Include="flow\CaseQRPrintForAll.cs" />
     <Compile Include="flow\CaseQRPrintFinish.cs" />
     <Compile Include="flow\Flow.cs" />
+    <Compile Include="models\QRCodeVerifier.cs" />
+    <Compile Include="models\IVerifier.cs" />
+    <Compile Include="models\QRCodeLoader.cs" />
+    <Compile Include="models\IDataLoader.cs" />
+    <Compile Include="models\FakeDataLoader.cs" />
+    <Compile Include="models\FakeVerifier.cs" />
+    <Compile Include="tests\flow\CaseTests.cs" />
+    <Compile Include="tests\flow\FlowTests.cs" />
+    <Compile Include="models\FakeResource.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="models\" />
     <Folder Include="tests\" />
     <Folder Include="flow\" />
+    <Folder Include="tests\flow\" />
   </ItemGroup>
 </Project>

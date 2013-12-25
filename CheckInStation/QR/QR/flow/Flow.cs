@@ -12,22 +12,34 @@ namespace QR
 	public class Flow : IFlow
 	{
 		public ICase Case { get; set; }
-
-		public FlowState State { get; set; }
-
+		//		public FlowState State { get; set; }
 		public FlowManager Manager { get; set; }
 
-		public IFlow Forward ()
+		public virtual bool Verify ()
 		{
-			ICase nextCase;
+			return Case.Verify ();
+		}
 
+		public Flow (FlowManager manager, ICase _case)
+		{
+			Manager = Manager;
+			Case = _case;
+		}
+
+		public ICase NextCase ()
+		{
 			Case.Configure ();
-			if (Case.Verify ()) {
-				nextCase = Case.OnSuccess (this);
+			if (Verify ()) {
+				return Case.OnSuccess (this);
 			} else {
-				nextCase = Case.OnFailure (this);
+				return Case.OnFailure (this);
 			}
-			return new Flow (){ Case = nextCase };
+		}
+
+		public virtual IFlow Forward ()
+		{
+			var nextCase = NextCase();
+			return new Flow (Manager, nextCase);
 		}
 
 		public IFlow Backward ()
