@@ -6,6 +6,8 @@ namespace QR
 	{
 		ICase StartPointCase(ICase case_);
 		ICase StartPointCase(IResource resource);
+
+		ICase AfterAuthorizationCase(IResource resource);
 	}
 }
 

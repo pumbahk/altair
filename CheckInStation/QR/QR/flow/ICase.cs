@@ -9,7 +9,7 @@ namespace QR
 	public interface ICase
 	{
 		IResource Resource{ get; set; }
-		void Configure();
+		void Configure(IInternalEvent ev);
 		ICase OnSuccess (IFlow flow);
 		ICase OnFailure (IFlow flow);
 		bool Verify();

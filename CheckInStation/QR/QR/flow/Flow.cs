@@ -32,7 +32,7 @@ namespace QR
 
 		public ICase NextCase ()
 		{
-			Case.Configure ();
+			Case.Configure (Manager.GetInternalEvent()); //ここでUIから情報を取得できるようにする必要がある。
 			if (Verify ()) {
 				return Case.OnSuccess (this);
 			} else {

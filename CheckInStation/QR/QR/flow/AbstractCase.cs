@@ -2,7 +2,7 @@ using System;
 
 namespace QR
 {
-	public abstract class AbstractCase :ICase
+	public abstract class AbstractCase
 	{
 		public virtual IResource Resource{ get; set; }
 
@@ -11,8 +11,13 @@ namespace QR
 			Resource = resource;
 		}
 
-		public virtual void Configure ()
+		public virtual void Configure (IInternalEvent ev)
 		{
+		}
+
+		public virtual void Configure()
+		{
+			Configure (new EmptyEvent ());
 		}
 
 		public virtual bool Verify ()

@@ -36,6 +36,8 @@
     <Reference Include="nunit.framework" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -69,6 +71,16 @@
     </Compile>
     <Compile Include="flow\IFlowDefinition.cs" />
     <Compile Include="flow\FlowDefinitionDefault.cs" />
+    <Compile Include="models\AuthInfo.cs" />
+    <Compile Include="flow\CaseAuthInput.cs" />
+    <Compile Include="flow\CaseEventSelect.cs" />
+    <Compile Include="events\IInternalEvent.cs" />
+    <Compile Include="RequestBroker.cs" />
+    <Compile Include="events\EmptyEvent.cs" />
+    <Compile Include="events\AuthenticationEvent.cs" />
+    <Compile Include="auth\Authentication.cs" />
+    <Compile Include="auth\FakeAuthentication.cs" />
+    <Compile Include="auth\IAuthentication.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -76,5 +88,7 @@
     <Folder Include="tests\" />
     <Folder Include="flow\" />
     <Folder Include="tests\flow\" />
+    <Folder Include="auth\" />
+    <Folder Include="events\" />
   </ItemGroup>
 </Project>

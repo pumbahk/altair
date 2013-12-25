@@ -9,6 +9,8 @@ namespace QR
 		//TODO:rename
 		public IFlowDefinition FlowDefinition{ get; set; }
 
+		public RequestBroker RequestBroker{ get; set; }
+
 		public FlowManager (IFlowDefinition def)
 		{
 			FlowDefinition = def;
@@ -19,6 +21,14 @@ namespace QR
 		{
 			FlowDefinition = new FlowDefinitionDefault ();
 			undoStack = new Stack<IFlow> ();
+		}
+
+		public IInternalEvent GetInternalEvent ()
+		{
+			if (this.RequestBroker == null) {
+				throw new InvalidOperationException ("forget to bind broker");
+			}
+			return this.RequestBroker.GetInternalEvent ();	
 		}
 
 		public bool Forward (IFlow cmd)

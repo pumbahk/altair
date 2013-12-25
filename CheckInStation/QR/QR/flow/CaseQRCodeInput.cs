@@ -21,7 +21,7 @@ namespace QR
 			this.VerifyStatus = false;
 		}
 
-		public override void Configure ()
+		public override void Configure (IInternalEvent ev)
 		{
 			this.QRCodeVerifier = this.Resource.QRCodeVerifier;
 			this.QRCodeLoader = this.Resource.QRCodeLoader;

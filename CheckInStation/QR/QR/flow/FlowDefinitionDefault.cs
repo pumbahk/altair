@@ -13,6 +13,11 @@ namespace QR
 		{
 			return new CaseQRCodeInput (resource);
 		}
+
+		public ICase AfterAuthorizationCase (IResource resource)
+		{
+			return new CaseEventSelect(resource);
+		}
 	}
 }
 
