@@ -56,10 +56,14 @@ class TemporaryCookieStore(object):
         return value
 
     def clear(self, request):
-        if self.key in request.cookies:
+        if self.applies_to_route is not None:
+            path = request.route_path(self.applies_to_route)
+        else:
+            path = self.set_cookie_args.get('path')
+        if self.key in request.cookies or path is not None:
             kwargs = {}
-            if self.applies_to_route is not None:
-                kwargs['path'] = request.route_path(self.applies_to_route)
+            if path is not None:
+                kwargs['path'] = path
             request.response.set_cookie(
                 self.key,
                 '',
