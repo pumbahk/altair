@@ -9,6 +9,8 @@ namespace QR
 		IFlow Backward ();
 		//TODO:implement
 		void Finish();
+
+		IFlowDefinition GetFlowDefinition();
 	}
 }
 

@@ -2,14 +2,17 @@ using System;
 
 namespace QR
 {
+	/// <summary>
+	/// Case QR code input. QR読み込み
+	/// </summary>
 	public class CaseQRCodeInput :AbstractCase, ICase
 	{
 		public IVerifier<string>QRCodeVerifier { get; set; }
 
 		public IDataLoader<string> QRCodeLoader{ get; set; }
 
-		public int VerifiedCount{ get; set; } //hmm.
-
+		public int VerifiedCount{ get; set; }
+		//hmm.
 		private bool VerifyStatus;
 
 		public CaseQRCodeInput (IResource resource) : base (resource)
@@ -37,6 +40,11 @@ namespace QR
 		public override ICase OnSuccess (IFlow flow)
 		{
 			return new CaseQRDataFetch (Resource);
+		}
+
+		public override ICase OnFailure (IFlow flow)
+		{
+			return new CaseFailureRedirect (Resource);
 		}
 	}
 

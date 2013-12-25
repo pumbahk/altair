@@ -14,7 +14,7 @@ namespace QR
 		public ICase Case { get; set; }
 		//		public FlowState State { get; set; }
 		public FlowManager Manager { get; set; }
-
+		
 		public virtual bool Verify ()
 		{
 			return Case.Verify ();
@@ -24,6 +24,10 @@ namespace QR
 		{
 			Manager = Manager;
 			Case = _case;
+		}
+
+		public IFlowDefinition GetFlowDefinition(){
+			return Manager.FlowDefinition;
 		}
 
 		public ICase NextCase ()

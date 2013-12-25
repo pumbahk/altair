@@ -29,6 +29,7 @@ namespace QR
 		{
 			target.Configure ();
 			Assert.That (target.Verify (), Is.True);
+			Assert.That (Is.Equals(target.QRCodeLoader.Result, "*qrcode*"));
 		}
 
 		[Test ()]

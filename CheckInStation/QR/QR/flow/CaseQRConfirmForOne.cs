@@ -2,6 +2,9 @@ using System;
 
 namespace QR
 {
+	/// <summary>
+	/// Case QR confirm for one. QR表示(1枚)
+	/// </summary>
 	public class CaseQRConfirmForOne : AbstractCase, ICase
 	{
 		public PrintUnit Unit { get; set; }

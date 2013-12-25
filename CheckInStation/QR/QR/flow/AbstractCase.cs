@@ -11,22 +11,24 @@ namespace QR
 			Resource = resource;
 		}
 
-		public virtual void Configure()
+		public virtual void Configure ()
 		{
 		}
 
-		public virtual bool Verify()
+		public virtual bool Verify ()
 		{
 			return true;
 		}
 
-		public virtual ICase OnFailure(IFlow flow)
+		public virtual ICase OnFailure (IFlow flow)
 		{
 			//TODO:log message
-			return this;
+			throw new InvalidOperationException ("must be success");
 		}
 
-		public abstract ICase OnSuccess(IFlow flow);
+		public abstract ICase OnSuccess (IFlow flow);
+
+
 
 		public virtual bool OnRefresh (FlowManager m)
 		{

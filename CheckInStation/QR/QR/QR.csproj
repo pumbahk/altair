@@ -64,6 +64,11 @@
     <Compile Include="tests\flow\CaseTests.cs" />
     <Compile Include="tests\flow\FlowTests.cs" />
     <Compile Include="models\FakeResource.cs" />
+    <Compile Include="flow\CaseFailureRedirect.cs">
+      <DependentUpon>CaseQRCodeInput.cs</DependentUpon>
+    </Compile>
+    <Compile Include="flow\IFlowDefinition.cs" />
+    <Compile Include="flow\FlowDefinitionDefault.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

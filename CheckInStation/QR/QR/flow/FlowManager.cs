@@ -6,9 +6,18 @@ namespace QR
 	public class FlowManager
 	{
 		private Stack<IFlow> undoStack;
+		//TODO:rename
+		public IFlowDefinition FlowDefinition{ get; set; }
+
+		public FlowManager (IFlowDefinition def)
+		{
+			FlowDefinition = def;
+			undoStack = new Stack<IFlow> ();
+		}
 
 		public FlowManager ()
 		{
+			FlowDefinition = new FlowDefinitionDefault ();
 			undoStack = new Stack<IFlow> ();
 		}
 

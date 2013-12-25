@@ -2,6 +2,9 @@ using System;
 
 namespace QR
 {
+	/// <summary>
+	/// Case QR print finish. 発券しました
+	/// </summary>
 	public class CaseQRPrintFinish: AbstractCase,ICase
 	{
 		public CaseQRPrintFinish (IResource resource) : base (resource)
