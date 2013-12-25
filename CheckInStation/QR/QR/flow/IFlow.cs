@@ -4,9 +4,11 @@ namespace QR
 {
 	public interface IFlow
 	{
-		void Forward (); //TODO:implement
-
-		void Backward (); //TODO:implement
+		IFlow Forward ();
+		//TODO:implement
+		IFlow Backward ();
+		//TODO:implement
+		void Finish();
 	}
 }
 

@@ -21,7 +21,7 @@ namespace QR
 
 		public bool Backward ()
 		{
-			if (undoStack.Cound <= 0) {
+			if (undoStack.Count <= 0) {
 				// TODO:log
 				return false;
 			}
@@ -34,6 +34,13 @@ namespace QR
 		{
 			//void is not good.
 			undoStack = new Stack<IFlow> ();
+		}
+
+		public virtual bool OnFinish (IFlow flow)
+		{
+			//TODO: log. 毎回印刷が終わったら履歴を消す(backできなくする)
+			this.Refresh ();
+			return true;
 		}
 	}
 }

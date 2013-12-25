@@ -2,24 +2,22 @@ using System;
 
 namespace QR
 {
-	interface IFlow{
-		IFlow OnSuccess();
-	}
-
-	public class CaseQRCodeInput
+	public class CaseQRCodeInput :AbstractCase, ICase
 	{
-		public Boolean IsVerified(){
-		}
-		public IFlow OnSuccess (){
-		}
-		public CaseQRCodeInput ()
+		public CaseQRCodeInput (IResource resource) : base (resource)
 		{
 		}
+
+		public override ICase OnSuccess (IFlow flow)
+		{
+			return new CaseQRDataFetch (Resource);
+		}
 	}
 
-	public class CaseQRDataFetcher
+	public enum PrintUnit
 	{
-
+		one,
+		all
 	}
 }
 
