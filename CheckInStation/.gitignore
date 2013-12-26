@@ -1,0 +1,6 @@
+*.exe
+*.mdb
+Debug/*
+Release/*
+obj
+*.dll

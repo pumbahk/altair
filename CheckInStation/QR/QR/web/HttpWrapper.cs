@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.IO;
 
+
 namespace QR
 {
 	public class HttpWrapper :IHttpWrapper
@@ -118,5 +119,34 @@ namespace QR
 			var url = this.UrlBuilder.Build ();
 			return await client.PutAsync (url, content, ct);
 		}
+
+		public async Task<HttpResponseMessage> PostAsJsonAsync<T> (T value)
+		{
+			var client = this.GetClient ();
+			var url = this.UrlBuilder.Build ();
+			return await client.PostAsJsonAsync<T> (url, value);
+		}
+
+		public async Task<HttpResponseMessage> PostAsJsonAsync<T> (T value, CancellationToken ct)
+		{
+			var client = this.GetClient ();
+			var url = this.UrlBuilder.Build ();
+			return await client.PostAsJsonAsync<T> (url, value, ct);
+		}
+
+		public async Task<HttpResponseMessage> PutAsJsonAsync<T> (T value)
+		{
+			var client = this.GetClient ();
+			var url = this.UrlBuilder.Build ();
+			return await client.PutAsJsonAsync<T> (url, value);
+		}
+
+		public async Task<HttpResponseMessage> PutAsJsonAsync<T> (T value, CancellationToken ct)
+		{
+			var client = this.GetClient ();
+			var url = this.UrlBuilder.Build ();
+			return await client.PutAsJsonAsync<T> (url, value, ct);
+		}
+
 	}
 }

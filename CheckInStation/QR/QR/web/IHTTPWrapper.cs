@@ -32,6 +32,14 @@ namespace QR
 
 		Task<HttpResponseMessage> PutAsync (HttpContent content, CancellationToken token);
 
+		Task<HttpResponseMessage> PostAsJsonAsync<T> (T Value);
+
+		Task<HttpResponseMessage> PostAsJsonAsync<T> (T Value, CancellationToken token);
+
+		Task<HttpResponseMessage> PutAsJsonAsync<T> (T Value);
+
+		Task<HttpResponseMessage> PutAsJsonAsync<T> (T Value, CancellationToken token);
+
 	}
 }
 
