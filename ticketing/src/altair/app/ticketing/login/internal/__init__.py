@@ -35,3 +35,4 @@ def setup_internal_login_views(config, factory, login_html="login.html"):
 def includeme(config):
     config.add_directive("use_internal_login", use_internal_login)
     config.add_directive("setup_internal_login_views", setup_internal_login_views)
+    config.add_directive("setup_internal_login_api_views", setup_internal_login_views)

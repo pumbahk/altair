@@ -29,7 +29,7 @@ def main(global_config, **local_config):
     ## login/logout
     config.include('altair.app.ticketing.login.internal')
     config.use_internal_login(secret=settings['authtkt.secret'], cookie_name='checkinstation.auth_tkt', auth_callback=find_group)
-    config.setup_internal_login_views(factory=".resources.CheckinStationResource", login_html="altair.app.ticketing.checkinstation:templates/login.html")
+    config.setup_internal_login_api_views(factory=".resources.CheckinStationResource")
     config.add_forbidden_view("altair.app.ticketing.login.internal.views.login_view", renderer="altair.app.ticketing.checkinstation:templates/login.html")
 
     config.include('altair.app.ticketing.qr', route_prefix='qr')
