@@ -27,6 +27,13 @@ namespace QR
 	[TestFixture ()]
 	public class FlowTests
 	{
+		[Test]
+		public void TestManagerGetInternalEvent__AtleastEmptyEvent ()
+		{
+			var manager = new FlowManager ();
+			manager.GetInternalEvent ();
+		}
+
 		[Test, Description ("QR読み込み -ok-> QRからデータ取得中 -ok-> QR表示(1枚) -ok-> 印刷(1枚) -ok> 発券しました")]
 		public void TestItForOne ()
 		{

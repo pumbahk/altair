@@ -22,7 +22,7 @@ namespace QR
 
 		public Flow (FlowManager manager, ICase _case)
 		{
-			Manager = Manager;
+			Manager = manager;
 			Case = _case;
 		}
 
@@ -33,9 +33,7 @@ namespace QR
 
 		public ICase NextCase ()
 		{
-			//TODO:直す
-			//FIXME:これやばい。なぜかNullReferenceExceptionが出る
-			//Case.Configure (Manager.GetInternalEvent ()); //ここでUIから情報を取得できるようにする必要がある。
+			Case.Configure (Manager.GetInternalEvent ()); //ここでUIから情報を取得できるようにする必要がある。
 			if (Verify ()) {
 				return Case.OnSuccess (this);
 			} else {

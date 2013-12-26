@@ -13,5 +13,7 @@ namespace QR
 		[DataMember]
 		internal string organization_id;
 	}
+
+	//なんか付加するような操作が必要;
 }
 

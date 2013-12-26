@@ -18,8 +18,8 @@ namespace QR
 				Assert.That (Is.Equals (t.Result, "test-test-test"));
 			}
 		}
-
-		[Test ()]
+		
+		//[Test ()] //実際にrequest投げてしまっているのでスキップ
 		public void TestConcreate ()
 		{
 			var factory = new HttpWrapperFactory<HttpWrapper> ();

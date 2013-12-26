@@ -26,7 +26,8 @@ namespace QR
 		public IInternalEvent GetInternalEvent ()
 		{
 			if (this.RequestBroker == null) {
-				throw new InvalidOperationException ("forget to bind broker");
+				//TODO:LOG
+				return new EmptyEvent ();
 			}
 			return this.RequestBroker.GetInternalEvent ();	
 		}
