@@ -1,5 +1,6 @@
 using System;
 using System.Configuration;
+using System.Net.Http;
 
 namespace QR
 {
@@ -44,6 +45,8 @@ namespace QR
 		public AuthInfo AuthInfo { get; set; }
 
 		public IAuthentication Authentication { get; set; }
+
+		public IHttpWrapperFactory<HttpWrapper> HttpWrapperFactory { get; set; }
 
 		public string SettingValue (string key)
 		{

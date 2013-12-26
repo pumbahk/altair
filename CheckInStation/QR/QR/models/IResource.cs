@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http;
 
 namespace QR
 {
@@ -14,13 +15,15 @@ namespace QR
 		IAuthentication Authentication{ get; set; }
 
 		AuthInfo AuthInfo{ get; set; }
-	}
 
+		IHttpWrapperFactory<HttpWrapper> HttpWrapperFactory { get; set; }
+	}
 	//本当は分割した形で管理したい
 	public interface IResource : INeedForQR, INeedForAuth
 	{
-		bool Verify();
-		string SettingValue(string key);
+		bool Verify ();
+
+		string SettingValue (string key);
 	}
 }
 

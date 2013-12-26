@@ -11,7 +11,7 @@ namespace QR
 
 		public async virtual Task<ResultTuple<string, AuthInfo>> authAsync (IResource resource, string name, string password)
 		{
-			throw new NotImplementedException ();
+			resource.HttpWrapperFactory.Create ();
 		}
 
 		public virtual Success<string, AuthInfo> OnSuccess (IResource resource)
