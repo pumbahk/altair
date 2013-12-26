@@ -1,10 +1,11 @@
 using System;
+using System.Threading.Tasks;
 
 namespace QR
 {
 	public interface IAuthentication
 	{
-		AuthInfo auth(IResource resource, string name, string password);
+		Task<ResultTuple<string, AuthInfo>> authAsync(IResource resource, string name, string password);
 	}
 }
 

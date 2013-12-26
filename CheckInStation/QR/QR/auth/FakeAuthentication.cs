@@ -1,22 +1,41 @@
 using System;
+using System.Threading.Tasks;
 
 namespace QR
 {
-	public class FakeAuthentication :IAuthentication
+	public class FakeAuthentication :Authentication, IAuthentication
 	{
-		public string OrganizationId { get; set;}
-		public FakeAuthentication (string organizationId)
+		public string OrganizationId { get; set; }
+
+		public string ExpectedName { get; set; }
+
+		public string ExpectedPassword { get; set; }
+
+		public FakeAuthentication (string expectedName, string expectedPassowrd, string organizationId)
 		{
+			ExpectedName = expectedName;
+			ExpectedPassword = expectedPassowrd;
 			OrganizationId = organizationId;
 		}
 
-		public AuthInfo auth(IResource resource, string name, string password)
+		public Success<string, AuthInfo> OnSuccess (IResource resource, string name, string password)
 		{
-			return new AuthInfo (){
+			var authInfo = new AuthInfo () {
 				loginname = name,
 				organization_id = OrganizationId,
 				secret = "*dummy*"
-				};
+			};
+			return new Success<string, AuthInfo>(authInfo);
+		}
+
+		public override Task<ResultTuple<string, AuthInfo>> authAsync (IResource resource, string name, string password)
+		{
+			if (!ExpectedName.Equals(name) || !ExpectedPassword.Equals(password)) {
+				//Console.WriteLine ("{0} - {1}", name, password);
+				//Console.WriteLine("{0} - {1}", ExpectedName, ExpectedPassword);
+				return Task.Run<ResultTuple<string,AuthInfo>> (() => OnFailure (resource));
+			}
+			return Task.Run<ResultTuple<string,AuthInfo>> (() => OnSuccess (resource, name, password));
 		}
 	}
 }

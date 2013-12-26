@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace QR
 {
@@ -11,7 +12,9 @@ namespace QR
 
 		public string LoginPassword { get; set; }
 
-		public CaseAuthInput (IResource resource) : base(resource)
+		public AuthenticationEvent PresentationChanel { get; set; }
+
+		public CaseAuthInput (IResource resource) : base (resource)
 		{
 		}
 
@@ -20,22 +23,35 @@ namespace QR
 			AuthenticationEvent subject = ev as AuthenticationEvent;
 			this.LoginName = subject.LoginName;
 			this.LoginPassword = subject.LoginPassword;
+			PresentationChanel = subject;
 		}
 
-		public override bool Verify (){
-			try{
-				var authInfo = Resource.Authentication.auth(Resource, LoginName, LoginPassword);
-				Resource.AuthInfo = authInfo;
+		public override bool Verify ()
+		{
+			Task<ResultTuple<string, AuthInfo>> t = Resource.Authentication.authAsync (Resource, LoginName, LoginPassword);
+			t.Wait (); //TODO:xxxx:
+			if (t.Result.Status) {
+				Resource.AuthInfo = t.Result.Right;
 				return true;
-			} catch(Exception){
-				//TODO:logging message
+			} else {
+				//modelからpresentation層へのメッセージ
+				NotifyValidationFailure (t.Result as Failure<string ,AuthInfo>);
 				return false;
+			}
+		}
+
+		public void NotifyValidationFailure (Failure<string, AuthInfo> failure)
+		{
+			if (PresentationChanel == null) {
+				//TODO:logなりメッセージ
+			} else {
+				PresentationChanel.AuthenticationFailure (failure.Result);
 			}
 		}
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			return new CaseQRPrintForAll (Resource);
+			return new CaseAuthDataFetch (Resource);
 		}
 	}
 }

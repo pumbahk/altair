@@ -11,8 +11,10 @@ namespace QR
 
 		public IInternalEvent Event { get; set; }
 
-		public RequestBroker ()
+		public RequestBroker (FlowManager manager)
 		{
+			this.FlowManager = manager;
+			FlowManager.RequestBroker = this;
 		}
 
 		public bool IsConfigurationOK ()
@@ -28,7 +30,12 @@ namespace QR
 
 		public IInternalEvent GetInternalEvent ()
 		{
-			return new EmptyEvent(); //TODO:implement
+			if (Event == null) {
+				//TODO:login
+				return new EmptyEvent (); //TODO:implement
+			} else {
+				return Event;
+			}
 		}
 	}
 }

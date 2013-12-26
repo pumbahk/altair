@@ -20,6 +20,10 @@ namespace QR
 			return Case.Verify ();
 		}
 
+		public virtual void Configure()
+		{
+			Case.Configure(Manager.GetInternalEvent ());
+		}
 		public Flow (FlowManager manager, ICase _case)
 		{
 			Manager = manager;
@@ -33,7 +37,7 @@ namespace QR
 
 		public ICase NextCase ()
 		{
-			Case.Configure (Manager.GetInternalEvent ()); //ここでUIから情報を取得できるようにする必要がある。
+			Configure (); //ここでUIから情報を取得できるようにする必要がある。
 			if (Verify ()) {
 				return Case.OnSuccess (this);
 			} else {

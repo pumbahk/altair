@@ -19,6 +19,8 @@ namespace QR
 	//本当は分割した形で管理したい
 	public interface IResource : INeedForQR, INeedForAuth
 	{
+		bool Verify();
+		string SettingValue(string key);
 	}
 }
 

@@ -6,7 +6,7 @@ namespace QR
 {
 	//fake object
 	[TestFixture ()]
-	public class CaseTests
+	public class QRCodeInputTests
 	{
 		public CaseQRCodeInput target;
 
@@ -16,7 +16,7 @@ namespace QR
 			var loader = new FakeDataLoader<string> ("*qrcode*");
 			var verifier = new FakeVerifier<string> (true);
 
-			var resource = new FakeResource () {
+			var resource = new Resource () {
 				QRCodeLoader = loader,
 				QRCodeVerifier = verifier
 			};

@@ -1,0 +1,17 @@
+{
+    "data": [
+        {"data": {
+            "ordered_product_item_token_id": 1,
+            "イベント名": ":Event:title",
+            "対戦名": ":Performance:name",
+            "開始時刻": "10時 00分",
+            "会場名": ":Venue:name",
+            "チケット価格": "14,000円",
+            "席種名": ":StockType:name",
+            "商品名": "ProductItem:name",
+            "受付日時": "2000年 01月 01日 (土) 01時 00分",
+            "発券番号": 1
+        }}
+    ],
+    "status": "success"
+}

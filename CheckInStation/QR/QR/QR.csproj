@@ -38,6 +38,10 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Abstractions">
+      <HintPath>..\..\..\..\..\projects\AppSettingGettingExample\packages\System.Configuration.Abstractions.1.1.5064.25905\lib\net45\System.Configuration.Abstractions.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -63,9 +67,7 @@
     <Compile Include="models\IDataLoader.cs" />
     <Compile Include="models\FakeDataLoader.cs" />
     <Compile Include="models\FakeVerifier.cs" />
-    <Compile Include="tests\flow\CaseTests.cs" />
     <Compile Include="tests\flow\FlowTests.cs" />
-    <Compile Include="models\FakeResource.cs" />
     <Compile Include="flow\CaseFailureRedirect.cs">
       <DependentUpon>CaseQRCodeInput.cs</DependentUpon>
     </Compile>
@@ -91,6 +93,15 @@
     <Compile Include="web\FakeHttpWrapperFactory.cs" />
     <Compile Include="web\tests\FakeGetUrlTests.cs" />
     <Compile Include="web\HttpWrapper.cs" />
+    <Compile Include="Configurator.cs" />
+    <Compile Include="IConfigrator.cs" />
+    <Compile Include="tests\flow\ConfigratorTests.cs" />
+    <Compile Include="Application.cs" />
+    <Compile Include="models\Resource_1.cs" />
+    <Compile Include="flow\CaseAuthDataFetch.cs" />
+    <Compile Include="tests\case\AuthenticationTests.cs" />
+    <Compile Include="tests\case\QRCodeInputTests.cs" />
+    <Compile Include="message\ResultTuple.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -102,5 +113,10 @@
     <Folder Include="events\" />
     <Folder Include="web\" />
     <Folder Include="web\tests\" />
+    <Folder Include="tests\case\" />
+    <Folder Include="message\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
   </ItemGroup>
 </Project>
