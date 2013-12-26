@@ -28,30 +28,12 @@ namespace QR
 
 		public override bool Verify ()
 		{
-			Task<ResultTuple<string, AuthInfo>> t = Resource.Authentication.authAsync (Resource, LoginName, LoginPassword);
-			t.Wait (); //TODO:xxxx:
-			if (t.Result.Status) {
-				Resource.AuthInfo = t.Result.Right;
-				return true;
-			} else {
-				//modelからpresentation層へのメッセージ
-				NotifyValidationFailure (t.Result as Failure<string ,AuthInfo>);
-				return false;
-			}
-		}
-
-		public void NotifyValidationFailure (Failure<string, AuthInfo> failure)
-		{
-			if (PresentationChanel == null) {
-				//TODO:logなりメッセージ
-			} else {
-				PresentationChanel.AuthenticationFailure (failure.Result);
-			}
+			return true;
 		}
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			return new CaseAuthDataFetch (Resource);
+			return new CaseAuthDataFetch (Resource, LoginName, LoginPassword, PresentationChanel);
 		}
 	}
 }

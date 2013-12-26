@@ -11,19 +11,18 @@ namespace QR
 
 		public string ExpectedPassword { get; set; }
 
-		public FakeAuthentication (string expectedName, string expectedPassowrd, string organizationId)
+		public FakeAuthentication (string expectedName, string expectedPassowrd)
 		{
 			ExpectedName = expectedName;
 			ExpectedPassword = expectedPassowrd;
-			OrganizationId = organizationId;
 		}
 
 		public Success<string, AuthInfo> OnSuccess (IResource resource, string name, string password)
 		{
 			var authInfo = new AuthInfo () {
 				loginname = name,
-				organization_id = OrganizationId,
-				secret = "*dummy*"
+				organization_id = "1", //hmm
+				secret = "*dummy*" //hmm
 			};
 			return new Success<string, AuthInfo>(authInfo);
 		}

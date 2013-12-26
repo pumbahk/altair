@@ -4,7 +4,7 @@ using NUnit.Framework.SyntaxHelpers;
 
 namespace QR
 {
-	[TestFixture ()]
+	[TestFixture, Description ("AuthenticationInput")]
 	public class AuthenticationTests
 	{
 		[Test, Description ("認証情報入力部分. configureでloginnameとloginpassword取得")]
@@ -20,18 +20,25 @@ namespace QR
 			Assert.AreEqual ("*username*", (target as CaseAuthInput).LoginName);
 			Assert.AreEqual ("*password*", (target as CaseAuthInput).LoginPassword);
 		}
+	}
 
-		[Test, Description ("認証情報入力した後のvalidation. successした時")]
-		public void TestAuthenticationInput__Verify__True__Get__Authenticator ()
+	[TestFixture, Description ("AuthenticationDataFetch")]
+	public class AuthenticaionFetchDataTests
+	{
+		[Test, Description ("認証情報入力した後のvalidation. successした時AuthInfoが取得できる")]
+		public void TestAuthenticationInput__Verify__True__Get__AuthInfo ()
 		{
 			var resource = new Resource ();
-			var organization_id = "1";
-			resource.Authentication = new FakeAuthentication ("*username*", "*password*", organization_id);
-
-			CaseAuthInput target = new CaseAuthInput (resource) {
-				LoginName = "*username*",
-				LoginPassword = "*password*"
-			};
+			var inputUsername = "*username*";
+			var inputPassword = "*password*";
+			resource.Authentication = new FakeAuthentication (inputUsername, inputPassword);
+			
+			CaseAuthDataFetch target = new CaseAuthDataFetch (
+				                       resource,
+				                       inputUsername, 
+				                       inputPassword,
+				                       new AuthenticationEvent (inputUsername, inputPassword)
+			                       );
 
 			Assert.IsTrue (target.Verify ());
 			Assert.IsNotNull (resource.AuthInfo);
@@ -41,14 +48,16 @@ namespace QR
 		public void TestAuthenticationInput__Verify__False__DisplayErrorMessage ()
 		{
 			var resource = new Resource ();
-			var organization_id = "1";
-			resource.Authentication = new FakeAuthentication ("x", "xx", organization_id);
+			var inputUsername = "*username*";
+			var inputPassword = "*password*";
+			resource.Authentication = new FakeAuthentication ("x", "xx");
 
-			CaseAuthInput target = new CaseAuthInput (resource) {
-				LoginName = "*username*",
-				LoginPassword = "*password*",
-				PresentationChanel = new AuthenticationEvent("","")
-			};
+			CaseAuthDataFetch target = new CaseAuthDataFetch (
+				resource,
+				inputUsername, 
+				inputPassword,
+				new AuthenticationEvent (inputUsername, inputPassword)
+			);
 
 			Assert.IsNull (target.PresentationChanel.ValidationErrorMessage);
 			Assert.IsFalse (target.Verify ());
