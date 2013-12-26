@@ -9,7 +9,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 def includeme(config):
+    config.add_route("login.status", "/login/status",factory=".resources.CheckinStationResource")
     config.scan(".views")
+
+
+"""
+/login
+/login/status
+/logout
+"""
 
 def find_group(user_id, request):
     return ["group:sales_counter"]
@@ -30,7 +38,7 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.login.internal')
     config.use_internal_login(secret=settings['authtkt.secret'], cookie_name='checkinstation.auth_tkt', auth_callback=find_group)
     config.setup_internal_login_api_views(factory=".resources.CheckinStationResource")
-    config.add_forbidden_view("altair.app.ticketing.login.internal.views.login_view", renderer="altair.app.ticketing.checkinstation:templates/login.html")
+
 
     config.include('altair.app.ticketing.qr', route_prefix='qr')
     config.include(".")
