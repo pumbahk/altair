@@ -9,7 +9,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 def includeme(config):
-    config.add_route("login.status", "/login/status",factory=".resources.CheckinStationResource")
+    config.add_route("login.status", "/login/status")
+    config.add_route("performance.list", "/performance/list")
     config.scan(".views")
 
 

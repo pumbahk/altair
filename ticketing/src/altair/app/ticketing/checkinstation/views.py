@@ -36,14 +36,36 @@ class LoginInfoView(BaseView):
 
 
 ## EventSelect
-from .domainmodel import ChoosableEvent
-from .todict import dict_from_event
+from .domainmodel import ChoosablePerformance
+from .todict import dict_from_performance
 
-@view_config(route_name="event.list", request_method="GET", renderer="json",  permission="sales_counter")
-def event_list(context, request):
+@view_config(route_name="performance.list", request_method="GET", renderer="json",  permission="sales_counter")
+def performance_list(context, request):
     operator = context.operator
-    logger.info("*event event list operator id=%s", operator.id)
-    ev = ChoosableEvent(request, operator)
+    logger.info("*performance list operator id=%s", operator.id)
+    ev = ChoosablePerformance(request, operator)
     now = get_now(request)
-    qs = ev.choosable_event_query(now).all()
-    return {"events": [dict_from_event(e) for e in qs]}
+    qs = ev.choosable_performance_query(now).all()
+    return {"performances": [dict_from_performance(e) for e in qs]}
+
+## signed -> qrdata
+from .domainmodel import TicketData
+@view_config(route_name="qr.ticketdata")
+def ticket_data_from_signed_string(context, request)
+    signed_string = request.json_body["signed"]
+    operator = context.operator
+    logger.info("*qr data operator id=%s", operator.id)
+    tiket_data = TicketData(request, operator)
+    data = ticket_data.ticket_data_from_qrcode(signed_string)
+    return data
+
+
+## token -> [svg] #one
+@view_config(route_name="qr.svg.one")
+def svg_one_from_token(context, request):
+    pass
+
+## order -> [svg] #all
+@view_config(route_name="qr.svg.one")
+def svg_all_from_order(context, request):
+    pass
