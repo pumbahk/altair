@@ -37,18 +37,19 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Net">
-      <HintPath>..\..\..\..\..\..\..\..\opt\local\lib\mono\4.5\System.Net.dll</HintPath>
+      <HintPath>opt\local\lib\mono\4.5\System.Net.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http">
-      <HintPath>..\..\..\..\..\..\..\..\opt\local\lib\mono\4.5\System.Net.Http.dll</HintPath>
+      <HintPath>opt\local\lib\mono\4.5\System.Net.Http.dll</HintPath>
     </Reference>
     <Reference Include="System.Configuration" />
     <Reference Include="System.Configuration.Abstractions">
       <HintPath>..\..\..\..\..\projects\AppSettingGettingExample\packages\System.Configuration.Abstractions.1.1.5064.25905\lib\net45\System.Configuration.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http.Formatting">
-      <HintPath>..\..\..\..\..\..\..\..\opt\local\lib\mono\4.5\System.Net.Http.Formatting.dll</HintPath>
+      <HintPath>opt\local\lib\mono\4.5\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
+    <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -109,6 +110,8 @@
     <Compile Include="tests\case\AuthenticationTests.cs" />
     <Compile Include="tests\case\QRCodeInputTests.cs" />
     <Compile Include="message\ResultTuple.cs" />
+    <Compile Include="web\tests\ClientCreateTests.cs" />
+    <Compile Include="web\CookieUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

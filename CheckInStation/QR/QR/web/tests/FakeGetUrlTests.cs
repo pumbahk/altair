@@ -15,7 +15,7 @@ namespace QR
 			using (var wrapper = factory.Create ("http://example.net"))
 			using (var t = wrapper.GetStringAsync ()) {
 				t.Wait ();
-				Assert.That (Is.Equals (t.Result, "test-test-test"));
+				Assert.AreEqual (t.Result, "test-test-test");
 			}
 		}
 		

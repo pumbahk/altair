@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace QR
 {
@@ -7,6 +8,9 @@ namespace QR
 	{
 		T Create (IUrlBuilder builder);
 		T Create (String url);
+
+		void AddCookies(IEnumerable<string> cookies);
+		void ClearCookies();
 	}
 }
 
