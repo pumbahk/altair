@@ -2,6 +2,7 @@
 from pyramid.view import view_defaults, view_config
 import logging
 logger = logging.getLogger(__name__)
+from altair.now import get_now
 
 class BaseView(object):
     def __init__(self, context, request):
@@ -33,3 +34,16 @@ class LoginInfoView(BaseView):
                               "name": operator.name},
                 "organization": {"id": operator.organization_id}}
 
+
+## EventSelect
+from .domainmodel import ChoosableEvent
+from .todict import dict_from_event
+
+@view_config(route_name="event.list", request_method="GET", renderer="json",  permission="sales_counter")
+def event_list(context, request):
+    operator = context.operator
+    logger.info("*event event list operator id=%s", operator.id)
+    ev = ChoosableEvent(request, operator)
+    now = get_now(request)
+    qs = ev.choosable_event_query(now).all()
+    return {"events": [dict_from_event(e) for e in qs]}
