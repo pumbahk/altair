@@ -112,6 +112,7 @@
     <Compile Include="message\ResultTuple.cs" />
     <Compile Include="web\tests\ClientCreateTests.cs" />
     <Compile Include="web\CookieUtils.cs" />
+    <Compile Include="tests\auth\AuthUsingResourceInformationTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -125,6 +126,7 @@
     <Folder Include="web\tests\" />
     <Folder Include="tests\case\" />
     <Folder Include="message\" />
+    <Folder Include="tests\auth\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

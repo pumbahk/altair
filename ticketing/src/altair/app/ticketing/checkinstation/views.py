@@ -17,8 +17,7 @@ class LoginInfoView(BaseView):
     @view_config(permission="everybady")
     def for_guest_user_view(self):
         logger.info("*login status no login user")
-        return {"status": "ok",
-                "data": {"login": False}}
+        return {"login": False}
 
 
     @view_config(permission="sales_counter")
@@ -26,13 +25,11 @@ class LoginInfoView(BaseView):
         operator = self.context.operator
         if not operator:
             logger.info("*login status operator not found")
-            return {"status": "ok",
-                    "data": {"login": False}}
+            return {"login": False}
         logger.info("*login status operator id=%s", operator.id)
-        return {"status": "ok",
-                "data":  {"login": True,
-                         "operator": {"type": u"login",
-                                      "id": unicode(operator.id),
-                                      "name": operator.name},
-                          "organization": {"id": operator.organization_id}}}
+        return {"login": True,
+                "loginuser": {"type": u"login",
+                              "id": unicode(operator.id),
+                              "name": operator.name},
+                "organization": {"id": operator.organization_id}}
 

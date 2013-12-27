@@ -34,7 +34,7 @@ def login_post_api_view(context, request):
         headers = security.login(request, form.data["login_id"], form.data["password"])
         logger.info("*login login success name=%s", form.data["login_id"])
         request.response.headers = headers
-        return {"status": "ok", "data": {"message": "login successed"}}
+        return {"message": "login successed"}
     else:
         logger.info("*login login failure name=%s", form.data["login_id"])
         return HTTPBadRequest(str(form.errors))
