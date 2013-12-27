@@ -61,11 +61,9 @@ namespace QR
 			return resource.SettingValue ("message.auth.failure.format.0");
 		}
 
-		public async virtual Task<ResultTuple<string, AuthInfo>> authAsync (IResource resource, string name, string password)
+		public async Task<bool> TryLoginRequest (IResource resource, string name, string password)
 		{
 			IHttpWrapperFactory<HttpWrapper> factory = resource.HttpWrapperFactory;
-
-			//TODO:resourceの不備のチェックもテストにしておきたい。
 			using (var wrapper = factory.Create (GetLoginURL (resource))) {
 				var user = new LoginUser (){ login_id = name, password = password };
 				using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (user).ConfigureAwait (false)) {
@@ -73,18 +71,32 @@ namespace QR
 					var headers = response.Headers;
 					var cookies = CookieUtils.GetCookiesFromResponseHeaders (headers);
 					factory.AddCookies (cookies);
-
-					using (var wrapper2 = factory.Create (GetLoginStatusURL (resource)))
-					using (HttpResponseMessage dataResponse = await wrapper2.GetAsync ().ConfigureAwait (false)) {
-
-						var statusData = await dataResponse.Content.ReadAsAsync<LoginStatusData> ();
-						if (statusData.login) {
-							return OnSuccess (resource, statusData);
-						} else {
-							return OnFailure (resource);
-						}
-					}
+					return true;
 				}
+			}
+		}
+
+		public async Task<LoginStatusData> TryLoginStatusRequest (IResource resource)
+		{
+			IHttpWrapperFactory<HttpWrapper> factory = resource.HttpWrapperFactory;
+			using (var wrapper = factory.Create (GetLoginStatusURL (resource)))
+			using (HttpResponseMessage dataResponse = await wrapper.GetAsync ().ConfigureAwait (false)) {
+				return await dataResponse.Content.ReadAsAsync<LoginStatusData> ();
+			}
+		}
+
+		public async virtual Task<ResultTuple<string, AuthInfo>> AuthAsync (IResource resource, string name, string password)
+		{
+			if (!await TryLoginRequest (resource, name, password)) {
+				//TODO:log LoginFailure
+				return OnFailure (resource);
+			}
+			var statusData = await TryLoginStatusRequest (resource);
+			if (statusData.login) {
+				return OnSuccess (resource, statusData);
+			} else {
+				//TODO:log LoginStatusFailure
+				return OnFailure (resource);
 			}
 		}
 

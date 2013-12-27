@@ -35,12 +35,12 @@ namespace QR
 		public static async Task GetAuthData (IResource resource)
 		{
 			var auth = new Authentication ();
-			ResultTuple<string, AuthInfo> result = await auth.authAsync (resource, "ts-rt-admin", "admin");
+			ResultTuple<string, AuthInfo> result = await auth.AuthAsync (resource, "ts-rt-admin", "admin");
 			if (result.Status) {
 				Console.WriteLine ("authinfo: {0}", result.Right);
 			} else {
 				Console.WriteLine ("failure: {0}", result.Left);
 			}
-			}
 		}
 	}
+}

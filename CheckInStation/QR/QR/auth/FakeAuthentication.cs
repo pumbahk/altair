@@ -27,7 +27,7 @@ namespace QR
 			return new Success<string, AuthInfo>(authInfo);
 		}
 
-		public override Task<ResultTuple<string, AuthInfo>> authAsync (IResource resource, string name, string password)
+		public override Task<ResultTuple<string, AuthInfo>> AuthAsync (IResource resource, string name, string password)
 		{
 			if (!ExpectedName.Equals(name) || !ExpectedPassword.Equals(password)) {
 				//Console.WriteLine ("{0} - {1}", name, password);
