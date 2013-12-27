@@ -6,8 +6,16 @@
 <%m:header>注目のイベント</%m:header>
 <div>
     % for event, attention in attentions:
-        % if event:
-            <a href="/eventdetail?event_id=${event.id}">${attention.text}</a><br />
+        <%
+            link = None
+            if attention.mobile_link:
+                link = attention.mobile_link
+            elif event:
+                link = request.mobile_route_path("eventdetail") + "?event_id=" + str(event.id)
+        %>
+
+        % if link:
+            <a href=${link}>${attention.text}</a><br />
         % else:
             % if helper.get_eventsqs_from_mobile_tag_id(request, attention.mobile_tag_id).all():
                 <a href="${request.mobile_route_path('mobile_tag_search', mobile_tag_id=attention.mobile_tag_id, genre=genre, sub_genre=sub_genre if sub_genre else "0", page=1)}">${attention.text}</a><br/>
