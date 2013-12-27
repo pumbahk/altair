@@ -4,6 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 from .forms import LoginForm
 from . import security
+from webob.multidict import MultiDict
 
 def login_view(context, request):
     logger.debug("login")
@@ -28,7 +29,7 @@ def logout_view(context, request):
 
 ## api
 def login_post_api_view(context, request):
-    form = LoginForm(request.POST)
+    form = LoginForm(MultiDict(request.json_body))
     if context.login_validate(form):
         headers = security.login(request, form.data["login_id"], form.data["password"])
         logger.info("*login login success name=%s", form.data["login_id"])
