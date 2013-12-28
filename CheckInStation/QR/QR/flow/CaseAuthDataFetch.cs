@@ -12,24 +12,30 @@ namespace QR
 
 		public string LoginPassword { get; set; }
 
-		public AuthenticationEvent PresentationChanel { get; set; }
-
-		public CaseAuthDataFetch (IResource resource, string name, string password, AuthenticationEvent ev) : base (resource)
+		public CaseAuthDataFetch (IResource resource, string name, string password) : base (resource)
 		{
 			LoginName = name;
 			LoginPassword = password;
-			PresentationChanel = ev;
 		}
 
 		public override bool Verify ()
 		{
 			Task<ResultTuple<string, AuthInfo>> t = Resource.Authentication.AuthAsync (Resource, LoginName, LoginPassword);
-			t.Wait (); //TODO:xxxx:
+			try {
+				t.Wait (); //TODO:xxxx:
+			} catch (AggregateException ex) {
+				//PresentationChanel.NotifyFlushMessage (ex.ToString ());
+				PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
+				return false;
+			}
 			if (t.Result.Status) {
 				Resource.AuthInfo = t.Result.Right;
 				return true;
 			} else {
 				//modelからpresentation層へのメッセージ
+				PresentationChanel.NotifyFlushMessage ((t.Result as Failure<string,AuthInfo>).Result);
+
+				//TODO:こちらを削除
 				NotifyValidationFailure (t.Result as Failure<string ,AuthInfo>);
 				return false;
 			}
@@ -40,13 +46,19 @@ namespace QR
 			if (PresentationChanel == null) {
 				//TODO:logなりメッセージ
 			} else {
-				PresentationChanel.AuthenticationFailure (failure.Result);
+				//TODO:fix. bad code
+				(PresentationChanel as AuthenticationEvent).AuthenticationFailure (failure.Result);
 			}
 		}
 
 		public override ICase OnSuccess (IFlow flow)
 		{
 			return new CaseEventSelect (Resource);
+		}
+
+		public override ICase OnFailure (IFlow flow)
+		{
+			return new CaseAuthInput (Resource);
 		}
 	}
 }

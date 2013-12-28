@@ -102,10 +102,7 @@
     <Compile Include="web\tests\FakeGetUrlTests.cs" />
     <Compile Include="web\HttpWrapper.cs" />
     <Compile Include="Configurator.cs" />
-    <Compile Include="IConfigrator.cs" />
-    <Compile Include="tests\flow\ConfigratorTests.cs" />
     <Compile Include="Application.cs" />
-    <Compile Include="models\Resource_1.cs" />
     <Compile Include="flow\CaseAuthDataFetch.cs" />
     <Compile Include="tests\case\AuthenticationTests.cs" />
     <Compile Include="tests\case\QRCodeInputTests.cs" />
@@ -113,6 +110,17 @@
     <Compile Include="web\tests\ClientCreateTests.cs" />
     <Compile Include="web\CookieUtils.cs" />
     <Compile Include="tests\auth\AuthUsingResourceInformationTests.cs" />
+    <Compile Include="models\Resource.cs" />
+    <Compile Include="configuration\AuthConfiguration.cs" />
+    <Compile Include="IConfigurator.cs" />
+    <Compile Include="configuration\QRConfiguration.cs" />
+    <Compile Include="configuration\HttpCommunicationConfiguration.cs" />
+    <Compile Include="tests\ConfigratorTests.cs">
+      <DependentUpon>JsonTest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\cli\AuthInput.cs" />
+    <Compile Include="message\MessageResourceUtil.cs" />
+    <Compile Include="tests\GetMessageFromAppConfigTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -127,6 +135,9 @@
     <Folder Include="tests\case\" />
     <Folder Include="message\" />
     <Folder Include="tests\auth\" />
+    <Folder Include="configuration\" />
+    <Folder Include="presentation\" />
+    <Folder Include="presentation\cli\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

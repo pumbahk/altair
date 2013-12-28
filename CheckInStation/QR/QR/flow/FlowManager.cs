@@ -32,10 +32,13 @@ namespace QR
 			return this.RequestBroker.GetInternalEvent ();	
 		}
 
-		public bool Forward (IFlow cmd)
+		public bool Forward ()
 		{
-			cmd.Forward ();
-			undoStack.Push (cmd);
+			
+			var cmd = undoStack.Peek ();
+			var nextCmd = cmd.Forward ();
+			undoStack.Push (nextCmd);
+			Console.WriteLine ("    *debug Forward: {0} -> {1}", cmd.Case.GetType().FullName, nextCmd.Case.GetType().FullName);
 			return true;
 		}
 
@@ -61,6 +64,13 @@ namespace QR
 			//TODO: log. 毎回印刷が終わったら履歴を消す(backできなくする)
 			this.Refresh ();
 			return true;
+		}
+
+		public void SetStartPoint (IFlow flow)
+		{
+			if (undoStack.Count > 0)
+				throw new InvalidOperationException ("already, start flow is set.");
+			undoStack.Push (flow);
 		}
 	}
 }

@@ -37,6 +37,16 @@ namespace QR
 				return Event;
 			}
 		}
+
+		public void Submit (IInternalEvent ev)
+		{
+			this.Event = ev;
+			this.FlowManager.Forward ();
+		}
+
+		public void SetStartCase (ICase case_)
+		{
+			this.FlowManager.SetStartPoint (new Flow (this.FlowManager, case_));
+		}
 	}
 }
-

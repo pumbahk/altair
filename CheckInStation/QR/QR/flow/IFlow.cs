@@ -9,7 +9,7 @@ namespace QR
 		IFlow Backward ();
 		//TODO:implement
 		void Finish();
-
+		ICase Case { get; set;}
 		IFlowDefinition GetFlowDefinition();
 	}
 }

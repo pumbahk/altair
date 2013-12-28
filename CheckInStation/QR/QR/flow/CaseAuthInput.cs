@@ -12,8 +12,6 @@ namespace QR
 
 		public string LoginPassword { get; set; }
 
-		public AuthenticationEvent PresentationChanel { get; set; }
-
 		public CaseAuthInput (IResource resource) : base (resource)
 		{
 		}
@@ -23,17 +21,23 @@ namespace QR
 			AuthenticationEvent subject = ev as AuthenticationEvent;
 			this.LoginName = subject.LoginName;
 			this.LoginPassword = subject.LoginPassword;
-			PresentationChanel = subject;
+			base.Configure (ev);
 		}
 
 		public override bool Verify ()
 		{
-			return true;
+			return !LoginName.Equals ("") && !LoginPassword.Equals ("");
 		}
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			return new CaseAuthDataFetch (Resource, LoginName, LoginPassword, PresentationChanel);
+			return new CaseAuthDataFetch (Resource, LoginName, LoginPassword);
+		}
+
+		public override ICase OnFailure (IFlow flow)
+		{
+			PresentationChanel.NotifyFlushMessage ("login failure");
+			return this;
 		}
 	}
 }

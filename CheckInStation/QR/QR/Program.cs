@@ -11,14 +11,10 @@ namespace QR
 		{
 			Console.WriteLine ("Hello World!");
 			//var t = GetJsonData ();
-			var resource = new Resource () {
-				HttpWrapperFactory = new HttpWrapperFactory<HttpWrapper> ()
-			};
-			if (resource.HttpWrapperFactory == null) {
-				throw new InvalidOperationException ("factory is null");
-			}
-			var t = GetAuthData (resource);
-			t.Wait ();
+			var app = new Application ();
+			app.Run (new CaseAuthInput (app.Resource));
+			// var t = GetAuthData (resource);
+			// t.Wait ();
 		}
 
 		public static async Task GetJsonData ()

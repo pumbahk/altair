@@ -3,7 +3,7 @@ using System.Configuration;
 
 namespace QR
 {
-	public class Configurator : IConfigrator
+	public class Configurator : IConfigurator
 	{
 		public IResource Resource { get; set; }
 
@@ -19,7 +19,7 @@ namespace QR
 			}
 			return Resource.Verify ();
 		}
-		public void include (Action<IConfigrator> includeFunction)
+		public void Include (Action<IConfigurator> includeFunction)
 		{
 			includeFunction (this);
 		}

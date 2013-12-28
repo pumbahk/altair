@@ -23,15 +23,6 @@ namespace QR
 
 			Assert.AreNotEqual(default(string), result);
 		}
-
-		[Test, Description ("login failure message")]
-		public void TestsGetLoginFailureMessage ()
-		{
-			var resource = new Resource ();
-			var result = new Authentication ().GetLoginFailureMessageFormat (resource);
-
-			Assert.AreNotEqual(default(string), result);
-		}
 	}
 }
 

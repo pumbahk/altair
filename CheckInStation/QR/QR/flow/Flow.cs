@@ -17,13 +17,17 @@ namespace QR
 
 		public virtual bool Verify ()
 		{
-			return Case.Verify ();
+			var status = Case.Verify ();
+			var evStatus = status ? InternalEventStaus.success : InternalEventStaus.failure;
+			Manager.GetInternalEvent ().Status = evStatus;
+			return status;
 		}
 
-		public virtual void Configure()
+		public virtual void Configure ()
 		{
-			Case.Configure(Manager.GetInternalEvent ());
+			Case.Configure (Manager.GetInternalEvent ());
 		}
+
 		public Flow (FlowManager manager, ICase _case)
 		{
 			Manager = manager;
@@ -48,6 +52,9 @@ namespace QR
 		public virtual IFlow Forward ()
 		{
 			var nextCase = NextCase ();
+			if (Case == nextCase) {
+				return this;
+			}
 			return new Flow (Manager, nextCase);
 		}
 

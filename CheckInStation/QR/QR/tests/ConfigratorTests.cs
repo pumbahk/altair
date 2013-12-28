@@ -17,7 +17,7 @@ namespace QR
 	[TestFixture ()]
 	public class ConfigratorTests
 	{
-		public void Includeme (IConfigrator config)
+		public void Includeme (IConfigurator config)
 		{
 			(config as DummyConfigurator).called = true;
 		}
@@ -28,8 +28,8 @@ namespace QR
 			var target = new DummyConfigurator (new Resource());
 			Assert.IsFalse (target.called);
 
-			Action<IConfigrator> includeme = this.Includeme;
-			target.include (includeme);
+			Action<IConfigurator> includeme = this.Includeme;
+			target.Include (includeme);
 
 			Assert.IsTrue (target.called);
 		}

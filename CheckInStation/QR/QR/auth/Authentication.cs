@@ -56,11 +56,6 @@ namespace QR
 			return resource.SettingValue ("endpoint.auth.login.status.url");
 		}
 
-		public string GetLoginFailureMessageFormat (IResource resource)
-		{
-			return resource.SettingValue ("message.auth.failure.format.0");
-		}
-
 		public async Task<bool> TryLoginRequest (IResource resource, string name, string password)
 		{
 			IHttpWrapperFactory<HttpWrapper> factory = resource.HttpWrapperFactory;
@@ -87,16 +82,21 @@ namespace QR
 
 		public async virtual Task<ResultTuple<string, AuthInfo>> AuthAsync (IResource resource, string name, string password)
 		{
-			if (!await TryLoginRequest (resource, name, password)) {
-				//TODO:log LoginFailure
-				return OnFailure (resource);
-			}
-			var statusData = await TryLoginStatusRequest (resource);
-			if (statusData.login) {
-				return OnSuccess (resource, statusData);
-			} else {
-				//TODO:log LoginStatusFailure
-				return OnFailure (resource);
+			try {
+				if (!await TryLoginRequest (resource, name, password)) {
+					//TODO:log LoginFailure
+					return OnFailure (resource);
+				}
+				var statusData = await TryLoginStatusRequest (resource);
+				if (statusData.login) {
+					return OnSuccess (resource, statusData);
+				} else {
+					//TODO:log LoginStatusFailure
+					return OnFailure (resource);
+				}
+			} catch (System.Net.WebException e) {
+				//TODO:log
+				return	 OnFailure (e.ToString ());
 			}
 		}
 
@@ -111,7 +111,12 @@ namespace QR
 
 		public Failure<string, AuthInfo> OnFailure (IResource resource)
 		{
-			var message = string.Format (GetLoginFailureMessageFormat (resource));
+			var message = string.Format (MessageResourceUtil.GetLoginFailureMessageFormat (resource));
+			return new Failure<string,AuthInfo> (message);
+		}
+
+		public Failure<string, AuthInfo> OnFailure (string message)
+		{
 			return new Failure<string,AuthInfo> (message);
 		}
 	}

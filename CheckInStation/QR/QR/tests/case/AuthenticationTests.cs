@@ -34,11 +34,10 @@ namespace QR
 			resource.Authentication = new FakeAuthentication (inputUsername, inputPassword);
 			
 			CaseAuthDataFetch target = new CaseAuthDataFetch (
-				                       resource,
-				                       inputUsername, 
-				                       inputPassword,
-				                       new AuthenticationEvent (inputUsername, inputPassword)
-			                       );
+				                           resource,
+				                           inputUsername, 
+				                           inputPassword);
+			target.Configure (new AuthenticationEvent (inputUsername, inputPassword));
 
 			Assert.IsTrue (target.Verify ());
 			Assert.IsNotNull (resource.AuthInfo);
@@ -53,15 +52,14 @@ namespace QR
 			resource.Authentication = new FakeAuthentication ("x", "xx");
 
 			CaseAuthDataFetch target = new CaseAuthDataFetch (
-				resource,
-				inputUsername, 
-				inputPassword,
-				new AuthenticationEvent (inputUsername, inputPassword)
-			);
+				                           resource,
+				                           inputUsername, 
+				                           inputPassword);
+			target.Configure (new AuthenticationEvent (inputUsername, inputPassword));
 
-			Assert.IsNull (target.PresentationChanel.ValidationErrorMessage);
+			Assert.IsNull ((target.PresentationChanel as AuthenticationEvent).ValidationErrorMessage);
 			Assert.IsFalse (target.Verify ());
-			Assert.IsNotNull (target.PresentationChanel.ValidationErrorMessage);
+			Assert.IsNotNull ((target.PresentationChanel as AuthenticationEvent).ValidationErrorMessage);
 		}
 	}
 }
