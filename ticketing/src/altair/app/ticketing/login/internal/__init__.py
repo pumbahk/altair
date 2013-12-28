@@ -11,9 +11,9 @@ def use_internal_login(config, secret, cookie_name, auth_callback):
     config.set_authentication_policy(authentication_policy)
 
 def setup_internal_login_api_views(config, factory):
-    from .interfaces import IInternalAuthResource
+    from .interfaces import IInternalAuthAPIResource
     factory = config.maybe_dotted(factory)
-    verifyClass(IInternalAuthResource, factory)
+    verifyClass(IInternalAuthAPIResource, factory)
 
     config.add_route("login", "/login", factory=factory)
     config.add_view("altair.app.ticketing.login.internal.views.login_post_api_view", route_name="login", request_method="POST", renderer="json")

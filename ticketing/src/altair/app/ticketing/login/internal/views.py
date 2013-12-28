@@ -34,7 +34,7 @@ def login_post_api_view(context, request):
         headers = security.login(request, form.data["login_id"], form.data["password"])
         logger.info("*login login success name=%s", form.data["login_id"])
         request.response.headers = headers
-        return {"message": "login successed"}
+        return context.on_after_login(form.operator)
     else:
         logger.info("*login login failure name=%s", form.data["login_id"])
         return HTTPBadRequest(str(form.errors))
@@ -43,4 +43,5 @@ def logout_api_view(context, request):
     operator = context.operator
     headers = security.logout(request)
     logger.info("*login logout name=%s", operator.name)
-    return HTTPFound(location=request.route_path("login"), headers=headers)
+    request.response.headers = headers
+    return context.on_after_logout(operator)

@@ -48,24 +48,24 @@ def performance_list(context, request):
     qs = ev.choosable_performance_query(now).all()
     return {"performances": [dict_from_performance(e) for e in qs]}
 
-## signed -> qrdata
-from .domainmodel import TicketData
-@view_config(route_name="qr.ticketdata")
-def ticket_data_from_signed_string(context, request)
-    signed_string = request.json_body["signed"]
-    operator = context.operator
-    logger.info("*qr data operator id=%s", operator.id)
-    tiket_data = TicketData(request, operator)
-    data = ticket_data.ticket_data_from_qrcode(signed_string)
-    return data
+# ## signed -> qrdata
+# from .domainmodel import TicketData
+# @view_config(route_name="qr.ticketdata")
+# def ticket_data_from_signed_string(context, request):
+#     signed_string = request.json_body["signed"]
+#     operator = context.operator
+#     logger.info("*qr data operator id=%s", operator.id)
+#     tiket_data = TicketData(request, operator)
+#     data = ticket_data.ticket_data_from_qrcode(signed_string)
+#     return data
 
 
-## token -> [svg] #one
-@view_config(route_name="qr.svg.one")
-def svg_one_from_token(context, request):
-    pass
+# ## token -> [svg] #one
+# @view_config(route_name="qr.svg.one")
+# def svg_one_from_token(context, request):
+#     pass
 
-## order -> [svg] #all
-@view_config(route_name="qr.svg.one")
-def svg_all_from_order(context, request):
-    pass
+# ## order -> [svg] #all
+# @view_config(route_name="qr.svg.one")
+# def svg_all_from_order(context, request):
+#     pass

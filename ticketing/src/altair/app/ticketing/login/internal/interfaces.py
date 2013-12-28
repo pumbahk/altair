@@ -3,7 +3,18 @@ from zope.interface import Attribute
 
 class IInternalAuthResource(Interface):
     def get_after_login_url(*args, **kwargs):
-        """ arguments is same for 'pyramid.request.add_route_path' """
+        """ arguments is same for 'pyramid.request.route_path' """
+
+    def login_validate(form):
+        pass
+
+    __acl__ = Attribute("__acl__")
+
+class IInternalAuthAPIResource(Interface):
+    def on_after_login(operator):
+        """continuation callback of login"""
+    def on_after_logout(operator):
+        """continuation callback of logout"""
 
     def login_validate(form):
         pass
