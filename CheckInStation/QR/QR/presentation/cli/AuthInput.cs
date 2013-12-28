@@ -16,16 +16,17 @@ namespace QR.presentation.cli
 			var ev = new AuthenticationEvent ();
 			do {
 				do {
-					Console.WriteLine ("login");
-					Console.WriteLine ("name:");
+					Console.WriteLine ("------login input---------");
+					Console.Write ("name:");
 					ev.LoginName = Console.ReadLine ();
-					Console.WriteLine ("password:");
+					Console.Write ("password:");
 					ev.LoginPassword = Console.ReadLine ();
 					RequestBroker.Submit (ev);
 					ev.HandleEvent ();
 				} while(ev.Status == InternalEventStaus.failure);
 
-				// request
+				// requestn
+				Console.WriteLine ("------login request---------");
 				RequestBroker.Submit (ev);
 				ev.HandleEvent();
 			} while(ev.Status == InternalEventStaus.failure);
