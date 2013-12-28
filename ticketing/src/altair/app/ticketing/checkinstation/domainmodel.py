@@ -4,20 +4,7 @@ logger = logging.getLogger(__name__)
 from altair.app.ticketing.core.models import Performance, Event
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-
-##qrappのapiを使う
-from altair.app.ticketing.printqr.utils import ticketdata_from_qrdata
-from altair.app.ticketing.qr import get_qrdata_builder
-
-class TicketData(object):
-    def __init__(self, request, operator):
-        self.request = request
-        self.operator = operator
-
-    def ticket_data_from_qrcode(self, signed):
-        builder = get_qrdata_builder(self.request)
-        qrdata = ticketdata_from_qrdata(builder.data_from_signed(signed))
-        return qrdata
+from pyramid.decorator import reify
 
 class ChoosablePerformance(object):
     def __init__(self, request, operator):
@@ -32,4 +19,63 @@ class ChoosablePerformance(object):
         qs = qs.options(orm.joinedload(Performance.event))
         return qs.distinct(Performance.id).order_by(sa.asc(Performance.start_on))
 
+from altair.app.ticketing.qr import get_qrdata_builder
+from altair.app.ticketing.printqr.utils import order_and_history_from_qrdata
+
+class TicketData(object):
+    def __init__(self, request, operator):
+        self.request = request
+        self.operator = operator
+
+    def get_order_and_history_from_signed(self, signed):
+        builder = get_qrdata_builder(self.request)
+        return order_and_history_from_qrdata(builder.data_from_signed(signed))
+
+from altair.app.ticketing.printqr.utils import get_matched_ordered_product_item_token
+from altair.app.ticketing.qr.utils import get_matched_token_query_from_order_no
+from altair.app.ticketing.printqr.utils import EnableTicketTemplatesCache
+
+class ItemTokenData(object):
+    def __init__(self, request, operator):
+        self.request = request
+        self.operator = operator
+
+    def get_item_token_from_id(self, token_id):
+        organization_id = self.operator.organization_id
+        return get_matched_ordered_product_item_token(token_id, organization_id)
+
+    def get_item_token_list_from_order_no(self, order_no):
+        return get_matched_token_query_from_order_no(order_no).all()
+
+from altair.app.ticketing.printqr import utils as p_utils
+from altair.app.ticketing.printqr import todict as p_todict
+from altair.app.ticketing.qr.utils import get_or_create_matched_history_from_token
+
+class SVGDataSource(object):
+    def __init__(self, request):
+        self.request = request
+
+    @reify
+    def templates_cache(self):
+        return EnableTicketTemplatesCache()
+
+    def data_list_for_one(self, token):
+        issuer = p_utils.get_issuer()
+
+        vardict = p_todict.svg_data_from_token(token, issuer=issuer)
+        ticket_templates = self.templates_cache(token)
+        retval = p_todict.svg_data_list_all_template_valiation(vardict, ticket_templates)
+        return retval
+
+    def data_list_for_all(self, order_no, tokens):
+        issuer = p_utils.get_issuer()
+        retval = []
+        for ordered_product_item_token in tokens:
+            history = get_or_create_matched_history_from_token(order_no, ordered_product_item_token)
+            ticket_templates = self.templates_cache(ordered_product_item_token)
+
+            vardict = p_todict.svg_data_from_token(ordered_product_item_token, issuer=issuer)
+            vardict[u'codeno'] = history.id #一覧で選択するため
+            retval.extend(p_todict.svg_data_list_all_template_valiation(vardict, ticket_templates))
+        return retval
 

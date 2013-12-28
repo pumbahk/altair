@@ -47,7 +47,8 @@ def data_dict_from_order_and_history(order, history):
         "printed_at": str(token.printed_at) if token.printed_at else None, 
         "printed": str(token.printed_at) if token.is_printed() else None, 
         "canceled": str(order.canceled_at) if order.is_canceled() else None, ##todo:データ整理
-        "orderno": order.order_no, 
+        "orderno": order.order_no,  #どこかでこちらが使われているので残しておく。(js?)
+        "order_no": order.order_no, 
         "order_id": order.id, 
         "performance_name": performance_name, 
         "performance_date": h.japanese_datetime(performance.start_on), 

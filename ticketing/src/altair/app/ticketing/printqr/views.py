@@ -134,7 +134,7 @@ def ticketdata_from_qrsigned_string(context, request):
     signed = request.params["qrsigned"]
     signed = re.sub(r"[\x01-\x1F\x7F]", "", signed.encode("utf-8")).replace("\x00", "") .decode("utf-8")
     builder = get_qrdata_builder(request)
-    event_id = request.matchdict["event_id"]
+    event_id = request.matchdict.get("event_id", "*")
     try:
         order, history = utils.order_and_history_from_qrdata(builder.data_from_signed(signed))
         utils.verify_order(order, event_id=event_id)

@@ -11,6 +11,7 @@ from .models import CheckinIdentity
 from altair.app.ticketing.models import DBSession
 from pyramid.security import remember
 from datetime import datetime
+from . import IAPIEndpointCollector
 
 @implementer(IInternalAuthAPIResource)
 class CheckinStationResource(object):
@@ -37,8 +38,8 @@ class CheckinStationResource(object):
         ## operator.idだけでなくidentity.idも保持したいのでrememberし直し
         headers = remember(self.request, "@".join(map(str, [identity.id, operator.id])))
         self.request.response.headers = headers
-        return {"endpoint": 
-                {"login.status": self.request.route_url("login.status")}}
+        collector = self.request.registry.getUtility(IAPIEndpointCollector)
+        return {"endpoint": collector.get_endpoints(self.request)}
 
     def on_after_logout(self, operator):
         self.identity.logout()

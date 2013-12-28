@@ -3,6 +3,7 @@ from pyramid.view import view_defaults, view_config
 import logging
 logger = logging.getLogger(__name__)
 from altair.now import get_now
+from pyramid.httpexceptions import HTTPBadRequest
 
 class BaseView(object):
     def __init__(self, context, request):
@@ -46,42 +47,57 @@ from .todict import dict_from_performance
 @view_config(route_name="performance.list", request_method="GET", renderer="json",  permission="sales_counter")
 def performance_list(context, request):
     access_log("*performance list", context.identity)
-    ev = ChoosablePerformance(request, operator)
+
+    ev = ChoosablePerformance(request, context.operator)
     now = get_now(request)
     qs = ev.choosable_performance_query(now).all()
     return {"performances": [dict_from_performance(e) for e in qs]}
 
-# ## signed -> qrdata
-# from .domainmodel import TicketData
+## 大体QRAppのviewの利用しているものをそのまま使う。
+## signed -> qrdata. 公演名やチケットの購入情報など
+from .domainmodel import TicketData
+from altair.app.ticketing.printqr.todict import data_dict_from_order_and_history
 
-# @view_config(route_name="qr.ticketdata")
-# def ticket_data_from_signed_string(context, request):
-#     access_log("*qr.ticketdata", context.identity)
-#     try:
-#         signed = request.json_body["signed"]
-#         signed = re.sub(r"[\x01-\x1F\x7F]", "", signed.encode("utf-8")).replace("\x00", "") .decode("utf-8")
-#         tiket_data = TicketData(request, context.operator)
-#         data = ticket_data.ticket_data_from_qrcode(signed)
-#         return data
-#     except KeyError as e:
-#         logger.warn(e)
-#         raise HTTPBadRequest("signed not found")
+@view_config(route_name="qr.ticketdata", permission="sales_counter", renderer="json")
+def ticket_data_from_signed_string(context, request):
+    access_log("*performance list", context.identity)
+    if not "qrsigned" in request.json_body:
+        raise HTTPBadRequest(u"引数が足りません")
 
-
-# ## token -> [svg] #one
-# from .domainmodel import SVGDataListForOne
-# from .todict import dict_from_
-# @view_config(route_name="qr.svg.one")
-# def svg_one_from_token(context, request):
-#     access_log("*qr.svg.one", context.identity)
-#     vals = request.json_body
-#     history_id = vals["exact_id"]
-#     order_no = vals["order_no"]
-#     ticket, history = get_pair_order_and_ticket_print_history(history_id, order_no)
-#     svg_data_list = 
+    ticket_data = TicketData(request, context.operator)
+    order, history = ticket_data.get_order_and_history_from_signed(request.json_body["qrsigned"])
+    return data_dict_from_order_and_history(order, history)
 
 
-# ## order -> [svg] #all
-# @view_config(route_name="qr.svg.one")
-# def svg_all_from_order(context, request):
-#     pass
+## token -> [svg] #one
+from .domainmodel import ItemTokenData
+from .domainmodel import SVGDataSource
+
+@view_config(route_name="qr.svgsource.one", permission="sales_counter", renderer="json")
+def svgsource_one_from_token(context, request):
+    access_log("*qr.svg.one", context.identity)
+    if not "ordered_product_item_token_id" in request.json_body:
+        raise HTTPBadRequest(u"引数が足りません")
+
+    token_data = ItemTokenData(request, context.operator)
+    svg_source = SVGDataSource(request)
+
+    token = token_data.get_item_token_from_id(request.json_body["ordered_product_item_token_id"])
+    datalist = svg_source.data_list_for_one(token)
+    return {"datalist": datalist}
+
+## token -> [svg] #all
+
+@view_config(route_name="qr.svgsource.all", permission="sales_counter", renderer="json")
+def svgsource_all_from_order_no(context, request):
+    access_log("*qr.svg.all", context.identity)
+    if not "order_no" in request.json_body:
+        raise HTTPBadRequest(u"引数が足りません")
+    order_no = request.json_body["order_no"]
+
+    token_data = ItemTokenData(request, context.operator)
+    svg_source = SVGDataSource(request)
+
+    token_list = token_data.get_item_token_list_from_order_no(request.json_body["order_no"])
+    datalist = svg_source.data_list_for_all(order_no, token_list)
+    return {"datalist": datalist}

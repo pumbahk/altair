@@ -7,16 +7,44 @@ import sqlahelper
 
 import logging
 logger = logging.getLogger(__name__)
+from zope.interface import Interface, implementer
+
+class IAPIEndpointCollector(Interface):
+    def add(name):
+        pass
+    def get_endpoints(request):
+        pass
+
+@implementer(IAPIEndpointCollector)
+class APIEndpointRouteCollector(object):
+    def __init__(self):
+        self.routes = set()
+
+    def add(self, name):
+        self.routes.add(name)
+
+    def get_endpoints(self, request):
+        return {k:request.route_url(k) for k in self.routes}
+
+def add_endpoint_route(config, name, *args, **kwargs):
+    collector = config.registry.queryUtility(IAPIEndpointCollector)
+    if collector is None:
+        collector = APIEndpointRouteCollector()
+        config.registry.registerUtility(collector, IAPIEndpointCollector)
+    config.add_route(name, *args, **kwargs)
+    collector.add(name)
 
 def includeme(config):
-    config.add_route("login.status", "/login/status")
-    config.add_route("performance.list", "/performance/list")
+    config.add_directive("add_endpoint_route", add_endpoint_route)
+    config.add_endpoint_route("login.status", "/login/status")
+    config.add_endpoint_route("performance.list", "/performance/list")
+    config.add_endpoint_route("qr.ticketdata", "/qr/ticketdata")
+    config.add_endpoint_route("qr.svgsource.one", "/qr/svgsource/one")
+    config.add_endpoint_route("qr.svgsource.all", "/qr/svgsource/all")
     config.scan(".views")
-
 
 """
 /login
-/login/status
 /logout
 """
 
