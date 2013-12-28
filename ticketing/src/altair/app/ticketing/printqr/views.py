@@ -16,9 +16,7 @@ from . import todict
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import Event
 from altair.app.ticketing.core.models import Performance
-from altair.app.ticketing.core.models import Order
-from altair.app.ticketing.core.models import OrderedProductItem
-from altair.app.ticketing.core.models import OrderedProduct
+from altair.app.ticketing.core.models import PageFormat
 from altair.app.ticketing.core.models import OrderedProductItemToken
 from altair.app.ticketing.core.models import Ticket
 from altair.app.ticketing.core.utils import PrintedAtBubblingSetter
@@ -235,7 +233,7 @@ class AppletAPIView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-        
+
     @view_config(route_name='api.applet.ticket', renderer='json')
     def ticket(self):
         event_id = self.request.matchdict['event_id']
@@ -252,32 +250,35 @@ class AppletAPIView(object):
         params = {
             u'status': 'success',
             u'data': {
-                u'ticket_formats': [utils.ticket_format_to_dict(ticket_format) for ticket_format in dict((ticket.ticket_format.id, ticket.ticket_format) for ticket in tickets).itervalues()],
-                u'page_formats': utils.page_formats_for_organization(self.context.organization),
-                u'ticket_templates': [utils.ticket_to_dict(ticket) for ticket in tickets]
+                u'ticket_formats': [todict.ticket_format_to_dict(ticket_format) for ticket_format in dict((ticket.ticket_format.id, ticket.ticket_format) for ticket in tickets).itervalues()],
+                u'page_formats':  [
+                    todict.page_format_to_dict(page_format) \
+                    for page_format in DBSession.query(PageFormat).filter_by(organization=self.context.organization)
+                ], 
+                u'ticket_templates': [todict.ticket_to_dict(ticket) for ticket in tickets]
                 }
             }
         return params
 
     @view_config(route_name='api.applet.ticket_data', request_method='POST', renderer='json')
-    def ticket_data(self):
+    def ticket_data(self): ## svg one
         ordered_product_item_token_id = self.request.json_body.get('ordered_product_item_token_id')
         if ordered_product_item_token_id is None:
             return { u'status': u'error', u'message': u'券面取得用の番号がみつかりません' }
 
-        qs = DBSession.query(OrderedProductItemToken) \
-            .filter_by(id=ordered_product_item_token_id) \
-            .join(OrderedProductItem) \
-            .join(OrderedProduct) \
-            .filter(Order.id==OrderedProduct.order_id) \
-            .filter(Order.organization_id==self.context.organization.id)
+        ordered_product_item_token = utils.get_matched_ordered_product_item_token(
+            ordered_product_item_token_id, 
+            self.context.organization.id)
 
-        ordered_product_item_token = qs.first()
         if ordered_product_item_token is None:
             logger.warn("*api.applet.ticket data: token id=%s,  organization id=%s" \
                              % (ordered_product_item_token_id, self.context.organization.id))
             return { u'status': u'error', u'message': u'券面データがみつかりません' }
-        retval = utils.svg_data_from_token(ordered_product_item_token)
+
+        ticket_templates = utils.enable_ticket_template_list(ordered_product_item_token)
+        issuer = utils.get_issuer()
+        vardict = todict.svg_data_from_token(ordered_product_item_token, issuer=issuer)
+        retval = todict.svg_data_list_all_template_valiation(vardict, ticket_templates)
         assert retval
         return {
             u'status': u'success',
@@ -289,13 +290,20 @@ class AppletAPIView(object):
         order_no = self.request.json_body.get('order_no')
         if order_no is None:
             return { u'status': u'error', u'message': u'注文番号がみつかりません' }
-        qs = get_matched_token_query_from_order_no(order_no)
-        
+
+        tokens = get_matched_token_query_from_order_no(order_no).all()
         retval = []
+        templates_generator = utils.EnableTicketTemplatesCache()
+        issuer = utils.get_issuer()
         try:
-            for ordered_product_item_token in qs:
+            for ordered_product_item_token in tokens:
                 history = get_or_create_matched_history_from_token(order_no, ordered_product_item_token)
-                retval.extend(utils.svg_data_from_token_with_descinfo(history, ordered_product_item_token))
+                ticket_templates = templates_generator(ordered_product_item_token)
+
+                vardict = todict.svg_data_from_token(ordered_product_item_token, issuer=issuer)
+                vardict[u'codeno'] = history.id #一覧で選択するため
+
+                retval.extend(todict.svg_data_list_all_template_valiation(vardict, ticket_templates))
             return {
                 u'status': u'success',
                 u'data': retval
