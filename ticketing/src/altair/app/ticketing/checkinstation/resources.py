@@ -50,7 +50,7 @@ class CheckinStationResource(object):
     @reify
     def identity(self):
         identity_id, operator_id = authenticated_userid(self.request).split("@")
-        return CheckinIdentity.query.filter_by(id=identity_id).one()
+        return CheckinIdentity.query.filter_by(id=identity_id).first()
 
     @reify
     def operator(self):

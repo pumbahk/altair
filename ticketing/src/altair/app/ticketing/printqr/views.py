@@ -6,11 +6,13 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPNotFound
 from altair.app.ticketing.qr import get_qrdata_builder
 import logging
-from altair.app.ticketing.printqr import utils 
 logger = logging.getLogger(__name__)
 
 from . import forms
 from . import helpers as h
+from . import utils
+from . import todict
+
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import Event
 from altair.app.ticketing.core.models import Performance
@@ -136,7 +138,9 @@ def ticketdata_from_qrsigned_string(context, request):
     builder = get_qrdata_builder(request)
     event_id = request.matchdict["event_id"]
     try:
-        data = utils.ticketdata_from_qrdata(builder.data_from_signed(signed), event_id=event_id)
+        order, history = utils.order_and_history_from_qrdata(builder.data_from_signed(signed))
+        utils.verify_order(order, event_id=event_id)
+        data = todict.data_dict_from_order_and_history(order, history)
         return {"status": "success", 
                 "data": data}
     except KeyError, e:

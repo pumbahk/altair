@@ -17,7 +17,7 @@ class TicketData(object):
     def ticket_data_from_qrcode(self, signed):
         builder = get_qrdata_builder(self.request)
         qrdata = ticketdata_from_qrdata(builder.data_from_signed(signed))
-        return ticketdata_from_qrdata(qrdata)
+        return qrdata
 
 class ChoosablePerformance(object):
     def __init__(self, request, operator):

@@ -53,7 +53,7 @@ def page_formats_for_organization(organization):
         for page_format in DBSession.query(PageFormat).filter_by(organization=organization)
         ]
 
-def _order_and_history_from_qrdata(qrdata):
+def order_and_history_from_qrdata(qrdata):
     qs =  DBSession.query(Order, TicketPrintHistory)\
         .filter(TicketPrintHistory.id==qrdata["serial"])\
         .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
@@ -67,43 +67,12 @@ def _order_and_history_from_qrdata(qrdata):
                  orm.joinedload(TicketPrintHistory.seat))
     return qs.first()
 
-def ticketdata_from_qrdata(qrdata, event_id="*"):
-    order, history = _order_and_history_from_qrdata(qrdata)
+def verify_order(order, event_id="*"):
     performance = order.performance
-    shipping_address = order.shipping_address
-    product_name = history.ordered_product_item.ordered_product.product.name
-    token = history.item_token
-    seat = history.seat
-    performance_name = u"%s (%s)" % (performance.name, performance.venue.name)
-    note = order.note
-
     if event_id != "*" and str(performance.event_id) != str(event_id):
         fmt = "ticketdata_from_qrdata: unmatched event id (order.id=%s, expected event_id=%s, event_id=%s)"
         logger.warn(fmt % (order.id, event_id, performance.event_id))
         raise UnmatchEventException
-
-    ##history.idがあればQRコードを再生成できるそう。それに気づいてもデータがなければ見れなそうなのでhash化しなくて良い
-    #codeno = hashlib.sha1(str(history.id)).hexdigest()
-    codeno = history.id
-    return {
-        "user": shipping_address.full_name_kana if shipping_address else u"", 
-        "codeno": codeno, 
-        "ordered_product_item_token_id": token.id, 
-        "ordered_product_item_id": history.ordered_product_item.id, 
-        "refreshed_at": str(token.refreshed_at) if token.refreshed_at else None, 
-        "printed_at": str(token.printed_at) if token.printed_at else None, 
-        "printed": str(token.printed_at) if token.is_printed() else None, 
-        "canceled": str(order.canceled_at) if order.is_canceled() else None, ##todo:データ整理
-        "orderno": order.order_no, 
-        "order_id": order.id, 
-        "performance_name": performance_name, 
-        "performance_date": h.japanese_datetime(performance.start_on), 
-        "event_id": performance.event_id, 
-        "product_name": product_name, 
-        "seat_id": seat.id if seat else None,
-        "seat_name": seat.name if seat else u"自由席",
-        "note": note,
-        }
 
 _issuer = None
 def get_issuer():
