@@ -13,6 +13,11 @@ namespace QR
 		{
 			return resource.SettingValue ("message.auth.failure.format.0");
 		}
+
+		public static string GetWebExceptionMessage (IResource resource)
+		{
+			return resource.SettingValue ("message.web.exception.format.0");
+		}
 	}
 }
 

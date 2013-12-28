@@ -21,6 +21,14 @@ namespace QR
 			var result = MessageResourceUtil.GetTaskCancelMessage (resource);
 			Assert.AreNotEqual (default(string), result);
 		}
+
+		[Test, Description ("web exception message")]
+		public void TestsGetWebExceptionMessage ()
+		{
+			var resource = new Resource ();
+			var result = MessageResourceUtil.GetWebExceptionMessage (resource);
+			Assert.AreNotEqual (default(string), result);
+		}
 	}
 }
 

@@ -96,7 +96,8 @@ namespace QR
 				}
 			} catch (System.Net.WebException e) {
 				//TODO:log
-				return	 OnFailure (e.ToString ());
+				// e.ToString()はうるさすぎ
+				return	OnFailure (MessageResourceUtil.GetWebExceptionMessage(resource));
 			}
 		}
 
