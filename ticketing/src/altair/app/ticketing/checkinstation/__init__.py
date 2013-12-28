@@ -68,7 +68,8 @@ def main(global_config, **local_config):
     config.use_internal_login(secret=settings['authtkt.secret'], cookie_name='checkinstation.auth_tkt', auth_callback=find_group)
     config.setup_internal_login_api_views(factory=".resources.CheckinStationResource")
 
-
+    ## svg builder
+    config.include('altair.app.ticketing.tickets.setup_svg')
     config.include('altair.app.ticketing.qr', route_prefix='qr')
     config.include(".")
     config.add_static_view('static', 'altair.app.ticketing.checkinstation:static', cache_max_age=3600)

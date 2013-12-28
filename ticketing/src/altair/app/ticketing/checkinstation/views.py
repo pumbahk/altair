@@ -12,9 +12,9 @@ class BaseView(object):
 
 def access_log(prefix, identity):
     if identity:
-        logger.info("{prefix} CheckinIdentity.secret=%s, operator.id=%s", identity.secret, identity.operator_id)
+        logger.info("{prefix} CheckinIdentity.secret=%s, operator.id=%s".format(prefix=prefix), identity.secret, identity.operator_id)
     else:
-        logger.info("{prefix} CheckinIdentity not found")
+        logger.info("{prefix} CheckinIdentity not found".format(prefix=prefix))
 
 ## status = {ok, ng}
 

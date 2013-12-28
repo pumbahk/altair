@@ -40,7 +40,7 @@ def setup_ticket_bundle(event, drawing):
     page_format = PageFormat.query.first()
     if page_format is None:
         page_format = PageFormat(name=":PageFormat:name",
-                                 printer_name=":PageFormat:printer_name",                             
+                                 printer_name=":PageFormat:printer_name",
                                  organization=event.organization,
                                  data={})
     ticket_format = TicketFormat.query.first()
@@ -57,7 +57,13 @@ def setup_ticket_bundle(event, drawing):
                     event=event,
                     organization=event.organization,
                     data={"drawing": drawing})
-    bundle = TicketBundle(name=":TicketBundle:name", event=event, tickets=[ticket])
+    ##副券
+    ticket2 = Ticket(name="Ticket:name2",
+                     ticket_format=ticket_format,
+                     event=event,
+                     organization=event.organization,
+                     data={"drawing": u"副券"})
+    bundle = TicketBundle(name=":TicketBundle:name", event=event, tickets=[ticket, ticket2])
     return bundle
 
 ORGANIZATION_ID = 12345
@@ -65,14 +71,14 @@ AUTH_ID = 23456
 IDENTITY_ID = 34567
 OPERATOR_ID = 45678
 
-def setup_operator(auth_id=AUTH_ID, organization_id=ORGANIZATION_ID):
+def setup_checkin_identity(auth_id=AUTH_ID, organization_id=ORGANIZATION_ID):
     from altair.app.ticketing.operators.models import OperatorAuth
     from altair.app.ticketing.operators.models import Operator
     from altair.app.ticketing.core.models import Organization
     from altair.app.ticketing.core.models import OrganizationSetting
     from .models import CheckinIdentity
-    operator = Operator.query.first()
-    if operator is None:
+    checkin_identity = CheckinIdentity.query.first()
+    if checkin_identity is None:
         organization = Organization(name=":Organization:name",
                                     short_name=":Organization:short_name", 
                                     code=":Organization:code", 
@@ -80,8 +86,9 @@ def setup_operator(auth_id=AUTH_ID, organization_id=ORGANIZATION_ID):
         OrganizationSetting(organization=organization, name="default")
         operator = Operator(organization_id=organization_id, organization=organization, id=OPERATOR_ID)
         OperatorAuth(operator=operator, login_id=auth_id)
-        CheckinIdentity(operator=operator, device_id=":device_id:", id=IDENTITY_ID).login()
-    return operator
+        checkin_identity = CheckinIdentity(operator=operator, device_id=":device_id:", id=IDENTITY_ID)
+        checkin_identity.login()
+    return checkin_identity
 
 def setup_product_item(quantity, quantity_only, organization):
     from altair.app.ticketing.core.models import Stock
@@ -266,6 +273,7 @@ class BaseTests(unittest.TestCase):
         cls.config = testing.setUp()
         cls.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
         cls.config.include('altair.app.ticketing.qr', route_prefix='qr')
+        cls.config.include('altair.app.ticketing.tickets.setup_svg')
         cls.config.include("altair.app.ticketing.checkinstation")
 
     @classmethod
@@ -286,7 +294,8 @@ class CheckinStationEndpointAPIWithoutSeat(BaseTests):
         BaseTests.setUpClass()
 
         from altair.app.ticketing.models import DBSession
-        operator = setup_operator()
+        checkin_identity = setup_checkin_identity()
+        operator = checkin_identity.operator
         item = setup_ordered_product_item(quantity=2, quantity_only=True,
                                            organization=operator.organization, order_no="Demo:OrderNO:01")
         event = item.product_item.performance.event
@@ -295,7 +304,7 @@ class CheckinStationEndpointAPIWithoutSeat(BaseTests):
         item.product_item.ticket_bundle = bundle
         DBSession.add(item)
         DBSession.add(bundle)
-        DBSession.add(operator)
+        DBSession.add(checkin_identity)
 
         token = item.tokens[0]
         token.id = cls.TOKEN_ID
@@ -340,9 +349,11 @@ class CheckinStationEndpointAPIWithoutSeat(BaseTests):
             _getTarget(), 
             request=DummyRequest(json_body={"ordered_product_item_token_id": self.token.id}, 
                              ))
+
         self.assertEquals(len(result["datalist"]), 1)
         self.assertEquals(result["datalist"][0][u'ordered_product_item_token_id'], self.token.id)
 
+        ##データ
         self.assertEquals(result["datalist"][0]["data"][u"イベント名"], ":Event:title")
         self.assertEquals(result["datalist"][0]["data"][u"対戦名"], ":Performance:name")
         self.assertEquals(result["datalist"][0]["data"][u"開始時刻"], u"10時 00分")
@@ -352,7 +363,13 @@ class CheckinStationEndpointAPIWithoutSeat(BaseTests):
         self.assertEquals(result["datalist"][0]["data"][u"商品名"], ":ProductItem:name")
         self.assertEquals(result["datalist"][0]["data"][u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
 
+        ##発券番号
         self.assertEquals(result["datalist"][0]["data"][u"発券番号"], 1)
+
+        ##svg
+        self.assertEquals(len(result["datalist"][0]["svg_list"]), 2)
+        self.assertEquals(result["datalist"][0]["svg_list"][0]["svg"], self.DRAWING_DATA)
+        self.assertEquals(result["datalist"][0]["svg_list"][1]["svg"], u"副券")
 
     def test_svgsource_all_from_order_no(self):
         def _getTarget():
@@ -366,6 +383,7 @@ class CheckinStationEndpointAPIWithoutSeat(BaseTests):
         self.assertEquals(result["datalist"][0][u'ordered_product_item_token_id'], self.token.id)
         self.assertTrue(result["datalist"][1][u'ordered_product_item_token_id'])
 
+        ## データ
         self.assertEquals(result["datalist"][0]["data"][u"イベント名"], ":Event:title")
         self.assertEquals(result["datalist"][0]["data"][u"対戦名"], ":Performance:name")
         self.assertEquals(result["datalist"][0]["data"][u"開始時刻"], u"10時 00分")
@@ -384,8 +402,17 @@ class CheckinStationEndpointAPIWithoutSeat(BaseTests):
         self.assertEquals(result["datalist"][1]["data"][u"商品名"], ":ProductItem:name")
         self.assertEquals(result["datalist"][1]["data"][u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
 
+        ## 発券番号
         self.assertEquals(result["datalist"][0]["data"][u"発券番号"], 1)
         self.assertEquals(result["datalist"][1]["data"][u"発券番号"], 2)
+
+        ## svg
+        self.assertEquals(len(result["datalist"][0]["svg_list"]), 2)
+        self.assertEquals(result["datalist"][0]["svg_list"][0]["svg"], self.DRAWING_DATA)
+        self.assertEquals(result["datalist"][0]["svg_list"][1]["svg"], u"副券")
+        self.assertEquals(result["datalist"][1]["svg_list"][0]["svg"], self.DRAWING_DATA)
+        self.assertEquals(result["datalist"][1]["svg_list"][1]["svg"], u"副券")
+
 
 #     @mock.patch("altair.app.ticketing.printqr.views.datetime")
 #     def test_refresh_printed_status(self, m):
@@ -499,7 +526,7 @@ class CheckinStationEndpointAPIWithoutSeat(BaseTests):
 
 #         from altair.app.ticketing.models import DBSession
 #         from altair.app.ticketing.core.models import Seat
-#         operator = setup_operator()
+#         operator = setup_checkin_identity()
 #         item = setup_ordered_product_item(quantity=1, quantity_only=False,
 #                                            organization=operator.organization, order_no="Demo:OrderNO:02")
 #         event = item.product_item.performance.event

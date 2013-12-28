@@ -50,6 +50,7 @@ class ItemTokenData(object):
 from altair.app.ticketing.printqr import utils as p_utils
 from altair.app.ticketing.printqr import todict as p_todict
 from altair.app.ticketing.qr.utils import get_or_create_matched_history_from_token
+from altair.app.ticketing.tickets.api import get_svg_builder
 
 class SVGDataSource(object):
     def __init__(self, request):
@@ -61,14 +62,17 @@ class SVGDataSource(object):
 
     def data_list_for_one(self, token):
         issuer = p_utils.get_issuer()
+        svg_builder = get_svg_builder(self.request)
 
         vardict = p_todict.svg_data_from_token(token, issuer=issuer)
         ticket_templates = self.templates_cache(token)
-        retval = p_todict.svg_data_list_all_template_valiation(vardict, ticket_templates)
-        return retval
+        vardict["svg_list"] = svg_list_all_template_valiation(svg_builder, vardict.get("data", {}), ticket_templates)
+        return [vardict]
 
     def data_list_for_all(self, order_no, tokens):
         issuer = p_utils.get_issuer()
+        svg_builder = get_svg_builder(self.request)
+
         retval = []
         for ordered_product_item_token in tokens:
             history = get_or_create_matched_history_from_token(order_no, ordered_product_item_token)
@@ -76,6 +80,16 @@ class SVGDataSource(object):
 
             vardict = p_todict.svg_data_from_token(ordered_product_item_token, issuer=issuer)
             vardict[u'codeno'] = history.id #一覧で選択するため
-            retval.extend(p_todict.svg_data_list_all_template_valiation(vardict, ticket_templates))
+            vardict["svg_list"] = svg_list_all_template_valiation(svg_builder, vardict.get("data", {}), ticket_templates)
+            retval.append(vardict)
         return retval
 
+def svg_list_all_template_valiation(svg_builder, vardict, ticket_templates):
+    ## var dictは券面のレンダリングに利用する変数のdict
+    data_list = []
+    for ticket_template in ticket_templates:
+        data = {"svg": svg_builder.build(ticket_template, vardict)} 
+        data[u'ticket_template_name'] = ticket_template.name
+        data[u'ticket_template_id'] = ticket_template.id
+        data_list.append(data)
+    return data_list
