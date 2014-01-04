@@ -111,13 +111,13 @@ class SalesSegmentForm(OurForm):
         widget=CheckboxInput()
     )
 
-    upper_limit = OurIntegerField(
+    max_quantity = OurIntegerField(
         label=u'購入上限枚数',
         default=10,
-        validators=[SwitchOptional('use_default_upper_limit'),
+        validators=[SwitchOptional('use_default_max_quantity'),
                     Required()]
     )
-    use_default_upper_limit = OurBooleanField(
+    use_default_max_quantity = OurBooleanField(
         label=u'グループの値を利用',
         widget=CheckboxInput()
     )

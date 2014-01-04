@@ -22,10 +22,10 @@
           <th scope="row">申込受付期間</th>
           <td>${h.japanese_datetime(sales_segment.start_at)}～${h.japanese_datetime(sales_segment.end_at)}</td>
         </tr>
-        %if sales_segment.upper_limit:
+        %if sales_segment.max_quantity:
         <tr>
           <th scope="row">制限枚数</th>
-          <td>1希望の申込で${sales_segment.upper_limit}枚まで</td>
+          <td>1希望の申込で${sales_segment.max_quantity}枚まで</td>
         </tr>
         %endif
         <tr>
@@ -320,7 +320,7 @@ var product_select_tmpl = _.template(decodeURIComponent('${capture(product_selec
 var stockTypes = ${h.tojson(stock_types)|n};
 var performanceProductMap = ${h.tojson(performance_product_map)|n};
 var postedValues = ${h.tojson(posted_values)|n};
-var upperLimit = ${sales_segment.upper_limit};
+var upperLimit = ${sales_segment.max_quantity};
 var performanceMap = ${h.tojson(performance_map)|n};
 var selected_performance_id = 0;
 % if selected_performance:

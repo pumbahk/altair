@@ -188,7 +188,7 @@ class SalesSegments(BaseView):
             'calculated_end_at': toutc(calculated_end_at, tz).isoformat() if calculated_end_at else None,
             'end_day_prior_to_performance': sales_segment_group.end_day_prior_to_performance,
             'end_time': sales_segment_group.end_time.strftime('%H:%M:%S') if sales_segment_group.end_time else None,
-            'upper_limit': sales_segment_group.upper_limit,
+            'max_quantity': sales_segment_group.max_quantity,
             'product_limit': sales_segment_group.product_limit,
             'order_limit': sales_segment_group.order_limit,
             'seat_choice': sales_segment_group.seat_choice,

@@ -138,8 +138,8 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                 max_quantity_per_product = min(max_quantity_per_product, max_quantity)
 
             # 購入上限枚数は販売区分ごとに設定できる
-            if sales_segment.upper_limit is not None:
-                max_quantity_per_product = min(max_quantity_per_product, sales_segment.upper_limit)
+            if sales_segment.max_quantity is not None:
+                max_quantity_per_product = min(max_quantity_per_product, sales_segment.max_quantity)
 
             # 商品毎の商品購入下限数を計算する
             min_product_quantity_per_product = (min_quantity_per_product + quantity_power - 1) / quantity_power
@@ -175,7 +175,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     detail=h.product_name_with_unit(product_items_for_product[product.id]),
                     unit_template=h.build_unit_template(product_items_for_product[product.id]),
                     quantity_power=quantity_power,
-                    upper_limit=max_product_quantity_per_product,
+                    max_quantity=max_product_quantity_per_product,
                     product_limit=product_limit,
                     min_product_quantity_per_product=min_product_quantity_per_product,
                     max_product_quantity_per_product=max_product_quantity_per_product
@@ -230,11 +230,11 @@ def assert_quantity_within_bounds(sales_segment, order_items):
     logger.debug('sum_quantity=%d, sum_product_quantity=%d' % (sum_quantity, sum_product_quantity))
 
     if sum_quantity == 0:
-        raise QuantityOutOfBoundsError(sum_quantity, 1, sales_segment.upper_limit)
+        raise QuantityOutOfBoundsError(sum_quantity, 1, sales_segment.max_quantity)
 
-    if sales_segment.upper_limit is not None and \
-       sales_segment.upper_limit < sum_quantity:
-        raise QuantityOutOfBoundsError(sum_quantity, 1, sales_segment.upper_limit)
+    if sales_segment.max_quantity is not None and \
+       sales_segment.max_quantity < sum_quantity:
+        raise QuantityOutOfBoundsError(sum_quantity, 1, sales_segment.max_quantity)
 
     if sales_segment.product_limit is not None and \
        sales_segment.product_limit < sum_product_quantity:

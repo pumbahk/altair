@@ -121,7 +121,7 @@ class EntryLotViewTests(unittest.TestCase):
             {'name': u'商品 B', 'price': 100},
             {'name': u'商品 C', 'price': 100},
         ])
-        lot.sales_segment.upper_limit = 100
+        lot.sales_segment.max_quantity = 100
 
         sales_segment = lot.sales_segment
         payment_delivery_method_pair = pdmp = sales_segment.payment_delivery_method_pairs[0]

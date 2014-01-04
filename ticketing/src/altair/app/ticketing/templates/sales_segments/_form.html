@@ -183,18 +183,18 @@ function get_performance_id() {
         % endif
       </td>
     </tr>
-    <tr class="SalesSegment_upper_limit">
+    <tr class="SalesSegment_max_quantity">
       <th>
-        ${form.upper_limit.label}
-        ${form.use_default_upper_limit(_widget=LabelledCheckboxInput())}
+        ${form.max_quantity.label}
+        ${form.use_default_max_quantity(_widget=LabelledCheckboxInput())}
       </th>
       <td>
-        ${form.upper_limit}
-        ${ch.validate_errors(form.upper_limit)}
+        ${form.max_quantity}
+        ${ch.validate_errors(form.max_quantity)}
       </td>
       <td>
         % if form.context.sales_segment_group:
-          ${form.context.sales_segment_group.upper_limit or u'-'}
+          ${form.context.sales_segment_group.max_quantity or u'-'}
         % endif
       </td>
     </tr>
@@ -455,11 +455,11 @@ function get_performance_id() {
       if (data.registration_fee !== void(0))
         originalValue.text(formatCurrency(data.registration_fee) + "/公演");
     },
-    upper_limit: function (data, n) {
+    max_quantity: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data.upper_limit !== void(0))
-        originalValue.text(data.order_limit === null ? "-": data.upper_limit + "枚");
+      if (data.max_quantity !== void(0))
+        originalValue.text(data.order_limit === null ? "-": data.max_quantity + "枚");
     },
     order_limit: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
@@ -507,7 +507,7 @@ function get_performance_id() {
         'refund_ratio',
         'printing_fee',
         'registration_fee',
-        'upper_limit',
+        'max_quantity',
         'order_limit',
         'seat_choice',
         'public',

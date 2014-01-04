@@ -15,7 +15,7 @@
           <th>公演名</th>
           % endif
           <th>${ch.sortable(SalesSegment.account_id)}</a></th>
-          <th>${ch.sortable(SalesSegment.upper_limit)}</a></th>
+          <th>${ch.sortable(SalesSegment.max_quantity)}</a></th>
           <%doc><th>${ch.sortable(SalesSegment.order_limit)}</a></th></%doc>
           <th>${ch.sortable(SalesSegment.seat_choice)}</a></th>
           <th>${ch.sortable(SalesSegment.public)}</a></th>
@@ -44,7 +44,7 @@
           </td>
           % endif
           <td ${rowspan}>${sales_segment.account.name}</td>
-          <td ${rowspan}>${u'%s枚' % sales_segment.upper_limit if sales_segment.upper_limit else u'-'} / ${u'%s個' % sales_segment.product_limit if sales_segment.product_limit else u'-'}</td>
+          <td ${rowspan}>${u'%s枚' % sales_segment.max_quantity if sales_segment.max_quantity else u'-'} / ${u'%s個' % sales_segment.product_limit if sales_segment.product_limit else u'-'}</td>
           <td ${rowspan}>${u'選択可' if sales_segment.seat_choice else u'×選択不可'}</td>
           <td ${rowspan}>${u'公開' if sales_segment.public else u'非公開'}</td>
           <td ${rowspan}>${u'対象' if sales_segment.reporting else u'×対象外'}</td>

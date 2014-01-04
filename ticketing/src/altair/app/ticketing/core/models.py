@@ -1195,7 +1195,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     kind = AnnotatedColumn(String(255), _a_label=_(u'種別'))
     start_at = AnnotatedColumn(DateTime, _a_label=_(u'販売開始日時'))
     end_at = AnnotatedColumn(DateTime, _a_label=_(u'販売終了日時'))
-    upper_limit = AnnotatedColumn(Integer, _a_label=_(u'購入上限枚数'))
+    max_quantity = AnnotatedColumn('upper_limit', Integer, _a_label=_(u'購入上限枚数'))
     order_limit = AnnotatedColumn(Integer, _a_label=_(u'購入回数制限'))
     product_limit = AnnotatedColumn(Integer, _a_label=_(u'商品購入上限数'))
 
@@ -3537,7 +3537,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     id = Column(Identifier, primary_key=True)
     start_at = AnnotatedColumn(DateTime, _a_label=_(u'販売開始'))
     end_at = AnnotatedColumn(DateTime, _a_label=_(u'販売終了'))
-    upper_limit = AnnotatedColumn(Integer, _a_label=_(u'購入上限枚数'))
+    max_quantity = AnnotatedColumn('upper_limit', Integer, _a_label=_(u'購入上限枚数'))
     order_limit = AnnotatedColumn(Integer, default=0,
                                   _a_label=_(u'購入回数制限'))
     product_limit = AnnotatedColumn(Integer, _a_label=_(u'商品購入上限数'))
@@ -3588,7 +3588,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     use_default_payment_delivery_method_pairs = Column(Boolean)
     use_default_start_at = Column(Boolean)
     use_default_end_at = Column(Boolean)
-    use_default_upper_limit = Column(Boolean)
+    use_default_max_quantity = Column('use_default_upper_limit', Boolean)
     use_default_order_limit = Column(Boolean)
     use_default_product_limit = Column(Boolean)
     use_default_account_id = Column(Boolean)

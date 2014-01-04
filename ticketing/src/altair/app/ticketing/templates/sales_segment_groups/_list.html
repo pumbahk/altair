@@ -13,7 +13,7 @@
           <%doc><th>${ch.sortable(SalesSegmentGroup.start_at, paging)}</a></th></%doc>
           <%doc><th>${ch.sortable(SalesSegmentGroup.end_at, paging)}</a></th></%doc>
           <th>${ch.sortable(SalesSegmentGroup.account_id, paging)}</a></th>
-          <th>${ch.sortable(SalesSegmentGroup.upper_limit, paging)}</a></th>
+          <th>${ch.sortable(SalesSegmentGroup.max_quantity, paging)}</a></th>
           <%doc><th>${ch.sortable(SalesSegmentGroup.order_limit, paging)}</a></th></%doc>
           <th>${ch.sortable(SalesSegmentGroup.seat_choice, paging)}</a></th>
           <th>${ch.sortable(SalesSegmentGroup.public, paging)}</a></th>
@@ -37,7 +37,7 @@
           <%doc><td ${rowspan}>${vh.datetime(sales_segment_group.end_at)}</td></%doc>
           <td ${rowspan}>${sales_segment_group.account.name}</td>
           <td ${rowspan}>
-            ${u'%s枚' % sales_segment_group.upper_limit if sales_segment_group.upper_limit else u'-'} / ${u'%s個' % sales_segment_group.product_limit if sales_segment_group.product_limit else u'-'}
+            ${u'%s枚' % sales_segment_group.max_quantity if sales_segment_group.max_quantity else u'-'} / ${u'%s個' % sales_segment_group.product_limit if sales_segment_group.product_limit else u'-'}
           </td>
           <%doc><td ${rowspan}>${sales_segment_group.order_limit or u''}</td></%doc>
           <td ${rowspan}>${u'○' if sales_segment_group.seat_choice else u'×'}</td>

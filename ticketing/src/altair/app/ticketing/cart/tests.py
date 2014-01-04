@@ -721,7 +721,7 @@ class ReserveViewTests(unittest.TestCase):
         performance = Performance(id=performance_id, event=event, public=True)
         sales_segment_group = SalesSegmentGroup(id=sales_segment_group_id, event=event, kind=SalesSegmentKindEnum.normal.k, public=True)
         sales_segment = SalesSegment(id=sales_segment_id, performance=performance, sales_segment_group=sales_segment_group,
-                                     start_at=now - timedelta(days=1), end_at=now + timedelta(days=1), public=True, upper_limit=10,
+                                     start_at=now - timedelta(days=1), end_at=now + timedelta(days=1), public=True, max_quantity=10,
                                      payment_delivery_method_pairs=[
                                         PaymentDeliveryMethodPair(system_fee=0, transaction_fee=0, delivery_fee=0, discount=0)
                                         ],
@@ -846,7 +846,7 @@ class ReserveViewTests(unittest.TestCase):
         performance = Performance(id=performance_id, event=event, public=True)
         sales_segment_group = SalesSegmentGroup(id=sales_segment_group_id, event=event, kind=SalesSegmentKindEnum.normal.k)
         sales_segment = SalesSegment(id=sales_segment_id, performance_id=performance_id, sales_segment_group=sales_segment_group,
-                                     start_at=now - timedelta(days=1), end_at=now + timedelta(days=1), public=True, upper_limit=10,
+                                     start_at=now - timedelta(days=1), end_at=now + timedelta(days=1), public=True, max_quantity=10,
                                      payment_delivery_method_pairs=[
                                         PaymentDeliveryMethodPair(system_fee=0, transaction_fee=0, delivery_fee=0, discount=0)
                                         ])

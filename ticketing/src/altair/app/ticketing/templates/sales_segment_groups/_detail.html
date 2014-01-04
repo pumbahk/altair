@@ -56,9 +56,9 @@
     <td id="registration_fee">${vh.price(sales_segment_group.registration_fee)}</td>
   </tr>
   <tr>
-    <th>${form.upper_limit.label.text} / ${form.product_limit.label.text}</th>
-    <td id="upper_limit">
-      ${u'%s枚' % sales_segment_group.upper_limit if sales_segment_group.upper_limit else u'-'} / ${u'%s個' % sales_segment_group.product_limit if sales_segment_group.product_limit else u'-'}
+    <th>${form.max_quantity.label.text} / ${form.product_limit.label.text}</th>
+    <td id="max_quantity">
+      ${u'%s枚' % sales_segment_group.max_quantity if sales_segment_group.max_quantity else u'-'} / ${u'%s個' % sales_segment_group.product_limit if sales_segment_group.product_limit else u'-'}
     </td>
   </tr>
   <tr>

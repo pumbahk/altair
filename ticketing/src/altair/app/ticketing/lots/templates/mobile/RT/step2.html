@@ -6,7 +6,7 @@ ${lot.name}
 </div>
 <%mobile:header>第${option_index}希望</%mobile:header>
 席種・券種と希望枚数をお選びください。<br />
-合計で${sales_segment.upper_limit}枚まで入力できます。<br />
+合計で${sales_segment.max_quantity}枚まで入力できます。<br />
 <%mobile:messages messages="${messages}" />
 <br />
 <form action="${request.route_path('lots.entry.step3', event_id=event.id, lot_id=lot.id, option_index=option_index)}" method="post">
