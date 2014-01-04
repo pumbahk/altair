@@ -2057,6 +2057,9 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stocks = association_proxy('items', 'stock')
     base_product_id = Column(Identifier, nullable=True)
 
+    min_product_quantity = Column(Integer, nullable=True)
+    max_product_quantity = Column(Integer, nullable=True)
+
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_group_id=None, stock_id=None, include_deleted=False):
         query = DBSession.query(Product, include_deleted=include_deleted)

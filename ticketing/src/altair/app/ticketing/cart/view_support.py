@@ -145,6 +145,8 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             min_product_quantity_per_product = (min_quantity_per_product + quantity_power - 1) / quantity_power
             if min_product_quantity is not None:
                 min_product_quantity_per_product = max(min_product_quantity_per_product, min_product_quantity)
+            if product.min_product_quantity is not None:
+                min_product_quantity_per_product = max(min_product_quantity_per_product, product.min_product_quantity)
 
             # 商品毎の商品購入上限数を計算する
             max_product_quantity_per_product = max_quantity_per_product / quantity_power
@@ -152,6 +154,8 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                 max_product_quantity_per_product = min(max_product_quantity_per_product, max_product_quatity)
             if max_product_quantity is not None:
                 max_product_quantity_per_product = min(max_product_quantity_per_product, max_product_quantity)
+            if product.max_product_quantity is not None:
+                max_product_quantity_per_product = min(max_product_quantity_per_product, product.max_product_quantity)
 
             # 席種毎の残数は商品在庫の最大値
             availability_for_stock_type = max(availability_for_stock_type, availability)
@@ -177,6 +181,8 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     quantity_power=quantity_power,
                     max_quantity=max_product_quantity_per_product,
                     max_product_quatity=max_product_quatity,
+                    min_product_quantity_from_product=product.min_product_quantity,
+                    max_product_quantity_from_product=product.max_product_quantity,
                     min_product_quantity_per_product=min_product_quantity_per_product,
                     max_product_quantity_per_product=max_product_quantity_per_product
                     )

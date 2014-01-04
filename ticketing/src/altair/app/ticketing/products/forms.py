@@ -49,6 +49,8 @@ class ProductForm(OurForm):
             public=1 if product.public else 0, # why integer?
             description=product.description,
             sales_segment=product.sales_segment,
+            min_product_quantity=product.min_product_quantity,
+            max_product_quantity=product.max_product_quantity,
             applied_point_grant_settings=[pgs.id for pgs in product.point_grant_settings]
             )
         return form
@@ -93,6 +95,18 @@ class ProductForm(OurForm):
         label=label_text_for(Product.price),
         places=2,
         validators=[Required()]
+        )
+    min_product_quantity = OurIntegerField(
+        label=u'商品購入下限数',
+        hide_on_new=True,
+        default=None,
+        validators=[Optional()],
+        )
+    max_product_quantity = OurIntegerField(
+        label=u'商品購入上限数',
+        hide_on_new=True,
+        default=None,
+        validators=[Optional()],
         )
     display_order = OurIntegerField(
         label=label_text_for(Product.display_order),
@@ -144,24 +158,45 @@ class ProductForm(OurForm):
             if product.items and field.data != product.seat_stock_type_id:
                 raise ValidationError(u'既に在庫が割り当てられているため、席種は変更できません')
 
-    def validate(self):
-        status = super(type(self), self).validate()
-        if status:
-            if self.id.data:
-                # 販売期間内で公開済みの場合、またはこの商品が予約/抽選申込されている場合は
-                # 価格、席種の変更は不可
-                product = Product.query.filter_by(id=self.id.data).one()
-                now = datetime.now()
-                if (product.public and product.sales_segment.public and product.sales_segment.in_term(now))\
-                   or product.ordered_products or product.has_lot_entry_products():
-                    error_message = u'既に販売中か予約および抽選申込がある為、変更できません'
-                    if self.price.data != product.price:
-                        self.price.errors.append(error_message)
-                        status = False
-                    if self.seat_stock_type_id.data != product.seat_stock_type_id:
-                        self.seat_stock_type_id.errors.append(error_message)
-                        status = False
-        return status
+    def validate_min_product_quantity(self, field):
+        if field.data is not None and field.data < 0:
+            raise ValidationError(u'0以上の数値を入力してください') 
+
+    def validate_max_product_quantity(self, field):
+        if field.data is not None and field.data < 0:
+            raise ValidationError(u'0以上の数値を入力してください') 
+
+    def validate(self, *args, **kwargs):
+        if not super(ProductForm, self).validate(*args, **kwargs):
+            return False
+        validity = True
+        if self.id.data:
+            # 販売期間内で公開済みの場合、またはこの商品が予約/抽選申込されている場合は
+            # 価格、席種の変更は不可
+            product = Product.query.filter_by(id=self.id.data).one()
+            now = datetime.now()
+            if (product.public and product.sales_segment.public and product.sales_segment.in_term(now))\
+               or product.ordered_products or product.has_lot_entry_products():
+                error_message = u'既に販売中か予約および抽選申込がある為、変更できません'
+                if self.price.data != product.price:
+                    self.price.errors.append(error_message)
+                    validity = False
+                if self.seat_stock_type_id.data != product.seat_stock_type_id:
+                    self.seat_stock_type_id.errors.append(error_message)
+                    validity = False
+        if self.min_product_quantity.data is not None and \
+           self.max_product_quantity.data is not None and \
+           self.min_product_quantity.data > self.max_product_quantity.data:
+            errors = self.max_product_quantity.errors
+            if errors is None:
+                errors = []
+            else:
+                errors = list(errors)
+            errors.append(u'最大商品購入数には最小商品購入数以上の値を指定してください')
+            self.max_product_quantity.errors = errors
+            validity = False
+        return validity
+           
 
 
 class ProductItemForm(OurForm):
@@ -280,3 +315,4 @@ class ProductItemForm(OurForm):
             stock = pi.stock
             if stock.stock_holder_id != field.data and len(pi.ordered_product_items) > 0:
                 raise ValidationError(u'既にこの商品明細への予約がある為、変更できません')
+
