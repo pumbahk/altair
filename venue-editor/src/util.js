@@ -159,17 +159,15 @@ exports.mergeStyle = function mergeStyle(a, b) {
   };
 };
 
-timer = function(msg) {
-    this.start = (new Date()).getTime();
-	if(msg) {
-		console.log(msg);
-	}
+var timer = exports.timer = function(msg) {
+  this.start = new Date();
+  if (msg) console.log(this.start+" "+msg);
 };
+
 timer.prototype.lap = function(msg) {
-	var lap = (new Date()).getTime()-this.start;
-    this.start = (new Date()).getTime();
-	if(msg) {
-		console.log(msg+": "+lap+"msec");
-	}
-    return lap;
+  var now = new Date();
+  var lap = now.getTime()-this.start.getTime();
+  this.start = now;
+  if (msg) console.log(now+" "+msg+": "+lap+" msec");
+  return lap;
 };

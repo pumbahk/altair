@@ -181,7 +181,7 @@ class TicketTemplateForm(OurForm):
     drawing = FileField(
         label=u"券面データ", 
         validators=[
-            FileRequired([".xml", ".svg"])
+            FileRequired([".xml", ".svg", ".tssvg"])
         ]
      )    
 
@@ -194,7 +194,8 @@ class TicketTemplateForm(OurForm):
         )
 
     def validate(self):
-        super(type(self), self).validate()
+        if not super(type(self), self).validate():
+            return False
 
         svgio = self.drawing.data.file
         try:
@@ -226,6 +227,8 @@ class TicketTemplateEditForm(OurForm):
         self.ticket_format_id.choices = [
             (format.id, format.name) for format in TicketFormat.filter_by(organization_id=context.organization.id)
             ]
+        self.data_value = None
+        self.filename = None
 
     name = TextField(
         label = u'名前',
@@ -253,21 +256,25 @@ class TicketTemplateEditForm(OurForm):
     drawing = FileField(
         label=u"券面データ", 
         validators=[
-            FileRequired([".xml", ".svg"]).none_is_ok
+            FileRequired([".xml", ".svg", ".tssvg"]).none_is_ok
         ]
      )    
 
     def validate(self):
-        super(type(self), self).validate()
+        if not super(type(self), self).validate():
+            return False
 
         validate_only = False
+        filename = None
 
         if filestorage_has_file(self.drawing.data):
             svgio = self.drawing.data.file
+            filename = self.drawing.data.filename
         else:
             from cStringIO import StringIO
             svgio = StringIO(self.obj.data["drawing"].encode("utf-8"))
             validate_only = True
+        self.filename = filename
 
         try:
             ticket_format = TicketFormat.query.filter_by(id=self.ticket_format_id.data, organization_id=self.context.organization.id).one()

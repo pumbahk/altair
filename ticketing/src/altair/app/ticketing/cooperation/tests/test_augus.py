@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 from unittest import TestCase
 from mock import Mock
+import csv
 from StringIO import StringIO
 
 from altair.app.ticketing.core.models import (
@@ -16,6 +17,8 @@ from altair.app.ticketing.cooperation.augus import (
     AugusTable,
     ImporterFactory,
     AugusVenueImporter,
+    CSVEditorFactory,
+    AugusCSVEditor,
     )
 
 class SamplePairsFactory(object):
@@ -26,7 +29,7 @@ class SamplePairsFactory(object):
         augus_venue.save = Mock(return_value=None) # castration
         augus_venue.id = 1
         augus_venue.code = 555
-        augus_seats = []        
+        augus_seats = []
         for ii, seat in enumerate(seats):
             seat.save = Mock(return_value=None) # castration
             seat.id = ii
@@ -59,7 +62,7 @@ class SamplePairsFactory(object):
             augus_seat.column = u'あ'
             augus_seat.num = u'{0}'.format(ii)
             augus_seats.append(augus_seat)
-            
+
         pairs = SeatAugusSeatPairs(venue_id)
         pairs.load = Mock(return_value=None)
         pairs._seats = seats
@@ -68,13 +71,13 @@ class SamplePairsFactory(object):
 
 class AugusCSVImportTest(TestCase):
     def _test_get_original_venue(self):
-        from altair.app.ticketing.cooperation.views import get_original_venue        
+        from altair.app.ticketing.cooperation.views import get_original_venue
         original_venue_id = 869
         target_venue_id = 6671
         organization_id = 15
         venue = get_original_venue(target_venue_id, organization_id)
         self.assertEqual(venue.id, original_venue_id)
-        self.assertEqual(venue.organization_id, organization_id)        
+        self.assertEqual(venue.organization_id, organization_id)
         self.assertEqual(venue.performance, None)
 
     def _test_csv_import(self):
@@ -98,13 +101,13 @@ class EncodeTest(TestCase):
     def test_sjis_encode(self):
         word = u'あるたいる'
         self.assertEqual(_sjis(word), word.encode('sjis'))
-        
+
         with self.assertRaises(UnicodeDecodeError):
             _sjis(u'あるたいる'.encode('sjis'))
-            
+
         with self.assertRaises(UnicodeDecodeError):
             _sjis('あるたいる')
-            
+
         with self.assertRaises(ValueError):
             _sjis(None)
 
@@ -161,11 +164,46 @@ class AugusTableTest(TestCase):
                 self.assertEqual(entry[10], '')
                 self.assertEqual(entry[11], '')
 
-class ImporterFactoryTest(TestCase):
-    def test_create(self):
-        type_class = ((CooperationTypeEnum.augus.v[0], AugusVenueImporter),
-                      )
+
+class AugusVenueImporterTest(TestCase):
+    def test_import_(self):
+        factory = SamplePairsFactory()
+        pairs = factory.create()
+        io = StringIO()        
+
+        # create csv
+        writer = csv.writer(io)
+        typ = CooperationTypeEnum.augus.v[0]
+        editor = CSVEditorFactory.create(typ)
+        editor.write(writer, pairs)
         
-        for typ, class_ in type_class:
-            importer = ImporterFactory.create(typ)
-            self.assertIsInstance(importer, class_)
+        # test improter
+        io.seek(0)
+        reader = csv.reader(io)
+        
+
+
+class _FactoryTestBase(object):
+    factory_class = None # need override
+    type_class = () # need override
+
+    def _test_create(self):
+        for typ, class_ in self.type_class:
+            ins = self.factory_class.create(typ)
+            self.assertIsInstance(ins, class_)
+
+class CSVEditorFactoryTest(TestCase, _FactoryTestBase):
+    factory_class = CSVEditorFactory
+    type_class = ((CooperationTypeEnum.augus.v[0], AugusCSVEditor),
+                  )
+
+    def test_create(self):
+        self._test_create()
+
+class ImporterFactoryTest(TestCase, _FactoryTestBase):
+    factory_class = ImporterFactory
+    type_class = ((CooperationTypeEnum.augus.v[0], AugusVenueImporter),
+                  )
+
+    def test_create(self):
+        self._test_create()

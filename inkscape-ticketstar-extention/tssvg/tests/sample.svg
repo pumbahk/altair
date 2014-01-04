@@ -1,0 +1,18 @@
+<ns0:svg xmlns:ns0="http://www.w3.org/2000/svg" xmlns:ns1="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:ns2="http://www.inkscape.org/namespaces/inkscape" height="612pt" id="svg3375" version="1.2" width="792pt" ns1:docname="New document 8" ns2:version="0.48.2 r9819">
+  <ns0:defs id="defs3377"/>
+  <ns1:namedview bordercolor="#666666" borderopacity="1.0" id="namedview3379" pagecolor="#ffffff" showgrid="false" ns2:current-layer="layer1" ns2:cx="490" ns2:cy="380" ns2:document-units="in" ns2:pageopacity="0.0" ns2:pageshadow="2" ns2:window-height="530" ns2:window-maximized="0" ns2:window-width="1032" ns2:window-x="126" ns2:window-y="40" ns2:zoom="0.43415836"/>
+  <ns0:metadata id="metadata3381">
+    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+      <ns3:Work xmlns:ns3="http://creativecommons.org/ns#" rdf:about="">
+        <dc:format xmlns:dc="http://purl.org/dc/elements/1.1/">image/svg+xml</dc:format>
+        <dc:type xmlns:dc="http://purl.org/dc/elements/1.1/" rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/"/>
+      </ns3:Work>
+    </rdf:RDF>
+  </ns0:metadata>
+  <ns0:g id="layer1" ns2:groupmode="layer" ns2:label="Layer 1">
+    <ns0:flowRoot id="flowRoot3384" style="font-size: 40px; font-style: normal; font-variant: normal; font-weight: normal; font-stretch: normal; line-height: 125%; letter-spacing: 0; word-spacing: 0; fill: #000; fill-opacity: 1; stroke: none; font-family: MS PGothic; -inkscape-font-specification: MS PGothic" xml:space="preserve"><ns0:flowRegion><ns0:rect fill="none" height="73.705833" id="rect3388" stroke="none" style="fill:none; stroke:none;" width="817.67395" x="50.672756" y="131.59056"/></ns0:flowRegion><ns0:flowDiv><ns0:flowPara>あいうえお　かきくけこ 12345 abcde</ns0:flowPara><ns0:flowPara/></ns0:flowDiv></ns0:flowRoot>    <ns0:text id="text3402" style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family: MS PGothic;inkscape-font-specification:Arial" x="43.762833" y="272.09229" ns1:linespacing="125%" xml:space="preserve"><ns0:tspan id="tspan3404" ns1:role="line"/></ns0:text>
+    <ns0:text id="text3406" style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:ＭＳ Ｐゴシック;-inkscape-font-specification:ＭＳ Ｐゴシック" x="50.672756" y="216.81293" ns1:linespacing="125%" xml:space="preserve"><ns0:tspan id="tspan3408" x="50.672756" y="216.81293" ns1:role="line">あいうえお　かきくけこ 12345 abcde</ns0:tspan></ns0:text>
+    <ns0:text id="text3410" style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial" x="50.672756" y="258.27246" ns1:linespacing="125%" xml:space="preserve"><ns0:tspan id="tspan3412" x="50.672756" y="258.27246" ns1:role="line">あいうえお　かきくけこ 12345 abcde</ns0:tspan></ns0:text>
+  </ns0:g>
+</ns0:svg>

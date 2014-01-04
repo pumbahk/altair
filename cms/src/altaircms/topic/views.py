@@ -27,6 +27,8 @@ def unit_list_view(context, request):
     qs = searcher.query_objects_for_grid(request.allowable(context.TargetTopic))
     if ":all:" in request.GET:
         qs = searcher.no_filter_without_tag(qs, request.GET)
+    elif "item_search" in request.GET:
+        qs = searcher.item_search_filter(qs, request.GET)
     else:
         qs = searcher.filter_default(qs, request.GET)
         

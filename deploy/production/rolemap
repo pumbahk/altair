@@ -8,8 +8,8 @@ apmv2.1b.vpc.altr	userapp
 apmv2.1c.vpc.altr	userapp
 apmv3.1b.vpc.altr	userapp
 apmv3.1c.vpc.altr	userapp
-apmv5.1b.vpc.altr	userapp-cart-only
-apmv5.1c.vpc.altr	userapp-cart-only
+apmv5.1b.vpc.altr	userapp
+apmv5.1c.vpc.altr	userapp
 apmv6.1b.vpc.altr	userapp-cart-only
 apmv6.1c.vpc.altr	userapp-without-cart-and-lots
 apmv7.1b.vpc.altr	userapp-without-cart-and-lots

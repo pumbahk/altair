@@ -32,8 +32,13 @@ PromotionPageListSearchSchemaList = [
     ]
 
 PromotionListTagOnly = [
-    sl.LikeSearchSchema(PromotionTag, "search", model_attribute="label"), 
+    sl.LikeSearchSchema(PromotionTag, "search", model_attribute="label"),
     ]
+
+PromotionListItemSearch = [
+    sl.LikeSearchSchema(Promotion, "search", model_attribute="text"),
+    ]
+
 TopcontentUnitListSearchSchemaList = [
     sl.LikeSearchSchema(TopcontentTag, "search", model_attribute="label"), 
     sl.DateTimeSearchSchema(Topcontent, "term_begin", model_attribute="publish_open_on"), 
@@ -49,7 +54,11 @@ TopcontentPageListSearchSchemaList = [
     ]
 
 TopcontentListTagOnly = [
-    sl.LikeSearchSchema(TopcontentTag, "search", model_attribute="label"), 
+    sl.LikeSearchSchema(TopcontentTag, "search", model_attribute="label"),
+    ]
+
+TopcontentListItemSearch = [
+    sl.LikeSearchSchema(Topcontent, "search", model_attribute="title"),
     ]
 
 TopicUnitListSearchSchemaList = [
@@ -66,8 +75,12 @@ TopicPageListSearchSchemaList = [
     sl.BooleanSearchSchema(Page, "published")
     ]
 
+TopicListItemSearch = [
+    sl.LikeSearchSchema(Topic, "search", model_attribute="title"),
+    ]
+
 TopicListTagOnly = [
-    sl.LikeSearchSchema(TopicTag, "search", model_attribute="label"), 
+    sl.LikeSearchSchema(TopicTag, "search", model_attribute="label"),
     ]
 
 class TopicUnitListSearcher(object):
@@ -85,6 +98,11 @@ class TopicUnitListSearcher(object):
 
     def no_filter_without_tag(self, qs, params):
         cond_dict = sl.parse_params_using_schemas(TopicListTagOnly, params)
+        qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
+        return qs
+
+    def item_search_filter(self, qs, params):
+        cond_dict = sl.parse_params_using_schemas(TopicListItemSearch, params)
         qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
         return qs
 
@@ -109,6 +127,11 @@ class TopicPageListSearcher(object):
         qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
         return qs
 
+    def item_search_filter(self, qs, params):
+        cond_dict = sl.parse_params_using_schemas(TopicListItemSearch, params)
+        qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
+        return qs
+
     def query_objects_for_grid(self, qs):
         qs = qs.filter(PageSet.id==Page.pageset_id).filter(self.finder.widget.tag_id==TopicTag.id)
         qs = qs.with_entities(PageSet, Page, self.finder.widget, TopicTag)
@@ -129,7 +152,6 @@ class TopicPageDetailSearcher(object):
         return widgets.first()
 
 
-
 class TopcontentUnitListSearcher(object):
     def __init__(self, request, _now=get_now):
         self.request = request 
@@ -145,6 +167,11 @@ class TopcontentUnitListSearcher(object):
 
     def no_filter_without_tag(self, qs, params):
         cond_dict = sl.parse_params_using_schemas(TopcontentListTagOnly, params)
+        qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
+        return qs
+
+    def item_search_filter(self, qs, params):
+        cond_dict = sl.parse_params_using_schemas(TopcontentListItemSearch, params)
         qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
         return qs
 
@@ -166,6 +193,11 @@ class TopcontentPageListSearcher(object):
 
     def no_filter_without_tag(self, qs, params):
         cond_dict = sl.parse_params_using_schemas(TopcontentListTagOnly, params)
+        qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
+        return qs
+
+    def item_search_filter(self, qs, params):
+        cond_dict = sl.parse_params_using_schemas(TopcontentListItemSearch, params)
         qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
         return qs
 
@@ -207,6 +239,11 @@ class PromotionUnitListSearcher(object):
         qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
         return qs
 
+    def item_search_filter(self, qs, params):
+        cond_dict = sl.parse_params_using_schemas(PromotionListItemSearch, params)
+        qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
+        return qs
+
     def query_objects_for_grid(self, qs):
         return get_tagmanager(Promotion.type, request=self.request).joined_query(qs=qs)
 
@@ -226,6 +263,11 @@ class PromotionPageListSearcher(object):
 
     def no_filter_without_tag(self, qs, params):
         cond_dict = sl.parse_params_using_schemas(PromotionListTagOnly, params)
+        qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
+        return qs
+
+    def item_search_filter(self, qs, params):
+        cond_dict = sl.parse_params_using_schemas(PromotionListItemSearch, params)
         qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
         return qs
 

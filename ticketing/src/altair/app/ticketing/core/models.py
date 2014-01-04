@@ -312,8 +312,9 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.stock.stock_holder == stock_holder
 
     @classmethod
-    def query_sales_seats(cls, sales_segment):
-        return cls.query.filter(
+    def query_sales_seats(cls, sales_segment, session=None):
+        session = session or DBSession
+        return session.query(cls).filter(
                 cls.stock_id==ProductItem.stock_id
             ).filter(
                 ProductItem.product_id==Product.id
@@ -3105,6 +3106,7 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     original_ticket_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='SET NULL'), nullable=True)
     derived_tickets = relationship('Ticket', backref=backref('original_ticket', remote_side=[id]))
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+    filename = Column(Unicode(255), nullable=False, default=u"uploaded.svg")
 
     def before_insert_or_update(self):
         if self.original_ticket and self.data != self.original_ticket.data:
@@ -3944,8 +3946,8 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     floor = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"階"))
     column = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"列"))
     num = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"番"))
-    augus_venue_id = Column(Identifier, ForeignKey('AugusVenue.id', ondelete='CASCADE'),
-                            nullable=False)
+    augus_venue_id = Column(Identifier, ForeignKey('AugusVenue.id',
+                            ondelete='CASCADE'), nullable=False)
     seat_id = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'))
     augus_venue = relationship('AugusVenue', backref='augus_seats')
     seat = relationship('Seat')
@@ -3955,8 +3957,18 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     deleted_at = Column(TIMESTAMP, nullable=True)
 
 
-class AugusPerformance(object):
+class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusPerformance'
-    augus_event_code = None
-    augus_peformance_code = None
-    performance_id = None
+    id = Column(Identifier, primary_key=True)    
+    code = AnnotatedColumn(Integer, nullable=False, 
+                           unique=True, _a_label=(u"公演コード"))
+    augus_event_code = AnnotatedColumn(Integer, nullable=False,
+                                       _a_label=(u"事業コード"))
+    performance_id = Column(Identifier, 
+                            ForeignKey("Performance.id", ondelete='CASCADE'),
+                            nullable=True, unique=True)
+    performance = relationship('Performance')
+    created_at = Column(TIMESTAMP, nullable=False)
+    updated_at = Column(TIMESTAMP, nullable=False)
+    deleted_at = Column(TIMESTAMP, nullable=True)
+    

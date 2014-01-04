@@ -21,6 +21,10 @@ ${ch.breadcrumbs(
           <td class="span3">${template.name}</td>
         </tr>
         <tr>
+          <th class="span2">ファイル名</th>
+          <td class="span3">${template.filename}</td>
+        </tr>
+        <tr>
           <th class="span2">チケット様式</th>
           <td class="span3"><a href="${request.route_path("tickets.ticketformats.show",id=template.ticket_format_id)}">
 			  ${template.ticket_format.name}

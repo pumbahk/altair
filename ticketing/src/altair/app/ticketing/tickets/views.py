@@ -441,9 +441,10 @@ class TicketTemplates(BaseView):
         ticket_template = Ticket(name=form.data["name"], 
                                  ticket_format_id=form.data["ticket_format_id"], 
                                  data=form.data_value, 
+                                 filename=form.drawing.data.filename, 
                                  organization_id=self.context.organization.id
                                  )
-        
+
         ticket_template.save()
         self.request.session.flash(u'チケットテンプレートを登録しました')
         return HTTPFound(location=self.request.route_path("tickets.index"))
@@ -499,7 +500,8 @@ class TicketTemplates(BaseView):
         template.ticket_format_id = form.data["ticket_format_id"]
         template.always_reissueable = form.data["always_reissueable"]
         template.priced = form.data["priced"]
-
+        if form.filename:
+            template.filename = form.filename
         if form.data_value:
             template.data = form.data_value
         template.save()

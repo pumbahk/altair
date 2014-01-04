@@ -103,6 +103,53 @@ def convert_wishes(params, limit):
     return [dict(performance_id=performance_ids[x], wished_products=results[x])
             for x in sorted(results)]
 
+
+wished_sp_performance_id_pt = r"^wish_order-(?P<wish_order>\d+)-performance_id$"
+wished_sp_product_id_pt = r"^wish_order-(?P<wish_order>\d+)-product_id$"
+wished_sp_product_quantity_pt = r"^wish_order-(?P<wish_order>\d+)-quantity$"
+wished_sp_performance_id_re = re.compile(wished_sp_performance_id_pt)
+wished_sp_product_id_re = re.compile(wished_sp_product_id_pt)
+wished_sp_product_quantity_re = re.compile(wished_sp_product_quantity_pt)
+def convert_sp_wishes(params, limit):
+
+    performances  = ((wished_sp_performance_id_re.match(p), params[p]) for p in params)
+    products = ((wished_sp_product_id_re.match(p), params[p]) for p in params)
+    quantities = ((wished_sp_product_quantity_re.match(p), params[p]) for p in params)
+
+    performance_map = {}
+    wish_orders = []
+    for m, param_value in performances:
+        if m is None:
+            continue
+        gdict = m.groupdict()
+        wish_order = int(gdict['wish_order'])
+        wish_orders.append(wish_order)
+        performance_map.update({wish_order : param_value})
+
+    products_map = {}
+    for m, param_value in products:
+        if m is None:
+            continue
+        gdict = m.groupdict()
+        wish_order = int(gdict['wish_order'])
+        products_map.update({wish_order : param_value})
+
+    quantity_map = {}
+    for m, param_value in quantities:
+        if m is None:
+            continue
+        gdict = m.groupdict()
+        wish_order = int(gdict['wish_order'])
+        quantity_map.update({wish_order : int(param_value)})
+
+    wishes = []
+    for wish_order in wish_orders:
+        list = [{'wish_order':wish_order, 'product_id':products_map[wish_order], 'quantity':quantity_map[wish_order]}]
+        map = {'performance_id':performance_map[wish_order], 'wished_products':list}
+        wishes.append(map)
+
+    return wishes
+
 def check_quantities(wishes, upper_limit):
     result = True
     for wish in wishes:

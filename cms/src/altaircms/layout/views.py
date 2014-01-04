@@ -1,6 +1,8 @@
-# coding: utf-8
+# -*- coding:utf-8 -*-
+import os.path
 from altairsite.front import helpers as fh
 from pyramid.view import view_config
+from pyramid.decorator import reify
 
 from altaircms.layout.models import Layout
 from .renderable import LayoutRender
@@ -175,10 +177,14 @@ def demo(request):
              renderer="dummy.html")
 def preview(context, request):
     layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
+    real_layout_file = RealLayoutFile(request, layout)
+    real_layout_file.abspath() #xxx:
+
     resolver = get_frontpage_discriptor_resolver(request)
     discriptor = resolver.resolve(request, layout, verbose=True)
     if not discriptor.exists():
         raise HTTPNotFound("template file %s is not found" % discriptor.abspath()) 
+
     blocks = defaultdict(list)
     class Page(object):
         title = layout.title
@@ -191,8 +197,34 @@ def preview(context, request):
 @view_config(route_name="layout_download")
 def download(request):
     layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
-    filesession = get_layout_filesession(request)
-    path = filesession.abspath(layout.prefixed_template_filename)
-    response = FileResponse(path)
+    real_layout_file = RealLayoutFile(request, layout)
+    response = FileResponse(real_layout_file.abspath())
     response.content_disposition = 'attachment; filename="%s"' % layout.template_filename
     return response
+
+from . import SESSION_NAME
+from altaircms.filelib.s3 import s3load_to_filename
+
+def s3download_layout(request, layout, abspath):
+    uri = "{}/{}".format(SESSION_NAME, layout.prefixed_template_filename)
+    s3load_to_filename(request, uri, abspath)
+
+class RealLayoutFile(object):
+    def __init__(self, request, layout, download=s3download_layout):
+        self.request = request
+        self.layout = layout
+        self.download = download
+
+    @reify
+    def filesession(self):
+        return get_layout_filesession(self.request)
+
+    def _abspath(self):
+        return self.filesession.abspath(self.layout.prefixed_template_filename)
+
+    def abspath(self):
+        abspath = self._abspath()
+        if not os.path.exists(abspath):
+            logger.info("*layout* layout does not exists. download it. (file:{})".format(abspath))
+            self.download(self.request, self.layout, abspath)
+        return abspath

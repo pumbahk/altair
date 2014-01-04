@@ -140,3 +140,25 @@ class OrderAttributesDataTests(unittest.TestCase):
             u"venue": "overwriten venue",
             u"aux": {u"税込み表記": u"[o_o]"}
         })
+
+class SVGBuilderUseMultipleTests(unittest.TestCase):
+    def _getTarget(self):
+        from altair.app.ticketing.tickets.svg_builder import TicketModelControl
+        return TicketModelControl
+
+    def _makeOne(self, *args, **kwargs):
+        class Contorl(self._getTarget()):
+            def overwrite_attributes(self, x):
+                return x
+        return Contorl(*args, **kwargs)
+
+    def test_it__6512(self):
+        class ticket(object):
+            vars_defaults = {}
+
+        vals = self._makeOne().get_vals(ticket, {"seat": "a"}) #指定席
+        self.assertEqual(vals, {"seat": "a"})
+
+        vals = self._makeOne().get_vals(ticket, {}) #自由席
+        self.assertEqual(vals, {})
+

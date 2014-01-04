@@ -195,7 +195,7 @@ class BundleAttributeView(BaseView):
     def new_post(self):
         bundle = self.context.bundle
         event_id = self.request.matchdict["event_id"]
-        form = forms.AttributeForm(self.request.POST)
+        form = forms.AttributeForm(self.request.POST, bundle_id=bundle.id)
         if not form.validate():
             return dict(form=form,event=self.context.event)
 
@@ -211,8 +211,9 @@ class BundleAttributeView(BaseView):
                  renderer="altair.app.ticketing:templates/tickets/events/attributes/new.html")
     def edit(self):
         bundle_attribute = self.context.bundle_attribute
-        form = forms.AttributeEditForm(name=bundle_attribute.name, 
+        form = forms.AttributeForm(name=bundle_attribute.name, 
                                        value=bundle_attribute.value, 
+                                       bundle_id=bundle_attribute.ticket_bundle_id, 
                                        attribute_id=bundle_attribute.id)
         return dict(form=form, event=self.context.event, attribute=bundle_attribute)
 
@@ -220,8 +221,10 @@ class BundleAttributeView(BaseView):
                  renderer="altair.app.ticketing:templates/tickets/events/attributes/new.html")
     def edit_post(self):
         attribute = self.context.bundle_attribute
-        form = forms.AttributeEditForm(self.request.POST, 
+        form = forms.AttributeForm(self.request.POST, 
+                                       bundle_id=attribute.ticket_bundle_id, 
                                        attribute_id=attribute.id)
+
 
         if not form.validate():
             return dict(form=form,event=self.context.event, attribute=attribute)

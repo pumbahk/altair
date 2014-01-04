@@ -38,6 +38,7 @@ from altair.app.ticketing.users.api import (
     )
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
+from altair.sqlahelper import get_db_session
 
 from . import api
 from . import helpers as h
@@ -375,22 +376,20 @@ class IndexView(IndexViewMixin):
         venue = self.context.performance.venue
 
         self.request.add_response_callback(gzip_preferred)
-
-        #from altair.sqlahelper import get_db_session
-        #slave_session = get_db_session(self.request, name="slave")
+        slave_session = get_db_session(self.request, name="slave")
 
         return dict(
             areas=dict(
-                (area.id, { 'id': area.id, 'name': area.name }) \
-                for area in DBSession.query(c_models.VenueArea) \
+                (area.id, { 'id': area.id, 'name': area.name })\
+                for area in slave_session.query(c_models.VenueArea) \
                             .join(c_models.VenueArea_group_l0_id) \
                             .filter(c_models.VenueArea_group_l0_id.venue_id==venue.id)
                 ),
             info=dict(
                 available_adjacencies=[
                     adjacency_set.seat_count
-                    for adjacency_set in \
-                        DBSession.query(c_models.SeatAdjacencySet) \
+                    for adjacency_set in\
+                        slave_session.query(c_models.SeatAdjacencySet) \
                         .filter_by(site_id=venue.site_id)
                     ]
                 ),
@@ -404,18 +403,19 @@ class IndexView(IndexViewMixin):
         venue = self.context.performance.venue
         stock_type_id = self.request.params.get('seat_type_id')
 
-        sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.context.sales_segment.id).one()
+        slave_session = get_db_session(self.request, name="slave")
+        sales_segment = slave_session.query(c_models.SalesSegment).filter(c_models.SalesSegment.id==self.context.sales_segment.id).one()
         sales_stocks = sales_segment.stocks
         seats_query = None
         if sales_segment.seat_choice:
-            seats_query = c_models.Seat.query_sales_seats(sales_segment)\
+            seats_query = c_models.Seat.query_sales_seats(sales_segment, slave_session)\
                 .options(joinedload('areas'), joinedload('status_'))\
                 .join(c_models.SeatStatus)\
                 .join(c_models.Stock)\
                 .filter(c_models.Seat.venue_id==venue.id)\
                 .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))
             seat_groups_queries = [
-                DBSession.query(c_models.SeatGroup.l0_id, c_models.SeatGroup.name, c_models.Seat.l0_id) \
+                slave_session.query(c_models.SeatGroup.l0_id, c_models.SeatGroup.name, c_models.Seat.l0_id) \
                     .join(c_models.Seat, c_models.SeatGroup.l0_id == l0_id_column) \
                     .join(c_models.Stock, c_models.Seat.stock_id == c_models.Stock.id) \
                     .filter(c_models.SeatGroup.site_id == venue.site_id) \

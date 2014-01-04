@@ -227,7 +227,7 @@ class ProductItemForm(OurForm):
     )
 
     def validate_product_item_price(form, field):
-        if field.data and form.product_id.data and form.product_item_id.data:
+        if field.data and form.product_item_quantity.data and form.product_id.data and form.product_item_id.data:
             product = Product.get(form.product_id.data)
             sum_amount = int(field.data) * int(form.product_item_quantity.data)
             for item in product.items:

@@ -10,7 +10,6 @@
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
-
     var regexp_for_values = /(?:((?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+)|"((?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)"|'((?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)')(?:\s+|$)/g;
 
     function unescape(escaped) {
@@ -245,6 +244,8 @@
       throw new Error('invalid transform function: ' + f);
   }
 
+  var tracker = new util.timer('start');
+
   var VenueEditor = function VenueEditor(canvas, options) {
     this.canvas = canvas;
     this.callbacks = {
@@ -302,16 +303,27 @@
   };
 
   VenueEditor.prototype.load = function VenueEditor_load(data) {
+    tracker.lap('load start');
     if (this.drawable !== null)
       this.drawable.dispose();
     this.drawing = data.drawing;
     this.metadata = data.metadata;
     if (data.metadata.seat_adjacencies)
       this.seatAdjacencies = new models.SeatAdjacencies(data.metadata.seat_adjacencies);
+    tracker.lap('initDrawable start');
     this.initDrawable();
+    tracker.lap('initModel start');
     this.initModel();
-    this.initSeats();
-    this.callbacks.load && this.callbacks.load(this);
+    tracker.lap('load end');
+
+    // 座席データの描画は別スレッドで行う
+    var self = this;
+    setTimeout(function() {
+      tracker.lap('initSeats start');
+      self.initSeats();
+      tracker.lap('callback.load start');
+      self.callbacks.load && self.callbacks.load(self);
+    }, 0)
   };
 
   VenueEditor.prototype.refresh = function VenueEditor_refresh(data) {
@@ -360,6 +372,7 @@
     var shapes = {};
     var styleClasses = CONF.DEFAULT.STYLES;
 
+    tracker.lap('create shape start');
     (function iter(svgStyle, defs, nodeList) {
       outer:
         for (var i = 0; i < nodeList.length; i++) {
@@ -382,7 +395,7 @@
             if (matrix) {
               if (currentSvgStyle._transform) {
                 currentSvgStyle._transform = currentSvgStyle._transform.multiply(matrix);
-	  		} else {
+              } else {
                 currentSvgStyle._transform = matrix;
               }
             }
@@ -473,6 +486,7 @@
       },
       {},
       drawing.documentElement.childNodes);
+    tracker.lap('create shape end');
 
     drawable.addEvent({
       mousewheel: function (evt) {
@@ -486,7 +500,9 @@
     self.drawable = drawable;
     self.shapes = shapes;
 
+    tracker.lap('zoom start');
     self.zoom(self.zoomRatio);
+    tracker.lap('changeUIMode start');
     self.changeUIMode(self.uiMode);
   };
 
@@ -517,93 +533,114 @@
       seats = {};
       target_seats = this.shapes;
     }
-    for (var id in target_seats) {
-      var shape = this.shapes[id];
-      var seat = this.venue.seats.get(id);
-      if (!seat)
-        continue;
 
-      var seat_vo = seats[id];
-      if (seat_vo) {
-        seat_vo.set('model', seat);
-        seat_vo.trigger('change:shape');
-        continue;
-      } else {
-        if (metadata && !seat.get('stock').get('assignable'))
+    var target_seats_keys = [];
+    for (var ts in target_seats) {
+      if (target_seats.hasOwnProperty(ts)) target_seats_keys.push(ts);
+    }
+    var total_count = target_seats_keys.length;
+    var count = 0;
+
+    var set_seat_callback = function() {
+      for (var i = 0; count < total_count && i < CONF.DEFAULT.SEAT_RENDER_UNITS; i++, count++) {
+        var id = target_seats_keys[count];
+        var shape = self.shapes[id];
+        var seat = self.venue.seats.get(id);
+        if (!seat) {
           continue;
-      }
+        }
 
-      seats[id] = (function (id) {
-        seat.on('change:selected', function () {
-          var value = this.get('selected');
-          if (value)
-            self.selection.add(this);
-          else
-            self.selection.remove(this);
-        });
-        return new viewobjects.Seat({
-          model: seat,
-          shape: shape,
-          events: {
-            mouseover: function(evt) {
-              var candidate = null;
-              if (self.seatAdjacencies) {
-                var candidates = self.seatAdjacencies.getCandidates(id, self.adjacencyLength());
-                if (candidates.length == 0)
-                  return;
-                for (var i = 0; i < candidates.length; i++) {
-                  candidate = candidates[i];
-                  for (var j = 0; j < candidate.length; j++) {
-                    if (!seats[candidate[j]].get('model').selectable()) {
-                      candidate = null;
+        var seat_vo = seats[id];
+        if (seat_vo) {
+          seat_vo.set('model', seat);
+          seat_vo.trigger('change:shape');
+          continue;
+        } else {
+          if (metadata && !seat.get('stock').get('assignable')) {
+            continue;
+          }
+        }
+
+        seats[id] = (function (id) {
+          seat.on('change:selected', function () {
+            var value = this.get('selected');
+            if (value)
+              self.selection.add(this);
+            else
+              self.selection.remove(this);
+          });
+          return new viewobjects.Seat({
+            model: seat,
+            shape: shape,
+            events: {
+              mouseover: function(evt) {
+                var candidate = null;
+                if (self.seatAdjacencies) {
+                  var candidates = self.seatAdjacencies.getCandidates(id, self.adjacencyLength());
+                  if (candidates.length == 0)
+                    return;
+                  for (var i = 0; i < candidates.length; i++) {
+                    candidate = candidates[i];
+                    for (var j = 0; j < candidate.length; j++) {
+                      if (!seats[candidate[j]].get('model').selectable()) {
+                        candidate = null;
+                        break;
+                      }
+                    }
+                    if (candidate) {
                       break;
                     }
                   }
-                  if (candidate) {
-                    break;
+                } else {
+                  candidate = [id];
+                }
+                if (!candidate)
+                  return;
+                for (var i = 0; i < candidate.length; i++) {
+                  var _id = candidate[i];
+                  var seat = seats[_id];
+                  if (seat.get('model').selectable()) {
+                    seat.addStyleType('highlighted');
+                  } else {
+                    seat.addStyleType('tooltip');
                   }
+                  self.highlighted[_id] = seat;
+                  self.callbacks.tooltip && self.callbacks.tooltip(seat, evt);
                 }
-              } else {
-                candidate = [id];
-              }
-              if (!candidate)
-                return;
-              for (var i = 0; i < candidate.length; i++) {
-                var _id = candidate[i];
-                var seat = seats[_id];
-                if (seat.get('model').selectable()) {
-                  seat.addStyleType('highlighted');
-                } else {
-                  seat.addStyleType('tooltip');
+              },
+              mouseout: function(evt) {
+                var highlighted = self.highlighted;
+                self.highlighted = {};
+                for (var i in highlighted) {
+                  var seat = highlighted[i];
+                  if (seat.get('model').selectable()) {
+                    seat.removeStyleType('highlighted');
+                  } else {
+                    seat.removeStyleType('tooltip');
+                  }
+                  self.callbacks.tooltip && self.callbacks.tooltip(null, evt);
                 }
-                self.highlighted[_id] = seat;
-                self.callbacks.tooltip && self.callbacks.tooltip(seat, evt);
-              }
-            },
-            mouseout: function(evt) {
-              var highlighted = self.highlighted;
-              self.highlighted = {};
-              for (var i in highlighted) {
-                var seat = highlighted[i];
-                if (seat.get('model').selectable()) {
-                  seat.removeStyleType('highlighted');
-                } else {
-                  seat.removeStyleType('tooltip');
+              },
+              mousedown: function(evt) {
+                var seat = seats[id];
+                if (seat.get('model').get('sold')) {
+                  self.callbacks.click && self.callbacks.click(seat.get('model'), evt);
                 }
-                self.callbacks.tooltip && self.callbacks.tooltip(null, evt);
-              }
-            },
-            mousedown: function(evt) {
-              var seat = seats[id];
-              if (seat.get('model').get('sold')) {
-                self.callbacks.click && self.callbacks.click(seat.get('model'), evt);
               }
             }
-          }
-        });
-      })(id);
-    }
-    this.seats = seats;
+          });
+        })(id);
+        self.seats = seats;
+      }
+
+      if (count < total_count) {
+        setTimeout(set_seat_callback, 0);
+      } else {
+        tracker.lap('initSeats end');
+      }
+    };
+
+    setTimeout(set_seat_callback, 0);
   };
 
   VenueEditor.prototype.addKeyEvent = function VenueEditor_addKeyEvent() {
@@ -831,6 +868,7 @@
   };
 
   VenueEditor.prototype.zoom = function VenueEditor_zoom(ratio, center) {
+    tracker.lap('zoom start');
     var sp = this.drawable.scrollPosition();
     var lvs;
 
@@ -840,6 +878,7 @@
     this.drawable.transform(Fashion.Matrix.scale(this.zoomRatio));
     lvs = this.drawable._inverse_transform.apply(this.drawable.viewportInnerSize());
     this.drawable.scrollPosition({ x: center.x - lvs.x / 2, y: center.y - lvs.y / 2 });
+    tracker.lap('zoom end');
   };
 
   $.fn.venueeditor = function (options) {
@@ -878,22 +917,36 @@
               }
             });
             // Load drawing
+            tracker.lap('ajax get drawing start');
             if (aux.dataSource.drawing) {
               $.ajax({
                 type: 'get',
                 url: aux.dataSource.drawing,
                 dataType: 'xml',
-                success: function(xml) { waiter.charge('drawing', xml); },
-                error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
+                success: function(xml) {
+                  tracker.lap('ajax get drawing success');
+                  waiter.charge('drawing', xml);
+                },
+                error: function(xhr, text) {
+                  tracker.lap('ajax get drawing error:' + text + ", status:" + xhr.status);
+                  aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (" + text + ")");
+                }
               });
             }
 
             // Load metadata
+            tracker.lap('ajax get metadata start');
             $.ajax({
               url: aux.dataSource.metadata,
               dataType: 'json',
-              success: function(data) { waiter.charge('metadata', data); },
-              error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
+              success: function(data) {
+                tracker.lap('ajax get metadata success');
+                waiter.charge('metadata', data);
+              },
+              error: function(xhr, text) {
+                tracker.lap('ajax get metadata error:' + text + ", status:" + xhr.status);
+                aux.callbacks.message && aux.callbacks.message("Failed to load seat data (" + text + ")");
+              }
             });
             aux.callbacks.loading && aux.callbacks.loading(aux.manager);
             break;

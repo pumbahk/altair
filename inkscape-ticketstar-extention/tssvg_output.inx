@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+    <_name>TS.SVG Output</_name>
+    <id>jp.ticketstar.output.tssvg</id>
+    <output>
+        <extension>.tssvg</extension>
+        <mimetype>text/xml+svg</mimetype>
+        <_filetypename>TSSVG (*.ts.svg)</_filetypename>
+        <_filetypetooltip>チケットスター券面フォーマット</_filetypetooltip>
+    </output>
+    <script>
+      <command reldir="extensions" interpreter="python">tssvg_output.py</command>
+    </script>
+</inkscape-extension>

@@ -42,7 +42,7 @@ class LayoutModelDescriptor(object):
         path = os.path.join(self.layout_spec, self.filename)
         module, path = path.split(":")
         return u"{0}:{1}".format(module, os.path.normpath(path)).encode("utf-8")
-        
+
 
 @implementer(ILayoutModelResolver)
 class LayoutModelResolver(object):
@@ -65,7 +65,7 @@ class LayoutModelResolver(object):
         if descriptor.exists():
             return descriptor
         if verbose:
-            logger.info("layout template file %s is not found. lookup in default template path" % descriptor.abspath)
+            logger.info("layout template file %s is not found. lookup in default template path" % descriptor.abspath())
 
         descriptor = self.from_layout_default(request, layout)
         if verbose:

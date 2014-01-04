@@ -14,9 +14,17 @@ def tearDownModule():
 
 
 class RootFactoryTests(unittest.TestCase):
-
     def setUp(self):
         self.config = testing.setUp()
+        self.config.include("altair.sqlahelper")
+        import sqlahelper
+        self.session = sqlahelper.get_session()
+
+    def _makeRequest(self):
+        class request:
+            registry = self.config.registry
+            environ = {"altair.sqlahelper.sessions": {"slave": self.session}}  #for altair.sqlahelper.
+        return request
 
     def tearDown(self):
         testing.tearDown()
@@ -33,7 +41,7 @@ class RootFactoryTests(unittest.TestCase):
     def test_acl_default(self):
 
         from pyramid.security import Allow, Authenticated
-        request = testing.DummyRequest()
+        request = self._makeRequest()
 
         target = self._makeOne(request)
         result = target.__acl__
@@ -43,15 +51,13 @@ class RootFactoryTests(unittest.TestCase):
     def _add_role(self, role_name, permissions):
         from altaircms.auth import models
         role = models.Role(name=role_name, permissions=permissions)
-        import sqlahelper
-        sqlahelper.get_session().add(role)
+        self.session.add(role)
         return role
 
     def test_acl_one_role(self):
-
         from pyramid.security import Allow, Authenticated
         self._add_role('test-role', ['page_update'])
-        request = testing.DummyRequest()
+        request = self._makeRequest()
 
         target = self._makeOne(request)
         result = target.__acl__

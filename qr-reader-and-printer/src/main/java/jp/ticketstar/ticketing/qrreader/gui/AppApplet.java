@@ -18,7 +18,7 @@ import jp.ticketstar.ticketing.ApplicationException;
 import jp.ticketstar.ticketing.qrreader.AppModel;
 import jp.ticketstar.ticketing.qrreader.TicketFormat;
 import jp.ticketstar.ticketing.URLConnectionFactory;
-
+import jp.ticketstar.ticketing.gvt.font.FontFamilyResolverPatch;
 
 import netscape.javascript.JSObject;
 
@@ -120,6 +120,16 @@ class OurObjectHandler extends ReflectionObjectHandler {
  * To change this template use File | Settings | File Templates.
  */
 public class AppApplet extends JApplet implements IAppWindow, URLConnectionFactory {
+    /* patch */
+    static {
+        //reason:: https://redmine.ticketstar.jp/issues/6179
+        try {
+            Class.forName("jp.ticketstar.ticketing.gvt.font.FontFamilyResolverPatch");
+        } catch(ClassNotFoundException ex){
+            ex.printStackTrace();
+        }
+    }
+
 	private static final long serialVersionUID = 1L;
 
 	protected final MustacheFactory mustacheFactory;

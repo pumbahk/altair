@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+    <_name>TS.SVG Input</_name>
+    <id>jp.ticketstar.input.tssvg</id>
+	<dependency type="executable" location="extensions">inkex.py</dependency>
+	<dependency type="executable" location="extensions">tssvg_input.py</dependency>
+    <input>
+        <extension>.tssvg</extension>
+        <mimetype>text/xml+svg</mimetype>
+        <_filetypename>TSSVG (*.tssvg)</_filetypename>
+        <_filetypetooltip>チケットスター券面フォーマット</_filetypetooltip>
+    </input>
+    <script>
+      <command reldir="extensions" interpreter="python">tssvg_input.py</command>
+    </script>
+</inkscape-extension>
