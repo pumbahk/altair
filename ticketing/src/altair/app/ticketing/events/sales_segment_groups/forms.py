@@ -122,7 +122,7 @@ class SalesSegmentGroupForm(OurForm):
         validators=[RequiredOnUpdate()],
         hide_on_new=True
     )
-    product_limit = OurIntegerField(
+    max_product_quatity = OurIntegerField(
         label=u'商品購入上限数',
         default=None,
         filters=[zero_as_none],

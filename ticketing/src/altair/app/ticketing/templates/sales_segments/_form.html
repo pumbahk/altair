@@ -198,18 +198,18 @@ function get_performance_id() {
         % endif
       </td>
     </tr>
-    <tr class="SalesSegment_product_limit">
+    <tr class="SalesSegment_max_product_quatity">
       <th>
-        ${form.product_limit.label}
-        ${form.use_default_product_limit(_widget=LabelledCheckboxInput())}
+        ${form.max_product_quatity.label}
+        ${form.use_default_max_product_quatity(_widget=LabelledCheckboxInput())}
       </th>
       <td>
-        ${form.product_limit}
-        ${ch.validate_errors(form.product_limit)}
+        ${form.max_product_quatity}
+        ${ch.validate_errors(form.max_product_quatity)}
       </td>
       <td>
         % if form.context.sales_segment_group:
-          ${form.context.sales_segment_group.product_limit or u'-'}
+          ${form.context.sales_segment_group.max_product_quatity or u'-'}
         % endif
       </td>
     </tr>

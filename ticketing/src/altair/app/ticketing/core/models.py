@@ -1197,7 +1197,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     end_at = AnnotatedColumn(DateTime, _a_label=_(u'販売終了日時'))
     max_quantity = AnnotatedColumn('upper_limit', Integer, _a_label=_(u'購入上限枚数'))
     order_limit = AnnotatedColumn(Integer, _a_label=_(u'購入回数制限'))
-    product_limit = AnnotatedColumn(Integer, _a_label=_(u'商品購入上限数'))
+    max_product_quatity = AnnotatedColumn('product_limit', Integer, _a_label=_(u'商品購入上限数'))
 
     seat_choice = AnnotatedColumn(Boolean, default=True, _a_label=_(u'座席選択可'))
     public = AnnotatedColumn(Boolean, default=True, _a_label=_(u'一般公開'))
@@ -3540,7 +3540,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     max_quantity = AnnotatedColumn('upper_limit', Integer, _a_label=_(u'購入上限枚数'))
     order_limit = AnnotatedColumn(Integer, default=0,
                                   _a_label=_(u'購入回数制限'))
-    product_limit = AnnotatedColumn(Integer, _a_label=_(u'商品購入上限数'))
+    max_product_quatity = AnnotatedColumn('product_limit', Integer, _a_label=_(u'商品購入上限数'))
 
     seat_choice = AnnotatedColumn(Boolean, nullable=True, default=None,
                                   _a_label=_(u'座席選択可'))
@@ -3590,7 +3590,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     use_default_end_at = Column(Boolean)
     use_default_max_quantity = Column('use_default_upper_limit', Boolean)
     use_default_order_limit = Column(Boolean)
-    use_default_product_limit = Column(Boolean)
+    use_default_max_product_quatity = Column('use_default_product_limit', Boolean)
     use_default_account_id = Column(Boolean)
     use_default_margin_ratio = Column(Boolean)
     use_default_refund_ratio = Column(Boolean)

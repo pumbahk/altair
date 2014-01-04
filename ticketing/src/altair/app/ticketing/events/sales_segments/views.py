@@ -189,7 +189,7 @@ class SalesSegments(BaseView):
             'end_day_prior_to_performance': sales_segment_group.end_day_prior_to_performance,
             'end_time': sales_segment_group.end_time.strftime('%H:%M:%S') if sales_segment_group.end_time else None,
             'max_quantity': sales_segment_group.max_quantity,
-            'product_limit': sales_segment_group.product_limit,
+            'max_product_quatity': sales_segment_group.max_product_quatity,
             'order_limit': sales_segment_group.order_limit,
             'seat_choice': sales_segment_group.seat_choice,
             'public': sales_segment_group.public,

@@ -129,7 +129,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                    or product.seat_stock_type_id is None
                 )
             availability = availability_per_product_map[product.id]
-            product_limit = sales_segment.product_limit
+            max_product_quatity = sales_segment.max_product_quatity
 
             # 現在のところ、商品毎に下限枚数や上限枚数は指定できないので
             min_quantity_per_product = min_quantity or 0
@@ -148,8 +148,8 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
 
             # 商品毎の商品購入上限数を計算する
             max_product_quantity_per_product = max_quantity_per_product / quantity_power
-            if product_limit is not None:
-                max_product_quantity_per_product = min(max_product_quantity_per_product, product_limit)
+            if max_product_quatity is not None:
+                max_product_quantity_per_product = min(max_product_quantity_per_product, max_product_quatity)
             if max_product_quantity is not None:
                 max_product_quantity_per_product = min(max_product_quantity_per_product, max_product_quantity)
 
@@ -176,7 +176,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     unit_template=h.build_unit_template(product_items_for_product[product.id]),
                     quantity_power=quantity_power,
                     max_quantity=max_product_quantity_per_product,
-                    product_limit=product_limit,
+                    max_product_quatity=max_product_quatity,
                     min_product_quantity_per_product=min_product_quantity_per_product,
                     max_product_quantity_per_product=max_product_quantity_per_product
                     )
@@ -236,9 +236,9 @@ def assert_quantity_within_bounds(sales_segment, order_items):
        sales_segment.max_quantity < sum_quantity:
         raise QuantityOutOfBoundsError(sum_quantity, 1, sales_segment.max_quantity)
 
-    if sales_segment.product_limit is not None and \
-       sales_segment.product_limit < sum_product_quantity:
-        raise ProductQuantityOutOfBoundsError(sum_product_quantity, 1, sales_segment.product_limit)
+    if sales_segment.max_product_quatity is not None and \
+       sales_segment.max_product_quatity < sum_product_quantity:
+        raise ProductQuantityOutOfBoundsError(sum_product_quantity, 1, sales_segment.max_product_quatity)
 
     for stock_type_id, quantity_per_stock_type in quantities_per_stock_type.items():
         stock_type = stock_types[stock_type_id]
