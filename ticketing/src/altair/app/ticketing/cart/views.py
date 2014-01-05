@@ -66,6 +66,7 @@ from .exceptions import (
     ProductQuantityOutOfBoundsError,
     PerStockTypeQuantityOutOfBoundsError,
     PerStockTypeProductQuantityOutOfBoundsError,
+    PerProductProductQuantityOutOfBoundsError,
 )
 from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource
 from .limiting import LimiterDecorators
@@ -581,7 +582,7 @@ class ReserveView(object):
         except QuantityOutOfBoundsError as e:
             transaction.abort()
             logger.debug("quantity limit")
-            if e.quantity_given < e.min_quantity:
+            if e.min_quantity is not None and e.quantity_given < e.min_quantity:
                 return dict(
                     result='NG',
                     reason="ticket_count_below_lower_bound",
@@ -596,7 +597,7 @@ class ReserveView(object):
         except ProductQuantityOutOfBoundsError as e:
             transaction.abort()
             logger.debug("product limit")
-            if e.quantity_given < e.min_quantity:
+            if e.min_quantity is not None and e.quantity_given < e.min_quantity:
                 return dict(
                     result='NG',
                     reason="product_count_below_lower_bound",
@@ -611,7 +612,7 @@ class ReserveView(object):
         except PerStockTypeQuantityOutOfBoundsError as e:
             transaction.abort()
             logger.debug("per-stock-type quantity limit")
-            if e.quantity_given < e.min_quantity:
+            if e.min_quantity is not None and e.quantity_given < e.min_quantity:
                 return dict(
                     result='NG',
                     reason="ticket_count_below_lower_bound",
@@ -623,10 +624,10 @@ class ReserveView(object):
                     reason="ticket_count_over_upper_bound",
                     message="枚数は合計{.max_quantity}以内で選択してください".format(e)
                     )
-        except PerStockTypeProductQuantityOutOfBoundsError as e:
+        except (PerStockTypeProductQuantityOutOfBoundsError, PerProductProductQuantityOutOfBoundsError) as e:
             transaction.abort()
             logger.debug("per-stock-type product limit")
-            if e.quantity_given < e.min_quantity:
+            if e.min_quantity is not None and e.quantity_given < e.min_quantity:
                 return dict(
                     result='NG',
                     reason="product_count_below_lower_bound",

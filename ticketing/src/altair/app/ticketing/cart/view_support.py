@@ -16,6 +16,7 @@ from .exceptions import (
     ProductQuantityOutOfBoundsError,
     PerStockTypeQuantityOutOfBoundsError,
     PerStockTypeProductQuantityOutOfBoundsError,
+    PerProductProductQuantityOutOfBoundsError,
     )
 from .resources import PerformanceOrientedTicketingCartResource
 
@@ -232,6 +233,20 @@ def assert_quantity_within_bounds(sales_segment, order_items):
             stock_types[stock_type.id] = stock_type
             quantity_per_stock_type['quantity'] += quantity * quantity_power
             quantity_per_stock_type['product_quantity'] += quantity
+        if product.min_product_quantity is not None and \
+           quantity < product.min_product_quantity:
+            raise PerProductProductQuantityOutOfBoundsError(
+                quantity,
+                product.min_product_quantity,
+                product.max_product_quantity
+                )
+        if product.max_product_quantity is not None and \
+           quantity > product.max_product_quantity:
+            raise PerProductProductQuantityOutOfBoundsError(
+                quantity,
+                product.min_product_quantity,
+                product.max_product_quantity
+                )
 
     logger.debug('sum_quantity=%d, sum_product_quantity=%d' % (sum_quantity, sum_product_quantity))
 
