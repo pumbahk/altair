@@ -20,11 +20,12 @@ class APIEndpointRouteCollector(object):
     def __init__(self):
         self.routes = set()
 
-    def add(self, name): #foo.bar -> foo_bar #for json
-        self.routes.add(name.replace(".", "_"))
+    def add(self, name):
+        self.routes.add(name)
 
     def get_endpoints(self, request):
-        return {k:request.route_url(k) for k in self.routes}
+        #foo.bar -> foo_bar #for json
+        return {k.replace(".", "_"):request.route_url(k) for k in self.routes}
 
 def add_endpoint_route(config, name, *args, **kwargs):
     collector = config.registry.queryUtility(IAPIEndpointCollector)
