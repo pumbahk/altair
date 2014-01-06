@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using System.Net.Http;
 
+using QR.message;
+
 namespace QR
 {
 	public class Authentication :IAuthentication
@@ -97,7 +99,7 @@ namespace QR
 			} catch (System.Net.WebException e) {
 				//TODO:log
 				// e.ToString()はうるさすぎ
-				return	OnFailure (MessageResourceUtil.GetWebExceptionMessage(resource));
+				return	OnFailure (resource.GetWebExceptionMessage());
 			}
 		}
 
@@ -112,7 +114,7 @@ namespace QR
 
 		public Failure<string, AuthInfo> OnFailure (IResource resource)
 		{
-			var message = string.Format (MessageResourceUtil.GetLoginFailureMessageFormat (resource));
+			var message = string.Format (resource.GetLoginFailureMessageFormat ());
 			return new Failure<string,AuthInfo> (message);
 		}
 

@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using System;
+using QR.message;
 
 namespace QR
 {
@@ -10,7 +11,7 @@ namespace QR
 		public void TestsGetLoginFailureMessage ()
 		{
 			var resource = new Resource ();
-			var result = MessageResourceUtil.GetLoginFailureMessageFormat (resource);
+			var result = resource.GetLoginFailureMessageFormat ();
 			Assert.AreNotEqual (default(string), result);
 		}
 
@@ -18,7 +19,7 @@ namespace QR
 		public void TestsGetTaskCancelMessage ()
 		{
 			var resource = new Resource ();
-			var result = MessageResourceUtil.GetTaskCancelMessage (resource);
+			var result = resource.GetTaskCancelMessage ();
 			Assert.AreNotEqual (default(string), result);
 		}
 
@@ -26,7 +27,7 @@ namespace QR
 		public void TestsGetWebExceptionMessage ()
 		{
 			var resource = new Resource ();
-			var result = MessageResourceUtil.GetWebExceptionMessage (resource);
+			var result = resource.GetWebExceptionMessage ();
 			Assert.AreNotEqual (default(string), result);
 		}
 	}

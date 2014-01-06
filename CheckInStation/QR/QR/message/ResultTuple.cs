@@ -1,6 +1,6 @@
 using System;
 
-namespace QR
+namespace QR.message
 {
 	public class ResultTuple<T,G>
 	{

@@ -1,20 +1,20 @@
 using System;
 
-namespace QR
+namespace QR.message
 {
-	public class MessageResourceUtil
+	public static class MessageResourceUtil
 	{
-		public static string GetTaskCancelMessage (IResource resource)
+		public static string GetTaskCancelMessage (this IResource resource)
 		{
 			return resource.SettingValue ("message.task.cancel.format.0");
 		}
 
-		public static string GetLoginFailureMessageFormat (IResource resource)
+		public static string GetLoginFailureMessageFormat (this IResource resource)
 		{
 			return resource.SettingValue ("message.auth.failure.format.0");
 		}
 
-		public static string GetWebExceptionMessage (IResource resource)
+		public static string GetWebExceptionMessage (this IResource resource)
 		{
 			return resource.SettingValue ("message.web.exception.format.0");
 		}

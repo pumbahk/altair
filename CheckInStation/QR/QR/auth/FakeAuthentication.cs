@@ -1,6 +1,8 @@
 using System;
 using System.Threading.Tasks;
 
+using QR.message;
+
 namespace QR
 {
 	public class FakeAuthentication :Authentication, IAuthentication
