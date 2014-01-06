@@ -18,6 +18,11 @@ namespace QR.message
 		{
 			return resource.SettingValue ("message.web.exception.format.0");
 		}
+
+		public static string GetInvalidInputMessage(this IResource resource)
+		{
+			return resource.SettingValue ("message.invalid.input.format.0");
+		}
 	}
 }
 

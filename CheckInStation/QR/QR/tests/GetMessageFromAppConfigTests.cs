@@ -30,6 +30,14 @@ namespace QR
 			var result = resource.GetWebExceptionMessage ();
 			Assert.AreNotEqual (default(string), result);
 		}
+
+		[Test, Description ("invalid input message")]
+		public void TestsGetInvalidInputMessage ()
+		{
+			var resource = new Resource ();
+			var result = resource.GetInvalidInputMessage ();
+			Assert.AreNotEqual (default(string), result);
+		}
 	}
 }
 

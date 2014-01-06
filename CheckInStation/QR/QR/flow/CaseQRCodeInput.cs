@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using QR.message;
 
 namespace QR
 {
@@ -8,7 +9,7 @@ namespace QR
 	/// </summary>
 	public class CaseQRCodeInput :AbstractCase, ICase
 	{
-		public IVerifier<string>QRCodeVerifier { get; set; }
+		public IDataFetcher<string,TicketData>TicketDataFetcher { get; set; }
 
 		public string QRCode { get; set; }
 
@@ -26,7 +27,7 @@ namespace QR
 		{
 			return Task.Run (() => {
 				QRInputEvent subject = ev as QRInputEvent;
-				this.QRCodeVerifier = this.Resource.QRCodeVerifier;
+				this.TicketDataFetcher = this.Resource.TicketDataFetcher;
 				this.QRCode = subject.QRCode;
 			});
 		}
@@ -36,8 +37,11 @@ namespace QR
 			if (this.VerifiedCount > 0) {
 				return this.VerifyStatus;
 			}
-			this.VerifyStatus = await this.QRCodeVerifier.VerifyAsync (this.QRCode);
-			this.VerifiedCount += 1;
+			ResultTuple<string, TicketData> result = await this.TicketDataFetcher.fetchAsync (this.QRCode);
+			this.VerifyStatus = result.Status;
+			if (result.Status) {
+				this.VerifiedCount += 1;
+			} 
 			return this.VerifyStatus;
 		}
 

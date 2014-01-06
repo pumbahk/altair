@@ -18,7 +18,7 @@ namespace QR
 			var verifier = new FakeVerifier<string> (true);
 
 			var resource = new Resource () {
-				QRCodeLoader = loader,
+				TicketDataFetcher = loader,
 				QRCodeVerifier = verifier
 			};
 
@@ -57,7 +57,7 @@ namespace QR
 		{
 			var t = Task.Run (async () => {
 				await target.ConfigureAsync (new QRInputEvent (){ QRCode = "*qrcode*" }); 
-				FakeVerifier<string> v = target.QRCodeVerifier as FakeVerifier<string>;
+				FakeVerifier<string> v = target.TicketDataFetcher as FakeVerifier<string>;
 				v.Result = false;
 
 				Assert.That (Is.Equals (target.VerifiedCount, 0));

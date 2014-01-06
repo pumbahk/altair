@@ -5,9 +5,7 @@ namespace QR
 {
 	public interface INeedForQR
 	{
-		IVerifier<string> QRCodeVerifier { get; set; }
-
-		IDataLoader<string> QRCodeLoader { get; set; }
+		IDataFetcher<string, TicketData> TicketDataFetcher { get; set; }
 	}
 
 	public interface INeedForAuth

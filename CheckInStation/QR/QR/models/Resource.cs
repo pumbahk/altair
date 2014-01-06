@@ -38,7 +38,7 @@ namespace QR
 			return true;
 		}
 
-		public IDataLoader<string> QRCodeLoader { get; set; }
+		public IDataFetcher<string, TicketData> TicketDataFetcher { get; set; }
 
 		public IVerifier<string> QRCodeVerifier { get; set; }
 

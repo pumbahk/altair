@@ -69,9 +69,7 @@
     <Compile Include="flow\CaseQRPrintForAll.cs" />
     <Compile Include="flow\CaseQRPrintFinish.cs" />
     <Compile Include="flow\Flow.cs" />
-    <Compile Include="models\QRCodeVerifier.cs" />
     <Compile Include="models\IVerifier.cs" />
-    <Compile Include="models\IDataLoader.cs" />
     <Compile Include="models\FakeDataLoader.cs" />
     <Compile Include="models\FakeVerifier.cs" />
     <Compile Include="tests\flow\FlowTests.cs" />
@@ -125,6 +123,8 @@
     <Compile Include="events\QRInputEvent.cs" />
     <Compile Include="events\AbstractEvent.cs" />
     <Compile Include="models\TicketData.cs" />
+    <Compile Include="models\TicketDataFetcher.cs" />
+    <Compile Include="models\IDataFetcher.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
