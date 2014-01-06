@@ -926,7 +926,7 @@ cart.OrderFormView = Backbone.View.extend({
         var selected_seats = orderForm.find('.selected-seats');
         var payment_seat_products = orderForm.find('.payment-seat-products');
         products.each(function(product) {
-            payment_seat_products.append(self.buildProduct(product, len(products) == 1));
+            payment_seat_products.append(self.buildProduct(product, products.length == 1));
         });
         var description = orderForm.find('.selectProduct-description');
         var descriptionText = stock_type.get('description');
