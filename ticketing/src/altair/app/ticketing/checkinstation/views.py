@@ -37,7 +37,7 @@ class LoginInfoView(BaseView):
                 "loginuser": {"type": u"login",
                               "id": unicode(operator.id),
                               "name": operator.name},
-                "organization": {"id": operator.organization_id}}
+                "organization": {"id": unicode(operator.organization_id)}}
 
 
 ## EventSelect
