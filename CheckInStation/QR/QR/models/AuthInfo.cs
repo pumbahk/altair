@@ -1,12 +1,15 @@
 using System;
 using System.Runtime.Serialization;
 
-/* {"login": True,
-	"loginuser": {"type": u"login",
+/* {"login": true,
+	"loginuser": {"type": "login",
 		"id": unicode(operator.id),
 		"name": operator.name},
 	"organization": {"id": operator.organization_id}}
 */
+
+
+
 
 namespace QR
 {

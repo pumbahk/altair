@@ -27,6 +27,22 @@ namespace QR
 			Assert.AreEqual (task.Result.LoginStatus, "http://login.status.url");
 		}
 
+		[Test, Description ("login api called. response is endpoint")]
+		public void TestCallLoginAPIParseFailure ()
+		{
+			var mockContent = @"{""endpoint"": {""**"": ""http://login.status.url""}}";
+			var resource = new Resource () {
+				HttpWrapperFactory = new FakeHttpWrapperFactory<HttpWrapper> (mockContent)
+			};
+			var task = new Authentication ().TryLoginRequest (resource, "", "");
+			try {
+				task.Wait ();
+			} catch {
+			}
+			Assert.IsNotNull (task.Exception);
+			Assert.AreEqual (task.Exception.InnerException.GetType (), typeof(System.Xml.XmlException));
+		}
+
 		[Test,Description ("login status api called.")]
 		public void TestCallLoginStatusAPI ()
 		{

@@ -18,35 +18,6 @@ namespace QR
 
 			public string password { get; set; }
 		}
-
-		public class LoginResponseData
-		{
-			public string message { get; set; }
-			//ok,ng
-		}
-
-		public class _LoginUserData
-		{
-			public string type { get; set; }
-			//TODO:ENUM{login,guest}
-			public string id { get; set; }
-
-			public string name { get; set; }
-		}
-
-		public class _OrganizationData
-		{
-			public string id { get; set; }
-		}
-
-		public class LoginStatusData
-		{
-			public bool login { get; set; }
-
-			public _LoginUserData loginuser { get; set; }
-
-			public _OrganizationData organization { get; set; }
-		}
 		// url
 		public string GetLoginURL (IResource resource)
 		{
@@ -84,9 +55,9 @@ namespace QR
 		public async Task<AuthInfo> TryLoginStatusRequest (IResource resource, string url)
 		{
 			IHttpWrapperFactory<HttpWrapper> factory = resource.HttpWrapperFactory;
-			using (var wrapper = factory.Create (url))
-			using (HttpResponseMessage dataResponse = await wrapper.GetAsync ().ConfigureAwait (false)) {
-				var result = DynamicJson.Parse (await dataResponse.Content.ReadAsStringAsync ());
+			using (var wrapper = factory.Create (url)) {
+				var s = await wrapper.GetStringAsync ().ConfigureAwait (false);
+				var result = DynamicJson.Parse (s);
 				return new AuthInfo (result);
 			}
 		}
@@ -94,21 +65,21 @@ namespace QR
 		public async virtual Task<ResultTuple<string, AuthInfo>> AuthAsync (IResource resource, string name, string password)
 		{
 			try {
-				var endpoint = await TryLoginRequest (resource, name, password);
+				EndPoint endpoint = await TryLoginRequest (resource, name, password);
 				if (endpoint == null) {
 					//TODO:log LoginFailure
 					return OnFailure (resource);
-				} else {
-					resource.EndPoint = endpoint;
 				}
 
 				var statusData = await TryLoginStatusRequest (resource, endpoint.LoginStatus);
 				if (statusData.login) {
-					return OnSuccess (resource, statusData);
+					return OnSuccess (resource, endpoint, statusData);
 				} else {
 					//TODO:log LoginStatusFailure
 					return OnFailure (resource);
 				}
+			} catch (System.Xml.XmlException e) {
+				return OnFailure (e.ToString ());
 			} catch (System.Net.WebException e) {
 				//TODO:log
 				// e.ToString()はうるさすぎ
@@ -116,9 +87,10 @@ namespace QR
 			}
 		}
 
-		public virtual Success<string, AuthInfo> OnSuccess (IResource resource, AuthInfo statusData)
+		public virtual Success<string, AuthInfo> OnSuccess (IResource resource, EndPoint endpoint, AuthInfo statusData)
 		{
-			return new Success<string,AuthInfo>(statusData);
+			resource.EndPoint = endpoint;
+			return new Success<string,AuthInfo> (statusData);
 		}
 
 		public Failure<string, AuthInfo> OnFailure (IResource resource)

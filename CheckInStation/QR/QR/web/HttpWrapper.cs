@@ -75,7 +75,10 @@ namespace QR
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-			return await client.GetStringAsync (url);
+			//TODO:change to debug log
+			var result = await client.GetStringAsync (url);
+			Console.WriteLine("Output:{0}", result);
+			return result;
 		}
 
 		public async Task<HttpResponseMessage> DeleteAsync ()
