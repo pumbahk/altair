@@ -64,22 +64,24 @@ namespace QR
 
 		public async virtual Task<ResultTuple<string, AuthInfo>> AuthAsync (IResource resource, string name, string password)
 		{
+			EndPoint endpoint;
 			try {
-				EndPoint endpoint = await TryLoginRequest (resource, name, password);
-				if (endpoint == null) {
-					//TODO:log LoginFailure
+				try {
+					endpoint = await TryLoginRequest (resource, name, password);
+				} catch (System.Xml.XmlException e) {
 					return OnFailure (resource);
 				}
-
-				var statusData = await TryLoginStatusRequest (resource, endpoint.LoginStatus);
-				if (statusData.login) {
-					return OnSuccess (resource, endpoint, statusData);
-				} else {
-					//TODO:log LoginStatusFailure
-					return OnFailure (resource);
+				try {
+					var statusData = await TryLoginStatusRequest (resource, endpoint.LoginStatus);
+					if (statusData.login) {
+						return OnSuccess (resource, endpoint, statusData);
+					} else {
+						//TODO:log LoginStatusFailure
+						return OnFailure (resource);
+					}
+				} catch (System.Xml.XmlException e) {
+					return OnFailure (e.ToString ());
 				}
-			} catch (System.Xml.XmlException e) {
-				return OnFailure (e.ToString ());
 			} catch (System.Net.WebException e) {
 				//TODO:log
 				// e.ToString()はうるさすぎ

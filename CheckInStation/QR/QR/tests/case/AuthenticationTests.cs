@@ -39,11 +39,11 @@ namespace QR
 				                           inputUsername, 
 				                           inputPassword);
 			var t = Task.Run (async () => {
-				await target.ConfigureAsync (new AuthenticationEvent (inputUsername, inputPassword));
-
+				var ev = new AuthenticationEvent (inputUsername, inputPassword);
+				await target.ConfigureAsync (ev);
 				Assert.IsTrue (await target.VerifyAsync ());
-				//TODO:変更
-				//Assert.IsNotNull (resource.AuthInfo);
+				ev.HandleEvent ();
+				Assert.IsNotNull (resource.AuthInfo);
 			});
 			t.Wait ();
 		}
@@ -59,13 +59,13 @@ namespace QR
 			CaseAuthDataFetch target = new CaseAuthDataFetch (
 				                           resource,
 				                           inputUsername, 
-				inputPassword);
+				                           inputPassword);
 			var t = Task.Run (async () => {
-				await target.ConfigureAsync (new AuthenticationEvent (inputUsername, inputPassword));
-
-				Assert.IsNull ((target.PresentationChanel as AuthenticationEvent).ValidationErrorMessage);
+				var ev = new AuthenticationEvent (inputUsername, inputPassword);
+				await target.ConfigureAsync (ev);
+				Assert.IsEmpty(ev.messages);
 				Assert.IsFalse (await target.VerifyAsync ());
-				Assert.IsNotNull ((target.PresentationChanel as AuthenticationEvent).ValidationErrorMessage);
+				Assert.IsNotEmpty(ev.messages);
 			});
 			t.Wait ();
 		}

@@ -44,7 +44,7 @@ namespace QR
 			manager.GetInternalEvent ();
 		}
 
-		[Test, Description ("認証input画面 -ok-> auth情報取得 -ok-> イベント一覧画面")]
+		[Test, Description ("認証input画面 -ok-> auth情報取得 -ok-> 認証方法選択")]
 		public void TestCase ()
 		{
 			var manager = new FlowManager ();
@@ -64,7 +64,7 @@ namespace QR
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseEventSelect), Is.True);
+				Assert.That ((target.Case is CaseQRInputStrategySelect), Is.True);
 			});
 			t.Wait ();
 		}

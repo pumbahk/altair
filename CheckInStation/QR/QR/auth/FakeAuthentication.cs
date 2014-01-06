@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-
 using QR.message;
 
 namespace QR
@@ -21,12 +20,14 @@ namespace QR
 
 		public override Task<ResultTuple<string, AuthInfo>> AuthAsync (IResource resource, string name, string password)
 		{
-			if (!ExpectedName.Equals(name) || !ExpectedPassword.Equals(password)) {
+			if (!ExpectedName.Equals (name) || !ExpectedPassword.Equals (password)) {
 				//Console.WriteLine ("{0} - {1}", name, password);
 				//Console.WriteLine("{0} - {1}", ExpectedName, ExpectedPassword);
 				return Task.Run<ResultTuple<string,AuthInfo>> (() => OnFailure (resource));
 			}
-			return Task.Run<ResultTuple<string,AuthInfo>> (() => new Success<string,AuthInfo> (new AuthInfo (new {})));
+			return Task.Run<ResultTuple<string,AuthInfo>> (() => {
+				return new Success<string,AuthInfo> (new AuthInfo (){ login = true });
+			});
 		}
 	}
 }

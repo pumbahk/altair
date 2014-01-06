@@ -5,7 +5,7 @@ namespace QR
 {
 	public abstract class AbstractEvent
 	{
-		protected List<string> messages;
+		public List<string> messages;
 		public virtual string GetMessageFormat()
 		{
 			return "message: {0}";

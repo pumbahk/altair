@@ -40,8 +40,7 @@ namespace QR
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			//return new CaseEventSelect (Resource);
-			return new CaseQRCodeInput (Resource);
+			return new CaseQRInputStrategySelect (Resource);
 		}
 
 		public override ICase OnFailure (IFlow flow)

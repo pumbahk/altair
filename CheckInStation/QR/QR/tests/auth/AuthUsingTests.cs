@@ -18,7 +18,10 @@ namespace QR
 		[Test, Description ("login api called. response is endpoint")]
 		public void TestCallLoginAPICheckResponseAsEndpoint ()
 		{
-			var mockContent = @"{""endpoint"": {""login_status"": ""http://login.status.url""}}";
+			var mockContent = @"{""endpoint"": {
+""login_status"": ""http://login.status.url"",
+""qr_ticketdata"": ""http://qr.ticketdata.url""
+}}";
 			var resource = new Resource () {
 				HttpWrapperFactory = new FakeHttpWrapperFactory<HttpWrapper> (mockContent)
 			};

@@ -19,7 +19,18 @@ namespace QR.presentation.cli
 		{
 			ICase result;
 			var ev = new QRInputEvent ();
-			do {
+			do {		
+				var ok = false;
+				do {
+					try {
+						Console.WriteLine ("------QRCode input strategy select: 1:qr, 2:orderno-----");
+						var inputUnit = Enum.Parse (typeof(InputUnit), Console.ReadLine ());
+						ok = true;
+					} catch (Exception e) {
+						Console.WriteLine (e.ToString ());
+					}
+				} while(!ok);
+
 				do {
 					Console.WriteLine ("------QRCode input---------");
 					Console.Write ("qrcode:");
@@ -27,8 +38,8 @@ namespace QR.presentation.cli
 					result = await RequestBroker.Submit (ev);
 					ev.HandleEvent ();
 				} while(ev.Status == InternalEventStaus.failure);
-				result = await RequestBroker.Submit(ev);
-				ev.HandleEvent();
+				result = await RequestBroker.Submit (ev);
+				ev.HandleEvent ();
 			} while(ev.Status == InternalEventStaus.failure);
 			return result;
 		}

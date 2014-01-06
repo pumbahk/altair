@@ -7,10 +7,6 @@ using System.Runtime.Serialization;
 		"name": operator.name},
 	"organization": {"id": operator.organization_id}}
 */
-
-
-
-
 namespace QR
 {
 	[DataContract]
@@ -30,6 +26,10 @@ namespace QR
 			login = json.login;
 			loginname = json.loginuser.name;
 			organization_id = json.organization.id;		
+		}
+
+		public AuthInfo ()
+		{
 		}
 	}
 	//なんか付加するような操作が必要;

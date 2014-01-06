@@ -9,7 +9,7 @@ namespace QR
 	{
 		public IResource Resource { get; set; }
 
-		public TicketData TicketData {get; set; }
+		public TicketData TicketData { get; set; }
 
 		public class QRRequest
 		{
@@ -44,9 +44,14 @@ namespace QR
 
 		public bool Parse (string responseString)
 		{
-			var json = DynamicJson.Parse (responseString);
-			TicketData = new TicketData(json);
-			return true;
+			try {
+				var json = DynamicJson.Parse (responseString);
+				TicketData = new TicketData (json);
+				return true;
+			} catch (System.Xml.XmlException) {
+				//hmm. log?
+				return false;
+			}
 		}
 	}
 }
