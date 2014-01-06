@@ -4,11 +4,17 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.IO;
 
-
 namespace QR
 {
 	public class HttpWrapper :IHttpWrapper
 	{
+		public async Task<string> ReadAsStringAsync (HttpContent content)
+		{
+			var result = await content.ReadAsStringAsync ();
+			Console.WriteLine ("Output:{0}", result);
+			return result;
+		}
+
 		protected HttpClient client;
 
 		public Func<HttpClient> ClientFactory { get; set; }
@@ -77,7 +83,7 @@ namespace QR
 			var url = this.UrlBuilder.Build ();
 			//TODO:change to debug log
 			var result = await client.GetStringAsync (url);
-			Console.WriteLine("Output:{0}", result);
+			Console.WriteLine ("Output:{0}", result);
 			return result;
 		}
 
@@ -150,6 +156,5 @@ namespace QR
 			var url = this.UrlBuilder.Build ();
 			return await client.PutAsJsonAsync<T> (url, value, ct);
 		}
-
 	}
 }

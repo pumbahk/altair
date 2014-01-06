@@ -37,7 +37,7 @@ namespace QR
 			using (var wrapper = factory.Create (GetQRFetchDataUrl ())) {
 				var qrdata = new QRRequest (){ qrsigned = qrcode };
 				using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (qrdata).ConfigureAwait (false)) {
-					return Parse (await response.Content.ReadAsStringAsync ().ConfigureAwait (false));
+					return Parse (await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait (false));
 				}
 			}
 		}

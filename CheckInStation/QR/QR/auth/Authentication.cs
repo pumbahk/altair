@@ -38,7 +38,7 @@ namespace QR
 					var headers = response.Headers;
 					var cookies = CookieUtils.GetCookiesFromResponseHeaders (headers);
 					factory.AddCookies (cookies);
-					var result = DynamicJson.Parse (await response.Content.ReadAsStringAsync ().ConfigureAwait (false));
+					var result = DynamicJson.Parse (await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait (false));
 					return new EndPoint (result.endpoint);
 				}
 			}
