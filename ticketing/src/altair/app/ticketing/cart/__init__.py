@@ -52,6 +52,39 @@ class WhoDecider(object):
         DBSession.add(org) # XXX
         return org.setting.auth_type
 
+def setup_temporary_store(config):
+    from datetime import timedelta
+    from altair.app.ticketing.interfaces import ITemporaryStore
+    from altair.app.ticketing.temp_store import TemporaryCookieStore
+    from .api import get_order_for_read_by_order_no
+
+    def extra_secret_provider(request, value):
+        order = get_order_for_read_by_order_no(request, value)
+        if order is None:
+            return ''
+        else:
+            return order.created_at.isoformat()
+
+    key = config.registry.settings['altair.cart.completion_page.temporary_store.cookie_name']
+    secret = config.registry.settings['altair.cart.completion_page.temporary_store.secret']
+    timeout_str = config.registry.settings.get('altair.cart.completion_page.temporary_store.timeout')
+    timeout = timedelta(seconds=3600)
+    if timeout_str is not None:
+        try:
+            timeout = timedelta(seconds=int(timeout_str))
+        except (ValueError, TypeError):
+            raise ConfigurationError('altair.cart.completion_page.temporary_store.cookie_timeout')
+    config.registry.registerUtility(
+        TemporaryCookieStore(
+            key=key,
+            secret=secret,
+            extra_secret_provider=extra_secret_provider,
+            max_age=timeout,
+            applies_to_route='payment.finish'
+            ),
+        ITemporaryStore
+        )
+
 def setup_components(config):
     from pyramid.interfaces import IRequest
     from .interfaces import IStocker, IReserving, ICartFactory, IPerformanceSelector
@@ -66,8 +99,9 @@ def setup_components(config):
     reg.adapters.register([IRequest], IPerformanceSelector, "matchup", MatchUpPerformanceSelector)
     reg.adapters.register([IRequest], IPerformanceSelector, "matchup2", MatchUpPerformanceSelector2)
     reg.adapters.register([IRequest], IPerformanceSelector, "date", DatePerformanceSelector)
+    setup_asid(config) # XXX: MOVE THIS
+    setup_temporary_store(config)
 
-    setup_asid(config)
 
 def setup_asid(config):
     pc = config.registry.settings.get('altair.pc.asid')
