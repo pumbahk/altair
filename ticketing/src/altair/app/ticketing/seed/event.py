@@ -118,7 +118,7 @@ class SalesSegmentEvent1Data(DataSet):
         start_at = datetime(2012,5,1,12,0)
         end_at = datetime(2012,7,1,12,0)
         event = EventData.event_1
-        upper_limit = 1
+        max_quantity = 1
         seat_choice = True
     class sales_segment_2:
         name = u'予約販売'
@@ -126,7 +126,7 @@ class SalesSegmentEvent1Data(DataSet):
         start_at = datetime(2012,3,1,12,0)
         end_at = datetime(2012,5,1,12,0)
         event = EventData.event_1
-        upper_limit = None
+        max_quantity = None
         seat_choice = True
 
 class SalesSegmentEvent2Data(DataSet):
@@ -136,7 +136,7 @@ class SalesSegmentEvent2Data(DataSet):
         start_at = datetime(2012,5,1,12,0)
         end_at = datetime(2012,7,1,12,0)
         event = EventData.event_2
-        upper_limit = 2
+        max_quantity = 2
         seat_choice = True
     class sales_segment_2:
         name = u'予約販売'
@@ -144,7 +144,7 @@ class SalesSegmentEvent2Data(DataSet):
         start_at = datetime(2012,3,1,12,0)
         end_at = datetime(2012,5,1,12,0)
         event = EventData.event_2
-        upper_limit = None
+        max_quantity = None
         seat_choice = False
 
 class SalesSegmentEvent3Data(DataSet):
@@ -154,5 +154,5 @@ class SalesSegmentEvent3Data(DataSet):
         start_at = datetime(2012,8,1,12,0)
         end_at = datetime(2012,8,1,12,0)
         event = EventData.event_3
-        upper_limit = None
+        max_quantity = None
         seat_choice = False

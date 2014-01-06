@@ -325,7 +325,6 @@ elif sales_segment:
                 <th style="width: 80px;">単価</th>
                 <th style="width: 80px;">販売単位</th>
                 <th style="width: 100px;">席数</th>
-                <th style="width: 60px;">在庫ID</th>
                 <th style="width: 100px;">券面</th>
                 <th style="width: 110px;"></th>
               </tr>
@@ -353,7 +352,6 @@ elif sales_segment:
                 <td>${vh.price(item.price)}</td>
                 <td>${item.quantity}</td>
                 <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>
-                <td>${item.stock.id}</td>
                 <td>
                   % if item.ticket_bundle_id:
                     <a id="productItem${item.id}" class="preview-link" data-pk="${item.id}" data-name="${item.name}">${item.ticket_bundle.name}<i class="icon-eye-open"></i></a>

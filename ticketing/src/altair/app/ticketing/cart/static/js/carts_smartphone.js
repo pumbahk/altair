@@ -926,7 +926,7 @@ cart.OrderFormView = Backbone.View.extend({
         var selected_seats = orderForm.find('.selected-seats');
         var payment_seat_products = orderForm.find('.payment-seat-products');
         products.each(function(product) {
-            payment_seat_products.append(self.buildProduct(product));
+            payment_seat_products.append(self.buildProduct(product, len(products) == 1));
         });
         var description = orderForm.find('.selectProduct-description');
         var descriptionText = stock_type.get('description');
@@ -966,9 +966,10 @@ cart.OrderFormView = Backbone.View.extend({
 
         return orderForm;
     },
-    buildProduct: function(product) {
+    buildProduct: function(product, singleton) {
         var min_product_quantity_per_product = product.get('min_product_quantity_per_product');
         var max_product_quantity_per_product = product.get('max_product_quantity_per_product');
+        var min_product_quantity_from_product = product.get('min_product_quantity_from_product');
         var name = $('<span class="productName"></span>');
         name.text(product.get("name"));
         var payment = $('<span class="productPrice"></span>');
@@ -976,7 +977,14 @@ cart.OrderFormView = Backbone.View.extend({
         var quantityBox = $('<span class="productQuantity"></span>');
         var pullDown = $('<select />').attr('name', 'product-' + product.id);
         var possible_quantities = [];
-        for (var i = 0; i <= max_product_quantity_per_product; i++)
+        var min = 0, max = max_product_quantity_per_product;
+        if (singleton)
+            min = min_product_quantity_per_product;
+        if (min_product_quantity_from_product !== null)
+            min = Math.max(min, min_product_quantity_from_product);
+        if (min > 0)
+            possible_quantities.push(0);
+        for (var i = min; i <= max; i++)
             possible_quantities.push(i);
         for (var i = 0; i < possible_quantities.length; i++) {
             var quantity = possible_quantities[i];

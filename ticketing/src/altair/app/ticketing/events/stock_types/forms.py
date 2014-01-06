@@ -100,6 +100,22 @@ class StockTypeForm(OurForm):
                         p = stock.performance
                         raise ValidationError(u'既に配席されている為、変更できません (%s席 @ %s %s)' % (stock.quantity, p.name, p.start_on.strftime("%m/%d")))
 
+    def validate_min_quantity(self, field):
+        if field.data is not None and field.data < 0:
+            raise ValidationError(u'0以上の数値を入力してください') 
+
+    def validate_max_quantity(self, field):
+        if field.data is not None and field.data < 0:
+            raise ValidationError(u'0以上の数値を入力してください') 
+
+    def validate_min_product_quantity(self, field):
+        if field.data is not None and field.data < 0:
+            raise ValidationError(u'0以上の数値を入力してください') 
+
+    def validate_max_product_quantity(self, field):
+        if field.data is not None and field.data < 0:
+            raise ValidationError(u'0以上の数値を入力してください') 
+
     def validate(self, *args, **kwargs):
         if not super(StockTypeForm, self).validate(*args, **kwargs):
             return False

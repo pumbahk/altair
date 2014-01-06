@@ -63,7 +63,7 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
                     name=u"前売券",
                     start_at=datetime(2013, 1, 1),
                     id=2,
-                    upper_limit=3
+                    max_quantity=3
                     ),
                 DummySalesSegment(
                     performance=DummyPerformance(
@@ -77,7 +77,7 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
                     name=u"前売券",
                     start_at=datetime(2013, 1, 1),
                     id=4,
-                    upper_limit=10
+                    max_quantity=10
                     ),
                 DummySalesSegment(
                     performance=DummyPerformance(
@@ -91,7 +91,7 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
                     name=u"前売券",
                     start_at=datetime(2013, 1, 1),
                     id=6,
-                    upper_limit=10
+                    max_quantity=10
                     ),
                 ]
             )
@@ -104,7 +104,7 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
         self.assertEqual(result[0][1][0], 
                          {'id': 2, 
                           'seat_types_url': 'http://example.com/testing/seat_types2/1/2',
-                          'upper_limit': 3, 
+                          'max_quantity': 3, 
                           'order_url': 'http://example.com/testing/order/2', 
                           'name': u'2013年3月31日 - 4月1日 テスト会場 前売券',
                           'name_pc': u'2013年3月31日 - 4月1日 テスト会場 前売券',
@@ -114,7 +114,7 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
         self.assertEqual(result[0][1][1],
                          {'id': 4,
                           'seat_types_url': 'http://example.com/testing/seat_types2/3/4', 
-                          'upper_limit': 10, 
+                          'max_quantity': 10, 
                           'order_url': 'http://example.com/testing/order/4', 
                           'name': u'2013年4月1日 00:00 テスト会場 前売券',
                           'name_pc': u'2013年4月1日 00:00 テスト会場 前売券', 
@@ -125,7 +125,7 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
         self.assertEqual(result[1][1][0],
                          {'id': 6,
                           'seat_types_url': 'http://example.com/testing/seat_types2/5/6',
-                          'upper_limit': 10,
+                          'max_quantity': 10,
                           'order_url': 'http://example.com/testing/order/6',
                           'name': u'2013年4月1日 - 4月2日 テスト会場 前売券',
                           'name_pc': u'2013年4月1日 - 4月2日 テスト会場 前売券',
@@ -193,7 +193,7 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                     name=u"前売券",
                     start_at=datetime(2013, 1, 1),
                     id=1,
-                    upper_limit=3,
+                    max_quantity=3,
                     ),
                 DummySalesSegment(
                     performance=DummyPerformance(
@@ -207,7 +207,7 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                     name=u"前売券",
                     start_at=datetime(2013, 1, 1),
                     id=3,
-                    upper_limit=10,
+                    max_quantity=10,
                     ),
                 DummySalesSegment(
                     performance=DummyPerformance(
@@ -221,7 +221,7 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                     name=u"前売券",
                     start_at=datetime(2013, 1, 1),
                     id=5,
-                    upper_limit=10,
+                    max_quantity=10,
                     ),
                 DummySalesSegment(
                     performance=DummyPerformance(
@@ -235,7 +235,7 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                     name=u"前売券",
                     start_at=datetime(2013, 1, 2),
                     id=7,
-                    upper_limit=10,
+                    max_quantity=10,
                     ),
                 ]
             )
@@ -250,7 +250,7 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                          {'id': 1,
                           'seat_types_url': 'http://example.com/testing/seat_types2/2/1',
                           'order_url': 'http://example.com/testing/order/1', 
-                          'upper_limit': 3, 
+                          'max_quantity': 3, 
                           'name': u'2013年3月31日 - 4月1日 テスト会場 前売券',
                           'name_pc': u'テスト会場 前売券',
                           'name_smartphone': u'テスト会場 前売券',
@@ -261,7 +261,7 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                          {'id': 3,
                           'seat_types_url': 'http://example.com/testing/seat_types2/4/3', 
                           'order_url': 'http://example.com/testing/order/3',
-                          'upper_limit': 10, 
+                          'max_quantity': 10, 
                           'name': u'2013年4月1日 - 4月2日 テスト会場 前売券',
                           'name_pc': u'テスト会場 前売券',
                           'name_smartphone': u'テスト会場 前売券',
@@ -272,7 +272,7 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                          {'id': 5,
                           'seat_types_url': 'http://example.com/testing/seat_types2/6/5',
                           'order_url': 'http://example.com/testing/order/5',
-                          'upper_limit': 10,
+                          'max_quantity': 10,
                           'name': u'2013年4月1日 00:00 テスト会場 前売券',
                           'name_pc': u'00:00 テスト会場 前売券',
                           'name_smartphone': u'00:00 テスト会場 前売券',
@@ -282,7 +282,7 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                          {'id': 7,
                           'order_url': 'http://example.com/testing/order/7',
                           'seat_types_url': 'http://example.com/testing/seat_types2/8/7',
-                          'upper_limit': 10,
+                          'max_quantity': 10,
                           'name': u'2013年4月1日 00:00 テスト会場 前売券',
                           'name_pc': u'00:00 テスト会場 前売券',
                           'name_smartphone': u'00:00 テスト会場 前売券',

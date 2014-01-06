@@ -593,7 +593,7 @@ class FixtureBuilder(object):
             name=name,
             start_at=start_at,
             end_at=end_at,
-            upper_limit=randint(1, 10),
+            max_quantity=randint(1, 10),
             seat_choice=randint(0, 1) != 0,
             kind=self.sales_segment_kind[randint(0, len(self.sales_segment_kind) - 1)],
             payment_delivery_method_pairs=one_to_many(
