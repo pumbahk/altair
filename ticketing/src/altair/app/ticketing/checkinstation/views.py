@@ -60,13 +60,17 @@ from altair.app.ticketing.printqr.todict import data_dict_from_order_and_history
 
 @view_config(route_name="qr.ticketdata", permission="sales_counter", renderer="json")
 def ticket_data_from_signed_string(context, request):
-    access_log("*performance list", context.identity)
+    access_log("*qr ticketdata", context.identity)
     if not "qrsigned" in request.json_body:
         raise HTTPBadRequest(u"引数が足りません")
 
     ticket_data = TicketData(request, context.operator)
-    order, history = ticket_data.get_order_and_history_from_signed(request.json_body["qrsigned"])
-    return data_dict_from_order_and_history(order, history)
+    try:
+        order, history = ticket_data.get_order_and_history_from_signed(request.json_body["qrsigned"])
+        return data_dict_from_order_and_history(order, history)
+    except KeyError:
+        logger.warn("*qr ticketdata: %s", request.json_body)
+        raise HTTPBadRequest(u"不正な入力が渡されました")
 
 
 ## token -> [svg] #one
