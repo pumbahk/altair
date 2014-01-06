@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace QR
 {
@@ -27,13 +28,13 @@ namespace QR
 			}
 		}
 
-		public async void Run (ICase case_)
+		public async Task Run (ICase case_)
 		{
 			this.RequestBroker.SetStartCase (case_);
 			var p = new QR.presentation.cli.AuthInput (RequestBroker, case_); //todo:change
-			ICase qrCase = p.Run ();
+			ICase qrCase = await p.Run ();
 			var q = new QR.presentation.cli.QRInput (RequestBroker, qrCase);
-			ICase svgCase = q.Run ();
+			ICase svgCase = await q.Run ();
 		}
 	}
 }

@@ -1,6 +1,7 @@
 using System;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
+using System.Threading.Tasks;
 
 namespace QR
 {
@@ -27,38 +28,47 @@ namespace QR
 		[Test ()]
 		public void TestVerify ()
 		{
-			target.Configure (new QRInputEvent(){QRCode = "*qrcode*"});
-			Assert.That (target.Verify (), Is.True);
-			Assert.That (Is.Equals(target.QRCode, "*qrcode*"));
+			var t = Task.Run (async () => {
+				await target.ConfigureAsync (new QRInputEvent (){ QRCode = "*qrcode*" });
+				Assert.That (await target.VerifyAsync (), Is.True);
+				Assert.That (Is.Equals (target.QRCode, "*qrcode*"));
+			});
+			t.Wait ();
 		}
 
 		[Test ()]
 		public void TestCallVerifyManyTimes ()
 		{
-			target.Configure (new QRInputEvent(){QRCode = "*qrcode*"});
-			Assert.That (Is.Equals (target.VerifiedCount, 0));
+			var t = Task.Run (async () => {
+				await target.ConfigureAsync (new QRInputEvent (){ QRCode = "*qrcode*" });
+				Assert.That (Is.Equals (target.VerifiedCount, 0));
 
-			Assert.IsTrue (target.Verify ());
-			Assert.That (Is.Equals (target.VerifiedCount, 1));
+				Assert.IsTrue (await target.VerifyAsync ());
+				Assert.That (Is.Equals (target.VerifiedCount, 1));
 
-			Assert.IsTrue (target.Verify ());
-			Assert.That (Is.Equals (target.VerifiedCount, 1));
+				Assert.IsTrue (await target.VerifyAsync ());
+				Assert.That (Is.Equals (target.VerifiedCount, 1));
+			});
+			t.Wait ();
 		}
 
 		[Test ()]
 		public void TestCallVerifyManyTimes__False ()
 		{
-			target.Configure (new QRInputEvent(){QRCode = "*qrcode*"}); 
-			FakeVerifier<string> v = target.QRCodeVerifier as FakeVerifier<string>;
-			v.Result = false;
+			var t = Task.Run (async () => {
+				await target.ConfigureAsync (new QRInputEvent (){ QRCode = "*qrcode*" }); 
+				FakeVerifier<string> v = target.QRCodeVerifier as FakeVerifier<string>;
+				v.Result = false;
 
-			Assert.That (Is.Equals (target.VerifiedCount, 0));
+				Assert.That (Is.Equals (target.VerifiedCount, 0));
 
-			Assert.IsFalse (target.Verify ());
-			Assert.That (Is.Equals (target.VerifiedCount, 1));
+				Assert.IsFalse (await target.VerifyAsync ());
+				Assert.That (Is.Equals (target.VerifiedCount, 1));
 
-			Assert.IsFalse (target.Verify ());
-			Assert.That (Is.Equals (target.VerifiedCount, 1));
+				Assert.IsFalse (await target.VerifyAsync ());
+				Assert.That (Is.Equals (target.VerifiedCount, 1));
+			});
+			t.Wait ();
 		}
 	}
 }

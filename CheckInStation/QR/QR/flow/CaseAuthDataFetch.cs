@@ -19,26 +19,25 @@ namespace QR
 			LoginPassword = password;
 		}
 
-		public override bool Verify ()
+		public override async Task<bool> VerifyAsync ()
 		{
-			Task<ResultTuple<string, AuthInfo>> t = Resource.Authentication.AuthAsync (Resource, LoginName, LoginPassword);
 			try {
-				t.Wait (); //TODO:xxxx:
-			} catch (AggregateException ex) {
+				ResultTuple<string, AuthInfo> Result = await Resource.Authentication.AuthAsync (Resource, LoginName, LoginPassword);
+				if (Result.Status) {
+					Resource.AuthInfo = Result.Right;
+					return true;
+				} else {
+					//modelからpresentation層へのメッセージ
+					PresentationChanel.NotifyFlushMessage ((Result as Failure<string,AuthInfo>).Result);
+					return false;
+				}
+			} catch (Exception ex) {
 				PresentationChanel.NotifyFlushMessage (ex.ToString ());
 				PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
 				return false;
 			}
-			if (t.Result.Status) {
-				Resource.AuthInfo = t.Result.Right;
-				return true;
-			} else {
-				//modelからpresentation層へのメッセージ
-				PresentationChanel.NotifyFlushMessage ((t.Result as Failure<string,AuthInfo>).Result);
-				return false;
-			}
 		}
-		
+
 		public override ICase OnSuccess (IFlow flow)
 		{
 			//return new CaseEventSelect (Resource);

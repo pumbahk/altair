@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace QR
 {
@@ -10,15 +11,15 @@ namespace QR
 	{
 		IResource Resource{ get; set; }
 
-		void Configure (IInternalEvent ev);
+		Task ConfigureAsync (IInternalEvent ev);
 
-		void Configure ();
+		Task ConfigureAsync ();
 
 		ICase OnSuccess (IFlow flow);
 
 		ICase OnFailure (IFlow flow);
 
-		bool Verify ();
+		Task<bool> VerifyAsync ();
 	}
 }
 

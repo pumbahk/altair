@@ -13,7 +13,8 @@ namespace QR
 			Console.WriteLine ("Hello World!");
 			//var t = GetJsonData ();
 			var app = new Application ();
-			app.Run (new CaseAuthInput (app.Resource));
+			var t = app.Run (new CaseAuthInput (app.Resource));
+			t.Wait ();
 			// var t = GetAuthData (resource);
 			// t.Wait ();
 		}

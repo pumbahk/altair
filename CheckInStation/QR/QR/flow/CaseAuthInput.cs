@@ -16,17 +16,17 @@ namespace QR
 		{
 		}
 
-		public override void Configure (IInternalEvent ev)
+		public override Task ConfigureAsync (IInternalEvent ev)
 		{
 			AuthenticationEvent subject = ev as AuthenticationEvent;
 			this.LoginName = subject.LoginName;
 			this.LoginPassword = subject.LoginPassword;
-			base.Configure (ev);
+			return base.ConfigureAsync (ev);
 		}
 
-		public override bool Verify ()
+		public override Task<bool> VerifyAsync ()
 		{
-			return !LoginName.Equals ("") && !LoginPassword.Equals ("");
+			return Task.Run(() => {return !LoginName.Equals ("") && !LoginPassword.Equals ("");});;
 		}
 
 		public override ICase OnSuccess (IFlow flow)

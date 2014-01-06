@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace QR.presentation.cli
 {
@@ -13,7 +14,7 @@ namespace QR.presentation.cli
 			Case = case_;			
 		}
 
-		public ICase Run ()
+		public async Task<ICase> Run ()
 		{
 			ICase result;
 			var ev = new AuthenticationEvent ();
@@ -24,13 +25,13 @@ namespace QR.presentation.cli
 					ev.LoginName = Console.ReadLine ();
 					Console.Write ("password:");
 					ev.LoginPassword = Console.ReadLine ();
-					RequestBroker.Submit (ev);
+					await RequestBroker.Submit (ev);
 					ev.HandleEvent ();
 				} while(ev.Status == InternalEventStaus.failure);
 
 				// requestn
 				Console.WriteLine ("------login request---------");
-				result = RequestBroker.Submit (ev);
+				result = await RequestBroker.Submit (ev);
 				ev.HandleEvent ();
 			} while(ev.Status == InternalEventStaus.failure);
 			return result;

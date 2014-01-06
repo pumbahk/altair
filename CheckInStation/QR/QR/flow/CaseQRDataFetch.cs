@@ -10,26 +10,17 @@ namespace QR
 	public class CaseQRDataFetch : AbstractCase, ICase
 	{
 		public string QRCode { get; set; }
+
 		public TicketData TicketData { get; set; }
+
 		public CaseQRDataFetch (IResource resource, string qrcode) : base (resource)
 		{
 			QRCode = qrcode;
 		}
 
-		public override bool Verify ()
+		public override async Task<bool> VerifyAsync ()
 		{
-			Task<bool> t = Resource.QRCodeVerifier.VerifyAsync (QRCode);
-			try {
-				t.Wait (); //TODO:xxxx:
-			} catch (AggregateException ex) {
-				PresentationChanel.NotifyFlushMessage (ex.ToString ());
-				PresentationChanel.NotifyFlushMessage (Resource.GetTaskCancelMessage());
-				return false;
-			}
-			if (!t.Result) {
-				PresentationChanel.NotifyFlushMessage ("heh");
-			}
-			return t.Result;
+			return await Resource.QRCodeVerifier.VerifyAsync (QRCode);
 		}
 
 		public override ICase OnSuccess (IFlow flow)

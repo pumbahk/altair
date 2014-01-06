@@ -1,12 +1,13 @@
 using System;
+using System.Threading.Tasks;
 
 namespace QR
 {
 	public interface IFlow
 	{
-		IFlow Forward ();
+		Task<IFlow> Forward ();
 		//TODO:implement
-		IFlow Backward ();
+		Task<IFlow> Backward ();
 		//TODO:implement
 		void Finish();
 		ICase Case { get; set;}

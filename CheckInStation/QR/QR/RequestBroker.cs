@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace QR
 {
@@ -38,10 +39,10 @@ namespace QR
 			}
 		}
 
-		public ICase Submit (IInternalEvent ev)
+		public async Task<ICase> Submit (IInternalEvent ev)
 		{
 			this.Event = ev;
-			return this.FlowManager.Forward ();
+			return await this.FlowManager.Forward ();
 		}
 
 		public void SetStartCase (ICase case_)

@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System;
 using NUnit.Framework.SyntaxHelpers;
+using System.Threading.Tasks;
 
 namespace QR
 {
@@ -8,14 +9,14 @@ namespace QR
 	public class AuthenticationTests
 	{
 		[Test, Description ("認証情報入力部分. configureでloginnameとloginpassword取得")]
-		public void TestAuthentcationInput__Configure__Setvalue ()
+		public void TestAuthentcationInput__ConfigureAsync__Setvalue ()
 		{
 			var resource = new Resource ();
 			ICase target = new CaseAuthInput (resource);
 
 			RequestBroker broker = new RequestBroker (new FlowManager ()); //hmm.
 			broker.Event = new AuthenticationEvent ("*username*", "*password*");
-			target.Configure (broker.GetInternalEvent ());
+			target.ConfigureAsync (broker.GetInternalEvent ());
 
 			Assert.AreEqual ("*username*", (target as CaseAuthInput).LoginName);
 			Assert.AreEqual ("*password*", (target as CaseAuthInput).LoginPassword);
@@ -37,11 +38,14 @@ namespace QR
 				                           resource,
 				                           inputUsername, 
 				                           inputPassword);
-			target.Configure (new AuthenticationEvent (inputUsername, inputPassword));
+			var t = Task.Run (async () => {
+				await target.ConfigureAsync (new AuthenticationEvent (inputUsername, inputPassword));
 
-			Assert.IsTrue (target.Verify ());
-			//TODO:変更
-			//Assert.IsNotNull (resource.AuthInfo);
+				Assert.IsTrue (await target.VerifyAsync ());
+				//TODO:変更
+				//Assert.IsNotNull (resource.AuthInfo);
+			});
+			t.Wait ();
 		}
 
 		[Test, Description ("認証情報入力した後のvalidation. failureした時エラーメッセージ")]
@@ -55,12 +59,15 @@ namespace QR
 			CaseAuthDataFetch target = new CaseAuthDataFetch (
 				                           resource,
 				                           inputUsername, 
-				                           inputPassword);
-			target.Configure (new AuthenticationEvent (inputUsername, inputPassword));
+				inputPassword);
+			var t = Task.Run (async () => {
+				await target.ConfigureAsync (new AuthenticationEvent (inputUsername, inputPassword));
 
-			Assert.IsNull ((target.PresentationChanel as AuthenticationEvent).ValidationErrorMessage);
-			Assert.IsFalse (target.Verify ());
-			Assert.IsNotNull ((target.PresentationChanel as AuthenticationEvent).ValidationErrorMessage);
+				Assert.IsNull ((target.PresentationChanel as AuthenticationEvent).ValidationErrorMessage);
+				Assert.IsFalse (await target.VerifyAsync ());
+				Assert.IsNotNull ((target.PresentationChanel as AuthenticationEvent).ValidationErrorMessage);
+			});
+			t.Wait ();
 		}
 	}
 }

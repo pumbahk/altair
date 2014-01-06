@@ -1,38 +1,40 @@
 using System;
+using System.Threading.Tasks;
 
 namespace QR
 {
 	public abstract class AbstractCase
 	{
 		public virtual IResource Resource{ get; set; }
+
 		public IInternalEvent PresentationChanel { get; set; }
+
 		public AbstractCase (IResource resource)
 		{
 			Resource = resource;
 		}
 
-		public virtual void Configure (IInternalEvent ev)
+		public virtual Task ConfigureAsync (IInternalEvent ev)
 		{
-			this.PresentationChanel = ev;
+			return Task.Run (() => {this.PresentationChanel = ev;});
 		}
 
-		public virtual void Configure()
+		public virtual Task ConfigureAsync ()
 		{
-			Configure (new EmptyEvent ());
+			return ConfigureAsync (new EmptyEvent ());
 		}
 
-		public virtual bool Verify ()
+		public virtual async Task<bool> VerifyAsync ()
 		{
-			return true;
+			return await Task.Run(() => {return true;}).ConfigureAwait(false);
 		}
+
 		public virtual ICase OnFailure (IFlow flow)
 		{
 			throw new InvalidOperationException ("must be success");
 		}
 
 		public abstract ICase OnSuccess (IFlow flow);
-
-
 
 		public virtual bool OnRefresh (FlowManager m)
 		{

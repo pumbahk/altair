@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace QR
 {
@@ -32,24 +33,24 @@ namespace QR
 			return this.RequestBroker.GetInternalEvent ();	
 		}
 
-		public ICase Forward ()
+		public async Task<ICase> Forward ()
 		{
 			
 			var cmd = undoStack.Peek ();
-			var nextCmd = cmd.Forward ();
+			var nextCmd = await cmd.Forward ();
 			undoStack.Push (nextCmd);
 			Console.WriteLine ("    *debug Forward: {0} -> {1}", cmd.Case.GetType ().FullName, nextCmd.Case.GetType ().FullName);
 			return nextCmd.Case;
 		}
 
-		public ICase Backward ()
+		public async Task<ICase> Backward ()
 		{
 			if (undoStack.Count <= 1) { //xx;
 				// TODO:log
 				return undoStack.Peek().Case;
 			}
 			var cmd = undoStack.Pop ();
-			return cmd.Backward().Case;
+			return (await cmd.Backward()).Case;
 		}
 
 		public void Refresh ()

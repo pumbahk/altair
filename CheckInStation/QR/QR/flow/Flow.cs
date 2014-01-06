@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace QR
 {
@@ -15,17 +16,17 @@ namespace QR
 		//		public FlowState State { get; set; }
 		public FlowManager Manager { get; set; }
 
-		public virtual bool Verify ()
+		public virtual async Task<bool> VerifyAsync ()
 		{
-			var status = Case.Verify ();
+			var status = await Case.VerifyAsync ();
 			var evStatus = status ? InternalEventStaus.success : InternalEventStaus.failure;
 			Manager.GetInternalEvent ().Status = evStatus;
 			return status;
 		}
 
-		public virtual void Configure ()
+		public virtual Task ConfigureAsync ()
 		{
-			Case.Configure (Manager.GetInternalEvent ());
+			return Case.ConfigureAsync (Manager.GetInternalEvent ());
 		}
 
 		public Flow (FlowManager manager, ICase _case)
@@ -39,28 +40,28 @@ namespace QR
 			return Manager.FlowDefinition;
 		}
 
-		public ICase NextCase ()
+		public async Task<ICase> NextCase ()
 		{
-			Configure (); //ここでUIから情報を取得できるようにする必要がある。
-			if (Verify ()) {
+			await ConfigureAsync (); //ここでUIから情報を取得できるようにする必要がある。
+			if (await VerifyAsync ()) {
 				return Case.OnSuccess (this);
 			} else {
 				return Case.OnFailure (this);
 			}
 		}
 
-		public virtual IFlow Forward ()
+		public virtual async Task<IFlow> Forward ()
 		{
-			var nextCase = NextCase ();
+			var nextCase = await NextCase ();
 			if (Case == nextCase) {
 				return this;
 			}
 			return new Flow (Manager, nextCase);
 		}
 
-		public IFlow Backward ()
+		public Task<IFlow> Backward ()
 		{
-			return this;
+			return Task.Run<IFlow> (() => {return this;});
 		}
 
 		public void Finish ()

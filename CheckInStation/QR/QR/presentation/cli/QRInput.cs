@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace QR.presentation.cli
 {
@@ -14,7 +15,7 @@ namespace QR.presentation.cli
 			Case = case_;			
 		}
 
-		public ICase Run ()
+		public async Task<ICase> Run ()
 		{
 			ICase result;
 			var ev = new QRInputEvent ();
@@ -23,10 +24,10 @@ namespace QR.presentation.cli
 					Console.WriteLine ("------QRCode input---------");
 					Console.Write ("qrcode:");
 					ev.QRCode = Console.ReadLine ();
-					result = RequestBroker.Submit (ev);
+					result = await RequestBroker.Submit (ev);
 					ev.HandleEvent ();
 				} while(ev.Status == InternalEventStaus.failure);
-				result = RequestBroker.Submit(ev);
+				result = await RequestBroker.Submit(ev);
 				ev.HandleEvent();
 			} while(ev.Status == InternalEventStaus.failure);
 			return result;

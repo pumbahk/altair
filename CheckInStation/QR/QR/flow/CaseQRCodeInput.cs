@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace QR
 {
@@ -21,21 +22,21 @@ namespace QR
 			this.VerifyStatus = false;
 		}
 
-		public override void Configure (IInternalEvent ev)
+		public override Task ConfigureAsync (IInternalEvent ev)
 		{
-			QRInputEvent subject = ev as QRInputEvent;
-			this.QRCodeVerifier = this.Resource.QRCodeVerifier;
-			this.QRCode = subject.QRCode;
+			return Task.Run (() => {
+				QRInputEvent subject = ev as QRInputEvent;
+				this.QRCodeVerifier = this.Resource.QRCodeVerifier;
+				this.QRCode = subject.QRCode;
+			});
 		}
 
-		public override bool Verify ()
+		public override async Task<bool> VerifyAsync ()
 		{
 			if (this.VerifiedCount > 0) {
 				return this.VerifyStatus;
 			}
-			var t = this.QRCodeVerifier.VerifyAsync (this.QRCode);
-			t.Wait ();
-			this.VerifyStatus = t.Result;
+			this.VerifyStatus = await this.QRCodeVerifier.VerifyAsync (this.QRCode);
 			this.VerifiedCount += 1;
 			return this.VerifyStatus;
 		}
