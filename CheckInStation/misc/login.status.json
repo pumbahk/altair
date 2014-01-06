@@ -1,0 +1,11 @@
+{
+    "login": true,
+    "loginuser": {
+        "type": "login",
+        "id": "1",
+        "name": "mock-user"
+    },
+    "organization": {
+        "id": "10"
+    }
+}

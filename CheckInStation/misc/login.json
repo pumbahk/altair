@@ -1,0 +1,3 @@
+{
+    "endpoint":{"login_status": "http://localhost:8000/login.status.json"}
+}
