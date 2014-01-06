@@ -1,8 +1,6 @@
 using System;
 using System.Threading.Tasks;
-
 using QR.message;
-
 
 namespace QR
 {
@@ -27,7 +25,7 @@ namespace QR
 			try {
 				t.Wait (); //TODO:xxxx:
 			} catch (AggregateException ex) {
-				//PresentationChanel.NotifyFlushMessage (ex.ToString ());
+				PresentationChanel.NotifyFlushMessage (ex.ToString ());
 				PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
 				return false;
 			}

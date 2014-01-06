@@ -23,6 +23,8 @@ namespace QR
 	{
 		bool Verify ();
 
+		EndPoint EndPoint { get; set; }
+
 		string SettingValue (string key);
 	}
 }

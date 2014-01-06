@@ -19,16 +19,6 @@ namespace QR
 			ExpectedPassword = expectedPassowrd;
 		}
 
-		public Success<string, AuthInfo> OnSuccess (IResource resource, string name, string password)
-		{
-			var authInfo = new AuthInfo () {
-				loginname = name,
-				organization_id = "1", //hmm
-				secret = "*dummy*" //hmm
-			};
-			return new Success<string, AuthInfo>(authInfo);
-		}
-
 		public override Task<ResultTuple<string, AuthInfo>> AuthAsync (IResource resource, string name, string password)
 		{
 			if (!ExpectedName.Equals(name) || !ExpectedPassword.Equals(password)) {
@@ -36,7 +26,7 @@ namespace QR
 				//Console.WriteLine("{0} - {1}", ExpectedName, ExpectedPassword);
 				return Task.Run<ResultTuple<string,AuthInfo>> (() => OnFailure (resource));
 			}
-			return Task.Run<ResultTuple<string,AuthInfo>> (() => OnSuccess (resource, name, password));
+			return Task.Run<ResultTuple<string,AuthInfo>> (() => new Success<string,AuthInfo> (new AuthInfo (new {})));
 		}
 	}
 }

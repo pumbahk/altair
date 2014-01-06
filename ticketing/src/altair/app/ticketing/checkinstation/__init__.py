@@ -20,8 +20,8 @@ class APIEndpointRouteCollector(object):
     def __init__(self):
         self.routes = set()
 
-    def add(self, name):
-        self.routes.add(name)
+    def add(self, name): #foo.bar -> foo_bar #for json
+        self.routes.add(name.replace(".", "_"))
 
     def get_endpoints(self, request):
         return {k:request.route_url(k) for k in self.routes}

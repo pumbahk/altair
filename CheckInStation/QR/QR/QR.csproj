@@ -50,6 +50,8 @@
       <HintPath>opt\local\lib\mono\4.5\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
     <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -109,7 +111,6 @@
     <Compile Include="message\ResultTuple.cs" />
     <Compile Include="web\tests\ClientCreateTests.cs" />
     <Compile Include="web\CookieUtils.cs" />
-    <Compile Include="tests\auth\AuthUsingResourceInformationTests.cs" />
     <Compile Include="models\Resource.cs" />
     <Compile Include="configuration\AuthConfiguration.cs" />
     <Compile Include="IConfigurator.cs" />
@@ -121,6 +122,10 @@
     <Compile Include="presentation\cli\AuthInput.cs" />
     <Compile Include="message\MessageResourceUtil.cs" />
     <Compile Include="tests\GetMessageFromAppConfigTests.cs" />
+    <Compile Include="DynamicJson.cs" />
+    <Compile Include="tests\auth\AuthUsingTests.cs" />
+    <Compile Include="models\Endpoint.cs" />
+    <Compile Include="message\UrlResourceUtil.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -141,5 +146,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

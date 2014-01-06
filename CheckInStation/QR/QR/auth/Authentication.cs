@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using System.Net.Http;
-
 using QR.message;
+using Codeplex.Data;
 
 namespace QR
 {
@@ -50,15 +50,14 @@ namespace QR
 		// url
 		public string GetLoginURL (IResource resource)
 		{
-			return resource.SettingValue ("endpoint.auth.login.url");
+			return resource.GetLoginURL ();
 		}
-
-		public string GetLoginStatusURL (IResource resource)
-		{
-			return resource.SettingValue ("endpoint.auth.login.status.url");
-		}
-
-		public async Task<bool> TryLoginRequest (IResource resource, string name, string password)
+		/*
+		 * API Response
+		 * 
+		 * {endpoint: {"login_status": "http://foo"}}
+		 */
+		public async Task<EndPoint> TryLoginRequest (IResource resource, string name, string password)
 		{
 			IHttpWrapperFactory<HttpWrapper> factory = resource.HttpWrapperFactory;
 			using (var wrapper = factory.Create (GetLoginURL (resource))) {
@@ -68,28 +67,42 @@ namespace QR
 					var headers = response.Headers;
 					var cookies = CookieUtils.GetCookiesFromResponseHeaders (headers);
 					factory.AddCookies (cookies);
-					return true;
+					var result = DynamicJson.Parse (await response.Content.ReadAsStringAsync ().ConfigureAwait (false));
+					return new EndPoint (result.endpoint);
 				}
 			}
 		}
-
-		public async Task<LoginStatusData> TryLoginStatusRequest (IResource resource)
+		/*
+		 * API Response
+		 * 
+		 * {"login": True,
+            "loginuser": {"type": u"login",
+                          "id": unicode(operator.id),
+                          "name": operator.name},
+            "organization": {"id": operator.organization_id}}
+          */
+		public async Task<AuthInfo> TryLoginStatusRequest (IResource resource, string url)
 		{
 			IHttpWrapperFactory<HttpWrapper> factory = resource.HttpWrapperFactory;
-			using (var wrapper = factory.Create (GetLoginStatusURL (resource)))
+			using (var wrapper = factory.Create (url))
 			using (HttpResponseMessage dataResponse = await wrapper.GetAsync ().ConfigureAwait (false)) {
-				return await dataResponse.Content.ReadAsAsync<LoginStatusData> ();
+				var result = DynamicJson.Parse (await dataResponse.Content.ReadAsStringAsync ());
+				return new AuthInfo (result);
 			}
 		}
 
 		public async virtual Task<ResultTuple<string, AuthInfo>> AuthAsync (IResource resource, string name, string password)
 		{
 			try {
-				if (!await TryLoginRequest (resource, name, password)) {
+				var endpoint = await TryLoginRequest (resource, name, password);
+				if (endpoint == null) {
 					//TODO:log LoginFailure
 					return OnFailure (resource);
+				} else {
+					resource.EndPoint = endpoint;
 				}
-				var statusData = await TryLoginStatusRequest (resource);
+
+				var statusData = await TryLoginStatusRequest (resource, endpoint.LoginStatus);
 				if (statusData.login) {
 					return OnSuccess (resource, statusData);
 				} else {
@@ -99,17 +112,13 @@ namespace QR
 			} catch (System.Net.WebException e) {
 				//TODO:log
 				// e.ToString()はうるさすぎ
-				return	OnFailure (resource.GetWebExceptionMessage());
+				return	OnFailure (resource.GetWebExceptionMessage ());
 			}
 		}
 
-		public virtual Success<string, AuthInfo> OnSuccess (IResource resource, LoginStatusData statusData)
+		public virtual Success<string, AuthInfo> OnSuccess (IResource resource, AuthInfo statusData)
 		{
-			return new Success<string, AuthInfo> (new AuthInfo () {
-				organization_id = statusData.organization.id,
-				loginname = statusData.loginuser.name,
-				secret = "*dummy*",
-			});
+			return new Success<string,AuthInfo>(statusData);
 		}
 
 		public Failure<string, AuthInfo> OnFailure (IResource resource)

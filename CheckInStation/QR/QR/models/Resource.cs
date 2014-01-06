@@ -44,6 +44,8 @@ namespace QR
 
 		public IVerifier<string> QRCodeVerifier { get; set; }
 
+		public EndPoint EndPoint { get; set; }
+
 		public AuthInfo AuthInfo { get; set; }
 
 		public IAuthentication Authentication { get; set; }
