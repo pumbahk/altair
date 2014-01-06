@@ -6,7 +6,9 @@ namespace QR
 {
 	public interface IAuthentication
 	{
-		Task<ResultTuple<string, AuthInfo>> AuthAsync(IResource resource, string name, string password);
+		IResource Resource{ get; set; }
+
+		Task<ResultTuple<string, AuthInfo>> AuthAsync (string name, string password);
 	}
 }
 

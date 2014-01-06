@@ -32,7 +32,7 @@ namespace QR
 			var resource = new Resource ();
 			var inputUsername = "*username*";
 			var inputPassword = "*password*";
-			resource.Authentication = new FakeAuthentication (inputUsername, inputPassword);
+			resource.Authentication = new FakeAuthentication (resource, inputUsername, inputPassword);
 			
 			CaseAuthDataFetch target = new CaseAuthDataFetch (
 				                           resource,
@@ -54,7 +54,7 @@ namespace QR
 			var resource = new Resource ();
 			var inputUsername = "*username*";
 			var inputPassword = "*password*";
-			resource.Authentication = new FakeAuthentication ("x", "xx");
+			resource.Authentication = new FakeAuthentication (resource, "x", "xx");
 
 			CaseAuthDataFetch target = new CaseAuthDataFetch (
 				                           resource,
@@ -63,9 +63,9 @@ namespace QR
 			var t = Task.Run (async () => {
 				var ev = new AuthenticationEvent (inputUsername, inputPassword);
 				await target.ConfigureAsync (ev);
-				Assert.IsEmpty(ev.messages);
+				Assert.IsEmpty (ev.messages);
 				Assert.IsFalse (await target.VerifyAsync ());
-				Assert.IsNotEmpty(ev.messages);
+				Assert.IsNotEmpty (ev.messages);
 			});
 			t.Wait ();
 		}

@@ -6,7 +6,13 @@ namespace QR
 	{
 		public static void IncludeMe(IConfigurator config)
 		{
-			config.Resource.Authentication = new Authentication ();
+			var loginUrl = config.Resource.GetLoginURL ();
+			config.Resource.Authentication = new Authentication (config.Resource, loginUrl);
+		}
+		public static void MockIncludeMe(IConfigurator config)
+		{
+			var loginUrl = config.Resource.GetMockLoginURL ();
+			config.Resource.Authentication = new Authentication (config.Resource, loginUrl);
 		}
 	}
 }

@@ -22,7 +22,7 @@ namespace QR
 		public override async Task<bool> VerifyAsync ()
 		{
 			try {
-				ResultTuple<string, AuthInfo> Result = await Resource.Authentication.AuthAsync (Resource, LoginName, LoginPassword);
+				ResultTuple<string, AuthInfo> Result = await Resource.Authentication.AuthAsync (LoginName, LoginPassword);
 				if (Result.Status) {
 					Resource.AuthInfo = Result.Right;
 					return true;

@@ -10,7 +10,7 @@ namespace QR
 		public void TestsGetLoginURL ()
 		{
 			var resource = new Resource ();
-			var result = new Authentication ().GetLoginURL (resource);
+			var result = new Authentication (resource, resource.GetLoginURL()).GetLoginURL ();
 
 			Assert.AreNotEqual (default(string), result);
 		}
@@ -25,7 +25,7 @@ namespace QR
 			var resource = new Resource () {
 				HttpWrapperFactory = new FakeHttpWrapperFactory<HttpWrapper> (mockContent)
 			};
-			var task = new Authentication ().TryLoginRequest (resource, "", "");
+			var task = new Authentication (resource, resource.GetLoginURL()).TryLoginRequest ("", "");
 			task.Wait ();
 			Assert.AreEqual (task.Result.LoginStatus, "http://login.status.url");
 		}
@@ -37,7 +37,7 @@ namespace QR
 			var resource = new Resource () {
 				HttpWrapperFactory = new FakeHttpWrapperFactory<HttpWrapper> (mockContent)
 			};
-			var task = new Authentication ().TryLoginRequest (resource, "", "");
+			var task = new Authentication (resource, resource.GetLoginURL()).TryLoginRequest ("", "");
 			try {
 				task.Wait ();
 			} catch {
@@ -57,7 +57,7 @@ namespace QR
 			var resource = new Resource () {
 				HttpWrapperFactory = new FakeHttpWrapperFactory<HttpWrapper> (mockContent)
 			};
-			var task = new Authentication ().TryLoginStatusRequest (resource, "http://login.status.url");
+			var task = new Authentication (resource).TryLoginStatusRequest ("http://login.status.url");
 			task.Wait ();
 			Assert.AreEqual (task.Result.login, true);
 			Assert.AreEqual (task.Result.organization_id, "10");
