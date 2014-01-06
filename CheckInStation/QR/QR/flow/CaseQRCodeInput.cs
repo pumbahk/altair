@@ -9,7 +9,7 @@ namespace QR
 	{
 		public IVerifier<string>QRCodeVerifier { get; set; }
 
-		public IDataLoader<string> QRCodeLoader{ get; set; }
+		public string QRCode { get; set; }
 
 		public int VerifiedCount{ get; set; }
 		//hmm.
@@ -23,8 +23,9 @@ namespace QR
 
 		public override void Configure (IInternalEvent ev)
 		{
+			QRInputEvent subject = ev as QRInputEvent;
 			this.QRCodeVerifier = this.Resource.QRCodeVerifier;
-			this.QRCodeLoader = this.Resource.QRCodeLoader;
+			this.QRCode = subject.QRCode;
 		}
 
 		public override bool Verify ()
@@ -32,14 +33,16 @@ namespace QR
 			if (this.VerifiedCount > 0) {
 				return this.VerifyStatus;
 			}
-			this.VerifyStatus = this.QRCodeVerifier.Verify (this.QRCodeLoader.Result);
+			var t = this.QRCodeVerifier.VerifyAsync (this.QRCode);
+			t.Wait ();
+			this.VerifyStatus = t.Result;
 			this.VerifiedCount += 1;
 			return this.VerifyStatus;
 		}
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			return new CaseQRDataFetch (Resource);
+			return new CaseQRDataFetch (Resource, QRCode);
 		}
 
 		public override ICase OnFailure (IFlow flow)

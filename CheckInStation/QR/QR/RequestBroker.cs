@@ -38,10 +38,10 @@ namespace QR
 			}
 		}
 
-		public void Submit (IInternalEvent ev)
+		public ICase Submit (IInternalEvent ev)
 		{
 			this.Event = ev;
-			this.FlowManager.Forward ();
+			return this.FlowManager.Forward ();
 		}
 
 		public void SetStartCase (ICase case_)

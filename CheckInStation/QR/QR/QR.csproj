@@ -73,7 +73,6 @@
     <Compile Include="flow\Flow.cs" />
     <Compile Include="models\QRCodeVerifier.cs" />
     <Compile Include="models\IVerifier.cs" />
-    <Compile Include="models\QRCodeLoader.cs" />
     <Compile Include="models\IDataLoader.cs" />
     <Compile Include="models\FakeDataLoader.cs" />
     <Compile Include="models\FakeVerifier.cs" />
@@ -126,6 +125,11 @@
     <Compile Include="tests\auth\AuthUsingTests.cs" />
     <Compile Include="models\Endpoint.cs" />
     <Compile Include="message\UrlResourceUtil.cs" />
+    <Compile Include="flow\CaseQRInputStrategySelect.cs" />
+    <Compile Include="presentation\cli\QRInput.cs" />
+    <Compile Include="events\QRInputEvent.cs" />
+    <Compile Include="events\AbstractEvent.cs" />
+    <Compile Include="models\TicketData.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

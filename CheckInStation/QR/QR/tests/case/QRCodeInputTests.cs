@@ -27,15 +27,15 @@ namespace QR
 		[Test ()]
 		public void TestVerify ()
 		{
-			target.Configure ();
+			target.Configure (new QRInputEvent(){QRCode = "*qrcode*"});
 			Assert.That (target.Verify (), Is.True);
-			Assert.That (Is.Equals(target.QRCodeLoader.Result, "*qrcode*"));
+			Assert.That (Is.Equals(target.QRCode, "*qrcode*"));
 		}
 
 		[Test ()]
 		public void TestCallVerifyManyTimes ()
 		{
-			target.Configure ();
+			target.Configure (new QRInputEvent(){QRCode = "*qrcode*"});
 			Assert.That (Is.Equals (target.VerifiedCount, 0));
 
 			Assert.IsTrue (target.Verify ());
@@ -48,7 +48,7 @@ namespace QR
 		[Test ()]
 		public void TestCallVerifyManyTimes__False ()
 		{
-			target.Configure (); 
+			target.Configure (new QRInputEvent(){QRCode = "*qrcode*"}); 
 			FakeVerifier<string> v = target.QRCodeVerifier as FakeVerifier<string>;
 			v.Result = false;
 

@@ -6,8 +6,7 @@ namespace QR
 	{
 		public static void IncludeMe (IConfigurator config)
 		{
-			config.Resource.QRCodeLoader = new QRCodeLoader ();
-			config.Resource.QRCodeVerifier = new QRCodeVerifier ();
+			config.Resource.QRCodeVerifier = new QRCodeVerifier (config.Resource);
 		}
 	}
 }

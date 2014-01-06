@@ -3,29 +3,15 @@ using System.Collections.Generic;
 
 namespace QR
 {
-	public class EmptyEvent :IInternalEvent
+	public class EmptyEvent :AbstractEvent, IInternalEvent
 	{
-		private List<string> messages;
-
-		public InternalEventStaus Status { get; set; }
-
-		public EmptyEvent ()
+		public override string GetMessageFormat ()
 		{
-			messages = new List<string> ();
+			return "empty: message: {0}";
 		}
 
-		public bool NotifyFlushMessage (string message)
+		public EmptyEvent () : base ()
 		{
-			messages.Add (message);
-			return true;
-		}
-
-		public void HandleEvent ()
-		{
-			foreach (var m in messages) {
-				Console.WriteLine ("empty: message: {0}", m);
-			}
-			messages.Clear ();
 		}
 	}
 }

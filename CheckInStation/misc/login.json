@@ -1,3 +1,6 @@
 {
-    "endpoint":{"login_status": "http://localhost:8000/login.status.json"}
+    "endpoint":{
+        "login_status": "http://localhost:8000/login.status.json",
+        "qr_ticketdata": "http://localhost:8000/qrdata.json"
+    }
 }

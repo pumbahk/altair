@@ -30,8 +30,10 @@ namespace QR
 		public async void Run (ICase case_)
 		{
 			this.RequestBroker.SetStartCase (case_);
-			var p = new QR.presentation.cli.AuthInput (RequestBroker); //todo:change
-			p.Run ();
+			var p = new QR.presentation.cli.AuthInput (RequestBroker, case_); //todo:change
+			ICase qrCase = p.Run ();
+			var q = new QR.presentation.cli.QRInput (RequestBroker, qrCase);
+			ICase svgCase = q.Run ();
 		}
 	}
 }

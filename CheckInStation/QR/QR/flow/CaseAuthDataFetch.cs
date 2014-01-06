@@ -35,26 +35,14 @@ namespace QR
 			} else {
 				//modelからpresentation層へのメッセージ
 				PresentationChanel.NotifyFlushMessage ((t.Result as Failure<string,AuthInfo>).Result);
-
-				//TODO:こちらを削除
-				NotifyValidationFailure (t.Result as Failure<string ,AuthInfo>);
 				return false;
 			}
 		}
-
-		public void NotifyValidationFailure (Failure<string, AuthInfo> failure)
-		{
-			if (PresentationChanel == null) {
-				//TODO:logなりメッセージ
-			} else {
-				//TODO:fix. bad code
-				(PresentationChanel as AuthenticationEvent).AuthenticationFailure (failure.Result);
-			}
-		}
-
+		
 		public override ICase OnSuccess (IFlow flow)
 		{
-			return new CaseEventSelect (Resource);
+			//return new CaseEventSelect (Resource);
+			return new CaseQRCodeInput (Resource);
 		}
 
 		public override ICase OnFailure (IFlow flow)

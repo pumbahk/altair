@@ -29,8 +29,6 @@ namespace QR
 
 		public bool FullVerify ()
 		{
-			if (QRCodeLoader == null)
-				throw new InvalidOperationException ("QRCodeLoader is NULL");
 			if (QRCodeVerifier == null)
 				throw new InvalidOperationException ("QRCodeVerifier is NULL");
 			if (Authentication == null)

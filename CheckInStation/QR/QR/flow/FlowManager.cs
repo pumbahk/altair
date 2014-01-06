@@ -32,25 +32,24 @@ namespace QR
 			return this.RequestBroker.GetInternalEvent ();	
 		}
 
-		public bool Forward ()
+		public ICase Forward ()
 		{
 			
 			var cmd = undoStack.Peek ();
 			var nextCmd = cmd.Forward ();
 			undoStack.Push (nextCmd);
-			Console.WriteLine ("    *debug Forward: {0} -> {1}", cmd.Case.GetType().FullName, nextCmd.Case.GetType().FullName);
-			return true;
+			Console.WriteLine ("    *debug Forward: {0} -> {1}", cmd.Case.GetType ().FullName, nextCmd.Case.GetType ().FullName);
+			return nextCmd.Case;
 		}
 
-		public bool Backward ()
+		public ICase Backward ()
 		{
-			if (undoStack.Count <= 0) {
+			if (undoStack.Count <= 1) { //xx;
 				// TODO:log
-				return false;
+				return undoStack.Peek().Case;
 			}
 			var cmd = undoStack.Pop ();
-			cmd.Backward ();
-			return false;
+			return cmd.Backward().Case;
 		}
 
 		public void Refresh ()
