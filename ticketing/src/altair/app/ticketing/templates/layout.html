@@ -25,8 +25,6 @@ typeof I18n == 'object' && (I18n.defaultLocale = 'ja');
     <%
       from pyramid.threadlocal import get_current_registry
       settings = get_current_registry().settings
-      altaircms_url = settings.get('altaircms.front_end_url')
-      testing = get_current_registry().settings.get('altair.app.ticketing.testing', False)
     %>
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
@@ -61,13 +59,7 @@ typeof I18n == 'object' && (I18n.defaultLocale = 'ja');
           <!-- Navigation -->
           <div class="nav-collapse">
             <ul class="nav">
-              % if testing:
-              <li class="active"><a href="${request.route_path('dashboard.index')}">Home</a></li>
-              % endif
               <li><a href="${request.route_path('events.index')}">イベント</a></li>
-              % if testing:
-              <li><a href="${altaircms_url}">CMS</a></li>
-              % endif
             </ul>
           </div>
           <!-- End Navigation -->
