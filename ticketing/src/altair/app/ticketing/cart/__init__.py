@@ -329,8 +329,8 @@ def main(global_config, **local_config):
     ## cmsとの通信
     bind_communication_api(config, 
                             "..api.impl.CMSCommunicationApi", 
-                            config.registry.settings["altaircms.event.notification_url"], 
-                            config.registry.settings["altaircms.apikey"]
+                            config.registry.settings["altair.cms.api_url"], 
+                            config.registry.settings["altair.cms.api_key"]
                             )
 
     ### s3 assets
