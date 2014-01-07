@@ -82,6 +82,7 @@ def csrf(request):
 @view_config(context=CompletionPageNotRenderered, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/errors/completion.html'))
 def completion_page_not_rendered(request):
     request.response.status = 404
+    api.get_temporary_store(request).clear(request)
     return {}
 
 def _mobile(**kwargs):
