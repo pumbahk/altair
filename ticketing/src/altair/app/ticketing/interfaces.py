@@ -27,3 +27,14 @@ class ITicketingFormatter(Interface):
 
     def format_currency(dec):
         pass
+
+
+class ITemporaryStore(Interface):
+    def set(request, value):
+        pass
+
+    def get(request):
+        pass
+
+    def clear(request):
+        pass

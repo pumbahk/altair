@@ -258,7 +258,7 @@ class EditSalesSegmentTests(unittest.TestCase):
             start_at=datetime(2014, 8, 31),
             end_at=datetime(2014, 9, 30),
             order_limit=1,
-            upper_limit=8,
+            max_quantity=8,
             registration_fee=100,
             printing_fee=150,
             refund_ratio=88,
@@ -352,7 +352,7 @@ class EditSalesSegmentTests(unittest.TestCase):
                                    use_default_account_id="on",
                                    use_default_refund_ratio="on",
                                    use_default_payment_delivery_method_pairs="on",
-                                   use_default_upper_limit="on",
+                                   use_default_max_quantity="on",
                                    use_default_registration_fee="on",
                                    use_default_order_limit="on",
                                    use_default_printing_fee="on",
@@ -383,7 +383,7 @@ class EditSalesSegmentTests(unittest.TestCase):
         self.assert_attr_equal(sales_segment, sales_segment_group, "refund_ratio", 88)
         self.assertTrue(sales_segment.payment_delivery_method_pairs)
         self.assert_attr_equal(sales_segment, sales_segment_group, "payment_delivery_method_pairs", sales_segment_group.payment_delivery_method_pairs)
-        self.assert_attr_equal(sales_segment, sales_segment_group, "upper_limit", 8)
+        self.assert_attr_equal(sales_segment, sales_segment_group, "max_quantity", 8)
         self.assert_attr_equal(sales_segment, sales_segment_group, "registration_fee", 100)
         self.assert_attr_equal(sales_segment, sales_segment_group, "order_limit", 1)
         self.assert_attr_equal(sales_segment, sales_segment_group, "printing_fee", 150)
@@ -402,7 +402,7 @@ class EditSalesSegmentTests(unittest.TestCase):
                                    'account_id': context.user.organization.accounts[0].id,
                                    'refund_ratio': 10000,
                                    'payment_delivery_method_pairs[]': context.sales_segment.sales_segment_group.payment_delivery_method_pairs[0].id,
-                                   'upper_limit': 4,
+                                   'max_quantity': 4,
                                    'registration_fee': 20000,
                                    'order_limit': 10,
                                    'printing_fee': 1010,
@@ -432,7 +432,7 @@ class EditSalesSegmentTests(unittest.TestCase):
         self.assertEqual(sales_segment.account_id, context.user.organization.accounts[0].id)
         self.assertEqual(sales_segment.refund_ratio, 10000)
         self.assertEqual(sales_segment.payment_delivery_method_pairs, [sales_segment_group.payment_delivery_method_pairs[0]])
-        self.assertEqual(sales_segment.upper_limit, 4)
+        self.assertEqual(sales_segment.max_quantity, 4)
         self.assertEqual(sales_segment.registration_fee, 20000)
         self.assertEqual(sales_segment.order_limit, 10)
         self.assertEqual(sales_segment.printing_fee, 1010)

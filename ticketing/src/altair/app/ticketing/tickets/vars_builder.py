@@ -338,7 +338,7 @@ class TicketDictBuilder(object):
                     u'kind': sales_segment.kind,
                     u'start_at': datetime_as_dict(sales_segment.start_at),
                     u'end_at': datetime_as_dict(sales_segment.end_at),
-                    u'upper_limit': sales_segment.upper_limit,
+                    u'max_quantity': sales_segment.max_quantity,
                     u'seat_choice': sales_segment.seat_choice
                     }})
         return retval

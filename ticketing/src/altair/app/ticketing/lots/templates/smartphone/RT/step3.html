@@ -199,7 +199,7 @@ var product_select_tmpl = _.template(decodeURIComponent('${capture(product_selec
 var stockTypes = ${h.tojson(stock_types)|n};
 var performanceProductMap = ${h.tojson(performance_product_map)|n};
 var postedValues = ${h.tojson(posted_values)|n};
-var upperLimit = ${sales_segment.upper_limit};
+var upperLimit = ${sales_segment.max_quantity};
 var performanceMap = ${h.tojson(performance_map)|n};
 var selected_performance_id = 0;
 % if selected_performance:

@@ -12,7 +12,7 @@ import transaction
 from dateutil.parser import parse as parsedatetime
 
 from sqlalchemy.orm import joinedload
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from pyramid.paster import bootstrap, setup_logging
 from altair.app.ticketing.utils import todatetime
@@ -196,13 +196,14 @@ def import_point_grant_results():
         transaction.abort()
         raise
 
-def do_import_point_grant_data(registry, organization_id, type, submitted_on, file, reason_code, shop_name, encoding, force):
+def do_import_point_grant_data(registry, organization, type, submitted_on, file, reason_code, shop_name, encoding, force, deduce_account, recovery):
     from .models import PointGrantHistoryEntry
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.users.models import UserPointAccount, UserPointAccountTypeEnum
     from altair.app.ticketing.core.models import Order
 
     logger.info("start processing %s" % file)
+    errors = 0
     for line_no, line in enumerate(open(file)):
         try:
             line = line.rstrip('\r\n').decode(encoding)
@@ -224,33 +225,62 @@ def do_import_point_grant_data(registry, organization_id, type, submitted_on, fi
 
             try:
                 order = Order.query \
-                    .filter_by(order_no=order_no, organization_id=organization_id) \
+                    .filter_by(order_no=order_no, organization_id=organization.id) \
                     .one()
             except NoResultFound:
                 raise RecordError("Order(order_no=%s) does not exist" % order_no)
 
-            try:
-                user_point_account = UserPointAccount.query \
-                    .filter_by(type=type, account_number=account_number) \
-                    .one()
-            except NoResultFound:
-                raise RecordError("UserPointAccount(type=%d, account_number=%s) does not exist" % (type, account_number))
+            if not account_number:
+                if deduce_account:
+                    try:
+                        user_point_account = UserPointAccount.query \
+                            .filter_by(type=type, user_id=order.user_id) \
+                            .one()
+                    except NoResultFound:
+                        raise RecordError("UserPointAccount(type=%d, account_number=%s) does not exist" % (type, account_number))
+                    except MultipleResultsFound:
+                        raise RecordError("multiple UserPointAccount found for the criteria (type=%d, user_id=%d <= order_no=%s) " % (type, order.user_id, order_no))
+                else:
+                    raise RecordError("no account number is given for order (order_no=%s). Use --deduce-account option to enable automatic deduction of point account number" % (order_no,))
+            else:
+                try:
+                    user_point_account = UserPointAccount.query \
+                        .filter_by(type=type, account_number=account_number) \
+                        .one()
+                except NoResultFound:
+                    raise RecordError("UserPointAccount(type=%d, account_number=%s) does not exist" % (type, account_number))
+                except MultipleResultsFound:
+                    raise RecordError("multiple UserPointAccount record found (type=%d, account_number=%s)" % (type, account_number))
 
-            if not force:
-                point_grant_history_entry = PointGrantHistoryEntry.query \
-                    .filter(PointGrantHistoryEntry.order_id == order.id) \
-                    .filter(PointGrantHistoryEntry.user_point_account_id == user_point_account.id) \
-                    .first()
-
+            if recovery:
+                point_grant_history_entry_id = decode_point_grant_history_entry_id(cols[4])
+                point_grant_history_entry = PointGrantHistoryEntry.query.filter_by(id=point_grant_history_entry_id).first()
                 if point_grant_history_entry is not None:
-                    raise RecordError("PointAcountHistoryEntry(id=%ld) already exists for Order(id=%ld, order_No=%s). Use -f option to forcefully create a new entry" % (point_grant_history_entry.id, order.id, order_no))
+                    raise RecordError("PointAcountHistoryEntry(id=%ld) already exists for Order(id=%ld, order_No=%s)." % (point_grant_history_entry.id, point_grant_history_entry.order.id, point_grant_history_entry.order.order_no))
 
-            point_grant_history_entry = PointGrantHistoryEntry(
-                user_point_account=user_point_account,
-                order=order,
-                amount=points_granted,
-                submitted_on=submitted_on
-                )
+                point_grant_history_entry = PointGrantHistoryEntry(
+                    id=point_grant_history_entry_id,
+                    user_point_account=user_point_account,
+                    order=order,
+                    amount=points_granted,
+                    submitted_on=submitted_on
+                    )
+            else:
+                if not force:
+                    point_grant_history_entry = PointGrantHistoryEntry.query \
+                        .filter(PointGrantHistoryEntry.order_id == order.id) \
+                        .filter(PointGrantHistoryEntry.user_point_account_id == user_point_account.id) \
+                        .first()
+
+                    if point_grant_history_entry is not None:
+                        raise RecordError("PointAcountHistoryEntry(id=%ld) already exists for Order(id=%ld, order_No=%s). Use -f option to forcefully create a new entry" % (point_grant_history_entry.id, order.id, order_no))
+
+                point_grant_history_entry = PointGrantHistoryEntry(
+                    user_point_account=user_point_account,
+                    order=order,
+                    amount=points_granted,
+                    submitted_on=submitted_on
+                    )
             DBSession.add(point_grant_history_entry)
             DBSession.flush()
 
@@ -278,7 +308,9 @@ def do_import_point_grant_data(registry, organization_id, type, submitted_on, fi
                 sys.stdout.write("\n")
         except RecordError as e:
             logger.warning("invalid record skipped at line %d (%r)\n" % (line_no + 1, e))
+            errors += 1
     logger.info('end processing %s' % file)
+    return errors
 
 def import_point_grant_data():
     import locale
@@ -290,11 +322,14 @@ def import_point_grant_data():
         default_encoding = 'ascii'
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('-O', '--organization', required=True)
     parser.add_argument('-e', '--encoding')
     parser.add_argument('-t', '--type')
     parser.add_argument('-R', '--reason-code')
     parser.add_argument('-S', '--shop-name')
     parser.add_argument('-f', '--force', action='store_true')
+    parser.add_argument('--deduce-account', action='store_true')
+    parser.add_argument('-Y', '--recovery', action='store_true')
     parser.add_argument('config')
     parser.add_argument('submitted_on')
     parser.add_argument('file', nargs='+')
@@ -323,20 +358,46 @@ def import_point_grant_data():
     env = bootstrap(args.config)
 
     transaction.begin()
+
+    from altair.app.ticketing.models import DBSession
+    from altair.app.ticketing.core.models import Organization
+    organization = None
     try:
+        organization = DBSession.query(Organization) \
+            .filter(
+                (Organization.name == args.organization) \
+                | (Organization.code == args.organization) \
+                | (Organization.short_name == args.organization) \
+                | (Organization.id == args.organization)
+                ) \
+            .one()
+    except:
+        sys.stderr.write("No such organization: %s" % args.organization)
+        sys.stderr.flush()
+        sys.exit(255)
+
+    try:
+        errors = 0
         for file in args.file:
-            do_import_point_grant_data(
+            errors += do_import_point_grant_data(
                 env['registry'],
-                args.organization_id,
+                organization,
                 type,
                 submitted_on,
                 file,
                 reason_code,
                 shop_name,
                 args.encoding or default_encoding,
-                args.force
+                args.force,
+                args.deduce_account,
+                args.recovery
                 )
-        transaction.commit()
+        if errors > 0 and not args.force:
+            sys.stderr.write("%d errors detected. aborting...\n" % errors)
+            transaction.abort()
+            sys.exit()
+        else:
+            transaction.commit()
     except:
         transaction.abort()
         raise

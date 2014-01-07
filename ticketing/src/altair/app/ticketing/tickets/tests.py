@@ -125,7 +125,7 @@ class TicketsUtilsTest(TestCase):
                 sales_segment_group=sales_segment_group,
                 start_at=datetime(2012, 12, 1, 10, 1, 2),
                 end_at=datetime(2012, 12, 30, 0, 0, 0),
-                upper_limit=10,
+                max_quantity=10,
                 seat_choice=True,
                 public=True,
                 payment_delivery_method_pairs=[

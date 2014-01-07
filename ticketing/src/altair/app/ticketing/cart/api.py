@@ -19,7 +19,9 @@ from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.mobile.api import detect_from_ip_address
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
+from altair.app.ticketing.interfaces import ITemporaryStore
 from altair.mq import get_publisher
+from altair.sqlahelper import get_db_session
 
 from .interfaces import IPaymentMethodManager
 from .interfaces import IStocker, IReserving, ICartFactory
@@ -329,3 +331,20 @@ def is_smartphone_organization(context, request):
 def is_point_input_organization(context, request):
     organization = c_api.get_organization(request)
     return organization.id == 24
+
+def get_temporary_store(request):
+    return request.registry.queryUtility(ITemporaryStore)
+
+def get_order_for_read_by_order_no(request, order_no):
+    orders = getattr(request, '_cached_readonly_orders', None)
+    if orders is None:
+        orders = request._cached_readonly_orders = {}
+    order = orders.get(order_no)
+    if order is not None:
+        return order
+    order = get_db_session(request, name="slave") \
+        .query(c_models.Order) \
+        .filter_by(order_no=order_no) \
+        .first()
+    orders[order_no] = order
+    return order

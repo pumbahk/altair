@@ -426,7 +426,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         data = {}
         model = SalesSegment(start_at=datetime(2000, 1, 1), 
                              end_at=datetime(2000, 1, 1, 23), 
-                             upper_limit=8, 
+                             max_quantity=8, 
                              seat_choice=True
                              )
         model.sales_segment_group = SalesSegmentGroup(
@@ -440,7 +440,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         self.assertEqual(sub[u'kind'],  ":kind")
         self.assertEqual(sub[u'start_at'],  datetime_as_dict(datetime(2000, 1, 1)))
         self.assertEqual(sub[u'end_at'],  datetime_as_dict(datetime(2000, 1, 1, 23)))
-        self.assertEqual(sub[u'upper_limit'],  8)
+        self.assertEqual(sub[u'max_quantity'],  8)
         self.assertEqual(sub[u'seat_choice'],  True)
 
     def test_build_product_item__none(self):
@@ -734,7 +734,7 @@ def setup_product_item(quantity, quantity_only, organization):
 
     sales_segment = SalesSegment(start_at=datetime(2000, 1, 1),
                          end_at=datetime(2000, 1, 1, 23),
-                         upper_limit=8,
+                         max_quantity=8,
                          seat_choice=True
                          )
     sales_segment.sales_segment_group = SalesSegmentGroup(

@@ -150,13 +150,13 @@ def convert_sp_wishes(params, limit):
 
     return wishes
 
-def check_quantities(wishes, upper_limit):
+def check_quantities(wishes, max_quantity):
     result = True
     for wish in wishes:
         total_quantity = 0
         for p in wish['wished_products']:
             total_quantity += p['quantity']
-        result = result and (total_quantity <= upper_limit)
+        result = result and (total_quantity <= max_quantity)
     return result
 
 def check_duplicated_products(wishes):

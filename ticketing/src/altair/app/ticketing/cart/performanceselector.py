@@ -54,7 +54,7 @@ class _PerformanceSelector(object):
             order_url=self.request.route_url(
                 'cart.order',
                 sales_segment_id=sales_segment.id),
-            upper_limit=sales_segment.upper_limit,
+            max_quantity=sales_segment.max_quantity,
             seat_types_url=self.request.route_url(
                 'cart.seat_types2',
                 performance_id=sales_segment.performance.id,
@@ -161,7 +161,7 @@ class DatePerformanceSelector(_PerformanceSelector):
             order_url=self.request.route_url(
                 'cart.order',
                 sales_segment_id=sales_segment.id),
-            upper_limit=sales_segment.upper_limit,
+            max_quantity=sales_segment.max_quantity,
             seat_types_url=self.request.route_url(
                 'cart.seat_types2',
                 performance_id=sales_segment.performance.id,
