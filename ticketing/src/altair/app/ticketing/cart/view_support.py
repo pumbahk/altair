@@ -129,6 +129,9 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                         product.seat_stock_type_id \
                    or product.seat_stock_type_id is None
                 )
+            if quantity_power == 0:
+                logger.warning("quantity power=0! sales_segment.id=%ld, product.id=%ld", sales_segment.id, product.id)
+                quantity_power = 1
             availability = availability_per_product_map[product.id]
             max_product_quatity = sales_segment.max_product_quatity
 
