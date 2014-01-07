@@ -20,8 +20,8 @@ Identifier = sa.BigInteger
 def upgrade():
     op.create_table(
         'AugusVenue',
-        sa.Column('id', Identifier, nullable=False, unique=True),
-        sa.Column('code', sa.Integer, nullable=False, unique=True),
+        sa.Column('id', Identifier, primary=True),
+        sa.Column('code', sa.Integer, nullable=False),
         sa.Column('name', sa.Unicode, nullable=False),
         sa.Column('version', sa.Integer, nullable=False),
         # links
@@ -33,7 +33,7 @@ def upgrade():
         )
     op.create_table(
         'AugusSeat',
-        sa.Column('id', Identifier, nullable=False, unique=True),        
+        sa.Column('id', Identifier, primary=True),        
         sa.Column('area_name', sa.Unicode, nullable=False, default=''),
         sa.Column('info_name', sa.Unicode, nullable=False, default=''),
         sa.Column('doorway_name', sa.Unicode, nullable=False, default=''),
@@ -49,9 +49,9 @@ def upgrade():
         sa.Column('area_code', sa.Integer, nullable=False),
         sa.Column('info_code', sa.Integer, nullable=False),
         sa.Column('doorway_code', sa.Integer, nullable=False),
-        sa.Column('version', sa.Integer),
+        sa.Column('version', sa.Integer, nullable=False),
         # links
-        sa.Column('seat_id', Identifier, nullable=False, unique=True),        
+        sa.Column('seat_id', Identifier, nullable=False),
         # for super class
         sa.Column('created_at', sa.TIMESTAMP(), server_default=text('CURRENT_TIMESTAMP'), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
@@ -59,7 +59,7 @@ def upgrade():
         )
     op.create_table(
         'AugusPerformance',
-        sa.Column('id', Identifier, nullable=False, unique=True),        
+        sa.Column('id', Identifier, primary=True),        
         sa.Column('augus_event_code', sa.Integer, nullable=False),        
         sa.Column('augus_performance_code', sa.Integer, nullable=False),        
         sa.Column('augus_venue_code', sa.Integer, nullable=False),
@@ -78,7 +78,7 @@ def upgrade():
         )
     op.create_table(
         'AugusTicket',
-        sa.Column('id', Identifier, nullable=False, unique=True),        
+        sa.Column('id', Identifier, primary=True),
         sa.Column('augus_event_code', sa.Integer, nullable=False),
         sa.Column('augus_performance_code', sa.Integer, nullable=False),
         sa.Column('augus_venue_code', sa.Integer, nullable=False),
@@ -94,8 +94,8 @@ def upgrade():
         )
     op.create_table(
         'AugusStockInfo',
-        sa.Column('id', Identifier, nullable=False, unique=True),        
-        sa.Column('augus_performance_id', Identifer),
+        sa.Column('id', Identifier, primary=True),        
+        sa.Column('augus_performance_id', Identifer, nullable=False),
         sa.Column('augus_distribution_code', sa.Integer),
         sa.Column('seat_type_classif', sa.Unicode),
         sa.Column('distributed_at', sa.TIMESTAMP())
@@ -108,10 +108,10 @@ def upgrade():
         )
     op.create_table(
         'AugusPutback',
-        sa.Column('id', Identifier, nullable=False, unique=True),
+        sa.Column('id', Identifier, primary=True),
         sa.Column('augus_putback_code', sa.Integer, nullable=False),                
-        sa.Column('quantity', sa.Integer),
-        sa.Column('augus_stock_info_id', Identifer),
+        sa.Column('quantity', sa.Integer, nullable=False),
+        sa.Column('augus_stock_info_id', Identifer, nullable=False),
         sa.Column('finished_at', sa.TIMESTAMP(), nullable=True),        
         )
 def downgrade():
