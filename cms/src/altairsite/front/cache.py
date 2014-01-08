@@ -117,7 +117,7 @@ def cached_view_tween(handler, registry):
             with atomic.atomic(k):
                 response = handler(request)
                 content_type = response.content_type
-                if response.status_int == 500:
+                if response.status_int in (301, 302, 404, 500, 503):
                     return response
                 app_cands = ("application/json", "application/javascript", "application/xhtml+xml")
                 if content_type.startswith("text/") or any(content_type == x for x in app_cands):
