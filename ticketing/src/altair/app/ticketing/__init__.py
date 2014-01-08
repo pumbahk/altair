@@ -161,8 +161,8 @@ def main(global_config, **local_config):
         ## cmsとの通信
         from .api.impl import CMSCommunicationApi
         event_push_communication = CMSCommunicationApi(
-            settings["altaircms.event.notification_url"], 
-            settings["altaircms.apikey"]
+            settings["altair.cms.api_url"], 
+            settings["altair.cms.api_key"]
             )
         event_push_communication.bind_instance(config)
 

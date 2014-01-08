@@ -116,13 +116,13 @@ class SalesSegmentGroupForm(OurForm):
         label=u'座席選択可',
         widget=CheckboxInput(),
     )
-    upper_limit = OurIntegerField(
+    max_quantity = OurIntegerField(
         label=u'購入上限枚数',
         default=10,
         validators=[RequiredOnUpdate()],
         hide_on_new=True
     )
-    product_limit = OurIntegerField(
+    max_product_quatity = OurIntegerField(
         label=u'商品購入上限数',
         default=None,
         filters=[zero_as_none],

@@ -32,8 +32,8 @@ def install_cms_accesskey(config):
     config.registry.registerUtility(cms_accesskey_getter, IAccessKeyGetter, name="cms")
     from altair.app.ticketing.api.impl import CMSCommunicationApi
     CMSCommunicationApi(
-        settings["altaircms.event.notification_url"], 
-        settings["altaircms.apikey"]
+        settings["altair.cms.api_url"], 
+        settings["altair.cms.api_key"]
         ).bind_instance(config)
 
 

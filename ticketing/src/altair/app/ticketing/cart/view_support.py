@@ -8,6 +8,7 @@ from sqlalchemy.sql.expression import desc, asc
 from sqlalchemy.orm import joinedload, aliased
 from altair.app.ticketing.core import models as c_models
 from altair.sqlahelper import get_db_session
+from altair.mobile.interfaces import IMobileRequest
 from . import helpers as h
 from collections import OrderedDict
 from .exceptions import (
@@ -16,6 +17,7 @@ from .exceptions import (
     ProductQuantityOutOfBoundsError,
     PerStockTypeQuantityOutOfBoundsError,
     PerStockTypeProductQuantityOutOfBoundsError,
+    PerProductProductQuantityOutOfBoundsError,
     )
 from .resources import PerformanceOrientedTicketingCartResource
 
@@ -23,6 +25,11 @@ logger = logging.getLogger(__name__)
 
 class IndexViewMixin(object):
     def prepare(self):
+        self._fetch_event_info()
+        self._clear_temporary_store()
+        self._check_redirect()
+
+    def _fetch_event_info(self):
         if self.context.event is None:
             raise NoEventError()
 
@@ -30,8 +37,13 @@ class IndexViewMixin(object):
         self.event_extra_info = get_event_info_from_cms(self.request, self.context.event.id)
         logger.info(self.event_extra_info)
 
-    def check_redirect(self, mobile):
-        if isinstance(self.request, PerformanceOrientedTicketingCartResource):
+    def _clear_temporary_store(self):
+        from .api import get_temporary_store
+        get_temporary_store(self.request).clear(self.request)
+
+    def _check_redirect(self):
+        mobile = IMobileRequest.providedBy(self.request)
+        if isinstance(self.request.context, PerformanceOrientedTicketingCartResource):
             performance_id = self.request.context.performance.id
         else:
             performance_id = self.request.params.get('pid') or self.request.params.get('performance')
@@ -128,8 +140,11 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                         product.seat_stock_type_id \
                    or product.seat_stock_type_id is None
                 )
+            if quantity_power == 0:
+                logger.warning("quantity power=0! sales_segment.id=%ld, product.id=%ld", sales_segment.id, product.id)
+                quantity_power = 1
             availability = availability_per_product_map[product.id]
-            product_limit = sales_segment.product_limit
+            max_product_quatity = sales_segment.max_product_quatity
 
             # 現在のところ、商品毎に下限枚数や上限枚数は指定できないので
             min_quantity_per_product = min_quantity or 0
@@ -138,20 +153,24 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                 max_quantity_per_product = min(max_quantity_per_product, max_quantity)
 
             # 購入上限枚数は販売区分ごとに設定できる
-            if sales_segment.upper_limit is not None:
-                max_quantity_per_product = min(max_quantity_per_product, sales_segment.upper_limit)
+            if sales_segment.max_quantity is not None:
+                max_quantity_per_product = min(max_quantity_per_product, sales_segment.max_quantity)
 
             # 商品毎の商品購入下限数を計算する
             min_product_quantity_per_product = (min_quantity_per_product + quantity_power - 1) / quantity_power
             if min_product_quantity is not None:
                 min_product_quantity_per_product = max(min_product_quantity_per_product, min_product_quantity)
+            if product.min_product_quantity is not None:
+                min_product_quantity_per_product = max(min_product_quantity_per_product, product.min_product_quantity)
 
             # 商品毎の商品購入上限数を計算する
             max_product_quantity_per_product = max_quantity_per_product / quantity_power
-            if product_limit is not None:
-                max_product_quantity_per_product = min(max_product_quantity_per_product, product_limit)
+            if max_product_quatity is not None:
+                max_product_quantity_per_product = min(max_product_quantity_per_product, max_product_quatity)
             if max_product_quantity is not None:
                 max_product_quantity_per_product = min(max_product_quantity_per_product, max_product_quantity)
+            if product.max_product_quantity is not None:
+                max_product_quantity_per_product = min(max_product_quantity_per_product, product.max_product_quantity)
 
             # 席種毎の残数は商品在庫の最大値
             availability_for_stock_type = max(availability_for_stock_type, availability)
@@ -175,8 +194,10 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     detail=h.product_name_with_unit(product_items_for_product[product.id]),
                     unit_template=h.build_unit_template(product_items_for_product[product.id]),
                     quantity_power=quantity_power,
-                    upper_limit=max_product_quantity_per_product,
-                    product_limit=product_limit,
+                    max_quantity=max_product_quantity_per_product,
+                    max_product_quatity=max_product_quatity,
+                    min_product_quantity_from_product=product.min_product_quantity,
+                    max_product_quantity_from_product=product.max_product_quantity,
                     min_product_quantity_per_product=min_product_quantity_per_product,
                     max_product_quantity_per_product=max_product_quantity_per_product
                     )
@@ -226,19 +247,33 @@ def assert_quantity_within_bounds(sales_segment, order_items):
             stock_types[stock_type.id] = stock_type
             quantity_per_stock_type['quantity'] += quantity * quantity_power
             quantity_per_stock_type['product_quantity'] += quantity
+        if product.min_product_quantity is not None and \
+           quantity < product.min_product_quantity:
+            raise PerProductProductQuantityOutOfBoundsError(
+                quantity,
+                product.min_product_quantity,
+                product.max_product_quantity
+                )
+        if product.max_product_quantity is not None and \
+           quantity > product.max_product_quantity:
+            raise PerProductProductQuantityOutOfBoundsError(
+                quantity,
+                product.min_product_quantity,
+                product.max_product_quantity
+                )
 
     logger.debug('sum_quantity=%d, sum_product_quantity=%d' % (sum_quantity, sum_product_quantity))
 
     if sum_quantity == 0:
-        raise QuantityOutOfBoundsError(sum_quantity, 1, sales_segment.upper_limit)
+        raise QuantityOutOfBoundsError(sum_quantity, 1, sales_segment.max_quantity)
 
-    if sales_segment.upper_limit is not None and \
-       sales_segment.upper_limit < sum_quantity:
-        raise QuantityOutOfBoundsError(sum_quantity, 1, sales_segment.upper_limit)
+    if sales_segment.max_quantity is not None and \
+       sales_segment.max_quantity < sum_quantity:
+        raise QuantityOutOfBoundsError(sum_quantity, 1, sales_segment.max_quantity)
 
-    if sales_segment.product_limit is not None and \
-       sales_segment.product_limit < sum_product_quantity:
-        raise ProductQuantityOutOfBoundsError(sum_product_quantity, 1, sales_segment.product_limit)
+    if sales_segment.max_product_quatity is not None and \
+       sales_segment.max_product_quatity < sum_product_quantity:
+        raise ProductQuantityOutOfBoundsError(sum_product_quantity, 1, sales_segment.max_product_quatity)
 
     for stock_type_id, quantity_per_stock_type in quantities_per_stock_type.items():
         stock_type = stock_types[stock_type_id]

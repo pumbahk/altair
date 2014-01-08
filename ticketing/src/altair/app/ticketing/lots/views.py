@@ -263,8 +263,8 @@ class EntryLotView(object):
         elif not h.check_duplicated_products(wishes):
             self.request.session.flash(u"同一商品が複数回希望されています。")
             validated = False
-        elif not h.check_quantities(wishes, lot.upper_limit):
-            self.request.session.flash(u"各希望ごとの合計枚数は最大{0}枚までにしてください".format(lot.upper_limit))
+        elif not h.check_quantities(wishes, lot.max_quantity):
+            self.request.session.flash(u"各希望ごとの合計枚数は最大{0}枚までにしてください".format(lot.max_quantity))
             validated = False
 
         # 決済・引取方法選択

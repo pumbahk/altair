@@ -133,8 +133,8 @@ class SalesSegmentEditor(object):
         "payment_delivery_method_pairs",
         "start_at",
         "end_at",
-        "upper_limit",
-        "product_limit",
+        "max_quantity",
+        "max_product_quatity",
         "order_limit",
         "account_id",
         "margin_ratio",
@@ -203,7 +203,7 @@ class SalesSegmentGroupCreate(object):
             use_default_payment_delivery_method_pairs=True,
             use_default_start_at=True,
             use_default_end_at=True,
-            use_default_upper_limit=True,
+            use_default_max_quantity=True,
             use_default_order_limit=True,
             use_default_account_id=True,
             use_default_margin_ratio=True,
@@ -226,7 +226,7 @@ class SalesSegmentGroupCreate(object):
             use_default_payment_delivery_method_pairs=True,
             use_default_start_at=False,
             use_default_end_at=False,
-            use_default_upper_limit=False,
+            use_default_max_quantity=False,
             use_default_order_limit=True,
             use_default_account_id=True,
             use_default_margin_ratio=True,
@@ -261,10 +261,10 @@ def update_sales_segment(ssg, ss):
         sync_attr(ss, ssg, 'reporting')
     if ss.use_default_payment_delivery_method_pairs:
         sync_attr(ss, ssg, 'payment_delivery_method_pairs')
-    if ss.use_default_upper_limit:
-        sync_attr(ss, ssg, 'upper_limit')
-    if ss.use_default_product_limit:
-        sync_attr(ss, ssg, 'product_limit')
+    if ss.use_default_max_quantity:
+        sync_attr(ss, ssg, 'max_quantity')
+    if ss.use_default_max_product_quatity:
+        sync_attr(ss, ssg, 'max_product_quatity')
     if ss.use_default_order_limit:
         sync_attr(ss, ssg, 'order_limit')
     if ss.use_default_account_id:

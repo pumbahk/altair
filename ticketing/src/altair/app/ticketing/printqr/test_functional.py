@@ -94,7 +94,7 @@ def setup_product_item(quantity, quantity_only, organization):
 
     sales_segment = SalesSegment(start_at=datetime(2000, 1, 1), 
                          end_at=datetime(2000, 1, 1, 23), 
-                         upper_limit=8, 
+                         max_quantity=8, 
                          seat_choice=True
                          )
     sales_segment.sales_segment_group = SalesSegmentGroup(

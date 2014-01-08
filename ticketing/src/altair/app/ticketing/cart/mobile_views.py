@@ -54,7 +54,6 @@ class MobileIndexView(IndexViewMixin):
     @view_config(route_name='cart.index')
     def event_based_landing_page(self):
         logger.debug('mobile index')
-        self.check_redirect(mobile=True)
 
         try:
             performance_id = long(self.request.params.get('pid') or self.request.params.get('performance'))
@@ -121,7 +120,6 @@ class MobileIndexView(IndexViewMixin):
     @view_config(route_name='cart.index2')
     def performance_based_landing_page(self):
         logger.debug('mobile index')
-        self.check_redirect(mobile=True)
 
         try:
             sales_segment = self.context.sales_segment
@@ -331,6 +329,20 @@ class MobileSelectProductView(object):
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
 
         product_dicts = get_seat_type_dicts(self.request, self.context.sales_segment, seat_type.id)[0]['products']
+
+        singleton = len(product_dicts) == 1
+        for product_dict in product_dicts:
+            possible_quantities = []
+            min_ = 0
+            max_ = product_dict['max_product_quantity_per_product'];
+            if singleton:
+                min_ = product_dict['min_product_quantity_per_product']
+            if product_dict['min_product_quantity_from_product'] is not None:
+                min_ = max(min_, product_dict['min_product_quantity_from_product'])
+            if min_ > 0 and not singleton:
+                possible_quantities.append(0);
+            possible_quantities.extend(range(min_, max_ + 1))
+            product_dict['possible_quantities'] = possible_quantities
 
         if isinstance(self.context, PerformanceOrientedTicketingCartResource):
             back_url = self.request.route_url('cart.seat_types2', performance_id=self.context.performance.id, sales_segment_id=self.context.sales_segment.id)

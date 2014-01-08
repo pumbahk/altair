@@ -93,9 +93,9 @@ class UpdateSalesSegmentTests(unittest.TestCase):
             start_at=datetime(2013, 8, 31),
             end_day_prior_to_performance=1,
             end_time=time(23, 59),
-            upper_limit=10,
+            max_quantity=10,
             order_limit=20, 
-            product_limit=0,
+            max_product_quatity=0,
             account_id=1,
             margin_ratio=150,
             refund_ratio=250,
@@ -116,7 +116,7 @@ class UpdateSalesSegmentTests(unittest.TestCase):
             use_default_payment_delivery_method_pairs=True,
             use_default_start_at=True,
             use_default_end_at=True,
-            use_default_upper_limit=True,
+            use_default_max_quantity=True,
             use_default_order_limit=True,
             use_default_account_id=True,
             use_default_margin_ratio=True,
@@ -124,7 +124,7 @@ class UpdateSalesSegmentTests(unittest.TestCase):
             use_default_printing_fee=True,
             use_default_registration_fee=True,
             use_default_auth3d_notice=True,
-            use_default_product_limit=True,
+            use_default_max_product_quatity=True,
         )
 
         self._callFUT(ssg, ss)
@@ -135,7 +135,7 @@ class UpdateSalesSegmentTests(unittest.TestCase):
         self.assertEqual(ss.payment_delivery_method_pairs, [])
         self.assertEqual(ss.start_at, datetime(2013, 10, 11, 12, 31))
         self.assertEqual(ss.end_at, datetime(2013, 11, 11, 12, 31))
-        self.assertEqual(ss.upper_limit, 10)
+        self.assertEqual(ss.max_quantity, 10)
         self.assertEqual(ss.order_limit, 20)
         self.assertEqual(ss.account_id, 1)
         self.assertEqual(ss.margin_ratio, 150)
@@ -155,9 +155,9 @@ class UpdateSalesSegmentTests(unittest.TestCase):
             start_time=time(10, 00),
             end_day_prior_to_performance=1,
             end_time=time(23, 59),
-            upper_limit=10,
+            max_quantity=10,
             order_limit=20,
-            product_limit=0,            
+            max_product_quatity=0,            
             account_id=1,
             margin_ratio=150,
             refund_ratio=250,
@@ -173,7 +173,7 @@ class UpdateSalesSegmentTests(unittest.TestCase):
             use_default_payment_delivery_method_pairs=False,
             use_default_start_at=False,
             use_default_end_at=False,
-            use_default_upper_limit=False,
+            use_default_max_quantity=False,
             use_default_order_limit=False,
             use_default_account_id=False,
             use_default_margin_ratio=False,
@@ -181,14 +181,14 @@ class UpdateSalesSegmentTests(unittest.TestCase):
             use_default_printing_fee=False,
             use_default_registration_fee=False,
             use_default_auth3d_notice=False, 
-            use_default_product_limit=False,           
+            use_default_max_product_quatity=False,           
             seat_choice=True,
             public=False,
             reporting=True,
             payment_delivery_method_pairs=[testing.DummyModel()],
             start_at=datetime(2014, 10, 11, 12, 31),
             end_at=datetime(2014, 11, 11, 12, 31),
-            upper_limit=110,
+            max_quantity=110,
             order_limit=120,
             account_id=10,
             margin_ratio=1150,
@@ -206,7 +206,7 @@ class UpdateSalesSegmentTests(unittest.TestCase):
         self.assertEqual(len(ss.payment_delivery_method_pairs), 1)
         self.assertEqual(ss.start_at, datetime(2014, 10, 11, 12, 31))
         self.assertEqual(ss.end_at, datetime(2014, 11, 11, 12, 31))
-        self.assertEqual(ss.upper_limit, 110)
+        self.assertEqual(ss.max_quantity, 110)
         self.assertEqual(ss.order_limit, 120)
         self.assertEqual(ss.account_id, 10)
         self.assertEqual(ss.margin_ratio, 1150)

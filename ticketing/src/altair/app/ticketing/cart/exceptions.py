@@ -51,6 +51,13 @@ class PerStockTypeProductQuantityOutOfBoundsError(CartException):
         self.min_quantity = min_product_quantity
         self.max_quantity = max_product_quantity
 
+class PerProductProductQuantityOutOfBoundsError(CartException):
+    def __init__(self, quantity_given, min_product_quantity, max_product_quantity):
+        super(PerProductProductQuantityOutOfBoundsError, self).__init__()
+        self.quantity_given = quantity_given
+        self.min_quantity = min_product_quantity
+        self.max_quantity = max_product_quantity
+
 class InvalidCartStatusError(CartException):
     def __init__(self, cart_id):
         super(InvalidCartStatusError, self).__init__()
@@ -183,3 +190,6 @@ class PaymentError(ContextualCartException):
         cause = kwargs.pop('cause')
         super(PaymentError, self).__init__(*args, **kwargs)
         self.cause = cause
+
+class CompletionPageNotRenderered(CartException):
+    pass

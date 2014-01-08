@@ -341,10 +341,10 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.sales_segment.sales_segment_group_id
 
     @property
-    def upper_limit(self):
+    def max_quantity(self):
         if self.sales_segment is None:
             return None
-        return self.sales_segment.upper_limit
+        return self.sales_segment.max_quantity
 
     @property
     def seat_choice(self):

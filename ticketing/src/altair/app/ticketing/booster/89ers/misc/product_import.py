@@ -142,7 +142,7 @@ def main():
         kind = c_model.SalesSegmentKindEnum.other.v,
         start_at = datetime(2012,07,01,00,00),
         end_at = datetime(2012,8,31,00,00),
-        upper_limit = 10000,
+        max_quantity = 10000,
         seat_choice = False,
         event = event,
     )
