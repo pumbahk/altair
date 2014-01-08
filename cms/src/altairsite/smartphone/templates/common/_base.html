@@ -14,8 +14,7 @@
 <body>
 
 <div class="header-navigation">
-  <% import random %>
-  <a class="goto-link btn-primary" style="float: right" href="${request.route_path('smartphone.goto_pc_page', _query=dict(mode=str(random.random())))}">PC版へ</a>
+  <a class="goto-link btn-primary" style="float: right" href="${request.route_path('smartphone.goto_pc_page')}">PC版へ</a>
   <a href="/"><img src="${request.static_url('altaircms:static/smartphone/img/logo.gif')}"/></a>
 </div>
 <div id="fb-root"></div>
