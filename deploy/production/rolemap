@@ -9,7 +9,8 @@ apmv3.1c.vpc.altr	userapp
 apmv5.1b.vpc.altr	userapp
 apmv5.1c.vpc.altr	userapp
 apmv6.1b.vpc.altr	userapp-api
-apmv6.1c.vpc.altr	userapp-api
+apmv7.1b.vpc.altr	userapp
+apmv7.1c.vpc.altr	userapp
 btmv1.1b.vpc.altr	batch
 btmv1.1c.vpc.altr	batch
 samv1.1b.vpc.altr	newsletter
