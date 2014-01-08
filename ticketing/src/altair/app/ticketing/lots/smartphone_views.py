@@ -301,24 +301,23 @@ class EntryLotView(object):
             validated = False
 
         if not validated:
-
-            error_messages = dict({
-                  'last_name_kana' : u"姓（カナ）を入力して下さい"
-                , 'first_name': u"名を入力して下さい"
-                , 'last_name': u"姓を入力して下さい"
-                , 'zip': u"郵便番号を入力して下さい"
-                , 'tel_1': u"電話番号を入力して下さい"
-                , 'sex': u"性別を入力して下さい"
-                , 'email_1': u"メールアドレス（確認）が一致していないか、メールアドレスが入力されていません。"
-                , 'first_name_kana': u"名（カナ）を入力して下さい"
-                , 'city': u"市区町村を入力して下さい"
-                , 'email_1_confirm': u"メールアドレス（確認）を入力して下さい"
-                , 'email_2': u"メールアドレス（確認）を入力して下さい"
-                , 'prefecture': u"都道府県を入力して下さい"
-                , 'address_1': u"住所を入力して下さい"
-                , 'year': u"生年月日の入力が不正です"
-                , 'month': u"生年月日の入力が不正です"
-            })
+            error_messages = {
+                'last_name_kana' : u"姓（カナ）を入力して下さい",
+                'first_name': u"名を入力して下さい",
+                'last_name': u"姓を入力して下さい",
+                'zip': u"郵便番号を入力して下さい",
+                'tel_1': u"電話番号を入力して下さい",
+                'sex': u"性別を入力して下さい",
+                'email_1': u"メールアドレス（確認）が一致していないか、メールアドレスが入力されていません。",
+                'first_name_kana': u"名（カナ）を入力して下さい",
+                'city': u"市区町村を入力して下さい",
+                'email_1_confirm': u"メールアドレス（確認）を入力して下さい",
+                'email_2': u"メールアドレス（確認）を入力して下さい",
+                'prefecture': u"都道府県を入力して下さい",
+                'address_1': u"住所を入力して下さい",
+                'year': u"生年月日の入力が不正です",
+                'month': u"生年月日の入力が不正です",
+                }
             for error in cform.errors:
                 if error in error_messages:
                     self.request.session.flash(error_messages[error])
