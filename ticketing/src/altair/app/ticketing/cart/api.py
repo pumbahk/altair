@@ -138,7 +138,6 @@ def get_cart_safe(request, for_update=True):
         raise NoCartError('Cart is not associated to the request')
     expired = cart.is_expired(minutes, now) or cart.finished_at
     if expired:
-        remove_cart(request)
         raise NoCartError('Cart is expired')
     return cart
 
