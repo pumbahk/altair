@@ -3975,8 +3975,17 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
     updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
     deleted_at = Column(TIMESTAMP, nullable=True)
-    
 
+    def __unicode__(self):
+        return u'{{}}'.format(u', '.join([self.augus_venue.name,
+                                          str(self.augus_venue.version),
+                                          self.area_name,
+                                          self.info_name,
+                                          self.floor,
+                                          self.column,
+                                          self.num
+                                      ]))
+    
 class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusPerformance'
     id = Column(Identifier, primary_key=True)
