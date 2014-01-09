@@ -75,7 +75,6 @@ class CartBot(object):
                 self.print_(u'  name: %s' % sales_segment['name'])
                 self.print_(u'  seat_types_url: %s' % sales_segment['seat_types_url'])
                 self.print_(u'  order_url: %s' % sales_segment['order_url'])
-                self.print_(u'  upper_limit: %s' % sales_segment['upper_limit'])
         self.print_()
 
     def show_sales_segment_detail(self, sales_segment_detail):
@@ -215,14 +214,14 @@ class CartBot(object):
     def buy_something(self):
         self.print_('buy something start')
         self.m.navigate(self.first_page_url)
-        self.wait()
+        #self.wait()
         actual_first_page_url = urlparse(self.m.location)
         if re.match("/cart/fc/.*/login", actual_first_page_url.path) is not None:
             self.do_fc_auth_login()
         if actual_first_page_url.netloc.endswith('.id.rakuten.co.jp') and \
                actual_first_page_url.path == '/rms/nid/login':
             self.do_open_id_login()
-        self.wait()
+        #self.wait()
         sales_segment_selection = None
         for script in self.m.page.root.findall('head/script'):
             if script.text:
@@ -249,7 +248,7 @@ class CartBot(object):
         self.print_()
         sales_segment_detail = json.load(self.m.create_loader(urllib2.Request(sales_segment['seat_types_url']))())
         self.show_sales_segment_detail(sales_segment_detail)
-        self.wait()
+        #self.wait()
         self.print_()
 
         seat_type = self.choose_seat_type(sales_segment_detail)
@@ -260,6 +259,10 @@ class CartBot(object):
         product_info = json.load(self.m.create_loader(urllib2.Request(seat_type['products_url']))())
         products = product_info['products']
         products_to_buy = [(product, 1) for product in sample(products, randint(1, len(products)))]
+
+        # dummy request
+        seats_info = json.load(self.m.create_loader(urllib2.Request(seat_type['seats_url']))())
+        self.print_(u'seats_info -> %s' % seats_info)
 
         url = sales_segment['order_url']
         data = self.build_order_post_data(sales_segment_detail, products_to_buy)
@@ -349,7 +352,7 @@ class CartBot(object):
         self.fill_shipping_address_form(form)
 
         self.m.submit_form(form)
-        self.wait()        
+        self.wait()
         path = urlparse(self.m.location).path
         if path == '/cart/rsp':
             self.do_rsp_form()
@@ -369,7 +372,7 @@ class CartBot(object):
         elif path != '/cart/confirm':
             raise NotImplementedError(self.m.location)
 
-        self.wait()        
+        self.wait()
         form = self.m.page.root.find('.//form[@id="form1"]')
         self.m.submit_form(form, submit=form.find('.//input[@id="btn-complete"]'))
         path = urlparse(self.m.location).path

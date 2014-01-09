@@ -1032,10 +1032,14 @@ class CompleteView(object):
             # 後で再度raiseするときに、現在の例外の状態をtry-exceptで
             # 撹乱されたくないので、副作用を呼び出しフレームの中に閉じ込める
             def _():
-                try:
-                    return self.complete_get()
-                except:
-                    return None
+                _cart = api.get_cart(self.request, for_update=False)
+                if _cart is not None:
+                    return self.render_complete_page(_cart.order_no)
+                else:
+                    try:
+                        return self.complete_get()
+                    except:
+                        return None
             retval = _()
             if retval is not None:
                 return retval
@@ -1064,12 +1068,12 @@ class CompleteView(object):
         magazine_ids = self.request.params.getall('mailmagazine')
         multi_subscribe(user, emails, magazine_ids)
 
-        api.remove_cart(self.request)
         api.logout(self.request)
 
         self.request.response.expires = datetime.now() + timedelta(seconds=3600)
         api.get_temporary_store(self.request).set(self.request, order_no)
         if IMobileRequest.providedBy(self.request):
+            api.remove_cart(self.request)
             # モバイルの場合はHTTPリダイレクトの際のSet-Cookieに対応していないと
             # 思われるので、直接ページをレンダリングする
             # transaction をコミットしたので、再度読み直し
@@ -1088,6 +1092,10 @@ class CompleteView(object):
         except:
             logger.exception('oops')
             raise CompletionPageNotRenderered()
+        return self.render_complete_page(order_no)
+
+    def render_complete_page(self, order_no):
+        api.remove_cart(self.request)
         order = api.get_order_for_read_by_order_no(self.request, order_no)
         self.request.response.expires = datetime.utcnow() + timedelta(seconds=3600) # XXX
         self.request.response.cache_control = 'max-age=3600'
