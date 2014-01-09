@@ -91,9 +91,12 @@ def main():
                     stock.save()
                 else:
                     cannot_distributes.append(augus_seat)
-    transaction.commit()
-    logger.warn('Cannot distribute seats: Seats are {}'.format(
-        [unicode(augus_seat).encode('utf8') for augus_seat in cannot_distributes])
+    if cannot_distributes:
+        transaction.abort()
+        logger.warn('Cannot distribute seats: Seats are {}'.format(
+            [unicode(augus_seat).encode('utf8') for augus_seat in cannot_distributes]))
+    else:
+        transaction.commit()
 
 if __name__ == '__main__':
     main()
