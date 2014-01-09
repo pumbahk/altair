@@ -2,9 +2,12 @@
 #-*- coding: utf-8 -*-
 import os
 import argparse
+import logging
+from pyramid.paster import bootstrap
 from altair.augus.protocols import (
-    DistributionSyncRequest,
-    DistributionSyncResponse,
+    PutbackRequest,
+    PutbackResponse,
+    PutbackFinish,
     )
 from altair.augus.parsers import AugusParser
 
@@ -22,6 +25,16 @@ def mkdir_p(path):
         os.makedirs(path)
 
 def main():
+    parser = get_argument_parser()
+    args = parser.parse_args()
+    bootstrap(args.conf)    
+    settings = get_settings(args.conf)
+    staging = settings['staging']
+    pending = settings['pending']
+    
+    mkdir_p(staging)
+    mkdir_p(pending)
+    
     parser = argparse.ArgumentParser()
     parser.add_argument('--conf', default=None)
     args = parser.parse_args()
@@ -31,11 +44,14 @@ def main():
     
     mkdir_p(staging)
     mkdir_p(pending)
-
-    for name in filter(DistributionSyncRequest.match_name, os.listdir(staging)):
+    
+    for name in filter(PutbackRequest.match_name, os.listdir(staging)):
         path = os.path.join(staging, name)
         request = AugusParser.parse(path)
+        records = sorted(request, key=lambda rec: rec.event_code, 
+        
         for record in request:
             pass
+
 if __name__ == '__main__':
     main()
