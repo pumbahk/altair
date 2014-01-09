@@ -3,6 +3,8 @@ using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using System.Threading.Tasks;
 
+//TODO: 2度押し防止
+/*
 namespace QR
 {
 	//fake object
@@ -72,3 +74,4 @@ namespace QR
 		}
 	}
 }
+*/

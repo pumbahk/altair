@@ -6,7 +6,7 @@ namespace QR
 {
 	public interface IDataFetcher<G,T>
 	{
-		Task<ResultTuple<string, T>> fetchAsync(G arg);
+		Task<ResultTuple<string, T>> FetchAsync(G arg);
 	}
 }
 

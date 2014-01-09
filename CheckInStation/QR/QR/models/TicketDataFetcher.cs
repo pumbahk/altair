@@ -27,6 +27,7 @@ namespace QR
 			return Resource.EndPoint.QRFetchData;
 		}
 
+			
 		public async Task<ResultTuple<string, TicketData>> FetchAsync (string qrcode)
 		{
 			IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;

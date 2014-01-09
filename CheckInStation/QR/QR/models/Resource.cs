@@ -29,8 +29,8 @@ namespace QR
 
 		public bool FullVerify ()
 		{
-			if (QRCodeVerifier == null)
-				throw new InvalidOperationException ("QRCodeVerifier is NULL");
+			if (TicketDataFetcher == null)
+				throw new InvalidOperationException ("TicketDataFetcher is NULL");
 			if (Authentication == null)
 				throw new InvalidOperationException ("Authentication is null");
 			if (HttpWrapperFactory == null)
@@ -39,8 +39,6 @@ namespace QR
 		}
 
 		public IDataFetcher<string, TicketData> TicketDataFetcher { get; set; }
-
-		public IVerifier<string> QRCodeVerifier { get; set; }
 
 		public EndPoint EndPoint { get; set; }
 

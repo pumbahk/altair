@@ -20,7 +20,21 @@ namespace QR
 
 		public override async Task<bool> VerifyAsync ()
 		{
-			return await Resource.QRCodeVerifier.VerifyAsync (QRCode);
+			try {
+				ResultTuple<string, TicketData> result = await Resource.TicketDataFetcher.FetchAsync (this.QRCode);
+				if (result.Status) {
+					this.TicketData = result.Right;
+					return true;
+				} else {
+					//modelからpresentation層へのメッセージ
+					PresentationChanel.NotifyFlushMessage ((result as Failure<string,TicketData>).Result);
+					return false;
+				}
+			} catch (Exception ex) {
+				PresentationChanel.NotifyFlushMessage (ex.ToString ());
+				PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
+				return false;
+			}
 		}
 
 		public override ICase OnSuccess (IFlow flow)

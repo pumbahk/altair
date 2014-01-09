@@ -13,7 +13,7 @@ namespace QR
 			Result = result;
 		}
 
-		public Task<ResultTuple<string, T>> fetchAsync (G arg)
+		public Task<ResultTuple<string, T>> FetchAsync (G arg)
 		{
 			return Task.Run (() => {
 				return new Success<string,T> (Result) as ResultTuple<string,T>;
