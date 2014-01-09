@@ -1765,7 +1765,6 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         products = Product.filter_by(event_id=self.event_id).filter_by(seat_stock_type_id=self.id).all()
         for product in products:
             product.delete()
-
         super(StockType, self).delete()
 
     def num_seats(self, performance_id=None, sale_only=False):
@@ -1816,7 +1815,9 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
     account_id = Column(Identifier, ForeignKey('Account.id'))
-
+    
+    putback_target = Column(Integer, nullable=True) # CooperationTypeEnum
+    
     style = deferred(Column(MutationDict.as_mutable(JSONEncodedDict(1024))))
     stocks = relationship('Stock', backref='stock_holder')
 

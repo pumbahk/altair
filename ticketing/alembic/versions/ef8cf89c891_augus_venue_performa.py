@@ -126,7 +126,11 @@ def upgrade():
         sa.Column('augus_putback_code', sa.Integer, nullable=False),                
         sa.Column('quantity', sa.Integer, nullable=False),
         sa.Column('augus_stock_info_id', Identifier, nullable=False),
-        sa.Column('finished_at', sa.TIMESTAMP(), nullable=True),        
+        sa.Column('finished_at', sa.TIMESTAMP(), nullable=True),
+        )
+    op.add_column(
+        'StockHolder',
+        sa.Column('putback_target', sa.Integer, nullable=True),
         )
 
 def downgrade():
@@ -139,4 +143,6 @@ def downgrade():
               ]
     for table in tables:
         op.drop_table(table)
+    op.drop_column('StockHolder', 'putback_target')
 
+        
