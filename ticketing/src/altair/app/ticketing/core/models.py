@@ -4041,7 +4041,7 @@ class AugusPutback(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     augus_putback_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'返券コード'))
     quantity = AnnotatedColumn(Integer, nullable=False, _a_label=(u'数量'))
-    augus_stock_info_id = AnnotatedColumn(ntifier, nullable=False, _a_label=(u'オーガスストック情報'))
+    augus_stock_info_id = AnnotatedColumn(Identifier, nullable=False, _a_label=(u'オーガスストック情報'))
     finished_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券完了日時'))
 
 
