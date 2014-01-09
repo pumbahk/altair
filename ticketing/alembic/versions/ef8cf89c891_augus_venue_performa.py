@@ -64,6 +64,7 @@ def upgrade():
         sa.Column('doorway_code', sa.Integer, nullable=False),
         sa.Column('version', sa.Integer, nullable=False),
         # links
+        sa.Column('augus_venue_id', Identifier, nullable=False),
         sa.Column('seat_id', Identifier, nullable=False),
         # for super class
         sa.Column('created_at', sa.TIMESTAMP(), server_default=text('CURRENT_TIMESTAMP'), nullable=False),
@@ -80,8 +81,8 @@ def upgrade():
         sa.Column('augus_event_name', sa.Unicode(32), nullable=False),
         sa.Column('augus_performance_name', sa.Unicode(32), nullable=False),
         sa.Column('open_on', sa.TIMESTAMP(), nullable=True),
+        sa.Column('augus_venue_version', sa.Integer, nullable=False),
         sa.Column('start_on', sa.TIMESTAMP(), nullable=True),
-        sa.Column('augus_event_version', sa.Integer, nullable=False),
         # links
         sa.Column('performance_id', Identifier, nullable=False, unique=True),        
         # for super class
