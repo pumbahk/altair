@@ -3984,7 +3984,7 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_performance_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス公演コード'))
     augus_venue_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス会場コード'))
     augus_venue_name = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'オーガス会場名'))
-    augus_event_name = AnnotatedColumn(Unicode(32), nullable, _a_label=(u'オーガス事業名'))
+    augus_event_name = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'オーガス事業名'))
     augus_performance_name = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'オーガス公演名'))
     open_on = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'開場日時'))
     start_on = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'公演日時'))
