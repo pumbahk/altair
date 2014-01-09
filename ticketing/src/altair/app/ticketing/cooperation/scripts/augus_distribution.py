@@ -51,9 +51,10 @@ def main():
     mkdir_p(pending)
     _get_key = lambda rec: (rec.event_code, rec.performance_code)
     cannot_distributes = []
-    
+    names = []
     for name in filter(DistributionSyncRequest.match_name, os.listdir(staging)):
         path = os.path.join(staging, name)
+        names.append(name)
         request = AugusParser.parse(path)
         records = sorted(request, key=lambda rec: _get_key)
         for (ag_event_code, ag_performance_code), recs in itertools.groupby(records, _get_key):
@@ -96,7 +97,25 @@ def main():
         logger.warn('Cannot distribute seats: Seats are {}'.format(
             [unicode(augus_seat).encode('utf8') for augus_seat in cannot_distributes]))
     else:
-        transaction.commit()
+        src_dst = [os.path.join(staging, name), os.path.join(pending, name)
+                   for name in names]
+        try:
+            try:
+                for src, dst in src_dst:
+                    shutil.copy(src, dst)
+            except (IOError, OSError) as err:
+                for src, dst in src_dst:
+                    os.remove(dst)
+            else:
+                for src, dst in src_dst:
+                    os.remove(src)
+        except (IOError, OSError) as err:
+            logger.warn('Cannot copy or remove files: {}: {}'.format(err, ', '.join(names)))
+            transaction.abort()
+        except:
+            transaction.abort()            
+        else:
+            transaction.commit()
 
 if __name__ == '__main__':
     main()
