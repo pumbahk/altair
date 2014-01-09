@@ -20,27 +20,22 @@ namespace QR.presentation.cli
 			ICase result;
 			var ev = new QRInputEvent ();
 			do {		
-				var ok = false;
-				do {
-					try {
-						Console.WriteLine ("------QRCode input strategy select: 1:qr, 2:orderno-----");
-						var inputUnit = Enum.Parse (typeof(InputUnit), Console.ReadLine ());
-						ok = true;
-					} catch (Exception e) {
-						Console.WriteLine (e.ToString ());
-					}
-				} while(!ok);
-
-				do {
-					Console.WriteLine ("------QRCode input---------");
-					Console.Write ("qrcode:");
-					ev.QRCode = Console.ReadLine ();
-					result = await RequestBroker.Submit (ev);
-					ev.HandleEvent ();
-				} while(ev.Status == InternalEventStaus.failure);
+				Console.WriteLine ("------QRCode input strategy select: 1:qr, 2:orderno-----");
+				ev.InputUnitString = Console.ReadLine ();
 				result = await RequestBroker.Submit (ev);
 				ev.HandleEvent ();
 			} while(ev.Status == InternalEventStaus.failure);
+			do {
+				Console.WriteLine ("------QRCode input---------");
+				Console.Write ("qrcode:");
+				ev.QRCode = Console.ReadLine ();
+				result = await RequestBroker.Submit (ev);
+				ev.HandleEvent ();
+			} while(ev.Status == InternalEventStaus.failure);
+			Console.WriteLine ("-------QRCode DataFetch--------");
+			result = await RequestBroker.Submit (ev);
+			ev.HandleEvent ();
+
 			return result;
 		}
 	}

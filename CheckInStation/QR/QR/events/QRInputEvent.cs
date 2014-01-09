@@ -14,6 +14,8 @@ namespace QR
 
 		public InputUnit InputUnit { get; set; }
 
+		public string InputUnitString { get; set; }
+
 		public QRInputEvent () : base ()
 		{
 		}
