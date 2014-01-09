@@ -75,7 +75,6 @@ class CartBot(object):
                 self.print_(u'  name: %s' % sales_segment['name'])
                 self.print_(u'  seat_types_url: %s' % sales_segment['seat_types_url'])
                 self.print_(u'  order_url: %s' % sales_segment['order_url'])
-                self.print_(u'  upper_limit: %s' % sales_segment['upper_limit'])
         self.print_()
 
     def show_sales_segment_detail(self, sales_segment_detail):
