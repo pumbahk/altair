@@ -1067,12 +1067,12 @@ class CompleteView(object):
         magazine_ids = self.request.params.getall('mailmagazine')
         multi_subscribe(user, emails, magazine_ids)
 
-        api.remove_cart(self.request)
         api.logout(self.request)
 
         self.request.response.expires = datetime.now() + timedelta(seconds=3600)
         api.get_temporary_store(self.request).set(self.request, order_no)
         if IMobileRequest.providedBy(self.request):
+            api.remove_cart(self.request)
             # モバイルの場合はHTTPリダイレクトの際のSet-Cookieに対応していないと
             # 思われるので、直接ページをレンダリングする
             # transaction をコミットしたので、再度読み直し
@@ -1094,6 +1094,7 @@ class CompleteView(object):
         return self.render_complete_page(order_no)
 
     def render_complete_page(self, order_no):
+        api.remove_cart(self.request)
         order = api.get_order_for_read_by_order_no(self.request, order_no)
         self.request.response.expires = datetime.utcnow() + timedelta(seconds=3600) # XXX
         self.request.response.cache_control = 'max-age=3600'
