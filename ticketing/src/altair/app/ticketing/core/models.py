@@ -3934,7 +3934,7 @@ class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'),
                       unique=True, nullable=False)
     created_at = Column(TIMESTAMP, nullable=False, 
-                        default=sql.current_timestamp())
+                        default=sqlf.current_timestamp())
     updated_at = Column(TIMESTAMP, nullable=False,
                         default=datetime.now, onupdate=datetime.now)
     deleted_at = Column(TIMESTAMP, nullable=True)
@@ -3972,7 +3972,7 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_venue = relationship('AugusVenue', backref='augus_seats')
     seat = relationship('Seat')
 
-    created_at = Column(TIMESTAMP, nullable=False, default=sql.current_timestamp())
+    created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
     updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
     deleted_at = Column(TIMESTAMP, nullable=True)
     
@@ -3995,7 +3995,7 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             nullable=True, unique=True)
     performance = relationship('Performance')
     
-    created_at = Column(TIMESTAMP, nullable=False, default=sql.current_timestamp())
+    created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
     updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
     deleted_at = Column(TIMESTAMP, nullable=True)
     
@@ -4016,7 +4016,7 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_seat_type_classif = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'席区分'))
     value = AnnotatedColumn(Integer, nullable=False, _a_label=(u'売値'))
 
-    created_at = Column(TIMESTAMP, nullable=False, default=sql.current_timestamp())
+    created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
     updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
     deleted_at = Column(TIMESTAMP, nullable=True)
 
@@ -4031,7 +4031,7 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_id = Column(Identifier, ForeignKey('Stock.id'))
     stock = relationship('Stock')
 
-    created_at = Column(TIMESTAMP, nullable=False, default=sql.current_timestamp())
+    created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
     updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
     deleted_at = Column(TIMESTAMP, nullable=True)
 
