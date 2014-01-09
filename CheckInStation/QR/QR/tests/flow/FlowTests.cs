@@ -119,7 +119,7 @@ namespace QR
 		public void Test__PrintForOne__Failure__DisplayError ()
 		{
 			var manager = new FlowManager ();
-			var startpoint = new CaseQRPrintForOne (new Resource ());
+			var startpoint = new CaseQRPrintForOne (new Resource (), null);
 			FakeFlow target = new FakeFlow (manager, startpoint);
 
 			var t = Task.Run (async () => {

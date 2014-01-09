@@ -125,6 +125,7 @@
     <Compile Include="models\TicketData.cs" />
     <Compile Include="models\TicketDataFetcher.cs" />
     <Compile Include="models\IDataFetcher.cs" />
+    <Compile Include="models\SVGImage.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

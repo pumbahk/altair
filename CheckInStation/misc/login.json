@@ -1,6 +1,10 @@
 {
     "endpoint":{
         "login_status": "http://localhost:8000/login.status.json",
-        "qr_ticketdata": "http://localhost:8000/qrdata.json"
-    }
+        "qr_ticketdata": "http://localhost:8000/qrdata.json",
+        "qr_svgsource_one": "http://localhost:8000/svgone.json",
+        "qr_svgsource_all": "http://localhost:8000/svgall.json",
+        "image_from_svg": "http://localhost:8000/image.png"
+    },
+    "memo": "svg_from_imageこれどこで設定しよう?"
 }

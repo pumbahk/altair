@@ -39,7 +39,7 @@ namespace QR
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			return new CaseQRConfirmForOne (Resource);
+			return new CaseQRConfirmForOne (Resource, TicketData);
 		}
 	}
 }

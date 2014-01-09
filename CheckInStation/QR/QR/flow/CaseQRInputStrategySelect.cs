@@ -17,15 +17,11 @@ namespace QR
 		public override Task<bool> VerifyAsync ()
 		{
 			return Task.Run (() => {
-				try {
-					var subject = PresentationChanel as QRInputEvent;
-					InputUnit = (InputUnit)Enum.Parse (typeof(InputUnit), subject.InputUnitString);
-					subject.InputUnit = InputUnit;
-					return true;
-				} catch (Exception e) {
-					Console.WriteLine (e.ToString ());
-					return false;
-				}
+				var subject = PresentationChanel as QRInputEvent;
+				InputUnit unit;
+				var status = subject.TryParseEnum<InputUnit> (subject.InputUnitString, out unit);
+				subject.InputUnit = InputUnit = unit;
+				return status;
 			});
 		}
 

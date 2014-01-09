@@ -40,11 +40,5 @@ namespace QR
 			return new CaseFailureRedirect (Resource);
 		}
 	}
-
-	public enum PrintUnit
-	{
-		one,
-		all
-	}
 }
 
