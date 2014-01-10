@@ -1816,7 +1816,7 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_id = Column(Identifier, ForeignKey('Event.id'))
     account_id = Column(Identifier, ForeignKey('Account.id'))
     
-    putback_target = Column(Integer, nullable=True) # CooperationTypeEnum
+    is_putback_target = Column(Boolean, nullable=True) # CooperationTypeEnum
     
     style = deferred(Column(MutationDict.as_mutable(JSONEncodedDict(1024))))
     stocks = relationship('Stock', backref='stock_holder')

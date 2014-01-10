@@ -130,7 +130,7 @@ def upgrade():
         )
     op.add_column(
         'StockHolder',
-        sa.Column('putback_target', sa.Integer, nullable=True),
+        sa.Column('is_putback_target', sa.Boolean, nullable=True),
         )
 
 def downgrade():
@@ -143,6 +143,4 @@ def downgrade():
               ]
     for table in tables:
         op.drop_table(table)
-    op.drop_column('StockHolder', 'putback_target')
-
-        
+    op.drop_column('StockHolder', 'is_putback_target')
