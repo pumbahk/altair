@@ -322,5 +322,66 @@ class AugusPerformanceImpoter(object):
                 ag_performance.save()
             else: # already exist
                 pass
+import time
+import itertools
+from altair.app.ticketing.core.models import (
+    Seat,
+    Stock,
+    StockHolder,
+    SeatStatusEnum,
+    )
+from altair.augus.protocols.putback import (
+    PutbackResponse,
+    PutbackResponseRecord,
+    )
+class CannotPutbackTicket(Exception):
+    pass
 
-            
+def putback(stock_holder):
+
+    if type(stock_holder) in (int, long):
+        stock_holder = StockHolder.query\
+                                  .filter(StockHolder.id==stock_holder)\
+                                  .one()
+    seats = Seat.query.filter(Seat.stock_id==Stock.id)\
+                      .filter(Stock.stock_holder_id==stock_holder.id)\
+                      .order_by(Stock.performance_id)
+
+    can_putback_statuses = (SeatStatusEnum.NotOnSales,
+                            SeatStatusEnum.Vacant,
+                            )
+
+    putback_code = unicode(time.strftime('%Y-%m-%d-%H-%M-%S'))
+    for performance_id, seat_in_performance in itertools.groupby(seats, key=lambda seat: seat.stock.performance_id):
+        unallocation_stock = Stock.query.filter(Stock.performance_id==performance_id)\
+                                        .filter(Stock.stock_holder_id==None)\
+                                        .one()
+        ag_performance = AugusPerformance\
+            .query\
+            .filter(AugusPerformance.performance_id==performance_id)\
+            .one()
+        ag_venue = AugusVenue.query.filter(AugusVenue.code==ag_performance.augus_venue_code)\
+                                   .filter(AugusVenue.version==ag_performance.augus_venue_version)\
+                                   .one()
+        for seat in sesat_in_performance:
+            if seat.status not in can_putback_statuses:
+                raise CannnotPutbackTicket()
+            ag_seat = AugusSeat.query.filter(AugusSeat.augus_venue_id==AugusVenue.id)\
+                                     .filter(AugusSeat.seat_id==Seat.id)\
+                                     .filter(Seat.l0_id==seat.l0_id)\
+                                     .one()
+            ag_stock_info = AugusStockInfo.query\
+                                          .filter(AugusStockInfo.augus_performance_id==ag_performance.id)\
+                                          .filter(AugusStockInfo.augus_seat_id==ag_seat.id)\
+                                          .one()
+            ag_putback = AugusPutback()
+            ag_putback.augus_putback_code = putback_code
+            ag_putback.quantity = 1 # 指定席は1
+            ag_putback.augus_stock_info_id = ag_stock_info.id
+
+            seat.stock_id = unallocation_stock.id
+
+            seat.save()
+            ag_putback.save()
+            ag_putbacks.append(ag_putback)
+    return putback_code
