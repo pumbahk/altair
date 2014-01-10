@@ -2,7 +2,7 @@ from pyramid.view import view_config, view_defaults
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPClientError
 
-from .helpers import make_sej_response
+from .payload import make_sej_response
 
 from .notification.receiver import (
     SejNotificationReceiver,
@@ -24,7 +24,7 @@ class SejHTTPErrorResponse(HTTPClientError):
 
 def makeReceiver(request):
     settings = request.registry.settings
-    api_key = settings['sej.api_key']
+    api_key = settings.get('altair.sej.api_key') or settings['sej.api_key']
     return SejNotificationReceiver(api_key)
 
 class SejCallback(object):

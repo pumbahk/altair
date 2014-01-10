@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 from dateutil.parser import parse as parsedate
-from ..helpers import create_hash_from_x_start_params
+from ..payload import create_hash_from_x_start_params
 from ..utils import JavaHashMap
 from .models import SejNotificationType, SejNotification
 

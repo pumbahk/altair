@@ -164,7 +164,7 @@ def main(env, args):
         exchange_number = _args.exchange_number
         billing_number = _args.billing_number
         tenant, notification = action(request, order_no, exchange_number=exchange_number, billing_number=billing_number)
-        builder = SejNotificationRequestParamBuilder(tenant.api_key or settings['sej.api_key'])
+        builder = SejNotificationRequestParamBuilder(tenant.api_key or settings.get('altair.sej.api_key') or settings['sej.api_key'])
         params = builder(notification)
         sys.stdout.write(uniurlencode(params, method='raw', encoding='CP932'))
     except ApplicationError as e:

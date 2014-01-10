@@ -20,7 +20,7 @@ def includeme(config):
         inticket_api_url=registry.settings.get('altair.sej.inticket_api_url') or registry.settings.get('sej.inticket_api_url')
         )
     config.registry.registerUtility(default_sej_tenant, ISejTenant)
-
+    config.include('.communicator')
 
 def setup_routes(config):
     config.add_route('sej.callback'                 , '/callback/')

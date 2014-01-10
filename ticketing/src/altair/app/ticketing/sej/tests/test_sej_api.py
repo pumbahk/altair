@@ -64,7 +64,7 @@ class SejApiTest(unittest.TestCase):
             }
         self._append_signature(params)
         request = testing.DummyRequest(post=params)
-        testing.setUp(request=request, settings={'sej.api_key': self.api_key})
+        testing.setUp(request=request, settings={'altair.sej.api_key': self.api_key})
         target = self._makeOne(request)
         resp = self._parseResponse(target.callback())
         assert resp['status'] == '800'
@@ -88,7 +88,7 @@ class SejApiTest(unittest.TestCase):
 
         testing.tearDown()
         request = testing.DummyRequest(post=params)
-        testing.setUp(request=request, settings={'sej.api_key': self.api_key})
+        testing.setUp(request=request, settings={'altair.sej.api_key': self.api_key})
         target = self._makeOne(request)
         resp = self._parseResponse(target.callback())
 
@@ -151,7 +151,7 @@ class SejApiTest(unittest.TestCase):
         self._append_signature(params)
 
         request = testing.DummyRequest(post=params)
-        testing.setUp(request=request, settings={'sej.api_key': self.api_key})
+        testing.setUp(request=request, settings={'altair.sej.api_key': self.api_key})
         target = self._makeOne(request)
         response = target.callback().body
 
@@ -195,7 +195,7 @@ class SejApiTest(unittest.TestCase):
         self._append_signature(params)
 
         request = testing.DummyRequest(post=params)
-        testing.setUp(request=request, settings={'sej.api_key': self.api_key})
+        testing.setUp(request=request, settings={'altair.sej.api_key': self.api_key})
         target = self._makeOne(request)
         resp = self._parseResponse(target.callback())
 
@@ -234,7 +234,7 @@ class SejApiTest(unittest.TestCase):
         self._append_signature(params)
 
         request = testing.DummyRequest(post=params)
-        testing.setUp(request=request, settings={'sej.api_key': self.api_key})
+        testing.setUp(request=request, settings={'altair.sej.api_key': self.api_key})
         target = self._makeOne(request)
         response = target.callback().body
 
@@ -276,7 +276,7 @@ class SejApiTest(unittest.TestCase):
         self._append_signature(params)
 
         request = testing.DummyRequest(post=params)
-        testing.setUp(request=request, settings={'sej.api_key': self.api_key})
+        testing.setUp(request=request, settings={'altair.sej.api_key': self.api_key})
         target = self._makeOne(request)
         response = target.callback().body
 

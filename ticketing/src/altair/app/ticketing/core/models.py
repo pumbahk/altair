@@ -2853,13 +2853,43 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             # 未入金ならコンビニ決済のキャンセル通知
             if self.payment_status == 'unpaid':
-                result = sej_api.cancel_sej_order(sej_order, tenant, now)
+                result = sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, now=now)
                 if not result:
                     return False
 
             # 入金済み、払戻予約ならコンビニ決済の払戻通知
             elif self.payment_status in ['paid', 'refunding']:
-                result = sej_api.refund_sej_order(sej_order, tenant, self, now)
+                from altair.app.ticketing.orders.api import (
+                    get_refund_per_order_fee,
+                    get_refund_per_ticket_fee,
+                    get_refund_ticket_price,
+                    )
+                result = sej_api.refund_sej_order(
+                    request,
+                    tenant=tenant,
+                    sej_order=sej_order,
+                    performance_name=self.performance.name,
+                    performance_code=self.performance.code,
+                    performance_start_on=self.performance.start_on,
+                    per_order_fee=get_refund_per_order_fee(
+                        self.prev.refund,
+                        self.prev
+                        ),
+                    per_ticket_fee=get_refund_per_ticket_fee(
+                        self.prev.refund,
+                        self.prev
+                        ),
+                    refund_start_at=self.refund.start_at,
+                    refund_end_at=self.refund.end_at,
+                    ticket_expire_at=self.refund.end_at + timedelta(days=+7),
+                    ticket_price_getter=lambda sej_ticket: \
+                        get_refund_ticket_price(
+                            self.prev.refund,
+                            self.prev,
+                            sej_ticket.product_item_id
+                            ),
+                    now=now
+                    )
                 if not result:
                     return False
 
@@ -2876,7 +2906,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             sej_order = self.sej_order
             # SejAPIでエラーのケースではSejOrderはつくられないのでスキップ
             if sej_order:
-                result = sej_api.cancel_sej_order(sej_order, tenant, now)
+                result = sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, now=now)
                 if not result:
                     logger.info('SejOrder (order_no=%s) cancel error' % self.order_no)
                     return False
@@ -2962,8 +2992,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         try:
             return order.cancel(request, self.refund.payment_method)
-        except Exception, e:
-            logger.error(u'払戻処理でエラーが発生しました (%s)' % e.message)
+        except Exception:
+            logger.exception(u'払戻処理でエラーが発生しました')
         return False
 
     def release(self):

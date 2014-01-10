@@ -27,7 +27,7 @@ class SejPaymentType(StandardEnum):
 code_from_payment_type = dict((enum_.v, enum_) for enum_ in SejPaymentType)
 
 def need_ticketing(type):
-    return type != SejPaymentType.PrepaymentOnly
+    return int(type) != int(SejPaymentType.PrepaymentOnly)
 
 class SejTicketType(StandardEnum):
     # 1:本券(チケットバーコード有り)

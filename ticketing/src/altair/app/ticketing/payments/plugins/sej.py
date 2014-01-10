@@ -30,11 +30,11 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 
 from altair.app.ticketing.sej import userside_api
-from altair.app.ticketing.sej.api import get_sej_order
+from altair.app.ticketing.sej.api import get_sej_order, create_sej_order, build_sej_tickets_from_dicts
 from altair.app.ticketing.sej.exceptions import SejErrorBase
 from altair.app.ticketing.sej.ticket import SejTicketDataXml
 from altair.app.ticketing.sej.models import SejOrder, SejPaymentType, SejTicketType, SejOrderUpdateReason
-from altair.app.ticketing.sej.payment import request_order, request_update_order, build_sej_tickets_from_dicts
+from altair.app.ticketing.sej.payment import request_order, request_update_order
 from altair.app.ticketing.sej.utils import han2zen
 
 from altair.app.ticketing.tickets.convert import convert_svg
@@ -138,14 +138,14 @@ def get_tickets_from_cart(cart, now):
                     tickets.append(ticket)
     return tickets
 
-def refresh_order(tenant, order, update_reason):
+def refresh_order(request, tenant, order, update_reason):
     sej_order = get_sej_order(order.order_no)
     if sej_order is None:
         raise Exception('no corresponding SejOrder found for order %s' % order.order_no)
 
     new_sej_order = sej_order.new_branch()
     new_sej_order.tickets = build_sej_tickets_from_dicts(
-        sej_order,
+        sej_order.order_no,
         get_tickets(order),
         lambda idx: None
         )
@@ -157,8 +157,9 @@ def refresh_order(tenant, order, update_reason):
 
     try:
         request_update_order(
+            request,
             tenant=tenant,
-            new_order=new_sej_order,
+            sej_order=new_sej_order,
             update_reason=update_reason
             )
     except SejErrorBase:
@@ -237,9 +238,14 @@ class SejPaymentPlugin(object):
         current_date = datetime.now()
         tenant = userside_api.lookup_sej_tenant(request, cart.organization_id)
         try:
-            request_order(
-                tenant=tenant,
+            sej_order = create_sej_order(   
+                request,
                 **build_sej_args(SejPaymentType.PrepaymentOnly, cart, current_date)
+                )
+            request_order(
+                request,
+                tenant=tenant,
+                sej_order=sej_order
                 )
         except SejErrorBase:
             raise SejPluginFailure('payment plugin', order_no=order.order_no, back_url=None)
@@ -262,6 +268,7 @@ class SejPaymentPlugin(object):
         settings = request.registry.settings
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
+            request,
             tenant=tenant,
             order=order,
             update_reason=SejOrderUpdateReason.Change
@@ -284,10 +291,15 @@ class SejDeliveryPlugin(object):
         tenant = userside_api.lookup_sej_tenant(request, cart.organization_id)
         try:
             tickets = get_tickets_from_cart(cart, current_date)
-            request_order(
-                tenant=tenant,
+            sej_order = create_sej_order(
+                request,
                 tickets=tickets,
                 **build_sej_args(SejPaymentType.Paid, cart, current_date)
+                )
+            request_order(
+                request,
+                tenant=tenant,
+                sej_order=sej_order
                 )
         except SejErrorBase:
             raise SejPluginFailure('delivery plugin', order_no=cart.order_no, back_url=None)
@@ -306,6 +318,7 @@ class SejDeliveryPlugin(object):
 
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
+            request,
             tenant=tenant,
             order=order,
             update_reason=SejOrderUpdateReason.Change
@@ -328,10 +341,15 @@ class SejPaymentDeliveryPlugin(object):
 
         try:
             tickets = get_tickets(order)
-            request_order(
+            sej_order = create_sej_order(
+                request,
                 tickets=tickets,
-                tenant=tenant,
                 **build_sej_args(SejPaymentType.CashOnDelivery, cart, current_date)
+                )
+            request_order(
+                request,
+                tenant=tenant,
+                sej_order=sej_order
                 )
         except SejErrorBase:
             raise SejPluginFailure('payment/delivery plugin', order_no=order.order_no, back_url=None)
@@ -351,6 +369,7 @@ class SejPaymentDeliveryPlugin(object):
             raise Exception('order %s is already paid / delivered' % order.order_no)
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
+            request,
             tenant=tenant,
             order=order,
             update_reason=SejOrderUpdateReason.Change

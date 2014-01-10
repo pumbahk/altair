@@ -2151,7 +2151,7 @@ class SejOrderInfoView(object):
         order_no = self.request.matchdict.get('order_no', '')
         sej_order = SejOrder.query.filter_by(order_no=order_no).order_by(desc(SejOrder.branch_no)).first()
 
-        result = sej_api.cancel_sej_order(sej_order, self.request.context.organization.id)
+        result = sej_api.cancel_sej_order(self.request, tenant=self.tenant, sej_order=sej_order)
         if result:
             self.request.session.flash(u'オーダーをキャンセルしました。')
             return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_no=order_no))

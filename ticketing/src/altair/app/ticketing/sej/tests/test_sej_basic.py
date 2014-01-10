@@ -2,17 +2,20 @@
 import unittest
 import datetime
 from pyramid import testing
+import cgi
 from altair.app.ticketing.testing import _setup_db, _teardown_db
+import time
 
 class SejTest(unittest.TestCase):
     def _makeServer(self, *args, **kwargs):
         from webapi import DummyServer
-        assert self.server is None
         self.server = DummyServer(*args, **kwargs)
         self.server.start()
         return self.server
 
     def setUp(self):
+        self.config = testing.setUp()
+        self.config.include('altair.app.ticketing.sej.communicator')
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
             'altair.app.ticketing.sej.models'
@@ -43,16 +46,15 @@ class SejTest(unittest.TestCase):
         webob.util.status_reasons[800] = 'OK'
 
         target = self._makeServer(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38001, status=800)
-
-        sej_order = SejOrder()
-
-        sej_order.billing_number  = u'00000001'
-        sej_order.exchange_number = u'12345678'
-        sej_order.ticket_count  = 1
-        sej_order.url_info      = u'https://www.r1test.com/order/hi.do&iraihyo_id_00=11111111'
-        sej_order.order_no      = u'orderid00001'
-        sej_order.exchange_sheet_number = u'11111111'
-        sej_order.order_at      = datetime.datetime.now()
+        sej_order = SejOrder(
+            billing_number        = u'00000001',
+            exchange_number       = u'12345678',
+            ticket_count          = 1,
+            url_info              = u'https://www.r1test.com/order/hi.do&iraihyo_id_00=11111111',
+            order_no              = u'orderid00001',
+            exchange_sheet_number = u'11111111',
+            order_at              = datetime.datetime.now()
+            )
 
         import sqlahelper
 
@@ -61,12 +63,10 @@ class SejTest(unittest.TestCase):
         DBSession.flush()
 
         request_cancel_order(
+            self.config.registry,
             tenant=self.tenant,
-            order_no=u'orderid00001',
-            billing_number=u'00000001',
-            exchange_number ='12345678'
-        )
-
+            sej_order=sej_order
+            )
         self.server.poll()
 
         self.assertEqual(self.server.request.method, 'POST')
@@ -78,10 +78,11 @@ class SejTest(unittest.TestCase):
 
     def test_request_order_cash_on_delivery(self):
         '''2-1.決済要求 代引き'''
-
+        from altair.app.ticketing.sej.api import create_sej_order
         from altair.app.ticketing.sej.ticket import SejTicketDataXml
         from altair.app.ticketing.sej.models import SejOrder, SejTicket
         from altair.app.ticketing.sej.payment import SejPaymentType, SejTicketType, request_order
+        from altair.app.ticketing.sej.payload import build_sej_datetime_without_second
 
         import webob.util
 
@@ -111,23 +112,22 @@ class SejTest(unittest.TestCase):
         webob.util.status_reasons[800] = 'OK'
         target = self._makeServer(sej_dummy_response, host='127.0.0.1', port=38001, status=800)
 
-        request_order(
-            order_no        = u"orderid00001",
-            user_name       = u"お客様氏名",
-            user_name_kana  = u'コイズミモリヨシ',
-            tel             = u'0312341234',
-            zip_code        = u'1070062',
-            email           = u'dev@ticketstar.jp',
-            total_price     = 15000,
-            ticket_price    = 13000,
-            commission_fee  = 1000,
-            ticketing_fee   = 1000,
-            payment_type    = SejPaymentType.CashOnDelivery,
-            payment_due_at = datetime.datetime(2012,7,30,7,00), #u'201207300700',
-            regrant_number_due_at = datetime.datetime(2012,7,30,7,00), # u'201207300700',
-
-            tenant=self.tenant,
-            tickets = [
+        sej_order = create_sej_order(
+            self.config.registry,
+            order_no=u"orderid00001",
+            user_name=u"お客様氏名",
+            user_name_kana=u'コイズミモリヨシ',
+            tel=u'0312341234',
+            zip_code=u'1070062',
+            email=u'dev@ticketstar.jp',
+            total_price=15000,
+            ticket_price=13000,
+            commission_fee=1000,
+            ticketing_fee=1000,
+            payment_type=SejPaymentType.CashOnDelivery,
+            payment_due_at=datetime.datetime(2012,7,30,7,00), #u'201207300700',
+            regrant_number_due_at=datetime.datetime(2012,7,30,7,00), # u'201207300700',
+            tickets=[
                 dict(
                     ticket_type         = SejTicketType.TicketWithBarcode,
                     event_name          = u'イベント名1',
@@ -186,9 +186,15 @@ class SejTest(unittest.TestCase):
                       <FIXTAG05></FIXTAG05>
                       <FIXTAG06></FIXTAG06>
                     </TICKET>''')
-                )
-            ]
-        )
+                    )
+                ]
+            )
+
+        request_order(
+            self.config.registry,
+            tenant=self.tenant,
+            sej_order=sej_order
+            )
 
         self.server.poll()
 
@@ -197,6 +203,21 @@ class SejTest(unittest.TestCase):
 
         sej_order = SejOrder.query.filter_by(order_no=u'orderid00001', billing_number=u'0000000001').one()
         sej_tickets = SejTicket.query.filter_by(order_no=sej_order.order_no).order_by(SejTicket.ticket_idx).all()
+
+        req = cgi.parse_qs(self.server.request.body)
+        self.assertEqual(req['X_shop_order_id'], [sej_order.order_no])
+        self.assertEqual(req['user_namek'][0].decode('cp932'), sej_order.user_name)
+        self.assertEqual(req['user_name_kana'][0].decode('cp932'), sej_order.user_name_kana)
+        self.assertEqual(req['X_user_tel_no'], [sej_order.tel])
+        self.assertEqual(req['X_user_post'], [sej_order.zip_code])
+        self.assertEqual(req['X_user_email'], [sej_order.email])
+        self.assertEqual(req['X_goukei_kingaku'], ['%06d' % sej_order.total_price])
+        self.assertEqual(req['X_ticket_daikin'], ['%06d' % sej_order.ticket_price])
+        self.assertEqual(req['X_ticket_kounyu_daikin'], ['%06d' % sej_order.commission_fee])
+        self.assertEqual(req['X_hakken_daikin'], ['%06d' % sej_order.ticketing_fee])
+        self.assertEqual(req['X_shori_kbn'], ['%02d' % SejPaymentType.CashOnDelivery.v])
+        self.assertEqual(req['X_pay_lmt'], [build_sej_datetime_without_second(sej_order.payment_due_at)])
+        self.assertEqual(req['X_saifuban_hakken_lmt'], [build_sej_datetime_without_second(sej_order.regrant_number_due_at)])
 
         assert sej_order is not None
         assert sej_order.total_price    == 15000
@@ -223,7 +244,7 @@ class SejTest(unittest.TestCase):
 
     def test_request_order_prepayment(self):
         '''2-1.決済要求 支払い済み'''
-        import sqlahelper
+        from altair.app.ticketing.sej.api import create_sej_order
         from altair.app.ticketing.sej.ticket import SejTicketDataXml
         from altair.app.ticketing.sej.models import SejOrder, SejTicket
         from altair.app.ticketing.sej.payment import SejPaymentType, SejTicketType, request_order
@@ -257,85 +278,88 @@ class SejTest(unittest.TestCase):
 
         webob.util.status_reasons[800] = 'OK'
         target = self._makeServer(sej_dummy_response, host='127.0.0.1', port=38001, status=800)
+        sej_order = create_sej_order(
+            self.config.registry,
+            order_no        = u"orderid00001",
+            user_name       = u"お客様氏名",
+            user_name_kana  = u'コイズミモリヨシ',
+            tel             = u'0312341234',
+            zip_code        = u'1070062',
+            email           = u'dev@ticketstar.jp',
+            total_price     = 15000,
+            ticket_price    = 13000,
+            commission_fee  = 1000,
+            ticketing_fee   = 1000,
+            payment_type    = SejPaymentType.Paid,
+            payment_due_at = datetime.datetime(2012,7,30,7,00), #u'201207300700',
+            regrant_number_due_at = datetime.datetime(2012,7,30,7,00), # u'201207300700',
+            tickets=[
+                dict(
+                    ticket_type         = SejTicketType.TicketWithBarcode,
+                    event_name          = u'イベント名',
+                    performance_name    = u'パフォーマンス名',
+                    ticket_template_id  = u'TTTS000001',
+                    performance_datetime= datetime.datetime(2012,8,31,18,00),
+                    xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="UTF-8" ?>
+                    <TICKET>
+                      <TEST1>test&#x20;test</TEST1>
+                      <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
+                      <TEST3>&#x3000;</TEST3>
+                      <FIXTAG01></FIXTAG01>
+                      <FIXTAG02></FIXTAG02>
+                      <FIXTAG03></FIXTAG03>
+                      <FIXTAG04></FIXTAG04>
+                      <FIXTAG05></FIXTAG05>
+                      <FIXTAG06></FIXTAG06>
+                    </TICKET>''')
+                ),
+                dict(
+                    ticket_type         = SejTicketType.TicketWithBarcode,
+                    event_name          = u'イベント名',
+                    performance_name    = u'パフォーマンス名',
+                    ticket_template_id  = u'TTTS000001',
+                    performance_datetime= datetime.datetime(2012,8,31,18,00),
+                    xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="UTF-8" ?>
+                    <TICKET>
+                      <TEST1>test&#x20;test</TEST1>
+                      <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
+                      <TEST3>&#x3000;</TEST3>
+                      <FIXTAG01></FIXTAG01>
+                      <FIXTAG02></FIXTAG02>
+                      <FIXTAG03></FIXTAG03>
+                      <FIXTAG04></FIXTAG04>
+                      <FIXTAG05></FIXTAG05>
+                      <FIXTAG06></FIXTAG06>
+                    </TICKET>''')
+                ),
+                dict(
+                    ticket_type         = SejTicketType.ExtraTicketWithBarcode,
+                    event_name          = u'イベント名',
+                    performance_name    = u'パフォーマンス名',
+                    ticket_template_id  = u'TTTS000001',
+                    performance_datetime= datetime.datetime(2012,8,31,18,00),
+                    xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="Shift_JIS" ?>
+                    <TICKET>
+                      <TEST1>test&#x20;test</TEST1>
+                      <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
+                      <TEST3>&#x3000;</TEST3>
+                      <FIXTAG01></FIXTAG01>
+                      <FIXTAG02></FIXTAG02>
+                      <FIXTAG03></FIXTAG03>
+                      <FIXTAG04></FIXTAG04>
+                      <FIXTAG05></FIXTAG05>
+                      <FIXTAG06></FIXTAG06>
+                    </TICKET>''')
+                    )
+                ]
+            )
+
 
         sejTicketOrder = request_order(
-             order_no        = u"orderid00001",
-             user_name       = u"お客様氏名",
-             user_name_kana  = u'コイズミモリヨシ',
-             tel             = u'0312341234',
-             zip_code        = u'1070062',
-             email           = u'dev@ticketstar.jp',
-             total_price     = 15000,
-             ticket_price    = 13000,
-             commission_fee  = 1000,
-             ticketing_fee   = 1000,
-             payment_type    = SejPaymentType.Paid,
-             payment_due_at = datetime.datetime(2012,7,30,7,00), #u'201207300700',
-             regrant_number_due_at = datetime.datetime(2012,7,30,7,00), # u'201207300700',
-             tenant=self.tenant,
-             tickets = [
-                 dict(
-                     ticket_type         = SejTicketType.TicketWithBarcode,
-                     event_name          = u'イベント名',
-                     performance_name    = u'パフォーマンス名',
-                     ticket_template_id  = u'TTTS000001',
-                     performance_datetime= datetime.datetime(2012,8,31,18,00),
-                     xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="UTF-8" ?>
-                     <TICKET>
-                       <TEST1>test&#x20;test</TEST1>
-                       <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
-                       <TEST3>&#x3000;</TEST3>
-                       <FIXTAG01></FIXTAG01>
-                       <FIXTAG02></FIXTAG02>
-                       <FIXTAG03></FIXTAG03>
-                       <FIXTAG04></FIXTAG04>
-                       <FIXTAG05></FIXTAG05>
-                       <FIXTAG06></FIXTAG06>
-                     </TICKET>''')
-                 ),
-
-                 dict(
-                     ticket_type         = SejTicketType.TicketWithBarcode,
-                     event_name          = u'イベント名',
-                     performance_name    = u'パフォーマンス名',
-                     ticket_template_id  = u'TTTS000001',
-                     performance_datetime= datetime.datetime(2012,8,31,18,00),
-                     xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="UTF-8" ?>
-                     <TICKET>
-                       <TEST1>test&#x20;test</TEST1>
-                       <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
-                       <TEST3>&#x3000;</TEST3>
-                       <FIXTAG01></FIXTAG01>
-                       <FIXTAG02></FIXTAG02>
-                       <FIXTAG03></FIXTAG03>
-                       <FIXTAG04></FIXTAG04>
-                       <FIXTAG05></FIXTAG05>
-                       <FIXTAG06></FIXTAG06>
-                     </TICKET>''')
-                 ),
-
-                 dict(
-                     ticket_type         = SejTicketType.ExtraTicketWithBarcode,
-                     event_name          = u'イベント名',
-                     performance_name    = u'パフォーマンス名',
-                     ticket_template_id  = u'TTTS000001',
-                     performance_datetime= datetime.datetime(2012,8,31,18,00),
-                     xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="Shift_JIS" ?>
-                     <TICKET>
-                       <TEST1>test&#x20;test</TEST1>
-                       <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
-                       <TEST3>&#x3000;</TEST3>
-                       <FIXTAG01></FIXTAG01>
-                       <FIXTAG02></FIXTAG02>
-                       <FIXTAG03></FIXTAG03>
-                       <FIXTAG04></FIXTAG04>
-                       <FIXTAG05></FIXTAG05>
-                       <FIXTAG06></FIXTAG06>
-                     </TICKET>''')
-                 )
-             ]
-         )
-
+            self.config.registry,
+            tenant=self.tenant,
+            sej_order=sej_order
+            )
         self.server.poll()
 
         self.assertEqual(self.server.request.method, 'POST')
@@ -383,27 +407,24 @@ class SejTest(unittest.TestCase):
 
         target = self._makeServer(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38001, status=800)
 
-        sej_order = SejOrder()
-
-        sej_order.billing_number    = u'00000001'
-        sej_order.exchange_number   = u'00001111'
-        sej_order.ticket_count      = 1
-        sej_order.exchange_sheet_url      = u'https://www.r1test.com/order/hi.do'
-        sej_order.order_no      = u'orderid00001'
-        sej_order.exchange_sheet_number = u'11111111'
-        sej_order.order_at      = datetime.datetime.now()
-
-
+        sej_order = SejOrder(
+            billing_number        = u'00000001',
+            exchange_number       = u'00001111',
+            ticket_count          = 1,
+            exchange_sheet_url    = u'https://www.r1test.com/order/hi.do',
+            order_no              = u'orderid00001',
+            exchange_sheet_number = u'11111111',
+            order_at              = datetime.datetime.now()
+            )
         DBSession = sqlahelper.get_session()
         DBSession.add(sej_order)
         DBSession.flush()
 
         request_cancel_order(
+            self.config.registry,
             tenant=self.tenant,
-            order_no=u'orderid00001',
-            billing_number=u'00000001',
-            exchange_number=u'00001111'
-        )
+            sej_order=sej_order
+            )
 
         self.server.poll()
 
@@ -460,14 +481,34 @@ class SejTest(unittest.TestCase):
         DBSession.flush()
 
         request_update_order(
+            self.config.registry,
             tenant=self.tenant,
-            new_order=sej_order, 
+            sej_order=sej_order, 
             update_reason=SejOrderUpdateReason.Change
-        )
+            )
 
         self.server.poll()
 
-        self.assertEqual(self.server.request.body, 'X_hakken_daikin=001000&X_ticket_cnt=01&X_ticket_hon_cnt=01&xcode=37ec9c530172b72093ff15ee60880854&X_hikikae_no=00001111&X_shop_order_id=orderid00001&X_shop_id=30520&X_goukei_kingaku=015000&X_saifuban_hakken_lmt=201207300700&X_ticket_kbn_01=1&X_upd_riyu=01&ticket_text_01=%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22Shift_JIS%22%20%3F%3E%3CTICKET%3E%3C/TICKET%3E&X_ticket_kounyu_daikin=001000&X_haraikomi_no=00000001&X_ticket_daikin=013000&X_kouen_date_01=201208301900&kougyo_mei_01=%83C%83x%83%93%83g&X_ticket_template_01=TTTS0001&kouen_mei_01=%83p%83t%83H%81%5B%83%7D%83%93%83X')
+        result = cgi.parse_qs(self.server.request.body)
+        self.assertEqual(result['X_hakken_daikin'], ['001000'])
+        self.assertEqual(result['X_ticket_cnt'], ['01'])
+        self.assertEqual(result['X_ticket_hon_cnt'], ['01'])
+        self.assertEqual(result['xcode'], ['37ec9c530172b72093ff15ee60880854'])
+        self.assertEqual(result['X_hikikae_no'], ['00001111'])
+        self.assertEqual(result['X_shop_order_id'], ['orderid00001'])
+        self.assertEqual(result['X_shop_id'], ['30520'])
+        self.assertEqual(result['X_goukei_kingaku'], ['015000'])
+        self.assertEqual(result['X_saifuban_hakken_lmt'], ['201207300700'])
+        self.assertEqual(result['X_ticket_kbn_01'], ['1'])
+        self.assertEqual(result['X_upd_riyu'], ['01'])
+        self.assertEqual(result['ticket_text_01'], ['<?xml version="1.0" encoding="Shift_JIS" ?><TICKET></TICKET>'])
+        self.assertEqual(result['X_ticket_kounyu_daikin'], ['001000'])
+        self.assertEqual(result['X_haraikomi_no'], ['00000001'])
+        self.assertEqual(result['X_ticket_daikin'], ['013000'])
+        self.assertEqual(result['X_kouen_date_01'], ['201208301900'])
+        self.assertEqual(result['kougyo_mei_01'], ['\x83C\x83x\x83\x93\x83g'])
+        self.assertEqual(result['X_ticket_template_01'], ['TTTS0001'])
+        self.assertEqual(result['kouen_mei_01'], ['\x83p\x83t\x83H\x81[\x83}\x83\x93\x83X'])
         self.assertEqual(self.server.request.method, 'POST')
         self.assertEqual(self.server.request.url, 'http://127.0.0.1:38001/order/updateorder.do')
         self.assertEqual(ticket.barcode_number, '00002000')
