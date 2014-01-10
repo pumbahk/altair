@@ -6,6 +6,7 @@
 %>
 <%def name="pager(items, url='%s')">
   % if isinstance(items, Page):
+  <p>${max(items.items_per_page * (items.page-1) + 1,0)}～${min(items.items_per_page * items.page, items.item_count)} / ${items.item_count}件</p>
   <div class="pagination-centered">
     ${items.pager(format='$link_previous ~2~ $link_next',
                   link_attr={"class": "btn small"},

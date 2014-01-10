@@ -95,83 +95,96 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
   </h1>
 </div>
 ${tabs.tabs(request)}
-<div class="lot-entry-statuses">
-<%include file="electing_statuses.html"/>
-
-</div>
-
 <div class="well">
-  <form id="search" class="form-horizontal" method="POST">
+  <form id="search" class="form-horizontal" method="get" action="${request.current_route_path()}">
     <fieldset>
       <legend>検索条件</legend>
       <table>
-	<tbody>
+	      <tbody>
           <tr>
             <th><label for="entry_no">${form.entry_no.label.text}</label></th>
-            <td>${form.entry_no(maxlength=12)}</td>
-	  </tr>
+            <td>
+              ${form.entry_no(maxlength=12)}
+              ${ch.validate_errors(form.entry_no)}
+            </td>
+	        </tr>
           <tr>
             <th><label for="tel">${form.tel.label.text}</label></th>
-            <td>${form.tel(maxlength=255)}</td>
-	  </tr>
+            <td>
+              ${form.tel(maxlength=255)}
+              ${ch.validate_errors(form.tel)}
+            </td>
+	        </tr>
           <tr>
             <th><label for="name">${form.name.label.text}</label></th>
-            <td>${form.name(maxlength=255)}</td>
-	  </tr>
+            <td>
+              ${form.name(maxlength=255)}
+              ${ch.validate_errors(form.name)}
+            </td>
+	        </tr>
           <tr>
             <th><label for="email">${form.email.label.text}</label></th>
-            <td>${form.email(maxlength=255)}</td>
-	  </tr>
+            <td>
+              ${form.email(maxlength=255)}
+              ${ch.validate_errors(form.email)}
+            </td>
+	        </tr>
           <tr>
             <th><label>${form.entried_from.label.text}</label></th>
             <td>
-              ${form.entried_from()} 〜
-              ${form.entried_to()}
+              ${form.entried_from()} 〜 ${form.entried_to()}
+              ${ch.validate_errors(form.entried_from)}
+              ${ch.validate_errors(form.entried_to)}
             </td>
           </tr>
           <tr>
             <th><label for="include_canceled">${form.include_canceled.label.text}</label></th>
-            <td>${form.include_canceled()}</td>
-	  </tr>
+            <td>
+              ${form.include_canceled()}
+            </td>
+	        </tr>
           <tr>
-	    <th>
-	      <label for="electing">${form.electing.label.text}</label>
-	    </th>
-	    <td>
-		${form.electing()}
-	    </td>
-	  </tr>
+            <th>
+              <label for="electing">${form.electing.label.text}</label>
+            </th>
+            <td>
+              ${form.electing()}
+            </td>
+          </tr>
           <tr>
-	    <th>
-	      <label for="electing">${form.elected.label.text}</label>
-	    </th>
-	    <td>
-		${form.elected()}
-	    </td>
-	  </tr>
+            <th>
+              <label for="electing">${form.elected.label.text}</label>
+            </th>
+            <td>
+              ${form.elected()}
+            </td>
+          </tr>
           <tr>
-	    <th>
-	      <label for="electing">${form.rejecting.label.text}</label>
-	    </th>
-	    <td>
-		${form.rejecting()}
-	    </td>
-	  </tr>
+            <th>
+              <label for="electing">${form.rejecting.label.text}</label>
+            </th>
+            <td>
+              ${form.rejecting()}
+            </td>
+          </tr>
           <tr>
-	    <th>
-	      <label for="electing">${form.rejected.label.text}</label>
-	    </th>
-	    <td>
-		${form.rejected()}
-	    </td>
-	  </tr>
+            <th>
+              <label for="electing">${form.rejected.label.text}</label>
+            </th>
+            <td>
+              ${form.rejected()}
+            </td>
+          </tr>
           <tr>
             <th><label for="wish_order">${form.wish_order.label.text}</label></th>
-            <td>${form.wish_order()}</td>
-	  </tr>
-	</tbody>
+            <td>
+              ${form.wish_order()}
+              ${ch.validate_errors(form.wish_order)}
+            </td>
+          </tr>
+        </tbody>
       </table>
-      <button type="submit" name="search" class="btn">検索</button>
+      <button type="submit" name="do_search" class="btn">検索</button>
     </fieldset>
   </form>
 </div>
@@ -195,6 +208,7 @@ ${tabs.tabs(request)}
 
 <div>
 %if wishes:
+${ch.pager(wishes)}
 <table border="1" class="table" id="wish-search-results">
 <thead>
 <tr>
@@ -236,6 +250,7 @@ ${self.lot_wish_row(request, w)}
 %endfor
 </tbody>
 </table>
+${ch.pager(wishes)}
 %endif
 </div>
 <script>

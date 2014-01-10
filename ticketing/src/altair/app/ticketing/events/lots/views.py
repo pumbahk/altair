@@ -9,6 +9,7 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import get_renderer
 from pyramid_mailer import get_mailer
+import webhelpers.paginate as paginate
 
 from altair.sqlahelper import get_db_session
 
@@ -59,6 +60,7 @@ from .reporting import LotEntryReporter
 
 from altair.app.ticketing.payments import helpers as payment_helpers
 from altair.app.ticketing.carturl.api import get_lots_cart_url_builder
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 
 logger = logging.getLogger(__name__)
 
@@ -445,6 +447,70 @@ class LotEntries(BaseView):
         else:
             return u"( {detail} )".format(detail=detail)
 
+    def _build_lot_search_query(self, form):
+        include_canceled = False
+        enable_elect_all = False
+        condition = (LotEntry.id != None)
+        s_a = ShippingAddress
+        if form.entry_no.data:
+            condition = sql.and_(condition, LotEntry.entry_no==form.entry_no.data)
+        if form.tel.data:
+            condition = sql.and_(condition, 
+                                 sql.or_(ShippingAddress.tel_1==form.tel.data,
+                                         ShippingAddress.tel_2==form.tel.data))
+        if form.name.data:
+            condition = sql.and_(condition, 
+                                 sql.or_(s_a.full_name==form.name.data,
+                                         s_a.last_name==form.name.data,
+                                         s_a.first_name==form.name.data,
+                                         s_a.full_name_kana==form.name.data,
+                                         s_a.last_name_kana==form.name.data,
+                                         s_a.first_name_kana==form.name.data,))
+        if form.email.data:
+            condition = sql.and_(condition, 
+                                 sql.or_(s_a.email_1==form.email.data,
+                                         s_a.email_2==form.email.data))
+
+        if form.entried_from.data:
+            condition = sql.and_(condition, 
+                                 LotEntry.created_at>=form.entried_from.data)
+        if form.entried_to.data:
+            condition = sql.and_(condition, 
+                                 LotEntry.created_at<=form.entried_to.data)
+        include_canceled = form.include_canceled.data
+
+        if (form.electing.data
+            or form.elected.data
+            or form.rejecting.data
+            or form.rejected.data):
+            wish_condition = (LotEntry.id == None) ## means False
+
+            if form.electing.data:
+                wish_condition = sql.or_(wish_condition, 
+                                         sql.and_(LotEntryWish.entry_wish_no==LotElectWork.entry_wish_no,
+                                                  LotEntryWish.elected_at==None))
+            if form.rejecting.data:
+                wish_condition = sql.or_(wish_condition, 
+                                         sql.and_(LotEntry.entry_no==LotRejectWork.lot_entry_no,
+                                                  LotEntryWish.rejected_at==None))
+            if form.elected.data:
+                wish_condition = sql.or_(wish_condition, 
+                                         LotEntryWish.elected_at!=None)
+            if form.rejected.data:
+                wish_condition = sql.or_(wish_condition, 
+                                         LotEntryWish.rejected_at!=None)
+
+            condition = sql.and_(condition, wish_condition)
+
+        if form.wish_order.data:
+            condition = sql.and_(condition,
+                                 LotEntryWish.wish_order==form.wish_order.data)
+            enable_elect_all = True
+
+        if not include_canceled:
+            condition = sql.and_(condition, 
+                                 LotEntry.canceled_at == None)
+        return condition, enable_elect_all
 
     @view_config(route_name='lots.entries.search',
                  renderer='altair.app.ticketing:templates/lots/search.html', permission='event_viewer')
@@ -459,91 +525,23 @@ class LotEntries(BaseView):
         self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]
         lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
-        form = SearchEntryForm(formdata=self.request.POST)
+        form = SearchEntryForm(formdata=self.request.params)
         form.wish_order.choices = [("", "")] + [(str(i), i + 1) for i in range(lot.limit_wishes)]
-        condition = (LotEntry.id != None)
-        s_a = ShippingAddress
-
-        include_canceled = False
+        condition = None
         enable_elect_all = False
-        if form.validate():
-            if form.entry_no.data:
-                condition = sql.and_(condition, LotEntry.entry_no==form.entry_no.data)
-            if form.tel.data:
-                condition = sql.and_(condition, 
-                                     sql.or_(ShippingAddress.tel_1==form.tel.data,
-                                             ShippingAddress.tel_2==form.tel.data))
-            if form.name.data:
-                condition = sql.and_(condition, 
-                                     sql.or_(s_a.full_name==form.name.data,
-                                             s_a.last_name==form.name.data,
-                                             s_a.first_name==form.name.data,
-                                             s_a.full_name_kana==form.name.data,
-                                             s_a.last_name_kana==form.name.data,
-                                             s_a.first_name_kana==form.name.data,))
-            if form.email.data:
-                condition = sql.and_(condition, 
-                                     sql.or_(s_a.email_1==form.email.data,
-                                             s_a.email_2==form.email.data))
+        if 'do_search' in self.request.params and form.validate():
+            condition, enable_elect_all = self._build_lot_search_query(form)
+            logger.debug("condition = {0}".format(condition))
 
-            if form.entried_from.data:
-                condition = sql.and_(condition, 
-                                     LotEntry.created_at>=form.entried_from.data)
-            if form.entried_to.data:
-                condition = sql.and_(condition, 
-                                     LotEntry.created_at<=form.entried_to.data)
-            include_canceled = form.include_canceled.data
-
-            if (form.electing.data
-                or form.elected.data
-                or form.rejecting.data
-                or form.rejected.data):
-                wish_condition = (LotEntry.id == None) ## means False
-
-                if form.electing.data:
-                    wish_condition = sql.or_(wish_condition, 
-                                             sql.and_(LotEntryWish.entry_wish_no==LotElectWork.entry_wish_no,
-                                                      LotEntryWish.elected_at==None))
-                if form.rejecting.data:
-                    wish_condition = sql.or_(wish_condition, 
-                                             sql.and_(LotEntry.entry_no==LotRejectWork.lot_entry_no,
-                                                      LotEntryWish.rejected_at==None))
-                if form.elected.data:
-                    wish_condition = sql.or_(wish_condition, 
-                                             LotEntryWish.elected_at!=None)
-                if form.rejected.data:
-                    wish_condition = sql.or_(wish_condition, 
-                                             LotEntryWish.rejected_at!=None)
-
-                condition = sql.and_(condition, wish_condition)
-
-            if form.wish_order.data:
-                condition = sql.and_(condition,
-                                     LotEntryWish.wish_order==form.wish_order.data)
-                enable_elect_all = True
+        if condition is not None:
+            wishes = slave_session.query(LotWishSummary) \
+                .filter(LotWishSummary.lot_id==lot_id) \
+                .options(orm.joinedload('products'), orm.joinedload('products.product')) \
+                .order_by(LotWishSummary.entry_no, LotWishSummary.wish_order) \
+                .filter(condition)
         else:
-            print form.errors
+            wishes = None
 
-        if not include_canceled:
-            condition = sql.and_(condition, 
-                                 LotEntry.canceled_at == None)
-
-        logger.debug("LotEntry.canceled_at == {0}".format(LotEntry.canceled_at))
-        logger.debug("condition = {0}".format(condition))
-        logger.debug("from = {0}".format(form.entried_from.data))
-
-        q = DBSession.query(LotWishSummary).filter(
-            LotWishSummary.lot_id==lot_id
-        ).options(
-            orm.joinedload('products'),
-            orm.joinedload('products.product'),
-        ).order_by(
-            LotWishSummary.entry_no,
-            LotWishSummary.wish_order
-        )
-
-
-        wishes = q.filter(condition)
         performances = Performance.query.filter(
             Performance.id==Product.performance_id
         ).filter(
@@ -566,7 +564,17 @@ class LotEntries(BaseView):
         electing = Electing(lot, self.request)
 
         lot_status = api.get_lot_entry_status(lot, self.request)
-        return dict(wishes=wishes.all(),
+        if wishes is not None:
+            wishes_pager = paginate.Page(
+                wishes,
+                page=int(self.request.params.get('page', 0)),
+                items_per_page=100,
+                url=PageURL_WebOb_Ex(self.request),
+                sqlalchemy_session=slave_session
+                )
+        else:
+            wishes_pager = None
+        return dict(wishes=wishes_pager,
                     lot=lot,
                     form=form,
                     cancel_url=cancel_url,
