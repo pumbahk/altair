@@ -11,7 +11,7 @@
     </div>
     <br class="clear">
     <div class="copyright">
-      Copyright © 2010-2013 TicketStar Inc. All Rights Reserved. 
+      Copyright © 2010-2014 TicketStar Inc. All Rights Reserved. 
     </div>
   </div>
 </div>
