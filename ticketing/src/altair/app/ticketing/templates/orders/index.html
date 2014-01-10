@@ -67,7 +67,6 @@
   </form>
 </div>
 
-<p> ${max(orders.items_per_page * (orders.page-1) + 1,0)}～${min(orders.items_per_page * orders.page, orders.item_count)} / ${orders.item_count}件</p>
 <div class="orders">
   <%include file="/orders/_list2.html" args="form=form, orders=orders" />
 </div>
