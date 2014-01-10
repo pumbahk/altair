@@ -4038,13 +4038,12 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     seat_type_classif = AnnotatedColumn(Unicode(32), _a_label=(u'席区分'))
     distributed_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'配券日時'))
     
-    stock_id = Column(Identifier, ForeignKey('Stock.id'))
-    stock = relationship('Stock')
-
+    augus_seat_id = Column(Identifier, ForeignKey('AugusSeat.id'))
+    augus_seat = relationship('AugusSeat')
+    
     created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
     updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
     deleted_at = Column(TIMESTAMP, nullable=True)
-
 
 class AugusPutback(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusPutback'
@@ -4053,6 +4052,7 @@ class AugusPutback(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     quantity = AnnotatedColumn(Integer, nullable=False, _a_label=(u'数量'))
     augus_stock_info_id = AnnotatedColumn(Identifier, nullable=False, _a_label=(u'オーガスストック情報'))
     finished_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券完了日時'))
+
 
 
 class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):

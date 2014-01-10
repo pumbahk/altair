@@ -114,7 +114,7 @@ def upgrade():
         sa.Column('seat_type_classif', sa.Unicode(32)),
         sa.Column('distributed_at', sa.TIMESTAMP(), nullable=True),
         # links
-        sa.Column('stock_id', Identifier, nullable=False),
+        sa.Column('augus_seat_id', Identifier, nullable=False),
         # for super class
         sa.Column('created_at', sa.TIMESTAMP(), server_default=text('CURRENT_TIMESTAMP'), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
