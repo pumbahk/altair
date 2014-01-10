@@ -97,7 +97,7 @@ def main():
         logger.warn('Cannot distribute seats: Seats are {}'.format(
             [unicode(augus_seat).encode('utf8') for augus_seat in cannot_distributes]))
     else:
-        src_dst = [os.path.join(staging, name), os.path.join(pending, name)
+        src_dst = [(os.path.join(staging, name), os.path.join(pending, name))
                    for name in names]
         try:
             try:

@@ -48,10 +48,6 @@ def main():
     for name in filter(PutbackRequest.match_name, os.listdir(staging)):
         path = os.path.join(staging, name)
         request = AugusParser.parse(path)
-        records = sorted(request, key=lambda rec: rec.event_code, 
         
-        for record in request:
-            pass
-
 if __name__ == '__main__':
     main()
