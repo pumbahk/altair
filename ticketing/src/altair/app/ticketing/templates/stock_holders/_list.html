@@ -24,6 +24,7 @@
         <th style="width: 30px;"></th>
         <th>${ch.sortable(form.name, paging)}</th>
         <th>${form.account_id.label.text}</th>
+        <th></th>        
       </tr>
       </thead>
       <tbody>
@@ -34,6 +35,11 @@
         <td>${ch.seat_style(stock_holder.style)}</td>
         <td><a href="javascript:edit_stock_holder('${stock_holder.id}');"><span id="name">${stock_holder.name}</span></a></td>
         <td><a href="${request.route_path('accounts.show', account_id=stock_holder.account_id)}"><span id="account_id" value="${stock_holder.account_id}">${stock_holder.account.name}</span></a></td>
+        <td>
+          %if stock_holder.is_putback_target:
+          <a href="javascript:putback_ticket('${stock_holder.id}');">返券</a>
+          %endif
+        </td>
       </tr>
       % endfor
       </tbody>
