@@ -32,7 +32,7 @@ class CooperationView(BaseView):
     def _stub(self):
         event_id = long(self.request.matchdict['event_id']) # raise KeyError, ValueError, TypeError
         event = Event.get(event_id)
-        url = self.request.route_path('cooperation.api.performances', event_id=event.id)        
+        url = self.request.route_path('cooperation2.api.performances', event_id=event.id)        
         if event:
             pairs = []
             for performance in event.performances:
@@ -46,45 +46,46 @@ class CooperationView(BaseView):
             raise HTTPNotFound('event_id: {0}'.format(event_id))
     
     # distribution
-    @view_config(route_name='cooperation.distribution', request_method='GET',
+    @view_config(route_name='cooperation2.distribution', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/distribution.html')
     def distribution_get(self):
         return self._stub()
 
-    @view_config(route_name='cooperation.distribution', request_method='POST',
+    @view_config(route_name='cooperation2.distribution', request_method='POST',
                  renderer='altair.app.ticketing:templates/cooperation/distribution.html')
     def distribution_post(self):
         return self._stub()
 
     # putback
-    @view_config(route_name='cooperation.putback', request_method='GET',
+    @view_config(route_name='cooperation2.putback', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/putback.html')
     def putback_get(self):
+        
         return self._stub()
 
-    @view_config(route_name='cooperation.putback', request_method='POST',
+    @view_config(route_name='cooperation2.putback', request_method='POST',
                  renderer='altair.app.ticketing:templates/cooperation/putback.html')
     def putback_post(self):
         return self._stub()
 
     # achievement
-    @view_config(route_name='cooperation.achievement', request_method='GET',
+    @view_config(route_name='cooperation2.achievement', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/achievement.html')
     def achievement_get(self):
         return self._stub()
 
-    @view_config(route_name='cooperation.putback', request_method='POST',
+    @view_config(route_name='cooperation2.putback', request_method='POST',
                  renderer='altair.app.ticketing:templates/cooperation/achievement.html')
     def achievement_post(self):
         return self._stub()
     
     # events
-    @view_config(route_name='cooperation.events', request_method='GET',
+    @view_config(route_name='cooperation2.events', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/events.html')
     def events_get(self):
         event_id = long(self.request.matchdict['event_id']) # raise KeyError, ValueError, TypeError
         event = Event.get(event_id)
-        url = self.request.route_path('cooperation.api.performances', event_id=event.id)        
+        url = self.request.route_path('cooperation2.api.performances', event_id=event.id)        
         if event:
             pairs = []
             for performance in event.performances:
@@ -97,7 +98,7 @@ class CooperationView(BaseView):
         else:
             raise HTTPNotFound('event_id: {0}'.format(event_id))
 
-    @view_config(route_name='cooperation.api.performances',
+    @view_config(route_name='cooperation2.api.performances',
                  request_method='GET', renderer='json')
     def get_performances(self):
         event_id = self.request.matchdict['event_id'] # raise KeyError
@@ -126,7 +127,7 @@ class CooperationView(BaseView):
                 'rows': entries,
                 }
 
-    @view_config(route_name='cooperation.api.performances',
+    @view_config(route_name='cooperation2.api.performances',
                  request_method='POST', renderer='json')
     def save_performances(self):
         success = {}
@@ -166,7 +167,7 @@ class CooperationView(BaseView):
 
         
     # venues
-    @view_config(route_name='cooperation.show', request_method='GET',
+    @view_config(route_name='cooperation2.show', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/show.html')
     def show(self):
         venue = self.context.venue
@@ -196,7 +197,7 @@ class CooperationView(BaseView):
                 ('Content-Disposition', 'attachment; filename={0}'.format(filename)),
                 ]
 
-    @view_config(route_name='cooperation.download', request_method='GET')
+    @view_config(route_name='cooperation2.download', request_method='GET')
     def download(self):
         res = Response()
         writer = csv.writer(res, delimiter=',')        
@@ -209,9 +210,9 @@ class CooperationView(BaseView):
         res.headers = headers
         return res
         
-    @view_config(route_name='cooperation.upload', request_method='POST')
+    @view_config(route_name='cooperation2.upload', request_method='POST')
     def upload(self):
-        return_url = self.request.route_path('cooperation.show',
+        return_url = self.request.route_path('cooperation2.show',
                                              venue_id=self.context.venue.id)
         form = CooperationUpdateForm(self.request.params)
         if form.validate() and hasattr(form.cooperation_file.data, 'file'):
@@ -243,7 +244,7 @@ class CooperationView(BaseView):
         site.name = u'テスト'
         update_form = form
         download_form = CooperationDownloadForm()
-        raise HTTPFound(self.request.route_path('cooperation.upload', venue_id=venue_id))
+        raise HTTPFound(self.request.route_path('cooperation2.upload', venue_id=venue_id))
         
         #return {'site': site,
         #        'update_form': update_form,
@@ -253,10 +254,10 @@ class CooperationView(BaseView):
         #        }
 
     def _upload_url(self, venue_id):
-        return self.request.route_path('cooperation.upload', venue_id=venue_id)
+        return self.request.route_path('cooperation2.upload', venue_id=venue_id)
 
     def _download_url(self, venue_id):
-        return self.request.route_path('cooperation.download', venue_id=venue_id)
+        return self.request.route_path('cooperation2.download', venue_id=venue_id)
         
 class DeterminateError(Exception):
     pass
