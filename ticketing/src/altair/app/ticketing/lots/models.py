@@ -246,11 +246,11 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             # すでに当選予定
             if LotElectWork.query.filter_by(lot_id=self.id, lot_entry_no=entry_no).count():
-                logger.debug("already electing {entry_no}".format(entry_no=entry_no))
+                logger.debug("already marked as elected {entry_no}".format(entry_no=entry_no))
                 continue
             # すでに落選予定
             if LotRejectWork.query.filter_by(lot_id=self.id, lot_entry_no=entry_no).count():
-                logger.debug("already rejecting {entry_no}".format(entry_no=entry_no))
+                logger.debug("already marked as rejected {entry_no}".format(entry_no=entry_no))
                 continue
             entry = LotEntry.query.filter_by(lot_id=self.id, entry_no=entry_no).first()
             if entry is None:

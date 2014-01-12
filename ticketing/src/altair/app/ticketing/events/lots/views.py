@@ -765,57 +765,87 @@ class LotEntries(BaseView):
         lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
-        params = self.request.json_body
-        logger.debug("electing all {0}".format(params))
-        wish_ids = params.get('wishes', [])
-        if not wish_ids:
-            return dict()
+        if self.request.content_type.startswith('application/json'):
+            entries = []
+            results = {}
+            params = self.request.json_body
+            logger.debug("electing all {0}".format(params))
+            wish_ids = params.get('wishes', [])
+            if not wish_ids:
+                return dict()
 
-        wishes = LotEntryWish.query.join(
-            LotEntryWish.lot_entry,
-        ).join(
-            LotEntry.lot,
-        ).outerjoin(
-            LotElectWork.__table__,
-            LotElectWork.lot_entry_no==LotEntry.entry_no,
-        ).filter(
-            LotEntryWish.id.in_(wish_ids)
-        ).filter(
-            LotEntry.elected_at==None
-        ).filter(
-            LotEntry.rejected_at==None
-        ).filter(
-            LotEntry.canceled_at==None
-        ).filter(
-            LotEntry.closed_at==None
-        ).filter(
-            LotElectWork.lot_entry_no==None
-        ).all()
+            wishes = LotEntryWish.query.join(
+                LotEntryWish.lot_entry,
+            ).join(
+                LotEntry.lot,
+            ).outerjoin(
+                LotElectWork.__table__,
+                LotElectWork.lot_entry_no==LotEntry.entry_no,
+            ).filter(
+                LotEntryWish.id.in_(wish_ids)
+            ).filter(
+                LotEntry.elected_at==None
+            ).filter(
+                LotEntry.rejected_at==None
+            ).filter(
+                LotEntry.canceled_at==None
+            ).filter(
+                LotEntry.closed_at==None
+            ).filter(
+                LotElectWork.lot_entry_no==None
+            ).all()
+            for w in wishes:
+                lot_entry = w.lot_entry
+                entry_no = lot_entry.entry_no
+                wish_order = w.wish_order
+                logger.debug("electing {0}".format(lot_entry))
+                if lot_entry.is_electing():
+                    logger.debug('{0} is already marked as elected'.format(entry_no))
+                    results[lot_entry.entry_no] = dict(result="NG")
+                if lot_entry.is_rejecting():
+                    logger.debug('{0} is already marked as rejected'.format(entry_no))
+                    results[lot_entry.entry_no] = dict(result="NG")
 
-        results = {}
-        entries = []
-        for w in wishes:
-            lot_entry = w.lot_entry
-            entry_no = lot_entry.entry_no
-            wish_order = w.wish_order
-            logger.debug("electing {0}".format(lot_entry))
-            if lot_entry.is_electing():
-                logger.debug('{0} is already electing'.format(entry_no))
-                results[lot_entry.entry_no] = dict(result="NG")
-            if lot_entry.is_rejecting():
-                logger.debug('{0} is already rejecting'.format(entry_no))
-                results[lot_entry.entry_no] = dict(result="NG")
+                entries.append((entry_no, wish_order))
+            affected = lots_api.submit_lot_entries(lot.id, entries)
 
-            entries.append((entry_no, wish_order))
-            
-        affected = lots_api.submit_lot_entries(lot.id, entries)
+            logger.debug('elect all: results = {0}'.format(results))
+            lot.start_lotting()
+            return dict(
+                affected=affected,
+                html=[(self.wish_tr_class(w), self.render_wish_row(w))
+                      for w in wishes])
+        else:
+            form = SearchEntryForm(formdata=self.request.params)
+            form.wish_order.choices = [("", "")] + [(str(i), i + 1) for i in range(lot.limit_wishes)]
+            if not form.validate():
+                return dict()
+            condition, _ = self._build_lot_search_query(form)
+            wish_summaries = DBSession.query(LotWishSummary) \
+                .filter(LotWishSummary.lot_id==lot_id) \
+                .filter(condition)
+            entries = []
+            results = {}
+            for wish_summary in wish_summaries:
+                entry_no = wish_summary.entry_no
+                wish_order = wish_summary.wish_order
+                logger.debug("electing {0}".format(entry_no))
+                if wish_summary.is_electing():
+                    logger.debug('{0} is already marked as elected'.format(entry_no))
+                    results[entry_no] = dict(result="NG")
+                if wish_summary.is_rejecting():
+                    logger.debug('{0} is already marked as rejected'.format(entry_no))
+                    results[entry_no] = dict(result="NG")
+                entries.append((entry_no, wish_order))
+            affected = lots_api.submit_lot_entries(lot.id, entries)
 
-        logger.debug('elect all: results = {0}'.format(results))
-        lot.start_lotting()
-        return dict(
-            affected=affected,
-            html=[(self.wish_tr_class(w), self.render_wish_row(w))
-                  for w in wishes])
+            logger.debug('elect all: results = {0}'.format(results))
+            lot.start_lotting()
+            return dict(
+                affected=affected,
+                html=None,
+                refresh=self.request.route_path('lots.entries.search', lot_id=lot.id, _query=self.request.params)
+                )
 
     @view_config(route_name='lots.entries.elect_entry_no', 
                  request_method="POST",
