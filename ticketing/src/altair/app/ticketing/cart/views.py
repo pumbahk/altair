@@ -1032,14 +1032,14 @@ class CompleteView(object):
             # 後で再度raiseするときに、現在の例外の状態をtry-exceptで
             # 撹乱されたくないので、副作用を呼び出しフレームの中に閉じ込める
             def _():
-                _cart = api.get_cart(self.request, for_update=False)
-                if _cart is not None:
-                    return self.render_complete_page(_cart.order_no)
-                else:
-                    try:
+                try:
+                    _cart = api.get_cart(self.request, for_update=False)
+                    if _cart is not None:
+                        return self.render_complete_page(_cart.order_no)
+                    else:
                         return self.complete_get()
-                    except:
-                        return None
+                except:
+                    return None
             retval = _()
             if retval is not None:
                 return retval
@@ -1097,6 +1097,8 @@ class CompleteView(object):
     def render_complete_page(self, order_no):
         api.remove_cart(self.request)
         order = api.get_order_for_read_by_order_no(self.request, order_no)
+        if order is None:
+            raise CompletionPageNotRenderered()
         self.request.response.expires = datetime.utcnow() + timedelta(seconds=3600) # XXX
         self.request.response.cache_control = 'max-age=3600'
         return dict(order=order)
