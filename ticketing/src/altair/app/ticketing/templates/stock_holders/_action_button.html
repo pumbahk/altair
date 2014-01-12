@@ -42,10 +42,17 @@
     modal.find('#id').val(id);
     modal.find('#name').val($(el).attr('name'));
     modal.find('#account_id').val($(el + ' #account_id').attr('value'));
+  
     var data = JSON.parse($(el).attr('data'));
     if (data) {
       modal.find('#text').val(data.text);
       modal.find('#text_color').val(data.text_color);
+      is_putback_target = $(el).attr('is_putback_target');
+      is_putback_target_cbox = modal.find('#is_putback_target');
+      is_putback_target_cbox.val(is_putback_target);
+      if(is_putback_target){
+        is_putback_target_cbox.attr('checked', true);
+      }
     }
     modal.modal('toggle');
   }
@@ -63,6 +70,40 @@
     var id = $(modal).find('#id').val();
     var url = id ? '/events/stock_holders/edit/' + id : '/events/stock_holders/new/' + $(modal).find('#event_id').val();
     post_modal_form(modal, form, url);
+  }
+
+  function view_putback_modal(id){
+    var id = id || get_id('stock_holder_id');
+    if (!id) return;
+    var el = '#stock_holder-' + id;
+    var modal = $('#modal-stock_holder');
+    reset_form(modal, '#event_id', false);
+    modal.find('#id').val(id);
+    modal.find('#name').val($(el).attr('name'));
+    modal.find('#account_id').val($(el + ' #account_id').attr('value'));
+    var data = JSON.parse($(el).attr('data'));
+    if (data) {
+      modal.find('#text').val(data.text);
+      modal.find('#text_color').val(data.text_color);
+    }
+    modal.modal('toggle');
+  }
+
+  function putback_ticket(id) {
+    var id = id || get_id('stock_holder_id');
+    if (!id) return;
+    var el = '#stock_holder-' + id;
+    var modal = $('#modal-putback_ticket');
+    reset_form(modal, '#event_id', false);
+    modal.find('#id').val(id);
+    modal.find('#name').val($(el).attr('name'));
+    modal.find('#account_id').val($(el + ' #account_id').attr('value'));
+    var data = JSON.parse($(el).attr('data'));
+    if (data) {
+      modal.find('#text').val(data.text);
+      modal.find('#text_color').val(data.text_color);
+    }
+    modal.modal('toggle');
   }
 </script>
 

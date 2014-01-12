@@ -49,5 +49,5 @@ class StockHolderForm(OurForm):
     )
     is_putback_target = BooleanField(
         label=u'外部返券利用',
-        validators=[RequiredOnUpdate()],
+        validators=[],
     )
