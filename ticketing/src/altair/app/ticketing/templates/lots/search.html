@@ -265,21 +265,15 @@ var rejectingRemainsUrl = "${rejecting_remains_url}"
 $(function() {
 
   $('#all-elect-button').on('click', function() {
-    var wishes = $.map($('.wish-row'), function(wish_row) {
-      var wishId = $(wish_row).data('wishId');
-      return wishId;
-    });
-    console.log(wishes);
-
+    $(this).attr('disabled', true);
     $.ajax({
       url: electingAllUrl,
-      data: JSON.stringify({"wishes": wishes}),
+      data: location.search,
       dataType: "json",
       type: "POST",
       success: function(data, textStatus, xhr) {
         rewrite_wishes(data);
       }});
-    
   });
   $('#remains-reject-button').on('click', function() {
 
@@ -292,10 +286,13 @@ $(function() {
   });
 
   function rewrite_wishes(data) {
-    for (var i = 0; i <  data.html.length; i++) {
-      $("." + data.html[i][0]).html(data.html[i][1]);
+    if (data.html !== null) {
+      for (var i = 0; i <  data.html.length; i++) {
+        $("." + data.html[i][0]).html(data.html[i][1]);
+      }
+    } else {
+      location.href = data['refresh'];
     }
-
   }
 
   function update_status() {
