@@ -86,10 +86,8 @@ def main():
                            .filter(Seat.l0_id==augus_seat.seat.l0_id)\
                            .filter(Seat.venue_id==ap.performance.venue.id)\
                            .one()
-                stock = seat.stock
-                if stock.stock_holder_id is None:
-                    stock.stock_holder_id = stock_holder.id
-                    stock.save()
+                if seat.stock.stock_holder_id is None:
+                    pass
                 else:
                     cannot_distributes.append(augus_seat)
     if cannot_distributes:

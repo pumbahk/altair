@@ -4045,15 +4045,20 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
     deleted_at = Column(TIMESTAMP, nullable=True)
 
+
 class AugusPutback(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusPutback'
     id = Column(Identifier, primary_key=True)
     augus_putback_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'返券コード'))
     quantity = AnnotatedColumn(Integer, nullable=False, _a_label=(u'数量'))
     augus_stock_info_id = AnnotatedColumn(Identifier, nullable=False, _a_label=(u'オーガスストック情報'))
+    
+    reserved_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券予約日時'))
+    nortificated_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券通知日時'))
     finished_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券完了日時'))
-
-
+    
+    seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
+    seat = relationship('Seat')
 
 class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrionPerformance'
@@ -4078,3 +4083,6 @@ class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     created_at = Column(TIMESTAMP, nullable=False)
     updated_at = Column(TIMESTAMP, nullable=False)
     deleted_at = Column(TIMESTAMP, nullable=True)
+
+    
+

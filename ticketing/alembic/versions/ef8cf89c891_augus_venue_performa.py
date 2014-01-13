@@ -126,7 +126,10 @@ def upgrade():
         sa.Column('augus_putback_code', sa.Integer, nullable=False),                
         sa.Column('quantity', sa.Integer, nullable=False),
         sa.Column('augus_stock_info_id', Identifier, nullable=False),
+        sa.Column('reserverd_at', sa.TIMESTAMP(), nullable=True),
+        sa.Column('notificated_at', sa.TIMESTAMP(), nullable=True),
         sa.Column('finished_at', sa.TIMESTAMP(), nullable=True),
+        sa.Column('seat_id', Identifier, nullable=True),
         )
     op.add_column(
         'StockHolder',
