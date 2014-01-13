@@ -41,22 +41,26 @@
     <div class="modal-footer">
       <input type="submit" class="btn" value="ダウンロード"></input>
       <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-  </div>
+    </div>
+  </form>
 </div>
 
 
 <div id="modal-augus-venue-upload" class="modal hide">
-  <form method="POST" action="${request.route_path('augus.venue.upload', venue_id=venue.id)}">
+  <form method="POST" action="${request.route_path('augus.venue.upload', venue_id=venue.id)}"
+        enctype="multipart/form-data">
     <div class="modal-header">
       <h3>アップロード</h3>
     </div>
     <div class="modal-body">
       オーガス会場図と連携させるためのCSVをアップロードします。
+      ${ch.form_item(upload_form.augus_venue_file)}
     </div>
     <div class="modal-footer">
       <input type="submit" class="btn" value="アップロード"></input>
       <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-  </div>
+    </div>
+  </form>    
 </div>
 
 ${delete_modal()}

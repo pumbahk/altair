@@ -3,6 +3,9 @@ from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
+from .forms import (
+    AugusVenueUploadForm,
+    )
 
 @view_config(route_name='augus.test')
 def test(*args, **kwds):
@@ -17,7 +20,10 @@ class AugusVenueView(_AugusBaseView):
     @view_config(route_name='augus.venue.index', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/venue.html')
     def index(self):
-        return {'venue': self.context.venue}
+        return {'venue': self.context.venue,
+                'upload_form': AugusVenueUploadForm(),
+                }
+
 
     @view_config(route_name='augus.venue.download', request_method='GET')
     def download(self):
@@ -31,4 +37,4 @@ class AugusVenueView(_AugusBaseView):
     
     @view_config(route_name='augus.venue.upload', request_method='POST')                
     def upload(self):
-        return {'venue': self.context.venue}
+        raise ValueError
