@@ -19,7 +19,7 @@ from .forms import (
     CooperationDownloadForm,
     CooperationTypeForm,
     )
-from .augus import (
+from .augus2 import (
     CSVEditorFactory,
     ImporterFactory,
     NoSeatError,
