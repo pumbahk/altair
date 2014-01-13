@@ -26,4 +26,5 @@ def includeme(config):
         if resource_class:
             kwds['factory'] = newRootFactory(resource_class)
         config.add_route(route, url, **kwds)
+    config.include('altair.app.ticketing.cooperation.augus', route_prefix='augus')
     config.scan('.')

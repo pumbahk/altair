@@ -10,6 +10,7 @@ from altair.app.ticketing.core.models import (
     Event,
     )
 
+
 class _RequestAccessor(object):
     in_params = ()
     in_matchdict = ()

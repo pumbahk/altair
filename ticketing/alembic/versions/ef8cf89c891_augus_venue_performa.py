@@ -53,7 +53,7 @@ def upgrade():
         sa.Column('priority', sa.Integer, nullable=False, default=u''),
         sa.Column('floor', sa.Unicode(32), nullable=False),
         sa.Column('column', sa.Unicode(32), nullable=False),
-        sa.Column('number', sa.Unicode(32), nullable=False),
+        sa.Column('num', sa.Unicode(32), nullable=False),
         sa.Column('block', sa.Integer, nullable=False),
         sa.Column('coordy', sa.Integer, nullable=False),
         sa.Column('coordx', sa.Integer, nullable=False),
