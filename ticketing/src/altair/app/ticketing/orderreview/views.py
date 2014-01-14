@@ -202,3 +202,34 @@ def render_qrmail_viewlet(context, request):
         mail = request.params['mail'],
         url = request.route_url('order_review.qr_confirm', ticket_id=ticket.id, sign=sign),
     )
+
+@mobile_view_config(route_name='order_review.qr_orion', request_method="POST", 
+             renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/send.html"))
+@view_config(route_name='order_review.qr_orion', request_method="POST", 
+             renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/send.html"))
+def order_review_send_to_orion(context, request):
+    # TODO: validate mail address
+    
+    mail = request.params['mail']
+    # send mail using template
+    form = schemas.SendMailSchema(request.POST)
+
+    if not form.validate():
+        return dict(mail=mail, 
+                    message=u"Emailの形式が正しくありません")
+
+    try:
+        res = api.send_to_orion(request, context, mail)
+        # TODO: 返り値を検証する
+
+    except Exception, e:
+        logger.error(e.message, exc_info=1)
+        ## この例外は違う...
+        raise HTTPNotFound()
+
+    message = u"電子チケットについてのメールを%s宛に送信しました!!" % mail
+    message = res
+    return dict(
+        mail = mail,
+        message = message
+        )
