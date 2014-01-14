@@ -501,6 +501,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     display_order = AnnotatedColumn(Integer, nullable=False, default=1, _a_label=_(u'表示順'))
 
+    orion = relationship("OrionPerformance", uselist=False, backref='performance')
+    
     @property
     def setting(self):
         return self.settings[0] if self.settings else None
@@ -3916,7 +3918,6 @@ class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 return e.v[1]
         return u''
 
-
 class CooperationTypeEnum(StandardEnum):
     augus = (1, u'オーガス')
     #gettie = (2, u'Gettie')
@@ -3975,3 +3976,26 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     updated_at = Column(TIMESTAMP, nullable=False)
     deleted_at = Column(TIMESTAMP, nullable=True)
     
+class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'OrionPerformance'
+
+    id = Column(Identifier, primary_key=True)
+    performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
+
+    instruction_general = Column(UnicodeText(8388608))
+    instruction_performance = Column(UnicodeText(8388608))
+    web = Column(Unicode(255))
+    header_url = Column(Unicode(255))
+    background_url = Column(Unicode(255))
+    icon_url = Column(Unicode(255))
+    
+    qr_enabled = Column(Boolean)
+    pattern = Column(Unicode(255))
+    
+    coupon_2_name = Column(Unicode(255))
+    coupon_2_qr_enabled = Column(Boolean)
+    coupon_2_pattern = Column(Unicode(255))
+
+    created_at = Column(TIMESTAMP, nullable=False)
+    updated_at = Column(TIMESTAMP, nullable=False)
+    deleted_at = Column(TIMESTAMP, nullable=True)
