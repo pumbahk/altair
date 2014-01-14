@@ -55,7 +55,13 @@ ${helper.nl2br(info['performance_period'])|n}<br/>
 
     % if event.salessegment_groups:
         % for sales_info in event_helper.get_summary_salessegment_group(event):
-            ${sales_info['group_name']}:${sales_info['start'].year}/${sales_info['start'].month}/${sales_info['start'].day}〜${sales_info['end'].year}/${sales_info['end'].month}/${sales_info['end'].day}
+            <%
+                end = ""
+                if sales_info['end']:
+                    end = str(sales_info['end'].year) + "/" + str(sales_info['end'].month) + "/" + str(sales_info['end'].day)
+                endif
+            %>
+            ${sales_info['group_name']}:${sales_info['start'].year}/${sales_info['start'].month}/${sales_info['start'].day}〜${end}
             <br />
         % endfor
     % else:
@@ -191,6 +197,18 @@ ${helper.nl2br(info['content'])|n}
                     準備中
                 %elif min(start_on_candidates) >= get_now(request):
                     販売前
+                %elif not end_on_candidates:
+                    % if not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
+                        予定枚数終了
+                    % else:
+                        <div align="center">
+                        <%m:band bgcolor="#ffcccc">
+                        % if event.deal_close >= get_now(request):
+                          <a href="${purchase_links[perf['perf'].id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
+                        % endif
+                        </%m:band>
+                        </div>
+                    % endif
                 %elif max(end_on_candidates) >= get_now(request):
                     % if not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
                         予定枚数終了
