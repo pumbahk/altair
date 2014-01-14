@@ -9,7 +9,11 @@
     下記よりご自身へ「メールで送る」を行っていただき、受信したメールを同行者様に転送することで、QRチケットを簡単にお渡しいただけます。<br>
     なお、お客様によるQRチケットの転送間違い、お渡し間違い等に起因するトラブル等にはご対応いたしかねますのでご注意ください。</p>
 
-    <p class="red">携帯電話へQRチケットを送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
+    % if for_orion:
+      <p class="red">携帯電話へQRチケットを送信される場合は、@eventgate.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
+    % else:
+      <p class="red">携帯電話へQRチケットを送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
+    % endif
 
 %if paid:
 
@@ -20,24 +24,35 @@
             席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
             %endif
             <br />
-            % if ticket.printed_at:
-                発行(印刷orメール送信)済 (${ticket.printed_at})
-            % else:
-                未発行
-            % endif
-            <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
-                <input type="hidden" name="order_no" value="${order.order_no}" />
-                <input type="hidden" name="tel" value="${tel}" />
-                <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
-                <input type="submit" value="印刷する" />
-            </form>
-            <form method="post" target="_blank" action="${request.route_path('order_review.qr_send')}">
-                <input type="hidden" name="order_no" value="${order.order_no}" />
-                <input type="hidden" name="tel" value="${tel}" />
-                <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
-                メールアドレス: <input type="text" name="mail" size="40" />
-                <input type="submit" name="send" value="メールで送る" />
-            </form>
+	    % if for_orion:
+	      携帯電話に送る / 「イベント・ゲート」アプリを使用して電子チケットで受け取る
+              <form method="post" target="_blank" action="${request.route_path('order_review.qr_orion')}">
+                  <input type="hidden" name="order_no" value="${order.order_no}" />
+                  <input type="hidden" name="tel" value="${tel}" />
+                  <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                  メールアドレス: <input type="text" name="mail" size="40" />
+                  <input type="submit" name="send" value="送信" />
+              </form>
+	    % else:
+              % if ticket.printed_at:
+                  発行(印刷orメール送信)済 (${ticket.printed_at})
+              % else:
+                  未発行
+              % endif
+              <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
+                  <input type="hidden" name="order_no" value="${order.order_no}" />
+                  <input type="hidden" name="tel" value="${tel}" />
+                  <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                  <input type="submit" value="印刷する" />
+              </form>
+              <form method="post" target="_blank" action="${request.route_path('order_review.qr_send')}">
+                  <input type="hidden" name="order_no" value="${order.order_no}" />
+                  <input type="hidden" name="tel" value="${tel}" />
+                  <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                  メールアドレス: <input type="text" name="mail" size="40" />
+                  <input type="submit" name="send" value="メールで送る" />
+              </form>
+	    % endif
         </div>
     % endfor
 
