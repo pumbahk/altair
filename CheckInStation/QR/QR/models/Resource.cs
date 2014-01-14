@@ -31,8 +31,10 @@ namespace QR
 		{
 			if (TicketDataFetcher == null)
 				throw new InvalidOperationException ("TicketDataFetcher is NULL");
-			if (SVGImage == null)
-				throw new InvalidOperationException ("QRPrinting is null");
+			if (SVGImageFetcher == null)
+				throw new InvalidOperationException ("SVGImageFetcher is null");
+			if (TicketImagePrinting == null)
+				throw new InvalidOperationException ("TicketImagePrinting is null");
 			if (Authentication == null)
 				throw new InvalidOperationException ("Authentication is null");
 			if (HttpWrapperFactory == null)
@@ -42,7 +44,9 @@ namespace QR
 
 		public IDataFetcher<string, TicketData> TicketDataFetcher { get; set; }
 
-		public SVGImageFetcher SVGImage{ get; set;}
+		public SVGImageFetcher SVGImageFetcher{ get; set; }
+
+		public TicketImagePrinting TicketImagePrinting{ get; set; }
 
 		public EndPoint EndPoint { get; set; }
 

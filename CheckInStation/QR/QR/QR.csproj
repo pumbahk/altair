@@ -129,6 +129,9 @@
     <Compile Include="tests\case\GetSVGTests.cs" />
     <Compile Include="tests\Testing.cs" />
     <Compile Include="models\SVGImageFetcher.cs" />
+    <Compile Include="models\TicketImagePrinting.cs">
+      <DependentUpon>IResource.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -7,7 +7,8 @@ namespace QR
 		public static void IncludeMe (IConfigurator config)
 		{
 			config.Resource.TicketDataFetcher = new TicketDataFetcher (config.Resource);
-			config.Resource.SVGImage = new SVGImageFetcher (config.Resource);
+			config.Resource.SVGImageFetcher = new SVGImageFetcher (config.Resource);
+			config.Resource.TicketImagePrinting = new TicketImagePrinting ();
 		}
 	}
 }

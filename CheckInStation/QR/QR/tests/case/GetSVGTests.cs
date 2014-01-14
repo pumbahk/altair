@@ -33,7 +33,7 @@ namespace QR
 				IResource resource = new Resource () {
 					HttpWrapperFactory = new FakeHttpWrapperFactory<HttpWrapper> (responseJSON),
 				};
-				resource.SVGImage = new MockSVGImage (resource);
+				resource.SVGImageFetcher = new MockSVGImage (resource);
 
 				var tdata = new TicketData (DynamicJson.Parse (Testing.ReadFromEmbeddedFile ("QR.tests.misc.qrdata.json")));
 				ICase target = new CaseQRPrintForOne (resource, tdata);
