@@ -485,6 +485,9 @@ class Options(object):
     def __getitem__(self, index):
         return self.options[index]
 
+    def __delitem__(self, index):
+        del self.options[index]
+
     def __len__(self):
         return len(self.options)
 
