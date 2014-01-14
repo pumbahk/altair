@@ -63,4 +63,4 @@ class _AchievementResponseParseTest(TestCase, _AugusProtocolParseTest):
 class ProtocolNotFoundTest(TestCase):
     def test_protocol_not_found(self):
         with self.assertRaises(ProtocolNotFound):
-            AugusParser._get_protocol('NOT_EXIST_PROTOCOL')
+            AugusParser.get_protocol('NOT_EXIST_PROTOCOL')
