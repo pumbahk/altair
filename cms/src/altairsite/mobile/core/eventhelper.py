@@ -46,7 +46,7 @@ class EventHelper(object):
             end = None
             salessegment_public = False
             for segment in group.salessegments:
-                if not segment.publicp:
+                if not segment.publicp or not segment.performance.public:
                     continue
 
                 salessegment_public = True
