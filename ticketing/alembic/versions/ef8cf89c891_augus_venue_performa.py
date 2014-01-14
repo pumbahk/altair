@@ -8,7 +8,7 @@ Create Date: 2013-12-24 17:51:40.084806
 
 # revision identifiers, used by Alembic.
 revision = 'ef8cf89c891'
-down_revision = '46aa7d0c688f'
+down_revision = '4dfb167db07c'
 
 from alembic import op
 import sqlalchemy as sa
@@ -18,19 +18,6 @@ from sqlalchemy.sql import functions as sqlf
 Identifier = sa.BigInteger
 
 def upgrade():
-    tables = ['AugusVenue',
-              'AugusSeat',
-              'AugusPerformance',
-              'AugusTicket',
-              'AugusStockInfo',
-              'AugusPutback',
-              ]
-    for table in tables:
-        try:
-            op.drop_table(table)
-        except:
-            pass
-
     op.create_table(
         'AugusVenue',
         sa.Column('id', Identifier, primary_key=True),
