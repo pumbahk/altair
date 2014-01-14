@@ -1,5 +1,6 @@
 README.txt
 setup.cfg
+setup.py
 src/altair/__init__.py
 src/altair.augus.egg-info/PKG-INFO
 src/altair.augus.egg-info/SOURCES.txt
