@@ -13,7 +13,8 @@ try:
 except:
     long_desc = ''
     
-requires = ['enum34',
+requires = ['setuptools',
+            'enum34',
             'ftputil',
             ]
 test_requires = ['nose',
