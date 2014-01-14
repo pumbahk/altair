@@ -1,0 +1,22 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/parts/_toggle_menu.html" name="tm" />
+<%namespace file="/common/helpers.html" import="form_item" />
+
+<div class="page-header">
+  <h3>外部イベント連携 - ${event.title}</h3>
+</div>
+
+<div>
+  <form method="POST" action="">
+    ${form_item(form.stock_holder_id)}
+    ${form_item(form.performance_ids)}
+    ${form.submit}
+  </form>
+</div>
+
+<!--
+<div class="table-wrapper">
+  <a id="putback-seats" class="btn btn-info pull-left">返券する</a>
+</div>
+-->
