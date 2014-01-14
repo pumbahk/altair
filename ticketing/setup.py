@@ -80,6 +80,7 @@ requires = [
     "poster",
     "radix",
     "requests",
+    "altair.augus",    
     "altair.auth",
     "altair.sqla",
     "altair.exclog",
