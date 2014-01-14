@@ -264,6 +264,7 @@ class Promotion(WithOrganizationMixin, TopicCore):
 
     ## linkとpagesetは排他的
     link = sa.Column(sa.Unicode(255), nullable=True)
+    mobile_link = sa.Column(sa.Unicode(255), nullable=True)
     linked_page_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"), nullable=True)
     linked_page = orm.relationship("PageSet")
 
