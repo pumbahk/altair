@@ -19,6 +19,12 @@ ROUTE_URL_RESOURCE = {
     'augus.venue.index': ('/venue/{venue_id}', AugusVenueResource),
     'augus.venue.download': ('/venue/{venue_id}/download', AugusVenueResource),
     'augus.venue.upload': ('/venue/{venue_id}/upload', AugusVenueResource),
+    
+    'augus.augus_venue.index.': ('/augus_venue/{augus_venue_code}', AugusVenueResource),
+    'augus.augus_venue.new.': ('/augus_venue/{augus_venue_code}/new', AugusVenueResource),            
+    'augus.augus_venue.show.': ('/augus_venue/{augus_venue_code}/version/{version}', AugusVenueResource),
+    'augus.augus_venue.download.': ('/augus_venue/{augus_venue_code}/version/{version}/download', AugusVenueResource),
+    'augus.augus_venue.upload.': ('/augus_venue/{augus_venue_code}/version/{version}/upload', AugusVenueResource),
     }
     
 def add_routes(config, route_url_resource):
@@ -31,7 +37,3 @@ def add_routes(config, route_url_resource):
 
 def includeme(config):
     add_routes(config, ROUTE_URL_RESOURCE)
-
-
-    
-    

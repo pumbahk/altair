@@ -452,7 +452,8 @@ class RecordAttribute(object):
     def venue_version(self, value):
         self._venue_version = NumberType.validate(value)
 
-class RecordBase(RecordAttribute):
+
+class RecordIF(object):
     attributes = []
     
     def dump(self):
@@ -466,6 +467,9 @@ class RecordBase(RecordAttribute):
         except IndexError:
             raise ProtocolFormatError('Illegal format: length={0} (need={1})'\
                                       .format(len(row), len(self.attributes)))
+
+class RecordBase(RecordIF, RecordAttribute):
+    pass
         
 class ProtocolBase(list):
     record = RecordBase

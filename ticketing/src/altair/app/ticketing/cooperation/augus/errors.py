@@ -7,3 +7,13 @@ class BadRequest(AugusError):
     
 class NoSeatError(AugusError):
     pass
+    
+class AbnormalTimestampFormatError(AugusError):
+    pass
+
+class EntryFormatError(AugusError):
+    pass
+
+class SeatImportError(AugusError):
+    pass    
+

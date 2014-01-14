@@ -8,6 +8,18 @@
 
 
 <div class="container">
+  <ul>
+    %for ag_venue in ag_venues:
+    <li>
+      <a href="${request.route_path('augus.augus_venue.index', augus_venue_code=ag_venue.code, version=ag_venue.version)}">
+        version-${ag_venue.version}
+      </a>
+    </li>
+    %endfor
+  </ul>
+</div>
+
+<div class="container">
   <button class="btn" onclick="javascript: enable_upload_dialog();">
     <i class="glyphicon icon-upload"></i>アップロード</button>
   <button class="btn" onclick="javascript: enable_download_dialog();">
@@ -54,6 +66,7 @@
     </div>
     <div class="modal-body">
       オーガス会場図と連携させるためのCSVをアップロードします。
+      ここでアップロードすると必ず新規作成となります。
       ${ch.form_item(upload_form.augus_venue_file)}
     </div>
     <div class="modal-footer">

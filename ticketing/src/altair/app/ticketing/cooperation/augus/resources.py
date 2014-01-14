@@ -9,7 +9,6 @@ from altair.app.ticketing.core.models import (
     Venue,
     )
 from .utils import (
-    SeatAugusSeatPairs,
     RequestAccessor,
     )
 from .errors import (
@@ -33,12 +32,8 @@ class AugusVenueResource(TicketingAdminResource):
         except (BadRequest, NoResultFound) as err:
             raise HTTPNotFound('The venue_id = {} is not found.'.format(request.matchdict.get('venue_id')))
             
-        self.pairs = SeatAugusSeatPairs(self.venue.id)            
-        try:
-            self.pairs.load()
-        except BadRequest as err:
-            raise HTTPBadRequest(err)
-        
-
-        
-
+        # self.pairs = SeatAugusSeatPairs(self.venue.id)            
+        # try:
+        #     self.pairs.load()
+        # except BadRequest as err:
+        #     raise HTTPBadRequest(err)
