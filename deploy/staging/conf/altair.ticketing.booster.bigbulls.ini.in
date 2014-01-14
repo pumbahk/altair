@@ -1,6 +1,6 @@
 [app:booster.bigbulls]
 use = config:%(here)s/../../baseconf/common.ini#booster.bigbulls
-pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_beaker pyramid_mailer altair_gaq altair.findable_label
+pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair_gaq altair.findable_label
 pyramid_who.config = %(here)s/mypage_who.ini
 altair.sej.template_file = %(here)s/../../../ticketing/misc/sej/template.html
 
@@ -10,6 +10,9 @@ altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 ; Beaker
 session.type = ${altair:beaker_backend_type}
 cache.type = ${altair:beaker_backend_type}
+
+; altair.httpsession
+altair.httpsession.persistence.type = ${altair:beaker_backend_type}
 
 [app:www-check]
 use = egg:Paste#static

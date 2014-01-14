@@ -60,7 +60,7 @@ def smartphone_request_factory(handler, registry):
     return tween
 
 def _on_error_return_error_response(e, request):
-    logger.warning(str(e))
+    logger.exception('error during decoding request')
     return Response(status=400, body=str(e))
 
 def _attach_for_smartphone(registry):
@@ -82,7 +82,6 @@ def mobile_encoding_convert_factory(handler, registry, on_decode_error=_on_error
         if IMobileRequest.providedBy(request):
             return handler(request)
         if not request.mobile_ua.carrier.is_nonmobile:
-            ## DeprecationWarning: Use req = req.decode('cp932')
             try:
                 return make_mobile_response(handler, request)
             except UnicodeDecodeError as e:

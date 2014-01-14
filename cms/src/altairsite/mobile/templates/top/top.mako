@@ -17,8 +17,15 @@
 <%m:header>ピックアップ</%m:header>
 % if form.promotions.data:
     % for event, promo in promotions:
-        % if event:
-            <a href="/eventdetail?event_id=${event.id}">${promo.text}</a><br/>
+        <%
+            link = None
+            if promo.mobile_link:
+                link = promo.mobile_link
+            elif event:
+                link = request.mobile_route_path("eventdetail") + "?event_id=" + str(event.id)
+        %>
+        % if link:
+            <a href=${link}>${promo.text}</a><br />
         % else:
             % if helper.get_eventsqs_from_mobile_tag_id(request, promo.mobile_tag_id).all():
                 <a href="${request.mobile_route_path('mobile_tag_search', mobile_tag_id=promo.mobile_tag_id, genre=0, sub_genre=0, page=1)}">${promo.text}</a><br/>

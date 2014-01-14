@@ -5,8 +5,6 @@ import logging
 import sqlahelper
 from pyramid.config import Configurator
 from pyramid.interfaces import IDict
-from pyramid_beaker import session_factory_from_settings
-from pyramid_beaker import set_cache_regions_from_settings
 from sqlalchemy import engine_from_config
 logger = logging.getLogger(__name__)
 
@@ -46,12 +44,10 @@ def main(global_config, **local_config):
 
     from sqlalchemy.pool import NullPool
     engine = engine_from_config(settings, poolclass=NullPool, isolation_level='READ COMMITTED')
-    session_factory = session_factory_from_settings(settings)
-    set_cache_regions_from_settings(settings) 
     sqlahelper.add_engine(engine)
 
-    config = Configurator(settings=settings,
-                          session_factory=session_factory)
+    config = Configurator(settings=settings)
+    config.include('altair.app.ticketing.setup_beaker_cache')
     config.registry['sa.engine'] = engine
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'altair.app.ticketing.renderers.json_renderer_factory')

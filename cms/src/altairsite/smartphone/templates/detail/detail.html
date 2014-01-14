@@ -148,7 +148,14 @@ $(function () {
                                 ${render_sale(sales_info['group_name'])}
                             </td>
                             <td>
-                                ${helper.disp_date(sales_info['start'])}〜${helper.disp_date(sales_info['end'])}<br/>
+                                <%
+                                    end = ""
+                                    if sales_info['end']:
+                                        end = helper.disp_date(sales_info['end'])
+                                    endif
+                                %>
+                                ${helper.disp_date(sales_info['start'])}〜${end}
+                                <br/>
                             </td>
                         </tr>
                     % endfor
@@ -284,6 +291,18 @@ $(function () {
                             <div class="actions">
                                 販売前
                             </div>
+                          %elif not end_on_candidates:
+                            % if not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
+                              <div class="actions">
+                                予定枚数終了
+                              </div>
+                            % else:
+                              <div class="actions">
+                                <a class="purchase" index="${count}" href="${purchase_links[perf['perf'].id]}">
+                                  <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>
+                                </a>
+                              </div>
+                            % endif
                           %elif max(end_on_candidates) >= helper.now(request):
                             % if not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
                               <div class="actions">

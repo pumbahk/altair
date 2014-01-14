@@ -10,8 +10,8 @@
 
         <%
             link = None
-            if topic.link:
-                link = topic.link
+            if topic.mobile_link:
+                link = topic.mobile_link
             elif event:
                 link = request.mobile_route_path("eventdetail") + "?event_id=" + str(event.id)
         %>

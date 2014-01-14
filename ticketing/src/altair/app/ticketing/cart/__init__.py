@@ -9,8 +9,6 @@ from pyramid.config import Configurator
 #from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.interfaces import IDict
 from pyramid.tweens import INGRESS, MAIN, EXCVIEW
-from pyramid_beaker import session_factory_from_settings
-from pyramid_beaker import set_cache_regions_from_settings
 from pyramid.exceptions import ConfigurationError
 
 from sqlalchemy import engine_from_config
@@ -270,13 +268,13 @@ def main(global_config, **local_config):
 
     from sqlalchemy.pool import NullPool
     engine = engine_from_config(settings, poolclass=NullPool, isolation_level='READ COMMITTED')
-    session_factory = session_factory_from_settings(settings)
-    set_cache_regions_from_settings(settings) 
     sqlahelper.add_engine(engine)
 
-    config = Configurator(settings=settings,
-                          root_factory='.resources.PerformanceOrientedTicketingCartResource',
-                          session_factory=session_factory)
+    config = Configurator(
+        settings=settings,
+        root_factory='.resources.PerformanceOrientedTicketingCartResource'
+        )
+    config.include('altair.app.ticketing.setup_beaker_cache')
     config.registry['sa.engine'] = engine
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'altair.app.ticketing.renderers.json_renderer_factory')
@@ -290,6 +288,7 @@ def main(global_config, **local_config):
     config.add_static_view('static', 'altair.app.ticketing.cart:static', cache_max_age=3600)
 
     ### includes altair.*
+    config.include('altair.httpsession.pyramid')
     config.include('altair.exclog')
     config.include('altair.browserid')
     config.include('altair.sqlahelper')

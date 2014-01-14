@@ -13,7 +13,6 @@ requires = [
     'pyramid_fanstatic',
     'pyramid_tm',
     'pyramid_mailer',
-    'pyramid_beaker',
     'pymysql',
     'pymysql_sa',
     'mako',
@@ -45,6 +44,7 @@ requires = [
     'altair.exclog', 
     'altair.browserid', 
     'altair.formhelpers',
+    'altair.httpsession',
     ]
 
 setup(name='altair_newsletter',
