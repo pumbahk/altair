@@ -125,8 +125,10 @@
     <Compile Include="models\TicketData.cs" />
     <Compile Include="models\TicketDataFetcher.cs" />
     <Compile Include="models\IDataFetcher.cs" />
-    <Compile Include="models\SVGImage.cs" />
     <Compile Include="tests\IntegrationTests.cs" />
+    <Compile Include="tests\case\GetSVGTests.cs" />
+    <Compile Include="tests\Testing.cs" />
+    <Compile Include="models\SVGImageFetcher.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -155,6 +157,7 @@
     <EmbeddedResource Include="tests\misc\login.json" />
     <EmbeddedResource Include="tests\misc\login.status.json" />
     <EmbeddedResource Include="tests\misc\qrdata.json" />
+    <EmbeddedResource Include="tests\misc\svgone.json" />
     <EmbeddedResource Include="tests\misc\server.py" />
   </ItemGroup>
 </Project>

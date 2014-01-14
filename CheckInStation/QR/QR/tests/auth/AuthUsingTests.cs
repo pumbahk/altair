@@ -18,16 +18,13 @@ namespace QR
 		[Test, Description ("login api called. response is endpoint")]
 		public void TestCallLoginAPICheckResponseAsEndpoint ()
 		{
-			var mockContent = @"{""endpoint"": {
-""login_status"": ""http://login.status.url"",
-""qr_ticketdata"": ""http://qr.ticketdata.url""
-}}";
+			var mockContent = Testing.ReadFromEmbeddedFile ("QR.tests.misc.login.json");
 			var resource = new Resource () {
 				HttpWrapperFactory = new FakeHttpWrapperFactory<HttpWrapper> (mockContent)
 			};
 			var task = new Authentication (resource, resource.GetLoginURL()).TryLoginRequest ("", "");
 			task.Wait ();
-			Assert.AreEqual (task.Result.LoginStatus, "http://login.status.url");
+			Assert.AreEqual (task.Result.LoginStatus, "http://localhost:8000/login.status.json");
 		}
 
 		[Test, Description ("login api called. response is endpoint")]

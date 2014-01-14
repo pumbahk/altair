@@ -10,8 +10,8 @@ namespace QR
 
 	public enum PrintUnit
 	{
-		one,
-		all
+		one = 1,
+		all = 2
 	}
 
 	public class QRInputEvent : AbstractEvent, IInternalEvent

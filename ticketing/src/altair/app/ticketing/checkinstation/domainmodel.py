@@ -79,7 +79,7 @@ class SVGDataSource(object):
             ticket_templates = self.templates_cache(ordered_product_item_token)
 
             vardict = p_todict.svg_data_from_token(ordered_product_item_token, issuer=issuer)
-            vardict[u'codeno'] = history.id #一覧で選択するため
+            vardict[u'codeno'] = unicode(history.id) #一覧で選択するため
             vardict["svg_list"] = svg_list_all_template_valiation(svg_builder, vardict.get("data", {}), ticket_templates)
             retval.append(vardict)
         return retval
@@ -90,6 +90,6 @@ def svg_list_all_template_valiation(svg_builder, vardict, ticket_templates):
     for ticket_template in ticket_templates:
         data = {"svg": svg_builder.build(ticket_template, vardict)} 
         data[u'ticket_template_name'] = ticket_template.name
-        data[u'ticket_template_id'] = ticket_template.id
+        data[u'ticket_template_id'] = unicode(ticket_template.id)
         data_list.append(data)
     return data_list

@@ -18,14 +18,14 @@ namespace QR
 			TicketData = ticketdata;
 		}
 
-		public override Task ConfigureAsync (IInternalEvent ev)
+		public override Task<bool> VerifyAsync ()
 		{
 			return Task.Run (() => {
-				var subject = ev as QRInputEvent;
+				var subject = PresentationChanel as QRInputEvent;
 				PrintUnit unit;
-				var status = subject.TryParseEnum (subject.PrintUnitString, out unit);
-				if (status)
-					Unit = subject.PrintUnit = unit; 
+				var status = subject.TryParseEnum<PrintUnit> (subject.PrintUnitString, out unit);
+				subject.PrintUnit = Unit = unit;
+				return status;
 			});
 		}
 

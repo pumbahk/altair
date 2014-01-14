@@ -7,21 +7,35 @@ using System.Collections.Generic;
 
 namespace QR
 {
-	public class SVGImage
+	public class TicketTemplate
+	{
+		public string id { get; set; }
+
+		public string name { get; set; }
+	}
+
+	public class SVGData
+	{
+		public string svg { get; set; }
+
+		public TicketTemplate template { get; set; }
+	}
+
+	public class SVGImageFetcher
 	{
 		public IResource Resource { get; set; }
 
-		public SVGImage (IResource resource)
+		public SVGImageFetcher (IResource resource)
 		{
 			Resource = resource;
 		}
 
-		public string GetSvgOneURL ()
+		public virtual string GetSvgOneURL ()
 		{
 			return Resource.EndPoint.QRSvgOne;
 		}
 
-		public string GetImageFromSvgURL()
+		public virtual string GetImageFromSvgURL ()
 		{
 			return Resource.EndPoint.ImageFromSvg;
 		}
@@ -40,18 +54,18 @@ namespace QR
 			}
 		}
 
-		public string[] ParseSvgOne (string response)
+		public IEnumerable<SVGData> ParseSvgOne (string response)
 		{
-			try {
-				var json = DynamicJson.Parse (response);
-				return json.datalist [0].svg_list;
-			} catch (System.Xml.XmlException) {
-				//hmm. log?
-				return new string[] { };
+			var json = DynamicJson.Parse (response); //throwable System.xml.XmlException
+			var r = new List<SVGData> ();
+			foreach (var data in json.datalist[0].svg_list) {
+				var template = new TicketTemplate (){ id = data.ticket_template_id, name = data.ticket_template_name };
+				r.Add (new SVGData (){ svg = data.svg, template = template });
 			}
+			return r;
 		}
 
-		public async Task<byte[]> GetImageFromSvg(string svg)
+		public async Task<byte[]> GetImageFromSvg (string svg)
 		{
 			var data = new {
 				svg = svg
@@ -60,6 +74,7 @@ namespace QR
 			IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
 			using (var wrapper = factory.Create (GetImageFromSvgURL ())) {
 				using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (data).ConfigureAwait (false)) {
+
 					return await response.Content.ReadAsByteArrayAsync ().ConfigureAwait (false);
 				}
 			}
@@ -67,14 +82,21 @@ namespace QR
 
 		public async Task<ResultTuple<string, List<byte[]>>> FetchImageAsync (TicketData tdata)
 		{
-			var response = await GetSvgOne (tdata);
-			var svg_list = ParseSvgOne (response);
-			var r = new List<byte[]>();
-			foreach (string svg in svg_list) {
-				var image = await GetImageFromSvg (svg);
-				r.Add(image);
+			try {
+				var response = await GetSvgOne (tdata);
+				var svg_list = ParseSvgOne (response);
+				var r = new List<byte[]> ();
+				foreach (SVGData svgdata in svg_list) {
+					var image = await GetImageFromSvg (svgdata.svg);
+					r.Add (image);
+				}
+				return new Success<string,List<byte[]>> (r);
+			} catch (System.Xml.XmlException e) {
+				Console.WriteLine (e.ToString ());
+				return new Failure<string,List<byte[]>> (Resource.GetInvalidOutputMessage ());
+			} catch (Exception e) {
+				return new Failure<string,List<byte[]>> (e.ToString ());
 			}
-			return new Success<string,List<byte[]>>(r);
 		}
 
 		public Task<ResultTuple<string, bool>>PrintAllAsync ()

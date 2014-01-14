@@ -25,7 +25,7 @@ namespace QR
 		public override async Task<bool> VerifyAsync ()
 		{
 			try {
-				ResultTuple<string, List<byte[]>> result = await Resource.QRPrinting.FetchImageAsync (this.TicketData);
+				ResultTuple<string, List<byte[]>> result = await Resource.SVGImage.FetchImageAsync (this.TicketData);
                 if (result.Status) {
 					return true;
 				} else {
