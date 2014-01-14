@@ -13,7 +13,7 @@ from altair.app.ticketing.core.models import (
     AugusSeat,
     Organization,
     )
-from .augus import SeatAugusSeatPairs
+from .augus2 import SeatAugusSeatPairs
 
 
 class ICooperationResource(Interface):

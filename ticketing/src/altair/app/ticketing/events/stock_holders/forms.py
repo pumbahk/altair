@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import HiddenField
+from wtforms import HiddenField, BooleanField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
 from altair.formhelpers import OurForm, DateTimeField, Translations, Required, RequiredOnUpdate, OurTextField, OurSelectField
@@ -46,4 +46,8 @@ class StockHolderForm(OurForm):
         label=u'記号色',
         validators=[RequiredOnUpdate()],
         hide_on_new=True
+    )
+    is_putback_target = BooleanField(
+        label=u'外部返券利用',
+        validators=[],
     )
