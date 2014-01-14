@@ -1,33 +1,55 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="QR/flow/CasePrintForAll.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="QR/tests/case/IntegrationTests.cs">
     <Files>
-      <File FileName="QR/tests/case/QRCodeInputTests.cs" Line="1" Column="1" />
-      <File FileName="QR/tests/flow/FlowTests.cs" Line="1" Column="1" />
-      <File FileName="QR/models/loader/AdImageCollector.cs" Line="1" Column="1" />
-      <File FileName="QR/models/IResource.cs" Line="1" Column="1" />
-      <File FileName="QR/models/Resource.cs" Line="1" Column="1" />
-      <File FileName="QR/tests/models/GetAdImageTests.cs" Line="1" Column="1" />
+      <File FileName="QR/Program.cs" Line="17" Column="1" />
+      <File FileName="QR/auth/Authentication.cs" Line="48" Column="22" />
+      <File FileName="QR/tests/auth/AuthUsingTests.cs" Line="23" Column="8" />
+      <File FileName="QR/models/AuthInfo.cs" Line="33" Column="4" />
+      <File FileName="QR/models/Endpoint.cs" Line="22" Column="5" />
+      <File FileName="QR/auth/FakeAuthentication.cs" Line="29" Column="44" />
+      <File FileName="QR/presentation/cli/AuthInput.cs" Line="8" Column="3" />
+      <File FileName="QR/flow/CaseAuthDataFetch.cs" Line="31" Column="11" />
+      <File FileName="QR/web/HttpWrapper.cs" Line="14" Column="3" />
+      <File FileName="QR/auth/IAuthentication.cs" Line="4" Column="1" />
       <File FileName="QR/configuration/AuthConfiguration.cs" Line="1" Column="1" />
-      <File FileName="QR/configuration/HttpCommunicationConfiguration.cs" Line="1" Column="1" />
-      <File FileName="QR/configuration/QRConfiguration.cs" Line="1" Column="1" />
-      <File FileName="QR/tests/models/ResultStatusCollectorTests.cs" Line="1" Column="1" />
-      <File FileName="QR/RequestBroker.cs" Line="1" Column="1" />
-      <File FileName="QR/events/IInternalEvent.cs" Line="1" Column="1" />
-      <File FileName="QR/events/AbstractEvent.cs" Line="1" Column="1" />
-      <File FileName="QR/events/OrdernoInputEvent.cs" Line="1" Column="1" />
-      <File FileName="QR/events/PrintingEvent.cs" Line="25" Column="41" />
-      <File FileName="QR/events/AuthenticationEvent.cs" Line="1" Column="1" />
-      <File FileName="QR/events/EmptyEvent.cs" Line="1" Column="1" />
-      <File FileName="QR/events/QRInputEvent.cs" Line="1" Column="1" />
-      <File FileName="QR/events/SelectInputStragetyEvent.cs" Line="16" Column="8" />
-      <File FileName="QR/flow/CasePrintForOne.cs" Line="80" Column="1" />
-      <File FileName="QR/models/loader/SVGImageFetcher.cs" Line="28" Column="2" />
-      <File FileName="QR/flow/CasePrintForAll.cs" Line="56" Column="46" />
-      <File FileName="QR/flow/CaseQRConfirmForAll.cs" Line="1" Column="1" />
-      <File FileName="QR/flow/CaseQRConfirmForOne.cs" Line="32" Column="12" />
-      <File FileName="QR/presentation/gui/control/InspectCase.xaml.cs" Line="7" Column="21" />
+      <File FileName="QR/configuration/HttpCommunicationConfiguration.cs" Line="16" Column="37" />
+      <File FileName="QR/configuration/QRConfiguration.cs" Line="9" Column="1" />
+      <File FileName="QR/events/AuthenticationEvent.cs" Line="12" Column="1" />
+      <File FileName="QR/app.config" Line="13" Column="18" />
+      <File FileName="QR/tests/case/AuthenticationTests.cs" Line="62" Column="10" />
+      <File FileName="QR/flow/CaseAuthInput.cs" Line="27" Column="19" />
+      <File FileName="QR/events/IInternalEvent.cs" Line="12" Column="17" />
+      <File FileName="QR/events/EmptyEvent.cs" Line="8" Column="26" />
+      <File FileName="QR/RequestBroker.cs" Line="42" Column="18" />
+      <File FileName="QR/flow/FlowManager.cs" Line="53" Column="33" />
+      <File FileName="QR/flow/CaseEventSelect.cs" Line="15" Column="3" />
+      <File FileName="QR/flow/CaseQRInputStrategySelect.cs" Line="22" Column="6" />
+      <File FileName="QR/Application.cs" Line="1" Column="14" />
+      <File FileName="QR/presentation/cli/QRInput.cs" Line="24" Column="34" />
+      <File FileName="QR/events/QRInputEvent.cs" Line="8" Column="14" />
+      <File FileName="QR/flow/CaseQRCodeInput.cs" Line="26" Column="11" />
+      <File FileName="QR/tests/case/QRCodeInputTests.cs" Line="52" Column="53" />
+      <File FileName="QR/events/AbstractEvent.cs" Line="8" Column="9" />
+      <File FileName="QR/tests/flow/FlowTests.cs" Line="63" Column="1" />
+      <File FileName="QR/flow/CaseQRDataFetch.cs" Line="24" Column="43" />
+      <File FileName="QR/models/FakeVerifier.cs" Line="20" Column="32" />
+      <File FileName="QR/web/FakeHttpMessageHandler.cs" Line="25" Column="6" />
+      <File FileName="QR/models/IVerifier.cs" Line="9" Column="9" />
+      <File FileName="QR/models/TicketData.cs" Line="44" Column="1" />
+      <File FileName="QR/models/FakeDataLoader.cs" Line="1" Column="1" />
+      <File FileName="QR/models/Resource.cs" Line="18" Column="30" />
+      <File FileName="QR/flow/Flow.cs" Line="1" Column="14" />
+      <File FileName="QR/flow/ICase.cs" Line="14" Column="5" />
+      <File FileName="QR/flow/AbstractCase.cs" Line="19" Column="59" />
+      <File FileName="QR/flow/IFlow.cs" Line="8" Column="6" />
+      <File FileName="QR/tests/case/IntegrationTests.cs" Line="14" Column="37" />
     </Files>
+    <Pads>
+      <Pad Id="MonoDevelop.NUnit.TestPad">
+        <State expanded="True" selected="True" />
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />

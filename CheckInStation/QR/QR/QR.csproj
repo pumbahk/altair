@@ -126,6 +126,7 @@
     <Compile Include="models\TicketDataFetcher.cs" />
     <Compile Include="models\IDataFetcher.cs" />
     <Compile Include="models\SVGImage.cs" />
+    <Compile Include="tests\IntegrationTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -143,9 +144,17 @@
     <Folder Include="configuration\" />
     <Folder Include="presentation\" />
     <Folder Include="presentation\cli\" />
+    <Folder Include="tests\misc\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="tests\misc\gen.sh" />
+    <EmbeddedResource Include="tests\misc\login.json" />
+    <EmbeddedResource Include="tests\misc\login.status.json" />
+    <EmbeddedResource Include="tests\misc\qrdata.json" />
+    <EmbeddedResource Include="tests\misc\server.py" />
   </ItemGroup>
 </Project>

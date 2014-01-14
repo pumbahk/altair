@@ -23,7 +23,7 @@ namespace QR
 		{
 			return Task.Run (() => {
 				return true;
-			}); //tODO:２度調べるを防止
+			}); //TODO:２度調べるを防止
 		}
 
 		public CaseQRCodeInput (IResource resource) : base (resource)
