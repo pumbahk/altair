@@ -316,3 +316,20 @@ class ProductItemForm(OurForm):
             if stock.stock_holder_id != field.data and len(pi.ordered_product_items) > 0:
                 raise ValidationError(u'既にこの商品明細への予約がある為、変更できません')
 
+    def validate(self):
+        status = super(type(self), self).validate()
+        if status:
+            if self.product_id.data:
+                # 販売期間内で公開済みの場合、またはこの商品が予約/抽選申込されている場合は
+                # 価格、席種の変更は不可
+                pi = ProductItem.query.filter_by(id=self.product_item_id.data).one()
+                product = pi.product
+                now = datetime.now()
+                if (product.public and product.sales_segment.public and product.sales_segment.in_term(now))\
+                   or product.ordered_products or product.has_lot_entry_products():
+                    error_message = u'既に販売中か予約および抽選申込がある為、変更できません'
+                    if self.product_item_price.data != pi.price:
+                        self.product_item_price.errors.append(error_message)
+                        status = False
+        return status
+
