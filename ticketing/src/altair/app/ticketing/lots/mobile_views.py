@@ -264,6 +264,7 @@ class EntryLotView(object):
             validated = False
 
         if not validated:
+            del options[option_index_zb]
             return HTTPFound(self.request.route_path(
                 'lots.entry.step2',
                 event_id=event.id,
