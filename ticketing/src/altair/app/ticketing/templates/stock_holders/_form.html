@@ -24,6 +24,11 @@
       ${form_item(form.name, maxlength=255)}
       ${form_item(form.text)}
       ${form_item(form.text_color, class_='span3')}
+      %if form.is_putback_target:
+          ${form_item(form.is_putback_target, checked='yes')}
+      %else:
+          ${form_item(form.is_putback_target)}
+      %endif
     </form>
   </div>
 
@@ -32,3 +37,28 @@
     <a href="javascript:void(0);" onclick="$('#modal-stock_holder').find('form').submit();" class="btn">保存</a>
   </div>
 </div>
+<!--
+<div id="modal-putback" class="modal hide">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h3>返券</h3>
+  </div>
+
+  <div class="modal-body">
+    <form action="javascript:putback_ticket();" method="POST">
+      ${form_item(form.id)}
+      ${form_item(form.event_id)}
+      ${form_item(form.account_id)}
+      ${form_item(form.name, maxlength=255)}
+      ${form_item(form.text)}
+      ${form_item(form.text_color, class_='span3')}
+      ${form_item(form.is_putback_target)}
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:void(0);" onclick="$('#modal-stock_holder').find('form').submit();" class="btn">保存</a>
+  </div>
+</div>
+-->

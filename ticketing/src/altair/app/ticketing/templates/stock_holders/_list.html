@@ -24,16 +24,26 @@
         <th style="width: 30px;"></th>
         <th>${ch.sortable(form.name, paging)}</th>
         <th>${form.account_id.label.text}</th>
+        <th></th>        
       </tr>
       </thead>
       <tbody>
       % for i, stock_holder in enumerate(stock_holders):
       <% if limit and i >= limit: break %>
-      <tr id="stock_holder-${stock_holder.id}" name="${stock_holder.name}" data='${HH.json(stock_holder.style)}'>
+      <tr id="stock_holder-${stock_holder.id}" name="${stock_holder.name}" data='${HH.json(stock_holder.style)}'
+          %if stock_holder.is_putback_target:
+              is_putback_target='true'
+          %endif
+          >
         <td><input type="radio" name="stock_holder_id" value="${stock_holder.id}" /></td>
         <td>${ch.seat_style(stock_holder.style)}</td>
         <td><a href="javascript:edit_stock_holder('${stock_holder.id}');"><span id="name">${stock_holder.name}</span></a></td>
         <td><a href="${request.route_path('accounts.show', account_id=stock_holder.account_id)}"><span id="account_id" value="${stock_holder.account_id}">${stock_holder.account.name}</span></a></td>
+        <td>
+          %if stock_holder.is_putback_target:
+          <a href="javascript:view_putback_modal('${stock_holder.id}');">返券</a>
+          %endif
+        </td>
       </tr>
       % endfor
       </tbody>
