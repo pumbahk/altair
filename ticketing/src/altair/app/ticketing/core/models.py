@@ -3932,7 +3932,7 @@ class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     name = AnnotatedColumn(Unicode(32), nullable=False,  _a_label=(u'会場名'))
     version = AnnotatedColumn(Integer, nullable=False,
                               _a_label=(u'会場バージョン'))
-    venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'),
+    venue_id = Column(Identifier, ForeignKey('Venue.id'),
                       unique=True, nullable=False)
     created_at = Column(TIMESTAMP, nullable=False, 
                         default=sqlf.current_timestamp())
@@ -3969,7 +3969,7 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     version = AnnotatedColumn(Integer, nullable=False, _a_label=(u'会場バージョン'))
     
     augus_venue_id = Column(Identifier, ForeignKey('AugusVenue.id', ondelete='CASCADE'), nullable=False)
-    seat_id = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'))
+    seat_id = Column(Identifier, ForeignKey('Seat.id'))
     augus_venue = relationship('AugusVenue', backref='augus_seats')
     seat = relationship('Seat')
 
@@ -4001,7 +4001,7 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_venue_version = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス会場バージョン'))
     
     performance_id = Column(Identifier, 
-                            ForeignKey("Performance.id", ondelete='CASCADE'),
+                            ForeignKey("Performance.id"),
                             nullable=True, unique=True)
     performance = relationship('Performance')
     
@@ -4083,6 +4083,3 @@ class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     created_at = Column(TIMESTAMP, nullable=False)
     updated_at = Column(TIMESTAMP, nullable=False)
     deleted_at = Column(TIMESTAMP, nullable=True)
-
-    
-
