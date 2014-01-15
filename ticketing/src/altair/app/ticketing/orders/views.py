@@ -1375,7 +1375,7 @@ class OrdersReserveView(BaseView):
 
     def _get_order_by_seat(self, performance_id, l0_id):
         logger.debug('call get order api (seat l0_id = %s)' % l0_id)
-        return Order.filter_by(organization_id=self.context.user.organization_id)\
+        return Order.filter_by(organization_id=self.context.organization.id)\
             .filter(Order.performance_id==performance_id)\
             .filter(Order.canceled_at==None)\
             .join(Order.items)\
@@ -1409,7 +1409,7 @@ class OrdersReserveView(BaseView):
     @view_config(route_name='orders.api.performance', request_method='GET', renderer='json')
     def api_performance(self):
         performance_id = self.request.matchdict.get('performance_id', 0)
-        performance = Performance.get(performance_id, self.context.user.organization_id)
+        performance = Performance.get(performance_id, self.context.organization.id)
         if performance is None:
             raise HTTPNotFound('performance id %d is not found' % performance_id)
 
@@ -1482,7 +1482,7 @@ class OrdersReserveView(BaseView):
     @view_config(route_name='orders.api.edit', request_method='GET', renderer='json')
     def api_edit_get(self):
         order_id = self.request.matchdict.get('order_id', 0)
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.organization.id)
         if order is None:
             raise HTTPNotFound('order id %s is not found' % order_id)
         return self._get_order_dicts(order)
@@ -1519,7 +1519,7 @@ class OrdersReserveView(BaseView):
     @view_config(route_name='orders.api.edit', request_method='PUT', renderer='json')
     def api_edit_put(self):
         order_id = self.request.matchdict.get('order_id', 0)
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.organization.id)
 
         reserving = api.get_reserving(self.request)
         stocker = api.get_stocker(self.request)
@@ -1650,7 +1650,7 @@ class OrdersReserveView(BaseView):
         edit_order.save()
         return self._get_order_dicts(edit_order)
 
-    @view_config(route_name='orders.api.get.html', renderer='ticketing:templates/orders/_tiny_order.html')
+    @view_config(route_name='orders.api.get.html', renderer='altair.app.ticketing:templates/orders/_tiny_order.html')
     def api_get_html(self):
         l0_id = self.request.params.get('l0_id', 0)
         performance_id = self.request.params.get('performance_id', 0)
@@ -1666,7 +1666,7 @@ class OrdersReserveView(BaseView):
                 )
             }
 
-    @view_config(route_name='orders.reserve.form', request_method='POST', renderer='ticketing:templates/orders/_form_reserve.html')
+    @view_config(route_name='orders.reserve.form', request_method='POST', renderer='altair.app.ticketing:templates/orders/_form_reserve.html')
     def reserve_form(self):
         post_data = MultiDict(self.request.json_body)
         logger.debug('order reserve post_data=%s' % post_data)
@@ -2039,11 +2039,11 @@ class SejOrderInfoView(object):
                     total           = int(data.get('total_price')),
                     ticket_total    = int(data.get('ticket_price')),
                     commission_fee  = int(data.get('commission_fee')),
-                    ticketing_fee   = int(data.get('altair.app.ticketing_fee')),
+                    ticketing_fee   = int(data.get('ticketing_fee')),
                     payment_type    = code_from_payment_type[int(order.payment_type)],
                     payment_due_at  = data.get('payment_due_at'),
-                    ticketing_start_at = data.get('altair.app.ticketing_start_at'),
-                    ticketing_due_at = data.get('altair.app.ticketing_due_at'),
+                    ticketing_start_at = data.get('ticketing_start_at'),
+                    ticketing_due_at = data.get('ticketing_due_at'),
                     regrant_number_due_at = data.get('regrant_number_due_at'),
                     tickets = tickets,
                     condition=dict(
