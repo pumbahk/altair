@@ -69,7 +69,9 @@ def import_view(config):
     ## reivew
     config.add_route('order_review.form', '/')
     config.add_route('order_review.show', '/show')
-    
+    config.add_route('guest.order_review.form', '/guest')
+    config.add_route('guest.order_review.show', '/guest/show')
+
     ## qr
     config.add_route('order_review.qr_print', '/qr/print')
     config.add_route('order_review.qr_send', '/qr/send')

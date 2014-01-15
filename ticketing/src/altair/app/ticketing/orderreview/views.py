@@ -52,6 +52,32 @@ class OrderReviewView(object):
             raise InvalidForm(form)
         return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
 
+class GuestOrderReviewView(object):
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    def __call__(self):
+        return dict()
+
+    @view_config(route_name='guest.order_review.form', request_method="GET",
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/form.html"))
+    def get(self):
+        form = schemas.OrderReviewSchema(self.request.params)
+        return {"form": form}
+
+    @view_config(route_name='guest.order_review.show', request_method="POST",
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/show.html"))
+    def post(self):
+        form = schemas.OrderReviewSchema(self.request.params)
+        if not form.validate():
+            raise InvalidForm(form)
+
+        order, sej_order = self.context.get_order()
+        if not form.object_validate(self.request, order):
+            raise InvalidForm(form)
+        return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
+
 @mobile_view_config(context=InvalidForm, 
                     renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile/form.html"))
 @view_config(context=InvalidForm, 
