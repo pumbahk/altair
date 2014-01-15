@@ -3,12 +3,15 @@ using System.Threading.Tasks;
 using QR.message;
 using System.Net.Http;
 using Codeplex.Data;
+using NLog;
 
 namespace QR
 {
 	public class TicketDataCollectionFetcher : IDataFetcher<TicketData, TicketDataCollection>
 	{
 		public IResource Resource { get; set; }
+
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
 		public TicketDataCollectionFetcher (IResource resource)
 		{
@@ -38,8 +41,8 @@ namespace QR
 			try {
 				var json = DynamicJson.Parse (responseString);
 				return new Success<string, TicketDataCollection> (new TicketDataCollection (json, tdata));
-			} catch (System.Xml.XmlException) {
-				//hmm. log?
+			} catch (System.Xml.XmlException e) {
+				logger.ErrorException ("exception:", e);
 				return new Failure<string, TicketDataCollection> (Resource.GetInvalidInputMessage ());
 			}
 		}

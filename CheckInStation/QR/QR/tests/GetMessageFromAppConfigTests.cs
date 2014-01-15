@@ -46,6 +46,14 @@ namespace QR
 			var result = resource.GetInvalidOutputMessage ();
 			Assert.AreNotEqual (default(string), result);
 		}
+
+		[Test, Description ("default error message")]
+		public void TestsGetDefaultErrorMessage ()
+		{
+			var resource = new Resource ();
+			var result = resource.GetDefaultErrorMessage ();
+			Assert.AreNotEqual (default(string), result);
+		}
 	}
 }
 

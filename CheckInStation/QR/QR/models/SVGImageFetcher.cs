@@ -5,6 +5,7 @@ using System.Net.Http;
 using Codeplex.Data;
 using System.Collections.Generic;
 using System.Linq;
+using NLog;
 
 namespace QR
 {
@@ -80,6 +81,8 @@ namespace QR
 
 	public class SVGImageFetcher
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
+
 		public IResource Resource { get; set; }
 
 		public SVGImageFetcher (IResource resource)
@@ -129,10 +132,11 @@ namespace QR
 				}
 				return new Success<string,List<byte[]>> (r);
 			} catch (System.Xml.XmlException e) {
-				Console.WriteLine (e.ToString ());
+				logger.ErrorException ("exception:", e);
 				return new Failure<string,List<byte[]>> (Resource.GetInvalidOutputMessage ());
 			} catch (Exception e) {
-				return new Failure<string,List<byte[]>> (e.ToString ());
+				logger.ErrorException ("exception:", e);
+				return new Failure<string, List<byte[]>> (Resource.GetDefaultErrorMessage ());
 			}
 		}
 
@@ -148,10 +152,11 @@ namespace QR
 				}
 				return new Success<string,List<byte[]>> (r);
 			} catch (System.Xml.XmlException e) {
-				Console.WriteLine (e.ToString ());
+				logger.ErrorException ("exception:", e);
 				return new Failure<string,List<byte[]>> (Resource.GetInvalidOutputMessage ());
 			} catch (Exception e) {
-				return new Failure<string,List<byte[]>> (e.ToString ());
+				logger.ErrorException ("exception:", e);
+				return new Failure<string, List<byte[]>> (Resource.GetDefaultErrorMessage ());
 			}
 		}
 	}

@@ -28,6 +28,11 @@ namespace QR.message
 		{
 			return resource.SettingValue ("message.invalid.output.format.0");
 		}
+
+		public static string GetDefaultErrorMessage(this IResource resource)
+		{
+			return resource.SettingValue ("message.default.error.format.0");
+		}
 	}
 }
 

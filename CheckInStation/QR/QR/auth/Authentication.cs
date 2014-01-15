@@ -3,12 +3,15 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using QR.message;
 using Codeplex.Data;
+using NLog;
 
 namespace QR
 {
 	public class Authentication :IAuthentication
 	{
 		public IResource Resource { get; set; }
+
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
 		public String LoginURL{ get; set; }
 
@@ -90,11 +93,11 @@ namespace QR
 						return OnFailure ();
 					}
 				} catch (System.Xml.XmlException e) {
+					logger.ErrorException ("exception:", e);
 					return OnFailure (e.ToString ());
 				}
 			} catch (System.Net.WebException e) {
-				//TODO:log
-				// e.ToString()はうるさすぎ
+				logger.ErrorException ("exception:", e);
 				return	OnFailure (Resource.GetWebExceptionMessage ());
 			}
 		}

@@ -3,12 +3,15 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using Codeplex.Data;
 using QR.message;
+using NLog;
 
 namespace QR
 {
 	public class TicketDataFetcher : IDataFetcher<string, TicketData>
 	{
 		public IResource Resource { get; set; }
+
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
 		public TicketData TicketData { get; set; }
 
@@ -27,7 +30,6 @@ namespace QR
 			return Resource.EndPoint.QRFetchData;
 		}
 
-			
 		public async Task<ResultTuple<string, TicketData>> FetchAsync (string qrcode)
 		{
 			IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
@@ -44,8 +46,8 @@ namespace QR
 			try {
 				var json = DynamicJson.Parse (responseString);
 				return new Success<string, TicketData> (new TicketData (json));
-			} catch (System.Xml.XmlException) {
-				//hmm. log?
+			} catch (System.Xml.XmlException e) {
+				logger.ErrorException ("exception:", e);
 				return new Failure<string, TicketData> (Resource.GetInvalidInputMessage ());
 			}
 		}
