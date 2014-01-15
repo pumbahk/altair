@@ -20,6 +20,8 @@ namespace QR
 		internal string QRSvgAll;
 		[DataMember]
 		internal string ImageFromSvg;
+		[DataMember]
+		internal string UpdatePrintedAt;
 
 		public static string asURL (string url)
 		{
@@ -34,6 +36,7 @@ namespace QR
 			this.QRSvgOne = EndPoint.asURL (json.qr_svgsource_one);
 			this.QRSvgAll = EndPoint.asURL (json.qr_svgsource_all);
 			this.ImageFromSvg = EndPoint.asURL (json.image_from_svg);
+			this.UpdatePrintedAt = EndPoint.asURL (json.qr_update_printed_at);
 		}
 	}
 }

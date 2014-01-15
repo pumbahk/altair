@@ -1,4 +1,6 @@
 using System;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace QR
 {
@@ -7,8 +9,17 @@ namespace QR
 	/// </summary>
 	public class CaseQRPrintFinish: AbstractCase,ICase
 	{
-		public CaseQRPrintFinish (IResource resource) : base (resource)
+		public ResultStatusCollector<string> StatusCollector { get; set; }
+
+		public CaseQRPrintFinish (IResource resource, ResultStatusCollector<string> statusCollector) : base (resource)
 		{
+			StatusCollector = statusCollector;
+		}
+
+		public override async Task<bool> VerifyAsync ()
+		{	
+			IEnumerable<string> used = StatusCollector.Result ().SuccessList;
+			return await Resource.TicketDataManager.UpdatePrintedAtAsync (used);
 		}
 
 		public override ICase OnSuccess (IFlow flow)

@@ -52,6 +52,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="NLog">
+      <HintPath>..\packages\NLog.2.1.0\lib\net45\NLog.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -132,6 +135,9 @@
     <Compile Include="models\TicketImagePrinting.cs">
       <DependentUpon>IResource.cs</DependentUpon>
     </Compile>
+    <Compile Include="models\ResultStatusCollector.cs" />
+    <Compile Include="tests\models\ResultStatusCollectorTests.cs" />
+    <Compile Include="models\TicketDataManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -150,6 +156,7 @@
     <Folder Include="presentation\" />
     <Folder Include="presentation\cli\" />
     <Folder Include="tests\misc\" />
+    <Folder Include="tests\models\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

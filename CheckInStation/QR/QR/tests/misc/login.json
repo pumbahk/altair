@@ -4,7 +4,8 @@
         "qr_ticketdata": "http://localhost:8000/qrdata.json",
         "qr_svgsource_one": "http://localhost:8000/svgone.json",
         "qr_svgsource_all": "http://localhost:8000/svgall.json",
-        "image_from_svg": "http://localhost:8000/image.png"
+        "image_from_svg": "http://localhost:8000/image.png",
+        "qr_update_printed_at": "http://localhost:8000/update.printed_at.json"
     },
     "memo": "svg_from_imageこれどこで設定しよう?"
 }

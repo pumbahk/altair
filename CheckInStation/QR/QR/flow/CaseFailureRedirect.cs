@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace QR
 {
@@ -7,13 +8,28 @@ namespace QR
 	/// </summary>
 	public class CaseFailureRedirect : AbstractCase, ICase
 	{
+		public Func<Task> Modify { get; set; }
+
 		public CaseFailureRedirect (IResource resource) : base (resource)
 		{
 		}
 
+		public CaseFailureRedirect (IResource resource, Func<Task> modify) : base (resource)
+		{
+			this.Modify = modify;
+		}
+
+		public override async Task<bool> VerifyAsync()
+		{
+			if(this.Modify != null){
+				await this.Modify();
+			}
+			return true;
+		}
+
 		public override ICase OnSuccess (IFlow flow)
 		{
-			IFlowDefinition def = flow.GetFlowDefinition();
+			IFlowDefinition def = flow.GetFlowDefinition ();
 			return def.StartPointCase (this);
 		}
 	}
