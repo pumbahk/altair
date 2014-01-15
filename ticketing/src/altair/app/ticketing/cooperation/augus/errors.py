@@ -17,3 +17,5 @@ class EntryFormatError(AugusError):
 class SeatImportError(AugusError):
     pass    
 
+class AlreadyExist(AugusError):
+    pass

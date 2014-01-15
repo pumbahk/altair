@@ -1,0 +1,17 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<div class="page-header">
+  <h3>オーガス会場図連携 - ${augus_venue_code}</h3>
+</div>
+
+<div class="container">
+  <ul>
+    %for ag_venue in augus_venues:
+    <li><a href="${request.route_path('augus.augus_venue.show', augus_venue_code=ag_venue.code, augus_venue_version=ag_venue.version)}">
+        ${ag_venue.code} - ${ag_venue.version} ${ag_venue.name}
+    </a></li>
+    %endfor
+  </ul>
+</div>

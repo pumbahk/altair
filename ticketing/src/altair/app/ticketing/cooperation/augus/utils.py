@@ -19,6 +19,9 @@ class SeatAugusSeatPairs(object):
         self._venue = venue
         self._augus_venue = augus_venue
 
+    def load_augus_venue(self, augus_venue):
+        self.load(augus_venue.venue, augus_venue)
+
     def get_seats(self):
         return sorted(self._venue.seats, key=lambda seat: seat.id)
 
