@@ -3932,8 +3932,8 @@ class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     name = AnnotatedColumn(Unicode(32), nullable=False,  _a_label=(u'会場名'))
     version = AnnotatedColumn(Integer, nullable=False,
                               _a_label=(u'会場バージョン'))
-    venue_id = Column(Identifier, ForeignKey('Venue.id'),
-                      unique=True, nullable=False)
+    venue_id = Column(Identifier, ForeignKey('Venue.id'), nullable=False)
+    venue = relationship('Venue')
     created_at = Column(TIMESTAMP, nullable=False, 
                         default=sqlf.current_timestamp())
     updated_at = Column(TIMESTAMP, nullable=False,
