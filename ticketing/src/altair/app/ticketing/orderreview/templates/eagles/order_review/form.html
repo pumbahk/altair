@@ -4,7 +4,7 @@
         <table class="nobdr">
             <tr>
                 <td>
-                    <table class="loginbox">
+                    <table class="guestbox">
                         <thead>
                             <tr>
                                 <th>一般の方のチケット確認<small> はこちらから</small></th>
@@ -12,7 +12,7 @@
                         </thead>
                         <tr>
                             <td>
-                            <form id="form1" name="form1" action="${request.route_path('order_review.show')}" method="get">
+                            <form id="form1" name="form1" action="${request.route_path('order_review.form')}" method="get">
                                 <table width="323" border="0" cellpadding="0" cellspacing="0" class="member nobdr" align="center">
                                   <tbody>
                                     <tr>
@@ -27,7 +27,7 @@
                         </tr>
                     </table>
 
-                    <table class="loginbox">
+                    <table class="guestbox">
                         <thead>
                             <tr>
                                 <th>一般の方の抽選確認<small> はこちらから</small></th>

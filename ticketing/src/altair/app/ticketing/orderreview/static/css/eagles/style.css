@@ -753,6 +753,24 @@ background: #f3a9c9;
 }
 
 
+.guestbox{
+border: 1px #555 solid;
+width: 180px;
+height: 400px;
+}
+.guestbox thead th{
+background: #860010;
+font-size: 20px;
+height: 30px;
+}
+
+.guestbox td{
+background: #fffecb;
+}
+
+.guestbox th{
+background: #fffecb;
+}
 
 .loginbox{
 border: 1px #555 solid;
