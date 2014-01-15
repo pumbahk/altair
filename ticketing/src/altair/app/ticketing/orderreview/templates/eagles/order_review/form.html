@@ -1,7 +1,144 @@
 <%inherit file="../commons/layout.html" />
 
 <h2>購入履歴の確認</h2>
-<form id="form1" name="form1" action="${request.route_path('order_review.show')}" method="post">
+        <table class="nobdr">
+            <tr>
+                <td>
+                    <table class="loginbox">
+                        <thead>
+                            <tr>
+                                <th>一般の方のチケット確認<small> はこちらから</small></th>
+                            </tr>
+                        </thead>
+                        <tr>
+                            <td>
+                            <form id="form1" name="form1" action="${request.route_path('order_review.show')}" method="get">
+                                <table width="323" border="0" cellpadding="0" cellspacing="0" class="member nobdr" align="center">
+                                  <tbody>
+                                    <tr>
+                                      <td colspan="2" id="btn_login" align="center">
+                                          <input type="submit" value="次に進む" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                            </form>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <table class="loginbox">
+                        <thead>
+                            <tr>
+                                <th>一般の方の抽選確認<small> はこちらから</small></th>
+                            </tr>
+                        </thead>
+                        <tr>
+                            <td>
+                            <form id="form2" name="form2" action="https://rt.tstar.jp/lots/review" method="get">
+                                <table width="323" border="0" cellpadding="0" cellspacing="0" class="member nobdr" align="center">
+                                  <tbody>
+                                    <tr>
+                                      <td colspan="2" id="btn_login" align="center">
+                                          <input type="submit" value="次に進む" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                            </form>
+                            </td>
+                        </tr>
+                    </table>
+
+                  </form>
+                </td>
+                <td>
+                  <form action="${request.url}" method="post">
+                    <table class="loginbox">
+                        <thead>
+                            <tr>
+                                <th>各種会員の方<small> はこちらから</small></th>
+                            </tr>
+                        </thead>
+                        <tr>
+                            <td>
+                            <table class="clubnames" >
+                                <tr>
+                                    <td style="background:#333;">ブースター<br />クラブ</td>
+                                    <td style="background:#d6a200">ゴールド<br />クラブ</td>
+                                    <td style="background:#aaa;">レギュラー<br />クラブ</td>
+                                </tr>
+                                <tr>
+                                    <td style="background:#860010;">ベーシック<br />クラブ</td>
+                                    <td style="background:#65aa00;">キッズ<br />クラブ</td>
+                                    <td style="background:#d65a8f;">レディース<br />クラブ</td>
+                                </tr>
+                                <tr>
+                                    <td style="background:#EA4E31;">お年玉<br/>先行</td>
+                                    <td/>
+                                    <td/>
+                                </tr>
+                            </table>
+                                <table width="323" border="0" cellpadding="0" cellspacing="0" class="member nobdr" align="center">
+                                  <tbody>
+                                    <tr>
+                                      <th align="right">会員ID</th>
+                                      <td align="left">
+                                        <div class="tal">
+                                            <input type="text" class="text" name="username">
+                                            %if message:
+                                            <br/><span class="small red">IDまたはパスワードが一致しません</span>
+                                            %endif
+                                        </div>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <th align="right">パスワード</th>
+                                      <td align="left">
+                                        <div class="tal">
+                                            <input type="password" name="password">
+                                        </div>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td colspan="2" id="btn_login" align="center">
+                                          <input type="submit" value="ログイン" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                  </form>
+                </td>
+            </tr>
+        </table>
+<h3>注意事項</h3>
+<ul class="notes">
+    <li>携帯電話､スマートフォンの各キャリアの受信拒否設定から、購入確認メールが受け取れない場合がございますので、
+<span style="color:#f00;">eagles@tstar.jpのドメイン指定受信許可設定を行ってください</span>。</li>
+    <li>年賀状が届いている方は、年賀状 宛名下の超先行専用ID・パスワードでログインしてください。</li>
+    <li>年賀状が届いていない方は、2014年の会員ID・パスワードでログインしてください。</li>
+    <li>発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。
+    </li>
+    <li>会員ID・パスワードは半角でご入力ください。</li>
+    <li>4歳以上は入場チケットが必要です。ただし3歳以下でも一人で着席の場合はチケットが必要です。</li>
+</ul>
+<h3>その他</h3>
+<ul class="notes">
+    <li>購入履歴の確認は<a href="/orderreview" target="_blank">こちら</a>から行ってください。</li>
+    <li>パスワードをお忘れの場合<a href="https://f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&clientid=13074&databaseid=wit" target="_blank">こちら</a>からお問合せください。</li>
+</ul>
+
+<h3>お問い合わせ</h3>
+
+<ul class="notes">
+        <li>お電話でのお問合せ：楽天野球団チケットセンター：050-5817-8192(平日10時～18時)</li>
+</ul>
+    <!-- wrapperおわり -->
+
+
   <!-- wrapper -->
   <div class="formWrapper">
     <table cellpadding="0" cellspacing="0" class="formeagles">
