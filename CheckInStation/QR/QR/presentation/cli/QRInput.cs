@@ -20,7 +20,7 @@ namespace QR.presentation.cli
 			ICase result;
 			var ev = new QRInputEvent ();
 			do {		
-				Console.WriteLine ("------QRCode input unit select: 1:qr, 2:order_no-----");
+				Console.WriteLine ("------QRCode input unit select: 0:qr, 1:order_no-----");
 				ev.InputUnitString = Console.ReadLine ();
 				result = await RequestBroker.Submit (ev);
 				ev.HandleEvent ();
@@ -36,16 +36,25 @@ namespace QR.presentation.cli
 			result = await RequestBroker.Submit (ev);
 			ev.HandleEvent ();
 
-			Console.WriteLine ("--------QRCode Confirm for one print unit select: 1:one, 2:all-------------------");
+			Console.WriteLine ("--------QRCode Confirm for one print unit select: 0:one, 1:all-------------------");
 			ev.PrintUnitString = Console.ReadLine ();
 			result = await RequestBroker.Submit (ev);
 			ev.HandleEvent ();
-
-			Console.WriteLine ("-------QRCode DataFetch *svg data*-----");
-			result = await RequestBroker.Submit (ev);
-			ev.HandleEvent ();
-			return result;
+			if (result is CaseQRPrintForOne) {
+				Console.WriteLine ("-------QRCode printing one (fetch *svg data*)-----");
+				result = await RequestBroker.Submit (ev);
+				ev.HandleEvent ();
+				return result;
+			} else if (result is CaseQRConfirmForAll) {
+				Console.WriteLine ("-------QRCode Confirm All-----");
+				result = await RequestBroker.Submit (ev);
+				ev.HandleEvent ();
+				Console.WriteLine ("-------QRCode printing all (fetch *svg data*)-----");
+				result = await RequestBroker.Submit (ev);
+				return result;
+			} else {
+				throw new NotImplementedException ();
+			}
 		}
 	}
 }
-

@@ -129,7 +129,6 @@
     <Compile Include="models\TicketDataFetcher.cs" />
     <Compile Include="models\IDataFetcher.cs" />
     <Compile Include="tests\IntegrationTests.cs" />
-    <Compile Include="tests\case\GetSVGTests.cs" />
     <Compile Include="tests\Testing.cs" />
     <Compile Include="models\SVGImageFetcher.cs" />
     <Compile Include="models\TicketImagePrinting.cs">
@@ -142,6 +141,7 @@
     <Compile Include="models\TicketDataCollectionFetcher.cs" />
     <Compile Include="models\FakeTicketImagePrinting.cs" />
     <Compile Include="models\ITicketImagePrinting.cs" />
+    <Compile Include="tests\case\CaseRequestingJSONTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -173,7 +173,9 @@
     <EmbeddedResource Include="tests\misc\login.json" />
     <EmbeddedResource Include="tests\misc\login.status.json" />
     <EmbeddedResource Include="tests\misc\qrdata.json" />
+    <EmbeddedResource Include="tests\misc\qrdata.all.json" />
     <EmbeddedResource Include="tests\misc\svgone.json" />
+    <EmbeddedResource Include="tests\misc\svgall.json" />
     <EmbeddedResource Include="tests\misc\server.py" />
   </ItemGroup>
 </Project>

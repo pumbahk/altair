@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using NLog;
 
 namespace QR
 {
@@ -9,6 +10,8 @@ namespace QR
 	public class CaseQRConfirmForOne : AbstractCase, ICase
 	{
 		public PrintUnit Unit { get; set; }
+
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
 		public TicketData TicketData { get; set; }
 
@@ -37,7 +40,8 @@ namespace QR
 			case PrintUnit.all:
 				return new CaseQRConfirmForAll (Resource, TicketData);
 			default:
-				throw new NotImplementedException ();
+				logger.Info ("PrintUnit: {0} is unknown value. default={1} is selected", Unit.ToString(), default(PrintUnit));
+				return new CaseQRPrintForOne (Resource, TicketData);
 			}
 		}
 	}

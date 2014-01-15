@@ -25,7 +25,7 @@ namespace QR
 			Resource = resource;
 		}
 
-		public string GetQRFetchDataUrl ()
+		public virtual string GetQRFetchDataUrl ()
 		{
 			return Resource.EndPoint.QRFetchData;
 		}
@@ -47,7 +47,7 @@ namespace QR
 				var json = DynamicJson.Parse (responseString);
 				return new Success<string, TicketData> (new TicketData (json));
 			} catch (System.Xml.XmlException e) {
-				logger.ErrorException ("exception:", e);
+				logger.ErrorException (":", e);
 				return new Failure<string, TicketData> (Resource.GetInvalidInputMessage ());
 			}
 		}

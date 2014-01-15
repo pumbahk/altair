@@ -1,22 +1,25 @@
 using System;
+using NLog;
 
 namespace QR
 {
 	public enum InputUnit
 	{
-		qrcode = 1,
-		order_no = 2
+		qrcode = 0,
+		order_no = 1
 	}
 
 	public enum PrintUnit
 	{
-		one = 1,
-		all = 2
+		one = 0,
+		all = 1
 	}
 
 	public class QRInputEvent : AbstractEvent, IInternalEvent
 	{
 		public string QRCode { get; set; }
+
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
 		public InputUnit InputUnit { get; set; }
 
@@ -31,8 +34,12 @@ namespace QR
 			try {
 				result = (T)Enum.Parse (typeof(T), target);
 				return true;
+			} catch (ArgumentException ex) {
+				logger.Error ("{0} is undefined value. default value {1} is selected.", target, default(T));
+				result = default(T);
+				return true;
 			} catch (Exception e) {
-				Console.WriteLine (e.ToString ());
+				logger.ErrorException (":", e);
 				result = default(T);
 				return false;
 			}

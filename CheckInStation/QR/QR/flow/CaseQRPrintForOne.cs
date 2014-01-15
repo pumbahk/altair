@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using QR.message;
 using System.Collections.Generic;
+using NLog;
 
 namespace QR
 {
@@ -13,6 +14,8 @@ namespace QR
 		public TicketData TicketData { get; set; }
 
 		public ResultStatusCollector<string> StatusCollector { get; set; }
+
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
 		public CaseQRPrintForOne (IResource resource, TicketData ticketdata) : base (resource)
 		{
@@ -37,7 +40,7 @@ namespace QR
 				}
 				return StatusCollector.Status;
 			} catch (Exception ex) {
-				PresentationChanel.NotifyFlushMessage (ex.ToString ());
+				logger.ErrorException (":", ex);
 				PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
 				return false;
 			}
@@ -53,8 +56,7 @@ namespace QR
 			Func<Task<bool>> modify = (async () => {
 				IEnumerable<string> used = StatusCollector.Result ().SuccessList;
 				foreach (var k in used) {
-					//TODO:LOG
-					Console.WriteLine ("{0} is printed. but all status is failure", k);
+					logger.Error ("{0} is printed. but summalized status is failure", k);
 				}
 				return await Resource.TicketDataManager.UpdatePrintedAtAsync (used);
 			});

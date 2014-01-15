@@ -6,6 +6,7 @@ namespace QR
 	public interface INeedForQR
 	{
 		IDataFetcher<string, TicketData> TicketDataFetcher { get; set; }
+		IDataFetcher<TicketData, TicketDataCollection> TicketDataCollectionFetcher { get; set; }
 		SVGImageFetcher SVGImageFetcher {get;set;}
 		ITicketImagePrinting TicketImagePrinting {get;set;}
 		TicketDataManager TicketDataManager {get;set;}

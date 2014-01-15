@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using QR.message;
+using NLog;
 
 namespace QR
 {
@@ -10,20 +11,22 @@ namespace QR
 	/// </summary>
 	public class CaseQRPrintForAll :AbstractCase,ICase
 	{
-		public TicketData TicketData { get; set; }
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
+
+		public TicketDataCollection DataCollection { get; set; }
 
 		public ResultStatusCollector<string> StatusCollector { get; set; }
 
-		public CaseQRPrintForAll (IResource resource, TicketData ticketdata) : base (resource)
+		public CaseQRPrintForAll (IResource resource, TicketDataCollection collection) : base (resource)
 		{
-			TicketData = ticketdata;
+			DataCollection = collection;
 			StatusCollector = new ResultStatusCollector<string> ();
 		}
 
 		public override async Task<bool> VerifyAsync ()
 		{
 			try {
-				ResultTuple<string, List<byte[]>> result = await Resource.SVGImageFetcher.FetchImageForOneAsync (this.TicketData);
+				ResultTuple<string, List<byte[]>> result = await Resource.SVGImageFetcher.FetchImageForAllAsync(this.DataCollection);
 				if (!result.Status) {
 					//modelからpresentation層へのメッセージ
 					PresentationChanel.NotifyFlushMessage ((result as Failure<string,List<byte[]>>).Result);
@@ -33,11 +36,13 @@ namespace QR
 				var printing = Resource.TicketImagePrinting;
 				foreach (var img in result.Right) {
 					var status = await printing.EnqueuePrinting (img);
-					StatusCollector.Add (TicketData.ordered_product_item_token_id, status);
+					//TODO: 治す(本当はList<byte[]>ではなく。もう少し高価なオブジェクトを作る)
+					logger.Debug("------------------hmmmmmmmmmmmmmmm-------------");
+					StatusCollector.Add (DataCollection.tdata.ordered_product_item_token_id, status);
 				}
 				return StatusCollector.Status;
 			} catch (Exception ex) {
-				PresentationChanel.NotifyFlushMessage (ex.ToString ());
+				logger.ErrorException (":", ex);
 				PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
 				return false;
 			}

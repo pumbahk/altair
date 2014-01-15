@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using NLog;
 
 namespace QR
 {
@@ -8,7 +9,9 @@ namespace QR
 	/// </summary>
 	public class CaseQRInputStrategySelect :AbstractCase, ICase
 	{
-		public InputUnit InputUnit { get; set; }
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
+
+		public InputUnit Unit { get; set; }
 
 		public CaseQRInputStrategySelect (IResource resource) : base (resource)
 		{
@@ -20,20 +23,21 @@ namespace QR
 				var subject = PresentationChanel as QRInputEvent;
 				InputUnit unit;
 				var status = subject.TryParseEnum<InputUnit> (subject.InputUnitString, out unit);
-				subject.InputUnit = InputUnit = unit;
+				subject.InputUnit = Unit = unit;
 				return status;
 			});
 		}
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			switch (InputUnit) {
+			switch (Unit) {
 			case InputUnit.qrcode:
 				return new CaseQRCodeInput (Resource);
 			case InputUnit.order_no:
 				throw new NotImplementedException ();
 			default:
-				throw new NotImplementedException ();
+				logger.Info ("InputUnit: {0} is unknown value. default={1} is selected", Unit.ToString(), default(InputUnit));
+				return new CaseQRCodeInput (Resource);
 			}
 		}
 

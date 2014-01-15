@@ -15,13 +15,13 @@
             "ordered_product_item_token_id": "-1", 
             "printed_at": null,
             "seat_id": "-1111",
-            "seat_name": "指定席A(1)",
+            "seat_name": "指定席A(1)"
         },
         {
             "ordered_product_item_token_id": "-2", 
             "printed_at": null,
             "seat_id": "-1112",
-            "seat_name": "指定席A(2)",
+            "seat_name": "指定席A(2)"
         }
     ]
 }

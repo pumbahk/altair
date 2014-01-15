@@ -132,10 +132,10 @@ namespace QR
 				}
 				return new Success<string,List<byte[]>> (r);
 			} catch (System.Xml.XmlException e) {
-				logger.ErrorException ("exception:", e);
+				logger.ErrorException (":", e);
 				return new Failure<string,List<byte[]>> (Resource.GetInvalidOutputMessage ());
 			} catch (Exception e) {
-				logger.ErrorException ("exception:", e);
+				logger.ErrorException (":", e);
 				return new Failure<string, List<byte[]>> (Resource.GetDefaultErrorMessage ());
 			}
 		}
@@ -152,10 +152,10 @@ namespace QR
 				}
 				return new Success<string,List<byte[]>> (r);
 			} catch (System.Xml.XmlException e) {
-				logger.ErrorException ("exception:", e);
+				logger.ErrorException (":", e);
 				return new Failure<string,List<byte[]>> (Resource.GetInvalidOutputMessage ());
 			} catch (Exception e) {
-				logger.ErrorException ("exception:", e);
+				logger.ErrorException (":", e);
 				return new Failure<string, List<byte[]>> (Resource.GetDefaultErrorMessage ());
 			}
 		}

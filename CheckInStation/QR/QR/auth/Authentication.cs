@@ -93,11 +93,11 @@ namespace QR
 						return OnFailure ();
 					}
 				} catch (System.Xml.XmlException e) {
-					logger.ErrorException ("exception:", e);
+					logger.ErrorException (":", e);
 					return OnFailure (e.ToString ());
 				}
 			} catch (System.Net.WebException e) {
-				logger.ErrorException ("exception:", e);
+				logger.ErrorException (":", e);
 				return	OnFailure (Resource.GetWebExceptionMessage ());
 			}
 		}
