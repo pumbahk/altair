@@ -146,7 +146,7 @@ formatter:grid.linkFormatter}
 
   var showDialog = function(title, msg, cls) {
     var modal = $('#modal-alert');
-    var message = $('<div>').addClass('alert '+cls).text(msg);
+    var message = $('<div>').addClass('alert '+cls).html(msg);
     modal.find('.modal-header > h3').text(title);
     modal.find('#message').empty().append(message);
     modal.modal('show');
@@ -200,7 +200,7 @@ formatter:grid.linkFormatter}
             rows += '<li>(' + response_text.rows.rowid + '行目) ' + col_name + response_text.rows.errors[col] + '</li>';
           }
         }
-        showDialog("エラー", message, 'alert-error');
+        showDialog("エラー", message + '<ul>' + rows + '</ul>', 'alert-error');
       }
     });
   });
