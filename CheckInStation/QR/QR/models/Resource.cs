@@ -1,12 +1,14 @@
 using System;
 using System.Configuration;
 using System.Net.Http;
+using NLog;
 
 namespace QR
 {
 	public class Resource :IResource
 	{
 		protected bool VerifyEnable;
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
 		public Resource (bool verifyEnable)
 		{
@@ -63,7 +65,7 @@ namespace QR
 		public string SettingValue (string key)
 		{
 			var v = ConfigurationManager.AppSettings [key];
-			Console.WriteLine ("    *debug get: {0}", v);
+			logger.Debug ("get from resource: {0}", v);
 			return v;
 		}
 	}

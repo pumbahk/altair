@@ -3,15 +3,18 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Threading;
 using System.IO;
+using NLog;
 
 namespace QR
 {
 	public class HttpWrapper :IHttpWrapper
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
+
 		public async Task<string> ReadAsStringAsync (HttpContent content)
 		{
 			var result = await content.ReadAsStringAsync ();
-			Console.WriteLine ("Output:{0}", result);
+			logger.Debug("* API Output:{0}", result);
 			return result;
 		}
 
@@ -81,9 +84,9 @@ namespace QR
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-			//TODO:change to debug log
+
 			var result = await client.GetStringAsync (url);
-			Console.WriteLine ("Output:{0}", result);
+			logger.Debug("* API Output:{0}", result);
 			return result;
 		}
 
