@@ -3,23 +3,24 @@ from unittest import TestCase
 from mock import Mock
 import csv
 from StringIO import StringIO
-
 from altair.app.ticketing.core.models import (
     Seat,
     AugusVenue,
     AugusSeat,
     CooperationTypeEnum,
     )
-
-from altair.app.ticketing.cooperation.augus import (
+from ..csveditor import (
     _sjis,
-    SeatAugusSeatPairs,
     AugusTable,
     ImporterFactory,
     AugusVenueImporter,
     CSVEditorFactory,
     AugusCSVEditor,
     )
+from ..utils import (
+    SeatAugusSeatPairs,
+    )
+
 
 class SamplePairsFactory(object):
     def create(self):
@@ -29,6 +30,8 @@ class SamplePairsFactory(object):
         augus_venue.save = Mock(return_value=None) # castration
         augus_venue.id = 1
         augus_venue.code = 555
+        augus_venue.version = 12
+        augus_venue.name = u'おーがす用会場'
         augus_seats = []
         for ii, seat in enumerate(seats):
             seat.save = Mock(return_value=None) # castration
@@ -43,11 +46,22 @@ class SamplePairsFactory(object):
                 augus_seat.id = ii
                 augus_seat.save = Mock(return_value=None) # castration
                 augus_seat.seat_id = seat.id
-                augus_seat.area_code = 999
-                augus_seat.info_code = 888
+                augus_seat.area_name = u'エリア名'                
+                augus_seat.info_name = u'付加情報名'                
+                augus_seat.doorway_name = u'出入口名'                
+                augus_seat.priority = 1
                 augus_seat.floor = '1'
                 augus_seat.column = u'あ'
                 augus_seat.num = u'{0}'.format(ii)
+                augus_seat.block = 2
+                augus_seat.coordy = 3
+                augus_seat.coordx = 4
+                augus_seat.coordy_whole = 5
+                augus_seat.coordx_whole = 6
+                augus_seat.area_code = 7
+                augus_seat.info_code = 8
+                augus_seat.doorway_code = 9
+                augus_seat.version = 12
                 augus_seat.augus_venue = augus_venue
                 augus_seats.append(augus_seat)
 
@@ -56,17 +70,27 @@ class SamplePairsFactory(object):
             augus_seat.id = ii
             augus_seat.save = Mock(return_value=None)
             augus_seat.seat_id = None
-            augus_seat.area_code = 999
-            augus_seat.info_code = 888
+            augus_seat.area_name = u'エリア名'                
+            augus_seat.info_name = u'付加情報名'                
+            augus_seat.doorway_name = u'出入口名'                
+            augus_seat.priority = 1
             augus_seat.floor = '1'
             augus_seat.column = u'あ'
             augus_seat.num = u'{0}'.format(ii)
+            augus_seat.block = 2
+            augus_seat.coordy = 3
+            augus_seat.coordx = 4
+            augus_seat.coordy_whole = 5
+            augus_seat.coordx_whole = 6
+            augus_seat.area_code = 999
+            augus_seat.info_code = 888
+            augus_seat.doorway_code = 9
+            augus_seat.version = 10
             augus_seats.append(augus_seat)
-
-        pairs = SeatAugusSeatPairs(venue_id)
-        pairs.load = Mock(return_value=None)
-        pairs._seats = seats
-        pairs._augus_seats = augus_seats
+            
+        pairs = SeatAugusSeatPairs()
+        pairs.get_seats = Mock(return_value=seats)
+        pairs.get_augus_seats = Mock(return_value=augus_seats)
         return pairs
 
 class AugusCSVImportTest(TestCase):
@@ -93,9 +117,11 @@ class AugusCSVImportTest(TestCase):
 
 class SeatAugusSeatPairsTest(TestCase):
     def test_venue_id(self):
-        venue_id = 1
-        pairs = SeatAugusSeatPairs(venue_id)
-        self.assertEqual(pairs.venue_id, venue_id)
+        venue = Mock()
+        venue.id = 1
+        pairs = SeatAugusSeatPairs()
+        pairs.load(venue)
+        self.assertEqual(pairs.venue_id, venue.id)
 
 class EncodeTest(TestCase):
     def test_sjis_encode(self):
@@ -120,11 +146,23 @@ class AugusTableTest(TestCase):
                         'group_l0_id',
                         'row_l0_id',
                         'augus_venue_code',
-                        'augus_seat_area_code',
-                        'augus_seat_info_code',
+                        'augus_venue_name',
+                        'augus_seat_area_name',
+                        'augus_seat_info_name',
+                        'augus_seat_doorway_name',
+                        'augus_seat_priority',
                         'augus_seat_floor',
                         'augus_seat_column',
-                        'augus_seat_num'
+                        'augus_seat_num',
+                        'augus_seat_block',
+                        'augus_seat_coordy',
+                        'augus_seat_coordx',
+                        'augus_seat_coordy_whole',
+                        'augus_seat_coordx_whole',
+                        'augus_seat_area_code',
+                        'augus_seat_info_code',
+                        'augus_seat_doorway_code',
+                        'augus_venue_version',
                         )
 
     def test_get_header(self):
@@ -132,7 +170,7 @@ class AugusTableTest(TestCase):
         header = table.get_header()
         for header_elm, header_tmpl in zip(header, self.header_templates):
             self.assertEqual(header_elm, header_tmpl,
-                             'invalid header: {0} (tempaltes={1})'\
+                             'invalid header: {0} (templates={1})'\
                              .format(header_elm, header_tmpl))
         self.assertEqual(len(header), len(self.header_templates),
                          'The number of header did not match.')
@@ -151,19 +189,27 @@ class AugusTableTest(TestCase):
             self.assertEqual(entry[5], _sjis(seat.row_l0_id))
             if augus_seat:
                 self.assertEqual(entry[6], augus_seat.augus_venue.code)
-                self.assertEqual(entry[7], augus_seat.area_code)
-                self.assertEqual(entry[8], augus_seat.info_code)
-                self.assertEqual(entry[9], _sjis(augus_seat.floor))
-                self.assertEqual(entry[10], _sjis(augus_seat.column))
-                self.assertEqual(entry[11], _sjis(augus_seat.num))
+                self.assertEqual(entry[7], _sjis(augus_seat.augus_venue.name))
+                self.assertEqual(entry[8], _sjis(augus_seat.area_name))
+                self.assertEqual(entry[9], _sjis(augus_seat.info_name))
+                self.assertEqual(entry[10], _sjis(augus_seat.doorway_name))                
+                self.assertEqual(entry[11], augus_seat.priority)
+                self.assertEqual(entry[12], _sjis(augus_seat.floor))
+                self.assertEqual(entry[13], _sjis(augus_seat.column))
+                self.assertEqual(entry[14], _sjis(augus_seat.num))
+                self.assertEqual(entry[15], augus_seat.block)
+                self.assertEqual(entry[16], augus_seat.coordy)
+                self.assertEqual(entry[17], augus_seat.coordx)
+                self.assertEqual(entry[18], augus_seat.coordy_whole)
+                self.assertEqual(entry[19], augus_seat.coordx_whole)
+                self.assertEqual(entry[20], augus_seat.area_code)
+                self.assertEqual(entry[21], augus_seat.info_code)
+                self.assertEqual(entry[22], augus_seat.doorway_code)
+                self.assertEqual(entry[23], augus_seat.version)
+                
             else:
-                self.assertEqual(entry[6], '')
-                self.assertEqual(entry[7], '')
-                self.assertEqual(entry[8], '')
-                self.assertEqual(entry[9], '')
-                self.assertEqual(entry[10], '')
-                self.assertEqual(entry[11], '')
-
+                for ii in range(6, 24):
+                    self.assertEqual(entry[ii], '')
 
 class AugusVenueImporterTest(TestCase):
     def test_import_(self):
