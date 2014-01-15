@@ -92,40 +92,36 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 </div>
 <div style="clear: both;"></div>
 
-<div class="tabbable tabs-below tabs-above" id="seat-allocation-tab">
-  <div class="tab-content"  id="seat-allocation-tab-content">
-    <div class="tab-pane active" id="map">
-      <div class="container-fluid">
-        <div class="row-fluid">
-          <%vv:venueeditor data_source="${data_source}">
-            <%def name="toolbar_extra()">
-            <input id="show-vacant-btn" type="button" class="btn btn-info" style="margin-left: 15px;" value="空席のみ表示" />
-            <script type="text/javascript">
-              $('#show-vacant-btn').click(function() {showVacantSeatMode();});
-            </script>
-            <div style="float:right">
-              <div class="venue-editor-main-side-toggle"></div>
-              <button class="btn btn-primary action-openOrderForm">座席指定</button>
-            </div>
-            </%def>
-            <%def name="venue_editor_side_extra()">
-              <ul class="nav nav-tabs">
-                <li class="active"><a href="#venue-editor-main-side-tab1" data-toggle="tab">この座席の予約情報</a></li>
-                <a class="close venue-editor-main-side-close" style="margin: 5px 5px 0 0;">×</a>
-                <script type="text/javascript">
-                  $('.venue-editor-main-side-close').click(function() {
-                    venueEditorSide.css('width', '0');
-                    venueEditorRoot.css('width', '100%');
-                    readjustMap();
-                  });
-                </script>
-              </ul>
-              <div class="tab-content" style="overflow: visible;">
-                <div class="tab-pane active" id="venue-editor-main-side-tab1"></div>
-              </div>
-            </%def>
+<div class="row-fluid">
+  <%vv:venueeditor data_source="${data_source}">
+    <%def name="toolbar_extra()">
+    <input id="show-vacant-btn" type="button" class="btn btn-info" style="margin-left: 15px;" value="空席のみ表示" />
+    <script type="text/javascript">
+      $('#show-vacant-btn').click(function() {showVacantSeatMode();});
+    </script>
+    <div style="float:right">
+      <div class="btn venue-editor-main-side-toggle">予約情報</div>
+      <button class="btn btn-primary action-openOrderForm">座席指定</button>
+    </div>
+    </%def>
+    <%def name="venue_editor_side_extra()">
+      <ul class="nav nav-tabs">
+	<li class="active"><a href="#venue-editor-main-side-tab1" data-toggle="tab">予約情報</a></li>
+	<a class="close venue-editor-main-side-close" style="margin: 5px 5px 0 0;">×</a>
+	<script type="text/javascript">
+	  $('.venue-editor-main-side-close').click(function() {
+	    venueEditorSide.css('width', '0');
+	    venueEditorRoot.css('width', '100%');
+	    readjustMap();
+	  });
+	</script>
+      </ul>
+      <div class="tab-content" style="overflow: visible;">
+	<div class="tab-pane active" id="venue-editor-main-side-tab1"></div>
+      </div>
+    </%def>
 
-            <%def name="post()">
+    <%def name="post()">
 <script type="text/javascript">
   var callbackName = ${json.dumps(callback_name)|n};
   var appletCodeBase = ${json.dumps(request.application_url)|n};
@@ -343,7 +339,6 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       dataType: 'html',
       success: function(data) {
         tab1.empty().append(data);
-        if (venueEditorSide.width() <= 0) $('.venue-editor-main-side-toggle').click();
       },
       error: function(xhr, text) {
         var responseText = JSON.parse(xhr.responseText);
@@ -651,8 +646,8 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     getSalesSummary();
   });
 </script>
-  </%def>
-</%vv:venueeditor>
+    </%def>
+  </%vv:venueeditor>
 </div>
 
 <div>

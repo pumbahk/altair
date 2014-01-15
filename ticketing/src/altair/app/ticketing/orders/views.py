@@ -1542,6 +1542,9 @@ class OrdersReserveView(BaseView):
                 if op_data.get('id') == op.id: break
             logger.info('op_data %s' % op_data)
 
+            if op_data is None:
+                raise HTTPBadRequest(body=json.dumps({'message':u'不正なデータです'}))
+
             # 商品変更
             product = Product.get(int(op_data.get('product_id')))
             eop.price = int(op_data.get('price'))
@@ -1555,6 +1558,9 @@ class OrdersReserveView(BaseView):
                 for opi_data in op_data.get('ordered_product_items'):
                     if opi_data.get('id') == opi.id: break
                 logger.info('opi_data %s' % opi_data)
+
+                if opi_data is None:
+                    raise HTTPBadRequest(body=json.dumps({'message':u'不正なデータです'}))
 
                 # 座席開放
                 eopi.release()

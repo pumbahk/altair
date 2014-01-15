@@ -80,29 +80,25 @@ span.editable {
 </script>
 
 <%include file="./_detail_table.html" args="expanded=false" />
-<div class="tabbable" id="seat-allocation-tab">
-  <div class="tab-content" id="seat-allocation-tab-content">
-    <div class="tab-pane active" id="map">
-      <div class="container-fluid">
-        <div class="row-fluid">
-          <%vv:venueeditor data_source="${data_source}">
-            <%def name="toolbar_extra()">
-              <div style="float:right">
-                <input type="button" class="btn venue-editor-main-side-toggle" value="配席テーブル表示" />
-                <a name="save" href="javascript:saveStocks();" class="btn btn-primary">保存する</a>
-              </div>
-            </%def>
-            <%def name="venue_editor_side_extra()">
-              <ul class="nav nav-tabs">
-                <li class="active"><a href="#venue-editor-main-side-tab1" data-toggle="tab">配席</a></li>
-                <li><a href="#venue-editor-main-side-tab2" data-toggle="tab">選択座席<span class="selection-count badge"></span></a></li>
-              </ul>
-              <div class="tab-content" style="overflow: visible;">
-                <div class="tab-pane active" id="venue-editor-main-side-tab1"></div>
-                <div class="tab-pane" id="venue-editor-main-side-tab2"></div>
-              </div>
-            </%def>
-            <%def name="post()">
+<div class="row-fluid">
+  <%vv:venueeditor data_source="${data_source}">
+    <%def name="toolbar_extra()">
+      <div style="float:right">
+	<input type="button" class="btn venue-editor-main-side-toggle" value="配席テーブル表示" />
+	<a name="save" href="javascript:saveStocks();" class="btn btn-primary">保存する</a>
+      </div>
+    </%def>
+    <%def name="venue_editor_side_extra()">
+      <ul class="nav nav-tabs">
+	<li class="active"><a href="#venue-editor-main-side-tab1" data-toggle="tab">配席</a></li>
+	<li><a href="#venue-editor-main-side-tab2" data-toggle="tab">選択座席<span class="selection-count badge"></span></a></li>
+      </ul>
+      <div class="tab-content" style="overflow: visible;">
+	<div class="tab-pane active" id="venue-editor-main-side-tab1"></div>
+	<div class="tab-pane" id="venue-editor-main-side-tab2"></div>
+      </div>
+    </%def>
+    <%def name="post()">
 <script type="text/javascript">
 
 function deepClone(o) {
@@ -566,12 +562,8 @@ callbacks.select = function (viewer, selection) {
   $('span.selection-count').text(selection_set.length);
 };
 </script>
-            </%def>
-          </%vv:venueeditor>
-        </div>
-      </div>
-    </div>
-  </div>
+    </%def>
+  </%vv:venueeditor>
 </div>
 
 <div>
