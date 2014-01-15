@@ -333,6 +333,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
   };
 
   callbacks.click = function (seat) {
+    if (!$('.venue-editor-main-side-toggle').hasClass('active')) return;
     $.ajax({
       url: '${request.route_path('orders.api.get.html')}',
       data: {'l0_id':seat.id, 'performance_id':${performance.id}},

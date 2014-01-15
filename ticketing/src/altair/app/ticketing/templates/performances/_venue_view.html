@@ -192,12 +192,14 @@ $('#menu-toggle').click(function() {
   }, 100);
 });
 $('.venue-editor-main-side-toggle').click(function() {
-  if (venueEditorSide.width() > 0) {
+  if ($(this).hasClass('active')) {
     venueEditorSide.css('width', '0%');
     venueEditorRoot.css('width', '100%');
+    $(this).removeClass('active');
   } else {
     venueEditorSide.css('width', '35%');
     venueEditorRoot.css('width', '65%');
+    $(this).addClass('active');
   }
   readjustMap();
 });
