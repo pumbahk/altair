@@ -20,7 +20,7 @@ namespace QR.presentation.cli
 			ICase result;
 			var ev = new QRInputEvent ();
 			do {		
-				Console.WriteLine ("------QRCode input unit select: 1:qr, 2:orderno-----");
+				Console.WriteLine ("------QRCode input unit select: 1:qr, 2:order_no-----");
 				ev.InputUnitString = Console.ReadLine ();
 				result = await RequestBroker.Submit (ev);
 				ev.HandleEvent ();

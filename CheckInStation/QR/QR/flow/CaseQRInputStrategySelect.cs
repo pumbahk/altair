@@ -30,7 +30,7 @@ namespace QR
 			switch (InputUnit) {
 			case InputUnit.qrcode:
 				return new CaseQRCodeInput (Resource);
-			case InputUnit.orderno:
+			case InputUnit.order_no:
 				throw new NotImplementedException ();
 			default:
 				throw new NotImplementedException ();

@@ -32,6 +32,7 @@ namespace QR
 				var responseJSON = Testing.ReadFromEmbeddedFile ("QR.tests.misc.svgone.json");
 				IResource resource = new Resource () {
 					HttpWrapperFactory = new FakeHttpWrapperFactory<HttpWrapper> (responseJSON),
+					TicketImagePrinting = new FakeTicketImagePrinting()
 				};
 				resource.SVGImageFetcher = new MockSVGImage (resource);
 

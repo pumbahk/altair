@@ -138,6 +138,10 @@
     <Compile Include="models\ResultStatusCollector.cs" />
     <Compile Include="tests\models\ResultStatusCollectorTests.cs" />
     <Compile Include="models\TicketDataManager.cs" />
+    <Compile Include="models\TicketDataCollection.cs" />
+    <Compile Include="models\TicketDataCollectionFetcher.cs" />
+    <Compile Include="models\FakeTicketImagePrinting.cs" />
+    <Compile Include="models\ITicketImagePrinting.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

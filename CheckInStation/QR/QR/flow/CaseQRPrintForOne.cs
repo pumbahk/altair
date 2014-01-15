@@ -17,12 +17,13 @@ namespace QR
 		public CaseQRPrintForOne (IResource resource, TicketData ticketdata) : base (resource)
 		{
 			TicketData = ticketdata;
+			StatusCollector = new ResultStatusCollector<string> ();
 		}
 
 		public override async Task<bool> VerifyAsync ()
 		{
 			try {
-				ResultTuple<string, List<byte[]>> result = await Resource.SVGImageFetcher.FetchImageAsync (this.TicketData);
+				ResultTuple<string, List<byte[]>> result = await Resource.SVGImageFetcher.FetchImageForOneAsync (this.TicketData);
 				if (!result.Status) {
 					//modelからpresentation層へのメッセージ
 					PresentationChanel.NotifyFlushMessage ((result as Failure<string,List<byte[]>>).Result);

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace QR
 {
-	public class TicketImagePrinting
+	public class TicketImagePrinting :ITicketImagePrinting
 	{
 		public IResource Resource { get; set; }
 

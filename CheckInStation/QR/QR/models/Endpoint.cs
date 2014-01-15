@@ -15,6 +15,8 @@ namespace QR
 		[DataMember]
 		internal string QRFetchData;
 		[DataMember]
+		internal string DataCollectionFetchData;
+		[DataMember]
 		internal string QRSvgOne;
 		[DataMember]
 		internal string QRSvgAll;
@@ -37,6 +39,7 @@ namespace QR
 			this.QRSvgAll = EndPoint.asURL (json.qr_svgsource_all);
 			this.ImageFromSvg = EndPoint.asURL (json.image_from_svg);
 			this.UpdatePrintedAt = EndPoint.asURL (json.qr_update_printed_at);
+			this.DataCollectionFetchData = EndPoint.asURL (json.qr_ticketdata_collection);
 		}
 	}
 }

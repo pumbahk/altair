@@ -134,7 +134,7 @@ namespace QR
 		public void Test__PrintForAll__Failure__DisplayError ()
 		{
 			var manager = new FlowManager ();
-			var startpoint = new CaseQRPrintForAll (new Resource ());
+			var startpoint = new CaseQRPrintForAll (new Resource (),null);
 			FakeFlow target = new FakeFlow (manager, startpoint);
 
 			var t = Task.Run (async () => {

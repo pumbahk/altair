@@ -7,7 +7,7 @@ namespace QR
 	{
 		IDataFetcher<string, TicketData> TicketDataFetcher { get; set; }
 		SVGImageFetcher SVGImageFetcher {get;set;}
-		TicketImagePrinting TicketImagePrinting {get;set;}
+		ITicketImagePrinting TicketImagePrinting {get;set;}
 		TicketDataManager TicketDataManager {get;set;}
 	}
 

@@ -35,7 +35,7 @@ namespace QR
 			case PrintUnit.one:
 				return new CaseQRPrintForOne (Resource, TicketData);
 			case PrintUnit.all:
-				return new CaseQRConfirmForAll (Resource);
+				return new CaseQRConfirmForAll (Resource, TicketData);
 			default:
 				throw new NotImplementedException ();
 			}

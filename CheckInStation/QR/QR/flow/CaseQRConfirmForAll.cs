@@ -7,13 +7,16 @@ namespace QR
 	/// </summary>
 	public class CaseQRConfirmForAll: AbstractCase,ICase
 	{
-		public CaseQRConfirmForAll (IResource resource) : base (resource)
+		public TicketData TicketData { get; set; }
+
+		public CaseQRConfirmForAll (IResource resource, TicketData ticketdata) : base (resource)
 		{
+			TicketData = ticketdata;
 		}
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			return new CaseQRPrintForAll (Resource);
+			return new CaseQRPrintForAll (Resource,TicketData);
 		}
 	}
 }

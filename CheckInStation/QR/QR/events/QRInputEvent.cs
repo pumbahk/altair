@@ -5,7 +5,7 @@ namespace QR
 	public enum InputUnit
 	{
 		qrcode = 1,
-		orderno = 2
+		order_no = 2
 	}
 
 	public enum PrintUnit

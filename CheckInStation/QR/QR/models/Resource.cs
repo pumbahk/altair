@@ -50,7 +50,7 @@ namespace QR
 
 		public SVGImageFetcher SVGImageFetcher{ get; set; }
 
-		public TicketImagePrinting TicketImagePrinting{ get; set; }
+		public ITicketImagePrinting TicketImagePrinting{ get; set; }
 
 		public EndPoint EndPoint { get; set; }
 
