@@ -1,7 +1,9 @@
 #-*- coding: utf-8 -*-
 from altair.app.ticketing import newRootFactory
 from .resources import (
+    VenueResource,
     AugusVenueResource,
+    AugusVenueListResource,
     )
 
 # /cooperation/augus/event/event_id
@@ -16,15 +18,18 @@ from .resources import (
 
 ROUTE_URL_RESOURCE = {
     'augus.test': ('/test', None),
-    'augus.venue.index': ('/venue/{venue_id}', AugusVenueResource),
-    'augus.venue.download': ('/venue/{venue_id}/download', AugusVenueResource),
-    'augus.venue.upload': ('/venue/{venue_id}/upload', AugusVenueResource),
-    
-    'augus.augus_venue.index.': ('/augus_venue/{augus_venue_code}', AugusVenueResource),
-    'augus.augus_venue.new.': ('/augus_venue/{augus_venue_code}/new', AugusVenueResource),            
-    'augus.augus_venue.show.': ('/augus_venue/{augus_venue_code}/version/{version}', AugusVenueResource),
-    'augus.augus_venue.download.': ('/augus_venue/{augus_venue_code}/version/{version}/download', AugusVenueResource),
-    'augus.augus_venue.upload.': ('/augus_venue/{augus_venue_code}/version/{version}/upload', AugusVenueResource),
+    'augus.venue.index': ('/venues/{venue_id}', VenueResource),
+    'augus.venue.download': ('/venues/{venue_id}/download', VenueResource),
+    'augus.venue.upload': ('/venues/{venue_id}/upload', VenueResource),
+    'augus.augus_venue.index': ('/augus_venues/{augus_venue_code}',
+                                AugusVenueListResource),
+    #'augus.augus_venue.new': ('/augus_venue/{augus_venue_code}/new', AugusVenueResource),            
+    'augus.augus_venue.show': ('/augus_venues/{augus_venue_code}/version/{augus_venue_version}',
+                               AugusVenueResource),
+    'augus.augus_venue.download': ('/augus_venues/{augus_venue_code}/version/{augus_venue_version}/download',
+                                   AugusVenueResource),
+    'augus.augus_venue.upload': ('/augus_venues/{augus_venue_code}/version/{augus_venue_version}/upload',
+                                 AugusVenueResource),
     }
     
 def add_routes(config, route_url_resource):
