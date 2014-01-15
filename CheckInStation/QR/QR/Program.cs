@@ -2,15 +2,27 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-
 using QR.message;
+using NLog;
+
 namespace QR
 {
 	class MainClass
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
+
 		public static void Main (string[] args)
 		{
 			Console.WriteLine ("Hello World!");
+
+			//log sample
+			logger.Trace("Sample trace message");
+			logger.Debug("Sample debug message");
+			logger.Info("Sample informational message");
+			logger.Warn("Sample warning message");
+			logger.Error("Sample error message");
+			logger.Fatal("Sample fatal error message");
+			
 			//var t = GetJsonData ();
 			var app = new Application ();
 			var t = app.Run (new CaseAuthInput (app.Resource));
