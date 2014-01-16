@@ -1,6 +1,5 @@
 using System;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using System.Threading.Tasks;
 
 namespace QR
@@ -55,16 +54,16 @@ namespace QR
 			var t = Task.Run (async () => {
 				// start
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseAuthInput), Is.True);
+				Assert.IsInstanceOf<CaseAuthInput>(target.Case);
 
 				// 認証処理
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseAuthDataFetch), Is.True);
+				Assert.IsInstanceOf<CaseAuthDataFetch>(target.Case);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseInputStrategySelect), Is.True);
+				Assert.IsInstanceOf<CaseInputStrategySelect>(target.Case);
 			});
 			t.Wait ();
 		}
@@ -83,7 +82,7 @@ namespace QR
 				(target.Case as CaseInputStrategySelect).Unit = InputUnit.qrcode;
 
 				target = await target.Forward () as FakeFlow;
-				Assert.That ((target.Case is CaseQRCodeInput), Is.True);
+				Assert.IsInstanceOf<CaseQRCodeInput>(target.Case);
 			});
 			t.Wait ();
 		}
@@ -103,7 +102,7 @@ namespace QR
 				(target.Case as CaseInputStrategySelect).Unit = InputUnit.order_no;
 
 				target = await target.Forward () as FakeFlow;
-				Assert.That ((target.Case is CaseOrdernoOrdernoInput), Is.True);
+				Assert.IsInstanceOf<CaseOrdernoOrdernoInput>(target.Case);
 			});
 			t.Wait ();
 		}
@@ -111,38 +110,47 @@ namespace QR
 		/***********
 		 * Orderno *
 		 ***********/
-		[Test, Description ("注文番号読み込み -ok-> 電話番号読み込み -ok-> 注文番号データのverify -ok-> Orderno表示(all) -ok-> 印刷(all) -ok> 発券しました")]
+		[Test, Description ("注文番号読み込み -ok-> 電話番号読み込み -ok-> 注文番号データのverify -ok-> Orderno表示(all) -ok-> 印刷(all) -ok-> 発券しました -ok-> 注文番号読み込み")]
 		public void TestItForOrderno ()
 		{
 			var manager = new FlowManager ();
 			var startpoint = new CaseOrdernoOrdernoInput (new Resource ());
 			FakeFlow target = new FakeFlow (manager, startpoint);
-
+			// これは遷移時にすでに設定されている
+			target.GetFlowDefinition().CurrentInputUnit = InputUnit.order_no;
+			
 			var t = Task.Run (async () => {
 				// start 
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseOrdernoOrdernoInput), Is.True);
+				Assert.IsInstanceOf<CaseOrdernoOrdernoInput>(target.Case);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseOrdernoTelInput), Is.True);
+				Assert.IsInstanceOf<CaseOrdernoTelInput>(target.Case);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseOrdernoVerifyRequestData), Is.True);
+				Assert.IsInstanceOf<CaseOrdernoVerifyRequestData>(target.Case);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseOrdernoConfirmForAll), Is.True);
+				Assert.IsInstanceOf<CaseOrdernoConfirmForAll>(target.Case);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
 				Assert.That ((target.Case is CasePrintForOne), Is.False);
-				Assert.That ((target.Case is CasePrintForAll), Is.True);
+				Assert.IsInstanceOf<CasePrintForAll>(target.Case);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CasePrintFinish), Is.True);
+				Assert.IsInstanceOf<CasePrintFinish>(target.Case);
+
+				// Finish. after redirect
+				Assert.AreSame(InputUnit.order_no.ToString(), target.GetFlowDefinition().CurrentInputUnit.ToString());
+
+				target = await target.Forward () as FakeFlow;
+				target.VerifyStatus = true;
+				Assert.IsInstanceOf<CaseOrdernoOrdernoInput>(target.Case);
 			});
 			t.Wait ();
 		}
@@ -151,34 +159,43 @@ namespace QR
 		 * QR      *
 		 ***********/
 
-		[Test, Description ("QR読み込み -ok-> QRからデータ取得中 -ok-> QR表示(1枚) -ok-> 印刷(1枚) -ok> 発券しました")]
+		[Test, Description ("QR読み込み -ok-> QRからデータ取得中 -ok-> QR表示(1枚) -ok-> 印刷(1枚) -ok> 発券しました -ok-> QR読み込み")]
 		public void TestItForOne ()
 		{
 			var manager = new FlowManager ();
 			var startpoint = new CaseQRCodeInput (new Resource ());
 			FakeFlow target = new FakeFlow (manager, startpoint);
+			// これは遷移時にすでに設定されている
+			target.GetFlowDefinition().CurrentInputUnit = InputUnit.qrcode;
 
 			var t = Task.Run (async () => {
 				// start 
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseQRCodeInput), Is.True);
+				Assert.IsInstanceOf<CaseQRCodeInput>(target.Case);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseQRDataFetch), Is.True);
+				Assert.IsInstanceOf<CaseQRDataFetch>(target.Case);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseQRConfirmForOne), Is.True);
+				Assert.IsInstanceOf<CaseQRConfirmForOne>(target.Case);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CasePrintForOne), Is.True);
+				Assert.IsInstanceOf<CasePrintForOne>(target.Case);
 				Assert.That ((target.Case is CasePrintForAll), Is.False);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CasePrintFinish), Is.True);
+				Assert.IsInstanceOf<CasePrintFinish>(target.Case);
+
+				// Finish. after redirect
+				Assert.AreSame(InputUnit.qrcode.ToString(), target.GetFlowDefinition().CurrentInputUnit.ToString());
+
+				target = await target.Forward () as FakeFlow;
+				target.VerifyStatus = true;
+				Assert.IsInstanceOf<CaseQRCodeInput>(target.Case);
 			});
 			t.Wait ();
 		}
@@ -192,7 +209,7 @@ namespace QR
 			var t = Task.Run (async () => {
 				target.VerifyStatus = false;
 				target = await target.Forward () as FakeFlow;
-				Assert.That ((target.Case is CaseFailureRedirect), Is.True);
+				Assert.IsInstanceOf<CaseFailureRedirect>(target.Case);
 			});
 			t.Wait ();
 		}
@@ -207,7 +224,7 @@ namespace QR
 			var t = Task.Run (async () => {
 				target.VerifyStatus = false;
 				target = await target.Forward () as FakeFlow;
-				Assert.That ((target.Case is CaseFailureRedirect), Is.True);
+				Assert.IsInstanceOf<CaseFailureRedirect>(target.Case);
 			});
 			t.Wait ();
 		}
@@ -222,44 +239,54 @@ namespace QR
 			var t = Task.Run (async () => {
 				target.VerifyStatus = false;
 				target = await target.Forward () as FakeFlow;
-				Assert.That ((target.Case is CaseFailureRedirect), Is.True);
+				Assert.IsInstanceOf<CaseFailureRedirect>(target.Case);
 			});
 			t.Wait ();
 		}
 
-		[Test,Description ("QR読み込み -ok-> QRからデータ取得中 -ok-> QR表示(1枚)[すべて印刷選択] -ok-> QR表示(all) -ok-> 印刷(all) -ok> 発券しました")]
+		[Test,Description ("QR読み込み -ok-> QRからデータ取得中 -ok-> QR表示(1枚)[すべて印刷選択] -ok-> QR表示(all) -ok-> 印刷(all) -ok> 発券しました -ok-> QR読み込み")]
 		public void TestItForAll ()
 		{
 			var manager = new FlowManager ();
 			var startpoint = new CaseQRCodeInput (new Resource ());
 			FakeFlow target = new FakeFlow (manager, startpoint);
+			// これは遷移時にすでに設定されている
+			target.GetFlowDefinition().CurrentInputUnit = InputUnit.qrcode;
+
 			var t = Task.Run (async () => {
 				// start 
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseQRCodeInput), Is.True);
+				Assert.IsInstanceOf<CaseQRCodeInput>(target.Case);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseQRDataFetch), Is.True);
+				Assert.IsInstanceOf<CaseQRDataFetch>(target.Case);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseQRConfirmForOne), Is.True);
+				Assert.IsInstanceOf<CaseQRConfirmForOne>(target.Case);
 
 				(target.Case as CaseQRConfirmForOne).Unit = PrintUnit.all;
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseQRConfirmForAll), Is.True);
+				Assert.IsInstanceOf<CaseQRConfirmForAll>(target.Case);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
 				Assert.That ((target.Case is CasePrintForOne), Is.False);
-				Assert.That ((target.Case is CasePrintForAll), Is.True);
+				Assert.IsInstanceOf<CasePrintForAll>(target.Case);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CasePrintFinish), Is.True);
+				Assert.IsInstanceOf<CasePrintFinish>(target.Case);
+
+				// Finish. after redirect
+				Assert.AreSame(InputUnit.qrcode.ToString(), target.GetFlowDefinition().CurrentInputUnit.ToString());
+
+				target = await target.Forward () as FakeFlow;
+				target.VerifyStatus = true;
+				Assert.IsInstanceOf<CaseQRCodeInput>(target.Case);
 			});
 			t.Wait ();
 		}

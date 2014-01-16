@@ -30,15 +30,7 @@ namespace QR
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			switch (Unit) {
-			case InputUnit.qrcode:
-				return new CaseQRCodeInput (Resource);
-			case InputUnit.order_no:
-				return new CaseOrdernoOrdernoInput (Resource);
-			default:
-				logger.Info ("InputUnit: {0} is unknown value. default={1} is selected", Unit.ToString(), default(InputUnit));
-				return new CaseQRCodeInput (Resource);
-			}
+			return flow.GetFlowDefinition ().AfterSelectInputStrategy (this.Resource, this.Unit);
 		}
 
 		public override ICase OnFailure (IFlow flow)
