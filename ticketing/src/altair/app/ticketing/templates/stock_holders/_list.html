@@ -41,7 +41,7 @@
         <td><a href="${request.route_path('accounts.show', account_id=stock_holder.account_id)}"><span id="account_id" value="${stock_holder.account_id}">${stock_holder.account.name}</span></a></td>
         <td>
           %if stock_holder.is_putback_target:
-          <a href="javascript:view_putback_modal('${stock_holder.id}');">返券</a>
+          <a href="${request.route_path('cooperation.putback', event_id=stock_holder.event_id)}">返券</a>
           %endif
         </td>
       </tr>
