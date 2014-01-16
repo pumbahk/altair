@@ -34,16 +34,34 @@ namespace QR
 		[DataMember]
 		internal string seat_name;
 		[DataMember]//認証情報
-		internal string secret;
+		internal string secret; //defaultはvalid
+		[DataMember]
+		internal string status;
 
-		public TicketData(dynamic json)
+		public TicketData (dynamic json)
 		{
 			ordered_product_item_token_id = json.ordered_product_item_token_id;
 			order_no = json.order_no;
 			seat_id = json.seat_id;
 			seat_name = json.seat_name;
 			secret = json.secret;
+			status = json.status;
 			additional = new AdditionalData (json);
+		}
+
+		public bool Verify ()
+		{
+			/*
+			 * - キャンセル済み
+			 * - 印刷済み
+			 * - 何かわからない状況で失敗(こちらはOnFailure()になるのでOK)
+			 */ 
+			return this.status == "valid"; //fmm;
+		}
+
+		public string StatusMessage(IResource resource)
+		{
+			return this.status;
 		}
 	}
 }

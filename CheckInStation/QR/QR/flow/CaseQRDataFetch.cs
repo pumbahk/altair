@@ -42,7 +42,12 @@ namespace QR
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			return new CaseQRConfirmForOne (Resource, TicketData);
+			if (this.TicketData.Verify ()) {
+				return new CaseQRConfirmForOne (Resource, TicketData);
+			} else {
+				logger.Error ("dataError:"); //TODO:まじめに処理書く
+				return base.OnFailure (flow);
+			}
 		}
 	}
 }
