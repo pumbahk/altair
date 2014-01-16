@@ -32,10 +32,13 @@ namespace QR
 		{
 			this.RequestBroker.SetStartCase (case_);
 			var p = new QR.presentation.cli.AuthInput (RequestBroker, case_); //todo:change
-			ICase qrCase = await p.Run ();
-			var q = new QR.presentation.cli.QRInput (RequestBroker, qrCase);
-			ICase svgCase = await q.Run ();
+			ICase selectCase = await p.Run ();
+			var q = new QR.presentation.cli.SelectInputStrategy (RequestBroker, selectCase);
+			ICase qrCase = await q.Run ();
+			var r = new QR.presentation.cli.QRInput (RequestBroker, qrCase);
+			while (true) {
+				ICase svgCase = await r.Run ();
+			}
 		}
 	}
 }
-

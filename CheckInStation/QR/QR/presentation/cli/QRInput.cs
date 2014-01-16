@@ -19,12 +19,6 @@ namespace QR.presentation.cli
 		{
 			ICase result;
 			var ev = new QRInputEvent ();
-			do {		
-				Console.WriteLine ("------QRCode input unit select: 0:qr, 1:order_no-----");
-				ev.InputUnitString = Console.ReadLine ();
-				result = await RequestBroker.Submit (ev);
-				ev.HandleEvent ();
-			} while(ev.Status == InternalEventStaus.failure);
 			do {
 				Console.WriteLine ("------QRCode input---------");
 				Console.Write ("qrcode:");
@@ -44,6 +38,10 @@ namespace QR.presentation.cli
 				Console.WriteLine ("-------QRCode printing one (fetch *svg data*)-----");
 				result = await RequestBroker.Submit (ev);
 				ev.HandleEvent ();
+
+				Console.WriteLine ("-------QRCode after printed at--------------");
+				result = await RequestBroker.Submit (ev);
+				ev.HandleEvent ();
 				return result;
 			} else if (result is CaseQRConfirmForAll) {
 				Console.WriteLine ("-------QRCode Confirm All-----");
@@ -51,6 +49,10 @@ namespace QR.presentation.cli
 				ev.HandleEvent ();
 				Console.WriteLine ("-------QRCode printing all (fetch *svg data*)-----");
 				result = await RequestBroker.Submit (ev);
+
+				Console.WriteLine ("-------QRCode after printed at--------------");
+				result = await RequestBroker.Submit (ev);
+				ev.HandleEvent ();
 				return result;
 			} else {
 				throw new NotImplementedException ();

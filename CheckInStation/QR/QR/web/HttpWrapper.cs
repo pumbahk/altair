@@ -14,7 +14,7 @@ namespace QR
 		public async Task<string> ReadAsStringAsync (HttpContent content)
 		{
 			var result = await content.ReadAsStringAsync ();
-			logger.Debug("* API Output:{0}", result);
+			logger.Trace("* API Output:{0}", result);
 			return result;
 		}
 
@@ -86,7 +86,7 @@ namespace QR
 			var url = this.UrlBuilder.Build ();
 
 			var result = await client.GetStringAsync (url);
-			logger.Debug("* API Output:{0}", result);
+			logger.Trace("* API Output:{0}", result);
 			return result;
 		}
 

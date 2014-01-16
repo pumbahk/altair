@@ -143,6 +143,8 @@
     <Compile Include="models\FakeTicketImagePrinting.cs" />
     <Compile Include="models\ITicketImagePrinting.cs" />
     <Compile Include="tests\case\CaseRequestingJSONTests.cs" />
+    <Compile Include="presentation\cli\SelectInputStrategy.cs" />
+    <Compile Include="events\SelectInputStragetyEvent.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

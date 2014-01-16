@@ -20,7 +20,7 @@ namespace QR
 		public override Task<bool> VerifyAsync ()
 		{
 			return Task.Run (() => {
-				var subject = PresentationChanel as QRInputEvent;
+				var subject = PresentationChanel as SelectInputStragetyEvent;
 				InputUnit unit;
 				var status = subject.TryParseEnum<InputUnit> (subject.InputUnitString, out unit);
 				subject.InputUnit = Unit = unit;
