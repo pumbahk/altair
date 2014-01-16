@@ -7,11 +7,11 @@ namespace QR
 	/// <summary>
 	/// Case QR print finish. 発券しました
 	/// </summary>
-	public class CaseQRPrintFinish: AbstractCase,ICase
+	public class CasePrintFinish: AbstractCase,ICase
 	{
 		public ResultStatusCollector<string> StatusCollector { get; set; }
 
-		public CaseQRPrintFinish (IResource resource, ResultStatusCollector<string> statusCollector) : base (resource)
+		public CasePrintFinish (IResource resource, ResultStatusCollector<string> statusCollector) : base (resource)
 		{
 			StatusCollector = statusCollector;
 		}
@@ -25,7 +25,7 @@ namespace QR
 		public override ICase OnSuccess (IFlow flow)
 		{
 			flow.Finish ();
-			return new CaseQRCodeInput (Resource); // TODO: ここトップに戻るが良いんだろうか
+			return flow.GetFlowDefinition ().AfterPrintFinish (Resource);
 		}
 	}
 }

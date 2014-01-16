@@ -58,7 +58,7 @@ namespace QR
 		public void Refresh ()
 		{
 			//void is not good.
-			undoStack = new Stack<IFlow> ();
+			undoStack.Clear ();
 		}
 
 		public virtual bool OnFinish (IFlow flow)

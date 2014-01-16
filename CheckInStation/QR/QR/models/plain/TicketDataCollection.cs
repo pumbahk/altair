@@ -24,9 +24,8 @@ namespace QR
 		[DataMember]
 		internal TicketDataMinumum[] collection;
 
-		public TicketDataCollection (dynamic json, TicketData tdata)
-		{
-			this.tdata = tdata;
+		public void ConfigureCollection (dynamic json)
+		{			
 			var coll = new List<TicketDataMinumum> ();
 			foreach (var sub in json.collection) {
 				coll.Add (new TicketDataMinumum () {
@@ -36,6 +35,12 @@ namespace QR
 				});
 			}
 			this.collection = coll.ToArray ();
+		}
+				
+		public TicketDataCollection (dynamic json)
+		{
+			this.tdata = new TicketData (json);
+			this.ConfigureCollection (json);
 		}
 	}
 }

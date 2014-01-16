@@ -6,29 +6,29 @@ using NLog;
 namespace QR
 {
 	/// <summary>
-	/// Case QR confirm for all. QR表示(all)
+	/// Case Orderno confirm for all. Orderno表示(all)
 	/// </summary>
 	// 
-	public class CaseQRConfirmForAll: AbstractCase,ICase
+	public class CaseOrdernoConfirmForAll: AbstractCase,ICase
 	{
 		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
-		public TicketData TicketData { get; set; }
+		public OrdernoRequestData RequestData { get; set; }
 
-		public TicketDataCollection TicketDataCollection { get; set; }
+		public TicketDataCollection Collection { get; set; }
 
-		public CaseQRConfirmForAll (IResource resource, TicketData ticketdata) : base (resource)
+		public CaseOrdernoConfirmForAll (IResource resource, OrdernoRequestData requestData) : base (resource)
 		{
-			TicketData = ticketdata;
+			this.RequestData = requestData;
 		}
 
 		public override async Task<bool> VerifyAsync ()
 		{
 			try {
-				var data = new TicketDataCollectionRequestData(){order_no = TicketData.order_no, secret = TicketData.secret};
+				var data = new TicketDataCollectionRequestData (){ order_no = this.RequestData.order_no, secret = this.RequestData.secret };
 				ResultTuple<string, TicketDataCollection> result = await Resource.TicketDataCollectionFetcher.FetchAsync (data);
 				if (result.Status) {
-					this.TicketDataCollection = result.Right;
+					this.Collection = result.Right;
 					return true;
 				} else {
 					//modelからpresentation層へのメッセージ
@@ -44,7 +44,7 @@ namespace QR
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			return new CasePrintForAll (Resource, TicketDataCollection);
+			return new CasePrintForAll (Resource, this.Collection);
 		}
 	}
 }

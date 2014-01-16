@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Numerics;
 using System.Threading.Tasks;
 using NLog;
 using Codeplex.Data;
@@ -52,7 +51,7 @@ namespace QR
 		{
 			var json = DynamicJson.Parse (response); //throwable System.xml.XmlException
 			var r = new List<SVGData> ();
-			string token_id = (new BigInteger(json.datalist [0].ordered_product_item_token_id)).ToString ();
+			string token_id = ((long)(json.datalist [0].ordered_product_item_token_id)).ToString ();
 			foreach (var data in json.datalist[0].svg_list) {
 				var template = new TicketTemplate (){ id = data.ticket_template_id, name = data.ticket_template_name };
 				r.Add (new SVGData () {
@@ -85,7 +84,7 @@ namespace QR
 			var json = DynamicJson.Parse (response); //throwable System.xml.XmlException
 			var r = new List<SVGData> ();
 			foreach (var datalist in json.datalist) {
-				string token_id = (new BigInteger(datalist.ordered_product_item_token_id)).ToString ();
+				string token_id = ((long)(datalist.ordered_product_item_token_id)).ToString ();
 				foreach (var data in datalist.svg_list) {
 					var template = new TicketTemplate (){ id = data.ticket_template_id, name = data.ticket_template_name };
 					r.Add (new SVGData (){ svg = data.svg, template = template, token_id = token_id });

@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using QR.message;
+using NLog;
 
 namespace QR
 {
@@ -10,6 +11,8 @@ namespace QR
 	public class CaseQRDataFetch : AbstractCase, ICase
 	{
 		public string QRCode { get; set; }
+
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
 		public TicketData TicketData { get; set; }
 
@@ -23,7 +26,6 @@ namespace QR
 			try {
 				ResultTuple<string, TicketData> result = await Resource.TicketDataFetcher.FetchAsync (this.QRCode);
 				if (result.Status) {
-					this.TicketData = result.Right;
 					return true;
 				} else {
 					//modelからpresentation層へのメッセージ
@@ -31,7 +33,7 @@ namespace QR
 					return false;
 				}
 			} catch (Exception ex) {
-				PresentationChanel.NotifyFlushMessage (ex.ToString ());
+				logger.ErrorException (":", ex);
 				PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
 				return false;
 			}

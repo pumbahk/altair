@@ -34,7 +34,7 @@ namespace QR.presentation.cli
 			ev.PrintUnitString = Console.ReadLine ();
 			result = await RequestBroker.Submit (ev);
 			ev.HandleEvent ();
-			if (result is CaseQRPrintForOne) {
+			if (result is CasePrintForOne) {
 				Console.WriteLine ("-------QRCode printing one (fetch *svg data*)-----");
 				result = await RequestBroker.Submit (ev);
 				ev.HandleEvent ();

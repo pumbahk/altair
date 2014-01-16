@@ -9,7 +9,7 @@ namespace QR
 	/// <summary>
 	/// Case QR print for one. 印刷(1枚)
 	/// </summary>
-	public class CaseQRPrintForOne :AbstractCase,ICase
+	public class CasePrintForOne :AbstractCase,ICase
 	{
 		public TicketData TicketData { get; set; }
 
@@ -17,7 +17,7 @@ namespace QR
 
 		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
-		public CaseQRPrintForOne (IResource resource, TicketData ticketdata) : base (resource)
+		public CasePrintForOne (IResource resource, TicketData ticketdata) : base (resource)
 		{
 			TicketData = ticketdata;
 			StatusCollector = new ResultStatusCollector<string> ();
@@ -48,7 +48,7 @@ namespace QR
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			return new CaseQRPrintFinish (this.Resource, StatusCollector);
+			return new CasePrintFinish (this.Resource, StatusCollector);
 		}
 
 		public override ICase OnFailure (IFlow flow)

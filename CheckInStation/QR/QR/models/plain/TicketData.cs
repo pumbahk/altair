@@ -33,6 +33,8 @@ namespace QR
 		internal string seat_id;
 		[DataMember]
 		internal string seat_name;
+		[DataMember]//認証情報
+		internal string secret;
 
 		public TicketData (dynamic json)
 		{

@@ -30,7 +30,7 @@ namespace QR
 		public override ICase OnSuccess (IFlow flow)
 		{
 			IFlowDefinition def = flow.GetFlowDefinition ();
-			return def.StartPointCase (this);
+			return def.AfterFailureRedirect (this);
 		}
 	}
 }

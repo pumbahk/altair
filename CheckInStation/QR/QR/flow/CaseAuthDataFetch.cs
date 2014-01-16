@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using QR.message;
+using NLog;
 
 namespace QR
 {
@@ -12,6 +13,8 @@ namespace QR
 		public string LoginName { get; set; }
 
 		public string LoginPassword { get; set; }
+
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
 		public CaseAuthDataFetch (IResource resource, string name, string password) : base (resource)
 		{
@@ -32,7 +35,7 @@ namespace QR
 					return false;
 				}
 			} catch (Exception ex) {
-				PresentationChanel.NotifyFlushMessage (ex.ToString ());
+				logger.ErrorException (":", ex);
 				PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
 				return false;
 			}
@@ -40,7 +43,7 @@ namespace QR
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			return new CaseQRInputStrategySelect (Resource);
+			return flow.GetFlowDefinition ().AfterAuthorization (Resource);
 		}
 
 		public override ICase OnFailure (IFlow flow)

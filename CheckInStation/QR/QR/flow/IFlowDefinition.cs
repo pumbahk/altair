@@ -4,10 +4,11 @@ namespace QR
 {
 	public interface IFlowDefinition
 	{
-		ICase StartPointCase(ICase case_);
-		ICase StartPointCase(IResource resource);
+		ICase AfterFailureRedirect(ICase case_);
+		ICase AfterFailureRedirect(IResource resource);
 
-		ICase AfterAuthorizationCase(IResource resource);
+		ICase AfterPrintFinish(IResource resource);
+		ICase AfterAuthorization(IResource resource);
 	}
 }
 

@@ -7,13 +7,13 @@ namespace QR
 	/// <summary>
 	/// Case qr input select. 認証方法選択画面
 	/// </summary>
-	public class CaseQRInputStrategySelect :AbstractCase, ICase
+	public class CaseInputStrategySelect :AbstractCase, ICase
 	{
 		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
 		public InputUnit Unit { get; set; }
 
-		public CaseQRInputStrategySelect (IResource resource) : base (resource)
+		public CaseInputStrategySelect (IResource resource) : base (resource)
 		{
 		}
 
@@ -34,7 +34,7 @@ namespace QR
 			case InputUnit.qrcode:
 				return new CaseQRCodeInput (Resource);
 			case InputUnit.order_no:
-				throw new NotImplementedException ();
+				return new CaseOrdernoOrdernoInput (Resource);
 			default:
 				logger.Info ("InputUnit: {0} is unknown value. default={1} is selected", Unit.ToString(), default(InputUnit));
 				return new CaseQRCodeInput (Resource);

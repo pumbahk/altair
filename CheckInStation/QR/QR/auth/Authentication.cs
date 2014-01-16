@@ -82,6 +82,7 @@ namespace QR
 				try {
 					endpoint = await TryLoginRequest (name, password);
 				} catch (System.Xml.XmlException e) {
+					logger.ErrorException("xml:", e);
 					return OnFailure ();
 				}
 				try {
@@ -93,11 +94,11 @@ namespace QR
 						return OnFailure ();
 					}
 				} catch (System.Xml.XmlException e) {
-					logger.ErrorException (":", e);
+					logger.ErrorException ("xml:", e);
 					return OnFailure (e.ToString ());
 				}
 			} catch (System.Net.WebException e) {
-				logger.ErrorException (":", e);
+				logger.ErrorException ("net:", e);
 				return	OnFailure (Resource.GetWebExceptionMessage ());
 			}
 		}

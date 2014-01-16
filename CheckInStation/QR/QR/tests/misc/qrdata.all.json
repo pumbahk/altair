@@ -9,6 +9,7 @@
     "performance_date": "2012年12月24日", 
     "event_id": "-111", 
     "product_name": "ダミー席", 
+    "secret": "xxx this is needed xxxx",
     "note": "何かメモがあったりなかったり",
     "collection": [
         {

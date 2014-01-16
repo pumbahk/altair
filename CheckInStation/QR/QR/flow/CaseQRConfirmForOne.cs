@@ -36,12 +36,12 @@ namespace QR
 		{
 			switch (Unit) {
 			case PrintUnit.one:
-				return new CaseQRPrintForOne (Resource, TicketData);
+				return new CasePrintForOne (Resource, TicketData);
 			case PrintUnit.all:
 				return new CaseQRConfirmForAll (Resource, TicketData);
 			default:
 				logger.Info ("PrintUnit: {0} is unknown value. default={1} is selected", Unit.ToString(), default(PrintUnit));
-				return new CaseQRPrintForOne (Resource, TicketData);
+				return new CasePrintForOne (Resource, TicketData);
 			}
 		}
 	}

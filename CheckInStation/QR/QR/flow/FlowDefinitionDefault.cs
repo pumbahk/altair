@@ -4,19 +4,24 @@ namespace QR
 {
 	public class FlowDefinitionDefault : IFlowDefinition
 	{
-		public ICase StartPointCase (ICase case_)
+		public ICase AfterFailureRedirect (ICase case_)
 		{
-			return StartPointCase (case_.Resource);
+			return AfterFailureRedirect (case_.Resource);
 		}
 
-		public ICase StartPointCase (IResource resource)
+		public ICase AfterFailureRedirect (IResource resource)
 		{
 			return new CaseQRCodeInput (resource);
 		}
 
-		public ICase AfterAuthorizationCase (IResource resource)
+		public ICase AfterAuthorization (IResource resource)
 		{
-			return new CaseEventSelect(resource);
+			return new CaseInputStrategySelect (resource);
+		}
+
+		public ICase AfterPrintFinish (IResource resource)
+		{
+			return new CaseQRCodeInput (resource);
 		}
 	}
 }

@@ -64,7 +64,7 @@ namespace QR
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseQRInputStrategySelect), Is.True);
+				Assert.That ((target.Case is CaseInputStrategySelect), Is.True);
 			});
 			t.Wait ();
 		}
@@ -91,12 +91,12 @@ namespace QR
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseQRPrintForOne), Is.True);
-				Assert.That ((target.Case is CaseQRPrintForAll), Is.False);
+				Assert.That ((target.Case is CasePrintForOne), Is.True);
+				Assert.That ((target.Case is CasePrintForAll), Is.False);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseQRPrintFinish), Is.True);
+				Assert.That ((target.Case is CasePrintFinish), Is.True);
 			});
 			t.Wait ();
 		}
@@ -119,7 +119,7 @@ namespace QR
 		public void Test__PrintForOne__Failure__DisplayError ()
 		{
 			var manager = new FlowManager ();
-			var startpoint = new CaseQRPrintForOne (new Resource (), null);
+			var startpoint = new CasePrintForOne (new Resource (), null);
 			FakeFlow target = new FakeFlow (manager, startpoint);
 
 			var t = Task.Run (async () => {
@@ -134,7 +134,7 @@ namespace QR
 		public void Test__PrintForAll__Failure__DisplayError ()
 		{
 			var manager = new FlowManager ();
-			var startpoint = new CaseQRPrintForAll (new Resource (),null);
+			var startpoint = new CasePrintForAll (new Resource (),null);
 			FakeFlow target = new FakeFlow (manager, startpoint);
 
 			var t = Task.Run (async () => {
@@ -172,12 +172,12 @@ namespace QR
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseQRPrintForOne), Is.False);
-				Assert.That ((target.Case is CaseQRPrintForAll), Is.True);
+				Assert.That ((target.Case is CasePrintForOne), Is.False);
+				Assert.That ((target.Case is CasePrintForAll), Is.True);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.That ((target.Case is CaseQRPrintFinish), Is.True);
+				Assert.That ((target.Case is CasePrintFinish), Is.True);
 			});
 			t.Wait ();
 		}

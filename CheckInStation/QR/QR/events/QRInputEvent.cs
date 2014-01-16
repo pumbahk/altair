@@ -1,5 +1,4 @@
 using System;
-using NLog;
 
 namespace QR
 {
@@ -12,8 +11,6 @@ namespace QR
 	public class QRInputEvent : AbstractEvent, IInternalEvent
 	{
 		public string QRCode { get; set; }
-
-		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
 		public PrintUnit PrintUnit { get; set; }
 

@@ -40,7 +40,7 @@ namespace QR
 			try {
 				result = (T)Enum.Parse (typeof(T), target);
 				return true;
-			} catch (ArgumentException ex) {
+			} catch (ArgumentException) {
 				logger.Error ("{0} is undefined value. default value {1} is selected.", target, default(T));
 				result = default(T);
 				return true;

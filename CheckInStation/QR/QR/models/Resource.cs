@@ -50,7 +50,7 @@ namespace QR
 
 		public IDataFetcher<string, TicketData> TicketDataFetcher { get; set; }
 
-		public IDataFetcher<TicketData, TicketDataCollection> TicketDataCollectionFetcher { get; set; }
+		public IDataFetcher<TicketDataCollectionRequestData, TicketDataCollection> TicketDataCollectionFetcher { get; set; }
 
 		public TicketDataManager TicketDataManager { get; set; }
 

@@ -7,7 +7,7 @@ using NLog;
 
 namespace QR
 {
-	public class TicketDataCollectionFetcher : IDataFetcher<TicketData, TicketDataCollection>
+	public class TicketDataCollectionFetcher : IDataFetcher<TicketDataCollectionRequestData, TicketDataCollection>
 	{
 		public IResource Resource { get; set; }
 
@@ -23,24 +23,21 @@ namespace QR
 			return Resource.EndPoint.DataCollectionFetchData;
 		}
 
-		public async Task<ResultTuple<string, TicketDataCollection>> FetchAsync (TicketData tdata)
+		public async Task<ResultTuple<string, TicketDataCollection>> FetchAsync (TicketDataCollectionRequestData requestData)
 		{
 			IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
 			using (var wrapper = factory.Create (GetCollectionFetchUrl ())) {
-				var prams = new {order_no = tdata.order_no};
-				using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (prams).ConfigureAwait (false)) {
-					return Parse (
-						await wrapper.ReadAsStringAsync (response.Content).ConfigureAwait (false),
-						tdata);
+				using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (requestData).ConfigureAwait (false)) {
+					return Parse (await wrapper.ReadAsStringAsync (response.Content).ConfigureAwait (false));
 				}
 			}
 		}
 
-		public ResultTuple<string, TicketDataCollection> Parse (string responseString, TicketData tdata)
+		public ResultTuple<string, TicketDataCollection> Parse (string responseString)
 		{
 			try {
 				var json = DynamicJson.Parse (responseString);
-				return new Success<string, TicketDataCollection> (new TicketDataCollection (json, tdata));
+				return new Success<string, TicketDataCollection> (new TicketDataCollection (json));
 			} catch (System.Xml.XmlException e) {
 				logger.ErrorException (":", e);
 				return new Failure<string, TicketDataCollection> (Resource.GetInvalidInputMessage ());

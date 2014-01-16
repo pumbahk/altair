@@ -1,7 +1,6 @@
 {
     "user": "苗字名前", 
     "codeno": "*codeno*", 
-    "ordered_product_item_token_id": "-1", 
     "refreshed_at": "2012年12月12日", 
     "printed_at": null,
     "order_no": "RT10101010", 
@@ -10,9 +9,14 @@
     "performance_date": "2012年12月24日", 
     "event_id": "-111", 
     "product_name": "ダミー席", 
+    "secret": "xxx this is needed xxxx",
+    "note": "何かメモがあったりなかったり",
+    "ordered_product_item_token_id": "-1", 
+    "refreshed_at": "2012年12月12日", 
+    "printed_at": null,
+    "product_name": "ダミー席", 
     "seat_id": "-1111",
     "seat_name": "指定席A(1)",
+    "secret": "xxx this is needed xxxx",
     "note": "何かメモがあったりなかったり"
 }
-
-
