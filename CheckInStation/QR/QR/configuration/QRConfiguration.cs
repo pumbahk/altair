@@ -10,7 +10,7 @@ namespace QR
 			config.Resource.TicketDataFetcher = new TicketDataFetcher (resource);
 			config.Resource.TicketDataCollectionFetcher = new TicketDataCollectionFetcher (resource);
 			config.Resource.SVGImageFetcher = new SVGImageFetcher (resource);
-			config.Resource.TicketImagePrinting = new TicketImagePrinting (resource);
+			config.Resource.TicketImagePrinting = new FakeTicketImagePrinting ();
 			config.Resource.TicketDataManager = new TicketDataManager (resource);
 		}
 	}

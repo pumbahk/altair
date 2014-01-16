@@ -14,7 +14,7 @@
           "ticket_template_id": "3"
         }
       ],
-      "ordered_product_item_token_id": 9999,
+      "ordered_product_item_token_id": -1,
       "ticket_name": ":Product:name(自由席)",
       "refreshed_at": null,
       "order_id": 1,
@@ -79,7 +79,7 @@
           "upper_limit": 8,
           "seat_choice": true
         },
-        "発券時ユニークID": "発券時ユニークID: token.id=9999",
+        "発券時ユニークID": "発券時ユニークID: token.id=-1",
         "イベント名略称": ":abbreviated_title",
         "event": {
           "title": ":Event:title",

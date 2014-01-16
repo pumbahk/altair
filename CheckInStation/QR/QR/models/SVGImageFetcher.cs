@@ -1,11 +1,12 @@
 using System;
-using QR.message;
-using System.Threading.Tasks;
-using System.Net.Http;
-using Codeplex.Data;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Numerics;
+using System.Threading.Tasks;
 using NLog;
+using Codeplex.Data;
+using QR.message;
 
 namespace QR
 {
@@ -20,7 +21,16 @@ namespace QR
 	{
 		public string svg { get; set; }
 
+		public string token_id { get; set; }
+
 		public TicketTemplate template { get; set; }
+	}
+
+	public class TicketImageData
+	{
+		public string token_id { get; set; }
+
+		public byte[] image { get; set; }
 	}
 
 	public class _SVGImageFetcherForOne
@@ -42,9 +52,14 @@ namespace QR
 		{
 			var json = DynamicJson.Parse (response); //throwable System.xml.XmlException
 			var r = new List<SVGData> ();
+			string token_id = (new BigInteger(json.datalist [0].ordered_product_item_token_id)).ToString ();
 			foreach (var data in json.datalist[0].svg_list) {
 				var template = new TicketTemplate (){ id = data.ticket_template_id, name = data.ticket_template_name };
-				r.Add (new SVGData (){ svg = data.svg, template = template });
+				r.Add (new SVGData () {
+					svg = data.svg,
+					template = template,
+					token_id = token_id
+				});
 			}
 			return r;
 		}
@@ -70,9 +85,10 @@ namespace QR
 			var json = DynamicJson.Parse (response); //throwable System.xml.XmlException
 			var r = new List<SVGData> ();
 			foreach (var datalist in json.datalist) {
+				string token_id = (new BigInteger(datalist.ordered_product_item_token_id)).ToString ();
 				foreach (var data in datalist.svg_list) {
 					var template = new TicketTemplate (){ id = data.ticket_template_id, name = data.ticket_template_name };
-					r.Add (new SVGData (){ svg = data.svg, template = template });
+					r.Add (new SVGData (){ svg = data.svg, template = template, token_id = token_id });
 				}
 			}
 			return r;
@@ -120,43 +136,46 @@ namespace QR
 			}
 		}
 
-		public async Task<ResultTuple<string, List<byte[]>>> FetchImageForOneAsync (TicketData tdata)
+		public async Task<ResultTuple<string, List<TicketImageData>>> FetchImageDataForOneAsync (TicketData tdata)
 		{
 			try {
 				var response = await _SVGImageFetcherForOne.GetSvgDataList (Resource.HttpWrapperFactory, tdata, GetSvgOneURL ());
 				var svg_list = _SVGImageFetcherForOne.ParseSvgDataList (response);
-				var r = new List<byte[]> ();
+				var r = new List<TicketImageData> ();
 				foreach (SVGData svgdata in svg_list) {
 					var image = await GetImageFromSvg (svgdata.svg);
-					r.Add (image);
+					if (svgdata.token_id != tdata.ordered_product_item_token_id) {
+						throw new ArgumentException (String.Format ("assert svgdata.token_id = ordered_product_item_token_id, {0} = {1}", svgdata.token_id, tdata.ordered_product_item_token_id));
+					}
+					r.Add (new TicketImageData (){ token_id = svgdata.token_id, image = image });
 				}
-				return new Success<string,List<byte[]>> (r);
+				return new Success<string,List<TicketImageData>> (r);
 			} catch (System.Xml.XmlException e) {
 				logger.ErrorException (":", e);
-				return new Failure<string,List<byte[]>> (Resource.GetInvalidOutputMessage ());
+				return new Failure<string,List<TicketImageData>> (Resource.GetInvalidOutputMessage ());
 			} catch (Exception e) {
 				logger.ErrorException (":", e);
-				return new Failure<string, List<byte[]>> (Resource.GetDefaultErrorMessage ());
+				return new Failure<string, List<TicketImageData>> (Resource.GetDefaultErrorMessage ());
 			}
 		}
 
-		public async Task<ResultTuple<string, List<Byte[]>>>FetchImageForAllAsync (TicketDataCollection collection)
+		public async Task<ResultTuple<string, List<TicketImageData>>>FetchImageDataForAllAsync (TicketDataCollection collection)
 		{
 			try {
-				var response = await _SVGImageFetcherForAll.GetSvgDataList (Resource.HttpWrapperFactory, collection, GetSvgAllURL ());
+				var response = await _SVGImageFetcherForAll.GetSvgDataList (Resource.HttpWrapperFactory, collection, GetSvgAllURL ()).ConfigureAwait (false);
 				var svg_list = _SVGImageFetcherForAll.ParseSvgDataList (response);
-				var r = new List<byte[]> ();
+				var r = new List<TicketImageData> ();
 				foreach (SVGData svgdata in svg_list) {
-					var image = await GetImageFromSvg (svgdata.svg);
-					r.Add (image);
+					var image = await GetImageFromSvg (svgdata.svg).ConfigureAwait (false);
+					r.Add (new TicketImageData (){ token_id = svgdata.token_id, image = image });
 				}
-				return new Success<string,List<byte[]>> (r);
+				return new Success<string,List<TicketImageData>> (r);
 			} catch (System.Xml.XmlException e) {
 				logger.ErrorException (":", e);
-				return new Failure<string,List<byte[]>> (Resource.GetInvalidOutputMessage ());
+				return new Failure<string,List<TicketImageData>> (Resource.GetInvalidOutputMessage ());
 			} catch (Exception e) {
 				logger.ErrorException (":", e);
-				return new Failure<string, List<byte[]>> (Resource.GetDefaultErrorMessage ());
+				return new Failure<string, List<TicketImageData>> (Resource.GetDefaultErrorMessage ());
 			}
 		}
 	}

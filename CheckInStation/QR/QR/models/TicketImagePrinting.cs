@@ -12,7 +12,7 @@ namespace QR
 			Resource = resource;
 		}
 
-		public Task<bool> EnqueuePrinting(byte[] imageBytes)
+		public Task<bool> EnqueuePrinting(TicketImageData imageData)
 		{
 			return Task.Run (() => {
 				Console.WriteLine("Printing image!");

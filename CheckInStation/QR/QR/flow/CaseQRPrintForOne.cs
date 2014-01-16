@@ -26,17 +26,17 @@ namespace QR
 		public override async Task<bool> VerifyAsync ()
 		{
 			try {
-				ResultTuple<string, List<byte[]>> result = await Resource.SVGImageFetcher.FetchImageForOneAsync (this.TicketData);
+				ResultTuple<string, List<TicketImageData>> result = await Resource.SVGImageFetcher.FetchImageDataForOneAsync (this.TicketData).ConfigureAwait(false);
 				if (!result.Status) {
 					//modelからpresentation層へのメッセージ
-					PresentationChanel.NotifyFlushMessage ((result as Failure<string,List<byte[]>>).Result);
+					PresentationChanel.NotifyFlushMessage ((result as Failure<string,List<TicketImageData>>).Result);
 					return false;
 				}
 
 				var printing = Resource.TicketImagePrinting;
-				foreach (var img in result.Right) {
-					var status = await printing.EnqueuePrinting (img);
-					StatusCollector.Add (TicketData.ordered_product_item_token_id, status);
+				foreach (var imgdata in result.Right) {
+					var status = await printing.EnqueuePrinting (imgdata).ConfigureAwait(false);
+					StatusCollector.Add (imgdata.token_id, status);
 				}
 				return StatusCollector.Status;
 			} catch (Exception ex) {

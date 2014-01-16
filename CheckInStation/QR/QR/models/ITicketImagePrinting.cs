@@ -5,7 +5,7 @@ namespace QR
 {
 	public interface ITicketImagePrinting
 	{
-		Task<bool> EnqueuePrinting (byte[] imageBytes);
+		Task<bool> EnqueuePrinting (TicketImageData imageData);
 	}
 }
 
