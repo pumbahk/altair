@@ -1,5 +1,7 @@
 /* application */
 
+Backbone.emulateHTTP = true;
+
 var order = {};
 
 order.init = function(order_id, options) {
@@ -198,6 +200,7 @@ order.Order = Backbone.Model.extend({
     transaction_fee: 0,
     delivery_fee: 0,
     system_fee: 0,
+    special_fee: 0,
     total_amount: 0,
     ordered_products: null
   },
@@ -208,7 +211,7 @@ order.Order = Backbone.Model.extend({
       opc.push(new order.OrderedProduct(response.ordered_products[i]));
     }
     opc.on('change', function() {
-      var total_amount = self.get('transaction_fee') + self.get('delivery_fee') + self.get('system_fee');
+      var total_amount = self.get('transaction_fee') + self.get('delivery_fee') + self.get('system_fee') + self.get('special_fee');
       this.each(function(op) {
         total_amount += op.get('price') * op.get('quantity');
       });

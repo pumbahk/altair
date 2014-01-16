@@ -1442,6 +1442,7 @@ class OrdersReserveView(BaseView):
             transaction_fee=int(order.transaction_fee),
             delivery_fee=int(order.delivery_fee),
             system_fee=int(order.system_fee),
+            special_fee=int(order.special_fee),
             total_amount=int(order.total_amount),
             ordered_products=[
             dict(
@@ -1512,12 +1513,13 @@ class OrdersReserveView(BaseView):
         order_data['transaction_fee'] = int(sales_segment.get_transaction_fee(order.payment_delivery_pair, products))
         order_data['delivery_fee'] = int(sales_segment.get_delivery_fee(order.payment_delivery_pair, products))
         order_data['system_fee'] = int(order.payment_delivery_pair.system_fee)
+        order_data['special_fee'] = int(order.payment_delivery_pair.special_fee)
         order_data['total_amount'] = int(sales_segment.get_amount(order.payment_delivery_pair, products))
 
         return order_data
 
-    @view_config(route_name='orders.api.edit', request_method='PUT', renderer='json')
-    def api_edit_put(self):
+    @view_config(route_name='orders.api.edit', request_method='POST', renderer='json')
+    def api_edit_post(self):
         order_id = self.request.matchdict.get('order_id', 0)
         order = Order.get(order_id, self.context.organization.id)
 
@@ -1530,7 +1532,7 @@ class OrdersReserveView(BaseView):
 
         # phase1: 合計金額が変わる変更はNG、ただしインナー予約のみOK、Sejへの変更リクエストは行う
         # phase2: 合計金額が変わる変更もOK、決済の減額再処理を行う
-        if order.channel != ChannelEnum.INNER.v or order.total_amount != order_data.get('total_amount'):
+        if order.channel != ChannelEnum.INNER.v and order.total_amount != order_data.get('total_amount'):
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'金額は変更できません'
             }))
@@ -1640,13 +1642,14 @@ class OrdersReserveView(BaseView):
                     ordered_product.ordered_product_items.append(ordered_product_item)
                 edit_order.items.append(ordered_product)
 
-        edit_order.system_fee = order_data.get('system_fee')
         edit_order.transaction_fee = order_data.get('transaction_fee')
         edit_order.delivery_fee = order_data.get('delivery_fee')
+        edit_order.system_fee = order_data.get('system_fee')
+        edit_order.specialfee = order_data.get('special_fee')
         edit_order.total_amount = order_data.get('total_amount')
 
         total_amount = sum(eop.price * eop.quantity for eop in edit_order.items)
-        total_amount += edit_order.system_fee + edit_order.transaction_fee + edit_order.delivery_fee
+        total_amount += edit_order.transaction_fee + edit_order.delivery_fee + edit_order.system_fee + edit_order.special_fee
         logger.info('total_amount %s == %s' % (total_amount, edit_order.total_amount))
         if total_amount != edit_order.total_amount:
             raise HTTPBadRequest(body=json.dumps({
@@ -1665,7 +1668,7 @@ class OrdersReserveView(BaseView):
         if l0_id:
             order = self._get_order_by_seat(performance_id, l0_id)
         elif order_no:
-            order = Order.query.filter_by(order_no=order_no).first()
+            order = Order.query.filter(Order.order_no==order_no, Order.organization_id==self.context.organization.id).first()
         if order is None:
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'予約がありません',
