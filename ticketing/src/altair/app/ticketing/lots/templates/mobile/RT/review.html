@@ -34,7 +34,7 @@ ${entry.lot.name}<br />
 <%mobile:form_header>お引取方法</%mobile:form_header>
 <div>${entry.payment_delivery_method_pair.delivery_method.name}</div>
 <%mobile:form_header>注意事項</%mobile:form_header>
-<div>${entry.lot.description}</div>
+<div>${entry.lot.description|n}</div>
 <%mobile:header>希望選択</%mobile:header>
 %for wish in entry.wishes:
 <%mobile:band bgcolor="#ffdddd">第${wish.wish_order + 1}希望</%mobile:band>
