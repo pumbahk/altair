@@ -47,6 +47,7 @@ class PutbackForm(Form):
         self.stock_holder_id.choices = [
             (stock_holder.id, stock_holder.name)
             for stock_holder in event.stock_holders
+            if stock_holder.is_putback_target
             ]
         self.performance_ids.choices = [
             (performance.id, performance.name)
