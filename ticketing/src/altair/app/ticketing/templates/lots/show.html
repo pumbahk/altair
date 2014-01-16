@@ -144,18 +144,18 @@ formatter:grid.linkFormatter}
 
   grid.jqGrid(productGrid);
 
-  var showDialog = function(title, msg) {
+  var showDialog = function(title, msg, cls) {
     var modal = $('#modal-alert');
+    var message = $('<div>').addClass('alert '+cls).html(msg);
     modal.find('.modal-header > h3').text(title);
-    modal.find('#message').html(
-        '<div class="alert alert-success">' + msg + '</div>');
+    modal.find('#message').empty().append(message);
     modal.modal('show');
   };
 
   var showSuccessDialog = function() {
      var title = '保存完了';
      var msg = '編集内容を保存しました';
-     showDialog(title, msg);
+     showDialog(title, msg, 'alert-success');
   };
 
   function deleteRow(gid, rowId) {
@@ -200,9 +200,22 @@ formatter:grid.linkFormatter}
             rows += '<li>(' + response_text.rows.rowid + '行目) ' + col_name + response_text.rows.errors[col] + '</li>';
           }
         }
-        showDialog("エラー", message);
+        showDialog("エラー", message + '<ul>' + rows + '</ul>', 'alert-error');
       }
     });
   });
 });
 </script>
+
+<div id="modal-alert" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close" data-dismiss="modal">&times;</a>
+    <h3></h3>
+  </div>
+  <div class="modal-body">
+    <p id="message"></p>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-alert').modal('hide');" class="btn secondary">閉じる</a>
+  </div>
+</div>

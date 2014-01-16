@@ -44,23 +44,27 @@ class EventHelper(object):
         for group in event.salessegment_groups:
             start = None
             end = None
-            salessegment_public = True            
+            salessegment_public = False
             for segment in group.salessegments:
-                salessegment_public = True
-                if not segment.publicp:
-                    salessegment_public = False
+                if not segment.publicp or not segment.performance.public:
                     continue
+
+                salessegment_public = True
 
                 if not start:
                     start = segment.start_on
+
                 if not end:
                     end = segment.end_on
 
-                if start > segment.start_on:
-                    start = segment.start_on
-                if end < segment.end_on:
-                    end = segment.end_on
+                if segment.start_on:
+                    if start > segment.start_on:
+                        start = segment.start_on
 
-            if group.publicp and salessegment_public and start and end:
+                if segment.end_on:
+                    if end < segment.end_on:
+                        end = segment.end_on
+
+            if group.publicp and salessegment_public and start:
                 groups.append(dict(group_name=group.name, start=start, end=end))
         return groups

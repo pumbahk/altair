@@ -501,6 +501,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     display_order = AnnotatedColumn(Integer, nullable=False, default=1, _a_label=_(u'表示順'))
 
+    orion = relationship("OrionPerformance", uselist=False, backref='performance')
+    
     @property
     def setting(self):
         return self.settings[0] if self.settings else None
@@ -1763,7 +1765,6 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         products = Product.filter_by(event_id=self.event_id).filter_by(seat_stock_type_id=self.id).all()
         for product in products:
             product.delete()
-
         super(StockType, self).delete()
 
     def num_seats(self, performance_id=None, sale_only=False):
@@ -1814,7 +1815,9 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
     account_id = Column(Identifier, ForeignKey('Account.id'))
-
+    
+    is_putback_target = Column(Boolean, nullable=True) # CooperationTypeEnum
+    
     style = deferred(Column(MutationDict.as_mutable(JSONEncodedDict(1024))))
     stocks = relationship('Stock', backref='stock_holder')
 
@@ -3916,7 +3919,6 @@ class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 return e.v[1]
         return u''
 
-
 class CooperationTypeEnum(StandardEnum):
     augus = (1, u'オーガス')
     #gettie = (2, u'Gettie')
@@ -3924,17 +3926,19 @@ class CooperationTypeEnum(StandardEnum):
 
 class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusVenue'
-    
+
     id = Column(Identifier, primary_key=True)
-    code = AnnotatedColumn(Integer, unique=True, nullable=False,
-                           _a_label=(u'会場コード'))
-    venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'),
-                      unique=True, nullable=False)
-
-    created_at = Column(TIMESTAMP, nullable=False)
-    updated_at = Column(TIMESTAMP, nullable=False)
+    code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'会場コード'))
+    name = AnnotatedColumn(Unicode(32), nullable=False,  _a_label=(u'会場名'))
+    version = AnnotatedColumn(Integer, nullable=False,
+                              _a_label=(u'会場バージョン'))
+    venue_id = Column(Identifier, ForeignKey('Venue.id'), nullable=False)
+    venue = relationship('Venue')
+    created_at = Column(TIMESTAMP, nullable=False, 
+                        default=sqlf.current_timestamp())
+    updated_at = Column(TIMESTAMP, nullable=False,
+                        default=datetime.now, onupdate=datetime.now)
     deleted_at = Column(TIMESTAMP, nullable=True)
-
 
 class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusSeat'
@@ -3944,34 +3948,138 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                          name="uix_AugusSeat"),
     )
     id = Column(Identifier, primary_key=True)
-    area_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u"エリアコード"))
-    info_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u"付加情報コード"))
-    floor = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"階"))
+    area_name = AnnotatedColumn(Unicode(32), nullable=False,
+                                _a_label=(u'エリア名'), default=u'')
+    info_name = AnnotatedColumn(Unicode(32), nullable=False,
+                                _a_label=(u'付加情報'), default=u'')
+    doorway_name = AnnotatedColumn(Unicode(32), nullable=False,
+                                   _a_label=(u'出入口'), default=u'')
+    priority = AnnotatedColumn(Integer, nullable=False, default=u'', _a_label=(u'優先度'))
+    floor = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"階"))    
     column = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"列"))
     num = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"番"))
-    augus_venue_id = Column(Identifier, ForeignKey('AugusVenue.id',
-                            ondelete='CASCADE'), nullable=False)
-    seat_id = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'))
+    block = AnnotatedColumn(Integer, nullable=False, _a_label=(u'ブロック'))
+    coordy = AnnotatedColumn(Integer, nullable=False, _a_label=(u'Y座標'))
+    coordx = AnnotatedColumn(Integer, nullable=False, _a_label=(u'X座標'))
+    coordy_whole = AnnotatedColumn(Integer, nullable=False, _a_label=(u'Y座標2'))
+    coordx_whole = AnnotatedColumn(Integer, nullable=False, _a_label=(u'X座標2'))
+    area_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'エリアコード'))
+    info_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'付加情報コード'))
+    doorway_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'出入口コード'))
+    version = AnnotatedColumn(Integer, nullable=False, _a_label=(u'会場バージョン'))
+    
+    augus_venue_id = Column(Identifier, ForeignKey('AugusVenue.id', ondelete='CASCADE'), nullable=False)
+    seat_id = Column(Identifier, ForeignKey('Seat.id'))
     augus_venue = relationship('AugusVenue', backref='augus_seats')
     seat = relationship('Seat')
 
-    created_at = Column(TIMESTAMP, nullable=False)
-    updated_at = Column(TIMESTAMP, nullable=False)
+    created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
+    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
     deleted_at = Column(TIMESTAMP, nullable=True)
 
-
+    def __unicode__(self):
+        return u'{{}}'.format(u', '.join([self.augus_venue.name,
+                                          str(self.augus_venue.version),
+                                          self.area_name,
+                                          self.info_name,
+                                          self.floor,
+                                          self.column,
+                                          self.num
+                                      ]))
+    
 class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusPerformance'
-    id = Column(Identifier, primary_key=True)    
-    code = AnnotatedColumn(Integer, nullable=False, 
-                           unique=True, _a_label=(u"公演コード"))
-    augus_event_code = AnnotatedColumn(Integer, nullable=False,
-                                       _a_label=(u"事業コード"))
+    id = Column(Identifier, primary_key=True)
+    augus_event_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス事業コード'))
+    augus_performance_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス公演コード'))
+    augus_venue_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス会場コード'))
+    augus_venue_name = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'オーガス会場名'))
+    augus_event_name = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'オーガス事業名'))
+    augus_performance_name = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'オーガス公演名'))
+    open_on = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'開場日時'))
+    start_on = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'公演日時'))
+    augus_venue_version = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス会場バージョン'))
+    
     performance_id = Column(Identifier, 
-                            ForeignKey("Performance.id", ondelete='CASCADE'),
+                            ForeignKey("Performance.id"),
                             nullable=True, unique=True)
     performance = relationship('Performance')
+    
+    created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
+    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
+    deleted_at = Column(TIMESTAMP, nullable=True)
+    
+    @property
+    def code(self):
+        return self.augus_performance_code
+
+
+class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'AugusTicket'
+    id = Column(Identifier, primary_key=True)
+    augus_event_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス事業コード'))
+    augus_performance_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス公演コード'))
+    augus_venue_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス会場コード'))
+    augus_seat_type_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス席種コード'))
+    augus_seat_type_name = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'オーガス席種名'))
+    unit_value_name = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'単価名称'))
+    augus_seat_type_classif = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'席区分'))
+    value = AnnotatedColumn(Integer, nullable=False, _a_label=(u'売値'))
+
+    created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
+    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
+    deleted_at = Column(TIMESTAMP, nullable=True)
+
+class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'AugusStockInfo'
+    id = Column(Identifier, primary_key=True)
+    augus_performance_id = AnnotatedColumn(Identifier, nullable=False, _a_label=(u'オーガス公演コード'))
+    augus_distribution_code = AnnotatedColumn(Integer, _a_label=(u'オーガス配券コード'))
+    seat_type_classif = AnnotatedColumn(Unicode(32), _a_label=(u'席区分'))
+    distributed_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'配券日時'))
+    
+    augus_seat_id = Column(Identifier, ForeignKey('AugusSeat.id'))
+    augus_seat = relationship('AugusSeat')
+    
+    created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
+    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
+    deleted_at = Column(TIMESTAMP, nullable=True)
+
+
+class AugusPutback(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'AugusPutback'
+    id = Column(Identifier, primary_key=True)
+    augus_putback_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'返券コード'))
+    quantity = AnnotatedColumn(Integer, nullable=False, _a_label=(u'数量'))
+    augus_stock_info_id = AnnotatedColumn(Identifier, nullable=False, _a_label=(u'オーガスストック情報'))
+    
+    reserved_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券予約日時'))
+    nortificated_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券通知日時'))
+    finished_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券完了日時'))
+    
+    seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
+    seat = relationship('Seat')
+
+class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'OrionPerformance'
+
+    id = Column(Identifier, primary_key=True)
+    performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
+
+    instruction_general = Column(UnicodeText(8388608))
+    instruction_performance = Column(UnicodeText(8388608))
+    web = Column(Unicode(255))
+    header_url = Column(Unicode(255))
+    background_url = Column(Unicode(255))
+    icon_url = Column(Unicode(255))
+    
+    qr_enabled = Column(Boolean)
+    pattern = Column(Unicode(255))
+    
+    coupon_2_name = Column(Unicode(255))
+    coupon_2_qr_enabled = Column(Boolean)
+    coupon_2_pattern = Column(Unicode(255))
+
     created_at = Column(TIMESTAMP, nullable=False)
     updated_at = Column(TIMESTAMP, nullable=False)
     deleted_at = Column(TIMESTAMP, nullable=True)
-    

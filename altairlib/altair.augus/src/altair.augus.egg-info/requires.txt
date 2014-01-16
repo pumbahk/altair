@@ -1,0 +1,3 @@
+setuptools
+enum34
+ftputil

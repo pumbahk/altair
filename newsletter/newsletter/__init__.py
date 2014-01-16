@@ -32,12 +32,13 @@ def main(global_config, **local_config):
     authn_policy = AuthTktAuthenticationPolicy('secretstring', callback=groupfinder)
     authz_policy = ACLAuthorizationPolicy()
 
-    config = Configurator(settings=settings,
-                          root_factory='newsletter.resources.RootFactory',
-                          authentication_policy=authn_policy,
-                          authorization_policy=authz_policy,
-                          session_factory=UnencryptedCookieSessionFactoryConfig('altair'))
-
+    config = Configurator(
+        settings=settings,
+        root_factory='newsletter.resources.RootFactory',
+        authentication_policy=authn_policy,
+        authorization_policy=authz_policy,
+        )
+    config.include('altair.httpsession.pyramid')
     config.include('altair.browserid')
     config.include('altair.exclog')
 

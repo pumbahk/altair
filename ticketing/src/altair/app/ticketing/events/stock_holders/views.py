@@ -65,6 +65,7 @@ class StockHolders(BaseView):
                 'text_color':f.data.get('text_color'),
             }
             stock_holder.style = style
+            stock_holder.is_putback_target = f.data.get('is_putback_target')
             stock_holder.save()
 
             self.request.session.flash(u'枠を保存しました')
@@ -89,6 +90,7 @@ class StockHolders(BaseView):
                 'text_color':f.data.get('text_color'),
             }
             stock_holder.style = style
+            stock_holder.is_putback_target = f.data.get('is_putback_target')            
             stock_holder.save()
 
             self.request.session.flash(u'枠を保存しました')

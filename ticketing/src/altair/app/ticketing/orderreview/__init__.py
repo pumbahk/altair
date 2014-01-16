@@ -77,6 +77,9 @@ def import_view(config):
     config.add_route('order_review.qr_confirm', '/qr/{ticket_id}/{sign}/')
     config.add_route('order_review.qrdraw', '/qr/{ticket_id}/{sign}/image')
 
+    ## orion
+    config.add_route('order_review.qr_orion', '/qr/app')
+
     ## misc
     config.add_route('contact', '/contact')
 
