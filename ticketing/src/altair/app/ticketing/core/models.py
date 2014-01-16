@@ -2770,7 +2770,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 ordered_product.price = 0
                 for ordered_product_item in ordered_product.ordered_product_items:
                     ordered_product_item.price = 0
-        order.total_amount = sum(o.price * o.quantity for o in order.items) + order.system_fee + order.transaction_fee + order.delivery_fee
+        fee = order.special_fee + order.system_fee + order.transaction_fee + order.delivery_fee
+        order.total_amount = sum(o.price * o.quantity for o in order.items) + fee
 
         try:
             return order.cancel(request, self.refund.payment_method)
