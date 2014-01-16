@@ -16,12 +16,12 @@ namespace QR
 		{
 		}
 
-		public override Task ConfigureAsync (IInternalEvent ev)
+		public override Task PrepareAsync (IInternalEvent ev)
 		{
 			AuthenticationEvent subject = ev as AuthenticationEvent;
 			this.LoginName = subject.LoginName;
 			this.LoginPassword = subject.LoginPassword;
-			return base.ConfigureAsync (ev);
+			return base.PrepareAsync (ev);
 		}
 
 		public override Task<bool> VerifyAsync ()

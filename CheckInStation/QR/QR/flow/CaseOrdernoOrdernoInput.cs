@@ -18,11 +18,11 @@ namespace QR
 			this.RequestData = new OrdernoRequestData ();
 		}
 
-		public override Task ConfigureAsync (IInternalEvent ev)
+		public override Task PrepareAsync (IInternalEvent ev)
 		{
 			OrdernoInputEvent subject  = ev as OrdernoInputEvent;
 			this.RequestData.order_no = subject.Orderno;
-			return base.ConfigureAsync(ev);
+			return base.PrepareAsync(ev);
 		}
 
 		public override Task<bool> VerifyAsync ()

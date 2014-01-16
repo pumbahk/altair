@@ -12,7 +12,7 @@ namespace QR
 
 		public bool VerifyStatus{ get; set; }
 
-		public override Task ConfigureAsync ()
+		public override Task PrepareAsync ()
 		{
 			//ここでは詳細に触れない。
 			return Task.Run (() => {

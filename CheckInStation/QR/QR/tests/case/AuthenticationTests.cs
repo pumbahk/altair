@@ -8,14 +8,14 @@ namespace QR
 	public class AuthenticationTests
 	{
 		[Test, Description ("認証情報入力部分. configureでloginnameとloginpassword取得")]
-		public void TestAuthentcationInput__ConfigureAsync__Setvalue ()
+		public void TestAuthentcationInput__PrepareAsync__Setvalue ()
 		{
 			var resource = new Resource ();
 			ICase target = new CaseAuthInput (resource);
 
 			RequestBroker broker = new RequestBroker (new FlowManager ()); //hmm.
 			broker.Event = new AuthenticationEvent ("*username*", "*password*");
-			target.ConfigureAsync (broker.GetInternalEvent ());
+			target.PrepareAsync (broker.GetInternalEvent ());
 
 			Assert.AreEqual ("*username*", (target as CaseAuthInput).LoginName);
 			Assert.AreEqual ("*password*", (target as CaseAuthInput).LoginPassword);
@@ -39,7 +39,7 @@ namespace QR
 				                           inputPassword);
 			var t = Task.Run (async () => {
 				var ev = new AuthenticationEvent (inputUsername, inputPassword);
-				await target.ConfigureAsync (ev);
+				await target.PrepareAsync (ev);
 				Assert.IsTrue (await target.VerifyAsync ());
 				ev.HandleEvent ();
 				Assert.IsNotNull (resource.AuthInfo);
@@ -61,7 +61,7 @@ namespace QR
 				                           inputPassword);
 			var t = Task.Run (async () => {
 				var ev = new AuthenticationEvent (inputUsername, inputPassword);
-				await target.ConfigureAsync (ev);
+				await target.PrepareAsync (ev);
 				Assert.IsEmpty (ev.messages);
 				Assert.IsFalse (await target.VerifyAsync ());
 				Assert.IsNotEmpty (ev.messages);

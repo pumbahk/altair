@@ -17,29 +17,40 @@ namespace QR
 
 		public TicketDataCollection Collection { get; set; }
 
+		protected bool fetchStatus;
+
 		public CaseOrdernoConfirmForAll (IResource resource, VerifiedOrdernoRequestData requestData) : base (resource)
 		{
 			this.RequestData = requestData;
 		}
 
-		public override async Task<bool> VerifyAsync ()
+		public override async Task PrepareAsync (IInternalEvent ev)
 		{
+			await base.PrepareAsync (ev).ConfigureAwait(false);
 			try {
-				var data = new TicketDataCollectionRequestData (){ order_no = this.RequestData.order_no, secret = this.RequestData.secret };
+				var data = new TicketDataCollectionRequestData () {
+					order_no = this.RequestData.order_no,
+					secret = this.RequestData.secret
+				};
 				ResultTuple<string, TicketDataCollection> result = await Resource.TicketDataCollectionFetcher.FetchAsync (data);
 				if (result.Status) {
 					this.Collection = result.Right;
-					return true;
+					this.fetchStatus = true;
 				} else {
 					//modelからpresentation層へのメッセージ
 					PresentationChanel.NotifyFlushMessage ((result as Failure<string,TicketDataCollection>).Result);
-					return false;
+					this.fetchStatus = false;
 				}
 			} catch (Exception ex) {
 				logger.ErrorException (":", ex);
 				PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
-				return false;
+				this.fetchStatus = false;
 			}
+		}
+
+		public override Task<bool> VerifyAsync ()
+		{
+			return Task.Run (() => this.fetchStatus);
 		}
 
 		public override ICase OnSuccess (IFlow flow)

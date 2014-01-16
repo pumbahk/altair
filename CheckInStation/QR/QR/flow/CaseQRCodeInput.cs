@@ -12,11 +12,11 @@ namespace QR
 	{
 		public string QRCode { get; set; }
 
-		public override Task ConfigureAsync (IInternalEvent ev)
+		public override Task PrepareAsync (IInternalEvent ev)
 		{
 			QRInputEvent subject = ev as QRInputEvent;
 			this.QRCode = subject.QRCode;
-			return base.ConfigureAsync (ev);
+			return base.PrepareAsync (ev);
 		}
 
 		public override Task<bool> VerifyAsync ()

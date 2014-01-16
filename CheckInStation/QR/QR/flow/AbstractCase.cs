@@ -14,19 +14,25 @@ namespace QR
 			Resource = resource;
 		}
 
-		public virtual Task ConfigureAsync (IInternalEvent ev)
+
+		public virtual Task PrepareAsync (IInternalEvent ev)
 		{
-			return Task.Run (() => {this.PresentationChanel = ev;});
+			return Task.Run (() => {
+				this.PresentationChanel = ev;
+			});
 		}
 
-		public virtual Task ConfigureAsync ()
+		public virtual Task PrepareAsync ()
 		{
-			return ConfigureAsync (new EmptyEvent ());
+			return PrepareAsync (new EmptyEvent ());
 		}
+
 
 		public virtual async Task<bool> VerifyAsync ()
 		{
-			return await Task.Run(() => {return true;}).ConfigureAwait(false);
+			return await Task.Run (() => {
+				return true;
+			}).ConfigureAwait (false);
 		}
 
 		public virtual ICase OnFailure (IFlow flow)

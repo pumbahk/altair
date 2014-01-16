@@ -69,7 +69,7 @@ namespace QR
 				ICase target = new CaseQRConfirmForAll (resource, tdata);
 				QRInputEvent ev = new QRInputEvent ();
 
-				await target.ConfigureAsync (ev as IInternalEvent);
+				await target.PrepareAsync (ev as IInternalEvent);
 				Console.WriteLine (await target.VerifyAsync ());
 				ev.HandleEvent ();
 
@@ -97,7 +97,7 @@ namespace QR
 				ICase target = new CaseQRDataFetch (resource, qrcode);
 				QRInputEvent ev = new QRInputEvent ();
 
-				await target.ConfigureAsync (ev as IInternalEvent);
+				await target.PrepareAsync (ev as IInternalEvent);
 				//Console.WriteLine (await target.VerifyAsync ());
 				//ev.HandleEvent ();
 
@@ -121,7 +121,7 @@ namespace QR
 				ICase target = new CaseQRConfirmForAll (resource, tdata);
 				QRInputEvent ev = new QRInputEvent ();
 
-				await target.ConfigureAsync (ev as IInternalEvent);
+				await target.PrepareAsync (ev as IInternalEvent);
 				Console.WriteLine (await target.VerifyAsync ());
 				ev.HandleEvent ();
 
@@ -146,7 +146,7 @@ namespace QR
 				ICase target = new CasePrintForAll (resource, coll);
 				QRInputEvent ev = new QRInputEvent ();
 
-				await target.ConfigureAsync (ev as IInternalEvent);
+				await target.PrepareAsync (ev as IInternalEvent);
 				//Console.WriteLine (await target.VerifyAsync ());
 				//ev.HandleEvent ();
 				Assert.IsTrue (await target.VerifyAsync ());
@@ -170,7 +170,7 @@ namespace QR
 				ICase target = new CasePrintForOne (resource, tdata);
 				QRInputEvent ev = new QRInputEvent ();
 
-				await target.ConfigureAsync (ev as IInternalEvent);
+				await target.PrepareAsync (ev as IInternalEvent);
 				//Console.WriteLine (await target.VerifyAsync ());
 				//ev.HandleEvent ();
 				Assert.IsTrue (await target.VerifyAsync ());

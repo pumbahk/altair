@@ -30,7 +30,7 @@ namespace QR
 		public void TestVerify ()
 		{
 			var t = Task.Run (async () => {
-				await target.ConfigureAsync (new QRInputEvent (){ QRCode = "*qrcode*" });
+				await target.PrepareAsync (new QRInputEvent (){ QRCode = "*qrcode*" });
 				Assert.That (await target.VerifyAsync (), Is.True);
 				Assert.That (Is.Equals (target.QRCode, "*qrcode*"));
 			});
@@ -41,7 +41,7 @@ namespace QR
 		public void TestCallVerifyManyTimes ()
 		{
 			var t = Task.Run (async () => {
-				await target.ConfigureAsync (new QRInputEvent (){ QRCode = "*qrcode*" });
+				await target.PrepareAsync (new QRInputEvent (){ QRCode = "*qrcode*" });
 				Assert.That (Is.Equals (target.VerifiedCount, 0));
 
 				Assert.IsTrue (await target.VerifyAsync ());
@@ -57,7 +57,7 @@ namespace QR
 		public void TestCallVerifyManyTimes__False ()
 		{
 			var t = Task.Run (async () => {
-				await target.ConfigureAsync (new QRInputEvent (){ QRCode = "*qrcode*" }); 
+				await target.PrepareAsync (new QRInputEvent (){ QRCode = "*qrcode*" }); 
 				FakeVerifier<string> v = target.TicketDataFetcher as FakeVerifier<string>;
 				v.Result = false;
 

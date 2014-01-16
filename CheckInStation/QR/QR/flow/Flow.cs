@@ -24,9 +24,9 @@ namespace QR
 			return status;
 		}
 
-		public virtual Task ConfigureAsync ()
+		public virtual Task PrepareAsync ()
 		{
-			return Case.ConfigureAsync (Manager.GetInternalEvent ());
+			return Case.PrepareAsync (Manager.GetInternalEvent ());
 		}
 
 		public Flow (FlowManager manager, ICase _case)
@@ -42,7 +42,7 @@ namespace QR
 
 		public async Task<ICase> NextCase ()
 		{
-			await ConfigureAsync (); //ここでUIから情報を取得できるようにする必要がある。
+			await PrepareAsync (); //ここでUIから情報を取得できるようにする必要がある。
 			if (await VerifyAsync ()) {
 				return Case.OnSuccess (this);
 			} else {
