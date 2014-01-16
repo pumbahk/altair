@@ -6,7 +6,7 @@ import argparse
 import transaction
 from boto.s3.connection import S3Connection
 from pyramid.paster import bootstrap, setup_logging
-from altair.app.ticketing.cooperation.augus import AugusPerformanceImpoter
+from altair.app.ticketing.cooperation.augus2 import AugusPerformanceImpoter
 
 class FileSearchError(Exception):
     pass
