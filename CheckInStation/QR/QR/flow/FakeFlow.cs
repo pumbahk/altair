@@ -15,6 +15,7 @@ namespace QR
 		{
 			//ここでは詳細に触れない。
 			return Task.Run (() => {
+				this.Case.PresentationChanel = new EmptyEvent ();
 			});
 		}
 

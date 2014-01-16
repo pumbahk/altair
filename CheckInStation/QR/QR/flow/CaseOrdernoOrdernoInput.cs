@@ -36,5 +36,11 @@ namespace QR
 		{
 			return new CaseOrdernoTelInput(Resource, RequestData);
 		}
+
+		public override ICase OnFailure (IFlow flow)
+		{
+			PresentationChanel.NotifyFlushMessage ("failure");
+			return this;
+		}
 	}
 }

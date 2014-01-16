@@ -14,7 +14,6 @@ namespace QR
 			Resource = resource;
 		}
 
-
 		public virtual Task PrepareAsync (IInternalEvent ev)
 		{
 			return Task.Run (() => {
@@ -27,7 +26,6 @@ namespace QR
 			return PrepareAsync (new EmptyEvent ());
 		}
 
-
 		public virtual async Task<bool> VerifyAsync ()
 		{
 			return await Task.Run (() => {
@@ -37,7 +35,8 @@ namespace QR
 
 		public virtual ICase OnFailure (IFlow flow)
 		{
-			throw new InvalidOperationException ("must be success");
+			flow.Finish ();
+			return new CaseFailureRedirect (Resource);
 		}
 
 		public abstract ICase OnSuccess (IFlow flow);

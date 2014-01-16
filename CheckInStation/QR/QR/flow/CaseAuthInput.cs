@@ -16,6 +16,12 @@ namespace QR
 		{
 		}
 
+		public CaseAuthInput (IResource resource, string name, string password) : base (resource)
+		{
+			this.LoginName = name;
+			this.LoginPassword = password;
+		}
+
 		public override Task PrepareAsync (IInternalEvent ev)
 		{
 			AuthenticationEvent subject = ev as AuthenticationEvent;

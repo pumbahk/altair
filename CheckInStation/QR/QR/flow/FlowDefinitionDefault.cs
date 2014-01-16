@@ -9,7 +9,7 @@ namespace QR
 
 		public FlowDefinitionDefault ()
 		{
-			this.CurrentInputUnit = InputUnit.qrcode;
+			this.CurrentInputUnit = InputUnit.before_auth;
 		}
 
 		public ICase AfterFailureRedirect (ICase case_)
@@ -19,7 +19,7 @@ namespace QR
 
 		public ICase AfterFailureRedirect (IResource resource)
 		{
-			return new CaseQRCodeInput (resource);
+			return DispatchICaseUtil.GetInputCaseByInputUnit (resource, this.CurrentInputUnit);
 		}
 
 		public ICase AfterAuthorization (IResource resource)
@@ -45,11 +45,14 @@ namespace QR
 
 		public static ICase GetInputCaseByInputUnit (IResource resource, InputUnit Selected)
 		{
+			logger.Debug ("InputUnit: {0}.. lookup redirect point.", Selected.ToString ());
 			switch (Selected) {
 			case InputUnit.qrcode:
 				return new CaseQRCodeInput (resource);
 			case InputUnit.order_no:
 				return new CaseOrdernoOrdernoInput (resource);
+			case InputUnit.before_auth:
+				return new CaseAuthInput (resource);
 			default:
 				logger.Info ("InputUnit: {0} is unknown value. default={1} is selected", Selected.ToString (), default(InputUnit));
 				return new CaseQRCodeInput (resource);

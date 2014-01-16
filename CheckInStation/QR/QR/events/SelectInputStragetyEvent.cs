@@ -5,7 +5,8 @@ namespace QR
 	public enum InputUnit
 	{
 		qrcode = 0,
-		order_no = 1
+		order_no = 1,
+		before_auth = 404,
 	}
 
 	public class SelectInputStragetyEvent : AbstractEvent, IInternalEvent

@@ -43,12 +43,14 @@ namespace QR
 
 		public override ICase OnSuccess (IFlow flow)
 		{
+			flow.Finish ();
 			return flow.GetFlowDefinition ().AfterAuthorization (Resource);
 		}
 
 		public override ICase OnFailure (IFlow flow)
 		{
-			return new CaseAuthInput (Resource);
+			flow.Finish ();
+			return new CaseAuthInput (Resource, this.LoginName, this.LoginPassword);
 		}
 	}
 }

@@ -7,7 +7,7 @@ namespace QR
 	/// <summary>
 	/// Case QR print finish. 発券しました
 	/// </summary>
-	public class CasePrintFinish: AbstractCase,ICase
+	public class CasePrintFinish: AbstractCase,ICase,IAutoForwardingCase
 	{
 		public ResultStatusCollector<string> StatusCollector { get; set; }
 

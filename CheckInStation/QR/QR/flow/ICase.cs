@@ -11,6 +11,8 @@ namespace QR
 	{
 		IResource Resource{ get; set; }
 
+		IInternalEvent PresentationChanel { get; set; }
+
 		/// <summary>
 		/// ユーザーが入力をする前に実行されるメソッド
 		/// </summary>

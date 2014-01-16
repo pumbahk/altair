@@ -9,7 +9,7 @@ namespace QR
 	/// <summary>
 	/// Case QR print for all. 印刷(all)
 	/// </summary>
-	public class CasePrintForAll :AbstractCase,ICase
+	public class CasePrintForAll :AbstractCase,ICase,IAutoForwardingCase
 	{
 		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
@@ -53,6 +53,7 @@ namespace QR
 
 		public override ICase OnFailure (IFlow flow)
 		{
+			flow.Finish ();
 			Func<Task<bool>> modify = (async () => {
 				IEnumerable<string> used = StatusCollector.Result ().SuccessList;
 				foreach (var k in used) {

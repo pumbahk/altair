@@ -37,7 +37,8 @@ namespace QR
 
 		public override ICase OnFailure (IFlow flow)
 		{
-			return new CaseFailureRedirect (Resource);
+			PresentationChanel.NotifyFlushMessage ("failure");
+			return this;
 		}
 	}
 }

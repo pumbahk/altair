@@ -36,5 +36,11 @@ namespace QR
 		{
 			return new CaseOrdernoVerifyRequestData (this.Resource, this.RequestData);
 		}
+
+		public override ICase OnFailure (IFlow flow)
+		{
+			PresentationChanel.NotifyFlushMessage ("failure");
+			return this;
+		}
 	}
 }
