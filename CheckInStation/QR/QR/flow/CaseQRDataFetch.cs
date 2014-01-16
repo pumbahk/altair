@@ -26,6 +26,7 @@ namespace QR
 			try {
 				ResultTuple<string, TicketData> result = await Resource.TicketDataFetcher.FetchAsync (this.QRCode);
 				if (result.Status) {
+					this.TicketData = result.Right;
 					return true;
 				} else {
 					//modelからpresentation層へのメッセージ
