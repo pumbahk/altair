@@ -45,7 +45,7 @@ namespace QR
 		}
 
 		[Test, Description ("認証input画面 -ok-> auth情報取得 -ok-> 認証方法選択")]
-		public void TestCase ()
+		public void TestAuthFlow ()
 		{
 			var manager = new FlowManager ();
 			var startpoint = new CaseAuthInput (new Resource ());
@@ -68,6 +68,88 @@ namespace QR
 			});
 			t.Wait ();
 		}
+
+		[Test, Description ("認証方法選択画面 -qr-> QR読み込み")]
+		public void TestInputSelectRedirectQRCode ()
+		{
+			var manager = new FlowManager ();
+			var startpoint = new CaseInputStrategySelect (new Resource ());
+
+			FakeFlow target = new FakeFlow (manager, startpoint);
+
+			var t = Task.Run (async () => {
+				// start
+				target.VerifyStatus = true;
+				(target.Case as CaseInputStrategySelect).Unit = InputUnit.qrcode;
+
+				target = await target.Forward () as FakeFlow;
+				Assert.That ((target.Case is CaseQRCodeInput), Is.True);
+			});
+			t.Wait ();
+		}
+
+
+		[Test, Description ("認証方法選択画面 -order_no-> 注文番号読み込み")]
+		public void TestInputSelectRedirectOrderno ()
+		{
+			var manager = new FlowManager ();
+			var startpoint = new CaseInputStrategySelect (new Resource ());
+
+			FakeFlow target = new FakeFlow (manager, startpoint);
+
+			var t = Task.Run (async () => {
+				// start
+				target.VerifyStatus = true;
+				(target.Case as CaseInputStrategySelect).Unit = InputUnit.order_no;
+
+				target = await target.Forward () as FakeFlow;
+				Assert.That ((target.Case is CaseOrdernoOrdernoInput), Is.True);
+			});
+			t.Wait ();
+		}
+
+		/***********
+		 * Orderno *
+		 ***********/
+		[Test, Description ("注文番号読み込み -ok-> 電話番号読み込み -ok-> 注文番号データのverify -ok-> Orderno表示(all) -ok-> 印刷(all) -ok> 発券しました")]
+		public void TestItForOrderno ()
+		{
+			var manager = new FlowManager ();
+			var startpoint = new CaseOrdernoOrdernoInput (new Resource ());
+			FakeFlow target = new FakeFlow (manager, startpoint);
+
+			var t = Task.Run (async () => {
+				// start 
+				target.VerifyStatus = true;
+				Assert.That ((target.Case is CaseOrdernoOrdernoInput), Is.True);
+
+				target = await target.Forward () as FakeFlow;
+				target.VerifyStatus = true;
+				Assert.That ((target.Case is CaseOrdernoTelInput), Is.True);
+
+				target = await target.Forward () as FakeFlow;
+				target.VerifyStatus = true;
+				Assert.That ((target.Case is CaseOrdernoVerifyRequestData), Is.True);
+
+				target = await target.Forward () as FakeFlow;
+				target.VerifyStatus = true;
+				Assert.That ((target.Case is CaseOrdernoConfirmForAll), Is.True);
+
+				target = await target.Forward () as FakeFlow;
+				target.VerifyStatus = true;
+				Assert.That ((target.Case is CasePrintForOne), Is.False);
+				Assert.That ((target.Case is CasePrintForAll), Is.True);
+
+				target = await target.Forward () as FakeFlow;
+				target.VerifyStatus = true;
+				Assert.That ((target.Case is CasePrintFinish), Is.True);
+			});
+			t.Wait ();
+		}
+
+		/***********
+		 * QR      *
+		 ***********/
 
 		[Test, Description ("QR読み込み -ok-> QRからデータ取得中 -ok-> QR表示(1枚) -ok-> 印刷(1枚) -ok> 発券しました")]
 		public void TestItForOne ()

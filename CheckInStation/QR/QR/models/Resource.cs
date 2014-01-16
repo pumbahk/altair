@@ -37,6 +37,8 @@ namespace QR
 				throw new InvalidOperationException ("TicketDataCollectionFetcher is NULL");
 			if (TicketDataManager == null)
 				throw new InvalidOperationException ("TicketDataManager is NULL");
+			if (VerifiedOrderDataFetcher == null)
+				throw new InvalidOperationException ("VerifiedOrderDataFetcher is NULL");
 			if (SVGImageFetcher == null)
 				throw new InvalidOperationException ("SVGImageFetcher is null");
 			if (TicketImagePrinting == null)
@@ -51,6 +53,8 @@ namespace QR
 		public IDataFetcher<string, TicketData> TicketDataFetcher { get; set; }
 
 		public IDataFetcher<TicketDataCollectionRequestData, TicketDataCollection> TicketDataCollectionFetcher { get; set; }
+
+		public IDataFetcher<OrdernoRequestData, VerifiedOrdernoRequestData> VerifiedOrderDataFetcher{ get; set; }
 
 		public TicketDataManager TicketDataManager { get; set; }
 

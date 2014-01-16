@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 - 抜けている属性が無いか
 - validな値か
 */
+// see also: tests.misc.login.json
 namespace QR
 {
 	[DataContract]
@@ -24,6 +25,8 @@ namespace QR
 		internal string ImageFromSvg;
 		[DataMember]
 		internal string UpdatePrintedAt;
+		[DataMember]
+		internal string VerifyOrderData;
 
 		public static string asURL (string url)
 		{
@@ -37,6 +40,7 @@ namespace QR
 			this.QRFetchData = EndPoint.asURL (json.qr_ticketdata);
 			this.QRSvgOne = EndPoint.asURL (json.qr_svgsource_one);
 			this.QRSvgAll = EndPoint.asURL (json.qr_svgsource_all);
+			this.VerifyOrderData = EndPoint.asURL (json.orderno_verified_data);
 			this.ImageFromSvg = EndPoint.asURL (json.image_from_svg);
 			this.UpdatePrintedAt = EndPoint.asURL (json.qr_update_printed_at);
 			this.DataCollectionFetchData = EndPoint.asURL (json.qr_ticketdata_collection);

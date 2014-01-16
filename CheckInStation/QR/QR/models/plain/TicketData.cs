@@ -24,7 +24,7 @@ namespace QR
 	public class TicketData
 	{
 		[DataMember]
-		internal string user;
+		internal AdditionalData additional;
 		[DataMember]
 		internal string ordered_product_item_token_id;
 		[DataMember]
@@ -36,13 +36,14 @@ namespace QR
 		[DataMember]//認証情報
 		internal string secret;
 
-		public TicketData (dynamic json)
+		public TicketData(dynamic json)
 		{
-			user = json.user;
 			ordered_product_item_token_id = json.ordered_product_item_token_id;
 			order_no = json.order_no;
 			seat_id = json.seat_id;
 			seat_name = json.seat_name;
+			secret = json.secret;
+			additional = new AdditionalData (json);
 		}
 	}
 }

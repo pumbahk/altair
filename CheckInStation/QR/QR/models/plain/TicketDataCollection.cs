@@ -2,6 +2,7 @@ using System;
 using System.Runtime.Serialization;
 using System.Linq;
 using System.Collections.Generic;
+using NLog;
 
 namespace QR
 {
@@ -20,9 +21,14 @@ namespace QR
 	public class TicketDataCollection
 	{
 		[DataMember]
-		internal TicketData tdata;
+		internal string user;
+		[DataMember]//認証情報
+		internal string secret;
+		[DataMember]
+		internal AdditionalData additional;
 		[DataMember]
 		internal TicketDataMinumum[] collection;
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
 		public void ConfigureCollection (dynamic json)
 		{			
@@ -36,11 +42,11 @@ namespace QR
 			}
 			this.collection = coll.ToArray ();
 		}
-				
+
 		public TicketDataCollection (dynamic json)
 		{
-			this.tdata = new TicketData (json);
 			this.ConfigureCollection (json);
+			this.additional = new AdditionalData (json);
 		}
 	}
 }

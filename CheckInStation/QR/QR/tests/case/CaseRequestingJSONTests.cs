@@ -5,55 +5,83 @@ using Codeplex.Data;
 
 namespace QR
 {
-	[TestFixture ()]
-	public class CaseRequestingJSONTests
+	public class MockSVGImage : SVGImageFetcher
 	{
-		public class MockSVGImage : SVGImageFetcher
+		public MockSVGImage (IResource resource) : base (resource)
 		{
-			public MockSVGImage (IResource resource) : base (resource)
-			{
-			}
-
-			public override string GetSvgOneURL ()
-			{
-				return "http://dummy.svg";
-			}
-
-			public override string GetSvgAllURL ()
-			{
-				return "http://dummy.all.svg";
-			}
-
-			public override string GetImageFromSvgURL ()
-			{
-				return "http://dummy.image";
-			}
 		}
 
-		public class MockTDFetcher : TicketDataFetcher
+		public override string GetSvgOneURL ()
 		{
-			public MockTDFetcher (IResource resource) : base (resource)
-			{
-			}
-
-			public override string GetQRFetchDataUrl ()
-			{
-				return "http://dummy.ticketdata.all";
-			}
+			return "http://dummy.svg";
 		}
 
-		public class MockTDCollectionFetcher : TicketDataCollectionFetcher
+		public override string GetSvgAllURL ()
 		{
-			public MockTDCollectionFetcher (IResource resource) : base (resource)
-			{
-			}
-
-			public override string GetCollectionFetchUrl ()
-			{
-				return "http://dummy.ticketdata.all";
-			}
+			return "http://dummy.all.svg";
 		}
 
+		public override string GetImageFromSvgURL ()
+		{
+			return "http://dummy.image";
+		}
+	}
+
+	public class MockTDFetcher : TicketDataFetcher
+	{
+		public MockTDFetcher (IResource resource) : base (resource)
+		{
+		}
+
+		public override string GetQRFetchDataUrl ()
+		{
+			return "http://dummy.ticketdata.all";
+		}
+	}
+
+	public class MockTDCollectionFetcher : TicketDataCollectionFetcher
+	{
+		public MockTDCollectionFetcher (IResource resource) : base (resource)
+		{
+		}
+
+		public override string GetCollectionFetchUrl ()
+		{
+			return "http://dummy.ticketdata.all";
+		}
+	}
+
+	[TestFixture ()]
+	public class CaseRequestingJSONOrdernoTests
+	{
+		[Test, Description ("orderno confirm all verified order dataからticketdata collectionを取ってくる")]
+		public void TestsConfirmALlFecthTicketDataCollectionFromTicketData ()
+		{
+			var t = Task.Run (async () => {
+				var responseJSON = Testing.ReadFromEmbeddedFile ("QR.tests.misc.qrdata.all.json");
+				IResource resource = new Resource () {
+					HttpWrapperFactory = new FakeHttpWrapperFactory<HttpWrapper> (responseJSON)
+				};
+				resource.TicketDataCollectionFetcher = new MockTDCollectionFetcher (resource);
+
+				// case 初期化
+				var tdata = new TicketData (DynamicJson.Parse (Testing.ReadFromEmbeddedFile ("QR.tests.misc.qrdata.json")));
+				ICase target = new CaseQRConfirmForAll (resource, tdata);
+				QRInputEvent ev = new QRInputEvent ();
+
+				await target.ConfigureAsync (ev as IInternalEvent);
+				Console.WriteLine (await target.VerifyAsync ());
+				ev.HandleEvent ();
+
+				Assert.IsTrue (await target.VerifyAsync ());
+			});
+			t.Wait ();
+		}
+	}
+
+	[TestFixture ()]
+	public class CaseRequestingJSONQRCodeTests
+	{
 		[Test, Description ("QR fetch data qrcodeからticketdataを取ってくる")]
 		public void TestsFecthTicketDataFromQRCode ()
 		{
@@ -94,8 +122,8 @@ namespace QR
 				QRInputEvent ev = new QRInputEvent ();
 
 				await target.ConfigureAsync (ev as IInternalEvent);
-				//Console.WriteLine (await target.VerifyAsync ());
-				//ev.HandleEvent ();
+				Console.WriteLine (await target.VerifyAsync ());
+				ev.HandleEvent ();
 
 				Assert.IsTrue (await target.VerifyAsync ());
 			});

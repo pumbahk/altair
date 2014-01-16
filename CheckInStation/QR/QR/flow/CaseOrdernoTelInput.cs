@@ -5,7 +5,7 @@ using NLog;
 namespace QR
 {
 	/// <summary>
-	/// Case CaseOrdernoTelInput. 
+	/// Case CaseOrdernoTelInput. 電話番号読み込み
 	/// </summary>
 	public class CaseOrdernoTelInput : AbstractCase, ICase
 	{

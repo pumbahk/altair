@@ -30,7 +30,7 @@ namespace QR.presentation.cli
 			do {
 				Console.WriteLine ("------TEL input---------");
 				Console.Write ("TEL:");
-				ev.Orderno = Console.ReadLine ();
+				ev.Tel = Console.ReadLine ();
 				result = await RequestBroker.Submit (ev);
 				ev.HandleEvent ();
 			} while(ev.Status == InternalEventStaus.failure);

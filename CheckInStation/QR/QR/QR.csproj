@@ -69,8 +69,6 @@
     <Compile Include="flow\CaseQRConfirmForOne.cs" />
     <Compile Include="flow\CaseQRConfirmForAll.cs" />
     <Compile Include="flow\Flow.cs" />
-    <Compile Include="models\IVerifier.cs" />
-    <Compile Include="models\FakeVerifier.cs" />
     <Compile Include="tests\flow\FlowTests.cs" />
     <Compile Include="flow\CaseFailureRedirect.cs">
       <DependentUpon>CaseQRCodeInput.cs</DependentUpon>
@@ -152,6 +150,8 @@
     <Compile Include="models\IResource.cs" />
     <Compile Include="models\plain\TicketDataCollectionRequestData.cs" />
     <Compile Include="flow\CaseOrdernoVerifyRequestData.cs" />
+    <Compile Include="models\loader\VerifiedOrderDataFetcher.cs" />
+    <Compile Include="models\plain\AdditionalData.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

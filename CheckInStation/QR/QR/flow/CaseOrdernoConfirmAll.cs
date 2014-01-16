@@ -13,11 +13,11 @@ namespace QR
 	{
 		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
-		public OrdernoRequestData RequestData { get; set; }
+		public VerifiedOrdernoRequestData RequestData { get; set; }
 
 		public TicketDataCollection Collection { get; set; }
 
-		public CaseOrdernoConfirmForAll (IResource resource, OrdernoRequestData requestData) : base (resource)
+		public CaseOrdernoConfirmForAll (IResource resource, VerifiedOrdernoRequestData requestData) : base (resource)
 		{
 			this.RequestData = requestData;
 		}

@@ -4,9 +4,9 @@ using QR.message;
 
 namespace QR
 {
-	public interface IDataFetcher<G,T>
+	public interface IDataFetcher<Required,Provided>
 	{
-		Task<ResultTuple<string, T>> FetchAsync(G arg);
+		Task<ResultTuple<string, Provided>> FetchAsync(Required arg);
 	}
 }
 
