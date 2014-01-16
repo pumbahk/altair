@@ -1659,10 +1659,17 @@ class OrdersReserveView(BaseView):
     @view_config(route_name='orders.api.get.html', renderer='altair.app.ticketing:templates/orders/_tiny_order.html')
     def api_get_html(self):
         l0_id = self.request.params.get('l0_id', 0)
+        order_no = self.request.params.get('order_no')
         performance_id = self.request.params.get('performance_id', 0)
-        order = self._get_order_by_seat(performance_id, l0_id)
+        order = None
+        if l0_id:
+            order = self._get_order_by_seat(performance_id, l0_id)
+        elif order_no:
+            order = Order.query.filter_by(order_no=order_no).first()
         if order is None:
-            raise HTTPNotFound('order (performance_id=%s, l0_id=%s) is not found' % (performance_id, l0_id))
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'予約がありません',
+            }))
         return {
             'order':order,
             'options':dict(

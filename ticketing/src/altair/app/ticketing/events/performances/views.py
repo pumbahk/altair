@@ -96,7 +96,8 @@ class PerformanceShowView(BaseView):
 
     def _tab_reservation(self):
         return dict(
-            data_source=self.build_data_source({u'f':u'sale_only'})
+            data_source=self.build_data_source({u'f':u'sale_only'}),
+            form_search=OrderSearchForm(self.request.params)
             )
 
     def _extra_data(self):

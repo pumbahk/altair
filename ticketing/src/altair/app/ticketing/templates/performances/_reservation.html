@@ -1,4 +1,4 @@
-<%page args="performance" />
+<%page args="performance, form_search" />
 <%namespace file="./_venue_view.html" name="vv" />
 <%namespace file="/common/helpers.html" name="ch" />
 
@@ -105,16 +105,16 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     </div>
     </%def>
     <%def name="venue_editor_side_extra()">
+      <div style="float:right">
+        <form class="form-horizontal search-order-form" style="margin-bottom: 0;">
+          ${form_search.order_no(minlength=12, placeholder=u'予約番号')}
+          <a href="javascript:void(0);" onclick="javascript:searchOrder();" class="btn">
+            <i class="icon-search"></i> 検索
+          </a>
+        </form>
+      </div>
       <ul class="nav nav-tabs">
 	<li class="active"><a href="#venue-editor-main-side-tab1" data-toggle="tab">予約情報</a></li>
-	<a class="close venue-editor-main-side-close" style="margin: 5px 5px 0 0;">×</a>
-	<script type="text/javascript">
-	  $('.venue-editor-main-side-close').click(function() {
-	    venueEditorSide.css('width', '0');
-	    venueEditorRoot.css('width', '100%');
-	    readjustMap();
-	  });
-	</script>
       </ul>
       <div class="tab-content" style="overflow: visible;">
 	<div class="tab-pane active" id="venue-editor-main-side-tab1"></div>
@@ -334,9 +334,29 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 
   callbacks.click = function (seat) {
     if (!$('.venue-editor-main-side-toggle').hasClass('active')) return;
+    showOrder(seat);
+  };
+
+  function onReservationComplete(result) {
+    if (window.ticketPrinterService)
+      printOrder(result.order_id); // _printer.html
+    window.open('/orders/show/' + result.order_id, '_blank');
+    venueEditorRoot.venueeditor('refresh');
+    getSalesSummary();
+  }
+
+  function searchOrder() {
+    var order_no = $('.search-order-form').find('#order_no').val();
+    showOrder(null, order_no);
+  }
+
+  function showOrder(seat, order_no) {
+    var params = {'performance_id':${performance.id}};
+    if (seat) params['l0_id'] = seat.id;
+    if (order_no) params['order_no'] = order_no;
     $.ajax({
       url: '${request.route_path('orders.api.get.html')}',
-      data: {'l0_id':seat.id, 'performance_id':${performance.id}},
+      data: params,
       dataType: 'html',
       success: function(data) {
         tab1.empty().append(data);
@@ -348,14 +368,6 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         tooltip.text(messages).css('width', '200px');
       }
     });
-  };
-
-  function onReservationComplete(result) {
-    if (window.ticketPrinterService)
-      printOrder(result.order_id); // _printer.html
-    window.open('/orders/show/' + result.order_id, '_blank');
-    venueEditorRoot.venueeditor('refresh');
-    getSalesSummary();
   }
 
   function switchToSalesCounterMode() {
