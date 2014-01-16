@@ -13,5 +13,3 @@ class AugusVenueUploadForm(Form):
         label=u'CSVファイル',
         validators=[],
     )
-
-
