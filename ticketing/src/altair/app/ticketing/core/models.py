@@ -2374,9 +2374,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     shipping_address = relationship('ShippingAddress', backref='order')
     organization_id = Column(Identifier, ForeignKey("Organization.id"))
     ordered_from = relationship('Organization', backref='orders')
-    @property
-    def organization(self):
-        return self.ordered_from
     operator_id = Column(Identifier, ForeignKey("Operator.id"))
     operator = relationship('Operator', uselist=False)
     channel = Column(Integer, nullable=True)
@@ -2424,6 +2421,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
     sales_segment = relationship('SalesSegment', backref='orders')
+
+    @property
+    def organization(self):
+        return self.ordered_from
 
     @property
     def ordered_products(self):

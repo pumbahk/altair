@@ -1593,6 +1593,16 @@ class OrdersReserveView(BaseView):
 
                 eopi.price = int(opi_data.get('product_item').get('price'))
                 eopi.quantity = int(opi_data.get('quantity'))
+
+                for token in eopi.tokens:
+                    DBSession.delete(token)
+                for i, seat in eopi.iterate_serial_and_seat():
+                    token = OrderedProductItemToken(
+                        serial = i,
+                        seat = seat,
+                        valid=True
+                        )
+                    eopi.tokens.append(token)
                 #Todo:
                 #product_item = ProductItem
                 #eopi.product_item_id = product_item.id
@@ -1639,8 +1649,13 @@ class OrdersReserveView(BaseView):
                         quantity=product_item.quantity * quantity,
                         seats=seats
                     )
-                    ordered_product.ordered_product_items.append(ordered_product_item)
-                edit_order.items.append(ordered_product)
+                    for i, seat in ordered_product_item.iterate_serial_and_seat():
+                        token = OrderedProductItemToken(
+                            serial = i,
+                            seat = seat,
+                            valid=True
+                            )
+                        ordered_product_item.tokens.append(token)
 
         edit_order.transaction_fee = order_data.get('transaction_fee')
         edit_order.delivery_fee = order_data.get('delivery_fee')
