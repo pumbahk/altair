@@ -35,10 +35,15 @@ namespace QR
 			return this.RequestBroker.GetInternalEvent ();	
 		}
 
+		public IFlow Peek ()
+		{
+			return this.undoStack.Peek ();
+		}
+
 		public async Task<ICase> Forward ()
 		{
 			
-			var cmd = undoStack.Peek ();
+			var cmd = this.Peek ();
 			var nextCmd = await cmd.Forward ();
 			undoStack.Push (nextCmd);
 			logger.Debug ("* Forward: {0} -> {1}", cmd.Case.GetType ().FullName, nextCmd.Case.GetType ().FullName);
@@ -51,8 +56,16 @@ namespace QR
 				// TODO:log
 				return undoStack.Peek ().Case;
 			}
-			var cmd = undoStack.Pop ();
-			return (await cmd.Backward ()).Case;
+			// 現在の情報を捨てる
+			var prev = undoStack.Pop ();
+			await prev.Backward ();
+
+			var that = this.Peek ();
+			while (that.IsAutoForwarding ()) {
+				that = undoStack.Pop ();
+				await that.Backward ();
+			}
+			return that.Case;
 		}
 
 		public void Refresh ()

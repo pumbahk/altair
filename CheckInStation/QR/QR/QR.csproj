@@ -154,6 +154,9 @@
     <Compile Include="flow\CaseOrdernoVerifyRequestData.cs" />
     <Compile Include="models\loader\VerifiedOrderDataFetcher.cs" />
     <Compile Include="models\plain\AdditionalData.cs" />
+    <Compile Include="tests\flow\BackwardTests.cs" />
+    <Compile Include="flow\FakeFlow.cs" />
+    <Compile Include="flow\IAutoForwardingCase.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

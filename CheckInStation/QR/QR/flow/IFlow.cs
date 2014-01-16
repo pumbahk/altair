@@ -8,10 +8,14 @@ namespace QR
 		Task<IFlow> Forward ();
 		//TODO:implement
 		Task<IFlow> Backward ();
-		//TODO:implement
-		void Finish();
-		ICase Case { get; set;}
-		IFlowDefinition GetFlowDefinition();
+
+		void Finish ();
+
+		ICase Case { get; set; }
+
+		IFlowDefinition GetFlowDefinition ();
+
+		bool IsAutoForwarding ();
 	}
 }
 

@@ -8,7 +8,7 @@ namespace QR
 	/// <summary>
 	/// Case Auth data fetch. Authデータ取得中
 	/// </summary>
-	public class CaseAuthDataFetch : AbstractCase, ICase
+	public class CaseAuthDataFetch : AbstractCase, ICase, IAutoForwardingCase
 	{
 		public string LoginName { get; set; }
 
