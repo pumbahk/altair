@@ -9,6 +9,7 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import get_renderer
 from pyramid_mailer import get_mailer
+from . import helpers as h
 import webhelpers.paginate as paginate
 
 from altair.sqlahelper import get_db_session
@@ -104,6 +105,7 @@ class Lots(BaseView):
         return dict(
             event=event,
             lots=lots,
+            h=h,
             )
 
     @view_config(route_name='lots.new', renderer='altair.app.ticketing:templates/lots/new.html', permission='event_viewer')
@@ -296,6 +298,7 @@ class Lots(BaseView):
             lot=lot,
             lots_cart_url=self.context.lots_cart_url,
             product_grid=product_grid,
+            h=h,
             )
 
     @view_config(route_name='lots.edit', renderer='altair.app.ticketing:templates/lots/edit.html', permission='event_viewer')
