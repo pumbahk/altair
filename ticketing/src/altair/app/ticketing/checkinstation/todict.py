@@ -48,16 +48,16 @@ def additional_data_dict_from_order(order):
                 "user": shipping_address.full_name_kana if shipping_address else u"",
                 "order": {
                     "order_no": order.order_no, 
-                    "id": order.id, 
+                    "id": unicode(order.id), 
                     "note": note,
                 }, 
                 "performance": {
-                    "id": performance.id, 
+                    "id": unicode(performance.id), 
                     "name": performance_name, 
                     "date":japanese_datetime(performance.start_on), 
                 }, 
                 "event": {
-                    "id": performance.event_id
+                    "id": unicode(performance.event_id)
                 }
             }}
 
@@ -66,11 +66,11 @@ def ticket_data_collection_dict_from_tokens(tokens):
     for token in tokens:
         seat = token.seat
         D = {
-            "refreshed_at": str(token.refreshed_at) if token.refreshed_at else None, 
-            "printed_at": str(token.printed_at) if token.printed_at else None, 
-            "ordered_product_item_token_id": token.id, 
+            "refreshed_at": unicode(token.refreshed_at) if token.refreshed_at else None, 
+            "printed_at": unicode(token.printed_at) if token.printed_at else None, 
+            "ordered_product_item_token_id": unicode(token.id), 
             "seat": {
-                "id": seat.id if seat else None,
+                "id": unicode(seat.id) if seat else None,
                 "name": seat.name if seat else u"自由席",
             }, 
             "product": {
@@ -86,22 +86,22 @@ def ticket_data_dict_from_history(history):
     seat = history.seat
     codeno = history.id
     return {
-        "codeno": codeno, 
-        "refreshed_at": str(token.refreshed_at) if token.refreshed_at else None, 
-        "printed_at": str(token.printed_at) if token.printed_at else None, 
-        "ordered_product_item_token_id": token.id, 
+        "codeno": unicode(codeno), 
+        "refreshed_at": unicode(token.refreshed_at) if token.refreshed_at else None, 
+        "printed_at": unicode(token.printed_at) if token.printed_at else None, 
+        "ordered_product_item_token_id": unicode(token.id), 
         "product": {
             "name":  product_name
         }, 
         "seat": {
-            "id": seat.id if seat else None,
+            "id": unicode(seat.id) if seat else None,
             "name": seat.name if seat else u"自由席",
         }
     }
 
 
 def dict_from_performance(performance):
-    return {"id": performance.id, 
+    return {"id": unicode(performance.id), 
             "name": performance.name, 
             "event_id": performance.event_id, 
             "start_on": performance.start_on, 

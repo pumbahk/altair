@@ -20,7 +20,7 @@ namespace QR
 
 		public virtual string GetVerifyURL ()
 		{
-			return Resource.EndPoint.DataCollectionFetchData;
+			return Resource.EndPoint.VerifyOrderData;
 		}
 
 		public async Task<ResultTuple<string, VerifiedOrdernoRequestData>> FetchAsync (OrdernoRequestData requestData)

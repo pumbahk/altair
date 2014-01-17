@@ -39,6 +39,7 @@ def verify_secret_token_decorator_factory(get_secret):
 
 def get_secret_from_json_body(request):
     try:
+        logger.debug("secret json_body:%s", request.json_body)
         return request.json_body["secret"]
     except KeyError:
         logger.warn("KeyError: request.json_body['secret']")

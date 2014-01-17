@@ -14,11 +14,13 @@ class VerifyOrderReuestDataForm(Form):
 
     def object_validate(self, request, order):
         if order is None or order.shipping_address is None:
-            self.errors["order_no"] = [u'受付番号または電話番号が違います。']
+            if order is None:
+                logger.info("order is Not found. order_no=%s", self.data["order_no"])
+            self.errors["order_no"] = [u'注文が見つかりません。受付番号または電話番号が違います。']
             return False
         address = order.shipping_address
         stripper = strip_hyphen()
         if stripper(address.tel_1) != self.data["tel"] and stripper(address.tel_2) != self.data["tel"] :
-            self.errors["order_no"] = [u'受付番号または電話番号が違います。']
+            self.errors["order_no"] = [u'注文が見つかりません。受付番号または電話番号が違います。']
             return False
         return True

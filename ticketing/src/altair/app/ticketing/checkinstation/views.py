@@ -80,7 +80,11 @@ def ticket_data_from_signed_string(context, request):
 
     ticket_data = TicketData(request, context.operator)
     try:
-        order, history = ticket_data.get_order_and_history_from_signed(request.json_body["qrsigned"])
+        try:
+            order, history = ticket_data.get_order_and_history_from_signed(request.json_body["qrsigned"])
+        except TypeError:
+            logger.warn("*qr ticketdata: history not found: json=%s", request.json_body)
+            raise HTTPBadRequest(u"不正な入力が渡されました!")
 
         data = ticket_data_dict_from_history(history)
         ## 付加情報追加
@@ -91,8 +95,8 @@ def ticket_data_from_signed_string(context, request):
         data.update(TokenStatusDictBuilder(order, history).build())
         return data
     except KeyError:
-        logger.warn("*qr ticketdata: %s", request.json_body)
-        raise HTTPBadRequest(u"不正な入力が渡されました")
+        logger.warn("*qr ticketdata: KeyError: json=%s", request.json_body)
+        raise HTTPBadRequest(u"不正な入力が渡されました!!")
 
 
 
@@ -175,6 +179,7 @@ def order_no_verified_data(context, request):
     ## 適切な注文情報か調べる。(order_no x tel)
     access_log("*order_no.verified_data", context.identity)
 
+    logger.info("json_body:%s", request.json_body)
     form = VerifyOrderReuestDataForm(MultiDict(request.json_body))
     if not form.validate():
         raise HTTPBadRequest(form.errors["order_no"][0]) #xxx:
