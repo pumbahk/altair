@@ -11,6 +11,7 @@ from wtforms.validators import Required
 from .models import LotEntryStatusEnum
 from altair.app.ticketing.users.helpers import format_sex
 from cgi import escape
+from api import get_lotting_announce_timezone
 from altair.app.ticketing.core.models import (
     ShippingAddress,
     Product,
@@ -329,3 +330,19 @@ def cr2br(t):
     if t is None:
         return None
     return t.replace("\n", "<br/>")
+
+def timezone_label(lot):
+    label = ""
+    if lot.custom_timezone_label:
+        label = lot.custom_timezone_label
+    else:
+        if lot.lotting_announce_timezone:
+            label = get_lotting_announce_timezone(lot.lotting_announce_timezone)
+    return label
+
+def announce_time_label(lot):
+    if not timezone_label(lot):
+        return japanese_datetime(lot.lotting_announce_datetime)
+    announce_datetime = japanese_datetime(lot.lotting_announce_datetime)
+    announce_datetime = announce_datetime[0:announce_datetime.find(')', 0) + 1]
+    return  announce_datetime + ' ' + timezone_label(lot)

@@ -43,7 +43,12 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
         </tr>
         <tr>
           <th>抽選結果発表予定日</th>
-          <td>${lot.lotting_announce_datetime}</td>
+          <td>
+              ${lot.lotting_announce_datetime}
+              % if h.timezone_label(lot):
+                (${h.timezone_label(lot)})
+              % endif
+          </td>
         </tr>
         <tr>
           <th>認証方法</th>

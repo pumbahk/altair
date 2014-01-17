@@ -32,6 +32,7 @@ from .models import (
 from .forms import (
     SearchLotEntryForm,
 )
+from altair.app.ticketing.lots import helpers as h
 
 @view_defaults(route_name='altair.app.ticketing.lots_admin.index',
                decorator=with_bootstrap)
@@ -118,6 +119,7 @@ class IndexView(object):
         return dict(lots=lots,
                     post_lots=post_lots,
                     past_lots=past_lots,
+                    h=h,
         )
 
 

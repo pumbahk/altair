@@ -8,6 +8,7 @@ from pyramid.renderers import render
 from .api import create_or_update_mailinfo, get_mail_setting_default, get_appropriate_message_part
 from .forms import SubjectInfoWithValue, SubjectInfo, SubjectInfoDefault
 from .forms import SubjectInfoRenderer
+from altair.app.ticketing.lots.helpers import announce_time_label
 import logging
 from altair.app.ticketing.cart import helpers as ch
 logger = logging.getLogger(__name__)
@@ -21,12 +22,14 @@ def get_subject_info_default():
 class LotsInfoDefault(SubjectInfoDefault):
     def get_announce_date(lot_entry):
         d = lot_entry.lot.lotting_announce_datetime
-        return u"{d.year}年{d.month:02}月{d.day:02}日 {d.hour:02}:{d.minute:02}～".format(d=d) if d else u"-"
+        if d:
+            return announce_time_label(lot_entry.lot)
+        return u"-"
 
     first_sentence_default = u"""この度は、お申込みいただき、誠にありがとうございました。
 抽選申込が完了いたしましたので、ご連絡させていただきます。
 
-抽選結果発表日時以降、抽選結果確認ページにて当選・落選をご確認下さい。
+抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
 """
 
     first_sentence = SubjectInfoWithValue(name="first_sentence", label=u"はじめの文章", value="", getval=(lambda _: LotsInfoDefault.first_sentence_default))

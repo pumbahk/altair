@@ -120,6 +120,8 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     entry_limit = sa.Column(sa.Integer, default=0, server_default="0")
 
     lotting_announce_datetime = sa.Column(sa.DateTime, doc=u"抽選結果発表予定日")
+    lotting_announce_timezone = sa.Column(sa.String(255))
+    custom_timezone_label = sa.Column(sa.String(255))
 
     system_fee = sa.Column(sa.Numeric(precision=16, scale=2), default=0,
                            server_default="0")
