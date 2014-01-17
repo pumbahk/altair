@@ -286,7 +286,7 @@ class BaseTests(unittest.TestCase):
         transaction.abort()
 
 
-class CheckinStationEndpointAPIWithoutSeat(BaseTests):
+class CheckinStationAPITests(BaseTests):
     TOKEN_ID = 9999
     DRAWING_DATA = "drawing-data-for-svg"
     @classmethod
@@ -335,6 +335,33 @@ class CheckinStationEndpointAPIWithoutSeat(BaseTests):
 
         self.assertIn("image_from_svg", endpoints)
         ## see: altair/CheckInStation/QR/QR/tests/misc/login.json
+
+    def test_verified_order_data_from_order__success(self):
+        def _getTarget():
+            from .views import order_no_verified_data
+            return order_no_verified_data
+
+        ## qrcode
+        result = do_view(
+            _getTarget(), 
+            request=DummyRequest(json_body={"order_no": "Demo:OrderNO:01", "tel": ":tel_1"})
+        )
+        self.assertEqual(result["order_no"], self.order.order_no)
+        ## 認証用のtokenが存在
+        self.assertIn("secret", result)
+
+    def test_verified_order_data_from_order__failure(self):
+        def _getTarget():
+            from .views import order_no_verified_data
+            return order_no_verified_data
+
+        from pyramid.httpexceptions import HTTPBadRequest
+        with self.assertRaises(HTTPBadRequest):
+            do_view(
+                _getTarget(), 
+                request=DummyRequest(json_body={})
+            )
+
 
     def test_ticketdata_from_qrsigned_string__success(self):
         ## full output sample: altair/CheckInStation/QR/QR/tests/misc/qrdata.json

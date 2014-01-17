@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 logger = logging.getLogger(__name__)
-from altair.app.ticketing.core.models import Performance, Event
+from altair.app.ticketing.core.models import Performance, Event, Order
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from pyramid.decorator import reify
@@ -51,6 +51,18 @@ from altair.app.ticketing.printqr import utils as p_utils
 from altair.app.ticketing.printqr import todict as p_todict
 from altair.app.ticketing.qr.utils import get_or_create_matched_history_from_token
 from altair.app.ticketing.tickets.api import get_svg_builder
+
+
+class OrderData(object):
+    def __init__(self, request, operator):
+        self.request = request
+        self.operator = operator
+
+    def get_order_from_order_no(self, order_no):
+        qs = (Order.query
+              .filter_by(organization_id=self.operator.organization_id)
+              .filter_by(order_no=order_no))
+        return qs.first()
 
 class SVGDataSource(object):
     def __init__(self, request):

@@ -4,6 +4,8 @@ import logging
 logger = logging.getLogger(__name__)
 from altair.now import get_now
 from pyramid.httpexceptions import HTTPBadRequest
+from webob.multidict import MultiDict
+from .signer import with_secret_token
 
 class BaseView(object):
     def __init__(self, context, request):
@@ -89,7 +91,8 @@ def ticket_data_from_signed_string(context, request):
 from .domainmodel import ItemTokenData
 from .domainmodel import SVGDataSource
 
-@view_config(route_name="qr.svgsource.one", permission="sales_counter", renderer="json")
+@view_config(route_name="qr.svgsource.one", permission="sales_counter", renderer="json", 
+             custom_predicates=(with_secret_token,))
 def svgsource_one_from_token(context, request):
     access_log("*qr.svg.one", context.identity)
     if not "ordered_product_item_token_id" in request.json_body:
@@ -104,7 +107,8 @@ def svgsource_one_from_token(context, request):
 
 ## token -> [svg] #all
 
-@view_config(route_name="qr.svgsource.all", permission="sales_counter", renderer="json")
+@view_config(route_name="qr.svgsource.all", permission="sales_counter", renderer="json", 
+             custom_predicates=(with_secret_token,))
 def svgsource_all_from_order_no(context, request):
     access_log("*qr.svg.all", context.identity)
     if not "order_no" in request.json_body:
@@ -117,3 +121,28 @@ def svgsource_all_from_order_no(context, request):
     token_list = token_data.get_item_token_list_from_order_no(request.json_body["order_no"])
     datalist = svg_source.data_list_for_all(order_no, token_list)
     return {"datalist": datalist}
+
+
+## order request data -> verified order request data
+from .forms import VerifyOrderReuestDataForm
+from .domainmodel import OrderData
+
+@view_config(route_name="orderno.verified_data", permission="sales_counter", renderer="json")
+def order_no_verified_data(context, request):
+    ## 適切な注文情報か調べる。(order_no x tel)
+    access_log("*order_no.verified_data", context.identity)
+
+    form = VerifyOrderReuestDataForm(MultiDict(request.json_body))
+    if not form.validate():
+        raise HTTPBadRequest(form.errors["order_no"][0]) #xxx:
+
+    order_no = request.json_body["order_no"]
+    order = OrderData(request, context.operator).get_order_from_order_no(order_no)
+
+    if not form.object_validate(request, order):
+        raise HTTPBadRequest(form.errors["order_no"][0]) #xxx:
+
+    data = {"order_no": order.order_no}
+    ## 認証用の文字列追加
+    data.update(verified_data_dict_from_secret(context.identity.secret))
+    return data
