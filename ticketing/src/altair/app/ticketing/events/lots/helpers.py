@@ -1,5 +1,5 @@
 from webhelpers.html.tags import link_to
-from .api import get_lotting_announce_timezone
+from altair.app.ticketing.lots.helpers import timezone_label
 
 class Link(object):
     def __init__(self, label, url, **attrs):
@@ -12,12 +12,3 @@ class Link(object):
 
     def __str__(self):
         return self.__html__()
-
-def timezone_label(lot):
-    label = ""
-    if lot.custom_timezone_label:
-        label = lot.custom_timezone_label
-    else:
-        if lot.lotting_announce_timezone:
-            label = get_lotting_announce_timezone(lot.lotting_announce_timezone)
-    return label
