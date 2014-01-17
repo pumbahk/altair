@@ -106,7 +106,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     </%def>
     <%def name="venue_editor_side_extra()">
       <div style="float:right">
-        <form class="form-horizontal search-order-form" style="margin-bottom: 0;">
+        <form class="form-horizontal search-order-form" style="margin: 0;" action="javascript:void(0);">
           ${form_search.order_no(minlength=12, placeholder=u'予約番号')}
           <a href="javascript:void(0);" onclick="javascript:searchOrder();" class="btn">
             <i class="icon-search"></i> 検索
@@ -364,8 +364,10 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       error: function(xhr, text) {
         var responseText = JSON.parse(xhr.responseText);
         var messages = responseText['message'] || xhr.statusText
-        var tooltip = venueEditor.find('.tooltip');
-        tooltip.text(messages).css('width', '200px');
+        var alert = $('<div class="alert" style="margin: 8px;" />').addClass('alert-error');
+        alert.append($('<ul/>').append($('<li/>').text(messages)));
+        tab1.find('.alert').remove();
+        tab1.prepend(alert);
       }
     });
   }
