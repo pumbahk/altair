@@ -29,7 +29,7 @@ class LotsInfoDefault(SubjectInfoDefault):
     first_sentence_default = u"""この度は、お申込みいただき、誠にありがとうございました。
 抽選申込が完了いたしましたので、ご連絡させていただきます。
 
-抽選結果発表日時以降、抽選結果確認ページにて当選・落選をご確認下さい。
+抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
 """
 
     first_sentence = SubjectInfoWithValue(name="first_sentence", label=u"はじめの文章", value="", getval=(lambda _: LotsInfoDefault.first_sentence_default))
