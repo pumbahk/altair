@@ -1685,9 +1685,9 @@ class OrdersReserveView(BaseView):
         elif order_no:
             order = Order.query.filter(Order.order_no==order_no, Order.organization_id==self.context.organization.id).first()
         if order is None:
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'予約がありません',
-            }))
+            raise HTTPBadRequest(body=json.dumps({'message':u'予約がありません' }))
+        elif order.performance_id != long(performance_id):
+            raise HTTPBadRequest(body=json.dumps({'message':u'異なる公演の予約番号です' }))
         return {
             'order':order,
             'options':dict(
