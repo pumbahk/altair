@@ -42,7 +42,10 @@
             <td><a href="${request.route_url('lots.show', lot_id=lot.id)}">${lot.name}</a></td>
             <td>${lot.start_at} - ${lot.end_at}</td>
             <td>${lot.limit_wishes}</td>
-            <td>${lot.lotting_announce_datetime}</td>
+            <td>${lot.lotting_announce_datetime}
+              % if h.timezone_label(lot):
+                (${h.timezone_label(lot)})</td>
+              % endif
             <td>
                 <div class="btn-group">
                     <a href="${request.route_url('lots.edit', lot_id=lot.id)}" class="btn"><i class="icon-edit"></i>編集</a>
