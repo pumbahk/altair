@@ -308,11 +308,16 @@ class CheckinStationAPITests(BaseTests):
         DBSession.add(bundle)
         DBSession.add(checkin_identity)
 
-        token = item.tokens[0]
-        token.id = cls.TOKEN_ID
+        for i, token in enumerate(item.tokens):
+            DBSession.merge(token)
+            token.id = cls.TOKEN_ID+i
 
+        def token_property(self):
+            token = DBSession.merge(self.item.tokens[0])
+            assert token.id
+            return token
+        cls.token = property(token_property)
         cls.item = property(lambda self: DBSession.merge(item))
-        cls.token = property(lambda self: DBSession.merge(token))
         cls.event = property(lambda self: DBSession.merge(self.item.product_item.performance.event))
         cls.order = property(lambda self: DBSession.merge(self.item.ordered_product.order))
         cls.budnle = property(lambda self: DBSession.merge(bundle))
@@ -393,7 +398,7 @@ class CheckinStationAPITests(BaseTests):
 
 
     def test_ticketdata_collection_from_order_no__success(self):
-        ## full output sample: altair/CheckInStation/QR/QR/tests/misc/qrdata.json
+        ## full output sample: altair/CheckInStation/QR/QR/tests/misc/qrdata.all.json
         def _getTarget():
             from .views import ticket_data_collection_from_order_no
             return ticket_data_collection_from_order_no
@@ -446,13 +451,13 @@ class CheckinStationAPITests(BaseTests):
         self.assertEquals(result["datalist"][0]["svg_list"][0]["svg"], self.DRAWING_DATA)
         self.assertEquals(result["datalist"][0]["svg_list"][1]["svg"], u"副券")
 
-    def test_svgsource_all_from_order_no(self):
+    def test_svgsource_all_from_token_id_list(self):
         def _getTarget():
-            from .views import svgsource_all_from_order_no
-            return svgsource_all_from_order_no
+            from .views import svgsource_all_from_token_id_list
+            return svgsource_all_from_token_id_list
         result = do_view(
             _getTarget(), 
-            request=DummyRequest(json_body={"order_no": self.order.order_no}))
+            request=DummyRequest(json_body={"token_id_list": [unicode(t.id) for t in self.item.tokens]}))
 
         self.assertEquals(len(result["datalist"]), 2)
         self.assertEquals(result["datalist"][0][u'ordered_product_item_token_id'], self.token.id)

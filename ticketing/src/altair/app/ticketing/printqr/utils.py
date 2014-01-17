@@ -81,15 +81,16 @@ def add_history(request, operator_id, params):
         ticket_id=ticket_id
         )
 
-def get_matched_ordered_product_item_token(ordered_product_item_token_id, organization_id):
-    qs = DBSession.query(OrderedProductItemToken) \
-        .filter_by(id=ordered_product_item_token_id) \
-        .join(OrderedProductItem) \
-        .join(OrderedProduct) \
-        .filter(Order.id==OrderedProduct.order_id) \
-        .filter(Order.organization_id==organization_id)
-    return qs.first()
+def ordered_product_item_token_query_on_organization(organization_id):
+    return (DBSession.query(OrderedProductItemToken) 
+            .join(OrderedProductItem) 
+            .join(OrderedProduct) 
+            .filter(Order.id==OrderedProduct.order_id) 
+            .filter(Order.organization_id==organization_id))
 
+def get_matched_ordered_product_item_token(ordered_product_item_token_id, organization_id):
+    qs = ordered_product_item_token_query_on_organization(organization_id)
+    return qs.filter(OrderedProductItemToken.id==ordered_product_item_token_id).first()
 
 class EnableTicketTemplatesCache(object):
     def __init__(self):

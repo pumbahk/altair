@@ -37,7 +37,8 @@ namespace QR
 		public static async Task<string> GetSvgDataList (IHttpWrapperFactory<HttpWrapper> factory, TicketData tdata, string url)
 		{
 			var data = new {
-				ordered_product_item_token_id = tdata.ordered_product_item_token_id
+				ordered_product_item_token_id = tdata.ordered_product_item_token_id,
+				secret = tdata.secret
 			};
 
 			using (var wrapper = factory.Create (url)) {
@@ -69,7 +70,9 @@ namespace QR
 		public static async Task<string> GetSvgDataList (IHttpWrapperFactory<HttpWrapper> factory, TicketDataCollection collection, string url)
 		{
 			var parms = new {
-				token_id_list = collection.collection.Select (o => o.ordered_product_item_token_id).ToArray ()
+				order_no = collection.additional.order.order_no,
+				token_id_list = collection.collection.Select (o => o.ordered_product_item_token_id).ToArray (),
+				secret = collection.secret
 			};
 
 			using (var wrapper = factory.Create (url)) {

@@ -32,6 +32,9 @@ namespace QR
 	{
 		[DataMember]
 		internal string status;
+		//認証情報
+		[DataMember]
+		internal string secret;
 		[DataMember]
 		internal AdditionalData additional;
 		[DataMember]
@@ -49,6 +52,7 @@ namespace QR
 		public TicketDataCollection (dynamic json)
 		{
 			this.status = json.status;
+			this.secret = json.secret;
 			this.ConfigureCollection (json.collection);
 			this.additional = new AdditionalData (json.additional);
 		}

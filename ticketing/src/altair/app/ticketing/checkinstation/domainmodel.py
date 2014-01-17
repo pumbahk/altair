@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 logger = logging.getLogger(__name__)
-from altair.app.ticketing.core.models import Performance, Event, Order
+from altair.app.ticketing.core.models import Performance, Event, Order, OrderedProductItemToken
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from pyramid.decorator import reify
@@ -31,8 +31,8 @@ class TicketData(object):
         builder = get_qrdata_builder(self.request)
         return order_and_history_from_qrdata(builder.data_from_signed(signed))
 
-from altair.app.ticketing.printqr.utils import get_matched_ordered_product_item_token
 from altair.app.ticketing.qr.utils import get_matched_token_query_from_order_no
+from altair.app.ticketing.printqr.utils import ordered_product_item_token_query_on_organization
 from altair.app.ticketing.printqr.utils import EnableTicketTemplatesCache
 
 class ItemTokenData(object):
@@ -42,14 +42,19 @@ class ItemTokenData(object):
 
     def get_item_token_from_id(self, token_id):
         organization_id = self.operator.organization_id
-        return get_matched_ordered_product_item_token(token_id, organization_id)
+        qs = ordered_product_item_token_query_on_organization(organization_id)
+        return qs.filter(OrderedProductItemToken.id==token_id).first()
 
     def get_item_token_list_from_order_no(self, order_no):
         return get_matched_token_query_from_order_no(order_no).all()
 
+    def get_item_token_list_from_token_id_list(self, token_id_list):
+        organization_id = self.operator.organization_id
+        qs = ordered_product_item_token_query_on_organization(organization_id)
+        return qs.filter(OrderedProductItemToken.id.in_(token_id_list)).all()
+
 from altair.app.ticketing.printqr import utils as p_utils
 from altair.app.ticketing.printqr import todict as p_todict
-from altair.app.ticketing.qr.utils import get_or_create_matched_history_from_token
 from altair.app.ticketing.tickets.api import get_svg_builder
 
 
@@ -81,17 +86,15 @@ class SVGDataSource(object):
         vardict["svg_list"] = svg_list_all_template_valiation(svg_builder, vardict.get("data", {}), ticket_templates)
         return [vardict]
 
-    def data_list_for_all(self, order_no, tokens):
+    def data_list_for_all(self, tokens):
         issuer = p_utils.get_issuer()
         svg_builder = get_svg_builder(self.request)
 
         retval = []
         for ordered_product_item_token in tokens:
-            history = get_or_create_matched_history_from_token(order_no, ordered_product_item_token)
             ticket_templates = self.templates_cache(ordered_product_item_token)
 
             vardict = p_todict.svg_data_from_token(ordered_product_item_token, issuer=issuer)
-            vardict[u'codeno'] = unicode(history.id) #一覧で選択するため
             vardict["svg_list"] = svg_list_all_template_valiation(svg_builder, vardict.get("data", {}), ticket_templates)
             retval.append(vardict)
         return retval

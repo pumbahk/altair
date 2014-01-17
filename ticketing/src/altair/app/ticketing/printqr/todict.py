@@ -60,6 +60,7 @@ def data_dict_from_order_and_history(order, history):
         }
 
 def svg_data_from_token(ordered_product_item_token, issuer):
+    assert ordered_product_item_token
     data = build_dict_from_ordered_product_item_token(ordered_product_item_token, ticket_number_issuer=issuer)
     if data is None:
         logger.error("*svg_data_from_token_with_descinfo data=None (token_id=%s)" % ordered_product_item_token.id)

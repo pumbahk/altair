@@ -29,7 +29,8 @@ def verify_secret_token_decorator_factory(get_secret):
             signer = Signer(internal_secret)
             secret_token = get_secret(request) 
             if not signer.verify(secret_token):
-                return logger.warn("verify failure. secret_token=%s", secret_token)
+                logger.warn("verify failure. secret_token=%s", secret_token)
+                return False
             return True
         except Exception:
             logger.exception("verify failure. (identity.id=%s)", identity)

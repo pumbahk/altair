@@ -101,7 +101,7 @@ from .todict import (
 @view_config(route_name="qr.ticketdata.collection", permission="sales_counter", renderer="json", 
              custom_predicates=(with_secret_token,))
 def ticket_data_collection_from_order_no(context, request):
-    access_log("*qr ticketdata", context.identity)
+    access_log("*qr ticketdata.collection", context.identity)
     if not "order_no" in request.json_body:
         raise HTTPBadRequest(u"引数が足りません")
 
@@ -142,17 +142,18 @@ def svgsource_one_from_token(context, request):
 
 @view_config(route_name="qr.svgsource.all", permission="sales_counter", renderer="json", 
              custom_predicates=(with_secret_token,))
-def svgsource_all_from_order_no(context, request):
+def svgsource_all_from_token_id_list(context, request):
     access_log("*qr.svg.all", context.identity)
-    if not "order_no" in request.json_body:
+    if not "token_id_list" in request.json_body:
         raise HTTPBadRequest(u"引数が足りません")
-    order_no = request.json_body["order_no"]
+
+    token_id_list = request.json_body["token_id_list"]
 
     token_data = ItemTokenData(request, context.operator)
     svg_source = SVGDataSource(request)
 
-    token_list = token_data.get_item_token_list_from_order_no(request.json_body["order_no"])
-    datalist = svg_source.data_list_for_all(order_no, token_list)
+    token_list = token_data.get_item_token_list_from_token_id_list(token_id_list)
+    datalist = svg_source.data_list_for_all(token_list)
     return {"datalist": datalist}
 
 
