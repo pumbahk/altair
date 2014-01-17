@@ -28,7 +28,7 @@ namespace QR
 		{
 			await base.PrepareAsync (ev).ConfigureAwait (false);
 			try {
-				var data = new TicketDataCollectionRequestData (){ order_no = TicketData.order_no, secret = TicketData.secret };
+				var data = new TicketDataCollectionRequestData (){ order_no = TicketData.additional.order.order_no, secret = TicketData.secret };
 				ResultTuple<string, TicketDataCollection> result = await Resource.TicketDataCollectionFetcher.FetchAsync (data);
 				if (result.Status) {
 					this.TicketDataCollection = result.Right;

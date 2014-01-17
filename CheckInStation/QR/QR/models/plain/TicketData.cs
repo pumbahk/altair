@@ -6,30 +6,39 @@ namespace QR
 	[DataContract]
 	public class TicketData
 	{
+		//QR
 		[DataMember]
-		internal AdditionalData additional;
+		internal string codeno;
+		//Status
+		[DataMember]
+		internal string refreshed_at;
+		[DataMember]
+		internal string printed_at;
 		[DataMember]
 		internal string ordered_product_item_token_id;
 		[DataMember]
-		internal string order_no;
-		[DataMember]
-		internal string seat_id;
-		[DataMember]
-		internal string seat_name;
-		[DataMember]//認証情報
-		internal string secret;
-		[DataMember]
 		internal string status;
+		//認証情報
+		[DataMember]
+		internal string secret;
+		//Seat
+		[DataMember]
+		internal _SeatData seat;
+		//Additional
+		[DataMember]
+		internal AdditionalData additional;
+
 		//statusのdefaultはvalid
 		public TicketData (dynamic json)
 		{
-			ordered_product_item_token_id = json.ordered_product_item_token_id;
-			order_no = json.order_no;
-			seat_id = json.seat_id;
-			seat_name = json.seat_name;
-			secret = json.secret;
-			status = json.status;
-			additional = new AdditionalData (json);
+			this.codeno = json.codeno;
+			this.refreshed_at = json.refreshed_at;
+			this.printed_at = json.printed_at;
+			this.ordered_product_item_token_id = json.ordered_product_item_token_id;
+			this.secret = json.secret;
+			this.status = json.status;
+			this.seat = new _SeatData (json.seat);
+			this.additional = new AdditionalData (json.additional);
 		}
 
 		public bool Verify ()

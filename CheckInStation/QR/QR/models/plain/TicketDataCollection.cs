@@ -12,41 +12,45 @@ namespace QR
 		[DataMember]
 		internal string ordered_product_item_token_id;
 		[DataMember]
-		internal string seat_id;
+		internal string printed_at;
 		[DataMember]
-		internal string seat_name;
+		internal string refreshed_at;
+		[DataMember]
+		internal _SeatData seat;
+
+		public TicketDataMinumum (dynamic json)
+		{
+			this.ordered_product_item_token_id = json.ordered_product_item_token_id;
+			this.printed_at = json.printed_at;
+			this.refreshed_at = json.refreshed_at;
+			this.seat = new _SeatData (json.seat);
+		}
 	}
 
 	[DataContract]
 	public class TicketDataCollection
 	{
 		[DataMember]
-		internal string user;
-		[DataMember]//認証情報
-		internal string secret;
+		internal string status;
 		[DataMember]
 		internal AdditionalData additional;
 		[DataMember]
 		internal TicketDataMinumum[] collection;
-		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
 		public void ConfigureCollection (dynamic json)
 		{			
 			var coll = new List<TicketDataMinumum> ();
-			foreach (var sub in json.collection) {
-				coll.Add (new TicketDataMinumum () {
-					ordered_product_item_token_id = sub.ordered_product_item_token_id,
-					seat_id = sub.seat_id,
-					seat_name = sub.seat_name
-				});
+			foreach (var sub in json) {
+				coll.Add (new TicketDataMinumum (sub));
 			}
 			this.collection = coll.ToArray ();
 		}
 
 		public TicketDataCollection (dynamic json)
 		{
-			this.ConfigureCollection (json);
-			this.additional = new AdditionalData (json);
+			this.status = json.status;
+			this.ConfigureCollection (json.collection);
+			this.additional = new AdditionalData (json.additional);
 		}
 	}
 }
