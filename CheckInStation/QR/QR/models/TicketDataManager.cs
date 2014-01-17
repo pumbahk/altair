@@ -36,7 +36,6 @@ namespace QR
 			} catch (Exception ex) {
 				logger.ErrorException (":", ex);
 				return false;
-				
 			}
 		}
 	}

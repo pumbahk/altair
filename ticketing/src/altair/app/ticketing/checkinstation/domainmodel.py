@@ -19,6 +19,7 @@ class ChoosablePerformance(object):
         qs = qs.options(orm.joinedload(Performance.event))
         return qs.distinct(Performance.id).order_by(sa.asc(Performance.start_on))
 
+
 from altair.app.ticketing.qr import get_qrdata_builder
 from altair.app.ticketing.printqr.utils import order_and_history_from_qrdata
 
@@ -30,6 +31,7 @@ class TicketData(object):
     def get_order_and_history_from_signed(self, signed):
         builder = get_qrdata_builder(self.request)
         return order_and_history_from_qrdata(builder.data_from_signed(signed))
+
 
 from altair.app.ticketing.qr.utils import get_matched_token_query_from_order_no
 from altair.app.ticketing.printqr.utils import ordered_product_item_token_query_on_organization
@@ -53,6 +55,7 @@ class ItemTokenData(object):
         qs = ordered_product_item_token_query_on_organization(organization_id)
         return qs.filter(OrderedProductItemToken.id.in_(token_id_list)).all()
 
+
 from altair.app.ticketing.printqr import utils as p_utils
 from altair.app.ticketing.printqr import todict as p_todict
 from altair.app.ticketing.tickets.api import get_svg_builder
@@ -64,10 +67,12 @@ class OrderData(object):
         self.operator = operator
 
     def get_order_from_order_no(self, order_no):
+        ## ok?
         qs = (Order.query
               .filter_by(organization_id=self.operator.organization_id)
               .filter_by(order_no=order_no))
         return qs.first()
+
 
 class SVGDataSource(object):
     def __init__(self, request):
@@ -98,6 +103,7 @@ class SVGDataSource(object):
             vardict["svg_list"] = svg_list_all_template_valiation(svg_builder, vardict.get("data", {}), ticket_templates)
             retval.append(vardict)
         return retval
+
 
 def svg_list_all_template_valiation(svg_builder, vardict, ticket_templates):
     ## var dictは券面のレンダリングに利用する変数のdict

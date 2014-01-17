@@ -494,108 +494,33 @@ class CheckinStationAPITests(BaseTests):
         self.assertEquals(result["datalist"][1]["svg_list"][1]["svg"], u"副券")
 
 
-#     @mock.patch("altair.app.ticketing.printqr.views.datetime")
-#     def test_refresh_printed_status(self, m):
-#         m.now.return_value = datetime(2000, 1, 1)
+    @mock.patch("altair.app.ticketing.checkinstation.views.get_now")
+    def test_ticket_update_token_status(self, m):
+        m.return_value = datetime(2000, 1, 1)
 
-#         def _getTarget():
-#             from .views import refresh_printed_status
-#             return refresh_printed_status
-        
-#         def setup():
-#             self.token.printed_at = datetime(2000, 1, 1)
-            
-#         def teardown():
-#             self.token.printed_at = None
-#             self.token.refreshed_at = None
-            
-#         with SetUpTearDownManager(setup, teardown):
-#             result = do_view(
-#                 _getTarget(), 
-#                 request=DummyRequest(
-#                     json_body={
-#                         "ordered_product_item_token_id": str(self.token.id), 
-#                         "order_no": str(self.order.order_no)
-#                     }                   
-#                 )
-#             )
-#             self.assertEquals(result["status"], "success")
-#             self.assertEqual(self.token.refreshed_at, datetime(2000, 1, 1))
+        from altair.app.ticketing.core.utils import PrintedAtBubblingSetter
+        from altair.app.ticketing.core.models import TicketPrintHistory
+        def teardown():
+            ## todo: not use bubbling.
+            setter = PrintedAtBubblingSetter(None)
+            setter.printed_token(self.token)
+            setter.start_bubbling()
+            self.assertEqual(self.token.printed_at, None)
 
-#     @mock.patch("altair.app.ticketing.printqr.views.datetime")
-#     def test_ticket_update_token_status(self, m):
-#         m.now.return_value = datetime(2000, 1, 1)
+        def _getTarget():
+            from .views import update_printed_at
+            return update_printed_at
 
-#         from altair.app.ticketing.core.utils import PrintedAtBubblingSetter
-#         from altair.app.ticketing.core.models import TicketPrintHistory
-#         def teardown():
-#             ## todo: not use bubbling.
-#             setter = PrintedAtBubblingSetter(None)
-#             setter.printed_token(self.token)
-#             setter.start_bubbling()
-#             self.assertEqual(self.token.printed_at, None)
-            
-#         def _getTarget():
-#             from .views import ticket_after_printed_edit_status
-#             return ticket_after_printed_edit_status
-           
-#         with SetUpTearDownManager(teardown=teardown):
-#             prev = TicketPrintHistory.query.count()
-#             result = do_view(
-#                 _getTarget(), 
-#                 request=DummyRequest(json_body={"ordered_product_item_token_id": str(self.token.id), 
-#                                                 "order_no": self.order.order_no, 
-#                                                 "ticket_id": self.ticket.id}, 
-#                                      matchdict={"event_id": self.event.id}), 
-#             )
-#             self.assertEquals(TicketPrintHistory.query.count(), prev+1)
-#             self.assertEquals(result["data"], {'printed': '2000-01-01 00:00:00'})
-            
-#     @mock.patch("altair.app.ticketing.printqr.views.datetime")
-#     def test_ticket_update_token_status_order(self, m):
-#         m.now.return_value = datetime(2000, 1, 1)
+        with SetUpTearDownManager(teardown=teardown):
+            prev = TicketPrintHistory.query.count()
+            result = do_view(
+                _getTarget(), 
+                request=DummyRequest(json_body={"token_id_list": [unicode(t.id) for t in self.item.tokens], 
+                                                "order_no": self.order.order_no})
+            )
+            self.assertTrue(TicketPrintHistory.query.count() > prev)
+            self.assertEquals(result, {'now': '2000-01-01 00:00:00'})
 
-#         def _getTarget():
-#             from .views import ticket_after_printed_edit_status_order
-#             return ticket_after_printed_edit_status_order
-            
-#         from altair.app.ticketing.core.models import TicketPrintHistory
-#         prev = TicketPrintHistory.query.count()
-#         result = do_view(
-#             _getTarget(), 
-#             request=DummyRequest(json_body={"ordered_product_item_token_id": str(self.token.id), 
-#                                             "order_no": self.order.order_no, 
-#                                             "order_id": self.order.id, 
-#                                             "consumed_tokens": [t.id for t in self.item.tokens]
-#                                         }, 
-#                                  matchdict={"event_id": self.event.id}), 
-#         )
-#         self.assertEquals(TicketPrintHistory.query.count(), prev+2)
-#         self.assertEquals(result["data"], {'printed': '2000-01-01 00:00:00'})
-
-#     ## from applet
-#     def test_fetch_ticket_format_candidates(self):
-#         def _getTarget():
-#             from .views import AppletAPIView
-#             return AppletAPIView
-
-#         result = do_view(
-#             _getTarget(), 
-#             request=DummyRequest(
-#                 matchdict={"event_id": str(self.event.id), "id": ""}
-#             ), 
-#             attr="ticket"
-#         )
-#         self.assertEquals(result["data"]["page_formats"], 
-#                           [{u'printer_name': u':PageFormat:printer_name', u'id': 1, u'name': u':PageFormat:name'}])
-
-#         self.assertEquals(result["data"]["ticket_formats"],
-#                           [{u'id': 1, u'name': u':TicketFormat:name'}])
-
-#         self.assertEquals(len(result["data"]["ticket_templates"]),1)
-#         self.assertEquals(result["data"]["ticket_templates"][0][u'ticket_format_id'], 1)
-#         self.assertEquals(result["data"]["ticket_templates"][0][u'drawing'], u'drawing-data-for-svg')
-#         self.assertEquals(result["data"]["ticket_templates"][0][u'name'], u'Ticket:name')
 
 # class CheckinStationEndpointAPIWithSeat(BaseTests):
 #     TOKEN_ID = 19999

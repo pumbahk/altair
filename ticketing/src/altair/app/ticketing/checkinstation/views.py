@@ -2,10 +2,13 @@
 from pyramid.view import view_defaults, view_config
 import logging
 logger = logging.getLogger(__name__)
+from altair.app.ticketing.models import DBSession
 from altair.now import get_now
 from pyramid.httpexceptions import HTTPBadRequest
 from webob.multidict import MultiDict
 from .signer import with_secret_token
+
+
 
 class BaseView(object):
     def __init__(self, context, request):
@@ -18,7 +21,7 @@ def access_log(prefix, identity):
     else:
         logger.info("{prefix} CheckinIdentity not found".format(prefix=prefix))
 
-## status = {ok, ng}
+
 
 @view_defaults(route_name="login.status", request_method="GET", renderer="json")
 class LoginInfoView(BaseView):
@@ -42,6 +45,7 @@ class LoginInfoView(BaseView):
                 "organization": {"id": unicode(operator.organization_id)}}
 
 
+
 ## EventSelect
 from .domainmodel import ChoosablePerformance
 from .todict import dict_from_performance
@@ -54,6 +58,7 @@ def performance_list(context, request):
     now = get_now(request)
     qs = ev.choosable_performance_query(now).all()
     return {"performances": [dict_from_performance(e) for e in qs]}
+
 
 
 ## 大体QRAppのviewの利用しているものをそのまま使う。
@@ -108,9 +113,9 @@ def ticket_data_collection_from_order_no(context, request):
     order_no = request.json_body["order_no"]
 
     order = OrderData(request, context.operator).get_order_from_order_no(order_no)
-    tokens = ItemTokenData(request, context.operator).get_item_token_list_from_order_no(order_no)
+    token_list = ItemTokenData(request, context.operator).get_item_token_list_from_order_no(order_no)
 
-    data = ticket_data_collection_dict_from_tokens(tokens)
+    data = ticket_data_collection_dict_from_tokens(token_list)
     ## 付加情報追加
     data.update(additional_data_dict_from_order(order))
     ## 認証用の文字列追加
@@ -121,6 +126,7 @@ def ticket_data_collection_from_order_no(context, request):
 
 
 ## token -> [svg] #one
+
 from .domainmodel import ItemTokenData
 from .domainmodel import SVGDataSource
 
@@ -137,6 +143,7 @@ def svgsource_one_from_token(context, request):
     token = token_data.get_item_token_from_id(request.json_body["ordered_product_item_token_id"])
     datalist = svg_source.data_list_for_one(token)
     return {"datalist": datalist}
+
 
 ## token -> [svg] #all
 
@@ -157,7 +164,9 @@ def svgsource_all_from_token_id_list(context, request):
     return {"datalist": datalist}
 
 
+
 ## order request data -> verified order request data
+
 from .forms import VerifyOrderReuestDataForm
 from .domainmodel import OrderData
 
@@ -180,3 +189,38 @@ def order_no_verified_data(context, request):
     ## 認証用の文字列追加
     data.update(verified_data_dict_from_secret(context.identity.secret))
     return data
+
+
+
+## update printed at
+
+from altair.app.ticketing.core.utils import PrintedAtBubblingSetter
+from altair.app.ticketing.printqr.utils import history_from_token
+
+@view_config(route_name="qr.update.printed_at", permission="sales_counter", renderer="json", 
+             custom_predicates=(with_secret_token,))
+def update_printed_at(context, request):
+    """ticket print historyの生成とprinted_atの更新"""
+    access_log("*qr.update.printed_at", context.identity)
+    if not "token_id_list" in request.json_body:
+        raise HTTPBadRequest(u"引数が足りません")
+    if not "order_no" in request.json_body:
+        raise HTTPBadRequest(u"引数が足りません")
+
+    token_data = ItemTokenData(request, context.operator)
+    token_id_list = request.json_body["token_id_list"]
+    token_list = token_data.get_item_token_list_from_token_id_list(token_id_list)
+
+    order_no = request.json_body["order_no"]
+    order = OrderData(request, context.operator).get_order_from_order_no(order_no)
+
+    now = get_now(request)
+    setter = PrintedAtBubblingSetter(now)
+
+    for token in token_list:
+        DBSession.add(token)
+        DBSession.add(history_from_token(request, context.operator.id, order.id, token))
+        setter.printed_token(token)
+
+    setter.start_bubbling()
+    return {"now": str(now)}

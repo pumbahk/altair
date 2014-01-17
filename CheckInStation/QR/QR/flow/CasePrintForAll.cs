@@ -44,7 +44,8 @@ namespace QR
 
 				this.RequestData = new UpdatePrintedAtRequestData () {
 					token_id_list = StatusCollector.Result ().SuccessList.ToArray (),
-					secret = this.DataCollection.secret
+					secret = this.DataCollection.secret,
+					order_no=this.DataCollection.additional.order.order_no
 				};
 				return StatusCollector.Status;
 			} catch (Exception ex) {
