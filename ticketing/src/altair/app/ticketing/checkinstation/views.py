@@ -55,14 +55,15 @@ def performance_list(context, request):
     qs = ev.choosable_performance_query(now).all()
     return {"performances": [dict_from_performance(e) for e in qs]}
 
+
 ## 大体QRAppのviewの利用しているものをそのまま使う。
-## signed -> qrdata. 公演名やチケットの購入情報など
+## signed -> ticket data. 公演名やチケットの購入情報など
 from .domainmodel import (
     TicketData, 
 )
 from .todict import (
-    data_dict_from_order_and_history,
     verified_data_dict_from_secret,
+    ticket_data_dict_from_history, 
     TokenStatusDictBuilder, 
 )
 
@@ -76,7 +77,9 @@ def ticket_data_from_signed_string(context, request):
     try:
         order, history = ticket_data.get_order_and_history_from_signed(request.json_body["qrsigned"])
 
-        data = data_dict_from_order_and_history(order, history)
+        data = ticket_data_dict_from_history(history)
+        ## 付加情報追加
+        data.update(additional_data_dict_from_order(order))
         ## 認証用の文字列追加
         data.update(verified_data_dict_from_secret(context.identity.secret))
         ## 印刷済み、キャンセル済みなどのステータス付加
@@ -85,6 +88,36 @@ def ticket_data_from_signed_string(context, request):
     except KeyError:
         logger.warn("*qr ticketdata: %s", request.json_body)
         raise HTTPBadRequest(u"不正な入力が渡されました")
+
+
+
+## order_no -> ticket data collection
+
+from .todict import (
+   ticket_data_collection_dict_from_tokens, 
+   additional_data_dict_from_order
+)
+
+@view_config(route_name="qr.ticketdata.collection", permission="sales_counter", renderer="json", 
+             custom_predicates=(with_secret_token,))
+def ticket_data_collection_from_order_no(context, request):
+    access_log("*qr ticketdata", context.identity)
+    if not "order_no" in request.json_body:
+        raise HTTPBadRequest(u"引数が足りません")
+
+    order_no = request.json_body["order_no"]
+
+    order = OrderData(request, context.operator).get_order_from_order_no(order_no)
+    tokens = ItemTokenData(request, context.operator).get_item_token_list_from_order_no(order_no)
+
+    data = ticket_data_collection_dict_from_tokens(tokens)
+    ## 付加情報追加
+    data.update(additional_data_dict_from_order(order))
+    ## 認証用の文字列追加
+    data.update(verified_data_dict_from_secret(context.identity.secret))
+    ## 印刷済み、キャンセル済みなどのステータス付加
+    data.update(TokenStatusDictBuilder(order, None).build())
+    return data
 
 
 ## token -> [svg] #one

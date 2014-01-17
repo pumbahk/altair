@@ -289,6 +289,8 @@ class BaseTests(unittest.TestCase):
 class CheckinStationAPITests(BaseTests):
     TOKEN_ID = 9999
     DRAWING_DATA = "drawing-data-for-svg"
+    EXIST_ORDER_NO = "Demo:OrderNO:01"
+
     @classmethod
     def setUpClass(cls):
         BaseTests.setUpClass()
@@ -344,7 +346,7 @@ class CheckinStationAPITests(BaseTests):
         ## qrcode
         result = do_view(
             _getTarget(), 
-            request=DummyRequest(json_body={"order_no": "Demo:OrderNO:01", "tel": ":tel_1"})
+            request=DummyRequest(json_body={"order_no": self.EXIST_ORDER_NO, "tel": ":tel_1"})
         )
         self.assertEqual(result["order_no"], self.order.order_no)
         ## 認証用のtokenが存在
@@ -378,6 +380,8 @@ class CheckinStationAPITests(BaseTests):
         self.assertEqual(str(result["ordered_product_item_token_id"]), 
                          str(self.token.id))
 
+        self.assertIn("seat",  result)
+
         self.assertEqual(str(result["additional"]["order"]["order_no"]), 
                          str(self.order.order_no))
 
@@ -386,6 +390,30 @@ class CheckinStationAPITests(BaseTests):
 
         ## statusが存在
         self.assertIn("status", result)
+
+
+    def test_ticketdata_collection_from_order_no__success(self):
+        ## full output sample: altair/CheckInStation/QR/QR/tests/misc/qrdata.json
+        def _getTarget():
+            from .views import ticket_data_collection_from_order_no
+            return ticket_data_collection_from_order_no
+
+        ## qrcode
+        result = do_view(
+            _getTarget(), 
+            request=DummyRequest(json_body={"order_no": self.EXIST_ORDER_NO})
+        )
+
+        for sub in result["collection"]:
+            self.assertIn("ordered_product_item_token_id",  sub)
+            self.assertIn("seat",  sub)
+
+        ## 認証用のtokenが存在
+        self.assertIn("secret", result)
+
+        ## statusが存在
+        self.assertIn("status", result)
+
 
 
     def test_svgsource_one_from_one_token(self):

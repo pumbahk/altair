@@ -38,17 +38,52 @@ class TokenStatusDictBuilder(object):
         else:
             return {"canceled_at":japanese_datetime(self.order.canceled_at), "status": "canceled"}
 
-
-def data_dict_from_order_and_history(order, history):
-    """variant of printqr.todict.data_dict_from_order_and_history"""
+def additional_data_dict_from_order(order):
     performance = order.performance
     shipping_address = order.shipping_address
+    performance_name = u"%s (%s)" % (performance.name, performance.venue.name)
+    note = order.note
+    return {"additional":
+            {
+                "user": shipping_address.full_name_kana if shipping_address else u"",
+                "order": {
+                    "order_no": order.order_no, 
+                    "id": order.id, 
+                    "note": note,
+                }, 
+                "performance": {
+                    "id": performance.id, 
+                    "name": performance_name, 
+                    "date":japanese_datetime(performance.start_on), 
+                }, 
+                "event": {
+                    "id": performance.event_id
+                }
+            }}
+
+def ticket_data_collection_dict_from_tokens(tokens):
+    collection = []
+    for token in tokens:
+        seat = token.seat
+        D = {
+            "refreshed_at": str(token.refreshed_at) if token.refreshed_at else None, 
+            "printed_at": str(token.printed_at) if token.printed_at else None, 
+            "ordered_product_item_token_id": token.id, 
+            "seat": {
+                "id": seat.id if seat else None,
+                "name": seat.name if seat else u"自由席",
+            }, 
+            "product": {
+                "name": token.item.ordered_product.product.name
+            }}
+        collection.append(D)
+    return {"collection": collection}
+
+def ticket_data_dict_from_history(history):
+    """variant of printqr.todict.data_dict_from_order_and_history"""
     product_name = history.ordered_product_item.ordered_product.product.name
     token = history.item_token
     seat = history.seat
-    performance_name = u"%s (%s)" % (performance.name, performance.venue.name)
-    note = order.note
-
     codeno = history.id
     return {
         "codeno": codeno, 
@@ -61,25 +96,6 @@ def data_dict_from_order_and_history(order, history):
         "seat": {
             "id": seat.id if seat else None,
             "name": seat.name if seat else u"自由席",
-        }, 
-        "additional": {
-            "user": shipping_address.full_name_kana if shipping_address else u"",
-            "order": {
-                "order_no": order.order_no, 
-                "id": order.id, 
-                "note": note,
-            }, 
-            "performance": {
-                "id": performance.id, 
-                "name": performance_name, 
-                "date":japanese_datetime(performance.start_on), 
-            }, 
-            "event": {
-                "id": performance.event_id
-            }, 
-            "ordered_product_item":{
-                "id": history.ordered_product_item.id,
-            }, 
         }
     }
 
