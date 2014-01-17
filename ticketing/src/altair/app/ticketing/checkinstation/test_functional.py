@@ -322,7 +322,19 @@ class CheckinStationEndpointAPIWithoutSeat(BaseTests):
         from altair.app.ticketing.checkinstation import IAPIEndpointCollector
         collector = self.config.registry.getUtility(IAPIEndpointCollector)
         request = DummyRequest(registry=self.config.registry)
-        collector.get_endpoints(request)
+        endpoints = collector.get_endpoints(request)
+
+        self.assertIn("login_status", endpoints)
+
+        self.assertIn("qr_ticketdata", endpoints)
+        self.assertIn("qr_ticketdata_collection", endpoints)
+        self.assertIn("qr_svgsource_one", endpoints)
+        self.assertIn("qr_svgsource_all", endpoints)
+        self.assertIn("qr_update_printed_at", endpoints)
+        self.assertIn("orderno_verified_data", endpoints)
+
+        self.assertIn("image_from_svg", endpoints)
+        ## see: altair/CheckInStation/QR/QR/tests/misc/login.json
 
     def test_ticketdata_from_qrsigned_string__success(self):
         ## full output sample: altair/CheckInStation/QR/QR/tests/misc/qrdata.json
