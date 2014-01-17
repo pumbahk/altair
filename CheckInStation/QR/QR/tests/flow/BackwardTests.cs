@@ -27,13 +27,35 @@ namespace QR
 
 				/// 印刷後. backword.
 				result = await manager.Backward ();
-				Assert.IsInstanceOf<CaseQRCodeInput> (result);
+				Assert.IsInstanceOf<CaseInputStrategySelect> (result);
+			});
+			t.Wait ();
+		}
+
+		[Test, Description ("認証情報選択 -[qr]-> QR読み込み -backward-> 認証情報選択")]
+		public void TestBackwordFromAfterInputStrategySelect ()
+		{
+			var manager = new FlowManager ();
+			var startpoint = new CaseInputStrategySelect (new Resource());
+			var target = new FakeFlow (manager, startpoint);
+			startpoint.Unit = InputUnit.qrcode;
+			manager.SetStartPoint (target);
+
+			ICase result, case_;
+			var t = Task.Run (async () => {
+				// start 
+				(manager.Peek () as FakeFlow).VerifyStatus = true;
+				case_ = await manager.Forward ();
+				Assert.IsInstanceOf<CaseQRCodeInput> (case_);
+
+				result = await manager.Backward ();
+				Assert.IsInstanceOf<CaseInputStrategySelect> (result);
 			});
 			t.Wait ();
 		}
 
 		[Test, Description ("QR読み込み -ok-> QRからデータ取得中 -ok-> QR表示(1枚) -backword-> QR読み込み")]
-		public void TestBackwordFromAuthForwarding ()
+		public void TestBackwordFromQRConfirmForwarding ()
 		{
 			var manager = new FlowManager ();
 			var startpoint = new CaseQRCodeInput (new Resource ());
@@ -53,7 +75,8 @@ namespace QR
 				case_ = await manager.Forward ();
 				Assert.IsInstanceOf<CaseQRConfirmForOne> (case_);
 
-				/// 印刷表示(1枚)
+				// 印刷表示(1枚)の後
+
 				result = await manager.Backward ();
 				Assert.IsInstanceOf<CaseQRCodeInput> (result);
 			});

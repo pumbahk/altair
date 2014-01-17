@@ -37,6 +37,11 @@ namespace QR
 		{
 			return DispatchICaseUtil.GetInputCaseByInputUnit (resource, this.CurrentInputUnit);
 		}
+
+		public ICase PreviousCaseFromRedirected(IResource resource)
+		{
+			return new CaseInputStrategySelect(resource);
+		}
 	}
 
 	class DispatchICaseUtil

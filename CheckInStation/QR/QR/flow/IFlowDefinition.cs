@@ -13,6 +13,8 @@ namespace QR
 		ICase AfterPrintFinish(IResource resource);
 		ICase AfterAuthorization(IResource resource);
 		ICase AfterSelectInputStrategy (IResource resource, InputUnit Selected);
+
+		ICase PreviousCaseFromRedirected(IResource resource);
 	}
 }
 

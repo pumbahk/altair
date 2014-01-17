@@ -18,5 +18,6 @@
     "seat_id": "-1111",
     "seat_name": "指定席A(1)",
     "secret": "xxx this is needed xxxx",
+    "status": "valid",
     "note": "何かメモがあったりなかったり"
 }

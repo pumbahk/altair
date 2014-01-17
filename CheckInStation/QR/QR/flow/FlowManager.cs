@@ -40,6 +40,11 @@ namespace QR
 			return this.undoStack.Peek ();
 		}
 
+		public void Push (IFlow flow)
+		{
+			this.undoStack.Push (flow);
+		}
+
 		public async Task<ICase> Forward ()
 		{
 			
