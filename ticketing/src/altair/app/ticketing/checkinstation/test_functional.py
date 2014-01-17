@@ -325,6 +325,7 @@ class CheckinStationEndpointAPIWithoutSeat(BaseTests):
         collector.get_endpoints(request)
 
     def test_ticketdata_from_qrsigned_string__success(self):
+        ## full output sample: altair/CheckInStation/QR/QR/tests/misc/qrdata.json
         def _getTarget():
             from .views import ticket_data_from_signed_string
             return ticket_data_from_signed_string
@@ -338,8 +339,15 @@ class CheckinStationEndpointAPIWithoutSeat(BaseTests):
         self.assertEqual(str(result["ordered_product_item_token_id"]), 
                          str(self.token.id))
 
-        self.assertEqual(str(result["order_no"]), 
+        self.assertEqual(str(result["additional"]["order"]["order_no"]), 
                          str(self.order.order_no))
+
+        ## 認証用のtokenが存在
+        self.assertIn("secret", result)
+
+        ## statusが存在
+        self.assertIn("status", result)
+
 
     def test_svgsource_one_from_one_token(self):
         def _getTarget():

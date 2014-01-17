@@ -55,8 +55,14 @@ def performance_list(context, request):
 
 ## 大体QRAppのviewの利用しているものをそのまま使う。
 ## signed -> qrdata. 公演名やチケットの購入情報など
-from .domainmodel import TicketData
-from altair.app.ticketing.printqr.todict import data_dict_from_order_and_history
+from .domainmodel import (
+    TicketData, 
+)
+from .todict import (
+    data_dict_from_order_and_history,
+    verified_data_dict_from_secret,
+    TokenStatusDictBuilder, 
+)
 
 @view_config(route_name="qr.ticketdata", permission="sales_counter", renderer="json")
 def ticket_data_from_signed_string(context, request):
@@ -67,7 +73,13 @@ def ticket_data_from_signed_string(context, request):
     ticket_data = TicketData(request, context.operator)
     try:
         order, history = ticket_data.get_order_and_history_from_signed(request.json_body["qrsigned"])
-        return data_dict_from_order_and_history(order, history)
+
+        data = data_dict_from_order_and_history(order, history)
+        ## 認証用の文字列追加
+        data.update(verified_data_dict_from_secret(context.identity.secret))
+        ## 印刷済み、キャンセル済みなどのステータス付加
+        data.update(TokenStatusDictBuilder(order, history).build())
+        return data
     except KeyError:
         logger.warn("*qr ticketdata: %s", request.json_body)
         raise HTTPBadRequest(u"不正な入力が渡されました")
