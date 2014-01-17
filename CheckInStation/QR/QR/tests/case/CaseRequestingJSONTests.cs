@@ -51,6 +51,18 @@ namespace QR
 		}
 	}
 
+	public class MockTicketDataManager : TicketDataManager
+	{
+		public MockTicketDataManager (IResource resource) : base (resource)
+		{
+		}
+
+		public override string GetUpdatePrintedAtURL ()
+		{
+			return "http://dummy.update.printed_at";
+		}
+	}
+
 	[TestFixture ()]
 	public class CaseRequestingJSONOrdernoTests
 	{
@@ -70,8 +82,8 @@ namespace QR
 				QRInputEvent ev = new QRInputEvent ();
 
 				await target.PrepareAsync (ev as IInternalEvent);
-				Console.WriteLine (await target.VerifyAsync ());
-				ev.HandleEvent ();
+//				Console.WriteLine (await target.VerifyAsync ());
+//				ev.HandleEvent ();
 
 				Assert.IsTrue (await target.VerifyAsync ());
 			});
@@ -173,6 +185,33 @@ namespace QR
 				await target.PrepareAsync (ev as IInternalEvent);
 				//Console.WriteLine (await target.VerifyAsync ());
 				//ev.HandleEvent ();
+				Assert.IsTrue (await target.VerifyAsync ());
+			});
+			t.Wait ();
+		}
+
+		[Test, Description ("印刷後 印刷日時をupdate")]
+		public void TestsUpdatePrinteadAt ()
+		{
+			var t = Task.Run (async () => {
+				var responseJSON = Testing.ReadFromEmbeddedFile ("QR.tests.misc.update.printed_at.json");
+				IResource resource = new Resource () {
+					HttpWrapperFactory = new FakeHttpWrapperFactory<HttpWrapper> (responseJSON),
+					TicketImagePrinting = new FakeTicketImagePrinting ()
+				};
+				resource.TicketDataManager = new MockTicketDataManager (resource);
+
+				// case 初期化
+				var data = new UpdatePrintedAtRequestData () {
+					token_id_list = new string[]{ "-9999" },
+					secret = "this-is-secret"
+				};
+				ICase target = new CasePrintFinish (resource, data);
+				QRInputEvent ev = new QRInputEvent ();
+
+				await target.PrepareAsync (ev as IInternalEvent);
+//				Console.WriteLine (await target.VerifyAsync ());
+//				ev.HandleEvent ();
 				Assert.IsTrue (await target.VerifyAsync ());
 			});
 			t.Wait ();

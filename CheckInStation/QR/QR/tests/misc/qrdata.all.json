@@ -1,5 +1,6 @@
 {
     "status": "valid",
+    "secret": "xxx this is needed xxxx",
     "collection": [
         {
             "ordered_product_item_token_id": "-1", 

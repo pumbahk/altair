@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using QR.message;
 using System.Collections.Generic;
 using NLog;
+using System.Linq;
 
 namespace QR
 {
@@ -15,6 +16,8 @@ namespace QR
 
 		public ResultStatusCollector<string> StatusCollector { get; set; }
 
+		public UpdatePrintedAtRequestData RequestData{ get; set; }
+
 		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
 		public CasePrintForOne (IResource resource, TicketData ticketdata) : base (resource)
@@ -26,7 +29,7 @@ namespace QR
 		public override async Task<bool> VerifyAsync ()
 		{
 			try {
-				ResultTuple<string, List<TicketImageData>> result = await Resource.SVGImageFetcher.FetchImageDataForOneAsync (this.TicketData).ConfigureAwait(false);
+				ResultTuple<string, List<TicketImageData>> result = await Resource.SVGImageFetcher.FetchImageDataForOneAsync (this.TicketData).ConfigureAwait (false);
 				if (!result.Status) {
 					//modelからpresentation層へのメッセージ
 					PresentationChanel.NotifyFlushMessage ((result as Failure<string,List<TicketImageData>>).Result);
@@ -35,9 +38,14 @@ namespace QR
 
 				var printing = Resource.TicketImagePrinting;
 				foreach (var imgdata in result.Right) {
-					var status = await printing.EnqueuePrinting (imgdata).ConfigureAwait(false);
+					var status = await printing.EnqueuePrinting (imgdata).ConfigureAwait (false);
 					StatusCollector.Add (imgdata.token_id, status);
 				}
+
+				this.RequestData = new UpdatePrintedAtRequestData () {
+					token_id_list = StatusCollector.Result ().SuccessList.ToArray (),
+					secret = this.TicketData.secret
+				};
 				return StatusCollector.Status;
 			} catch (Exception ex) {
 				logger.ErrorException (":", ex);
@@ -48,18 +56,21 @@ namespace QR
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			return new CasePrintFinish (this.Resource, StatusCollector);
+			return new CasePrintFinish (this.Resource, this.RequestData);
 		}
 
 		public override ICase OnFailure (IFlow flow)
 		{
 			flow.Finish ();
 			Func<Task<bool>> modify = (async () => {
-				IEnumerable<string> used = StatusCollector.Result ().SuccessList;
-				foreach (var k in used) {
-					logger.Error ("{0} is printed. but summalized status is failure", k);
+				if (this.RequestData != null) {
+					IEnumerable<string> used = StatusCollector.Result ().SuccessList;
+					foreach (var k in used) {
+						logger.Warn ("{0} is printed. but all status is failure", k);
+					}
+					await Resource.TicketDataManager.UpdatePrintedAtAsync (this.RequestData);
 				}
-				return await Resource.TicketDataManager.UpdatePrintedAtAsync (used);
+				return true;
 			});
 			return new CaseFailureRedirect (Resource, modify);
 		}

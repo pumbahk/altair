@@ -57,7 +57,7 @@ def includeme(config):
     config.add_endpoint_route("qr.ticketdata", "/qr/ticketdata")
     config.add_endpoint_route("qr.ticketdata.collection", "/qr/ticketdata/collection")
     config.add_endpoint_route("qr.svgsource.one", "/qr/svgsource/one")
-    config.add_endpoint_route("qr.svgsource.all", "/qr/svgsource/all") ##impl
+    config.add_endpoint_route("qr.svgsource.all", "/qr/svgsource/all")
     config.add_endpoint_route("qr.update.printed_at", "/qr/printed/update") ##impl
     config.add_endpoint_route("orderno.verified_data", "/orderno/verified_data")
 

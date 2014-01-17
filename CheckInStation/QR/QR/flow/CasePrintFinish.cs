@@ -9,17 +9,16 @@ namespace QR
 	/// </summary>
 	public class CasePrintFinish: AbstractCase,ICase,IAutoForwardingCase
 	{
-		public ResultStatusCollector<string> StatusCollector { get; set; }
+		public UpdatePrintedAtRequestData RequsetData { get; set; }
 
-		public CasePrintFinish (IResource resource, ResultStatusCollector<string> statusCollector) : base (resource)
+		public CasePrintFinish (IResource resource, UpdatePrintedAtRequestData data) : base (resource)
 		{
-			StatusCollector = statusCollector;
+			this.RequsetData = data;
 		}
 
 		public override async Task<bool> VerifyAsync ()
 		{	
-			IEnumerable<string> used = StatusCollector.Result ().SuccessList;
-			return await Resource.TicketDataManager.UpdatePrintedAtAsync (used);
+			return await Resource.TicketDataManager.UpdatePrintedAtAsync (this.RequsetData);
 		}
 
 		public override ICase OnSuccess (IFlow flow)

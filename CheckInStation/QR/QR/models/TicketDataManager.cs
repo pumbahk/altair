@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Net.Http;
+using NLog;
 
 namespace QR
 {
@@ -9,17 +11,33 @@ namespace QR
 	{
 		public IResource Resource { get; set; }
 
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
+
 		public TicketDataManager (IResource resource)
 		{
 			Resource = resource;
 		}
 
-		public Task<bool> UpdatePrintedAtAsync (IEnumerable<string> ids)
+		public virtual string GetUpdatePrintedAtURL ()
 		{
-			return Task.Run (() => {
-				Console.WriteLine ("updated! {0}", ids.ToArray ());
-				return true;
-			});
+			return Resource.EndPoint.UpdatePrintedAt;
+		}
+
+		public async Task<bool> UpdatePrintedAtAsync (UpdatePrintedAtRequestData data)
+		{
+			try {
+				IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
+				using (var wrapper = factory.Create (GetUpdatePrintedAtURL ())) {
+					using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (data).ConfigureAwait (false)) {
+						await wrapper.ReadAsStringAsync (response.Content).ConfigureAwait (false);
+						return true;
+					}
+				}
+			} catch (Exception ex) {
+				logger.ErrorException (":", ex);
+				return false;
+				
+			}
 		}
 	}
 }

@@ -157,6 +157,7 @@
     <Compile Include="tests\flow\BackwardTests.cs" />
     <Compile Include="flow\FakeFlow.cs" />
     <Compile Include="flow\IAutoForwardingCase.cs" />
+    <Compile Include="models\plain\UpdatePrintedAtRequestData.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -195,6 +196,7 @@
     <EmbeddedResource Include="tests\misc\qrdata.all.json" />
     <EmbeddedResource Include="tests\misc\svgone.json" />
     <EmbeddedResource Include="tests\misc\svgall.json" />
+    <EmbeddedResource Include="tests\misc\update.printed_at.json" />
     <EmbeddedResource Include="tests\misc\server.py" />
   </ItemGroup>
 </Project>
