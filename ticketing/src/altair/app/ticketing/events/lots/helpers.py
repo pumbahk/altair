@@ -1,5 +1,5 @@
 from webhelpers.html.tags import link_to
-
+from altair.app.ticketing.lots.helpers import timezone_label
 
 class Link(object):
     def __init__(self, label, url, **attrs):
@@ -12,4 +12,3 @@ class Link(object):
 
     def __str__(self):
         return self.__html__()
-

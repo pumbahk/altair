@@ -20,7 +20,7 @@ from altair.app.ticketing.cart.helpers import format_currency
 </tr>
 %for lot in lots:
 <tr>
-<td nowrap="">${lot.lotting_announce_datetime}</td>
+<td nowrap="">${h.announce_time_label(lot)}</td>
 <td nowrap="">${lot.sales_segment.start_at} - ${lot.sales_segment.end_at}</td>
 <td><a href="${request.route_url('lots.show', lot_id=lot.id)}">${lot.name}</a></td>
 <td>${view.lot_status(lot)}</td>

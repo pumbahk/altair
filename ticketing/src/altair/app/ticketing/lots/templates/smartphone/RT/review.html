@@ -17,7 +17,7 @@
         %elif entry.is_rejected:
 抽選の結果、お客様は残念ながら落選となりました。
 	%elif not entry.lot.is_elected():
-	抽選結果発表は、${h.japanese_datetime(entry.lot.lotting_announce_datetime)}～を予定しております。発表日時以降に再度、当選・落選をご確認ください。
+	抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
 	%endif
       </div>
     </div>
