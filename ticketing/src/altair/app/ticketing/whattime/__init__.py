@@ -54,8 +54,10 @@ def main(global_config, **local_config):
     config.add_renderer('csv'   , 'altair.app.ticketing.renderers.csv_renderer_factory')
     config.include("altair.cdnpath")
     config.add_static_view('static', 'altair.app.ticketing.cart:static', cache_max_age=3600)
+    config.include('altair.app.ticketing.setup_beaker_cache')
 
     ### includes altair.*
+    config.include('altair.httpsession.pyramid')
     config.include('altair.exclog')
     config.include('altair.browserid')
     config.include('altair.sqlahelper')
