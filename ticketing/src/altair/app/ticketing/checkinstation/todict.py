@@ -13,30 +13,76 @@ def verified_data_dict_from_secret(secret):
     return {"secret": signer.sign()}
 
 
-##token status = {valid, canceled, printed, unknown}
+##token status = {valid, canceled, printed, unknown, not_supported}
+from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID
+class TokenStatus:
+    valid = "valid"
+    printed = "printed"
+    canceled = "canceled"
+    before_start = "before_start"
+    not_supported = "not_supported"
+    unknown = "unknown"
+
+
 class TokenStatusDictBuilder(object):
-    def __init__(self, order, history=None):
+    def __init__(self, order, history=None, today=None):
         self.order = order
         self.history = history
-        self.token = history.item_token if history else None
+
+        self.today = today
+
+        self.token = self.history.item_token if history else None
+        self.performance = self.order.performance
+
 
     def build(self):
-        D = {"status": "valid"}
+        D = {"status": TokenStatus.valid}
         D.update(self.printed_status_dict())
         D.update(self.canceled_status_dict())
+        D.update(self.printable_date_status_dict())
+        D.update(self.supported_status_dict())
         return D
 
     def printed_status_dict(self):
-        if self.token is None or not self.token.is_printed():
+        if self._is_unprinted_yet(self.order, self.token):
             return {"printed_at": None}
         else:
-            return {"printed_at":japanese_datetime(self.token.printed_at), "status": "printed"}
+            return {"printed_at":japanese_datetime(self.token.printed_at), "status": TokenStatus.printed}
 
     def canceled_status_dict(self):
-        if self.order is None or not self.order.is_canceled():
+        if not self._is_not_canceled(self.order):
             return {"canceled_at": None}
         else:
-            return {"canceled_at":japanese_datetime(self.order.canceled_at), "status": "canceled"}
+            return {"canceled_at":japanese_datetime(self.order.canceled_at), "status": TokenStatus.canceled}
+
+    def supported_status_dict(self, delivery_plugin_id=QR_DELIVERY_PLUGIN_ID):
+        if self._is_supported_order(self.order):
+            return {}
+        else:
+            return {"status": TokenStatus.not_supported}
+
+    def printable_date_status_dict(self):
+        if self.today is None:
+            return {}
+        elif self._is_printable_date(self.performance, self.today):
+            return {}
+        else:
+            return {"status": TokenStatus.before_start}
+
+    def _is_not_canceled(self, order):
+        return order is None or not order.is_canceled()
+
+    def _is_unprinted_yet(self, order, token):
+        return ((token is None or not token.is_printed()) 
+                and (order and order.printed_at is None))
+
+    def _is_printable_date(self, performance, today):
+        return today >= (performance.start_on or performance.open_on).date()
+
+    def _is_supported_order(self, order):
+        delivery_method = order.payment_delivery_method_pair.delivery_method
+        return delivery_method.delivery_plugin_id == QR_DELIVERY_PLUGIN_ID
+
 
 def additional_data_dict_from_order(order):
     performance = order.performance
