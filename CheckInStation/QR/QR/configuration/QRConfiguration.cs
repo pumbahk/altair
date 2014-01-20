@@ -13,6 +13,8 @@ namespace QR
 			config.Resource.TicketImagePrinting = new FakeTicketImagePrinting ();
 			config.Resource.TicketDataManager = new TicketDataManager (resource);
 			config.Resource.VerifiedOrderDataFetcher = new VerifiedOrderDataFetcher (resource);
+
+			config.Resource.AdImageCollector = new AdImageCollector (resource);
 		}
 	}
 }

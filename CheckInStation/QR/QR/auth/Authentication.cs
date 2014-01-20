@@ -51,10 +51,15 @@ namespace QR
 					var headers = response.Headers;
 					var cookies = CookieUtils.GetCookiesFromResponseHeaders (headers);
 					factory.AddCookies (cookies);
+
+					// endpointの取得
 					var result = DynamicJson.Parse (await wrapper.ReadAsStringAsync (response.Content).ConfigureAwait (false));
 					var endpoint = new EndPoint (result.endpoint);
+
+					//広告用の画像のurl設定
 					string[] images = result.ad_images;
 					endpoint.ConfigureAdImages (images); //xxx: bad-code
+
 					return endpoint;
 				}
 			}

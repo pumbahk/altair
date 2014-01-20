@@ -45,6 +45,8 @@ namespace QR
 				throw new InvalidOperationException ("TicketImagePrinting is null");
 			if (Authentication == null)
 				throw new InvalidOperationException ("Authentication is null");
+			if (AdImageCollector == null)
+				throw new InvalidOperationException ("AdImageCollector is null");
 			if (HttpWrapperFactory == null)
 				throw new InvalidOperationException ("HttpWrapperFactory is null");
 			return true;
@@ -67,6 +69,8 @@ namespace QR
 		public AuthInfo AuthInfo { get; set; }
 
 		public IAuthentication Authentication { get; set; }
+
+		public AdImageCollector AdImageCollector { get; set; }
 
 		public IHttpWrapperFactory<HttpWrapper> HttpWrapperFactory { get; set; }
 

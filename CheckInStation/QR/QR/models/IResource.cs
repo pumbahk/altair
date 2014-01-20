@@ -16,6 +16,8 @@ namespace QR
 		ITicketImagePrinting TicketImagePrinting { get; set; }
 
 		TicketDataManager TicketDataManager { get; set; }
+
+		AdImageCollector AdImageCollector { get; set; }
 	}
 
 	public interface INeedForAuth

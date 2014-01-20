@@ -8,7 +8,7 @@ namespace QR
 		public static void IncludeMe (IConfigurator config)
 		{
 			var factory = new HttpWrapperFactory<HttpWrapper> ();
-			var timeout = TimeSpan.FromSeconds (1);
+			var timeout = TimeSpan.FromSeconds (10);
 			Func<HttpClient,HttpClient> configure = (HttpClient client) => {
 				client.Timeout = timeout;
 				return client;

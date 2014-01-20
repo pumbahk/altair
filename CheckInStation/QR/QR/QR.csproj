@@ -159,6 +159,8 @@
     <Compile Include="flow\IAutoForwardingCase.cs" />
     <Compile Include="models\plain\UpdatePrintedAtRequestData.cs" />
     <Compile Include="message\EnumUtil.cs" />
+    <Compile Include="models\loader\AdImageCollector.cs" />
+    <Compile Include="tests\models\GetAdImageTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
