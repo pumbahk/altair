@@ -43,7 +43,12 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
         </tr>
         <tr>
           <th>抽選結果発表予定日</th>
-          <td>${lot.lotting_announce_datetime}</td>
+          <td>
+              ${lot.lotting_announce_datetime}
+              % if h.timezone_label(lot):
+                (${h.timezone_label(lot)})
+              % endif
+          </td>
         </tr>
         <tr>
           <th>認証方法</th>
@@ -146,7 +151,7 @@ formatter:grid.linkFormatter}
 
   var showDialog = function(title, msg, cls) {
     var modal = $('#modal-alert');
-    var message = $('<div>').addClass('alert '+cls).text(msg);
+    var message = $('<div>').addClass('alert '+cls).html(msg);
     modal.find('.modal-header > h3').text(title);
     modal.find('#message').empty().append(message);
     modal.modal('show');
@@ -200,7 +205,7 @@ formatter:grid.linkFormatter}
             rows += '<li>(' + response_text.rows.rowid + '行目) ' + col_name + response_text.rows.errors[col] + '</li>';
           }
         }
-        showDialog("エラー", message, 'alert-error');
+        showDialog("エラー", message + '<ul>' + rows + '</ul>', 'alert-error');
       }
     });
   });

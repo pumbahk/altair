@@ -32,6 +32,7 @@ from .errors import (
     SeatImportError,
     EntryFormatError,
     AbnormalTimestampFormatError,
+    AlreadyExist,
     )
 
 
@@ -196,23 +197,27 @@ class EntryData(object):
         return self.augus_venue_code != ''
 
 
-def get_or_create_augus_venue_from_code(code, version, name=u'', venue_id=None):
+def get_or_create_augus_venue_from_code(code, version, name=u'', venue_id=None, create_only=False):
     augus_venue = AugusVenue.get(code=code, version=version)
+    if create_only and augus_venue:
+        raise AlreadyExist('AugusVenue already exist: code={} version={}'.format(code, version))
     if augus_venue is None:
         augus_venue = AugusVenue()
-        augus_venue.name = name
-        augus_venue.version = version
-        augus_venue.code = code
-        augus_venue.venue_id = venue_id
-        augus_venue.save()
     elif augus_venue.venue_id != venue_id:
         augus_venue.venue_id = venue_id
-        augus_venue.save()        
+    augus_venue.name = name
+    augus_venue.version = version
+    augus_venue.code = code
+    augus_venue.venue_id = venue_id
+    augus_venue.save()
     return AugusVenue.get(code=code, venue_id=venue_id, version=version)
 
 class AugusVenueImporter(object):
+    def __init__(self, code=None, version=None):
+        self.code = code
+        self.version = version
 
-    def import_(self, csvlike, pairs):
+    def import_(self, csvlike, pairs, create_only=False):
         csvlike.next() # ignore header
         datas = [EntryData(row) for row in csvlike] # raise EntryFormatError
         code_version_name = set([(data.augus_venue_code, data.augus_venue_version, data.augus_venue_name)
@@ -224,9 +229,14 @@ class AugusVenueImporter(object):
         if code_version_name:
             raise SeatImportError('mupliple augus venue codes: {0}'.format(
                 [(code, version, name)] + list(code_version_name)))
+        elif (self.code is not None) and (self.code != code):
+            raise SeatImportError('Validation Error: venue code: {} != {}'.format(self.code, code))
+        elif (self.version is not None) and (self.version != version):
+            raise SeatImportError('Validation Error: venue version: {} != {}'.format(self.version, version))
 
         augus_venue = get_or_create_augus_venue_from_code(code, version, name,
                                                           pairs.venue_id,
+                                                          create_only,
                                                           )
 
         for data in datas:
@@ -259,6 +269,10 @@ class AugusVenueImporter(object):
                 augus_seat.doorway_code = data.augus_seat_doorway_code
                 augus_seat.version = data.augus_venue_version
                 augus_seat.seat_id = seat.id
+                if (self.version is not None) and (self.version != augus_seat.version):
+                    raise SeatImportError('Validation Error: venue version: {} != {} (augus_seat=<{},{},{}>)'\
+                                          .format(self.version, version, 
+                                                  augus_seat.floor, augus_seat.column, augus_seat.num))
                 augus_seat.save()
             elif augus_seat:
                 # remove link

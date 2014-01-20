@@ -14,6 +14,7 @@ class StockHolderForm(OurForm):
             self.account_id.choices = [
                 (account.id, account.name) for account in Account.filter_by_organization_id(kwargs['organization_id'])
             ]
+        self.organization_id = kwargs['organization_id'] or None
 
     def _get_translations(self):
         return Translations()
@@ -51,3 +52,7 @@ class StockHolderForm(OurForm):
         label=u'外部返券利用',
         validators=[],
     )
+
+    def validate_is_putback_target(self, field):
+        if field.data and self.organization_id not in (15,): # rt only
+            raise ValidationError(u'サポート対象外の機能です。')

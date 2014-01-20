@@ -319,7 +319,7 @@ class ProductItemForm(OurForm):
     def validate(self):
         status = super(type(self), self).validate()
         if status:
-            if self.product_id.data:
+            if self.product_item_id.data:
                 # 販売期間内で公開済みの場合、またはこの商品が予約/抽選申込されている場合は
                 # 価格、席種の変更は不可
                 pi = ProductItem.query.filter_by(id=self.product_item_id.data).one()

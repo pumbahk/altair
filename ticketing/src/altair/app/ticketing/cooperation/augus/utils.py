@@ -19,6 +19,9 @@ class SeatAugusSeatPairs(object):
         self._venue = venue
         self._augus_venue = augus_venue
 
+    def load_augus_venue(self, augus_venue):
+        self.load(augus_venue.venue, augus_venue)
+
     def get_seats(self):
         return sorted(self._venue.seats, key=lambda seat: seat.id)
 
@@ -184,7 +187,7 @@ class RequestAccessor(object):
     def __getattr__(self, name):
         if name in self.in_params:
             type_ = self.in_params[name]
-            return self._get_params(name, type_)
+            return map(type_, self._get_params(name))
         elif name in self.in_matchdict:
             type_ = self.in_matchdict[name]
             return self._get_matchdict(name, type_)

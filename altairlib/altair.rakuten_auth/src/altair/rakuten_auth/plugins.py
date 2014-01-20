@@ -209,7 +209,7 @@ class RakutenOpenIDPlugin(object):
         logger.debug('forget identity')
         self._flush_cache(identity)
         session = impl.get_session(req)
-        session and session.clear()
+        session and session.invalidate()
         rememberer = self._get_rememberer(environ)
         return rememberer.forget(environ, identity)
 

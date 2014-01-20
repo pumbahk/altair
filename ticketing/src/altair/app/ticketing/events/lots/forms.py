@@ -59,6 +59,29 @@ class LotForm(Form):
         ],
     )
 
+    lotting_announce_timezone = SelectField(
+        label=u"抽選予定時間帯",
+        validators=[
+            Optional(),
+        ],
+        choices=[
+              ('', u'時間まで表示')
+            , ('morning', u'午前(6:00 - 12:00)')
+            , ('day', u'昼以降(12:00 - 16:00)')
+            , ('evening', u'夕方以降(16:00 - 19:00)')
+            , ('night', u'夜(19:00 - 2:00)')
+            , ('next_morning', u'明朝(翌2:00 - 翌6:00)')
+        ],
+    )
+
+    custom_timezone_label = TextField(
+        label=u'抽選時間帯カスタムラベル（抽選予定時間帯より優先）',
+        validators=[
+            Optional(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ],
+    )
+
     auth_type = SelectField(
         label=u"認証方法",
         validators=[
@@ -119,6 +142,8 @@ class LotForm(Form):
             entry_limit=self.data['entry_limit'],
             description=self.data['description'],
             lotting_announce_datetime=self.data['lotting_announce_datetime'],
+            lotting_announce_timezone=self.data['lotting_announce_timezone'],
+            custom_timezone_label=self.data['custom_timezone_label'],
             auth_type=self.data['auth_type'],
             )
         creator = SalesSegmentGroupCreate(sales_segment_group)
@@ -148,6 +173,8 @@ class LotForm(Form):
         lot.entry_limit=self.data['entry_limit']
         lot.description=self.data['description']
         lot.lotting_announce_datetime=self.data['lotting_announce_datetime']
+        lot.lotting_announce_timezone=self.data['lotting_announce_timezone']
+        lot.custom_timezone_label=self.data['custom_timezone_label']
         lot.auth_type = self.data['auth_type']
 
         return lot

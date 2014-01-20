@@ -172,7 +172,7 @@ class RakutenOpenID(object):
             )
 
     def get_return_url(self, session):
-        return session[self.__class__.__name__ + '.return_url']
+        return session.get(self.__class__.__name__ + '.return_url')
 
     def set_return_url(self, session, url):
         session[self.__class__.__name__ + '.return_url'] = url
