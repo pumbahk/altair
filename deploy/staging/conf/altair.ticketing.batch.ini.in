@@ -8,6 +8,9 @@ cache.type = ${altair:beaker_backend_type}
 ; altair.httpsession
 altair.httpsession.persistence.type = ${altair:beaker_backend_type}
 
+staging = /tmp/staging
+pending = /tmp/pending
+
 [loggers]
 keys = root, ticketing
 
