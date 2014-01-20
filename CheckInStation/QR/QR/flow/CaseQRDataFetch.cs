@@ -5,14 +5,6 @@ using NLog;
 
 namespace QR
 {
-	public enum TokenStatus
-	{
-		valid,
-		canceled,
-		printed,
-		unknown
-	}
-
 	/// <summary>
 	/// Case QR data fetch. QRからデータ取得中
 	/// </summary>
@@ -40,7 +32,7 @@ namespace QR
 					if (this.TicketData.Verify ()) {
 						return true;
 					} else {
-						this.tokenStatus = TokenStatus.unknown; //TODO:適切なenum
+						this.tokenStatus = this.TicketData.status;
 						return false;
 					}
 				} else {
@@ -55,13 +47,19 @@ namespace QR
 			}
 		}
 
+		public ICase OnFailure (IFlow flow, string message)
+		{
+			flow.Finish ();
+			return new CaseFailureRedirect (Resource, message);
+		}
+
 		public override ICase OnSuccess (IFlow flow)
 		{
 			if (this.tokenStatus == TokenStatus.valid) {
 				return new CaseQRConfirmForOne (Resource, TicketData);
 			} else {
-				logger.Error ("dataError:"); //TODO:まじめに処理書く
-				return base.OnFailure (flow);
+				logger.Error (String.Format ("invalid status: status={0}, token_id={1}", this.tokenStatus.ToString (), this.TicketData.ordered_product_item_token_id));
+				return this.OnFailure (flow, this.Resource.GetTokenStatusMessage (this.tokenStatus));
 			}
 		}
 	}

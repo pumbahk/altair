@@ -13,7 +13,6 @@ def verified_data_dict_from_secret(secret):
     return {"secret": signer.sign()}
 
 
-##token status = {valid, canceled, printed, unknown, not_supported}
 from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID
 class TokenStatus:
     valid = "valid"

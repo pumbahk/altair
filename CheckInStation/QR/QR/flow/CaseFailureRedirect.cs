@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using QR.message;
+using NLog;
 
 namespace QR
 {
@@ -8,21 +10,34 @@ namespace QR
 	/// </summary>
 	public class CaseFailureRedirect : AbstractCase, ICase
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger ();
+
 		public Func<Task> Modify { get; set; }
+
+		public string Message { get; set; }
+
+		public CaseFailureRedirect (IResource resource, string message) : base (resource)
+		{
+			this.Message = message;
+		}
 
 		public CaseFailureRedirect (IResource resource) : base (resource)
 		{
+			this.Message = resource.GetDefaultErrorMessage ();
 		}
 
 		public CaseFailureRedirect (IResource resource, Func<Task> modify) : base (resource)
 		{
 			this.Modify = modify;
+			this.Message = resource.GetDefaultErrorMessage ();
 		}
 
-		public override async Task<bool> VerifyAsync()
+		public override async Task<bool> VerifyAsync ()
 		{
-			if(this.Modify != null){
-				await this.Modify();
+			// message
+			logger.Info (String.Format ("failure message {0}", this.Message));
+			if (this.Modify != null) {
+				await this.Modify ();
 			}
 			return true;
 		}

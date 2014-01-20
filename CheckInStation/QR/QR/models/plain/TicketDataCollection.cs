@@ -31,7 +31,7 @@ namespace QR
 	public class TicketDataCollection
 	{
 		[DataMember]
-		internal string status;
+		internal TokenStatus status;
 		//認証情報
 		[DataMember]
 		internal string secret;
@@ -51,10 +51,15 @@ namespace QR
 
 		public TicketDataCollection (dynamic json)
 		{
-			this.status = json.status;
+			this.status = EnumUtil.ParseEnum<TokenStatus> (json.status);
 			this.secret = json.secret;
 			this.ConfigureCollection (json.collection);
 			this.additional = new AdditionalData (json.additional);
+		}
+
+		public bool Verify ()
+		{
+			return this.status == TokenStatus.valid;
 		}
 	}
 }

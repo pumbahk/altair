@@ -158,6 +158,7 @@
     <Compile Include="flow\FakeFlow.cs" />
     <Compile Include="flow\IAutoForwardingCase.cs" />
     <Compile Include="models\plain\UpdatePrintedAtRequestData.cs" />
+    <Compile Include="message\EnumUtil.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

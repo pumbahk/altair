@@ -26,7 +26,7 @@ namespace QR
 			return Task.Run (() => {
 				var subject = PresentationChanel as QRInputEvent;
 				PrintUnit unit;
-				var status = subject.TryParseEnum<PrintUnit> (subject.PrintUnitString, out unit);
+				var status = EnumUtil.TryParseEnum<PrintUnit> (subject.PrintUnitString, out unit);
 				subject.PrintUnit = Unit = unit;
 				return status;
 			});

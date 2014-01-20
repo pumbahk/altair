@@ -19,19 +19,37 @@ namespace QR.message
 			return resource.SettingValue ("message.web.exception.format.0");
 		}
 
-		public static string GetInvalidInputMessage(this IResource resource)
+		public static string GetInvalidInputMessage (this IResource resource)
 		{
 			return resource.SettingValue ("message.invalid.input.format.0");
 		}
 
-		public static string GetInvalidOutputMessage(this IResource resource)
+		public static string GetInvalidOutputMessage (this IResource resource)
 		{
 			return resource.SettingValue ("message.invalid.output.format.0");
 		}
 
-		public static string GetDefaultErrorMessage(this IResource resource)
+		public static string GetDefaultErrorMessage (this IResource resource)
 		{
 			return resource.SettingValue ("message.default.error.format.0");
+		}
+
+		public static string GetTokenStatusMessage (this IResource resource, TokenStatus tokenStatus)
+		{
+			switch (tokenStatus) {
+			case TokenStatus.valid:
+				throw new InvalidOperationException ("don't call with valid token.");
+			case TokenStatus.printed:
+				return resource.SettingValue ("message.token.status.printed.format.0");
+			case TokenStatus.canceled:
+				return resource.SettingValue ("message.token.status.canceled.format.0");
+			case TokenStatus.before_start:
+				return resource.SettingValue ("message.token.status.before_start.format.0");
+			case TokenStatus.not_supported:
+				return resource.SettingValue ("message.token.status.not_supported.format.0");
+			default:
+				return resource.SettingValue ("message.token.status.unknown.format.0");
+			}
 		}
 	}
 }

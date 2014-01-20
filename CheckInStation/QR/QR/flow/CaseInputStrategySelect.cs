@@ -22,7 +22,7 @@ namespace QR
 			return Task.Run (() => {
 				var subject = PresentationChanel as SelectInputStragetyEvent;
 				InputUnit unit;
-				var status = subject.TryParseEnum<InputUnit> (subject.InputUnitString, out unit);
+				var status = EnumUtil.TryParseEnum<InputUnit> (subject.InputUnitString, out unit);
 				subject.InputUnit = Unit = unit;
 				return status;
 			});

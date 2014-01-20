@@ -5,6 +5,50 @@ using QR.message;
 namespace QR
 {
 	[TestFixture ()]
+	public class TokenStatusMessageAppConfigTests
+	{
+		[Test, Description ("token status printed")]
+		public void TestTokenStatusMessagePrinted ()
+		{
+			var resource = new Resource ();
+			var result = resource.GetTokenStatusMessage (TokenStatus.printed);
+			Assert.AreNotEqual (default(string), result);
+		}
+
+		[Test, Description ("token status canceled")]
+		public void TestTokenStatusMessageCanceled ()
+		{
+			var resource = new Resource ();
+			var result = resource.GetTokenStatusMessage (TokenStatus.canceled);
+			Assert.AreNotEqual (default(string), result);
+		}
+
+		[Test, Description ("token status before_start")]
+		public void TestTokenStatusMessageBefore_Start ()
+		{
+			var resource = new Resource ();
+			var result = resource.GetTokenStatusMessage (TokenStatus.before_start);
+			Assert.AreNotEqual (default(string), result);
+		}
+
+		[Test, Description ("token status not_support")]
+		public void TestTokenStatusMessageNot_Support ()
+		{
+			var resource = new Resource ();
+			var result = resource.GetTokenStatusMessage (TokenStatus.not_supported);
+			Assert.AreNotEqual (default(string), result);
+		}
+
+		[Test, Description ("token status unknown")]
+		public void TestTokenStatusMessageUnknown ()
+		{
+			var resource = new Resource ();
+			var result = resource.GetTokenStatusMessage (TokenStatus.unknown);
+			Assert.AreNotEqual (default(string), result);
+		}
+	}
+
+	[TestFixture ()]
 	public class GetMessageFromAppConfigTests
 	{
 		[Test, Description ("login failure message")]

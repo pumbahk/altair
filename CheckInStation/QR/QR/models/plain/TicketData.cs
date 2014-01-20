@@ -3,6 +3,16 @@ using System.Runtime.Serialization;
 
 namespace QR
 {
+	public enum TokenStatus
+	{
+		valid,
+		printed,
+		canceled,
+		before_start,
+		not_supported,
+		unknown
+	}
+
 	[DataContract]
 	public class TicketData
 	{
@@ -17,7 +27,7 @@ namespace QR
 		[DataMember]
 		internal string ordered_product_item_token_id;
 		[DataMember]
-		internal string status;
+		internal TokenStatus status;
 		//認証情報
 		[DataMember]
 		internal string secret;
@@ -27,7 +37,6 @@ namespace QR
 		//Additional
 		[DataMember]
 		internal AdditionalData additional;
-
 		//statusのdefaultはvalid
 		public TicketData (dynamic json)
 		{
@@ -36,24 +45,14 @@ namespace QR
 			this.printed_at = json.printed_at;
 			this.ordered_product_item_token_id = json.ordered_product_item_token_id;
 			this.secret = json.secret;
-			this.status = json.status;
+			this.status = EnumUtil.ParseEnum<TokenStatus> (json.status);
 			this.seat = new _SeatData (json.seat);
 			this.additional = new AdditionalData (json.additional);
 		}
 
 		public bool Verify ()
 		{
-			/*
-			 * - キャンセル済み
-			 * - 印刷済み
-			 * - 何かわからない状況で失敗(こちらはOnFailure()になるのでOK)
-			 */ 
-			return true; //this.status == "valid"; //fmm;
-		}
-
-		public string StatusMessage (IResource resource)
-		{
-			return this.status;
+			return this.status == TokenStatus.valid;
 		}
 	}
 }
