@@ -39,7 +39,7 @@ namespace QR
 		/*
 		 * API Response
 		 * 
-		 * {endpoint: {"login_status": "http://foo"}}
+		 * {endpoint: {"login_status": "http://foo"}, ad_images: ["http://foo.bar.jp/foo.jpg"]}
 		 */
 		public async Task<EndPoint> TryLoginRequest (string name, string password)
 		{
@@ -52,7 +52,10 @@ namespace QR
 					var cookies = CookieUtils.GetCookiesFromResponseHeaders (headers);
 					factory.AddCookies (cookies);
 					var result = DynamicJson.Parse (await wrapper.ReadAsStringAsync (response.Content).ConfigureAwait (false));
-					return new EndPoint (result.endpoint);
+					var endpoint = new EndPoint (result.endpoint);
+					string[] images = result.ad_images;
+					endpoint.ConfigureAdImages (images); //xxx: bad-code
+					return endpoint;
 				}
 			}
 		}
@@ -82,7 +85,7 @@ namespace QR
 				try {
 					endpoint = await TryLoginRequest (name, password);
 				} catch (System.Xml.XmlException e) {
-					logger.ErrorException("xml:", e);
+					logger.ErrorException ("xml:", e);
 					return OnFailure ();
 				}
 				try {

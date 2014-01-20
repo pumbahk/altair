@@ -1,5 +1,5 @@
 {
-    "endpoint":{
+    "endpoint": {
         "login_status": "http://localhost:8000/login.status.json",
         "qr_ticketdata": "http://localhost:8000/qrdata.json",
         "qr_ticketdata_collection": "http://localhost:8000/qrdata.all.json",
@@ -9,6 +9,9 @@
         "orderno_verified_data": "http://localhost:8000/verified.order.json",
         "image_from_svg": "http://localhost:8000/image.png"
     },
+    "ad_images": [
+        "http://localhost:8000/ad.sample.jpg"
+    ],
     "memo": "svg_from_imageこれどこで設定しよう?"
 }
 

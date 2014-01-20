@@ -28,6 +28,9 @@ namespace QR
 		[DataMember]
 		internal string VerifyOrderData;
 
+		[DataMember]
+		internal string[] AdImages; //xxx: 
+
 		public static string asURL (string url)
 		{
 			new Uri (url); //slackoff validation
@@ -44,6 +47,14 @@ namespace QR
 			this.ImageFromSvg = EndPoint.asURL (json.image_from_svg);
 			this.UpdatePrintedAt = EndPoint.asURL (json.qr_update_printed_at);
 			this.DataCollectionFetchData = EndPoint.asURL (json.qr_ticketdata_collection);
+		}
+
+		public void ConfigureAdImages(string[] imageUrlList)
+		{
+			foreach(var url in imageUrlList){
+				new Uri(url);
+			}
+			this.AdImages = imageUrlList;
 		}
 	}
 }
