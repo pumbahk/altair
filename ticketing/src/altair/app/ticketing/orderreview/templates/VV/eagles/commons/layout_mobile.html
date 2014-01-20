@@ -1,0 +1,23 @@
+<html>
+<% from altair.app.ticketing.orderreview.api import safe_get_contact_url %>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>イーグルスチケット 購入確認ページ</title>
+</head>
+<body>
+  <div style="text-align: center">
+      <a href="http://eagles.tstar.jp/">
+        <img src="${request.static_url('altair.app.ticketing.orderreview:static/images/eagles/logo.gif')}" alt="イーグルスチケット" class="serviceLogo" width="100%" />
+      </a>
+  </div>
+  <%block name="header">
+</%block>
+</div>
+  ${next.body()}
+  <hr />
+  <a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a> / <a href="http://eagles.tstar.jp/legal/">特定商取引法に基づく表示</a>
+  <div>
+    Copyright &copy; 2010-2014 TicketStar, Inc. All Rights Reserved. 
+  </div>
+</body>
+</html>
