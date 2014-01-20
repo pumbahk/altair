@@ -11,8 +11,8 @@ class AccountForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
-        self.user_id.choices = [(u'', u'')] + [
-            (unicode(organization.user_id), organization.name) for organization in Organization.all()
+        self.user_id.choices = [(None, u'')] + [
+            (organization.user_id, organization.name) for organization in Organization.all()
         ]
         if 'organization_id' in kwargs:
             self.organization_id = kwargs['organization_id']
