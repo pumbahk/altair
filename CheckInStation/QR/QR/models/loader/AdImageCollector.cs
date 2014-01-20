@@ -81,6 +81,9 @@ namespace QR
 
 		public byte[] GetImage ()
 		{
+			if (this.State != CollectorState.ending) {
+				throw new InvalidOperationException ("fetching image is not ending.");
+			}
 			if (this.imageCount >= this.imageSet.Count) {
 				this.imageCount = 0;
 			} 

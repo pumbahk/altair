@@ -11,7 +11,9 @@ namespace QR
 		{
 			var target = new AdImageCollector (new Resource ());
 			var a = new byte[] { 0x20 };
+
 			target.Add (a);
+			target.State = CollectorState.ending;
 
 			CollectionAssert.AreEqual (a, target.GetImage ());
 			CollectionAssert.AreEqual (a, target.GetImage ());
@@ -23,8 +25,10 @@ namespace QR
 			var target = new AdImageCollector (new Resource ());
 			var a = new byte[] { 0x20 };
 			var b = new byte[] { 0x21 };
+
 			target.Add (a);
 			target.Add (b);
+			target.State = CollectorState.ending;
 
 			CollectionAssert.AreEqual (a, target.GetImage ());
 			CollectionAssert.AreEqual (b, target.GetImage ());
