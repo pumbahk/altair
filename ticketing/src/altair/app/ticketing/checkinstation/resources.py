@@ -3,7 +3,7 @@ from zope.interface import implementer
 from altair.app.ticketing.login.internal.interfaces import IInternalAuthAPIResource
 from pyramid.decorator import reify
 from pyramid.security import Allow, Everyone, authenticated_userid
-from altair.app.ticketing.operators.models import Operator, OperatorAuth
+from altair.app.ticketing.operators.models import Operator
 import logging
 logger = logging.getLogger(__name__)
 
@@ -11,7 +11,10 @@ from .models import CheckinIdentity
 from altair.app.ticketing.models import DBSession
 from pyramid.security import remember
 from datetime import datetime
-from . import IAPIEndpointCollector
+from .interfaces import (
+    IAPIEndpointCollector, 
+    IAdImageCollector
+)
 
 @implementer(IInternalAuthAPIResource)
 class CheckinStationResource(object):
@@ -39,7 +42,10 @@ class CheckinStationResource(object):
         headers = remember(self.request, "@".join(map(str, [identity.id, operator.id])))
         self.request.response.headers = headers
         collector = self.request.registry.getUtility(IAPIEndpointCollector)
-        return {"endpoint": collector.get_endpoints(self.request)}
+        ad_images = self.request.registry.getUtility(IAdImageCollector)
+        return {
+            "endpoint": collector.get_endpoints(self.request), 
+            "ad_images": ad_images.get_images(self.request)}
 
     def on_after_logout(self, operator):
         self.identity.logout()

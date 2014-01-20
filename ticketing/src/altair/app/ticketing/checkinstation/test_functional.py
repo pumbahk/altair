@@ -326,7 +326,16 @@ class CheckinStationAPITests(BaseTests):
 
     def test_get_endpoints(self):
         """endpointが取得できればok"""
-        from altair.app.ticketing.checkinstation import IAPIEndpointCollector
+        from altair.app.ticketing.checkinstation.interfaces import IAdImageCollector
+        collector = self.config.registry.getUtility(IAdImageCollector)
+        request = DummyRequest(registry=self.config.registry)
+        result = collector.get_images(request)
+
+        self.assertNotEqual(result, [])
+
+    def test_get_ad_images(self):
+        """広告用の画像が取得できればok"""
+        from altair.app.ticketing.checkinstation.interfaces import IAPIEndpointCollector
         collector = self.config.registry.getUtility(IAPIEndpointCollector)
         request = DummyRequest(registry=self.config.registry)
         endpoints = collector.get_endpoints(request)
