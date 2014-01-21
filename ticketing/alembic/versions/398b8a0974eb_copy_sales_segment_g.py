@@ -5,7 +5,7 @@ Revision ID: 398b8a0974eb
 Revises: 317d5e17c201
 Create Date: 2013-01-23 19:08:52.673436
 
-スキーマのみ
+only schema
 """
 
 # revision identifiers, used by Alembic.
