@@ -11,7 +11,7 @@ namespace QR
 	{
 		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
-		public static void Main (string[] args)
+		public static void Main_ (string[] args)
 		{
 			Console.WriteLine ("Hello World!");
 
