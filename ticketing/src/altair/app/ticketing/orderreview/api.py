@@ -82,7 +82,7 @@ def send_to_orion(request, context, recipient):
         obj['order'] = dict(number = order.order_no, created_at = str(order.paid_at))
         obj['performance'] = dict(code = performance.code, name = performance.name, open_on = str(performance.open_on), start_on = str(performance.start_on), end_on = str(performance.end_on))
         obj['performance']['event'] = dict(code = event.code, title = event.title, abbreviated_title = event.abbreviated_title)
-        obj['performance']['site'] = dict(name = site.name, prefecture = site.prefecture, address = (site.city or '')+(site.street or '')+(site.address or ''), phone = site.tel_1)
+        obj['performance']['site'] = dict(name = site.name, prefecture = site.prefecture, address = (site.city or u'')+(site.address_1 or u'')+(site.address_2 or u''), phone = site.tel_1)
         obj['performance']['organization'] = dict(code = org.code, name = org.name)
         obj['performance']['web'] = orion.web
         obj['segment'] = dict(name = segment.name)

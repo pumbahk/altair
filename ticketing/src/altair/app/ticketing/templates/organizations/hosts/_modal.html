@@ -1,0 +1,49 @@
+<%page args="modal_id, organization, host=None" />
+<%namespace file="/common/helpers.html" name="ch" />
+<script type="text/javascript">
+  var new_host, edit_host, delete_host;
+  $(function() {
+    var endpoints = {
+      'new': '${request.route_path('organizations.hosts.new', organization_id=organization.id)|n}',
+      'edit': '${request.route_path('organizations.hosts.edit', organization_id=organization.id, host_id='__id__')|n}',
+      'delete': '${request.route_path('organizations.hosts.delete', organization_id=organization.id, host_id='__id__')}',
+    };
+    (function(modal_host) {
+      new_host = function new_host() {
+        load_modal_form(
+          modal_host,
+          endpoints['new'],
+          null
+        );
+      };
+      edit_host = function edit_host(id) {
+        if (!id) return false;
+        load_modal_form(
+          modal_host,
+          endpoints['edit'].replace(encodeURIComponent('__id__'), id),
+          null
+        );
+      };
+      delete_host = function delete_host(id) {
+        if (!id) return false;
+        var modal = $('#modal-delete');
+        modal.find('#delete').attr('href', endpoints['delete'].replace(encodeURIComponent('__id__'), id));
+        modal.find('#message').text('選択したホスト名を削除します。よろしいですか？');
+        modal.modal('toggle');
+      };
+    })($('#${modal_id}'));
+  });
+</script>
+<div id="${modal_id}" class="modal hide big">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>ホスト名</h3>
+  </div>
+
+  <div class="modal-body"></div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();" class="btn">保存</a>
+  </div>
+</div>

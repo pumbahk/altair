@@ -1,0 +1,96 @@
+<%page args="organization_setting" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%! from altair.app.ticketing.core import models as c_models %>
+<%include file="./_action_button.html" args="organization_setting=organization_setting, order=['edit']" />
+<table class="table table-bordered fullwidth" style="margin-top: 10px;">
+  <thead>
+    <tr>
+      <th>設定名</th>
+      <th>設定値</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.name)}</th>
+      <td>${organization_setting.name}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.auth_type)}</th>
+      <td>${organization_setting.auth_type or u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.performance_selector)}</th>
+      <td>${organization_setting.performance_selector}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.margin_ratio)}</th>
+      <td>${HH.format_percentage(organization_setting.margin_ratio)}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.refund_ratio)}</th>
+      <td>${HH.format_percentage(organization_setting.refund_ratio)}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.printing_fee)}</th>
+      <td>${vh.price(organization_setting.printing_fee)}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.registration_fee)}</th>
+      <td>${vh.price(organization_setting.registration_fee)}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.multicheckout_shop_name)}</th>
+      <td>${organization_setting.multicheckout_shop_name or u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.multicheckout_shop_id)}</th>
+      <td>${organization_setting.multicheckout_shop_id or u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.multicheckout_auth_id)}</th>
+      <td>${organization_setting.multicheckout_auth_id or u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.multicheckout_auth_password)}</th>
+      <td>${u'*' * len(organization_setting.multicheckout_auth_password) if organization_setting.multicheckout_auth_password else u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.cart_item_name)}</th>
+      <td>${organization_setting.cart_item_name or u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.contact_pc_url)}</th>
+      <td>${organization_setting.contact_pc_url or u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.contact_mobile_url)}</th>
+      <td>${organization_setting.contact_mobile_url or u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.point_type)}</th>
+      <td>${organization_setting.point_type or u'(無効)'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.point_fixed)}</th>
+      <td>${organization_setting.point_fixed or u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.point_rate)}</th>
+      <td>${organization_setting.point_rate or u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.notify_point_granting_failure)}</th>
+      <td>${u'付与失敗をメールで通知する' if organization_setting.notify_point_granting_failure else u'付与失敗をメールで通知しない'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.bcc_recipient)}</th>
+      <td>${organization_setting.bcc_recipient or u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.entrust_separate_seats)}</th>
+      <td>${u'バラ席を許可する' if organization_setting.entrust_separate_seats else u'バラ席を許可しない'}</td>
+    </tr>
+  <tbody>
+</table>
+
+

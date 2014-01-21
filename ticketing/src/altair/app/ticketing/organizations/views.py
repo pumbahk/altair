@@ -3,22 +3,24 @@
 import webhelpers.paginate as paginate
 
 from pyramid.view import view_config, view_defaults
+from pyramid.renderers import render_to_response
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPForbidden
 from pyramid.url import route_path
 
-from deform.form import Form,Button
-from deform.exception import ValidationFailure
 
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
-from ..core.models import Organization
-from altair.app.ticketing.organizations.forms import OrganizationForm, SejTenantForm
-from altair.app.ticketing.core.models import Event, Account, MailTypeChoices
+from altair.app.ticketing.core.models import Organization, OrganizationSetting, Host, Event, Account, MailTypeChoices
+from altair.app.ticketing.operators.models import Operator, OperatorRole, OperatorAuth
+from altair.app.ticketing.users.models import User
+from altair.app.ticketing.master.models import BankAccount
 from altair.app.ticketing.sej.models import SejTenant
 from altair.app.ticketing.mails.forms import MailInfoTemplate
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.mails.api import get_mail_utility
+from altair.app.ticketing.operators import api as o_api
+from .forms import OrganizationForm, NewOrganizationForm, SejTenantForm, OrganizationSettingForm, HostForm
 
 import logging
 logger = logging.getLogger(__name__)
@@ -55,7 +57,6 @@ class Organizations(BaseView):
             return HTTPNotFound("organization id %d is not found" % organization_id)
         sej_tenants = SejTenant.filter_by(organization_id=organization.id).all()
         return {
-            'form':OrganizationForm(),
             'organization':organization,
             'sej_tenants':sej_tenants
         }
@@ -63,18 +64,39 @@ class Organizations(BaseView):
     @view_config(route_name='organizations.new', request_method='GET', renderer='altair.app.ticketing:templates/organizations/edit.html')
     def new_get(self):
         return {
-            'form':OrganizationForm(),
+            'form': NewOrganizationForm(),
             'route_name': u'登録',
-            'route_path': self.request.path,
-        }
+            'new_user': True,
+            }
 
     @view_config(route_name='organizations.new', request_method='POST', renderer='altair.app.ticketing:templates/organizations/edit.html')
     def new_post(self):
-        f = OrganizationForm(self.request.POST)
+        f = NewOrganizationForm(self.request.POST)
 
         if f.validate():
             organization = merge_session_with_post(Organization(), f.data)
-            organization.user_id = 1
+            organization.user = User(
+                bank_account=BankAccount()
+                )
+            organization.settings = [
+                OrganizationSetting(
+                    name='default',
+                    performance_selector='matchup'
+                    )
+                ]
+            organization.operators = [
+                Operator(
+                    name=f.login.data['name'],
+                    email=f.login.data['email'],
+                    expire_at=None,
+                    status=1,
+                    roles=[OperatorRole.query.filter_by(id=1).one()], # XXX
+                    auth=OperatorAuth(
+                        login_id=f.login.data['login_id'],
+                        password=o_api.crypt(f.login.data['password'])
+                        )
+                    )
+                ]
             organization.save()
 
             self.request.session.flash(u'配券先／配券元を保存しました')
@@ -83,8 +105,8 @@ class Organizations(BaseView):
             return {
                 'form':f,
                 'route_name': u'登録',
-                'route_path': self.request.path,
-            }
+                'new_user': True,
+                }
 
     @view_config(route_name='organizations.edit', request_method='GET', renderer='altair.app.ticketing:templates/organizations/edit.html')
     def edit_get(self):
@@ -98,8 +120,8 @@ class Organizations(BaseView):
         return {
             'form':f,
             'route_name': u'編集',
-            'route_path': self.request.path,
-        }
+            'new_user': False,
+            }
 
     @view_config(route_name='organizations.edit', request_method='POST', renderer='altair.app.ticketing:templates/organizations/edit.html')
     def edit_post(self):
@@ -107,7 +129,6 @@ class Organizations(BaseView):
         organization = Organization.get(organization_id)
         if organization is None:
             return HTTPNotFound("organization id %d is not found" % organization_id)
-
         f = OrganizationForm(self.request.POST)
         if f.validate():
             organization = merge_session_with_post(organization, f.data)
@@ -119,8 +140,8 @@ class Organizations(BaseView):
             return {
                 'form':f,
                 'route_name': u'編集',
-                'route_path': self.request.path,
-            }
+                'new_user': False,
+                }
 
     @view_config(route_name='organizations.delete')
     def delete(self):
@@ -136,61 +157,143 @@ class Organizations(BaseView):
 
 
 @view_defaults(decorator=with_bootstrap, permission="administrator")
+class OrganizationSettings(BaseView):
+    @view_config(route_name='organizations.settings.edit', request_method='GET', renderer='altair.app.ticketing:templates/organizations/organization_setting/edit.html')
+    def edit_get(self):
+        organization_id = long(self.request.matchdict.get('organization_id', 0))
+        organization = Organization.query.filter_by(id=organization_id).one()
+        organization_setting_id = long(self.request.matchdict.get('organization_setting_id', 0))
+        organization_setting = OrganizationSetting.query.filter_by(organization_id=organization_id, id=organization_setting_id).first()
+        if organization_setting is None:
+            return HTTPNotFound("organizationSetting(organization_id=%d, id=%d) is not found" % (organization_setting_id, organization_id))
+        f = OrganizationSettingForm(self.request.POST, obj=organization_setting)
+        return {
+            'organization': organization,
+            'form':f,
+            'route_name': u'編集',
+            'route_path': self.request.path,
+            }
+
+    @view_config(route_name='organizations.settings.edit', request_method='POST', renderer='altair.app.ticketing:templates/organizations/organization_setting/edit.html')
+    def edit_post(self):
+        organization_id = long(self.request.matchdict.get('organization_id', 0))
+        organization = Organization.query.filter_by(id=organization_id).one()
+        organization_setting_id = long(self.request.matchdict.get('organization_setting_id', 0))
+        organization_setting = OrganizationSetting.query.filter_by(organization_id=organization_id, id=organization_setting_id).first()
+        if organization_setting is None:
+            return HTTPNotFound("organizationSetting(organization_id=%d, id=%d) is not found" % (organization_setting_id, organization_id))
+
+        f = OrganizationSettingForm(self.request.POST, obj=organization_setting)
+        if not f.validate():
+            return {
+                'organization': organization,
+                'form':f,
+                'route_name': u'編集',
+                'route_path': self.request.path,
+            }
+
+        organization_setting.name = f.name.data
+        organization_setting.auth_type = f.auth_type.data
+        organization_setting.performance_selector = f.performance_selector.data
+        organization_setting.margin_ratio = f.margin_ratio.data
+        organization_setting.refund_ratio = f.refund_ratio.data
+        organization_setting.printing_fee = f.printing_fee.data
+        organization_setting.registration_fee = f.registration_fee.data
+        organization_setting.multicheckout_shop_name = f.multicheckout_shop_name.data
+        organization_setting.multicheckout_shop_id = f.multicheckout_shop_id.data
+        organization_setting.multicheckout_auth_id = f.multicheckout_auth_id.data
+        if f.multicheckout_auth_password.data:
+            organization_setting.multicheckout_auth_password = f.multicheckout_auth_password.data
+        organization_setting.cart_item_name = f.cart_item_name.data
+        organization_setting.contact_pc_url = f.contact_pc_url.data
+        organization_setting.contact_mobile_url = f.contact_mobile_url.data
+        organization_setting.point_type = f.point_type.data
+        organization_setting.point_fixed = f.point_fixed.data
+        organization_setting.point_rate = f.point_rate.data
+        organization_setting.notify_point_granting_failure = f.notify_point_granting_failure.data
+        organization_setting.bcc_recipient = f.bcc_recipient.data
+        organization_setting.entrust_separate_seats = f.entrust_separate_seats.data
+
+        self.request.session.flash(u'その他の設定を保存しました')
+        return HTTPFound(location=route_path('organizations.show', self.request, organization_id=organization_id))
+
+@view_defaults(decorator=with_bootstrap, permission="administrator")
 class SejTenants(BaseView):
 
     @view_config(route_name='organizations.sej_tenant.new', request_method='GET',
                  renderer='altair.app.ticketing:templates/organizations/sej_tenants/edit.html')
     def new(self):
         organization_id = int(self.request.matchdict.get('organization_id', 0))
-        sej_tenant = SejTenant.filter_by(organization_id=organization_id).first()
-        if not sej_tenant:
-            return dict(form=SejTenantForm(organization_id=organization_id))
-        else:
+        organization = Organization.query.filter_by(id=organization_id).one()
+        sej_tenant = SejTenant.query.filter_by(organization_id=organization_id).first()
+        if sej_tenant:
             self.request.session.flash(u'既にコンビニ設定があります')
-            return HTTPFound(location=route_path('organizations.sej_tenant.edit', self.request, organization_id=organization_id))
+            return HTTPFound(location=route_path('organizations.show', self.request, organization_id=organization_id))
+
+        form = SejTenantForm(organization_id=organization_id)
+        return dict(
+            form=form,
+            organization=organization,
+            route_name=u'登録'
+            )
 
     @view_config(route_name='organizations.sej_tenant.new', request_method='POST',
                  renderer='altair.app.ticketing:templates/organizations/sej_tenants/edit.html')
     def new_post(self):
         organization_id = int(self.request.matchdict.get('organization_id', 0))
+        organization = Organization.query.filter_by(id=organization_id).one()
         form = SejTenantForm(self.request.POST, organization_id=organization_id)
-        if form.validate():
-            sej_tenant = merge_session_with_post(SejTenant(), form.data)
-            sej_tenant.organization_id = organization_id
-            sej_tenant.save()
+        if not form.validate():
+            return dict(
+                form=form,
+                organization=organization,
+                route_name=u'登録'
+                )
 
-            self.request.session.flash(u'コンビニ設定を保存しました')
-            return HTTPFound(location=route_path('organizations.show', self.request, organization_id=organization_id))
-        else:
-            return dict(form=form)
+        sej_tenant = merge_session_with_post(SejTenant(), form.data)
+        sej_tenant.organization_id = organization_id
+        sej_tenant.save()
+
+        self.request.session.flash(u'コンビニ設定を保存しました')
+        return HTTPFound(location=route_path('organizations.show', self.request, organization_id=organization_id))
 
     @view_config(route_name='organizations.sej_tenant.edit', request_method='GET',
                  renderer='altair.app.ticketing:templates/organizations/sej_tenants/edit.html')
     def edit(self):
         organization_id = int(self.request.matchdict.get('organization_id', 0))
+        organization = Organization.query.filter_by(id=organization_id).one()
         sej_tenant = SejTenant.filter_by(organization_id=organization_id).first()
         if not sej_tenant:
             raise HTTPNotFound("sej_tenant (%d) is not found" % organization_id)
 
-        return dict(form=SejTenantForm(record_to_multidict(sej_tenant), organization_id=organization_id))
+        form = SejTenantForm(obj=sej_tenant, organization_id=organization_id)
+        return dict(
+            form=form,
+            organization=organization,
+            route_name=u'編集'
+            )
 
     @view_config(route_name='organizations.sej_tenant.edit', request_method='POST',
                  renderer='altair.app.ticketing:templates/organizations/sej_tenants/edit.html')
     def edit_post(self):
         organization_id = int(self.request.matchdict.get('organization_id', 0))
+        organization = Organization.query.filter_by(id=organization_id).one()
         sej_tenant = SejTenant.filter_by(organization_id=organization_id).first()
         if not sej_tenant:
             raise HTTPNotFound("sej_tenant (%d) is not found" % organization_id)
 
         form = SejTenantForm(self.request.POST, organization_id=organization_id)
-        if form.validate():
-            sej_tenant = merge_session_with_post(SejTenant(), form.data)
-            sej_tenant.save()
+        if not form.validate():
+            return dict(
+                form=form,
+                organization=organization,
+                route_name=u'編集'
+                )
+        sej_tenant = merge_session_with_post(SejTenant(), form.data)
+        sej_tenant.save()
 
-            self.request.session.flash(u'コンビニ設定を保存しました')
-            return HTTPFound(location=route_path('organizations.show', self.request, organization_id=organization_id))
-        else:
-            return dict(form=form)
+        self.request.session.flash(u'コンビニ設定を保存しました')
+        return HTTPFound(location=route_path('organizations.show', self.request, organization_id=organization_id))
 
     @view_config(route_name='organizations.sej_tenant.delete')
     def delete(self):
@@ -204,6 +307,84 @@ class SejTenants(BaseView):
         self.request.session.flash(u'コンビニ設定を削除しました')
         return HTTPFound(location=route_path('organizations.show', self.request, organization_id=organization_id))
 
+@view_defaults(decorator=with_bootstrap, permission="administrator")
+class Hosts(BaseView):
+    @view_config(route_name='organizations.hosts.new', request_method='GET', renderer='altair.app.ticketing:templates/organizations/hosts/_form.html', xhr=True)
+    def new_get(self):
+        organization_id = long(self.request.matchdict['organization_id'])
+        organization = Organization.query.filter_by(id=organization_id).one()
+        form = HostForm()
+        return dict(
+            organization=organization,
+            action=self.request.route_path(self.request.matched_route.name, **self.request.matchdict),
+            form=form
+            )
+
+    @view_config(route_name='organizations.hosts.new', request_method='POST', renderer='altair.app.ticketing:templates/organizations/hosts/_form.html', xhr=True)
+    def new_post(self):
+        organization_id = long(self.request.matchdict['organization_id'])
+        organization = Organization.query.filter_by(id=organization_id).one()
+        form = HostForm(self.request.POST)
+        if not form.validate():
+            return dict(
+                organization=organization,
+                action=self.request.route_path(self.request.matched_route.name, **self.request.matchdict),
+                form=form
+                )
+        host = Host(
+            organization_id=organization.id,
+            host_name=form.host_name.data,
+            path=form.path.data,
+            base_url=form.base_url.data,
+            mobile_base_url=form.mobile_base_url.data
+            )
+        host.save()
+        return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+
+    @view_config(route_name='organizations.hosts.edit', request_method='GET', renderer='altair.app.ticketing:templates/organizations/hosts/_form.html', xhr=True)
+    def edit_get(self):
+        organization_id = long(self.request.matchdict['organization_id'])
+        organization = Organization.query.filter_by(id=organization_id).one()
+        host_id = long(self.request.matchdict['host_id'])
+        host = Host.query.filter_by(organization_id=organization_id, id=host_id).one()
+        form = HostForm(obj=host)
+        return dict(
+            organization=organization,
+            action=self.request.route_path(self.request.matched_route.name, **self.request.matchdict),
+            form=form
+            )
+
+    @view_config(route_name='organizations.hosts.edit', request_method='POST', renderer='altair.app.ticketing:templates/organizations/hosts/_form.html', xhr=True)
+    def edit_post(self):
+        organization_id = long(self.request.matchdict['organization_id'])
+        organization = Organization.query.filter_by(id=organization_id).one()
+        host_id = long(self.request.matchdict['host_id'])
+        host = Host.query.filter_by(organization_id=organization_id, id=host_id).one()
+        form = HostForm(self.request.POST)
+        if not form.validate():
+            return dict(
+                organization=organization,
+                action=self.request.route_path(self.request.matched_route.name, **self.request.matchdict),
+                form=form
+                )
+        host.host_name = form.host_name.data
+        host.path = form.path.data
+        host.base_url = form.base_url.data
+        host.mobile_base_url = form.mobile_base_url.data
+        host.save()
+        return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+
+    @view_config(route_name='organizations.hosts.delete')
+    def delete(self):
+        organization_id = long(self.request.matchdict['organization_id'])
+        host_id = long(self.request.matchdict['host_id'])
+        host = Host.query.filter_by(organization_id=organization_id, id=host_id).one()
+        host.delete()
+        return HTTPFound(   
+            location=self.request.route_path(
+                'organizations.show',
+                organization_id=organization_id)
+            )
 
 @view_defaults(route_name="organizations.mails.new", decorator=with_bootstrap, permission="authenticated",
                renderer="altair.app.ticketing:templates/organizations/mailinfo/new.html")

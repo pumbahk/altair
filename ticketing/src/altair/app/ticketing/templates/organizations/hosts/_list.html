@@ -1,0 +1,33 @@
+<%page args="items" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%! from altair.app.ticketing.core import models as c_models %>
+<form>
+  <table class="table table-bordered fullwidth" style="margin-top: 10px;">
+    <thead>
+      <tr>
+        <th></th>
+        <th>${HH.label_text_for(c_models.Host.host_name)}</th>
+        <th>${HH.label_text_for(c_models.Host.path)}</th>
+        <th>${HH.label_text_for(c_models.Host.base_url)}</th>
+        <th>${HH.label_text_for(c_models.Host.mobile_base_url)}</th>
+      </tr>
+    </thead>
+    <tbody>
+    % for host in items:
+      <tr>
+        <td><input type="radio" name="host_id" value="${host.id}" /></td>
+        <td>${host.host_name}</td>
+        <td>${host.path or u'-'}</td>
+        <td>${host.base_url or u'-'}</td>
+        <td>${host.mobile_base_url or u'-'}</td>
+    % endfor
+    </tbody>
+  </table>
+  <script type="text/javascript">
+  (function (form) {
+    get_selected_host_id = function get_selected_host_id() {
+      return form.find('input:radio[name="host_id"]:checked').val();
+    }
+  })($('script:last').closest('form'));
+  </script>
+</form>
