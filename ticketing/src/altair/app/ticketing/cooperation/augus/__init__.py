@@ -4,7 +4,9 @@ from .resources import (
     VenueResource,
     AugusVenueResource,
     AugusVenueListResource,
+    SeatTypeResource,
     )
+
 
 # /cooperation/augus/event/event_id
 # /cooperation/augus/event/event_id/performances
@@ -30,6 +32,10 @@ ROUTE_URL_RESOURCE = {
                                    AugusVenueResource),
     'augus.augus_venue.upload': ('/augus_venues/{augus_venue_code}/version/{augus_venue_version}/upload',
                                  AugusVenueResource),
+    # stock type
+    'augus.stock_type.index': ('/events/{event_id}/stock_types', SeatTypeResource),
+    'augus.stock_type.show': ('/events/{event_id}/stock_types/show', SeatTypeResource),
+    'augus.stock_type.edit': ('/events/{event_id}/stock_types/edit', SeatTypeResource),
     }
     
 def add_routes(config, route_url_resource):

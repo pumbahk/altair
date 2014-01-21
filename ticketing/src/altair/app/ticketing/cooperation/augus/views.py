@@ -140,3 +140,21 @@ class AugusVenueView(_AugusBaseView):
                 raise HTTPBadRequest(err)
         else:# validate error
             raise HTTPBadRequest('validation error')
+
+
+@view_defaults(route_name='augus.stock_type', decorator=with_bootstrap, permission='event_editor')
+class AugusVenueView(_AugusBaseView):
+    @view_config(route_name='augus.stock_type.show', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/augus/events/stock_types/show.html')
+    def show(self):
+        stocktypeid_agticket = dict([(ag_ticket.stock_type.id, ag_ticket)
+                                     for ag_ticket in self.context.ag_tickets
+                                     if ag_ticket.stock_type])
+        stocktype_agticket = [(stock_type, stocktypeid_agticket.get(stock_type.id, None))
+                              for stock_type in self.context.event.stock_types
+                              ]
+
+        return dict(stocktype_agticket=stocktype_agticket, event=self.context.event)
+
+    
+    

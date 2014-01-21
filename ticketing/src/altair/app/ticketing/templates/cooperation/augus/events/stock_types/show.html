@@ -1,0 +1,29 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<div class="page-header">
+  <h3>オーガス席種連携</h3>
+</div>
+
+<a class="btn entry" href="${request.route_path('augus.stock_type.show', event_id=event.id)}">連携を編集</a>
+
+<table class="table">
+  <tr>
+    <th>席種</th>
+    <th>オーガスチケット</th>
+  </tr>
+  
+  %for stock_type, ag_ticekt in stocktype_agticket:
+  <tr>
+    <td>${stock_type.name}</td>
+    <td>
+      %if ag_ticket:
+      ${ag_ticket.augus_seat_type_code} - ${ag_ticket.augus_seat_type_name}
+      %endif
+    </td>
+  </tr>
+  %endfor
+</table>
+
+

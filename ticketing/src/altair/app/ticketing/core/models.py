@@ -4029,9 +4029,14 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_seat_type_classif = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'席区分'))
     value = AnnotatedColumn(Integer, nullable=False, _a_label=(u'売値'))
 
+
     created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
     updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
     deleted_at = Column(TIMESTAMP, nullable=True)
+
+    stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
+    stock_type = relationship('StockType')    
+
 
 class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusStockInfo'
