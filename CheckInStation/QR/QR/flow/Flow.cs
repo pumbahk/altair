@@ -33,6 +33,12 @@ namespace QR
 
 		public virtual async Task<bool> VerifyAsync ()
 		{
+            //prepare if not then calling.
+            if (this.state < FlowState.prepared)
+            {
+                await PrepareAsync().ConfigureAwait(false);
+            }
+
 			var status = await Case.VerifyAsync ();
 			var evStatus = status ? InternalEventStaus.success : InternalEventStaus.failure;
 			Manager.GetInternalEvent ().Status = evStatus;
@@ -56,12 +62,7 @@ namespace QR
 
 		public async Task<ICase> NextCase ()
 		{
-			//prepare if not called.
-			if (this.state < FlowState.prepared) {
-				await PrepareAsync ().ConfigureAwait (false);
-			}
-
-			//verify if not called.
+			//verify if not then calling.
 			bool isVerifySuccess;
 			if (this.state < FlowState.verified) {
 				isVerifySuccess = await VerifyAsync ().ConfigureAwait (false);

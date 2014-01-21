@@ -29,7 +29,7 @@ namespace QR
 		public IInternalEvent GetInternalEvent ()
 		{
 			if (this.RequestBroker == null) {
-				//TODO:LOG
+                logger.Warn("RequestBroker hasn't Internal Event.");
 				return new EmptyEvent ();
 			}
 			return this.RequestBroker.GetInternalEvent ();	
@@ -45,11 +45,21 @@ namespace QR
 			this.undoStack.Push (flow);
 		}
 
+        public async Task PrepareAsync()
+        {
+            await this.Peek().PrepareAsync().ConfigureAwait(false);
+        }
+
+        public async Task<bool> VerifyAsync()
+        {
+            return await this.Peek().VerifyAsync().ConfigureAwait(false);
+        }
+
 		public async Task<ICase> Forward ()
 		{
 			
 			var cmd = this.Peek ();
-			var nextCmd = await cmd.Forward ();
+			var nextCmd = await cmd.Forward ().ConfigureAwait(false);
 			undoStack.Push (nextCmd);
 			logger.Debug ("* Forward: {0} -> {1}", cmd.Case.GetType ().FullName, nextCmd.Case.GetType ().FullName);
 			return nextCmd.Case;

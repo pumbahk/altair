@@ -8,6 +8,13 @@
 	Title="PageAuthInput">
 
     <Grid>
-        <Label>test</Label>
+        <StackPanel>
+            <Label>auth</Label>
+            <TextBlock>Login name:</TextBlock>
+            <TextBox Text="{Binding LoginName, Mode=OneWayToSource}"></TextBox>
+            <TextBlock>Password:</TextBlock>
+            <PasswordBox Name="PasswordInput"></PasswordBox>
+            <Button Click="LoginButton_Click">login</Button>
+        </StackPanel>
     </Grid>
 </Page>

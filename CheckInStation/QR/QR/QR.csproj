@@ -115,7 +115,7 @@
     <Compile Include="web\tests\FakeGetUrlTests.cs" />
     <Compile Include="web\HttpWrapper.cs" />
     <Compile Include="Configurator.cs" />
-    <Compile Include="Application.cs" />
+    <Compile Include="InternalApplication.cs" />
     <Compile Include="flow\CaseAuthDataFetch.cs" />
     <Compile Include="tests\case\AuthenticationTests.cs" />
     <Compile Include="tests\case\QRCodeInputTests.cs" />

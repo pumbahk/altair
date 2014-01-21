@@ -9,6 +9,9 @@ namespace QR
 		//TODO:implement
 		Task<IFlow> Backward ();
 
+        Task PrepareAsync();
+        Task<bool> VerifyAsync();
+
 		void Finish ();
 
 		ICase Case { get; set; }

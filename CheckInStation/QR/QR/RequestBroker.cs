@@ -1,3 +1,4 @@
+using NLog;
 using System;
 using System.Threading.Tasks;
 
@@ -11,6 +12,8 @@ namespace QR
 		public FlowManager FlowManager { get; set; }
 
 		public IInternalEvent Event { get; set; }
+
+        private Logger logger = LogManager.GetCurrentClassLogger(); 
 
 		public RequestBroker (FlowManager manager)
 		{
@@ -32,17 +35,29 @@ namespace QR
 		public IInternalEvent GetInternalEvent ()
 		{
 			if (Event == null) {
-				//TODO:login
+                logger.Warn("Internal Event is not found.");
 				return new EmptyEvent (); //TODO:implement
 			} else {
 				return Event;
 			}
 		}
 
+        public async Task PrepareAsync(IInternalEvent ev)
+        {
+            this.Event = ev;//xxx:
+            await this.FlowManager.PrepareAsync().ConfigureAwait(false);
+        }
+
+        public async Task<bool> VerifyAsync(IInternalEvent ev)
+        {
+            this.Event = ev;//xxx:
+            return await this.FlowManager.VerifyAsync().ConfigureAwait(false);
+        }
+
 		public async Task<ICase> Submit (IInternalEvent ev)
 		{
-			this.Event = ev;
-			return await this.FlowManager.Forward ();
+			this.Event = ev;//xxx:
+			return await this.FlowManager.Forward ().ConfigureAwait(false);
 		}
 
 		public void SetStartCase (ICase case_)
