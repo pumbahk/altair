@@ -48,4 +48,4 @@ def column_name_for(misc):
     raise ValueError('no column name for %r' % misc)
 
 def format_percentage(rate, precision=0):
-    return (u'%%.%df%%%%' % precision) % (rate * 100.) if rate is not None else u'-'
+    return (u'%%.%df%%%%' % precision) % (float(rate) * 100.) if rate is not None else u'-'

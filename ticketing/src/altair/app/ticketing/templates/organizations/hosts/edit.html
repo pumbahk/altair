@@ -1,0 +1,56 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<style>
+  .form-horizontal .control-label {
+    float: left;
+    width: 180px;
+    padding-top: 5px;
+    text-align: right;
+    margin-right: 15px;
+  }
+</style>
+
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'トップ', u'取引先', route_name, u'その他の設定を編集'],
+      urls=[
+        request.route_path('index'),
+        request.route_path('organizations.index'),
+        request.route_path('organizations.show', organization_id=organization_id),
+      ]
+  )}
+</%block>
+
+<div class="page-header">
+  <h1>取引先 ${route_name}</h1>
+</div>
+<div class="well">
+  <form class="form-horizontal" action="${route_path}" method="POST">
+    <fieldset>
+      ${ch.form_item(form.name)}
+      ${ch.form_item(form.auth_type)}
+      ${ch.form_item(form.performance_selector)}
+      ${ch.form_item(form.margin_ratio)}
+      ${ch.form_item(form.refund_ratio)}
+      ${ch.form_item(form.printing_fee)}
+      ${ch.form_item(form.registration_fee)}
+      ${ch.form_item(form.multicheckout_shop_name)}
+      ${ch.form_item(form.multicheckout_shop_id)}
+      ${ch.form_item(form.multicheckout_auth_id)}
+      ${ch.form_item(form.multicheckout_auth_password)}
+      ${ch.form_item(form.cart_item_name)}
+      ${ch.form_item(form.contact_pc_url)}
+      ${ch.form_item(form.contact_mobile_url)}
+      ${ch.form_item(form.point_type)}
+      ${ch.form_item(form.point_fixed)}
+      ${ch.form_item(form.point_rate)}
+      ${ch.form_item(form.notify_point_granting_failure)}
+      ${ch.form_item(form.bcc_recipient)}
+      ${ch.form_item(form.entrust_separate_seats)}
+    </fieldset>
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+    </div>
+  </form>
+</div>
