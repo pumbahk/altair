@@ -167,7 +167,7 @@ class PageInfoSetupWithEventForm(Form):
 @implementer(IForm)
 class PageForm(Form):
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
-    url = fields.TextField(validators=[url_field_validator,  url_not_conflict],label=u"URL", )
+    url = fields.TextField(validators=[validators.Required(), url_field_validator,  url_not_conflict],label=u"URL", )
     genre = LazySelectField(
         label=u"ジャンル",
         model=lambda field: GenreSelectionModel(build_genre_choices(get_current_request()))
