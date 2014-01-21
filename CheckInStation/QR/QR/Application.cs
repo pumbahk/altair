@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace QR
 {
-	public class Application
+	public class InternalApplication
 	{
 		public RequestBroker RequestBroker { get; set; }
 
@@ -11,7 +11,7 @@ namespace QR
 
 		public IResource Resource { get; set; }
 
-		public Application ()
+		public InternalApplication ()
 		{
 			var config = new Configurator (new Resource (true));
 			this.Resource = config.Resource;

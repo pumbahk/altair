@@ -25,7 +25,7 @@ namespace QR
 			
 			//var t = GetJsonData ();
 			try {
-				var app = new Application ();
+				var app = new InternalApplication ();
 				var t = app.Run (new CaseAuthInput (app.Resource));
 				t.Wait ();
 				// var t = GetAuthData (resource);
