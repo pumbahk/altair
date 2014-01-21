@@ -133,7 +133,7 @@ def smartphone_rendering_page(context, request):
         query = dict(event_id=page.event_id or page.pageset.event_id)
         query.update(params)
         return HTTPFound(request.route_path("smartphone.detail", _query=query))
-    if page.url.startswith("special"):
+    if page.pageset.url.startswith("special"):
         return _rendering_page(context, request, control, page)
     if page.pageset.genre_id:
         return HTTPFound(request.route_path("smartphone.genre", genre_id=page.pageset.genre_id))
