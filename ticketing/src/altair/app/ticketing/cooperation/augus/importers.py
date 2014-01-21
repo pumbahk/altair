@@ -35,13 +35,12 @@ class AugusPerformanceImpoter(object):
         ag_performance.save()
         return ag_performance
         
-        
     def import_record_all(self, records):
-        ag_performances = []
+        elms = []
         for record in records:
-            ag_performance = self.import_record(record)
-            ag_performances.append(ag_performance)
-        return ag_performances
+            elm = self.import_record(record)
+            elms.append(elm)
+        return elms
 
     def import_(self, protocol):
         return self.import_record_all(protocol)
