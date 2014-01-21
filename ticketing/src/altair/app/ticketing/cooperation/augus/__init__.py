@@ -36,6 +36,7 @@ ROUTE_URL_RESOURCE = {
     'augus.stock_type.index': ('/events/{event_id}/stock_types', SeatTypeResource),
     'augus.stock_type.show': ('/events/{event_id}/stock_types/show', SeatTypeResource),
     'augus.stock_type.edit': ('/events/{event_id}/stock_types/edit', SeatTypeResource),
+    'augus.stock_type.save': ('/events/{event_id}/stock_types/save', SeatTypeResource),
     }
     
 def add_routes(config, route_url_resource):

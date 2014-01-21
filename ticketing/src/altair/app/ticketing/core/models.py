@@ -4035,9 +4035,22 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     deleted_at = Column(TIMESTAMP, nullable=True)
 
     stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
-    stock_type = relationship('StockType')    
+    stock_type = relationship('StockType')
 
+    @property
+    def augus_performance(self):
+        ag_performance = AugusPerformance\
+            .query.filter(AugusPerformance.augus_event_code==self.augus_event_code)\
+                  .filter(AugusPerformance.augus_performance_code==self.augus_performance_cod)\
+                  .one()
+        return ag_performance
 
+    def link_stock_type(self, stock_type):
+        if not self.augus_performance.performance in stock_type.event.performances:
+            raise ValueError('illegal performance')
+        self.stock_type_id = stock_type.id
+        
+        
 class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusStockInfo'
     id = Column(Identifier, primary_key=True)

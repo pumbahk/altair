@@ -144,6 +144,7 @@ class AugusVenueView(_AugusBaseView):
 
 @view_defaults(route_name='augus.stock_type', decorator=with_bootstrap, permission='event_editor')
 class AugusVenueView(_AugusBaseView):
+    
     @view_config(route_name='augus.stock_type.show', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/stock_types/show.html')
     def show(self):
@@ -156,5 +157,33 @@ class AugusVenueView(_AugusBaseView):
 
         return dict(stocktype_agticket=stocktype_agticket, event=self.context.event)
 
-    
-    
+    @view_config(route_name='augus.stock_type.edit', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/augus/events/stock_types/edit.html')
+    def edit(self):
+        stocktypeid_agticket = dict([(ag_ticket.stock_type.id, ag_ticket)
+                                     for ag_ticket in self.context.ag_tickets
+                                     if ag_ticket.stock_type])
+        stocktype_agticket = [(stock_type, stocktypeid_agticket.get(stock_type.id, None))
+                              for stock_type in self.context.event.stock_types
+                              ]
+
+        return dict(stocktype_agticket=stocktype_agticket,
+                    event=self.context.event,
+                    ag_tickets=self.context.ag_tickets,
+                    )
+        
+    @view_config(route_name='augus.stock_type.save', request_method='POST')
+    def save(self):
+        try:
+            for stock_type_id, ag_ticket_id in self.request.params.iteritems():
+                stock_type_id = int(stock_type_id)
+                ag_ticket_id = int(ag_ticket_id)
+                stock_type = StockType.query.filte(StockType.id==stock_type_id).one()
+                ag_ticket = AugusTicket.query.filter(AugusTicket.id==ag_ticket_id).one()
+                ag_ticket.link_stock_type(stock_type)
+                ag_ticket.save()
+        except ValueError as err:
+            raise HTTPBadRequest('invalid save data')
+        return HTTPFound(self.request.route_url('augus.stock_type.show', event_id=self.context.event.id))
+
+
