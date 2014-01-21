@@ -13,14 +13,14 @@ namespace QR
 
 		public IInternalEvent Event { get; set; }
 
-        private Logger logger = LogManager.GetCurrentClassLogger(); 
+        private Logger logger = LogManager.GetCurrentClassLogger();
 
 		public RequestBroker (FlowManager manager)
 		{
 			this.FlowManager = manager;
 			FlowManager.RequestBroker = this;
 		}
-
+        
 		public bool IsConfigurationOK ()
 		{
 			if (FlowManager == null) {
@@ -57,7 +57,8 @@ namespace QR
 		public async Task<ICase> Submit (IInternalEvent ev)
 		{
 			this.Event = ev;//xxx:
-			return await this.FlowManager.Forward ().ConfigureAwait(false);
+			var result = await this.FlowManager.Forward ().ConfigureAwait(false);
+            return result;
 		}
 
 		public void SetStartCase (ICase case_)

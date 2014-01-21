@@ -9,6 +9,7 @@
 
     <Grid>
         <StackPanel>
+            <TextBlock Text="{Binding CaseName, Mode=OneWay}" Background="AliceBlue"/>
             <Label>auth</Label>
             <TextBlock>Login name:</TextBlock>
             <TextBox Text="{Binding LoginName, Mode=OneWayToSource}"></TextBox>
