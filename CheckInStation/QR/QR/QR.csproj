@@ -76,6 +76,9 @@
     <Compile Include="presentation\gui\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="presentation\gui\PageAuthInput.xaml.cs">
+      <DependentUpon>PageAuthInput.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="flow\FlowManager.cs" />
@@ -209,6 +212,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="presentation\gui\MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\PageAuthInput.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
