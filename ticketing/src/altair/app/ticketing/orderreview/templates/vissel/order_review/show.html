@@ -13,6 +13,10 @@
               <table class="purchasedContents">
                 <tbody>
                   <tr>
+                    <td colspan="3">受付番号</td>
+                    <td class="textR">${order.order_no}</td>
+                  </tr>
+                  <tr>
                     <thead>
                       <th colspan="4"><span>${order.performance.event.title} <br />${order.performance.name}<br />${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)} ${order.performance.venue.name}</span></th>
                     </thead>
