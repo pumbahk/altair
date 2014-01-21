@@ -5,34 +5,48 @@ namespace QR
 {
 	public enum FlowState
 	{
-		starting,
-		running,
-		ending
+		initialized,
+		prepared,
+		verified
 	}
 
 	public class Flow : IFlow
 	{
 		public ICase Case { get; set; }
-		//		public FlowState State { get; set; }
+
 		public FlowManager Manager { get; set; }
+
+		protected FlowState state;
+		protected bool verifyResult;
+
+		public Flow (FlowManager manager, ICase _case)
+		{
+			this.Manager = manager;
+			this.Case = _case;
+			this.state = FlowState.initialized;
+		}
+
+		private void ChangeState (FlowState s)
+		{
+			this.state = s;
+		}
 
 		public virtual async Task<bool> VerifyAsync ()
 		{
 			var status = await Case.VerifyAsync ();
 			var evStatus = status ? InternalEventStaus.success : InternalEventStaus.failure;
 			Manager.GetInternalEvent ().Status = evStatus;
+
+			this.ChangeState (FlowState.verified);
+			this.verifyResult = status;
 			return status;
 		}
 
 		public virtual Task PrepareAsync ()
 		{
-			return Case.PrepareAsync (Manager.GetInternalEvent ());
-		}
-
-		public Flow (FlowManager manager, ICase _case)
-		{
-			Manager = manager;
-			Case = _case;
+			var r = Case.PrepareAsync (Manager.GetInternalEvent ());
+			this.ChangeState (FlowState.prepared);
+			return r;
 		}
 
 		public IFlowDefinition GetFlowDefinition ()
@@ -42,8 +56,21 @@ namespace QR
 
 		public async Task<ICase> NextCase ()
 		{
-			await PrepareAsync (); //ここでUIから情報を取得できるようにする必要がある。
-			if (await VerifyAsync ()) {
+			//prepare if not called.
+			if (this.state < FlowState.prepared) {
+				await PrepareAsync ().ConfigureAwait (false);
+			}
+
+			//verify if not called.
+			bool isVerifySuccess;
+			if (this.state < FlowState.verified) {
+				isVerifySuccess = await VerifyAsync ().ConfigureAwait (false);
+			} else {
+				isVerifySuccess = this.verifyResult;
+			}
+
+			//dispatch by verify status
+			if (isVerifySuccess) {
 				return Case.OnSuccess (this);
 			} else {
 				return Case.OnFailure (this);
@@ -52,7 +79,7 @@ namespace QR
 
 		public virtual async Task<IFlow> Forward ()
 		{
-			var nextCase = await NextCase ();
+			var nextCase = await NextCase ().ConfigureAwait (false);
 			if (Case == nextCase) {
 				return this;
 			}
@@ -77,7 +104,7 @@ namespace QR
 			if (!Manager.OnFinish (this)) {
 				throw new Exception ("anything is wrong!");
 			}
-			// 印刷終了後に戻った場合には、認証方法選択画面に遷移
+			// 印刷終了後に戻った場合には、認証方法選択画面に遷移するように履歴を調整
 			this.Manager.Push (new Flow (this.Manager, this.GetFlowDefinition ().PreviousCaseFromRedirected (this.Case.Resource)));
 		}
 	}

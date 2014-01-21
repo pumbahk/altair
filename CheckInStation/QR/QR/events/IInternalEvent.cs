@@ -7,12 +7,15 @@ namespace QR
 	/// </summary>
 	public interface IInternalEvent
 	{
-		void HandleEvent();
-		bool NotifyFlushMessage(string message);
-		InternalEventStaus Status { get; set;}
+		void HandleEvent ();
+
+		bool NotifyFlushMessage (string message);
+
+		InternalEventStaus Status { get; set; }
 	}
 
-	public enum InternalEventStaus {
+	public enum InternalEventStaus
+	{
 		success,
 		failure
 	}
