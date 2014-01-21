@@ -6,6 +6,7 @@ from pyramid_mailer.message import Message
 from altair.app.ticketing.core.api import get_organization, get_organization_setting, is_mobile_request
 from altair.app.ticketing.mails.api import get_appropriate_message_part
 from pyramid.threadlocal import get_current_registry
+from altair.app.ticketing.core import api as c_api
 from altair.app.ticketing.qr.utils import get_matched_token_from_token_id
 import urllib
 import urllib2
@@ -115,3 +116,7 @@ def send_to_orion(request, context, recipient):
         return "failed[%u]" % stream.code
     except Exception as e:
         return "http exception[%s]" % str(e)
+
+def is_mypage_organization(context, request):
+    organization = c_api.get_organization(request)
+    return organization.id == 24
