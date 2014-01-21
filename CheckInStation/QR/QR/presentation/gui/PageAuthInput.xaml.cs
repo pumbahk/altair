@@ -35,6 +35,7 @@ namespace QR.presentation.gui
             var ev = this.Event as AuthenticationEvent;
             ev.LoginName = this.LoginName;
             ev.LoginPassword = this.LoginPassword; //TODO:use seret string
+            logger.Info(String.Format("Submit: Name:{0}, Password:{1}", ev.LoginName, ev.LoginPassword));
             base.OnSubmit();
         }
     }
@@ -46,7 +47,7 @@ namespace QR.presentation.gui
         public RequestBroker Broker { get; set; }
         public IInternalEvent Event { get; set; }
 
-        private Logger logger = LogManager.GetCurrentClassLogger();
+        protected Logger logger = LogManager.GetCurrentClassLogger();
 
         protected virtual void OnPropertyChanged(string propName)
         {
@@ -69,11 +70,12 @@ namespace QR.presentation.gui
         {
         }
 
-        public virtual async Task Submit()
+        public virtual async Task<ICase> Submit()
         {
             this.OnSubmit();
-            await this.Broker.Submit(this.Event).ConfigureAwait(false);
+            var result = await this.Broker.Submit(this.Event).ConfigureAwait(false);
             this.OnPropertyChanged("CaseName");
+            return result;
         }
 
         public string CaseName { get { return this.Case.ToString(); } }
@@ -99,7 +101,16 @@ namespace QR.presentation.gui
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             //hmm.
-            await (this.DataContext as InputDataContext).Submit();
+            var ctx = this.DataContext as InputDataContext;
+            var case_ = await ctx.Submit();
+            if (ctx.Event.Status == InternalEventStaus.success)
+            {
+                await ctx.Submit(); //Data Fetch
+            }
+            else
+            {
+                logger.Info("failure");
+            }
            // MessageBox.Show(String.Format("name: {0}, password: {1}", ev.LoginName, ev.LoginPassword));
         }
     }

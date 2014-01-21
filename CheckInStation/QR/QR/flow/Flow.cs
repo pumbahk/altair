@@ -1,3 +1,4 @@
+using NLog;
 using System;
 using System.Threading.Tasks;
 
@@ -16,6 +17,7 @@ namespace QR
 
 		public FlowManager Manager { get; set; }
 
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 		protected FlowState state;
 		protected bool verifyResult;
 
@@ -62,6 +64,7 @@ namespace QR
 
 		public async Task<ICase> NextCase ()
 		{
+            logger.Debug(String.Format("FlowState: {0}", this.state));
 			//verify if not then calling.
 			bool isVerifySuccess;
 			if (this.state < FlowState.verified) {
@@ -82,6 +85,7 @@ namespace QR
 		{
 			var nextCase = await NextCase ().ConfigureAwait (false);
 			if (Case == nextCase) {
+                this.ChangeState(FlowState.prepared);
 				return this;
 			}
 			return new Flow (Manager, nextCase);

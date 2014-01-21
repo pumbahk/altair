@@ -22,17 +22,14 @@ namespace QR
 			this.LoginPassword = password;
 		}
 
-		public override Task PrepareAsync (IInternalEvent ev)
-		{
-			AuthenticationEvent subject = ev as AuthenticationEvent;
-			this.LoginName = subject.LoginName;
-			this.LoginPassword = subject.LoginPassword;
-			return base.PrepareAsync (ev);
-		}
-
 		public override Task<bool> VerifyAsync ()
 		{
-			return Task.Run(() => {return !LoginName.Equals ("") && !LoginPassword.Equals ("");});;
+			return Task.Run(() => {
+                var subject = this.PresentationChanel as AuthenticationEvent;
+                this.LoginName = subject.LoginName;
+                this.LoginPassword = subject.LoginPassword;
+                return !LoginName.Equals ("") && !LoginPassword.Equals ("");
+            });
 		}
 
 		public override ICase OnSuccess (IFlow flow)
