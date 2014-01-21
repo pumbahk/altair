@@ -4020,15 +4020,12 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusTicket'
     id = Column(Identifier, primary_key=True)
-    augus_event_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス事業コード'))
-    augus_performance_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス公演コード'))
     augus_venue_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス会場コード'))
     augus_seat_type_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス席種コード'))
     augus_seat_type_name = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'オーガス席種名'))
     unit_value_name = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'単価名称'))
     augus_seat_type_classif = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'席区分'))
     value = AnnotatedColumn(Integer, nullable=False, _a_label=(u'売値'))
-
 
     created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
     updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
@@ -4037,13 +4034,11 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
     stock_type = relationship('StockType')
 
-    @property
-    def augus_performance(self):
-        ag_performance = AugusPerformance\
-            .query.filter(AugusPerformance.augus_event_code==self.augus_event_code)\
-                  .filter(AugusPerformance.augus_performance_code==self.augus_performance_cod)\
-                  .one()
-        return ag_performance
+    augus_performance_id = Column(Identifier, ForeignKey('AugusPerformance.id'), nullable=True)
+    augus_performance = relationship('AugusPerformance')
+
+    augus_event_code = association_proxy('augus_performance', 'augus_event_code')
+    augus_performance_code = association_proxy('augus_performance', 'augus_performance_code')
 
     def link_stock_type(self, stock_type):
         if not self.augus_performance.performance in stock_type.event.performances:
