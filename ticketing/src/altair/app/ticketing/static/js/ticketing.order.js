@@ -163,20 +163,9 @@ order.OrderFormPresenter.prototype = {
     var self = this;
     self.order.save(null, {
       success: function(model, res) {
+        venueEditorRoot.venueeditor('refresh');
+        self.close();
         showOrder(null, self.order.get('order_no'));
-
-        self.ensure_seats.each(function(seat) {
-          seat.set('sold', true);
-          seat.set('status', 3);
-          seat.set('selectable', true);
-          seat.trigger('change:selectable');
-        });
-        self.release_seats.each(function(seat) {
-          seat.set('sold', false);
-          seat.set('status', 1);
-          seat.set('selectable', true);
-          seat.trigger('change:selectable');
-        });
       },
       error: function(model, res) {
         var response = JSON.parse(res.responseText);
