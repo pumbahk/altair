@@ -1377,18 +1377,21 @@ class OrdersReserveView(BaseView):
                 self.release_seats(venue, inner_cart_session.get('seats'))
             del self.request.session['altair.app.ticketing.inner_cart']
 
-    @view_config(route_name='orders.api.get', renderer='json')
-    def get_order_by_seat(self):
-        l0_id = self.request.params.get('l0_id', 0)
-        performance_id = self.request.params.get('performance_id', 0)
+    def _get_order_by_seat(self, performance_id, l0_id):
         logger.debug('call get order api (seat l0_id = %s)' % l0_id)
-        order = Order.filter_by(organization_id=self.context.organization.id)\
+        return Order.filter_by(organization_id=self.context.organization.id)\
             .filter(Order.performance_id==performance_id)\
             .filter(Order.canceled_at==None)\
             .join(Order.items)\
             .join(OrderedProduct.elements)\
             .join(OrderedProductItem.seats)\
             .filter(Seat.l0_id==l0_id).first()
+
+    @view_config(route_name='orders.api.get', renderer='json')
+    def api_get(self):
+        l0_id = self.request.params.get('l0_id', 0)
+        performance_id = self.request.params.get('performance_id', 0)
+        order = self._get_order_by_seat(performance_id, l0_id)
         if not order:
             raise HTTPBadRequest(body=json.dumps({'message':u'予約データが見つかりません'}))
 
@@ -1406,6 +1409,297 @@ class OrdersReserveView(BaseView):
             'products':products,
             'seat_names':seat_names
         }
+
+    @view_config(route_name='orders.api.performance', request_method='GET', renderer='json')
+    def api_performance(self):
+        performance_id = self.request.matchdict.get('performance_id', 0)
+        performance = Performance.get(performance_id, self.context.organization.id)
+        if performance is None:
+            raise HTTPNotFound('performance id %d is not found' % performance_id)
+
+        return dict(
+            id=performance_id,
+            sales_segments=[
+            dict(
+                id=ss.id,
+                name=ss.name,
+                products=[
+                dict(
+                    id=p.id,
+                    name=p.name,
+                    price=int(p.price),
+                    stock_type_id=p.seat_stock_type.id,
+                    stock_type_name=p.seat_stock_type.name
+                )
+                for p in ss.products
+                ]
+            )
+            for ss in performance.sales_segments
+            ]
+        )
+
+    def _get_order_dicts(self, order):
+        return dict(
+            id=order.id,
+            order_no=order.order_no,
+            performance_id=order.performance_id,
+            transaction_fee=int(order.transaction_fee),
+            delivery_fee=int(order.delivery_fee),
+            system_fee=int(order.system_fee),
+            special_fee=int(order.special_fee),
+            total_amount=int(order.total_amount),
+            ordered_products=[
+            dict(
+                id=op.id,
+                price=int(op.price),
+                quantity=op.quantity,
+                sales_segment_id=op.product.sales_segment.id,
+                sales_segment_name=op.product.sales_segment.name,
+                product_id=op.product.id,
+                product_name=op.product.name,
+                ordered_product_items=[
+                dict(
+                    id=opi.id,
+                    quantity=opi.quantity,
+                    product_item=dict(
+                        price=int(opi.product_item.price),
+                        quantity=opi.product_item.quantity,
+                        stock_holder_name=opi.product_item.stock.stock_holder.name,
+                        stock_type_id=opi.product_item.stock.stock_type_id,
+                        is_seat=opi.product_item.stock.stock_type.is_seat,
+                    ),
+                    seats=[
+                    dict(
+                        id=seat.l0_id,
+                        name=seat.name,
+                        stock_type_id=seat.stock.stock_type_id
+                    )
+                    for seat in opi.seats
+                    ],
+                )
+                for opi in op.ordered_product_items
+                ]
+            )
+            for op in order.ordered_products
+            ]
+        )
+
+    @view_config(route_name='orders.api.edit', request_method='GET', renderer='json')
+    def api_edit_get(self):
+        order_id = self.request.matchdict.get('order_id', 0)
+        order = Order.get(order_id, self.context.organization.id)
+        if order is None:
+            raise HTTPNotFound('order id %s is not found' % order_id)
+        return self._get_order_dicts(order)
+
+    @view_config(route_name='orders.api.edit_confirm', request_method='POST', renderer='json')
+    def api_edit_confirm(self):
+        order_data = self.request.json_body
+        order_id = order_data.get('id')
+
+        order = Order.get(order_id, self.context.organization.id)
+        prev_data = self._get_order_dicts(order)
+        if order_data == prev_data:
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'変更がありません'
+            }))
+
+        # 手数料を再計算して返す
+        sales_segment = None
+        products = []
+        for op_data in order_data.get('ordered_products'):
+            if sales_segment is None:
+                sales_segment_id = op_data.get('sales_segment_id')
+                sales_segment = SalesSegment.query.filter_by(id=sales_segment_id).first()
+            product = Product.query.filter_by(id=op_data.get('product_id')).first()
+            products.append((product, op_data.get('quantity')))
+
+        order_data['transaction_fee'] = int(sales_segment.get_transaction_fee(order.payment_delivery_pair, products))
+        order_data['delivery_fee'] = int(sales_segment.get_delivery_fee(order.payment_delivery_pair, products))
+        order_data['system_fee'] = int(order.payment_delivery_pair.system_fee)
+        order_data['special_fee'] = int(order.payment_delivery_pair.special_fee)
+        order_data['total_amount'] = int(sales_segment.get_amount(order.payment_delivery_pair, products))
+
+        return order_data
+
+    @view_config(route_name='orders.api.edit', request_method='POST', renderer='json')
+    def api_edit_post(self):
+        order_id = self.request.matchdict.get('order_id', 0)
+        order = Order.get(order_id, self.context.organization.id)
+
+        reserving = api.get_reserving(self.request)
+        stocker = api.get_stocker(self.request)
+        edit_order = Order.clone(order, deep=True)
+
+        order_data = MultiDict(self.request.json_body)
+        logger.info(order_data)
+
+        # phase1: 合計金額が変わる変更はNG、ただしインナー予約のみOK、Sejへの変更リクエストは行う
+        # phase2: 合計金額が変わる変更もOK、決済の減額再処理を行う
+        if order.channel != ChannelEnum.INNER.v and order.total_amount != order_data.get('total_amount'):
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'金額は変更できません'
+            }))
+
+        op_zip = itertools.izip(order.items, edit_order.items)
+        for i, (op, eop) in enumerate(op_zip):
+            op_data = None
+            for op_data in order_data.get('ordered_products'):
+                if op_data.get('id') == op.id: break
+            logger.info('op_data %s' % op_data)
+
+            if op_data is None:
+                raise HTTPBadRequest(body=json.dumps({'message':u'不正なデータです'}))
+
+            # 商品変更
+            product = Product.get(int(op_data.get('product_id')))
+            eop.price = int(op_data.get('price'))
+            eop.quantity = int(op_data.get('quantity'))
+            eop.product_id = product.id
+            eop.sales_segment_id = product.sales_segment_id
+
+            opi_zip = itertools.izip(op.ordered_product_items, eop.ordered_product_items)
+            for j, (opi, eopi) in enumerate(opi_zip):
+                opi_data = None
+                for opi_data in op_data.get('ordered_product_items'):
+                    if opi_data.get('id') == opi.id: break
+                logger.info('opi_data %s' % opi_data)
+
+                if opi_data is None:
+                    raise HTTPBadRequest(body=json.dumps({'message':u'不正なデータです'}))
+
+                # 座席開放
+                eopi.release()
+                eopi.seats = []
+
+                # 座席がないなら商品明細削除
+                if opi_data.get('quantity') == 0:
+                    logger.info('delete ordered_product_item %s' % opi_data.get('id'))
+                    del_item = eop.ordered_product_items.pop(j)
+                    del_item.delete()
+                    continue
+
+                # 座席確保
+                seats_data = opi_data.get('seats')
+                product_requires = [(eop.product, len(seats_data))]
+                stock_statuses = stocker.take_stock(order.performance_id, product_requires)
+                seats = reserving.reserve_selected_seats(
+                    stock_statuses,
+                    order.performance_id,
+                    [s.get('id') for s in seats_data],
+                    SeatStatusEnum.Ordered
+                )
+                eopi.seats += seats
+                logger.info('seats_data %s' % seats_data)
+                logger.info("product_requires %s" % product_requires)
+                logger.info("stock_statuses %s" % stock_statuses)
+                logger.info('seats %s' % seats)
+
+                eopi.price = int(opi_data.get('product_item').get('price'))
+                eopi.quantity = int(opi_data.get('quantity'))
+
+                for token in eopi.tokens:
+                    DBSession.delete(token)
+                for i, seat in eopi.iterate_serial_and_seat():
+                    token = OrderedProductItemToken(
+                        serial = i,
+                        seat = seat,
+                        valid=True
+                        )
+                    eopi.tokens.append(token)
+                #Todo:
+                #product_item = ProductItem
+                #eopi.product_item_id = product_item.id
+
+            # 商品明細がないなら商品削除
+            if op_data.get('quantity') == 0:
+                logger.info('delete ordered_product %s' % op_data.get('id'))
+                del_product = edit_order.items.pop(i)
+                del_product.delete()
+
+        # 商品追加
+        for op_data in order_data.get('ordered_products'):
+            if not op_data.get('id'):
+                logger.info('add ordered_product %s' % op_data)
+                product = Product.get(int(op_data.get('product_id')))
+                quantity = int(op_data.get('quantity'))
+                ordered_product = OrderedProduct(
+                    order=edit_order, product=product, price=product.price, quantity=quantity)
+                for product_item in product.items:
+                    seats = []
+                    if product_item.stock.stock_type.is_seat:
+                        seats_data = []
+                        for opi_data in op_data.get('ordered_product_items'):
+                            if opi_data.get('seats'):
+                                seats_data = opi_data.get('seats')
+                                #1Product複数座席ProductItemでうまくいかない？
+                                break
+                        product_requires = [(product, len(seats_data))]
+                        stock_statuses = stocker.take_stock(order.performance_id, product_requires)
+                        seats = reserving.reserve_selected_seats(
+                            stock_statuses,
+                            order.performance_id,
+                            [s.get('id') for s in seats_data],
+                            SeatStatusEnum.Ordered
+                        )
+                        logger.info('seats_data %s' % seats_data)
+                        logger.info("product_requires %s" % product_requires)
+                        logger.info("stock_statuses %s" % stock_statuses)
+                        logger.info('seats %s' % seats)
+                    ordered_product_item = OrderedProductItem(
+                        ordered_product=ordered_product,
+                        product_item=product_item,
+                        price=product_item.price,
+                        quantity=product_item.quantity * quantity,
+                        seats=seats
+                    )
+                    for i, seat in ordered_product_item.iterate_serial_and_seat():
+                        token = OrderedProductItemToken(
+                            serial = i,
+                            seat = seat,
+                            valid=True
+                            )
+                        ordered_product_item.tokens.append(token)
+
+        edit_order.transaction_fee = order_data.get('transaction_fee')
+        edit_order.delivery_fee = order_data.get('delivery_fee')
+        edit_order.system_fee = order_data.get('system_fee')
+        edit_order.specialfee = order_data.get('special_fee')
+        edit_order.total_amount = order_data.get('total_amount')
+
+        total_amount = sum(eop.price * eop.quantity for eop in edit_order.items)
+        total_amount += edit_order.transaction_fee + edit_order.delivery_fee + edit_order.system_fee + edit_order.special_fee
+        logger.info('total_amount %s == %s' % (total_amount, edit_order.total_amount))
+        if total_amount != edit_order.total_amount:
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'合計金額を確認してください'
+            }))
+
+        edit_order.save()
+        return self._get_order_dicts(edit_order)
+
+    @view_config(route_name='orders.api.get.html', renderer='altair.app.ticketing:templates/orders/_tiny_order.html')
+    def api_get_html(self):
+        l0_id = self.request.params.get('l0_id', 0)
+        order_no = self.request.params.get('order_no')
+        performance_id = self.request.params.get('performance_id', 0)
+        order = None
+        if l0_id:
+            order = self._get_order_by_seat(performance_id, l0_id)
+        elif order_no:
+            order = Order.query.filter(Order.order_no==order_no, Order.organization_id==self.context.organization.id).first()
+        if order is None:
+            raise HTTPBadRequest(body=json.dumps({'message':u'予約がありません' }))
+        elif order.performance_id != long(performance_id):
+            raise HTTPBadRequest(body=json.dumps({'message':u'異なる公演の予約番号です' }))
+        return {
+            'order':order,
+            'options':dict(
+                data_source=dict(
+                    order_template_url='/static/tiny_order.html'
+                    )
+                )
+            }
 
     @view_config(route_name='orders.reserve.form', request_method='POST', renderer='altair.app.ticketing:templates/orders/_form_reserve.html')
     def reserve_form(self):
@@ -1780,11 +2074,11 @@ class SejOrderInfoView(object):
                     total           = int(data.get('total_price')),
                     ticket_total    = int(data.get('ticket_price')),
                     commission_fee  = int(data.get('commission_fee')),
-                    ticketing_fee   = int(data.get('altair.app.ticketing_fee')),
+                    ticketing_fee   = int(data.get('ticketing_fee')),
                     payment_type    = code_from_payment_type[int(order.payment_type)],
                     payment_due_at  = data.get('payment_due_at'),
-                    ticketing_start_at = data.get('altair.app.ticketing_start_at'),
-                    ticketing_due_at = data.get('altair.app.ticketing_due_at'),
+                    ticketing_start_at = data.get('ticketing_start_at'),
+                    ticketing_due_at = data.get('ticketing_due_at'),
                     regrant_number_due_at = data.get('regrant_number_due_at'),
                     tickets = tickets,
                     condition=dict(
