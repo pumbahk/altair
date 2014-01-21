@@ -53,7 +53,7 @@ order.OrderFormPresenter.prototype = {
     });
   },
   showMessage: function(message, option) {
-    this.view.alert(message, option);
+    this.view.showAlert(message, option);
   },
   showForm: function() {
     $('.btn-edit-order, #orderProduct').hide();
@@ -163,8 +163,7 @@ order.OrderFormPresenter.prototype = {
     var self = this;
     self.order.save(null, {
       success: function(model, res) {
-        self.showMessage('保存しました', 'alert-success');
-        $('.btn-save-order, .btn-close').hide();
+        showOrder(null, self.order.get('order_no'));
 
         self.ensure_seats.each(function(seat) {
           seat.set('sold', true);
@@ -430,18 +429,23 @@ order.OrderFormView = Backbone.View.extend({
     this.template = new orderProductTemplate(this.options.data_source);
     this.template.get();
   },
-  alert: function(message, option) {
+  showAlert: function(message, option) {
     var el = $('#orderProductAlert');
-    var alert = $('<div class="alert" style="margin: 8px;" />').addClass(option);
-    alert.append($('<ul/>').append($('<li/>').text(message)));
+    var alert_el = $('<div class="alert" style="margin: 8px;" />').addClass(option);
+    alert_el.append($('<ul/>').append($('<li/>').text(message)));
     el.find('.alert').remove();
-    el.append(alert);
+    el.append(alert_el);
+  },
+  hideAlert: function() {
+    var el = $('#orderProductAlert');
+    el.empty();
   },
   show: function() {
     this.render();
     this.$el.show();
   },
   close: function() {
+    this.hideAlert();
     this.$el.off();
     this.$el.hide();
   },

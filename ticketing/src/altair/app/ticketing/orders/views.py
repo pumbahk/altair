@@ -1672,6 +1672,7 @@ class OrdersReserveView(BaseView):
             }))
 
         edit_order.save()
+        self.request.session.flash(u'変更を保存しました')
         return self._get_order_dicts(edit_order)
 
     @view_config(route_name='orders.api.get.html', renderer='altair.app.ticketing:templates/orders/_tiny_order.html')

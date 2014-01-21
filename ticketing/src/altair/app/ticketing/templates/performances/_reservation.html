@@ -360,6 +360,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       dataType: 'html',
       success: function(data) {
         tab1.empty().append(data);
+        venueEditorSide.animate({scrollTop: 0});
       },
       error: function(xhr, text) {
         var responseText = JSON.parse(xhr.responseText);
