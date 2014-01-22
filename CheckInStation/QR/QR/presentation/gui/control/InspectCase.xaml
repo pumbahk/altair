@@ -7,10 +7,12 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition></RowDefinition>
-            <RowDefinition></RowDefinition>
+            <RowDefinition Height="2*"></RowDefinition>
+            <RowDefinition Height="3*"></RowDefinition>
+            <RowDefinition Height="3*"></RowDefinition>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" Text="{Binding CaseName, Mode=OneWay}" Background="AliceBlue"/>
-        <TextBlock Grid.Row="1" Style="{StaticResource ErrorMessageForUser}" Text="{Binding ErrorMessage, Mode=OneWay}"></TextBlock>
+        <TextBlock Grid.Row="0" Style="{StaticResource CaseInspectName}" Text="{Binding CaseName, Mode=OneWay}"/>
+        <TextBlock Grid.Row="1" Style="{StaticResource CaseDescription}" Text="{Binding Description, Mode=OneWay}"></TextBlock>
+        <TextBlock Grid.Row="2" Style="{StaticResource ErrorMessageForUser}" Text="{Binding ErrorMessage, Mode=OneWay}"></TextBlock>
     </Grid>
 </UserControl>

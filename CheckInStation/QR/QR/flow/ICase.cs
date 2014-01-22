@@ -10,7 +10,7 @@ namespace QR
 	public interface ICase
 	{
 		IResource Resource{ get; set; }
-
+        string Description { get;}
 		IInternalEvent PresentationChanel { get; set; }
 
 		/// <summary>

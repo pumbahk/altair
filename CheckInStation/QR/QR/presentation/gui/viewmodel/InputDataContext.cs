@@ -35,6 +35,15 @@ namespace QR.presentation.gui
             }
         }
 
+        public string Description
+        {
+            get {
+                var result = this.Case.Description;
+                logger.Debug(String.Format("case:{0} description:{1}", this.Case, result));
+                return result;
+            }
+        }
+
         public virtual void OnSubmit()
         {
         }
@@ -95,7 +104,7 @@ namespace QR.presentation.gui
             {
                 coll.Add(s);
             });
-            this.ErrorMessage = String.Join(",", coll.ToArray<string>());
+            this.ErrorMessage = String.Join(Environment.NewLine, coll.ToArray<string>());
         }
     }
 }

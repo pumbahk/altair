@@ -5,26 +5,29 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:control="clr-namespace:QR.presentation.gui.control"
       mc:Ignorable="d" 
-      d:DesignHeight="300" d:DesignWidth="300"
+      d:DesignHeight="400" d:DesignWidth="600"
     ShowsNavigationUI="False"
 	Title="PageAuthInput"
-    Loaded="OnLoaded">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="2*"></RowDefinition>
-            <RowDefinition Height="1*"></RowDefinition>
-            <RowDefinition Height="2*"></RowDefinition>
-            <RowDefinition Height="1*"></RowDefinition>
-            <RowDefinition Height="2*"></RowDefinition>
-            <RowDefinition Height="2*"></RowDefinition>
-        </Grid.RowDefinitions>
-        
-        <control:InspectCase Grid.Row="0"/>
+    Loaded="OnLoaded"
+    >
+    <Grid Style="{StaticResource ToplevelGrid}">
+        <Grid Style="{StaticResource CenterContentGrid}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="2*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="2*"></RowDefinition>
+            </Grid.RowDefinitions>
+
+            <control:InspectCase Grid.Row="0"/>
             <TextBlock Grid.Row="1">Login name:</TextBlock>
             <TextBox Grid.Row="2" Text="{Binding LoginName, Mode=OneWayToSource}"></TextBox>
-        <TextBlock Grid.Row="3">Password:</TextBlock>
-        <PasswordBox Grid.Row="4" Name="PasswordInput"></PasswordBox>
-        <Button Grid.Row="5" Click="OnSubmitWithBoundContext">login</Button>
+            <TextBlock Grid.Row="3">Password:</TextBlock>
+            <PasswordBox Grid.Row="4" Name="PasswordInput"></PasswordBox>
+            <Button Grid.Row="5" Click="OnSubmitWithBoundContext">login</Button>
+        </Grid>
     </Grid>
 
 </Page>

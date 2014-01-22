@@ -111,7 +111,6 @@
     <Compile Include="presentation\gui\page\PageFailure.xaml.cs">
       <DependentUpon>PageFailure.xaml</DependentUpon>
     </Compile>
-
     <Compile Include="presentation\gui\viewmodel\InputDataContext.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -125,7 +124,7 @@
     <Compile Include="flow\CaseQRConfirmForAll.cs" />
     <Compile Include="flow\Flow.cs" />
     <Compile Include="tests\flow\FlowTests.cs" />
-    <Compile Include="flow\CaseFailureRedirect.cs"/>
+    <Compile Include="flow\CaseFailureRedirect.cs" />
     <Compile Include="flow\IFlowDefinition.cs" />
     <Compile Include="flow\FlowDefinitionDefault.cs" />
     <Compile Include="flow\CaseAuthInput.cs" />
@@ -168,7 +167,7 @@
     <Compile Include="events\AbstractEvent.cs" />
     <Compile Include="tests\IntegrationTests.cs" />
     <Compile Include="tests\Testing.cs" />
-    <Compile Include="models\TicketImagePrinting.cs"/>
+    <Compile Include="models\TicketImagePrinting.cs" />
     <Compile Include="models\ResultStatusCollector.cs" />
     <Compile Include="tests\models\ResultStatusCollectorTests.cs" />
     <Compile Include="models\TicketDataManager.cs" />
@@ -215,6 +214,7 @@
     <Folder Include="models\core\" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resource\background.png" />
     <None Include="app.config" />
     <Content Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
