@@ -5,7 +5,8 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300"
-	Title="PageAuthInput">
+	Title="PageAuthInput"
+    Loaded="OnLoaded">
        
         <Grid>
         <StackPanel>
@@ -16,7 +17,7 @@
             <TextBox Text="{Binding LoginName, Mode=OneWayToSource}"></TextBox>
             <TextBlock>Password:</TextBlock>
             <PasswordBox Name="PasswordInput"></PasswordBox>
-            <Button Click="LoginButton_Click">login</Button>
+            <Button Click="OnSubmitWithBoundContext">login</Button>
         </StackPanel>
     </Grid>
 </Page>

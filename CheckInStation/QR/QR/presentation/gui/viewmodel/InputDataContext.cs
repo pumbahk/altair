@@ -39,13 +39,35 @@ namespace QR.presentation.gui
         {
         }
 
-        public virtual async Task<ICase> Submit()
+        public virtual async Task<ICase> SubmitAsync()
         {
             this.OnSubmit();
             var result = await this.Broker.Submit(this.Event).ConfigureAwait(false);
             this.OnPropertyChanged("CaseName");
             return result;
         }
+
+        public virtual void OnVerify()
+        {
+        }
+
+        public virtual async Task<bool> VerifyAsync()
+        {
+            this.OnVerify();
+            var result = await this.Broker.VerifyAsync(this.Event).ConfigureAwait(false);
+            return result;
+        }
+
+        public virtual void OnPrepare()
+        {
+        }
+
+        public virtual async Task PrepareAsync()
+        {
+            this.OnPrepare();
+            await this.Broker.PrepareAsync(this.Event).ConfigureAwait(false);
+        }
+
 
         public string CaseName { get { return this.Case.ToString(); } }
         public string ErrorMessage

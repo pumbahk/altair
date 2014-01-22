@@ -44,7 +44,7 @@ namespace QR.presentation.gui.page
     /// <summary>
     /// Interaction logic for PageAuthInput.xaml
     /// </summary>
-    public partial class PageAuthInput : Page
+    public partial class PageAuthInput : Page//, IDataContextHasCase
     {
         private Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -52,20 +52,31 @@ namespace QR.presentation.gui.page
         {
             InitializeComponent();
             //PasswordBox is not Dependency Property. so.
-            this.DataContext =new AuthInputDataContext(this.PasswordInput){
-              Broker=AppUtil.GetCurrentBroker(),
-              Event=new AuthenticationEvent()
+            this.DataContext = this.CreateDataContext();
+        }
+
+        private InputDataContext CreateDataContext()
+        {
+            return new AuthInputDataContext(this.PasswordInput)
+            {
+                Broker = AppUtil.GetCurrentBroker(),
+                Event = new AuthenticationEvent()
             };
         }
 
-        private async void LoginButton_Click(object sender, RoutedEventArgs e)
+        private async void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            await(this.DataContext as AuthInputDataContext).PrepareAsync().ConfigureAwait(false);
+        }
+
+        private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
         {
             var ctx = this.DataContext as InputDataContext;
-            var case_ = await ctx.Submit();
+            var case_ = await ctx.SubmitAsync();
             
             if (ctx.Event.Status == InternalEventStaus.success)
             {
-                case_ = await ctx.Submit();
+                case_ = await ctx.SubmitAsync();
             }
 
             ctx.TreatErrorMessage();
