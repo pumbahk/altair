@@ -11,6 +11,7 @@ from altair.mobile import mobile_view_config
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
 from datetime import datetime
 
+import helpers as h
 from altair.app.ticketing.qr.utils import build_qr_by_history_id
 from altair.app.ticketing.qr.utils import build_qr_by_token_id
 from altair.auth import who_api as get_who_api
@@ -44,6 +45,7 @@ class MypageView(object):
             shipping_address=shipping_address,
             orders=orders,
             lot_entries=entries,
+            h=h,
         )
 
 class MypageLoginView(object):

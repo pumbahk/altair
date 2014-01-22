@@ -755,8 +755,8 @@ background: #f3a9c9;
 
 .guestbox{
 border: 1px #555 solid;
-width: 180px;
-height: 400px;
+width: 420px;
+height: 190px;
 }
 .guestbox thead th{
 background: #860010;
@@ -967,3 +967,230 @@ table.formeagles input.submit:hover {
 }
 
 
+/* マイページ
+----------------------------------------------------------- */
+#mypageHistory {
+	margin-bottom: 30px;
+}
+
+#mypageHistory form {
+	height: 40px;
+	padding: 5px 15px 0;
+	background: url(../img/mypage/bg_search.gif) no-repeat 0 0;
+}
+
+#mypageHistory form input {
+	vertical-align: middle;
+}
+
+#mypageHistory div {
+	clear: both;
+	overflow: hidden;
+	padding: 10px 0 5px;
+	border-bottom: 1px dashed #cccccc;
+}
+
+* html #mypageHistory div {
+	height: 1%;
+}
+
+#mypageHistory p {
+	float: left;
+	margin: 0;
+	padding-left: 5px;
+}
+
+#mypageHistory dl {
+	float: left;
+	width: 650px;
+	padding-left: 20px;
+}
+
+#mypageHistory dt {
+	font-size: 116.7%;
+	font-weight: bold;
+}
+
+#mypageHistory dd {
+	padding-bottom: 5px;
+	font-size: 83.3%;
+}
+/*
+#mypageCancel {
+	margin-bottom: 30px;
+}
+
+#mypageCancel div {
+	clear: both;
+	position: relative;
+	overflow: hidden;
+	padding: 10px 0;
+	border-bottom: 1px dashed #cccccc;
+}
+
+* html #mypageCancel div {
+	height: 1%;
+}
+
+#mypageCancel p {
+	float: left;
+	margin: 0;
+	padding-left: 5px;
+}
+
+#mypageCancel dl {
+	float: left;
+	width: 630px;
+	padding-left: 20px;
+}
+
+#mypageCancel dt {
+	font-size: 116.7%;
+	font-weight: bold;
+}
+
+#mypageCancel dd {
+	font-size: 91.7%;;
+}
+
+.btnCancelDelete {
+	position: absolute;
+	top: 10px;
+	right: 5px;
+	padding: 0;
+}
+*/
+/*
+#mypageAgentMail h3 {
+	float: left;
+}
+
+#mypageAgentMail p {
+	float: right;
+	margin-bottom: 10px;
+}
+
+#mypageAgentMail ul {
+	clear: both;
+	overflow: hidden;
+	padding: 15px 10px 10px;
+	background-color: #f7f7ea;
+}
+
+* html #mypageAgentMail ul {
+	height: 1%;
+}
+
+#mypageAgentMail li {
+	float: left;
+	margin: 0 10px 5px 0;
+	white-space: nowrap;
+}
+
+#mypageAgentMail li img {
+	vertical-align: top;
+}
+
+#mypageAgentMail li a {
+	text-decoration: none;
+}
+
+#mypageAgentMail li a:hover {
+	text-decoration: underline;
+}
+*/
+.mypagePaging {
+	clear: both;
+	font-weight: bold;
+	text-align: right;
+}
+
+.mypageBox1 {
+	height: 1%;
+	margin-bottom: 30px;
+	padding: 8px;
+	border: 2px solid #cccccc;
+}
+
+.mypageBox1 div {
+	position: relative;
+	float: right;
+	width: 640px;
+	margin-bottom: 15px;
+}
+
+.mypageBox1 h3 {
+	font-size: 116.7%;
+}
+
+.mypageBox1 div dt {
+	margin-bottom: 5px;
+}
+
+.mypageBox1 div dd {
+	font-size: 91.7%;
+}
+
+.mypageBox1 div dd a {
+	padding: 2px 0 2px 15px;
+	background: url(../img/mypage/icon_map.gif) no-repeat 0 0;
+}
+
+.mypageBox1 div ul {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+}
+
+.mypageBox1 div li {
+	float: right;
+	margin-left: 5px;
+}
+
+.mypageBox1 div li .twitter-share-button {
+	display: block;
+	width: 70px !important;
+}
+
+.mypageBox1 table {
+	width: 100%;
+	margin-bottom: 10px;
+	background-color: #fcfcf7;
+}
+
+.mypageBox1 th {
+	width: 20%;
+	padding: 10px;
+	border: 1px solid #e6e6da;
+	font-size: 91.7%;
+	font-weight: normal;
+}
+
+.mypageBox1 td {
+	padding: 10px;
+	border: 1px solid #e6e6da;
+	font-weight: bold;
+}
+
+.mypageBox1 td.align1 {
+	border-left: none;
+	font-weight: normal;
+}
+
+.mypageBox1 td span {
+	font-size: 91.7%;
+	font-weight: normal;
+}
+
+.mypageBox1 th.waitingPayment,
+.mypageBox1 td.waitingPayment {
+	background-color: #fccac6;
+}
+
+.mypageBox1 p {
+	margin: 0;
+}
+
+.mypageBuy {
+	border-right: none !important;
+}

@@ -4,6 +4,7 @@ from markupsafe import Markup
 from pyramid.threadlocal import get_current_request
 from altair.app.ticketing.cart.helpers import *
 from altair.app.ticketing.core.models import OrderCancelReasonEnum
+from ..cart.helpers import japanese_date
 
 __all__ = ["error", "order_desc", "is_include_t_shirts", "sex_value"]
            
@@ -71,3 +72,42 @@ def order_status(order):
 
 def safe_strftime(s, format='%Y-%m-%d %H:%M'):
     return s and s.strftime(format) or ''
+
+def get_order_status(order):
+    if order.status == 'canceled':
+        return u"キャンセル"
+    elif order.status == 'delivered':
+        return u"配送済"
+    else:
+        return u"受付済"
+
+
+def get_order_status_image(order):
+    if order.status == 'canceled':
+        return u"icon_cancel.gif"
+    elif order.status == 'delivered':
+        return u"icon_hassou.gif"
+    else:
+        return u"icon_uketsuke.gif"
+
+def get_payment_status(order):
+    if order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
+        return u"払戻済(中止)"
+    elif order.payment_status == 'refunded':
+        return u"払戻済"
+    elif order.payment_status in ['paid', 'refunding']:
+        return u"入金済"
+    elif order.payment_status == 'unpaid':
+        return u"未入金"
+
+def get_payment_status_image(order):
+    if order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
+        return u"icon_haraimodoshizumi_b.gif"
+    elif order.payment_status == 'refunded':
+        return u"icon_haraimodoshizumi.gif"
+    elif order.payment_status in ['paid', 'refunding']:
+        return u"icon_payment.gif"
+    elif order.payment_status == 'unpaid':
+        return u"icon_minyukin.gif"
+    return ""
+
