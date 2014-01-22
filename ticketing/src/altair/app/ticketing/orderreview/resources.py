@@ -7,7 +7,8 @@ from pyramid.decorator import reify
 from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
 
-from altair.app.ticketing.core.models import DBSession, Order
+from altair.app.ticketing.core.models import DBSession, Order, ShippingAddress
+from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.sej.api import get_sej_order
 import altair.app.ticketing.users.models as u_m
@@ -90,3 +91,20 @@ class OrderReviewResource(object):
 
         return user.id
 
+    def get_shipping_address(self, user_id):
+        shipping_address = ShippingAddress.query.filter(
+            ShippingAddress.user_id==user_id
+        ).first()
+        return shipping_address
+
+    def get_orders(self, user_id):
+        orders = Order.query.filter(
+            Order.user_id==user_id
+        ).all()
+        return orders
+
+    def get_lots_entries(self, user_id):
+        entries = LotEntry.query.filter(
+            LotEntry.user_id==user_id
+        ).all()
+        return entries

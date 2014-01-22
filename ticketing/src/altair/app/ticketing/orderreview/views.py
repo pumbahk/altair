@@ -32,9 +32,19 @@ class MypageView(object):
     @view_config(route_name='mypage.show', request_method="GET", custom_predicates=(is_mypage_organization, ),
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/show.html"))
     def show(self):
-        return {}
+        user_id = self.request.matchdict['user_id']
 
+        # 閲覧できない人を弾く
 
+        shipping_address = self.context.get_shipping_address(user_id)
+        orders = self.context.get_orders(user_id)
+        entries = self.context.get_lots_entries(user_id)
+
+        return dict(
+            shipping_address=shipping_address,
+            orders=orders,
+            lot_entries=entries,
+        )
 
 class MypageLoginView(object):
     renderer_tmpl = "altair.app.ticketing.orderreview:templates/{membership}/order_review/form.html"
