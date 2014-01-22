@@ -28,7 +28,18 @@ namespace QR
                 var subject = this.PresentationChanel as AuthenticationEvent;
                 this.LoginName = subject.LoginName;
                 this.LoginPassword = subject.LoginPassword;
-                return !LoginName.Equals ("") && !LoginPassword.Equals ("");
+                var status = true;
+                if (LoginName.Equals(""))
+                {
+                    subject.NotifyFlushMessage("名前が未入力です。入力してください");
+                    status = false;
+                }
+                if (LoginPassword.Equals(""))
+                {
+                    subject.NotifyFlushMessage("パスワードが未入力です。入力してください");
+                    status = false;
+                }
+                return status;
             });
 		}
 
@@ -39,7 +50,6 @@ namespace QR
 
 		public override ICase OnFailure (IFlow flow)
 		{
-			PresentationChanel.NotifyFlushMessage ("login failure");
 			return this;
 		}
 	}

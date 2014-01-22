@@ -10,7 +10,7 @@ namespace QR
 
 		public virtual string GetMessageFormat ()
 		{
-			return "message: {0}";
+			return "{0}";
 		}
 
 		public InternalEventStaus Status { get; set; }
@@ -33,6 +33,14 @@ namespace QR
 			}
 			messages.Clear ();
 		}
+
+        public void HandleEvent(Action<string> useAction)
+        {
+     		foreach (var m in messages) {
+				useAction(String.Format(GetMessageFormat(), m));
+			}
+			messages.Clear ();
+        }
 	}
 }
 

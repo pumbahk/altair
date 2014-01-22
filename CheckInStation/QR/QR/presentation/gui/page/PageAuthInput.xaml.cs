@@ -16,10 +16,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace QR.presentation.gui
+namespace QR.presentation.gui.page
 {
 
-    public class AuthInputDataContext : InputDataContext
+    class AuthInputDataContext : InputDataContext
     {
         private PasswordBox input;
                 
@@ -35,51 +35,11 @@ namespace QR.presentation.gui
             var ev = this.Event as AuthenticationEvent;
             ev.LoginName = this.LoginName;
             ev.LoginPassword = this.LoginPassword; //TODO:use seret string
-            logger.Info(String.Format("Submit: Name:{0}, Password:{1}", ev.LoginName, ev.LoginPassword));
+            //logger.Info(String.Format("Submit: Name:{0}, Password:{1}", ev.LoginName, ev.LoginPassword));
             base.OnSubmit();
         }
     }
 
-    public class InputDataContext : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public RequestBroker Broker { get; set; }
-        public IInternalEvent Event { get; set; }
-
-        protected Logger logger = LogManager.GetCurrentClassLogger();
-
-        protected virtual void OnPropertyChanged(string propName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propName));
-        }
-
-        public ICase Case
-        {
-            get
-            {
-                var case_ = this.Broker.FlowManager.Peek().Case;
-                logger.Debug(String.Format("Case: {0}", case_));
-                return case_;  //なぜかこれを直接Bindingで呼び出したとき""が返るっぽい。
-            }
-        }
-
-        public virtual void OnSubmit()
-        {
-        }
-
-        public virtual async Task<ICase> Submit()
-        {
-            this.OnSubmit();
-            var result = await this.Broker.Submit(this.Event).ConfigureAwait(false);
-            this.OnPropertyChanged("CaseName");
-            return result;
-        }
-
-        public string CaseName { get { return this.Case.ToString(); } }
-    }
 
     /// <summary>
     /// Interaction logic for PageAuthInput.xaml
@@ -100,18 +60,22 @@ namespace QR.presentation.gui
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
-            //hmm.
             var ctx = this.DataContext as InputDataContext;
             var case_ = await ctx.Submit();
+            
             if (ctx.Event.Status == InternalEventStaus.success)
             {
-                await ctx.Submit(); //Data Fetch
+                case_ = await ctx.Submit();
             }
-            else
+            
+            var coll = new List<string>();
+            ctx.Event.HandleEvent((string s) =>
             {
-                logger.Info("failure");
-            }
-           // MessageBox.Show(String.Format("name: {0}, password: {1}", ev.LoginName, ev.LoginPassword));
+                coll.Add(s);
+            });
+            ctx.ErrorMessage = String.Join(",", coll.ToArray<string>());
+
+            AppUtil.GetNavigator().NavigateNextPage(case_, this);
         }
     }
 }

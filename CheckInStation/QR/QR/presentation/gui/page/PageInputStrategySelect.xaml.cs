@@ -13,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace QR.presentation.gui
+namespace QR.presentation.gui.page
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for PageInputStrategySelect.xaml
     /// </summary>
-    public partial class MainWindow : NavigationWindow
+    public partial class PageInputStrategySelect : Page
     {
-        public MainWindow()
+        public PageInputStrategySelect()
         {
             InitializeComponent();
         }

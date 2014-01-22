@@ -5,6 +5,9 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+
+using QR.presentation.gui;
 
 namespace QR
 {
@@ -15,14 +18,15 @@ namespace QR
     {
         public static RequestBroker Broker;
         public static InternalApplication Internal;
+        public static NextPageChoicer PageChoicer;
 
         public static void OnStartup(StartupEventArgs e)
         {
             //モデル層の処理をどこに置いたらよいのかわからないので、とりあえずここに。
             var app = AppUtil.Internal = new InternalApplication();
+            AppUtil.PageChoicer = new NextPageChoicer();
             AppUtil.Broker = app.RequestBroker;
             AppUtil.Broker.SetStartCase(new CaseAuthInput(app.Resource));
-
         }
 
         public static void OnExit(ExitEventArgs e)
@@ -33,6 +37,11 @@ namespace QR
         public static RequestBroker GetCurrentBroker()
         {
             return AppUtil.Broker;
+        }
+
+        public static NextPageChoicer GetNavigator()
+        {
+            return AppUtil.PageChoicer;
         }
     }
 
