@@ -22,7 +22,7 @@ namespace QR.presentation.cli
 			do {		
 				Console.WriteLine ("------input unit select: (0:qr, 1:order_no)-----");
 				ev.InputUnitString = Console.ReadLine ();
-				result = await RequestBroker.Submit (ev);
+				result = await RequestBroker.SubmitAsync (ev);
 				ev.HandleEvent ();
 			} while(ev.Status == InternalEventStaus.failure);
 			return result;

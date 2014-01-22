@@ -61,7 +61,7 @@ namespace QR.presentation.gui.page
             var ctx = this.DataContext as InputDataContext;
             var case_ = await ctx.SubmitAsync();
             ctx.TreatErrorMessage();
-            AppUtil.GetNavigator().NavigateNextPage(case_, this);
+            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
         }
     }
 }

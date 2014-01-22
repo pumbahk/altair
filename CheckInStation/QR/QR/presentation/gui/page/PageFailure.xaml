@@ -6,7 +6,8 @@
       xmlns:control="clr-namespace:QR.presentation.gui.control"
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300"
-	Title="PageFailure"
+    ShowsNavigationUI="False"
+    Title="PageFailure"
     Loaded="OnLoaded">
     <Grid>
         <Grid.RowDefinitions>

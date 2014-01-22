@@ -42,7 +42,19 @@ namespace QR.presentation.gui
         public virtual async Task<ICase> SubmitAsync()
         {
             this.OnSubmit();
-            var result = await this.Broker.Submit(this.Event).ConfigureAwait(false);
+            var result = await this.Broker.SubmitAsync(this.Event).ConfigureAwait(false);
+            this.OnPropertyChanged("CaseName");
+            return result;
+        }
+
+        public virtual void OnBackward()
+        {
+        }
+
+        public virtual async Task<ICase> BackwardAsync()
+        {
+            this.OnBackward();
+            var result = await this.Broker.BackwardAsync().ConfigureAwait(false);
             this.OnPropertyChanged("CaseName");
             return result;
         }

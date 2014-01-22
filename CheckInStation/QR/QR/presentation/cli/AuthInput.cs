@@ -25,13 +25,13 @@ namespace QR.presentation.cli
 					ev.LoginName = Console.ReadLine ();
 					Console.Write ("password:");
 					ev.LoginPassword = Console.ReadLine ();
-					await RequestBroker.Submit (ev);
+					await RequestBroker.SubmitAsync (ev);
 					ev.HandleEvent ();
 				} while(ev.Status == InternalEventStaus.failure);
 
 				// requestn
 				Console.WriteLine ("------login request---------");
-				result = await RequestBroker.Submit (ev);
+				result = await RequestBroker.SubmitAsync (ev);
 				ev.HandleEvent ();
 			} while(ev.Status == InternalEventStaus.failure);
 			return result;

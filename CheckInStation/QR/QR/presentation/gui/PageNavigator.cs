@@ -56,7 +56,7 @@ namespace QR.presentation.gui
             throw new NotImplementedException("sorry");
         }
 
-        public void NavigateNextPage(ICase case_, Page previous)
+        public void NavigateToMatchedPage(ICase case_, Page previous)
         {
             var nextPage = this.Choice(case_, previous);
             if (previous != nextPage)

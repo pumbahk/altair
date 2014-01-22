@@ -80,7 +80,7 @@ namespace QR.presentation.gui.page
             }
 
             ctx.TreatErrorMessage();
-            AppUtil.GetNavigator().NavigateNextPage(case_, this);
+            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
         }
     }
 }

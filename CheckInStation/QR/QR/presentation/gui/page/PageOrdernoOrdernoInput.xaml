@@ -6,6 +6,7 @@
       xmlns:control="clr-namespace:QR.presentation.gui.control"
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300"
+    ShowsNavigationUI="False"
 	Title="PageOrdernoOrdernoInput"
     Loaded="OnLoaded">
     <Grid>

@@ -21,9 +21,11 @@ namespace QR.presentation.gui.page
 
     class PageQRCodeInputDataContext : InputDataContext
     {
+        public string QRCode { get; set; }
         public override void OnSubmit()
         {
-            var ev = this.Event as IInternalEvent;
+            var ev = this.Event as QRInputEvent;
+            ev.QRCode = this.QRCode;
             base.OnSubmit();
         }
     }
@@ -47,7 +49,7 @@ namespace QR.presentation.gui.page
             return new PageQRCodeInputDataContext()
             {
                 Broker = AppUtil.GetCurrentBroker(),
-                Event = new EmptyEvent()
+                Event = new QRInputEvent()
             };
         }
 
@@ -60,8 +62,18 @@ namespace QR.presentation.gui.page
         {
             var ctx = this.DataContext as InputDataContext;
             var case_ = await ctx.SubmitAsync();
+            if (ctx.Event.Status == InternalEventStaus.success)
+                case_ = await ctx.SubmitAsync();
             ctx.TreatErrorMessage();
-            AppUtil.GetNavigator().NavigateNextPage(case_, this);
+            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+        }
+
+        private async void OnBackwardWithBoundContext(object sender, RoutedEventArgs e)
+        {
+            var ctx = this.DataContext as InputDataContext;
+            var case_ = await ctx.BackwardAsync();
+            ctx.TreatErrorMessage();
+            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
         }
     }
 }

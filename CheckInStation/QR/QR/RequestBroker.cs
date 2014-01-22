@@ -54,12 +54,17 @@ namespace QR
             return await this.FlowManager.VerifyAsync().ConfigureAwait(false);
         }
 
-		public async Task<ICase> Submit (IInternalEvent ev)
+		public async Task<ICase> SubmitAsync (IInternalEvent ev)
 		{
 			this.Event = ev;//xxx:
-			var result = await this.FlowManager.Forward ().ConfigureAwait(false);
+			var result = await this.FlowManager.Forward().ConfigureAwait(false);
             return result;
 		}
+
+        public async Task<ICase> BackwardAsync()
+        {
+            return await this.FlowManager.Backward().ConfigureAwait(false);
+        }
 
 		public void SetStartCase (ICase case_)
 		{
