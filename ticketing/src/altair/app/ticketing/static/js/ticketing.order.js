@@ -455,28 +455,27 @@ order.OrderFormView = Backbone.View.extend({
     self.$el.html(_.template(self.template.template, this.order.attributes));
 
     this.order.get('ordered_products').each(function(op) {
+      var product_el = $('<tr/>');
       var product_view = new order.OrderProductFormView({
-        el: self.el,
+        el: product_el,
         order: self.order,
         presenter: self.presenter
       });
+      self.$el.find('.add-product').before(product_el);
       product_view.render(op);
     })
   }
 });
 
 order.OrderProductFormView = Backbone.View.extend({
-  defaults: {
-  },
   initialize: function() {
     this.el = this.options.el;
     this.order = this.options.order;
     this.presenter = this.options.presenter;
+    this.children = [];
   },
   render: function(op) {
     var self = this;
-
-    var product = $('<tr/>');
     var product_name = $('<td colspan="2" />');
 
     var sales_segment_id = op.get('sales_segment_id') || self.order.get('sales_segment_id');
@@ -489,7 +488,11 @@ order.OrderProductFormView = Backbone.View.extend({
     });
     sales_segment.on('change', function() {
       op.set('sales_segment_id', $(this).val());
-      self.presenter.showForm();
+      _.each(self.children, function(child) {
+        child.$el.empty();
+      });
+      self.$el.empty();
+      self.render(op);
     });
     product_name.append(sales_segment);
 
@@ -536,19 +539,21 @@ order.OrderProductFormView = Backbone.View.extend({
       sum_amount.text(op.get('price') * op.get('quantity'));
     }
 
-    product.append(product_name);
-    product.append(product_price);
-    product.append(product_quantity);
-    product.append(sum_amount);
-    this.$el.find('.add-product').before(product);
+    this.$el.append(product_name);
+    this.$el.append(product_price);
+    this.$el.append(product_quantity);
+    this.$el.append(sum_amount);
 
     var item_view = null;
     op.get('ordered_product_items').each(function(opi) {
+      var product_item_el = $('<tr/>');
       item_view = new order.OrderProductItemFormView({
-        el: self.el,
+        el: product_item_el,
         presenter: self.presenter,
         model: opi
       });
+      self.$el.after(product_item_el);
+      self.children.push(item_view);
       item_view.render();
     });
   }
@@ -556,6 +561,7 @@ order.OrderProductFormView = Backbone.View.extend({
 
 order.OrderProductItemFormView = Backbone.View.extend({
   initialize: function() {
+    this.el = this.options.el;
     this.presenter = this.options.presenter;
   },
   render: function() {
@@ -563,7 +569,6 @@ order.OrderProductItemFormView = Backbone.View.extend({
     var opi = self.model;
 
     var pi = opi.get('product_item');
-    var item = $('<tr/>');
     var stock_holder_name = $('<td style="text-align: right;" />');
     var span = $('<span class="label label-info" />').text(pi.get('stock_holder_name'));
     var seat_name = $('<td class="span4" />');
@@ -581,15 +586,14 @@ order.OrderProductItemFormView = Backbone.View.extend({
     btn_add.data('ordered_product_item', opi);
 
     stock_holder_name.prepend(span);
-    item.append(stock_holder_name);
+    this.$el.append(stock_holder_name);
     seat_name.append(seats);
-    item.append(seat_name);
-    item.append(product_item_price);
-    item.append(product_item_quantity);
+    this.$el.append(seat_name);
+    this.$el.append(product_item_price);
+    this.$el.append(product_item_quantity);
     div_right.append(btn_add);
     btn_add_td.append(div_right);
-    item.append(btn_add_td);
-    this.$el.find('.add-product').before(item);
+    this.$el.append(btn_add_td);
   }
 });
 
