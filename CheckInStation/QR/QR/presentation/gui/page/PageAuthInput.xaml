@@ -3,16 +3,15 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:control="clr-namespace:QR.presentation.gui.control"
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300"
 	Title="PageAuthInput"
     Loaded="OnLoaded">
        
         <Grid>
-        <StackPanel>
-            <TextBlock Text="{Binding CaseName, Mode=OneWay}" Background="AliceBlue"/>
-            <TextBlock Style="{StaticResource ErrorMessageForUser}" Text="{Binding ErrorMessage, Mode=OneWay}"></TextBlock>
-            <Label>auth</Label>
+            <StackPanel>
+            <control:InspectCase/>
             <TextBlock>Login name:</TextBlock>
             <TextBox Text="{Binding LoginName, Mode=OneWayToSource}"></TextBox>
             <TextBlock>Password:</TextBlock>

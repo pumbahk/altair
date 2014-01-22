@@ -73,6 +73,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DynamicJson.cs" />
+    <Compile Include="presentation\gui\control\InspectCase.xaml.cs">
+      <DependentUpon>InspectCase.xaml</DependentUpon>
+    </Compile>
     <Compile Include="presentation\gui\PageNavigator.cs" />
     <Compile Include="presentation\gui\page\IDataContextHasCase.cs" />
     <Compile Include="presentation\gui\page\MainWindow.xaml.cs">
@@ -217,6 +220,10 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="presentation\gui\control\InspectCase.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="presentation\gui\page\MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
