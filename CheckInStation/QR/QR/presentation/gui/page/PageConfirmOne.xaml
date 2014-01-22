@@ -1,4 +1,4 @@
-<Page x:Class="QR.presentation.gui.page.PageConfirmOne"
+﻿<Page x:Class="QR.presentation.gui.page.PageConfirmOne"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -9,14 +9,29 @@
     ShowsNavigationUI="False"
 	Title="PageConfirmOne"
     Loaded="OnLoaded">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="20"></RowDefinition>
-            <RowDefinition Height="20"></RowDefinition>
-            <RowDefinition></RowDefinition>
-        </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0">
-            <control:InspectCase></control:InspectCase>
-        </StackPanel>
+    <Grid Style="{StaticResource ToplevelGrid}">
+        <Grid Style="{StaticResource CenterContentGrid}">
+            <Grid.RowDefinitions>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <control:InspectCase Grid.Row="0"></control:InspectCase>
+            <TextBlock Grid.Row="1">ここに本当はイベントの情報を載せる</TextBlock>
+            <ListBox Grid.Row="2" ItemsSource="{Binding Candidates}" SelectionChanged="OnSubmitWithBoundContext">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"></StackPanel>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Key}" Width="150" TextWrapping="Wrap"></TextBlock>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Button Grid.Row="3" Click="OnBackwardWithBoundContext">戻る</Button>
+        </Grid>
     </Grid>
 </Page>
