@@ -10,6 +10,7 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import DBSession, Order
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.sej.api import get_sej_order
+import altair.app.ticketing.users.models as u_m
 import altair.app.ticketing.core.api as core_api
 from altair.app.ticketing.payments.plugins import (
     SEJ_PAYMENT_PLUGIN_ID, 
@@ -61,4 +62,31 @@ class OrderReviewResource(object):
                 sej_order = get_sej_order(order_no, self.session)
 
         return order, sej_order
+
+    def get_user_id(self, identity):
+        membership = identity.get('membership')
+        username = identity.get('username')
+        password = identity.get('password')
+
+        user_query = u_m.User.query.filter(
+                u_m.UserCredential.auth_identifier==username
+            ).filter(
+                u_m.Membership.id==u_m.UserCredential.membership_id
+            ).filter(
+                u_m.Membership.name==membership
+            ).filter(
+                u_m.User.id==u_m.UserCredential.user_id
+            ).filter(
+                u_m.UserCredential.auth_secret==password
+            )
+
+        user = user_query.first()
+
+        if user is None:
+            return None
+
+        if user.member is None:
+            return None
+
+        return user.id
 

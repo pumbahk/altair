@@ -87,7 +87,8 @@ class MypageLoginView(object):
             return {'username': username,
                     'message': u'IDかパスワードが一致しません'}
 
-        res = HTTPFound(location=self.request.route_path("mypage.show"), headers=headers)
+        user_id = self.context.get_user_id(identity)
+        res = HTTPFound(location=self.request.route_path("mypage.show", user_id=user_id), headers=headers)
 
         return res
 

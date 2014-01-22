@@ -86,7 +86,7 @@ def import_view(config):
     config.add_route('order_review.qr_orion', '/qr/app')
 
     ## mypage
-    config.add_route('mypage.show', '/mypage')
+    config.add_route('mypage.show', '/mypage/{user_id}')
 
     ## misc
     config.add_route('contact', '/contact')
