@@ -1439,6 +1439,7 @@ class OrdersReserveView(BaseView):
             id=order.id,
             order_no=order.order_no,
             performance_id=order.performance_id,
+            sales_segment_id=order.sales_segment_id,
             transaction_fee=int(order.transaction_fee),
             delivery_fee=int(order.delivery_fee),
             system_fee=int(order.system_fee),
@@ -1492,13 +1493,12 @@ class OrdersReserveView(BaseView):
     def api_edit_confirm(self):
         order_data = self.request.json_body
         order_id = order_data.get('id')
+        logger.debug('order_data=%s' % order_data)
 
         order = Order.get(order_id, self.context.organization.id)
         prev_data = self._get_order_dicts(order)
         if order_data == prev_data:
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'変更がありません'
-            }))
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'変更がありません')))
 
         # 手数料を再計算して返す
         sales_segment = None
@@ -1528,7 +1528,7 @@ class OrdersReserveView(BaseView):
         edit_order = Order.clone(order, deep=True)
 
         order_data = MultiDict(self.request.json_body)
-        logger.info(order_data)
+        logger.info('order_data=%s' % order_data)
 
         # phase1: 合計金額が変わる変更はNG、ただしインナー予約のみOK、Sejへの変更リクエストは行う
         # phase2: 合計金額が変わる変更もOK、決済の減額再処理を行う

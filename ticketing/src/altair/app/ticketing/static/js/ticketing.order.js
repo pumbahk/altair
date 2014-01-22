@@ -185,6 +185,7 @@ order.Order = Backbone.Model.extend({
     id: null,
     order_no: null,
     performance_id: null,
+    sales_segment_id: 0,
     transaction_fee: 0,
     delivery_fee: 0,
     system_fee: 0,
@@ -456,6 +457,7 @@ order.OrderFormView = Backbone.View.extend({
     this.order.get('ordered_products').each(function(op) {
       var product_view = new order.OrderProductFormView({
         el: self.el,
+        order: self.order,
         presenter: self.presenter
       });
       product_view.render(op);
@@ -465,9 +467,10 @@ order.OrderFormView = Backbone.View.extend({
 
 order.OrderProductFormView = Backbone.View.extend({
   defaults: {
-    el: $('#orderProductForm')
   },
   initialize: function() {
+    this.el = this.options.el;
+    this.order = this.options.order;
     this.presenter = this.options.presenter;
   },
   render: function(op) {
@@ -476,7 +479,7 @@ order.OrderProductFormView = Backbone.View.extend({
     var product = $('<tr/>');
     var product_name = $('<td colspan="2" />');
 
-    var sales_segment_id = op.get('sales_segment_id');
+    var sales_segment_id = op.get('sales_segment_id') || self.order.get('sales_segment_id');
     var sales_segment = $('<select id="sales_segment_id" name="sales_segment_id"></select>');
     var ssc = self.presenter.performance.get('sales_segments');
     ssc.each(function(ss) {
