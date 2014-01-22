@@ -12,7 +12,7 @@ namespace QR.presentation.gui
     /// <summary>
     /// case -> page
     /// </summary>
-    public class NextPageChoicer
+    public class PageNavigator
     {
         public T CreateOrReUse<T> (ICase CurrentCase, Page previous) where T : Page, new()
         {
@@ -21,7 +21,7 @@ namespace QR.presentation.gui
             return new T();
         }
 
-        public Page Choice(ICase CurrentCase, Page previous)
+        public Page Create(ICase CurrentCase, Page previous)
         {
             var c = CurrentCase;
             if (c is CaseAuthInput || c is CaseAuthDataFetch)

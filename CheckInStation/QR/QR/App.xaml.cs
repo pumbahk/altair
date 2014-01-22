@@ -18,13 +18,13 @@ namespace QR
     {
         public static RequestBroker Broker;
         public static InternalApplication Internal;
-        public static NextPageChoicer PageChoicer;
+        public static PageNavigator PageChoicer;
 
         public static void OnStartup(StartupEventArgs e)
         {
             //モデル層の処理をどこに置いたらよいのかわからないので、とりあえずここに。
             var app = AppUtil.Internal = new InternalApplication();
-            AppUtil.PageChoicer = new NextPageChoicer();
+            AppUtil.PageChoicer = new PageNavigator();
             AppUtil.Broker = app.RequestBroker;
             AppUtil.Broker.SetStartCase(new CaseAuthInput(app.Resource));
         }
@@ -39,7 +39,7 @@ namespace QR
             return AppUtil.Broker;
         }
 
-        public static NextPageChoicer GetNavigator()
+        public static PageNavigator GetNavigator()
         {
             return AppUtil.PageChoicer;
         }
