@@ -19,8 +19,28 @@ using System.Windows.Shapes;
 namespace QR.presentation.gui.page
 {
 
-    class PagePrintingDataContext : InputDataContext
+    class PagePrintingDataContext : InputDataContext, IPrintingStatusInfo, INotifyPropertyChanged
     {
+        private int _finishedPrinted;
+        private int _totalPrinted;
+        private PrintingStatus _status;
+        
+        public int TotalPrinted {
+            get { return this._totalPrinted;}
+            set { this._totalPrinted = value; this.OnPropertyChanged("TotalPrinted"); }
+        }
+        public int FinishedPrinted {
+            get { return this._finishedPrinted; }
+            set { this._finishedPrinted = value; this.OnPropertyChanged("FinishedPrinted"); }
+        }
+        public PrintingStatus Status 
+        {
+            get {return this._status;}
+            set {this._status = value;
+                 this.OnPropertyChanged("Status");
+            }
+        } 
+
         public override void OnSubmit()
         {
             var ev = this.Event as IInternalEvent;
@@ -44,11 +64,13 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
-            return new PagePrintingDataContext()
+            var ctx = new PagePrintingDataContext()
             {
                 Broker = AppUtil.GetCurrentBroker(),
-                Event = new EmptyEvent()
             };
+            ctx.Event = new PrintingEvent() { StatusInfo = ctx as IPrintingStatusInfo };
+            //ctx.PropertyChanged += OnPrintedRequesting;
+            return ctx;
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -56,12 +78,15 @@ namespace QR.presentation.gui.page
             await(this.DataContext as PagePrintingDataContext).PrepareAsync().ConfigureAwait(false);
         }
 
-        private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
+        private async void OnPrintedRequesting(object sendeer, PropertyChangedEventArgs e)
         {
-            var ctx = this.DataContext as InputDataContext;
-            var case_ = await ctx.SubmitAsync();
-            ctx.TreatErrorMessage();
-            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+            await this.Dispatcher.InvokeAsync(async () =>
+            {
+                var ctx = this.DataContext as InputDataContext;
+                var case_ = await ctx.SubmitAsync();
+                ctx.TreatErrorMessage();
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+            });
         }
     }
 }

@@ -20,7 +20,15 @@
             <StackPanel Background="White" Grid.Row="1" HorizontalAlignment="Center">
                 <Image Source="/Resource/printing.gif"></Image>
             </StackPanel>
-            <TextBlock Grid.Row="2">1/4枚など表示したい</TextBlock>
+            <TextBlock Grid.Row="2">
+                <TextBlock.Text>
+                    <MultiBinding StringFormat="印刷中: {0}/{1} ({2})">
+                        <Binding Path="FinishedPrinted" Mode="OneWay"/>
+                        <Binding Path="TotalPrinted" Mode="OneWay" />
+                        <Binding Path="Status" Mode="OneWay"/>
+                    </MultiBinding>
+                </TextBlock.Text></TextBlock>
         </Grid>
     </Grid>
 </Page>
+    

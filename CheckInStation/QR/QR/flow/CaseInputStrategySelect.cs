@@ -22,7 +22,14 @@ namespace QR
 			return Task.Run (() => {
 				var subject = PresentationChanel as SelectInputStragetyEvent;
 				InputUnit unit;
-				var status = EnumUtil.TryParseEnum<InputUnit> (subject.InputUnitString, out unit);
+                bool status;
+                if (subject.InputUnitString == null) {
+                    logger.Warn("subject.InputUnitString is null");
+                    unit = InputUnit.qrcode;
+                    status = true;
+                } else {
+                    status = EnumUtil.TryParseEnum<InputUnit>(subject.InputUnitString, out unit);
+                }
 				subject.InputUnit = Unit = unit;
 				return status;
 			});

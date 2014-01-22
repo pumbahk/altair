@@ -28,7 +28,7 @@ namespace QR
 			StatusCollector = new ResultStatusCollector<string> ();
 		}
 
-		public override async Task PresentationChanel (IInternalEvent ev)
+		public override async Task PrepareAsync (IInternalEvent ev)
 		{
 			await base.PrepareAsync (ev).ConfigureAwait (false);
 			var subject = this.PresentationChanel as PrintingEvent;
@@ -53,12 +53,13 @@ namespace QR
 				return false;
 			}
 			var subject = this.PresentationChanel as PrintingEvent;
+            subject.ChangeState(PrintingStatus.printing);
 
 			try {
 				var printing = Resource.TicketImagePrinting;
 				foreach (var imgdata in this.PrintingTargets.Right) {
 					var status = await printing.EnqueuePrinting (imgdata).ConfigureAwait (false);
-					subject.FinishedPrinted(); //印刷枚数インクリメント
+					subject.PrintFinished(); //印刷枚数インクリメント
 					StatusCollector.Add (imgdata.token_id, status);
 				}
 
@@ -67,6 +68,7 @@ namespace QR
 					secret = this.DataCollection.secret,
 					order_no = this.DataCollection.additional.order.order_no
 				};
+                subject.ChangeState(PrintingStatus.finished);
 				return StatusCollector.Status;
 			} catch (Exception ex) {
 				logger.ErrorException (":", ex);

@@ -16,8 +16,6 @@ namespace QR
 
 		public ResultTuple<string, List<TicketImageData>> PrintingTargets { get; set; }
 
-		private bool IsGetPrintingTargetSuccess;
-
 		public ResultStatusCollector<string> StatusCollector { get; set; }
 
 		public UpdatePrintedAtRequestData RequestData{ get; set; }
@@ -28,7 +26,6 @@ namespace QR
 		{
 			TicketData = ticketdata;
 			StatusCollector = new ResultStatusCollector<string> ();
-			this.IsGetPrintingTargetSuccess = false;
 		}
 
 		public override async Task PrepareAsync (IInternalEvent ev)
@@ -55,6 +52,7 @@ namespace QR
 				return false;
 			}
 			var subject = this.PresentationChanel as PrintingEvent;
+            subject.ChangeState(PrintingStatus.printing);
 
 			try {
 				var printing = Resource.TicketImagePrinting;
@@ -69,6 +67,7 @@ namespace QR
 					secret = this.TicketData.secret,
 					order_no = this.TicketData.additional.order.order_no
 				};
+                subject.ChangeState(PrintingStatus.finished);
 				return StatusCollector.Status;
 			} catch (Exception ex) {
 				logger.ErrorException (":", ex);
