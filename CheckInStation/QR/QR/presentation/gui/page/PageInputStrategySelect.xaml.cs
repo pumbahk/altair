@@ -33,7 +33,7 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
-            return new InputDataContext() { Broker = AppUtil.GetCurrentBroker(), Event = new SelectInputStragetyEvent() };
+            return new InputStrategyDataContext() { Broker = AppUtil.GetCurrentBroker(), Event = new SelectInputStragetyEvent() };
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs e)

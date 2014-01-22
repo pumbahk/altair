@@ -8,8 +8,7 @@
       d:DesignHeight="300" d:DesignWidth="300"
 	Title="PageAuthInput"
     Loaded="OnLoaded">
-       
-        <Grid>
+
             <StackPanel>
             <control:InspectCase/>
             <TextBlock>Login name:</TextBlock>
@@ -18,5 +17,5 @@
             <PasswordBox Name="PasswordInput"></PasswordBox>
             <Button Click="OnSubmitWithBoundContext">login</Button>
         </StackPanel>
-    </Grid>
+
 </Page>

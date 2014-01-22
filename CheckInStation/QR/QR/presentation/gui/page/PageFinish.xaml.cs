@@ -47,7 +47,7 @@ namespace QR.presentation.gui.page
             return new PageFinishDataContext()
             {
                 Broker = AppUtil.GetCurrentBroker(),
-                Event = new IInternalEvent()
+                Event = new EmptyEvent()
             };
         }
 

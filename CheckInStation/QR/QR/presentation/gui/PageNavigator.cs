@@ -26,8 +26,33 @@ namespace QR.presentation.gui
             var c = CurrentCase;
             if (c is CaseAuthInput || c is CaseAuthDataFetch)
                 return this.CreateOrReUse<PageAuthInput>(c, previous);
+
             else if (c is CaseInputStrategySelect)
                 return this.CreateOrReUse<PageInputStrategySelect>(c, previous);
+
+            else if (c is CaseFailureRedirect)
+                return this.CreateOrReUse<PageFailure>(c, previous);
+
+            else if (c is CaseQRCodeInput || c is CaseQRDataFetch)
+                return this.CreateOrReUse<PageQRCodeInput>(c, previous);
+            else if (c is CaseQRConfirmForOne)
+                return this.CreateOrReUse<PageConfirmOne>(c, previous);
+            else if (c is CaseQRConfirmForAll)
+                return this.CreateOrReUse<PageConfirmAll>(c, previous);
+
+            else if (c is CaseOrdernoOrdernoInput)
+                return this.CreateOrReUse<PageOrdernoOrdernoInput>(c, previous);
+            else if (c is CaseOrdernoTelInput)
+                return this.CreateOrReUse<PageOrdernoTelInput>(c, previous);
+            else if (c is CaseOrdernoVerifyRequestData)
+                return this.CreateOrReUse<PageOrdernoTelInput>(c, previous); //xxx:
+            else if (c is CaseOrdernoConfirmForAll)
+                return this.CreateOrReUse<PageConfirmAll>(c, previous);
+
+            else if (c is CasePrintForOne || c is CasePrintForAll)
+                return this.CreateOrReUse<PagePrinting>(c, previous);
+            else if (c is CasePrintFinish)
+                return this.CreateOrReUse<PageFinish>(c, previous);
             throw new NotImplementedException("sorry");
         }
 
