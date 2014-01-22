@@ -1,4 +1,5 @@
 #-*- coding: utf-8 -*-
+import datetime
 import itertools
 from altair.app.ticketing.core.models import (
     Event,
@@ -8,6 +9,7 @@ from altair.app.ticketing.core.models import (
     AugusVenue,
     AugusTicket,
     AugusSeat,
+    AugusStockInfo,
     )
 from .errors import (
     AugusDataImportError,
@@ -106,10 +108,22 @@ class AugusDistributionImpoter(object):
         old_stock = seat.stock
         
         if old_stock.stock_holder == None and seat.status not in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v]:
-            # 未割当 かつ 配席可能な状態            
+            # 未割当 かつ 配席可能な状態
+
+            # AugusStockInfo生成
+            ag_stock_info = AugusStockInfo()
+            ag_stock_info.augus_performance_id = ag_performance.id
+            ag_stock_info.augus_distribution_code = record.distribution_code
+            ag_stock_info.seat_type_classif = record.seat_type_classif
+            ag_stock_info.distributed_at = datetime.datetime.now()
+            ag_stock_info.augus_seat_id = ag_seat.id
+            ag_stock_info.save()
+            
+            # seat の割当
             seat.stock_id = stock.id
             old_stock.quantity -= 1
             seat.save()
+            
             return seat
         else:
             raise AugusDataImportError('Cannot seat allocation: seat_id={}'.format(seat.id))
