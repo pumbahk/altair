@@ -15,6 +15,11 @@ using System.Windows.Shapes;
 
 namespace QR.presentation.gui.page
 {
+    class InputStrategyDataContext : InputDataContext
+    {
+        public string inputString { get; set; }
+    }
+
     /// <summary>
     /// Interaction logic for PageInputStrategySelect.xaml
     /// </summary>
@@ -23,6 +28,25 @@ namespace QR.presentation.gui.page
         public PageInputStrategySelect()
         {
             InitializeComponent();
+            this.DataContext = this.CreateDataContext();
+        }
+
+        private InputDataContext CreateDataContext()
+        {
+            return new InputDataContext() { Broker = AppUtil.GetCurrentBroker(), Event = new SelectInputStragetyEvent() };
+        }
+
+        private async void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            await (this.DataContext as InputStrategyDataContext).PrepareAsync().ConfigureAwait(false);
+        }
+
+        private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
+        {
+            var ctx = this.DataContext as InputStrategyDataContext;
+            var case_ = await ctx.SubmitAsync();
+            ctx.TreatErrorMessage();
+            AppUtil.GetNavigator().NavigateNextPage(case_, this);
         }
     }
 }
