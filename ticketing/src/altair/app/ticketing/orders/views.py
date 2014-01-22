@@ -1481,6 +1481,17 @@ class OrdersReserveView(BaseView):
             ]
         )
 
+    def _get_request_order_data(self):
+        order = self.request.json_body
+        logger.info('order data=%s' % order)
+        ordered_products = order.get('ordered_products')
+        for i, op in enumerate(ordered_products):
+            if not op.get('product_id'):
+                ordered_products.pop(i)
+        order['ordered_products'] = ordered_products
+        logger.info('mod order data=%s' % order)
+        return order
+
     @view_config(route_name='orders.api.edit', request_method='GET', renderer='json')
     def api_edit_get(self):
         order_id = self.request.matchdict.get('order_id', 0)
@@ -1491,9 +1502,8 @@ class OrdersReserveView(BaseView):
 
     @view_config(route_name='orders.api.edit_confirm', request_method='POST', renderer='json')
     def api_edit_confirm(self):
-        order_data = self.request.json_body
+        order_data = self._get_request_order_data()
         order_id = order_data.get('id')
-        logger.debug('order_data=%s' % order_data)
 
         order = Order.get(order_id, self.context.organization.id)
         prev_data = self._get_order_dicts(order)
@@ -1527,8 +1537,7 @@ class OrdersReserveView(BaseView):
         stocker = api.get_stocker(self.request)
         edit_order = Order.clone(order, deep=True)
 
-        order_data = MultiDict(self.request.json_body)
-        logger.info('order_data=%s' % order_data)
+        order_data = MultiDict(self._get_request_order_data())
 
         # phase1: 合計金額が変わる変更はNG、ただしインナー予約のみOK、Sejへの変更リクエストは行う
         # phase2: 合計金額が変わる変更もOK、決済の減額再処理を行う

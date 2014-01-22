@@ -504,7 +504,12 @@ order.OrderProductFormView = Backbone.View.extend({
         });
       });
       var ss = ssc.get(sales_segment_id);
+      var existing_pid = [];
+      self.order.get('ordered_products').each(function(existing_op) {
+        if (op != existing_op) existing_pid.push(existing_op.get('product_id'));
+      })
       ss.get('products').each(function(p) {
+        if ($.inArray(p.get('id'), existing_pid) > -1) return false;
         if (!stock_type_id || stock_type_id == p.get('stock_type_id')) {
           var option = $('<option/>').text(p.get('name')).attr('value', p.get('id'));
           if (p.get('id') == product_id) option.attr('selected', 'selected');
