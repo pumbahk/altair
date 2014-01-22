@@ -25,8 +25,8 @@ def init_env(conf):
     if conf:
         env = bootstrap(conf)
     settings = get_settings(env)
-    staging = settings['staging']
-    pending = settings['pending']
+    staging = settings['to_staging']
+    pending = settings['to_pending']
     mkdir_p(staging)
     mkdir_p(pending)
     return staging, pending
