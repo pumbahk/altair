@@ -6,11 +6,11 @@
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300"
 	Title="PageAuthInput">
-
-    <Grid>
+       
+        <Grid>
         <StackPanel>
             <TextBlock Text="{Binding CaseName, Mode=OneWay}" Background="AliceBlue"/>
-            <TextBlock Text="{Binding ErrorMessage, Mode=OneWay}" Background="Crimson" Foreground="White"></TextBlock>
+            <TextBlock Style="{StaticResource ErrorMessageForUser}" Text="{Binding ErrorMessage, Mode=OneWay}"></TextBlock>
             <Label>auth</Label>
             <TextBlock>Login name:</TextBlock>
             <TextBox Text="{Binding LoginName, Mode=OneWayToSource}"></TextBox>

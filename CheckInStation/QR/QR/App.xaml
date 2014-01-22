@@ -3,6 +3,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="presentation/gui/page/MainWindow.xaml">
     <Application.Resources>
+       <Style TargetType="TextBlock" x:Key="ErrorMessageForUser">
+         <Setter Property="Background" Value="Crimson"></Setter>
+         <Setter Property="Foreground" Value="White"></Setter>
+         <Style.Triggers>
+            <DataTrigger Binding="{Binding ErrorMessage}" Value="">
+              <Setter Property="Background" Value="White"></Setter>
+              <Setter Property="Foreground" Value="Black"></Setter>
+            </DataTrigger>
+          </Style.Triggers>
+       </Style>
 
         <!-- Label style
         <Style x:Key="labelStyle" TargetType="{x:Type Label}">

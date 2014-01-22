@@ -50,7 +50,7 @@ namespace QR.presentation.gui
         public string CaseName { get { return this.Case.ToString(); } }
         public string ErrorMessage
         {
-            get { return this.errorMessage; }
+            get { return this.errorMessage == null ? "" : this.errorMessage; }
             set { this.errorMessage = value; this.OnPropertyChanged("ErrorMessage"); }
         }
 
