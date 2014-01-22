@@ -1539,12 +1539,19 @@ class OrdersReserveView(BaseView):
 
         order_data = MultiDict(self._get_request_order_data())
 
-        # phase1: 合計金額が変わる変更はNG、ただしインナー予約のみOK、Sejへの変更リクエストは行う
-        # phase2: 合計金額が変わる変更もOK、決済の減額再処理を行う
-        if order.channel != ChannelEnum.INNER.v and order.total_amount != order_data.get('total_amount'):
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'金額は変更できません'
-            }))
+        if order.channel == ChannelEnum.INNER.v:
+            ppid = order.payment_delivery_pair.payment_method.payment_plugin_id
+            dpid = order.payment_delivery_pair.delivery_method.delivery_plugin_id
+            if ppid == payments_plugins.SEJ_PAYMENT_PLUGIN_ID or dpid == payments_plugins.SEJ_DELIVERY_PLUGIN_ID:
+                raise HTTPBadRequest(body=json.dumps(dict(message=u'コンビニ決済/コンビニ発券の予約はまだ変更できません')))
+        else:
+            if order.payment_status != 'paid' or order.is_issued():
+                logger.info('order.payment_status=%s, order.is_issued=%s' % (order.payment_status, order.is_issued()))
+                raise HTTPBadRequest(body=json.dumps(dict(message=u'未決済または発券済みの予約は変更できません')))
+            if order.total_amount < long(order_data.get('total_amount')):
+                raise HTTPBadRequest(body=json.dumps(dict(message=u'決済金額が増額となる変更はできません')))
+            if order.total_amount > long(order_data.get('total_amount')):
+                raise HTTPBadRequest(body=json.dumps(dict(message=u'決済金額が減額となる変更はまだできません')))
 
         op_zip = itertools.izip(order.items, edit_order.items)
         for i, (op, eop) in enumerate(op_zip):
@@ -1554,7 +1561,7 @@ class OrdersReserveView(BaseView):
             logger.info('op_data %s' % op_data)
 
             if op_data is None:
-                raise HTTPBadRequest(body=json.dumps({'message':u'不正なデータです'}))
+                raise HTTPBadRequest(body=json.dumps(dict(message=u'不正なデータです')))
 
             # 商品変更
             product = Product.get(int(op_data.get('product_id')))

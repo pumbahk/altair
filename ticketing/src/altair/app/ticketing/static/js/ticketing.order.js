@@ -56,7 +56,7 @@ order.OrderFormPresenter.prototype = {
     this.view.showAlert(message, option);
   },
   showForm: function() {
-    $('.btn-edit-order, #orderProduct').hide();
+    $('.btn-edit-order, .btn-save-order, #orderProduct').hide();
     $('.btn-confirm, .btn-close').show();
 
     this.view.close();
