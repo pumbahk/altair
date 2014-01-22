@@ -1425,7 +1425,8 @@ class OrdersReserveView(BaseView):
                     name=p.name,
                     price=int(p.price),
                     stock_type_id=p.seat_stock_type.id,
-                    stock_type_name=p.seat_stock_type.name
+                    stock_type_name=p.seat_stock_type.name,
+                    quantity_only=p.seat_stock_type.quantity_only
                 )
                 for p in ss.products
                 ]
@@ -1464,6 +1465,7 @@ class OrdersReserveView(BaseView):
                         stock_holder_name=opi.product_item.stock.stock_holder.name,
                         stock_type_id=opi.product_item.stock.stock_type_id,
                         is_seat=opi.product_item.stock.stock_type.is_seat,
+                        quantity_only=opi.product_item.stock.stock_type.quantity_only,
                     ),
                     seats=[
                     dict(
@@ -1486,7 +1488,7 @@ class OrdersReserveView(BaseView):
         logger.info('order data=%s' % order)
         ordered_products = order.get('ordered_products')
         for i, op in enumerate(ordered_products):
-            if not op.get('product_id'):
+            if (not op.get('id') and op.get('quantity') == 0) or not op.get('product_id'):
                 ordered_products.pop(i)
         order['ordered_products'] = ordered_products
         logger.info('mod order data=%s' % order)
@@ -1631,7 +1633,7 @@ class OrdersReserveView(BaseView):
 
         # 商品追加
         for op_data in order_data.get('ordered_products'):
-            if not op_data.get('id'):
+            if not op_data.get('id') and op_data.get('quantity') > 0:
                 logger.info('add ordered_product %s' % op_data)
                 product = Product.get(int(op_data.get('product_id')))
                 quantity = int(op_data.get('quantity'))
