@@ -214,6 +214,7 @@
     <Folder Include="models\core\" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resource\printing.gif" />
     <Resource Include="Resource\background.png" />
     <None Include="app.config" />
     <Content Include="NLog.config">
