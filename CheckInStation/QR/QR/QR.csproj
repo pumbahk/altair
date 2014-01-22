@@ -73,7 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DynamicJson.cs" />
-    <Compile Include="presentation\gui\NextPageChoicer.cs" />
+    <Compile Include="presentation\gui\PageNavigator.cs" />
     <Compile Include="presentation\gui\page\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>

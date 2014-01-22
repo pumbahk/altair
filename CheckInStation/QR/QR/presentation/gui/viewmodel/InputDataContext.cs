@@ -53,5 +53,15 @@ namespace QR.presentation.gui
             get { return this.errorMessage; }
             set { this.errorMessage = value; this.OnPropertyChanged("ErrorMessage"); }
         }
+
+        public void TreatErrorMessage()
+        {
+            var coll = new List<string>();
+            this.Event.HandleEvent((string s) =>
+            {
+                coll.Add(s);
+            });
+            this.ErrorMessage = String.Join(",", coll.ToArray<string>());
+        }
     }
 }

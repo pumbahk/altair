@@ -67,14 +67,8 @@ namespace QR.presentation.gui.page
             {
                 case_ = await ctx.Submit();
             }
-            
-            var coll = new List<string>();
-            ctx.Event.HandleEvent((string s) =>
-            {
-                coll.Add(s);
-            });
-            ctx.ErrorMessage = String.Join(",", coll.ToArray<string>());
 
+            ctx.TreatErrorMessage();
             AppUtil.GetNavigator().NavigateNextPage(case_, this);
         }
     }

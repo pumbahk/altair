@@ -21,7 +21,7 @@ namespace QR.presentation.gui
             return new T();
         }
 
-        public Page Create(ICase CurrentCase, Page previous)
+        public Page Choice(ICase CurrentCase, Page previous)
         {
             var c = CurrentCase;
             if (c is CaseAuthInput || c is CaseAuthDataFetch)
