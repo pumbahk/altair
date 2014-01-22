@@ -54,9 +54,13 @@
             <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/images/eagles/mypage/' + h.get_order_status_image(order))}" alt="${h.get_order_status(order)}" width="60" height="60" /></p>
             <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/images/eagles/mypage/' + h.get_payment_status_image(order))}" alt="${h.get_payment_status(order)}" width="60" height="60" /></p>
             <dl>
-                <dt><a href="#">${order.performance.name}</a></dt>
+              <form name="${order.order_no}" action="${request.route_path('order_review.show')}" method="POST">
+                <input type="hidden" name="order_no" value="${order.order_no}"/>
+                <input type="hidden" name="tel" value="${order.shipping_address.tel_1}"/>
+                <dt><a href="javascript:void(0);" onclick="document.${order.order_no}.submit()">${order.performance.name}</a></dt>
                 <dd>${h.japanese_date(order.performance.start_on)} ${order.performance.venue.name}</dd>
                 <dd>${order.order_no}</dd>
+              </form>
             </dl>
         </div>
     </div>
