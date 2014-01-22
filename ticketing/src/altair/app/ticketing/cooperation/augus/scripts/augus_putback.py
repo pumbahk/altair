@@ -2,52 +2,59 @@
 #-*- coding: utf-8 -*-
 import os
 import argparse
-import logging
-from pyramid.paster import bootstrap
-from altair.augus.protocols import (
-    PutbackRequest,
-    PutbackResponse,
-    PutbackFinish,
-    )
+from altair.augus.protocols import TicketSyncRequest
 from altair.augus.parsers import AugusParser
+from pyramid.paster import bootstrap
+import transaction
+from ..exporters import AugusPutbackExporter
+from ..errors import AugusDataImportError
 
-def get_settings(conf=None): 
-    if conf:
-        raise NotImplementedError()
-    else:
+
+def get_settings(env=None):
+    if env:
+        return env['registry'].settings
+    else: # DEBUG
         from pit import Pit
         return Pit.get('augus_ftp',
                        {'require': {'staging': '',
                                     'pending': '',
-                                    }})
+                                }})
+
+def init_env(conf):
+    env = None
+    if conf:
+        env = bootstrap(conf)
+    settings = get_settings(env)
+    staging = settings['from_staging']
+    pending = settings['from_pending']
+    mkdir_p(staging)
+    mkdir_p(pending)
+    return staging, pending
+
+
 def mkdir_p(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
+CUSTOMER_ID = 12345678
+
 def main():
-    parser = get_argument_parser()
-    args = parser.parse_args()
-    bootstrap(args.conf)    
-    settings = get_settings(args.conf)
-    staging = settings['staging']
-    pending = settings['pending']
-    
-    mkdir_p(staging)
-    mkdir_p(pending)
-    
     parser = argparse.ArgumentParser()
-    parser.add_argument('--conf', default=None)
+    parser.add_argument('conf', nargs='?', default=None)
     args = parser.parse_args()
-    settings = get_settings(args.conf)
-    staging = settings['staging']
-    pending = settings['pending']
-    
-    mkdir_p(staging)
-    mkdir_p(pending)
-    
-    for name in filter(PutbackRequest.match_name, os.listdir(staging)):
-        path = os.path.join(staging, name)
-        request = AugusParser.parse(path)
-        
+    staging, pending = init_env(args.conf)
+    exporter = AugusPutbackExporter()
+    try:
+        request = exporter.export(staging, CUSTOMER_ID)
+    except AugusDataImportError as err:
+        transaction.abort()        
+        raise
+    except:
+        transaction.abort()
+        raise
+    else:
+        transaction.commit()
+    for path in paths:
+        shutil.move(path, pending)
 if __name__ == '__main__':
     main()

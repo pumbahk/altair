@@ -10,6 +10,7 @@ from altair.app.ticketing.core.models import (
     AugusTicket,
     AugusSeat,
     AugusStockInfo,
+    SeatStatusEnum,
     )
 from .errors import (
     AugusDataImportError,

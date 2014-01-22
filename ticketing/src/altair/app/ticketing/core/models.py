@@ -4053,6 +4053,7 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_distribution_code = AnnotatedColumn(Integer, _a_label=(u'オーガス配券コード'))
     seat_type_classif = AnnotatedColumn(Unicode(32), _a_label=(u'席区分'))
     distributed_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'配券日時'))
+    quantity = AnnotatedColumn(Integer, _a_label=(u'席数'), nullable=False)
     
     augus_seat_id = Column(Identifier, ForeignKey('AugusSeat.id'))
     augus_seat = relationship('AugusSeat')
@@ -4061,6 +4062,13 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
     deleted_at = Column(TIMESTAMP, nullable=True)
 
+class AugusPutbackStatus:
+    CANDO = 0
+    CANNOT = 1
+
+class AugusPutbackType:
+    ROUTE = u'R' # 途中
+    FINAL = u'F' # 最終
 
 class AugusPutback(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusPutback'
@@ -4072,9 +4080,20 @@ class AugusPutback(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     reserved_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券予約日時'))
     nortificated_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券通知日時'))
     finished_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券完了日時'))
+
+    augus_putback_type = AnnotatedColumn(Unicode(32), _a_label=(u'返券区分'), default=AugusPutbackType.ROUTE)
     
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
     seat = relationship('Seat')
+
+    @property
+    def putback_status(self):
+        if self.seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v]:
+            return AugusPutbackStatus.CANNOT
+        else:
+            return AugusPutbackStatus.CANDO
+        
+               
 
 class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrionPerformance'

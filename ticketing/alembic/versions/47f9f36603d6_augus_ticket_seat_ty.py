@@ -20,13 +20,17 @@ Identifier = sa.BigInteger
 
 def upgrade():
     op.add_column('AugusTicket', sa.Column('stock_type_id', Identifier, default=None, nullable=True))
-    op.add_column('AugusTicket', sa.Column('augus_performance_id', Identifier, nullable =False))
+    op.add_column('AugusTicket', sa.Column('augus_performance_id', Identifier, nullable =False))    
+    op.add_column('AugusStockInfo', sa.Column('quantity', sa.Integer, nullable=False))
+    op.add_column('AugusPutback', sa.Column('augus_putback_type', sa.Unicode(32), nullable=False))
     op.drop_column('AugusTicket', 'augus_event_code')
     op.drop_column('AugusTicket', 'augus_performance_code')
 
 def downgrade():
     op.drop_column('AugusTicket', 'stock_type_id')
     op.drop_column('AugusTicket', 'augus_performance_id')
+    op.drop_column('AugusStockInfo', 'quantity')
+    op.drop_column('AugusPutback', 'augus_putback_type')
     op.add_column('AugusTicket', sa.Column('augus_event_code', sa.Integer, nullable=False))
     op.add_column('AugusTicket', sa.Column('augus_performance_code', sa.Integer, nullable=False))
     

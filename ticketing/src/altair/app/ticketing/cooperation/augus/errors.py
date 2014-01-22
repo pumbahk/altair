@@ -23,3 +23,6 @@ class AlreadyExist(AugusError):
 
 class AugusDataImportError(AugusError):
     pass
+
+class AugusDataExportError(AugusError):
+    pass
