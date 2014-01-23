@@ -4,17 +4,17 @@ Backbone.emulateHTTP = true;
 
 var order = {};
 
-order.init = function(order_id, options) {
+order.init = function(order_id, performance_id, options) {
   this.app = new order.ApplicationController();
-  this.app.init(order_id, options);
+  this.app.init(order_id, performance_id, options);
 };
 
 order.ApplicationController = function() {
 };
 
-order.ApplicationController.prototype.init = function(order_id, options) {
+order.ApplicationController.prototype.init = function(order_id, performance_id, options) {
   this.orderFormPresenter = new order.OrderFormPresenter({viewType: order.OrderFormView});
-  this.orderFormPresenter.initialize(order_id, options);
+  this.orderFormPresenter.initialize(order_id, performance_id, options);
   this.orderFormPresenter.fetchAndShow();
 };
 
@@ -28,11 +28,11 @@ order.OrderFormPresenter = function(params) {
 order.OrderFormPresenter.prototype = {
   defaults: {
   },
-  initialize: function(order_id, options) {
+  initialize: function(order_id, performance_id, options) {
     var self = this;
     this.order = new order.Order({id: order_id});
     this.options = options;
-    this.performance = new order.Performance();
+    this.performance = new order.Performance({id: performance_id});
     this.view = new this.viewType({
       el: $('#orderProductForm'),
       presenter: this,
@@ -41,6 +41,7 @@ order.OrderFormPresenter.prototype = {
     });
     this.ensure_seats = new order.EnsureSeatCollection();
     this.release_seats = new order.ReleaseSeatCollection();
+    this.change_performance = false;
 
     $('.btn-confirm').on('click', function() {
       self.confirm();
@@ -67,14 +68,22 @@ order.OrderFormPresenter.prototype = {
       data_source: this.options.data_source
     });
     this.view.show();
+
+    if (this.change_performance) {
+      this.showMessage('公演が異なる予約を変更します。変更前の公演の予約情報は自動的にクリアされます。', 'alert-warning');
+    }
   },
   fetchAndShow: function() {
     var self = this;
     this.order.fetch({
       success: function() {
-        self.performance.set('id', self.order.get('performance_id'));
         self.performance.fetch({
           success: function() {
+            if (self.order.get('performance_id') != self.performance.get('id')) {
+              self.order.set('performance_id', self.performance.get('id'));
+              self.order.get('ordered_products').reset();
+              self.change_performance = true;
+            }
             self.showForm();
           }
         });
@@ -218,6 +227,7 @@ order.OrderedProduct = Backbone.Model.extend({
     quantity: 0,
     product_id: 0,
     product_name: null,
+    stock_type_id: 0,
     sales_segment_id: 0,
     sales_segment_name: null,
     ordered_product_items: null
@@ -404,8 +414,9 @@ order.OrderFormView = Backbone.View.extend({
   },
   showAlert: function(message, option) {
     var el = $('#orderProductAlert');
-    var alert_el = $('<div class="alert" style="margin: 8px;" />').addClass(option);
-    alert_el.append($('<ul/>').append($('<li/>').text(message)));
+    var alert_el = $('<div class="alert"/>').addClass(option);
+    alert_el.append($('<a class="close" data-dismiss="alert">&times;</a>'));
+    alert_el.append($('<h4 class="alert-heading"/>').text(message));
     el.find('.alert').remove();
     el.append(alert_el);
   },
@@ -468,7 +479,7 @@ order.OrderProductFormView = Backbone.View.extend({
   },
   selectSalesSegment: function(el) {
     var op = this.model;
-    op.set('sales_segment_id', $(this).val());
+    op.set('sales_segment_id', el.val());
   },
   selectProduct: function(el) {
     var op = this.model;
@@ -502,16 +513,10 @@ order.OrderProductFormView = Backbone.View.extend({
     product_name.append(sales_segment);
 
     var product_list = $('<select id="product_id" name="product_id" />');
-    if (sales_segment_id) {
-      var product_id = op.get('product_id');
-      var stock_type_id = null;
-      op.get('ordered_product_items').each(function(opi) {
-        opi.get('seats').each(function(seat) {
-          stock_type_id = seat.get('stock_type_id');
-          return false;
-        });
-      });
-      var ss = ssc.get(sales_segment_id);
+    var product_id = op.get('product_id');
+    var ss = ssc.get(sales_segment_id);
+    if (ss) {
+      var stock_type_id = op.get('stock_type_id');
       var existing_pid = [];
       self.order.get('ordered_products').each(function(existing_op) {
         if (op != existing_op) existing_pid.push(existing_op.get('product_id'));

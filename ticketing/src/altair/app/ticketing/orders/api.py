@@ -592,7 +592,9 @@ def save_order_modification(order, modify_data):
     request = get_current_request()
     reserving = cart_api.get_reserving(request)
     stocker = cart_api.get_stocker(request)
+
     modify_order = Order.clone(order, deep=True)
+    modify_order.performance_id = modify_data.get('performance_id')
 
     if order.channel == ChannelEnum.INNER.v:
         ppid = order.payment_delivery_pair.payment_method.payment_plugin_id
@@ -645,10 +647,10 @@ def save_order_modification(order, modify_data):
             # 座席確保
             seats_data = opi_data.get('seats')
             product_requires = [(mop.product, opi_quantity)]
-            stock_statuses = stocker.take_stock(order.performance_id, product_requires)
+            stock_statuses = stocker.take_stock(modify_order.performance_id, product_requires)
             seats = reserving.reserve_selected_seats(
                 stock_statuses,
-                order.performance_id,
+                modify_order.performance_id,
                 [s.get('id') for s in seats_data],
                 SeatStatusEnum.Ordered
             )
@@ -692,10 +694,10 @@ def save_order_modification(order, modify_data):
                             #1Product複数座席ProductItemでうまくいかない？
                             break
                     product_requires = [(product, opi_quantity)]
-                    stock_statuses = stocker.take_stock(order.performance_id, product_requires)
+                    stock_statuses = stocker.take_stock(modify_order.performance_id, product_requires)
                     seats = reserving.reserve_selected_seats(
                         stock_statuses,
-                        order.performance_id,
+                        modify_order.performance_id,
                         [s.get('id') for s in seats_data],
                         SeatStatusEnum.Ordered
                     )

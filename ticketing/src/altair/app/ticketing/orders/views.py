@@ -1654,6 +1654,7 @@ class OrdersEditAPIView(BaseView):
                 sales_segment_name=op.product.sales_segment.name,
                 product_id=op.product.id,
                 product_name=op.product.name,
+                stock_type_id=op.product.seat_stock_type_id,
                 ordered_product_items=[
                 dict(
                     id=opi.id,
@@ -1729,9 +1730,10 @@ class OrdersEditAPIView(BaseView):
         if order is None:
             raise HTTPBadRequest(body=json.dumps({'message':u'予約がありません' }))
         elif order.performance_id != long(performance_id):
-            raise HTTPBadRequest(body=json.dumps({'message':u'異なる公演の予約番号です' }))
+            self.request.session.flash(u'異なる公演の予約番号です')
         return {
             'order':order,
+            'performance_id':performance_id,
             'options':dict(
                 data_source=dict(
                     order_template_url='/static/tiny_order.html'
@@ -1757,7 +1759,7 @@ class OrdersEditAPIView(BaseView):
                     id=p.id,
                     name=p.name,
                     price=int(p.price),
-                    stock_type_id=p.seat_stock_type.id,
+                    stock_type_id=p.seat_stock_type_id,
                     stock_type_name=p.seat_stock_type.name,
                     quantity_only=p.seat_stock_type.quantity_only
                 )

@@ -365,8 +365,9 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       error: function(xhr, text) {
         var responseText = JSON.parse(xhr.responseText);
         var messages = responseText['message'] || xhr.statusText
-        var alert = $('<div class="alert" style="margin: 8px;" />').addClass('alert-error');
-        alert.append($('<ul/>').append($('<li/>').text(messages)));
+        var alert = $('<div />').addClass('alert alert-error');
+        alert.append($('<a class="close" data-dismiss="alert">&times;</a>'));
+        alert.append($('<h4 class="alert-heading"/>').text(messages));
         tab1.find('.alert').remove();
         tab1.prepend(alert);
       }
