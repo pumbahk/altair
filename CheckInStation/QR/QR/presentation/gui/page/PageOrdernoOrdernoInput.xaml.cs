@@ -21,9 +21,12 @@ namespace QR.presentation.gui.page
 
     class PageOrdernoOrdernoInputDataContext : InputDataContext
     {
+        public string Orderno { get; set; }
+
         public override void OnSubmit()
         {
-            var ev = this.Event as IInternalEvent;
+            var ev = this.Event as OrdernoInputEvent;
+            ev.Orderno = this.Orderno;
             base.OnSubmit();
         }
     }
@@ -60,6 +63,14 @@ namespace QR.presentation.gui.page
         {
             var ctx = this.DataContext as InputDataContext;
             var case_ = await ctx.SubmitAsync();
+            ctx.TreatErrorMessage();
+            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+        }
+
+        private async void OnBackwardWithBoundContext(object sender, RoutedEventArgs e)
+        {
+            var ctx = this.DataContext as InputDataContext;
+            var case_ = await ctx.BackwardAsync();
             ctx.TreatErrorMessage();
             AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
         }

@@ -42,6 +42,7 @@
             </ScrollViewer>
             <WrapPanel Grid.Row="3">
                 <Button Click="OnSubmitWithBoundContext">発券する</Button>
+                <Button Click="OnBackwardWithBoundContext">戻る</Button>
             </WrapPanel>
         </Grid>
     </Grid>

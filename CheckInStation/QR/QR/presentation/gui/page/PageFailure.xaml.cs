@@ -53,7 +53,7 @@ namespace QR.presentation.gui.page
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            await(this.DataContext as PageFailureDataContext).PrepareAsync().ConfigureAwait(false);
+            await (this.DataContext as PageFailureDataContext).PrepareAsync().ConfigureAwait(false);
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)

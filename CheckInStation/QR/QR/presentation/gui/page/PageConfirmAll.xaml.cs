@@ -147,5 +147,13 @@ namespace QR.presentation.gui.page
             ctx.TreatErrorMessage();
             AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
         }
+
+        private async void OnBackwardWithBoundContext(object sender, RoutedEventArgs e)
+        {
+            var ctx = this.DataContext as InputDataContext;
+            var case_ = await ctx.BackwardAsync();
+            ctx.TreatErrorMessage();
+            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+        }
     }
 }

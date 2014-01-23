@@ -4,6 +4,7 @@ using QR.message;
 using System.Collections.Generic;
 using NLog;
 using System.Linq;
+using System.Net;
 
 namespace QR
 {
@@ -33,21 +34,36 @@ namespace QR
 			await base.PrepareAsync (ev).ConfigureAwait (false);
 			var subject = this.PresentationChanel as PrintingEvent;
 
-			try {
-				var result = this.PrintingTargets = await Resource.SVGImageFetcher.FetchImageDataForOneAsync (this.TicketData).ConfigureAwait (false);
-				if (result.Status) {
-					subject.ConfigureByTotalPrinted(result.Right.Count); //印刷枚数設定
-				}
-			} catch (Exception ex) {
-				logger.ErrorException (":", ex);
-				PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
-			}
+            try
+            {
+                var result = this.PrintingTargets = await Resource.SVGImageFetcher.FetchImageDataForOneAsync(this.TicketData).ConfigureAwait(false);
+                if (result.Status)
+                {
+                    subject.ConfigureByTotalPrinted(result.Right.Count); //印刷枚数設定
+                }
+                else
+                {
+                    subject.ConfigureByTotalPrinted(0); //失敗時;
+                }
+            }
+            catch (WebException ex)
+            {
+                logger.ErrorException(":", ex);
+                this.PrintingTargets = new Failure<string, List<TicketImageData>>(Resource.GetWebExceptionMessage());
+            }
+            catch (Exception ex)
+            {
+                logger.ErrorException(":", ex);
+                this.PrintingTargets = new Failure<string, List<TicketImageData>>(Resource.GetDefaultErrorMessage());
+
+            }
 		}
 
 		public override async Task<bool> VerifyAsync ()
 		{
 			// 印刷対象の画像の取得に失敗した時
 			if (!this.PrintingTargets.Status) {
+                PresentationChanel.NotifyFlushMessage(this.PrintingTargets.Left);
 				PresentationChanel.NotifyFlushMessage ((this.PrintingTargets as Failure<string,List<TicketImageData>>).Result);
 				return false;
 			}

@@ -18,16 +18,11 @@ namespace QR
 			this.RequestData = data;
 		}
 
-		public override Task PrepareAsync (IInternalEvent ev)
-		{
-			OrdernoInputEvent subject  = ev as OrdernoInputEvent;
-			this.RequestData.tel = subject.Tel;
-			return base.PrepareAsync(ev);
-		}
-
 		public override Task<bool> VerifyAsync ()
 		{
 			return Task.Run (() => {
+                var subject = this.PresentationChanel as OrdernoInputEvent;
+                this.RequestData.tel = subject.Tel;
 				return this.RequestData.tel != null;
 			});
 		}
