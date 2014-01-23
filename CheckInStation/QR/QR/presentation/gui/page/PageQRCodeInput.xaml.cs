@@ -42,6 +42,7 @@ namespace QR.presentation.gui.page
         {
             InitializeComponent();
             this.DataContext = this.CreateDataContext();
+            logger.Info("!initialize page: {0}, context: {1}, event: {2}, case: ", this, this.DataContext, (this.DataContext as PageQRCodeInputDataContext).Event, (this.DataContext as PageQRCodeInputDataContext).Case);
         }
 
         private InputDataContext CreateDataContext()

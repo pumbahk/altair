@@ -44,22 +44,19 @@ namespace QR
 
         public async Task PrepareAsync(IInternalEvent ev)
         {
-            logger.Debug("ev: {0}", ev);
             this.Event = ev;//xxx:
             await this.FlowManager.PrepareAsync().ConfigureAwait(false);
         }
 
         public async Task<bool> VerifyAsync(IInternalEvent ev)
         {
-            logger.Debug("ev: {0}", ev);
             this.Event = ev;//xxx:
             return await this.FlowManager.VerifyAsync().ConfigureAwait(false);
         }
 
 		public async Task<ICase> SubmitAsync (IInternalEvent ev)
 		{
-            logger.Debug("ev: {0}", ev);
-			this.Event = ev;//xxx:
+            this.Event = ev;//xxx:
 			var result = await this.FlowManager.Forward().ConfigureAwait(false);
             return result;
 		}

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 
 using QR.presentation.gui.page;
+using NLog;
 
 namespace QR.presentation.gui
 {
@@ -14,6 +15,8 @@ namespace QR.presentation.gui
     /// </summary>
     public class PageNavigator
     {
+        private Logger logger = LogManager.GetCurrentClassLogger();
+
         public T CreateOrReUse<T> (ICase CurrentCase, Page previous) where T : Page, new()
         {
             if (previous is T)
@@ -61,6 +64,7 @@ namespace QR.presentation.gui
             var nextPage = this.Choice(case_, previous);
             if (previous != nextPage)
             {
+                logger.Debug("navigate page: {0}", nextPage);
                 previous.NavigationService.Navigate(nextPage);
             }
         }
