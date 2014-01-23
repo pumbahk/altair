@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:control="clr-namespace:QR.presentation.gui.control"
       mc:Ignorable="d" 
-      d:DesignHeight="50" d:DesignWidth="50"
+      d:DesignHeight="480" d:DesignWidth="640"
     ShowsNavigationUI="False"
     Title="PageFailure"
     Loaded="OnLoaded">
@@ -14,11 +14,11 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="2*"></RowDefinition>
-                <RowDefinition Height="3*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
             </Grid.RowDefinitions>
             <control:InspectCase Grid.Row="0"></control:InspectCase>
-            <TextBlock>ここに何かメッセージ</TextBlock>
-            <Button Click="OnSubmitWithBoundContext">Topに戻る</Button>
+            <TextBlock Grid.Row="1">ここに何かメッセージ</TextBlock>
+            <Button Grid.Row="2" Click="OnSubmitWithBoundContext">Topに戻る</Button>
         </Grid>
     </Grid>
 </Page>

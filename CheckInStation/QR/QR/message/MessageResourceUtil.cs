@@ -37,8 +37,9 @@ namespace QR.message
         public static string GetCaseDescriptionMessage(this IResource resource, ICase case_)
         {
             {
-                //e.g. QR.CaseAuthInput.description.format0
-                var r = resource.SettingValue(String.Format("message.{0}.description.format0", case_.GetType().ToString()));
+                //e.g. QR.CaseAuthInput.description.format.0
+                var k = String.Format("message.{0}.description.format.0", case_.GetType().ToString());
+                var r = resource.SettingValue(k);
                 if (r == null)
                 {
                     return "<説明が設定されていません>";
