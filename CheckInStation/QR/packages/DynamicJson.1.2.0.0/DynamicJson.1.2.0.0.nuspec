@@ -11,6 +11,9 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>dynamic json structure for C# 4.0. This provides only single .cs file.</description>
     <summary>dynamic json structure for C# 4.0. This provides only single .cs file.</summary>
+    <releaseNotes />
+    <copyright />
+    <language />
     <tags>json dynamic</tags>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System.Runtime.Serialization" targetFramework="" />
