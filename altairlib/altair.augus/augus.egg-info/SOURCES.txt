@@ -1,8 +1,0 @@
-README.txt
-setup.cfg
-augus.egg-info/PKG-INFO
-augus.egg-info/SOURCES.txt
-augus.egg-info/dependency_links.txt
-augus.egg-info/not-zip-safe
-augus.egg-info/requires.txt
-augus.egg-info/top_level.txt
