@@ -40,8 +40,16 @@ namespace QR
 			return this.undoStack.Peek ();
 		}
 
+        public IFlow Pop()
+        {
+            var result = this.undoStack.Pop();
+            logger.Trace("Pop(). flow={0}, case={1}", result, result.Case);
+            return result;
+        }
+
 		public void Push (IFlow flow)
 		{
+            logger.Trace("Manager.Push(). flow={0}, Case={1}", flow, flow.Case);
 			this.undoStack.Push (flow);
 		}
 
@@ -60,7 +68,7 @@ namespace QR
 			
 			var cmd = this.Peek ();
 			var nextCmd = await cmd.Forward ().ConfigureAwait(false);
-			undoStack.Push (nextCmd);
+			this.Push (nextCmd);
 			logger.Debug ("* Forward: {0} -> {1}", cmd.Case.GetType ().FullName, nextCmd.Case.GetType ().FullName);
 			return nextCmd.Case;
 		}
@@ -68,18 +76,24 @@ namespace QR
 		public async Task<ICase> Backward ()
 		{
 			if (undoStack.Count <= 1) { //xx;
-				// TODO:log
-				return undoStack.Peek ().Case;
+                logger.Debug("Backward is empty or one");
+				return this.Peek ().Case;
 			}
 			// 現在の情報を捨てる
-			var prev = undoStack.Pop ();
+			var prev = this.Pop ();
 			await prev.Backward ();
 
 			var that = this.Peek ();
-			while (that.IsAutoForwarding ()) {
-				that = undoStack.Pop ();
-				await that.Backward ();
-			}
+            if (that.IsAutoForwarding())
+            {
+                while (that.IsAutoForwarding())
+                {
+                    that = this.Pop();
+                    await that.Backward();
+                }
+                this.Push(that);
+            }
+            logger.Debug("Backward: {0} -> {1}", prev.Case, that.Case);
 			return that.Case;
 		}
 

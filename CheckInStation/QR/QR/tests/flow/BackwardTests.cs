@@ -28,6 +28,9 @@ namespace QR
 				/// 印刷後. backword.
 				result = await manager.Backward ();
 				Assert.IsInstanceOf<CaseInputStrategySelect> (result);
+
+				// peekでも現在のCaseが取れる必要がある!!
+				Assert.IsInstanceOf<CaseInputStrategySelect>(manager.Peek().Case);
 			});
 			t.Wait ();
 		}
@@ -50,6 +53,8 @@ namespace QR
 
 				result = await manager.Backward ();
 				Assert.IsInstanceOf<CaseInputStrategySelect> (result);
+				// peekでも現在のCaseが取れる必要がある!!
+				Assert.IsInstanceOf<CaseInputStrategySelect>(manager.Peek().Case);
 			});
 			t.Wait ();
 		}
@@ -79,6 +84,9 @@ namespace QR
 
 				result = await manager.Backward ();
 				Assert.IsInstanceOf<CaseQRCodeInput> (result);
+
+				// peekでも現在のCaseが取れる必要がある!!
+				Assert.IsInstanceOf<CaseQRCodeInput>(manager.Peek().Case);
 			});
 			t.Wait ();
 		}
