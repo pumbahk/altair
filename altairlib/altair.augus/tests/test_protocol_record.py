@@ -1,6 +1,8 @@
 #-*- coding: utf-8 -*-
-from unittest import TestCase, skip
 import string
+import datetime
+from unittest import TestCase, skip
+
 from altair.augus.errors import ProtocolFormatError
 from altair.augus.protocols import ( # protocols
     VenueSyncRequest,
@@ -340,3 +342,23 @@ class ProtocolRecordAttributeTypeTest(TestCase):
 
     def test_achievement_status(self):
         self._testing_type_it(AchievementStatus)
+
+class PerformanceRequestRecordDateTimeTypeTest(TestCase):
+    def test_start_on(self):
+        now = datetime.datetime.now()
+        record = PerformanceSyncRequest.record()
+        record.date = date = now.strftime('%Y%m%d')
+        record.start_on = now.strftime('%H%M')
+        fmt = '%Y%m%d%H%M'
+        self.assertEqual(record.start_on_datetime.strftime(fmt),
+                         now.strftime(fmt))
+
+    def test_open_on(self):
+        now = datetime.datetime.now()
+        record = PerformanceSyncRequest.record()
+        record.date = date = now.strftime('%Y%m%d')
+        record.open_on = now.strftime('%H%M')
+        fmt = '%Y%m%d%H%M'
+        self.assertEqual(record.open_on_datetime.strftime(fmt),
+                         now.strftime(fmt))
+
