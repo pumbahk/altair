@@ -17,8 +17,11 @@ namespace QR
 		}
 
 		public override async Task<bool> VerifyAsync ()
-		{	
-			return await Resource.TicketDataManager.UpdatePrintedAtAsync (this.RequsetData);
+		{
+            (this.PresentationChanel as FinishEvent).ChangeState(FinishStatus.requesting);
+            var s = await Resource.TicketDataManager.UpdatePrintedAtAsync (this.RequsetData);
+            (this.PresentationChanel as FinishEvent).ChangeState(FinishStatus.saved);
+            return s;
 		}
 
 		public override ICase OnSuccess (IFlow flow)

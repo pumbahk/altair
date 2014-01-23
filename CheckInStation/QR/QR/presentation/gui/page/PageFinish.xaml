@@ -5,18 +5,25 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:control="clr-namespace:QR.presentation.gui.control"
       mc:Ignorable="d" 
-      d:DesignHeight="300" d:DesignWidth="300"
+      d:DesignHeight="480" d:DesignWidth="680"
     ShowsNavigationUI="False"     
 	Title="PageFinish"
     Loaded="OnLoaded">
-    <Grid>
+    <Grid Style="{StaticResource ToplevelGrid}">
+        <Grid Style="{StaticResource CenterContentGrid}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="20"></RowDefinition>
-            <RowDefinition Height="20"></RowDefinition>
+            <RowDefinition Height="1*"></RowDefinition>
+            <RowDefinition Height="1*"></RowDefinition>
             <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0">
-            <control:InspectCase></control:InspectCase>
-        </StackPanel>
+       <control:InspectCase Grid.Row="0"></control:InspectCase>
+            <TextBlock Grid.Row="1">
+                <TextBlock.Text>
+                    <MultiBinding StringFormat="status:{0}}">
+                        <Binding Path="Status" Mode="OneWay"></Binding>
+                    </MultiBinding>                    
+                </TextBlock.Text>
+            </TextBlock>
+        </Grid>
     </Grid>
 </Page>

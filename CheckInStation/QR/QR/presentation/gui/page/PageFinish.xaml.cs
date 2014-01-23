@@ -19,8 +19,15 @@ using System.Windows.Shapes;
 namespace QR.presentation.gui.page
 {
 
-    class PageFinishDataContext : InputDataContext
+    class PageFinishDataContext : InputDataContext, INotifyPropertyChanged, IFinishStatusInfo
     {
+        private FinishStatus _status;
+        public FinishStatus Status
+        {
+            get { return this._status; }
+            set { this._status = value; this.OnPropertyChanged("Status"); }
+        }
+
         public override void OnSubmit()
         {
             var ev = this.Event as IInternalEvent;
@@ -44,24 +51,33 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
-            return new PageFinishDataContext()
+            var ctx = new PageFinishDataContext()
             {
                 Broker = AppUtil.GetCurrentBroker(),
-                Event = new EmptyEvent()
+                Status = FinishStatus.starting
             };
+            ctx.Event = new FinishEvent() { StatusInfo = ctx };
+            ctx.PropertyChanged += OnStatusChangedSetRedirectCallback;
+            return ctx;
+        }
+
+        void OnStatusChangedSetRedirectCallback(object sender, PropertyChangedEventArgs e)
+        {
+            var ctx = sender as PageFinishDataContext;
+            if (ctx.Status == FinishStatus.saved)
+            {
+                this.Dispatcher.InvokeAsync(async () =>
+                {
+                    var case_ = await ctx.SubmitAsync();
+                    ctx.TreatErrorMessage();
+                    AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+                });
+            }
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            await(this.DataContext as PageFinishDataContext).PrepareAsync().ConfigureAwait(false);
-        }
-
-        private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
-        {
-            var ctx = this.DataContext as InputDataContext;
-            var case_ = await ctx.SubmitAsync();
-            ctx.TreatErrorMessage();
-            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+            await (this.DataContext as PageFinishDataContext).VerifyAsync().ConfigureAwait(false);
         }
     }
 }
