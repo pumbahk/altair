@@ -38,6 +38,9 @@ class MypageView(object):
         authenticated_user = self.context.authenticated_user()
         user = get_user(authenticated_user)
 
+        if not user:
+            raise HTTPNotFound()
+
         shipping_address = self.context.get_shipping_address(user)
         orders = self.context.get_orders(user)
         entries = self.context.get_lots_entries(user)
