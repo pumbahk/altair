@@ -87,6 +87,37 @@
     <Compile Include="presentation\gui\page\PageInputStrategySelect.xaml.cs">
       <DependentUpon>PageInputStrategySelect.xaml</DependentUpon>
     </Compile>
+    <Compile Include="presentation\gui\page\PageAuthInput.xaml.cs">
+      <DependentUpon>PageAuthInput.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageInputStrategySelect.xaml.cs">
+      <DependentUpon>PageInputStrategySelect.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageQRCodeInput.xaml.cs">
+      <DependentUpon>PageQRCodeInput.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageOrdernoOrdernoInput.xaml.cs">
+      <DependentUpon>PageOrdernoOrdernoInput.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageOrdernoTelInput.xaml.cs">
+      <DependentUpon>PageOrdernoTelInput.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageConfirmOne.xaml.cs">
+      <DependentUpon>PageConfirmOne.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageConfirmAll.xaml.cs">
+      <DependentUpon>PageConfirmAll.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PagePrinting.xaml.cs">
+      <DependentUpon>PagePrinting.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageFinish.xaml.cs">
+      <DependentUpon>PageFinish.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageFailure.xaml.cs">
+      <DependentUpon>PageFailure.xaml</DependentUpon>
+    </Compile>
+
     <Compile Include="presentation\gui\viewmodel\InputDataContext.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -229,6 +260,46 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="presentation\gui\page\PageInputStrategySelect.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageAuthInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageInputStrategySelect.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageQRCodeInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageOrdernoOrdernoInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageOrdernoTelInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageConfirmOne.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageConfirmAll.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PagePrinting.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageFinish.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageFailure.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
