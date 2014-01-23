@@ -34,6 +34,8 @@ namespace QR
 		//Seat
 		[DataMember]
 		internal _SeatData seat;
+        [DataMember]
+        internal _ProductData product;
 		//Additional
 		[DataMember]
 		internal AdditionalData additional;
@@ -47,6 +49,7 @@ namespace QR
 			this.secret = json.secret;
 			this.status = EnumUtil.ParseEnum<TokenStatus> (json.status);
 			this.seat = new _SeatData (json.seat);
+            this.product = new _ProductData(json.product);
 			this.additional = new AdditionalData (json.additional);
 		}
 

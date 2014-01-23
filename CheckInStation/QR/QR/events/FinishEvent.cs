@@ -10,6 +10,7 @@ namespace QR
         starting,
         requesting,
         saved,
+        finished,
     }
 
     public interface IFinishStatusInfo

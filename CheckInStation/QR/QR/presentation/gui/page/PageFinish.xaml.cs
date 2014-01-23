@@ -64,10 +64,13 @@ namespace QR.presentation.gui.page
         void OnStatusChangedSetRedirectCallback(object sender, PropertyChangedEventArgs e)
         {
             var ctx = sender as PageFinishDataContext;
-            if (ctx.Status == FinishStatus.saved)
+            if (e.PropertyName == "Status" && ctx.Status == FinishStatus.saved)
             {
-                this.Dispatcher.InvokeAsync(async () =>
+                ctx.Status = FinishStatus.finished;
+                this.Dispatcher.InvokeAsync(async () =>               
                 {
+                    await Task.Delay(500);
+                    logger.Info(String.Format("stop case {0}", ctx.Broker.FlowManager.Peek()));
                     var case_ = await ctx.SubmitAsync();
                     ctx.TreatErrorMessage();
                     AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);

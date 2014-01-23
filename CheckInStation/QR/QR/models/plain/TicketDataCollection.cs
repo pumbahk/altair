@@ -17,6 +17,8 @@ namespace QR
 		internal string refreshed_at;
 		[DataMember]
 		internal _SeatData seat;
+        [DataMember]
+        internal _ProductData product;
 
 		public TicketDataMinumum (dynamic json)
 		{
@@ -24,6 +26,7 @@ namespace QR
 			this.printed_at = json.printed_at;
 			this.refreshed_at = json.refreshed_at;
 			this.seat = new _SeatData (json.seat);
+            this.product = new _ProductData(json.product);
 		}
 	}
 

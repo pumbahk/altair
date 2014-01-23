@@ -1,22 +1,48 @@
-<Page x:Class="QR.presentation.gui.page.PageConfirmAll"
+﻿<Page x:Class="QR.presentation.gui.page.PageConfirmAll"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:control="clr-namespace:QR.presentation.gui.control"
       mc:Ignorable="d" 
-      d:DesignHeight="480" d:DesignWidth="680"
+      d:DesignHeight="50" d:DesignWidth="50"
     ShowsNavigationUI="False"
 	Title="PageConfirmAll"
     Loaded="OnLoaded">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="20"></RowDefinition>
-            <RowDefinition Height="20"></RowDefinition>
-            <RowDefinition></RowDefinition>
-        </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0">
-            <control:InspectCase></control:InspectCase>
-        </StackPanel>
+    <Grid Style="{StaticResource ToplevelGrid}">
+        <Grid Style="{StaticResource CenterContentGrid}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="2*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <control:InspectCase Grid.Row="0"></control:InspectCase>
+            <WrapPanel Grid.Row="1">
+                <TextBlock Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
+                <TextBlock Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
+            </WrapPanel>
+            <ScrollViewer Grid.Row="2">
+            <ListView ItemsSource="{Binding DisplayTicketDataCollection}" Margin="5">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <WrapPanel Margin="10,5,0,0">
+                                <CheckBox IsChecked="{Binding IsSelected}"></CheckBox>
+                                <TextBlock>商品:</TextBlock>
+                                <TextBlock Text="{Binding ProductName}"/>
+                                <TextBlock>席:</TextBlock>
+                                <TextBlock Text="{Binding SeatName}"/>
+                                <TextBlock>発券日時:</TextBlock>
+                                <TextBlock Text="{Binding PrintedAt}"/>
+                            </WrapPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </ScrollViewer>
+            <WrapPanel Grid.Row="3">
+                <Button Click="OnSubmitWithBoundContext">発券する</Button>
+            </WrapPanel>
+        </Grid>
     </Grid>
 </Page>

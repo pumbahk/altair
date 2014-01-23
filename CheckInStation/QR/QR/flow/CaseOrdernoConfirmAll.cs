@@ -2,6 +2,7 @@ using System;
 using QR.message;
 using System.Threading.Tasks;
 using NLog;
+using System.Collections.Generic;
 
 namespace QR
 {
@@ -37,6 +38,9 @@ namespace QR
 				if (result.Status) {
 					this.Collection = result.Right;
 					this.tokenStatus = result.Right.status;
+
+                    var subject = this.PresentationChanel as ConfirmAllEvent;
+                    subject.SetCollection(this.Collection);
 				} else {
 					//modelからpresentation層へのメッセージ
 					PresentationChanel.NotifyFlushMessage ((result as Failure<string,TicketDataCollection>).Result);
@@ -51,7 +55,9 @@ namespace QR
 
 		public override Task<bool> VerifyAsync ()
 		{
-			return Task.Run (() => this.tokenStatus == TokenStatus.valid);
+			return Task.Run (() => {
+                return this.tokenStatus == TokenStatus.valid;
+            });
 		}
 
 		public override ICase OnSuccess (IFlow flow)

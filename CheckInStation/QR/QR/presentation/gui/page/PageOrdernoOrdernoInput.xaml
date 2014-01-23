@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:control="clr-namespace:QR.presentation.gui.control"
       mc:Ignorable="d" 
-      d:DesignHeight="480" d:DesignWidth="680"
+      d:DesignHeight="50" d:DesignWidth="50"
     ShowsNavigationUI="False"
 	Title="PageOrdernoOrdernoInput"
     Loaded="OnLoaded">

@@ -36,6 +36,31 @@ namespace QR
 		}
 	}
 
+    public class _PerformanceData
+    {
+        [DataMember]
+        internal string name;
+        [DataMember]
+        internal string date;
+        public _PerformanceData(dynamic json)
+        {
+            this.name = json.name;
+            this.date = json.date;
+        }
+    }
+
+    [DataContract]
+    public class _ProductData
+    {
+        [DataMember]
+        internal string name;
+
+        public _ProductData(dynamic json)
+        {
+            this.name = json.name;
+        }
+    }
+
 	[DataContract]
 	public class AdditionalData
 	{
@@ -44,11 +69,14 @@ namespace QR
 		//Order
 		[DataMember]
 		internal _OrderData order;
+        [DataMember]
+        internal _PerformanceData performance;
 
 		public AdditionalData (dynamic json)
 		{
 			this.user = json.user;
 			this.order = new _OrderData (json.order);
+            this.performance = new _PerformanceData(json.performance);
 		}
 	}
 }

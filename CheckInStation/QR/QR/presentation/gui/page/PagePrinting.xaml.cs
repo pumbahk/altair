@@ -81,8 +81,9 @@ namespace QR.presentation.gui.page
         private async void OnPrintingStart(object sender, PropertyChangedEventArgs e)
         {
             var ctx = sender as PagePrintingDataContext;
-            if (ctx.Status == PrintingStatus.requesting)
+            if (e.PropertyName == "Status" && ctx.Status == PrintingStatus.prepared)
             {
+                ctx.Status = PrintingStatus.requesting;
                 logger.Debug("** status is requesting");
                 await this.Dispatcher.InvokeAsync(async () =>
                 {

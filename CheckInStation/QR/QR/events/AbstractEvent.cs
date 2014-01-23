@@ -6,6 +6,8 @@ namespace QR
 {
 	public abstract class AbstractEvent
 	{
+        protected static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public List<string> messages;
 
 		public virtual string GetMessageFormat ()

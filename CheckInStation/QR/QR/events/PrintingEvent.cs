@@ -5,6 +5,7 @@ namespace QR
 	public enum PrintingStatus
 	{
 		starting,
+        prepared,
         requesting,
 		printing,
 		finished
@@ -26,7 +27,7 @@ namespace QR
 		public void ConfigureByTotalPrinted (int numOfPirnted)
 		{
 			var s = this.StatusInfo;
-			s.Status = PrintingStatus.requesting;
+			s.Status = PrintingStatus.prepared;
 			s.TotalPrinted = numOfPirnted;
 			s.FinishedPrinted = 0;
 		}
