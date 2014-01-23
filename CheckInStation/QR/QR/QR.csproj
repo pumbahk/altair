@@ -87,12 +87,6 @@
     <Compile Include="presentation\gui\page\PageInputStrategySelect.xaml.cs">
       <DependentUpon>PageInputStrategySelect.xaml</DependentUpon>
     </Compile>
-    <Compile Include="presentation\gui\page\PageAuthInput.xaml.cs">
-      <DependentUpon>PageAuthInput.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="presentation\gui\page\PageInputStrategySelect.xaml.cs">
-      <DependentUpon>PageInputStrategySelect.xaml</DependentUpon>
-    </Compile>
     <Compile Include="presentation\gui\page\PageQRCodeInput.xaml.cs">
       <DependentUpon>PageQRCodeInput.xaml</DependentUpon>
     </Compile>
@@ -252,14 +246,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="presentation\gui\page\MainWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="presentation\gui\page\PageAuthInput.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="presentation\gui\page\PageInputStrategySelect.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
