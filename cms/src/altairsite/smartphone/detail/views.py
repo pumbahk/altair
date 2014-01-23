@@ -19,7 +19,8 @@ class ValidationFailure(UsersiteException):
 def moveDetail(context, request):
     form = DetailForm(request.GET)
     event = context.get_event(form.data['event_id'])
-    if not event:
+    page_published = context.get_page_published(form.data['event_id'])
+    if not event or not page_published:
         raise ValidationFailure
 
     purchase_links = get_purchase_links(request=request, event=event)
