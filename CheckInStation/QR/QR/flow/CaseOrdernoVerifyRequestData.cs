@@ -8,7 +8,7 @@ namespace QR
 	/// <summary>
 	/// Case CaseOrdernoVerifyRequestData. 注文番号データのverify
 	/// </summary>
-	public class CaseOrdernoVerifyRequestData : AbstractCase, ICase
+	public class CaseOrdernoVerifyRequestData : AbstractCase, ICase, IAutoForwardingCase
 	{
 		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
