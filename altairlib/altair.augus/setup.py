@@ -24,7 +24,7 @@ test_requires = ['nose',
 
 setup(
     name='altair.augus',
-    version='0.1.0',
+    version='0.1.1',
     url='https://github.com/ticketstar/altair',
     download_url='https://github.com/ticketstar/altair',
     license='GPL',
