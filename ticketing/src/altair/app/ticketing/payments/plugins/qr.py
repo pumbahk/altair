@@ -44,7 +44,6 @@ QRTicket = namedtuple("QRTicket", "order performance product seat token printed_
 def deliver_completion_viewlet(context, request):
     tickets = [ ]
     order = context.order
-    for_orion = False
     for op in order.ordered_products:
         for opi in op.ordered_product_items:
             for t in opi.tokens:
@@ -56,10 +55,6 @@ def deliver_completion_viewlet(context, request):
                     token = t,
                     printed_at = t.issued_at)
                 tickets.append(ticket)
-                
-                print str(context.order.performance.orion)
-                if context.order.performance.orion:
-                    for_orion = True
     
     # TODO: orderreviewから呼ばれた場合とcartの完了画面で呼ばれた場合で
     # 処理を分岐したい
@@ -69,7 +64,6 @@ def deliver_completion_viewlet(context, request):
         order = order,
         tel = order.shipping_address.tel_1,
         tickets = tickets,
-        for_orion = for_orion,
         )
 
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("qr_mail_complete.html"))
