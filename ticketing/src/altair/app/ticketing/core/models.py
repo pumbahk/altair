@@ -4135,7 +4135,3 @@ class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     coupon_2_name = Column(Unicode(255))
     coupon_2_qr_enabled = Column(Boolean)
     coupon_2_pattern = Column(Unicode(255))
-
-    created_at = Column(TIMESTAMP, nullable=False)
-    updated_at = Column(TIMESTAMP, nullable=False)
-    deleted_at = Column(TIMESTAMP, nullable=True)
