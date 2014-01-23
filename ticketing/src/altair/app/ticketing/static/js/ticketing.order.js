@@ -466,6 +466,10 @@ order.OrderProductFormView = Backbone.View.extend({
     this.$el.empty();
     this.render();
   },
+  selectSalesSegment: function(el) {
+    var op = this.model;
+    op.set('sales_segment_id', $(this).val());
+  },
   selectProduct: function(el) {
     var op = this.model;
     var sales_segment_id = op.get('sales_segment_id') || this.order.get('sales_segment_id');
@@ -492,7 +496,7 @@ order.OrderProductFormView = Backbone.View.extend({
       sales_segment.append(option);
     });
     sales_segment.on('change', function() {
-      op.set('sales_segment_id', $(this).val());
+      self.selectSalesSegment($(this));
       self.show();
     });
     product_name.append(sales_segment);
