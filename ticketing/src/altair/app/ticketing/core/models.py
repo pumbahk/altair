@@ -4007,6 +4007,7 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             ForeignKey("Performance.id"),
                             nullable=True, unique=True)
     performance = relationship('Performance')
+    augus_stock_infos = relationship('AugusStockInfo')
     
     created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
     updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
@@ -4049,11 +4050,13 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusStockInfo'
     id = Column(Identifier, primary_key=True)
-    augus_performance_id = AnnotatedColumn(Identifier, nullable=False, _a_label=(u'オーガス公演コード'))
     augus_distribution_code = AnnotatedColumn(Integer, _a_label=(u'オーガス配券コード'))
     seat_type_classif = AnnotatedColumn(Unicode(32), _a_label=(u'席区分'))
     distributed_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'配券日時'))
     quantity = AnnotatedColumn(Integer, _a_label=(u'席数'), nullable=False)
+
+    augus_performance_id = Column(Identifier, ForeignKey('AugusPerformance.id'), nullable=True)
+    augus_performance = relationship('AugusPerformance')
     
     augus_seat_id = Column(Identifier, ForeignKey('AugusSeat.id'))
     augus_seat = relationship('AugusSeat')
@@ -4061,6 +4064,25 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
     updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
     deleted_at = Column(TIMESTAMP, nullable=True)
+
+    def get_seat(self):
+        performance = self.augus_performance
+        if not performance:
+            return None
+        venue = performance.venue
+        l0_id = self.augus_seat.seat.l0_id        
+        for seat in venue.seats:
+            if seat.l0_id == l0_id:
+                return seat
+        return None
+        
+    def get_augus_ticket(self):
+        seat = self.get_seat()
+        if seat:
+            stock_type = seat.stock.stock_type if seat.stock else None
+            if stock_type:
+                return AugusTicket.get(stock_type_id=stock_type.id)
+        return None
 
 class AugusPutbackStatus:
     CANDO = 0
@@ -4075,7 +4097,7 @@ class AugusPutback(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     augus_putback_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'返券コード'))
     quantity = AnnotatedColumn(Integer, nullable=False, _a_label=(u'数量'))
-    augus_stock_info_id = AnnotatedColumn(Identifier, nullable=False, _a_label=(u'オーガスストック情報'))
+
     
     reserved_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券予約日時'))
     nortificated_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券通知日時'))
@@ -4086,14 +4108,36 @@ class AugusPutback(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
     seat = relationship('Seat')
 
+    augus_stock_info_id = Column(Identifier, ForeignKey('AugusStockInfo.id'), nullable=True)
+    augus_stock_info = relationship('AugusStockInfo', backref='augus_putback')
+
     @property
     def putback_status(self):
         if self.seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v]:
             return AugusPutbackStatus.CANNOT
         else:
             return AugusPutbackStatus.CANDO
-        
-               
+
+class AugusSeatStatus(object):
+    RESERVE = 0
+    SOULD = 1
+    OTHER = 99
+
+    @classmethod
+    def get_status(cls, seat):
+        if seat.status in (SeatStatusEnum.Keep.v,
+                           SeatStatusEnum.Import.v,
+                           SeatStatusEnum.InCart.v,
+                           SeatStatusEnum.Confirmed.v,
+                           SeatStatusEnum.Reserved.v,
+                           ):
+            return cls.RESERVE
+        elif seat.status in (SeatStatusEnum.Ordered.v,
+                             SeatStatusEnum.Shipped.v,
+                             ):
+            return cls.SOLD
+        else:
+            return cls.OTHER
 
 class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrionPerformance'
