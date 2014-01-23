@@ -46,7 +46,10 @@ class NumberType(_ValueType):
 class StringType(_ValueType):
     @classmethod
     def get(cls, value):
-        return value.decode('sjis') # raise AttributeError, UnicodeEncodeError, UnicodeDecodeError
+        try:
+            return unicode(value)
+        except (UnicodeEncodeError, UnicodeDecodeError) as err:
+            raise err.__class__(repr(value), *err.args[1:])
         
 class DateType(_TimeType):
     FORMAT = '%Y%m%d'

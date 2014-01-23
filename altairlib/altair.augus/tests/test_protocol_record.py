@@ -273,7 +273,7 @@ class ProtocolRecordAttributeTypeTest(TestCase):
                 setattr(record, attr, None)
                 
     def test_str_type(self):
-        japanese = map(lambda wd: wd.encode('sjis'), [u'日', u'本', u'語'])
+        japanese = [u'日', u'本', u'語']
         for protocol, attr in self._generate_protocol_attribute(StringType):
             record = protocol.record
             name = '{}.{}'.format(record.__name__, attr)

@@ -21,4 +21,8 @@ class AugusExporterTest(TestCase):
             with open(self.EXPORT_PATH, 'rb') as fp:
                 after = fp.read()
             self.assertEqual(before, after,
-                             'Mismatch data: {}'.format(proto.__class__.__name__))
+                             'Mismatch data: {} (before: {}, after: {})'\
+                             .format(proto.__class__.__name__,
+                                     before, after))
+
+

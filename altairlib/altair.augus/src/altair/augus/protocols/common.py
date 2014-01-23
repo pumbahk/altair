@@ -514,6 +514,7 @@ class ProtocolBase(list):
         return [row for row in self.iterdump()]
 
     def load(self, rows):
+        rows = iter(rows)
         header = rows.next()
         self.customer_id = header[0]
         self.created_at = header[1]

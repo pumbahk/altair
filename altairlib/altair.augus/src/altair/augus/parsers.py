@@ -3,6 +3,7 @@ import os
 import csv
 from .protocols import ALL
 from .errors import ProtocolNotFound
+from . import DEFAULT_ENCODING
 
 class AugusParser(object):
     protocols = ALL
@@ -35,7 +36,9 @@ class AugusParser(object):
         return cls.parserows(reader, protocol)
                 
     @classmethod
-    def parserows(cls, rows, protocol):
+    def parserows(cls, rows, protocol, encoding=DEFAULT_ENCODING):
+        _dec = lambda data: data.decode(encoding)
+        rows = map(lambda row: map(_dec, row), rows)
         proto = protocol()
         proto.load(rows)
         return proto
