@@ -2018,9 +2018,6 @@ class TicketType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=False)
     stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'), nullable=False)
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=True)
-    created_at = Column(TIMESTAMP, nullable=False)
-    updated_at = Column(TIMESTAMP, nullable=False)
-    deleted_at = Column(TIMESTAMP, nullable=True)
 
 class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Product'
