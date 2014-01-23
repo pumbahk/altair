@@ -13,7 +13,13 @@ namespace QR.presentation.gui
         public event PropertyChangedEventHandler PropertyChanged;
 
         public RequestBroker Broker { get; set; }
-        public IInternalEvent Event { get; set; }
+        private IInternalEvent _event;
+        public IInternalEvent Event
+        {
+            get { logger.Debug("get event: parent.id={0} value={1} value.id={2}", this.GetHashCode(), this._event, this._event.GetHashCode()); return this._event; }
+            set { logger.Debug("set event: parent.id={0} value={1} value.id={2}", this.GetHashCode(), value, value.GetHashCode()); this._event = value; }
+        }
+        //public IInternalEvent Event { get; set; }
         private string errorMessage;
 
         protected Logger logger = LogManager.GetCurrentClassLogger();
