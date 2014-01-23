@@ -480,8 +480,9 @@ class ProtocolBase(list):
         self.customer_id = customer_id
         self.event_code = event_code
         self.venue_code = venue_code
-        self.date = None
+        self.date = None 
         self.created_at = None
+        self.set_now()
 
     @classmethod
     def match_name(cls, name):
