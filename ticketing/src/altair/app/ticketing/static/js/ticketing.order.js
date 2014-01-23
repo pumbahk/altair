@@ -479,7 +479,9 @@ order.OrderProductFormView = Backbone.View.extend({
   },
   selectSalesSegment: function(el) {
     var op = this.model;
-    op.set('sales_segment_id', el.val());
+    var id = el.val();
+    op.set('sales_segment_id', id);
+    this.order.set('sales_segment_id', id);
   },
   selectProduct: function(el) {
     var op = this.model;

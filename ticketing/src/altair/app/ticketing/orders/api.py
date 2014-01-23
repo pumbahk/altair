@@ -27,7 +27,6 @@ from altair.app.ticketing.core.models import (
     ShippingAddress,
     Seat,
     Performance,
-    ChannelEnum,
     SeatStatusEnum,
     )
 from altair.app.ticketing.cart import api as cart_api
@@ -595,20 +594,7 @@ def save_order_modification(order, modify_data):
 
     modify_order = Order.clone(order, deep=True)
     modify_order.performance_id = modify_data.get('performance_id')
-
-    if order.channel == ChannelEnum.INNER.v:
-        ppid = order.payment_delivery_pair.payment_method.payment_plugin_id
-        dpid = order.payment_delivery_pair.delivery_method.delivery_plugin_id
-        if ppid == payments_plugins.SEJ_PAYMENT_PLUGIN_ID or dpid == payments_plugins.SEJ_DELIVERY_PLUGIN_ID:
-            raise HTTPBadRequest(body=json.dumps(dict(message=u'コンビニ決済/コンビニ発券の予約はまだ変更できません')))
-    else:
-        if order.payment_status != 'paid' or order.is_issued():
-            logger.info('order.payment_status=%s, order.is_issued=%s' % (order.payment_status, order.is_issued()))
-            raise HTTPBadRequest(body=json.dumps(dict(message=u'未決済または発券済みの予約は変更できません')))
-        if order.total_amount < long(modify_data.get('total_amount')):
-            raise HTTPBadRequest(body=json.dumps(dict(message=u'決済金額が増額となる変更はできません')))
-        if order.total_amount > long(modify_data.get('total_amount')):
-            raise HTTPBadRequest(body=json.dumps(dict(message=u'決済金額が減額となる変更はまだできません')))
+    modify_order.sales_segment_id = modify_data.get('sales_segment_id')
 
     op_zip = itertools.izip(order.items, modify_order.items)
     for i, (op, mop) in enumerate(op_zip):

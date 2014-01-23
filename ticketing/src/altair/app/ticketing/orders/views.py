@@ -1683,16 +1683,39 @@ class OrdersEditAPIView(BaseView):
             ]
         )
 
-    def _get_request_order_data(self):
-        order = self.request.json_body
-        logger.info('order data=%s' % order)
-        ordered_products = order.get('ordered_products')
-        for i, op in enumerate(ordered_products):
+    def _validate_order_data(self):
+        order_data = self.request.json_body
+        logger.info('order data=%s' % order_data)
+
+        order = Order.get(order_data.get('id'), self.context.organization.id)
+        if order.channel == ChannelEnum.INNER.v:
+            ppid = order.payment_delivery_pair.payment_method.payment_plugin_id
+            dpid = order.payment_delivery_pair.delivery_method.delivery_plugin_id
+            if ppid == payments_plugins.SEJ_PAYMENT_PLUGIN_ID or dpid == payments_plugins.SEJ_DELIVERY_PLUGIN_ID:
+                raise HTTPBadRequest(body=json.dumps(dict(message=u'コンビニ決済/コンビニ発券の予約はまだ変更できません')))
+        else:
+            if order.payment_status != 'paid' or order.is_issued():
+                logger.info('order.payment_status=%s, order.is_issued=%s' % (order.payment_status, order.is_issued()))
+                raise HTTPBadRequest(body=json.dumps(dict(message=u'未決済または発券済みの予約は変更できません')))
+            if order.total_amount < long(modify_data.get('total_amount')):
+                raise HTTPBadRequest(body=json.dumps(dict(message=u'決済金額が増額となる変更はできません')))
+            if order.total_amount > long(modify_data.get('total_amount')):
+                raise HTTPBadRequest(body=json.dumps(dict(message=u'決済金額が減額となる変更はまだできません')))
+
+        op_data = order_data.get('ordered_products')
+        sales_segments = set()
+        for i, op in enumerate(op_data):
             if (not op.get('id') and op.get('quantity') == 0) or not op.get('product_id'):
-                ordered_products.pop(i)
-        order['ordered_products'] = ordered_products
-        logger.info('mod order data=%s' % order)
-        return order
+                op_data.pop(i)
+                continue
+            if op.get('quantity') > 0:
+                sales_segments.add(op.get('sales_segment_id'))
+        order_data['ordered_products'] = op_data
+        if len(sales_segments) > 1:
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'予約内の販売区分は同じでなければいけません')))
+        logger.info('validate order data=%s' % order_data)
+
+        return order_data
 
     @view_config(route_name='orders.api.get', renderer='json')
     def api_get(self):
@@ -1780,7 +1803,7 @@ class OrdersEditAPIView(BaseView):
 
     @view_config(route_name='orders.api.edit_confirm', request_method='POST', renderer='json')
     def api_edit_confirm(self):
-        order_data = self._get_request_order_data()
+        order_data = self._validate_order_data()
         order_id = order_data.get('id')
 
         order = Order.get(order_id, self.context.organization.id)
@@ -1814,7 +1837,7 @@ class OrdersEditAPIView(BaseView):
     def api_edit_post(self):
         order_id = self.request.matchdict.get('order_id', 0)
         order = Order.get(order_id, self.context.organization.id)
-        modify_data = MultiDict(self._get_request_order_data())
+        modify_data = MultiDict(self._validate_order_data())
 
         modiry_order = save_order_modification(order, modify_data)
         self.request.session.flash(u'変更を保存しました')
