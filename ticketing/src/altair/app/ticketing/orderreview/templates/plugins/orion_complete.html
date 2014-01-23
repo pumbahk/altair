@@ -1,0 +1,42 @@
+<div>
+    <h4>電子チケット</h4>
+
+%if paid:
+
+    <p class="red">携帯電話へQRチケットを送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
+
+    % for ticket in tickets:
+        <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
+            商品名 ${ticket.product.name} (${ticket.product.id}) <br />
+            %if ticket.seat:
+            席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
+            %endif
+            <br />
+              % if ticket.printed_at:
+                  発行(印刷orメール送信)済 (${ticket.printed_at})
+              % else:
+                  未発行
+              % endif
+              <form method="post" target="_blank" action="${request.route_path('order_review.orion_print')}">
+                  <input type="hidden" name="order_no" value="${order.order_no}" />
+                  <input type="hidden" name="tel" value="${tel}" />
+                  <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                  <input type="submit" value="印刷は、まだできません" />
+              </form>
+              <form method="post" target="_blank" action="${request.route_path('order_review.orion_send')}">
+                  <input type="hidden" name="order_no" value="${order.order_no}" />
+                  <input type="hidden" name="tel" value="${tel}" />
+                  <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                  メールアドレス: <input type="text" name="mail" size="40" />
+                  <input type="submit" name="send" value="イベント・ゲートに送る" />
+              </form>
+        </div>
+    % endfor
+
+% else:
+
+    <p>支払い完了後、電子チケットを発行いただけます。</p>
+
+% endif
+
+</div>

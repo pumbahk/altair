@@ -16,6 +16,7 @@ SHIPPING_DELIVERY_PLUGIN_ID = 1
 SEJ_DELIVERY_PLUGIN_ID = 2
 RESERVE_NUMBER_DELIVERY_PLUGIN_ID = 3
 QR_DELIVERY_PLUGIN_ID = 4
+ORION_DELIVERY_PLUGIN_ID = 5
 
 _template = None
 
@@ -95,3 +96,4 @@ def includeme(config):
     config.include(".sej")
     config.include(".checkout")
     config.include(".qr")
+    config.include(".orion")
