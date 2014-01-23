@@ -17,7 +17,7 @@
                 <RowDefinition Height="1*"></RowDefinition>
             </Grid.RowDefinitions>
             <control:InspectCase Grid.Row="0"></control:InspectCase>
-            <TextBlock Grid.Row="1">ここに何かメッセージ</TextBlock>
+            <TextBlock Grid.Row="1" Text="{Binding Message, Mode=OneWay}"></TextBlock>
             <Button Grid.Row="2" Click="OnSubmitWithBoundContext">Topに戻る</Button>
         </Grid>
     </Grid>

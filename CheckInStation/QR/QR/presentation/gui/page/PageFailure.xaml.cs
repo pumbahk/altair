@@ -19,8 +19,15 @@ using System.Windows.Shapes;
 namespace QR.presentation.gui.page
 {
 
-    class PageFailureDataContext : InputDataContext
+    class PageFailureDataContext : InputDataContext, INotifyPropertyChanged, IFailureStatusInfo
     {
+        private string _message;
+        public string Message
+        {
+            get { return this._message; }
+            set { this._message = value; this.OnPropertyChanged("Message"); }
+        }
+
         public override void OnSubmit()
         {
             var ev = this.Event as IInternalEvent;
@@ -44,11 +51,12 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
-            return new PageFailureDataContext()
+            var ctx = new PageFailureDataContext()
             {
                 Broker = AppUtil.GetCurrentBroker(),
-                Event = new EmptyEvent()
             };
+            ctx.Event = new FailureEvent() { StatusInfo = ctx };
+            return ctx;
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs e)

@@ -47,21 +47,22 @@ namespace QR
 			}
 		}
 
-		public ICase OnFailure (IFlow flow, string message)
+		public override ICase OnFailure (IFlow flow)
 		{
 			flow.Finish ();
-			return new CaseFailureRedirect (Resource, message);
+            if (this.tokenStatus == TokenStatus.valid)
+            {
+                return base.OnFailure(flow);
+            }
+            logger.Error(String.Format("invalid status: status={0}, token_id={1}", this.tokenStatus.ToString(), this.TicketData.ordered_product_item_token_id));
+            var message = this.Resource.GetTokenStatusMessage (this.tokenStatus);
+            return new CaseFailureRedirect(Resource, message);
 		}
 
-		public override ICase OnSuccess (IFlow flow)
-		{
-			if (this.tokenStatus == TokenStatus.valid) {
-				return new CaseQRConfirmForOne (Resource, TicketData);
-			} else {
-				logger.Error (String.Format ("invalid status: status={0}, token_id={1}", this.tokenStatus.ToString (), this.TicketData.ordered_product_item_token_id));
-				return this.OnFailure (flow, this.Resource.GetTokenStatusMessage (this.tokenStatus));
-			}
-		}
+        public override ICase OnSuccess(IFlow flow)
+        {
+            return new CaseQRConfirmForOne(Resource, TicketData);
+        }
 	}
 }
 

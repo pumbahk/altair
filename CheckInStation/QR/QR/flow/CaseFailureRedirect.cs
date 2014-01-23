@@ -32,6 +32,13 @@ namespace QR
 			this.Message = resource.GetDefaultErrorMessage ();
 		}
 
+        public override async Task PrepareAsync(IInternalEvent ev)
+        {
+            await base.PrepareAsync(ev).ConfigureAwait(false);
+            var subject = ev as FailureEvent;
+            subject.Message = this.Message;
+        }
+
 		public override async Task<bool> VerifyAsync ()
 		{
 			// message
