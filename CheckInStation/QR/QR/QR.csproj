@@ -100,9 +100,7 @@
     <Compile Include="flow\CaseQRConfirmForAll.cs" />
     <Compile Include="flow\Flow.cs" />
     <Compile Include="tests\flow\FlowTests.cs" />
-    <Compile Include="flow\CaseFailureRedirect.cs">
-      <DependentUpon>CaseQRCodeInput.cs</DependentUpon>
-    </Compile>
+    <Compile Include="flow\CaseFailureRedirect.cs"/>
     <Compile Include="flow\IFlowDefinition.cs" />
     <Compile Include="flow\FlowDefinitionDefault.cs" />
     <Compile Include="flow\CaseAuthInput.cs" />
@@ -145,9 +143,7 @@
     <Compile Include="events\AbstractEvent.cs" />
     <Compile Include="tests\IntegrationTests.cs" />
     <Compile Include="tests\Testing.cs" />
-    <Compile Include="models\TicketImagePrinting.cs">
-      <DependentUpon>IResource.cs</DependentUpon>
-    </Compile>
+    <Compile Include="models\TicketImagePrinting.cs"/>
     <Compile Include="models\ResultStatusCollector.cs" />
     <Compile Include="tests\models\ResultStatusCollectorTests.cs" />
     <Compile Include="models\TicketDataManager.cs" />
