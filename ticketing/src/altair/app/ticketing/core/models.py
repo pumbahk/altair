@@ -3937,11 +3937,6 @@ class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                               _a_label=(u'会場バージョン'))
     venue_id = Column(Identifier, ForeignKey('Venue.id'), nullable=False)
     venue = relationship('Venue')
-    created_at = Column(TIMESTAMP, nullable=False, 
-                        default=sqlf.current_timestamp())
-    updated_at = Column(TIMESTAMP, nullable=False,
-                        default=datetime.now, onupdate=datetime.now)
-    deleted_at = Column(TIMESTAMP, nullable=True)
 
 class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusSeat'
@@ -3976,9 +3971,6 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_venue = relationship('AugusVenue', backref='augus_seats')
     seat = relationship('Seat')
 
-    created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
-    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
-    deleted_at = Column(TIMESTAMP, nullable=True)
 
     def __unicode__(self):
         return u'{{}}'.format(u', '.join([self.augus_venue.name,
@@ -4008,11 +4000,7 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             nullable=True, unique=True)
     performance = relationship('Performance')
     augus_stock_infos = relationship('AugusStockInfo')
-    
-    created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
-    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
-    deleted_at = Column(TIMESTAMP, nullable=True)
-    
+        
     @property
     def code(self):
         return self.augus_performance_code
@@ -4027,10 +4015,6 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     unit_value_name = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'単価名称'))
     augus_seat_type_classif = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'席区分'))
     value = AnnotatedColumn(Integer, nullable=False, _a_label=(u'売値'))
-
-    created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
-    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
-    deleted_at = Column(TIMESTAMP, nullable=True)
 
     stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
     stock_type = relationship('StockType')
@@ -4061,10 +4045,6 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_seat_id = Column(Identifier, ForeignKey('AugusSeat.id'))
     augus_seat = relationship('AugusSeat')
     
-    created_at = Column(TIMESTAMP, nullable=False, default=sqlf.current_timestamp())
-    updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now, onupdate=datetime.now)
-    deleted_at = Column(TIMESTAMP, nullable=True)
-
     def get_seat(self):
         performance = self.augus_performance
         if not performance:
