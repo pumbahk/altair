@@ -73,8 +73,7 @@ class MypageLoginView(object):
     @view_config(request_method="GET", route_name='order_review.form'
         , custom_predicates=(is_mypage_organization, ), renderer='json', http_cache=60)
     def login_form(self):
-        #membership = self.request.matchdict['membership']
-        membership = 'eagles'
+        membership = self.context.get_membership().name
         self.select_renderer(membership)
         return dict(username='')
 
@@ -82,8 +81,7 @@ class MypageLoginView(object):
         , custom_predicates=(is_mypage_organization, ))
     def login(self):
         who_api = get_who_api(self.request, name="fc_auth")
-        #membership = self.request.matchdict['membership']
-        membership = 'eagles'
+        membership = self.context.get_membership().name
         username = self.request.params['username']
         password = self.request.params['password']
         logger.debug("authenticate for membership %s" % membership)

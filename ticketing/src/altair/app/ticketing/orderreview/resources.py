@@ -6,17 +6,16 @@ from dateutil import parser
 from pyramid.decorator import reify
 from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
-
 from altair.app.ticketing.core.models import DBSession, Order, ShippingAddress
 from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.sej.api import get_sej_order
-import altair.app.ticketing.users.models as u_m
 import altair.app.ticketing.core.api as core_api
 from altair.app.ticketing.payments.plugins import (
     SEJ_PAYMENT_PLUGIN_ID, 
     SEJ_DELIVERY_PLUGIN_ID,
     )
+from ..core import api as c_api
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +68,11 @@ class OrderReviewResource(object):
                 sej_order = get_sej_order(order_no, self.session)
 
         return order, sej_order
+
+    def get_membership(self):
+        org = c_api.get_organization(self.request)
+        membership = Membership.query.filter(Membership.organization_id==org.id).first()
+        return membership
 
     def get_shipping_address(self, user):
         shipping_address = ShippingAddress.query.filter(
