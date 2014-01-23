@@ -177,8 +177,6 @@ class SejTenantForm(OurForm):
     )
 
 def encoder(x):
-    import sys
-    print >>sys.stderr, '*****', x
     return x or u''
 
 class OrganizationSettingForm(OurForm):
