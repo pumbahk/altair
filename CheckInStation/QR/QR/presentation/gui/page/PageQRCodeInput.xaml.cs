@@ -23,7 +23,7 @@ namespace QR.presentation.gui.page
     {
         public override void OnSubmit()
         {
-            var ev = this.Event as InternalEvent;
+            var ev = this.Event as IInternalEvent;
             base.OnSubmit();
         }
     }
@@ -39,13 +39,12 @@ namespace QR.presentation.gui.page
         public PageQRCodeInput()
         {
             InitializeComponent();
-            //PasswordBox is not Dependency Property. so.
             this.DataContext = this.CreateDataContext();
         }
 
         private InputDataContext CreateDataContext()
         {
-            return new PageQRCodeInputDataContext(this.PasswordInput)
+            return new PageQRCodeInputDataContext()
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new IInternalEvent()
