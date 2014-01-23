@@ -1796,11 +1796,15 @@ class OrdersEditAPIView(BaseView):
             product = Product.query.filter_by(id=op_data.get('product_id')).first()
             products.append((product, op_data.get('quantity')))
 
-        order_data['transaction_fee'] = int(sales_segment.get_transaction_fee(order.payment_delivery_pair, products))
-        order_data['delivery_fee'] = int(sales_segment.get_delivery_fee(order.payment_delivery_pair, products))
-        order_data['system_fee'] = int(order.payment_delivery_pair.system_fee)
-        order_data['special_fee'] = int(order.payment_delivery_pair.special_fee)
-        order_data['total_amount'] = int(sales_segment.get_amount(order.payment_delivery_pair, products))
+        try:
+            order_data['transaction_fee'] = int(sales_segment.get_transaction_fee(order.payment_delivery_pair, products))
+            order_data['delivery_fee'] = int(sales_segment.get_delivery_fee(order.payment_delivery_pair, products))
+            order_data['system_fee'] = int(order.payment_delivery_pair.system_fee)
+            order_data['special_fee'] = int(order.payment_delivery_pair.special_fee)
+            order_data['total_amount'] = int(sales_segment.get_amount(order.payment_delivery_pair, products))
+        except Exception, e:
+            logger.exception('fee calculation error (%s)' % e.message)
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'手数料計算できません。変更内容を確認してください。')))
 
         return order_data
 
