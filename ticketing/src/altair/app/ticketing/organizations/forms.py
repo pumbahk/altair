@@ -197,7 +197,7 @@ class OrganizationSettingForm(OurForm):
         choices=[
             (u'', u'未設定'),
             (u'fc_auth', u'FC会員ログイン'),
-            (u'rakuten_auth', u'楽天会員認証'),
+            (u'rakuten', u'楽天会員認証'),
             ]
         )
     performance_selector = OurSelectField(
