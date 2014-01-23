@@ -1007,13 +1007,15 @@ table.formeagles input.submit:hover {
 }
 
 #mypageHistory dt {
-	font-size: 116.7%;
+	/* font-size: 116.7%; */
+	font-size: 14px;
 	font-weight: bold;
 }
 
 #mypageHistory dd {
 	padding-bottom: 5px;
-	font-size: 83.3%;
+	font-size: 14px;
+	/* font-size: 83.3%; */
 }
 /*
 #mypageCancel {

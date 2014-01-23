@@ -111,3 +111,8 @@ def get_payment_status_image(order):
         return u"icon_minyukin.gif"
     return ""
 
+def get_print_status(order):
+    if order.printed_at:
+        return u"発券済"
+    else:
+        return u"未発券"
