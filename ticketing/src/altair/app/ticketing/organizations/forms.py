@@ -2,6 +2,7 @@
 
 from altair.formhelpers.form import OurForm
 from wtforms.fields import PasswordField, HiddenField, FormField
+from altair.formhelpers import filters
 from altair.formhelpers.widgets import OurTextInput
 from altair.formhelpers.fields import OurTextField, OurIntegerField, OurSelectField, OurBooleanField, OurDecimalField
 from wtforms.validators import Length, Regexp, Email, Optional
@@ -18,10 +19,6 @@ class OrganizationForm(OurForm):
     def _get_translations(self):
         return Translations()
 
-    id = HiddenField(
-        label=u'ID',
-        validators=[Optional()],
-    )
     name = OurTextField(
         label=u'取引先名',
         validators=[
@@ -161,14 +158,22 @@ class SejTenantForm(OurForm):
         validators=[
             Optional(),
             Length(max=255, message=u'255文字以内で入力してください'),
-        ]
+        ],
+        filters=[
+            filters.strip_spaces,
+            lambda x: None if not x else x,
+            ]
     )
     inticket_api_url = OurTextField(
         label=u'API URL',
         validators=[
             Optional(),
             Length(max=255, message=u'255文字以内で入力してください'),
-        ]
+        ],
+        filters=[
+            filters.strip_spaces,
+            lambda x: None if not x else x,
+            ]
     )
 
 def encoder(x):
