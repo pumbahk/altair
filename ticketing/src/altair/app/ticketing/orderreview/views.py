@@ -12,6 +12,7 @@ from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
 from datetime import datetime
 
 import helpers as h
+from ..users.api import get_user
 from altair.app.ticketing.qr.utils import build_qr_by_history_id
 from altair.app.ticketing.qr.utils import build_qr_by_token_id
 from altair.auth import who_api as get_who_api
@@ -33,13 +34,13 @@ class MypageView(object):
     @view_config(route_name='mypage.show', request_method="GET", custom_predicates=(is_mypage_organization, ),
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/show.html"))
     def show(self):
-        user_id = self.request.matchdict['user_id']
 
-        # 閲覧できない人を弾く
+        authenticated_user = self.context.authenticated_user()
+        user = get_user(authenticated_user)
 
-        shipping_address = self.context.get_shipping_address(user_id)
-        orders = self.context.get_orders(user_id)
-        entries = self.context.get_lots_entries(user_id)
+        shipping_address = self.context.get_shipping_address(user)
+        orders = self.context.get_orders(user)
+        entries = self.context.get_lots_entries(user)
 
         return dict(
             shipping_address=shipping_address,
@@ -99,8 +100,7 @@ class MypageLoginView(object):
             return {'username': username,
                     'message': u'IDかパスワードが一致しません'}
 
-        user_id = self.context.get_user_id(identity)
-        res = HTTPFound(location=self.request.route_path("mypage.show", user_id=user_id), headers=headers)
+        res = HTTPFound(location=self.request.route_path("mypage.show"), headers=headers)
 
         return res
 

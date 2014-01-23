@@ -47,6 +47,12 @@ class OrderReviewResource(object):
     def order_no(self):
         return self.request.params.get('order_no')
 
+    def authenticated_user(self):
+        """現在認証中のユーザ"""
+        from altair.rakuten_auth.api import authenticated_user
+        user = authenticated_user(self.request)
+        return user or { 'is_guest': True }
+
     def get_order(self):
         order_no = self.order_no
         order = self.session.query(Order).filter_by(
@@ -64,47 +70,20 @@ class OrderReviewResource(object):
 
         return order, sej_order
 
-    def get_user_id(self, identity):
-        membership = identity.get('membership')
-        username = identity.get('username')
-        password = identity.get('password')
-
-        user_query = u_m.User.query.filter(
-                u_m.UserCredential.auth_identifier==username
-            ).filter(
-                u_m.Membership.id==u_m.UserCredential.membership_id
-            ).filter(
-                u_m.Membership.name==membership
-            ).filter(
-                u_m.User.id==u_m.UserCredential.user_id
-            ).filter(
-                u_m.UserCredential.auth_secret==password
-            )
-
-        user = user_query.first()
-
-        if user is None:
-            return None
-
-        if user.member is None:
-            return None
-
-        return user.id
-
-    def get_shipping_address(self, user_id):
+    def get_shipping_address(self, user):
         shipping_address = ShippingAddress.query.filter(
-            ShippingAddress.user_id==user_id
+            ShippingAddress.user_id==user.id
         ).first()
         return shipping_address
 
-    def get_orders(self, user_id):
+    def get_orders(self, user):
         orders = Order.query.filter(
-            Order.user_id==user_id
+            Order.user_id==user.id
         ).all()
         return orders
 
-    def get_lots_entries(self, user_id):
+    def get_lots_entries(self, user):
         entries = LotEntry.query.filter(
-            LotEntry.user_id==user_id
+            LotEntry.user_id==user.id
         ).all()
         return entries
