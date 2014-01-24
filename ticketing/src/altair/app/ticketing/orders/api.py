@@ -2,13 +2,14 @@
 
 import logging
 import re
-import itertools
+import json
 
 from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql import functions as safunc
 from sqlalchemy.orm import aliased
 from pyramid.interfaces import IRequest
 from pyramid.threadlocal import get_current_request
+from pyramid.httpexceptions import HTTPBadRequest
 
 from altair.app.ticketing.models import DBSession, asc_or_desc
 from altair.app.ticketing.utils import todatetime
@@ -595,42 +596,57 @@ def save_order_modification(order, modify_data):
     modify_order = Order.clone(order, deep=True)
     modify_order.performance_id = modify_data.get('performance_id')
     modify_order.sales_segment_id = modify_data.get('sales_segment_id')
+    modify_order.transaction_fee = modify_data.get('transaction_fee')
+    modify_order.delivery_fee = modify_data.get('delivery_fee')
+    modify_order.system_fee = modify_data.get('system_fee')
+    modify_order.specialfee = modify_data.get('special_fee')
+    modify_order.total_amount = modify_data.get('total_amount')
+    modify_order.operator = request.context.user
 
-    op_zip = itertools.izip(order.items, modify_order.items)
-    for i, (op, mop) in enumerate(op_zip):
+    for i, mop in enumerate(modify_order.items):
         op_data = None
-        for op_data in modify_data.get('ordered_products'):
-            if op_data.get('id') == op.id and op_data.get('product_id') == op.product_id: break
-        if op_data is None:
-            raise HTTPBadRequest(body=json.dumps(dict(message=u'不正なデータです')))
+        for data in modify_data.get('ordered_products'):
+            if data.get('id') == mop.id and data.get('product_id') == mop.product_id:
+                op_data = data
+                break
         logger.debug('op_data %s' % op_data)
+
+        # 商品削除
+        if op_data is None or op_data.get('quantity') == 0:
+            logger.info('delete ordered_product %s' % mop.id)
+            mop.release()
+            mop.delete()
+            modify_order.items.pop(i)
+            continue
 
         # 商品変更
         mop.price = long(op_data.get('price'))
         mop.quantity = long(op_data.get('quantity'))
 
-        opi_zip = itertools.izip(op.ordered_product_items, mop.ordered_product_items)
-        for j, (opi, mopi) in enumerate(opi_zip):
+        for j, mopi in enumerate(mop.ordered_product_items):
             opi_data = None
-            for opi_data in op_data.get('ordered_product_items'):
-                if opi_data.get('id') == opi.id: break
-            if opi_data is None:
-                raise HTTPBadRequest(body=json.dumps({'message':u'不正なデータです'}))
+            for data in op_data.get('ordered_product_items'):
+                if data.get('id') == mopi.id:
+                    opi_data = data
+                    break
             logger.info('opi_data %s' % opi_data)
 
-            # 座席開放
+            # 商品明細削除
+            opi_quantity = long(opi_data.get('quantity'))
+            if opi_data is None or opi_quantity == 0:
+                logger.info('delete ordered_product_item %s' % mopi.id)
+                mopi.release()
+                mopi.delete()
+                mop.ordered_product_items.pop(j)
+                continue
+
+            # 座席変更
+            mopi.price = long(opi_data.get('product_item').get('price'))
+            mopi.quantity = opi_quantity
+
             mopi.release()
             mopi.seats = []
 
-            # 座席がないなら商品明細削除
-            opi_quantity = long(opi_data.get('quantity'))
-            if opi_quantity == 0:
-                logger.info('delete ordered_product_item %s' % opi_data.get('id'))
-                del_item = mop.ordered_product_items.pop(j)
-                del_item.delete()
-                continue
-
-            # 座席確保
             seats_data = opi_data.get('seats')
             product_requires = [(mop.product, opi_quantity)]
             stock_statuses = stocker.take_stock(modify_order.performance_id, product_requires)
@@ -641,8 +657,6 @@ def save_order_modification(order, modify_data):
                 SeatStatusEnum.Ordered
             )
             mopi.seats += seats
-            mopi.price = long(opi_data.get('product_item').get('price'))
-            mopi.quantity = opi_quantity
             logger.info('seats_data %s' % seats_data)
 
             for token in mopi.tokens:
@@ -655,12 +669,6 @@ def save_order_modification(order, modify_data):
                     )
                 mopi.tokens.append(token)
 
-        # 商品削除
-        if op_data.get('quantity') == 0:
-            logger.info('delete ordered_product %s' % op_data.get('id'))
-            del_product = modify_order.items.pop(i)
-            del_product.delete()
-
     # 商品追加
     for op_data in modify_data.get('ordered_products'):
         if not op_data.get('id') and op_data.get('quantity') > 0:
@@ -671,7 +679,6 @@ def save_order_modification(order, modify_data):
                 order=modify_order, product=product, price=product.price, quantity=op_quantity)
             for product_item in product.items:
                 seats = []
-                opi_quantity = long(opi_data.get('quantity'))
                 if product_item.stock.stock_type.is_seat:
                     seats_data = []
                     for opi_data in op_data.get('ordered_product_items'):
@@ -679,7 +686,7 @@ def save_order_modification(order, modify_data):
                             seats_data = opi_data.get('seats')
                             #1Product複数座席ProductItemでうまくいかない？
                             break
-                    product_requires = [(product, opi_quantity)]
+                    product_requires = [(product, len(seats_data))]
                     stock_statuses = stocker.take_stock(modify_order.performance_id, product_requires)
                     seats = reserving.reserve_selected_seats(
                         stock_statuses,
@@ -692,7 +699,7 @@ def save_order_modification(order, modify_data):
                     ordered_product=ordered_product,
                     product_item=product_item,
                     price=product_item.price,
-                    quantity=opi_quantity,
+                    quantity=product_item.quantity * op_quantity,
                     seats=seats
                 )
                 for i, seat in ordered_product_item.iterate_serial_and_seat():
@@ -703,19 +710,12 @@ def save_order_modification(order, modify_data):
                         )
                     ordered_product_item.tokens.append(token)
 
-    modify_order.transaction_fee = modify_data.get('transaction_fee')
-    modify_order.delivery_fee = modify_data.get('delivery_fee')
-    modify_order.system_fee = modify_data.get('system_fee')
-    modify_order.specialfee = modify_data.get('special_fee')
-    modify_order.total_amount = modify_data.get('total_amount')
-
     total_amount = sum(mop.price * mop.quantity for mop in modify_order.items)
     total_amount += modify_order.transaction_fee + modify_order.delivery_fee + modify_order.system_fee + modify_order.special_fee
     logger.info('total_amount %s == %s' % (total_amount, modify_order.total_amount))
     if total_amount != modify_order.total_amount:
         raise HTTPBadRequest(body=json.dumps(dict(message=u'合計金額を確認してください')))
 
-    modify_order.operator = request.context.user
     modify_order.save()
     return modify_order
 
