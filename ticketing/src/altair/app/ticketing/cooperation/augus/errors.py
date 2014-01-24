@@ -19,3 +19,7 @@ class SeatImportError(AugusError):
 
 class AlreadyExist(AugusError):
     pass
+
+
+class AugusDataImportError(AugusError):
+    pass

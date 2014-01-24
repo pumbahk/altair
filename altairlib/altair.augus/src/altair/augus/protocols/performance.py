@@ -1,4 +1,6 @@
 #-*- coding: utf-8 -*-
+import time
+import datetime
 from .common import (
     ProtocolBase,
     RecordBase,
@@ -29,6 +31,19 @@ class PerformanceSyncRequestRecord(_PerformanceRecord):
         'start_on',
         'venue_version',
         )
+    
+    def _str2datetime(self, txt):
+        st = time.strptime(txt, '%Y%m%d%H%M')
+        return datetime.datetime(*st[:5])
+
+    @property
+    def open_on_datetime(self):
+        return self._str2datetime(self.date + self.open_on)
+
+    @property
+    def start_on_datetime(self):
+        return self._str2datetime(self.date + self.start_on)
+
 
 class PerformanceSyncRequest(_PerformanceProtocol):
     """公演連携要求

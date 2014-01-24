@@ -1,0 +1,8 @@
+<%page args="form, action='#'" />
+<%namespace file="/common/helpers.html" name="ch" />
+<form action="${action}" method="POST">
+  ${ch.form_item(form.host_name)}
+  ${ch.form_item(form.path)}
+  ${ch.form_item(form.base_url)}
+  ${ch.form_item(form.mobile_base_url)}
+</form>

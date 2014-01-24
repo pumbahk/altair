@@ -95,15 +95,24 @@ def main(argv=sys.argv):
             organization = Organization.get(id=_event.organization_id)
         elif event:
             # 販売終了日の翌日まで自動レポートの送信対象に含める
-            sales_end_on = event.sales_end_on + timedelta(days=1)
-            if (from_date and sales_end_on < from_date) or\
-               (form.limited_to.data and form.limited_to.data < event.sales_start_on) or\
-               (from_date and event.final_start_on and event.final_start_on < from_date):
+            sales_end_on = None
+            if event.sales_end_on:
+                sales_end_on = event.sales_end_on + timedelta(days=1)
+            final_end_on = None
+            if event.final_performance:
+                final_end_on = event.final_performance.end_on or event.final_performance.start_on
+            if (from_date and sales_end_on and sales_end_on < from_date) or\
+               (from_date and final_end_on and final_end_on < from_date) or\
+               (form.limited_to.data and form.limited_to.data < event.sales_start_on):
+                logger.info('continue(not in term)')
+                logger.info('from_date=%s, sales_end_on=%s, final_end_on=%s, form.limited_to.data=%s, event.sales_start_on=%s'
+                    % (from_date, sales_end_on, final_end_on, form.limited_to.data, event.sales_start_on))
                 continue
 
             if form not in reports:
                 reporter = EventReporter(form, event)
                 if not reporter.reporters:
+                    logger.info('continue(no report)')
                     continue
                 render_param = dict(event_reporter=reporter)
                 reports[form] = render_to_response('altair.app.ticketing:templates/sales_reports/event_mail.html', render_param)

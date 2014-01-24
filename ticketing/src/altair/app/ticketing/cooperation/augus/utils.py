@@ -194,3 +194,16 @@ class RequestAccessor(object):
         else:
             raise AttributeError(name)
 
+
+class AugusPerformanceImpoter(object):
+    def import_all(self, protocol):
+        ag_performances = []
+        for record in protocol:
+            ag_performance = self.import_(self, record)
+            ag_performances.append(ag_performance)
+        return ag_performances
+
+    def import_(self, record):
+        pass
+            
+            

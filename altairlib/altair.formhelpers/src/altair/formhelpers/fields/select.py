@@ -78,13 +78,14 @@ class LazyWrapper(object):
         return '<%s wrapping %r at %p>' % (self.__class__.__name__, self._get_impl(), id(self))
 
 class WTFormsChoicesWrapper(object):
-    def __init__(self, choices, coerce_getter):
+    def __init__(self, choices, coerce_getter, encoder_getter=None):
         self.choices = choices
         self.coerce_getter = coerce_getter
+        self.encoder_getter = encoder_getter or (lambda: text_type)
 
     @property
     def encoder(self):
-        return unicode
+        return self.encoder_getter()
 
     @property
     def decoder(self):
@@ -111,13 +112,14 @@ class WTFormsChoicesWrapper(object):
             yield encoded_value
 
 class WTFormsChoiceGroupsWrapper(object):
-    def __init__(self, choice_groups, coerce_getter):
+    def __init__(self, choice_groups, coerce_getter, encoder_getter=None):
         self.choice_groups = choice_groups
         self.coerce_getter = coerce_getter
+        self.encoder_getter = encoder_getter or (lambda: text_type)
 
     @property
     def encoder(self):
-        return unicode
+        return self.encoder_getter()
 
     @property
     def decoder(self):
@@ -190,7 +192,7 @@ class SelectMultipleFieldDataMixin(object):
 class LazySelectFieldBase(fields.SelectFieldBase):
     widget = widgets.Select()
 
-    def __init__(self, label=None, validators=None, coerce=None, choices=None, model=None, cachable=None, **kwargs):
+    def __init__(self, label=None, validators=None, coerce=None, choices=None, model=None, cachable=None, encoder=None, **kwargs):
         _form = kwargs.pop('_form', None)
         hide_on_new = kwargs.pop('hide_on_new', False)
         raw_input_filters = kwargs.pop('raw_input_filters', [])
@@ -206,12 +208,12 @@ class LazySelectFieldBase(fields.SelectFieldBase):
         if choices is not None:
             if callable(choices):
                 self._model = LazyWrapper(
-                    lambda: WTFormsChoicesWrapper(choices(self), lambda: self._coerce or text_type),
+                    lambda: WTFormsChoicesWrapper(choices(self), lambda: self._coerce or text_type, lambda: self._encoder or text_type),
                     AttributeStore(self, '_choices_cache') if cachable is None or cachable else NullStore())
             else:
                 if cachable is not None:
                     raise TypeError('cachable is specified but choices will not be initialized lazily')
-                self._model = WTFormsChoicesWrapper(choices, lambda: self._coerce or text_type)
+                self._model = WTFormsChoicesWrapper(choices, lambda: self._coerce or text_type, lambda: self._encoder or text_type)
 
         elif model is not None:
             if callable(model):
@@ -226,6 +228,7 @@ class LazySelectFieldBase(fields.SelectFieldBase):
             self._model = None
  
         self._coerce = coerce
+        self._encoder = encoder
 
     def _get_coerce(self):
         if self._coerce is not None:
@@ -246,7 +249,7 @@ class LazySelectFieldBase(fields.SelectFieldBase):
         return [(encoded_value, label) for encoded_value, model_value, label in self._model.items()]
 
     def _set_choices(self, value):
-        self._model = WTFormsChoicesWrapper(value, lambda: self._coerce or text_type)
+        self._model = WTFormsChoicesWrapper(value, lambda: self._coerce or text_type, lambda: self._encoder or text_type)
 
     choices = property(_get_choices, _set_choices)
 
@@ -281,17 +284,17 @@ class LazySelectMultipleField(SelectMultipleFieldDataMixin, LazySelectFieldBase)
                     raise ValueError(self.gettext("'%(value)s' is not a valid choice for this field" % dict(value=d)))
 
 class LazyGroupedSelectFieldBase(fields.SelectFieldBase):
-    def __init__(self, label=None, validators=None, coerce=None, choices=None, model=None, cachable=None, **kwargs):
+    def __init__(self, label=None, validators=None, coerce=None, choices=None, model=None, cachable=None, encoder=None, **kwargs):
         super(LazyGroupedSelectFieldBase, self).__init__(label, validators, **kwargs)
         if choices is not None:
             if callable(choices):
                 self._model = LazyWrapper(
-                    lambda: WTFormsChoiceGroupsWrapper(choices(self), lambda: self._coerce or text_type),
+                    lambda: WTFormsChoiceGroupsWrapper(choices(self), lambda: self._coerce or text_type, lambda: self._encoder or text_type),
                     AttributeStore(self, '_choices_cache') if cachable is None or cachable else NullStore())
             else:
                 if cachable is not None:
                     raise TypeError('cachable is specified but choices will not be initialized lazily')
-                self._model = WTFormsChoiceGroupsWrapper(choices, lambda: self._coerce or text_type)
+                self._model = WTFormsChoiceGroupsWrapper(choices, lambda: self._coerce or text_type, lambda: self._encoder or text_type)
 
         elif model is not None:
             if callable(model):
@@ -306,6 +309,7 @@ class LazyGroupedSelectFieldBase(fields.SelectFieldBase):
             raise TypeError('either choices or model must be a non-None value')
  
         self._coerce = coerce
+        self._encoder = encoder
 
     def _get_coerce(self):
         if self._coerce is not None:
@@ -326,7 +330,7 @@ class LazyGroupedSelectFieldBase(fields.SelectFieldBase):
         return [(encoded_value, label) for encoded_value, model_value, label in self._choices]
 
     def _set_choices(self, value):
-        self._model = WTFormsChoiceGroupsWrapper(value, lambda: self._coerce or text_type)
+        self._model = WTFormsChoiceGroupsWrapper(value, lambda: self._coerce or text_type, lambda: self._encoder or text_type)
 
     choices = property(_get_choices, _set_choices)
 

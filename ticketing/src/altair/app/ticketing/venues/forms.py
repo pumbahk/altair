@@ -58,7 +58,7 @@ class SiteForm(Form):
         ]
     )
     city = TextField(
-        label = u'市町村',
+        label = u'市区町村',
         filters=[
             replace_ambiguous,
             ],
@@ -67,8 +67,8 @@ class SiteForm(Form):
             Length(max=20, message=u'20文字以内で入力してください'),
         ]
     )
-    street = TextField(
-        label = u'町名',
+    address_1 = TextField(
+        label = u'町名番地以下',
         filters=[
             replace_ambiguous,
             ],
@@ -77,24 +77,14 @@ class SiteForm(Form):
             Length(max=20, message=u'20文字以内で入力してください'),
         ]
     )
-    address = TextField(
-        label = u'番地',
+    address_2 = TextField(
+        label = u'建物名など',
         filters=[
             replace_ambiguous,
             ],
         validators=[
             JISX0208, 
             Length(max=20, message=u'20文字以内で入力してください'),
-        ]
-    )
-    other_address = TextField(
-        label = u'続きの住所',
-        filters=[
-            replace_ambiguous,
-            ],
-        validators=[
-            JISX0208, 
-            Length(max=100, message=u'100文字以内で入力してください'),
         ]
     )
     tel_1 = TextField(

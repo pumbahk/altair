@@ -1,6 +1,8 @@
-<%page args="performance" />
+<%page args="performance, form_search" />
 <%namespace file="./_venue_view.html" name="vv" />
 <%namespace file="/common/helpers.html" name="ch" />
+
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing:static/js/ticketing.order.js')}"></script>
 <%
 import json, random
 endpoints_json = json.dumps(endpoints, ensure_ascii=False)
@@ -91,18 +93,35 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 <div style="clear: both;"></div>
 
 <div class="row-fluid">
-<%vv:venueeditor data_source="${data_source}">
-  <%def name="toolbar_extra()">
-  <input id="show-vacant-btn" type="button" class="btn btn-info" style="margin-left: 15px;" value="空席のみ表示" />
-  <script type="text/javascript">
-    $('#show-vacant-btn').click(function() {showVacantSeatMode();});
-  </script>
-  <div style="float:right">
-    <button class="btn btn-primary action-openOrderForm">座席指定</button>
-  </div>
-  </%def>
+  <%vv:venueeditor data_source="${data_source}">
+    <%def name="toolbar_extra()">
+    <input id="show-vacant-btn" type="button" class="btn btn-info" style="margin-left: 15px;" value="空席のみ表示" />
+    <script type="text/javascript">
+      $('#show-vacant-btn').click(function() {showVacantSeatMode();});
+    </script>
+    <div style="float:right">
+      <div class="btn venue-editor-main-side-toggle">予約情報</div>
+      <button class="btn btn-primary action-openOrderForm">座席指定予約</button>
+    </div>
+    </%def>
+    <%def name="venue_editor_side_extra()">
+      <div style="float:right">
+        <form class="form-horizontal search-order-form" style="margin: 0;" action="javascript:void(0);">
+          ${form_search.order_no(minlength=12, placeholder=u'予約番号')}
+          <a href="javascript:void(0);" onclick="javascript:searchOrder();" class="btn">
+            <i class="icon-search"></i> 検索
+          </a>
+        </form>
+      </div>
+      <ul class="nav nav-tabs">
+	<li class="active"><a href="#venue-editor-main-side-tab1" data-toggle="tab">予約情報</a></li>
+      </ul>
+      <div class="tab-content" style="overflow: visible;">
+	<div class="tab-pane active" id="venue-editor-main-side-tab1"></div>
+      </div>
+    </%def>
 
-  <%def name="post()">
+    <%def name="post()">
 <script type="text/javascript">
   var callbackName = ${json.dumps(callback_name)|n};
   var appletCodeBase = ${json.dumps(request.application_url)|n};
@@ -307,12 +326,52 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     });
   }
 
+  var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
+
+  callbacks.load = function (viewer) {
+    tab1.empty();
+  };
+
+  callbacks.click = function (seat) {
+    if (!$('.venue-editor-main-side-toggle').hasClass('active')) return;
+    showOrder(seat);
+  };
+
   function onReservationComplete(result) {
     if (window.ticketPrinterService)
       printOrder(result.order_id); // _printer.html
     window.open('/orders/show/' + result.order_id, '_blank');
     venueEditorRoot.venueeditor('refresh');
     getSalesSummary();
+  }
+
+  function searchOrder() {
+    var order_no = $('.search-order-form').find('#order_no').val();
+    showOrder(null, order_no);
+  }
+
+  function showOrder(seat, order_no) {
+    var params = {'performance_id':${performance.id}};
+    if (seat) params['l0_id'] = seat.id;
+    if (order_no) params['order_no'] = order_no;
+    $.ajax({
+      url: '${request.route_path('orders.api.get.html')}',
+      data: params,
+      dataType: 'html',
+      success: function(data) {
+        tab1.empty().append(data);
+        venueEditorSide.animate({scrollTop: 0});
+      },
+      error: function(xhr, text) {
+        var responseText = JSON.parse(xhr.responseText);
+        var messages = responseText['message'] || xhr.statusText
+        var alert = $('<div />').addClass('alert alert-error');
+        alert.append($('<a class="close" data-dismiss="alert">&times;</a>'));
+        alert.append($('<h4 class="alert-heading"/>').text(messages));
+        tab1.find('.alert').remove();
+        tab1.prepend(alert);
+      }
+    });
   }
 
   function switchToSalesCounterMode() {
@@ -604,8 +663,8 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     getSalesSummary();
   });
 </script>
-  </%def>
-</%vv:venueeditor>
+    </%def>
+  </%vv:venueeditor>
 </div>
 
 <div>

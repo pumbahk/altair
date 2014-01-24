@@ -27,6 +27,7 @@ class SalesReports(BaseView):
     @view_config(route_name='sales_reports.index', request_method='GET', renderer='altair.app.ticketing:templates/sales_reports/index.html')
     def index(self):
         form = SalesReportForm()
+        form.recent_report.data = True
         event_total_reporter = SalesTotalReporter(form, self.context.organization)
 
         return {

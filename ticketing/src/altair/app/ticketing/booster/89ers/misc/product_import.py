@@ -38,7 +38,6 @@ def main():
         city = u'',
         street = u'',
         address = u'',
-        other_address = u'',
         tel_1 = u'',
         tel_2 = u'',
         fax = u'',

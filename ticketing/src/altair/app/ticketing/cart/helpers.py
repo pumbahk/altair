@@ -169,7 +169,7 @@ def render_payment_confirm_viewlet(request, cart):
     cart = CartPayment(cart)
     response = render_view_to_response(cart, request, name="payment-%d" % plugin_id, secure=False)
     if response is None:
-        raise ValueError
+        raise ValueError('could not render payment_confirm_viewlet for payment plugin id=%d' % plugin_id)
     return Markup(response.text)
 
 def render_delivery_finished_viewlet(request, order):
@@ -180,7 +180,7 @@ def render_delivery_finished_viewlet(request, order):
     order = OrderDelivery(order)
     response = render_view_to_response(order, request, name="delivery-%d" % plugin_id, secure=False)
     if response is None:
-        raise ValueError
+        raise ValueError('could not render delivery_finished_viewlet for delivery plugin id=%d' % plugin_id)
     return Markup(response.text)
 
 def render_payment_finished_viewlet(request, order):
@@ -191,7 +191,7 @@ def render_payment_finished_viewlet(request, order):
     order = OrderPayment(order)
     response = render_view_to_response(order, request, name="payment-%d" % plugin_id, secure=False)
     if response is None:
-        raise ValueError
+        raise ValueError('could not render payment_finished_viewlet for payment plugin id=%d' % plugin_id)
     return Markup(response.text)
 
 

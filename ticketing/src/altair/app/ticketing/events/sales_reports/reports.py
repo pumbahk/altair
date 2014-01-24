@@ -121,8 +121,7 @@ class SalesTotalReporter(object):
         if self.form.recent_report.data:
             today = date.today()
             query = query.filter(
-                ((Performance.end_on==None) & (Performance.start_on > today + timedelta(days=-31))) |
-                (Performance.start_on > today + timedelta(days=-31))
+                or_(and_(Performance.end_on==None, Performance.start_on > today + timedelta(days=-31)), Performance.end_on > today + timedelta(days=-31))
             )
 
         if self.form.event_title.data:

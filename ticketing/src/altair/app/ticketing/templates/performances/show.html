@@ -63,7 +63,7 @@ ${performance.code} | ${performance.name}
     </div>
     % elif tab == 'reservation':
     <div class="tab-pane" id="reservation">
-      <%include file="./_reservation.html" args="performance=performance" />
+      <%include file="./_reservation.html" args="performance=performance, form_search=form_search" />
     </div>
     % elif tab == 'order':
     <div class="tab-pane" id="order">
