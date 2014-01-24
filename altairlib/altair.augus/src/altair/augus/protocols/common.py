@@ -507,7 +507,7 @@ class ProtocolBase(list):
 
 
     def iterdump(self):
-        yield self.customer_id, self.created_at, str(len(self))
+        yield self.customer_id, self.created_at_str, str(len(self))
         for record in self:
             yield record.dump()
 
