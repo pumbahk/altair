@@ -17,14 +17,6 @@ using System.Windows.Shapes;
 namespace QR.presentation.gui.page
 {
 
-    class UnitPair
-    {
-        public UnitPair(){}
-        public UnitPair(string k, string v) { this.Key = k; this.Value = v; }
-        public string Key { get; set; }
-        public string Value { get; set; }
-    }
-
     class InputStrategyDataContext : InputDataContext
     {
         public string InputString { get; set;}
@@ -51,11 +43,9 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
-            var candidates = new ObservableCollection<UnitPair>();
-            candidates.Add(new UnitPair("QRで認証", InputUnit.qrcode.ToString()));
-            candidates.Add(new UnitPair("注文番号を入力して認証", InputUnit.order_no.ToString()));
+
             return new InputStrategyDataContext() { 
-                Candidates = candidates,
+                Candidates = CandidateCreator.InputUnitCandidates(),
                 Broker = AppUtil.GetCurrentBroker(), 
                 Event = new SelectInputStragetyEvent() };
         }

@@ -48,12 +48,10 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
-            var candidates = new ObservableCollection<UnitPair>();
-            candidates.Add(new UnitPair("このチケット１枚を発券", PrintUnit.one.ToString()));
-            candidates.Add(new UnitPair("同じ注文番号のチケットをまとめて発券", PrintUnit.all.ToString()));
+
             return new PageConfirmOneDataContext()
             {
-                Candidates = candidates,
+                Candidates = CandidateCreator.PrintUnitCandidates(),
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new QRInputEvent()
             };
