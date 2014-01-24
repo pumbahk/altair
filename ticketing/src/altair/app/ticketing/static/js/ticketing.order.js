@@ -501,6 +501,7 @@ order.OrderProductFormView = Backbone.View.extend({
     var product_name = $('<td colspan="2" />');
 
     var sales_segment_id = op.get('sales_segment_id') || self.order.get('sales_segment_id');
+    if (!op.get('sales_segment_id')) op.set('sales_segment_id', sales_segment_id);
     var sales_segment = $('<select id="sales_segment_id" name="sales_segment_id"></select>');
     var ssc = self.presenter.performance.get('sales_segments');
     ssc.each(function(ss) {
@@ -531,14 +532,14 @@ order.OrderProductFormView = Backbone.View.extend({
           product_list.append(option);
         }
       });
+      if (!op.get('id') && !product_id) {
+        product_list.val(product_list.find('option:first').val());
+        this.selectProduct(product_list);
+      }
       product_list.on('change', function() {
         self.selectProduct($(this));
         self.show();
       });
-      if (op.get('id') == null && product_list.find('option').length == 1) {
-        product_list.val(product_list.find('option:first').val());
-        this.selectProduct(product_list);
-      }
       product_name.append(product_list);
     }
 
