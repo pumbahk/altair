@@ -101,7 +101,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     </script>
     <div style="float:right">
       <div class="btn venue-editor-main-side-toggle">予約情報</div>
-      <button class="btn btn-primary action-openOrderForm">座席指定</button>
+      <button class="btn btn-primary action-openOrderForm">座席指定予約</button>
     </div>
     </%def>
     <%def name="venue_editor_side_extra()">
@@ -360,12 +360,14 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       dataType: 'html',
       success: function(data) {
         tab1.empty().append(data);
+        venueEditorSide.animate({scrollTop: 0});
       },
       error: function(xhr, text) {
         var responseText = JSON.parse(xhr.responseText);
         var messages = responseText['message'] || xhr.statusText
-        var alert = $('<div class="alert" style="margin: 8px;" />').addClass('alert-error');
-        alert.append($('<ul/>').append($('<li/>').text(messages)));
+        var alert = $('<div />').addClass('alert alert-error');
+        alert.append($('<a class="close" data-dismiss="alert">&times;</a>'));
+        alert.append($('<h4 class="alert-heading"/>').text(messages));
         tab1.find('.alert').remove();
         tab1.prepend(alert);
       }

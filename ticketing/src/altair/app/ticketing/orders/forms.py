@@ -588,8 +588,8 @@ class OrderReserveForm(Form):
     def validate_stocks(form, field):
         if len(field.data) == 0:
             raise ValidationError(u'座席および席種を選択してください')
-        if len(field.data) > 1:
-            raise ValidationError(u'複数の席種を選択することはできません')
+        #if len(field.data) > 1:
+        #    raise ValidationError(u'複数の席種を選択することはできません')
         if not form.products.choices:
             raise ValidationError(u'選択された座席に紐づく予約可能な商品がありません')
 
