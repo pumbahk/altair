@@ -71,21 +71,27 @@ namespace QR.presentation.gui.page
             {
                 var pair = box.SelectedItem as UnitPair;
                 var ctx = this.DataContext as PageConfirmOneDataContext;
-                ctx.InputString = pair.Value;
+                await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+                {
+                    ctx.InputString = pair.Value;
 
-                //submit
-                var case_ = await ctx.SubmitAsync();
-                ctx.TreatErrorMessage();
-                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+                    //submit
+                    var case_ = await ctx.SubmitAsync();
+                    ctx.TreatErrorMessage();
+                    AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+                });
             }
         }
 
         private async void OnBackwardWithBoundContext(object sender, RoutedEventArgs e)
         {
             var ctx = this.DataContext as InputDataContext;
-            var case_ = await ctx.BackwardAsync();
-            ctx.TreatErrorMessage();
-            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+            {
+                var case_ = await ctx.BackwardAsync();
+                ctx.TreatErrorMessage();
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+            });
         }
     }
 }

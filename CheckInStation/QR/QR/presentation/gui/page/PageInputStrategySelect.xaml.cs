@@ -70,14 +70,17 @@ namespace QR.presentation.gui.page
             var box = sender as ListBox;
             if (box.SelectedItem != null)
             {
-                var pair = box.SelectedItem as UnitPair;
-                (this.DataContext as InputStrategyDataContext).InputString = pair.Value;
-
-                //submit
                 var ctx = this.DataContext as InputStrategyDataContext;
-                var case_ = await ctx.SubmitAsync();
-                ctx.TreatErrorMessage();
-                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+                await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+                {
+                    var pair = box.SelectedItem as UnitPair;
+                    (this.DataContext as InputStrategyDataContext).InputString = pair.Value;
+
+                    //submit
+                    var case_ = await ctx.SubmitAsync();
+                    ctx.TreatErrorMessage();
+                    AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+                });
             }
         }
     }

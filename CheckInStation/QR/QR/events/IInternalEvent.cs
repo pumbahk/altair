@@ -16,8 +16,8 @@ namespace QR
 
 	public enum InternalEventStaus
 	{
-		success,
-		failure
+		failure,
+        success,
 	}
 }
 

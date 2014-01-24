@@ -143,17 +143,24 @@ namespace QR.presentation.gui.page
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
         {
             var ctx = this.DataContext as InputDataContext;
-            var case_ = await ctx.SubmitAsync();
-            ctx.TreatErrorMessage();
-            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+            {
+                var case_ = await ctx.SubmitAsync();
+                ctx.TreatErrorMessage();
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+
+            });
         }
 
         private async void OnBackwardWithBoundContext(object sender, RoutedEventArgs e)
         {
             var ctx = this.DataContext as InputDataContext;
-            var case_ = await ctx.BackwardAsync();
-            ctx.TreatErrorMessage();
-            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+            {
+                var case_ = await ctx.BackwardAsync();
+                ctx.TreatErrorMessage();
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+            });
         }
     }
 }

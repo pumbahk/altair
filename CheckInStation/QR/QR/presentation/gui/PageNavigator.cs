@@ -61,17 +61,23 @@ namespace QR.presentation.gui
 
         public void NavigateToMatchedPage(ICase case_, Page previous)
         {
-            var nextPage = this.Choice(case_, previous);
-            if (previous != nextPage)
+            previous.Dispatcher.Invoke(() =>
             {
-                logger.Debug("navigate page: {0}", nextPage);
-                var service = previous.NavigationService;
-                if(service != null){
-                    service.Navigate(nextPage);
-                } else {
-                    logger.Info("previous: {0}, case: {1}, NavigationService is not found", previous, case_);
+                var nextPage = this.Choice(case_, previous);
+                if (previous != nextPage)
+                {
+                    logger.Debug("navigate page: {0}", nextPage);
+                    var service = previous.NavigationService;
+                    if (service != null)
+                    {
+                        service.Navigate(nextPage);
+                    }
+                    else
+                    {
+                        logger.Info("previous: {0}, case: {1}, NavigationService is not found", previous, case_);
+                    }
                 }
-            }
+            });
         }
     }
 }

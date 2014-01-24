@@ -92,9 +92,11 @@
     <Compile Include="events\ConfirmAllEvent.cs" />
     <Compile Include="events\FailureEvent.cs" />
     <Compile Include="events\FinishEvent.cs" />
+    <Compile Include="presentation\gui\control\ClickOnceButton.cs" />
     <Compile Include="presentation\gui\control\InspectCase.xaml.cs">
       <DependentUpon>InspectCase.xaml</DependentUpon>
     </Compile>
+    <Compile Include="presentation\gui\ProgressSingletonAction.cs" />
     <Compile Include="presentation\gui\PageNavigator.cs" />
     <Compile Include="presentation\gui\page\IDataContextHasCase.cs" />
     <Compile Include="presentation\gui\page\MainWindow.xaml.cs">

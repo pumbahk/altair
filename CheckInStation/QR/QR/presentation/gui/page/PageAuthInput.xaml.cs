@@ -47,7 +47,6 @@ namespace QR.presentation.gui.page
     public partial class PageAuthInput : Page//, IDataContextHasCase
     {
         private Logger logger = LogManager.GetCurrentClassLogger();
-
         public PageAuthInput()
         {
             InitializeComponent();
@@ -72,23 +71,24 @@ namespace QR.presentation.gui.page
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
         {
             var ctx = this.DataContext as InputDataContext;
-            var case_ = await ctx.SubmitAsync();
-            
-            if (ctx.Event.Status == InternalEventStaus.success)
+            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
-                case_ = await ctx.SubmitAsync();
-            }
+                var case_ = await ctx.SubmitAsync();
 
-        
-            ctx.TreatErrorMessage();
-            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+                if (ctx.Event.Status == InternalEventStaus.success)
+                {
+                    case_ = await ctx.SubmitAsync();
 
-            //ここである必要はあまりないけれど。裏側で広告用の画像をとる
-            var resource = AppUtil.GetCurrentResource();
-            if (resource.AdImageCollector.State == CollectorState.starting)
-            {
-              await resource.AdImageCollector.Run(resource.EndPoint.AdImages).ConfigureAwait(false);
-            }
+                    //ここである必要はあまりないけれど。裏側で広告用の画像をとる
+                    var resource = AppUtil.GetCurrentResource();
+                    if (resource.AdImageCollector.State == CollectorState.starting)
+                    {
+                        await resource.AdImageCollector.Run(resource.EndPoint.AdImages).ConfigureAwait(false);
+                    }
+                }
+                ctx.TreatErrorMessage();
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);   
+            });
         }
     }
 }

@@ -25,8 +25,8 @@
             <TextBlock Grid.Row="1">Login name:</TextBlock>
             <TextBox Grid.Row="2" Text="{Binding LoginName, Mode=OneWayToSource}"></TextBox>
             <TextBlock Grid.Row="3">Password:</TextBlock>
-            <PasswordBox Grid.Row="4" Name="PasswordInput"></PasswordBox>
-            <Button Grid.Row="5" Click="OnSubmitWithBoundContext">login</Button>
+            <PasswordBox Grid.Row="4" Name="PasswordInput"></PasswordBox>           
+            <Button Grid.Row="5" Click="OnSubmitWithBoundContext" Style="{StaticResource SubmitButtonStyle}">login</Button>
         </Grid>
     </Grid>
 
