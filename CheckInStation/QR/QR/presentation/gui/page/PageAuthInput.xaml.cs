@@ -79,8 +79,16 @@ namespace QR.presentation.gui.page
                 case_ = await ctx.SubmitAsync();
             }
 
+        
             ctx.TreatErrorMessage();
             AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+
+            //ここである必要はあまりないけれど。裏側で広告用の画像をとる
+            var resource = AppUtil.GetCurrentResource();
+            if (resource.AdImageCollector.State == CollectorState.starting)
+            {
+              await resource.AdImageCollector.Run(resource.EndPoint.AdImages).ConfigureAwait(false);
+            }
         }
     }
 }

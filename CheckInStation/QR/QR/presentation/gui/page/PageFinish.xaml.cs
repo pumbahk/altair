@@ -27,6 +27,7 @@ namespace QR.presentation.gui.page
             get { return this._status; }
             set { this._status = value; this.OnPropertyChanged("Status"); }
         }
+        public BitmapImage AdImage { get; set; }
 
         public override void OnSubmit()
         {
@@ -51,8 +52,11 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
+            var resource = AppUtil.GetCurrentResource();
+
             var ctx = new PageFinishDataContext()
             {
+                AdImage =  resource.AdImageCollector.GetImage(),
                 Broker = AppUtil.GetCurrentBroker(),
                 Status = FinishStatus.starting
             };

@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NLog;
+using System.Windows.Media.Imaging;
 
 namespace QR
 {
@@ -13,10 +14,31 @@ namespace QR
 		ending
 	}
 
+    public class ImageUtil
+    {
+        public static BitmapImage LoadImage(byte[] imageData)
+        {
+            if (imageData == null || imageData.Length == 0) return null;
+            var image = new BitmapImage();
+            using (var mem = new MemoryStream(imageData))
+            {
+                mem.Position = 0;
+                image.BeginInit();
+                image.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.UriSource = null;
+                image.StreamSource = mem;
+                image.EndInit();
+            }
+            image.Freeze();
+            return image;
+        }
+    }
+
 	public class AdImageCollector
 	{
 		private HashSet<string> urlSet;
-		private List<byte[]> imageSet;
+		private List<BitmapImage> imageSet;
 		public int imageCount;
 
 		public IResource Resource { get; set; }
@@ -36,7 +58,7 @@ namespace QR
 			this.Resource = resource;
 
 			this.urlSet = new HashSet<string> ();	
-			this.imageSet = new List<byte[]> ();
+			this.imageSet = new List<BitmapImage> ();
 			this.State = CollectorState.starting;
 			this.imageCount = 0;
 		}
@@ -56,15 +78,20 @@ namespace QR
 			}
 		}
 
-		public void Add (byte[] data)
+		public void Add (BitmapImage data)
 		{
 			this.imageSet.Add (data);
 		}
+        public void Add (Byte[] data)
+        {
+            this.imageSet.Add(this.CreateImage(data));
+        }
 
 		public async Task Run (IEnumerable<string>urls)
 		{
 			this.State = CollectorState.running;
-			var tq = new List<Task<byte[]>> ();
+			var tq = new List<Task<byte[]>> ();           
+
 			foreach (var url in urls) {
 				if (!this.urlSet.Contains (url)) {
 					this.urlSet.Add (url);
@@ -73,13 +100,17 @@ namespace QR
 			}
 			var images = await Task.WhenAll (tq);
 			foreach (var img in images) {
-//				Console.WriteLine (string.Format ("image:raw: {0}", img.Length));
-				this.Add (img);
+                logger.Debug("image: Length={0}", img.Length);
+                this.Add(this.CreateImage(img));
 			}
 			this.State = CollectorState.ending;
 		}
 
-		public byte[] GetImage ()
+        public BitmapImage CreateImage (Byte[] data){
+            return ImageUtil.LoadImage(data);
+        }
+
+		public BitmapImage GetImage ()
 		{
 			if (this.State != CollectorState.ending) {
 				throw new InvalidOperationException ("fetching image is not ending.");

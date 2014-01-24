@@ -30,6 +30,11 @@ namespace QR
             AppUtil.Broker.SetStartCase(new CaseAuthInput(app.Resource));
         }
 
+        public static IResource GetCurrentResource()
+        {
+            return AppUtil.Internal.Resource;
+        }
+
         public static void OnExit(ExitEventArgs e)
         {
             AppUtil.Internal.ShutDown();

@@ -13,11 +13,12 @@
         <Grid Style="{StaticResource CenterContentGrid}">
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"></RowDefinition>
-            <RowDefinition Height="1*"></RowDefinition>
-            <RowDefinition></RowDefinition>
-        </Grid.RowDefinitions>
+                <RowDefinition Height="2*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
+            </Grid.RowDefinitions>
        <control:InspectCase Grid.Row="0"></control:InspectCase>
-            <TextBlock Grid.Row="1">
+            <Image Grid.Row="1" Style="{StaticResource AdImageStyle}" Source="{Binding AdImage, Mode=OneTime}"></Image>
+            <TextBlock Grid.Row="2">
                 <TextBlock.Text>
                     <MultiBinding StringFormat="status:{0}}">
                         <Binding Path="Status" Mode="OneWay"></Binding>

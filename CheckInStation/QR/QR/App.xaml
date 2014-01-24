@@ -58,6 +58,10 @@
             <Setter Property="Height" Value="336"></Setter> <!-- 70% -->
         </Style>
 
+        <Style TargetType="Image" x:Key="AdImageStyle">
+            <Setter Property="MaxWidth" Value="384"></Setter>           <!-- 60%-->
+            <Setter Property="MaxHeight" Value="336"></Setter>            <!-- 70% -->
+        </Style>
         
         <!-- Label style
         <Style x:Key="labelStyle" TargetType="{x:Type Label}">
