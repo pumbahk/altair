@@ -12,10 +12,6 @@ namespace QR
 	{
 		public string QRCode { get; set; }
 
-		public PrintUnit PrintUnit { get; set; }
-
-		public string PrintUnitString { get; set; }
-
 		public QRInputEvent () : base ()
 		{
 		}

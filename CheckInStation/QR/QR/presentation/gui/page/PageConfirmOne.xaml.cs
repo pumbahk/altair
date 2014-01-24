@@ -20,16 +20,65 @@ using System.Windows.Shapes;
 namespace QR.presentation.gui.page
 {
 
-    class PageConfirmOneDataContext : InputDataContext
+    class PageConfirmOneDataContext : InputDataContext, INotifyPropertyChanged, IConfirmOneStatusInfo
     {
         public string InputString { get; set;}
         public ObservableCollection<UnitPair> Candidates {get;set;}
         public override void OnSubmit()
         {
-            var ev = this.Event as QRInputEvent;
+            var ev = this.Event as ConfirmOneEvent;
             ev.PrintUnitString = this.InputString;
             base.OnSubmit();
         }
+
+         private string _performanceName ;
+         private string _performanceDate ;
+
+         private string _userName ;
+
+         private string _orderNo ;
+         private string _productName ;
+         private string _seatName ;
+         private string _printedAt ;
+
+         public string PerformanceName
+         {
+             get { return this._performanceName; }
+             set { this._performanceName = value; this.OnPropertyChanged("PerformanceName"); }
+         }
+
+         public string PerformanceDate
+         {
+             get { return this._performanceDate; }
+             set { this._performanceDate = value; this.OnPropertyChanged("PerformanceDate"); }
+         }
+
+         public string UserName
+         {
+             get { return this._userName; }
+             set { this._userName = value; this.OnPropertyChanged("UserName"); }
+         }
+
+         public string OrderNo
+         {
+             get { return this._orderNo; }
+             set { this._orderNo = value; this.OnPropertyChanged("OrderNo"); }
+         }
+         public string ProductName
+         {
+             get { return this._productName; }
+             set { this._productName = value; this.OnPropertyChanged("ProductName"); }
+         }
+         public string SeatName
+         {
+             get { return this._seatName; }
+             set { this._seatName = value; this.OnPropertyChanged("SeatName"); }
+         }
+         public string PrintedAt
+         {
+             get { return this._printedAt; }
+             set { this._printedAt = value; this.OnPropertyChanged("PrintedAt"); }
+         }
     }
 
 
@@ -48,13 +97,13 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
-
-            return new PageConfirmOneDataContext()
+            var ctx = new PageConfirmOneDataContext()
             {
                 Candidates = CandidateCreator.PrintUnitCandidates(),
                 Broker = AppUtil.GetCurrentBroker(),
-                Event = new QRInputEvent()
             };
+            ctx.Event = new ConfirmOneEvent() { StatusInfo = ctx };
+            return ctx;
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs e)

@@ -19,6 +19,7 @@ namespace QR.presentation.cli
 		{
 			ICase result;
 			var ev = new QRInputEvent ();
+            var confirm_ev = new ConfirmOneEvent();
 			do {
 				Console.WriteLine ("------QRCode input---------");
 				Console.Write ("qrcode:");
@@ -31,8 +32,8 @@ namespace QR.presentation.cli
 			ev.HandleEvent ();
 
 			Console.WriteLine ("--------QRCode Confirm for one print unit select: 0:one, 1:all-------------------");
-			ev.PrintUnitString = Console.ReadLine ();
-			result = await RequestBroker.SubmitAsync (ev);
+			confirm_ev.PrintUnitString = Console.ReadLine ();
+			result = await RequestBroker.SubmitAsync (confirm_ev);
 			ev.HandleEvent ();
 			if (result is CasePrintForOne) {
 				Console.WriteLine ("-------QRCode printing one (fetch *svg data*)-----");

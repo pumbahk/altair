@@ -13,12 +13,40 @@
         <Grid Style="{StaticResource CenterContentGrid}">
             <Grid.RowDefinitions>
                 <RowDefinition></RowDefinition>
-                <RowDefinition></RowDefinition>
-                <RowDefinition></RowDefinition>
+                <RowDefinition Height="2*"></RowDefinition>
+                <RowDefinition Height="2*"></RowDefinition>
                 <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
             <control:InspectCase Grid.Row="0"></control:InspectCase>
-            <TextBlock Grid.Row="1">ここに本当はイベントの情報を載せる</TextBlock>
+            <ListView Grid.Row="1">
+                    <ListViewItem>
+                    <WrapPanel>
+                        <TextBlock Text="{Binding PerformanceName}"/>
+                        <TextBlock Text="{Binding PerformanceDate}"/>
+                    </WrapPanel>
+                </ListViewItem>
+                <ListViewItem>
+                    <WrapPanel>
+                        <TextBlock>予約番号</TextBlock>
+                        <TextBlock Text="{Binding OrderNo}"/>
+                    </WrapPanel>
+                </ListViewItem>
+                <ListViewItem>
+                    <WrapPanel>
+                        <TextBlock>購入者</TextBlock>
+                        <TextBlock Text="{Binding UserName}"/>
+                    </WrapPanel>
+                </ListViewItem>
+                <ListViewItem>
+                    <WrapPanel>
+                        <TextBlock>座席</TextBlock>
+                        <TextBlock Text="{Binding ProductName}"/>
+                        <TextBlock Text="{Binding SeatName}"/>
+                    </WrapPanel>
+                </ListViewItem>
+            </ListView>
+            
+            
             <ListBox Grid.Row="2" ItemsSource="{Binding Candidates}" SelectionChanged="OnSubmitWithBoundContext">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>

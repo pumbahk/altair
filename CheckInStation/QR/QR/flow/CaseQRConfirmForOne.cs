@@ -20,11 +20,16 @@ namespace QR
 			Unit = PrintUnit.one;
 			TicketData = ticketdata;
 		}
-
+        public override Task PrepareAsync(IInternalEvent ev)
+        {
+            var subject = ev as ConfirmOneEvent;
+            subject.SetData(this.TicketData);
+            return base.PrepareAsync(ev);
+        }
 		public override Task<bool> VerifyAsync ()
 		{
 			return Task.Run (() => {
-				var subject = PresentationChanel as QRInputEvent;
+				var subject = PresentationChanel as ConfirmOneEvent;
 				PrintUnit unit;
 				var status = EnumUtil.TryParseEnum<PrintUnit> (subject.PrintUnitString, out unit);
 				subject.PrintUnit = Unit = unit;
