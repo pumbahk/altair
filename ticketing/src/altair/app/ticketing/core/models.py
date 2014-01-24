@@ -1784,6 +1784,26 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
         return query.scalar()
 
+    def init_display_order(self, event_id):
+        types = StockType.query.filter(StockType.event_id==event_id).all()
+        self.display_order = len(types) + 1
+
+    def init_style(self, data):
+        if self.is_seat:
+
+            self.style = {
+                'stroke':{
+                    'color':data.get('stroke_color'),
+                    'width':data.get('stroke_width'),
+                    'pattern':data.get('stroke_patten'),
+                },
+                'fill':{
+                    'color':self.get_fill_color(self.display_order-1),
+                },
+            }
+        else:
+            self.style = {}
+
     def set_style(self, data):
         if self.is_seat:
             self.style = {
@@ -1798,6 +1818,11 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             }
         else:
             self.style = {}
+
+    def get_fill_color(self, color_no):
+        color_dict = ['#ff0000', '#3366ff', '#009900', '#ffff00',
+                      '#9900ff', '#80cccc', '#ff80cc', '#cce680']
+        return color_dict[color_no % len(color_dict)]
 
     @staticmethod
     def create_from_template(template, **kwargs):

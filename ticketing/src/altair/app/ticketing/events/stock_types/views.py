@@ -54,7 +54,8 @@ class StockTypes(BaseView):
         f = StockTypeForm(self.request.POST)
         if f.validate():
             stock_type = merge_session_with_post(StockType(), f.data)
-            stock_type.set_style(f.data)
+            stock_type.init_display_order(f['event_id'].data)
+            stock_type.init_style(f.data)
             stock_type.save()
 
             self.request.session.flash(u'席種を保存しました')
