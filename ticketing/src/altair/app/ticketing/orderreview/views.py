@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 import sqlahelper
+import json
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
@@ -203,9 +204,9 @@ def render_qrmail_viewlet(context, request):
         url = request.route_url('order_review.qr_confirm', ticket_id=ticket.id, sign=sign),
     )
 
-@mobile_view_config(route_name='order_review.qr_orion', request_method="POST", 
+@mobile_view_config(route_name='order_review.orion_send', request_method="POST", 
              renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/send.html"))
-@view_config(route_name='order_review.qr_orion', request_method="POST", 
+@view_config(route_name='order_review.orion_send', request_method="POST", 
              renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/send.html"))
 def order_review_send_to_orion(context, request):
     # TODO: validate mail address
@@ -218,8 +219,10 @@ def order_review_send_to_orion(context, request):
         return dict(mail=mail, 
                     message=u"Emailの形式が正しくありません")
 
+    response = None
     try:
-        res = api.send_to_orion(request, context, mail)
+        res_text = api.send_to_orion(request, context, mail)
+        response = json.loads(res_text)
         # TODO: 返り値を検証する
 
     except Exception, e:
@@ -227,8 +230,12 @@ def order_review_send_to_orion(context, request):
         ## この例外は違う...
         raise HTTPNotFound()
 
-    message = u"電子チケットについてのメールを%s宛に送信しました!!" % mail
-    message = res
+    if response != None and response['result'] == u"OK":
+        message = u"電子チケットについてのメールを%s宛に送信しました!!" % mail
+    else:
+        # そのまま出すのも微妙だがコード化されてないからしょうがない
+        message = response.message
+
     return dict(
         mail = mail,
         message = message
