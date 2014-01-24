@@ -96,7 +96,7 @@ class VenueResource(TicketingAdminResource):
     def venue(self):
         try:
             return Venue.query.filter(Venue.id==self.accessor.venue_id)\
-                              .filter(Venue.organization_id==self.organization_id)\
+                              .filter(Venue.organization_id==self.organization.id)\
                               .one()
         except (MultipleResultsFound, NoResultFound) as err:
             raise HTTPNotFound('The venue_id = {} is not found or multiply.'.format(self.accessor.venue_id))
@@ -121,7 +121,7 @@ class SeatTypeResource(TicketingAdminResource):
     def event(self):
         try:
             return Event.query.filter(Event.id==accessor.event_id)\
-                              .filter(Venue.organization_id==self.user.organization_id)\
+                              .filter(Venue.organization_id==self.organization.id)\
                               .one()
         except (MultipleResultsFound, NoResultFound) as err:
             raise HTTPNotFound('The event_id = {} is not found or multiply.'.format(self.accessor.event_id))
