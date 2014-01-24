@@ -18,6 +18,8 @@ namespace QR
 
 		public ResultStatusCollector<string> StatusCollector { get; set; }
 
+		public ResultTuple<string, List<TicketImageData>> PrintingTargets;
+
 		public UpdatePrintedAtRequestData RequestData{ get; set; }
 
 		public CasePrintForAll (IResource resource, TicketDataCollection collection) : base (resource)
@@ -26,26 +28,44 @@ namespace QR
 			StatusCollector = new ResultStatusCollector<string> ();
 		}
 
+		public override async Task PresentationChanel (IInternalEvent ev)
+		{
+			await base.PrepareAsync (ev).ConfigureAwait (false);
+			var subject = this.PresentationChanel as PrintingEvent;
+
+			try {
+				var result = this.PrintingTargets = await Resource.SVGImageFetcher.FetchImageDataForAllAsync (this.DataCollection).ConfigureAwait (false);
+				if (result.Status) {
+					//印刷枚数設定
+					subject.ConfigureByTotalPrinted(result.Right.Count);
+				}
+			} catch (Exception ex) {
+				logger.ErrorException (":", ex);
+				PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
+			}
+		}
+
 		public override async Task<bool> VerifyAsync ()
 		{
-			try {
-				ResultTuple<string, List<TicketImageData>> result = await Resource.SVGImageFetcher.FetchImageDataForAllAsync (this.DataCollection).ConfigureAwait (false);
-				if (!result.Status) {
-					//modelからpresentation層へのメッセージ
-					PresentationChanel.NotifyFlushMessage ((result as Failure<string,List<TicketImageData>>).Result);
-					return false;
-				}
+			// 印刷対象の画像の取得に失敗した時
+			if (!this.PrintingTargets.Status) {
+				PresentationChanel.NotifyFlushMessage ((this.PrintingTargets as Failure<string,List<TicketImageData>>).Result);
+				return false;
+			}
+			var subject = this.PresentationChanel as PrintingEvent;
 
+			try {
 				var printing = Resource.TicketImagePrinting;
-				foreach (var imgdata in result.Right) {
+				foreach (var imgdata in this.PrintingTargets.Right) {
 					var status = await printing.EnqueuePrinting (imgdata).ConfigureAwait (false);
+					subject.FinishedPrinted(); //印刷枚数インクリメント
 					StatusCollector.Add (imgdata.token_id, status);
 				}
 
 				this.RequestData = new UpdatePrintedAtRequestData () {
 					token_id_list = StatusCollector.Result ().SuccessList.ToArray (),
 					secret = this.DataCollection.secret,
-					order_no=this.DataCollection.additional.order.order_no
+					order_no = this.DataCollection.additional.order.order_no
 				};
 				return StatusCollector.Status;
 			} catch (Exception ex) {

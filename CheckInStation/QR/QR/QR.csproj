@@ -208,6 +208,7 @@
     <Compile Include="message\EnumUtil.cs" />
     <Compile Include="models\loader\AdImageCollector.cs" />
     <Compile Include="tests\models\GetAdImageTests.cs" />
+    <Compile Include="events\PrintingEvent.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

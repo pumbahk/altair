@@ -14,6 +14,10 @@ namespace QR
 	{
 		public TicketData TicketData { get; set; }
 
+		public ResultTuple<string, List<TicketImageData>> PrintingTargets { get; set; }
+
+		private bool IsGetPrintingTargetSuccess;
+
 		public ResultStatusCollector<string> StatusCollector { get; set; }
 
 		public UpdatePrintedAtRequestData RequestData{ get; set; }
@@ -24,21 +28,39 @@ namespace QR
 		{
 			TicketData = ticketdata;
 			StatusCollector = new ResultStatusCollector<string> ();
+			this.IsGetPrintingTargetSuccess = false;
+		}
+
+		public override async Task PrepareAsync (IInternalEvent ev)
+		{
+			await base.PrepareAsync (ev).ConfigureAwait (false);
+			var subject = this.PresentationChanel as PrintingEvent;
+
+			try {
+				var result = this.PrintingTargets = await Resource.SVGImageFetcher.FetchImageDataForOneAsync (this.TicketData).ConfigureAwait (false);
+				if (result.Status) {
+					subject.ConfigureByTotalPrinted(result.Right.Count); //印刷枚数設定
+				}
+			} catch (Exception ex) {
+				logger.ErrorException (":", ex);
+				PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
+			}
 		}
 
 		public override async Task<bool> VerifyAsync ()
 		{
-			try {
-				ResultTuple<string, List<TicketImageData>> result = await Resource.SVGImageFetcher.FetchImageDataForOneAsync (this.TicketData).ConfigureAwait (false);
-				if (!result.Status) {
-					//modelからpresentation層へのメッセージ
-					PresentationChanel.NotifyFlushMessage ((result as Failure<string,List<TicketImageData>>).Result);
-					return false;
-				}
+			// 印刷対象の画像の取得に失敗した時
+			if (!this.PrintingTargets.Status) {
+				PresentationChanel.NotifyFlushMessage ((this.PrintingTargets as Failure<string,List<TicketImageData>>).Result);
+				return false;
+			}
+			var subject = this.PresentationChanel as PrintingEvent;
 
+			try {
 				var printing = Resource.TicketImagePrinting;
-				foreach (var imgdata in result.Right) {
+				foreach (var imgdata in this.PrintingTargets.Right) {
 					var status = await printing.EnqueuePrinting (imgdata).ConfigureAwait (false);
+					subject.PrintFinished(); //印刷枚数インクリメント
 					StatusCollector.Add (imgdata.token_id, status);
 				}
 
