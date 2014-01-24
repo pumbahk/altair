@@ -50,17 +50,17 @@ class AugusVenueListResource(TicketingAdminResource):
                 'Not found AugusVenue: AugusVenue.code == {} is not found.'.format(
                     self.augus_venue_code))
         return augus_venues
-        
+
 
 class AugusVenueRequestAccessor(RequestAccessor):
     in_matchdict = {'augus_venue_code': int,
                     'augus_venue_version': int,
                     }
-    
+
 class AugusVenueResource(TicketingAdminResource):
     accessor_factory = AugusVenueRequestAccessor
     def __init__(self, request):
-        super(type(self), self).__init__(request)        
+        super(type(self), self).__init__(request)
         self.accessor = self.accessor_factory(request)
 
     @reify
@@ -81,12 +81,12 @@ class AugusVenueResource(TicketingAdminResource):
         except (MultipleResultsFound, NoResultFound):
             raise HTTPNotFound('The AugusVenue not found or multiply: code={}, version={}'.format(
                 self.augus_venue_code, self.augus_venue_version))
-    
+
 class VenueRequestAccessor(RequestAccessor):
     in_matchdict = {'venue_id': int}
-        
+
 class VenueResource(TicketingAdminResource):
-    accessor_factory = VenueRequestAccessor    
+    accessor_factory = VenueRequestAccessor
     def __init__(self, request):
         super(type(self), self).__init__(request)
         self.accessor = self.accessor_factory(request)
@@ -112,7 +112,7 @@ class SeatTypeRequestAccessor(RequestAccessor):
 
 
 class SeatTypeResource(TicketingAdminResource):
-    accessor_factory = SeatTypeRequestAccessor    
+    accessor_factory = SeatTypeRequestAccessor
     def __init__(self, request):
         super(type(self), self).__init__(request)
         self.accessor = self.accessor_factory(request)
