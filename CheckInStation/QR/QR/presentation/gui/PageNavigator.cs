@@ -65,7 +65,12 @@ namespace QR.presentation.gui
             if (previous != nextPage)
             {
                 logger.Debug("navigate page: {0}", nextPage);
-                previous.NavigationService.Navigate(nextPage);
+                var service = previous.NavigationService;
+                if(service != null){
+                    service.Navigate(nextPage);
+                } else {
+                    logger.Info("previous: {0}, case: {1}, NavigationService is not found", previous, case_);
+                }
             }
         }
     }

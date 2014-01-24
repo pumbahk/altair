@@ -20,7 +20,7 @@
             </Grid.RowDefinitions>
             <control:InspectCase Grid.Row="0"></control:InspectCase>
             <StackPanel Background="White" Grid.Row="1" HorizontalAlignment="Center">
-                <Image Source="/Resource/printing.gif"></Image>
+                <Image Source="/Resource/printing.gif" Style="{StaticResource PrintingImageStyle}"></Image>
             </StackPanel>
             <TextBlock Grid.Row="2">
                 <TextBlock.Text>

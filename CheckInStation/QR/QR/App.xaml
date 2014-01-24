@@ -58,19 +58,22 @@
             <Setter Property="Height" Value="336"></Setter> <!-- 70% -->
         </Style>
 
-        <Style TargetType="Image" x:Key="AdImageStyle">
-            <Setter Property="MaxWidth" Value="384"></Setter>           <!-- 60%-->
-            <Setter Property="MaxHeight" Value="336"></Setter>            <!-- 70% -->
+        <Style TargetType="Image" x:Key="MainImageStyle">
+            <Setter Property="MaxWidth" Value="384"></Setter>
+            <!-- 60%-->
+            <Setter Property="MaxHeight" Value="336"></Setter>
+            <!-- 70% -->
         </Style>
         
-        <!-- Label style
-        <Style x:Key="labelStyle" TargetType="{x:Type Label}">
-            <Setter Property="VerticalAlignment" Value="top"></Setter>
-            <Setter Property="HorizontalAlignment" Value="left"></Setter>
-            <Setter Property="FontWeight" Value="Bold"></Setter>
-            <Setter Property="Margin" Value="0,0,0,5"></Setter>
+        
+        <!-- 個別の設定-->
+        <Style TargetType="Image" BasedOn="{StaticResource MainImageStyle}" x:Key="AdImageStyle">
+
         </Style>
-        -->
-    
+        
+        <Style TargetType="Image" BasedOn="{StaticResource MainImageStyle}" x:Key="PrintingImageStyle">
+        </Style>
+        
+
     </Application.Resources>
 </Application>
