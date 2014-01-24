@@ -3,6 +3,7 @@
 import logging
 import re
 import json
+import itertools
 
 from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql import functions as safunc
@@ -603,10 +604,11 @@ def save_order_modification(order, modify_data):
     modify_order.total_amount = modify_data.get('total_amount')
     modify_order.operator = request.context.user
 
-    for i, mop in enumerate(modify_order.items):
+    op_zip = itertools.izip(order.items, modify_order.items)
+    for i, (op, mop) in enumerate(op_zip):
         op_data = None
         for data in modify_data.get('ordered_products'):
-            if data.get('id') == mop.id and data.get('product_id') == mop.product_id:
+            if data.get('id') == op.id and data.get('product_id') == op.product_id:
                 op_data = data
                 break
         logger.debug('op_data %s' % op_data)
@@ -619,14 +621,15 @@ def save_order_modification(order, modify_data):
             modify_order.items.pop(i)
             continue
 
-        # 商品変更
+        # 商品数および座席変更
         mop.price = long(op_data.get('price'))
         mop.quantity = long(op_data.get('quantity'))
 
-        for j, mopi in enumerate(mop.ordered_product_items):
+        opi_zip = itertools.izip(op.ordered_product_items, mop.ordered_product_items)
+        for j, (opi, mopi) in enumerate(opi_zip):
             opi_data = None
             for data in op_data.get('ordered_product_items'):
-                if data.get('id') == mopi.id:
+                if data.get('id') == opi.id:
                     opi_data = data
                     break
             logger.info('opi_data %s' % opi_data)
@@ -671,7 +674,17 @@ def save_order_modification(order, modify_data):
 
     # 商品追加
     for op_data in modify_data.get('ordered_products'):
-        if not op_data.get('id') and op_data.get('quantity') > 0:
+        add_product = False
+        if not op_data.get('id'):
+            if op_data.get('quantity') > 0:
+                add_product = True
+        else:
+            for op in order.items:
+                if op_data.get('id') == op.id and op_data.get('product_id') != op.product_id:
+                    add_product = True
+                    break
+
+        if add_product:
             logger.info('add ordered_product %s' % op_data)
             product = Product.get(long(op_data.get('product_id')))
             op_quantity = long(op_data.get('quantity'))
@@ -679,22 +692,22 @@ def save_order_modification(order, modify_data):
                 order=modify_order, product=product, price=product.price, quantity=op_quantity)
             for product_item in product.items:
                 seats = []
-                if product_item.stock.stock_type.is_seat:
+                seat_quantity = product_item.quantity * op_quantity
+                product_requires = [(product, seat_quantity)]
+                stock_statuses = stocker.take_stock(modify_order.performance_id, product_requires)
+                if not product_item.stock.stock_type.quantity_only:
                     seats_data = []
                     for opi_data in op_data.get('ordered_product_items'):
                         if opi_data.get('seats'):
                             seats_data = opi_data.get('seats')
-                            #1Product複数座席ProductItemでうまくいかない？
+                            logger.info('seats_data %s' % seats_data)
                             break
-                    product_requires = [(product, len(seats_data))]
-                    stock_statuses = stocker.take_stock(modify_order.performance_id, product_requires)
                     seats = reserving.reserve_selected_seats(
                         stock_statuses,
                         modify_order.performance_id,
                         [s.get('id') for s in seats_data],
                         SeatStatusEnum.Ordered
                     )
-                    logger.info('seats_data %s' % seats_data)
                 ordered_product_item = OrderedProductItem(
                     ordered_product=ordered_product,
                     product_item=product_item,

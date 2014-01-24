@@ -1709,8 +1709,9 @@ class OrdersEditAPIView(BaseView):
                 op_data.pop(i)
                 continue
             if op.get('quantity') > 0:
-                sales_segments.add(op.get('sales_segment_id'))
+                sales_segments.add(long(op.get('sales_segment_id')))
         order_data['ordered_products'] = op_data
+        logger.info('sales_segments=%s' % sales_segments)
         if len(sales_segments) > 1:
             raise HTTPBadRequest(body=json.dumps(dict(message=u'予約内の販売区分は同じでなければいけません')))
         logger.info('validate order data=%s' % order_data)
