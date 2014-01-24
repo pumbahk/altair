@@ -74,9 +74,10 @@ class StockTypes(BaseView):
 
         f = StockTypeForm(self.request.POST)
         if f.validate():
+            old_display_order = stock_type.display_order
             stock_type = merge_session_with_post(stock_type, f.data)
             stock_type.set_style(f.data)
-            stock_type.save()
+            stock_type.update_stock_types(old_display_order)
 
             self.request.session.flash(u'席種を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
