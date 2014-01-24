@@ -2,28 +2,27 @@
 <table class="table table-bordered table-condensed ">
   <tbody>
     <tr>
-      <th width="10%">公演コード</th>
-      <td width="15%">${performance.code}</td>
-      <th width="5%">開場</th>
-      <td width="20%">${vh.datetime(performance.open_on)}</td>
-      <th width="5%">開演</th>
-      <td width="20%">${vh.datetime(performance.start_on)}</td>
-      <th width="5%">会場</th>
-      <td width="20%">
+      <th width="8%">会場</th>
+      <td width="52%" colspan="3">
         ${performance.venue.name}
         %if performance.venue.sub_name != None:
           <div class="sub_name">${performance.venue.sub_name}</div>
         %endif
       </td>
+      <th width="8%">公演コード</th>
+      <td width="12%">${performance.code}</td>
+      <th width="8%">開場</th>
+      <td width="12%">${vh.datetime(performance.open_on)}</td>
     </tr>
     <tr>
-      <th width="10%">公演名略称</th>
-      <td width="20%">${performance.abbreviated_title or u""}</td>
-      <th width="10%">公演名副題</th>
-      <td width="20%">${performance.subtitle or u""}</td>
-      <th width="10%">公演名備考</th>
-      <td width="20%">${performance.note or u""}</td>
-      </td>
+      <th>公演名副題</th>
+      <td width="28%">${performance.subtitle or u""}</td>
+      <th width="8%">公演名略称</th>
+      <td width="16%">${performance.abbreviated_title or u""}</td>
+      <th>公演名備考</th>
+      <td>${performance.note or u""}</td>
+      <th>開演</th>
+      <td>${vh.datetime(performance.start_on)}</td>
     </tr>
 % if expanded:
     <tr>

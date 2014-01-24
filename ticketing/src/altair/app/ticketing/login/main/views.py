@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import hashlib
 from datetime import datetime, timedelta
 
 from pyramid.view import view_config, view_defaults
@@ -15,6 +14,7 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import *
 from altair.app.ticketing.operators.models import Operator
 from .forms import LoginForm, OperatorForm, ResetForm
+from altair.app.ticketing.operators import api as o_api
 
 @view_defaults(decorator=with_bootstrap)
 class Login(BaseView):
@@ -106,7 +106,7 @@ class LoginUser(BaseView):
             if not f.data['password']:
                 password = operator.auth.password
             else:
-                password = hashlib.md5(f.data['password']).hexdigest()
+                password = o_api.crypt(f.data['password'])
 
             operator = merge_session_with_post(operator, f.data)
             operator.expire_at = datetime.today() + timedelta(days=180)

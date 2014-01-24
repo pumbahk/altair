@@ -1,0 +1,18 @@
+<%page args="organization_setting, order=None, small=False" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+<%
+  actions = {
+    'edit':dict(
+      label=u'編集',
+      url=request.route_path('organizations.settings.edit', organization_id=organization_setting.organization_id, organization_setting_id=organization_setting.id),
+      icon='icon-pencil',
+      route_name='events.edit',
+    )
+  }
+
+  order = iter(order or ['edit'])
+%>
+<div style="float: left;">
+  ${HH.action_button(actions, order, extra_classes=[u'btn-small'] if small else [])}
+</div>

@@ -88,7 +88,7 @@ class SalesReportForm(Form):
     )
     recent_report = OurBooleanField(
         validators=[Optional()],
-        default=True,
+        default=False,
     )
 
 

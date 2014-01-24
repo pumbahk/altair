@@ -20,7 +20,6 @@
       <tr>
         <th class="minwidth">ID</th>
         <th>取引先名</th>
-        <th>操作</th>
       </tr>
     </thead>
     <tbody>
@@ -28,10 +27,6 @@
       <tr>
         <td><a href="${request.route_path('organizations.show', organization_id=organization.id)}">${organization.id}</a></td>
         <td><a href="${request.route_path('organizations.show', organization_id=organization.id)}">${organization.name}</a></td>
-        <td>
-          <a class="btn btn-small" href="${request.route_path('organizations.edit', organization_id=organization.id)}">編集</a>
-          <a class="btn btn-small btn-danger" href="javascript:delete_organization(${organization.id});">削除</a>
-        </td>
       </tr>
     % endfor
     </tbody>

@@ -1,0 +1,53 @@
+<div>
+    <h4>イベント・ゲート受取</h4>
+
+%if paid:
+
+    <p>対応スマホをお持ちの方は、専用アプリ【イベント・ゲート】にQRコードをダウンロード頂けます（要無料会員登録）。<br />
+      <br />
+[イベント・ゲートへのダウンロード方法] <br />
+1.下記のフォームにメールアドレスをご入力いただき、ご自分のスマホでメールを受信してください。 <br />
+2.メール受信後、リンクをクリックし[アプリでチケットを受け取る]を選択してください。 <br />
+※インストール・無料会員登録がまだの場合は、ここで手続きをお願いします。 <br />
+3.【イベント・ゲート】に購入済みチケットが保存されます。 <br />
+※【イベント・ゲート】アプリから友達に送ることもできます。詳細はアプリ内の「ヘルプ」でご確認ください。 <br />
+4.当日は、QRコードを会場窓口でご提示いただき、紙チケットを受け取りください。 <br />
+</p>
+
+    <p class="red">携帯電話へQRチケットを送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
+
+    % for ticket in tickets:
+        <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
+            商品名 ${ticket.product.name} (${ticket.product.id}) <br />
+            %if ticket.seat:
+            席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
+            %endif
+            <br />
+              % if ticket.printed_at:
+                  発行(印刷orメール送信)済 (${ticket.printed_at})
+              % else:
+                  未発行
+              % endif
+              <form method="post" target="_blank" action="${request.route_path('order_review.orion_print')}">
+                  <input type="hidden" name="order_no" value="${order.order_no}" />
+                  <input type="hidden" name="tel" value="${tel}" />
+                  <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                  <input type="submit" value="印刷は、まだできません" />
+              </form>
+              <form method="post" target="_blank" action="${request.route_path('order_review.orion_send')}">
+                  <input type="hidden" name="order_no" value="${order.order_no}" />
+                  <input type="hidden" name="tel" value="${tel}" />
+                  <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                  メールアドレス: <input type="text" name="mail" size="40" />
+                  <input type="submit" name="send" value="イベント・ゲートに送る" />
+              </form>
+        </div>
+    % endfor
+
+% else:
+
+    <p>支払い完了後、電子チケットを発行いただけます。</p>
+
+% endif
+
+</div>

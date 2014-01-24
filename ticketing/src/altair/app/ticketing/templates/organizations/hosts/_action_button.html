@@ -1,0 +1,30 @@
+<%page args="order=None, small=False" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+<%
+  actions = {
+    'new':dict(
+      label=u'追加',
+      url='javascript:new_host()',
+      icon='icon-plus',
+      route_name='organizations.hosts.new'
+    ),
+    'edit':dict(
+      label=u'編集',
+      url='javascript:edit_host(get_selected_host_id())',
+      icon='icon-pencil',
+      route_name='organizations.hosts.edit'
+    ),
+    'delete':dict(
+      label=u'削除',
+      url='javascript:delete_host(get_selected_host_id())',
+      icon='icon-delete',
+      route_name='organizations.hosts.delete'
+    )
+  }
+
+  order = iter(order or ['new', 'edit', 'delete'])
+%>
+<div style="float: left;">
+  ${HH.action_button(actions, order, extra_classes=[u'btn-small'] if small else [])}
+</div>

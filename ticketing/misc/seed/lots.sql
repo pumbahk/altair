@@ -2,9 +2,9 @@ set @organization_id = 1;
 set @account_id = 1;
 
 INSERT INTO Site (
-name, zip, prefecture, city, street, address, other_address, tel_1, tel_2, fax, drawing_url, metadata_url
+name, zip, prefecture, city, street, other_address, tel_1, tel_2, fax, drawing_url, metadata_url
 ) VALUES (
-'テストサイト', '1234567', '東京都', '千代田区', '千代田1丁目', NULL, NULL, NULL, NULL, NULL, NULL, NULL
+'テストサイト', '1234567', '東京都', '千代田区', '千代田1丁目', NULL, NULL, NULL, NULL, NULL, NULL
 )
 ;
 

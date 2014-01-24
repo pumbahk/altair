@@ -79,7 +79,8 @@ def import_view(config):
     config.add_route('order_review.qrdraw', '/qr/{ticket_id}/{sign}/image')
 
     ## orion
-    config.add_route('order_review.qr_orion', '/qr/app')
+    config.add_route('order_review.orion_send', '/qr/eg_print')
+    config.add_route('order_review.orion_print', '/qr/eg_send')
 
     ## misc
     config.add_route('contact', '/contact')

@@ -1090,7 +1090,6 @@ class CompleteView(object):
         try:
             order_no = api.get_temporary_store(self.request).get(self.request)
         except:
-            logger.exception('oops')
             raise CompletionPageNotRenderered()
         return self.render_complete_page(order_no)
 
