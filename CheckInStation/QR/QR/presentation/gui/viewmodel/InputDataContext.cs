@@ -59,7 +59,11 @@ namespace QR.presentation.gui
             this.OnSubmit();
             logger.Debug("SubmitAsync this:{0}, Event:{1}, Case:{2}", this, this.Event, this.Case);
             var result = await this.Broker.SubmitAsync(this.Event).ConfigureAwait(false);
+
+            //本当はOnPropertyChangeでCaseが変わり。そのOnProeprtyChangeでCaseNameが変わるのが良い。
             this.OnPropertyChanged("CaseName");
+            this.OnPropertyChanged("Description");
+
             return result;
         }
 
