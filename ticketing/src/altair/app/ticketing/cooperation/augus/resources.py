@@ -74,7 +74,7 @@ class AugusVenueResource(TicketingAdminResource):
     @reify
     def augus_venue(self):
         try:
-            return augus_venue = AugusVenue\
+            return AugusVenue\
                 .query.filter(AugusVenue.code==self.augus_venue_code)\
                       .filter(AugusVenue.version==self.augus_venue_version)\
                       .one()
