@@ -283,16 +283,6 @@ order.OrderedProductItem = Backbone.Model.extend({
   }
 });
 
-order.ProductItem = Backbone.Model.extend({
-  defaults: {
-    quantity: 1,
-    stock_holder_name: null,
-    stock_type_id: null,
-    is_seat: false,
-    quantity_only: false
-  }
-});
-
 order.Seat = Backbone.Model.extend({
   defaults: {
     id: null,
@@ -343,6 +333,29 @@ order.Product = Backbone.Model.extend({
     stock_type_id: null,
     stock_type_name: null,
     quantity_only: false
+  },
+  initialize: function() {
+    var pic = new order.ProductItemCollection();
+    var product_items = this.get('product_items');
+    if (product_items) {
+      for (var i = 0; i < product_items.length; i++) {
+        pic.push(new order.ProductItem(product_items[i]));
+      }
+    }
+    this.set('product_items', pic);
+  }
+});
+
+order.ProductItem = Backbone.Model.extend({
+  defaults: {
+    id: null,
+    name: null,
+    price: 0,
+    quantity: 0,
+    stock_holder_name: null,
+    stock_type_id: null,
+    is_seat: false,
+    quantity_only: false
   }
 });
 
@@ -364,6 +377,10 @@ order.SalesSegmentCollection = Backbone.Collection.extend({
 
 order.ProductCollection = Backbone.Collection.extend({
   model: order.Product
+});
+
+order.ProductItemCollection = Backbone.Collection.extend({
+  model: order.ProductItem
 });
 
 order.EnsureSeatCollection = Backbone.Collection.extend({
@@ -490,8 +507,9 @@ order.OrderProductFormView = Backbone.View.extend({
     var p = ss.get('products').get(el.val());
     op.set('product_id', p.get('id'));
     op.set('price', p.get('price'));
+
     var opi = op.get('ordered_product_items').at(0);
-    var product_item = new order.ProductItem({stock_type_id: p.get('stock_type_id'), quantity_only: p.get('quantity_only')});
+    var product_item = p.get('product_items').at(0);
     opi.set('product_item', product_item);
   },
   render: function() {

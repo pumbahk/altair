@@ -644,23 +644,24 @@ def save_order_modification(order, modify_data):
                 continue
 
             # 座席変更
-            mopi.price = long(opi_data.get('product_item').get('price'))
-            mopi.quantity = opi_quantity
-
             mopi.release()
             mopi.seats = []
 
-            seats_data = opi_data.get('seats')
-            product_requires = [(mop.product, opi_quantity)]
+            mopi.price = long(opi_data.get('product_item').get('price'))
+            mopi.quantity = opi_quantity
+
+            product_requires = [(mop.product, mop.quantity)]
             stock_statuses = stocker.take_stock(modify_order.performance_id, product_requires)
-            seats = reserving.reserve_selected_seats(
-                stock_statuses,
-                modify_order.performance_id,
-                [s.get('id') for s in seats_data],
-                SeatStatusEnum.Ordered
-            )
-            mopi.seats += seats
-            logger.info('seats_data %s' % seats_data)
+            if not mopi.product_item.stock.stock_type.quantity_only:
+                seats_data = opi_data.get('seats')
+                seats = reserving.reserve_selected_seats(
+                    stock_statuses,
+                    modify_order.performance_id,
+                    [s.get('id') for s in seats_data],
+                    SeatStatusEnum.Ordered
+                )
+                mopi.seats += seats
+                logger.info('seats_data %s' % seats_data)
 
             for token in mopi.tokens:
                 DBSession.delete(token)
@@ -692,8 +693,7 @@ def save_order_modification(order, modify_data):
                 order=modify_order, product=product, price=product.price, quantity=op_quantity)
             for product_item in product.items:
                 seats = []
-                seat_quantity = product_item.quantity * op_quantity
-                product_requires = [(product, seat_quantity)]
+                product_requires = [(product, op_quantity)]
                 stock_statuses = stocker.take_stock(modify_order.performance_id, product_requires)
                 if not product_item.stock.stock_type.quantity_only:
                     seats_data = []

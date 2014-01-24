@@ -1664,6 +1664,8 @@ class OrdersEditAPIView(BaseView):
                     id=opi.id,
                     quantity=opi.quantity,
                     product_item=dict(
+                        id=long(opi.product_item.id),
+                        name=opi.product_item.name,
                         price=int(opi.product_item.price),
                         quantity=opi.product_item.quantity,
                         stock_holder_name=opi.product_item.stock.stock_holder.name,
@@ -1789,7 +1791,20 @@ class OrdersEditAPIView(BaseView):
                     price=int(p.price),
                     stock_type_id=p.seat_stock_type_id,
                     stock_type_name=p.seat_stock_type.name,
-                    quantity_only=p.seat_stock_type.quantity_only
+                    quantity_only=p.seat_stock_type.quantity_only,
+                    product_items=[
+                    dict(
+                        id=long(pi.id),
+                        name=pi.name,
+                        price=int(pi.price),
+                        quantity=pi.quantity,
+                        stock_holder_name=pi.stock.stock_holder.name,
+                        stock_type_id=pi.stock.stock_type_id,
+                        is_seat=pi.stock.stock_type.is_seat,
+                        quantity_only=pi.stock.stock_type.quantity_only,
+                    )
+                    for pi in p.items
+                    ]
                 )
                 for p in ss.products
                 ]
