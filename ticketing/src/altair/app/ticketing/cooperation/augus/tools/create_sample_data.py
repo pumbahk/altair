@@ -7,6 +7,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from pit import Pit
 from altair.augus.exporters import AugusExporter
+from altair.augus.parsers import AugusParser
 from altair.augus.protocols import (
     VenueSyncRequest,
     VenueSyncResponse,
@@ -90,7 +91,10 @@ def create_venue_data():
         export_dir = './data'
         mkdir_p(export_dir)
         try:
-            AugusExporter.export(request, os.path.join(export_dir, request.name))
+            path = os.path.join(export_dir, request.name)
+            AugusExporter.export(request, path)
+            new_request = AugusParser.parse(path)
+            AugusExporter.export(new_request, path)
         except Exception as err:
             print 'NG: venue_id={}: {}'.format(venue_id, repr(err))
 
