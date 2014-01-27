@@ -1,0 +1,39 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<div class="page-header">
+  <h3>オーガス公演連携 - ${event.title}</h3>
+</div>
+
+<a class="btn entry" href="${request.route_path('augus.performance.edit', event_id=event.id)}">連携を編集</a>
+
+<table class="table">
+  <tr>
+    <th>公演</th>
+    <th>公演コード</th>
+    <th>日時</th>
+    <th>開場</th>
+    <th>オーガス公演</th>
+    <th>オーガス公演コード</th>
+  </tr>
+  
+  %for performance, ag_performance in performance_agperformance:
+  <tr>
+    <td>${performance.name}</td>
+    <td>${performance.code}</td>
+    <td>${performance.start_on}</td>
+    <td>${performance.venue.name}</td>
+    <td>
+      %if ag_performance:
+      ${ag_performance.augus_performance_name}
+      %endif
+    </td>
+    <td>
+      %if ag_performance:
+      ${ag_performance.augus_performance_code}
+      %endif
+    </td>
+  </tr>
+  %endfor
+</table>
