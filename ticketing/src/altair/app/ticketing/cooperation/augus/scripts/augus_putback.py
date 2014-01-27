@@ -54,7 +54,5 @@ def main():
         raise
     else:
         transaction.commit()
-    for path in paths:
-        shutil.move(path, pending)
 if __name__ == '__main__':
     main()

@@ -40,6 +40,7 @@ def mkdir_p(path):
         os.makedirs(path)
 
 def main():
+    paths = []
     parser = argparse.ArgumentParser()
     parser.add_argument('conf', nargs='?', default=None)
     args = parser.parse_args()
