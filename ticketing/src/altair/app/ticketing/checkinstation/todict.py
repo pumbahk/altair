@@ -112,7 +112,7 @@ def ticket_data_collection_dict_from_tokens(tokens):
         seat = token.seat
         D = {
             "refreshed_at": unicode(token.refreshed_at) if token.refreshed_at else None, 
-            "printed_at": unicode(token.printed_at) if token.printed_at else None, 
+            "printed_at": unicode(token.printed_at) if token.is_printed() else None, 
             "ordered_product_item_token_id": unicode(token.id), 
             "seat": {
                 "id": unicode(seat.id) if seat else None,
