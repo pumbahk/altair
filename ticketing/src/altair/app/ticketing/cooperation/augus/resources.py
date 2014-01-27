@@ -106,6 +106,45 @@ class VenueResource(TicketingAdminResource):
     def augus_venues(self):
         return AugusVenue.query.filter(AugusVenue.venue_id==self.venue.id).all()
 
+class PerformanceRequestAccessor(RequestAccessor):
+    in_matchdict = {'event_id': int}
+
+class PerformanceResource(TicketingAdminResource):
+    accessor_factory = PerformanceRequestAccessor
+    def __init__(self, request):
+        super(type(self), self).__init__(request)
+        self.accessor = self.accessor_factory(request)
+
+    @reify
+    def event(self):
+        try:
+            return Event.query.filter(Event.id==self.accessor.event_id)\
+                              .filter(Venue.organization_id==self.organization.id)\
+                              .one()
+        except (MultipleResultsFound, NoResultFound) as err:
+            raise HTTPNotFound('The event_id = {} is not found or multiply.'.format(self.accessor.event_id))
+    
+    @reify
+    def performances(self):
+        return self.event.performances
+
+    @reify
+    def augus_performance_all(self):
+        try:
+            return AugusPerformance.query.all()
+        except (MultipleResultsFound, NoResultFound) as err:
+            raise HTTPNotFound('The event_id = {} is not found or multiply.'.format(self.accessor.event_id))
+            
+    def get_performance_augus_performance_pair(self):
+        for performance in self.performances:
+            ag_performance = AugusPerformance.get(performance_id=performance.id)
+            yield performance, ag_performance
+
+    @reify
+    def performance_agperformance(self):
+        return [(performance, ag_performance)
+                for performance, ag_performance 
+                in self.get_performance_augus_performance_pair()]
 
 class SeatTypeRequestAccessor(RequestAccessor):
     in_matchdict = {'event_id': int}
@@ -120,7 +159,7 @@ class SeatTypeResource(TicketingAdminResource):
     @reify
     def event(self):
         try:
-            return Event.query.filter(Event.id==accessor.event_id)\
+            return Event.query.filter(Event.id==self.accessor.event_id)\
                               .filter(Venue.organization_id==self.organization.id)\
                               .one()
         except (MultipleResultsFound, NoResultFound) as err:
