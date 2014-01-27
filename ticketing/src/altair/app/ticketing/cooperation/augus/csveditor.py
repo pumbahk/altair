@@ -190,8 +190,8 @@ class EntryData(object):
             
         except (ValueError, TypeError, IndexError,
                 UnicodeDecodeError, UnicodeEncodeError) as err:
-            raise EntryFormatError('Illegal format entry: {0}: {1}'\
-                                   .format(repr(row), repr(err)))
+            raise EntryFormatError('Illegal format entry: {}: length={}: {}'\
+                                   .format(repr(row), len(row), repr(err)))
 
     def is_enable(self):
         return self.augus_venue_code != ''
