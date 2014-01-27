@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace QR.message
 {
@@ -33,6 +33,19 @@ namespace QR.message
 		{
 			return resource.SettingValue ("message.default.error.format.0");
 		}
+
+        public static string GetCaseDescriptionMessage(this IResource resource, ICase case_)
+        {
+            {
+                //e.g. QR.CaseAuthInput.description.format0
+                var r = resource.SettingValue(String.Format("message.{0}.description.format0", case_.GetType().ToString()));
+                if (r == null)
+                {
+                    return "<説明が設定されていません>";
+                }
+                return r;
+            }
+        }
 
 		public static string GetTokenStatusMessage (this IResource resource, TokenStatus tokenStatus)
 		{

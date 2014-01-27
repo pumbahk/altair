@@ -1,10 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using NLog;
+using QR.message;
 
 namespace QR
 {
-	public abstract class AbstractCase
+	public abstract class AbstractCase : ICase
 	{
         private Logger logger = LogManager.GetCurrentClassLogger();
 		public virtual IResource Resource{ get; set; }
@@ -15,17 +16,13 @@ namespace QR
         {
             get {
                 try{
-                    var r = this.Resource.SettingValue(String.Format("{0}.description.format0", this.GetType().ToString()));
-                    if(r == null){
-                        return "<à–¾‚ªÝ’è‚³‚ê‚Ä‚¢‚Ü‚¹‚ñ>";
-                    }
-                    return r;
+                  return this.Resource.GetCaseDescriptionMessage(this as ICase);
                 }
                 catch (Exception ex)
-                {
+                  {
                     logger.ErrorException("missing:", ex);
                     return "<à–¾‚ªÝ’è‚³‚ê‚Ä‚Ü‚¹‚ñ!!>";
-                }
+                  }
             }
         }
 
