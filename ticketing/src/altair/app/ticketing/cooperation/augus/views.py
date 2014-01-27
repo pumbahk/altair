@@ -143,7 +143,7 @@ class AugusVenueView(_AugusBaseView):
 
 
 @view_defaults(route_name='augus.stock_type', decorator=with_bootstrap, permission='event_editor')
-class AugusVenueView(_AugusBaseView):
+class AugusTicketView(_AugusBaseView):
     
     @view_config(route_name='augus.stock_type.show', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/stock_types/show.html')
