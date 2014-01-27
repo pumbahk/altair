@@ -58,7 +58,6 @@ from .exceptions import (
     InvalidCSRFTokenException, 
     CartCreationException,
     InvalidCartStatusError,
-    OverOrderLimitException,
     PaymentMethodEmptyError,
     OutTermSalesException,
     TooManyCartsCreated,
@@ -831,10 +830,12 @@ class PaymentView(object):
             return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
 
         sales_segment = cart.sales_segment
-        if not self.context.check_order_limit(sales_segment, user, shipping_address_params['email_1']):
-
-            order_limit = sales_segment.order_limit
-            raise OverOrderLimitException.from_resource(self.context, self.request, order_limit=order_limit)
+        mail_addresses = []
+        if shipping_address_params.get('email_1'):
+            mail_addresses.append(shipping_address_params['email_1'])
+        if shipping_address_params.get('email_2'):
+            mail_addresses.append(shipping_address_params['email_2'])
+        self.context.check_order_limit(sales_segment, user, mail_addresses)
 
         cart.payment_delivery_pair = payment_delivery_pair
         cart.shipping_address = self.create_shipping_address(user, shipping_address_params)

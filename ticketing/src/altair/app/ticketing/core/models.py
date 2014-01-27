@@ -28,7 +28,7 @@ from sqlalchemy.orm.session import object_session
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null, alias, or_
 from sqlalchemy.ext.associationproxy import association_proxy
 from zope.interface import implementer
-from altair.saannotation import AnnotatedColumn
+from altair.saannotation import AnnotatedColumn, get_annotations_for
 from pyramid.i18n import TranslationString as _
 
 from zope.deprecation import deprecation
@@ -36,9 +36,14 @@ from zope.deprecation import deprecation
 from .exceptions import InvalidStockStateError
 from .interfaces import (
     ISalesSegmentQueryable,
+    IOrderQueryable,
     IOrderLike,
     IOrderedProductLike,
-    IOrderedProductItemLike
+    IOrderedProductItemLike,
+    ISetting,
+    ISettingContainer,
+    IChainedSetting,
+    IAllAppliedSetting
 )
 
 from altair.app.ticketing.models import (
@@ -470,7 +475,7 @@ class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def filter_by_organization_id(id):
         return Account.filter(Account.organization_id==id).all()
 
-@implementer(ISalesSegmentQueryable)
+@implementer(ISalesSegmentQueryable, IOrderQueryable, ISettingContainer)
 class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Performance'
 
@@ -500,11 +505,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     display_order = AnnotatedColumn(Integer, nullable=False, default=1, _a_label=_(u'表示順'))
 
-    orion = relationship("OrionPerformance", uselist=False, backref='performance')
-    
-    @property
-    def setting(self):
-        return self.settings[0] if self.settings else None
+    setting = relationship('PerformanceSetting', backref='performance', uselist=False)
 
     @property
     def products(self):
@@ -569,10 +570,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             template_performance = Performance.get(self.original_id)
 
             # create PerformanceSetting
-            if template_performance.settings:
-                for setting in template_performance.settings:
-                    new_setting = PerformanceSetting.create_from_template(setting, performance_id=self.id)
-                    new_setting.performance = self
+            if template_performance.setting:
+                setting = template_performance.setting
+                new_setting = PerformanceSetting.create_from_template(setting, performance_id=self.id)
+                new_setting.performance = self
 
             # create SalesSegment - Product
             for template_sales_segment in template_performance.sales_segments:
@@ -641,8 +642,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             raise Exception(u'配席されている為、削除できません')
 
         # delete PerformanceSetting
-        for setting in self.settings:
-            setting.delete()
+        if self.setting:
+            self.setting.delete()
 
         # delete SalesSegment
         for sales_segment in self.sales_segments:
@@ -694,6 +695,34 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """ISalesSegmentQueryable.query_sales_segments)"""
         q = build_sales_segment_query(performance_id=self.id, user=user, now=now, type=type)
         return q
+
+    def query_orders_by_user(self, user, filter_canceled=False):
+        """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.cart.models import Cart
+        
+        qs = DBSession.query(Order) \
+            .join(Order.sales_segment) \
+            .filter(Order.user_id == user.id) \
+            .filter(SalesSegment.performance_id == self.id)
+        if filter_canceled:
+            qs = qs.filter(Order.canceled_at==None)
+        return qs
+        
+    def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False):
+        """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.cart.models import Cart
+        qs = DBSession.query(Order) \
+            .join(Order.shipping_address) \
+            .join(Order.sales_segment) \
+            .filter(
+                or_(ShippingAddress.email_1.in_(mailaddresses),
+                    ShippingAddress.email_2.in_(mailaddresses))
+                ) \
+            .filter(SalesSegment.event_id == self.id)
+        if filter_canceled:
+            qs = qs.filter(Order.canceled_at==None)
+        return qs
+
 
     @classmethod
     def get(cls, id, organization_id=None, **kwargs):
@@ -821,7 +850,7 @@ def build_sales_segment_query(event_id=None, performance_id=None, sales_segment_
                 )
     return q
 
-@implementer(ISalesSegmentQueryable)
+@implementer(ISalesSegmentQueryable, IOrderQueryable, ISettingContainer)
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
 
@@ -846,12 +875,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     sales_segment_groups = relationship('SalesSegmentGroup')
     cms_send_at = Column(DateTime, nullable=True, default=None)
 
+    setting = relationship('EventSetting', backref='event', uselist=False)
+
     _first_performance = None
     _final_performance = None
-
-    @property
-    def setting(self):
-        return self.settings[0] if self.settings else None
 
     @property
     def accounts(self):
@@ -999,8 +1026,9 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 Performance.create_from_template(template=template_performance, event_id=self.id)
 
             # create EventSettings
-            for template_event_setting in template_event.settings:
-                EventSetting.create_from_template(template=template_event.setting, event_id=self.id)
+            if template_event.setting:
+                setting = template_event.setting
+                EventSetting.create_from_template(template=setting, event_id=self.id)
 
             convert_map['payment_delivery_method_pair'] = {}
             for org_id, new_id in convert_map['sales_segment_group'].iteritems():
@@ -1092,6 +1120,33 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def query_sales_segments(self, user=None, now=None, type='available'):
         q = build_sales_segment_query(event_id=self.id, user=user, now=now, type=type)
         return q
+
+    def query_orders_by_user(self, user, filter_canceled=False):
+        """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.cart.models import Cart
+        
+        qs = DBSession.query(Order) \
+            .join(Order.sales_segment) \
+            .filter(Order.user_id == user.id) \
+            .filter(SalesSegment.event_id == self.id)
+        if filter_canceled:
+            qs = qs.filter(Order.canceled_at==None)
+        return qs
+        
+    def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False):
+        """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.cart.models import Cart
+        qs = DBSession.query(Order) \
+            .join(Order.shipping_address) \
+            .join(Order.sales_segment) \
+            .filter(
+                or_(ShippingAddress.email_1.in_(mailaddresses),
+                    ShippingAddress.email_2.in_(mailaddresses))
+                ) \
+            .filter(SalesSegment.event_id == self.id)
+        if filter_canceled:
+            qs = qs.filter(Order.canceled_at==None)
+        return qs
 
     @staticmethod
     def find_next_and_last_sales_segment_period(sales_segments, now):
@@ -1191,13 +1246,14 @@ class SalesSegmentKindEnum(StandardEnum):
 @implementer(ISalesSegmentQueryable)
 class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegmentGroup'
+
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
     name = AnnotatedColumn(String(255), _a_label=_(u'名前'))
     kind = AnnotatedColumn(String(255), _a_label=_(u'種別'))
     start_at = AnnotatedColumn(DateTime, _a_label=_(u'販売開始日時'))
     end_at = AnnotatedColumn(DateTime, _a_label=_(u'販売終了日時'))
     max_quantity = AnnotatedColumn('upper_limit', Integer, _a_label=_(u'購入上限枚数'))
-    order_limit = AnnotatedColumn(Integer, _a_label=_(u'購入回数制限'))
+    order_limit = association_proxy('setting', 'order_limit')
     max_product_quatity = AnnotatedColumn('product_limit', Integer, _a_label=_(u'商品購入上限数'))
 
     seat_choice = AnnotatedColumn(Boolean, default=True, _a_label=_(u'座席選択可'))
@@ -1222,6 +1278,8 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_time = Column(Time)
     end_day_prior_to_performance = Column(Integer)
     end_time = Column(Time)
+
+    setting = relationship('SalesSegmentGroupSetting', uselist=False, backref='sales_segment_group', cascade='delete', lazy='joined')
 
     @hybrid_method
     def in_term(self, dt):
@@ -1261,6 +1319,8 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def create_from_template(template, with_payment_delivery_method_pairs=False, **kwargs):
         sales_segment_group = SalesSegmentGroup.clone(template)
+        if template.setting is not None:
+            sales_segment_group.setting = SalesSegmentGroupSetting.create_from_template(template.setting)
         if 'event_id' in kwargs:
             sales_segment_group.event_id = kwargs['event_id']
         sales_segment_group.membergroups = template.membergroups
@@ -2300,6 +2360,7 @@ class SeatIndex(Base, BaseModel):
 class OrganizationTypeEnum(StandardEnum):
     Standard = 1
 
+@implementer(ISettingContainer)
 class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Organization"
     id = Column(Identifier, primary_key=True)
@@ -3599,15 +3660,16 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return sum(o.price * o.quantity for o in order.items) if self.include_item else 0
 
 
+@implementer(ISettingContainer, IOrderQueryable)
 class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'SalesSegment'
     query = DBSession.query_property()
+
     id = Column(Identifier, primary_key=True)
     start_at = AnnotatedColumn(DateTime, _a_label=_(u'販売開始'))
     end_at = AnnotatedColumn(DateTime, _a_label=_(u'販売終了'))
     max_quantity = AnnotatedColumn('upper_limit', Integer, _a_label=_(u'購入上限枚数'))
-    order_limit = AnnotatedColumn(Integer, default=0,
-                                  _a_label=_(u'購入回数制限'))
+    order_limit = association_proxy('setting', 'order_limit')
     max_product_quatity = AnnotatedColumn('product_limit', Integer, _a_label=_(u'商品購入上限数'))
 
     seat_choice = AnnotatedColumn(Boolean, nullable=True, default=None,
@@ -3656,8 +3718,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     use_default_payment_delivery_method_pairs = Column(Boolean)
     use_default_start_at = Column(Boolean)
     use_default_end_at = Column(Boolean)
+    use_default_order_limit = association_proxy('setting', 'use_default_order_limit')
     use_default_max_quantity = Column('use_default_upper_limit', Boolean)
-    use_default_order_limit = Column(Boolean)
     use_default_max_product_quatity = Column('use_default_product_limit', Boolean)
     use_default_account_id = Column(Boolean)
     use_default_margin_ratio = Column(Boolean)
@@ -3665,6 +3727,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     use_default_printing_fee = Column(Boolean)
     use_default_registration_fee = Column(Boolean)
     use_default_auth3d_notice = Column(Boolean)
+
+    setting = relationship('SalesSegmentSetting', uselist=False, backref='sales_segment', cascade='delete', lazy='joined')
 
     def has_stock_type(self, stock_type):
         return stock_type in self.seat_stock_types
@@ -3676,7 +3740,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         return [pdmp for pdmp in self.payment_delivery_method_pairs if pdmp.is_available_for(self, now)]
 
 
-    def query_orders_by_user(self, user, filter_cancel=False):
+    def query_orders_by_user(self, user, filter_canceled=False):
         """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
         from altair.app.ticketing.cart.models import Cart
         
@@ -3687,15 +3751,11 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         ).filter(
             Cart.sales_segment_id==self.id
         )
-        if filter_cancel:
+        if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
         return qs
         
-    @deprecation.deprecate(u"メールアドレスは複数与えられるものなので、このメソッドは使うべきではない")
-    def query_orders_by_mailaddress(self, mailaddress, filter_cancel=False):
-        return self.query_orders_by_mailaddresses([mailaddress], filter_cancel)
-
-    def query_orders_by_mailaddresses(self, mailaddresses, filter_cancel=False):
+    def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
         from altair.app.ticketing.cart.models import Cart
         qs = DBSession.query(Order).filter(
@@ -3709,7 +3769,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             Cart.sales_segment_id==self.id
         )
         
-        if filter_cancel:
+        if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
         return qs
 
@@ -3797,6 +3857,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     @staticmethod
     def create_from_template(template, **kwargs):
         sales_segment = SalesSegment.clone(template)
+        if template.setting is not None:
+            sales_segment.setting = SalesSegmentSetting.create_from_template(template.setting)
         if 'performance_id' in kwargs:
             sales_segment.performance_id = kwargs['performance_id']
         if 'sales_segment_group_id' in kwargs:
@@ -3861,7 +3923,17 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     def applicable(self, user=None, now=None, type='available'):
         return build_sales_segment_query(sales_segment_id=self.id, user=user, now=now, type=type).exists()
 
-class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class SettingMixin(object):
+    def describe_iter(self):
+        for prop in self.__mapper__.iterate_properties:
+            annotations = get_annotations_for(prop)
+            if hasattr(self, prop.key):
+                v = getattr(self, prop.key, None)
+                if annotations and annotations.get('visible_column'):
+                    yield prop.key, v, annotations.get('label') or prop.key
+
+@implementer(ISetting)
+class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixin):
     __tablename__ = "OrganizationSetting"
     id = Column(Identifier, primary_key=True)
     DEFAULT_NAME = u"default"
@@ -3894,15 +3966,28 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     entrust_separate_seats = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"バラ席のおまかせが有効", _a_label=u"おまかせ座席選択でバラ席を許可する")
     notify_point_granting_failure = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"ポイント付与失敗時のメール通知on/off", _a_label=u"ポイント付与失敗時のメール通知を有効にする")
 
-class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    @property
+    def container(self):
+        return self.organization
+
+@implementer(ISetting, IAllAppliedSetting, IChainedSetting)
+class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixin):
     __tablename__ = "EventSetting"
     id = Column(Identifier, primary_key=True)
     event_id = Column(Identifier, ForeignKey('Event.id'))
-    event = relationship('Event', backref='settings')
 
     performance_selector = Column(Unicode(255), doc=u"カートでの公演絞り込み方法")
     performance_selector_label1_override = Column(Unicode(255), nullable=True)
     performance_selector_label2_override = Column(Unicode(255), nullable=True)
+    order_limit = AnnotatedColumn(Integer, default=0, _a_label=_(u'購入回数制限'), _a_visible_column=True)
+
+    @property
+    def super(self):
+        return None
+
+    @property
+    def container(self):
+        return self.event
 
     @classmethod
     def create_from_template(cls, template, event_id=None, **kwargs):
@@ -3911,38 +3996,13 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         setting.save() # XXX
         return setting
 
-class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = "PerformanceSetting"
-    id = Column(Identifier, primary_key=True)
-    performance_id = Column(Identifier, ForeignKey('Performance.id'))
-    performance = relationship('Performance', backref='settings')
-               
-    KEYS = []
 
-    @classmethod
-    def create_from_model(cls, obj, params):
-        kwargs = {k:params.get(k) for k in cls.KEYS}
-        settings = cls(**kwargs)
-        settings.performance = obj
-        return settings
-
-    @classmethod
-    def update_from_model(cls, obj, params):
-        setting = obj.setting or cls()
-
-        for k in cls.KEYS:
-            setattr(setting, k, params.get(k) or "")
-        setting.performance = obj
-        return setting
-
-    def describe_iter(self):
-        columns = self.__mapper__.c
-        for k in self.KEYS:
-            col = getattr(columns, k, None)
-            if col is None:
-                yield k, getattr(self, k, None) or u"", k
-            else:
-                yield k, getattr(self, k, None) or u"", getattr(col, "doc", k) or k
+@implementer(IAllAppliedSetting)
+class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixin):
+    __tablename__ = "SalesSegmentGroupSetting"
+    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
+    sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'))
+    order_limit = AnnotatedColumn(Integer, default=0, _a_label=_(u'購入回数制限'))
 
     @classmethod
     def create_from_template(cls, template, **kwargs):
@@ -3951,12 +4011,67 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return setting
 
 
+@implementer(ISetting, IAllAppliedSetting, IChainedSetting)
+class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixin):
+    __tablename__ = "SalesSegmentSetting"
+    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
+    sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
+    order_limit = AnnotatedColumn(Integer, default=0, _a_label=_(u'購入回数制限'))
+    use_default_order_limit = Column(Boolean)
+
+    @property
+    def super(self):
+        performance = self.sales_segment.performance
+        if performance is not None and performance.setting is not None:
+            return performance.setting
+        else:
+            event = self.sales_segment.event
+            if event is not None and event.setting is not None:
+                return event.setting
+        return None
+
+    @property
+    def container(self):
+        return self.sales_segment
+
+    @classmethod
+    def create_from_template(cls, template, **kwargs):
+        setting = cls.clone(template)
+        setting.save() # XXX
+        return setting
+
+@implementer(ISetting, IAllAppliedSetting, IChainedSetting)
+class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixin):
+    __tablename__ = "PerformanceSetting"
+    id = Column(Identifier, primary_key=True)
+    performance_id = Column(Identifier, ForeignKey('Performance.id'))
+    order_limit = AnnotatedColumn(Integer, default=0, _a_label=_(u'購入回数制限'), _a_visible_column=True)
+
+    @property
+    def super(self):
+        event = self.performance.event
+        if event is not None and event.setting is not None:
+            return event.setting
+        return None
+
+    @property
+    def container(self):
+        return self.performance
+
+    @classmethod
+    def create_from_template(cls, template, **kwargs):
+        setting = cls.clone(template)
+        setting.save() # XXX
+        return setting
+
+# move to altair.app.ticketing.orders.models
 class ImportStatusEnum(StandardEnum):
     Waiting = (1, u'インポート待ち')
     Importing = (2, u'インポート中')
     Imported = (3, u'インポート完了')
 
 
+# move to altair.app.ticketing.orders.models
 class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderImportTask'
 
@@ -3981,11 +4096,13 @@ class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 return e.v[1]
         return u''
 
+# move to altair.app.ticketing.orion.cooperation.augus.models
 class CooperationTypeEnum(StandardEnum):
     augus = (1, u'オーガス')
     #gettie = (2, u'Gettie')
 
 
+# move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusVenue'
 
@@ -3997,6 +4114,7 @@ class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     venue_id = Column(Identifier, ForeignKey('Venue.id'), nullable=False)
     venue = relationship('Venue')
 
+# move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusSeat'
     __table_args__= (
@@ -4041,6 +4159,7 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                           self.num
                                       ]))
     
+# move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusPerformance'
     id = Column(Identifier, primary_key=True)
@@ -4065,6 +4184,7 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.augus_performance_code
 
 
+# move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusTicket'
     id = Column(Identifier, primary_key=True)
@@ -4090,6 +4210,7 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         self.stock_type_id = stock_type.id
         
         
+# move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusStockInfo'
     id = Column(Identifier, primary_key=True)
@@ -4131,6 +4252,7 @@ class AugusPutbackType:
     ROUTE = u'R' # 途中
     FINAL = u'F' # 最終
 
+# move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusPutback(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusPutback'
     id = Column(Identifier, primary_key=True)
@@ -4157,6 +4279,7 @@ class AugusPutback(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return AugusPutbackStatus.CANDO
 
+# move to altair.app.ticketing.orion.models
 class AugusSeatStatus(object):
     RESERVE = 0
     SOULD = 1
@@ -4178,11 +4301,13 @@ class AugusSeatStatus(object):
         else:
             return cls.OTHER
 
+# move to altair.app.ticketing.orion.models
 class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrionPerformance'
 
     id = Column(Identifier, primary_key=True)
     performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
+    performance = relationship('Performance', backref='orion', uselist=False)
 
     instruction_general = Column(UnicodeText(8388608))
     instruction_performance = Column(UnicodeText(8388608))

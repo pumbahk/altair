@@ -15,20 +15,21 @@ from zope.interface import implementer
 from .interfaces import ICartPayment, ICartDelivery
 from altair.app.ticketing.payments.interfaces import IOrderPayment, IOrderDelivery 
 from altair.app.ticketing.users import api as user_api
-
-from .exceptions import (
-    OutTermSalesException,
-    NoSalesSegment,
-    NoPerformanceError,
-)
 from altair.app.ticketing.users import models as u_models
-from ..core import models as c_models
-from ..core import api as core_api
-from ..users import models as u_models
+from altair.app.ticketing.core import models as c_models
+from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.core.interfaces import IOrderQueryable
+from altair.app.ticketing.users import models as u_models
 from . import models as m
 from .api import get_cart_safe
 from .exceptions import NoCartError
 from .interfaces import ICartContext
+from .exceptions import (
+    OutTermSalesException,
+    NoSalesSegment,
+    NoPerformanceError,
+    OverOrderLimitException,
+)
 from zope.deprecation import deprecate
 from altair.now import get_now
 
@@ -229,21 +230,34 @@ class TicketingCartResourceBase(object):
     def host_base_url(self):
         return core_api.get_host_base_url(self.request)
 
-    def check_order_limit(self, sales_segment, user, email):
+    def check_order_limit(self, sales_segment, user, mail_addresses, filter_canceled=True):
         """ 購入回数制限チェック
         設定なしの場合は何度でも購入可能です。
         カウントするOrder数にcancelされたOrderは含まれません。
         """
-        kwds = {'filter_cancel': True}
-        if sales_segment.order_limit:
+        kwds = dict(
+            filter_canceled=filter_canceled
+            )
+        setting = sales_segment.setting
+        while setting is not None:
             # 設定なしの場合は何度でも購入可能
-            if user:
-                if sales_segment.query_orders_by_user(user, **kwds).count() >= sales_segment.order_limit:
-                    return False
-            elif email:
-                if sales_segment.query_orders_by_mailaddress(email, **kwds).count() >= sales_segment.order_limit:
-                    return False
-        return True
+            logger.info("checking order limit for %s(order_limit=%r)" % (setting.__class__, setting.order_limit))
+            if setting.order_limit:
+                container = setting.container
+                if IOrderQueryable.providedBy(container):
+                    if user:
+                        count = container.query_orders_by_user(user, **kwds).count()
+                        logger.info("order count for User(%d)=%d where order_limit=%d" % (user.id, count, setting.order_limit))
+                        if count >= setting.order_limit:
+                            raise OverOrderLimitException.from_resource(self, self.request, order_limit=setting.order_limit)
+                    elif mail_addresses:
+                        count = container.query_orders_by_mailaddresses(mail_addresses, **kwds).count()
+                        logger.info("order count for email_addresses(%r)=%d where order_limit=%d" % (mail_addresses, count, setting.order_limit))
+                        if count >= setting.order_limit:
+                            raise OverOrderLimitException.from_resource(self, self.request, order_limit=setting.order_limit)
+                else:
+                    logger.info("%s does not implement IOrderQueryable. skip" % container.__class__)
+            setting = setting.super
 
     @reify
     def login_required(self):
@@ -331,7 +345,7 @@ class EventOrientedTicketingCartResource(TicketingCartResourceBase):
             event = None
             try:
                 event = c_models.Event.query \
-                    .options(joinedload(c_models.Event.settings)) \
+                    .options(joinedload(c_models.Event.setting)) \
                     .filter(c_models.Event.id==self._event_id) \
                     .filter(c_models.Event.organization==organization) \
                     .one()
@@ -393,7 +407,7 @@ class PerformanceOrientedTicketingCartResource(TicketingCartResourceBase):
                 performance = None
                 try:
                     performance = c_models.Performance.query \
-                        .options(joinedload_all(c_models.Performance.event, c_models.Event.settings)) \
+                        .options(joinedload_all(c_models.Performance.event, c_models.Event.setting)) \
                         .join(c_models.Performance.event) \
                         .filter(c_models.Performance.id == self._performance_id) \
                         .filter(c_models.Event.organization_id == organization.id) \

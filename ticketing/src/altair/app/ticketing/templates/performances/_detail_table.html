@@ -47,11 +47,11 @@
         <a href="${cart_url}">${cart_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
       </td>
     </tr>
-    %if performance.settings:
-      %for k, v, doc in performance.settings[0].describe_iter():
+    %if performance.setting:
+      %for k, v, label in performance.setting.describe_iter():
         <tr>
-          <th>${doc}</th>
-          <td colspan="7">${v}</td>
+          <th>${label}</th>
+          <td colspan="7">${v or u'-'}</td>
         </tr>
       %endfor
     %endif

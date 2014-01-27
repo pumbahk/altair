@@ -6,10 +6,11 @@ from wtforms.validators import Regexp, Length, Optional, ValidationError
 
 from altair.formhelpers import Translations, Required, JISX0208, after1900
 from altair.formhelpers.form import OurForm
-from altair.formhelpers.fields import OurTextField, OurBooleanField, DateField, DateTimeField
+from altair.formhelpers.fields import OurTextField, OurIntegerField, OurBooleanField, DateField, DateTimeField
 from altair.formhelpers.widgets import OurTextInput, OurDateWidget
-from altair.formhelpers.filters import replace_ambiguous
-from altair.app.ticketing.core.models import Event, Account
+from altair.formhelpers.filters import replace_ambiguous, zero_as_none
+from altair.app.ticketing.helpers import label_text_for
+from altair.app.ticketing.core.models import Event, EventSetting, Account
 
 class EventSearchForm(OurForm):
     def _get_translations(self):
@@ -150,6 +151,12 @@ class EventForm(Form):
             JISX0208, 
             Length(max=100, message=u'100文字以内で入力してください'),
         ]
+    )
+    order_limit = OurIntegerField(
+        label=label_text_for(EventSetting.order_limit),
+        default=None,
+        filters=[zero_as_none],
+        validators=[Optional()]
     )
     original_id = HiddenField(
         validators=[Optional()],

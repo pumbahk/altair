@@ -120,6 +120,8 @@ class SalesSegments(BaseView):
         sales_segment_group = SalesSegmentGroup.query.filter_by(id=sales_segment_group_id).one()
         sales_segment = sales_segment_group.new_sales_segment()
         sales_segment = merge_session_with_post(sales_segment, f.data)
+        assert sdles_segment.event_id == sales_segment_group.event_id
+        assert sales_segment.performance is None or sales_segment.performance.event_id == sales_segment.event_id
 
         pdmps = [pdmp
                  for pdmp in sales_segment_group.payment_delivery_method_pairs

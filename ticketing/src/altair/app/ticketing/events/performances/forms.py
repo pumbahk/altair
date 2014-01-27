@@ -6,9 +6,10 @@ from wtforms.validators import Regexp, Length, Optional, ValidationError
 
 from altair.formhelpers import Translations, Required, NullableTextField, JISX0208, after1900
 from altair.formhelpers.form import OurForm
+from altair.formhelpers.filters import zero_as_none
 from altair.formhelpers.fields import OurIntegerField, DateTimeField, OurGroupedSelectField 
 from altair.formhelpers import replace_ambiguous
-from altair.app.ticketing.core.models import Venue, Performance, Stock
+from altair.app.ticketing.core.models import Venue, Performance, PerformanceSetting, Stock
 from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.helpers import label_text_for
@@ -118,6 +119,12 @@ class PerformanceForm(OurForm):
 
     note = NullableTextField(
         label=u'公演名備考',
+    )
+    order_limit = OurIntegerField(
+        label=label_text_for(PerformanceSetting.order_limit),
+        default=None,
+        filters=[zero_as_none],
+        validators=[Optional()]
     )
 
     display_order = OurIntegerField(

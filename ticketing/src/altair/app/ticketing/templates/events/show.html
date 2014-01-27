@@ -102,6 +102,14 @@ $(function(){
         % endif
       </td>
     </tr>
+    %if event.setting:
+      %for k, v, label in event.setting.describe_iter():
+        <tr>
+          <th>${label}</th>
+          <td colspan="7">${v or u'-'}</td>
+        </tr>
+      %endfor
+    %endif
     <tr>
       <th>
         カートURL
