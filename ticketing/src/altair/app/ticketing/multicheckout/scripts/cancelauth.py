@@ -133,7 +133,8 @@ def main():
     LOCK_NAME = 'cancelauth'
     LOCK_TIMEOUT = 10
     if lock(LOCK_NAME, LOCK_TIMEOUT):
-        return run(request)
+        run(request)
+        return
     else:
         logger.warn('lock timeout: already running process')
         return

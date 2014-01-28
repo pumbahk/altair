@@ -43,7 +43,7 @@ def item_ticket_pairs(order, ticket_dict=None, ticket=None):
 def enqueue_cover(operator, order):
     cover = TicketCover.get_from_order(order)
     if cover is None:
-        logger.error("cover is not found. order = {order.id} organization_id = {operator.organization_id}".format(order=order, operator=operator))
+        logger.info("cover is not found. order = {order.id} organization_id = {operator.organization_id}".format(order=order, operator=operator))
         return 
     dict_ = build_cover_dict_from_order(order)
     svg_builder = _get_svg_builder()
