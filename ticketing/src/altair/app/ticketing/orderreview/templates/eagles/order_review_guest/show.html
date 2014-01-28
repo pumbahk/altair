@@ -11,10 +11,6 @@
             <th colspan="4"><span style="color: #000000">${order.performance.event.title} <br />${order.performance.name}<br />${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)} ${order.performance.venue.name}</span></th>
           </thead>
         </tr>
-        <tr>
-          <td colspan="3">受付番号</td>
-          <td class="textR">${order.order_no}</td>
-        </tr>
         %for product in order.items:
         <tr>
           <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="22" height="21" /> <span style="color: #000000">${product.product.name}</span></th>
@@ -31,15 +27,7 @@
         %endfor
         <tr>
           <td colspan="3">ステータス</td>
-          <td class="textR">${h.get_order_status(order)}</td>
-        </tr>
-        <tr>
-          <td colspan="3">支払状況</td>
-          <td class="textR">${h.get_payment_status(order)}</td>
-        </tr>
-        <tr>
-          <td colspan="3">発券状況</td>
-          <td class="textR">${h.get_print_status(order)}</td>
+          <td class="textR">${h.order_status(order)}</td>
         </tr>
         <tr>
           <td colspan="3">決済手数料</td>

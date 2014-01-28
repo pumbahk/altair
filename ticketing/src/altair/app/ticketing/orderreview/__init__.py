@@ -43,6 +43,8 @@ def main(global_config, **local_config):
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
             mapping={"altair.app.ticketing.cart:static/": "/cart/static/"}))
 
+    from ..cart.authorization import MembershipAuthorizationPolicy
+    config.set_authorization_policy(MembershipAuthorizationPolicy())
 
     config.include('altair.app.ticketing.checkout')
     config.include('altair.app.ticketing.multicheckout')
@@ -70,7 +72,9 @@ def import_view(config):
     ## reivew
     config.add_route('order_review.form', '/')
     config.add_route('order_review.show', '/show')
-    
+    config.add_route('guest.order_review.form', '/guest')
+    config.add_route('guest.order_review.show', '/guest/show')
+
     ## qr
     config.add_route('order_review.qr_print', '/qr/print')
     config.add_route('order_review.qr_send', '/qr/send')
@@ -81,6 +85,9 @@ def import_view(config):
     ## orion
     config.add_route('order_review.orion_send', '/qr/eg_print')
     config.add_route('order_review.orion_print', '/qr/eg_send')
+
+    ## mypage
+    config.add_route('mypage.show', '/mypage')
 
     ## misc
     config.add_route('contact', '/contact')

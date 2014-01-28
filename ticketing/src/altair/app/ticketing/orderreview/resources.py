@@ -6,8 +6,8 @@ from dateutil import parser
 from pyramid.decorator import reify
 from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
-
-from altair.app.ticketing.core.models import DBSession, Order
+from altair.app.ticketing.core.models import DBSession, Order, ShippingAddress
+from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.sej.api import get_sej_order
 import altair.app.ticketing.core.api as core_api
@@ -15,6 +15,7 @@ from altair.app.ticketing.payments.plugins import (
     SEJ_PAYMENT_PLUGIN_ID, 
     SEJ_DELIVERY_PLUGIN_ID,
     )
+from ..core import api as c_api
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,12 @@ class OrderReviewResource(object):
     def order_no(self):
         return self.request.params.get('order_no')
 
+    def authenticated_user(self):
+        """現在認証中のユーザ"""
+        from altair.rakuten_auth.api import authenticated_user
+        user = authenticated_user(self.request)
+        return user or { 'is_guest': True }
+
     def get_order(self):
         order_no = self.order_no
         order = self.session.query(Order).filter_by(
@@ -62,3 +69,25 @@ class OrderReviewResource(object):
 
         return order, sej_order
 
+    def get_membership(self):
+        org = c_api.get_organization(self.request)
+        membership = Membership.query.filter(Membership.organization_id==org.id).first()
+        return membership
+
+    def get_shipping_address(self, user):
+        shipping_address = ShippingAddress.query.filter(
+            ShippingAddress.user_id==user.id
+        ).first()
+        return shipping_address
+
+    def get_orders(self, user):
+        orders = Order.query.filter(
+            Order.user_id==user.id
+        ).all()
+        return orders
+
+    def get_lots_entries(self, user):
+        entries = LotEntry.query.filter(
+            LotEntry.user_id==user.id
+        ).all()
+        return entries

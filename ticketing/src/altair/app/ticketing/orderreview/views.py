@@ -12,9 +12,12 @@ from altair.mobile import mobile_view_config
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
 from datetime import datetime
 
+import helpers as h
+from ..users.api import get_user
 from altair.app.ticketing.qr.utils import build_qr_by_history_id
 from altair.app.ticketing.qr.utils import build_qr_by_token_id
-from .api import safe_get_contact_url
+from altair.auth import who_api as get_who_api
+from .api import safe_get_contact_url, is_mypage_organization
 logger = logging.getLogger(__name__)
 
 DBSession = sqlahelper.get_session()
@@ -22,6 +25,86 @@ DBSession = sqlahelper.get_session()
 class InvalidForm(Exception):
     def __init__(self, form):
         self.form = form
+
+class MypageView(object):
+
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    @view_config(route_name='mypage.show', request_method="GET", custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/show.html"))
+    def show(self):
+
+        authenticated_user = self.context.authenticated_user()
+        user = get_user(authenticated_user)
+
+        if not user:
+            raise HTTPNotFound()
+
+        shipping_address = self.context.get_shipping_address(user)
+        orders = self.context.get_orders(user)
+        entries = self.context.get_lots_entries(user)
+
+        return dict(
+            shipping_address=shipping_address,
+            orders=orders,
+            lot_entries=entries,
+            h=h,
+        )
+
+class MypageLoginView(object):
+    renderer_tmpl = "altair.app.ticketing.orderreview:templates/{membership}/order_review/form.html"
+    #renderer_tmpl_mobile = "altair.app.ticketing.fc_auth:templates/{membership}/login_mobile.html"
+    #renderer_tmpl_smartphone = "altair.app.ticketing.fc_auth:templates/{membership}/login_smartphone.html"
+
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+
+    def select_renderer(self, membership):
+        self.request.override_renderer = self.renderer_tmpl.format(membership=membership)
+        """
+        if cart_api.is_mobile(self.request):
+            self.request.override_renderer = self.renderer_tmpl_mobile.format(membership=membership)
+        elif cart_api.is_smartphone(self.request):
+            self.request.override_renderer = self.renderer_tmpl_smartphone.format(membership=membership)
+        else:
+            self.request.override_renderer = self.renderer_tmpl.format(membership=membership)
+        """
+
+    @view_config(request_method="GET", route_name='order_review.form'
+        , custom_predicates=(is_mypage_organization, ), renderer='json', http_cache=60)
+    def login_form(self):
+        membership = self.context.get_membership().name
+        self.select_renderer(membership)
+        return dict(username='')
+
+    @view_config(request_method="POST", route_name='order_review.form', renderer='string'
+        , custom_predicates=(is_mypage_organization, ))
+    def login(self):
+        who_api = get_who_api(self.request, name="fc_auth")
+        membership = self.context.get_membership().name
+        username = self.request.params['username']
+        password = self.request.params['password']
+        logger.debug("authenticate for membership %s" % membership)
+
+        identity = {
+            'membership': membership,
+            'username': username,
+            'password': password,
+        }
+        authenticated, headers = who_api.login(identity)
+
+        if authenticated is None:
+            self.select_renderer(membership)
+            return {'username': username,
+                    'message': u'IDかパスワードが一致しません'}
+
+        res = HTTPFound(location=self.request.route_path("mypage.show"), headers=headers)
+
+        return res
 
 class OrderReviewView(object):
     def __init__(self, request):
@@ -43,6 +126,32 @@ class OrderReviewView(object):
                         renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile/show.html"))
     @view_config(route_name='order_review.show', request_method="POST", 
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/show.html"))
+    def post(self):
+        form = schemas.OrderReviewSchema(self.request.params)
+        if not form.validate():
+            raise InvalidForm(form)
+
+        order, sej_order = self.context.get_order()
+        if not form.object_validate(self.request, order):
+            raise InvalidForm(form)
+        return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
+
+class GuestOrderReviewView(object):
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    def __call__(self):
+        return dict()
+
+    @view_config(route_name='guest.order_review.form', request_method="GET",
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/form.html"))
+    def get(self):
+        form = schemas.OrderReviewSchema(self.request.params)
+        return {"form": form}
+
+    @view_config(route_name='guest.order_review.show', request_method="POST",
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/show.html"))
     def post(self):
         form = schemas.OrderReviewSchema(self.request.params)
         if not form.validate():
