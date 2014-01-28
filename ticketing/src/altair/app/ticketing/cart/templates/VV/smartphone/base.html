@@ -8,7 +8,7 @@
   <meta name="keywords" content="チケット,野球" />
   <meta http-equiv="content-style-type" content="text/css" />
   <meta http-equiv="content-script-type" content="text/javascript" />
-  <link rel="shortcut icon" href="http://www.v-varen.com/shared/img/favicon.ico">
+  <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.cart:static/img/common/v-varen.ico')}">
   <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/css/smartphone_default.css')}" type="text/css" />
   <%block name="javascript"></%block>
   <%block name="css"></%block>
@@ -27,18 +27,11 @@
       </div>
 
       <div class="side-action-buttons">
-        <form name="logout" action="${request.route_path('cart.logout')}" method="POST">
           <div style="text-align: right">
-            % if request.context.authenticated_user()['is_guest']:
-              <a onclick="document.logout.submit()" class="btn btn-supplementary"><span class="btn-inner">会員でログイン</span></a>
-            % else:
-              <a onclick="document.logout.submit()" class="btn btn-supplementary"><span class="btn-inner">ログアウト</span></a>
-            % endif
             % if event:
               <a href="${request.route_url('cart.switchpc.perf', event_id=event['id'], performance=performance) if performance else request.route_url('cart.switchpc', event_id=event['id'])}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
             % endif
           </div>
-        </form>
       </div>
 
       <div class="band">

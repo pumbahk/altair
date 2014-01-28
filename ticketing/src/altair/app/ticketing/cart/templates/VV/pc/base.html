@@ -7,7 +7,7 @@
   <meta http-equiv="content-style-type" content="text/css" />
   <meta http-equiv="content-script-type" content="text/javascript" />
   <meta name="viewport" content="width=950" />
-  <link rel="shortcut icon" href="http://www.v-varen.com/shared/img/favicon.ico">
+  <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.cart:static/img/common/v-varen.ico')}">
   <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/css/import.css')}" type="text/css" media="all" />
   <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/css/custom.css')}" type="text/css" media="all" />
   <%block name="javascript"></%block>
@@ -16,15 +16,6 @@
 <body id="settlement">
   <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.cart:static/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
   <div id="container" style="position:relative">
-    <form action="${request.route_path('cart.logout')}" method="POST">
-      <div style="text-align: right">
-        % if request.context.authenticated_user()['is_guest']:
-          <input type="submit" value="会員でログイン"/>
-        % else:
-          <input type="submit" value="ログアウト"/>
-        % endif
-      </div>
-    </form>
     <!-- ========== header ========== -->
     <div id="grpheader" style="height:80px">
       <p id="siteID" style="float:none;position:absolute;z-index:100">
