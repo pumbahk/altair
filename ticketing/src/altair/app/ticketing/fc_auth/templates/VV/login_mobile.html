@@ -16,13 +16,15 @@
 
 </div>
 <form action="${request.path}" method="post">
-<input type="hidden" name="membership" value="eagles" />
+<input type="hidden" name="membership" value="VV" />
 <div>
   会員ID<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
-  <br/>
-  パスワード<br/>
-  <input type="password" size="22" name="password">
+  %if message:
+  <br/><span style="color: red">IDまたはパスワードが一致しません</span>
+  %endif
+
+  <input type="hidden" name="password" value="vvaren">
 </div>
 <input type="submit" value="ログイン" />
 </form>
@@ -44,7 +46,7 @@
 <hr size="1" color="#888888" noshade="noshade" />
 <div align="center" style="font-size:x-small">
   <div>
-    <a href="http://www.ticketstar.jp">運営会社</a> | <a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a> | <a href="http://eagles.tstar.jp/legal">特定商取引法に基づく表示</a>
+    <a href="http://www.ticketstar.jp">運営会社</a> | <a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
   </div>
 <div><font color="#888888">2010-2013 &copy; TicketStar, Inc. All rights reserved.</font></div>
 </div>
