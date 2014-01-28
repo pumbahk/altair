@@ -6,7 +6,7 @@ import urlparse
 from altair.augus.transporters import FTPTransporter
 from altair.augus.parsers import AugusParser
 
-from .utils import (
+from ..utils import (
     get_argument_parser,
     get_settings,
     mkdir_p,
