@@ -41,7 +41,6 @@ def get_or_create_user(authenticated_user):
     if membership is None:
         membership = user_models.Membership(name='rakuten')
         DBSession.add(membership)
-    credential = user_models.UserCredential(user=user, auth_identifier=auth_identifier, membership=membership)
     DBSession.add(user)
     return user
 
