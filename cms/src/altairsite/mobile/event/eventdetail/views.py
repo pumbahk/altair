@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from altaircms.event.models import Event
+from altaircms.page.models import Page
 from altaircms.event.event_info import get_event_notify_info
 from altaircms.plugins.extra.stockstatus import StockStatus
 from altaircms.plugins.extra.api import get_stockstatus_summary
@@ -24,9 +25,10 @@ def move_eventdetail(request):
     form = EventDetailForm(request.GET)
     form.week.data = get_week_map()
     form.event.data = request.allowable(Event).filter(Event.id == form.event_id.data).first()
+    page_published = request.allowable(Page).filter(Page.event_id == form.event.data.id).filter(Page.published == True).first()
 
-    if not exist_value(form.event.data):
-        log_info("move_eventdetail", "event not found")
+    if not exist_value(form.event.data) or not page_published:
+        log_info("move_eventdetail", "event not found or page not published")
         raise ValidationFailure
 
     log_info("move_eventdetail", "detail infomation get start")
