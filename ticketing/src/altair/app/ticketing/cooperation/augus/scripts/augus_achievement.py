@@ -2,11 +2,11 @@
 #-*- coding: utf-8 -*-
 import os
 import argparse
-from altair.augus.protocols import PerformanceSyncRequest
 from altair.augus.parsers import AugusParser
+from altair.augus.protocols import AchievementRequest
 from pyramid.paster import bootstrap
 import transaction
-from ..importers import AugusPerformanceImpoter
+from ..exporters import AugusAchievementExporter
 from ..errors import AugusDataImportError
 
 
@@ -25,43 +25,44 @@ def init_env(conf):
     if conf:
         env = bootstrap(conf)
     settings = get_settings(env)
-    staging = settings['to_staging']
-    pending = settings['to_pending']
-    mkdir_p(staging)
-    mkdir_p(pending)
-    return staging, pending
-
+    to_staging = settings['to_staging']
+    to_pending = siettings['to_pending']
+    from_staging = settings['from_staging']
+    from_pending = siettings['from_pending']
+    mkdir_p(to_staging)
+    mkdir_p(to_pending)
+    mkdir_p(from_staging)
+    mkdir_p(from_pending)
+    return to_staging, to_pending, from_staging, from_pending
 
 def mkdir_p(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-
 def main():
+    paths = []
     parser = argparse.ArgumentParser()
     parser.add_argument('conf', nargs='?', default=None)
     args = parser.parse_args()
-    staging, pending = init_env(args.conf)
-    
-    importer = AugusPerformanceImpoter()
-    target = PerformanceSyncRequest
-    paths = []
+    to_staging, to_pending, from_staging, from_pending_= init_env(args.conf)
+    exporter = AugusAchievementExporter()
+    target = AchievementRequest
     try:
         for name in filter(target.match_name, os.listdir(staging)):
             path = os.path.join(staging, name)
             paths.append(path)
             request = AugusParser.parse(path)
-            importer.import_(request)
+            exporter.export(from_staging, request)
     except AugusDataImportError as err:
-        transaction.abort()        
+        transaction.abort()    
         raise
     except:
         transaction.abort()
         raise
     else:
         transaction.commit()
-
     for path in paths:
-        shutil.move(path, pending)
+        shutil.move(path, to_pending)
+    
 if __name__ == '__main__':
     main()

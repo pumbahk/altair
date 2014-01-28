@@ -1,7 +1,12 @@
 #-*- coding: utf-8 -*-
+from pyramid.decorator import reify
 from pyramid.httpexceptions import (
     HTTPNotFound,
     HTTPBadRequest,
+    )
+from sqlalchemy import (
+    or_,
+    and_,
     )
 from sqlalchemy.orm.exc import (
     NoResultFound,
@@ -11,6 +16,9 @@ from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.core.models import (
     Venue,
     AugusVenue,
+    Event,
+    AugusTicket,
+    AugusPerformance,
     )
 from .utils import (
     RequestAccessor,
@@ -27,49 +35,144 @@ class AugusVenueListRequestAccessor(RequestAccessor):
 class AugusVenueListResource(TicketingAdminResource):
     accessor_factory = AugusVenueListRequestAccessor
     def __init__(self, request):
-        super(type(self), self).__init__(request)        
-        accessor = self.accessor_factory(request)
-        self.augus_venue_code = accessor.augus_venue_code
-        self.augus_venues = AugusVenue.query.filter(AugusVenue.code==self.augus_venue_code).all()
-        if 0 == len(self.augus_venues):
+        super(type(self), self).__init__(request)
+        self.accessor = self.accessor_factory(request)
+
+    @reify
+    def augus_venue_code(self):
+        return self.accessor.augus_venue_code
+
+    @reify
+    def augus_venues(self):
+        augus_venues = AugusVenue.query.filter(AugusVenue.code==self.augus_venue_code).all()
+        if 0 == len(augus_venues):
             raise HTTPNotFound(
                 'Not found AugusVenue: AugusVenue.code == {} is not found.'.format(
                     self.augus_venue_code))
+        return augus_venues
+
 
 class AugusVenueRequestAccessor(RequestAccessor):
     in_matchdict = {'augus_venue_code': int,
                     'augus_venue_version': int,
                     }
-    
+
 class AugusVenueResource(TicketingAdminResource):
     accessor_factory = AugusVenueRequestAccessor
     def __init__(self, request):
-        super(type(self), self).__init__(request)        
-        accessor = self.accessor_factory(request)
-        self.augus_venue_code = accessor.augus_venue_code
-        self.augus_venue_version = accessor.augus_venue_version
+        super(type(self), self).__init__(request)
+        self.accessor = self.accessor_factory(request)
+
+    @reify
+    def augus_venue_code(self):
+        return self.accessor.augus_venue_code
+
+    @reify
+    def augus_venue_version(self):
+        return self.accessor.augus_venue_version
+
+    @reify
+    def augus_venue(self):
         try:
-            self.augus_venue = AugusVenue\
+            return AugusVenue\
                 .query.filter(AugusVenue.code==self.augus_venue_code)\
                       .filter(AugusVenue.version==self.augus_venue_version)\
                       .one()
         except (MultipleResultsFound, NoResultFound):
             raise HTTPNotFound('The AugusVenue not found or multiply: code={}, version={}'.format(
                 self.augus_venue_code, self.augus_venue_version))
-        
+
 class VenueRequestAccessor(RequestAccessor):
     in_matchdict = {'venue_id': int}
-        
-    
+
 class VenueResource(TicketingAdminResource):
-    accessor_factory = VenueRequestAccessor    
+    accessor_factory = VenueRequestAccessor
     def __init__(self, request):
         super(type(self), self).__init__(request)
-        accessor = self.accessor_factory(request)
+        self.accessor = self.accessor_factory(request)
+
+
+    @reify
+    def venue(self):
         try:
-            self.venue = Venue.query.filter(Venue.id==accessor.venue_id)\
-                                    .filter(Venue.organization_id==self.user.organization_id)\
-                                    .one()
+            return Venue.query.filter(Venue.id==self.accessor.venue_id)\
+                              .filter(Venue.organization_id==self.organization.id)\
+                              .one()
         except (MultipleResultsFound, NoResultFound) as err:
-            raise HTTPNotFound('The venue_id = {} is not found or multiply.'.format(request.matchdict.get('venue_id')))
-        self.augus_venues = AugusVenue.query.filter(AugusVenue.venue_id==self.venue.id).all()
+            raise HTTPNotFound('The venue_id = {} is not found or multiply.'.format(self.accessor.venue_id))
+
+
+    @reify
+    def augus_venues(self):
+        return AugusVenue.query.filter(AugusVenue.venue_id==self.venue.id).all()
+
+class PerformanceRequestAccessor(RequestAccessor):
+    in_matchdict = {'event_id': int}
+
+class PerformanceResource(TicketingAdminResource):
+    accessor_factory = PerformanceRequestAccessor
+    def __init__(self, request):
+        super(type(self), self).__init__(request)
+        self.accessor = self.accessor_factory(request)
+
+    @reify
+    def event(self):
+        try:
+            return Event.query.filter(Event.id==self.accessor.event_id)\
+                              .filter(Venue.organization_id==self.organization.id)\
+                              .one()
+        except (MultipleResultsFound, NoResultFound) as err:
+            raise HTTPNotFound('The event_id = {} is not found or multiply.'.format(self.accessor.event_id))
+    
+    @reify
+    def performances(self):
+        return self.event.performances
+
+    @reify
+    def augus_performance_all(self):
+        try:
+            return AugusPerformance.query.all()
+        except (MultipleResultsFound, NoResultFound) as err:
+            raise HTTPNotFound('The event_id = {} is not found or multiply.'.format(self.accessor.event_id))
+            
+    def get_performance_augus_performance_pair(self):
+        for performance in self.performances:
+            ag_performance = AugusPerformance.get(performance_id=performance.id)
+            yield performance, ag_performance
+
+    @reify
+    def performance_agperformance(self):
+        return [(performance, ag_performance)
+                for performance, ag_performance 
+                in self.get_performance_augus_performance_pair()]
+
+class SeatTypeRequestAccessor(RequestAccessor):
+    in_matchdict = {'event_id': int}
+
+
+class SeatTypeResource(TicketingAdminResource):
+    accessor_factory = SeatTypeRequestAccessor
+    def __init__(self, request):
+        super(type(self), self).__init__(request)
+        self.accessor = self.accessor_factory(request)
+
+    @reify
+    def event(self):
+        try:
+            return Event.query.filter(Event.id==self.accessor.event_id)\
+                              .filter(Venue.organization_id==self.organization.id)\
+                              .one()
+        except (MultipleResultsFound, NoResultFound) as err:
+            raise HTTPNotFound('The event_id = {} is not found or multiply.'.format(self.accessor.event_id))
+
+    @reify
+    def ag_tickets(self):
+        performance_ids = [pfc.id for pfc in self.event.performances]
+        ag_performances = AugusPerformance.query.filter(AugusPerformance.performance_id.in_(performance_ids)).all()
+        if ag_performances:
+            ag_event_code = ag_performances[0].augus_event_code
+            ag_performance_codes = [ag_performance.augus_performance_code for ag_performance in ag_performances]
+            ag_ticekts = AugusTicket.query.filter(AugusTicket.augus_performance_code.in_(ag_performance_codes)).all()
+            return [ag_ticket for ag_ticekt in ag_tickets if ag_ticket.augus_event_code == ag_event_code]
+        else:
+            return []

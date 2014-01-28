@@ -1,0 +1,37 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<div class="page-header">
+  <h3>オーガス公演連携</h3>
+</div>
+<form role="form" method="POST" action="${request.route_url('augus.performance.save', event_id=event.id)}">
+<button class="btn" type="submit">連携を保存</button>
+<table class="table">
+  <tr>
+    <th>公演</th>
+    <th>公演コード</th>
+    <th>日時</th>
+    <th>開場</th>
+    <th>オーガス公演</th>
+  </tr>
+  %for performance, ag_performance_now in performance_agperformance:
+  <tr>
+    <td>${performance.name}</td>
+    <td>${performance.code}</td>
+    <td>${performance.start_on}</td>
+    <td>${performance.venue.name}</td>
+    
+    <td>
+      <select class="selectpicker" name="${select_prefix}${performance.id}">
+        %for ag_performance in augus_performance_all:
+        <option value="${ag_performance.id}">${ag_performance.name} -
+          ${ag_performance.code} -
+        </option>
+        %endfor
+      </select>
+    </td>
+  </tr>
+  %endfor
+</table>
+</form>

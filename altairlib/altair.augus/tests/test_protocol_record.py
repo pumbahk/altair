@@ -1,6 +1,8 @@
 #-*- coding: utf-8 -*-
-from unittest import TestCase, skip
 import string
+import datetime
+from unittest import TestCase, skip
+
 from altair.augus.errors import ProtocolFormatError
 from altair.augus.protocols import ( # protocols
     VenueSyncRequest,
@@ -273,7 +275,7 @@ class ProtocolRecordAttributeTypeTest(TestCase):
                 setattr(record, attr, None)
                 
     def test_str_type(self):
-        japanese = map(lambda wd: wd.encode('sjis'), [u'日', u'本', u'語'])
+        japanese = [u'日', u'本', u'語']
         for protocol, attr in self._generate_protocol_attribute(StringType):
             record = protocol.record
             name = '{}.{}'.format(record.__name__, attr)
@@ -340,3 +342,23 @@ class ProtocolRecordAttributeTypeTest(TestCase):
 
     def test_achievement_status(self):
         self._testing_type_it(AchievementStatus)
+
+class PerformanceRequestRecordDateTimeTypeTest(TestCase):
+    def test_start_on(self):
+        now = datetime.datetime.now()
+        record = PerformanceSyncRequest.record()
+        record.date = date = now.strftime('%Y%m%d')
+        record.start_on = now.strftime('%H%M')
+        fmt = '%Y%m%d%H%M'
+        self.assertEqual(record.start_on_datetime.strftime(fmt),
+                         now.strftime(fmt))
+
+    def test_open_on(self):
+        now = datetime.datetime.now()
+        record = PerformanceSyncRequest.record()
+        record.date = date = now.strftime('%Y%m%d')
+        record.open_on = now.strftime('%H%M')
+        fmt = '%Y%m%d%H%M'
+        self.assertEqual(record.open_on_datetime.strftime(fmt),
+                         now.strftime(fmt))
+

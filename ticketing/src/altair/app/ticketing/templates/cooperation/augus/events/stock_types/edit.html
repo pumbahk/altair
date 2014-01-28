@@ -1,0 +1,28 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<div class="page-header">
+  <h3>オーガス席種連携</h3>
+</div>
+<form role="form" method="POST" action="${request.route_url('augus.stock_type.save', event_id=event.id)}">
+<button class="btn" type="submit">連携を保存</button>
+<table class="table">
+  <tr>
+    <th>席種</th>
+    <th>オーガスチケット</th>
+  </tr>
+  %for stock_type, ag_ticekt_now in stocktype_agticket:
+  <tr>
+    <td>${stock_type.name}</td>
+    <td>
+      <select class="selectpicker" name="${select_prefix}${stock_type.id}">
+        %for ag_ticket in ag_tickets:
+        <option value="${ag_ticket.id}">${ag_ticket.code} - ${ag_ticket.name}</option>
+        %endfor
+      </select>
+    </td>
+  </tr>
+  %endfor
+</table>
+</form>

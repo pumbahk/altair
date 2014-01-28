@@ -1,4 +1,5 @@
 #-*- coding: utf-8 -*-
+import time
 from unittest import TestCase
 from altair.augus.protocols import ( # protocols
     VenueSyncRequest,
@@ -268,3 +269,42 @@ class ProtocolRecordAttributeMismatchTest(TestCase):
                              .format(protocol.__name__,
                                      len(record.attributes),
                                      len(testattributes)))
+
+class ProtocolHeaderTest(TestCase):
+    def test_date(self):
+        for protocol_class in ALL:
+            fmt = '%Y%m%d%H%M'
+            proto = protocol_class()
+            now = time.localtime()
+            stamp = time.strftime(fmt, now)
+            proto.date = stamp
+            self.assertEqual(proto.date, stamp)
+            
+            proto.date = now
+            self.assertEqual(proto.date, stamp)
+
+            with self.assertRaises(ValueError):
+                proto.date = None
+            
+            with self.assertRaises(ValueError):
+                proto.date = 'aaaaaa'
+            
+
+    def test_created_at(self):
+        for protocol_class in ALL:
+            fmt = '%Y%m%d%H%M%S'
+            proto = protocol_class()
+            now = time.localtime()
+            stamp = time.strftime(fmt, now)
+            proto.created_at = stamp
+            self.assertEqual(proto.created_at, stamp)
+            
+            proto.created_at = now
+            self.assertEqual(proto.created_at, stamp)
+
+            with self.assertRaises(ValueError):
+                proto.created_at = None
+            
+            with self.assertRaises(ValueError):
+                proto.created_at = 'aaaaaa'
+    

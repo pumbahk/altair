@@ -164,7 +164,7 @@ def main():
     for venue_id in venue_ids:
         print venue_id,
         res, content = http.request(
-            'https://backend.stg2.rt.ticketstar.jp/cooperation/download/{0}?id=&cooperation_type=1'.format(venue_id),
+            'https://backend.stg2.rt.ticketstar.jp/cooperation/augus/venues/{}/download'.format(venue_id),
             'GET', headers=headers)
         if res.status != 200:
             print res.status, '--------------->', 'NG'
@@ -191,7 +191,7 @@ def main():
         new.seek(0)
 
         res, content = http.request(
-            'https://backend.stg2.rt.ticketstar.jp/cooperation/download/{0}?id=&cooperation_type=1'.format(venue_id),
+            'https://backend.stg2.rt.ticketstar.jp/cooperation/augus/venues/{}/download'.format(venue_id),
             'POST', headers=headers, body=new.read())
         import ipdb; ipdb.set_trace()
         pass

@@ -2,11 +2,11 @@
 #-*- coding: utf-8 -*-
 import os
 import argparse
-from altair.augus.protocols import PerformanceSyncRequest
+from altair.augus.protocols import TicketSyncRequest
 from altair.augus.parsers import AugusParser
 from pyramid.paster import bootstrap
 import transaction
-from ..importers import AugusPerformanceImpoter
+from ..importers import AugusTicketImpoter
 from ..errors import AugusDataImportError
 
 
@@ -43,8 +43,8 @@ def main():
     args = parser.parse_args()
     staging, pending = init_env(args.conf)
     
-    importer = AugusPerformanceImpoter()
-    target = PerformanceSyncRequest
+    importer = AugusTicketImpoter()
+    target = TicketSyncRequest
     paths = []
     try:
         for name in filter(target.match_name, os.listdir(staging)):

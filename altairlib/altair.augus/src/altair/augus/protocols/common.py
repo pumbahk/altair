@@ -480,8 +480,9 @@ class ProtocolBase(list):
         self.customer_id = customer_id
         self.event_code = event_code
         self.venue_code = venue_code
-        self.date = None
-        self.created_at = None
+        self._date = None
+        self._created_at = None
+        self.set_now()
 
     @classmethod
     def match_name(cls, name):
@@ -493,20 +494,64 @@ class ProtocolBase(list):
         return self.fmt.format(customer_id=self.customer_id,
                                event_code=self.event_code,
                                venue_code=self.venue_code,
-                               date=self.date_str,
-                               created_at=self.created_at_str,
+                               date=self.date,
+                               created_at=self.created_at,
                                )
+
+    DATE_FORMAT = '%Y%m%d%H%M'
     @property
-    def date_str(self):
-        return time.strftime('%Y%m%d%H%M', self.date)
+    def date(self):
+        return time.strftime(self.DATE_FORMAT, self._date)
+
+    @date.setter
+    def date(self, value):
+        try:
+            self._date = time.strptime(value, self.DATE_FORMAT)
+            return
+        except (TypeError, ValueError):
+            pass
+        
+        try:
+            time.strftime(self.DATE_FORMAT, value)
+            self._date = value
+            return
+        except (TypeError, ValueError):
+            pass
+
+        raise ValueError('Illegal data: {}'.format(value))
+
+    
+    
+
+
+    CREATED_AT_FORMAT = '%Y%m%d%H%M%S'
+    @property
+    def created_at(self):
+        return time.strftime(self.CREATED_AT_FORMAT, self._created_at)
+
+    @created_at.setter
+    def created_at(self, value):
+        try:
+            self._created_at = time.strptime(value, self.CREATED_AT_FORMAT)
+            return
+        except (TypeError, ValueError):
+            pass
+        
+        try:
+            time.strftime(self.CREATED_AT_FORMAT, value)
+            self._created_at = value
+            return
+        except (TypeError, ValueError):
+            pass
+
+        raise ValueError('Illegal data: {}'.format(value))
 
     @property
     def created_at_str(self):
-        return time.strftime('%Y%m%d%H%M%S', self.created_at)
-
+        return self.created_at
 
     def iterdump(self):
-        yield self.customer_id, self.created_at, self.length
+        yield self.customer_id, self.created_at_str, str(len(self))
         for record in self:
             yield record.dump()
 
@@ -514,6 +559,7 @@ class ProtocolBase(list):
         return [row for row in self.iterdump()]
 
     def load(self, rows):
+        rows = iter(rows)
         header = rows.next()
         self.customer_id = header[0]
         self.created_at = header[1]
@@ -530,6 +576,6 @@ class ProtocolBase(list):
     def create_record(cls):
         return cls.record()
     
-    # for test
     def set_now(self):
-        self.date = self.created_at = time.localtime()
+        self.date = time.localtime()
+        self.created_at = self.date

@@ -2,11 +2,11 @@
 #-*- coding: utf-8 -*-
 import os
 import argparse
-from altair.augus.protocols import PerformanceSyncRequest
+from altair.augus.protocols import TicketSyncRequest
 from altair.augus.parsers import AugusParser
 from pyramid.paster import bootstrap
 import transaction
-from ..importers import AugusPerformanceImpoter
+from ..exporters import AugusPutbackExporter
 from ..errors import AugusDataImportError
 
 
@@ -25,8 +25,8 @@ def init_env(conf):
     if conf:
         env = bootstrap(conf)
     settings = get_settings(env)
-    staging = settings['to_staging']
-    pending = settings['to_pending']
+    staging = settings['from_staging']
+    pending = settings['from_pending']
     mkdir_p(staging)
     mkdir_p(pending)
     return staging, pending
@@ -36,22 +36,16 @@ def mkdir_p(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
+CUSTOMER_ID = 12345678
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('conf', nargs='?', default=None)
     args = parser.parse_args()
     staging, pending = init_env(args.conf)
-    
-    importer = AugusPerformanceImpoter()
-    target = PerformanceSyncRequest
-    paths = []
+    exporter = AugusPutbackExporter()
     try:
-        for name in filter(target.match_name, os.listdir(staging)):
-            path = os.path.join(staging, name)
-            paths.append(path)
-            request = AugusParser.parse(path)
-            importer.import_(request)
+        request = exporter.export(staging, CUSTOMER_ID)
     except AugusDataImportError as err:
         transaction.abort()        
         raise
@@ -60,8 +54,5 @@ def main():
         raise
     else:
         transaction.commit()
-
-    for path in paths:
-        shutil.move(path, pending)
 if __name__ == '__main__':
     main()
