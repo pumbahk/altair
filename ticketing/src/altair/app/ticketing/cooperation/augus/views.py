@@ -141,6 +141,13 @@ class AugusVenueView(_AugusBaseView):
         else:# validate error
             raise HTTPBadRequest('validation error')
 
+@view_defaults(route_name='augus.events.show', decorator=with_bootstrap, permission='event_editor')
+class AugusEventView(_AugusBaseView):
+    @view_config(route_name='augus.event.show', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/augus/events/show.html')                 
+    def show(self):
+        return dict(event=self.context.event)
+
 @view_defaults(route_name='augus.performance', decorator=with_bootstrap, permission='event_editor')
 class AugusPerformanceView(_AugusBaseView):
     select_prefix = 'performance-'
