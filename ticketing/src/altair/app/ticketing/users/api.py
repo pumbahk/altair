@@ -7,7 +7,7 @@ from . import models as user_models
 
 logger = logging.getLogger(__name__)
 
-def get_or_create_user(authenticated_user):
+def get_user(authenticated_user):
     if authenticated_user is None or authenticated_user.get('is_guest', False):
         return None
 
@@ -30,6 +30,11 @@ def get_or_create_user(authenticated_user):
     ).first()
     if credential:
         return credential.user
+
+def get_or_create_user(authenticated_user):
+    user = get_user(authenticated_user)
+    if user:
+        return user
     
     user = user_models.User()
     membership = user_models.Membership.query.filter(user_models.Membership.name=='rakuten').first()

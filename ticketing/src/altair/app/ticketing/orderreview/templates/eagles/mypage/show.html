@@ -1,0 +1,70 @@
+<%inherit file="../commons/layout.html" />
+
+<h2>マイページ</h2>
+
+<h3>会員情報</h3>
+% if shipping_address:
+  ${render_shipping_address(shipping_address)}
+% else:
+  会員情報が設定されていません。
+% endif
+
+<h3>購入履歴照会</h3>
+% if orders:
+  ${render_orders(orders)}
+% else:
+  購入履歴がありません。
+% endif
+
+<h3>抽選申込み状況照会</h3>
+% if lot_entries:
+  ${render_lot_entries(lot_entries)}
+% else:
+  抽選申込みがありません。
+% endif
+
+<%def name="render_shipping_address(shipping)">
+  <table class="purchasedContents" summary="配送先情報">
+    <tbody>
+      <tr>
+        <th scope="row"><span style="color: #000000">氏名（漢字）</span></th>
+        <td>${shipping.last_name} ${shipping.first_name}</td>
+      </tr>
+      <tr>
+        <th scope="row"><span style="color: #000000">氏名（カナ）</span></th>
+        <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
+      </tr>
+      <tr>
+        <th scope="row"><span style="color: #000000">電話番号</span></th>
+        <td>${shipping.tel_1}</td>
+      </tr>
+      <tr>
+        <th scope="row"><span style="color: #000000">住所</span></th>
+        <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
+      </tr>
+    </tbody>
+  </table>
+</%def>
+
+<%def name="render_lot_entries(lot_entries)">
+</%def>
+
+<%def name="render_orders(orders)">
+  % for order in orders:
+    <div id="mypageHistory">
+        <div>
+            <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/images/eagles/mypage/' + h.get_order_status_image(order))}" alt="${h.get_order_status(order)}" width="60" height="60" /></p>
+            <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/images/eagles/mypage/' + h.get_payment_status_image(order))}" alt="${h.get_payment_status(order)}" width="60" height="60" /></p>
+            <dl>
+              <form name="${order.order_no}" action="${request.route_path('order_review.show')}" method="POST">
+                <input type="hidden" name="order_no" value="${order.order_no}"/>
+                <input type="hidden" name="tel" value="${order.shipping_address.tel_1}"/>
+                <dt><a href="javascript:void(0);" onclick="document.${order.order_no}.submit()">${order.performance.name}</a></dt>
+                <dd>${h.japanese_date(order.performance.start_on)} ${order.performance.venue.name}</dd>
+                <dd>${order.order_no}</dd>
+              </form>
+            </dl>
+        </div>
+    </div>
+  % endfor
+</%def>

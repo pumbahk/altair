@@ -1,6 +1,10 @@
 [app:orderreview]
 use = config:%(here)s/../../baseconf/common.ini#orderreview
-pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair_gaq altair.findable_label altair.app.ticketing.orderreview.dummy
+pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair_gaq altair.findable_label altair.app.ticketing.orderreview.dummy altair.auth
+altair.auth.specs =
+    fc_auth=%(here)s/fc_who.ini
+altair.auth.decider = altair.app.ticketing.cart:WhoDecider
+altair.auth.callback = altair.app.ticketing.cart.security:auth_model_callback
 
 ; altair:site-data
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
