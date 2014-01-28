@@ -1755,7 +1755,44 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # create default Stock
         Stock.create_default(self.event, stock_type_id=self.id)
 
+    def update_stock_types(self, old_display_order):
+        min_display_order = 1
+        max_display_order = len(StockType.query.filter(StockType.event_id==self.event_id).all())
+        if self.display_order < min_display_order:
+            self.display_order = min_display_order
+        if self.display_order > max_display_order:
+            self.display_order = max_display_order
+
+        if old_display_order > self.display_order:
+            stock_types = StockType.query.filter(StockType.event_id==self.event_id)\
+                .filter(StockType.id!=self.id)\
+                .filter(StockType.display_order>=self.display_order)\
+                .filter(StockType.display_order<old_display_order).all()
+
+            for st in stock_types:
+                st.display_order += 1
+                st.save()
+
+        if old_display_order < self.display_order:
+            stock_types = StockType.query.filter(StockType.event_id==self.event_id)\
+                .filter(StockType.id!=self.id)\
+                .filter(StockType.display_order<=self.display_order)\
+                .filter(StockType.display_order>=old_display_order).all()
+
+            for st in stock_types:
+                st.display_order -= 1
+                st.save()
+
+        self.save()
+
     def delete(self):
+        stock_types = StockType.query.filter(StockType.event_id==self.event_id)\
+            .filter(StockType.display_order>self.display_order).all()
+
+        for stock_type in stock_types:
+            stock_type.display_order -= 1
+            stock_type.save()
+
         # delete Stock
         for stock in self.stocks:
             stock.delete()
@@ -1783,6 +1820,31 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if sale_only:
                 query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
         return query.scalar()
+
+    def init_display_order(self, event_id):
+        types = StockType.query.filter(StockType.event_id==event_id).all()
+        self.display_order = len(types) + 1
+
+    def init_style(self, data):
+        if self.is_seat:
+
+            self.style = {
+                'stroke':{
+                    'color':data.get('stroke_color'),
+                    'width':data.get('stroke_width'),
+                    'pattern':data.get('stroke_patten'),
+                },
+                'fill':{
+                    'color':self.get_fill_color(self.display_order-1),
+                },
+            }
+        else:
+            self.style = {}
+
+    def get_fill_color(self, color_no):
+        color_dict = ['#ff0000', '#3366ff', '#009900', '#ffff00',
+                      '#9900ff', '#80cccc', '#ff80cc', '#cce680']
+        return color_dict[color_no % len(color_dict)]
 
     def set_style(self, data):
         if self.is_seat:
