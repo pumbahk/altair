@@ -13,7 +13,7 @@ from altair.formhelpers import (
 from altair.formhelpers.fields.datetime import Min, Max
 from altair.formhelpers.widgets.datetime import OurTimeWidget
 from altair.app.ticketing.helpers import label_text_for
-from altair.app.ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder, Account
+from altair.app.ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder, Account, SalesSegmentGroup, SalesSegmentGroupSetting
 
 logger = logging.getLogger(__name__)
 
@@ -117,9 +117,16 @@ class SalesSegmentGroupForm(OurForm):
         widget=CheckboxInput(),
     )
     max_quantity = OurIntegerField(
-        label=u'購入上限枚数',
+        label=label_text_for(SalesSegmentGroup.max_quantity),
         default=10,
         validators=[RequiredOnUpdate()],
+        hide_on_new=True
+    )
+    max_quantity_per_user = OurIntegerField(
+        label=label_text_for(SalesSegmentGroupSetting.max_quantity_per_user),
+        default=0,
+        filters=[zero_as_none],
+        validators=[Optional()],
         hide_on_new=True
     )
     max_product_quatity = OurIntegerField(

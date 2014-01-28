@@ -2,6 +2,7 @@
 
 import json
 from datetime import datetime
+import logging
 
 import webhelpers.paginate as paginate
 from pyramid.view import view_config, view_defaults
@@ -18,7 +19,9 @@ from altair.app.ticketing.events.sales_segment_groups.forms import SalesSegmentG
 from altair.app.ticketing.events.sales_segments.forms import SalesSegmentForm
 from altair.app.ticketing.memberships.forms import MemberGroupForm
 from altair.app.ticketing.users.models import MemberGroup, Membership
-from altair.app.ticketing.events.sales_segments.resources import SalesSegmentGroupUpdate, SalesSegmentGroupCreate
+from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
+
+logger = logging.getLogger(__name__)
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegmentGroups(BaseView):
@@ -53,7 +56,6 @@ class SalesSegmentGroups(BaseView):
     def show(self):
         return {
             'form_s': SalesSegmentForm(context=self.context),
-            'form_ss': SalesSegmentGroupForm(obj=self.context.sales_segment_group, context=self.context),
             'member_groups': self.context.sales_segment_group.membergroups, 
             'sales_segment_group':self.context.sales_segment_group,
             }
@@ -69,10 +71,20 @@ class SalesSegmentGroups(BaseView):
     def new_post(self):
         f = SalesSegmentGroupForm(self.request.POST, context=self.context, new_form=True)
         if f.validate():
-            sales_segment_group = merge_session_with_post(SalesSegmentGroup(), f.data)
-            sales_segment_group.organization = self.context.user.organization
+            sales_segment_group = merge_session_with_post(
+                SalesSegmentGroup(
+                    organization=self.context.organization,
+                    setting=SalesSegmentGroupSetting(
+                        order_limit=f.order_limit.data,
+                        max_quantity_per_user=f.max_quantity_per_user.data
+                        )
+                    ),
+                f.data
+                )
             sales_segment_group.save()
-            SalesSegmentGroupCreate(sales_segment_group).create(self.context.event.performances)
+            accessor = SalesSegmentGroupAccessor()
+            for performacne in self.context.event.performances:
+                accessor.create_sales_segment_for_performance(performance)
             self.request.session.flash(u'販売区分グループを保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
@@ -96,26 +108,43 @@ class SalesSegmentGroups(BaseView):
         sales_segment_group = self.context.sales_segment_group
         if self.request.matched_route.name == 'sales_segment_groups.copy':
             with_pdmp = bool(f.copy_payment_delivery_method_pairs.data)
+            # id_map は { テンプレートのid: 新しいSalesSegmentGroupのid }
             id_map = SalesSegmentGroup.create_from_template(sales_segment_group, with_payment_delivery_method_pairs=with_pdmp)
             f.id.data = id_map[self.context.sales_segment_group.id]
-            new_sales_segment_group = merge_session_with_post(SalesSegmentGroup.get(f.id.data), f.data)
+            # XXX: なぜこれを取り直す必要が? create_from_template がそのまま実体を返せば済む話では?
+            new_sales_segment_group = SalesSegmentGroup.query.filter_by(id=f.id.data).one()
+            new_sales_segment_group = merge_session_with_post(new_sales_segment_group, f.data)
+            new_sales_segment_group.setting.order_limit = f.order_limit.data
+            new_sales_segment_group.setting.max_quantity_per_user = f.max_quantity_per_user.data
             new_sales_segment_group.save()
 
-            for ss in sales_segment_group.sales_segments:
-                id_map = SalesSegment.create_from_template(ss, sales_segment_group_id=new_sales_segment_group.id)
+            for sales_segment in sales_segment_group.sales_segments:
+                id_map = SalesSegment.create_from_template(
+                    sales_segment,
+                    sales_segment_group_id=new_sales_segment_group.id
+                    )
                 if bool(f.copy_products.data):
-                    for product in ss.products:
-                        Product.create_from_template(template=product, with_product_items=True, stock_holder_id=f.copy_to_stock_holder.data, sales_segment=id_map)
+                    for product in sales_segment.products:
+                        Product.create_from_template(
+                            template=product,
+                            with_product_items=True,
+                            stock_holder_id=f.copy_to_stock_holder.data,
+                            sales_segment=id_map
+                            )
 
             new_sales_segment_group.sync_member_group_to_children()
             
         else:
             sales_segment_group = merge_session_with_post(sales_segment_group, f.data)
+            sales_segment_group.setting.order_limit = f.order_limit.data
+            sales_segment_group.setting.max_quantity_per_user = f.max_quantity_per_user.data
             sales_segment_group.save()
 
             sales_segment_group.sync_member_group_to_children()
-            SalesSegmentGroupUpdate(sales_segment_group).update(
-                sales_segment_group.sales_segments)
+            accessor = SalesSegmentAccessor()
+            for sales_segment in sales_segment_group.sales_segments:
+                logger.info('propagating changes to sales_segment(id=%ld)' % sales_segment.id)
+                accessor.update_sales_segment(sales_segment)
 
         self.request.session.flash(u'販売区分グループを保存しました')
         return None
@@ -161,7 +190,6 @@ class SalesSegmentGroups(BaseView):
             'form': form,
             'membergroups': sales_segment_group.membergroups,
             'form_mg': MemberGroupForm(),
-            'form_ss': SalesSegmentGroupForm(context=self.context),
             'sales_segment_group':sales_segment_group,
             'redirect_to': redirect_to,
             'sales_segment_group_id': sales_segment_group.id

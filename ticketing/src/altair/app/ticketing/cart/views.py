@@ -30,6 +30,7 @@ from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
 from altair.app.ticketing.users.models import UserPointAccountTypeEnum
 from altair.app.ticketing.users.api import (
+    get_user,
     get_or_create_user,
     get_or_create_user_from_point_no,
     create_user_point_account_from_point_no,
@@ -727,7 +728,7 @@ class PaymentView(object):
         
         if 0 == len(payment_delivery_methods):
             raise PaymentMethodEmptyError.from_resource(self.context, self.request)
-        
+
         user = get_or_create_user(self.context.authenticated_user())
         user_profile = None
         if user is not None:
@@ -830,15 +831,9 @@ class PaymentView(object):
             return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
 
         sales_segment = cart.sales_segment
-        mail_addresses = []
-        if shipping_address_params.get('email_1'):
-            mail_addresses.append(shipping_address_params['email_1'])
-        if shipping_address_params.get('email_2'):
-            mail_addresses.append(shipping_address_params['email_2'])
-        self.context.check_order_limit(sales_segment, user, mail_addresses)
-
         cart.payment_delivery_pair = payment_delivery_pair
         cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
+        self.context.check_order_limit()
 
         DBSession.add(cart)
 
@@ -925,11 +920,10 @@ class PaymentView(object):
     @view_config(route_name='cart.point', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
     @view_config(route_name='cart.point', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
     def point_post(self):
-
         self.form = schemas.PointForm(formdata=self.request.params)
 
         cart = self.request.context.cart
-        user = get_or_create_user(self.context.authenticated_user())
+        user = self.context.user_object
 
         form = self.form
         if not form.validate():
@@ -948,7 +942,7 @@ class PaymentView(object):
             if point:
                 if not user:
                     user = get_or_create_user_from_point_no(point)
-                    cart.shipping_address.user_id = user.id
+                    cart.shipping_address.user = user
                     DBSession.add(cart)
                 create_user_point_account_from_point_no(
                     user.id,
@@ -1047,9 +1041,7 @@ class CompleteView(object):
             else:
                 raise
 
-        user = get_or_create_user(self.context.authenticated_user())
-        if not self.context.check_order_limit(cart.sales_segment, user, None):
-            raise OverOrderLimitException.from_resource(self.context, self.request, order_limit=cart.sales_segment.order_limit)
+        self.context.check_order_limit()
 
         payment = Payment(cart, self.request)
         order = payment.call_payment()
@@ -1064,7 +1056,7 @@ class CompleteView(object):
         cart = api.get_cart(self.request) # これは get_cart でよい
 
         # メール購読
-        user = get_or_create_user(self.context.authenticated_user()) # これも読み直し
+        user = get_user(self.context.authenticated_user()) # これも読み直し
         emails = cart.shipping_address.emails
         magazine_ids = self.request.params.getall('mailmagazine')
         multi_subscribe(user, emails, magazine_ids)

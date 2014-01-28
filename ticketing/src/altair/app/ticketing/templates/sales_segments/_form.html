@@ -35,6 +35,10 @@ function get_performance_id() {
   return $('#${form.performance_id.name}').val();
 }
 </script>
+  <div class="content">
+    ${ch.flash_messages(request, type='alert-error')}
+    ${ch.alert_message(form)}
+  </div>
   <table width="100%" class="table">
     <tr>
       <td></td><th>販売区分</th><th>販売区分グループ</th>
@@ -198,6 +202,21 @@ function get_performance_id() {
         % endif
       </td>
     </tr>
+    <tr class="SalesSegment_max_quantity_per_user">
+      <th>
+        ${form.max_quantity_per_user.label}
+        ${form.use_default_max_quantity_per_user(_widget=LabelledCheckboxInput())}
+      </th>
+      <td>
+        ${form.max_quantity_per_user}
+        ${ch.validate_errors(form.max_quantity_per_user)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${form.context.sales_segment_group.setting.max_quantity_per_user or u'-'}
+        % endif
+      </td>
+    </tr>
     <tr class="SalesSegment_max_product_quatity">
       <th>
         ${form.max_product_quatity.label}
@@ -224,7 +243,7 @@ function get_performance_id() {
       </td>
       <td>
         % if form.context.sales_segment_group:
-          ${form.context.sales_segment_group.order_limit or u'-'}
+          ${form.context.sales_segment_group.setting.order_limit or u'-'}
         % endif
       </td>
     </tr>
@@ -461,12 +480,6 @@ function get_performance_id() {
       if (data.max_quantity !== void(0))
         originalValue.text(data.order_limit === null ? "-": data.max_quantity + "枚");
     },
-    order_limit: function (data, n) {
-      var originalValue = n.find('td:nth-child(3)');
-      originalValue.empty();
-      if (data.order_limit !== void(0))
-        originalValue.text(data.order_limit === null ? "-": data.order_limit + "回");
-    },
     seat_choice: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
@@ -490,6 +503,18 @@ function get_performance_id() {
       originalValue.empty();
       if (data.auth3d_notice !== void(0))
         originalValue.text(data.auth3d_notice);
+    },
+    order_limit: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data.order_limit !== void(0))
+        originalValue.text(data.order_limit === null ? "-": data.order_limit + "回");
+    },
+    max_quantity_per_user: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data.max_quantity_per_user !== void(0))
+        originalValue.text(data.max_quantity_per_user);
     }
   };
 
@@ -508,11 +533,12 @@ function get_performance_id() {
         'printing_fee',
         'registration_fee',
         'max_quantity',
-        'order_limit',
         'seat_choice',
         'public',
         'reporting',
-        'auth3d_notice'
+        'auth3d_notice',
+        'order_limit',
+        'max_quantity_per_user'
         ], function (_, k) {
         var n = form.find('.SalesSegment_' + k);
         refreshers[k](data, n);

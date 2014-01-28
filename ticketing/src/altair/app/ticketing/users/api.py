@@ -34,9 +34,12 @@ def get_user(authenticated_user):
     ).first()
     if credential:
         return credential.user
+    else:
+        return None
 
 def get_or_create_user(authenticated_user):
     if authenticated_user is None or authenticated_user.get('is_guest', False):
+        # ゲストのときはユーザを作らない
         return None
 
     user = get_user(authenticated_user)

@@ -34,7 +34,7 @@ from altair.app.ticketing.orders.models import OrderSummary
 from altair.app.ticketing.orders.importer import OrderImporter
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder
 from altair.app.ticketing.events.sales_segments.resources import (
-    SalesSegmentGroupCreate,
+    SalesSegmentAccessor,
 )
 
 
@@ -294,6 +294,7 @@ class Performances(BaseView):
                 Performance(
                     setting=PerformanceSetting(
                         order_limit=f.order_limit.data,
+                        max_quantity_per_user=f.max_quantity_per_user.data
                         ),
                     event_id=self.context.event.id,
                     create_venue_id=f.venue_id.data
@@ -302,8 +303,9 @@ class Performances(BaseView):
                 )
             performance.save()
             event = performance.event
+            accessor = SalesSegmentAccessor()
             for ssg in event.sales_segment_groups:
-                SalesSegmentGroupCreate(ssg).create_sales_segment_for(performance)
+                accessor.create_sales_segment_for_performance(ssg, performance)
             self.request.session.flash(u'パフォーマンスを保存しました')
             return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
         return {
@@ -329,6 +331,7 @@ class Performances(BaseView):
             venue_id=performance.venue.id
             )
         f.order_limit.data = performance.setting and performance.setting.order_limit
+        f.max_quantity_per_user.data = performance.setting and performance.setting.max_quantity_per_user
         if is_copy:
             f.original_id.data = f.id.data
             f.id.data = None
@@ -364,6 +367,7 @@ class Performances(BaseView):
                 if performance.setting is None:
                     performance.setting = PerformanceSetting()
                 performance.setting.order_limit = f.order_limit.data
+                performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
             else:
                 try:
                     query = Performance.query.filter_by(id=performance.id)
@@ -386,6 +390,7 @@ class Performances(BaseView):
                 if performance.setting is None:
                     performance.setting = PerformanceSetting()
                 performance.setting.order_limit = f.order_limit.data
+                performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
 
             performance.save()
             self.request.session.flash(u'パフォーマンスを保存しました')

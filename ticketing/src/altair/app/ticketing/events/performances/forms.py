@@ -126,7 +126,12 @@ class PerformanceForm(OurForm):
         filters=[zero_as_none],
         validators=[Optional()]
     )
-
+    max_quantity_per_user = OurIntegerField(
+        label=label_text_for(PerformanceSetting.max_quantity_per_user),
+        default=None,
+        filters=[zero_as_none],
+        validators=[Optional()]
+    )
     display_order = OurIntegerField(
         label=label_text_for(Performance.display_order),
         default=1,

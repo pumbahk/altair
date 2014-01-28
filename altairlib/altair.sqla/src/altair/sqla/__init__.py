@@ -26,6 +26,7 @@ __all__ = [
     'property_for',
     'get_strategy',
     'session_partaken_by',
+    'new_comparator',
     ]
 
 def _property_for_descriptor(descriptor, configure_mappers=True):
@@ -114,3 +115,5 @@ def session_partaken_by(obj):
         session = _all_sessions[state.session_id]
     return session
 
+def new_comparator(property, mapper):
+    return property.comparator_factory(property, mapper)

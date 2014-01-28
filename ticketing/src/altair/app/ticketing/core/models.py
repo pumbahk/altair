@@ -553,7 +553,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         またVenueの変更があったら関連モデルを削除する
           - PerformanceSetting
           - SalesSegment
+            - SalesSegmentSetting
             - Product
+              - ProductItem
             − MemberGroup_SalesSegment
           - Venue
             - VenueArea
@@ -1269,7 +1271,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     event_id = AnnotatedColumn(Identifier, ForeignKey('Event.id'), _a_label=_(u'イベント'))
     event = relationship('Event')
-    auth3d_notice = Column(UnicodeText)
+    auth3d_notice = AnnotatedColumn(UnicodeText, _a_label=_(u'クレジットカード 3D認証フォーム 注記事項'))
 
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref="sales_segment_group")
@@ -3704,7 +3706,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         order_by="PaymentDeliveryMethodPair.id",
         cascade="all",
         collection_class=list)
-    auth3d_notice = Column(UnicodeText)
+    auth3d_notice = AnnotatedColumn(UnicodeText, _a_label=_(u'クレジットカード 3D認証フォーム 注記事項'))
 
     event_id = AnnotatedColumn(Identifier, ForeignKey("Event.id"),
                                _a_label=_(u'イベント'))
@@ -3979,7 +3981,8 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixi
     performance_selector = Column(Unicode(255), doc=u"カートでの公演絞り込み方法")
     performance_selector_label1_override = Column(Unicode(255), nullable=True)
     performance_selector_label2_override = Column(Unicode(255), nullable=True)
-    order_limit = AnnotatedColumn(Integer, default=0, _a_label=_(u'購入回数制限'), _a_visible_column=True)
+    order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'), _a_visible_column=True)
+    max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
 
     @property
     def super(self):
@@ -4002,7 +4005,8 @@ class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted,
     __tablename__ = "SalesSegmentGroupSetting"
     id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
     sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'))
-    order_limit = AnnotatedColumn(Integer, default=0, _a_label=_(u'購入回数制限'))
+    order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'))
+    max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
 
     @classmethod
     def create_from_template(cls, template, **kwargs):
@@ -4016,8 +4020,10 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     __tablename__ = "SalesSegmentSetting"
     id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
-    order_limit = AnnotatedColumn(Integer, default=0, _a_label=_(u'購入回数制限'))
+    order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'))
+    max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
     use_default_order_limit = Column(Boolean)
+    use_default_max_quantity_per_user = Column(Boolean)
 
     @property
     def super(self):
@@ -4045,7 +4051,8 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Setti
     __tablename__ = "PerformanceSetting"
     id = Column(Identifier, primary_key=True)
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
-    order_limit = AnnotatedColumn(Integer, default=0, _a_label=_(u'購入回数制限'), _a_visible_column=True)
+    order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'), _a_visible_column=True)
+    max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
 
     @property
     def super(self):

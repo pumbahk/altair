@@ -20,7 +20,7 @@ ${ch.breadcrumbs(
   <h1>販売区分グループ</h1>
 </div>
 
-<%include file="/sales_segment_groups/_detail.html", args="form=form_ss, sales_segment_group=sales_segment_group"/>
+<%include file="/sales_segment_groups/_detail.html", args="sales_segment_group=sales_segment_group"/>
 
 <%include file="/sales_segment_groups/_action_button.html" args="order=['edit', 'copy', 'delete']" />
 <div id="sales_segment_groups-form">
@@ -95,7 +95,7 @@ ${ch.breadcrumbs(
             <td>${vh.datetime(sales_segment.start_at)}</td>
             <td>${vh.datetime(sales_segment.end_at)}</td>
             <td>${sales_segment.account.name if sales_segment.account else u'(未設定)'}</td>
-            <td>${u'%s枚' % sales_segment.max_quantity if sales_segment.max_quantity else u'-'} / ${u'%s個' % sales_segment.max_product_quatity if sales_segment.max_product_quatity else u'-'}</td>
+            <td>${u'%s枚' % sales_segment.max_quantity if sales_segment.max_quantity else u'-'} / ${u'%s枚' % sales_segment.setting.max_quantity_per_user if sales_segment.setting.max_quantity_per_user else u'-'} / ${u'%s個' % sales_segment.max_product_quatity if sales_segment.max_product_quatity else u'-'}</td>
             <td>${sales_segment.order_limit or u'-'}</td>
             <td>${u'選択可' if sales_segment.seat_choice else u'×選択不可'}</td>
             <td>${u'公開' if sales_segment.public else u'非公開'}</td>

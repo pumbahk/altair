@@ -158,6 +158,12 @@ class EventForm(Form):
         filters=[zero_as_none],
         validators=[Optional()]
     )
+    max_quantity_per_user = OurIntegerField(
+        label=label_text_for(EventSetting.max_quantity_per_user),
+        default=None,
+        filters=[zero_as_none],
+        validators=[Optional()]
+    )
     original_id = HiddenField(
         validators=[Optional()],
     )

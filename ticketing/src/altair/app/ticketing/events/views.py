@@ -128,7 +128,8 @@ class Events(BaseView):
                 Event(
                     organization_id=self.context.user.organization_id,
                     setting=EventSetting(
-                        order_limit=f.order_limit.data
+                        order_limit=f.order_limit.data,
+                        max_quantity_per_user=f.max_quantity_per_user.data
                         )
                     ),
                 f.data
@@ -158,6 +159,7 @@ class Events(BaseView):
 
         f = EventForm(organization_id=self.context.organization.id, obj=event)
         f.order_limit.data = event.setting and event.setting.order_limit
+        f.max_quantity_per_user.data = event.setting and event.setting.max_quantity_per_user
 
         if self.request.matched_route.name == 'events.copy':
             f.original_id.data = f.id.data
@@ -189,7 +191,8 @@ class Events(BaseView):
                     Event(
                         organization_id=self.context.organization.id,
                         setting=EventSetting(
-                            order_limit=f.order_limit.data   
+                            order_limit=f.order_limit.data,
+                            max_quantity_per_user=f.max_quantity_per_user.data
                             )
                         ),
                     f.data
@@ -199,6 +202,7 @@ class Events(BaseView):
                 if event.setting is None:
                     event.setting = EventSetting()
                 event.setting.order_limit = f.order_limit.data
+                event.setting.max_quantity_per_user = f.max_quantity_per_user.data
             event.save()
 
             self.request.session.flash(u'イベントを保存しました')

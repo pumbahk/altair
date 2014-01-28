@@ -2,10 +2,13 @@
 
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
+import logging
 
 from zope.interface import Interface, Attribute, implementer
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup, Performance, Event, Organization, PaymentDeliveryMethodPair
+
+logger = logging.getLogger(__name__)
 
 class ISalesSegmentAdminResource(Interface):
     event = Attribute('')
@@ -125,158 +128,202 @@ class SalesSegmentAdminResource(TicketingAdminResource):
         else:
             self.sales_segment = None
 
-class SalesSegmentEditor(object):
-    use_default_fields = [
-        "seat_choice",
-        "public",
-        "reporting",
-        "payment_delivery_method_pairs",
-        "start_at",
-        "end_at",
-        "max_quantity",
-        "max_product_quatity",
-        "order_limit",
-        "account_id",
-        "margin_ratio",
-        "refund_ratio",
-        "printing_fee",
-        "registration_fee",
-        "auth3d_notice",
-    ]
+class SalesSegmentAccessor(object):
+    attributes = {
+        "start_at": dict(
+            getter=lambda sales_segment_group, performance: sales_segment_group.start_for_performance(performance),
+            has_use_default=True,
+            use_default_default=True,
+            use_default_default_for_lot=False
+            ),
+        "end_at": dict(
+            getter=lambda sales_segment_group, performance: sales_segment_group.end_for_performance(performance),
+            has_use_default=True,
+            use_default_default=True,
+            use_default_default_for_lot=False
+            ),
+        "seat_choice": dict(
+            has_use_default=True,
+            use_default_default=True,
+            use_default_default_for_lot=False
+            ),
+        "public": dict(
+            has_use_default=True,
+            use_default_default=True
+            ),
+        "reporting": dict(
+            has_use_default=True,
+            use_default_default=True
+            ),
+        "payment_delivery_method_pairs": dict(
+            has_use_default=True,
+            use_default_default=True
+            ),
+        "max_quantity": dict(
+            has_use_default=True,
+            use_default_default=True,
+            use_default_default_for_lot=False
+            ),
+        "max_product_quatity": dict(
+            has_use_default=True,
+            use_default_default=True,
+            use_default_default_for_lot=False
+            ),
+        "account_id": dict(
+            has_use_default=True,
+            use_default_default=True
+            ),
+        "margin_ratio": dict(
+            has_use_default=True,
+            use_default_default=True
+            ),
+        "refund_ratio": dict(
+            has_use_default=True,
+            use_default_default=True
+            ),
+        "printing_fee": dict(
+            has_use_default=True,
+            use_default_default=True
+            ),
+        "registration_fee": dict(
+            has_use_default=True,
+            use_default_default=True
+            ),
+        "auth3d_notice": dict(
+            has_use_default=True,
+            use_default_default=True
+            ),
+        "order_limit": dict(
+            setting=True,
+            has_use_default=True,
+            use_default_default=True
+            ),
+        "max_quantity_per_user": dict(
+            setting=True,
+            has_use_default=True,
+            use_default_default=True
+            ),
+        }
 
-    def __init__(self, sales_segment_group, form):
-        self.sales_segment_group = sales_segment_group
-        self.form = form
+    def sync_attr(self, dest, src, attr):
+        self.attr_set(dest, attr, self.attr_get(src, attr))
 
-    def apply_changes(self, obj):
-        for field in self.form:
-            if field.name == "payment_delivery_method_pairs":
-                value = self.get_value(field, obj.performance)
-                if any([isinstance(v, int) for v in value]):
-                    value = PaymentDeliveryMethodPair.query.filter(
-                        PaymentDeliveryMethodPair.id.in_(value)).all()
-                setattr(obj, field.name, value)
-            else:
-                setattr(obj, field.name, self.get_value(field, obj.performance))
-        return obj
-
-    def is_use_default(self, field):
-        return self.form["use_default_" + field.name].data
-
-    def get_value(self, field, performance):
-        if field.name not in self.use_default_fields:
-            return field.data
+    def attr_set(self, obj, name, value):
+        if self.attributes.get(name).get('setting'):
+            setattr(obj.setting, name, value)
         else:
-            if not self.is_use_default(field):
-                return field.data
+            setattr(obj, name, value)
+
+    def attr_get(self, obj, name):
+        if self.attributes.get(name).get('setting'):
+            return getattr(obj.setting, name)
+        else:
+            return getattr(obj, name)
+
+    def set_use_default(self, obj, name, value):
+        if not self.attributes.get(name).get('has_use_default'):
+            return False
+        if self.attributes.get(name).get('setting'):
+            setattr(obj.setting, 'use_default_%s' % name, value)
+        else:
+            setattr(obj, 'use_default_%s' % name, value)
+        return True
+
+    def get_use_default(self, obj, name):
+        if not self.attributes.get(name).get('has_use_default'):
+            return False 
+        if self.attributes.get(name).get('setting'):
+            return getattr(obj.setting, 'use_default_%s' % name)
+        else:
+            return getattr(obj, 'use_default_%s' % name)
+
+    def attr_get_default(self, sales_segment_group, performance, name):
+        getter = self.attributes[name].get('getter')
+        if getter is not None:
+            if performance is not None:
+                return getter(sales_segment_group, performance)
             else:
-                if field.name == 'start_at':
-                    return self.sales_segment_group.start_for_performance(performance)
-                elif field.name == 'end_at':
-                    return self.sales_segment_group.end_for_performance(performance)
-                else:
-                    return getattr(self.sales_segment_group, field.name)
+                return None
+        else:
+            return self.attr_get(sales_segment_group, name)
 
+    def update_sales_segment(self, sales_segment):
+        for k in self.attributes.keys():
+            if self.get_use_default(sales_segment, k):
+                default_value = self.attr_get_default(
+                    sales_segment.sales_segment_group,
+                    sales_segment.performance,
+                    k)
+                logger.debug('sales_segment(id=%ld).%s set to default value %s' % (sales_segment.id, k, repr(default_value)))
+                self.attr_set(sales_segment, k, default_value)
 
-
-
-def sync_attr(dest, src, attr):
-    setattr(dest, attr, getattr(src, attr))
-
-class SalesSegmentGroupCreate(object):
-    def __init__(self, new_sales_segment_group):
-        self.ssg = new_sales_segment_group
-
-    def create(self, performances):
-        for p in performances:
-            self.create_sales_segment_for(p)
-
-    def create_sales_segment_for(self, performance):
+    def create_sales_segment_for_performance(self, sales_segment_group, performance):
         ss = SalesSegment(
             organization=performance.event.organization,
             event=performance.event,
             performance=performance,
-            sales_segment_group=self.ssg,
-            use_default_seat_choice=True,
-            use_default_public=True,
-            use_default_reporting=True,
-            use_default_payment_delivery_method_pairs=True,
-            use_default_start_at=True,
-            use_default_end_at=True,
-            use_default_max_quantity=True,
-            use_default_order_limit=True,
-            use_default_account_id=True,
-            use_default_margin_ratio=True,
-            use_default_refund_ratio=True,
-            use_default_printing_fee=True,
-            use_default_registration_fee=True,
-            use_default_auth3d_notice=True,
+            sales_segment_group=sales_segment_group,
+            **dict(
+                (
+                    'use_default_%' % k,
+                    desc.get('use_default_default', False)
+                    )
+                for k, desc in self.attributes.items()
+                if 'has_use_default' in desc
+                )
             )
-        update_sales_segment(self.ssg, ss)
+        self.update_sales_segment(ss)
         return ss
 
-    def create_sales_lot_segment(self, lot):
+    def create_sales_segment_for_lot(self, sales_segment_group, lot):
         ss = SalesSegment(
             organization=lot.event.organization,
             event=lot.event,
-            sales_segment_group=self.ssg,
-            use_default_seat_choice=False,
-            use_default_public=True,
-            use_default_reporting=True,
-            use_default_payment_delivery_method_pairs=True,
-            use_default_start_at=False,
-            use_default_end_at=False,
-            use_default_max_quantity=False,
-            use_default_order_limit=True,
-            use_default_account_id=True,
-            use_default_margin_ratio=True,
-            use_default_refund_ratio=True,
-            use_default_printing_fee=True,
-            use_default_registration_fee=True,
-            use_default_auth3d_notice=True,
+            sales_segment_group=sales_segment_group,
+            **dict(
+                (
+                    'use_default_%' % k,
+                    desc.get('use_default_default_for_lot',
+                        desc.get('use_default_default',False))
+                    )
+                for k, desc in self.attributes.items()
+                if 'has_use_default' in desc
+                )
             )
         lot.sales_segment = ss
-        update_sales_segment(self.ssg, ss)
+        self.update_sales_segment(ss)
         return ss
             
-class SalesSegmentGroupUpdate(object):
 
-    def __init__(self, sales_segment_group):
-        self.ssg = sales_segment_group
+class SalesSegmentEditor(object):
+    def __init__(self, sales_segment_group, form):
+        self.sales_segment_group = sales_segment_group
+        self.form = form
+        self.accessor = SalesSegmentAccessor()
 
-    def update(self, sales_segments):
-        for ss in sales_segments:
-            update_sales_segment(self.ssg, ss)
+    def apply_changes(self, obj):
+        for k, desc in self.accessor.attributes.items(): 
+            field = getattr(self.form, k)
+            if k == "payment_delivery_method_pairs":
+                value = self.get_value(k, obj.performance)
+                if any([isinstance(v, int) for v in value]):
+                    value = PaymentDeliveryMethodPair.query.filter(
+                        PaymentDeliveryMethodPair.id.in_(value)).all()
+                self.accessor.attr_set(obj, k, value)
+            else:
+                self.accessor.attr_set(obj, k, self.get_value(k, obj.performance))
+            if desc.get('has_use_default'):
+                use_default_field = getattr(self.form, 'use_default_%s' % k, None)
+                if use_default_field is not None:
+                    self.accessor.set_use_default(obj, k, use_default_field.data)
+                else:
+                    logger.warning("field `use_default_%s' does not exist!" % k)
+        return obj
 
-def update_sales_segment(ssg, ss):
-    if ss.use_default_start_at:
-        ss.start_at = ssg.start_for_performance(ss.performance)
-    if ss.use_default_end_at:
-        ss.end_at = ssg.end_for_performance(ss.performance)
-    if ss.use_default_seat_choice:
-        sync_attr(ss, ssg, 'seat_choice')
-    if ss.use_default_public:
-        sync_attr(ss, ssg, 'public')
-    if ss.use_default_reporting:
-        sync_attr(ss, ssg, 'reporting')
-    if ss.use_default_payment_delivery_method_pairs:
-        sync_attr(ss, ssg, 'payment_delivery_method_pairs')
-    if ss.use_default_max_quantity:
-        sync_attr(ss, ssg, 'max_quantity')
-    if ss.use_default_max_product_quatity:
-        sync_attr(ss, ssg, 'max_product_quatity')
-    if ss.use_default_order_limit:
-        sync_attr(ss, ssg, 'order_limit')
-    if ss.use_default_account_id:
-        sync_attr(ss, ssg, 'account_id')
-    if ss.use_default_margin_ratio:
-        sync_attr(ss, ssg, 'margin_ratio')
-    if ss.use_default_refund_ratio:
-        sync_attr(ss, ssg, 'refund_ratio')
-    if ss.use_default_printing_fee:
-        sync_attr(ss, ssg, 'printing_fee')
-    if ss.use_default_registration_fee:
-        sync_attr(ss, ssg, 'registration_fee')
-    if ss.use_default_auth3d_notice:
-        sync_attr(ss, ssg, 'auth3d_notice')
-
+    def get_value(self, k, performance):
+        desc = self.accessor.attributes.get(k)
+        use_default = desc.get('has_use_default') and self.form["use_default_" + k].data
+        if use_default:
+            return self.accessor.attr_get_default(self.sales_segment_group, performance, k)
+        else:
+            return self.form[k].data

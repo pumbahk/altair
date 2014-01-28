@@ -1,5 +1,6 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch"/>
+<%! from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting %>
 <script type="text/javascript">
 function get_selected_sales_segment_id() {
   return ${sales_segment.id};
@@ -23,46 +24,46 @@ function get_selected_sales_segment_id() {
 <table class="table">
   <tbody>
     <tr>
-      <th>販売区分グループ</th>
+      <th>${HH.label_text_for(SalesSegment.sales_segment_group)}</th>
       <td>
         ${sales_segment.sales_segment_group.name}
         <a href="${request.route_path('sales_segment_groups.show', sales_segment_group_id=sales_segment.sales_segment_group_id)}">この販売区分グループを編集する</a>
       </td>
     </tr>
     <tr>
-      <th>販売開始日時</th>
+      <th>${HH.label_text_for(SalesSegment.start_at)}</th>
       <td>${sales_segment.start_at}</td>
     </tr>
     <tr>
-      <th>販売終了日時</th>
+      <th>${HH.label_text_for(SalesSegment.end_at)}</th>
       <td>${sales_segment.end_at}</td>
     </tr>
     <tr>
-      <th>配券元</th>
+      <th>${HH.label_text_for(SalesSegment.account)}</th>
       <td>${sales_segment.account.name}</td>
     </tr>
     <tr>
-      <th>購入上限</th>
-      <td>${u'%s枚' % sales_segment.max_quantity if sales_segment.max_quantity else u'-'} / ${u'%s個' % sales_segment.max_product_quatity if sales_segment.max_product_quatity else u'-'}</td>
+      <th>${HH.label_text_for(SalesSegment.max_quantity)} / ${HH.label_text_for(SalesSegmentSetting.max_quantity_per_user)} / ${HH.label_text_for(SalesSegment.max_product_quatity)}</th>
+      <td>${u'%s枚' % sales_segment.max_quantity if sales_segment.max_quantity else u'-'} / ${u'%s枚' % sales_segment.setting.max_quantity_per_user if sales_segment.setting.max_quantity_per_user else u'-'} / ${u'%s個' % sales_segment.max_product_quatity if sales_segment.max_product_quatity else u'-'}</td>
     </tr>
     <tr>
-      <th>購入回数制限</th>
+      <th>${HH.label_text_for(SalesSegment.order_limit)}</th>
       <td>${sales_segment.order_limit or u'-'}</td>
     </tr>
     <tr>
-      <th>座席選択</th>
+      <th>${HH.label_text_for(SalesSegment.seat_choice)}</th>
       <td>${u'選択可' if sales_segment.seat_choice else u'×選択不可'}</td>
     </tr>
     <tr>
-      <th>公開／非公開</th>
+      <th>${HH.label_text_for(SalesSegment.public)}</th>
       <td>${u'公開' if sales_segment.public else u'非公開'}</td>
     </tr>
     <tr>
-      <th>レポート対象</th>
+      <th>${HH.label_text_for(SalesSegment.reporting)}</th>
       <td>${u'対象' if sales_segment.reporting else u'×対象外'}</td>
     </tr>
     <tr>
-      <th>クレジットカード 3D認証フォーム 注記事項</th>
+      <th>${HH.label_text_for(SalesSegment.auth3d_notice)}</th>
       <td>${sales_segment.auth3d_notice or u'(なし)'}</td>
     </tr>
   </tbody>

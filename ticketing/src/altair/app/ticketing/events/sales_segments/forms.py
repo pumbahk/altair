@@ -6,12 +6,29 @@ from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 from sqlalchemy.sql import or_, and_, select
 
-from altair.formhelpers import (Translations, Required, RequiredOnUpdate, DateTimeFormat, OurForm, OurDateTimeField,
-                                OurIntegerField, OurBooleanField, OurSelectField, OurDecimalField,
-                                BugFreeSelectField, PHPCompatibleSelectMultipleField, CheckboxMultipleSelect,
-                                BugFreeSelectMultipleField, SwitchOptional, zero_as_none
-)
-from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment, Account
+from altair.formhelpers import (
+    Translations,
+    DateTimeFormat,
+    OurDateTimeField,
+    OurIntegerField,
+    OurBooleanField,
+    OurSelectField,
+    OurDecimalField,
+    BugFreeSelectField,
+    PHPCompatibleSelectMultipleField,
+    BugFreeSelectMultipleField,
+    )
+from altair.formhelpers.widgets import CheckboxMultipleSelect
+from altair.formhelpers.form import OurForm
+from altair.formhelpers.validators import Required, RequiredOnUpdate, SwitchOptional
+from altair.formhelpers.filters import zero_as_none
+from altair.app.ticketing.helpers import label_text_for
+from altair.app.ticketing.core.models import (
+    SalesSegmentGroup,
+    SalesSegment,
+    SalesSegmentSetting,
+    Account,
+    )
 from altair.app.ticketing.loyalty.models import PointGrantSetting, SalesSegment_PointGrantSetting
 
 from .resources import ISalesSegmentAdminResource
@@ -110,14 +127,25 @@ class SalesSegmentForm(OurForm):
         label=u'グループの値を利用',
         widget=CheckboxInput()
     )
-
     max_quantity = OurIntegerField(
-        label=u'購入上限枚数',
+        label=label_text_for(SalesSegment.max_quantity),
         default=10,
         validators=[SwitchOptional('use_default_max_quantity'),
-                    Required()]
+                    Required()],
+        hide_on_new=True
     )
     use_default_max_quantity = OurBooleanField(
+        label=u'グループの値を利用',
+        widget=CheckboxInput()
+    )
+    max_quantity_per_user = OurIntegerField(
+        label=label_text_for(SalesSegmentSetting.max_quantity_per_user),
+        default=0,
+        filters=[zero_as_none],
+        validators=[Optional()],
+        hide_on_new=True
+    )
+    use_default_max_quantity_per_user = OurBooleanField(
         label=u'グループの値を利用',
         widget=CheckboxInput()
     )
