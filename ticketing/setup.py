@@ -194,11 +194,11 @@ setup(name='altair.app.ticketing',
       publish_lot_electing=altair.app.ticketing.events.lots.commands.publish_lot_electing:main
       fix_seat_adjacency=altair.app.ticketing.scripts.fix_seat_adjacency:main
       augus_performance=altair.app.ticketing.cooperation.augus.scripts.augus_performance:main
-      augus_download=altair.app.ticketing.cooperation.scripts.augus_download:main
-      augus_upload=altair.app.ticketing.cooperation.scripts.augus_upload:main
-      augus_distribution=altair.app.ticketing.cooperation.scripts.augus_distribution:main
-      augus_putback=altair.app.ticketing.cooperation.scripts.augus_putback:main
-      augus_achievement=altair.app.ticketing.cooperation.scripts.augus_achievement:main
+      augus_download=altair.app.ticketing.cooperation.augus.scripts.augus_download:main
+      augus_upload=altair.app.ticketing.cooperation.augus.scripts.augus_upload:main
+      augus_distribution=altair.app.ticketing.cooperation.augus.scripts.augus_distribution:main
+      augus_putback=altair.app.ticketing.cooperation.augus.scripts.augus_putback:main
+      augus_achievement=altair.app.ticketing.cooperation.augus.scripts.augus_achievement:main
       """,
       paster_plugins=['pyramid'],
       )
