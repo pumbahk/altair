@@ -10,7 +10,7 @@ from sqlalchemy.sql.expression import desc
 from paste.deploy import loadapp
 from pyramid.paster import bootstrap, setup_logging
 
-from altair.app.ticketing.payments.api import lookup_plugin, refresh_order
+from altair.app.ticketing.payments.api import refresh_order
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +18,6 @@ def message(msg, auxiliary=False):
     logger.log(auxiliary and logging.DEBUG or logging.INFO, msg)
     pad = '  ' if auxiliary else ''
     print >>sys.stderr, pad + msg
-
-def refresh_orders(request, session, orders):
-    for order in orders:
-        refresh_order(session, order)
 
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
@@ -46,7 +42,11 @@ def main(argv=sys.argv):
             if order is None:
                 raise Exception('Order %s could not be found' % order_no)
             orders.append(order)
-        refresh_orders(request, session, orders)
+
+        for order in orders:
+            print order
+            refresh_order(session, order)
+
     except Exception as e:
         raise
         message(e.message)
