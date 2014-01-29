@@ -26,6 +26,10 @@ class InvalidForm(Exception):
     def __init__(self, form):
         self.form = form
 
+class InvalidGuestForm(Exception):
+    def __init__(self, form):
+        self.form = form
+
 class MypageView(object):
 
     def __init__(self, request):
@@ -130,8 +134,6 @@ class OrderReviewView(object):
                         renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile/show.html"))
     @view_config(route_name='order_review.show', request_method="POST",
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/show.html"))
-    @view_config(route_name='guest.order_review.show',
-                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/show.html"))
     def post(self):
         form = schemas.OrderReviewSchema(self.request.params)
         if not form.validate():
@@ -142,11 +144,29 @@ class OrderReviewView(object):
             raise InvalidForm(form)
         return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
 
+    @view_config(route_name='guest.order_review.show',
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/show.html"))
+    def guest_post(self):
+        form = schemas.OrderReviewSchema(self.request.params)
+        if not form.validate():
+            raise InvalidGuestForm(form)
+
+        order, sej_order = self.context.get_order()
+        if not form.object_validate(self.request, order):
+            raise InvalidGuestForm(form)
+        return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
+
 @mobile_view_config(context=InvalidForm,
                     renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile/form.html"))
 @view_config(context=InvalidForm, 
              renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/form.html"))
 def order_review_form_view(context, request):
+    request.errors = context.form.errors
+    return dict(form=context.form)
+
+@view_config(context=InvalidGuestForm,
+             renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/form.html"))
+def guest_order_review_form_view(context, request):
     request.errors = context.form.errors
     return dict(form=context.form)
 
