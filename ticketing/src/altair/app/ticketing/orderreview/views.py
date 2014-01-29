@@ -14,6 +14,7 @@ from datetime import datetime
 
 import helpers as h
 from ..users.api import get_user
+from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.qr.utils import build_qr_by_history_id
 from altair.app.ticketing.qr.utils import build_qr_by_token_id
 from altair.auth import who_api as get_who_api
@@ -55,19 +56,18 @@ class MypageView(object):
 
 class MypageLoginView(object):
     renderer_tmpl = "altair.app.ticketing.orderreview:templates/{membership}/order_review/form.html"
-    #renderer_tmpl_mobile = "altair.app.ticketing.fc_auth:templates/{membership}/login_mobile.html"
+    renderer_tmpl_mobile = "altair.app.ticketing.orderreview:templates/{membership}/order_review_mobile/form.html"
     #renderer_tmpl_smartphone = "altair.app.ticketing.fc_auth:templates/{membership}/login_smartphone.html"
 
     def __init__(self, request):
         self.request = request
         self.context = request.context
 
-
     def select_renderer(self, membership):
         self.request.override_renderer = self.renderer_tmpl.format(membership=membership)
-        """
         if cart_api.is_mobile(self.request):
             self.request.override_renderer = self.renderer_tmpl_mobile.format(membership=membership)
+        """
         elif cart_api.is_smartphone(self.request):
             self.request.override_renderer = self.renderer_tmpl_smartphone.format(membership=membership)
         else:
@@ -79,7 +79,10 @@ class MypageLoginView(object):
     def login_form(self):
         membership = self.context.get_membership().name
         self.select_renderer(membership)
-        return dict(username='')
+
+        # このformは、モバイルのためだけに必要
+        form = schemas.OrderReviewSchema(self.request.params)
+        return dict(username='', form=form)
 
     @view_config(request_method="POST", route_name='order_review.form', renderer='string'
         , custom_predicates=(is_mypage_organization, ))
