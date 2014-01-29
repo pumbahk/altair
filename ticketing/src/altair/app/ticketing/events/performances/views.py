@@ -34,7 +34,7 @@ from altair.app.ticketing.orders.models import OrderSummary
 from altair.app.ticketing.orders.importer import OrderImporter
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder
 from altair.app.ticketing.events.sales_segments.resources import (
-    SalesSegmentGroupCreate,
+    SalesSegmentAccessor,
 )
 
 
@@ -290,15 +290,22 @@ class Performances(BaseView):
     def new_post(self):
         f = PerformanceForm(self.request.POST, organization_id=self.context.user.organization_id)
         if f.validate():
-            performance = merge_session_with_post(Performance(), f.data)
-            PerformanceSetting.create_from_model(performance, f.data)
-            performance.event_id = self.context.event.id
-            performance.create_venue_id = f.data['venue_id']
+            performance = merge_session_with_post(
+                Performance(
+                    setting=PerformanceSetting(
+                        order_limit=f.order_limit.data,
+                        max_quantity_per_user=f.max_quantity_per_user.data
+                        ),
+                    event_id=self.context.event.id,
+                    create_venue_id=f.venue_id.data
+                    ),
+                f.data
+                )
             performance.save()
-
             event = performance.event
+            accessor = SalesSegmentAccessor()
             for ssg in event.sales_segment_groups:
-                SalesSegmentGroupCreate(ssg).create_sales_segment_for(performance)
+                accessor.create_sales_segment_for_performance(ssg, performance)
             self.request.session.flash(u'パフォーマンスを保存しました')
             return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
         return {
@@ -318,17 +325,13 @@ class Performances(BaseView):
             route_name = u'コピー'
 
         is_copy = (self.request.matched_route.name == 'performances.copy')
-        kwargs = dict(
+        f = PerformanceForm(    
+            obj=performance,
             organization_id=self.context.user.organization_id,
             venue_id=performance.venue.id
-        )
-
-        f = PerformanceForm(**kwargs)
-        D = record_to_multidict(performance)
-        setting = performance.setting
-        if setting:
-            D.update((k, getattr(setting, k)) for k in setting.KEYS)
-        f.process(D)
+            )
+        f.order_limit.data = performance.setting and performance.setting.order_limit
+        f.max_quantity_per_user.data = performance.setting and performance.setting.max_quantity_per_user
         if is_copy:
             f.original_id.data = f.id.data
             f.id.data = None
@@ -350,18 +353,21 @@ class Performances(BaseView):
             route_name = u'コピー'
 
         is_copy = (self.request.matched_route.name == 'performances.copy')
-        kwargs = dict(
+        f = PerformanceForm(
+            self.request.POST,
             organization_id=self.context.user.organization_id,
             venue_id=performance.venue.id
-        )
-
-        f = PerformanceForm(self.request.POST, **kwargs)
+            )
         if f.validate():
             if is_copy:
                 event_id = performance.event_id
                 performance = merge_session_with_post(Performance(), f.data)
                 performance.event_id = event_id
-                performance.create_venue_id = f.data['venue_id']
+                performance.create_venue_id = f.venue_id.data
+                if performance.setting is None:
+                    performance.setting = PerformanceSetting()
+                performance.setting.order_limit = f.order_limit.data
+                performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
             else:
                 try:
                     query = Performance.query.filter_by(id=performance.id)
@@ -381,7 +387,10 @@ class Performances(BaseView):
                 if f.data['venue_id'] != venue.id:
                     performance.delete_venue_id = venue.id
                     performance.create_venue_id = f.data['venue_id']
-                PerformanceSetting.update_from_model(performance, f.data)
+                if performance.setting is None:
+                    performance.setting = PerformanceSetting()
+                performance.setting.order_limit = f.order_limit.data
+                performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
 
             performance.save()
             self.request.session.flash(u'パフォーマンスを保存しました')

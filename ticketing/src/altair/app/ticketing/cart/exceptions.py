@@ -182,6 +182,12 @@ class OverOrderLimitException(ContextualCartException):
         super(OverOrderLimitException, self).__init__(*args, **kwargs)
         self.order_limit = order_limit
 
+class OverQuantityLimitException(ContextualCartException):
+    def __init__(self, *args, **kwargs):
+        quantity_limit = kwargs.pop('quantity_limit')
+        super(OverQuantityLimitException, self).__init__(*args, **kwargs)
+        self.quantity_limit = quantity_limit
+
 class PaymentMethodEmptyError(ContextualCartException):
     pass
 

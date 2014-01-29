@@ -18,6 +18,7 @@ from ..exceptions import (
     CartCreationException,
     InvalidCartStatusError,
     OverOrderLimitException,
+    OverQuantityLimitException,
     PaymentMethodEmptyError,
     TooManyCartsCreated,
     PaymentError,
@@ -131,6 +132,17 @@ class CommonErrorView(object):
                                               limit=self.context.order_limit,
                                               event=self.context.event,
                                               performance=self.context.performance)))
+
+    @_for_(OverQuantityLimitException)
+    def over_quantity_limit_exception(self):
+        location = self.request.route_url('cart.index', event_id=self.context.event_id)
+        msg = u'{performance.name} の購入は {limit} 枚までとなっております。 <br><a href="{location}">{event.title}の購入ページに戻る</a>'
+        return dict(title=u'',
+                    message=Markup(msg.format(location=location,
+                                              limit=self.context.quantity_limit,
+                                              event=self.context.event,
+                                              performance=self.context.performance)))
+
 
     @_for_(InvalidCartStatusError)
     def invalid_cart_status_error(self):

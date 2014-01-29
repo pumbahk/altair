@@ -25,7 +25,7 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict, merge_and_flush
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.core.models import Event, Performance, StockType, StockTypeEnum, SalesSegment
+from altair.app.ticketing.core.models import Event, EventSetting, Performance, StockType, StockTypeEnum, SalesSegment
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.events.performances.forms import PerformanceForm
@@ -124,7 +124,16 @@ class Events(BaseView):
         f = EventForm(self.request.POST, organization_id=self.context.user.organization.id)
 
         if f.validate():
-            event = merge_session_with_post(Event(organization_id=self.context.user.organization_id), f.data)
+            event = merge_session_with_post(
+                Event(
+                    organization_id=self.context.user.organization_id,
+                    setting=EventSetting(
+                        order_limit=f.order_limit.data,
+                        max_quantity_per_user=f.max_quantity_per_user.data
+                        )
+                    ),
+                f.data
+                )
             event.save()
 
             self.request.session.flash(u'イベントを登録しました')
@@ -148,8 +157,9 @@ class Events(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        f = EventForm(organization_id=self.context.organization.id)
-        f.process(record_to_multidict(event))
+        f = EventForm(organization_id=self.context.organization.id, obj=event)
+        f.order_limit.data = event.setting and event.setting.order_limit
+        f.max_quantity_per_user.data = event.setting and event.setting.max_quantity_per_user
 
         if self.request.matched_route.name == 'events.copy':
             f.original_id.data = f.id.data
@@ -177,9 +187,22 @@ class Events(BaseView):
         f = EventForm(self.request.POST, organization_id=self.context.organization.id)
         if f.validate():
             if self.request.matched_route.name == 'events.copy':
-                event = merge_session_with_post(Event(organization_id=self.context.organization.id), f.data)
+                event = merge_session_with_post(
+                    Event(
+                        organization_id=self.context.organization.id,
+                        setting=EventSetting(
+                            order_limit=f.order_limit.data,
+                            max_quantity_per_user=f.max_quantity_per_user.data
+                            )
+                        ),
+                    f.data
+                    )
             else:
                 event = merge_session_with_post(event, f.data)
+                if event.setting is None:
+                    event.setting = EventSetting()
+                event.setting.order_limit = f.order_limit.data
+                event.setting.max_quantity_per_user = f.max_quantity_per_user.data
             event.save()
 
             self.request.session.flash(u'イベントを保存しました')

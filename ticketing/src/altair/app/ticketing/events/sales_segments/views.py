@@ -2,6 +2,9 @@
 import logging
 import json
 import webhelpers.paginate as paginate
+from sqlalchemy import sql
+from sqlalchemy.orm.util import class_mapper
+from sqlalchemy.orm.attributes import QueryableAttribute
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
@@ -21,6 +24,7 @@ from webob.multidict import MultiDict
 from .resources import SalesSegmentEditor
 from datetime import datetime
 from altair.pyramid_tz.api import get_timezone
+from altair.sqla import new_comparator
 from altair.app.ticketing.utils import toutc
 
 logger = logging.getLogger(__name__)
@@ -46,10 +50,17 @@ class SalesSegments(BaseView):
         else:
             performance = None
 
-        sort = self.request.GET.get('sort', 'SalesSegment.start_at')
-        direction = self.request.GET.get('direction', 'asc')
-        if direction not in ['asc', 'desc']:
-            direction = 'asc'
+        sort_column = self.request.GET.get('sort', 'start_at')
+        try:
+            mapper = class_mapper(SalesSegment)
+            prop = mapper.get_property(sort_column)
+            sort = new_comparator(prop,  mapper)
+        except:
+            sort = None
+        direction = { 'asc': sql.asc, 'desc': sql.desc }.get(
+            self.request.GET.get('direction'),
+            sql.asc
+            )
 
         query = SalesSegment.query \
             .join(SalesSegment.sales_segment_group) \
@@ -59,7 +70,8 @@ class SalesSegments(BaseView):
             query = query.filter(SalesSegmentGroup.event_id==event.id)
         if performance is not None:
             query = query.filter(SalesSegment.performance_id==performance.id)
-        query = query.order_by(sort + ' ' + direction)
+        if sort is not None:
+            query = query.order_by(direction(sort))
 
         sales_segments = paginate.Page(
             query,
@@ -120,6 +132,10 @@ class SalesSegments(BaseView):
         sales_segment_group = SalesSegmentGroup.query.filter_by(id=sales_segment_group_id).one()
         sales_segment = sales_segment_group.new_sales_segment()
         sales_segment = merge_session_with_post(sales_segment, f.data)
+        sales_segment.setting.order_limit = f.order_limit.data
+        sales_segment.setting.max_quantity_per_user = f.max_quantity_per_user.data
+        assert sdles_segment.event_id == sales_segment_group.event_id
+        assert sales_segment.performance is None or sales_segment.performance.event_id == sales_segment.event_id
 
         pdmps = [pdmp
                  for pdmp in sales_segment_group.payment_delivery_method_pairs

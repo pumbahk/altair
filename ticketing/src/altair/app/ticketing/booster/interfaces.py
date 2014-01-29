@@ -46,8 +46,6 @@ class ICartResource(Interface):
         """initialize attributes. if invalid None is stored"""
     def get_payment_delivery_method_pair(start_at=None):
         pass
-    def get_or_create_user():
-        pass
     def get_order():
         pass
     

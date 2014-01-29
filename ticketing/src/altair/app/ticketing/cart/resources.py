@@ -15,24 +15,49 @@ from zope.interface import implementer
 from .interfaces import ICartPayment, ICartDelivery
 from altair.app.ticketing.payments.interfaces import IOrderPayment, IOrderDelivery 
 from altair.app.ticketing.users import api as user_api
-
-from .exceptions import (
-    OutTermSalesException,
-    NoSalesSegment,
-    NoPerformanceError,
-)
 from altair.app.ticketing.users import models as u_models
-from ..core import models as c_models
-from ..core import api as core_api
-from ..users import models as u_models
+from altair.app.ticketing.core import models as c_models
+from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.core.interfaces import IOrderQueryable
+from altair.app.ticketing.users import models as u_models
 from . import models as m
 from .api import get_cart_safe
 from .exceptions import NoCartError
 from .interfaces import ICartContext
+from .exceptions import (
+    OutTermSalesException,
+    NoSalesSegment,
+    NoPerformanceError,
+    OverOrderLimitException,
+    OverQuantityLimitException,
+)
 from zope.deprecation import deprecate
 from altair.now import get_now
+import functools
 
 logger = logging.getLogger(__name__)
+
+# https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
+class memoize(object):
+    def __init__(self, cache_attr_name=None):
+        self.cache_attr_name = cache_attr_name
+
+    def __call__(self, fn):
+        if self.cache_attr_name is None:
+            cache_attr_name = '_cache_%s' % fn.__name__
+        else:
+            cache_attr_name = self.cache_attr_name
+        @functools.wraps(fn)
+        def memoizer(_self, *args, **kwargs):
+            cache = getattr(_self, cache_attr_name, None)
+            if cache is None:
+                cache = {}
+                setattr(_self, cache_attr_name, cache)
+            key = (args, tuple(kwargs.items()))
+            if key not in cache:
+                cache[key] = fn(_self, *args, **kwargs)
+            return cache[key]
+        return memoizer
 
 @implementer(ICartContext)
 class TicketingCartResourceBase(object):
@@ -221,29 +246,85 @@ class TicketingCartResourceBase(object):
         membership = user['membership']
         return membership
 
-    @deprecate('use altair.app.ticketing.users.api.get_or_create_user')
-    def get_or_create_user(self):
-        return user_api.get_or_create_user(self.authenticated_user())
+    @reify
+    def user_object(self):
+        return user_api.get_user(self.authenticated_user())
 
     @reify
     def host_base_url(self):
         return core_api.get_host_base_url(self.request)
 
-    def check_order_limit(self, sales_segment, user, email):
-        """ 購入回数制限チェック
+    @memoize()
+    def get_total_orders_and_quantities_per_user(self, sales_segment):
+        """ユーザごとのこれまでの注文数や購入数を取得する"""
+        setting = sales_segment.setting
+        user = self.user_object
+        mail_addresses = None
+        try:
+            mail_addresses = self.cart.shipping_address and self.cart.shipping_address.emails
+        except NoCartError:
+            pass
+        retval = []
+        if user or mail_addresses:
+            while setting is not None:
+                # 設定なしの場合は何度でも購入可能
+                container = setting.container
+                if IOrderQueryable.providedBy(container):
+                    from altair.app.ticketing.models import DBSession
+                    if user:
+                        order_query = container.query_orders_by_user(user, filter_canceled=True)
+                    elif mail_addresses:
+                        order_query = container.query_orders_by_mailaddresses(mail_addresses, filter_canceled=True)
+                    query = order_query.add_columns(sql.expression.func.sum(c_models.OrderedProductItem.quantity)) \
+                        .join(c_models.OrderedProduct, c_models.Order.items) \
+                        .join(c_models.OrderedProductItem, c_models.OrderedProduct.elements) \
+                        .group_by(c_models.Order.id)
+                    quantities_per_order = list(int(quantity_sum) for _, quantity_sum in query)
+                    logger.info(
+                        "%r(id=%d): order_limit=%r, max_quantity_per_user=%r, orders=%d, total_quantity=%d" % (
+                            container.__class__,
+                            container.id,
+                            setting.order_limit,
+                            setting.max_quantity_per_user,
+                            len(quantities_per_order),
+                            sum(quantities_per_order)
+                            )
+                        )
+                    retval.append(
+                        (
+                            container,
+                            dict(
+                                order_count=len(quantities_per_order),
+                                total_quantity=sum(quantities_per_order),
+                                order_limit=setting.order_limit,
+                                max_quantity_per_user=setting.max_quantity_per_user
+                                )
+                            )
+                        )
+                else:
+                    logger.info("%s does not implement IOrderQueryable. skip" % container.__class__)
+                setting = setting.super
+        return retval
+
+    def check_order_limit(self):
+        """ 購入回数および購入枚数制限チェック
         設定なしの場合は何度でも購入可能です。
         カウントするOrder数にcancelされたOrderは含まれません。
         """
-        kwds = {'filter_cancel': True}
-        if sales_segment.order_limit:
-            # 設定なしの場合は何度でも購入可能
-            if user:
-                if sales_segment.query_orders_by_user(user, **kwds).count() >= sales_segment.order_limit:
-                    return False
-            elif email:
-                if sales_segment.query_orders_by_mailaddress(email, **kwds).count() >= sales_segment.order_limit:
-                    return False
-        return True
+        cart_total_quantity = sum(element.quantity for item in self.cart.items for element in item.elements)
+        total_orders_and_quantities_per_user = self.get_total_orders_and_quantities_per_user(self.cart.sales_segment)
+        for container, record in total_orders_and_quantities_per_user:
+            order_limit = record['order_limit']
+            max_quantity_per_user = record['max_quantity_per_user']
+            order_count = record['order_count']
+            total_quantity = record['total_quantity']
+            if order_limit is not None and order_count >= order_limit:
+                logger.info("order_limit exceeded: %d >= %d" % (order_count, order_limit))
+                raise OverOrderLimitException.from_resource(self, self.request, order_limit=order_limit)
+            if max_quantity_per_user is not None:
+                if total_quantity + cart_total_quantity > max_quantity_per_user:
+                    logger.info("order_limit exceeded: %d >= %d" % (total_quantity, max_quantity_per_user))
+                    raise OverQuantityLimitException.from_resource(self, self.request, quantity_limit=max_quantity_per_user)
 
     @reify
     def login_required(self):
@@ -331,7 +412,7 @@ class EventOrientedTicketingCartResource(TicketingCartResourceBase):
             event = None
             try:
                 event = c_models.Event.query \
-                    .options(joinedload(c_models.Event.settings)) \
+                    .options(joinedload(c_models.Event.setting)) \
                     .filter(c_models.Event.id==self._event_id) \
                     .filter(c_models.Event.organization==organization) \
                     .one()
@@ -393,7 +474,7 @@ class PerformanceOrientedTicketingCartResource(TicketingCartResourceBase):
                 performance = None
                 try:
                     performance = c_models.Performance.query \
-                        .options(joinedload_all(c_models.Performance.event, c_models.Event.settings)) \
+                        .options(joinedload_all(c_models.Performance.event, c_models.Event.setting)) \
                         .join(c_models.Performance.event) \
                         .filter(c_models.Performance.id == self._performance_id) \
                         .filter(c_models.Event.organization_id == organization.id) \

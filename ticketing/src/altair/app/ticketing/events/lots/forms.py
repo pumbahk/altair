@@ -16,7 +16,7 @@ from altair.formhelpers import (
 )
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator
-from altair.app.ticketing.events.sales_segments.resources import SalesSegmentGroupCreate
+from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
 from altair.app.ticketing.lots.models import Lot
 
 from .models import LotEntryReportSetting
@@ -146,8 +146,8 @@ class LotForm(Form):
             custom_timezone_label=self.data['custom_timezone_label'],
             auth_type=self.data['auth_type'],
             )
-        creator = SalesSegmentGroupCreate(sales_segment_group)
-        sales_segment = creator.create_sales_lot_segment(lot)
+        accessor = SalesSegmentAccessor()
+        sales_segment = accessor.create_sales_segment_for_lot(sales_segment_group, lot)
         sales_segment.sales_segment_group_id=self.data['sales_segment_group_id']
         sales_segment.start_at=self.data['start_at']
         sales_segment.end_at=self.data['end_at']

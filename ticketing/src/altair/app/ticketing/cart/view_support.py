@@ -20,6 +20,7 @@ from .exceptions import (
     PerProductProductQuantityOutOfBoundsError,
     )
 from .resources import PerformanceOrientedTicketingCartResource
+from .interfaces import ICartContext
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +83,11 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             desc(c_models.Product.price)
             )
 
+    if ICartContext.providedBy(request.context):
+        context = request.context
+    else:
+        context = None
+
     if seat_type_id is not None:
         _ProductItem = aliased(c_models.ProductItem)
         _Product = aliased(c_models.Product)
@@ -122,6 +128,18 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             availability_per_product = min(availability_per_product, available)
         availability_per_product_map[product.id] = availability_per_product
 
+    max_quantity_per_user = None
+    # このクエリが重い可能性が高いので、一時的に蓋閉め
+    # if context is not None:
+    #     # container can be a SalesSegment, Performance or Event...
+    #     l = [
+    #         record['max_quantity_per_user'] - record['total_quantity']
+    #         for container, record in context.get_total_orders_and_quantities_per_user(sales_segment)
+    #         if record['max_quantity_per_user'] is not None
+    #         ]
+    #     if l:
+    #         max_quantity_per_user = min(l)
+
     retval = []
     for stock_type in stock_types.itervalues():
         availability_for_stock_type = 0
@@ -131,6 +149,9 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
         max_product_quantity = stock_type.max_product_quantity
         min_quantity = stock_type.min_quantity
         max_quantity = stock_type.max_quantity
+        # ユーザ毎の最大購入枚数があれば、それを加味する...
+        if max_quantity_per_user is not None:
+            max_quantity = max(max_quantity, max_quantity_per_user)
         for product in products_for_stock_type[stock_type.id].itervalues():
             # XXX: 券種導入時に直す
             quantity_power = sum(

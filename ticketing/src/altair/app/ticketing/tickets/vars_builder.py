@@ -238,7 +238,7 @@ class TicketDictBuilder(object):
             return retval
         event = performance.event
         retval = self.build_dict_from_event(event, retval=retval)
-        setting = performance.settings[0] if performance.settings else None
+        setting = performance.setting
         retval.update({
             u'performance': {
                 u'name': performance.name,
