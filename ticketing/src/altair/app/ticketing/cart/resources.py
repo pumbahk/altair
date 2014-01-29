@@ -276,10 +276,10 @@ class TicketingCartResourceBase(object):
                     elif mail_addresses:
                         order_query = container.query_orders_by_mailaddresses(mail_addresses, filter_canceled=True)
                     query = order_query.add_columns(sql.expression.func.sum(c_models.OrderedProductItem.quantity)) \
-                        .join(c_models.OrderedProduct, c_models.Order.items) \
-                        .join(c_models.OrderedProductItem, c_models.OrderedProduct.elements) \
+                        .outerjoin(c_models.OrderedProduct, c_models.Order.items) \
+                        .outerjoin(c_models.OrderedProductItem, c_models.OrderedProduct.elements) \
                         .group_by(c_models.Order.id)
-                    quantities_per_order = list(int(quantity_sum) for _, quantity_sum in query)
+                    quantities_per_order = list(int(quantity_sum or 0) for _, quantity_sum in query)
                     logger.info(
                         "%r(id=%d): order_limit=%r, max_quantity_per_user=%r, orders=%d, total_quantity=%d" % (
                             container.__class__,
