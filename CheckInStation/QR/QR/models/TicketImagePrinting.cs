@@ -32,6 +32,10 @@ namespace QR
 
 		public bool EnqueuePrinting(TicketImageData imageData)
 		{
+            PrintQueue pq = this.DefaultPrinter;
+            this.writer = PrintQueue.CreateXpsDocumentWriter(pq);
+            this.doc = new FixedDocument();
+
             // get image
             var bmi = ImageUtil.LoadImage(imageData.image);
             var img = new System.Windows.Controls.Image() { Width = bmi.PixelWidth, Height = bmi.PixelHeight, Source = bmi };
@@ -48,23 +52,20 @@ namespace QR
             page.Children.Add(img);
             pageContent.Child = page;
             this.doc.Pages.Add(pageContent);
+            writer.WriteAsync(doc); //todo: PrintTicket
+
+            this.doc = null;
+            this.writer = null;
             return true;
 		}
 
         public void BeginEnqueue()
         {
-            PrintQueue pq = this.DefaultPrinter;
-            this.writer = PrintQueue.CreateXpsDocumentWriter(pq);
-            this.doc = new FixedDocument();
+    
         }
 
         public void EndEnqueue()
         {
-            // printing
-            writer.WriteAsync(doc); //todo: PrintTicket
-            // xxx: warning not async
-            this.doc = null;
-            this.writer = null;
         }
 	}
 }
