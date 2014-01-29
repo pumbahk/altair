@@ -1694,12 +1694,16 @@ class OrdersEditAPIView(BaseView):
         logger.info('order data=%s' % order_data)
 
         order = Order.get(order_data.get('id'), self.context.organization.id)
-        if order.channel != ChannelEnum.INNER.v:
+        if not order.is_inner_channel:
             if order.payment_status != 'paid' or order.is_issued():
                 logger.info('order.payment_status=%s, order.is_issued=%s' % (order.payment_status, order.is_issued()))
                 raise HTTPBadRequest(body=json.dumps(dict(message=u'未決済または発券済みの予約は変更できません')))
             if order.total_amount < long(order_data.get('total_amount')):
                 raise HTTPBadRequest(body=json.dumps(dict(message=u'決済金額が増額となる変更はできません')))
+
+        payment_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
+        if order.payment_status == 'paid' and payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'コンビニ決済で入金済みの場合は金額変更できません')))
 
         op_data = order_data.get('ordered_products')
         sales_segments = set()

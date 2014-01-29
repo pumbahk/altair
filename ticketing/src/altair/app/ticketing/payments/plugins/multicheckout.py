@@ -238,6 +238,10 @@ class MultiCheckoutPlugin(object):
     def refresh(self, request, order):
         real_order_no = get_order_no(request, order)
 
+        if order.is_inner_channel:
+            logger.info('order %s is inner order' % order.order_no)
+            return
+
         if order.delivered_at is not None:
             raise Exception('order %s is already delivered' % order.order_no)
 
@@ -246,7 +250,7 @@ class MultiCheckoutPlugin(object):
             raise MultiCheckoutSettlementFailure(
                 message='checkout_sales_part_cancel: generic failure',
                 order_no=order.order_no,
-                back_url=back_url(self.request),
+                back_url=back_url(request),
                 error_code=part_cancel_res.CmnErrorCd
                 )
 
@@ -270,7 +274,7 @@ class MultiCheckoutPlugin(object):
             raise MultiCheckoutSettlementFailure(
                 message='checkout_sales_part_cancel: generic failure',
                 order_no=order.order_no,
-                back_url=back_url(self.request),
+                back_url=back_url(request),
                 error_code=part_cancel_res.CmnErrorCd
                 )
 

@@ -732,7 +732,8 @@ def save_order_modification(order, modify_data):
     modify_order.save()
 
     # 金額変更をAPIで更新
-    if order.total_amount < modify_order.total_amount:
+    delivery_plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
+    if order.total_amount > modify_order.total_amount or delivery_plugin_id == payments_plugins.SEJ_DELIVERY_PLUGIN_ID:
         refresh_order(DBSession, modify_order)
 
     return modify_order
