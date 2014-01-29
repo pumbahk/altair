@@ -70,13 +70,15 @@ namespace QR
 			var subject = this.PresentationChanel as PrintingEvent;
             subject.ChangeState(PrintingStatus.printing);
 
+            var printing = Resource.TicketImagePrinting;
 			try {
-				var printing = Resource.TicketImagePrinting;
+                printing.BeginEnqueue();
 				foreach (var imgdata in this.PrintingTargets.Right) {
-					var status = await printing.EnqueuePrinting (imgdata).ConfigureAwait (false);
+                    var status = printing.EnqueuePrinting(imgdata);
 					subject.PrintFinished(); //印刷枚数インクリメント
 					StatusCollector.Add (imgdata.token_id, status);
 				}
+                printing.EndEnqueue();
 
 				this.RequestData = new UpdatePrintedAtRequestData () {
 					token_id_list = StatusCollector.Result ().SuccessList.ToArray (),
@@ -86,6 +88,9 @@ namespace QR
                 subject.ChangeState(PrintingStatus.finished);
 				return StatusCollector.Status;
 			} catch (Exception ex) {
+                if (printing != null)
+                    printing.EndEnqueue();
+
 				logger.ErrorException (":", ex);
 				PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
 				return false;

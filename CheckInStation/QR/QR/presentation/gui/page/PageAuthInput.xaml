@@ -10,7 +10,28 @@
 	Title="PageAuthInput"
     Loaded="OnLoaded"
     >
+    <Page.Resources>
+        <!-- data template -->
+        <DataTemplate x:Key="InstalledPrinterListBoxData">
+            <WrapPanel>
+                <TextBlock Text="{Binding FullName, Mode=OneTIme}"></TextBlock>
+            </WrapPanel>
+        </DataTemplate>
+    </Page.Resources>
+    
     <Grid Style="{StaticResource ToplevelGrid}">
+        <ToolBarTray  Background="Transparent">
+            <ToolBar Margin="5,2">
+                <TextBlock Style="{StaticResource SubText}">プリンター設定:</TextBlock>
+                <ListBox 
+                 ItemsSource="{Binding AvailablePrinters}"
+                 ItemTemplate="{StaticResource InstalledPrinterListBoxData}"
+                 SelectionChanged="OnPrinterSelected">
+                </ListBox>
+                <TextBlock Style="{StaticResource SubText}">現在のプリンター: </TextBlock>
+                <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedPrinterName, Mode=OneWay}"></TextBlock>
+            </ToolBar>
+        </ToolBarTray>
         <Grid Style="{StaticResource CenterContentGrid}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="2*"></RowDefinition>
@@ -25,7 +46,7 @@
             <TextBlock Grid.Row="1">Login name:</TextBlock>
             <TextBox Grid.Row="2" Text="{Binding LoginName, Mode=OneWayToSource}"></TextBox>
             <TextBlock Grid.Row="3">Password:</TextBlock>
-            <PasswordBox Grid.Row="4" Name="PasswordInput"></PasswordBox>           
+            <PasswordBox Grid.Row="4" Name="PasswordInput"></PasswordBox>
             <Button Grid.Row="5" Click="OnSubmitWithBoundContext" Style="{StaticResource SubmitButtonStyle}">login</Button>
         </Grid>
     </Grid>

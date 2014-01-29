@@ -1,8 +1,10 @@
 ﻿using NLog;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Printing;
 using System.Security;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,6 +31,12 @@ namespace QR.presentation.gui.page
         }
         public string LoginName { get; set; }
         public string LoginPassword { get { return this.input.Password; } }
+        public ObservableCollection<PrintQueue> AvailablePrinters { get; set; }
+        public string _selectedPrinterName;
+        public string SelectedPrinterName {
+            get { return this._selectedPrinterName; }
+            set { this._selectedPrinterName = value; this.OnPropertyChanged("SelectedPrinterName"); }
+        }
 
         public override void OnSubmit()
         {
@@ -56,16 +64,35 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
+            var printers = new ObservableCollection<PrintQueue>();
+            var printing = AppUtil.GetCurrentResource().TicketImagePrinting;
+            printers.Add(printing.DefaultPrinter);
+            foreach (var q in printing.AvailablePrinters())
+            {
+                if (printing.DefaultPrinter.FullName != q.FullName)
+                {
+                    printers.Add(q);
+                }
+            }
             return new AuthInputDataContext(this.PasswordInput)
             {
                 Broker = AppUtil.GetCurrentBroker(),
-                Event = new AuthenticationEvent()
+                Event = new AuthenticationEvent(),
+                AvailablePrinters = printers,
+                SelectedPrinterName = printing.DefaultPrinter.FullName
             };
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
             await(this.DataContext as AuthInputDataContext).PrepareAsync().ConfigureAwait(false);
+        }
+
+        private void OnPrinterSelected(object sender, SelectionChangedEventArgs e)
+        {
+            var selected = (sender as ListBox).SelectedItem as PrintQueue;
+            AppUtil.GetCurrentResource().TicketImagePrinting.DefaultPrinter = selected;
+            (this.DataContext as AuthInputDataContext).SelectedPrinterName = selected.FullName;
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)

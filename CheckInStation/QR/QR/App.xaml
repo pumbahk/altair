@@ -8,11 +8,23 @@
              StartupUri="presentation/gui/page/MainWindow.xaml">
     
     <Application.Resources>
+        <!-- data template-->
+        <DataTemplate x:Key="InstalledPrinterListBoxData">
+            <WrapPanel>
+                <TextBlock Style="{Binding Subtext}" Text="{Binding FullName, Mode=OneTIme}"></TextBlock>
+            </WrapPanel>
+        </DataTemplate>
+
+
         <!-- base-->
         <Style TargetType="TextBlock">
             <Setter Property="FontSize" Value="20"></Setter>
         </Style>
-
+        
+        <Style TargetType="TextBlock" x:Key="SubText">
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+            
         <Style TargetType="TextBlock" x:Key="CaseInspectName">
             <Setter Property="Background" Value="AliceBlue"></Setter>
             <Setter Property="FontSize" Value="14"></Setter>
