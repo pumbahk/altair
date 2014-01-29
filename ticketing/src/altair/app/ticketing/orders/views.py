@@ -1694,6 +1694,9 @@ class OrdersEditAPIView(BaseView):
         logger.info('order data=%s' % order_data)
 
         order = Order.get(order_data.get('id'), self.context.organization.id)
+        if order is None:
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'予約データが見つかりません。既に更新されている可能性があります。')))
+
         if not order.is_inner_channel:
             if order.payment_status != 'paid' or order.is_issued():
                 logger.info('order.payment_status=%s, order.is_issued=%s' % (order.payment_status, order.is_issued()))
@@ -1822,8 +1825,8 @@ class OrdersEditAPIView(BaseView):
     def api_edit_confirm(self):
         order_data = self._validate_order_data()
         order_id = order_data.get('id')
-
         order = Order.get(order_id, self.context.organization.id)
+
         prev_data = self._get_order_dicts(order)
         if order_data == prev_data:
             raise HTTPBadRequest(body=json.dumps(dict(message=u'変更がありません')))
@@ -1852,11 +1855,16 @@ class OrdersEditAPIView(BaseView):
 
     @view_config(route_name='orders.api.edit', request_method='POST', renderer='json')
     def api_edit_post(self):
-        order_id = self.request.matchdict.get('order_id', 0)
+        order_data = MultiDict(self._validate_order_data())
+        order_id = order_data.get('id')
         order = Order.get(order_id, self.context.organization.id)
-        modify_data = MultiDict(self._validate_order_data())
 
-        modiry_order = save_order_modification(order, modify_data)
+        try:
+            modiry_order = save_order_modification(order, order_data)
+        except Exception, e:
+            logger.exception('save order error (%s)' % e.message)
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'システムエラーが発生しました。')))
+
         self.request.session.flash(u'変更を保存しました')
         return self._get_order_dicts(modiry_order)
 
