@@ -3749,9 +3749,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         qs = DBSession.query(Order).filter(
             Order.user_id==user.id
         ).filter(
-            Cart.order_id==Order.id
-        ).filter(
-            Cart.sales_segment_id==self.id
+            Order.sales_segment_id==self.id
         )
         if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
@@ -3766,9 +3764,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             or_(ShippingAddress.email_1.in_(mailaddresses),
                 ShippingAddress.email_2.in_(mailaddresses))
         ).filter(
-            Cart.order_id==Order.id
-        ).filter(
-            Cart.sales_segment_id==self.id
+            Order.sales_segment_id==self.id
         )
         
         if filter_canceled:
