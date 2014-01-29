@@ -1,7 +1,9 @@
 # encoding: utf-8
 
 import logging
+import transaction
 
+from pyramid.threadlocal import get_current_request
 from zope.interface import directlyProvides
 from .interfaces import IGetCart
 from .exceptions import PaymentDeliveryMethodPairNotFound
@@ -69,3 +71,32 @@ def lookup_plugin(request, payment_delivery_pair):
        (payment_plugin is None or delivery_plugin is None):
         raise PaymentDeliveryMethodPairNotFound(u"対応する決済プラグインか配送プラグインが見つかりませんでした")
     return payment_delivery_plugin, payment_plugin, delivery_plugin
+
+def refresh_order(session, order):
+    request = get_current_request()
+    session.add(order)
+    logger.info('Trying to refresh order %s (id=%d, payment_delivery_pair={ payment_method=%s, delivery_method=%s })...'
+                        % (order.order_no, order.id, order.payment_delivery_pair.payment_method.name, order.payment_delivery_pair.delivery_method.name))
+    os = order.organization.setting
+    request.altair_checkout3d_override_shop_name = os.multicheckout_shop_name
+    payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order.payment_delivery_pair)
+    if payment_delivery_plugin is not None:
+        try:
+            logger.info('payment_delivery_plugin.refresh')
+            payment_delivery_plugin.refresh(request, order)
+        finally:
+            transaction.commit()
+    else:
+        try:
+            logger.info('payment_plugin.refresh')
+            payment_plugin.refresh(request, order)
+        finally:
+            transaction.commit()
+        session.add(order)
+        try:
+            logger.info('delivery_plugin.refresh')
+            delivery_plugin.refresh(request, order)
+        finally:
+            transaction.commit()
+    session.add(order)
+    logger.info('Finished refreshing order %s (id=%d)' % (order.order_no, order.id))

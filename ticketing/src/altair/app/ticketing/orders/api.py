@@ -4,6 +4,7 @@ import logging
 import re
 import json
 import itertools
+import transaction
 
 from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql import functions as safunc
@@ -45,10 +46,9 @@ from altair.app.ticketing.sej.models import (
     SejOrder,
     )
 from altair.app.ticketing.payments.payment import Payment
-from altair.app.ticketing.payments.api import get_delivery_plugin
+from altair.app.ticketing.payments.api import get_delivery_plugin, refresh_order
 from altair.app.ticketing.payments import plugins as payments_plugins
 from .models import OrderSummary
-
 
 ## backward compatibility
 from altair.metadata.api import get_metadata_provider_registry
@@ -665,6 +665,9 @@ def save_order_modification(order, modify_data):
 
             for token in mopi.tokens:
                 DBSession.delete(token)
+                DBSession.flush()
+            mopi.tokens = []
+
             for i, seat in mopi.iterate_serial_and_seat():
                 token = OrderedProductItemToken(
                     serial = i,
@@ -730,5 +733,10 @@ def save_order_modification(order, modify_data):
         raise HTTPBadRequest(body=json.dumps(dict(message=u'合計金額を確認してください')))
 
     modify_order.save()
-    return modify_order
 
+    # 金額変更をAPIで更新
+    delivery_plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
+    if order.total_amount > modify_order.total_amount or delivery_plugin_id == payments_plugins.SEJ_DELIVERY_PLUGIN_ID:
+        refresh_order(DBSession, modify_order)
+
+    return modify_order

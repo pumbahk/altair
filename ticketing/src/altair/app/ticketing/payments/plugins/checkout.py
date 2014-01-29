@@ -114,6 +114,10 @@ class CheckoutPlugin(object):
         return bool(checkout.sales_at)
 
     def refresh(self, request, order):
+        if order.is_inner_channel:
+            logger.info('order %s is inner order' % order.order_no)
+            return
+
         raise NotImplementedError()
 
 @view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)

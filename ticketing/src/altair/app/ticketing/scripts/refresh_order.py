@@ -9,7 +9,8 @@ import sqlahelper
 from sqlalchemy.sql.expression import desc
 from paste.deploy import loadapp
 from pyramid.paster import bootstrap, setup_logging
-import transaction
+
+from altair.app.ticketing.payments.api import refresh_order
 
 logger = logging.getLogger(__name__)
 
@@ -17,40 +18,6 @@ def message(msg, auxiliary=False):
     logger.log(auxiliary and logging.DEBUG or logging.INFO, msg)
     pad = '  ' if auxiliary else ''
     print >>sys.stderr, pad + msg
-
-def refresh_orders(request, session, orders):
-    from altair.app.ticketing.core.models import OrganizationSetting, Event, SalesSegmentGroup, SalesSegment, Order
-    from altair.app.ticketing.payments.api import lookup_plugin
-    for order in orders:
-        session.add(order)
-        message('Trying to refresh order %s (id=%d, payment_delivery_pair={ payment_method=%s, delivery_method=%s })...' % (order.order_no, order.id, order.payment_delivery_pair.payment_method.name, order.payment_delivery_pair.delivery_method.name))
-        os = session.query(OrganizationSetting) \
-            .join(Event, Event.organization_id == OrganizationSetting.organization_id) \
-            .join(SalesSegmentGroup, SalesSegmentGroup.event_id == Event.id) \
-            .join(SalesSegment, SalesSegment.sales_segment_group_id == SalesSegmentGroup.id) \
-            .join(Order) \
-            .filter(Order.id == order.id) \
-            .one()
-        request.altair_checkout3d_override_shop_name = os.multicheckout_shop_name
-        payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order.payment_delivery_pair)
-        if payment_delivery_plugin is not None:
-            try:
-                payment_delivery_plugin.refresh(request, order)
-                print 'OK'
-            finally:
-                transaction.commit()
-        else:
-            try:
-                payment_plugin.refresh(request, order)
-            finally:
-                transaction.commit()
-            session.add(order)
-            try:
-                delivery_plugin.refresh(request, order)
-            finally:
-                transaction.commit()
-        session.add(order)
-        message('Finished refreshing order %s (id=%d)' % (order.order_no, order.id))
 
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
@@ -75,7 +42,11 @@ def main(argv=sys.argv):
             if order is None:
                 raise Exception('Order %s could not be found' % order_no)
             orders.append(order)
-        refresh_orders(request, session, orders)
+
+        for order in orders:
+            print order
+            refresh_order(session, order)
+
     except Exception as e:
         raise
         message(e.message)
