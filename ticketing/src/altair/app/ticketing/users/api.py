@@ -7,10 +7,7 @@ from . import models as user_models
 
 logger = logging.getLogger(__name__)
 
-def get_user(authenticated_user):
-    if authenticated_user is None or authenticated_user.get('is_guest', False):
-        return None
-
+def get_auth_identifier_membership(authenticated_user):
     if 'claimed_id' in authenticated_user:
         auth_identifier = authenticated_user['claimed_id']
         membership = 'rakuten'
@@ -19,6 +16,13 @@ def get_user(authenticated_user):
         membership = authenticated_user['membership']
     else:
         raise ValueError('clamed_id, username not in %s' % authenticated_user)
+    return auth_identifier, membership
+
+def get_user(authenticated_user):
+    if authenticated_user is None or authenticated_user.get('is_guest', False):
+        return None
+
+    auth_identifier, membership = get_auth_identifier_membership(authenticated_user)
 
     # TODO: 楽天OpenID以外にも対応できるフレームワークを...
     credential = user_models.UserCredential.query.filter(
@@ -32,15 +36,21 @@ def get_user(authenticated_user):
         return credential.user
 
 def get_or_create_user(authenticated_user):
+    if authenticated_user is None or authenticated_user.get('is_guest', False):
+        return None
+
     user = get_user(authenticated_user)
     if user:
         return user
-    
+
+    auth_identifier, membership = get_auth_identifier_membership(authenticated_user)
+
     user = user_models.User()
     membership = user_models.Membership.query.filter(user_models.Membership.name=='rakuten').first()
     if membership is None:
         membership = user_models.Membership(name='rakuten')
         DBSession.add(membership)
+    credential = user_models.UserCredential(user=user, auth_identifier=auth_identifier, membership=membership)
     DBSession.add(user)
     return user
 
