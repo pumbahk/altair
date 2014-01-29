@@ -53,12 +53,12 @@
   <tr>
     <th>${HH.label_text_for(SalesSegmentGroup.max_quantity)} / ${HH.label_text_for(SalesSegmentGroupSetting.max_quantity_per_user)} / ${HH.label_text_for(SalesSegmentGroup.max_product_quatity)}</th>
     <td id="max_quantity">
-      ${u'%s枚' % sales_segment_group.max_quantity if sales_segment_group.max_quantity else u'-'} / ${u'%s枚' % sales_segment_group.setting.max_quantity_per_user if sales_segment_group.setting.max_quantity_per_user else u'-'} /${u'%s個' % sales_segment_group.max_product_quatity if sales_segment_group.max_product_quatity else u'-'}
+      ${u'%s枚' % sales_segment_group.max_quantity if sales_segment_group.max_quantity else u'-'} / ${u'%s枚' % sales_segment_group.setting.max_quantity_per_user if sales_segment_group.setting and sales_segment_group.setting.max_quantity_per_user else u'-'} /${u'%s個' % sales_segment_group.max_product_quatity if sales_segment_group.max_product_quatity else u'-'}
     </td>
   </tr>
   <tr>
     <th>${HH.label_text_for(SalesSegmentGroupSetting.order_limit)}</th>
-    <td id="order_limit">${sales_segment_group.setting.order_limit or u'-'}</td>
+    <td id="order_limit">${sales_segment_group.setting.order_limit if sales_segment_group.setting and sales_segment_group.setting.order_limit else u'-'}</td>
   </tr>
   <tr>
     <th>${HH.label_text_for(SalesSegmentGroup.seat_choice)}</th>

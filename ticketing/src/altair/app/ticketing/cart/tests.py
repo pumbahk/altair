@@ -490,126 +490,250 @@ class TicketingCartResourceTestBase(object):
         venue = Venue(id=venue_id, site=site, organization_id=organization.id)
         return venue
 
-    def _add_orders_user(self, order_limit=0):
-        from altair.app.ticketing.core.models import Order, SalesSegment
+    def _add_orders_user(self, order_limit=None, max_quantity_per_user=None):
+        from altair.app.ticketing.core.models import (
+            Order,
+            SalesSegment,
+            SalesSegmentSetting,
+            Performance,
+            PerformanceSetting,
+            Event,
+            EventSetting,
+            )
         from altair.app.ticketing.cart.models import Cart
         from altair.app.ticketing.users.models import User
         from datetime import datetime
-        sales_segment = SalesSegment(order_limit=order_limit)
+        performance = Performance(
+            setting=PerformanceSetting(),
+            event=Event(setting=EventSetting())
+            )
+        self.session.add(performance)
+        sales_segment = SalesSegment(
+            performance=performance,
+            setting=SalesSegmentSetting(
+                order_limit=order_limit,
+                max_quantity_per_user=max_quantity_per_user
+                )
+            )
+        self.session.add(sales_segment)
         user = User()
+        self.session.add(user)
         other = User()
-        orders = []
+        self.session.add(other)
         for i in range(2):
-            cart = Cart(sales_segment=sales_segment)
-            order = Order(user=user, cart=cart,
-                          total_amount=0,
-                          system_fee=0, transaction_fee=0, delivery_fee=0)
-            orders.append(order)
+            order = Order(
+                user=user,
+                performance=performance,
+                sales_segment=sales_segment,
+                total_amount=0,
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0
+                )
+            self.session.add(order)
 
-        cancels = []
         for i in range(2):
-            cart = Cart(sales_segment=sales_segment)
-            order = Order(user=user, cart=cart,
-                          total_amount=0, canceled_at=datetime.now(),
-                          system_fee=0, transaction_fee=0, delivery_fee=0)
-            cancels.append(order)
+            order = Order(
+                user=user,
+                performance=performance,
+                sales_segment=sales_segment,
+                total_amount=0,
+                canceled_at=datetime(1970, 1, 1),
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0
+                )
+            self.session.add(order)
 
-        others = []
         for i in range(2):
-            cart = Cart(sales_segment=sales_segment)
-            order = Order(user=other, cart=cart,
-                          total_amount=0,
-                          system_fee=0, transaction_fee=0, delivery_fee=0)
-            others.append(order)
+            order = Order(
+                user=other,
+                performance=performance,
+                sales_segment=sales_segment,
+                total_amount=0,
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0
+                )
+            self.session.add(order)
 
         self.session.add(sales_segment)
         self.session.flush()
         return sales_segment, user
 
-    def test_check_order_limit_noset(self):
-
-        request = testing.DummyRequest()
-        target = self._makeOne(request)
+    @mock.patch('altair.app.ticketing.cart.resources.user_api.get_user')
+    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    def test_check_order_limit_noset(self, get_cart_safe, get_user):
+        from .models import Cart
+        from altair.app.ticketing.core.models import ShippingAddress
         sales_segment, user = self._add_orders_user()
-
-        result = target.check_order_limit(sales_segment, user, "testing@example.com")
-        self.assertTrue(result)
-
-    def test_check_order_limit_user_over(self):
+        get_user.return_value = user
+        get_cart_safe.return_value = Cart(
+            sales_segment=sales_segment,
+            shipping_address=ShippingAddress(
+                user=user,
+                email_1="testing@example.com"
+                )
+            )
 
         request = testing.DummyRequest()
         target = self._makeOne(request)
+        result = target.check_order_limit()
+        self.assert_(True)
+
+    @mock.patch('altair.app.ticketing.cart.resources.user_api.get_user')
+    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    def test_check_order_limit_user_over(self, get_cart_safe, get_user):
+        from .models import Cart
+        from .exceptions import OverOrderLimitException
+        from altair.app.ticketing.core.models import ShippingAddress
         sales_segment, user = self._add_orders_user(order_limit=1)
-
-        result = target.check_order_limit(sales_segment, user, "testing@example.com")
-
-        self.assertFalse(result)
-
-    def test_check_order_limit_user_under(self):
+        get_user.return_value = user
+        get_cart_safe.return_value = Cart(
+            sales_segment=sales_segment,
+            shipping_address=ShippingAddress(
+                user=user,
+                email_1="testing@example.com"
+                )
+            )
 
         request = testing.DummyRequest()
         target = self._makeOne(request)
+
+        with self.assertRaises(OverOrderLimitException):
+            target.check_order_limit()
+
+    @mock.patch('altair.app.ticketing.cart.resources.user_api.get_user')
+    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    def test_check_order_limit_user_under(self, get_cart_safe, get_user):
+        from .models import Cart
+        from altair.app.ticketing.core.models import ShippingAddress
         sales_segment, user = self._add_orders_user(order_limit=3)
+        get_user.return_value = user
+        get_cart_safe.return_value = Cart(
+            sales_segment=sales_segment,
+            shipping_address=ShippingAddress(
+                user=user,
+                email_1="testing@example.com"
+                )
+            )
 
-        result = target.check_order_limit(sales_segment, user, "testing@example.com")
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
 
-        self.assertTrue(result)
+        try:
+            target.check_order_limit()
+            self.assert_(True)
+        except:
+            self.fail() 
 
-    def _add_orders_email(self, order_limit=0):
-        from altair.app.ticketing.core.models import Order, SalesSegment, ShippingAddress
-        from altair.app.ticketing.cart.models import Cart
+    def _add_orders_email(self, order_limit=None, max_quantity_per_user=None):
+        from altair.app.ticketing.core.models import (
+            Order,
+            SalesSegment,
+            SalesSegmentSetting,
+            ShippingAddress,
+            Performance,
+            PerformanceSetting,
+            Event,
+            EventSetting,
+            )
         from datetime import datetime
-        sales_segment = SalesSegment(order_limit=order_limit)
+        performance = Performance(
+            setting=PerformanceSetting(),
+            event=Event(setting=EventSetting())
+            )
+        sales_segment = SalesSegment(
+            performance=performance,
+            setting=SalesSegmentSetting(
+                order_limit=order_limit,
+                max_quantity_per_user=max_quantity_per_user
+                )
+            )
         orders = []
         for i in range(2):
-            cart = Cart(sales_segment=sales_segment)
-            order = Order(cart=cart,
-                          shipping_address=ShippingAddress(email_1="testing@example.com"),
-                          total_amount=0,
-                          system_fee=0, transaction_fee=0, delivery_fee=0)
+            order = Order(
+                sales_segment=sales_segment,
+                performance=performance,
+                shipping_address=ShippingAddress(email_1="testing@example.com"),
+                total_amount=0,
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0
+                )
             orders.append(order)
 
         cancel = []
         for i in range(2):
-            cart = Cart(sales_segment=sales_segment)
-            order = Order(cart=cart,
-                          shipping_address=ShippingAddress(email_1="testing@example.com"),
-                          total_amount=0, canceled_at=datetime.now(),
-                          system_fee=0, transaction_fee=0, delivery_fee=0)
+            order = Order(
+                sales_segment=sales_segment,
+                performance=performance,
+                shipping_address=ShippingAddress(email_1="testing@example.com"),
+                total_amount=0,
+                canceled_at=datetime(1970, 1, 1),
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0
+                )
             orders.append(order)
 
         others = []
         for i in range(2):
-            cart = Cart(sales_segment=sales_segment)
-            order = Order(cart=cart,
-                          shipping_address=ShippingAddress(email_1="other@example.com"),
-                          total_amount=0,
-                          system_fee=0, transaction_fee=0, delivery_fee=0)
+            order = Order(
+                sales_segment=sales_segment,
+                performance=performance,
+                shipping_address=ShippingAddress(email_1="other@example.com"),
+                total_amount=0,
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0
+                )
             others.append(order)
 
         self.session.add(sales_segment)
         self.session.flush()
         return sales_segment, None
 
-    def test_check_order_limit_email_over(self):
-
-        request = testing.DummyRequest()
-        target = self._makeOne(request)
+    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    def test_check_order_limit_email_over(self, get_cart_safe):
+        from .models import Cart
+        from altair.app.ticketing.core.models import ShippingAddress
         sales_segment, user = self._add_orders_email(order_limit=1)
-
-        result = target.check_order_limit(sales_segment, user, "testing@example.com")
-
-        self.assertFalse(result)
-
-    def test_check_order_limit_email_under(self):
-
+        get_cart_safe.return_value = Cart(
+            sales_segment=sales_segment,
+            shipping_address=ShippingAddress(
+                user=user,
+                email_1="testing@example.com"
+                )
+            )
         request = testing.DummyRequest()
         target = self._makeOne(request)
+        try:
+            target.check_order_limit()
+            self.assert_(True)
+        except:
+            self.fail()
+
+    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    def test_check_order_limit_email_under(self, get_cart_safe):
+        from .models import Cart
+        from altair.app.ticketing.core.models import ShippingAddress
         sales_segment, user = self._add_orders_email(order_limit=3)
+        get_cart_safe.return_value = Cart(
+            sales_segment=sales_segment,
+            shipping_address=ShippingAddress(
+                user=user,
+                email_1="testing@example.com"
+                )
+            )
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
 
-        result = target.check_order_limit(sales_segment, user, "testing@example.com")
-
-        self.assertTrue(result)
+        try:
+            target.check_order_limit()
+            self.assert_(True)
+        except:
+            self.fail()
 
 class EventOrientedTicketingCartResourceTests(unittest.TestCase, TicketingCartResourceTestBase):
     def setUp(self):
