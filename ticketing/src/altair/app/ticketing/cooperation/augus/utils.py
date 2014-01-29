@@ -214,6 +214,13 @@ class AugusPerformanceImpoter(object):
 
 
 def mkdir_p(path):
+    """ディレクトリの作成を試みる
+    ディレクトリがあった場合はそのまま
+    なかったら作る
+    ファイルがあった場合は例外を送出する
+    (そこにファイルがあるケースはロジック的におかしい所があるはずなので
+     それを見落とさないために例外を送出するようにする)
+    """
     if not os.path.isdir(path):
         os.makedirs(path)
 

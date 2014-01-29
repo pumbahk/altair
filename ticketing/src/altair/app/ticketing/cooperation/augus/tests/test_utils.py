@@ -1,4 +1,6 @@
 #-*- coding: utf-8 -*-
+import shutil
+import tempfile
 from unittest import TestCase
 from mock import Mock
 from ..utils import RequestAccessor
@@ -26,3 +28,23 @@ class RequestAccessorTest(TestCase):
         self.assertEqual(accessor.b, map(str, [1,2,3]))
         self.assertEqual(accessor.c, 0)
         self.assertEqual(accessor.d, str(1))
+
+
+class MakeDirectoryTest(TestCase):
+    def test_it(self):
+        from ..utils import mkdir_p
+        path = tempfile.mkdtemp()
+
+        if 1:
+            mkdir_p(path)
+            shutil.rmtree(path)
+            mkdir_p(path)
+
+            shutil.rmtree(path, ignore_errors=True)
+
+class GetArgumentParserTest(TestCase):
+    def test_it(self):
+        from ..utils import get_argument_parser
+        parser = get_argument_parser()
+        opts = parser.parse_args(['test'])
+        self.assertEqual(opts.conf, 'test')
