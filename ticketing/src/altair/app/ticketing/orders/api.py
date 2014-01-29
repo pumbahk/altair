@@ -665,6 +665,9 @@ def save_order_modification(order, modify_data):
 
             for token in mopi.tokens:
                 DBSession.delete(token)
+                DBSession.flush()
+            mopi.tokens = []
+
             for i, seat in mopi.iterate_serial_and_seat():
                 token = OrderedProductItemToken(
                     serial = i,
