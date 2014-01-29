@@ -3,7 +3,7 @@ from altair.augus.protocols.common import (
     RecordIF,
     ProtocolBase,
     )
-from altair.augus.protocols.venue import (    
+from altair.augus.protocols.venue import (
     VenueSyncRequestRecord,
     VenueSyncRequest,
     )

@@ -46,7 +46,7 @@ def _sjis(unistr):
         raise err.__class__(repr(unistr), *err.args[1:])
     except AttributeError as err:
         raise ValueError('The `unistr` should be unicode object: {0}'\
-                        .format(repr(unistr)))                        
+                        .format(repr(unistr)))
 
 def _unsjis(msg, default=None):
     try:
@@ -60,7 +60,7 @@ def _unsjis(msg, default=None):
 
 class _TableBase(object):
     __metaclass__ = ABCMeta
-    
+
     BASE_HEADER_GETTER = collections.OrderedDict(( # read only property
         ('id', lambda seat: seat.id),
         ('name', lambda seat: _sjis(seat.name)),
@@ -106,7 +106,7 @@ class AugusTable(_TableBase):
         ('augus_seat_area_code', lambda ag_seat: getattr(ag_seat, 'area_code', '')),
         ('augus_seat_info_code', lambda ag_seat: getattr(ag_seat, 'info_code', '')),
         ('augus_seat_doorway_code', lambda ag_seat: getattr(ag_seat, 'doorway_code', '')),
-        ('augus_venue_version', lambda ag_seat: getattr(getattr(ag_seat, 'augus_venue', ''), 'version', '')),        
+        ('augus_venue_version', lambda ag_seat: getattr(getattr(ag_seat, 'augus_venue', ''), 'version', '')),
         ))
 
     def get_ext_entry(self, augus_seat, *args, **kwds):
@@ -139,7 +139,7 @@ class _CSVEditorBase(object):
 
 class AugusCSVEditor(_CSVEditorBase):
     _table = AugusTable
-    
+
     def write(self, csvlike, pairs):
         table = self._table()
         header = table.get_header()
@@ -182,12 +182,12 @@ class EntryData(object):
             self.augus_seat_coordy = _long(row[16], '')
             self.augus_seat_coordx = _long(row[17], '')
             self.augus_seat_coordy_whole = _long(row[18], '')
-            self.augus_seat_coordx_whole = _long(row[19], '')            
+            self.augus_seat_coordx_whole = _long(row[19], '')
             self.augus_seat_area_code = _long(row[20], '')
             self.augus_seat_info_code = _long(row[21], '')
             self.augus_seat_doorway_code = _long(row[22], '')
             self.augus_venue_version = _long(row[23], '')
-            
+
         except (ValueError, TypeError, IndexError,
                 UnicodeDecodeError, UnicodeEncodeError) as err:
             raise EntryFormatError('Illegal format entry: {}: length={}: {}'\
@@ -247,7 +247,7 @@ class AugusVenueImporter(object):
                 if other_augus_seat and other_augus_seat.id != augus_seat.id:
                     other_augus_seat.seat_id = Nonen
                     other_augus_seat.save()
-                
+
                 # make link
                 if augus_seat is None:
                     augus_seat = AugusSeat()
@@ -271,7 +271,7 @@ class AugusVenueImporter(object):
                 augus_seat.seat_id = seat.id
                 if (self.version is not None) and (self.version != augus_seat.version):
                     raise SeatImportError('Validation Error: venue version: {} != {} (augus_seat=<{},{},{}>)'\
-                                          .format(self.version, version, 
+                                          .format(self.version, version,
                                                   augus_seat.floor, augus_seat.column, augus_seat.num))
                 augus_seat.save()
             elif augus_seat:

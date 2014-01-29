@@ -15,7 +15,7 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
     AugusVenue,
     )
-    
+
 from .forms import (
     AugusVenueUploadForm,
     )
@@ -55,7 +55,7 @@ class VenueView(_AugusBaseView):
         res.headers = [('Content-Type', 'application/octet-stream; charset=cp932'),
                        ('Content-Disposition', 'attachment; filename={0}'.format(filename)),
                        ]
-        writer = csv.writer(res, delimiter=',') 
+        writer = csv.writer(res, delimiter=',')
         csveditor = AugusCSVEditor()
         pairs = SeatAugusSeatPairs()
         pairs.load(self.context.venue)
@@ -64,8 +64,8 @@ class VenueView(_AugusBaseView):
         except (NoSeatError, EntryFormatError, SeatImportError) as err:
             raise HTTPBadRequest(err)
         return res
-        
-    @view_config(route_name='augus.venue.upload', request_method='POST')                
+
+    @view_config(route_name='augus.venue.upload', request_method='POST')
     def upload(self):
         form = AugusVenueUploadForm(self.request.params)
         if form.validate() and hasattr(form.augus_venue_file.data, 'file'):
@@ -79,7 +79,7 @@ class VenueView(_AugusBaseView):
                                               augus_venue_code=ag_venue.code,
                                               augus_venue_version=ag_venue.version,
                                               )
-                return HTTPFound(url)                
+                return HTTPFound(url)
             except (NoSeatError, EntryFormatError, SeatImportError, AlreadyExist) as err:
                 raise HTTPBadRequest(err)
         else:# validate error
@@ -87,7 +87,7 @@ class VenueView(_AugusBaseView):
 
 @view_defaults(route_name='augus.augus_venue', decorator=with_bootstrap, permission='event_editor')
 class AugusVenueView(_AugusBaseView):
-    
+
     @view_config(route_name='augus.augus_venue.index', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/augus_venues/index.html')
     def index(self):
@@ -111,7 +111,7 @@ class AugusVenueView(_AugusBaseView):
         res.headers = [('Content-Type', 'application/octet-stream; charset=cp932'),
                        ('Content-Disposition', 'attachment; filename={0}'.format(filename)),
                        ]
-        writer = csv.writer(res, delimiter=',') 
+        writer = csv.writer(res, delimiter=',')
         csveditor = AugusCSVEditor()
         pairs = SeatAugusSeatPairs()
         pairs.load_augus_venue(augus_venue)
@@ -121,7 +121,7 @@ class AugusVenueView(_AugusBaseView):
             raise HTTPBadRequest(err)
         return res
 
-    @view_config(route_name='augus.augus_venue.upload', request_method='POST')                
+    @view_config(route_name='augus.augus_venue.upload', request_method='POST')
     def upload(self):
         form = AugusVenueUploadForm(self.request.params)
         if form.validate() and hasattr(form.augus_venue_file.data, 'file'):
@@ -135,7 +135,7 @@ class AugusVenueView(_AugusBaseView):
                                               augus_venue_code=self.context.augus_venue_code,
                                               augus_venue_version=self.context.augus_venue_version,
                                               )
-                return HTTPFound(url)                
+                return HTTPFound(url)
             except (NoSeatError, EntryFormatError, SeatImportError) as err:
                 raise HTTPBadRequest(err)
         else:# validate error
@@ -144,7 +144,7 @@ class AugusVenueView(_AugusBaseView):
 @view_defaults(route_name='augus.events.show', decorator=with_bootstrap, permission='event_editor')
 class AugusEventView(_AugusBaseView):
     @view_config(route_name='augus.event.show', request_method='GET',
-                 renderer='altair.app.ticketing:templates/cooperation/augus/events/show.html')                 
+                 renderer='altair.app.ticketing:templates/cooperation/augus/events/show.html')
     def show(self):
         return dict(event=self.context.event)
 
@@ -152,23 +152,23 @@ class AugusEventView(_AugusBaseView):
 class AugusPerformanceView(_AugusBaseView):
     select_prefix = 'performance-'
 
-    
+
     @view_config(route_name='augus.performance.index', request_method='GET')
     def index(self):
         return HTTPFound(self.request.route_url('augus.performance.show', event_id=self.context.event.id))
-    
+
     @view_config(route_name='augus.performance.show', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/performances/show.html')
     def show(self):
         return dict(performance_agperformance=self.context.performance_agperformance,
                     event=self.context.event)
 
-    @view_config(route_name='augus.performance.edit', request_method='GET', 
-                 renderer='altair.app.ticketing:templates/cooperation/augus/events/performances/edit.html')                
+    @view_config(route_name='augus.performance.edit', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/augus/events/performances/edit.html')
     def edit(self):
         return dict(performance_agperformance=self.context.performance_agperformance,
                     augus_performance_all=self.context.augus_performance_all,
-                    select_prefix=self.select_prefix,                    
+                    select_prefix=self.select_prefix,
                     event=self.context.event)
 
 
@@ -177,7 +177,7 @@ class AugusPerformanceView(_AugusBaseView):
         for performance_txt, ag_performance_id in self.request.params.iteritems():
             if not performance_txt.startswith(self.select_prefix):
                 continue
-                    
+
             try:
                 performance_id = long(performance_txt)
             except (ValueError, TypeError) as err:
@@ -186,7 +186,7 @@ class AugusPerformanceView(_AugusBaseView):
             performance = Performance.get(performance_id)
             if not performance:
                 raise HTTPBadRequest('The performance not found: {}'.format(performance_id))
-                    
+
             if external_performance_code:
                 try:
                     external_performance_code = long(external_performance_code)
@@ -196,21 +196,21 @@ class AugusPerformanceView(_AugusBaseView):
                 external_performance = AugusPerformance.get(code=external_performance_code)
                 if not external_performance:
                     raise HTTPBadRequest('The external performance not found: {}'.format(external_performance_code))
-                
+
                 if external_performance.performance_id != performance.id:
                     external_performance.performance_id = performance.id;
-                    external_performance.save() 
+                    external_performance.save()
             else: # delete link
                 external_performance = AugusPerformance.get(performance_id=performance.id)
                 if external_performance:
                     external_performance.performance_id = None
                     external_performance.save()
         return HTTPFound(self.request.route_url('augus.performance.show', event_id=self.context.event.id))
-        
+
 @view_defaults(route_name='augus.stock_type', decorator=with_bootstrap, permission='event_editor')
 class AugusTicketView(_AugusBaseView):
     select_prefix = 'stock_type-'
-    
+
     @view_config(route_name='augus.stock_type.show', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/stock_types/show.html')
     def show(self):
@@ -242,7 +242,7 @@ class AugusTicketView(_AugusBaseView):
                     ag_tickets=self.context.ag_tickets,
                     select_prefix=self.select_prefix,
                     )
-        
+
     @view_config(route_name='augus.stock_type.save', request_method='POST')
     def save(self):
         try:

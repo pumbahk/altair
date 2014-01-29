@@ -26,7 +26,7 @@ class AugusPutbackExporter(object):
         ag_ticket = AugusTicket.get(stock_type_id=stock_type.id)
         if not ag_ticket:
             raise AugusDataExportError('Stock type unlinked: StockType.id={}'.format(stock_type.id))
-        
+
         record = PutbackResponseRecord()
         record.event_code = ag_performance.augus_event_code
         record.performance_code = ag_performance.augus_performance_code
@@ -51,7 +51,7 @@ class AugusPutbackExporter(object):
         record.putback_status = ag_putback.putback_status
         record.putback_type = ag_putback.augus_putback_type
         return record
-    
+
     def create_response(self, putbacks=[]):
         response = PutbackResponse()
         if not putbacks:
@@ -63,7 +63,7 @@ class AugusPutbackExporter(object):
         response.customer_id = customer_id
         AugusPutbackExporter.export(path, customer_id)
         return response
-        
+
 class AugusAchievementExporter(object):
     def create_record(self):
         ag_stock_info = ag_putback.augus_stock_info
@@ -73,10 +73,10 @@ class AugusAchievementExporter(object):
         stock = seat.stock
         stock_type = stock.stock_type
         ag_ticket = AugusTicket.get(stock_type_id=stock_type.id)
-        
+
         if not ag_ticket:
             raise AugusDataExportError('Stock type unlinked: StockType.id={}'.format(stock_type.id))
-        
+
         record = PutbackResponseRecord()
         record.event_code = ag_performance.augus_event_code
         record.performance_code = ag_performance.augus_performance_code
@@ -101,7 +101,7 @@ class AugusAchievementExporter(object):
         record.putback_status = ag_putback.putback_status
         record.putback_type = ag_putback.augus_putback_type
         return record
-    
+
     def create_response(self, putbacks=[]):
         response = PutbackResponse()
         if not putbacks:
@@ -118,7 +118,7 @@ class AugusAchievementExporter(object):
                 raise AugusDataExportError(
                     'AugusPerformance not found: event_code={} performance_code={}'\
                     .format(record.event_code, record.performance_code))
-            
+
             for ag_stock_info in ag_performance.augus_stock_infos:
                 ag_seat = ag_stock_info.ag_seat
                 ag_ticket = ag_stock_info.get_augus_ticket()
@@ -155,7 +155,7 @@ class AugusAchievementExporter(object):
         response.customer_id = customer_id
         AugusExporter.export(response, path)
         return response
-        
+
     @staticmethod
     def seat2opitem(seat):
         qs = orders_seat_table.select(whereclause='seat_id={}'.format(seat.id))
@@ -166,7 +166,7 @@ class AugusAchievementExporter(object):
         else:
             opitem_id = seatid_opitemid[0][1]
             return OrderedProductItem.get(opitem_id)
-            
+
     @staticmethod
     def get_unit_price(opitem):
         return opitem.price / len(opitem.seats)

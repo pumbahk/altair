@@ -8,17 +8,6 @@ from .resources import (
     SeatTypeResource,
     )
 
-
-# /cooperation/augus/event/event_id
-# /cooperation/augus/event/event_id/performances
-# /cooperation/augus/event/event_id/seat_types
-# /cooperation/augus/event/event_id/distribution
-# /cooperation/augus/event/event_id/putback
-# /cooperation/augus/event/event_id/reverse
-# /cooperation/augus/venue/venue_id
-# /cooperation/augus/venue/venue_id/download
-# /cooperation/augus/venue/venue_id/upload
-
 ROUTE_URL_RESOURCE = {
     'augus.test': ('/test', None),
     'augus.venue.index': ('/venues/{venue_id}', VenueResource),
@@ -26,7 +15,6 @@ ROUTE_URL_RESOURCE = {
     'augus.venue.upload': ('/venues/{venue_id}/upload', VenueResource),
     'augus.augus_venue.index': ('/augus_venues/{augus_venue_code}',
                                 AugusVenueListResource),
-    #'augus.augus_venue.new': ('/augus_venue/{augus_venue_code}/new', AugusVenueResource),
     'augus.augus_venue.show': ('/augus_venues/{augus_venue_code}/version/{augus_venue_version}',
                                AugusVenueResource),
     'augus.augus_venue.download': ('/augus_venues/{augus_venue_code}/version/{augus_venue_version}/download',
@@ -41,14 +29,14 @@ ROUTE_URL_RESOURCE = {
     'augus.performance.show': ('/events/{event_id}/performances/show', PerformanceResource),
     'augus.performance.edit': ('/events/{event_id}/performances/edit', PerformanceResource),
     'augus.performance.save': ('/events/{event_id}/performances/save', PerformanceResource),
-    
+
     # stock type
     'augus.stock_type.index': ('/events/{event_id}/stock_types', SeatTypeResource),
     'augus.stock_type.show': ('/events/{event_id}/stock_types/show', SeatTypeResource),
     'augus.stock_type.edit': ('/events/{event_id}/stock_types/edit', SeatTypeResource),
     'augus.stock_type.save': ('/events/{event_id}/stock_types/save', SeatTypeResource),
     }
-    
+
 def add_routes(config, route_url_resource):
     for route, values in ROUTE_URL_RESOURCE.items():
         url, resource_class = values

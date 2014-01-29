@@ -47,7 +47,7 @@ def main():
     try:
         request = exporter.export(staging, CUSTOMER_ID)
     except AugusDataImportError as err:
-        transaction.abort()        
+        transaction.abort()
         raise
     except:
         transaction.abort()

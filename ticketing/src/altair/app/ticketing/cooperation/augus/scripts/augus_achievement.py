@@ -54,7 +54,7 @@ def main():
             request = AugusParser.parse(path)
             exporter.export(from_staging, request)
     except AugusDataImportError as err:
-        transaction.abort()    
+        transaction.abort()
         raise
     except:
         transaction.abort()
@@ -63,6 +63,6 @@ def main():
         transaction.commit()
     for path in paths:
         shutil.move(path, to_pending)
-    
+
 if __name__ == '__main__':
     main()
