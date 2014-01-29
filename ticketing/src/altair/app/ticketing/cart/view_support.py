@@ -129,15 +129,16 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
         availability_per_product_map[product.id] = availability_per_product
 
     max_quantity_per_user = None
-    if context is not None:
-        # container can be a SalesSegment, Performance or Event...
-        l = [
-            record['max_quantity_per_user'] - record['total_quantity']
-            for container, record in context.get_total_orders_and_quantities_per_user(sales_segment)
-            if record['max_quantity_per_user'] is not None
-            ]
-        if l:
-            max_quantity_per_user = min(l)
+    # このクエリが重い可能性が高いので、一時的に蓋閉め
+    # if context is not None:
+    #     # container can be a SalesSegment, Performance or Event...
+    #     l = [
+    #         record['max_quantity_per_user'] - record['total_quantity']
+    #         for container, record in context.get_total_orders_and_quantities_per_user(sales_segment)
+    #         if record['max_quantity_per_user'] is not None
+    #         ]
+    #     if l:
+    #         max_quantity_per_user = min(l)
 
     retval = []
     for stock_type in stock_types.itervalues():
