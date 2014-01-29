@@ -61,10 +61,13 @@ def create_hash_from_x_start_params(params, secret_key):
         if name.startswith('X_'):
             if not isinstance(param, basestring):
                 raise SejRequestError(u"%s must be a string (got %s)" % (name, type(param)))
-            _param = str(param)
-            result = ascii_regex.search(_param)
-            if result:
-                raise SejRequestError(u"%s must be ascii (%s)" % (name, _param))
+            _param = None
+            try:
+                _param = str(param)
+            except (UnicodeDecodeError, UnicodeEncodeError):
+                pass
+            if _param is None or ascii_regex.search(_param):
+                raise SejRequestError(u"%s must be ascii (%r)" % (name, param))
 
             falsify_props[name] = _param
 
