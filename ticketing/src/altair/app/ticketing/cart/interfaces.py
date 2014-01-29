@@ -71,4 +71,8 @@ class ICartContext(Interface):
     performance = Attribute(u"パフォーマンス")
     sales_segment = Attribute(u"販売区分")
     authenticated_user = Attribute(u"認証ユーザ")
+    user_object = Attribute(u"認証ユーザのUserオブジェクト")
     host_base_url = Attribute(u"トップページURL")
+    total_orders_and_quantities_per_user = Attribute(u"ユーザごとのこれまでの注文数や購入数")
+    def check_order_limit():
+        pass

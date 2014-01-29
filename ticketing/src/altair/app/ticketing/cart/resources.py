@@ -33,14 +33,20 @@ from .exceptions import (
 )
 from zope.deprecation import deprecate
 from altair.now import get_now
+import functools
 
 logger = logging.getLogger(__name__)
 
 # https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
-def memoize(cache_attr_name=None):
-    def _(fn):
-        if cache_attr_name is None:
+class memoize(object):
+    def __init__(self, cache_attr_name=None):
+        self.cache_attr_name = cache_attr_name
+
+    def __call__(self, fn):
+        if self.cache_attr_name is None:
             cache_attr_name = '_cache_%s' % fn.__name__
+        else:
+            cache_attr_name = self.cache_attr_name
         @functools.wraps(fn)
         def memoizer(_self, *args, **kwargs):
             cache = getattr(_self, cache_attr_name, None)
@@ -49,10 +55,9 @@ def memoize(cache_attr_name=None):
                 setattr(_self, cache_attr_name, cache)
             key = (args, tuple(kwargs.items()))
             if key not in cache:
-                cache[key] = obj(_self, *args, **kwargs)
+                cache[key] = fn(_self, *args, **kwargs)
             return cache[key]
-        return memoize
-    return _
+        return memoizer
 
 @implementer(ICartContext)
 class TicketingCartResourceBase(object):
@@ -249,47 +254,57 @@ class TicketingCartResourceBase(object):
     def host_base_url(self):
         return core_api.get_host_base_url(self.request)
 
-    @reify
-    def total_orders_and_quantities_per_user(self):
+    @memoize()
+    def get_total_orders_and_quantities_per_user(self, sales_segment):
         """ユーザごとのこれまでの注文数や購入数を取得する"""
-        setting = self.cart.sales_segment.setting
+        setting = sales_segment.setting
         user = self.user_object
+        mail_addresses = None
+        try:
+            mail_addresses = self.cart.shipping_address and self.cart.shipping_address.emails
+        except NoCartError:
+            pass
         retval = []
-        while setting is not None:
-            # 設定なしの場合は何度でも購入可能
-            container = setting.container
-            if IOrderQueryable.providedBy(container):
-                from altair.app.ticketing.models import DBSession
-                if user:
-                    order_query = container.query_orders_by_user(user, filter_canceled=True)
-                elif mail_addresses:
-                    order_query = container.query_orders_by_mailaddresses(mail_addresses, filter_canceled=True)
-                query = order_query.add_columns(sql.expression.func.sum(c_models.OrderedProductItem.quantity)) \
-                    .join(c_models.OrderedProduct, c_models.Order.items) \
-                    .join(c_models.OrderedProductItem, c_models.OrderedProduct.elements) \
-                    .group_by(c_models.Order.id)
-                quantities_per_order = list(int(quantity_sum) for _, quantity_sum in query)
-                logger.info(
-                    "%r(id=%d): order_limit=%r, max_quantity_per_user=%r, orders=%d, total_quantity=%d" % (
-                        container.__class__,
-                        container.id,
-                        setting.order_limit,
-                        setting.max_quantity_per_user,
-                        len(quantities_per_order),
-                        sum(quantities_per_order)
+        if user or mail_addresses:
+            while setting is not None:
+                # 設定なしの場合は何度でも購入可能
+                container = setting.container
+                if IOrderQueryable.providedBy(container):
+                    from altair.app.ticketing.models import DBSession
+                    if user:
+                        order_query = container.query_orders_by_user(user, filter_canceled=True)
+                    elif mail_addresses:
+                        order_query = container.query_orders_by_mailaddresses(mail_addresses, filter_canceled=True)
+                    query = order_query.add_columns(sql.expression.func.sum(c_models.OrderedProductItem.quantity)) \
+                        .join(c_models.OrderedProduct, c_models.Order.items) \
+                        .join(c_models.OrderedProductItem, c_models.OrderedProduct.elements) \
+                        .group_by(c_models.Order.id)
+                    quantities_per_order = list(int(quantity_sum) for _, quantity_sum in query)
+                    logger.info(
+                        "%r(id=%d): order_limit=%r, max_quantity_per_user=%r, orders=%d, total_quantity=%d" % (
+                            container.__class__,
+                            container.id,
+                            setting.order_limit,
+                            setting.max_quantity_per_user,
+                            len(quantities_per_order),
+                            sum(quantities_per_order)
+                            )
                         )
-                    )
-                retval.append(
-                    dict(
-                        order_count=len(quantities_per_order),
-                        total_quantity=sum(quantities_per_order),
-                        order_limit=setting.order_limit,
-                        max_quantity_per_user=setting.max_quantity_per_user
+                    retval.append(
+                        (
+                            container,
+                            dict(
+                                order_count=len(quantities_per_order),
+                                total_quantity=sum(quantities_per_order),
+                                order_limit=setting.order_limit,
+                                max_quantity_per_user=setting.max_quantity_per_user
+                                )
+                            )
                         )
-                    )
-            else:
-                logger.info("%s does not implement IOrderQueryable. skip" % container.__class__)
-            setting = setting.super
+                else:
+                    logger.info("%s does not implement IOrderQueryable. skip" % container.__class__)
+                setting = setting.super
+        return retval
 
     def check_order_limit(self):
         """ 購入回数および購入枚数制限チェック
@@ -297,8 +312,8 @@ class TicketingCartResourceBase(object):
         カウントするOrder数にcancelされたOrderは含まれません。
         """
         cart_total_quantity = sum(element.quantity for item in self.cart.items for element in item.elements)
-        total_orders_and_quantities_per_user = self.total_orders_and_quantities_per_user
-        for container, record in total_orders_and_quantities_per_user.items():
+        total_orders_and_quantities_per_user = self.get_total_orders_and_quantities_per_user(self.cart.sales_segment)
+        for container, record in total_orders_and_quantities_per_user:
             order_limit = record['order_limit']
             max_quantity_per_user = record['max_quantity_per_user']
             order_count = record['order_count']
