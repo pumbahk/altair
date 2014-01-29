@@ -318,7 +318,8 @@ class TicketingCartResourceBase(object):
             max_quantity_per_user = record['max_quantity_per_user']
             order_count = record['order_count']
             total_quantity = record['total_quantity']
-            if order_limit is not None and order_count >= order_limit:
+            # XXX: order_limit はかつて 0 が無効値だった...
+            if order_limit and order_count >= order_limit:
                 logger.info("order_limit exceeded: %d >= %d" % (order_count, order_limit))
                 raise OverOrderLimitException.from_resource(self, self.request, order_limit=order_limit)
             if max_quantity_per_user is not None:
