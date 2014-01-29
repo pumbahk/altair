@@ -131,11 +131,11 @@ class SalesSegments(BaseView):
         sales_segment_group_id = f.sales_segment_group_id.data
         sales_segment_group = SalesSegmentGroup.query.filter_by(id=sales_segment_group_id).one()
         sales_segment = sales_segment_group.new_sales_segment()
-        sales_segment = merge_session_with_post(sales_segment, f.data)
+        sales_segment = merge_session_with_post(sales_segment, f.data, excludes={'order_limit', 'max_quantity_per_user'})
         sales_segment.setting.order_limit = f.order_limit.data
         sales_segment.setting.max_quantity_per_user = f.max_quantity_per_user.data
-        assert sdles_segment.event_id == sales_segment_group.event_id
-        assert sales_segment.performance is None or sales_segment.performance.event_id == sales_segment.event_id
+        assert sales_segment.event == sales_segment_group.event
+        assert sales_segment.performance is None or sales_segment.performance.event == sales_segment.event
 
         pdmps = [pdmp
                  for pdmp in sales_segment_group.payment_delivery_method_pairs

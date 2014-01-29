@@ -112,7 +112,7 @@ def setup_product_item(quantity, quantity_only, organization):
             site=Site()
         )
     )
-    performance.settings.append(PerformanceSetting())
+    performance.setting = PerformanceSetting()
 
     product_item = ProductItem(
         name=":ProductItem:name", 

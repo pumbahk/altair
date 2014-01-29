@@ -123,6 +123,7 @@ class SalesSegmentsTests(unittest.TestCase):
             Account,
             Event,
             SalesSegmentGroup,
+            SalesSegmentGroupSetting,
             SalesSegment,
             Performance,
             PaymentDeliveryMethodPair,
@@ -139,19 +140,22 @@ class SalesSegmentsTests(unittest.TestCase):
         organization = Organization(short_name='testing')
         account = Account(organization=organization)
         event = Event(organization=organization)
-        pdmp = PaymentDeliveryMethodPair(system_fee=0,
-                                         transaction_fee=0,
-                                         delivery_fee=0,
-                                         discount=0,
-                                         payment_method=PaymentMethod(fee=0,
-                                                                      name="testing-payment"),
-                                         delivery_method=DeliveryMethod(fee=0,
-                                                                        name="testing-delivery"))
+        pdmp = PaymentDeliveryMethodPair(
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            discount=0,
+            payment_method=PaymentMethod(fee=0, name="testing-payment"),
+            delivery_method=DeliveryMethod(fee=0, name="testing-delivery")
+            )
         membergroup = MemberGroup()
-        sales_segment_group=SalesSegmentGroup(event=event,
-                                              organization=organization,
-                                              payment_delivery_method_pairs=[pdmp],
-                                              membergroups=[membergroup])
+        sales_segment_group=SalesSegmentGroup(
+            event=event,
+            organization=organization,
+            payment_delivery_method_pairs=[pdmp],
+            membergroups=[membergroup],
+            setting=SalesSegmentGroupSetting()
+            )
         performance = Performance(event=event,
                                   start_on=datetime(2013, 1, 1))
 
@@ -224,7 +228,9 @@ class EditSalesSegmentTests(unittest.TestCase):
         from datetime import datetime
         from altair.app.ticketing.core.models import (
             SalesSegment,
+            SalesSegmentSetting,
             SalesSegmentGroup,
+            SalesSegmentGroupSetting,
             Event,
             Performance,
             Account,
@@ -257,13 +263,16 @@ class EditSalesSegmentTests(unittest.TestCase):
             event=event,
             start_at=datetime(2014, 8, 31),
             end_at=datetime(2014, 9, 30),
-            order_limit=1,
             max_quantity=8,
             registration_fee=100,
             printing_fee=150,
             refund_ratio=88,
             margin_ratio=99,
             account=account,
+            setting=SalesSegmentGroupSetting(
+                order_limit=1,
+                max_quantity_per_user=5
+                ),
             payment_delivery_method_pairs=[
                 PaymentDeliveryMethodPair(
                     system_fee=0,
@@ -288,7 +297,8 @@ class EditSalesSegmentTests(unittest.TestCase):
             performance=performance,
             start_at=datetime(2013, 8, 31),
             end_at=datetime(2013, 9, 30),
-            sales_segment_group=sales_segment_group
+            sales_segment_group=sales_segment_group,
+            setting=SalesSegmentSetting()
             )
         user = User(
             organization=organization
@@ -434,7 +444,7 @@ class EditSalesSegmentTests(unittest.TestCase):
         self.assertEqual(sales_segment.payment_delivery_method_pairs, [sales_segment_group.payment_delivery_method_pairs[0]])
         self.assertEqual(sales_segment.max_quantity, 4)
         self.assertEqual(sales_segment.registration_fee, 20000)
-        self.assertEqual(sales_segment.order_limit, 10)
+        self.assertEqual(sales_segment.setting.order_limit, 10)
         self.assertEqual(sales_segment.printing_fee, 1010)
         self.assertEqual(sales_segment.margin_ratio, 1310)
 

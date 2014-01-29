@@ -1313,10 +1313,13 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         super(type(self), self).delete()
 
     def new_sales_segment(self):
-        return SalesSegment(sales_segment_group=self,
-                            event=self.event,
-                            organization=self.organization,
-                            membergroups=[m for m in self.membergroups])
+        return SalesSegment(
+            sales_segment_group=self,
+            event=self.event,
+            organization=self.organization,
+            membergroups=[m for m in self.membergroups],
+            setting=SalesSegmentSetting()
+            )
 
     @staticmethod
     def create_from_template(template, with_payment_delivery_method_pairs=False, **kwargs):
