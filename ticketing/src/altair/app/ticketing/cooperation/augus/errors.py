@@ -4,10 +4,10 @@ class AugusError(Exception):
 
 class BadRequest(AugusError):
     pass
-    
+
 class NoSeatError(AugusError):
     pass
-    
+
 class AbnormalTimestampFormatError(AugusError):
     pass
 
@@ -15,7 +15,7 @@ class EntryFormatError(AugusError):
     pass
 
 class SeatImportError(AugusError):
-    pass    
+    pass
 
 class AlreadyExist(AugusError):
     pass

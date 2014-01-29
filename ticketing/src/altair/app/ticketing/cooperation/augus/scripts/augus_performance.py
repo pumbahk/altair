@@ -42,7 +42,7 @@ def main():
     parser.add_argument('conf', nargs='?', default=None)
     args = parser.parse_args()
     staging, pending = init_env(args.conf)
-    
+
     importer = AugusPerformanceImpoter()
     target = PerformanceSyncRequest
     paths = []
@@ -53,7 +53,7 @@ def main():
             request = AugusParser.parse(path)
             importer.import_(request)
     except AugusDataImportError as err:
-        transaction.abort()        
+        transaction.abort()
         raise
     except:
         transaction.abort()

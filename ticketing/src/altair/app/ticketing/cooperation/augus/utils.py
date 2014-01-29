@@ -11,7 +11,7 @@ from .errors import (
     NoSeatError,
     BadRequest,
     )
-    
+
 class SeatAugusSeatPairs(object):
     def __init__(self):
         self._venue = None
@@ -36,7 +36,7 @@ class SeatAugusSeatPairs(object):
     @property
     def venue_id(self):
         return self._venue.id
-    
+
     def find_augus_seat(self, seat):
         for augus_seat in self.get_augus_seats():
             if seat.id == augus_seat.seat_id:
@@ -50,7 +50,7 @@ class SeatAugusSeatPairs(object):
         for seat in self.get_seats():
             augus_seat = self.find_augus_seat(seat)
             yield seat, augus_seat
-        
+
     def _find_augus_seat(self): # co routine
         augus_seats = self.get_augus_seats()
         length = len(augus_seats)
@@ -80,12 +80,12 @@ class SeatAugusSeatPairs(object):
                 break
         else:
             raise NoSeatError('no seat: {0}'.format(seat_id))
-                         
+
     def find_pair(self, seat_id):
         seat = self.get_seat(seat_id)
-        augus_seat = self.find_augus_seat(seat)        
+        augus_seat = self.find_augus_seat(seat)
         return seat, augus_seat
-        
+
 class _SeatAugusSeatPairs(object):
     def __init__(self, venue_id, augus_venue_code, augus_venue_version):
         self._venue_id = venue_id
@@ -97,7 +97,7 @@ class _SeatAugusSeatPairs(object):
     @property
     def venue_id(self):
         return self._venue_id
-    
+
 
     def load(self):
         self._seats = Seat.query.filter(Seat.venue_id==self.venue_id)\
@@ -124,7 +124,7 @@ class _SeatAugusSeatPairs(object):
         for seat in self._seats:
             augus_seat = self.find_augus_seat(seat)
             yield seat, augus_seat
-        
+
     def _find_augus_seat(self): # co routine
         length = len(self._augus_seats)
         augus_seat = None
@@ -153,19 +153,19 @@ class _SeatAugusSeatPairs(object):
                 break
         else:
             raise NoSeatError('no seat: {0}'.format(seat_id))
-                         
+
     def find_pair(self, seat_id):
         seat = self.get_seat(seat_id)
-        augus_seat = self.find_augus_seat(seat)        
+        augus_seat = self.find_augus_seat(seat)
         return seat, augus_seat
 
 class RequestAccessor(object):
     in_params = {}
     in_matchdict = {}
-    
+
     def __init__(self, request):
         self._request = request
-        
+
     def _get_value(self, getter, key, type_=None):
         try:
             value = getter(key)
@@ -180,7 +180,7 @@ class RequestAccessor(object):
 
     def _get_matchdict(self, key, *args, **kwds):
         getter = lambda _key: self._request.matchdict[_key]
-        return self._get_value(getter, key, *args, **kwds)        
+        return self._get_value(getter, key, *args, **kwds)
 
     def _get_params(self, key, *args, **kwds):
         getter = lambda _key: self._request.params.getall(_key)
@@ -207,13 +207,20 @@ class AugusPerformanceImpoter(object):
 
     def import_(self, record):
         pass
-            
-            
+
+
 
 
 
 
 def mkdir_p(path):
+    """ディレクトリの作成を試みる
+    ディレクトリがあった場合はそのまま
+    なかったら作る
+    ファイルがあった場合は例外を送出する
+    (そこにファイルがあるケースはロジック的におかしい所があるはずなので
+     それを見落とさないために例外を送出するようにする)
+    """
     if not os.path.isdir(path):
         os.makedirs(path)
 

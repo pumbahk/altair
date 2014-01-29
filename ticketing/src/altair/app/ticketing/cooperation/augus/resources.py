@@ -123,7 +123,7 @@ class PerformanceResource(TicketingAdminResource):
                               .one()
         except (MultipleResultsFound, NoResultFound) as err:
             raise HTTPNotFound('The event_id = {} is not found or multiply.'.format(self.accessor.event_id))
-    
+
     @reify
     def performances(self):
         return self.event.performances
@@ -134,7 +134,7 @@ class PerformanceResource(TicketingAdminResource):
             return AugusPerformance.query.all()
         except (MultipleResultsFound, NoResultFound) as err:
             raise HTTPNotFound('The event_id = {} is not found or multiply.'.format(self.accessor.event_id))
-            
+
     def get_performance_augus_performance_pair(self):
         for performance in self.performances:
             ag_performance = AugusPerformance.get(performance_id=performance.id)
@@ -143,7 +143,7 @@ class PerformanceResource(TicketingAdminResource):
     @reify
     def performance_agperformance(self):
         return [(performance, ag_performance)
-                for performance, ag_performance 
+                for performance, ag_performance
                 in self.get_performance_augus_performance_pair()]
 
 class SeatTypeRequestAccessor(RequestAccessor):

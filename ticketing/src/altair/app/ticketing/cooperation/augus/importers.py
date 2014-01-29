@@ -19,7 +19,7 @@ from .errors import (
 
 class AugusPerformanceImpoter(object):
     def import_record(self, record):
-        
+
         ag_venue = AugusVenue\
             .query.filter(AugusVenue.code==record.venue_code)\
                   .filter(AugusVenue.version==record.venue_version)\
@@ -29,7 +29,7 @@ class AugusPerformanceImpoter(object):
                                        'no such AugusVenue: '
                                        'code={} version={}'.format(record.venue_code, record.venue_version)
                                        )
-        
+
         ag_performance = AugusPerformance.query.get(augus_event_code=record.event_code,
                                                     augus_performance_code=record.performance_code,
                                                     )
@@ -46,7 +46,7 @@ class AugusPerformanceImpoter(object):
         ag_performance.augus_venue_version = record.venue_version
         ag_performance.save()
         return ag_performance
-        
+
     def import_record_all(self, records):
         elms = []
         for record in records:
@@ -83,8 +83,8 @@ class AugusTicketImpoter(object):
         ag_ticket.augus_performance_id = ag_performance.id
         ag_ticket.save()
         return ag_ticket
-        
-        
+
+
     def import_record_all(self, records):
         elms = []
         for record in records:
@@ -107,7 +107,7 @@ class AugusDistributionImpoter(object):
                                 )
         seat = augus_seat_to_real_seat(ag_performance, ag_seat)
         old_stock = seat.stock
-        
+
         if old_stock.stock_holder == None and seat.status not in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v]:
             # 未割当 かつ 配席可能な状態
 
@@ -119,16 +119,16 @@ class AugusDistributionImpoter(object):
             ag_stock_info.distributed_at = datetime.datetime.now()
             ag_stock_info.augus_seat_id = ag_seat.id
             ag_stock_info.save()
-            
+
             # seat の割当
             seat.stock_id = stock.id
             old_stock.quantity -= 1
             seat.save()
-            
+
             return seat
         else:
             raise AugusDataImportError('Cannot seat allocation: seat_id={}'.format(seat.id))
-        
+
     def _create_stock_holder(self, event):
         stock_holder = StockHolder()
         stock_holder.name = u'オーガス連携:' + time.strftime('%Y-%m-%d-%H-%M-%S')
@@ -136,7 +136,7 @@ class AugusDistributionImpoter(object):
         stock_holder.stype = u'{"text": "\u8ffd", "text_color": "#a62020"}'
         stock_holder.save()
         return stock_holder
-        
+
     def import_record_all(self, records):
         allcated_seats = []
         for augus_event_code, _records in itertools.groupby(records, lambda record: record.augus_event_code):
@@ -153,7 +153,7 @@ class AugusDistributionImpoter(object):
                         ag_performance.id))
             stock_holder = self._create_stock_holder(ag_performance.performance.event)
             stocks = filter(lambda stock: stock.performance_id==ag_performance.performance.id, stock_holder.stocks)
-            
+
             for augus_performance_code, _n_records in itertools.groupby(_records, lambda record: record.performance_code):
                 ag_performance = AugusPerformance.get(augus_event_code=augus_event_code,
                                                       augus_performance_code=augus_performance_code,
@@ -162,7 +162,7 @@ class AugusDistributionImpoter(object):
                     raise AugusDataImportError(
                         'AugusPerformance not found: event_code={} performance_code={}'.format(
                             augus_event_code, augus_performance_code))
-                    
+
                 if not  ag_performance.performance:
                     raise AugusDataImportError(
                         'AugusPerformance not linked to Performance: AugusPerformance.id={}, '.format(
@@ -180,7 +180,7 @@ class AugusDistributionImpoter(object):
                         raise AugusDataImportError(
                             'AugusTicket not linked to StockType: AugusTicket.id={}, '.format(
                                 ag_ticket.id))
-                    
+
                     stock = None
                     for stock in stocks:
                         if stock.stock_type_id == ag_ticket.stock_type.id:
@@ -196,7 +196,7 @@ class AugusDistributionImpoter(object):
                     if stock:
                         stock.save()
         return allocated_seats
-        
+
     def import_(self, protocol):
         return self.import_record_all(protocol)
 
