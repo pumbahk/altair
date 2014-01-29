@@ -239,7 +239,12 @@ class EditSalesSegment(BaseView):
     @view_config(route_name='sales_segments.copy', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
     @view_config(route_name='sales_segments.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
     def get(self):
-        form = SalesSegmentForm(obj=self.context.sales_segment, formdata=self.request.GET, context=self.context)
+        sales_segment = self.context.sales_segment
+        form = SalesSegmentForm(obj=sales_segment, formdata=self.request.GET, context=self.context)
+        for k in ['order_limit', 'max_quantity_per_user']:
+            dk = 'use_default_%s' % k
+            getattr(form, k).data = getattr(sales_segment.setting, k)
+            getattr(form, dk).data = getattr(sales_segment.setting, dk)
         form.payment_delivery_method_pairs.data = [pdmp.id for pdmp in self.context.sales_segment.payment_delivery_method_pairs]
         return self._render_params(form)
 

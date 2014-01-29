@@ -505,7 +505,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     display_order = AnnotatedColumn(Integer, nullable=False, default=1, _a_label=_(u'表示順'))
 
-    setting = relationship('PerformanceSetting', backref='performance', uselist=False)
+    setting = relationship('PerformanceSetting', backref='performance', uselist=False, cascade='all')
 
     @property
     def products(self):
@@ -877,7 +877,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     sales_segment_groups = relationship('SalesSegmentGroup')
     cms_send_at = Column(DateTime, nullable=True, default=None)
 
-    setting = relationship('EventSetting', backref='event', uselist=False)
+    setting = relationship('EventSetting', backref='event', uselist=False, cascade='all')
 
     _first_performance = None
     _final_performance = None
@@ -1281,7 +1281,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     end_day_prior_to_performance = Column(Integer)
     end_time = Column(Time)
 
-    setting = relationship('SalesSegmentGroupSetting', uselist=False, backref='sales_segment_group', cascade='delete', lazy='joined')
+    setting = relationship('SalesSegmentGroupSetting', uselist=False, backref='sales_segment_group', cascade='all', lazy='joined')
 
     @hybrid_method
     def in_term(self, dt):
@@ -3730,7 +3730,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     use_default_registration_fee = Column(Boolean)
     use_default_auth3d_notice = Column(Boolean)
 
-    setting = relationship('SalesSegmentSetting', uselist=False, backref='sales_segment', cascade='delete', lazy='joined')
+    setting = relationship('SalesSegmentSetting', uselist=False, backref='sales_segment', cascade='all', lazy='joined')
 
     def has_stock_type(self, stock_type):
         return stock_type in self.seat_stock_types

@@ -6,7 +6,7 @@ import logging
 
 from zope.interface import Interface, Attribute, implementer
 from altair.app.ticketing.resources import TicketingAdminResource
-from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup, Performance, Event, Organization, PaymentDeliveryMethodPair
+from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup, SalesSegmentSetting, SalesSegmentGroupSetting, Performance, Event, Organization, PaymentDeliveryMethodPair
 
 logger = logging.getLogger(__name__)
 
@@ -248,13 +248,15 @@ class SalesSegmentAccessor(object):
             return self.attr_get(sales_segment_group, name)
 
     def update_sales_segment(self, sales_segment):
+        if sales_segment.setting is None:
+            sales_segment.setting = SalesSegmentSetting()
         for k in self.attributes.keys():
             if self.get_use_default(sales_segment, k):
                 default_value = self.attr_get_default(
                     sales_segment.sales_segment_group,
                     sales_segment.performance,
                     k)
-                logger.debug('sales_segment(id=%ld).%s set to default value %s' % (sales_segment.id, k, repr(default_value)))
+                logger.debug('sales_segment(id=%r).%s set to default value %r' % (sales_segment.id, k, default_value))
                 self.attr_set(sales_segment, k, default_value)
 
     def create_sales_segment_for_performance(self, sales_segment_group, performance):
@@ -263,13 +265,23 @@ class SalesSegmentAccessor(object):
             event=performance.event,
             performance=performance,
             sales_segment_group=sales_segment_group,
+            setting=SalesSegmentSetting(
+                **dict(
+                    (
+                        'use_default_%s' % k,
+                        desc.get('use_default_default', False)
+                        )
+                    for k, desc in self.attributes.items()
+                    if desc.get('has_use_default') and desc.get('setting')
+                    )
+                ),
             **dict(
                 (
-                    'use_default_%' % k,
+                    'use_default_%s' % k,
                     desc.get('use_default_default', False)
                     )
                 for k, desc in self.attributes.items()
-                if 'has_use_default' in desc
+                if desc.get('has_use_default') and not desc.get('setting')
                 )
             )
         self.update_sales_segment(ss)
@@ -280,14 +292,23 @@ class SalesSegmentAccessor(object):
             organization=lot.event.organization,
             event=lot.event,
             sales_segment_group=sales_segment_group,
+            setting=SalesSegmentSetting(
+                **dict(
+                    (
+                        'use_default_%s' % k,
+                        desc.get('use_default_default', False)
+                        )
+                    for k, desc in self.attributes.items()
+                    if desc.get('has_use_default') and desc.get('setting')
+                    )
+                ),
             **dict(
                 (
-                    'use_default_%' % k,
-                    desc.get('use_default_default_for_lot',
-                        desc.get('use_default_default',False))
+                    'use_default_%s' % k,
+                    desc.get('use_default_default', False)
                     )
                 for k, desc in self.attributes.items()
-                if 'has_use_default' in desc
+                if desc.get('has_use_default') and not desc.get('setting')
                 )
             )
         lot.sales_segment = ss
