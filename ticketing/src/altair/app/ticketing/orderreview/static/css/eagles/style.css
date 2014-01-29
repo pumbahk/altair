@@ -756,7 +756,7 @@ background: #f3a9c9;
 .guestbox{
 border: 1px #555 solid;
 width: 420px;
-height: 190px;
+height: 215px;
 }
 .guestbox thead th{
 background: #860010;
@@ -775,7 +775,7 @@ background: #fffecb;
 .loginbox{
 border: 1px #555 solid;
 width: 420px;
-height: 400px;
+height: 450px;
 }
 .loginbox thead th{
 background: #860010;
