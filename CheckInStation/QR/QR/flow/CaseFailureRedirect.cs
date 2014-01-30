@@ -8,7 +8,7 @@ namespace QR
 	/// <summary>
 	/// Case failure redirect. エラー表示。 キャンセル済みなど予期しない状況の時にリダイレクトメッセージ表示する状況
 	/// </summary>
-	public class CaseFailureRedirect : AbstractCase, ICase
+	public class CaseFailureRedirect : AbstractCase, ICase, IAutoForwardingCase
 	{
 		private static Logger logger = LogManager.GetCurrentClassLogger ();
 

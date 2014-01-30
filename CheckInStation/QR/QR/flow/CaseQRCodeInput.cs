@@ -12,17 +12,12 @@ namespace QR
 	{
 		public string QRCode { get; set; }
 
-		public override Task PrepareAsync (IInternalEvent ev)
-		{
-			QRInputEvent subject = ev as QRInputEvent;
-			this.QRCode = subject.QRCode;
-			return base.PrepareAsync (ev);
-		}
-
 		public override Task<bool> VerifyAsync ()
 		{
 			return Task.Run (() => {
-				return true;
+                QRInputEvent subject = this.PresentationChanel as QRInputEvent;
+                this.QRCode = subject.QRCode;
+                return this.QRCode != null && this.QRCode != "";
 			}); //TODO:２度調べるを防止
 		}
 

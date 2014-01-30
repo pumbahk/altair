@@ -55,6 +55,37 @@ namespace QR
 				Assert.IsInstanceOf<CaseInputStrategySelect> (result);
 				// peekでも現在のCaseが取れる必要がある!!
 				Assert.IsInstanceOf<CaseInputStrategySelect>(manager.Peek().Case);
+			}); 
+			t.Wait ();
+		}
+		[Test, Description("QRデータ取得中 -ng -> エラー画面 -ok> QR読み込み -backward-> 認証方法選択")]
+		public void TestBackwordFromQRDataFetchErrorRedirect()
+		{
+			var manager = new FlowManager ();
+			var startpoint = new CaseQRDataFetch (new Resource (), null);
+			FakeFlow target = new FakeFlow (manager, startpoint);
+			// これは遷移時にすでに設定されている
+			target.GetFlowDefinition ().CurrentInputUnit = InputUnit.qrcode;
+			manager.SetStartPoint (target);
+
+			ICase result, case_;
+			var t = Task.Run (async () => {
+				// start 
+				(manager.Peek () as FakeFlow).VerifyStatus = false;
+				case_ = await manager.Forward ();
+				Assert.IsInstanceOf<CaseFailureRedirect> (case_);
+
+				(manager.Peek () as FakeFlow).VerifyStatus = true;
+				case_ = await manager.Forward ();
+				Assert.IsInstanceOf<CaseQRCodeInput> (case_);
+
+				// 印刷表示(1枚)の後
+
+				result = await manager.Backward ();
+				Assert.IsInstanceOf<CaseInputStrategySelect> (result);
+
+				// peekでも現在のCaseが取れる必要がある!!
+				Assert.IsInstanceOf<CaseInputStrategySelect>(manager.Peek().Case);
 			});
 			t.Wait ();
 		}
