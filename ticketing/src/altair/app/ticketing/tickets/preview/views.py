@@ -111,12 +111,15 @@ def preview_ticket_post(context, request):
     curl -Fsvgfile=@<file> <url> > out.png
     """
     preview = SVGPreviewCommunication.get_instance(request)
-
-    svgio = request.POST["svgfile"].file 
-    cleaner = get_validated_svg_cleaner(svgio, exc_class=HTTPBadRequest)
-    svgio = cleaner.get_cleaned_svgio()
+    if "raw" in request.POST:
+        svg_string = request.POST["svgfile"].file.read()
+    else:
+        svgio = request.POST["svgfile"].file 
+        cleaner = get_validated_svg_cleaner(svgio, exc_class=HTTPBadRequest)
+        svgio = cleaner.get_cleaned_svgio()
+        svg_string = svgio.getvalue()
     try:
-        imgdata_base64 = preview.communicate(request, svgio.getvalue())
+        imgdata_base64 = preview.communicate(request, svg_string)
         return as_filelike_response(request, base64.b64decode(imgdata_base64))
     except jsonrpc.ProtocolError, e:
         raise HTTPBadRequest(str(e))
