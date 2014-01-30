@@ -83,33 +83,53 @@ namespace QR
 			}
 		}
 
-		public async virtual Task<ResultTuple<string, AuthInfo>> AuthAsync (string name, string password)
-		{
-			EndPoint endpoint;
-			try {
-				try {
-					endpoint = await TryLoginRequest (name, password);
-				} catch (System.Xml.XmlException e) {
-					logger.ErrorException ("xml:", e);
-					return OnFailure ();
-				}
-				try {
-					var statusData = await TryLoginStatusRequest (endpoint.LoginStatus);
-					if (statusData.login) {
-						return OnSuccess (endpoint, statusData);
-					} else {
-						//TODO:log LoginStatusFailure
-						return OnFailure ();
-					}
-				} catch (System.Xml.XmlException e) {
-					logger.ErrorException ("xml:", e);
-					return OnFailure (e.ToString ());
-				}
-			} catch (System.Net.WebException e) {
-				logger.ErrorException ("net:", e);
-				return	OnFailure (Resource.GetWebExceptionMessage ());
-			}
-		}
+        public async virtual Task<ResultTuple<string, AuthInfo>> AuthAsync(string name, string password)
+        {
+            EndPoint endpoint;
+            try
+            {
+                endpoint = await TryLoginRequest(name, password);
+            }
+            catch (System.Xml.XmlException e)
+            {
+                logger.ErrorException("xml:", e);
+                return OnFailure();
+            }
+            catch (System.Net.WebException e)
+            {
+                logger.ErrorException("net:", e);
+                return OnFailure(Resource.GetWebExceptionMessage());
+            }
+            try
+            {
+                var statusData = await TryLoginStatusRequest(endpoint.LoginStatus);
+                if (statusData.login)
+                {
+                    return OnSuccess(endpoint, statusData);
+                }
+                else
+                {
+                    //TODO:log LoginStatusFailure
+                    return OnFailure();
+                }
+            }
+            catch (System.Xml.XmlException e)
+            {
+                logger.ErrorException("xml:", e);
+                return OnFailure(e.ToString());
+
+            }
+            catch (System.Net.WebException e)
+            {
+                logger.ErrorException("net:", e);
+                return OnFailure(Resource.GetWebExceptionMessage());
+            }
+            catch (System.Net.Sockets.SocketException e)
+            {
+                logger.ErrorException("net(socket):", e);
+                return OnFailure(Resource.GetWebExceptionMessage());
+            }
+        }
 
 		public virtual Success<string, AuthInfo> OnSuccess (EndPoint endpoint, AuthInfo statusData)
 		{

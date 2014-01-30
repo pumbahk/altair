@@ -100,17 +100,19 @@ namespace QR.presentation.gui.page
             var ctx = this.DataContext as InputDataContext;
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
-                var case_ = await ctx.SubmitAsync();
+                var case_ = await ctx.SubmitAsync(); //入力値チェック
 
                 if (ctx.Event.Status == InternalEventStaus.success)
                 {
-                    case_ = await ctx.SubmitAsync();
-
-                    //ここである必要はあまりないけれど。裏側で広告用の画像をとる
-                    var resource = AppUtil.GetCurrentResource();
-                    if (resource.AdImageCollector.State == CollectorState.starting)
+                    case_ = await ctx.SubmitAsync(); // call login api
+                    if (ctx.Event.Status == InternalEventStaus.success)
                     {
-                        await resource.AdImageCollector.Run(resource.EndPoint.AdImages).ConfigureAwait(false);
+                        //ここである必要はあまりないけれど。裏側で広告用の画像をとる
+                        var resource = AppUtil.GetCurrentResource();
+                        if (resource.AdImageCollector.State == CollectorState.starting)
+                        {
+                            await resource.AdImageCollector.Run(resource.EndPoint.AdImages).ConfigureAwait(false);
+                        }
                     }
                 }
                 ctx.TreatErrorMessage();

@@ -96,16 +96,102 @@ namespace QR
 		}
 	}
 
+    /* TODO: split file
+     * IImageFromSvg, ImageFromSvg, ImageFromSvgBase64
+     */
+
+    public interface IImageFromSvg
+    {
+       Task<byte[]> GetImageFromSvg(string svg);
+    }
+
+    public class ImageFromSvg : IImageFromSvg
+    {
+        public ImageFromSvg(IResource resource)
+        {
+            this.Resource = resource;
+        }
+        public IResource Resource { get; set; }
+        public virtual string GetImageFromSvgURL()
+        {
+            return Resource.EndPoint.ImageFromSvg;
+        }
+
+        public async Task<byte[]> GetImageFromSvg(string svg)
+        {
+            var data = new
+            {
+                svg = svg
+            };
+
+            IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
+            using (var wrapper = factory.Create(GetImageFromSvgURL()))
+            {
+                using (HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false))
+                {
+
+                    return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                }
+            }
+        }
+
+    }
+
+    public class ImageFromSvgBase64 : IImageFromSvg
+    {
+        public ImageFromSvgBase64(IResource resource)
+        {
+            this.Resource = resource;
+        }
+
+        public IResource Resource { get; set; }
+        public virtual string GetImageFromSvgURL()
+        {
+            return Resource.EndPoint.ImageFromSvg;
+        }
+
+         // use preview server api instead of custom svg image api. this is adapter.
+        public async Task<byte[]> GetImageFromSvg(string svg)
+        {
+            var data = new
+            {
+                svgfile = svg, raw=true
+            };
+
+            IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
+            using (var wrapper = factory.Create(GetImageFromSvgURL()))
+            {
+                using (HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false))
+                {
+
+                    return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                }
+            }
+        }
+    }
+
 	public class SVGImageFetcher
 	{
 		private static Logger logger = LogManager.GetCurrentClassLogger ();
-
+        public IImageFromSvg ImageFromSvg { get; set; }
 		public IResource Resource { get; set; }
 
 		public SVGImageFetcher (IResource resource)
 		{
 			Resource = resource;
+            this.ImageFromSvg = new ImageFromSvg(resource);
 		}
+
+        public SVGImageFetcher(IResource resource, IImageFromSvg imageFromSVG)
+        {
+            Resource = resource;
+            this.ImageFromSvg = imageFromSVG;
+        }
+
+        public Task<byte[]> GetImageFromSvg(string svg)
+        {
+            return this.ImageFromSvg.GetImageFromSvg(svg);
+        }
 
 		public virtual string GetSvgOneURL ()
 		{
@@ -115,26 +201,6 @@ namespace QR
 		public virtual string GetSvgAllURL ()
 		{
 			return Resource.EndPoint.QRSvgAll;
-		}
-
-		public virtual string GetImageFromSvgURL ()
-		{
-			return Resource.EndPoint.ImageFromSvg;
-		}
-
-		public async Task<byte[]> GetImageFromSvg (string svg)
-		{
-			var data = new {
-				svg = svg
-			};
-
-			IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
-			using (var wrapper = factory.Create (GetImageFromSvgURL ())) {
-				using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (data).ConfigureAwait (false)) {
-
-					return await response.Content.ReadAsByteArrayAsync ().ConfigureAwait (false);
-				}
-			}
 		}
 
 		public async Task<ResultTuple<string, List<TicketImageData>>> FetchImageDataForOneAsync (TicketData tdata)

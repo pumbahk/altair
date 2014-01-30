@@ -20,11 +20,12 @@ namespace QR
 		{
 			return "http://dummy.all.svg";
 		}
-
+/*
 		public override string GetImageFromSvgURL ()
 		{
 			return "http://dummy.image";
 		}
+ */
 	}
 
 	public class MockTDFetcher : TicketDataFetcher
