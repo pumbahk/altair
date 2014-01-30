@@ -32,6 +32,11 @@ namespace QR
 			this.Message = resource.GetDefaultErrorMessage ();
 		}
 
+        public CaseFailureRedirect(IResource resource, Func<Task> modify, string message) : this(resource, message)
+        {
+            this.Modify = modify;
+        }
+
         public override async Task PrepareAsync(IInternalEvent ev)
         {
             await base.PrepareAsync(ev).ConfigureAwait(false);

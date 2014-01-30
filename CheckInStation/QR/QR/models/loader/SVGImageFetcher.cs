@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using NLog;
 using Codeplex.Data;
 using QR.message;
+using System.IO;
+using System.Text;
+using System.Net.Http.Headers;
 
 namespace QR
 {
@@ -107,6 +110,7 @@ namespace QR
 
     public class ImageFromSvg : IImageFromSvg
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         public ImageFromSvg(IResource resource)
         {
             this.Resource = resource;
@@ -129,8 +133,15 @@ namespace QR
             {
                 using (HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false))
                 {
-
-                    return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        logger.Info("image fetching status code: {0}", response.StatusCode);
+                        return null; //Too-Bad!!
+                    }                    
                 }
             }
         }
@@ -139,6 +150,7 @@ namespace QR
 
     public class ImageFromSvgBase64 : IImageFromSvg
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         public ImageFromSvgBase64(IResource resource)
         {
             this.Resource = resource;
@@ -150,21 +162,37 @@ namespace QR
             return Resource.EndPoint.ImageFromSvg;
         }
 
-         // use preview server api instead of custom svg image api. this is adapter.
+        // use preview server api instead of custom svg image api. this is adapter.
         public async Task<byte[]> GetImageFromSvg(string svg)
         {
-            var data = new
-            {
-                svgfile = svg, raw=true
-            };
 
-            IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
-            using (var wrapper = factory.Create(GetImageFromSvgURL()))
+            using (var data = new MultipartFormDataContent())
             {
-                using (HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false))
+                data.Add(new StringContent("raw"), "true");
+                var svgFileLike = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(svg)));
+                svgFileLike.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
                 {
+                    FileName = "svg.svg",
+                    Name="svgfile"
+                };
+                data.Add(svgFileLike);
 
-                    return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
+                using (var wrapper = factory.Create(GetImageFromSvgURL()))
+                {
+                    //todo:é∏îsÇµÇΩÇ∆Ç´ÇÃèàóù(status!=200)
+                    using (HttpResponseMessage response = await wrapper.PostAsync(data).ConfigureAwait(false))
+                    {
+                        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                        {
+                            return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            logger.Info("image fetching status code: {0}", response.StatusCode);
+                            return null; //Too-bad!!
+                        }
+                    }
                 }
             }
         }
@@ -210,7 +238,15 @@ namespace QR
 				var svg_list = _SVGImageFetcherForOne.ParseSvgDataList (response);
 				var r = new List<TicketImageData> ();
 				foreach (SVGData svgdata in svg_list) {
+
+                    //TODO: ê^ñ ñ⁄Ç…èàóùèëÇ≠GetImageFromSvg
 					var image = await GetImageFromSvg (svgdata.svg);
+                    if (image == null)                    
+                    {
+                        logger.Error("image fetching is failure. token_id={0}", svgdata.token_id);
+                        return new Failure<string, List<TicketImageData>>(Resource.GetInvalidOutputMessage());
+                    }
+
 					if (svgdata.token_id != tdata.ordered_product_item_token_id) {
 						throw new ArgumentException (String.Format ("assert svgdata.token_id = ordered_product_item_token_id, {0} = {1}", svgdata.token_id, tdata.ordered_product_item_token_id));
 					}
@@ -246,5 +282,5 @@ namespace QR
 			}
 		}
 	}
-}
+    }
 

@@ -115,7 +115,14 @@ namespace QR
 				}
 				return true;
 			});
-			return new CaseFailureRedirect (Resource, modify);
+            if (this.PrintingTargets != null)
+            {
+                return new CaseFailureRedirect(Resource, modify, this.PrintingTargets.Left);
+            }
+            else
+            {
+                return new CaseFailureRedirect(Resource, modify);
+            }
 		}
 	}
 }
