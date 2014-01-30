@@ -720,7 +720,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 or_(ShippingAddress.email_1.in_(mailaddresses),
                     ShippingAddress.email_2.in_(mailaddresses))
                 ) \
-            .filter(SalesSegment.event_id == self.id)
+            .filter(SalesSegment.performance_id == self.id)
         if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
         return qs
