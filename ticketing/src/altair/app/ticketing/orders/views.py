@@ -1847,8 +1847,8 @@ class OrdersEditAPIView(BaseView):
             order_data['system_fee'] = int(order.payment_delivery_pair.system_fee)
             order_data['special_fee'] = int(order.payment_delivery_pair.special_fee)
             order_data['total_amount'] = int(sales_segment.get_amount(order.payment_delivery_pair, products))
-        except Exception, e:
-            logger.exception('fee calculation error (%s)' % e.message)
+        except Exception:
+            logger.exception('fee calculation error')
             raise HTTPBadRequest(body=json.dumps(dict(message=u'手数料計算できません。変更内容を確認してください。')))
 
         return order_data
@@ -1861,8 +1861,8 @@ class OrdersEditAPIView(BaseView):
 
         try:
             modiry_order = save_order_modification(order, order_data)
-        except Exception, e:
-            logger.exception('save order error (%s)' % e.message)
+        except Exception:
+            logger.exception('save order error')
             raise HTTPBadRequest(body=json.dumps(dict(message=u'システムエラーが発生しました。')))
 
         self.request.session.flash(u'変更を保存しました')
