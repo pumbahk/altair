@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Collections.Generic;
 
@@ -9,37 +10,55 @@ namespace QR
 	{
 		public Func<HttpClient,HttpClient> ClientConfig { get; set; }
 
-		protected List<string> cookies;
+        protected CookieContainer cookieContainer {get;set;}
 
 		public HttpWrapperFactory ()
 		{
-			cookies = new List<string> ();
+			
 		}
 
-		public void AddCookies (IEnumerable<string> new_cookies)
+		public void AddCookies (IEnumerable<Cookie> new_cookies)
 		{
+            if (this.cookieContainer == null)
+            {
+                this.cookieContainer = new CookieContainer();
+            }
 			foreach (var v in new_cookies) {
-				cookies.Add (v);
+                this.cookieContainer.Add(v);
 			}
 		}
 
+        public void AddCookies(CookieContainer container)
+        {
+            if (this.cookieContainer == null)
+            {
+                this.cookieContainer = container;
+            }
+            else
+            {
+                throw new NotImplementedException("sorry. not supported yet");
+            }
+        }
+
 		public void ClearCookies ()
 		{
-			cookies.Clear ();
+            this.cookieContainer = null;
 		}
+
 		// configuration client for individual usecase
 		protected virtual HttpClient ClientAttachedSomething (HttpClient client)
 		{
 			if (ClientConfig != null) {
 				client = ClientConfig (client);
 			}
-			CookieUtils.PutCokkiesToRequestHeaders (client.DefaultRequestHeaders, cookies);
 			return client;
 		}
 
 		public virtual HttpClient CreateHttpClient ()
 		{
-			var client = new HttpClient ();
+            var handler = new HttpClientHandler();
+            CookieUtils.PutCokkiesToRequestHandler(handler, this.cookieContainer);
+			var client = new HttpClient (handler);
 			return ClientAttachedSomething (client);
 		}
 

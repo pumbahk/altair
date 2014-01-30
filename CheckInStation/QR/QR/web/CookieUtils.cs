@@ -1,6 +1,8 @@
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 
 namespace QR
@@ -8,30 +10,31 @@ namespace QR
 	public class CookieUtils
 	{
         private static Logger logger = LogManager.GetCurrentClassLogger();
-		public static IEnumerable<string>GetCookiesFromResponseHeaders (HttpResponseHeaders headers)
+		public static CookieContainer GetCookiesFromResponseHeaders (string uriString, HttpResponseHeaders headers)
 		{
-
-			IEnumerable<string> setCookiesSentences;
-			ICollection<string> cookies = new List<string> ();
+            var uri = new Uri(uriString);
+            var domain = new Uri(String.Format("{0}://{1}", uri.Scheme , uri.DnsSafeHost));
+            var container = new CookieContainer();
+			IEnumerable<string> setCookiesSentences;			
 
 			if (headers.TryGetValues ("Set-Cookie", out setCookiesSentences)) {
-				foreach (var k in setCookiesSentences) {
-					//TODO: refine. this is tiny implementation.
-					cookies.Add (k.Substring (0, k.IndexOf (';')));
+                logger.Debug("domain: {0}", domain);
+                foreach (var k in setCookiesSentences) {
+                    //foo=bar; boo
+                    var expr = k.Substring(0, k.IndexOf(";"));
+                    var nameAndValue = expr.Split('=');
+                    logger.Debug("Cookie: name={0}, value={1}", nameAndValue[0], nameAndValue[1]);
+                    container.Add(domain, new Cookie(nameAndValue[0], nameAndValue[1]));
 				}
-			}
-			return cookies as IEnumerable<string>;
+            }
+            return container;
 		}
 
-		public static void PutCokkiesToRequestHeaders (HttpRequestHeaders headers, ICollection<string>cookies)
+		public static void PutCokkiesToRequestHandler (HttpClientHandler handler , CookieContainer container)
 		{
-            headers.Add("Accept", "*/*");
-			if (cookies.Count > 0) {
-				var cookieBody = String.Join (", ", cookies);
-				//Console.WriteLine (cookieBody);
-				//headers.Add ("Cookie", cookieBody);
-                headers.Add("Cookie", "checkinstation.auth_tkt=\"bf43e5e81a529cb98a75582bb3febdff52ea3e24NTlANQ%3D%3D!userid_type:b64str\"; checkinstation.auth_tkt=\"bf43e5e81a529cb98a75582bb3febdff52ea3e24NTlANQ%3D%3D!userid_type:b64str\"");
-                logger.Debug("headers: {0}", headers);
+			if (container != null){
+                handler.CookieContainer = container;
+                logger.Debug("cookie: {0}", container);
 			}
 		}
 	}

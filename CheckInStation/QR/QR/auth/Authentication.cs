@@ -49,8 +49,8 @@ namespace QR
 				using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (user).ConfigureAwait (false)) {
 					// cookie取得
 					var headers = response.Headers;
-					var cookies = CookieUtils.GetCookiesFromResponseHeaders (headers);
-					factory.AddCookies (cookies);
+					factory.AddCookies(CookieUtils.GetCookiesFromResponseHeaders (GetLoginURL(), headers));
+					
 
 					// endpointの取得
 					var result = DynamicJson.Parse (await wrapper.ReadAsStringAsync (response.Content).ConfigureAwait (false));

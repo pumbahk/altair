@@ -2,6 +2,8 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Linq;
+using System.Net;
 
 namespace QR
 {
@@ -14,9 +16,10 @@ namespace QR
 		public void Setup ()
 		{
 			target = new FakeHttpWrapperFactory<HttpWrapper> ("*dummy response*");
-			IEnumerable<string> cookies = new string[] {		
+			IEnumerable<string> cookie_strings = new string[] {		
 				"this", "is", "cookie", "string"
 			};
+            var cookies = cookie_strings.Select(s => new Cookie("http://localhost", s)).ToArray();
 			target.AddCookies (cookies);
 		}
 
