@@ -698,6 +698,7 @@ class TicketingCartResourceTestBase(object):
     def test_check_order_limit_email_over(self, get_cart_safe):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
+        from .exceptions import OverOrderLimitException
         sales_segment, user = self._add_orders_email(order_limit=1)
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
@@ -708,11 +709,8 @@ class TicketingCartResourceTestBase(object):
             )
         request = testing.DummyRequest()
         target = self._makeOne(request)
-        try:
+        with self.assertRaises(OverOrderLimitException):
             target.check_order_limit()
-            self.assert_(True)
-        except:
-            self.fail()
 
     @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
     def test_check_order_limit_email_under(self, get_cart_safe):
