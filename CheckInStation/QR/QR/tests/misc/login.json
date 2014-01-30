@@ -7,11 +7,14 @@
         "qr_svgsource_all": "http://192.168.56.1:8000/svgall.json",
         "qr_update_printed_at": "http://192.168.56.1:8000/update.printed_at.json",
         "orderno_verified_data": "http://192.168.56.1:8000/verified.order.json",
-        "image_from_svg": "http://192.168.56.1:8000/image.png"
+        "image_from_svg": "http://192.168.56.101:8021/tickets/preview"
     },
     "ad_images": [
         "http://192.168.56.1:8000/ad.sample.jpg"
     ],
-    "memo": "svg_from_imageこれどこで設定しよう?"
+    "comment": {
+        "memo": "svg_from_imageこれどこで設定しよう?",
+        "image_from_svg": "http://192.168.56.1:8000/image.png"
+    }
 }
 
