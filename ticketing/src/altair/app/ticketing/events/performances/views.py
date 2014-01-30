@@ -297,7 +297,7 @@ class Performances(BaseView):
                         max_quantity_per_user=f.max_quantity_per_user.data
                         ),
                     event_id=self.context.event.id,
-                    create_venue_id=f.venue_id.data
+                    venue_id=f.venue_id.data
                     ),
                 f.data
                 )
