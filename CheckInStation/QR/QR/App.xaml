@@ -49,8 +49,11 @@
         
         <!-- size-->
         <Style TargetType="NavigationWindow" x:Key="MainWindow">
-            <Setter Property="Height" Value="480"></Setter>
-            <Setter Property="Width" Value="640"></Setter>
+            <Setter Property="Height" Value="768"></Setter>
+            <Setter Property="Width" Value="1366"></Setter>
+            <Setter Property="WindowStyle" Value="None"></Setter>
+            <Setter Property="ResizeMode" Value="NoResize"></Setter>  
+            <Setter Property="WindowState" Value="Maximized"></Setter>
         </Style>
         
         <Style TargetType="Page" x:Key="KioskPage">           
@@ -67,14 +70,14 @@
         <Style TargetType="Grid" x:Key="CenterContentGrid">
             <Setter Property="HorizontalAlignment" Value="Center"></Setter> 
             <Setter Property="VerticalAlignment" Value="Center"></Setter>
-            <Setter Property="Width" Value="384"></Setter> <!-- 60%-->
-            <Setter Property="Height" Value="336"></Setter> <!-- 70% -->
+            <Setter Property="Width" Value="820"></Setter> <!-- 60%-->
+            <Setter Property="Height" Value="538"></Setter> <!-- 70% -->
         </Style>
 
         <Style TargetType="Image" x:Key="MainImageStyle">
-            <Setter Property="MaxWidth" Value="384"></Setter>
+            <Setter Property="MaxWidth" Value="820"></Setter>
             <!-- 60%-->
-            <Setter Property="MaxHeight" Value="336"></Setter>
+            <Setter Property="MaxHeight" Value="820"></Setter>
             <!-- 70% -->
         </Style>
 
