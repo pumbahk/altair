@@ -81,22 +81,16 @@ def refresh_order(session, order):
     request.altair_checkout3d_override_shop_name = os.multicheckout_shop_name
     payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order.payment_delivery_pair)
     if payment_delivery_plugin is not None:
-        try:
-            logger.info('payment_delivery_plugin.refresh')
-            payment_delivery_plugin.refresh(request, order)
-        finally:
-            transaction.commit()
+        logger.info('payment_delivery_plugin.refresh')
+        payment_delivery_plugin.refresh(request, order)
+        transaction.commit()
     else:
-        try:
-            logger.info('payment_plugin.refresh')
-            payment_plugin.refresh(request, order)
-        finally:
-            transaction.commit()
+        logger.info('payment_plugin.refresh')
+        payment_plugin.refresh(request, order)
+        transaction.commit()
         session.add(order)
-        try:
-            logger.info('delivery_plugin.refresh')
-            delivery_plugin.refresh(request, order)
-        finally:
-            transaction.commit()
+        logger.info('delivery_plugin.refresh')
+        delivery_plugin.refresh(request, order)
+        transaction.commit()
     session.add(order)
     logger.info('Finished refreshing order %s (id=%d)' % (order.order_no, order.id))

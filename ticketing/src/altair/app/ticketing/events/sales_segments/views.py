@@ -131,11 +131,11 @@ class SalesSegments(BaseView):
         sales_segment_group_id = f.sales_segment_group_id.data
         sales_segment_group = SalesSegmentGroup.query.filter_by(id=sales_segment_group_id).one()
         sales_segment = sales_segment_group.new_sales_segment()
-        sales_segment = merge_session_with_post(sales_segment, f.data)
+        sales_segment = merge_session_with_post(sales_segment, f.data, excludes={'order_limit', 'max_quantity_per_user'})
         sales_segment.setting.order_limit = f.order_limit.data
         sales_segment.setting.max_quantity_per_user = f.max_quantity_per_user.data
-        assert sdles_segment.event_id == sales_segment_group.event_id
-        assert sales_segment.performance is None or sales_segment.performance.event_id == sales_segment.event_id
+        assert sales_segment.event == sales_segment_group.event
+        assert sales_segment.performance is None or sales_segment.performance.event == sales_segment.event
 
         pdmps = [pdmp
                  for pdmp in sales_segment_group.payment_delivery_method_pairs
@@ -239,7 +239,12 @@ class EditSalesSegment(BaseView):
     @view_config(route_name='sales_segments.copy', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
     @view_config(route_name='sales_segments.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
     def get(self):
-        form = SalesSegmentForm(obj=self.context.sales_segment, formdata=self.request.GET, context=self.context)
+        sales_segment = self.context.sales_segment
+        form = SalesSegmentForm(obj=sales_segment, formdata=self.request.GET, context=self.context)
+        for k in ['order_limit', 'max_quantity_per_user']:
+            dk = 'use_default_%s' % k
+            getattr(form, k).data = getattr(sales_segment.setting, k)
+            getattr(form, dk).data = getattr(sales_segment.setting, dk)
         form.payment_delivery_method_pairs.data = [pdmp.id for pdmp in self.context.sales_segment.payment_delivery_method_pairs]
         return self._render_params(form)
 

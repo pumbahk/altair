@@ -52,11 +52,12 @@ def record_to_multidict(self, filters=dict()):
 
     return MultiDict([ _convert (k, v) for k,v in app_struct.items()])
 
-def merge_session_with_post(session, post, filters={}):
+def merge_session_with_post(session, post, filters={}, excludes=set()):
     def _set_attrs(session, values):
         for key,value in values:
+            if key in excludes:
+                continue
             filter = filters.get(key)
-
             try:
                 if filter is not None:
                     value = filter(session, value)

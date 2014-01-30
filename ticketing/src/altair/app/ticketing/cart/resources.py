@@ -276,10 +276,10 @@ class TicketingCartResourceBase(object):
                     elif mail_addresses:
                         order_query = container.query_orders_by_mailaddresses(mail_addresses, filter_canceled=True)
                     query = order_query.add_columns(sql.expression.func.sum(c_models.OrderedProductItem.quantity)) \
-                        .join(c_models.OrderedProduct, c_models.Order.items) \
-                        .join(c_models.OrderedProductItem, c_models.OrderedProduct.elements) \
+                        .outerjoin(c_models.OrderedProduct, c_models.Order.items) \
+                        .outerjoin(c_models.OrderedProductItem, c_models.OrderedProduct.elements) \
                         .group_by(c_models.Order.id)
-                    quantities_per_order = list(int(quantity_sum) for _, quantity_sum in query)
+                    quantities_per_order = list(int(quantity_sum or 0) for _, quantity_sum in query)
                     logger.info(
                         "%r(id=%d): order_limit=%r, max_quantity_per_user=%r, orders=%d, total_quantity=%d" % (
                             container.__class__,
@@ -318,7 +318,8 @@ class TicketingCartResourceBase(object):
             max_quantity_per_user = record['max_quantity_per_user']
             order_count = record['order_count']
             total_quantity = record['total_quantity']
-            if order_limit is not None and order_count >= order_limit:
+            # XXX: order_limit はかつて 0 が無効値だった...
+            if order_limit and order_count >= order_limit:
                 logger.info("order_limit exceeded: %d >= %d" % (order_count, order_limit))
                 raise OverOrderLimitException.from_resource(self, self.request, order_limit=order_limit)
             if max_quantity_per_user is not None:

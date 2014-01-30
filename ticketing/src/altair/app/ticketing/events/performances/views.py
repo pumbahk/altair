@@ -296,11 +296,11 @@ class Performances(BaseView):
                         order_limit=f.order_limit.data,
                         max_quantity_per_user=f.max_quantity_per_user.data
                         ),
-                    event_id=self.context.event.id,
-                    create_venue_id=f.venue_id.data
+                    event_id=self.context.event.id
                     ),
                 f.data
                 )
+            performance.create_venue_id = f.venue_id.data
             performance.save()
             event = performance.event
             accessor = SalesSegmentAccessor()

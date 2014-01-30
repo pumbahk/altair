@@ -49,6 +49,7 @@ class SalesSegmentGroupsTests(unittest.TestCase):
 
         context = testing.DummyResource(
             user=user,
+            organization=organization,
             event=event,
             sales_segment_group=None
         )
@@ -102,6 +103,7 @@ class SalesSegmentGroupsTests(unittest.TestCase):
 
         context = testing.DummyResource(
             user=user,
+            organization=organization,
             event=event,
             sales_segment_group=sales_segment_group
             )
@@ -180,6 +182,7 @@ class SalesSegmentGroupsTests(unittest.TestCase):
 
         context = testing.DummyResource(
             user=user,
+            organization=organization,
             event=event,
             sales_segment_group=sales_segment_group
         )

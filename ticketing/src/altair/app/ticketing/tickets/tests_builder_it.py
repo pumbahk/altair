@@ -788,7 +788,7 @@ def setup_product_item(quantity, quantity_only, organization):
                           fee=300, 
                           fee_type=1, 
                           delivery_plugin_id=2)
-    performance.settings.append(PerformanceSetting())
+    performance.setting = PerformanceSetting()
 
     product_item = ProductItem(
         name=":ProductItem:name",

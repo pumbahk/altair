@@ -505,7 +505,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     display_order = AnnotatedColumn(Integer, nullable=False, default=1, _a_label=_(u'表示順'))
 
-    setting = relationship('PerformanceSetting', backref='performance', uselist=False)
+    setting = relationship('PerformanceSetting', backref='performance', uselist=False, cascade='all')
 
     @property
     def products(self):
@@ -720,7 +720,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 or_(ShippingAddress.email_1.in_(mailaddresses),
                     ShippingAddress.email_2.in_(mailaddresses))
                 ) \
-            .filter(SalesSegment.event_id == self.id)
+            .filter(SalesSegment.performance_id == self.id)
         if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
         return qs
@@ -877,7 +877,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     sales_segment_groups = relationship('SalesSegmentGroup')
     cms_send_at = Column(DateTime, nullable=True, default=None)
 
-    setting = relationship('EventSetting', backref='event', uselist=False)
+    setting = relationship('EventSetting', backref='event', uselist=False, cascade='all')
 
     _first_performance = None
     _final_performance = None
@@ -1281,7 +1281,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     end_day_prior_to_performance = Column(Integer)
     end_time = Column(Time)
 
-    setting = relationship('SalesSegmentGroupSetting', uselist=False, backref='sales_segment_group', cascade='delete', lazy='joined')
+    setting = relationship('SalesSegmentGroupSetting', uselist=False, backref='sales_segment_group', cascade='all', lazy='joined')
 
     @hybrid_method
     def in_term(self, dt):
@@ -1313,10 +1313,13 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         super(type(self), self).delete()
 
     def new_sales_segment(self):
-        return SalesSegment(sales_segment_group=self,
-                            event=self.event,
-                            organization=self.organization,
-                            membergroups=[m for m in self.membergroups])
+        return SalesSegment(
+            sales_segment_group=self,
+            event=self.event,
+            organization=self.organization,
+            membergroups=[m for m in self.membergroups],
+            setting=SalesSegmentSetting()
+            )
 
     @staticmethod
     def create_from_template(template, with_payment_delivery_method_pairs=False, **kwargs):
@@ -3731,7 +3734,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     use_default_registration_fee = Column(Boolean)
     use_default_auth3d_notice = Column(Boolean)
 
-    setting = relationship('SalesSegmentSetting', uselist=False, backref='sales_segment', cascade='delete', lazy='joined')
+    setting = relationship('SalesSegmentSetting', uselist=False, backref='sales_segment', cascade='all', lazy='joined')
 
     def has_stock_type(self, stock_type):
         return stock_type in self.seat_stock_types
@@ -3750,9 +3753,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         qs = DBSession.query(Order).filter(
             Order.user_id==user.id
         ).filter(
-            Cart.order_id==Order.id
-        ).filter(
-            Cart.sales_segment_id==self.id
+            Order.sales_segment_id==self.id
         )
         if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
@@ -3767,9 +3768,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             or_(ShippingAddress.email_1.in_(mailaddresses),
                 ShippingAddress.email_2.in_(mailaddresses))
         ).filter(
-            Cart.order_id==Order.id
-        ).filter(
-            Cart.sales_segment_id==self.id
+            Order.sales_segment_id==self.id
         )
         
         if filter_canceled:
