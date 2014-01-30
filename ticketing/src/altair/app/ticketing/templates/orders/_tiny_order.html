@@ -175,18 +175,18 @@ ${ch.flash_messages(request)}
         <div id="orderProductAlert"></div>
 
         <div style="text-align: center; margin-bottom: 12px;">
-          <a href="javascript:order.init(${order.id}, ${performance_id}, ${options});" class="btn btn-edit-order">
+          <button type="button" onclick="javascript:order.init(${order.id}, ${performance_id}, ${options});" class="btn btn-edit-order">
             <i class="icon-edit"></i> 商品・座席の変更
-          </a>
-          <a href="javascript:void(0)" class="btn btn-save-order hide">
+          </button>
+          <button type="button" class="btn btn-save-order hide">
             <i class="icon-ok"></i> 保存する
-          </a>
-          <a href="javascript:void(0)" class="btn btn-confirm hide">
+          </button>
+          <button type="button" class="btn btn-confirm hide">
             <i class="icon-ok"></i> 確認する
-          </a>
-          <a href="javascript:void(0)" class="btn btn-close hide">
+          </button>
+          <button type="button" class="btn btn-close hide">
             <i class="icon-remove"></i> 変更しない
-          </a>
+          </button>
         </div>
       </div>
     </div>

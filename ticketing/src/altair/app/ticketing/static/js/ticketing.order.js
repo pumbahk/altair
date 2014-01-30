@@ -44,12 +44,15 @@ order.OrderFormPresenter.prototype = {
     this.change_performance = false;
 
     $('.btn-confirm').on('click', function() {
+      $(this).attr('disabled','disabled');
       self.confirm();
     });
     $('.btn-save-order').on('click', function() {
+      $(this).attr('disabled','disabled');
       self.save();
     });
     $('.btn-close').on('click', function() {
+      $('.btn-confirm, .btn-save-order').removeAttr('disabled');
       self.close();
     });
   },
@@ -163,6 +166,7 @@ order.OrderFormPresenter.prototype = {
       },
       error: function (xhr, text) {
         console.log(xhr);
+        $('.btn-confirm').removeAttr('disabled');
         var response = JSON.parse(xhr.responseText);
         self.showMessage(response.message, 'alert-error');
       }
@@ -177,6 +181,7 @@ order.OrderFormPresenter.prototype = {
         showOrder(null, self.order.get('order_no'));
       },
       error: function(model, res) {
+        $('.btn-save-order').removeAttr('disabled');
         var response = JSON.parse(res.responseText);
         self.showMessage(response.message, 'alert-error');
       }
