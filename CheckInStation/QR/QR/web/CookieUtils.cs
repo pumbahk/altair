@@ -1,3 +1,4 @@
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
@@ -6,11 +7,12 @@ namespace QR
 {
 	public class CookieUtils
 	{
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 		public static IEnumerable<string>GetCookiesFromResponseHeaders (HttpResponseHeaders headers)
 		{
 
 			IEnumerable<string> setCookiesSentences;
-			ISet<string> cookies = new HashSet<string> ();
+			ICollection<string> cookies = new List<string> ();
 
 			if (headers.TryGetValues ("Set-Cookie", out setCookiesSentences)) {
 				foreach (var k in setCookiesSentences) {
@@ -23,11 +25,13 @@ namespace QR
 
 		public static void PutCokkiesToRequestHeaders (HttpRequestHeaders headers, ICollection<string>cookies)
 		{
+            headers.Add("Accept", "*/*");
 			if (cookies.Count > 0) {
-				Console.WriteLine ("headers: {0}", headers);
 				var cookieBody = String.Join (", ", cookies);
 				//Console.WriteLine (cookieBody);
-				headers.Add ("Cookie", cookieBody);
+				//headers.Add ("Cookie", cookieBody);
+                headers.Add("Cookie", "checkinstation.auth_tkt=\"bf43e5e81a529cb98a75582bb3febdff52ea3e24NTlANQ%3D%3D!userid_type:b64str\"; checkinstation.auth_tkt=\"bf43e5e81a529cb98a75582bb3febdff52ea3e24NTlANQ%3D%3D!userid_type:b64str\"");
+                logger.Debug("headers: {0}", headers);
 			}
 		}
 	}
