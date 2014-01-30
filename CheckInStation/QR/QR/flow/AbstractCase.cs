@@ -10,7 +10,17 @@ namespace QR
         private Logger logger = LogManager.GetCurrentClassLogger();
 		public virtual IResource Resource{ get; set; }
 
-		public IInternalEvent PresentationChanel { get; set; }
+		private IInternalEvent _presentationChanel;
+		public IInternalEvent PresentationChanel { 
+			get {
+				if (this._presentationChanel == null) {
+					logger.Warn ("use presentation chanel before binding event.");
+					this._presentationChanel = new EmptyEvent ();
+				}
+				return this._presentationChanel;
+			}
+			set{ this._presentationChanel = value; }
+		}
 
         public virtual string Description
         {
@@ -21,7 +31,7 @@ namespace QR
                 catch (Exception ex)
                   {
                     logger.ErrorException("missing:", ex);
-                    return "<à–¾‚ªÝ’è‚³‚ê‚Ä‚Ü‚¹‚ñ!!>";
+                    return "<??????????????????????!!>";
                   }
             }
         }

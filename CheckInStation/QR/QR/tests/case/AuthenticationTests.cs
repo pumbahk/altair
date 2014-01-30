@@ -13,12 +13,17 @@ namespace QR
 			var resource = new Resource ();
 			ICase target = new CaseAuthInput (resource);
 
-			RequestBroker broker = new RequestBroker (new FlowManager ()); //hmm.
-			broker.Event = new AuthenticationEvent ("*username*", "*password*");
-			target.PrepareAsync (broker.GetInternalEvent ());
+			var t = Task.Run (async () => {
+				RequestBroker broker = new RequestBroker (new FlowManager ()); //hmm.
+				broker.Event = new AuthenticationEvent ("*username*", "*password*");
+				await target.PrepareAsync (broker.GetInternalEvent ());
+				await target.VerifyAsync ();
 
-			Assert.AreEqual ("*username*", (target as CaseAuthInput).LoginName);
-			Assert.AreEqual ("*password*", (target as CaseAuthInput).LoginPassword);
+				Assert.AreEqual ("*username*", (target as CaseAuthInput).LoginName);
+				Assert.AreEqual ("*password*", (target as CaseAuthInput).LoginPassword);
+
+			});
+			t.Wait ();
 		}
 	}
 

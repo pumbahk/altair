@@ -67,6 +67,12 @@ namespace QR
 	[TestFixture ()]
 	public class CaseRequestingJSONOrdernoTests
 	{
+	
+		class MockStatusInfo : IConfirmAllStatusInfo{
+			public ConfirmAllStatus Status { get; set; }
+			public TicketDataCollection TicketDataCollection { get; set; }
+		}
+
 		[Test, Description ("orderno confirm all verified order dataからticketdata collectionを取ってくる")]
 		public void TestsConfirmALlFecthTicketDataCollectionFromTicketData ()
 		{
@@ -80,11 +86,13 @@ namespace QR
 				// case 初期化
 				var tdata = new TicketData (DynamicJson.Parse (Testing.ReadFromEmbeddedFile ("QR.tests.misc.qrdata.json")));
 				ICase target = new CaseQRConfirmForAll (resource, tdata);
-				QRInputEvent ev = new QRInputEvent ();
 
-				await target.PrepareAsync (ev as IInternalEvent);
-//				Console.WriteLine (await target.VerifyAsync ());
-//				ev.HandleEvent ();
+				//we need mock!
+				IInternalEvent ev = new ConfirmAllEvent (){StatusInfo = new MockStatusInfo()};
+
+				await target.PrepareAsync (ev);
+				Console.WriteLine (await target.VerifyAsync ());
+				ev.HandleEvent ();
 
 				Assert.IsTrue (await target.VerifyAsync ());
 			});

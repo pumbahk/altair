@@ -5,8 +5,10 @@ namespace QR
 {
 	class FakeFlow : Flow
 	{
+		public IInternalEvent PresentationChanel { get; set; }
 		public FakeFlow (FlowManager manager, ICase _case) : base (manager, _case)
 		{
+			this.PresentationChanel = new EmptyEvent ();
 		}
 
 		public bool VerifyStatus{ get; set; }
