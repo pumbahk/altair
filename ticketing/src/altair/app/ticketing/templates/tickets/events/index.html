@@ -8,6 +8,14 @@ ${ch.breadcrumbs(
 )}
 </%block>
 
+<%def name="cover_print_label(cover_print)">
+% if cover_print:
+  <span>する</span>
+% else:
+  <span>しない</span>
+% endif
+</%def>
+
 <style type="text/css">
   h3 {margin-top: 20px;  }
 </style>
@@ -55,6 +63,7 @@ ${ch.breadcrumbs(
       <th><a href="#" class="sortable">名前</a></th>
       <th><a href="#" class="sortable">ファイル名</a></th>
       <th><a href="#" class="sortable">チケット様式</a></th>
+      <th><a href="#" class="sortable">表紙印刷</a></th>
       <th><a href="#" class="sortable">更新日時</a></th>
       <th><a href="#" class="sortable">作成日時</a></th>
       </tr>
@@ -66,6 +75,7 @@ ${ch.breadcrumbs(
         <td id="ticket:${ticket.id}"><a href="${request.route_path("events.tickets.boundtickets.show", event_id=event.id, id=ticket.id)}">${ticket.name}</a></td>
         <td>${ticket.filename}</td>
         <td><a href="${request.route_path("tickets.ticketformats.show", id=ticket.ticket_format.id)}">${ticket.ticket_format.name}</a></td>
+        <td>${cover_print_label(ticket.cover_print)}</td>
         <td>${ticket.updated_at}</td>
         <td>${ticket.created_at}</td>
       </tr>
