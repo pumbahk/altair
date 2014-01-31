@@ -46,7 +46,7 @@ class TokenStatusTests(unittest.TestCase):
         history = self._getHistory()
         target = self._makeOne(order, history)
 
-        self.assertTrue(target._is_not_canceled(order))
+        self.assertFalse(target._is_canceled(order))
 
     def test_canceled_status__canceled(self):
         order = self._getOrder()
@@ -54,7 +54,7 @@ class TokenStatusTests(unittest.TestCase):
         target = self._makeOne(order, history)
 
         order.canceled_at = datetime(2013, 1, 1, 6, 1, 1, 1)
-        self.assertFalse(target._is_not_canceled(order))
+        self.assertTrue(target._is_canceled(order))
 
     def test_printable_date_status__before_start__failure(self):
         order = self._getOrder()

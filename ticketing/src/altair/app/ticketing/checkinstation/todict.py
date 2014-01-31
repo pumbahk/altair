@@ -50,11 +50,11 @@ class TokenStatusDictBuilder(object):
 
     def canceled_status_dict(self):
         order=self.order
-        if not self._is_not_canceled(order):
-            return {"canceled_at": None}
-        else:
+        if self._is_canceled(order):
             logger.info("*status order is already canceled (order.id=%s, order.order_no= %s)",  order.id,  order.order_no)
             return {"canceled_at":japanese_datetime(self.order.canceled_at), "status": TokenStatus.canceled}
+        else:
+            return {"canceled_at": None}
 
     def supported_status_dict(self, delivery_plugin_id=QR_DELIVERY_PLUGIN_ID):
         order=self.order
@@ -74,8 +74,8 @@ class TokenStatusDictBuilder(object):
             logger.info("*status order's performance is before start date. (order.id=%s, order.order_no=%s, performance.id=%s)", order.id, order.order_no, self.performance.id)
             return {"status": TokenStatus.before_start}
 
-    def _is_not_canceled(self, order):
-        return order is None or not order.is_canceled()
+    def _is_canceled(self, order):
+        return order is None or order.is_canceled()
 
     def _is_unprinted_yet(self, order, token):
         return ((token is None or not token.is_printed()) 
