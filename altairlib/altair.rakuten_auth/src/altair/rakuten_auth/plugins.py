@@ -89,6 +89,7 @@ class RakutenOpenIDPlugin(object):
             first_name_kana=user_info.get('firstNameKataKana'),
             last_name_kana=user_info.get('lastNameKataKana'),
             birthday=birthday,
+            birth_day=birthday,
             sex=sex_no(user_info.get('sex'), 'utf-8'),
             zip=contact_info.get('zip'),
             prefecture=contact_info.get('prefecture'),
