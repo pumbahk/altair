@@ -256,7 +256,9 @@ def diff_adjacencies(relevant_adjacencies, rebuilt_adjacencies):
     return retval
 
 def escape_param(dialect, value):
-    if isinstance(value, basestring):
+    if value is None:
+        return "NULL"
+    elif isinstance(value, basestring):
         return "'%s'" % value.replace("'", "''")
     else:
         return str(value) # XXX
@@ -268,16 +270,15 @@ def convert_placeholders(compiled_expr):
         named_param_re = r'\b(%s)\b' % '|'.join(compiled_expr.params)
 
     retval = []
+    counter = itertools.count(0)
     for token in re.finditer(r"""([^`'"]+)|(`(?:[^`]|``)*`)|('(?:[^']|\\'|'')*')|("(?:[^"]|\\"|"")*")""", stmt_str):
         unquoted = token.group(1)
         if unquoted is not None:
             if paramstyle == 'pyformat':
                 unquoted = re.sub(r'%\(([^)]+)\)s', lambda g: '{%s}' % g.group(1), unquoted)
             elif paramstyle == 'qmark':
-                counter = itertools.count(0)
                 unquoted = re.sub(r'\?', lambda g: '{%d}' % counter.next(), unquoted)
             elif paramstyle == 'format':
-                counter = itertools.count(0)
                 unquoted = re.sub(r'%s', lambda g: '{%d}' % counter.next(), unquoted)
             elif paramstyle == 'numeric':
                 unquoted = re.sub(r':(\d+)', lambda g: '{%d}' % (int(g.group(1)) - 1), unquoted)
@@ -295,7 +296,7 @@ def render_sql(expr):
     if compiled_expr.dialect.positional:
         positional = [
             escape_param(compiled_expr.dialect, params[k])
-            for k in params
+            for k in compiled_expr.positiontup
             ]
         named = {}
     else:

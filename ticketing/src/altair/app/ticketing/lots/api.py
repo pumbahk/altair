@@ -31,7 +31,7 @@
 """
 
 import transaction
-from datetime import datetime
+from datetime import datetime, date
 from collections import OrderedDict
 from uuid import uuid4
 from sqlalchemy import sql
@@ -498,32 +498,40 @@ def get_options(request, lot_id):
     return Options(request, lot_id)
 
 def create_client_form(context):
-        user = user_api.get_or_create_user(context.authenticated_user())
-        user_profile = None
-        if user is not None:
-            user_profile = user.user_profile
+    user = user_api.get_or_create_user(context.authenticated_user())
+    user_profile = None
+    if user is not None:
+        user_profile = user.user_profile
 
-        if user_profile is not None:
-            formdata = MultiDict(
-                last_name=user_profile.last_name,
-                last_name_kana=user_profile.last_name_kana,
-                first_name=user_profile.first_name,
-                first_name_kana=user_profile.first_name_kana,
-                tel_1=user_profile.tel_1,
-                fax=getattr(user_profile, "fax", None),
-                zip=user_profile.zip,
-                prefecture=user_profile.prefecture,
-                city=user_profile.city,
-                address_1=user_profile.address_1,
-                address_2=user_profile.address_2,
-                email_1=user_profile.email_1,
-                email_2=user_profile.email_2,
-                sex=user_profile.sex,
-                )
-        else:
-            formdata = None
+    retval = schemas.ClientForm()
 
-        return schemas.ClientForm(formdata=formdata)
+    # XXX:ゆるふわなデフォルト値
+    sex = SexEnum.Female.v
+    birthday = date(1990, 1, 1)
+
+    if user_profile is not None:
+        retval.last_name.data = user_profile.last_name
+        retval.last_name_kana.data = user_profile.last_name_kana
+        retval.first_name.data = user_profile.first_name
+        retval.first_name_kana.data = user_profile.first_name_kana
+        retval.tel_1.data = user_profile.tel_1
+        retval.fax.data = getattr(user_profile, "fax", None)
+        retval.zip.data = user_profile.zip
+        retval.prefecture.data = user_profile.prefecture
+        retval.city.data = user_profile.city
+        retval.address_1.data = user_profile.address_1
+        retval.address_2.data = user_profile.address_2
+        retval.email_1.data = user_profile.email_1
+        retval.email_2.data = user_profile.email_2
+        if user_profile.sex:
+            sex = user_profile.sex
+        if user_profile.birthday:
+            birthday = user_profile.birthday
+    retval.sex.data = unicode(sex or u'')
+    retval.year.data = unicode(birthday.year)
+    retval.month.data = unicode(birthday.month)
+    retval.day.data = unicode(birthday.day)
+    return retval
 
 def get_lotting_announce_timezone(timezone):
     label = u""

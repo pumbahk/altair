@@ -404,12 +404,15 @@ SELECT
     ShippingAddress.fax AS `FAX`,
     ShippingAddress.email_1 AS `メールアドレス1`,
     ShippingAddress.email_2 AS `メールアドレス2`,
+    LotEntry.gender AS `性別`,
+    LotEntry.birthday AS `誕生日`,
     UserProfile.last_name AS `姓`,
     UserProfile.first_name AS `名`,
     UserProfile.last_name_kana AS `姓(カナ)`,
     UserProfile.first_name_kana AS `名(カナ)`,
     UserProfile.nick_name AS `ニックネーム`,
-    UserProfile.sex AS `性別`,
+    UserProfile.sex AS `プロフィールに設定されている性別`,
+    UserProfile.birthday AS `プロフィールに設定されている誕生日`,
     NULL
 FROM LotEntryWish
      JOIN LotEntry
@@ -497,12 +500,15 @@ AND LotEntry.deleted_at IS NULL
         u'FAX',
         u'メールアドレス1',
         u'メールアドレス2',
+        u'性別',
+        u'誕生日',
         u'姓',
         u'名',
         u'姓(カナ)',
         u'名(カナ)',
         U'ニックネーム',
-        u'性別',
+        u'プロフィールに設定されている性別',
+        u'プロフィールに設定されている誕生日',
     )
 
     def __init__(self, session, lot_id):
