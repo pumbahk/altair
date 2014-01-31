@@ -44,7 +44,7 @@ class UserProfileData(DataSet):
         last_name       = u'楽天'
         first_name_kana = u'チケット'
         last_name_kana  = u'ラクテン'
-        birth_day       = date(1955,1,1)
+        birthday       = date(1955,1,1)
         sex             = 1
         zip             = '251-0036'
         prefecture      = u"東京都"
@@ -64,7 +64,7 @@ class UserProfileData(DataSet):
         last_name       = u'ぴ'
         first_name_kana = u'ア'
         last_name_kana  = u'ピ'
-        birth_day       = date(1955,1,1)
+        birthday       = date(1955,1,1)
         sex             = 1
         zip             = '251-0036'
         prefecture      = u"東京都"
@@ -84,7 +84,7 @@ class UserProfileData(DataSet):
         last_name       = u'イー'
         first_name_kana = u'プラス'
         last_name_kana  = u'イー'
-        birth_day       = date(1955,1,1)
+        birthday       = date(1955,1,1)
         sex             = 1
         zip             = '251-0036'
         prefecture      = u"東京都"
@@ -104,7 +104,7 @@ class UserProfileData(DataSet):
         last_name       = u'ローソン'
         first_name_kana = u'チケット'
         last_name_kana  = u'ローソン'
-        birth_day       = date(1955,1,1)
+        birthday       = date(1955,1,1)
         sex             = 1
         zip             = '251-0036'
         prefecture      = u"東京都"
@@ -124,7 +124,7 @@ class UserProfileData(DataSet):
         last_name       = u'クライ'
         first_name_kana = u'アント'
         last_name_kana  = u'クライ'
-        birth_day       = date(1955,1,1)
+        birthday       = date(1955,1,1)
         sex             = 1
         zip             = '251-0036'
         prefecture      = u"東京都"
@@ -144,7 +144,7 @@ class UserProfileData(DataSet):
         last_name       = u'クライ'
         first_name_kana = u'アント'
         last_name_kana  = u'クライ'
-        birth_day       = date(1955,1,1)
+        birthday       = date(1955,1,1)
         sex             = 1
         zip             = '251-0036'
         prefecture      = u"東京都"
@@ -164,7 +164,7 @@ class UserProfileData(DataSet):
         last_name       = u'クライ'
         first_name_kana = u'アント'
         last_name_kana  = u'クライ'
-        birth_day       = date(1955,1,1)
+        birthday       = date(1955,1,1)
         sex             = 1
         zip             = '251-0036'
         prefecture      = u"東京都"

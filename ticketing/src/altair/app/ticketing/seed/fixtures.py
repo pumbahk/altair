@@ -429,7 +429,7 @@ class FixtureBuilder(object):
                     last_name=u"楽天",
                     first_name_kana=u"タロウ",
                     last_name_kana=u"ラクテン",
-                    birth_day=date(randint(1930, 2000), randint(1, 12), 1) + relativedelta(days=randint(0, 30)),
+                    birthday=date(randint(1930, 2000), randint(1, 12), 1) + relativedelta(days=randint(0, 30)),
                     sex=1,
                     zip="251-0036",
                     prefecture=u"東京都",

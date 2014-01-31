@@ -131,7 +131,7 @@ class TicketDictBuilder(object):
             u"last_name": user_profile.last_name,
             u"first_name_kana": user_profile.first_name_kana,
             u"last_name_kana": user_profile.last_name_kana,
-            u"birth_day": datetime_as_dict(user_profile.birth_day),
+            u"birthday": datetime_as_dict(user_profile.birthday),
             u"sex": self.formatter.sex_as_string(user_profile.sex),
             u"zip": user_profile.zip,
             u"country": user_profile.country,

@@ -15,7 +15,7 @@ def hook(event):
     user.user_profile.last_name = identity['last_name']
     user.user_profile.first_name_kana = identity['first_name_kana']
     user.user_profile.last_name_kana = identity['last_name_kana']
-    user.user_profile.birth_day = identity['birth_day']
+    user.user_profile.birthday = identity['birthday']
     user.user_profile.sex = identity['sex']
     user.user_profile.zip = identity['zip']
     user.user_profile.prefecture = identity['prefecture']
