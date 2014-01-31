@@ -229,7 +229,8 @@ def order_review_qr_html(context, request):
         gate = gate
     )
 
-@view_config(route_name='order_review.qrdraw', xhr=False, permission="view")
+
+@view_config(route_name='order_review.qrdraw', xhr=False)
 def order_review_qr_image(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
     sign = request.matchdict.get('sign', 0)
