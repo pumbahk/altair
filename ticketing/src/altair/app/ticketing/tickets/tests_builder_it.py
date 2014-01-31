@@ -79,7 +79,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
                             last_name=":last_name", 
                             first_name_kana=":first_name_kana", 
                             last_name_kana=":last_name_kana", 
-                            birth_day=datetime(2000, 1, 1), 
+                            birthday=datetime(2000, 1, 1), 
                             sex=1, 
                             zip=":zip", 
                             country=":country", 
@@ -106,7 +106,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         self.assertEqual(sub["last_name"],  ":last_name")
         self.assertEqual(sub["first_name_kana"],  ":first_name_kana")
         self.assertEqual(sub["last_name_kana"],  ":last_name_kana")
-        self.assertEqual(sub["birth_day"],  datetime_as_dict(datetime(2000, 1, 1)))
+        self.assertEqual(sub["birthday"],  datetime_as_dict(datetime(2000, 1, 1)))
         self.assertEqual(sub["sex"],  u"男性")
         self.assertEqual(sub["zip"],  ":zip")
         self.assertEqual(sub["country"],  ":country")
