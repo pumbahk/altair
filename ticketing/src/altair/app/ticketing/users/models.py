@@ -71,7 +71,7 @@ class UserProfile(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     last_name = Column(String(255))
     first_name_kana = Column(String(255))
     last_name_kana = Column(String(255))
-    birth_day = Column(DateTime)
+    birthday = Column(DateTime)
     sex = Column(Integer)
     zip = Column(Unicode(32))
     country = Column(Unicode(255))

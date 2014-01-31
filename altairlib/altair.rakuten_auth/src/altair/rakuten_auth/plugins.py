@@ -71,9 +71,9 @@ class RakutenOpenIDPlugin(object):
 
         idapi = get_rakuten_id_api_factory(request)(access_token)
         user_info = idapi.get_basic_info()
-        birth_day = None
+        birthday = None
         try:
-            datetime.strptime(user_info.get('birthDay'), '%Y/%m/%d')
+            birthday = datetime.strptime(user_info.get('birthDay'), '%Y/%m/%d')
         except (ValueError, TypeError):
             # 生年月日未登録
             pass
@@ -88,7 +88,8 @@ class RakutenOpenIDPlugin(object):
             last_name=user_info.get('lastName'),
             first_name_kana=user_info.get('firstNameKataKana'),
             last_name_kana=user_info.get('lastNameKataKana'),
-            birth_day=birth_day,
+            birthday=birthday,
+            birth_day=birthday,
             sex=sex_no(user_info.get('sex'), 'utf-8'),
             zip=contact_info.get('zip'),
             prefecture=contact_info.get('prefecture'),
