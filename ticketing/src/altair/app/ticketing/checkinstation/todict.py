@@ -49,15 +49,19 @@ class TokenStatusDictBuilder(object):
             return {"printed_at":japanese_datetime(self.token.printed_at), "status": TokenStatus.printed}
 
     def canceled_status_dict(self):
-        if not self._is_not_canceled(self.order):
+        order=self.order
+        if not self._is_not_canceled(order):
             return {"canceled_at": None}
         else:
+            logger.info("*status order is already canceled (order.id=%s, order.order_no= %s)",  order.id,  order.order_no)
             return {"canceled_at":japanese_datetime(self.order.canceled_at), "status": TokenStatus.canceled}
 
     def supported_status_dict(self, delivery_plugin_id=QR_DELIVERY_PLUGIN_ID):
-        if self._is_supported_order(self.order):
+        order=self.order
+        if self._is_supported_order(order):
             return {}
         else:
+            logger.info("*status order's PDMP is not dupported (order.id=%s, order.order_no= %s,  pdmp.id=%s)", order.id,  order.order_no,  self.order.payment_delivery_method_pair.id)
             return {"status": TokenStatus.not_supported}
 
     def printable_date_status_dict(self):
@@ -66,6 +70,8 @@ class TokenStatusDictBuilder(object):
         elif self._is_printable_date(self.performance, self.today):
             return {}
         else:
+            order = self.order
+            logger.info("*status order's performance is before start date. (order.id=%s, order.order_no=%s, performance.id=%s)", order.id, order.order_no, self.performance.id)
             return {"status": TokenStatus.before_start}
 
     def _is_not_canceled(self, order):
