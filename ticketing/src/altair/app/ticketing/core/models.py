@@ -4314,7 +4314,7 @@ class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     id = Column(Identifier, primary_key=True)
     performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
-    performance = relationship('Performance', backref='orion', uselist=False)
+    performance = relationship('Performance', backref=backref('orion', uselist=False))
 
     instruction_general = Column(UnicodeText(8388608))
     instruction_performance = Column(UnicodeText(8388608))

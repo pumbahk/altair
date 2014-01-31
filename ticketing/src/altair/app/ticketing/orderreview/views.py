@@ -330,15 +330,20 @@ def order_review_send_to_orion(context, request):
         return dict(mail=mail, 
                     message=u"Emailの形式が正しくありません")
 
-    response = None
+    res_text = None
     try:
         res_text = api.send_to_orion(request, context, mail)
-        response = json.loads(res_text)
-        # TODO: 返り値を検証する
-
     except Exception, e:
         logger.error(e.message, exc_info=1)
         ## この例外は違う...
+        raise HTTPNotFound()
+
+    response = None
+    try:
+        response = json.loads(res_text)
+        # TODO: 返り値を検証する
+    except Exception, e:
+        logger.error(e.message + " (res_text: %s)" % res_text, exc_info=1)
         raise HTTPNotFound()
 
     if response != None and response['result'] == u"OK":
