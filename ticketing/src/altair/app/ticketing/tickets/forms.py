@@ -183,7 +183,7 @@ class TicketTemplateForm(OurForm):
         validators=[
             FileRequired([".xml", ".svg", ".tssvg"])
         ]
-     )    
+     )
 
     always_reissueable = OurBooleanField(
         label=u"常に再発券可能"
@@ -191,6 +191,10 @@ class TicketTemplateForm(OurForm):
 
     priced = OurBooleanField(
         label=u"手数料計算に含める"
+        )
+
+    cover_print = OurBooleanField(
+        label=u"表紙を印刷する"
         )
 
     def validate(self):
@@ -258,7 +262,11 @@ class TicketTemplateEditForm(OurForm):
         validators=[
             FileRequired([".xml", ".svg", ".tssvg"]).none_is_ok
         ]
-     )    
+    )
+
+    cover_print = OurBooleanField(
+        label=u"表紙を印刷する"
+        )
 
     def validate(self):
         if not super(type(self), self).validate():

@@ -44,7 +44,9 @@ def enqueue_cover(operator, order):
     cover = TicketCover.get_from_order(order)
     if cover is None:
         logger.info("cover is not found. order = {order.id} organization_id = {operator.organization_id}".format(order=order, operator=operator))
-        return 
+        return
+    if not is_cover_print(order):
+        return
     dict_ = build_cover_dict_from_order(order)
     svg_builder = _get_svg_builder()
     TicketPrintQueueEntry.enqueue(
@@ -53,6 +55,16 @@ def enqueue_cover(operator, order):
         data = json_safe_coerce({u"drawing": svg_builder.build(cover.ticket, dict_), "vars_defaults": cover.ticket.vars_defaults}), 
         summary=u"表紙 {order.order_no}".format(order=order)
         )
+
+def is_cover_print(order):
+    cover_print = False
+    for ordered_product in order.items:
+        for ordered_product_item in ordered_product.ordered_product_items:
+            bundle = ordered_product_item.product_item.ticket_bundle
+            for ticket in bundle.tickets:
+                if ticket.cover_print:
+                    cover_print = True
+    return cover_print
 
 def enqueue_for_order(operator, order, ticket_format_id=None):
     svg_builder = _get_svg_builder()

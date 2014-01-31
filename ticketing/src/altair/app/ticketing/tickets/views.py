@@ -500,6 +500,7 @@ class TicketTemplates(BaseView):
         template.ticket_format_id = form.data["ticket_format_id"]
         template.always_reissueable = form.data["always_reissueable"]
         template.priced = form.data["priced"]
+        template.cover_print = form.data["cover_print"]
         if form.filename:
             template.filename = form.filename
         if form.data_value:
