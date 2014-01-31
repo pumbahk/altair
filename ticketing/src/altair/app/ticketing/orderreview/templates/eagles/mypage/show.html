@@ -16,13 +16,6 @@
   購入履歴がありません。
 % endif
 
-<h3>抽選申込み状況照会</h3>
-% if lot_entries:
-  ${render_lot_entries(lot_entries)}
-% else:
-  抽選申込みがありません。
-% endif
-
 <%def name="render_shipping_address(shipping)">
   <table class="purchasedContents" summary="配送先情報">
     <tbody>
