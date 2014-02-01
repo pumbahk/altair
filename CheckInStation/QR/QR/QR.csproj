@@ -10,9 +10,7 @@
     <RootNamespace>QR</RootNamespace>
     <AssemblyName>QR</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <!--
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
--->
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -56,6 +54,12 @@
     <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="InputSimulator">
+      <HintPath>..\..\..\..\..\Downloads\WpfKb.0.1.0.0-bin\WpfKb.0.1.0.0-bin\InputSimulator.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -63,6 +67,9 @@
     <Reference Include="System.Printing" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Interactivity">
+      <HintPath>..\..\..\..\..\Downloads\WpfKb.0.1.0.0-bin\WpfKb.0.1.0.0-bin\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Net">
@@ -72,11 +79,8 @@
       <HintPath>opt\local\lib\mono\4.5\System.Net.Http.dll</HintPath>
     </Reference>
     <Reference Include="System.Configuration" />
-    <Reference Include="System.Configuration.Abstractions">
-      <HintPath>..\..\..\..\..\projects\AppSettingGettingExample\packages\System.Configuration.Abstractions.1.1.5064.25905\lib\net45\System.Configuration.Abstractions.dll</HintPath>
-    </Reference>
     <Reference Include="System.Net.Http.Formatting">
-      <HintPath>opt\local\lib\mono\4.5\System.Net.Http.Formatting.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.1.0\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -89,6 +93,9 @@
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
+    <Reference Include="WpfKb">
+      <HintPath>..\..\..\..\..\Downloads\WpfKb.0.1.0.0-bin\WpfKb.0.1.0.0-bin\WpfKb.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DynamicJson.cs" />
@@ -99,6 +106,14 @@
     <Compile Include="presentation\gui\CandidateCreator.cs" />
     <Compile Include="presentation\gui\control\InspectCase.xaml.cs">
       <DependentUpon>InspectCase.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\control\TelPad.cs" />
+    <Compile Include="presentation\gui\control\KeyPad.xaml.cs">
+      <DependentUpon>KeyPad.xaml</DependentUpon>
+      <DependentUpon>TelPad.cs</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageDummy.xaml.cs">
+      <DependentUpon>PageDummy.xaml</DependentUpon>
     </Compile>
     <Compile Include="presentation\gui\ProgressSingletonAction.cs" />
     <Compile Include="presentation\gui\PageNavigator.cs" />
@@ -272,11 +287,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="presentation\gui\control\KeyPad.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="presentation\gui\page\MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="presentation\gui\page\PageAuthInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageDummy.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

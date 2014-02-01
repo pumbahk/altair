@@ -9,7 +9,7 @@ namespace QR
 			var resource = config.Resource;
 			config.Resource.TicketDataFetcher = new TicketDataFetcher (resource);
 			config.Resource.TicketDataCollectionFetcher = new TicketDataCollectionFetcher (resource);
-			config.Resource.SVGImageFetcher = new SVGImageFetcher (resource, new ImageFromSvgBase64(resource)); //todo: change
+			config.Resource.SVGImageFetcher = new SVGImageFetcher (resource, new ImageFromSvgPostMultipart(resource)); //todo: change
 			config.Resource.TicketImagePrinting = new TicketImagePrinting (resource);
 			config.Resource.TicketDataManager = new TicketDataManager (resource);
 			config.Resource.VerifiedOrderDataFetcher = new VerifiedOrderDataFetcher (resource);

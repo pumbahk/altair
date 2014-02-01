@@ -2,12 +2,15 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Collections.Generic;
+using NLog;
 
 namespace QR
 {
 	public class HttpWrapperFactory <T> : IHttpWrapperFactory<T>
 		where T : IHttpWrapper, new()
 	{
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public Func<HttpClient,HttpClient> ClientConfig { get; set; }
 
         protected CookieContainer cookieContainer {get;set;}
@@ -36,7 +39,8 @@ namespace QR
             }
             else
             {
-                throw new NotImplementedException("sorry. not supported yet");
+                logger.Warn("this is not invalid behavior. overwrited via new container.");
+                this.cookieContainer = container;
             }
         }
 

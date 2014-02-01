@@ -100,7 +100,7 @@ namespace QR
 	}
 
     /* TODO: split file
-     * IImageFromSvg, ImageFromSvg, ImageFromSvgBase64
+     * IImageFromSvg, ImageFromSvg, ImageFromSvgPostMultiPart
      */
 
     public interface IImageFromSvg
@@ -148,10 +148,10 @@ namespace QR
 
     }
 
-    public class ImageFromSvgBase64 : IImageFromSvg
+    public class ImageFromSvgPostMultipart : IImageFromSvg
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
-        public ImageFromSvgBase64(IResource resource)
+        public ImageFromSvgPostMultipart(IResource resource)
         {
             this.Resource = resource;
         }
