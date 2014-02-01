@@ -21,7 +21,6 @@ def main(global_config, **local_config):
 
     my_session_factory = session_factory_from_settings(settings)
     config = Configurator(settings=settings, session_factory=my_session_factory)
-    config.include('altair.app.ticketing.setup_beaker_cache')
     config.set_root_factory('.resources.OrderReviewResource')
     #config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     #config.add_renderer('.txt' , txt_renderer_factory)

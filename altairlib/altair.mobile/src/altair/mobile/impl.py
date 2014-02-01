@@ -1,10 +1,3 @@
-import radix
-import hashlib
-import logging
-from markupsafe import Markup, escape
-from urlparse import urlparse, urlunparse
-from zope.interface import implementer, directlyProvides
-from pyramid.threadlocal import manager
 from uamobile import detect
 from uamobile.context import Context
 from uamobile.docomo import DoCoMoUserAgent
@@ -12,23 +5,15 @@ from uamobile.ezweb import EZwebUserAgent
 from uamobile.softbank import SoftBankUserAgent
 from uamobile.willcom import WillcomUserAgent
 from uamobile.nonmobile import NonMobileUserAgent
-
-from .interfaces import (
-    IMobileUserAgent,
-    IMobileUserAgentDisplayInfo,
-    IMobileRequest,
-    IMobileCarrierDetector,
-    IMobileRequestMaker,
-    )
-from .carriers import (
-    carriers,
-    DoCoMo,
-    EZweb,
-    SoftBank,
-    Willcom,
-    NonMobile,
-    )
-from .session import HybridHTTPBackend
+import radix
+import hashlib
+import logging
+from zope.interface import implementer, directlyProvides
+from pyramid.threadlocal import manager
+from markupsafe import Markup, escape
+from urlparse import urlparse, urlunparse
+from .interfaces import IMobileUserAgent, IMobileUserAgentDisplayInfo, IMobileRequest, IMobileCarrierDetector, IMobileRequestMaker, ISessionObjectImplCompanion
+from .carriers import carriers, DoCoMo, EZweb, SoftBank, Willcom, NonMobile
 
 logger = logging.getLogger(__name__)
 
@@ -104,11 +89,7 @@ class DefaultCarrierDetector(object):
             for fqdn in carrier.email_address_fqdns:
                 self.fqdn_map[fqdn] = carrier
 
-def _get_query_string_key(request):
-    return request.environ.get(HybridHTTPBackend.ENV_QUERY_STRING_KEY_KEY)
-
-def _get_session_restorer(request):
-    return request.environ.get(HybridHTTPBackend.ENV_SESSION_RESTORER_KEY)
+import urllib
 
 overridden_url_methods = [
     'route_url',
@@ -119,30 +100,81 @@ overridden_url_methods = [
     'current_route_path',
     ]
 
+def parse_query_string(query_string):
+    return (tuple(urllib.unquote(kv) for kv in c.partition(b'=')) for c in query_string.split(b'&'))
+
+
+@implementer(ISessionObjectImplCompanion)
+class BeakerSessionObjectCompanion(object):
+    def get_cookie_key_from_session(self):
+        return getattr(self.session, 'key')
+
+    def get_session_restorer(self):
+        cookie_key = self.get_cookie_key_from_session()
+
+        session_restorer = None
+        cookie = getattr(self.session, 'cookie')
+        if cookie:
+            return cookie[cookie_key].coded_value
+        else:
+            return None 
+
+    def renew_session(self, request):
+        self.session = self.session.__class__(request)
+
+    def invalidate(self):
+        self.session.invalidate() 
+
+    def __init__(self, session):
+        self.session = session
+
+def make_session_object_impl_companion(adaptee):
+    try:
+        from beaker.session import SessionObject
+        if isinstance(adaptee, SessionObject):
+            return BeakerSessionObjectCompanion(adaptee)
+    except:
+        pass
+    return None
+
 @implementer(IMobileRequestMaker)
 class MobileRequestMaker(object):
     hash_key = __name__ + '.ua_hash'
 
-    def __init__(self):
-        pass
+    def __init__(self, query_string_key):
+        self.query_string_key = query_string_key
 
-    def revalidate_session(self, request):
-        hash = request.session.get(self.hash_key)
+    def fetch_session(self, request, companion):
+        if self.query_string_key is not None:
+            query_string = request.environ.get('QUERY_STRING')
+            cookie_key = companion.get_cookie_key_from_session()
+            if query_string is not None:
+                session_restorer = None
+                for k, _, v in parse_query_string(query_string):
+                    if k == self.query_string_key:
+                        session_restorer = v
+                if session_restorer is not None:
+                    request.cookies[cookie_key] = session_restorer
+                    companion.renew_session(request)
+
+    def revalidate_session(self, request, companion):
+        hash = companion.session.get(self.hash_key)
         _hash = hashlib.sha1(request.user_agent).hexdigest()
         if hash is not None and hash != _hash:
             logger.error('UA hash mismatch')
-            request.session.invalidate()
-        request.session[self.hash_key] = _hash
+            companion.invalidate()
+        companion.session[self.hash_key] = _hash
+        return companion.session
 
-    def _retouch_request(self, request):
-        query_string_key = _get_query_string_key(request)
-        if query_string_key is None:
-            return
+    def override_url_methods(self, request, companion):
+        def _mix_query(kw):
+            session_restorer = companion.get_session_restorer()
+            if session_restorer is not None:
+                kw.setdefault('_query', {})[self.query_string_key] = session_restorer
 
-        session_restorer = _get_session_restorer(request)
         def decorate(orig):
             def _(*args, **kwargs):
-                kwargs.setdefault('_query', {})[query_string_key] = session_restorer
+                _mix_query(kwargs)
                 return orig(*args, **kwargs)
             return _
 
@@ -150,6 +182,18 @@ class MobileRequestMaker(object):
             orig = getattr(request, k, None)
             if orig is not None:
                 setattr(request, k, decorate(orig))
+
+    def retouch_request(self, request, companion):
+        if self.query_string_key is not None:
+            self.override_url_methods(request, companion)
+            try:
+                del request.params[self.query_string_key]
+            except KeyError:
+                pass
+            try:
+                del request.GET[self.query_string_key]
+            except KeyError:
+                pass
 
         def open_form_tag_for_get(**attrs):
             attrs.pop('method', None)
@@ -161,20 +205,25 @@ class MobileRequestMaker(object):
             for k, v in attrs.items():
                 html.append(u' %s="%s"' % (escape(k), escape(v)))
             html.append(u'>')
-            if query_string_key is not None:
+            if self.query_string_key is not None:
                 html.append(u'<input type="hidden" name="')
-                html.append(escape(query_string_key))
-                html.append(u'" value="')
-                html.append(escape(session_restorer))
-                html.append(u'"/ >')
+                html.append(escape(self.query_string_key))
+                html.append('" value="')
+                html.append(escape(companion.get_session_restorer()))
+                html.append('"/ >')
             return Markup(u''.join(html))
+
         request.open_form_tag_for_get = open_form_tag_for_get
+        return request
 
     def __call__(self, request):
-        # the following is needed to differentiate the kind of the request in HTTP backend module
-        directlyProvides(request, IMobileRequest)
-        self.revalidate_session(request)
-        kept_session = request.session
+        companion = request.registry.queryAdapter(
+            getattr(request, 'session', None),
+            ISessionObjectImplCompanion
+            )
+        if companion is not None:
+            self.fetch_session(request, companion)
+            self.revalidate_session(request, companion)
         decoded = request.decode("cp932:normalized-tilde")
         request.environ.update(decoded.environ)
         decoded.environ = request.environ
@@ -185,6 +234,9 @@ class MobileRequestMaker(object):
         decoded.mobile_ua = request.mobile_ua
         ## todo:remove.
         decoded.is_docomo = request.mobile_ua.carrier.is_docomo #cms, usersite compatibility
-        decoded.session = kept_session
-        self._retouch_request(decoded)
+        if companion is not None:
+            self.retouch_request(decoded, companion)
+            decoded.session = companion.session
         return decoded
+
+
