@@ -1,6 +1,6 @@
 [app:orderreview]
 use = config:%(here)s/../../baseconf/common.ini#orderreview
-pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair_gaq altair.findable_label altair.app.ticketing.orderreview.dummy altair.auth
+pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair_gaq altair.findable_label altair.app.ticketing.orderreview.dummy altair.auth pyramid_beaker
 altair.auth.specs =
     fc_auth=%(here)s/fc_who.ini
 altair.auth.decider = altair.app.ticketing.cart:WhoDecider
@@ -12,9 +12,6 @@ altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 ; Beaker
 session.type = ${altair:beaker_backend_type}
 cache.type = ${altair:beaker_backend_type}
-
-; altair.httpsession
-altair.httpsession.persistence.type = ${altair:beaker_backend_type}
 
 [app:www-check]
 use = egg:Paste#static

@@ -144,8 +144,6 @@ def setup_order_product_attribute_metadata(config):
     get_ordered_product_metadata_provider_registry(config.registry).registerProvider(metadata_provider)
     
 def includeme(config):
-    config.include('altair.httpsession.pyramid')
-    config.include('altair.app.ticketing.setup_beaker_cache')
     config.include(setup_cart)
     config.include('altair.mobile')
     config.include(setup_views)

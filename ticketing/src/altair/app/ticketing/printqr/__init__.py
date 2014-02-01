@@ -38,8 +38,6 @@ def main(global_config, **local_config):
 
     config = Configurator(settings=settings, 
                           root_factory=".resources.PrintQRResource")
-    config.include('altair.app.ticketing.setup_beaker_cache')
-    config.include('altair.httpsession.pyramid')
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('lxml'  , 'altair.app.ticketing.renderers.lxml_renderer_factory')
 

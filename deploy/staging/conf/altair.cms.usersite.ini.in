@@ -11,9 +11,6 @@ altaircms.solr.search.utility  = ${altair:altaircms.solr.search.utility}
 session.type = ${altair:beaker_backend_type}
 cache.type = ${altair:beaker_backend_type}
 
-; altair.httpsession
-altair.httpsession.persistence.type = ${altair:beaker_backend_type}
-
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s

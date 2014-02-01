@@ -6,6 +6,8 @@ from pyramid_who.whov2 import WhoV2AuthenticationPolicy
 from sqlalchemy import engine_from_config
 from sqlalchemy.pool import NullPool
 import sqlahelper
+from pyramid_beaker import session_factory_from_settings
+from pyramid_beaker import set_cache_regions_from_settings
 
 import logging
 
@@ -31,12 +33,13 @@ def main(global_config, **local_config):
     settings.update(local_config)
 
     engine = engine_from_config(settings, poolclass=NullPool)
+    session_factory = session_factory_from_settings(settings)
+    set_cache_regions_from_settings(settings) 
     sqlahelper.add_engine(engine)
 
-    config = Configurator(
-        settings=settings,
-        root_factory='.resources.TicketingMyPageResources'
-        )
+    config = Configurator(settings=settings,
+                          root_factory='.resources.TicketingMyPageResources',
+                          session_factory=session_factory)
     config.registry['sa.engine'] = engine
 
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
@@ -44,7 +47,6 @@ def main(global_config, **local_config):
     config.add_renderer('csv'   , 'altair.app.ticketing.renderers.csv_renderer_factory')
     config.add_static_view('img', 'altair.app.ticketing.cart:static', cache_max_age=3600)
 
-    config.include('altair.app.ticketing.setup_beaker_cache')
     config.include('.')
     config.include('.errors')
     config.include('altair.rakuten_auth')

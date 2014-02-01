@@ -1,31 +1,27 @@
-[app:whattime]
-use = config:%(here)s/../../baseconf/common.ini#whattime
-pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_beaker pyramid_mailer altair_gaq altair.findable_label altair.queryprofile
+[app:altairsite]
+use = config:%(here)s/../../baseconf/cms-common.ini#altairsite
+pyramid.includes = pyramid_tm pyramid_fanstatic altair_gaq altair.findable_label pyramid_mailer
+altaircms.stage = staging
+altaircms.page.tmp.directory = %(here)s/../tmp
+altaircms.asset.storepath = %(here)s/../var/altair/cms/asset
+altaircms.s3.utility = altaircms.filelib.s3.S3ConnectionFactory
+altaircms.solr.search.utility  = altaircms.solr.api.SolrSearch
 
 ; Beaker
-session.type = ${altair:beaker_backend_type}
-cache.type = ${altair:beaker_backend_type}
-
-altair.queryprofile.summary_path = whattime/__queryprofile
+session.type = redis
+cache.type = redis
 
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s
 
 [filter:prefix]
-use = egg:PasteDeploy#prefix
-prefix = /whattime
-
-[filter:browserid]
-use = egg:altair.browserid#browserid
-cookie_name = browserid
-env_key = repoze.browserid
+use = egg:pastedeploy#prefix
 
 [pipeline:pipeline]
-pipeline = 
+pipeline =
     prefix
-    browserid
-    whattime
+    altairsite
 
 [composite:main]
 use = egg:Paste#urlmap
@@ -37,11 +33,15 @@ use  = egg:gunicorn#main
 host = 0.0.0.0
 port = %(http_port)s
 workers = 1
+timeout = 30
+graceful_timeout = 30
+
+[pshell]
+setup = altaircms.scripts.pshell.setup
 
 # Begin logging configuration
-
 [loggers]
-keys = root, altair, ticketing, whattime, sqlalchemy
+keys = root, altair, altaircms, sqlalchemy, altairsite
 
 [handlers]
 keys = console, fluent, sqlalchemy
@@ -59,20 +59,20 @@ handlers = console, fluent
 qualname = altair
 propagate = 0
 
-[logger_ticketing]
-level = DEBUG
+[logger_altaircms]
+level = INFO
 handlers = console, fluent
-qualname = altair.app.ticketing
+qualname = altaircms
 propagate = 0
 
-[logger_whattime]
-level = DEBUG
+[logger_altairsite]
+level = INFO
 handlers = console, fluent
-qualname = altair.app.ticketing.whattime
+qualname = altairsite
 propagate = 0
 
 [logger_sqlalchemy]
-level = INFO
+level = WARN
 handlers = sqlalchemy
 qualname = sqlalchemy.engine
 propagate = 0
@@ -80,22 +80,22 @@ propagate = 0
 [handler_console]
 class = altair.log.filters.BrowserIdStreamHandler
 args = (sys.stderr,)
-level = ${altair:console_loglevel}
+level = WARN
 formatter = generic
 
 [handler_sqlalchemy]
 class = altair.log.filters.BrowserIdTimedRotatingFileHandler
-args = ('%(here)s/../log/altair.ticketing.whattime.sqlalchemy.log', 'D',)
+args = ('%(here)s/../log/altair.cms.usersite.sqlalchemy.log', 'D',)
 level = INFO
 formatter = generic
 
 [handler_fluent]
 class = altair.log.filters.BrowserIdFluentHandler
-args = ('altair.ticketing.whattime', '127.0.0.1', 24224)
+args = ('altair.cms.usersite', '127.0.0.1', 24224)
 level = NOTSET
 formatter = generic
 
 [formatter_generic]
-format = %(asctime)s %(browserid)s %(url)s %(levelname)-5.5s [%(name)s][%(hostname)s][%(threadName)s] %(message)s
+format = %(asctime)s %(browserid)s %(url)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s
 
 # End logging configuration
