@@ -31,11 +31,17 @@ ${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shi
 <%def name="render_lot_entries(lot_entries)">
 </%def>
 
+<%def name="render_pager(result)">
+${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示 $link_next $link_last ")}
+</%def>
+
 <%def name="render_orders(orders)">
   % for order in orders:
 <form name="${order.order_no}" action="${request.route_path('order_review.show')}" method="POST">
-お申込番号：
+受付番号：
 ${order.order_no}<br/>
+予約日時：
+${h.japanese_datetime(order.created_at)}<br/>
 ステータス：
 ${h.get_order_status(order)}<br/>
 支払状況：
@@ -45,11 +51,12 @@ ${h.get_payment_status(order)}<br/>
 公演名：
 ${order.performance.name}<br/>
 公演開始時間：
-${h.japanese_date(order.performance.start_on)}<br/>
+${h.japanese_datetime(order.performance.start_on)}<br/>
 会場名：
 ${order.performance.venue.name}
 <input type="submit" value="チケット詳細">
 </form>
 <hr/>
   % endfor
+${render_pager(orders)}
 </%def>
