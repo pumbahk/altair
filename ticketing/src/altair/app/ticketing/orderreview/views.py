@@ -37,6 +37,8 @@ class MypageView(object):
         self.request = request
         self.context = request.context
 
+    @mobile_view_config(route_name='mypage.show', request_method="GET", custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/show_mobile.html"))
     @view_config(route_name='mypage.show', request_method="GET", custom_predicates=(is_mypage_organization, ),
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/show.html"))
     def show(self):
@@ -123,7 +125,9 @@ class OrderReviewView(object):
 
     @mobile_view_config(route_name='order_review.form',
                         request_method="GET", renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile/form.html"))
-    @view_config(route_name='order_review.form', request_method="GET", 
+    @mobile_view_config(route_name='guest.order_review.form',
+                        request_method="GET", renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile_guest/form.html"))
+    @view_config(route_name='order_review.form', request_method="GET",
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/form.html"))
     @view_config(route_name='guest.order_review.form', request_method="GET",
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/form.html"))
@@ -145,6 +149,8 @@ class OrderReviewView(object):
             raise InvalidForm(form)
         return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
 
+    @mobile_view_config(route_name='guest.order_review.show', request_method="POST",
+                        renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile_guest/show.html"))
     @view_config(route_name='guest.order_review.show',
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/show.html"))
     def guest_post(self):
@@ -167,6 +173,8 @@ def order_review_form_view(context, request):
 
 @view_config(context=InvalidGuestForm,
              renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/form.html"))
+@mobile_view_config(context=InvalidGuestForm,
+                    renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile_guest/form.html"))
 def guest_order_review_form_view(context, request):
     request.errors = context.form.errors
     return dict(form=context.form)
