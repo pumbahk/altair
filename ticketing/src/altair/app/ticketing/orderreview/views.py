@@ -349,6 +349,7 @@ def order_review_send_to_orion(context, request):
         return dict(mail=mail,
                     message = u"電子チケットについてのメールを%s宛に送信しました!!" % mail)
     
+    # エラーメッセージ
     return dict(
         mail = mail,
         # そのまま出すのも微妙だがコード化されてないからしょうがない
