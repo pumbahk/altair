@@ -167,6 +167,11 @@ class EventForm(Form):
     original_id = HiddenField(
         validators=[Optional()],
     )
+    display_order = OurIntegerField(
+        label=label_text_for(Event.display_order),
+        default=1,
+        hide_on_new=True,
+        )
 
     def validate_code(form, field):
         if field.data:

@@ -159,8 +159,11 @@ column_label = HH.label_text_for(column)
   sort_direction = request.GET.get('direction')
   direction = 'desc' if (column_name == sort_column and sort_direction == 'asc') else 'asc'
   css_class = 'current ' + direction if (column_name == sort_column) else ''
+  query = dict(request.GET)
+  query['sort'] = column_name
+  query['direction'] = direction
 %>
-  <a href="?sort=${column_name}&direction=${direction}" class="${css_class}">${column_label}</a>
+  <a href="${request.current_route_path(_query=query)}" class="${css_class}">${column_label}</a>
 % else:
   ${column_label}
 % endif

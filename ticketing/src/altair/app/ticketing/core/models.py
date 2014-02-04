@@ -861,8 +861,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     # 旧仕様: Organization.code(2桁) + 3桁の英数字
     # 新仕様: Organization.code(2桁) + 5桁の英数字
     code = Column(String(12))
-    title = AnnotatedColumn(String(1024), _a_label=(u'名称'))
-    abbreviated_title = AnnotatedColumn(String(1024), _a_label=(u'略称'))
+    title = AnnotatedColumn(String(1024), _a_label=(u'イベント名称'))
+    abbreviated_title = AnnotatedColumn(String(1024), _a_label=(u'イベント略称'))
 
     account_id = AnnotatedColumn(Identifier, ForeignKey('Account.id'), _a_label=(u'配券元'))
     account = relationship('Account', backref='events')
@@ -876,6 +876,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     sales_segment_groups = relationship('SalesSegmentGroup')
     cms_send_at = Column(DateTime, nullable=True, default=None)
+
+    display_order = AnnotatedColumn(Integer, nullable=False, default=1, _a_label=_(u'表示順'))
 
     setting = relationship('EventSetting', backref='event', uselist=False, cascade='all')
 
