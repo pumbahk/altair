@@ -84,7 +84,7 @@ namespace QR.presentation.gui.page
             if (e.PropertyName == "Status" && ctx.Status == PrintingStatus.prepared)
             {
                 ctx.Status = PrintingStatus.requesting;
-                logger.Debug("** status is requesting");
+                logger.Trace("** status is requesting");
                 await this.Dispatcher.InvokeAsync(async () =>
                 {
                     var case_ = await ctx.SubmitAsync();

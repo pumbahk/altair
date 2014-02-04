@@ -77,7 +77,7 @@ namespace QR
 		public string SettingValue (string key)
 		{
 			var v = ConfigurationManager.AppSettings [key];
-			logger.Debug ("get from resource: key={0} value={1}", key, v);
+			logger.Trace ("get from resource: key={0} value={1}", key, v);
 			return v;
 		}
 	}

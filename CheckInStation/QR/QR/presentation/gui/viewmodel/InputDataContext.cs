@@ -20,13 +20,15 @@ namespace QR.presentation.gui
         public DataContextProgress Progress;
         public RequestBroker Broker { get; set; }
         private IInternalEvent _event;
+        /*
         public IInternalEvent Event
         {
             get { logger.Debug("get event: parent={3} parent.id={0} value={1} value.id={2}", this.GetHashCode(), this._event, this._event.GetHashCode(), this); return this._event; }
             set { logger.Debug("set event: parent={3} parent.id={0} value={1} value.id={2}", this.GetHashCode(), value, value.GetHashCode(), this); this._event = value; }
         }
-        //public IInternalEvent Event { get; set; }
-
+         */
+        public IInternalEvent Event { get; set; }
+        
 
         // 不要かもしれない
         private InternalEventStaus _submitStatus;
@@ -69,7 +71,7 @@ namespace QR.presentation.gui
         {
             get {
                 var result = this.Case.Description;
-                logger.Debug("case:{0} description:{1}", this.Case, result);
+                //logger.Debug("case:{0} description:{1}", this.Case, result);
                 return result;
             }
         }

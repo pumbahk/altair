@@ -64,7 +64,7 @@ namespace QR
 
 		public async Task<ICase> NextCase ()
 		{
-            logger.Debug(String.Format("FlowState: {0}", this.state));
+            logger.Trace(String.Format("Next Case current FlowState: {0}", this.state));
 			//verify if not then calling.
 			bool isVerifySuccess;
 			if (this.state < FlowState.verified) {
