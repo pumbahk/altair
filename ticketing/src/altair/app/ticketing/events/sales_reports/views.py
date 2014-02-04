@@ -143,22 +143,27 @@ class SalesReports(BaseView):
 
     @view_config(route_name='sales_reports.send_mail', renderer='altair.app.ticketing:templates/sales_reports/preview.html')
     def send_mail(self):
-        event = self.context.event
-        performance = self.context.performance
-        if not event and not performance:
+        event_id = long(self.request.params.get('event_id') or 0)
+        performance_id = long(self.request.params.get('performance_id') or 0)
+
+        if performance_id:
+            performance = Performance.get(performance_id, organization_id=self.context.user.organization_id)
+            if performance is None:
+                raise HTTPNotFound('performance id %d is not found' % performance_id)
+        elif event_id:
+            event = Event.get(event_id, organization_id=self.context.user.organization_id)
+            if event is None:
+                raise HTTPNotFound('event id %d is not found' % event_id)
+        else:
             raise HTTPNotFound('event and performance id is not found')
 
         form = SalesReportForm(self.request.params)
         if form.validate():
-            if performance:
-                render_param = {
-                    'performance_reporter':PerformanceReporter(form, performance)
-                    }
+            if performance_id:
+                render_param = dict(performance_reporter=PerformanceReporter(form, performance))
                 html = render_to_response('altair.app.ticketing:templates/sales_reports/performance_mail.html', render_param, request=self.request)
-            elif event:
-                render_param = {
-                    'event_reporter':EventReporter(form, event)
-                    }
+            elif event_id:
+                render_param = dict(event_reporter=EventReporter(form, event))
                 html = render_to_response('altair.app.ticketing:templates/sales_reports/event_mail.html', render_param, request=self.request)
 
             settings = self.request.registry.settings
