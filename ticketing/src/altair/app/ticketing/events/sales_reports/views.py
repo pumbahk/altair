@@ -143,31 +143,36 @@ class SalesReports(BaseView):
 
     @view_config(route_name='sales_reports.send_mail', renderer='altair.app.ticketing:templates/sales_reports/preview.html')
     def send_mail(self):
-        event = self.context.event
-        performance = self.context.performance
-        if not event and not performance:
+        event_id = long(self.request.params.get('event_id') or 0)
+        performance_id = long(self.request.params.get('performance_id') or 0)
+
+        if performance_id:
+            performance = Performance.get(performance_id, organization_id=self.context.user.organization_id)
+            if performance is None:
+                raise HTTPNotFound('performance id %d is not found' % performance_id)
+        elif event_id:
+            event = Event.get(event_id, organization_id=self.context.user.organization_id)
+            if event is None:
+                raise HTTPNotFound('event id %d is not found' % event_id)
+        else:
             raise HTTPNotFound('event and performance id is not found')
 
         form = SalesReportForm(self.request.params)
         if form.validate():
-            if performance:
-                render_param = {
-                    'performance_reporter':PerformanceReporter(form, performance)
-                    }
+            if performance_id:
+                render_param = dict(performance_reporter=PerformanceReporter(form, performance))
                 html = render_to_response('altair.app.ticketing:templates/sales_reports/performance_mail.html', render_param, request=self.request)
-            elif event:
-                render_param = {
-                    'event_reporter':EventReporter(form, event)
-                    }
+            elif event_id:
+                render_param = dict(event_reporter=EventReporter(form, event))
                 html = render_to_response('altair.app.ticketing:templates/sales_reports/event_mail.html', render_param, request=self.request)
 
             settings = self.request.registry.settings
             recipient = form.recipient.data
             subject = form.subject.data
             if sendmail(settings, recipient, subject, html):
-                self.request.session.flash(u'レポートメールを送信しました')
+                self.request.session.flash(u'レポートを送信しました')
             else:
-                self.request.session.flash(u'メール送信に失敗しました')
+                self.request.session.flash(u'レポート送信に失敗しました')
         else:
             self.request.session.flash(u'入力されていません')
 
@@ -192,7 +197,7 @@ class ReportSettings(BaseView):
         if f.validate():
             report_mail = merge_session_with_post(ReportSetting(), f.data)
             report_mail.save()
-            self.request.session.flash(u'メール送信設定を保存しました')
+            self.request.session.flash(u'レポート送信設定を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
@@ -215,7 +220,7 @@ class ReportSettings(BaseView):
         report_setting = merge_session_with_post(report_setting, f.data)
         report_setting.save()
 
-        self.request.session.flash(u'メール送信設定を保存しました')
+        self.request.session.flash(u'レポート送信設定を保存しました')
         return None
 
     @view_config(route_name='report_settings.edit', request_method='POST', renderer='altair.app.ticketing:templates/sales_reports/_form.html')
@@ -240,7 +245,7 @@ class ReportSettings(BaseView):
 
         try:
             report_setting.delete()
-            self.request.session.flash(u'選択したメール送信設定を削除しました')
+            self.request.session.flash(u'選択したレポート送信設定を削除しました')
         except Exception as e:
             self.request.session.flash(e.message)
             raise HTTPFound(location=location)
