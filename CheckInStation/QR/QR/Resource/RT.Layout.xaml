@@ -1,0 +1,34 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- brush -->
+    <ImageBrush x:Key="BackgroundImageBrush" ImageSource="background.png"/>
+
+    <Style TargetType="Page" x:Key="KioskPage">
+    </Style>
+
+    <Style TargetType="Grid" x:Key="ToplevelGrid" BasedOn="{StaticResource ToplevelGridBase}">
+        <Setter Property="Background" Value="{StaticResource BackgroundImageBrush}"/>
+    </Style>
+
+
+
+    <Style TargetType="TextBlock" x:Key="CaseInspectName" BasedOn="{StaticResource CaseInspectNameBase}">
+        <Setter Property="Background" Value="AliceBlue"></Setter>
+    </Style>
+
+
+    <Style TargetType="TextBlock" x:Key="ErrorMessageForUser" BasedOn="{StaticResource ErrorMessageForUserBase}">
+        <Setter Property="Background" Value="Crimson"></Setter>
+        <Setter Property="Foreground" Value="White"></Setter>
+    </Style>
+
+
+    <!-- 個別の設定-->
+    <Style TargetType="Image" BasedOn="{StaticResource MainImageStyle}" x:Key="AdImageStyle">
+    </Style>
+
+    <Style TargetType="Image" BasedOn="{StaticResource MainImageStyle}" x:Key="PrintingImageStyle">
+    </Style>
+
+</ResourceDictionary>

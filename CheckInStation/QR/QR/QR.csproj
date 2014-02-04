@@ -114,6 +114,9 @@
     <Compile Include="presentation\gui\page\PageDummy.xaml.cs">
       <DependentUpon>PageDummy.xaml</DependentUpon>
     </Compile>
+    <Compile Include="presentation\gui\page\PageHomeMenu.xaml.cs">
+      <DependentUpon>PageHomeMenu.xaml</DependentUpon>
+    </Compile>
     <Compile Include="presentation\gui\ProgressSingletonAction.cs" />
     <Compile Include="presentation\gui\PageNavigator.cs" />
     <Compile Include="presentation\gui\page\IDataContextHasCase.cs" />
@@ -302,6 +305,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="presentation\gui\page\PageHomeMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="presentation\gui\page\PageInputStrategySelect.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -335,6 +342,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="presentation\gui\page\PageFailure.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resource\Base.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resource\RT.Layout.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
