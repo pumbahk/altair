@@ -127,9 +127,11 @@ class ApplicationError(Exception):
 def main(env, args):
     settings = env['registry'].settings
     try:
-        action = actions.get(int(getattr(sej_models.SejNotificationType, args[0], None)))
+        action = None
+        if len(args) > 0:
+            action = actions.get(int(getattr(sej_models.SejNotificationType, args[0], None)))
         if action is None:
-            raise ApplicationError('unknown action')
+            raise ApplicationError('unknown action: possible actions are %s' % ', '.join(en.k for en in sej_models.SejNotificationType._values))
         order = DBSession.query(c_models.Order).filter_by(order_no=args[1]).one()
         tenant = DBSession.query(sej_models.SejTenant).filter_by(organization_id=order.organization_id).one()
         builder = SejNotificationRequestParamBuilder(tenant.api_key or settings['sej.api_key'])
