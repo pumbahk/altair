@@ -67,6 +67,7 @@ class Events(BaseView):
             .filter(Event.organization_id==int(self.context.organization.id))
         if sort is not None:
             query = query.order_by(direction(sort))
+        query = query.order_by(sql.desc(Event.id))
 
         form_search = EventSearchForm(self.request.params)
         search_query = None
