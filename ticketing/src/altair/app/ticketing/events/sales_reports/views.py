@@ -170,9 +170,9 @@ class SalesReports(BaseView):
             recipient = form.recipient.data
             subject = form.subject.data
             if sendmail(settings, recipient, subject, html):
-                self.request.session.flash(u'レポートメールを送信しました')
+                self.request.session.flash(u'レポートを送信しました')
             else:
-                self.request.session.flash(u'メール送信に失敗しました')
+                self.request.session.flash(u'レポート送信に失敗しました')
         else:
             self.request.session.flash(u'入力されていません')
 
@@ -197,7 +197,7 @@ class ReportSettings(BaseView):
         if f.validate():
             report_mail = merge_session_with_post(ReportSetting(), f.data)
             report_mail.save()
-            self.request.session.flash(u'メール送信設定を保存しました')
+            self.request.session.flash(u'レポート送信設定を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
@@ -220,7 +220,7 @@ class ReportSettings(BaseView):
         report_setting = merge_session_with_post(report_setting, f.data)
         report_setting.save()
 
-        self.request.session.flash(u'メール送信設定を保存しました')
+        self.request.session.flash(u'レポート送信設定を保存しました')
         return None
 
     @view_config(route_name='report_settings.edit', request_method='POST', renderer='altair.app.ticketing:templates/sales_reports/_form.html')
@@ -245,7 +245,7 @@ class ReportSettings(BaseView):
 
         try:
             report_setting.delete()
-            self.request.session.flash(u'選択したメール送信設定を削除しました')
+            self.request.session.flash(u'選択したレポート送信設定を削除しました')
         except Exception as e:
             self.request.session.flash(e.message)
             raise HTTPFound(location=location)

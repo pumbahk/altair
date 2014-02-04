@@ -40,7 +40,7 @@
         if (!id) return false;
         var modal = $('#modal-delete');
         modal.find('#delete').attr('href', '${request.route_path('report_settings.delete', report_setting_id='{id}')}'.replace(encodeURIComponent('{id}'), id));
-        modal.find('#message').text('選択した送信先設定を削除します。よろしいですか？');
+        modal.find('#message').text('選択したレポート送信設定を削除します。よろしいですか？');
         modal.modal('toggle');
       };
     })($('#${modal_id}'));
@@ -49,7 +49,7 @@
 <div id="${modal_id}" class="modal hide">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
-    <h3>メール送信設定</h3>
+    <h3>レポート送信設定</h3>
   </div>
 
   <div class="modal-body"></div>
