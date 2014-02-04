@@ -9,8 +9,7 @@ namespace QR
 	public class CaseAuthInput : AbstractCase,ICase
 	{
 		public string LoginName { get; set; }
-
-		public string LoginPassword { get; set; }
+        public string LoginPassword {get;set;}
 
 		public CaseAuthInput (IResource resource) : base (resource)
 		{
@@ -19,7 +18,7 @@ namespace QR
 		public CaseAuthInput (IResource resource, string name, string password) : base (resource)
 		{
 			this.LoginName = name;
-			this.LoginPassword = password;
+            this.LoginPassword = password;
 		}
 
 		public override Task<bool> VerifyAsync ()
@@ -27,25 +26,18 @@ namespace QR
 			return Task.Run(() => {
                 var subject = this.PresentationChanel as AuthenticationEvent;
                 this.LoginName = subject.LoginName;
-                this.LoginPassword = subject.LoginPassword;
-                var status = true;
                 if (LoginName.Equals(""))
                 {
                     subject.NotifyFlushMessage("名前が未入力です。入力してください");
-                    status = false;
+                    return false;
                 }
-                if (LoginPassword.Equals(""))
-                {
-                    subject.NotifyFlushMessage("パスワードが未入力です。入力してください");
-                    status = false;
-                }
-                return status;
+                return true;
             });
 		}
 
 		public override ICase OnSuccess (IFlow flow)
 		{
-			return new CaseAuthDataFetch (Resource, LoginName, LoginPassword);
+            return new CaseAuthPassword(Resource, LoginName);
 		}
 
 		public override ICase OnFailure (IFlow flow)

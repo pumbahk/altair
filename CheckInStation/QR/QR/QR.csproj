@@ -123,6 +123,7 @@
     <Compile Include="events\ConfirmOneEvent.cs" />
     <Compile Include="events\FailureEvent.cs" />
     <Compile Include="events\FinishEvent.cs" />
+    <Compile Include="flow\CaseAuthPassword.cs" />
     <Compile Include="presentation\gui\CandidateCreator.cs" />
     <Compile Include="presentation\gui\control\InspectCase.xaml.cs">
       <DependentUpon>InspectCase.xaml</DependentUpon>
@@ -131,6 +132,9 @@
       <DependentUpon>KeyPad.xaml</DependentUpon>
     </Compile>
     <Compile Include="presentation\gui\control\TelPad.cs" />
+    <Compile Include="presentation\gui\page\PageAuthPassword.xaml.cs">
+      <DependentUpon>PageAuthPassword.xaml</DependentUpon>
+    </Compile>
     <Compile Include="presentation\gui\page\PageDummy.xaml.cs">
       <DependentUpon>PageDummy.xaml</DependentUpon>
     </Compile>
@@ -321,6 +325,10 @@
     <Page Include="presentation\gui\page\PageAuthInput.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageAuthPassword.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="presentation\gui\page\PageDummy.xaml">
       <SubType>Designer</SubType>

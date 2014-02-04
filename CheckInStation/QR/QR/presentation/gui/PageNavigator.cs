@@ -29,6 +29,8 @@ namespace QR.presentation.gui
             var c = CurrentCase;
             if (c is CaseAuthInput || c is CaseAuthDataFetch)
                 return this.CreateOrReUse<PageAuthInput>(c, previous);
+            else if (c is CaseAuthPassword)
+                return this.CreateOrReUse<PageAuthPassword>(c, previous);
 
             else if (c is CaseInputStrategySelect)
                 return this.CreateOrReUse<PageInputStrategySelect>(c, previous);

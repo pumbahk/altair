@@ -1,4 +1,5 @@
 ﻿using NLog;
+using QR.presentation.gui.control;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,21 +24,12 @@ namespace QR.presentation.gui.page
 
     class AuthInputDataContext : InputDataContext
     {
-        private PasswordBox input;
-                
-        public AuthInputDataContext(PasswordBox input)
-        {
-            this.input = input;
-        }
         public string LoginName { get; set; }
-        public string LoginPassword { get { return this.input.Password; } }
-
+ 
         public override void OnSubmit()
         {
             var ev = this.Event as AuthenticationEvent;
             ev.LoginName = this.LoginName;
-            ev.LoginPassword = this.LoginPassword; //TODO:use seret string
-            //logger.Info(String.Format("Submit: Name:{0}, Password:{1}", ev.LoginName, ev.LoginPassword));
             base.OnSubmit();
         }
     }
@@ -52,13 +44,12 @@ namespace QR.presentation.gui.page
         public PageAuthInput()
         {
             InitializeComponent();
-            //PasswordBox is not Dependency Property. so.
             this.DataContext = this.CreateDataContext();
         }
 
         private InputDataContext CreateDataContext()
         {
-            return new AuthInputDataContext(this.PasswordInput)
+            return new AuthInputDataContext()
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new AuthenticationEvent(),
@@ -67,7 +58,9 @@ namespace QR.presentation.gui.page
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            await(this.DataContext as AuthInputDataContext).PrepareAsync().ConfigureAwait(false);
+            var ctx = this.DataContext as AuthInputDataContext;
+            await ctx.PrepareAsync().ConfigureAwait(false);
+            ctx.TreatErrorMessage();
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
@@ -76,23 +69,19 @@ namespace QR.presentation.gui.page
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
                 var case_ = await ctx.SubmitAsync(); //入力値チェック
-
-                if (ctx.Event.Status == InternalEventStaus.success)
-                {
-                    case_ = await ctx.SubmitAsync(); // call login api
-                    if (ctx.Event.Status == InternalEventStaus.success)
-                    {
-                        //ここである必要はあまりないけれど。裏側で広告用の画像をとる
-                        var resource = AppUtil.GetCurrentResource();
-                        if (resource.AdImageCollector.State == CollectorState.starting)
-                        {
-                            await resource.AdImageCollector.Run(resource.EndPoint.AdImages).ConfigureAwait(false);
-                        }
-                    }
-                }
                 ctx.TreatErrorMessage();
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);   
             });
+        }
+
+        private void KeyPad_KeyPadFinish(object sender, RoutedEventArgs e)
+        {
+            //歴史的経緯で
+            // virtualkeyboardからの出力がAuthInputDataContext.LoginNameに渡され。
+            // AuthInputDataContext.LoginNameがAuthInputEvent.LoginNameに渡され。
+            // モデル側の処理はAuthInputEvent.LoginNameを見る。
+            (this.DataContext as AuthInputDataContext).LoginName = (sender as KeyPad).InputString;
+            this.OnSubmitWithBoundContext(sender, e);
         }
     }
 }
