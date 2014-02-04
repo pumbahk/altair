@@ -4,6 +4,8 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:control="clr-namespace:QR.presentation.gui.control"
+      xmlns:c="clr-namespace:QR.presentation.gui.control"
+      xmlns:WpfKb="clr-namespace:WpfKb.Controls;assembly=WpfKb"
       mc:Ignorable="d" 
       d:DesignHeight="50" d:DesignWidth="50"
     ShowsNavigationUI="False"
@@ -33,21 +35,31 @@
             </ToolBar>
         </ToolBarTray>
         <Grid Style="{StaticResource CenterContentGrid}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="2*"></RowDefinition>
                 <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="1*"></RowDefinition>
-                <RowDefinition Height="2*"></RowDefinition>
+                <RowDefinition Height="1*"></RowDefinition>
             </Grid.RowDefinitions>
 
-            <control:InspectCase Grid.Row="0"/>
-            <TextBlock Grid.Row="1">Login name:</TextBlock>
-            <TextBox Grid.Row="2" Text="{Binding LoginName, Mode=OneWayToSource}"></TextBox>
-            <TextBlock Grid.Row="3">Password:</TextBlock>
-            <PasswordBox Grid.Row="4" Name="PasswordInput"></PasswordBox>
-            <Button Grid.Row="5" Click="OnSubmitWithBoundContext" Style="{StaticResource SubmitButtonStyle}">login</Button>
+            <control:InspectCase Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"/>
+            <TextBlock Grid.Row="1" Grid.Column="0">Login name:</TextBlock>
+            <TextBox Grid.Row="2" Grid.Column="0" Text="{Binding LoginName, Mode=OneWayToSource}"></TextBox>
+            <TextBlock Grid.Row="3" Grid.Column="0">Password:</TextBlock>
+            <PasswordBox Grid.Row="4" Grid.Column="0" Name="PasswordInput"></PasswordBox>
+            <c:KeyPad Grid.Row="1" Grid.Column="1" Grid.RowSpan="5" KeyPadFinish="OnSubmitWithBoundContext" Style="{StaticResource UserKeyPad}">
+                <c:KeyPad.DataContext>
+                    <c:KeyPadPopupContext/>
+                </c:KeyPad.DataContext>
+                <WpfKb:OnScreenKeyboard/>
+            </c:KeyPad>
+            <Button Grid.Row="5" Grid.Column="0" Click="OnSubmitWithBoundContext" Style="{StaticResource SubmitButtonStyle}">login</Button>
         </Grid>
     </Grid>
 
