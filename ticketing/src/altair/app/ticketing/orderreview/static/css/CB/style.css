@@ -1,5 +1,5 @@
 body {
-  background: #B5DBF7;
+  background: #FFF0C4;
   font-size:12px;
   height:100%;
   font-family:"Helvetica Neue",Helvetica,Meiryo,"メイリオ",HiraKakuPro-W3,"ヒラギノ角ゴ Pro W3",Arial,"ＭＳ Ｐゴシック",sans-serif;
@@ -119,13 +119,13 @@ h1{
 }
 
 h2 {
-background: #205A86; /* Old browsers */
-background: -moz-linear-gradient(top, #205A86 0%, #154A6B 50%, #09355F 51%, #09355F 100%); /* FF3.6+ */
-background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#2222aa), color-stop(50%,#111199), color-stop(51%,#09355F), color-stop(100%,#09355F)); /* Chrome,Safari4+ */
-background: -webkit-linear-gradient(top, #205A86 0%,#154A6B 50%,#09355F 51%,#09355F 100%); /* Chrome10+,Safari5.1+ */
-background: -o-linear-gradient(top, #205A86 0%,#154A6B 50%,#09355F 51%,#009355F 100%); /* Opera 11.10+ */
-background: -ms-linear-gradient(top, #205A86 0%,#154A6B 50%,#09355F 51%,#09355F 100%); /* IE10+ */
-background: linear-gradient(to bottom, #205A86 0%,#154A6B 50%,#09355F 51%,#09355F 100%); /* W3C */
+background: #FF754D; /* Old browsers */
+background: -moz-linear-gradient(top, #FF754D 0%, #FF754D 50%, #FF5422 51%, #FF5422 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#FF754D), color-stop(50%,#FF754D), color-stop(51%,#FF5422), color-stop(100%,#FF5422)); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top, #FF754D 0%,#154A6B 50%,#FF5422 51%,#FF5422 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top, #FF754D 0%,#FF754D 50%,#FF5422 51%,#FF5422 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top, #FF754D 0%,#FF754D 50%,#FF5422 51%,#FF5422 100%); /* IE10+ */
+background: linear-gradient(to bottom, #FF754D 0%,#FF754D 50%,#FF5422 51%,#FF5422 100%); /* W3C */
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#205A86', endColorstr='#09355F',GradientType=0 ); /* IE6-9 */
 margin: 0 0 20px 0;
 padding: 10px 10px;
@@ -215,7 +215,7 @@ width:100%;
 position:relative;
 margin:0;
 padding:10px 0 0 0;
-background: #EA9F27;
+background: #FFC926;
 }
 
 .header .header-inner {
@@ -490,7 +490,7 @@ table tbody th {
 }
 
 table thead th {
-  background-color:#09355F;
+  background-color:#FF5422;
   color:#fff;
 }
 
