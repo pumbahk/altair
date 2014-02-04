@@ -12,6 +12,8 @@ import logging
 
 import webhelpers.paginate as paginate
 from sqlalchemy import or_
+from sqlalchemy import sql
+from sqlalchemy.orm.util import class_mapper
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
 from pyramid.threadlocal import get_current_registry
@@ -21,6 +23,7 @@ from pyramid.path import AssetResolver
 from paste.util.multidict import MultiDict
 
 from altair.sqlahelper import get_db_session
+from altair.sqla import new_comparator
 
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict, merge_and_flush
 from altair.app.ticketing.views import BaseView
@@ -47,15 +50,23 @@ class Events(BaseView):
     def index(self):
         slave_session = get_db_session(self.request, name="slave")
 
-        sort = self.request.params.get('sort', 'Event.id')
-        direction = self.request.GET.get('direction', 'desc')
-        if direction not in ['asc', 'desc']:
-            direction = 'asc'
+        sort_column = self.request.params.get('sort', 'display_order')
+        try:
+            mapper = class_mapper(Event)
+            prop = mapper.get_property(sort_column)
+            sort = new_comparator(prop,  mapper)
+        except:
+            sort = None
+        direction = { 'asc': sql.asc, 'desc': sql.desc }.get(
+            self.request.GET.get('direction'),
+            sql.asc
+            )
 
         query = slave_session.query(Event) \
             .group_by(Event.id) \
             .filter(Event.organization_id==int(self.context.organization.id))
-        query = query.order_by(sort + ' ' + direction)
+        if sort is not None:
+            query = query.order_by(direction(sort))
 
         form_search = EventSearchForm(self.request.params)
         search_query = None

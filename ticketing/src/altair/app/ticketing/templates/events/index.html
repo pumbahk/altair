@@ -1,5 +1,6 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch" />
+<%! from altair.app.ticketing.core.models import Event %>
 <%!
   label_classes = [
     'label-important',
@@ -50,8 +51,8 @@
   <table id="event_table" class="table bordered">
     <thead>
       <tr>
-        <th>イベント名</th>
-        <th>登録公演数</th>
+        <th>${ch.sortable(Event.title)}</th>
+        <th>${ch.sortable(Event.display_order)}</th>
         <th>-</th>
       </tr>
     </thead>
@@ -64,6 +65,9 @@
           % for i, sales_segment_group in enumerate(event.sales_segment_groups):
             <span class="label ${label_classes[i%6]}">${sales_segment_group.name}</span>
           % endfor
+        </td>
+        <td>
+          ${event.display_order}
         </td>
         <td class="span3">
           <%include file="./_action_button.html" args="event=event, order=['edit', 'copy', 'delete'], small=True" />
@@ -96,7 +100,7 @@
   <table id="event_table" class="table bordered">
     <thead>
       <tr>
-        <th>イベント名（公演名）</th>
+        <th>${ch.sortable(Event.title)}</th>
         <th>販売区分</th>
         <th>公演期間</th>
         <th>販売期間</th>
