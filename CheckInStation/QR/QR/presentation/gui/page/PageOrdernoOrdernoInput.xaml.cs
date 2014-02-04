@@ -1,4 +1,5 @@
 using NLog;
+using QR.presentation.gui.control;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -83,7 +84,10 @@ namespace QR.presentation.gui.page
 
         private void KeyPad_KeyPadFinish(object sender, RoutedEventArgs e)
         {
-            this.OnSubmitWithBoundContext(sender, e);//hmm.
+            //hmm.
+            e.Handled = true;
+            (this.DataContext as PageOrdernoOrdernoInputDataContext).Orderno = (sender as KeyPad).InputString;
+            this.OnSubmitWithBoundContext(sender, e);
         }
     }
 }

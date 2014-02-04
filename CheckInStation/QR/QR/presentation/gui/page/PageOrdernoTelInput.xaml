@@ -27,7 +27,6 @@
                 </c:KeyPad>
             </StackPanel>
             <StackPanel Grid.Row="2">
-                <Button Click="OnSubmitWithBoundContext">進む</Button>
                 <Button Click="OnBackwardWithBoundContext">戻る</Button>
             </StackPanel>
         </Grid>

@@ -57,6 +57,11 @@ namespace QR.presentation.gui.control
             remove { RemoveHandler(KeyPadFinishEvent, value); }
         }
 
+        public string InputString { get {
+            var ctx = this.DataContext as KeyPadPopupContext;
+            return ctx.InputString;
+        }}
+
         void RaiseKeyPadFinishEvent()
         {
             var e = new RoutedEventArgs(KeyPad.KeyPadFinishEvent);

@@ -4,7 +4,8 @@
              Style="{StaticResource MainWindow}"
              WindowStartupLocation="CenterScreen" 
              Title="CheckinStation"
-                  Source="PageOrdernoOrdernoInput.xaml">
+                  Source="PageAuthInput.xaml">
+    <!--              Source="PageOrdernoOrdernoInput.xaml"> -->
     <!--              Source="PageHomeMenu.xaml"> -->
     <!--         Source="PageAuthInput.xaml"> -->
     <!--     Source="PageDummy.xaml"> -->

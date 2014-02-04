@@ -91,8 +91,7 @@ namespace QR.presentation.gui.page
         private void KeyPad_KeyPadFinish(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
-            var v = ((sender as KeyPad).DataContext as KeyPadPopupContext).InputString;
-            MessageBox.Show(String.Format("box: {0}", v));
+            (this.DataContext as PageOrdernoTelInputDataContext).Tel = (sender as KeyPad).InputString;
             OnSubmitWithBoundContext(sender, e);
         }
     }

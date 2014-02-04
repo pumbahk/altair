@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:c="clr-namespace:QR.presentation.gui.control"
+      xmlns:Nlog="clr-namespace:NLog;assembly=NLog"
       xmlns:WpfKb="clr-namespace:WpfKb.Controls;assembly=WpfKb"
       mc:Ignorable="d" 
       d:DesignHeight="50" d:DesignWidth="50"
@@ -21,15 +22,12 @@
             <StackPanel Grid.Row="1">
                 <c:KeyPad KeyPadFinish="KeyPad_KeyPadFinish">
                     <c:KeyPad.DataContext>
-                        <c:KeyPadPopupContext InputString="{Binding Orderno, Mode=OneWayToSource}"/>
+                        <c:KeyPadPopupContext/>
                     </c:KeyPad.DataContext>
-                    <WpfKb:OnScreenKeyboard/>
+                    <c:TelPad/>
                 </c:KeyPad>
-                <TextBlock Text="{Binding Orderno,Mode=OneWay}"/>
-                <!-- <TextBox Text="{Binding Orderno, Mode=OneWayToSource}"></TextBox> -->
             </StackPanel>
             <StackPanel Grid.Row="2">
-                <Button Click="OnSubmitWithBoundContext">進む</Button>
                 <Button Click="OnBackwardWithBoundContext">戻る</Button>
             </StackPanel>
         </Grid>
