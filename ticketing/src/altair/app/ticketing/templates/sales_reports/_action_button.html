@@ -3,42 +3,31 @@
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
-  function new_sales_reports_mail() {
-    var modal = $('#modal-sales_reports_mail');
-    reset_form(modal, '#event_id, #performance_id');
-    modal.modal('toggle');
-  }
-  function delete_sales_reports_mail() {
-    var id = get_id('sales_reports_mail_id');
-    if (!id) return;
-    var modal = $('#modal-delete');
-    modal.find('#delete').attr('href', '/events/sales_reports/mail/delete/' + id);
-    modal.find('#message').text('選択した送信先アドレスを削除します。よろしいですか？');
-    modal.modal('toggle');
-  }
-  function save_sales_reports_mail() {
-    var modal = '#modal-sales_reports_mail';
-    var form = '#sales_reports_mail-form';
-    var id = $(modal).find('#id').val();
-    var url = id ? '/events/sales_reports/mail/edit/' + id : '/events/sales_reports/mail/new/';
-    post_modal_form(modal, form, url);
-  }
+  var get_selected_report_setting_id;
 </script>
 
 <%
+  event_id = event.id if event else ''
+  performance_id = performance.id if performance else ''
+
   actions = {
     'new':dict(
       label=u'新規',
-      url='javascript:new_sales_reports_mail();',
+      url='javascript:new_report_setting("{0}", "{1}");'.format(event_id, performance_id),
       icon='icon-plus',
+    ),
+    'edit':dict(
+      label=u'編集',
+      url='javascript:edit_report_setting(get_selected_report_setting_id());',
+      icon='icon-pencil',
     ),
     'delete':dict(
       label=u'削除',
-      url='javascript:delete_sales_reports_mail();',
+      url='javascript:delete_report_setting(get_selected_report_setting_id());',
       icon='icon-minus',
     ),
   }
-  order = iter(order or ['new', 'delete'])
+  order = iter(order or ['new', 'edit', 'delete'])
 %>
 ${HH.action_button(actions, order)}
 
