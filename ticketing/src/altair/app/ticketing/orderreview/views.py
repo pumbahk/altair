@@ -351,18 +351,17 @@ def order_review_send_to_orion(context, request):
     response = None
     try:
         response = json.loads(res_text)
-        # TODO: 返り値を検証する
     except Exception, e:
         logger.error(e.message + " (res_text: %s)" % res_text, exc_info=1)
         raise HTTPNotFound()
 
     if response != None and response['result'] == u"OK":
-        message = u"電子チケットについてのメールを%s宛に送信しました!!" % mail
-    else:
-        # そのまま出すのも微妙だがコード化されてないからしょうがない
-        message = response.message
-
+        return dict(mail=mail,
+                    message = u"電子チケットについてのメールを%s宛に送信しました!!" % mail)
+    
+    # エラーメッセージ
     return dict(
         mail = mail,
-        message = message
+        # そのまま出すのも微妙だがコード化されてないからしょうがない
+        message = response['message']
         )
