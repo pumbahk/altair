@@ -192,6 +192,8 @@ class ReportSettingForm(OurForm):
                 ReportSetting.time==form.time.data,
                 ReportSetting.operator_id==field.data
             )
+            if form.id.data:
+                query = query.filter(ReportSetting.id!=form.id.data)
             if form.event_id.data:
                 query = query.filter(ReportSetting.event_id==form.event_id.data)
             if form.performance_id.data:
@@ -208,6 +210,8 @@ class ReportSettingForm(OurForm):
                 ReportSetting.time==form.time.data,
                 ReportSetting.email==form.email.data
             )
+            if form.id.data:
+                query = query.filter(ReportSetting.id!=form.id.data)
             if form.event_id.data:
                 query = query.filter(ReportSetting.event_id==form.event_id.data)
             if form.performance_id.data:
