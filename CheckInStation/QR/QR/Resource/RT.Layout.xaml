@@ -29,6 +29,30 @@
         <Setter Property="Foreground" Value="White"></Setter>
     </Style>
 
+    
+    <Style TargetType="WrapPanel" x:Key="KeyPadDebugPanel">
+        <Style.Resources>
+            <LinearGradientBrush x:Key="InputFollowBrush">
+                <GradientStop Color="lightGray" Offset="1.0"/>
+                <GradientStop Color="Gray" Offset="0.9"/>
+                <GradientStop Color="black" Offset="0.4"/>
+            </LinearGradientBrush>
+            <Style TargetType="TextBlock">
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontSize" Value="24"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding EnableDebug}" Value="True">
+                        <Setter Property="Visibility" Value="Hidden"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Style.Resources>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="Background" Value="{StaticResource InputFollowBrush}"/>
+    </Style>
+
+
+
 
     <!-- 個別の設定-->
     <Style TargetType="Image" BasedOn="{StaticResource MainImageStyle}" x:Key="AdImageStyle">

@@ -80,5 +80,10 @@ namespace QR.presentation.gui.page
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }
+
+        private void KeyPad_KeyPadFinish(object sender, RoutedEventArgs e)
+        {
+            this.OnSubmitWithBoundContext(sender, e);//hmm.
+        }
     }
 }

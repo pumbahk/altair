@@ -3,7 +3,8 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:control="clr-namespace:QR.presentation.gui.control"
+      xmlns:c="clr-namespace:QR.presentation.gui.control"
+      xmlns:WpfKb="clr-namespace:WpfKb.Controls;assembly=WpfKb"
       mc:Ignorable="d" 
       d:DesignHeight="50" d:DesignWidth="50"
     ShowsNavigationUI="False"
@@ -16,10 +17,16 @@
                 <RowDefinition Height="2*"></RowDefinition>
                 <RowDefinition Height="1*"></RowDefinition>
             </Grid.RowDefinitions>
-            <control:InspectCase Grid.Row="0"></control:InspectCase>
+            <c:InspectCase Grid.Row="0"></c:InspectCase>
             <StackPanel Grid.Row="1">
-                <TextBlock>ここにUI</TextBlock>
-                <TextBox Text="{Binding Orderno, Mode=OneWayToSource}"></TextBox>
+                <c:KeyPad KeyPadFinish="KeyPad_KeyPadFinish">
+                    <c:KeyPad.DataContext>
+                        <c:KeyPadPopupContext InputString="{Binding Orderno, Mode=OneWayToSource}"/>
+                    </c:KeyPad.DataContext>
+                    <WpfKb:OnScreenKeyboard/>
+                </c:KeyPad>
+                <TextBlock Text="{Binding Orderno,Mode=OneWay}"/>
+                <!-- <TextBox Text="{Binding Orderno, Mode=OneWayToSource}"></TextBox> -->
             </StackPanel>
             <StackPanel Grid.Row="2">
                 <Button Click="OnSubmitWithBoundContext">進む</Button>
