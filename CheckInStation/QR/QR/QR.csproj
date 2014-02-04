@@ -107,11 +107,10 @@
     <Compile Include="presentation\gui\control\InspectCase.xaml.cs">
       <DependentUpon>InspectCase.xaml</DependentUpon>
     </Compile>
-    <Compile Include="presentation\gui\control\TelPad.cs" />
     <Compile Include="presentation\gui\control\KeyPad.xaml.cs">
       <DependentUpon>KeyPad.xaml</DependentUpon>
-      <DependentUpon>TelPad.cs</DependentUpon>
     </Compile>
+    <Compile Include="presentation\gui\control\TelPad.cs" />
     <Compile Include="presentation\gui\page\PageDummy.xaml.cs">
       <DependentUpon>PageDummy.xaml</DependentUpon>
     </Compile>

@@ -10,24 +10,14 @@
     FocusManager.FocusedElement="{Binding ElementName=Input}"
 	Title="PageOrdernoTelInput">
 
-    <Grid Style="{StaticResource ToplevelGrid}">
-        <Grid Style="{StaticResource CenterContentGrid}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="1*"></RowDefinition>
-                <RowDefinition Height="2*"></RowDefinition>
-                <RowDefinition Height="1*"></RowDefinition>
-            </Grid.RowDefinitions>
-            <c:InspectCase Grid.Row="0"></c:InspectCase>
-            <c:KeyPad KeyPadFinish="KeyPad_KeyPadFinish" Grid.Row="1">
-                <c:KeyPad.DataContext>
-                    <c:KeyPadPopupContext/>
-                </c:KeyPad.DataContext>
+    <Grid>
+        <StackPanel>
+           <c:InspectCase Grid.Row="0"></c:InspectCase> 
+            <c:KeyPad KeyPadFinish="KeyPad_KeyPadFinish">
                 <c:TelPad></c:TelPad>
             </c:KeyPad>
-            <StackPanel Grid.Row="2">
-                <Button>進む</Button>
-                <Button>戻る</Button>
-            </StackPanel>
-        </Grid>
+            <Button>進む</Button>
+            <Button>戻る</Button>
+        </StackPanel>
     </Grid>
 </Page>

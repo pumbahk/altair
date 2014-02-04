@@ -1,4 +1,5 @@
-﻿using System;
+﻿using QR.presentation.gui.control;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,7 +28,10 @@ namespace QR.presentation.gui.page
 
         private void KeyPad_KeyPadFinish(object sender, RoutedEventArgs e)
         {
-
+            var v = ((sender as KeyPad).DataContext as KeyPadPopupContext).InputString;
+            MessageBox.Show(String.Format("box: {0}", v));
+            e.Handled = true;
         }
+
     }
 }
