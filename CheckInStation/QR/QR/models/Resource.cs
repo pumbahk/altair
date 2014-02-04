@@ -80,6 +80,11 @@ namespace QR
 			logger.Trace ("get from resource: key={0} value={1}", key, v);
 			return v;
 		}
+
+        public string GetUniqueNameEachMachine()
+        {
+            return System.Environment.MachineName;
+        }
 	}
 }
 

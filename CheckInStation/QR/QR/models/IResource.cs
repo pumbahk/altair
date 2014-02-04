@@ -36,6 +36,8 @@ namespace QR
 		EndPoint EndPoint { get; set; }
 
 		string SettingValue (string key);
+
+        string GetUniqueNameEachMachine();
 	}
 }
 

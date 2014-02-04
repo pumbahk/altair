@@ -30,6 +30,8 @@ namespace QR
 			public string login_id { get; set; }
 
 			public string password { get; set; }
+
+            public string device_id { get; set; } //端末ごとにuniqueなid(e.g. xxxのPC)
 		}
 		// url
 		public string GetLoginURL ()
@@ -44,8 +46,10 @@ namespace QR
 		public async Task<EndPoint> TryLoginRequest (string name, string password)
 		{
 			IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
-			using (var wrapper = factory.Create (GetLoginURL ())) {
-				var user = new LoginUser (){ login_id = name, password = password };
+			using (var wrapper = factory.Create (GetLoginURL ())) {                
+                var device_id = this.Resource.GetUniqueNameEachMachine();
+
+				var user = new LoginUser (){ login_id = name, password = password, device_id = device_id};
 				using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (user).ConfigureAwait (false)) {
 					// cookie取得
 					var headers = response.Headers;

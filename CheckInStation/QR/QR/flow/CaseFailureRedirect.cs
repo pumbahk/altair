@@ -14,7 +14,15 @@ namespace QR
 
 		public Func<Task> Modify { get; set; }
 
-		public string Message { get; set; }
+        private string _message;
+        public string Message
+        {
+            get
+            {
+                return String.Format("{0} (発生時刻: {1})", this._message, DateTime.Now.ToString("yyyy/M/d hh:mm:ss"));
+            }
+            set { this._message = value; }
+        }
 
 		public CaseFailureRedirect (IResource resource, string message) : base (resource)
 		{
