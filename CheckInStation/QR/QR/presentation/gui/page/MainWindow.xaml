@@ -4,6 +4,6 @@
              Style="{StaticResource MainWindow}"
              WindowStartupLocation="CenterScreen" 
              Title="CheckinStation"
-                  Source="PageDummy.xaml">
-             <!-- Source="PageAuthInput.xaml"> -->
+             Source="PageAuthInput.xaml">
+    <!--     Source="PageDummy.xaml"> -->
 </NavigationWindow>

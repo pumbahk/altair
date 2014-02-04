@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:control="clr-namespace:QR.presentation.gui.control"
+             xmlns:c="clr-namespace:QR.presentation.gui.control"
              Startup="App_Startup"
              DispatcherUnhandledException="App_DispatcherUnhandledException"
              StartupUri="presentation/gui/page/MainWindow.xaml">
@@ -19,6 +20,12 @@
         <!-- base-->
         <Style TargetType="TextBlock">
             <Setter Property="FontSize" Value="20"></Setter>
+        </Style>
+        
+        <Style TargetType="c:KeyPad" x:Key="UserKeyPad">
+            <Setter Property="Width" Value="546"/> <!--0.4-->
+            <Setter Property="Height" Value="460"></Setter> <!-- 0.6-->
+            
         </Style>
         
         <Style TargetType="TextBlock" x:Key="SubText">
