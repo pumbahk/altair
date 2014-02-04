@@ -22,18 +22,6 @@
     </Page.Resources>
     
     <Grid Style="{StaticResource ToplevelGrid}">
-        <ToolBarTray  Background="Transparent">
-            <ToolBar Margin="5,2">
-                <TextBlock Style="{StaticResource SubText}">プリンター設定:</TextBlock>
-                <ListBox 
-                 ItemsSource="{Binding AvailablePrinters}"
-                 ItemTemplate="{StaticResource InstalledPrinterListBoxData}"
-                 SelectionChanged="OnPrinterSelected">
-                </ListBox>
-                <TextBlock Style="{StaticResource SubText}">現在のプリンター: </TextBlock>
-                <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedPrinterName, Mode=OneWay}"></TextBlock>
-            </ToolBar>
-        </ToolBarTray>
         <Grid Style="{StaticResource CenterContentGrid}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>

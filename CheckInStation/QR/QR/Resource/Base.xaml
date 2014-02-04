@@ -58,6 +58,10 @@
         <Setter Property="FontSize" Value="20"></Setter>
     </Style>
     
+    <Style TargetType="TextBlock" x:Key="MainText">
+        <Setter Property="FontSize" Value="20" />
+    </Style>
+
     <Style TargetType="TextBlock" x:Key="SubText">
         <Setter Property="FontSize" Value="14" />
     </Style>

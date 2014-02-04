@@ -15,9 +15,8 @@ namespace QR.presentation.gui
         finished
     }
 
-    public class InputDataContext : INotifyPropertyChanged
+    public class InputDataContext : ViewModel, INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
         public DataContextProgress Progress;
         public RequestBroker Broker { get; set; }
         private IInternalEvent _event;
@@ -55,13 +54,6 @@ namespace QR.presentation.gui
         private string errorMessage;
 
         protected Logger logger = LogManager.GetCurrentClassLogger();
-
-        protected virtual void OnPropertyChanged(string propName)
-        {
-            var handler = this.PropertyChanged;
-            if (handler != null)
-                handler(this, new PropertyChangedEventArgs(propName));
-        }
 
         public ICase Case
         {

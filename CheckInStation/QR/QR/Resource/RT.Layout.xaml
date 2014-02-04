@@ -11,6 +11,12 @@
         <Setter Property="Background" Value="{StaticResource BackgroundImageBrush}"/>
     </Style>
 
+    <Style TargetType="Border" x:Key="PopupDialogStyle">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="Width" Value="300"/>
+        <Setter Property="Height" Value="300"/>
+        <Setter Property="Opacity" Value="0.9"/>
+    </Style>
 
 
     <Style TargetType="TextBlock" x:Key="CaseInspectName" BasedOn="{StaticResource CaseInspectNameBase}">
