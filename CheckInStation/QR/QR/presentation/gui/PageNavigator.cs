@@ -61,7 +61,32 @@ namespace QR.presentation.gui
             throw new NotImplementedException("sorry");
         }
 
-        public void NavigateToMatchedPage(ICase case_, Page previous)
+        public void NavigateToMatchedPage(ICase case_, Page previous, string errorMessage)
+        {
+            previous.Dispatcher.Invoke(() =>
+            {
+                var nextPage = this.Choice(case_, previous);
+                if (previous != nextPage)
+                {
+                    logger.Debug("navigate page: {0}", nextPage);
+                    var service = previous.NavigationService;
+                    if (service != null)
+                    {
+                        service.Navigate(nextPage);
+                        nextPage.Dispatcher.Invoke(() => {
+                            (nextPage.DataContext as InputDataContext).PassingErrorMessage(errorMessage);
+                        }
+                            );
+                    }
+                    else
+                    {
+                        logger.Info("previous: {0}, case: {1}, NavigationService is not found", previous, case_);
+                    }
+                }
+            });
+        }
+
+        public void  NavigateToMatchedPage(ICase case_, Page previous)
         {
             previous.Dispatcher.Invoke(() =>
             {

@@ -69,22 +69,18 @@ namespace QR.presentation.gui.page
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
                 var case_ = await ctx.SubmitAsync(); //入力値チェック
-                if (ctx.Event.Status == InternalEventStaus.failure)
+                case_ = await ctx.SubmitAsync(); // call login api
+                if (ctx.Event.Status == InternalEventStaus.success)
                 {
-                    ctx.TreatErrorMessage();
-                } else {
-                    case_ = await ctx.SubmitAsync(); // call login api
-                    if (ctx.Event.Status == InternalEventStaus.success)
+                    //ここである必要はあまりないけれど。裏側で広告用の画像をとる
+                    var resource = AppUtil.GetCurrentResource();
+                    if (resource.AdImageCollector.State == CollectorState.starting)
                     {
-                        //ここである必要はあまりないけれど。裏側で広告用の画像をとる
-                        var resource = AppUtil.GetCurrentResource();
-                        if (resource.AdImageCollector.State == CollectorState.starting)
-                        {
-                            await resource.AdImageCollector.Run(resource.EndPoint.AdImages).ConfigureAwait(false);
-                        }
+                        await resource.AdImageCollector.Run(resource.EndPoint.AdImages).ConfigureAwait(false);
                     }
                 }
-                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+                ctx.TreatErrorMessage();
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this, ctx.ErrorMessage); //エラーメッセージを受け渡す
             });
         }
 

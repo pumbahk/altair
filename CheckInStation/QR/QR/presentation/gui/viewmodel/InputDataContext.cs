@@ -19,8 +19,9 @@ namespace QR.presentation.gui
     {
         public DataContextProgress Progress;
         public RequestBroker Broker { get; set; }
-        private IInternalEvent _event;
         /*
+        private IInternalEvent _event;
+
         public IInternalEvent Event
         {
             get { logger.Debug("get event: parent={3} parent.id={0} value={1} value.id={2}", this.GetHashCode(), this._event, this._event.GetHashCode(), this); return this._event; }
@@ -147,6 +148,11 @@ namespace QR.presentation.gui
                 coll.Add(s);
             });
             this.ErrorMessage = String.Join(Environment.NewLine, coll.ToArray<string>());
+        }
+
+        public void PassingErrorMessage(string message)
+        {
+            this.ErrorMessage = message;
         }
     }
 }

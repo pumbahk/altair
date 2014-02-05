@@ -60,7 +60,6 @@ namespace QR.presentation.gui.page
         {
             var ctx = this.DataContext as AuthInputDataContext;
             await ctx.PrepareAsync().ConfigureAwait(false);
-            ctx.TreatErrorMessage();
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)

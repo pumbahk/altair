@@ -33,7 +33,6 @@
             </Grid.RowDefinitions>
 
             <control:InspectCase Grid.Row="0"/>
-            <TextBlock Grid.Row="1">Login name:</TextBlock>
             <c:KeyPad Grid.Row="1" Grid.RowSpan="5" KeyPadFinish="KeyPad_KeyPadFinish" Style="{StaticResource UserKeyPad}">
                 <c:KeyPad.DataContext>
                     <c:KeyPadPopupContext/>

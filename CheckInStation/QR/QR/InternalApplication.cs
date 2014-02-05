@@ -19,8 +19,8 @@ namespace QR
             logger.Info("Internal Application starting.");
 			var config = new Configurator (new Resource (true));
 			this.Resource = config.Resource;
-			//config.Include (AuthConfiguration.MockIncludeMe);
-            config.Include(AuthConfiguration.IncludeMe);
+			config.Include (AuthConfiguration.MockIncludeMe);
+            //config.Include(AuthConfiguration.IncludeMe);
 			config.Include (QRConfiguration.IncludeMe);
 			config.Include (HttpCommunicationConfiguration.IncludeMe);
 
