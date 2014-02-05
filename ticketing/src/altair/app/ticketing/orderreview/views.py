@@ -357,12 +357,6 @@ def order_review_send_to_orion(context, request):
         raise HTTPNotFound()
 
     if response != None and response['result'] == u"OK":
-        message = u"電子チケットについてのメールを%s宛に送信しました!!" % mail
-    else:
-        # そのまま出すのも微妙だがコード化されてないからしょうがない
-        message = response.message
-
-    if response != None and response['result'] == u"OK":
         return dict(mail=mail,
                     message = u"電子チケットについてのメールを%s宛に送信しました!!" % mail)
     
