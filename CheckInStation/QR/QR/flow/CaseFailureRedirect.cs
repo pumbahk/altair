@@ -19,7 +19,7 @@ namespace QR
         {
             get
             {
-                return String.Format("{0} (発生時刻: {1})", this._message, DateTime.Now.ToString("yyyy/M/d hh:mm:ss"));
+                return String.Format("{0} (マシン名:{2} 発生時刻: {1})", this._message, DateTime.Now.ToString("yyyy/M/d hh:mm:ss"), this.Resource.GetUniqueNameEachMachine());
             }
             set { this._message = value; }
         }

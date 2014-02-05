@@ -9,6 +9,8 @@ namespace QR
 		IResource Resource{ get; set; }
 
 		Task<ResultTuple<string, AuthInfo>> AuthAsync (string name, string password);
+
+        
 	}
 }
 
