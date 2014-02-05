@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:control="clr-namespace:QR.presentation.gui.control"
              xmlns:c="clr-namespace:QR.presentation.gui.control"
+             xmlns:WpfKb="clr-namespace:WpfKb.Controls;assembly=WpfKb"
              Startup="App_Startup"
              DispatcherUnhandledException="App_DispatcherUnhandledException"
              StartupUri="presentation/gui/page/MainWindow.xaml">
@@ -17,7 +18,12 @@
                 </WrapPanel>
             </DataTemplate>
 
+            <c:KeyPadPopupContext x:Key="KeyPadContextPassword" PreviewType="password"/>
+            <c:KeyPadPopupContext x:Key="KeyPadContextRaw" PreviewType="raw"/>
             
+            <WpfKb:OnScreenKeyboard x:Key="VirtualInputKeyboardRaw" DataContext="{StaticResource KeyPadContextRaw}"/>
+            <WpfKb:OnScreenKeyboard x:Key="VirtualInputKeyboardPassword" DataContext="{StaticResource KeyPadContextPassword}"/>
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resource/Base.xaml"/>
                 <ResourceDictionary Source="Resource/RT.Layout.xaml"/>

@@ -11,16 +11,7 @@
     ShowsNavigationUI="False"
 	Title="PageAuthInput"
     Loaded="OnLoaded"
-    >
-    <Page.Resources>
-        <!-- data template -->
-        <DataTemplate x:Key="InstalledPrinterListBoxData">
-            <WrapPanel>
-                <TextBlock Text="{Binding FullName, Mode=OneTIme}"></TextBlock>
-            </WrapPanel>
-        </DataTemplate>
-    </Page.Resources>
-    
+    >    
     <Grid Style="{StaticResource ToplevelGrid}">
         <Grid Style="{StaticResource CenterContentGrid}">
             <Grid.ColumnDefinitions>
@@ -33,12 +24,11 @@
             </Grid.RowDefinitions>
 
             <control:InspectCase Grid.Row="0"/>
-            <c:KeyPad Grid.Row="1" Grid.RowSpan="5" KeyPadFinish="KeyPad_KeyPadFinish" Style="{StaticResource UserKeyPad}">
-                <c:KeyPad.DataContext>
-                    <c:KeyPadPopupContext PreviewType="password"/>
-                </c:KeyPad.DataContext>
-                <WpfKb:OnScreenKeyboard/>
-            </c:KeyPad>
+            <c:KeyPad Grid.Row="1" Grid.RowSpan="5"
+                      Style="{StaticResource UserKeyPad}"
+                      DataContext="{StaticResource KeyPadContextRaw}"
+                      Content="{StaticResource VirtualInputKeyboardRaw}"
+                      KeyPadFinish="KeyPad_KeyPadFinish" />            
         </Grid>
     </Grid>
 

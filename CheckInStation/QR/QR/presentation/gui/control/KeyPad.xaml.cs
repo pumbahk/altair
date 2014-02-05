@@ -24,90 +24,51 @@ namespace QR.presentation.gui.control
         password
     }
 
-    public class KeyPadPopupContext : INotifyPropertyChanged
+    public class KeyPadPopupContext : DependencyObject
     {
+        public static readonly DependencyProperty PreviewTypeProperty = DependencyProperty.Register(
+            "KeyPadPreviewType", typeof(KeyPadPreviewType), typeof(KeyPadPopupContext), new PropertyMetadata(KeyPadPreviewType.raw));
 
-        public KeyPadPopupContext()
+        public KeyPadPreviewType PreviewType
         {
-            this.PropertyChanged += SyncPreview;
+            get { return (KeyPadPreviewType)this.GetValue(PreviewTypeProperty); }
+            set { this.SetValue(PreviewTypeProperty, value); }
         }
 
-        void SyncPreview(object sender, PropertyChangedEventArgs e)
+        public static readonly DependencyProperty InputStringProperty = DependencyProperty.Register(
+        "InputString", typeof(string), typeof(KeyPadPopupContext), new FrameworkPropertyMetadata(new PropertyChangedCallback(OnInputStringPropertyChanged)));
+        private static void OnInputStringPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "InputString")
+            var s = e.NewValue as string;
+            var k = (KeyPadPreviewType)d.GetValue(PreviewTypeProperty);
+            switch (k)
             {
-                this.PreviewString = this.InputString;
+                case KeyPadPreviewType.password:
+                    d.SetValue(PreviewStringProperty, new String((s.Select(c => '*').ToArray<char>())));
+                    break;
+                case KeyPadPreviewType.raw:
+                    d.SetValue(PreviewStringProperty, s);
+                    break;
             }
         }
-
-        private string _InputString;
-
         public string InputString
         {
-            get { return this._InputString; }
-            set { this._InputString = value; this.OnPropertyChanged("InputString"); }
+            get { return (string)this.GetValue(InputStringProperty); }
+            set { this.SetValue(InputStringProperty, value); }
         }
 
-        private string _PreviewString;
+        public static readonly DependencyProperty PreviewStringProperty = DependencyProperty.Register(
+"PreviewString", typeof(string), typeof(KeyPadPopupContext), new PropertyMetadata(""));
 
         public string PreviewString
         {
-            get { return this._PreviewString; }
-            set { 
-                if(this.PreviewType == KeyPadPreviewType.password){
-                    this._PreviewString = StringToStarConverter.ToStar(value);
-                }else {
-                    this._PreviewString = value;
-                }
-                this.OnPropertyChanged("PreviewString");
-            }
+            get { return (string)this.GetValue(PreviewStringProperty); }
+            set { this.SetValue(PreviewStringProperty, value); }
         }
 
-        private KeyPadPreviewType _previewType;
-        public KeyPadPreviewType PreviewType
+        public KeyPadPopupContext()
         {
-            get
-            {
-                return this._previewType;
-            }
-            set
-            {
-                this._previewType = value;
-                this.OnPropertyChanged("PreviewType");
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged(string name)
-        {
-            if (this.PropertyChanged != null)
-            {
-                this.PropertyChanged(this, new PropertyChangedEventArgs(name));
-            }
-        }
-        //public bool EnableDebug { get; set; }
-    }
-
-    //[ValueConversion(typeof(string),typeof(string))]
-    public class StringToStarConverter : IValueConverter
-    {
-
-        public static string ToStar(string s)
-        {
-            return new String(s.Select(c => '*').ToArray<char>());
-        }
-       
-        public object Convert(object value, Type targetType, object paramater, CultureInfo cu)
-        {
-            if (value == null)
-                return "";
-            return StringToStarConverter.ToStar(value as string);
-        }   
-        public object ConvertBack(object value, Type targetType, object paramater, CultureInfo cu)
-        {
-            if (value == null)
-                return "";
-            throw new InvalidOperationException("one direction!!");
+            this.InputString = "";
         }
     }
 
@@ -119,7 +80,6 @@ namespace QR.presentation.gui.control
         public KeyPad()
         {
             InitializeComponent();
-            this.DataContext = new KeyPadPopupContext();
         }
                 
         public static readonly RoutedEvent KeyPadFinishEvent = EventManager.RegisterRoutedEvent(

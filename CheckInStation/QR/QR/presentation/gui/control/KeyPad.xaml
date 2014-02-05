@@ -10,26 +10,20 @@
 
     <UserControl.ContentTemplate>        
         <DataTemplate>
-            <DataTemplate.Resources>
-                <c:StringToStarConverter x:Key="ToStarConverter"/>
-            </DataTemplate.Resources>
             <Grid x:Name="baseContainer">
-                <Grid.DataContext>
-                    <c:KeyPadPopupContext/>
-                </Grid.DataContext>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*"></RowDefinition>
                     <RowDefinition Height="5*"></RowDefinition>
                 </Grid.RowDefinitions>
                 <WrapPanel Grid.Row="0" Style="{StaticResource KeyPadDebugPanel}">
                     <TextBox x:Name="KeyPad_InputString" Width="0" Height="0"
-                     Text="{Binding InputString, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"                     
+                     Text="{Binding DataContext.InputString, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"                     
                      KeyDown="OnKeyDownHandler"
                      FocusManager.FocusedElement="{Binding ElementName=KeyPad_InputString}"
                              ></TextBox>
                     <TextBlock>入力された文字列</TextBlock>
                     <!-- logic? -->
-                    <TextBlock Text="{Binding PreviewString,Mode=OneWay}"/>
+                    <TextBlock Text="{Binding DataContext.PreviewString,Mode=OneWay}"/>
                 </WrapPanel>
                 <Border
             Grid.Row="1"
