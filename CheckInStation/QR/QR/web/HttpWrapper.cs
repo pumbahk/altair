@@ -10,12 +10,51 @@ namespace QR
 	public class HttpWrapper :IHttpWrapper
 	{
 		private static Logger logger = LogManager.GetCurrentClassLogger ();
+        
+        //todo: 
+        public static int RetryMaxCount = 3;
+        public static TimeSpan RetryDelay = TimeSpan.FromMilliseconds(300);
+        
+        public async Task<T> RetryAsyncCall<T>(Func<Task<T>> thunk, string uri, int retryMax){
+            int i = 0;
+        RETRY:
+            try{
+                i++;
+                return await thunk();
+            }
+            catch
+            {
+                if (i > retryMax) {
+                    throw;
+                }
+                logger.Warn("request failure. retry(i={0}), url={1}, Delay={2}", i, uri, HttpWrapper.RetryDelay);
+            }
 
-		public async Task<string> ReadAsStringAsync (HttpContent content)
+            if (i <= retryMax) {
+                await Task.Delay(HttpWrapper.RetryDelay);
+            }
+            goto RETRY;
+        }
+
+        public Task<T> RetryAsyncCall<T>(Func<Task<T>> thunk, string uri){
+            return this.RetryAsyncCall(thunk, uri, HttpWrapper.RetryMaxCount);
+        }
+
+		public Task<string> ReadAsStringAsync (HttpContent content)
 		{
-			var result = await content.ReadAsStringAsync ();
-			logger.Trace("* API Output:{0}", result);
-			return result;
+            string uri;
+            if(content.Headers.ContentLocation != null)
+                uri = content.Headers.ContentLocation.AbsoluteUri.ToString();
+            else
+                uri ="<null>";
+            
+            return this.RetryAsyncCall<string>(async () =>
+            {
+                //todo. remove await;
+                var result = await content.ReadAsStringAsync().ConfigureAwait(false);
+                logger.Trace("* API Output:{0}", result);
+                return result;
+            }, uri);
 		}
 
 		protected HttpClient client;
@@ -52,112 +91,131 @@ namespace QR
 
 		public void Dispose ()
 		{
-			if (client != null) {
-				client.Dispose ();
-				//System.Console.WriteLine ("Dispose!");
-			}
-			client = null;
+            try
+            {
+                if (client != null)
+                {
+                    logger.Debug("begin dispose!");
+                    client.Dispose();
+                    logger.Debug("end dispose!");
+                }
+                client = null;
+            }
+            catch (Exception e)
+            {
+                logger.ErrorException("dispose", e);
+                throw;
+            }
 		}
 
-		public async Task<HttpResponseMessage> GetAsync ()
+		public Task<HttpResponseMessage> GetAsync ()
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-			return await client.GetAsync (url);
+			return this.RetryAsyncCall<HttpResponseMessage>(() => client.GetAsync (url), url);
 		}
 
-		public async Task<HttpResponseMessage> GetAsync (CancellationToken ct)
+		public Task<HttpResponseMessage> GetAsync (CancellationToken ct)
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-			return await client.GetAsync (url, ct);
+			return this.RetryAsyncCall<HttpResponseMessage>(() => client.GetAsync (url, ct), url);
 		}
 
-		public async Task<Stream> GetStreamAsync ()
+		public Task<Stream> GetStreamAsync ()
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-			return await client.GetStreamAsync (url);
+			return this.RetryAsyncCall<Stream>(() => client.GetStreamAsync (url), url);
 		}
 
-		public async Task<String> GetStringAsync ()
+		public Task<String> GetStringAsync ()
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-
+            return this.RetryAsyncCall<String>(() =>
+            {
+                return client.GetStringAsync(url).ContinueWith<Task<string>>((Task<string> t) =>
+                    {
+                        logger.Trace("* API Output:{0}", t.Result);
+                        return t;
+                    }).Unwrap();
+            }, url);
+            /*
 			var result = await client.GetStringAsync (url);
 			logger.Trace("* API Output:{0}", result);
 			return result;
+             */
 		}
 
-		public async Task<HttpResponseMessage> DeleteAsync ()
+		public Task<HttpResponseMessage> DeleteAsync ()
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-			return await client.DeleteAsync (url);
+            return this.RetryAsyncCall<HttpResponseMessage>(() => client.DeleteAsync(url), url);
 		}
 
-		public async Task<HttpResponseMessage> DeleteAsync (CancellationToken ct)
+		public Task<HttpResponseMessage> DeleteAsync (CancellationToken ct)
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-			return await client.DeleteAsync (url, ct);
+			return this.RetryAsyncCall<HttpResponseMessage>(() => client.DeleteAsync (url, ct), url);
 		}
 
-		public async Task<HttpResponseMessage> PostAsync (HttpContent content)
+		public Task<HttpResponseMessage> PostAsync (HttpContent content)
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-			return await client.PostAsync (url, content);
+			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsync (url, content), url);
 		}
 
-		public async Task<HttpResponseMessage> PostAsync (HttpContent content, CancellationToken ct)
+		public Task<HttpResponseMessage> PostAsync (HttpContent content, CancellationToken ct)
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-			return await client.PostAsync (url, content, ct);
+			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsync (url, content, ct), url);
 		}
 
-		public async Task<HttpResponseMessage> PutAsync (HttpContent content)
+		public Task<HttpResponseMessage> PutAsync (HttpContent content)
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-			return await client.PutAsync (url, content);
+			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsync (url, content), url);
 		}
 
-		public async Task<HttpResponseMessage> PutAsync (HttpContent content, CancellationToken ct)
+		public Task<HttpResponseMessage> PutAsync (HttpContent content, CancellationToken ct)
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-			return await client.PutAsync (url, content, ct);
+			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsync (url, content, ct), url);
 		}
 
-		public async Task<HttpResponseMessage> PostAsJsonAsync<T> (T value)
+		public Task<HttpResponseMessage> PostAsJsonAsync<T> (T value)
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-			return await client.PostAsJsonAsync<T> (url, value);
+			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsJsonAsync<T> (url, value), url);
 		}
 
-		public async Task<HttpResponseMessage> PostAsJsonAsync<T> (T value, CancellationToken ct)
+		public Task<HttpResponseMessage> PostAsJsonAsync<T> (T value, CancellationToken ct)
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-			return await client.PostAsJsonAsync<T> (url, value, ct);
+			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsJsonAsync<T> (url, value, ct), url);
 		}
 
-		public async Task<HttpResponseMessage> PutAsJsonAsync<T> (T value)
+		public Task<HttpResponseMessage> PutAsJsonAsync<T> (T value)
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-			return await client.PutAsJsonAsync<T> (url, value);
+			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsJsonAsync<T> (url, value), url);
 		}
 
-		public async Task<HttpResponseMessage> PutAsJsonAsync<T> (T value, CancellationToken ct)
+		public Task<HttpResponseMessage> PutAsJsonAsync<T> (T value, CancellationToken ct)
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-			return await client.PutAsJsonAsync<T> (url, value, ct);
+			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsJsonAsync<T> (url, value, ct), url);
 		}
 	}
 }
