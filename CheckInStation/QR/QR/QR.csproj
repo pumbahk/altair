@@ -131,6 +131,7 @@
     <Compile Include="presentation\gui\control\KeyPad.xaml.cs">
       <DependentUpon>KeyPad.xaml</DependentUpon>
     </Compile>
+    <Compile Include="presentation\gui\control\AlnumPad.cs" />
     <Compile Include="presentation\gui\control\TelPad.cs" />
     <Compile Include="presentation\gui\page\PageAuthPassword.xaml.cs">
       <DependentUpon>PageAuthPassword.xaml</DependentUpon>

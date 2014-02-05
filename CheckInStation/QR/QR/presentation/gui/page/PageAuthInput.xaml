@@ -5,7 +5,6 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:control="clr-namespace:QR.presentation.gui.control"
       xmlns:c="clr-namespace:QR.presentation.gui.control"
-      xmlns:WpfKb="clr-namespace:WpfKb.Controls;assembly=WpfKb"
       mc:Ignorable="d" 
       d:DesignHeight="50" d:DesignWidth="50"
     ShowsNavigationUI="False"
@@ -40,13 +39,13 @@
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <control:InspectCase Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="7"/>
-            <c:KeyPad Grid.Row="1" Grid.Column="1" Grid.RowSpan="7" Grid.ColumnSpan="7"
+        <c:KeyPad Grid.Row="1" Grid.Column="1" Grid.RowSpan="7" Grid.ColumnSpan="7"
                       Style="{StaticResource UserKeyPad}"
                       Content="{StaticResource VirtualInputKeyboard}"
                       KeyPadFinish="KeyPad_KeyPadFinish">
-                <c:KeyPad.DataContext>
-                    <c:KeyPadPopupContext PreviewType="raw" Description="ログインユーザー名"/>
-                </c:KeyPad.DataContext>
-            </c:KeyPad>
-        </Grid>
+            <c:KeyPad.DataContext>
+                <c:KeyPadPopupContext PreviewType="raw" Description="ログインユーザー名"/>
+            </c:KeyPad.DataContext>
+        </c:KeyPad>
+    </Grid>
 </Page>
