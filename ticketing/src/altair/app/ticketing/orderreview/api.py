@@ -63,9 +63,12 @@ def send_to_orion(request, context, recipient):
     if api_url is None:
         raise Exception("orion.api_uri is None")
     
-    # request.params['order_no']
     data = OrderedProductItemToken.filter_by(id = request.params['token']).one()
+    
     order = data.item.ordered_product.order
+    if order.order_no != request.params['order_no']:
+        raise Exception(u"Wrong order number or token: (%s, %s)" % (request.params['order_no'], request.params['token']))
+    
     product = data.item.ordered_product.product
     item = data.item.product_item
     performance = data.item.product_item.performance
@@ -78,8 +81,12 @@ def send_to_orion(request, context, recipient):
     
     obj = dict()
     obj['recipient'] = dict(mail = recipient)
-    obj['order'] = dict(number = order.order_no, created_at = str(order.paid_at))
-    obj['performance'] = dict(code = performance.code, name = performance.name, open_on = str(performance.open_on), start_on = str(performance.start_on), end_on = str(performance.end_on))
+    obj['order'] = dict(number = order.order_no,
+                        created_at = str(order.paid_at))
+    obj['performance'] = dict(code = performance.code, name = performance.name,
+                              open_on = str(performance.open_on) if performance.open_on is not None else None,
+                              start_on = str(performance.start_on) if performance.start_on is not None else None,
+                              end_on = str(performance.end_on) if performance.end_on is not None else None)
     obj['performance']['event'] = dict(code = event.code, title = event.title, abbreviated_title = event.abbreviated_title)
     obj['performance']['site'] = dict(name = site.name, prefecture = site.prefecture, address = (site.city or u'')+(site.address_1 or u'')+(site.address_2 or u''), phone = site.tel_1)
     obj['performance']['organization'] = dict(code = org.code, name = org.name)
@@ -101,6 +108,7 @@ def send_to_orion(request, context, recipient):
                         icon = orion.icon_url)
     
     data = json.dumps(obj)
+    logger.info("Create request to Orion API: %s" % data);
     req = urllib2.Request(api_url, data, headers={ u'Content-Type': u'text/json; charset="UTF-8"' })
     stream = urllib2.urlopen(req);
     headers = stream.info()

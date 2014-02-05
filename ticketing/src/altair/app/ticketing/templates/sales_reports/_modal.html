@@ -1,0 +1,61 @@
+<%page args="modal_id" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%! from altair.app.ticketing.core.models import ReportFrequencyEnum %>
+
+<script type="text/javascript">
+  var new_report_setting, edit_report_setting, delete_report_setting;
+  $(function() {
+    (function(modal_report_setting) {
+      get_selected_report_setting_id = function get_selected_report_setting_id() {
+        return $('.table-report-settings').find('input:radio[name="sales_reports_mail_id"]:checked').val();
+      };
+      new_report_setting = function new_report_setting(event_id, performance_id) {
+        var url = '${request.route_path('report_settings.new', _query=dict(event_id="{event_id}", performance_id="{performance_id}"))}';
+        load_modal_form(
+          modal_report_setting,
+          url.replace(encodeURIComponent('{event_id}'), event_id).replace(encodeURIComponent('{performance_id}'), performance_id),
+          null,
+          function () {
+            modal_report_setting.find('select[name="frequency"]').change(function(){
+              if ($(this).val() == ${ReportFrequencyEnum.Weekly.v[0]}) {
+                modal_report_setting.find('.frequency-weekly').css('display', 'block');
+              } else {
+                modal_report_setting.find('.frequency-weekly').css('display', 'none');
+              }
+            }).change();
+          }
+        );
+      };
+      edit_report_setting = function edit_report_setting(id) {
+        if (!id) return false;
+        var url = '${request.route_path('report_settings.edit', report_setting_id='{id}')}';
+        load_modal_form(
+          modal_report_setting,
+          url.replace(encodeURIComponent('{id}'), id),
+          null,
+          function () {}
+        );
+      };
+      delete_report_setting = function delete_report_setting(id) {
+        if (!id) return false;
+        var modal = $('#modal-delete');
+        modal.find('#delete').attr('href', '${request.route_path('report_settings.delete', report_setting_id='{id}')}'.replace(encodeURIComponent('{id}'), id));
+        modal.find('#message').text('選択したレポート送信設定を削除します。よろしいですか？');
+        modal.modal('toggle');
+      };
+    })($('#${modal_id}'));
+  });
+</script>
+<div id="${modal_id}" class="modal hide">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h3>レポート送信設定</h3>
+  </div>
+
+  <div class="modal-body"></div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();" class="btn">保存</a>
+  </div>
+</div>

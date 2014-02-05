@@ -53,11 +53,16 @@
                 <input type="hidden" name="order_no" value="${order.order_no}"/>
                 <input type="hidden" name="tel" value="${order.shipping_address.tel_1}"/>
                 <dt><a href="javascript:void(0);" onclick="document.${order.order_no}.submit()">${order.performance.name}</a></dt>
-                <dd>${h.japanese_date(order.performance.start_on)} ${order.performance.venue.name}</dd>
-                <dd>${order.order_no}</dd>
+                <dd>受付番号：${order.order_no}　予約日時：${h.japanese_datetime(order.created_at)}</dd>
+                <dd>${h.japanese_datetime(order.performance.start_on)}開演 ${order.performance.venue.name}</dd>
               </form>
             </dl>
         </div>
     </div>
   % endfor
+  ${render_pager(orders)}
+</%def>
+
+<%def name="render_pager(result)">
+${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示 $link_next $link_last ")}
 </%def>

@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
 def includeme(config):
-    config.add_route('sales_reports.index', '/')
-    config.add_route('sales_reports.index_all', '/all')
-    config.add_route('sales_reports.event','/event/{event_id}')
-    config.add_route('sales_reports.performance', '/performance/{performance_id}')
-    config.add_route('sales_reports.preview','/preview/')
-    config.add_route('sales_reports.mail_body','/mail_body/')
-    config.add_route('sales_reports.send_mail','/send_mail/')
+    from .resources import SalesReportAdminResource
+    config.add_route('sales_reports.index', '/', factory=SalesReportAdminResource)
+    config.add_route('sales_reports.index_all', '/all', factory=SalesReportAdminResource)
+    config.add_route('sales_reports.event','/event/{event_id}', factory=SalesReportAdminResource)
+    config.add_route('sales_reports.performance', '/performance/{performance_id}', factory=SalesReportAdminResource)
+    config.add_route('sales_reports.preview','/preview/', factory=SalesReportAdminResource)
+    config.add_route('sales_reports.mail_body','/mail_body/', factory=SalesReportAdminResource)
+    config.add_route('sales_reports.send_mail','/send_mail/', factory=SalesReportAdminResource)
 
-    config.add_route('sales_reports.mail.new', '/mail/new/')
-    config.add_route('sales_reports.mail.delete', '/mail/delete/{report_setting_id}')
+    from .resources import ReportSettingAdminResource
+    config.add_route('report_settings.new', '/report_settings/new/', factory=ReportSettingAdminResource)
+    config.add_route('report_settings.edit', '/report_settings/edit/{report_setting_id}', factory=ReportSettingAdminResource)
+    config.add_route('report_settings.delete', '/report_settings/delete/{report_setting_id}', factory=ReportSettingAdminResource)
