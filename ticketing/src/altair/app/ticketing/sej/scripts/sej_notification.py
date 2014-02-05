@@ -23,7 +23,8 @@ def main(argv=sys.argv):
 
     import transaction
     trans = transaction.begin()
-    from ..notification import SejNotificationProcessor, SejNotificationProcessorError, fetch_notifications
+    from ..notification.api import fetch_notifications
+    from ..notification.processor import SejNotificationProcessor, SejNotificationProcessorError
     now = datetime.now()
     processor = SejNotificationProcessor(request, now)
     for sej_order, order, notification in fetch_notifications():

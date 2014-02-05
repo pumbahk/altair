@@ -48,7 +48,6 @@ def create_payment_notification_from_order(shop_id, sej_order):
         processed_at=datetime.now()
         )
 
-
 class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
     def setUp(self):
         self.session = _setup_db([
@@ -283,7 +282,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         assert not any(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
         assert not any(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
 
-    def test_cancel(self):
+    def test_cancel_basic(self):
         from ..models import SejOrder, SejPaymentType
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
@@ -320,6 +319,69 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         assert notification.reflected_at == now
         assert order.canceled_at == notification.processed_at
         assert sej_order.cancel_at == notification.processed_at
+
+    def test_cancel_branches(self):
+        from ..models import SejOrder, SejPaymentType
+        from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
+        from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
+        order = self._create_order(
+            [(product, 1) for product in self.products],
+            sales_segment=None,
+            pdmp=PaymentDeliveryMethodPair(
+                system_fee=0.,
+                transaction_fee=0.,
+                delivery_fee=0.,
+                discount=0.,
+                discount_unit=0,
+                special_fee=0.,
+                public=True,
+                payment_method=self.payment_methods[SEJ_PAYMENT_PLUGIN_ID],
+                delivery_method=self.delivery_methods[SEJ_DELIVERY_PLUGIN_ID]
+                )
+            )
+        self.session.add(order)
+        self.session.flush()
+        order.order_no = '012301230123'
+        sej_orders = [
+            SejOrder(
+                order_no=order.order_no,
+                exchange_number='000000000000',
+                billing_number='000000000000',
+                payment_type=SejPaymentType.CashOnDelivery.v,
+                branch_no=1
+                ),
+            SejOrder(
+                order_no=order.order_no,
+                exchange_number='000000000001',
+                billing_number='000000000001',
+                payment_type=SejPaymentType.CashOnDelivery.v,
+                branch_no=2
+                )
+            ]
+        for sej_order in sej_orders:
+            self.session.add(sej_order)
+
+        notification1 = create_expire_notification_from_order('000000', sej_orders[0])
+
+        now = datetime(2013, 1, 1, 1, 23, 45)
+        processor = self._makeOne(testing.DummyRequest(), now)
+        processor(sej_orders[0], order, notification1)
+
+        assert notification1.reflected_at == now
+        assert order.canceled_at is None
+        assert sej_orders[0].cancel_at == notification1.processed_at
+        assert sej_orders[1].cancel_at is None
+
+        notification2 = create_expire_notification_from_order('000000', sej_orders[1])
+
+        now = datetime(2013, 1, 1, 1, 23, 48)
+        processor = self._makeOne(testing.DummyRequest(), now)
+        processor(sej_orders[1], order, notification2)
+
+        assert notification2.reflected_at == now
+        assert order.canceled_at == notification2.processed_at
+        assert sej_orders[0].cancel_at == notification1.processed_at
+        assert sej_orders[1].cancel_at == notification2.processed_at
 
     def test_expire_notification_paid_order(self):
         from ..models import SejOrder, SejPaymentType

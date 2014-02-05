@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 from sqlalchemy import update
 from sqlalchemy import and_
-from sqlalchemy.sql.expression import desc
+from sqlalchemy.sql.expression import asc, desc
 from sqlalchemy.orm.exc import NoResultFound
 
 import sqlahelper
@@ -167,3 +167,12 @@ def get_sej_order(order_no, session=None):
         .filter_by(order_no=order_no) \
         .order_by(desc(SejOrder.branch_no)) \
         .first()
+
+def get_sej_orders(order_no, fetch_canceled=False, session=None):
+    if session is None:
+        session = DBSession
+    q = session.query(SejOrder)
+    q = q.filter_by(order_no=order_no)
+    if not fetch_canceled:
+        q = q.filter_by(cancel_at=None)
+    return q.all()

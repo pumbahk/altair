@@ -6,6 +6,7 @@ from zope.interface import implementer
 
 from altair.app.ticketing.orders.events import notify_order_canceled
 
+from ..api import get_sej_orders
 from .models import SejNotification, SejNotificationType
 
 from .interfaces import ISejNotificationProcessor
@@ -77,27 +78,20 @@ class SejNotificationProcessor(object):
 
     @__order_required
     def reflect_cancel_from_svc(self, sej_order, order, notification):
-        order.release()
-        order.mark_canceled(notification.processed_at)
-        order.updated_at = self.now
         sej_order.mark_canceled(notification.processed_at)
         sej_order.processed_at = notification.processed_at
         notification.reflected_at = self.now
-        notify_order_canceled(self.request, order)
+        self.cancel_order_if_necessary(order, notification.processed_at)
 
     def reflect_expire(self, sej_order, order, notification):
         from ..models import SejPaymentType
         if order is not None:
             # 対応するOrderがない場合はスキップする (see #5610)
             # 代済発券はキャンセルしない
-            payment_type = int(notification.payment_type)
-            if payment_type != SejPaymentType.Paid.v:
-                order.release()
-                order.mark_canceled(notification.processed_at)
-                order.updated_at = self.now
+            if int(notification.payment_type) != int(SejPaymentType.Paid):
                 sej_order.canceled_at = notification.processed_at
                 sej_order.mark_canceled(notification.processed_at)
-                notify_order_canceled(self.request, order)
+                self.cancel_order_if_necessary(order, notification.processed_at)
             sej_order.processed_at = notification.processed_at
         else:
             logger.warning("Order Not found: order_no=%s, exchange_number=%s, billing_number=%s" % (
@@ -129,6 +123,15 @@ class SejNotificationProcessor(object):
         SejNotificationType.ReGrant.v          : reflect_re_grant,
         SejNotificationType.TicketingExpire.v  : reflect_expire
         }
+
+    def cancel_order_if_necessary(self, order, processed_at):
+        sej_orders = get_sej_orders(order.order_no, fetch_canceled=False, session=self.session)
+        # もしすべての枝番がキャンセルされているようであれば、本注文をキャンセルする refs #6525
+        if len(sej_orders) == 0:
+            order.release()
+            order.mark_canceled(processed_at)
+            order.updated_at = self.now
+            notify_order_canceled(self.request, order)
 
     def __init__(self, request, now, session=None):
         from altair.app.ticketing.models import DBSession
