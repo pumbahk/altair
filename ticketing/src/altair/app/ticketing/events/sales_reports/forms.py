@@ -1,18 +1,23 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
 from wtforms import Form, TextField, SelectField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, Email
 from wtforms.compat import iteritems
 
-from altair.formhelpers import DateTimeField, Translations, Required, after1900, OurBooleanField
+from altair.formhelpers import (
+    OurDateTimeField, Translations, Required, RequiredOnUpdate,
+    OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField,
+    OurTimeField, zero_as_none, after1900)
 from altair.app.ticketing.core.models import Operator, ReportSetting
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 
 
-class SalesReportForm(Form):
+class SalesReportForm(OurForm):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        super(type(self), self).__init__(formdata, obj, prefix, **kwargs)
         for name, field in iteritems(self._fields):
             if name in kwargs:
                 field.data = kwargs[name]
@@ -34,42 +39,42 @@ class SalesReportForm(Form):
         label=u'イベント名',
         validators=[Optional()],
     )
-    event_from = DateTimeField(
+    event_from = OurDateTimeField(
         label=u'公演期間',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
-    event_to = DateTimeField(
+    event_to = OurDateTimeField(
         label=u'公演期間',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
-    event_start_from = DateTimeField(
+    event_start_from = OurDateTimeField(
         label=u'公演開始日',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
-    event_start_to = DateTimeField(
+    event_start_to = OurDateTimeField(
         label=u'公演開始日',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
-    event_end_from = DateTimeField(
+    event_end_from = OurDateTimeField(
         label=u'公演終了日',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
-    event_end_to = DateTimeField(
+    event_end_to = OurDateTimeField(
         label=u'公演終了日',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
-    limited_from = DateTimeField(
+    limited_from = OurDateTimeField(
         label=u'絞り込み期間',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
-    limited_to = DateTimeField(
+    limited_to = OurDateTimeField(
         label=u'絞り込み期間',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
@@ -92,13 +97,16 @@ class SalesReportForm(Form):
     )
 
 
-class SalesReportMailForm(Form):
+class ReportSettingForm(OurForm):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        super(type(self), self).__init__(formdata, obj, prefix, **kwargs)
 
-        if 'organization_id' in kwargs:
-            operators = Operator.query.filter_by(organization_id=kwargs['organization_id']).all()
+        context = kwargs.pop('context', None)
+        self.context = context
+
+        if context.user.organization_id:
+            operators = Operator.query.filter_by(organization_id=context.user.organization_id).all()
             self.operator_id.choices = [('', '')] + [(o.id, o.name) for o in operators]
 
     def _get_translations(self):
@@ -160,12 +168,12 @@ class SalesReportMailForm(Form):
         choices=[(h, u'%d時' % h) for h in range(0, 24)],
         coerce=lambda v: None if not v else int(v)
     )
-    start_on = DateTimeField(
+    start_on = OurDateTimeField(
         label=u'開始日時',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
-    end_on = DateTimeField(
+    end_on = OurDateTimeField(
         label=u'終了日時',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
@@ -184,6 +192,8 @@ class SalesReportMailForm(Form):
                 ReportSetting.time==form.time.data,
                 ReportSetting.operator_id==field.data
             )
+            if form.id.data:
+                query = query.filter(ReportSetting.id!=form.id.data)
             if form.event_id.data:
                 query = query.filter(ReportSetting.event_id==form.event_id.data)
             if form.performance_id.data:
@@ -200,6 +210,8 @@ class SalesReportMailForm(Form):
                 ReportSetting.time==form.time.data,
                 ReportSetting.email==form.email.data
             )
+            if form.id.data:
+                query = query.filter(ReportSetting.id!=form.id.data)
             if form.event_id.data:
                 query = query.filter(ReportSetting.event_id==form.event_id.data)
             if form.performance_id.data:

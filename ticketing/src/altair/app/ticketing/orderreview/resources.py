@@ -10,6 +10,7 @@ from altair.app.ticketing.core.models import DBSession, Order, ShippingAddress
 from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.sej.api import get_sej_order
+import webhelpers.paginate as paginate
 import altair.app.ticketing.core.api as core_api
 from altair.app.ticketing.payments.plugins import (
     SEJ_PAYMENT_PLUGIN_ID, 
@@ -80,14 +81,16 @@ class OrderReviewResource(object):
         ).first()
         return shipping_address
 
-    def get_orders(self, user):
+    def get_orders(self, user, page, per):
         orders = Order.query.filter(
             Order.user_id==user.id
-        ).all()
+        ).order_by(Order.updated_at.desc())
+        orders = paginate.Page(orders.all(), page, per, url=paginate.PageURL_WebOb(self.request))
         return orders
 
-    def get_lots_entries(self, user):
+    def get_lots_entries(self, user, page, per):
         entries = LotEntry.query.filter(
             LotEntry.user_id==user.id
-        ).all()
+        ).order_by(LotEntry.updated_at.desc())
+        entries = paginate.Page(entries.all(), page, per, url=paginate.PageURL_WebOb(self.request))
         return entries

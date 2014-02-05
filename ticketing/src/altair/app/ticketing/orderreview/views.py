@@ -37,19 +37,23 @@ class MypageView(object):
         self.request = request
         self.context = request.context
 
+    @mobile_view_config(route_name='mypage.show', request_method="GET", custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/show_mobile.html"))
     @view_config(route_name='mypage.show', request_method="GET", custom_predicates=(is_mypage_organization, ),
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/show.html"))
     def show(self):
 
         authenticated_user = self.context.authenticated_user()
         user = get_user(authenticated_user)
+        per = 10
 
         if not user:
             raise HTTPNotFound()
 
         shipping_address = self.context.get_shipping_address(user)
-        orders = self.context.get_orders(user)
-        entries = self.context.get_lots_entries(user)
+        page=self.request.params.get("page", 1)
+        orders = self.context.get_orders(user, page, per)
+        entries = self.context.get_lots_entries(user, page, per)
 
         return dict(
             shipping_address=shipping_address,
@@ -123,7 +127,9 @@ class OrderReviewView(object):
 
     @mobile_view_config(route_name='order_review.form',
                         request_method="GET", renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile/form.html"))
-    @view_config(route_name='order_review.form', request_method="GET", 
+    @mobile_view_config(route_name='guest.order_review.form',
+                        request_method="GET", renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile_guest/form.html"))
+    @view_config(route_name='order_review.form', request_method="GET",
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/form.html"))
     @view_config(route_name='guest.order_review.form', request_method="GET",
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/form.html"))
@@ -145,6 +151,8 @@ class OrderReviewView(object):
             raise InvalidForm(form)
         return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
 
+    @mobile_view_config(route_name='guest.order_review.show', request_method="POST",
+                        renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile_guest/show.html"))
     @view_config(route_name='guest.order_review.show',
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/show.html"))
     def guest_post(self):
@@ -167,6 +175,8 @@ def order_review_form_view(context, request):
 
 @view_config(context=InvalidGuestForm,
              renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/form.html"))
+@mobile_view_config(context=InvalidGuestForm,
+                    renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile_guest/form.html"))
 def guest_order_review_form_view(context, request):
     request.errors = context.form.errors
     return dict(form=context.form)
@@ -352,7 +362,13 @@ def order_review_send_to_orion(context, request):
         # そのまま出すのも微妙だがコード化されてないからしょうがない
         message = response.message
 
+    if response != None and response['result'] == u"OK":
+        return dict(mail=mail,
+                    message = u"電子チケットについてのメールを%s宛に送信しました!!" % mail)
+    
+    # エラーメッセージ
     return dict(
         mail = mail,
-        message = message
+        # そのまま出すのも微妙だがコード化されてないからしょうがない
+        message = response['message']
         )

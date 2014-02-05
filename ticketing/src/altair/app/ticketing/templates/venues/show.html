@@ -34,7 +34,7 @@
 	% if drawing.drawing_url is not None:
 		<a href="${drawing.direct_drawing_url}" target="_blank">${drawing.drawing_url}</a>
 		<a href="${request.route_path('venues.checker', venue_id=venue.id)}" target="_blank">[checker]</a>
- else:
+	% else:
 		None
 	% endif
 </td></tr>

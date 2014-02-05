@@ -1,4 +1,4 @@
-<%page args="form, form_report_mail=None, event=None, performance=None, report_settings=None" />
+<%page args="form, form_report_setting=None, event=None, performance=None, report_settings=None" />
 <%namespace file="/common/helpers.html" name="ch" />
 
 <script type="text/javascript">
@@ -32,18 +32,15 @@
   </div>
 </form>
 
-% if form_report_mail:
+% if form_report_setting:
 <h4>レポート送信設定</h4>
-
 <%include file="/sales_reports/_action_button.html" args="event=event, performance=performance" />
+<%include file="/sales_reports/_modal.html" args="modal_id='modal-report_setting'" />
 <a href="javascript:preview();" class="btn">全送信先に送信 プレビュー</a>
-<div id="sales_reports_mail-form" style="margin-bottom:10px;">
-  <%include file="/sales_reports/_form.html" args="form=form_report_mail" />
-</div>
 % endif
 
-% if report_settings and form_report_mail:
-<table class="table table-striped table-bordered table-condensed" style="margin-bottom: 0px;">
+% if report_settings and form_report_setting:
+<table class="table table-striped table-bordered table-condensed table-report-settings" style="margin-bottom: 0px;">
   <tr>
     <th></th>
     <th>名前</th>
@@ -67,7 +64,7 @@
     <td>${name or ''}</td>
     <td>${email}</td>
     <td>${''.join([enum.v[1] for enum in ReportFrequencyEnum if enum.v[0] == rs.frequency])}</td>
-    <td>${''.join([dow[1] for dow in form_report_mail.day_of_week.choices if rs.day_of_week == dow[0]])}</td>
+    <td>${''.join([dow[1] for dow in form_report_setting.day_of_week.choices if rs.day_of_week == dow[0]])}</td>
     <td>${u'%s時' % rs.time if rs.time else ''}</td>
     <td>
       ${vh.term(rs.start_on, rs.end_on, without_minute=True)}

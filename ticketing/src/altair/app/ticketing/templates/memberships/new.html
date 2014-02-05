@@ -3,15 +3,14 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'トップ', u'membership'],
+      names=[u'トップ', u'会員種別'],
       urls=[request.route_path('index'), request.route_path('memberships',action="index",membership_id="*")]
   )}
 </%block>
 
 <div class="page-header">
-  <h3>membership作成</h3>
+  <h3>会員種別作成</h3>
 </div>
-<a href="${request.route_path("organizations.index")}">新規取引先マスタ登録</a>
 <%
 route_name=u'登録'
 route_path=request.route_path('memberships',action='new', membership_id='*')
