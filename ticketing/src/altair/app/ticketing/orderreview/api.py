@@ -63,10 +63,6 @@ def send_to_orion(request, context, recipient):
     if api_url is None:
         raise Exception("orion.api_uri is None")
     
-<<<<<<< HEAD
-    # request.params['order_no']
-=======
->>>>>>> develop
     data = OrderedProductItemToken.filter_by(id = request.params['token']).one()
     
     order = data.item.ordered_product.order
