@@ -35,7 +35,7 @@
             <control:InspectCase Grid.Row="0"/>
             <c:KeyPad Grid.Row="1" Grid.RowSpan="5" KeyPadFinish="KeyPad_KeyPadFinish" Style="{StaticResource UserKeyPad}">
                 <c:KeyPad.DataContext>
-                    <c:KeyPadPopupContext/>
+                    <c:KeyPadPopupContext PreviewType="password"/>
                 </c:KeyPad.DataContext>
                 <WpfKb:OnScreenKeyboard/>
             </c:KeyPad>

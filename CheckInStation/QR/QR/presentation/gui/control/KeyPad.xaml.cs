@@ -26,12 +26,41 @@ namespace QR.presentation.gui.control
 
     public class KeyPadPopupContext : INotifyPropertyChanged
     {
+
+        public KeyPadPopupContext()
+        {
+            this.PropertyChanged += SyncPreview;
+        }
+
+        void SyncPreview(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "InputString")
+            {
+                this.PreviewString = this.InputString;
+            }
+        }
+
         private string _InputString;
 
         public string InputString
         {
             get { return this._InputString; }
             set { this._InputString = value; this.OnPropertyChanged("InputString"); }
+        }
+
+        private string _PreviewString;
+
+        public string PreviewString
+        {
+            get { return this._PreviewString; }
+            set { 
+                if(this.PreviewType == KeyPadPreviewType.password){
+                    this._PreviewString = StringToStarConverter.ToStar(value);
+                }else {
+                    this._PreviewString = value;
+                }
+                this.OnPropertyChanged("PreviewString");
+            }
         }
 
         private KeyPadPreviewType _previewType;
@@ -62,13 +91,18 @@ namespace QR.presentation.gui.control
     //[ValueConversion(typeof(string),typeof(string))]
     public class StringToStarConverter : IValueConverter
     {
+
+        public static string ToStar(string s)
+        {
+            return new String(s.Select(c => '*').ToArray<char>());
+        }
+       
         public object Convert(object value, Type targetType, object paramater, CultureInfo cu)
         {
             if (value == null)
                 return "";
-            return new String((value as string).Select(c => '*').ToArray<char>());
-        }
-
+            return StringToStarConverter.ToStar(value as string);
+        }   
         public object ConvertBack(object value, Type targetType, object paramater, CultureInfo cu)
         {
             if (value == null)

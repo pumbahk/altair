@@ -29,24 +29,7 @@
                              ></TextBox>
                     <TextBlock>入力された文字列</TextBlock>
                     <!-- logic? -->
-                    <TextBlock Text="{}">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-<!--                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding PreviewType}" Value="{x:Static c:KeyPadPreviewType.password}">
-                                        <Setter Property="Text">
-                                            <Setter.Value>{Binding InputString, Mode=OneWay, Converter={StaticResource ToStarConverter}</Setter.Value>
-                                        </Setter>
-                                    </DataTrigger>
-                                </Style.Triggers>
--->                                
-                                <Setter Property="Text">
-                                    <Setter.Value>{Binding InputString, Mode=OneWay}</Setter.Value>
-                                </Setter>
-                                <Setter Property="Foreground" Value="Green"/>
-                            </Style>                           
-                        </TextBlock.Style>
-                    </TextBlock>
+                    <TextBlock Text="{Binding PreviewString,Mode=OneWay}"/>
                 </WrapPanel>
                 <Border
             Grid.Row="1"
