@@ -5,7 +5,12 @@
         "id": "1",
         "name": "mock-user"
     },
+    "identity": {
+        "id": "1",
+        "device_id": "192.168.56.102"
+    },
     "organization": {
         "id": "10"
+        "code": "RE"
     }
 }

@@ -36,13 +36,19 @@ class LoginInfoView(BaseView):
     def for_login_user_view(self):
         access_log("*login status start", self.context.identity)
         operator = self.context.operator
+        identity = self.context.identity
+
         if not operator:
             return {"login": False}
         return {"login": True,
                 "loginuser": {"type": u"login",
                               "id": unicode(operator.id),
                               "name": operator.name},
-                "organization": {"id": unicode(operator.organization_id)}}
+                "identity": {"id": identity.id, "device_id": identity.device_id}, 
+                "organization": {
+                    "id": unicode(operator.organization_id), 
+                    "code": operator.organization.code
+                }}
 
 
 
