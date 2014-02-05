@@ -7,8 +7,12 @@
        x:Name="KeyPadControl"    
        mc:Ignorable="d" 
        d:DesignHeight="300" d:DesignWidth="300">
-    <UserControl.ContentTemplate>
+
+    <UserControl.ContentTemplate>        
         <DataTemplate>
+            <DataTemplate.Resources>
+                <c:StringToStarConverter x:Key="ToStarConverter"/>
+            </DataTemplate.Resources>
             <Grid x:Name="baseContainer">
                 <Grid.DataContext>
                     <c:KeyPadPopupContext/>
@@ -24,7 +28,25 @@
                      FocusManager.FocusedElement="{Binding ElementName=KeyPad_InputString}"
                              ></TextBox>
                     <TextBlock>入力された文字列</TextBlock>
-                    <TextBlock Text="{Binding InputString, Mode=OneWay}"></TextBlock>
+                    <!-- logic? -->
+                    <TextBlock Text="{}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+<!--                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding PreviewType}" Value="{x:Static c:KeyPadPreviewType.password}">
+                                        <Setter Property="Text">
+                                            <Setter.Value>{Binding InputString, Mode=OneWay, Converter={StaticResource ToStarConverter}</Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+-->                                
+                                <Setter Property="Text">
+                                    <Setter.Value>{Binding InputString, Mode=OneWay}</Setter.Value>
+                                </Setter>
+                                <Setter Property="Foreground" Value="Green"/>
+                            </Style>                           
+                        </TextBlock.Style>
+                    </TextBlock>
                 </WrapPanel>
                 <Border
             Grid.Row="1"
