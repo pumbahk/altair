@@ -42,28 +42,27 @@ namespace QR
 			}
 		}
 
-        public async Task PrepareAsync(IInternalEvent ev)
+        public Task PrepareAsync(IInternalEvent ev)
         {
             this.Event = ev;//xxx:
-            await this.FlowManager.PrepareAsync().ConfigureAwait(false);
+            return this.FlowManager.PrepareAsync();
         }
 
-        public async Task<bool> VerifyAsync(IInternalEvent ev)
+        public Task<bool> VerifyAsync(IInternalEvent ev)
         {
             this.Event = ev;//xxx:
-            return await this.FlowManager.VerifyAsync().ConfigureAwait(false);
+            return this.FlowManager.VerifyAsync();
         }
 
-		public async Task<ICase> SubmitAsync (IInternalEvent ev)
+		public Task<ICase> SubmitAsync (IInternalEvent ev)
 		{
             this.Event = ev;//xxx:
-			var result = await this.FlowManager.Forward().ConfigureAwait(false);
-            return result;
+            return this.FlowManager.Forward();
 		}
 
-        public async Task<ICase> BackwardAsync()
+        public Task<ICase> BackwardAsync()
         {
-            return await this.FlowManager.Backward().ConfigureAwait(false);
+            return this.FlowManager.Backward();
         }
 
 		public void SetStartCase (ICase case_)

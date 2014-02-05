@@ -53,14 +53,14 @@ namespace QR
 			this.undoStack.Push (flow);
 		}
 
-        public async Task PrepareAsync()
+        public Task PrepareAsync()
         {
-            await this.Peek().PrepareAsync().ConfigureAwait(false);
+            return this.Peek().PrepareAsync();
         }
 
-        public async Task<bool> VerifyAsync()
+        public Task<bool> VerifyAsync()
         {
-            return await this.Peek().VerifyAsync().ConfigureAwait(false);
+            return this.Peek().VerifyAsync();
         }
 
 		public async Task<ICase> Forward ()

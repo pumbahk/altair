@@ -53,11 +53,12 @@ namespace QR
 			return PrepareAsync (new EmptyEvent ());
 		}
 
-		public virtual async Task<bool> VerifyAsync ()
+		public virtual Task<bool> VerifyAsync ()
 		{
-			return await Task.Run (() => {
-				return true;
-			}).ConfigureAwait (false);
+            return Task.Run(() =>
+            {
+                return true;
+            });
 		}
 
 		public virtual ICase OnFailure (IFlow flow)
