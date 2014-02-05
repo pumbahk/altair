@@ -15,16 +15,20 @@
                     <RowDefinition Height="1*"></RowDefinition>
                     <RowDefinition Height="5*"></RowDefinition>
                 </Grid.RowDefinitions>
-                <WrapPanel Grid.Row="0" Style="{StaticResource KeyPadDebugPanel}">
+                <Border Grid.Row="0" Style="{StaticResource KeyPadDebugPanel}">
+                    <StackPanel>
+                        <WrapPanel>
+                            <TextBlock Text="{Binding DataContext.Description, Mode=OneTime}">
+                    </TextBlock>
                     <TextBox x:Name="KeyPad_InputString" Width="0" Height="0"
                      Text="{Binding DataContext.InputString, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"                     
                      KeyDown="OnKeyDownHandler"
                      FocusManager.FocusedElement="{Binding ElementName=KeyPad_InputString}"
                              ></TextBox>
-                    <TextBlock>入力された文字列</TextBlock>
-                    <!-- logic? -->
-                    <TextBlock Text="{Binding DataContext.PreviewString,Mode=OneWay}"/>
-                </WrapPanel>
+                    </WrapPanel>
+                    <TextBlock Text="{Binding DataContext.PreviewString, Mode=OneWay}"/>
+                    </StackPanel>
+                </Border>
                 <Border
             Grid.Row="1"
             Grid.ColumnSpan="2"

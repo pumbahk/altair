@@ -13,23 +13,40 @@
     Loaded="OnLoaded"
     >    
     <Grid Style="{StaticResource ToplevelGrid}">
-        <Grid Style="{StaticResource CenterContentGrid}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="1*"></RowDefinition>
-                <RowDefinition Height="1*"></RowDefinition>
-                <RowDefinition Height="3*"></RowDefinition>
-            </Grid.RowDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
 
-            <control:InspectCase Grid.Row="0"/>
-            <c:KeyPad Grid.Row="1" Grid.RowSpan="5"
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <control:InspectCase Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="7"/>
+            <c:KeyPad Grid.Row="1" Grid.Column="1" Grid.RowSpan="7" Grid.ColumnSpan="7"
                       Style="{StaticResource UserKeyPad}"
-                      DataContext="{StaticResource KeyPadContextRaw}"
-                      Content="{StaticResource VirtualInputKeyboardRaw}"
-                      KeyPadFinish="KeyPad_KeyPadFinish" />            
+                      Content="{StaticResource VirtualInputKeyboard}"
+                      KeyPadFinish="KeyPad_KeyPadFinish">
+                <c:KeyPad.DataContext>
+                    <c:KeyPadPopupContext PreviewType="raw" Description="ログインユーザー名"/>
+                </c:KeyPad.DataContext>
+            </c:KeyPad>
         </Grid>
-    </Grid>
-
 </Page>

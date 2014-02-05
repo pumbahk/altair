@@ -26,6 +26,8 @@ namespace QR.presentation.gui.control
 
     public class KeyPadPopupContext : DependencyObject
     {
+        public string Description { get; set; } 
+
         public static readonly DependencyProperty PreviewTypeProperty = DependencyProperty.Register(
             "KeyPadPreviewType", typeof(KeyPadPreviewType), typeof(KeyPadPopupContext), new PropertyMetadata(KeyPadPreviewType.raw));
 
@@ -76,7 +78,8 @@ namespace QR.presentation.gui.control
     /// KeyPad.xaml の相互作用ロジック
     /// </summary>
     public partial class KeyPad : UserControl
-    {            
+    {
+
         public KeyPad()
         {
             InitializeComponent();

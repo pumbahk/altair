@@ -21,8 +21,7 @@
             <c:KeyPadPopupContext x:Key="KeyPadContextPassword" PreviewType="password"/>
             <c:KeyPadPopupContext x:Key="KeyPadContextRaw" PreviewType="raw"/>
             
-            <WpfKb:OnScreenKeyboard x:Key="VirtualInputKeyboardRaw" DataContext="{StaticResource KeyPadContextRaw}"/>
-            <WpfKb:OnScreenKeyboard x:Key="VirtualInputKeyboardPassword" DataContext="{StaticResource KeyPadContextPassword}"/>
+            <WpfKb:OnScreenKeyboard x:Key="VirtualInputKeyboard"/>
 
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resource/Base.xaml"/>
