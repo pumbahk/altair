@@ -40,22 +40,13 @@ namespace QR
             return this.RetryAsyncCall(thunk, uri, HttpWrapper.RetryMaxCount);
         }
 
-		public Task<string> ReadAsStringAsync (HttpContent content)
-		{
-            string uri;
-            if(content.Headers.ContentLocation != null)
-                uri = content.Headers.ContentLocation.AbsoluteUri.ToString();
-            else
-                uri ="<null>";
-            
-            return this.RetryAsyncCall<string>(async () =>
-            {
-                //todo. remove await;
-                var result = await content.ReadAsStringAsync().ConfigureAwait(false);
-                logger.Trace("* API Output:{0}", result);
-                return result;
-            }, uri);
-		}
+        public async Task<string> ReadAsStringAsync(HttpContent content)
+        {
+            //todo. remove await;
+            var result = await content.ReadAsStringAsync().ConfigureAwait(false);
+            logger.Trace("* API Output:{0}", result);
+            return result;
+        }
 
 		protected HttpClient client;
 
