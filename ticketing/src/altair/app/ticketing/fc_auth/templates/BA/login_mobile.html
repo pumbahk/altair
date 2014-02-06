@@ -1,10 +1,10 @@
 <html lang="ja">
 <head>
-  <title>V・ファーレンチケット</title>
+  <title>ブラウブリッツチケット</title>
 </head>
 <body style="background-color:#B5DBF7" bgcolor="#B5DBF7">
 <div align="center">
-  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/VV/images/logo_mobile.gif')}" width="240" height="96" alt="V・ファーレンチケット" />
+  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/BA/images/logo_mobile.gif')}" width="240" height="96" alt="ブラウブリッツチケット" />
 </div>
 <div>
 <div style="background-color:#09355F" bgcolor="#09355F"><font color="white">チケット購入</font></div>
@@ -16,7 +16,7 @@
 
 </div>
 <form action="${request.path}" method="post">
-<input type="hidden" name="membership" value="VV" />
+<input type="hidden" name="membership" value="BA" />
 <div>
   会員ID<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
@@ -24,7 +24,7 @@
   <br/><span style="color: red">IDまたはパスワードが一致しません</span>
   %endif
 
-  <input type="hidden" name="password" value="vvaren">
+  <input type="hidden" name="password" value="blaublitz">
 </div>
 <input type="submit" value="ログイン" />
 </form>

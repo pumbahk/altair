@@ -1,5 +1,5 @@
 body {
-  background: #004378;
+  background: #2B6A99;
   font-size:12px;
   height:100%;
   font-family:"Helvetica Neue",Helvetica,Meiryo,"メイリオ",HiraKakuPro-W3,"ヒラギノ角ゴ Pro W3",Arial,"ＭＳ Ｐゴシック",sans-serif;
@@ -141,8 +141,8 @@ font-weight:700;
 font-size:15px;
 color:#000;
 line-height:1;  
-border-left:5px solid #09355F;
-border-bottom:1px dotted #09355F;
+border-left:5px solid #005bac;
+border-bottom:1px dotted #005bac;
 background:#FFF;
 padding:4px 0 4px 10px;
 }
@@ -215,7 +215,7 @@ width:100%;
 position:relative;
 margin:0;
 padding:10px 0 0 0;
-background: #EA9F27;
+background: #0b3458;
 }
 
 .header .header-inner {
@@ -700,7 +700,8 @@ padding-top:15px;
 font-size:85%;
 float:right;
 margin:10px auto;
-}
+color: #FFF;
+} 
 
 .footer .footernav ul {
 font-size:75%;
@@ -709,12 +710,18 @@ padding:0;
 }
 
 .footer .footernav ul li {
-border-left:1px solid #09355F;
-display:inline;
-padding:0 6px;
+	border-left:1px solid #FFF;
+	display:inline;
+	padding:0 6px;
 }
 
 .footer .footernav ul li a{
+	color: #FFF;
+	text-decoration: none;
+}
+.footer .footernav ul li a:hover{
+	color: #D8D398;
+	text-decoration:underline;
 }
 
 /* 最初の要素だけボーダーなし */
@@ -759,35 +766,28 @@ width: 420px;
 height: 240px;
 }
 .loginbox thead th{
-background: #09355F;
+background: #005bac;
 font-size: 20px;
 height: 30px;
 }
 
-.loginbox td{
-background: #FFFCE1;
-}
+.loginbox td{ background: #FFFCE1; }
 
-.loginbox th{
-background: #205A86;
-}
+.loginbox th{ background: #005bac; }
 
 table.member{
 border-collapse: collapse;
-border-top: 1px solid #09355F !important;
-border-left: 1px solid #09355F !important;
+border-top: 1px solid #0b3458 !important;
+border-left: 1px solid #00b3458 !important;
 }
-table.member th{
-color: #FFF;
-text-align: right;
-border-bottom: 1px solid #09355F !important;
-border-right: 1px solid #09355F !important;
+table.member th,
+table.member td {
+border-bottom: 1px solid #0b3458 !important;
+border-right: 1px solid #0b3458 !important;
 }
-table.member td{
-background: #FFF;
-border-bottom: 1px solid #09355F !important;
-border-right: 1px solid #09355F !important;
-}
+table.member th{ color: #FFF; text-align: right; }
+table.member td{ background: #FFF; }
+
 table.member td input{
 border: 1px solid #000;
 height: 20px;
@@ -901,26 +901,26 @@ table.form input.submit,
 text-align: center;
 color: #fff;
 padding: 5px;
-border:1px solid #eeb44f;
+border:1px solid #979346;
 margin: 10px auto;
 font-size: 20px;
 font-weight: bold;
 display: inline-block;
--moz-box-shadow:inset 0px 1px 0px 0px #fce2c1;
--webkit-box-shadow:inset 0px 1px 0px 0px #fce2c1;
-box-shadow:inset 0px 1px 0px 0px #fce2c1;
-background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ffcc00), color-stop(1, #fb9e25) );
-background:-moz-linear-gradient( center top, #ffcc00 5%, #fb9e25 100% );
-filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffcc00', endColorstr='#fb9e25');
-background-color:#ffcc00;
+-moz-box-shadow:inset 0px 1px 0px 0px #BFB87B;
+-webkit-box-shadow:inset 0px 1px 0px 0px #BFB87B;
+box-shadow:inset 0px 1px 0px 0px #BFB87B;
+background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #AAA54E), color-stop(1, #979346) );
+background:-moz-linear-gradient( center top, #AAA54E 5%, #979346 100% );
+filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#AAA54E', endColorstr='#979346');
+background-color:#AAA54E;
 }
 
 table.form input.submit:hover,
 .btnLogin:hover {
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #fb9e25), color-stop(1, #ffcc00) );
-	background:-moz-linear-gradient( center top, #fb9e25 5%, #ffcc00 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fb9e25', endColorstr='#ffcc00');
-	background-color:#fb9e25;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #979346), color-stop(1, #AAA54E) );
+	background:-moz-linear-gradient( center top, #979346 5%, #AAA54E 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#979346', endColorstr='#AAA54E');
+	background-color:#979346;
 }
 
 
