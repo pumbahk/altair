@@ -19,12 +19,14 @@
     <td>${stats.get('created_at')}</td>
   </tr>
   % endif
-  <!--
   <tr>
     <th class="span2">インポート方法</th>
-    <td class="span6">${stats.get('import_type')[1]}</td>
+    <td class="span6">${stats.get('import_type')}</td>
   </tr>
-  -->
+  <tr>
+    <th class="span2">配席モード</th>
+    <td class="span6">${stats.get('allocation_mode')}</td>
+  </tr>
   <tr>
     <th>インポート対象の予約数</th>
     <td>${stats.get('order_count')}</td>
