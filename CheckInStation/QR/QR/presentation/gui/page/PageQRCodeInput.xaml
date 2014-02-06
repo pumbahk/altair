@@ -50,8 +50,8 @@
                  Grid.ColumnSpan="5"
                  HorizontalAlignment="Stretch"
                  VerticalAlignment="Center"
-                 KeyDown="OnKeyDownHandler"
-                 Text="{Binding Mode=OneWayToSource, Path=QRCode}" x:Name="QRCodeInput"></TextBox>
+                 KeyDown="OnKeyDownHandler"                 
+                 Text="{Binding Mode=OneWayToSource, Path=QRCode,UpdateSourceTrigger=PropertyChanged}" x:Name="QRCodeInput"></TextBox>
                 
 
             <Button Grid.Row="7" Grid.Column="1"

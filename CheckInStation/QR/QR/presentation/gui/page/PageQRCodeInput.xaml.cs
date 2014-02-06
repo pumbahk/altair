@@ -21,7 +21,13 @@ namespace QR.presentation.gui.page
 
     class PageQRCodeInputDataContext : InputDataContext
     {
-        public string QRCode { get; set; }
+        private string _QRCode;
+        public string QRCode
+        {
+            get { return this._QRCode; }
+            set { this._QRCode = value; this.OnPropertyChanged("QRCode"); }
+        }
+
         public override void OnSubmit()
         {
             var ev = this.Event as QRInputEvent;
@@ -87,7 +93,9 @@ namespace QR.presentation.gui.page
         {
             if (e.Key == Key.Return)
             {
-                this.OnSubmitWithBoundContext(this, new RoutedEventArgs());
+                this.Dispatcher.InvokeAsync(() => {
+                    this.OnSubmitWithBoundContext(this, new RoutedEventArgs());
+                });
             }
         }
     }
