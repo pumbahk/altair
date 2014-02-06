@@ -23,17 +23,34 @@ namespace QR.presentation.gui.page{
 
     class HomeMenuDataContext : ViewModel
     {
+
+        // TODO:  viewmodel作成 Printer設定のpopup. 
         public ObservableCollection<PrintQueue> AvailablePrinters { get; set; }        
         private string _selectedPrinterName;
         public string SelectedPrinterName {
             get { return this._selectedPrinterName; }
             set { this._selectedPrinterName = value; this.OnPropertyChanged("SelectedPrinterName"); }
         }
-        private bool _isPopupOpen;
-        public bool IsPopupOpen
+        private bool _isPrinterPopupOpen;
+        public bool IsPrinterPopupOpen
         {
-            get { return this._isPopupOpen; }
-            set { this._isPopupOpen = value; this.OnPropertyChanged("IsPopupOpen");}
+            get { return this._isPrinterPopupOpen; }
+            set { this._isPrinterPopupOpen = value; this.OnPropertyChanged("IsPrinterPopupOpen");}
+        }
+
+        public ObservableCollection<UnitPair<Style>> AvailableWindowStyles { get; set; }
+        private UnitPair<Style> _selectedWindowStyle;
+        public UnitPair<Style> SelectedWindowStyle
+        {
+            get { return this._selectedWindowStyle; }
+            set { this._selectedWindowStyle = value; this.OnPropertyChanged("SelectedWindowStyle");}
+        }
+
+        private bool _isWindowPopupOpen;
+        public bool IsWindowPopupOpen
+        {
+            get { return this._isWindowPopupOpen; }
+            set { this._isWindowPopupOpen = value; this.OnPropertyChanged("IsWindowPopupOpen"); }
         }
     }
 
@@ -55,33 +72,24 @@ namespace QR.presentation.gui.page{
         {
             //別windowで起動
             e.Handled = true;
-            Style style;
-            //TODO:メニューで選択
-            if(false)
-                style = this.FindResource("MainWindowSmall") as Style;
-            else
-                style = this.FindResource("MainWindow") as Style;
-            var win = new MainWindow() { Style = style };
+            var stylePair = (this.DataContext as HomeMenuDataContext).SelectedWindowStyle;
+            var win = new MainWindow() { Style = stylePair.Value };
             win.Show();
             //this.NavigationService.Navigate(new PageAuthInput());
         }
 
         private object CreateDataContext()
         {
-            var printers = new ObservableCollection<PrintQueue>();
             var printing = AppUtil.GetCurrentResource().TicketImagePrinting;
-            printers.Add(printing.DefaultPrinter);
-            foreach (var q in printing.AvailablePrinters())
-            {
-                if (printing.DefaultPrinter.FullName != q.FullName)
-                {
-                    printers.Add(q);
-                }
-            }
+            ObservableCollection<PrintQueue> printers = CandidateCreator.AvailablePrinterCandidates(printing);
+            ObservableCollection<UnitPair<Style>> windowStyles = CandidateCreator.WindowStyleCandidates(this);
+
             return new HomeMenuDataContext()
             {
                 AvailablePrinters = printers,
-                SelectedPrinterName = printing.DefaultPrinter.FullName
+                SelectedPrinterName = printing.DefaultPrinter.FullName,
+                AvailableWindowStyles = windowStyles,
+                SelectedWindowStyle = windowStyles[0]
             };
         }
 
@@ -91,7 +99,15 @@ namespace QR.presentation.gui.page{
             AppUtil.GetCurrentResource().TicketImagePrinting.DefaultPrinter = selected;
             var ctx = (this.DataContext as HomeMenuDataContext);
             ctx.SelectedPrinterName = selected.FullName;
-            ctx.IsPopupOpen = false;
+            ctx.IsPrinterPopupOpen = false;
+        }
+
+        private void OnWindowStyleSelected(object sender, SelectionChangedEventArgs e)
+        {
+            var selected = (sender as ListBox).SelectedItem as UnitPair<Style>;
+            var ctx = (this.DataContext as HomeMenuDataContext);
+            ctx.SelectedWindowStyle = selected;
+            ctx.IsWindowPopupOpen = false;
         }
     }
 }

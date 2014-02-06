@@ -23,7 +23,7 @@ namespace QR.presentation.gui.page
     class PageConfirmOneDataContext : InputDataContext, INotifyPropertyChanged, IConfirmOneStatusInfo
     {
         public string InputString { get; set;}
-        public ObservableCollection<UnitPair> Candidates {get;set;}
+        public ObservableCollection<UnitStringPair> Candidates {get;set;}
         public override void OnSubmit()
         {
             var ev = this.Event as ConfirmOneEvent;
@@ -116,7 +116,7 @@ namespace QR.presentation.gui.page
             var box = sender as ListBox;
             if (box.SelectedItem != null)
             {
-                var pair = box.SelectedItem as UnitPair;
+                var pair = box.SelectedItem as UnitStringPair;
                 var ctx = this.DataContext as PageConfirmOneDataContext;
                 await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
                 {

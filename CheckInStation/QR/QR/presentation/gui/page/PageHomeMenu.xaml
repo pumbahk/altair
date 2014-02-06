@@ -7,6 +7,8 @@
       d:DesignHeight="300" d:DesignWidth="300"
 	Title="PageHomeMenu">
     <Page.Resources>
+        
+        <!-- もうちょっときれいにまとめる方法ありそうな気がする.. -->
         <Style TargetType="Button"  x:Key="MenuSelectButton">
             <Setter Property="Margin" Value="0,10,0,10"/>
         </Style>
@@ -25,13 +27,15 @@
         <Style TargetType="ToggleButton" x:Key="MenuSelectToggleButtonLast" BasedOn="{StaticResource MenuSelectToggleButton}">
             <Setter Property="Margin" Value="0,10,0,0"/>
         </Style>
+        
     </Page.Resources>
     
-    <Grid Style="{StaticResource ToplevelGrid}">        
-        <StackPanel Name="Menulist" Style="{StaticResource CenterContentStackPanel}" VerticalAlignment="Center">
-            <Popup IsOpen="{Binding IsPopupOpen, Mode=TwoWay}"
+    <Grid Style="{StaticResource ToplevelGrid}">
+
+        <StackPanel Name="MenulistPanel" Style="{StaticResource CenterContentStackPanel}" VerticalAlignment="Center">
+            <Popup IsOpen="{Binding IsPrinterPopupOpen, Mode=TwoWay}"
                    Placement="Center"
-                   PlacementTarget="{Binding ElementName=Menulist}">
+                   PlacementTarget="{Binding ElementName=MenulistPanel}">
                 <Border Style="{StaticResource PopupDialogStyle}">
                     <StackPanel>
                         <TextBlock>プリンター設定</TextBlock>
@@ -49,13 +53,48 @@
                     </StackPanel>
                 </Border>
             </Popup>
+
+
+            <Popup IsOpen="{Binding IsWindowPopupOpen, Mode=TwoWay}"
+                   Placement="Center"
+                   PlacementTarget="{Binding ElementName=MenulistPanel}">
+                <Border Style="{StaticResource PopupDialogStyle}">
+                    <StackPanel>
+                        <TextBlock>ウインドウの表示の設定</TextBlock>
+                        <Border Padding="20" Background="LightGray">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource MainText}">現在のウインドウの表示</TextBlock>
+                                <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedWindowName.Key, Mode=OneWay}"></TextBlock>
+                            </StackPanel>
+                        </Border>
+                        <ListBox 
+                 ItemsSource="{Binding AvailableWindowStyles}"
+                 ItemTemplate="{StaticResource AvailableWIndowStyleListBoxData}"
+                 SelectionChanged="OnWindowStyleSelected">
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+            </Popup>
+
+            <!-- main menu -->
             <WrapPanel>
                 <TextBlock Style="{StaticResource SubText}">現在のプリンター:</TextBlock>
                 <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedPrinterName, Mode=OneWay}"></TextBlock>
             </WrapPanel>
             <ToggleButton Name="PrinterSelectButton" 
-                IsChecked="{Binding IsPopupOpen}"
-                Style="{StaticResource MenuSelectToggleButtonFirst}">プリンター設定</ToggleButton>
+                          IsChecked="{Binding IsPrinterPopupOpen}"
+                          Style="{StaticResource MenuSelectToggleButtonFirst}">プリンター設定
+            </ToggleButton>
+
+            <WrapPanel>
+                <TextBlock Style="{StaticResource SubText}">現在のウィンドウの表示:</TextBlock>
+                <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedWindowStyle.Key, Mode=OneWay}"/>
+            </WrapPanel>
+            <ToggleButton Name="WindowStyleSelectButton"
+                          IsChecked="{Binding IsWindowPopupOpen}"
+                          Style="{StaticResource MenuSelectToggleButtonFirst}">ウィンドウの表示の設定
+            </ToggleButton>
+
             <Button Style="{StaticResource MenuSelectButtonLast}"
                     Click="Button_Click">受付開始</Button>
         </StackPanel>

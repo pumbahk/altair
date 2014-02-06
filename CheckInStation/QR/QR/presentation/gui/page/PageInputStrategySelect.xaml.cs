@@ -20,7 +20,7 @@ namespace QR.presentation.gui.page
     class InputStrategyDataContext : InputDataContext
     {
         public string InputString { get; set;}
-        public ObservableCollection<UnitPair> Candidates {get;set;}
+        public ObservableCollection<UnitStringPair> Candidates {get;set;}
 
         public override void OnSubmit()
         {
@@ -63,7 +63,7 @@ namespace QR.presentation.gui.page
                 var ctx = this.DataContext as InputStrategyDataContext;
                 await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
                 {
-                    var pair = box.SelectedItem as UnitPair;
+                    var pair = box.SelectedItem as UnitStringPair;
                     (this.DataContext as InputStrategyDataContext).InputString = pair.Value;
 
                     //submit

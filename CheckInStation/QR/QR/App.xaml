@@ -13,9 +13,18 @@
     <Application.Resources>
         <ResourceDictionary>
             <!-- data template-->
+            
+            <!-- プリンターの設定-->
             <DataTemplate x:Key="InstalledPrinterListBoxData">
                 <WrapPanel>
-                    <TextBlock Style="{Binding Subtext}" Text="{Binding FullName, Mode=OneTIme}"></TextBlock>
+                    <TextBlock Style="{StaticResource SubText}" Text="{Binding FullName, Mode=OneTime}"/>
+                </WrapPanel>
+            </DataTemplate>
+            
+            <!-- ウインドウの表示方法の設定-->
+            <DataTemplate x:Key="AvailableWIndowStyleListBoxData">
+                <WrapPanel>
+                    <TextBlock Style="{StaticResource SubText}" Text="{Binding Key, Mode=OneTime}"/>
                 </WrapPanel>
             </DataTemplate>
 
