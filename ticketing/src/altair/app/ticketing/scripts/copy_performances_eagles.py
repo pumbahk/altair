@@ -21,6 +21,8 @@ from sqlalchemy.orm.exc import NoResultFound
 
 import sqlahelper
 
+from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
+
 logger = logging.getLogger(__name__)
 
 formats = {
@@ -166,6 +168,9 @@ def do_performance_copy(request, session, file_, encoding, format, dry_run=False
                 order_limit=new_performance_max_orders,
                 max_quantity_per_user=new_performance_max_quantity_per_user
                 )
+            accessor = SalesSegmentAccessor()
+            for sales_segment in new_performance.sales_segments:
+                accessor.update_sales_segment(sales_segment)
             new_performance.save()
             session.flush()
             message('new performance: Performance(id=%d, title=%s, code=%s)' % (new_performance.id, new_performance.name, new_performance.code))
