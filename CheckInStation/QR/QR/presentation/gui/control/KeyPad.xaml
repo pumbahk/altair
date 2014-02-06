@@ -13,20 +13,23 @@
             <Grid x:Name="baseContainer">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*"></RowDefinition>
-                    <RowDefinition Height="5*"></RowDefinition>
+                    <RowDefinition Height="4*"></RowDefinition>
                 </Grid.RowDefinitions>
                 <Border Grid.Row="0" Style="{StaticResource KeyPadDebugPanel}">
                     <StackPanel>
                         <WrapPanel>
                             <TextBlock Text="{Binding DataContext.Description, Mode=OneTime}">
-                    </TextBlock>
-                    <TextBox x:Name="KeyPad_InputString" Width="0" Height="0"
+                            </TextBlock>
+                            <TextBox x:Name="KeyPad_InputString" Width="0" Height="0"
                      Text="{Binding DataContext.InputString, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"                     
                      KeyDown="OnKeyDownHandler"
                      FocusManager.FocusedElement="{Binding ElementName=KeyPad_InputString}"
                              ></TextBox>
-                    </WrapPanel>
-                    <TextBlock Text="{Binding DataContext.PreviewString, Mode=OneWay}"/>
+                        </WrapPanel>
+                        <WrapPanel>
+                            <TextBlock Text="{Binding DataContext.PreviewString, Mode=OneWay}"/>
+                            <Border HorizontalAlignment="Left" VerticalAlignment="Stretch" Padding="5,5,5,5" Background="Wheat"></Border>
+                        </WrapPanel>
                     </StackPanel>
                 </Border>
                 <Border

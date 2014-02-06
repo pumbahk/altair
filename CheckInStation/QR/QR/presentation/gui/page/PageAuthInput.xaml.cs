@@ -79,8 +79,14 @@ namespace QR.presentation.gui.page
             // virtualkeyboardからの出力がAuthInputDataContext.LoginNameに渡され。
             // AuthInputDataContext.LoginNameがAuthInputEvent.LoginNameに渡され。
             // モデル側の処理はAuthInputEvent.LoginNameを見る。
+            e.Handled = true;
             (this.DataContext as AuthInputDataContext).LoginName = (sender as KeyPad).InputString;
             this.OnSubmitWithBoundContext(sender, e);
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            this.KeyPad_KeyPadFinish(this.KeyPad, e); //!!!まったく別の経路からRoutedEventが発生しているので良くない。
         }
     }
 }

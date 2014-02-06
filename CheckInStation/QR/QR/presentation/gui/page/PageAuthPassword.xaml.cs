@@ -102,5 +102,10 @@ namespace QR.presentation.gui.page
             });
         }
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            this.KeyPad_KeyPadFinish(this.KeyPad, e);
+        }
+
     }
 }
