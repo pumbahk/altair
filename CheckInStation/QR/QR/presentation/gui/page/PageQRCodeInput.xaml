@@ -7,25 +7,58 @@
       mc:Ignorable="d" 
       d:DesignHeight="50" d:DesignWidth="640"
     ShowsNavigationUI="False"
+    FocusManager.FocusedElement="{Binding ElementName=QRCodeInput}"
 	Title="PageQRCodeInput"
     Loaded="OnLoaded">
     <Grid Style="{StaticResource ToplevelGrid}">
-        <Grid Style="{StaticResource CenterContentGrid}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="2*"></RowDefinition>
-                <RowDefinition Height="1*"></RowDefinition>
-                <RowDefinition Height="1*"></RowDefinition>
-                <RowDefinition Height="2*"></RowDefinition>
-                <RowDefinition Height="2*"></RowDefinition>
-            </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0">
-                <control:InspectCase></control:InspectCase>
-            </StackPanel>
-            <TextBlock Grid.Row="1">QRCode</TextBlock>
-            <TextBox Grid.Row="2" Text="{Binding Mode=OneWayToSource, Path=QRCode}"></TextBox>
-            <Button Grid.Row="3" Click="OnSubmitWithBoundContext">QRCode読み込み</Button>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
 
-            <Button Grid.Row="4" Click="OnBackwardWithBoundContext">戻る</Button>
-        </Grid>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <control:InspectCase Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="7" Grid.RowSpan="2"/>
+        
+        <Image Grid.Row="2" Grid.Column="2" Grid.RowSpan="5" Grid.ColumnSpan="4"
+               VerticalAlignment="Center"
+               HorizontalAlignment="Center"
+               Stretch="UniformToFill"
+               Source="/Resource/qrload.png"/>
+        
+        <TextBox Grid.Row="6" Grid.Column="2" 
+                 Grid.ColumnSpan="5"
+                 HorizontalAlignment="Stretch"
+                 VerticalAlignment="Center"
+                 KeyDown="OnKeyDownHandler"
+                 Text="{Binding Mode=OneWayToSource, Path=QRCode}" x:Name="QRCodeInput"></TextBox>
+                
+
+            <Button Grid.Row="7" Grid.Column="1"
+                    Click="OnBackwardWithBoundContext">戻る</Button>
+            <!--
+            <Button Grid.Row="7" Grid.Column="7"   
+                    Click="OnSubmitWithBoundContext">QRCode読み込み</Button>
+             --> 
     </Grid>
 </Page>

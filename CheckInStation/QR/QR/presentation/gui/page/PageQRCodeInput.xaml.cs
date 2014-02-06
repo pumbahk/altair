@@ -82,5 +82,13 @@ namespace QR.presentation.gui.page
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }
+
+        private void OnKeyDownHandler(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Return)
+            {
+                this.OnSubmitWithBoundContext(this, new RoutedEventArgs());
+            }
+        }
     }
 }

@@ -70,12 +70,13 @@ namespace QR.presentation.gui.page{
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            //別windowで起動
+            //別windowで起動(ここで最初に表示するページを指定している)
             e.Handled = true;
             var stylePair = (this.DataContext as HomeMenuDataContext).SelectedWindowStyle;
-            var win = new MainWindow() { Style = stylePair.Value };
+            var win = new MainWindow() {
+                Style = stylePair.Value,
+            };
             win.Show();
-            //this.NavigationService.Navigate(new PageAuthInput());
         }
 
         private object CreateDataContext()
