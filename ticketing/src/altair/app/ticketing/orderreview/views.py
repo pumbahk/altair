@@ -351,6 +351,7 @@ def order_review_send_to_orion(context, request):
     response = None
     try:
         response = json.loads(res_text)
+        # TODO: 返り値を検証する
     except Exception, e:
         logger.error(e.message + " (res_text: %s)" % res_text, exc_info=1)
         raise HTTPNotFound()
