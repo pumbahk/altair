@@ -16,18 +16,10 @@
                 <RowDefinition Height="1*"></RowDefinition>
             </Grid.RowDefinitions>
             <control:InspectCase Grid.Row="0"></control:InspectCase>
-            <ListBox Grid.Row="1" ItemsSource="{Binding Candidates}" SelectionChanged="OnSubmitWithBoundContext">
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"></StackPanel>
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Key}" Width="150" TextWrapping="Wrap"></TextBlock>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <ListBox Grid.Row="1"
+                     ItemsSource="{Binding Candidates}" 
+                     Style="{StaticResource ChoiceHorizontalPair}"
+                     SelectionChanged="OnSubmitWithBoundContext"/>
         </Grid>
     </Grid>
 </Page>

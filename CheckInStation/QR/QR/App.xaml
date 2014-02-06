@@ -8,8 +8,8 @@
              Startup="App_Startup"
              DispatcherUnhandledException="App_DispatcherUnhandledException"
              StartupUri="presentation/gui/HomeWIndow.xaml">
-             <!-- StartupUri="presentation/gui/MainWindow.xaml"> -->
-    
+
+
     <Application.Resources>
         <ResourceDictionary>
             <!-- data template-->
@@ -28,12 +28,11 @@
                 </WrapPanel>
             </DataTemplate>
 
+            <!-- virtual keyboard-->
             <c:KeyPadPopupContext x:Key="KeyPadContextPassword" PreviewType="password"/>
             <c:KeyPadPopupContext x:Key="KeyPadContextRaw" PreviewType="raw"/>
             
-            <c:AlnumPad x:Key="VirtualInputKeyboard"/>
-            <!-- <c:AlnumPad x:Key="VirtualInputKeyboard"/> -->
-            <!-- <WpfKb:AlnumPad x:Key="VirtualInputKeyboard"/> -->
+            <c:AlnumPad x:Key="VirtualInputKeyboard"/>           
 
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resource/Base.xaml"/>

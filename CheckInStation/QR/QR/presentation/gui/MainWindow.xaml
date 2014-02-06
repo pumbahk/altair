@@ -3,9 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              WindowStartupLocation="CenterScreen" 
              Title="CheckinStation"
-                  Source="page/PageAuthInput.xaml">
-    <!--              Source="PageOrdernoOrdernoInput.xaml"> -->
-    <!--              Source="PageHomeMenu.xaml"> -->
-    <!--         Source="PageAuthInput.xaml"> -->
-    <!--     Source="PageDummy.xaml"> -->
+             Source="page/PageAuthInput.xaml">
+
 </NavigationWindow>
