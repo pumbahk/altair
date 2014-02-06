@@ -1,0 +1,9 @@
+﻿<Window x:Class="QR.presentation.gui.page.HomeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:page="clr-namespace:QR.presentation.gui.page"
+        Title="HomeWindow" Height="500" Width="500"
+        WindowStartupLocation="CenterScreen"
+    >
+    <page:PageHomeMenu/>
+</Window>

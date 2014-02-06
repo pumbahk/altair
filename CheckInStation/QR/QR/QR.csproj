@@ -133,6 +133,9 @@
     </Compile>
     <Compile Include="presentation\gui\control\AlnumPad.cs" />
     <Compile Include="presentation\gui\control\TelPad.cs" />
+    <Compile Include="presentation\gui\HomeWindow.xaml.cs">
+      <DependentUpon>HomeWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="presentation\gui\page\PageAuthPassword.xaml.cs">
       <DependentUpon>PageAuthPassword.xaml</DependentUpon>
     </Compile>
@@ -145,7 +148,7 @@
     <Compile Include="presentation\gui\ProgressSingletonAction.cs" />
     <Compile Include="presentation\gui\PageNavigator.cs" />
     <Compile Include="presentation\gui\page\IDataContextHasCase.cs" />
-    <Compile Include="presentation\gui\page\MainWindow.xaml.cs">
+    <Compile Include="presentation\gui\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="presentation\gui\page\PageAuthInput.xaml.cs">
@@ -319,7 +322,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="presentation\gui\page\MainWindow.xaml">
+    <Page Include="presentation\gui\HomeWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

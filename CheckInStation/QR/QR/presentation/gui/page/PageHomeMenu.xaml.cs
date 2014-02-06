@@ -53,8 +53,17 @@ namespace QR.presentation.gui.page{
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            //別windowで起動
             e.Handled = true;
-            this.NavigationService.Navigate(new PageAuthInput());
+            Style style;
+            //TODO:メニューで選択
+            if(false)
+                style = this.FindResource("MainWindowSmall") as Style;
+            else
+                style = this.FindResource("MainWindow") as Style;
+            var win = new MainWindow() { Style = style };
+            win.Show();
+            //this.NavigationService.Navigate(new PageAuthInput());
         }
 
         private object CreateDataContext()
