@@ -173,30 +173,29 @@ namespace QR
                 svgFileLike.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
                 {
                     FileName = "svg.svg",
-                    Name="svgfile"
+                    Name = "svgfile"
                 };
                 data.Add(svgFileLike);
 
                 IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
-                using (var wrapper = factory.Create(GetImageFromSvgURL()))
+                var wrapper = factory.Create(GetImageFromSvgURL());
+                //todo:é∏îsÇµÇΩÇ∆Ç´ÇÃèàóù(status!=200)
+                HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode(); //throw exception?
+
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    //todo:é∏îsÇµÇΩÇ∆Ç´ÇÃèàóù(status!=200)
-                    using (HttpResponseMessage response = await wrapper.PostAsync(data).ConfigureAwait(false))
-                    {
-                        if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                        {
-                            return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            logger.Info("image fetching status code: {0}", response.StatusCode);
-                            return null; //Too-bad!!
-                        }
-                    }
+                    return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    logger.Info("image fetching status code: {0}", response.StatusCode);
+                    return null; //Too-bad!!
                 }
             }
         }
     }
+
 
 	public class SVGImageFetcher
 	{
