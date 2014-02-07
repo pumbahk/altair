@@ -31,8 +31,27 @@
     </Page.Resources>
     
     <Grid Style="{StaticResource ToplevelGrid}">
-
         <StackPanel Name="MenulistPanel" Style="{StaticResource CenterContentStackPanel}" VerticalAlignment="Center">
+            <Popup IsOpen="{Binding IsServerUrlPopupOpen, Mode=TwoWay}"
+                   Placement="Center"
+                   PlacementTarget="{Binding ElementName=MenulistPanel}">
+                <Border Style="{StaticResource PopupDialogStyle}">
+                    <StackPanel>
+                        <TextBlock>通信先サーバー設定</TextBlock>
+                        <Border Padding="20" Background="LightGray">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource MainText}">現在の通信先サーバー</TextBlock>
+                                <TextBox Text="{Binding SelectedServerUrl,Mode=TwoWay}"/>
+                            </StackPanel>
+                        </Border>
+                        <ToggleButton Name="ServerUrlSelectButton_Popup" 
+                          IsChecked="{Binding IsServerUrlPopupOpen}"
+                        >閉じる
+                        </ToggleButton>
+                    </StackPanel>
+                </Border>
+            </Popup>
+        
             <Popup IsOpen="{Binding IsPrinterPopupOpen, Mode=TwoWay}"
                    Placement="Center"
                    PlacementTarget="{Binding ElementName=MenulistPanel}">
@@ -78,6 +97,16 @@
 
             <!-- main menu -->
             <WrapPanel>
+                <TextBlock Style="{StaticResource SubText}">現在の通信先サーバー:</TextBlock>
+                <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedServerUrl, Mode=OneWay}"></TextBlock>
+            </WrapPanel>
+            <ToggleButton Name="ServerUrlSelectButton" 
+                          IsChecked="{Binding IsServerUrlPopupOpen}"
+                          Focusable="True"
+                          Style="{StaticResource MenuSelectToggleButtonFirst}">通信先サーバー設定
+            </ToggleButton>
+
+            <WrapPanel>
                 <TextBlock Style="{StaticResource SubText}">現在のプリンター:</TextBlock>
                 <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedPrinterName, Mode=OneWay}"></TextBlock>
             </WrapPanel>
@@ -97,6 +126,7 @@
                           Style="{StaticResource MenuSelectToggleButtonFirst}">ウィンドウの表示の設定
             </ToggleButton>
 
+            
             <Button Style="{StaticResource MenuSelectButtonLast}"
                     Focusable="True"
                     Click="Button_Click">受付開始</Button>

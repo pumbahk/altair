@@ -166,33 +166,33 @@ namespace QR
         public async Task<byte[]> GetImageFromSvg(string svg)
         {
 
-            using (var data = new MultipartFormDataContent())
+            var data = new MultipartFormDataContent();
+
+            data.Add(new StringContent("raw"), "true");
+            var svgFileLike = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(svg)));
+            svgFileLike.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
             {
-                data.Add(new StringContent("raw"), "true");
-                var svgFileLike = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(svg)));
-                svgFileLike.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
-                {
-                    FileName = "svg.svg",
-                    Name = "svgfile"
-                };
-                data.Add(svgFileLike);
+                FileName = "svg.svg",
+                Name = "svgfile"
+            };
+            data.Add(svgFileLike);
 
-                IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
-                var wrapper = factory.Create(GetImageFromSvgURL());
-                //todo:é∏îsÇµÇΩÇ∆Ç´ÇÃèàóù(status!=200)
-                HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false);
-                response.EnsureSuccessStatusCode(); //throw exception?
+            IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
+            var wrapper = factory.Create(GetImageFromSvgURL());
+            //todo:é∏îsÇµÇΩÇ∆Ç´ÇÃèàóù(status!=200)
+            HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode(); //throw exception?
 
-                if (response.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
-                }
-                else
-                {
-                    logger.Info("image fetching status code: {0}", response.StatusCode);
-                    return null; //Too-bad!!
-                }
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
             }
+            else
+            {
+                logger.Info("image fetching status code: {0}", response.StatusCode);
+                return null; //Too-bad!!
+            }
+
         }
     }
 

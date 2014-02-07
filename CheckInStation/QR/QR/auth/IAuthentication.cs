@@ -10,6 +10,7 @@ namespace QR
 
 		Task<ResultTuple<string, AuthInfo>> AuthAsync (string name, string password);
 
+        string LoginURL { get; set; }
         
 	}
 }

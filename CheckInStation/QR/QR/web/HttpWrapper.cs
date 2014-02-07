@@ -120,23 +120,13 @@ namespace QR
 			return this.RetryAsyncCall<Stream>(() => client.GetStreamAsync (url), url);
 		}
 
-		public Task<String> GetStringAsync ()
+		public async Task<String> GetStringAsync ()
 		{
 			var client = this.GetClient ();
 			var url = this.UrlBuilder.Build ();
-            return this.RetryAsyncCall<String>(() =>
-            {
-                return client.GetStringAsync(url).ContinueWith<Task<string>>((Task<string> t) =>
-                    {
-                        logger.Trace("* API Output:{0}", t.Result);
-                        return t;
-                    }).Unwrap();
-            }, url);
-            /*
 			var result = await client.GetStringAsync (url);
 			logger.Trace("* API Output:{0}", result);
 			return result;
-             */
 		}
 
 		public Task<HttpResponseMessage> DeleteAsync ()

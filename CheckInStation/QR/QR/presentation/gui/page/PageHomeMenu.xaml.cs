@@ -38,6 +38,19 @@ namespace QR.presentation.gui.page{
             set { this._isPrinterPopupOpen = value; this.OnPropertyChanged("IsPrinterPopupOpen");}
         }
 
+        private string _selectedServerUrl;
+        public string SelectedServerUrl
+        {
+            get { return this._selectedServerUrl; }
+            set { this._selectedServerUrl = value; this.OnPropertyChanged("SelectedServerUrl"); }
+        }
+        private bool _isServerUrlPopupOpen;
+        public bool IsServerUrlPopupOpen
+        {
+            get { return this._isServerUrlPopupOpen; }
+            set { this._isServerUrlPopupOpen = value; this.OnPropertyChanged("IsServerUrlPopupOpen"); }
+        }
+
         public ObservableCollection<UnitPair<Style>> AvailableWindowStyles { get; set; }
         private UnitPair<Style> _selectedWindowStyle;
         public UnitPair<Style> SelectedWindowStyle
@@ -72,7 +85,11 @@ namespace QR.presentation.gui.page{
         {
             //別windowで起動(ここで最初に表示するページを指定している)
             e.Handled = true;
-            var stylePair = (this.DataContext as HomeMenuDataContext).SelectedWindowStyle;
+            var ctx = this.DataContext as HomeMenuDataContext;
+            var stylePair = ctx.SelectedWindowStyle;
+
+            //todo:validation
+            AppUtil.GetCurrentResource().Authentication.LoginURL = ctx.SelectedServerUrl;
             var win = new MainWindow() {
                 Style = stylePair.Value,
             };
@@ -81,19 +98,22 @@ namespace QR.presentation.gui.page{
 
         private object CreateDataContext()
         {
-            var printing = AppUtil.GetCurrentResource().TicketImagePrinting;
+            var resource = AppUtil.GetCurrentResource();
+            var printing = resource.TicketImagePrinting;
             ObservableCollection<PrintQueue> printers = CandidateCreator.AvailablePrinterCandidates(printing);
             ObservableCollection<UnitPair<Style>> windowStyles = CandidateCreator.WindowStyleCandidates(this);
 
-            return new HomeMenuDataContext()
+            var ctx = new HomeMenuDataContext()
             {
                 AvailablePrinters = printers,
                 SelectedPrinterName = printing.DefaultPrinter.FullName,
                 AvailableWindowStyles = windowStyles,
-                SelectedWindowStyle = windowStyles[0]
+                SelectedWindowStyle = windowStyles[0],
+                SelectedServerUrl = resource.Authentication.LoginURL
             };
+           
+            return ctx;
         }
-
         private void OnPrinterSelected(object sender, SelectionChangedEventArgs e)
         {
             var selected = (sender as ListBox).SelectedItem as PrintQueue;

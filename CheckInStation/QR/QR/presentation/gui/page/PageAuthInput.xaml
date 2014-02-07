@@ -38,7 +38,7 @@
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
-        <control:InspectCase Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="7" Grid.RowSpan="2"/>
+        <c:InspectCase Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="7" Grid.RowSpan="2"/>
         
         <c:KeyPad Grid.Row="2" Grid.Column="1" Grid.RowSpan="6" Grid.ColumnSpan="7"
                       Style="{StaticResource UserKeyPad}"

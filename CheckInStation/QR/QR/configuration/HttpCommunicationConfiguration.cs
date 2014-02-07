@@ -11,6 +11,7 @@ namespace QR
 			var timeout = TimeSpan.FromSeconds (10);
 			Func<HttpClient,HttpClient> configure = (HttpClient client) => {
 				client.Timeout = timeout;
+                client.DefaultRequestHeaders.ExpectContinue = false;
 				return client;
 			};
 			factory.ClientConfig = configure;
