@@ -7,7 +7,7 @@ namespace QR
     [TestFixture ()]
 	public class FlowAuthTests
 	{
-		[Test, Description ("認証input画面 -ok-> password入力 -ok> auth情報取得 -ok-> 認証方法選択")]
+		[Test, Description ("認証input画面 -ok-> password入力 -ok> auth情報取得 -ok-> <認証後の遷移へ>")]
 			public void TestAuthFlow ()
 		{			
 			var resource = new Resource ();
@@ -95,10 +95,10 @@ namespace QR
 			manager.GetInternalEvent ();
 		}
 
-		[Test, Description ("認証方法選択画面 -qr-> QR読み込み")]
+		[Test, Description ("default: 認証方法選択画面 -qr-> QR読み込み")]
 		public void TestInputSelectRedirectQRCode ()
 		{
-			var manager = new FlowManager ();
+			var manager = new FlowManager (new DefaultFlowDefinition());
 			var startpoint = new CaseInputStrategySelect (new Resource ());
 
 			FakeFlow target = new FakeFlow (manager, startpoint);
@@ -114,10 +114,10 @@ namespace QR
 			t.Wait ();
 		}
 
-		[Test, Description ("認証方法選択画面 -order_no-> 注文番号読み込み")]
+		[Test, Description ("default: 認証方法選択画面 -order_no-> 注文番号読み込み")]
 		public void TestInputSelectRedirectOrderno ()
 		{
-			var manager = new FlowManager ();
+			var manager = new FlowManager (new DefaultFlowDefinition());
 			var startpoint = new CaseInputStrategySelect (new Resource ());
 
 			FakeFlow target = new FakeFlow (manager, startpoint);
@@ -157,10 +157,10 @@ namespace QR
 	[TestFixture ()]
 	public class FlowOrdernoTests
 	{
-		[Test, Description ("注文番号読み込み -ok-> 電話番号読み込み -ok-> 注文番号データのverify -ok-> Orderno表示(all) -ok-> 印刷(all) -ok-> 発券しました -ok-> 注文番号読み込み")]
-		public void TestItForOrderno ()
+		[Test, Description ("default 注文番号読み込み -ok-> 電話番号読み込み -ok-> 注文番号データのverify -ok-> Orderno表示(all) -ok-> 印刷(all) -ok-> 発券しました -ok-> 注文番号読み込み")]
+		public void TestItForOrderno_Default ()
 		{
-			var manager = new FlowManager ();
+			var manager = new FlowManager (new DefaultFlowDefinition());
 			var startpoint = new CaseOrdernoOrdernoInput (new Resource ());
 			FakeFlow target = new FakeFlow (manager, startpoint);
 			// これは遷移時にすでに設定されている
@@ -201,6 +201,7 @@ namespace QR
 			});
 			t.Wait ();
 		}
+	
 
 		[Test, Description ("注文番号読み込み -ng-> 注文番号読み込み ")]
 		public void Test__OrdernoInput__Failure__DisplayError ()
@@ -252,10 +253,10 @@ namespace QR
 	[TestFixture ()]
 	public class FlowQRTests
 	{
-		[Test, Description ("QR読み込み -ok-> QRからデータ取得中 -ok-> QR表示(1枚) -ok-> 印刷(1枚) -ok> 発券しました -ok-> QR読み込み")]
-		public void TestItForOne ()
+		[Test, Description ("default QR読み込み -ok-> QRからデータ取得中 -ok-> QR表示(1枚) -ok-> 印刷(1枚) -ok> 発券しました -ok-> QR読み込み")]
+		public void TestItForOne__Default ()
 		{
-			var manager = new FlowManager ();
+			var manager = new FlowManager(new DefaultFlowDefinition());
 			var startpoint = new CaseQRCodeInput (new Resource ());
 			FakeFlow target = new FakeFlow (manager, startpoint);
 			// これは遷移時にすでに設定されている
@@ -292,7 +293,7 @@ namespace QR
 			});
 			t.Wait ();
 		}
-
+		
 		[Test,Description ("QR読み込み -ng-> QR読み込み")]
 		public void Test__QRInput__Failure__QRInput ()
 		{
@@ -374,10 +375,10 @@ namespace QR
 			t.Wait ();
 		}
 
-		[Test,Description ("QR読み込み -ok-> QRからデータ取得中 -ok-> QR表示(1枚)[すべて印刷選択] -ok-> QR表示(all) -ok-> 印刷(all) -ok> 発券しました -ok-> QR読み込み")]
-		public void TestItForAll ()
+		[Test,Description ("default: QR読み込み -ok-> QRからデータ取得中 -ok-> QR表示(1枚)[すべて印刷選択] -ok-> QR表示(all) -ok-> 印刷(all) -ok> 発券しました -ok-> QR読み込み")]
+		public void TestItForAll__Default ()
 		{
-			var manager = new FlowManager ();
+			var manager = new FlowManager (new DefaultFlowDefinition());
 			var startpoint = new CaseQRCodeInput (new Resource ());
 			FakeFlow target = new FakeFlow (manager, startpoint);
 			// これは遷移時にすでに設定されている
@@ -420,6 +421,7 @@ namespace QR
 			});
 			t.Wait ();
 		}
+
 	}
 }
 

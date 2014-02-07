@@ -3,20 +3,16 @@ using NLog;
 
 namespace QR
 {
-	public class FlowDefinitionDefault : IFlowDefinition
+	public class DefaultFlowDefinition: IFlowDefinition
 	{
 		public InputUnit CurrentInputUnit { get; set; }
 
-		public FlowDefinitionDefault ()
+		public DefaultFlowDefinition()
 		{
 			this.CurrentInputUnit = InputUnit.before_auth;
 		}
 
-		public ICase AfterFailureRedirect (ICase case_)
-		{
-			return AfterFailureRedirect (case_.Resource);
-		}
-
+		
 		public ICase AfterFailureRedirect (IResource resource)
 		{
 			return DispatchICaseUtil.GetInputCaseByInputUnit (resource, this.CurrentInputUnit);
@@ -33,6 +29,10 @@ namespace QR
 			return DispatchICaseUtil.GetInputCaseByInputUnit (resource, this.CurrentInputUnit);
 		}
 
+		public ICase AfterQRDataFetch(IResource resource, TicketData tdata)
+		{
+			return new CaseQRConfirmForOne(resource, tdata);
+		}
 		public ICase AfterPrintFinish (IResource resource)
 		{
 			return DispatchICaseUtil.GetInputCaseByInputUnit (resource, this.CurrentInputUnit);
@@ -41,6 +41,47 @@ namespace QR
 		public ICase PreviousCaseFromRedirected(IResource resource)
 		{
 			return new CaseInputStrategySelect(resource);
+		}
+
+	}
+
+	public class EaglesFlowDefinition : IFlowDefinition
+	{
+		public InputUnit CurrentInputUnit { get; set; }
+
+		public EaglesFlowDefinition ()
+		{
+			this.CurrentInputUnit = InputUnit.before_auth;
+		}
+		
+		public ICase AfterFailureRedirect (IResource resource)
+		{
+			return DispatchICaseUtil.GetInputCaseByInputUnit (resource, this.CurrentInputUnit);
+		}
+		
+		public ICase AfterAuthorization (IResource resource)
+		{
+			return new CaseQRCodeInput(resource);
+		}
+		
+		public ICase AfterSelectInputStrategy (IResource resource, InputUnit Selected)
+		{
+			throw new InvalidOperationException("dont call this");
+		}
+
+		public ICase AfterQRDataFetch(IResource resource, TicketData tdata)
+		{
+			return new CaseQRConfirmForAll(resource, tdata);
+		}
+
+		public ICase AfterPrintFinish (IResource resource)
+		{
+			return this.AfterAuthorization(resource);
+		}
+
+		public ICase PreviousCaseFromRedirected(IResource resource)
+		{
+			return this.AfterAuthorization (resource);
 		}
 	}
 

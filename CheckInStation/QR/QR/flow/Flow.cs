@@ -109,8 +109,12 @@ namespace QR
 			if (!Manager.OnFinish (this)) {
 				throw new Exception ("anything is wrong!");
 			}
+
 			// 印刷終了後に戻った場合には、認証方法選択画面に遷移するように履歴を調整
-			this.Manager.Push (new Flow (this.Manager, this.GetFlowDefinition ().PreviousCaseFromRedirected (this.Case.Resource)));
+			var prev = this.GetFlowDefinition ().PreviousCaseFromRedirected (this.Case.Resource);
+			if(prev != null){
+				this.Manager.Push (new Flow (this.Manager, prev));
+			}
 		}
 	}
 }

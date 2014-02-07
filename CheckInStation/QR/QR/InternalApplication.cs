@@ -24,7 +24,7 @@ namespace QR
 			config.Include (QRConfiguration.IncludeMe);
 			config.Include (HttpCommunicationConfiguration.IncludeMe);
 
-			this.FlowManager = new FlowManager (new FlowDefinitionDefault ());
+			this.FlowManager = new FlowManager (new EaglesFlowDefinition ());
 			this.RequestBroker = new RequestBroker (FlowManager);
 
 			// verify

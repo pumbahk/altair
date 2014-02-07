@@ -22,7 +22,7 @@ namespace QR
 
 		public FlowManager ()
 		{
-			FlowDefinition = new FlowDefinitionDefault ();
+			FlowDefinition = new DefaultFlowDefinition ();
 			undoStack = new Stack<IFlow> ();
 		}
 
@@ -86,7 +86,7 @@ namespace QR
 			var that = this.Peek ();
             if (that.IsAutoForwarding())
             {
-                while (that.IsAutoForwarding())
+				while (that.IsAutoForwarding())
                 {
                     that = this.Pop();
                     await that.Backward();
