@@ -698,11 +698,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         q = build_sales_segment_query(performance_id=self.id, user=user, now=now, type=type)
         return q
 
-    def query_orders_by_user(self, user, filter_canceled=False):
+    def query_orders_by_user(self, user, filter_canceled=False, query=None):
         """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
-        from altair.app.ticketing.cart.models import Cart
-        
-        qs = DBSession.query(Order) \
+        if query is None:
+            query = DBSession.query(Order)
+        qs = query \
             .join(Order.sales_segment) \
             .filter(Order.user_id == user.id) \
             .filter(SalesSegment.performance_id == self.id)
@@ -710,10 +710,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             qs = qs.filter(Order.canceled_at==None)
         return qs
         
-    def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False):
+    def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False, query=None):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
-        from altair.app.ticketing.cart.models import Cart
-        qs = DBSession.query(Order) \
+        if query is None:
+            query = DBSession.query(Order)
+        qs = query \
             .join(Order.shipping_address) \
             .join(Order.sales_segment) \
             .filter(
@@ -1125,11 +1126,11 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         q = build_sales_segment_query(event_id=self.id, user=user, now=now, type=type)
         return q
 
-    def query_orders_by_user(self, user, filter_canceled=False):
+    def query_orders_by_user(self, user, filter_canceled=False, query=None):
         """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
-        from altair.app.ticketing.cart.models import Cart
-        
-        qs = DBSession.query(Order) \
+        if query is None:
+            query = DBSession.query(Order)
+        qs = query \
             .join(Order.sales_segment) \
             .filter(Order.user_id == user.id) \
             .filter(SalesSegment.event_id == self.id)
@@ -1137,10 +1138,11 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             qs = qs.filter(Order.canceled_at==None)
         return qs
         
-    def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False):
+    def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False, query=None):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
-        from altair.app.ticketing.cart.models import Cart
-        qs = DBSession.query(Order) \
+        if query is None:
+            query = DBSession.query(Order)
+        qs = query \
             .join(Order.shipping_address) \
             .join(Order.sales_segment) \
             .filter(
@@ -3748,11 +3750,11 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         return [pdmp for pdmp in self.payment_delivery_method_pairs if pdmp.is_available_for(self, now)]
 
 
-    def query_orders_by_user(self, user, filter_canceled=False):
+    def query_orders_by_user(self, user, filter_canceled=False, query=None):
         """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
-        from altair.app.ticketing.cart.models import Cart
-        
-        qs = DBSession.query(Order).filter(
+        if query is None:
+            query = DBSession.query(Order)
+        qs = query.filter(
             Order.user_id==user.id
         ).filter(
             Order.sales_segment_id==self.id
@@ -3761,10 +3763,11 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             qs = qs.filter(Order.canceled_at==None)
         return qs
         
-    def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False):
+    def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False, query=None):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
-        from altair.app.ticketing.cart.models import Cart
-        qs = DBSession.query(Order).filter(
+        if query is None:
+            query = DBSession.query(Order)
+        qs = query.filter(
             Order.shipping_address_id==ShippingAddress.id
         ).filter(
             or_(ShippingAddress.email_1.in_(mailaddresses),
