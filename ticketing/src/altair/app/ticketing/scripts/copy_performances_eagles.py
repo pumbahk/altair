@@ -121,7 +121,7 @@ def do_performance_copy(request, session, file_, encoding, format, dry_run=False
             retval = session.query(Performance).filter_by(id=performance_id).one()
         except NoResultFound:
             raise new_record_error('no such performance: %d' % performance_id)
-        if title and retval.title != title:
+        if title and retval.name != title:
             raise new_record_error('performance(id=%d).title differs from %s' % (performance_id, title))
         return retval
 
@@ -129,47 +129,52 @@ def do_performance_copy(request, session, file_, encoding, format, dry_run=False
         return '%s%02d%02dZ' % (performance.code[0:7], performance.start_on.month, performance.start_on.day)
 
     for l, row in enumerate(r, 2):
-        cols = dict((headers[i], col.decode(encoding)) for i, col in enumerate(row))
-        src_performance_name = cols[u'コピー元パフォーマンス']
-        src_performance_id = parse_long(cols[u'パフォーマンスID'], 'invalid performance id')
-        new_performance_name = cols[u'公演名']
-        new_performance_date = parse_date(cols[u'試合開催日'], 'invalid performance date', default_year=now.year)
-        new_performance_open_time = parse_time(cols[u'開場時間'], 'invalid open time')
-        new_performance_start_time = parse_time(cols[u'開演時間'], 'invalid start time')
-        new_performance_open_at = combine_date_time(new_performance_date, new_performance_open_time)
-        new_performance_start_at = combine_date_time(new_performance_date, new_performance_start_time)
-        new_performance_abbreviated_title = cols[u'公演名略称']
-        new_performance_subtitle = cols[u'公演名副題']
-        new_performance_display_order = parse_int(cols[u'表示順'], 'invalid display order')
-        new_performance_max_orders = parse_int(cols[u'購入回数制限'], 'invalid max orders')
-        new_performance_max_quantity_per_user = parse_int(cols[u'購入上限枚数 (購入者毎)'], 'invalid max quantity')
+        try:
+            cols = dict((headers[i], col.decode(encoding)) for i, col in enumerate(row))
+            src_performance_name = cols[u'コピー元パフォーマンス']
+            src_performance_id = parse_long(cols[u'パフォーマンスID'], 'invalid performance id')
+            new_performance_name = cols[u'公演名']
+            new_performance_date = parse_date(cols[u'試合開催日'], 'invalid performance date', default_year=now.year)
+            new_performance_open_time = parse_time(cols[u'開場時間'], 'invalid open time')
+            new_performance_start_time = parse_time(cols[u'開演時間'], 'invalid start time')
+            new_performance_open_at = combine_date_time(new_performance_date, new_performance_open_time)
+            new_performance_start_at = combine_date_time(new_performance_date, new_performance_start_time)
+            new_performance_abbreviated_title = cols[u'公演名略称']
+            new_performance_subtitle = cols[u'公演名副題']
+            new_performance_display_order = parse_int(cols[u'表示順'], 'invalid display order')
+            new_performance_max_orders = parse_int(cols[u'購入回数制限'], 'invalid max orders')
+            new_performance_max_quantity_per_user = parse_int(cols[u'購入上限枚数 (購入者毎)'], 'invalid max quantity')
 
-        src_performance = get_performance(src_performance_id)
+            src_performance = get_performance(src_performance_id, title=src_performance_name)
 
-        new_performance_code = generate_performance_code(src_performance)
+            new_performance_code = generate_performance_code(src_performance)
 
-        message('copying Performance(id=%d, title=%s)' % (src_performance.id, src_performance.name))
+            message('copying Performance(id=%d, title=%s)' % (src_performance.id, src_performance.name))
 
-        if not dry_run:
-            new_performance = Performance.clone(src_performance)
-            new_performance.original_id = src_performance.id
-            new_performance.venue_id = src_performance.venue.id
-            new_performance.create_venue_id = src_performance.venue.id
-            new_performance.open_on = new_performance_open_at
-            new_performance.start_on = new_performance_start_at
-            new_performance.name = new_performance_name
-            new_performance.subtitle = new_performance_subtitle
-            new_performance.abbreviated_title = new_performance_abbreviated_title
-            new_performance.code = new_performance_code
-            new_performance.display_order = new_performance_display_order
-            new_performance.setting = PerformanceSetting(
-                order_limit=new_performance_max_orders,
-                max_quantity_per_user=new_performance_max_quantity_per_user
-                )
-            new_performance.save()
-            session.flush()
-            message('new performance: Performance(id=%d, title=%s, code=%s)' % (new_performance.id, new_performance.name, new_performance.code))
-        message('end copying Performance(id=%d, title=%s)' % (src_performance.id, src_performance.name))
+            if not dry_run:
+                new_performance = Performance.clone(src_performance)
+                new_performance.original_id = src_performance.id
+                new_performance.venue_id = src_performance.venue.id
+                new_performance.create_venue_id = src_performance.venue.id
+                new_performance.open_on = new_performance_open_at
+                new_performance.start_on = new_performance_start_at
+                new_performance.name = new_performance_name
+                new_performance.subtitle = new_performance_subtitle
+                new_performance.abbreviated_title = new_performance_abbreviated_title
+                new_performance.code = new_performance_code
+                new_performance.display_order = new_performance_display_order
+                new_performance.setting = PerformanceSetting(
+                    order_limit=new_performance_max_orders,
+                    max_quantity_per_user=new_performance_max_quantity_per_user
+                    )
+                new_performance.save()
+                session.flush()
+                message('new performance: Performance(id=%d, title=%s, code=%s)' % (new_performance.id, new_performance.name, new_performance.code))
+            message('end copying Performance(id=%d, title=%s)' % (src_performance.id, src_performance.name))
+            transaction.commit()
+        except:
+            transaction.abort()
+            raise
 
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
@@ -201,12 +206,10 @@ def main(argv=sys.argv):
                 format=formats[args.format],
                 dry_run=args.dry_run
                 )
-            transaction.commit()
         except ApplicationException as e:
             message(str(e))
             raise
     except:
-        transaction.abort()
         raise
     return 0
 
