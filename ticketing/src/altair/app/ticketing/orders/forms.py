@@ -13,7 +13,7 @@ from wtforms.widgets import CheckboxInput, HiddenInput
 from altair.formhelpers import (
     Translations,
     DateTimeField, DateField, Max, OurDateWidget, OurDateTimeWidget,
-    CheckboxMultipleSelect, BugFreeSelectMultipleField,
+    CheckboxMultipleSelect, BugFreeSelectField, BugFreeSelectMultipleField,
     Required, after1900, NFKC, Zenkaku, Katakana,
     strip_spaces, ignore_space_hyphen)
 from altair.app.ticketing.core.models import (Organization, PaymentMethod, DeliveryMethod, SalesSegmentGroup, PaymentDeliveryMethodPair,
@@ -21,7 +21,13 @@ from altair.app.ticketing.core.models import (Organization, PaymentMethod, Deliv
 from altair.app.ticketing.cart.schemas import ClientForm
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.core import helpers as core_helpers
-from altair.app.ticketing.orders.importer import ImportTypeEnum, ImportCSVReader
+from altair.app.ticketing.orders.importer import (
+    ImportTypeEnum,
+    ImportCSVReader,
+    get_import_type_label,
+    AllocationModeEnum,
+    get_allocation_mode_label,
+    )
 from altair.app.ticketing.orders.export import OrderCSV
 from altair.app.ticketing.csvutils import AttributeRenderer
 
@@ -759,11 +765,18 @@ class OrderImportForm(Form):
         u'CSVファイル',
         validators=[]
     )
-    import_type = SelectField(
+    import_type = BugFreeSelectField(
         label=u'インポート方法',
         validators=[Required()],
-        choices=[e.v for e in ImportTypeEnum],
-        default=ImportTypeEnum.Create.v[0],
+        choices=[(str(e.v), get_import_type_label(e.v)) for e in ImportTypeEnum],
+        default=ImportTypeEnum.Create.v,
+        coerce=int,
+    )
+    allocation_mode = BugFreeSelectField(
+        label=u'配席モード',
+        validators=[Required()],
+        choices=[(str(e.v), get_allocation_mode_label(e.v)) for e in AllocationModeEnum],
+        default=ImportTypeEnum.Create.v,
         coerce=int,
     )
 

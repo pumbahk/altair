@@ -163,11 +163,12 @@ class PerformanceShowView(BaseView):
         f = OrderImportForm(self.request.params)
         if f.validate():
             importer = OrderImporter(
-                self.context.user,
-                self.context.organization,
-                self.performance.id,
-                f.order_csv.data.file,
-                f.import_type.data
+                operator=self.context.user,
+                organization=self.context.organization,
+                performance_id=self.performance.id,
+                order_csv=f.order_csv.data.file,
+                import_type=f.import_type.data,
+                allocation_mode=f.allocation_mode.data
             )
             importer.validate()
             self.request.session['ticketing.order.importer'] = importer

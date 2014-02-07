@@ -12,6 +12,7 @@ from StringIO import StringIO
 
 from zope.interface import implementer
 from pyramid.threadlocal import get_current_request
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
@@ -32,6 +33,7 @@ from altair.app.ticketing.core.models import (
     ShippingAddress,
     SeatStatusEnum,
     Seat,
+    SeatStatus,
     Venue,
     OrderImportTask,
     ImportStatusEnum
@@ -132,6 +134,7 @@ class TemporaryCartedProductItem(TemporaryModel):
         self.price = 0
         self.quantity = 0
         self.seats = []
+        self.original_seats = []
         super(type(self), self).__init__(**kwargs)
 
     @property
@@ -197,17 +200,36 @@ class ImportCSVReader(object):
 
 
 class ImportTypeEnum(StandardEnum):
-    Create = (1, u'新規登録')
-    Update = (2, u'同じ予約番号を更新')
+    Create = 1
+    Update = 2
 
+class AllocationModeEnum(StandardEnum):
+    AlwaysAllocateNew = 1
+    NoAutoAllocation = 2
+
+import_type_labels = {
+    1: u'新規登録',
+    2: u'同じ予約番号を更新',
+    }
+
+allocation_mode_labels = {
+    1: u'座席番号を無視し常に自動配席する',
+    2: u'座席番号に該当する座席を配席する',
+    }
+
+def get_import_type_label(import_type):
+    return import_type_labels.get(int(import_type), None)
+
+def get_allocation_mode_label(allocation_mode):
+    return allocation_mode_labels.get(int(allocation_mode), None)
 
 class OrderImporter(object):
-
-    def __init__(self, operator, organization, performance_id, order_csv, import_type, **kwargs):
+    def __init__(self, operator, organization, performance_id, order_csv, import_type, allocation_mode=AllocationModeEnum.AlwaysAllocateNew, **kwargs):
         self.operator_id = operator.id
         self.organization_id = organization.id
         self.performance_id = performance_id
-        self.import_type = import_type
+        self.import_type = int(import_type)
+        self.allocation_mode = int(allocation_mode)
         self.status = ImportStatusEnum.Waiting.v[0]
         file_data = order_csv.read()
         self.file_data = unicode(file_data.decode('cp932'))
@@ -259,10 +281,7 @@ class OrderImporter(object):
 
     @property
     def import_type_label(self):
-        for e in ImportTypeEnum:
-            if e.v[0] == self.import_type:
-                return e.v[1]
-        return u''
+        return get_import_type_label(self.import_type) or u''
 
     def parse_import_file(self, file):
         reader = ImportCSVReader(file)
@@ -303,8 +322,7 @@ class OrderImporter(object):
 
                 # Seat: dict(seat_id=seat)
                 seat = self.get_seat(row, product_item)
-                if seat:
-                    cpi._seat_ids.append(seat.id)
+                cpi.original_seats.append(seat)
             except (NoResultFound, MultipleResultsFound), e:
                 self.errors[order_no] = u'予約番号: %s  %s' % (order_no, e.message)
                 continue
@@ -313,6 +331,8 @@ class OrderImporter(object):
         return
 
     def validate(self):
+        from altair.app.ticketing.models import DBSession
+        session = DBSession
         sum_quantity = dict()
         order_no_list = self.carts.keys()
         for order_no in order_no_list:
@@ -340,7 +360,19 @@ class OrderImporter(object):
                             error_reason = u'配席可能な座席がありません  商品明細: %s  個数: %s  (stock_id: %s)' %\
                                            (product_item.name, cpi.quantity, stock.id)
                             raise Exception(error_reason)
-            except Exception, e:
+                        if self.allocation_mode == AllocationModeEnum.NoAutoAllocation.v:
+                            # セッションからdetachしているかもしれないので
+                            for seat in cpi.original_seats:
+                                session.add(seat)
+
+                            if not all(cpi.original_seats):
+                                raise Exception(u'座席番号が一致しないもしくは指定されていないデータがありますが、自動配席が無効になっています')
+                            if len(cpi.original_seats) != cpi.quantity:
+                                raise Exception(u'商品明細数と座席数が一致しません')
+                            for seat in cpi.original_seats:
+                                if seat.status != SeatStatusEnum.Vacant.v:
+                                    raise Exception(u'座席「%s」(id=%ld, l0_id=%s) は配席済みです' % (seat.name, seat.id, seat.l0_id))
+            except Exception as e:
                 self.errors[order_no] = u'予約番号: %s  %s' % (order_no, e.message)
         return
 
@@ -431,7 +463,7 @@ class OrderImporter(object):
 
         try:
             venue = Venue.query.filter_by(performance_id=self.performance_id).one()
-            seat = Seat.query.filter(
+            seat = Seat.query.options(joinedload(Seat.status_)).filter(
                 Seat.venue_id == venue.id,
                 Seat.stock_id == product_item.stock_id,
                 Seat.name == seat_name
@@ -485,7 +517,6 @@ class OrderImporter(object):
             quantity        = int(row.get(u'ordered_product_item.quantity')),
             product_item_id = product_item.id,
             _parent         = parent,
-            _seat_ids       = []
         )
         return carted_product_item
 
@@ -547,7 +578,9 @@ class OrderImporter(object):
         errors = self.errors
 
         # インポート方法
-        stats['import_type'] = self.import_type_label
+        stats['import_type'] = get_import_type_label(self.import_type)
+        # 配席モード
+        stats['allocation_mode'] = get_allocation_mode_label(self.allocation_mode)
         # インポートする予約数
         stats['order_count'] = len(carts)
         # インポートする席数
@@ -596,6 +629,8 @@ class OrderImporter(object):
         transaction.commit()
 
         self.validate()
+        from altair.app.ticketing.models import DBSession
+        session = DBSession
 
         # インポート実行
         order_no_list = self.carts.keys()
@@ -610,18 +645,26 @@ class OrderImporter(object):
                         product_item = temp_cpi.product_item
                         stock = temp_cpi.product_item.stock
 
-                        # 配席
-                        if not stock.stock_type.quantity_only:
-                            seats = self.allocate_seats(reserving, product_item, temp_cpi.quantity)
-                            temp_cpi._seat_ids = [seat.id for seat in seats]
-                            temp_cpi.seats += seats
-
                         # 在庫数
                         quantity = temp_cpi.quantity
                         stock_requires = [(stock.id, quantity)]
-                        stocker.take_stock_by_stock_id(stock_requires)
-            except (NotEnoughAdjacencyException, Exception), e:
-                logger.error('take stock error(%s): %s' % (org_order_no, e.message))
+                        stockstatuses = stocker.take_stock_by_stock_id(stock_requires)
+
+                        # 配席
+                        if not stock.stock_type.quantity_only:
+                            if self.allocation_mode == AllocationModeEnum.NoAutoAllocation.v:
+                                assert len(temp_cpi.original_seats) == temp_cpi.quantity, 'len(cpi.original_seats) (%d) != cpi.quantity (%d)' % (len(temp_cpi.original_seats), temp_cpi.quantity)
+                                for seat in temp_cpi.original_seats:
+                                    session.add(seat)
+                                reserving.reserve_selected_seats(stockstatuses, performance_id=temp_cart.performance_id, selected_seat_l0_ids=[seat.l0_id for seat in temp_cpi.original_seats], reserve_status=SeatStatusEnum.Ordered)
+                                temp_cpi.seats += temp_cpi.original_seats
+                            elif self.allocation_mode == AllocationModeEnum.AlwaysAllocateNew.v:
+                                seats = self.allocate_seats(reserving, product_item, temp_cpi.quantity)
+                                temp_cpi.seats += seats
+                            else:
+                                raise AssertionError('never get here')
+            except Exception as e:
+                logger.error('take stock error (%s): %r' % (org_order_no, e))
                 transaction.abort()
                 self.errors[org_order_no] = u'予約番号: %s  %s' % (org_order_no, u'座席を確保できませんでした')
                 continue
@@ -633,7 +676,7 @@ class OrderImporter(object):
             temp_cart.shipping_address = shipping_address
 
             # order_noを採番
-            if self.import_type == ImportTypeEnum.Create.v[0]:
+            if self.import_type == ImportTypeEnum.Create.v:
                 organization = Organization.query.filter_by(id=self.organization_id).one()
                 base_id = core_api.get_next_order_no()
                 order_no = organization.code + sensible_alnum_encode(base_id).zfill(10)
@@ -641,7 +684,7 @@ class OrderImporter(object):
 
             # 備考欄に追記
             note = u''
-            if self.import_type == ImportTypeEnum.Create.v[0]:
+            if self.import_type == ImportTypeEnum.Create.v:
                 note = u'元の予約番号: %s  ' % org_order_no
             imported_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             note += u'インポート日時: %s' % imported_at
@@ -683,6 +726,7 @@ class OrderImporter(object):
             performance_id=self.performance_id,
             operator_id=self.operator_id,
             import_type=self.import_type,
+            allocation_mode=self.allocation_mode,
             count=len(self.valid_carts),
             status=self.status,
             data=self.file_data,
@@ -707,6 +751,7 @@ class OrderImporter(object):
             task.performance_id,
             file,
             task.import_type,
+            task.allocation_mode,
             task_id=task.id,
             created_at=task.created_at,
             updated_at=task.updated_at,

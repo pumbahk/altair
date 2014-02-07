@@ -4089,6 +4089,7 @@ class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
     operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=False)
     import_type = Column(Integer, nullable=False)
+    allocation_mode = Column(Integer, default=1, nullable=False) # XXX: 1 = AllocationModeEnum.AlwaysAllocateNew
     status = Column(Integer, nullable=False)
     count = Column(Integer, nullable=False)
     data = Column(UnicodeText(8388608))
