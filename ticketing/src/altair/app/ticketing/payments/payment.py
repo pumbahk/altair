@@ -2,6 +2,7 @@
 import logging
 import transaction
 from zope.interface import implementer 
+from sqlalchemy.orm.util import _is_mapped_class
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import Order
 from .events import DeliveryErrorEvent
@@ -74,7 +75,8 @@ class Payment(object):
             self._bind_order(order)
             # 注文確定として、他の処理でロールバックされないようにコミット
             transaction.commit()
-            self.session.add(self.cart)
+            if _is_mapped_class(self.cart.__class__):
+                self.session.add(self.cart)
         else:
             # 決済と配送を別々に処理する            
             order = payment_plugin.finish(self.request, self.cart)
@@ -82,7 +84,8 @@ class Payment(object):
             self._bind_order(order)
             # 注文確定として、他の処理でロールバックされないようにコミット
             transaction.commit()
-            self.session.add(self.cart)
+            if _is_mapped_class(self.cart.__class__):
+                self.session.add(self.cart)
             try:
                 delivery_plugin.finish(self.request, self.cart)
             except Exception as e:
