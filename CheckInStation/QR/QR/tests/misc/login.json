@@ -1,16 +1,16 @@
 {
     "endpoint": {
-        "login_status": "http://127.0.0.1:8000/login.status.json",
-        "qr_ticketdata": "http://127.0.0.1:8000/qrdata.json",
-        "qr_ticketdata_collection": "http://127.0.0.1:8000/qrdata.all.json",
-        "qr_svgsource_one": "http://127.0.0.1:8000/svgone.json",
-        "qr_svgsource_all": "http://127.0.0.1:8000/svgall.json",
-        "qr_update_printed_at": "http://127.0.0.1:8000/update.printed_at.json",
-        "orderno_verified_data": "http://127.0.0.1:8000/verified.order.json",
-        "image_from_svg": "http://127.0.0.1:8000/image.png"
+        "login_status": "http://192.168.1.45:8000/login.status.json",
+        "qr_ticketdata": "http://192.168.1.45:8000/qrdata.json",
+        "qr_ticketdata_collection": "http://192.168.1.45:8000/qrdata.all.json",
+        "qr_svgsource_one": "http://192.168.1.45:8000/svgone.json",
+        "qr_svgsource_all": "http://192.168.1.45:8000/svgall.json",
+        "qr_update_printed_at": "http://192.168.1.45:8000/update.printed_at.json",
+        "orderno_verified_data": "http://192.168.1.45:8000/verified.order.json",
+        "image_from_svg": "http://192.168.1.45:8000/image.png"
     },
     "ad_images": [
-        "http://127.0.0.1:8000/ad.sample.jpg"
+        "http://192.168.1.45:8000/ad.sample.jpg"
     ],
     "comment": {
         "memo": "svg_from_imageこれどこで設定しよう?",
