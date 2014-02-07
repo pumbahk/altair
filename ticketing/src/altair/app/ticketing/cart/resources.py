@@ -271,31 +271,37 @@ class TicketingCartResourceBase(object):
                 container = setting.container
                 if IOrderQueryable.providedBy(container):
                     from altair.app.ticketing.models import DBSession
-                    if user:
-                        order_query = container.query_orders_by_user(user, filter_canceled=True)
-                    elif mail_addresses:
-                        order_query = container.query_orders_by_mailaddresses(mail_addresses, filter_canceled=True)
-                    query = order_query.add_columns(sql.expression.func.sum(c_models.OrderedProductItem.quantity)) \
+                    query = DBSession.query(
+                        sql.expression.func.count(sql.expression.distinct(c_models.Order.id)),
+                        sql.expression.func.sum(c_models.OrderedProductItem.quantity)
+                        ) \
                         .outerjoin(c_models.OrderedProduct, c_models.Order.items) \
-                        .outerjoin(c_models.OrderedProductItem, c_models.OrderedProduct.elements) \
-                        .group_by(c_models.Order.id)
-                    quantities_per_order = list(int(quantity_sum or 0) for _, quantity_sum in query)
+                        .outerjoin(c_models.OrderedProductItem, c_models.OrderedProduct.elements)
+                    if user:
+                        query = container.query_orders_by_user(user, filter_canceled=True, query=query)
+                    elif mail_addresses:
+                        query = container.query_orders_by_mailaddresses(mail_addresses, filter_canceled=True, query=query)
+                    order_count, total_quantity = query.one()
+                    if order_count is None:
+                        order_count = 0
+                    if total_quantity is None:
+                        total_quantity = 0 
                     logger.info(
                         "%r(id=%d): order_limit=%r, max_quantity_per_user=%r, orders=%d, total_quantity=%d" % (
                             container.__class__,
                             container.id,
                             setting.order_limit,
                             setting.max_quantity_per_user,
-                            len(quantities_per_order),
-                            sum(quantities_per_order)
+                            order_count,
+                            total_quantity
                             )
                         )
                     retval.append(
                         (
                             container,
                             dict(
-                                order_count=len(quantities_per_order),
-                                total_quantity=sum(quantities_per_order),
+                                order_count=order_count,
+                                total_quantity=total_quantity,
                                 order_limit=setting.order_limit,
                                 max_quantity_per_user=setting.max_quantity_per_user
                                 )
