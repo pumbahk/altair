@@ -4,14 +4,21 @@ using System.Threading.Tasks;
 
 namespace QR
 {
-	[TestFixture ()]
+    [TestFixture ()]
 	public class FlowAuthTests
 	{
-		[Test, Description ("認証input画面 -ok-> auth情報取得 -ok-> 認証方法選択")]
-		public void TestAuthFlow ()
-		{
-			var manager = new FlowManager ();
-			var startpoint = new CaseAuthInput (new Resource ());
+		[Test, Description ("認証input画面 -ok-> password入力 -ok> auth情報取得 -ok-> 認証方法選択")]
+			public void TestAuthFlow ()
+		{			
+			var resource = new Resource ();
+
+			var fakeDefinition = new Moq.Mock<IFlowDefinition> ();
+			var fakeAfterAuthorization = new Moq.Mock<ICase> () ;
+			fakeDefinition.Setup (d => d.AfterAuthorization (resource)).Returns (fakeAfterAuthorization.Object);
+			
+
+			var manager = new FlowManager (){FlowDefinition = fakeDefinition.Object};
+			var startpoint = new CaseAuthInput (resource);
 
 			FakeFlow target = new FakeFlow (manager, startpoint);
 
@@ -23,11 +30,16 @@ namespace QR
 				// 認証処理
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
+				Assert.IsInstanceOf<CaseAuthPassword> (target.Case);
+
+				// 認証処理
+				target = await target.Forward () as FakeFlow;
+				target.VerifyStatus = true;
 				Assert.IsInstanceOf<CaseAuthDataFetch> (target.Case);
 
 				target = await target.Forward () as FakeFlow;
 				target.VerifyStatus = true;
-				Assert.IsInstanceOf<CaseInputStrategySelect> (target.Case);
+				Assert.AreSame(fakeAfterAuthorization.Object, target.Case);
 			});
 			t.Wait ();
 		}
