@@ -109,9 +109,9 @@ ${h.render_delivery_finished_viewlet(request, order)}
 &#xe737;注意事項<br />
 <font size="-2">
 %if order.payment_delivery_pair.delivery_method.delivery_plugin.id == 1:
-また、転居等による住所変更があった場合も上記メールアドレスへご連絡をお願いいたします。（送付先変更期限：各試合日の2週間前まで）
-
-なお、住所変更のご連絡がない場合等に起因する配送遅延等にはご対応いたしかねますのでご注意ください。
+配送引取の場合の注意事項<br/>
+・お申込時に受付内容を記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:bacoo@tstar.jp">こちら</a>までご連絡ください。<br/>
+・入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。
 %endif
 %if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
 ・セブン-イレブン決済の際には払込票番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。<br />
