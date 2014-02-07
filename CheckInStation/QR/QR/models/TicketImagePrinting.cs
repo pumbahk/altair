@@ -55,7 +55,7 @@ namespace QR
             page.Children.Add(img);
             pageContent.Child = page;
             this.doc.Pages.Add(pageContent);
-            writer.WriteAsync(doc); //todo: PrintTicket
+            writer.Write(doc); //todo: PrintTicket
 
             this.doc = null;
             this.writer = null;
