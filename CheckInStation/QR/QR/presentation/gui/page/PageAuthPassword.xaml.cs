@@ -72,6 +72,9 @@ namespace QR.presentation.gui.page
                 case_ = await ctx.SubmitAsync(); // call login api
                 if (ctx.Event.Status == InternalEventStaus.success)
                 {
+                    ctx.TreatErrorMessage();
+                    AppUtil.GetNavigator().NavigateToMatchedPage(case_, this, ctx.ErrorMessage); //エラーメッセージを受け渡す
+
                     //ここである必要はあまりないけれど。裏側で広告用の画像をとる
                     var resource = AppUtil.GetCurrentResource();
                     if (resource.AdImageCollector.State == CollectorState.starting)
@@ -79,8 +82,11 @@ namespace QR.presentation.gui.page
                         await resource.AdImageCollector.Run(resource.EndPoint.AdImages).ConfigureAwait(false);
                     }
                 }
-                ctx.TreatErrorMessage();
-                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this, ctx.ErrorMessage); //エラーメッセージを受け渡す
+                else
+                {
+                    ctx.TreatErrorMessage();
+                    AppUtil.GetNavigator().NavigateToMatchedPage(case_, this, ctx.ErrorMessage); //エラーメッセージを受け渡す
+                }
             });
         }
 
