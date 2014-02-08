@@ -60,7 +60,8 @@ namespace QR
 
 		public virtual HttpClient CreateHttpClient ()
 		{
-            var handler = new HttpClientHandler();
+            //temporary: 
+            var handler = new HttpClientHandler() { Credentials = new NetworkCredential("mock", "mock") };
             CookieUtils.PutCokkiesToRequestHandler(handler, this.cookieContainer);
 			var client = new HttpClient (handler);
 			return ClientAttachedSomething (client);
