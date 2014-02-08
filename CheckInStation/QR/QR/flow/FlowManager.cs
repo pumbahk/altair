@@ -35,6 +35,14 @@ namespace QR
 			return this.RequestBroker.GetInternalEvent ();	
 		}
 
+        public IFlow RedirectAlternativeFlow(ICase previous)
+        {
+            ICase nextCase = this.FlowDefinition.GetAlternativeCase(previous);
+            var nextFlow = new Flow(this, nextCase);
+            this.Push(nextFlow);
+            return nextFlow;
+        }
+
 		public IFlow Peek ()
 		{
 			return this.undoStack.Peek ();

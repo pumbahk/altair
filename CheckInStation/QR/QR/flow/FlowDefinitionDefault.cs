@@ -43,10 +43,17 @@ namespace QR
 			return new CaseInputStrategySelect(resource);
 		}
 
+        public ICase GetAlternativeCase (ICase previous)
+        {
+            throw new InvalidOperationException("not supported");
+        }
+
 	}
 
 	public class EaglesFlowDefinition : IFlowDefinition
 	{
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public InputUnit CurrentInputUnit { get; set; }
 
 		public EaglesFlowDefinition ()
@@ -84,6 +91,23 @@ namespace QR
 		{
 			return this.AfterAuthorization (resource);
 		}
+
+        public ICase GetAlternativeCase (ICase previous)
+        {
+            switch(this.CurrentInputUnit)
+            {
+                case InputUnit.qrcode:
+                    this.CurrentInputUnit = InputUnit.order_no;
+                    return new CaseOrdernoOrdernoInput(previous.Resource);
+                case InputUnit.order_no:
+                    this.CurrentInputUnit = InputUnit.qrcode;
+                    return new CaseQRCodeInput(previous.Resource);
+                default:
+                    logger.Warn("invalid redirect is found. (get alternative case from {0})", previous);
+                    this.CurrentInputUnit = InputUnit.before_auth;
+                    return new CaseAuthInput(previous.Resource);
+            }
+        }
 	}
 
 	class DispatchICaseUtil

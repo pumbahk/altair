@@ -44,7 +44,7 @@ namespace QR
             FixedDocument doc = await ev.CurrentDispatcher.InvokeAsync<FixedDocument>(() =>
             {
                 return XamlReader.Load(xmlreader) as FixedDocument;
-            });
+            }, System.Windows.Threading.DispatcherPriority.Send);
             
 			writer.Write(doc); //todo: PrintTicket
 			return true;

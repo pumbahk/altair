@@ -65,6 +65,11 @@ namespace QR
             return this.FlowManager.Backward();
         }
 
+        public ICase RedirectAlternativeCase(ICase previous)
+        {
+            return this.FlowManager.RedirectAlternativeFlow(previous).Case;
+        }
+
 		public void SetStartCase (ICase case_)
 		{
 			this.FlowManager.SetStartPoint (new Flow (this.FlowManager, case_));

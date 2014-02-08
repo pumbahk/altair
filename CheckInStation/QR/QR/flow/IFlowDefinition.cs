@@ -15,6 +15,7 @@ namespace QR
 		ICase AfterQRDataFetch(IResource resource, TicketData tdata);
 
 		ICase PreviousCaseFromRedirected(IResource resource);
+        ICase GetAlternativeCase(ICase previous);
 	}
 }
 

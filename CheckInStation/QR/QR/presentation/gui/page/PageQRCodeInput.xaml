@@ -52,8 +52,9 @@
                  VerticalAlignment="Center"
                  KeyDown="OnKeyDownHandler"                 
                  Text="{Binding Mode=OneWayToSource, Path=QRCode,UpdateSourceTrigger=PropertyChanged}" x:Name="QRCodeInput"></TextBox>
-                
 
+
+            <Button Grid.Row="1" Grid.Column="7" Grid.ColumnSpan="2" Click="OnGotoAnotherMode">予約番号で認証</Button>
             <Button Grid.Row="7" Grid.Column="1"
                     Click="OnBackwardWithBoundContext">戻る</Button>
             <!--

@@ -44,7 +44,7 @@
 
         <ScrollViewer Grid.Row="3" Grid.Column="1" Grid.RowSpan="5" Grid.ColumnSpan="7">
             <ListView ItemsSource="{Binding DisplayTicketDataCollection}" Margin="5"
-                          ItemTemplate="{StaticResource SelectingTicketItemBoxData}"/>
+                      ItemTemplate="{StaticResource SelectingTicketItemBoxData}"/>
         </ScrollViewer>
 
         <Button Grid.Row="7" Grid.Column="1" Click="OnBackwardWithBoundContext"

@@ -29,6 +29,7 @@
             </StackPanel>
             <StackPanel Grid.Row="2">
                 <Button Click="OnBackwardWithBoundContext">戻る</Button>
+                <Button Click="OnGotoAnotherMode">QRで認証</Button>
             </StackPanel>
         </Grid>
     </Grid>
