@@ -28,6 +28,19 @@
                 </WrapPanel>
             </DataTemplate>
 
+            <!-- 券面候補の選択 -->
+            <DataTemplate x:Key="SelectingTicketItemBoxData">
+                <WrapPanel Margin="10,5,0,0">
+                    <!-- <CheckBox IsChecked="{Binding IsSelected}"></CheckBox> -->
+                    <TextBlock>商品:</TextBlock>
+                    <TextBlock Text="{Binding ProductName}"/>
+                    <TextBlock>席:</TextBlock>
+                    <TextBlock Text="{Binding SeatName}"/>
+                    <TextBlock>発券日時:</TextBlock>
+                    <TextBlock Text="{Binding PrintedAt}"/>
+                </WrapPanel>
+            </DataTemplate>
+
             <!-- virtual keyboard-->
             <c:KeyPadPopupContext x:Key="KeyPadContextPassword" PreviewType="password"/>
             <c:KeyPadPopupContext x:Key="KeyPadContextRaw" PreviewType="raw"/>
