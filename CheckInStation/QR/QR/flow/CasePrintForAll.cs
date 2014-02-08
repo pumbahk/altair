@@ -74,7 +74,7 @@ namespace QR
 			var subject = this.PresentationChanel as PrintingEvent;
             subject.ChangeState(PrintingStatus.printing);
 
-            var printing = Resource.TicketImagePrinting;
+            var printing = Resource.TicketPrinting;
 			try {
                 printing.BeginEnqueue();
 				foreach (var imgdata in this.PrintingTargets.Right) {

@@ -158,7 +158,7 @@ namespace QR
 				var responseJSON = Testing.ReadFromEmbeddedFile ("QR.tests.misc.svgall.json");
 				IResource resource = new Resource () {
 					HttpWrapperFactory = new FakeHttpWrapperFactory<HttpWrapper> (responseJSON),
-					TicketImagePrinting = new FakeTicketImagePrinting ()
+					TicketPrinting = new FakeTicketImagePrinting ()
 				};
 				resource.SVGImageFetcher = new MockSVGImage (resource);
 
@@ -182,7 +182,7 @@ namespace QR
 				var responseJSON = Testing.ReadFromEmbeddedFile ("QR.tests.misc.svgone.json");
 				IResource resource = new Resource () {
 					HttpWrapperFactory = new FakeHttpWrapperFactory<HttpWrapper> (responseJSON),
-					TicketImagePrinting = new FakeTicketImagePrinting ()
+					TicketPrinting = new FakeTicketImagePrinting ()
 				};
 				resource.SVGImageFetcher = new MockSVGImage (resource);
 
@@ -206,7 +206,7 @@ namespace QR
 				var responseJSON = Testing.ReadFromEmbeddedFile ("QR.tests.misc.update.printed_at.json");
 				IResource resource = new Resource () {
 					HttpWrapperFactory = new FakeHttpWrapperFactory<HttpWrapper> (responseJSON),
-					TicketImagePrinting = new FakeTicketImagePrinting ()
+					TicketPrinting = new FakeTicketImagePrinting ()
 				};
 				resource.TicketDataManager = new MockTicketDataManager (resource);
 

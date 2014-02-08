@@ -4,7 +4,9 @@ using System.IO;
 using System.Printing;
 using System.Threading.Tasks;
 using System.Windows.Documents;
+using System.Windows.Markup;
 using System.Windows.Media.Imaging;
+using System.Xml;
 
 namespace QR
    {
@@ -39,14 +41,7 @@ namespace QR
 			var xmlreader = XmlReader.Create(r);
 			var doc = XamlReader.Load(xmlreader) as FixedDocument;
 
-			//
-			FixedPage.SetTop(img, 0);
-			FixedPage.SetLeft(img, 0);
-
 			writer.Write(doc); //todo: PrintTicket
-
-			this.doc = null;
-			this.writer = null;
 			return true;
 		}
 
@@ -56,11 +51,12 @@ namespace QR
 		}
 		public void BeginEnqueue ()
 		{
-			throw new NotImplementedException ();
+            //
 		}
 		public void EndEnqueue ()
 		{
-			throw new NotImplementedException ();
+            this.doc = null;
+            this.writer = null;
 		}
 		#endregion
 	}

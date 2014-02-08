@@ -13,7 +13,7 @@ namespace QR
 
 		ISVGTicketImageDataFetcher SVGImageFetcher { get; set; }
 
-		ITicketPrinting TicketImagePrinting { get; set; }
+		ITicketPrinting TicketPrinting { get; set; }
 
 		TicketPrintedAtUpdater TicketDataManager { get; set; }
 

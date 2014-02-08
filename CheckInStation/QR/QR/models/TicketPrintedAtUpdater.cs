@@ -7,13 +7,13 @@ using NLog;
 
 namespace QR
 {
-	public class TicketDataManager
+	public class TicketPrintedAtUpdater
 	{
 		public IResource Resource { get; set; }
 
 		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
-		public TicketDataManager (IResource resource)
+		public TicketPrintedAtUpdater (IResource resource)
 		{
 			Resource = resource;
 		}

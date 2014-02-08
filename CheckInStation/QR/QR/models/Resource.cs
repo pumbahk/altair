@@ -41,7 +41,7 @@ namespace QR
 				throw new InvalidOperationException ("VerifiedOrderDataFetcher is NULL");
 			if (SVGImageFetcher == null)
 				throw new InvalidOperationException ("SVGImageFetcher is null");
-			if (TicketImagePrinting == null)
+			if (TicketPrinting == null)
 				throw new InvalidOperationException ("TicketImagePrinting is null");
 			if (Authentication == null)
 				throw new InvalidOperationException ("Authentication is null");
@@ -62,7 +62,7 @@ namespace QR
 
 		public ISVGTicketImageDataFetcher SVGImageFetcher{ get; set; }
 
-		public ITicketPrinting TicketImagePrinting{ get; set; }
+		public ITicketPrinting TicketPrinting{ get; set; }
 
 		public EndPoint EndPoint { get; set; }
 

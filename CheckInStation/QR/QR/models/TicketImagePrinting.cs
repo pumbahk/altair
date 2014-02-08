@@ -8,7 +8,7 @@ using System.Windows.Media.Imaging;
 
 namespace QR
    {
-	public class TicketImagePrinting :ITicketImagePrinting
+	public class TicketImagePrinting : ITicketPrinting
 	{
 		public IResource Resource { get; set; }
 

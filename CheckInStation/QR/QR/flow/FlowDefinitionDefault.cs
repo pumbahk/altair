@@ -61,6 +61,7 @@ namespace QR
 		
 		public ICase AfterAuthorization (IResource resource)
 		{
+            this.CurrentInputUnit = InputUnit.qrcode;
 			return new CaseQRCodeInput(resource);
 		}
 		

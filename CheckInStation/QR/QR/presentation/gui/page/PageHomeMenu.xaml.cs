@@ -99,7 +99,7 @@ namespace QR.presentation.gui.page{
         private object CreateDataContext()
         {
             var resource = AppUtil.GetCurrentResource();
-            var printing = resource.TicketImagePrinting;
+            var printing = resource.TicketPrinting;
             ObservableCollection<PrintQueue> printers = CandidateCreator.AvailablePrinterCandidates(printing);
             ObservableCollection<UnitPair<Style>> windowStyles = CandidateCreator.WindowStyleCandidates(this);
 
@@ -117,7 +117,7 @@ namespace QR.presentation.gui.page{
         private void OnPrinterSelected(object sender, SelectionChangedEventArgs e)
         {
             var selected = (sender as ListBox).SelectedItem as PrintQueue;
-            AppUtil.GetCurrentResource().TicketImagePrinting.DefaultPrinter = selected;
+            AppUtil.GetCurrentResource().TicketPrinting.DefaultPrinter = selected;
             var ctx = (this.DataContext as HomeMenuDataContext);
             ctx.SelectedPrinterName = selected.FullName;
             ctx.IsPrinterPopupOpen = false;
