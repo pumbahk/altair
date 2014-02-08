@@ -105,7 +105,6 @@ namespace QR
 
 		public virtual bool OnFinish (IFlow flow)
 		{
-			//TODO: log. 毎回印刷が終わったら履歴を消す(backできなくする)
 			this.Refresh ();
 			return true;
 		}

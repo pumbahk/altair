@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace QR
 {
-    public class FakeTicketImagePrinting : ITicketImagePrinting
+    public class FakeTicketImagePrinting : ITicketPrinting
     {
         public bool EnqueuePrinting(TicketImageData imagedata)
         {

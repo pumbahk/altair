@@ -11,11 +11,11 @@ namespace QR
 
 		IDataFetcher<OrdernoRequestData, VerifiedOrdernoRequestData> VerifiedOrderDataFetcher{ get; set; }
 
-		SVGImageFetcher SVGImageFetcher { get; set; }
+		ISVGTicketImageDataFetcher SVGImageFetcher { get; set; }
 
-		ITicketImagePrinting TicketImagePrinting { get; set; }
+		ITicketPrinting TicketImagePrinting { get; set; }
 
-		TicketDataManager TicketDataManager { get; set; }
+		TicketPrintedAtUpdater TicketDataManager { get; set; }
 
 		AdImageCollector AdImageCollector { get; set; }
 	}

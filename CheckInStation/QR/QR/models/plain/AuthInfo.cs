@@ -16,8 +16,8 @@ namespace QR
 		internal bool login;
 		[DataMember]
 		internal string loginname;
-		[DataMember]
-		internal string secret;
+		//		[DataMember]
+		//		internal string secret;
         [DataMember]
         internal string device_id;
 		[DataMember]

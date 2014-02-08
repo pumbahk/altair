@@ -58,8 +58,12 @@ namespace QR
                 this.PrintingTargets = new Failure<string, List<TicketImageData>>(Resource.GetDefaultErrorMessage());
             }
 		}
+				
+		public override Task<bool> VerifyAsync (){
+			return Task.Run (() => this.Verify ());
+		}
 
-		public override async Task<bool> VerifyAsync ()
+		private bool Verify()
 		{
 			// 印刷対象の画像の取得に失敗した時
 			if (!this.PrintingTargets.Status) {

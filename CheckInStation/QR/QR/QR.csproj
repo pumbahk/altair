@@ -10,7 +10,9 @@
     <RootNamespace>QR</RootNamespace>
     <AssemblyName>QR</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <!--
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+-->
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -241,12 +243,9 @@
     <Compile Include="events\AbstractEvent.cs" />
     <Compile Include="tests\IntegrationTests.cs" />
     <Compile Include="tests\Testing.cs" />
-    <Compile Include="models\TicketImagePrinting.cs" />
     <Compile Include="models\ResultStatusCollector.cs" />
     <Compile Include="tests\models\ResultStatusCollectorTests.cs" />
-    <Compile Include="models\TicketDataManager.cs" />
     <Compile Include="models\FakeTicketImagePrinting.cs" />
-    <Compile Include="models\ITicketImagePrinting.cs" />
     <Compile Include="tests\case\CaseRequestingJSONTests.cs" />
     <Compile Include="presentation\cli\SelectInputStrategy.cs" />
     <Compile Include="events\SelectInputStragetyEvent.cs" />
@@ -266,7 +265,6 @@
     <Compile Include="models\plain\OrdernoRequestData.cs" />
     <Compile Include="models\loader\FakeDataLoader.cs" />
     <Compile Include="models\loader\IDataFetcher.cs" />
-    <Compile Include="models\loader\SVGImageFetcher.cs" />
     <Compile Include="models\loader\TicketDataCollectionFetcher.cs" />
     <Compile Include="models\loader\TicketDataFetcher.cs" />
     <Compile Include="models\Resource.cs" />
@@ -285,6 +283,17 @@
     <Compile Include="events\PrintingEvent.cs" />
     <Compile Include="tests\flow\FlowForEaglesTests.cs" />
     <Compile Include="tests\flow\BackwardForEaglesTests.cs" />
+    <Compile Include="models\loader\SVGTicketImageDataXamlFetcher.cs" />
+    <Compile Include="models\loader\SVGTicketImageDataByteArrayFetcher.cs" />
+    <Compile Include="models\ISVGTicketImageDataFetcher.cs">
+      <DependentUpon>ITicketImagePrinting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="models\plain\TicketImageData.cs" />
+    <Compile Include="models\loader\SVGFetcher.cs" />
+    <Compile Include="models\ITicketPrinting.cs" />
+    <Compile Include="models\TicketImagePrinting.cs" />
+    <Compile Include="models\TicketXamlPrinting.cs" />
+    <Compile Include="models\TicketPrintedAtUpdater.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

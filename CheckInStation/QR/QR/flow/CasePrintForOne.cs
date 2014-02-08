@@ -59,7 +59,12 @@ namespace QR
             }
 		}
 
-		public override async Task<bool> VerifyAsync ()
+		public override Task<bool> VerifyAsync ()
+		{
+			return Task.Run (() => this.Verify());
+		}
+
+		private bool Verify()
 		{
 			// 印刷対象の画像の取得に失敗した時
 			if (!this.PrintingTargets.Status) {
@@ -69,7 +74,7 @@ namespace QR
 			}
 			var subject = this.PresentationChanel as PrintingEvent;
             subject.ChangeState(PrintingStatus.printing);
-            ITicketImagePrinting printing = Resource.TicketImagePrinting;
+            ITicketPrinting printing = Resource.TicketImagePrinting;
 			try {
 
                 printing.BeginEnqueue();

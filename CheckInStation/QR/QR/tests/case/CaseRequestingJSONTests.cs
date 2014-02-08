@@ -5,7 +5,7 @@ using Codeplex.Data;
 
 namespace QR
 {
-	public class MockSVGImage : SVGImageFetcher
+	public class MockSVGImage : SVGTicketImageDataByteArrayFetcher
 	{
 		public MockSVGImage (IResource resource) : base (resource)
 		{
@@ -52,7 +52,7 @@ namespace QR
 		}
 	}
 
-	public class MockTicketDataManager : TicketDataManager
+	public class MockTicketDataManager : TicketPrintedAtUpdater
 	{
 		public MockTicketDataManager (IResource resource) : base (resource)
 		{

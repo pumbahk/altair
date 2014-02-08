@@ -18,7 +18,7 @@ namespace QR
                 QRInputEvent subject = this.PresentationChanel as QRInputEvent;
                 this.QRCode = subject.QRCode;
                 return this.QRCode != null && this.QRCode != "";
-			}); //TODO:２度調べるを防止
+			});
 		}
 
 		public CaseQRCodeInput (IResource resource) : base (resource)

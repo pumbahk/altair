@@ -58,11 +58,11 @@ namespace QR
 
 		public IDataFetcher<OrdernoRequestData, VerifiedOrdernoRequestData> VerifiedOrderDataFetcher{ get; set; }
 
-		public TicketDataManager TicketDataManager { get; set; }
+		public TicketPrintedAtUpdater TicketDataManager { get; set; }
 
-		public SVGImageFetcher SVGImageFetcher{ get; set; }
+		public ISVGTicketImageDataFetcher SVGImageFetcher{ get; set; }
 
-		public ITicketImagePrinting TicketImagePrinting{ get; set; }
+		public ITicketPrinting TicketImagePrinting{ get; set; }
 
 		public EndPoint EndPoint { get; set; }
 

@@ -49,7 +49,7 @@ namespace QR.presentation.gui
             return candidates;
         }
 
-        public static ObservableCollection<PrintQueue> AvailablePrinterCandidates(ITicketImagePrinting printing){
+        public static ObservableCollection<PrintQueue> AvailablePrinterCandidates(ITicketPrinting printing){
             var printers = new ObservableCollection<PrintQueue>();
             printers.Add(printing.DefaultPrinter);
             foreach (var q in printing.AvailablePrinters())
