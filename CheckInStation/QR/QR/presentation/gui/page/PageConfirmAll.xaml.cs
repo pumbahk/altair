@@ -19,11 +19,25 @@ using System.Windows.Shapes;
 
 namespace QR.presentation.gui.page
 {
-    class DisplayTicketData
+    class DisplayTicketData : ViewModel
     {
+        public DisplayTicketData(TicketDataMinumum tdata)
+        {
+            this.coreData = tdata;
+            this.ProductName = tdata.product.name;
+            this.SeatName = tdata.seat.name;
+            this.PrintedAt = tdata.printed_at; //null?
+            this.TokenId = tdata.ordered_product_item_token_id;
+        }
+
+		private readonly TicketDataMinumum coreData;
         public string ProductName { get; set; }
         public string SeatName { get; set; }
-        public bool IsSelected { get; set; }
+        public bool IsSelected
+        {
+			get { return this.coreData.is_selected; }
+			set { this.coreData.is_selected = value; this.OnPropertyChanged("IsSelected"); }
+        }
         public string TokenId { get; set; }
         public string PrintedAt { get; set; }
     }
@@ -34,7 +48,6 @@ namespace QR.presentation.gui.page
         private TicketDataCollection _ticketDataCollection;
         private string _performanceName;
         private string _performanceDate;
-
         public ConfirmAllStatus Status
         {
             get { return this._status; }
@@ -60,7 +73,7 @@ namespace QR.presentation.gui.page
 
         public override void OnSubmit()
         {
-            var ev = this.Event as ConfirmAllEvent;
+            var ev = this.Event as ConfirmAllEvent;			
             base.OnSubmit();
         }
     }
@@ -104,7 +117,7 @@ namespace QR.presentation.gui.page
                 }
                 else
                 {
-                    //エラーが出たときにすぐにエラー画面に遷移
+                    //?G???[???o???????????????G???[???????J??
                     await this.Dispatcher.InvokeAsync(async () => {
                        var case_ = await ctx.SubmitAsync();
                        ctx.TreatErrorMessage();
@@ -124,14 +137,7 @@ namespace QR.presentation.gui.page
 
             foreach (var tdata in source.TicketDataCollection.collection)
             {
-                displayColl.Add(new DisplayTicketData()
-                {
-                    ProductName = tdata.product.name,
-                    SeatName = tdata.seat.name,
-                    PrintedAt = tdata.printed_at, //null?
-                    IsSelected = (tdata.printed_at == null ? true : false),
-                    TokenId = tdata.ordered_product_item_token_id,
-                });
+                displayColl.Add(new DisplayTicketData(tdata));
             }
         }
 

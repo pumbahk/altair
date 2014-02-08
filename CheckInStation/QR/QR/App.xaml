@@ -31,7 +31,7 @@
             <!-- 券面候補の選択 -->
             <DataTemplate x:Key="SelectingTicketItemBoxData">
                 <WrapPanel Margin="10,5,0,0">
-                    <!-- <CheckBox IsChecked="{Binding IsSelected}"></CheckBox> -->
+                    <CheckBox IsChecked="{Binding IsSelected}"></CheckBox>
                     <TextBlock>商品:</TextBlock>
                     <TextBlock Text="{Binding ProductName}"/>
                     <TextBlock>席:</TextBlock>

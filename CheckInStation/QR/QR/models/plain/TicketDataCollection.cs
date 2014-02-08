@@ -19,6 +19,8 @@ namespace QR
 		internal _SeatData seat;
         [DataMember]
         internal _ProductData product;
+		[DataMember]
+		internal bool is_selected;
 
 		public TicketDataMinumum (dynamic json)
 		{
@@ -27,6 +29,7 @@ namespace QR
 			this.refreshed_at = json.refreshed_at;
 			this.seat = new _SeatData (json.seat);
             this.product = new _ProductData(json.product);
+			this.is_selected = (this.printed_at == null ? true : false);
 		}
 	}
 
