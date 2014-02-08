@@ -59,12 +59,8 @@ namespace QR
             }
 		}
 				
-		public override Task<bool> VerifyAsync (){
-			return Task.Run (() => this.Verify ());
-		}
-
-		private bool Verify()
-		{
+		public override async Task<bool> VerifyAsync ()
+        {	
 			// 印刷対象の画像の取得に失敗した時
 			if (!this.PrintingTargets.Status) {
                 PresentationChanel.NotifyFlushMessage(this.PrintingTargets.Left);
@@ -78,7 +74,7 @@ namespace QR
 			try {
                 printing.BeginEnqueue();
 				foreach (var imgdata in this.PrintingTargets.Right) {
-                    var status = printing.EnqueuePrinting(imgdata);
+                    var status = await printing.EnqueuePrinting(imgdata, subject).ConfigureAwait(true);
 					subject.PrintFinished(); //印刷枚数インクリメント
 					StatusCollector.Add (imgdata.token_id, status);
 				}

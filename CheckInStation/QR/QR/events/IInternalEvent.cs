@@ -1,4 +1,5 @@
 using System;
+using System.Windows.Threading;
 
 namespace QR
 {
@@ -8,10 +9,11 @@ namespace QR
 	public interface IInternalEvent
 	{
 		void HandleEvent ();
-        void HandleEvent (Action<string> useAction);
+        void HandleEvent (Action<string> useAction);        
 		bool NotifyFlushMessage (string message);
 
 		InternalEventStaus Status { get; set; }
+        Dispatcher CurrentDispatcher { get; set; }
 	}
 
 	public enum InternalEventStaus

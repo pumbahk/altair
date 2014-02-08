@@ -6,7 +6,7 @@ namespace QR
 {
 	public interface ITicketPrinting
 	{
-		bool EnqueuePrinting (TicketImageData imageData);
+		Task<bool> EnqueuePrinting (TicketImageData imageData, IInternalEvent ev);
         PrintQueueCollection AvailablePrinters();
         PrintQueue DefaultPrinter { get; set; }
         void BeginEnqueue();

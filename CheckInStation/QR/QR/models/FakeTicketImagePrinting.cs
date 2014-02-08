@@ -5,10 +5,10 @@ namespace QR
 {
     public class FakeTicketImagePrinting : ITicketPrinting
     {
-        public bool EnqueuePrinting(TicketImageData imagedata)
+        public Task<bool> EnqueuePrinting(TicketImageData imagedata, IInternalEvent ev)
         {
             Console.WriteLine("Printing image!: token id={0}", imagedata.token_id);
-            return true;
+            return Task.Run(() => true);
         }
         public System.Printing.PrintQueue DefaultPrinter { get; set; }
         public System.Printing.PrintQueueCollection AvailablePrinters()

@@ -68,7 +68,10 @@ namespace QR.presentation.gui.page
             {
                 Broker = AppUtil.GetCurrentBroker(),
             };
-            ctx.Event = new PrintingEvent() { StatusInfo = ctx as IPrintingStatusInfo };
+            ctx.Event = new PrintingEvent() {
+                CurrentDispatcher = this.Dispatcher,
+                StatusInfo = ctx as IPrintingStatusInfo,
+            };
             ctx.PropertyChanged += OnPrintingStart;
             return ctx;
         }

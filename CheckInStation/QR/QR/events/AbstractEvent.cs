@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using NLog;
+using System.Windows.Threading;
 
 namespace QR
 {
 	public abstract class AbstractEvent
 	{
         protected static Logger logger = LogManager.GetCurrentClassLogger();
+
+        public Dispatcher CurrentDispatcher { get; set; }
 
 		public List<string> messages;
 

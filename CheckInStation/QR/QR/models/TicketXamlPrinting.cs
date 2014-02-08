@@ -31,7 +31,7 @@ namespace QR
 		#region ITicketPrinting implementation
 		public PrintQueue DefaultPrinter { get; set; }
 
-		public bool EnqueuePrinting (TicketImageData imageData)
+		public async Task<bool> EnqueuePrinting (TicketImageData imageData, IInternalEvent ev)
 		{
 
 			PrintQueue pq = this.DefaultPrinter;
@@ -39,8 +39,13 @@ namespace QR
 
 			var r = new StringReader(imageData.xaml);
 			var xmlreader = XmlReader.Create(r);
-			var doc = XamlReader.Load(xmlreader) as FixedDocument;
 
+            //xaml‚ðobject‰»‚·‚é‚Ì‚Íui thread ‚Ì‚Ý
+            FixedDocument doc = await ev.CurrentDispatcher.InvokeAsync<FixedDocument>(() =>
+            {
+                return XamlReader.Load(xmlreader) as FixedDocument;
+            });
+            
 			writer.Write(doc); //todo: PrintTicket
 			return true;
 		}
