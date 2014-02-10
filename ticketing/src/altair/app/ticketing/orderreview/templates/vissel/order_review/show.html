@@ -24,14 +24,20 @@
                   %for product in order.items:
                   <tr>
                     <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="22" height="21" /> ${product.product.name}</th>
+                    % if product.product.sales_segment.seat_choice and product.seats:
                     <td><strong>${product.seat_quantity}</strong>枚</td>
                     <td>
-                    % if product.product.sales_segment.seat_choice:
-                      % for seat in product.seats:
-                        ${seat['name']}<br/>
-                      % endfor
-                    % endif
+                    % for seat in product.seats:
+                      ${seat['name']}<br/>
+                    % endfor
                     </td>
+                    % else:
+                    % if product.seats:
+                    <td colspan="2"><strong>${product.seat_quantity}</strong>枚</td>
+                    % else:
+                    <td colspan="2"><strong>${product.quantity}</strong>枚</td>
+                    % endif
+                    % endif
                     <td class="align1">￥${h.format_number(product.price * product.quantity)}</td>
                   </tr>
                   %endfor
