@@ -15,6 +15,9 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
     AugusVenue,
     )
+from altair.augus.protocols import VenueSyncResponse
+from altair.augus.exporters import AugusExporter
+from altair.augus.types import Status
 
 from .forms import (
     AugusVenueUploadForm,
@@ -85,6 +88,8 @@ class VenueView(_AugusBaseView):
         else:# validate error
             raise HTTPBadRequest('validation error')
 
+CUSTOMER_ID = 1000001
+
 @view_defaults(route_name='augus.augus_venue', decorator=with_bootstrap, permission='event_editor')
 class AugusVenueView(_AugusBaseView):
 
@@ -140,6 +145,25 @@ class AugusVenueView(_AugusBaseView):
                 raise HTTPBadRequest(err)
         else:# validate error
             raise HTTPBadRequest('validation error')
+
+    @view_config(route_name='augus.augus_venue.complete', request_method='GET')
+    def complete(self):
+        augus_venue = self.context.augus_venue
+        res = Response()
+        venue_response = VenueSyncResponse(customer_id=CUSTOMER_ID,
+                                           venue_code=augus_venue.code)
+        res.headers = [('Content-Type', 'application/octet-stream; charset=cp932'),
+                       ('Content-Disposition', 'attachment; filename={0}'.format(venue_response.name)),
+                       ]
+        record = venue_response.record()
+        record.venue_code = augus_venue.code
+        record.venue_name = augus_venue.name
+        record.status = Status.OK.value
+        record.venue_version = augus_venue.version
+        venue_response.append(record)
+        AugusExporter.exportfp(venue_response, res)
+        return res
+
 
 @view_defaults(route_name='augus.events.show', decorator=with_bootstrap, permission='event_editor')
 class AugusEventView(_AugusBaseView):
@@ -259,5 +283,3 @@ class AugusTicketView(_AugusBaseView):
         except ValueError as err:
             raise HTTPBadRequest('invalid save data: {}'.format(repr(err)))
         return HTTPFound(self.request.route_url('augus.stock_type.show', event_id=self.context.event.id))
-
-
