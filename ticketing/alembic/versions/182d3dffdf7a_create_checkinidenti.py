@@ -1,14 +1,14 @@
 """create CheckinIdentity for checkinstation
 
 Revision ID: 182d3dffdf7a
-Revises: 31e43f2db41b
+Revises: ee042788746
 Create Date: 2013-12-28 00:26:58.421242
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '182d3dffdf7a'
-down_revision = '31e43f2db41b'
+down_revision = 'ee042788746'
 
 from alembic import op
 import sqlalchemy as sa
