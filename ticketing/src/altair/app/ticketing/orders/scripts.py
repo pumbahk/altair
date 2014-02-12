@@ -16,7 +16,7 @@ import sqlahelper
 
 from altair.app.ticketing.core.models import DBSession, SeatStatus, SeatStatusEnum, Order, OrderedProduct, OrderedProductItem
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, ShippingAddress, Mailer
-from altair.app.ticketing.core.models import OrderImportTask, ImportStatusEnum
+from altair.app.ticketing.core.models import Organization, OrderImportTask, ImportStatusEnum
 from altair.app.ticketing.orders.importer import OrderImporter
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.sej.refund import create_and_send_refund_file
@@ -121,7 +121,6 @@ def detect_fraud():
     now = datetime.now()
     period_from = args.f if args.f else (now - timedelta(days=2)).strftime('%Y-%m-%d %H:%M')
     period_to = args.t if args.t else now.strftime('%Y-%m-%d %H:%M')
-    frauds = []
 
     logging.info('start detect_fraud batch')
 
@@ -143,30 +142,37 @@ def detect_fraud():
         func.sum(OrderedProductItem.quantity) >= 8,
         func.sum(OrderedProductItem.price * OrderedProductItem.quantity) >= 100000
     ))
-    query = query.with_entities(Order.performance_id, func.ifnull(Order.user_id, ShippingAddress.email_1))
+    # インナー予約は除く
+    query = query.filter(not_(Order.channel.in_(Order.inner_channels())))
+    query = query.with_entities(Order.organization_id, Order.performance_id, func.ifnull(Order.user_id, ShippingAddress.email_1))
     orders = query.all()
 
     # 該当した予約を予約者ごとに全て取得
+    frauds = dict()
     if len(orders) > 0:
         for order in orders:
             query = Order.query.filter(Order.canceled_at==None)
             query = query.join(Order.shipping_address)
-            query = query.filter(func.ifnull(Order.user_id, ShippingAddress.email_1)==order[1])
+            query = query.filter(func.ifnull(Order.user_id, ShippingAddress.email_1)==order[2])
             query = query.filter(period_from<=Order.created_at, Order.created_at<=period_to)
             rows = query.all()
             # 同一人物(user_idまたはメールアドレス)による同一公演の注文が2件以上存在
             if len(rows) >= 2:
-                frauds.append(rows)
+                organization_id = order[0]
+                if not frauds.has_key(organization_id):
+                    frauds[organization_id] = []
+                frauds[organization_id].append(rows)
                 for row in rows:
                     row.fraud_suspect = True
                     row.save()
 
-    if len(frauds) > 0:
+    for organization_id, fraud_list in frauds.items():
+        organization = Organization.filter_by(id=organization_id).one()
         settings = registry.settings
         sender = settings['mail.message.sender']
-        recipient = 'dev@ticketstar.jp,op@ticketstar.jp'
+        recipient = u'dev@ticketstar.jp,' + organization.contact_email
         subject = u'[alert] 不正予約'
-        render_params = dict(frauds=frauds, period_from=period_from, period_to=period_to)
+        render_params = dict(frauds=fraud_list, period_from=period_from, period_to=period_to)
         html = render_to_response('altair.app.ticketing:templates/orders/_fraud_alert_mail.html', render_params, request=None)
 
         mailer = Mailer(settings)
