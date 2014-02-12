@@ -364,12 +364,11 @@
       y: ((vb && vb[3]) || h || w)
     } : null);
 
-    var drawableOption = {
+    var drawable = new Fashion.Drawable(self.canvas[0], {
       contentSize: { x: size.x+100, y: size.y+100 },
       viewportSize: { x: this.canvas.innerWidth(), y: this.canvas.innerHeight() },
       captureTarget: document
-    };
-    var drawable = new Fashion.Drawable(self.canvas[0], drawableOption);
+    });
     var shapes = {};
     var styleClasses = CONF.DEFAULT.STYLES;
 
@@ -500,10 +499,6 @@
 
     self.drawable = drawable;
     self.shapes = shapes;
-
-    // set minimum zoom ratio in initial
-    self.zoomRatio = Math.min(drawableOption.viewportSize.x / drawableOption.contentSize.x,
-                              drawableOption.viewportSize.y / drawableOption.contentSize.y);
 
     tracker.lap('zoom start');
     self.zoom(self.zoomRatio);

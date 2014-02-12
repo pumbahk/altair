@@ -53,6 +53,10 @@ class LoggableCartBot(CartBot):
                     i = 0
                     while True:
                         try:
+                            self.logger.info("making %s request to %s", request.get_method(), request.get_full_url())
+                            for header_name, header_value in request.header_items():
+                                self.logger.debug("[HEADER] %s: %s", header_name, header_value)
+                            self.logger.debug("[REQUEST BODY] %r", request.data)
                             retval = fn()
                         except HTTPError as e:
                             if e.code >= 500 and e.code <= 599:
@@ -66,7 +70,12 @@ class LoggableCartBot(CartBot):
                             else:
                                 continue
                         except Exception as err:
-                            continue
+                            i += 1
+                            if i >= retry_count:
+                                raise
+                            else:
+                                self.logger.exception("oops")
+                                continue
                         break
                     elapsed = time.time() - s
                     self.logger.info("%s processed in %g seconds (%s)", request.get_full_url(), elapsed, browserid())

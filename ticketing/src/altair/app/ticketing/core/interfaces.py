@@ -60,8 +60,8 @@ class IAllAppliedSetting(Interface):
     order_limit     = Attribute(u"")
 
 class IOrderQueryable(Interface):
-    def query_orders_by_user(user, filter_canceled):
+    def query_orders_by_user(user, filter_canceled, query=None):
         pass
 
-    def query_orders_by_mailaddresses(mail_addresses, filter_canceled):
+    def query_orders_by_mailaddresses(mail_addresses, filter_canceled, query=None):
         pass
