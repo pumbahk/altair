@@ -1,0 +1,36 @@
+***************
+*** 5,20 ****
+    <div class="section">
+      <h3>購入情報</h3>
+      <table class="purchasedContents">
+-       <tbody>
+          <tr>
+-           <thead>
+-             <th colspan="4"><span>${order.performance.event.title} <br />${order.performance.name}<br />${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)} ${order.performance.venue.name}</span></th>
+-           </thead>
+          </tr>
+          %for product in order.items:
+          <tr>
+            <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="22" height="21" /> <span style="color: #000000">${product.product.name}</span></th>
+-           % if product.product.sales_segment.seat_choice and product.seats:
+            <td><strong>${product.seat_quantity}</strong>枚</td>
+            <td>
+            % for seat in product.seats:
+--- 5,21 ----
+    <div class="section">
+      <h3>購入情報</h3>
+      <table class="purchasedContents">
++       <thead>
+          <tr>
++           <th colspan="4"><span>${order.performance.event.title} <br />${order.performance.name}<br />${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)} ${order.performance.venue.name}</span></th>
+          </tr>
++       </thead>
++       <tbody>
+          %for product in order.items:
+          <tr>
+            <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="22" height="21" /> <span style="color: #000000">${product.product.name}</span></th>
++           % if product.seats:
++           % if product.product.sales_segment.seat_choice:
+            <td><strong>${product.seat_quantity}</strong>枚</td>
+            <td>
+            % for seat in product.seats:

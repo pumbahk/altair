@@ -138,7 +138,8 @@ shipping =order.shipping_address
         <tr>
           <th scope="row"><span style="background-color:${getattr(product.product.items[0].stock_type, 'style', {}).get('fill', {}).get('color') or '#000'}; width:12px; height:12px; border: 1px solid #888; border-radius:2px; display:inline-block; margin-right: 0.5em;"></span>${product.product.name}
           </th>
-          % if product.product.sales_segment.seat_choice and product.seats:
+          % if product.seats:
+          % if product.product.sales_segment.seat_choice:
           <td><strong>${product.seat_quantity}</strong>枚</td>
           <td>
           % for seat in product.seats:
@@ -146,11 +147,10 @@ shipping =order.shipping_address
           % endfor
           </td>
           % else:
-          % if product.seats:
           <td colspan="2"><strong>${product.seat_quantity}</strong>枚</td>
+          % endif
           % else:
           <td colspan="2"><strong>${product.quantity}</strong>枚</td>
-          % endif
           % endif
           <td class="align1">￥${h.format_number(product.price * product.quantity)}</td>
         </tr>

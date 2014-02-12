@@ -1,20 +1,20 @@
 <%inherit file="../commons/layout.html" />
 <div class="purchased">
   <h2>受付履歴確認 検索結果</h2>
-  <% pm,t_shirts = h.order_desc(order) %>
   <div class="section">
     <h3>購入情報</h3>
     <table class="purchasedContents">
-      <tbody>
+      <thead>
         <tr>
-          <thead>
-            <th colspan="4"><span style="color: #000000">${order.performance.event.title} <br />${order.performance.name}<br />${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)} ${order.performance.venue.name}</span></th>
-          </thead>
+          <th colspan="4"><span style="color: #000000">${order.performance.event.title} <br />${order.performance.name}<br />${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)} ${order.performance.venue.name}</span></th>
         </tr>
+      </thead>
+      <tbody>
         %for product in order.items:
         <tr>
           <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="22" height="21" /> <span style="color: #000000">${product.product.name}</span></th>
-          % if product.product.sales_segment.seat_choice and product.seats:
+          % if product.seats:
+          % if product.product.sales_segment.seat_choice:
           <td><strong>${product.seat_quantity}</strong>枚</td>
           <td>
           % for seat in product.seats:
@@ -22,11 +22,10 @@
           % endfor
           </td>
           % else:
-          % if product.seats:
           <td colspan="2"><strong>${product.seat_quantity}</strong>枚</td>
+          % endif
           % else:
           <td colspan="2"><strong>${product.quantity}</strong>枚</td>
-          % endif
           % endif
           <td class="textR">￥${h.format_number(product.price * product.quantity)}</td>
         </tr>
@@ -60,9 +59,7 @@
       </tbody>
     </table>
   </div>
-<%
-shipping =order.shipping_address
-%>
+  <% shipping =order.shipping_address %>
   % if order.status == 'canceled' or order.payment_status == 'refunded':
   <div class="section">
     <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
