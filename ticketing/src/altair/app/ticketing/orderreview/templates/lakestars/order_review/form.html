@@ -1,43 +1,37 @@
 <%inherit file="../commons/layout.html" />
 <form action="${request.route_path('order_review.show')}" method="post">
-	<table class="layout" style="width:760px" class="wrapper">
-    <tr>
-      <td>
-        <h2>滋賀レイクスターズ レイクスオンラインチケット 購入確認ページ</h2>
-        <div class="formWrapper">
-          <table cellpadding="0" cellspacing="0" class="formlakestars">
-            <colgroup>
-              <col style="width:180px;">
-              <col style="width:310px;">
-            </colgroup>
-            <tbody>
-              <tr>
-                <th>受付番号 <span class="red">*</span></th>
-                <td>
-                  ${form.order_no}
-                  ${h.error('order_no')}
-                </td>
-              </tr>
-              <tr>
-                <th>電話番号 <span class="red">*</span></th>
-                <td>
-                  ${form.tel}<br><small>電話番号は、ご登録時の電話番号をご入力ください（携帯・自宅をどちらもご登録した場合、どちらの番号でも構いません）</small>
-                  ${h.error('tel')}
-                </td>
-              </tr>
-              <tr>
-                <td colspan="2" style="text-align:center">
-                  <div class="textRight red" style="font-size:12px;">*は入力必須項目です。<br></div>
-                  <input type="submit" value="次に進む" class="redBtn" style="width:400px;height:50px;">
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <br />
-        <br />
-        <br />
-			</td>
-		</tr>
-  </table>
+  <h2>滋賀レイクスターズ レイクスオンラインチケット 購入確認ページ</h2>
+  <div class="formWrapper">
+    <table cellpadding="0" cellspacing="0" class="formlakestars">
+      <colgroup>
+        <col style="width:180px;">
+        <col style="width:310px;">
+      </colgroup>
+      <tbody>
+        <tr>
+          <th>受付番号 <span class="red">*</span></th>
+          <td>
+            ${form.order_no}
+            ${h.error('order_no')}
+          </td>
+        </tr>
+        <tr>
+          <th>電話番号 <span class="red">*</span></th>
+          <td>
+            ${form.tel}<br><small>電話番号は、ご登録時の電話番号をご入力ください（携帯・自宅をどちらもご登録した場合、どちらの番号でも構いません）</small>
+            ${h.error('tel')}
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2" style="text-align:center">
+            <div class="textRight red" style="font-size:12px;">*は入力必須項目です。<br></div>
+            <input type="submit" value="次に進む" class="redBtn" style="width:400px;height:50px;">
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </form>
+<br />
+<br />
+<br />
