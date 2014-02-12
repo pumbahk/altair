@@ -46,6 +46,36 @@ class SimpleControl(object):
             y=attrib.get("y"), 
         )
 
+    def add_content_tspan(self, contents, region, default_attrs, tspan):
+        attrs = self.attrgetter.get_new_attrs(default_attrs, tspan)
+        if "x" in attrs or "y" in attrs:
+            region = Region(
+                x=attrs.get("x", region.x),
+                y=attrs.get("y", region.y),
+                width=attrs.get("width", region.width),
+                height=attrs.get("height", region.height),
+            )
+        contents.append((region, Content(text=tspan.text, attrs=attrs)))
+        for c in tspan.iterchildren():
+            ctag = self.get_tag(c)
+            if ctag == "tspan":
+                self.add_content_tspan(contents, region, attrs, c)
+            else:
+                logger.info("%s is not supported, c")
+        return contents
+
+    def add_content_text(self, contents, region, default_attrs, text):
+        attrs = self.attrgetter.get_new_attrs(default_attrs, text)
+        if text.text:
+            contents.append((region, Content(text=text.text, attrs=attrs)))
+        for c in text.iterchildren():
+            ctag = self.get_tag(c)
+            if ctag == "tspan":
+                self.add_content_tspan(contents, region, attrs, c)
+            else:
+                logger.info("%s is not supported, c")
+        return contents
+
     def get_region_flowregion(self, flowregion):
         children = flowregion.getchildren()
         assert len(children) == 1
@@ -62,7 +92,7 @@ class SimpleControl(object):
 
         text = flowpara.text
         if text is None:
-            logger.debug("flowPara %s is empty", flowpara)
+            logger.info("flowPara %s is empty", flowpara)
         else:
             contents.append((region, Content(text=text, attrs=attrs)))
         return contents
@@ -103,11 +133,21 @@ class ElementBuilder(object):
     def build_flowed_text_block(self, region, attrs, content):
         e = etree.Element("TextBlock")
         e.attrib["TextWrapping"] = "Wrap"
-        return self._emit_text_block_attributes(e, region, attrs, content)
-
-    def _emit_text_block_attributes(self, e, region, attrs, content):
         e.attrib["Width"] = region.width
         e.attrib["Height"] = region.height
+        return self._emit_text_block_attributes(e, region, attrs, content)
+
+    def build_span_from_text(self, text):
+        text.tag = "Span"
+        attrib = text.attrib
+        attrib.pop("Canvas.Left", None)
+        attrib.pop("Canvas.Top", None)
+        attrib.pop("Height", None)
+        attrib.pop("Width", None)
+        attrib.pop("TextWrapping", None)
+        return text 
+
+    def _emit_text_block_attributes(self, e, region, attrs, content):
         e.attrib["Canvas.Left"] = region.x
         e.attrib["Canvas.Top"] = region.y
 
@@ -115,8 +155,8 @@ class ElementBuilder(object):
             e.attrib["FontSize"] = attrs["font-size"]
         if "font-family" in attrs:
             e.attrib["FontFamily"] = attrs["font-family"]
-        if "font-color" in attrs:
-            e.attrib["Foreground"] = attrs["font-color"]
+        if "fill" in attrs:
+            e.attrib["Foreground"] = attrs["fill"]
         if "font-style" in attrs:
             fontstyle = attrs["font-style"]
             if fontstyle == "normal":
@@ -127,6 +167,7 @@ class ElementBuilder(object):
                 e.attrib["FontStyle"] = "Oblique"
             else:
                 logger.warn("fontstyle=%s is not found", fontstyle)
+
         if "font-weight" in attrs:
             fontweight = attrs["font-weight"]
             if fontweight == "bold":
@@ -218,13 +259,20 @@ class XAMLFromSVG(object):
 
         contents = [] #((region, content), ....)
         default_attrs = self.control.get_new_attrs(n)
-        self.control.add_content_flowpara(contents, region, default_attrs, n)
+        self.control.add_content_text(contents, region, default_attrs, n)
+        prev_element = None
+        prev_region = None
 
         for region, content in contents:
             region = region
             attrs = content.attrs or default_attrs
             e = self.element_builder.build_fixed_text_block(region, attrs, content)
-            this.append(e)
+            if prev_region and prev_region.x == region.x and prev_region.y == region.y:
+                prev_element.append(self.element_builder.build_span_from_text(e))
+            else:
+                this.append(e)
+                prev_element = e
+                prev_region = region
 
     def visit_rect(self, this, n):
         pass
@@ -253,11 +301,21 @@ class XAMLFromSVG(object):
             elif tag == "flowPara":
                 self.control.add_content_flowpara(contents, default_region, default_attrs, c)
 
+        prev_element = None
+        prev_region = None
+
         for region, content in contents:
             region = region or default_region
             attrs = content.attrs or default_attrs
             e = self.element_builder.build_flowed_text_block(region, attrs, content)
-            this.append(e)
+            if prev_region and prev_region.x == region.x and prev_region.y == region.y:
+                linebreak = etree.SubElement(prev_element, "LineBreak")
+                #linebreak.tail = e.text
+                prev_element.append(self.element_builder.build_span_from_text(e))
+            else:
+                this.append(e)
+                prev_element = e
+                prev_region = region
 
 
 """
