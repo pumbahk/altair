@@ -50,63 +50,25 @@
                     </table>
                 </td>
                 <td>
-                  <form action="${request.url}" method="post">
                     <table class="loginbox">
                         <thead>
                             <tr>
-                                <th>各種会員の方<small> はこちらから</small></th>
+                                <th>楽天会員の方<small> はこちらから</small></th>
                             </tr>
                         </thead>
                         <tr>
                             <td>
-                            <table class="clubnames" >
-                                <tr>
-                                    <td style="background:#333;">ブースター<br />クラブ</td>
-                                    <td style="background:#d6a200">ゴールド<br />クラブ</td>
-                                    <td style="background:#aaa;">レギュラー<br />クラブ</td>
-                                </tr>
-                                <tr>
-                                    <td style="background:#860010;">ベーシック<br />クラブ</td>
-                                    <td style="background:#65aa00;">キッズ<br />クラブ</td>
-                                    <td style="background:#d65a8f;">レディース<br />クラブ</td>
-                                </tr>
-                                <tr>
-                                    <td style="background:#008000;">E25<br/>クラブ</td>
-                                    <td style="background:#800080;">1001<br/>クラブ</td>
-                                    <td style="background:#ff4500;">SOC</td>
-                                </tr>
-                                <tr>
-                                    <td style="background:#0000ff;">スポンサー<br/>クラブ</td>
-                                </tr>
-                            </table>
+                            <form id="form3" name="form3" action="${request.route_path('mypage.show')}" method="get">
                                 <table width="323" border="0" cellpadding="0" cellspacing="0" class="member nobdr" align="center">
                                   <tbody>
                                     <tr>
-                                      <th align="right">会員ID</th>
-                                      <td align="left">
-                                        <div class="tal">
-                                            <input type="text" class="text" name="username">
-                                            %if message:
-                                            <br/><span class="small red">IDまたはパスワードが一致しません</span>
-                                            %endif
-                                        </div>
-                                      </td>
-                                    </tr>
-                                    <tr>
-                                      <th align="right">パスワード</th>
-                                      <td align="left">
-                                        <div class="tal">
-                                            <input type="password" name="password">
-                                        </div>
-                                      </td>
-                                    </tr>
-                                    <tr>
                                       <td colspan="2" id="btn_login" align="center">
-                                          <input type="submit" value="ログイン" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+                                          <input type="submit" value="次に進む" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
                                       </td>
                                     </tr>
                                   </tbody>
                                 </table>
+                            </form>
                             </td>
                         </tr>
                     </table>
