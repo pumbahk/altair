@@ -42,8 +42,9 @@ def main(global_config, **local_config):
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
             mapping={"altair.app.ticketing.cart:static/": "/cart/static/"}))
 
-    from ..cart.authorization import MembershipAuthorizationPolicy
-    config.set_authorization_policy(MembershipAuthorizationPolicy())
+    config.include('altair.rakuten_auth')
+    from .authorization import MypageAuthorizationPolicy
+    config.set_authorization_policy(MypageAuthorizationPolicy())
 
     config.include('altair.app.ticketing.checkout')
     config.include('altair.app.ticketing.multicheckout')
@@ -62,12 +63,18 @@ def main(global_config, **local_config):
     config.include(import_view)
     config.include(import_exc_view)
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
-    
+
     config.scan(".views")
     
     return config.make_wsgi_app()
 
 def import_view(config):
+    # 楽天認証URL
+    config.add_route('rakuten_auth.login', '/login')
+    config.add_route('rakuten_auth.verify', '/verify')
+    config.add_route('rakuten_auth.verify2', '/verify2')
+    config.add_route('rakuten_auth.error', '/error')
+
     ## reivew
     config.add_route('order_review.form', '/')
     config.add_route('order_review.show', '/show')
