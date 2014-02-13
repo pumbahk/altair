@@ -4,7 +4,6 @@ import SocketServer
 import logging
 import cgi
 import time
-PORT = 8000
 
 class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
@@ -26,8 +25,12 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         #     logging.error(item)
         SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
+import sys
+if len(sys.argv) >= 2:
+    PORT = int(sys.argv[1])
+else:
+    PORT = 8000
 Handler = ServerHandler
-
 httpd = SocketServer.TCPServer(("", PORT), Handler)
 
 print "serving at port", PORT
