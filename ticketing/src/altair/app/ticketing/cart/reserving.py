@@ -20,7 +20,7 @@ from altair.app.ticketing.core.models import (
     SeatAdjacencySet,
     Seat_SeatAdjacency,
 )
-from sqlalchemy.sql import not_, or_, func, distinct
+from sqlalchemy.sql import not_, or_
 from sqlalchemy.orm import joinedload, aliased
 
 logger = logging.getLogger(__name__)
@@ -199,31 +199,83 @@ class Reserving(object):
             .join(Stock, Performance.id == Stock.performance_id) \
             .filter(Stock.id == stock_id).one()
 
+        # すでに確保済みか、異なるstock_idのSeatを持つ連席
+        def query_reserved_adjacencies(venue, stock_id, quantity):
+            _SeatAdjacency = aliased(SeatAdjacency)
+            _SeatAdjacencySet = aliased(SeatAdjacencySet)
+            _Seat = aliased(Seat)
+            _SeatStatus = aliased(SeatStatus)
+            _Seat_SeatAdjacency = aliased(Seat_SeatAdjacency)
+            _Venue = aliased(Venue)
+            return DBSession.query(_SeatAdjacency.id).filter(
+                    # すでに確保済み
+                    or_(
+                        _SeatStatus.status != int(SeatStatusEnum.Vacant),
+                        _Seat.stock_id != stock_id)
+                ).filter(
+                    _Seat_SeatAdjacency.seat_adjacency_id == _SeatAdjacency.id
+                ).filter(
+                    _Seat_SeatAdjacency.l0_id == _Seat.l0_id
+                ).filter(
+                    _SeatAdjacencySet.id == _SeatAdjacency.adjacency_set_id
+                ).filter(
+                    _SeatAdjacencySet.seat_count==quantity,
+                ).filter(
+                    _SeatStatus.seat_id==_Seat.id
+                ).filter(
+                    _SeatAdjacencySet.site_id==venue.site_id
+                ).filter(
+                    _Seat.venue_id==venue.id
+                )
+
+        # 未確保の座席だけからなる SeatAdjacency を探す
+        def query_adjacency(venue, stock_id, quantity, seat_index_type_id):
+            _SeatAdjacency = aliased(SeatAdjacency)
+            _SeatAdjacencySet = aliased(SeatAdjacencySet)
+            _Seat = aliased(Seat)
+            _SeatStatus = aliased(SeatStatus)
+            _Seat_SeatAdjacency = aliased(Seat_SeatAdjacency)
+            _SeatIndex = aliased(SeatIndex)
+            _Venue = aliased(Venue)
+            return DBSession.query(_SeatAdjacency.id).filter(
+                    _SeatAdjacencySet.seat_count==quantity,
+                ).filter(
+                    _SeatAdjacencySet.id==_SeatAdjacency.adjacency_set_id,
+                ).filter(
+                    _SeatAdjacencySet.site_id==venue.site_id
+                ).filter(
+                    _SeatAdjacency.id==_Seat_SeatAdjacency.seat_adjacency_id
+                ).filter(
+                    _Seat.l0_id==_Seat_SeatAdjacency.l0_id
+                ).filter(
+                    _Seat.stock_id==stock_id
+                ).filter(
+                    _SeatIndex.seat_id==_Seat.id
+                ).filter(
+                    _SeatIndex.seat_index_type_id==seat_index_type_id
+                ).filter(
+                    not_(_SeatAdjacency.id.in_(query_reserved_adjacencies(venue, stock_id, quantity)))
+                ).filter(
+                    _Seat.venue_id==venue.id
+                ).order_by(_SeatIndex.index, _Seat.l0_id)
+
         def query_selected_seats(venue, stock_id, quantity, seat_index_type_id):
-            tmp = DBSession.query(Seat_SeatAdjacency.seat_adjacency_id) \
-                .join(SeatAdjacency, Seat_SeatAdjacency.seat_adjacency_id == SeatAdjacency.id) \
-                .join(SeatAdjacencySet, SeatAdjacency.adjacency_set_id == SeatAdjacencySet.id) \
-                .join(Seat, Seat_SeatAdjacency.l0_id == Seat.l0_id) \
-                .filter(Seat.venue_id == venue.id) \
-                .filter(Seat.stock_id == stock_id) \
-                .join(SeatStatus, Seat.id == SeatStatus.seat_id) \
-                .join(SeatIndex, SeatIndex.seat_id == Seat.id) \
-                .filter(SeatStatus.status == SeatStatusEnum.Vacant.v) \
-                .filter(SeatIndex.seat_index_type_id == seat_index_type_id) \
-                .filter(SeatAdjacencySet.seat_count == quantity) \
-                .filter(SeatAdjacencySet.site_id == venue.site_id) \
-                .group_by(Seat_SeatAdjacency.seat_adjacency_id) \
-                .having(func.count(distinct(Seat.id)) == quantity) \
-                .order_by(func.min(SeatIndex.index), func.min(Seat.l0_id)) \
-                .first()
-            if tmp is None:
-                seat_adjacency_id = None
-            else:
-                seat_adjacency_id = tmp[0]
-            return DBSession.query(Seat_SeatAdjacency.seat_adjacency_id, Seat) \
-                .join(Seat, Seat_SeatAdjacency.l0_id == Seat.l0_id) \
-                .filter(Seat.venue_id == venue.id) \
-                .filter(Seat_SeatAdjacency.seat_adjacency_id == seat_adjacency_id)
+            _Seat = Seat # aliased(Seat) # XXX: これをaliasedにするとSQLAlchemyが変なクエリ (余計な Seat へのテーブル参照) を生成する
+            _Seat_SeatAdjacency = aliased(Seat_SeatAdjacency)
+            _SeatIndex = aliased(SeatIndex)
+            return DBSession.query(_Seat_SeatAdjacency.seat_adjacency_id, _Seat).options(
+                    joinedload(_Seat.status_)
+                ).filter(
+                    _Seat.l0_id == _Seat_SeatAdjacency.l0_id
+                ).filter(
+                    _Seat_SeatAdjacency.seat_adjacency_id == query_adjacency(venue, stock_id, quantity, seat_index_type_id).limit(1)
+                ).filter(
+                    _Seat.venue_id == venue.id
+                ).filter(
+                    _SeatIndex.seat_id==_Seat.id
+                ).filter(
+                    _SeatIndex.seat_index_type_id==seat_index_type_id
+                ).order_by(_SeatIndex.index, _Seat.l0_id)
 
         _selected_seats = query_selected_seats(venue, stock_id, quantity, seat_index_type_id).all()
 
