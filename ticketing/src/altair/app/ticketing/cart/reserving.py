@@ -221,6 +221,7 @@ class Reserving(object):
             else:
                 seat_adjacency_id = tmp[0]
             return DBSession.query(Seat_SeatAdjacency.seat_adjacency_id, Seat) \
+                .options(joinedload(Seat.status_)) \
                 .join(Seat, Seat_SeatAdjacency.l0_id == Seat.l0_id) \
                 .filter(Seat.venue_id == venue.id) \
                 .filter(Seat_SeatAdjacency.seat_adjacency_id == seat_adjacency_id)
