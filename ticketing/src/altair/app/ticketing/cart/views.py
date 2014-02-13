@@ -170,7 +170,7 @@ class IndexView(IndexViewMixin):
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
-        logger.debug("sales_segments: %s" % sales_segments_selection)
+        #logger.debug("sales_segments: %s" % sales_segments_selection)
 
         selected_sales_segment = None
         preferred_performance = None
@@ -234,7 +234,7 @@ class IndexView(IndexViewMixin):
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
-        logger.debug("sales_segments: %s" % sales_segments_selection)
+        #logger.debug("sales_segments: %s" % sales_segments_selection)
 
         set_rendered_event(self.request, self.context.event)
 
