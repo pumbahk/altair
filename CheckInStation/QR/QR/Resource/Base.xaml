@@ -57,7 +57,10 @@
     
     
     <!-- element -->
-    
+    <Style TargetType="TextBox">
+        <Setter Property="FontSize" Value="20"></Setter>
+    </Style>
+
     <Style TargetType="TextBlock">
         <Setter Property="FontSize" Value="20"></Setter>
     </Style>
@@ -92,6 +95,29 @@
     <Style TargetType="Button" x:Key="SubmitButtonStyle">
     </Style>
 
+    
+    <!-- checkbox -->
+    <Style x:Key="GrayoutIfNeedCheckBox" TargetType="CheckBox">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsSelected,Mode=OneTime}" Value="False">
+                <Setter Property="IsEnabled" Value="False"/>
+                <Setter Property="IsChecked" Value="False"/>
+            </DataTrigger>
+        </Style.Triggers>
+        <Setter Property="IsChecked" Value="True"/>
+    </Style>
+    <Style x:Key="GrayoutIfNeedTextBlock" BasedOn="{StaticResource MainText}" TargetType="TextBlock">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsSelected, Mode=OneTime}" Value="False">
+                <Setter Property="Foreground" Value="Gray"></Setter>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorLevel=1, AncestorType=CheckBox, Mode=FindAncestor}}" Value="False">
+                <Setter Property="Foreground" Value="Gray"></Setter>
+            </DataTrigger>
+        </Style.Triggers>
+        <Setter Property="Foreground" Value="Black"/>
+    </Style>
+    
     <!-- メニュー選択 -->
     <Style TargetType="ListBox" x:Key="ChoiceHorizontalPair">
         <Setter Property="ItemsPanel">

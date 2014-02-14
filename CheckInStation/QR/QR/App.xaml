@@ -29,18 +29,49 @@
             </DataTemplate>
 
             <!-- 券面候補の選択 -->
+            <ControlTemplate x:Key="DisableScrolviewer">
+                <ItemsPresenter />
+            </ControlTemplate>
+            
             <DataTemplate x:Key="SelectingTicketItemBoxData">
-                <WrapPanel Margin="10,5,0,0">
-                    <CheckBox IsChecked="{Binding IsSelected}"></CheckBox>
-                    <TextBlock>商品:</TextBlock>
-                    <TextBlock Text="{Binding ProductName}"/>
-                    <TextBlock>席:</TextBlock>
-                    <TextBlock Text="{Binding SeatName}"/>
-                    <TextBlock>発券日時:</TextBlock>
-                    <TextBlock Text="{Binding PrintedAt}"/>
-                </WrapPanel>
+                <CheckBox IsChecked="{Binding IsSelected}" Style="{StaticResource GrayoutIfNeedCheckBox}"
+                          Height="60"
+                          Width="390">
+                    <WrapPanel Margin="10,5,0,0">
+                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">商品:</TextBlock>
+                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding ProductName}"/>
+                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">席:</TextBlock>
+                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding SeatName}"/>
+                        <WrapPanel>
+                            <WrapPanel.Style>
+                                <Style TargetType="WrapPanel">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=Text,ElementName=PrintedAt}" Value="">
+                                            <Setter Property="Visibility" Value="Hidden"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </Style>
+                            </WrapPanel.Style>
+                            <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">印刷済み:</TextBlock>
+                            <TextBlock Name="PrintedAt" Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding PrintedAt}"/>
+                        </WrapPanel>
+                    </WrapPanel>
+                </CheckBox>
             </DataTemplate>
-
+            
+            <ItemsPanelTemplate x:Key="TwoColumnsItemsPanel">
+                <WrapPanel Width="800" Orientation="Horizontal">
+                </WrapPanel>
+            </ItemsPanelTemplate>
+            
+            <Style TargetType="ListView" x:Key="ChoiceCandidatesTwoColumns">
+                <Setter Property="ItemsPanel" Value="{StaticResource TwoColumnsItemsPanel}"/>
+                <Setter Property="Template" Value="{StaticResource DisableScrolviewer}"/>
+                <Setter Property="ItemTemplate" Value="{StaticResource SelectingTicketItemBoxData}"/>
+            </Style>
+                   
+            
             <!-- virtual keyboard-->
             <c:KeyPadPopupContext x:Key="KeyPadContextPassword" PreviewType="password"/>
             <c:KeyPadPopupContext x:Key="KeyPadContextRaw" PreviewType="raw"/>

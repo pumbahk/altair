@@ -14,7 +14,7 @@
                 "name": "指定席A(1)"
             }
         },
-        {
+       {
             "ordered_product_item_token_id": "-2", 
             "printed_at": null,
             "refreshed_at": null,
@@ -25,7 +25,115 @@
                 "id": "-1112",
                 "name": "指定席A(2)"
             }
-        }
+        },
+       {
+            "ordered_product_item_token_id": "-3", 
+            "printed_at": "2012年12月12日",
+            "refreshed_at": null,
+            "product": {
+                "name": "ダミー席"
+            },
+            "seat": {
+                "id": "-1113",
+                "name": "指定席A(3)"
+            }
+        },
+       {
+            "ordered_product_item_token_id": "-4", 
+            "printed_at": "2012年12月12日",
+            "refreshed_at": null,
+            "product": {
+                "name": "ダミー席"
+            },
+            "seat": {
+                "id": "-1114",
+                "name": "指定席A(4)"
+            }
+        },
+       {
+            "ordered_product_item_token_id": "-5", 
+            "printed_at": "2012年12月12日",
+            "refreshed_at": null,
+            "product": {
+                "name": "ダミー席"
+            },
+            "seat": {
+                "id": "-1115",
+                "name": "指定席A(5)"
+            }
+        },
+       {
+            "ordered_product_item_token_id": "-6", 
+            "printed_at": null,
+            "refreshed_at": null,
+            "product": {
+                "name": "ダミー席"
+            },
+            "seat": {
+                "id": "-1116",
+                "name": "指定席A(6)"
+            }
+        },
+       {
+            "ordered_product_item_token_id": "-7", 
+            "printed_at": null,
+            "refreshed_at": null,
+            "product": {
+                "name": "ダミー席"
+            },
+            "seat": {
+                "id": "-1117",
+                "name": "指定席A(7)"
+            }
+        },
+       {
+            "ordered_product_item_token_id": "-8", 
+            "printed_at": null,
+            "refreshed_at": null,
+            "product": {
+                "name": "ダミー席"
+            },
+            "seat": {
+                "id": "-1118",
+                "name": "指定席A(8)"
+            }
+        },
+       {
+            "ordered_product_item_token_id": "-9", 
+            "printed_at": null,
+            "refreshed_at": null,
+            "product": {
+                "name": "ダミー席"
+            },
+            "seat": {
+                "id": "-1119",
+                "name": "指定席A(9)"
+            }
+        },
+       {
+            "ordered_product_item_token_id": "-10", 
+            "printed_at": null,
+            "refreshed_at": null,
+            "product": {
+                "name": "ダミー席"
+            },
+            "seat": {
+                "id": "-11110",
+                "name": "指定席A(10)"
+            }
+        },
+       {
+            "ordered_product_item_token_id": "-11", 
+            "printed_at": null,
+            "refreshed_at": null,
+            "product": {
+                "name": "ダミー席"
+            },
+            "seat": {
+                "id": "-11111",
+                "name": "指定席A(11)"
+            }
+        },
     ],
     "additional": {
         "user": "苗字名前",
