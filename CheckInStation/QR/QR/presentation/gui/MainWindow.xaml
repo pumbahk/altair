@@ -4,5 +4,10 @@
              WindowStartupLocation="CenterScreen" 
              Title="CheckinStation"
              Source="page/PageAuthInput.xaml">
-
+    <NavigationWindow.ContextMenu>
+        <ContextMenu>
+            <MenuItem Header="アプリケーションを終了する"
+                      Click="MenuItem_Close"/>
+        </ContextMenu>
+    </NavigationWindow.ContextMenu>
 </NavigationWindow>

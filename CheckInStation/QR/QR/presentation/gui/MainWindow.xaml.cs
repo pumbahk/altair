@@ -26,12 +26,23 @@ namespace QR.presentation.gui.page
             this.PreviewKeyDown += new KeyEventHandler(HandleEsc);
         }
 
+        private void Shutdown()
+        {
+           // this.Close();
+            Application.Current.Shutdown();
+        }
+
         private void HandleEsc(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
-                this.Close();
+                this.Shutdown();
             }
+        }
+
+        private void MenuItem_Close(object sender, RoutedEventArgs e)
+        {
+            this.Shutdown();
         }
     }
 }
