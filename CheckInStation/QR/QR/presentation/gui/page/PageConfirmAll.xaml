@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:c="clr-namespace:QR.presentation.gui.control"
+      xmlns:l="clr-namespace:QR"
       mc:Ignorable="d" 
       d:DesignHeight="50" d:DesignWidth="50"
     ShowsNavigationUI="False"
@@ -40,6 +41,16 @@
         
         <ScrollViewer Grid.Row="2" Grid.Column="1" Grid.RowSpan="6" Grid.ColumnSpan="7">            
             <StackPanel>
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Status, Mode=OneWay}" Value="{x:Static l:ConfirmAllStatus.starting}">
+                                <Setter Property="Visibility" Value="Hidden"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                        <Setter Property="Visibility" Value="Visible"/>
+                    </Style>
+                </StackPanel.Style>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition></RowDefinition>
