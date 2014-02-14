@@ -3,7 +3,7 @@ using System.Net.Http;
 
 namespace QR
 {
-	public class HttpCilent
-	{
-	}
+    public class HttpCilent
+    {
+    }
 }

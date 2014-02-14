@@ -5,25 +5,25 @@ using System.Threading.Tasks;
 
 namespace QR
 {
-	public class FakeHttpMessageHandler : HttpMessageHandler
-	{
-		private HttpResponseMessage response;
+    public class FakeHttpMessageHandler : HttpMessageHandler
+    {
+        private HttpResponseMessage response;
 
-		public FakeHttpMessageHandler (HttpResponseMessage response)
-		{
-			this.response = response;
-		}
+        public FakeHttpMessageHandler (HttpResponseMessage response)
+        {
+            this.response = response;
+        }
 
-		protected override Task<HttpResponseMessage>
-		SendAsync (HttpRequestMessage request,
-		           CancellationToken cancellationToken)
-		{
-			var responseTask =
-				new TaskCompletionSource<HttpResponseMessage> ();
-			responseTask.SetResult (response);
+        protected override Task<HttpResponseMessage>
+        SendAsync (HttpRequestMessage request,
+                   CancellationToken cancellationToken)
+        {
+            var responseTask =
+                new TaskCompletionSource<HttpResponseMessage> ();
+            responseTask.SetResult (response);
 
-			return responseTask.Task;
-		}
-	}
+            return responseTask.Task;
+        }
+    }
 }
 

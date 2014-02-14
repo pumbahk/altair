@@ -2,9 +2,9 @@ using System;
 
 namespace QR
 {
-	public interface IUrlBuilder
-	{
-		string Build ();
-	}
+    public interface IUrlBuilder
+    {
+        string Build ();
+    }
 }
 

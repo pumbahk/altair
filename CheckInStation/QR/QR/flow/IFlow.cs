@@ -3,22 +3,22 @@ using System.Threading.Tasks;
 
 namespace QR
 {
-	public interface IFlow
-	{
-		Task<IFlow> Forward ();
-		//TODO:implement
-		Task<IFlow> Backward ();
+    public interface IFlow
+    {
+        Task<IFlow> Forward ();
+        //TODO:implement
+        Task<IFlow> Backward ();
 
         Task PrepareAsync();
         Task<bool> VerifyAsync();
 
-		void Finish ();
+        void Finish ();
 
-		ICase Case { get; set; }
+        ICase Case { get; set; }
 
-		IFlowDefinition GetFlowDefinition ();
+        IFlowDefinition GetFlowDefinition ();
 
-		bool IsAutoForwarding ();
-	}
+        bool IsAutoForwarding ();
+    }
 }
 

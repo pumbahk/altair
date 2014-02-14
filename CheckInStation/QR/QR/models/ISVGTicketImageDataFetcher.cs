@@ -17,11 +17,11 @@ namespace QR
      * IImageFromSvg, ImageFromSvg, ImageFromSvgPostMultiPart
      */
 
-	public interface ISVGTicketImageDataFetcher{
-		Task<ResultTuple<string, List<TicketImageData>>> FetchImageDataForOneAsync (TicketData tdata);
-		Task<ResultTuple<string, List<TicketImageData>>>FetchImageDataForAllAsync (TicketDataCollection collection);
-		string GetSvgOneURL ();
-		string GetSvgAllURL ();
-	}
+    public interface ISVGTicketImageDataFetcher{
+        Task<ResultTuple<string, List<TicketImageData>>> FetchImageDataForOneAsync (TicketData tdata);
+        Task<ResultTuple<string, List<TicketImageData>>>FetchImageDataForAllAsync (TicketDataCollection collection);
+        string GetSvgOneURL ();
+        string GetSvgAllURL ();
+    }
 
 }

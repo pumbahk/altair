@@ -7,17 +7,17 @@ using System.Net.Http.Headers;
 
 namespace QR
 {
-	public class CookieUtils
-	{
+    public class CookieUtils
+    {
         private static Logger logger = LogManager.GetCurrentClassLogger();
-		public static CookieContainer GetCookiesFromResponseHeaders (string uriString, HttpResponseHeaders headers)
-		{
+        public static CookieContainer GetCookiesFromResponseHeaders (string uriString, HttpResponseHeaders headers)
+        {
             var uri = new Uri(uriString);
             var domain = new Uri(String.Format("{0}://{1}", uri.Scheme , uri.DnsSafeHost));
             var container = new CookieContainer();
-			IEnumerable<string> setCookiesSentences;			
+            IEnumerable<string> setCookiesSentences;            
 
-			if (headers.TryGetValues ("Set-Cookie", out setCookiesSentences)) {
+            if (headers.TryGetValues ("Set-Cookie", out setCookiesSentences)) {
                 logger.Debug("domain: {0}", domain);
                 foreach (var k in setCookiesSentences) {
                     //foo=bar; boo
@@ -25,18 +25,18 @@ namespace QR
                     var nameAndValue = expr.Split('=');
                     logger.Debug("Cookie: name={0}, value={1}", nameAndValue[0], nameAndValue[1]);
                     container.Add(domain, new Cookie(nameAndValue[0], nameAndValue[1]));
-				}
+                }
             }
             return container;
-		}
+        }
 
-		public static void PutCokkiesToRequestHandler (HttpClientHandler handler , CookieContainer container)
-		{
-			if (container != null){
+        public static void PutCokkiesToRequestHandler (HttpClientHandler handler , CookieContainer container)
+        {
+            if (container != null){
                 handler.CookieContainer = container;
                 logger.Debug("cookie: {0}", container);
-			}
-		}
-	}
+            }
+        }
+    }
 }
 

@@ -8,31 +8,31 @@ using System.Net;
 
 namespace QR
 {
-	/// <summary>
-	/// Case QR print for one. 印刷(1枚)
-	/// </summary>
-	public class CasePrintForOne :AbstractCase,ICase,IAutoForwardingCase
-	{
-		public TicketData TicketData { get; set; }
+    /// <summary>
+    /// Case QR print for one. 印刷(1枚)
+    /// </summary>
+    public class CasePrintForOne :AbstractCase,ICase,IAutoForwardingCase
+    {
+        public TicketData TicketData { get; set; }
 
-		public ResultTuple<string, List<TicketImageData>> PrintingTargets { get; set; }
+        public ResultTuple<string, List<TicketImageData>> PrintingTargets { get; set; }
 
-		public ResultStatusCollector<string> StatusCollector { get; set; }
+        public ResultStatusCollector<string> StatusCollector { get; set; }
 
-		public UpdatePrintedAtRequestData RequestData{ get; set; }
+        public UpdatePrintedAtRequestData RequestData{ get; set; }
 
-		private static Logger logger = LogManager.GetCurrentClassLogger ();
+        private static Logger logger = LogManager.GetCurrentClassLogger ();
 
-		public CasePrintForOne (IResource resource, TicketData ticketdata) : base (resource)
-		{
-			TicketData = ticketdata;
-			StatusCollector = new ResultStatusCollector<string> ();
-		}
+        public CasePrintForOne (IResource resource, TicketData ticketdata) : base (resource)
+        {
+            TicketData = ticketdata;
+            StatusCollector = new ResultStatusCollector<string> ();
+        }
 
-		public override async Task PrepareAsync (IInternalEvent ev)
-		{
-			await base.PrepareAsync (ev).ConfigureAwait (false);
-			var subject = this.PresentationChanel as PrintingEvent;
+        public override async Task PrepareAsync (IInternalEvent ev)
+        {
+            await base.PrepareAsync (ev).ConfigureAwait (false);
+            var subject = this.PresentationChanel as PrintingEvent;
 
             try
             {
@@ -57,64 +57,64 @@ namespace QR
                 this.PrintingTargets = new Failure<string, List<TicketImageData>>(Resource.GetDefaultErrorMessage());
 
             }
-		}
+        }
 
-		public override async Task<bool> VerifyAsync ()
-		{
-			// 印刷対象の画像の取得に失敗した時
-			if (!this.PrintingTargets.Status) {
+        public override async Task<bool> VerifyAsync ()
+        {
+            // 印刷対象の画像の取得に失敗した時
+            if (!this.PrintingTargets.Status) {
                 PresentationChanel.NotifyFlushMessage(this.PrintingTargets.Left);
-				PresentationChanel.NotifyFlushMessage ((this.PrintingTargets as Failure<string,List<TicketImageData>>).Result);
-				return false;
-			}
-			var subject = this.PresentationChanel as PrintingEvent;
+                PresentationChanel.NotifyFlushMessage ((this.PrintingTargets as Failure<string,List<TicketImageData>>).Result);
+                return false;
+            }
+            var subject = this.PresentationChanel as PrintingEvent;
             subject.ChangeState(PrintingStatus.printing);
             ITicketPrinting printing = Resource.TicketPrinting;
-			try {
+            try {
 
                 printing.BeginEnqueue();
-				foreach (var imgdata in this.PrintingTargets.Right) {
+                foreach (var imgdata in this.PrintingTargets.Right) {
                     var status = await printing.EnqueuePrinting(imgdata, subject).ConfigureAwait(true);
-					subject.PrintFinished(); //印刷枚数インクリメント
-					StatusCollector.Add (imgdata.token_id, status);
-				}
+                    subject.PrintFinished(); //印刷枚数インクリメント
+                    StatusCollector.Add (imgdata.token_id, status);
+                }
                 printing.EndEnqueue();
 
-				this.RequestData = new UpdatePrintedAtRequestData () {
-					token_id_list = StatusCollector.Result ().SuccessList.ToArray (),
-					secret = this.TicketData.secret,
-					order_no = this.TicketData.additional.order.order_no
-				};
+                this.RequestData = new UpdatePrintedAtRequestData () {
+                    token_id_list = StatusCollector.Result ().SuccessList.ToArray (),
+                    secret = this.TicketData.secret,
+                    order_no = this.TicketData.additional.order.order_no
+                };
                 subject.ChangeState(PrintingStatus.finished);
-				return StatusCollector.Status;
-			} catch (Exception ex) {
+                return StatusCollector.Status;
+            } catch (Exception ex) {
                 if (printing != null)
                     printing.EndEnqueue();
 
-				logger.ErrorException (":", ex);
-				PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
-				return false;
-			}
-		}
+                logger.ErrorException (":", ex);
+                PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
+                return false;
+            }
+        }
 
-		public override ICase OnSuccess (IFlow flow)
-		{
-			return new CasePrintFinish (this.Resource, this.RequestData);
-		}
+        public override ICase OnSuccess (IFlow flow)
+        {
+            return new CasePrintFinish (this.Resource, this.RequestData);
+        }
 
-		public override ICase OnFailure (IFlow flow)
-		{
-			flow.Finish ();
-			Func<Task<bool>> modify = (async () => {
-				if (this.RequestData != null) {
-					IEnumerable<string> used = StatusCollector.Result ().SuccessList;
-					foreach (var k in used) {
-						logger.Warn ("{0} is printed. but all status is failure", k);
-					}
-					await Resource.TicketDataManager.UpdatePrintedAtAsync (this.RequestData);
-				}
-				return true;
-			});
+        public override ICase OnFailure (IFlow flow)
+        {
+            flow.Finish ();
+            Func<Task<bool>> modify = (async () => {
+                if (this.RequestData != null) {
+                    IEnumerable<string> used = StatusCollector.Result ().SuccessList;
+                    foreach (var k in used) {
+                        logger.Warn ("{0} is printed. but all status is failure", k);
+                    }
+                    await Resource.TicketDataManager.UpdatePrintedAtAsync (this.RequestData);
+                }
+                return true;
+            });
             if (this.PrintingTargets != null)
             {
                 return new CaseFailureRedirect(Resource, modify, this.PrintingTargets.Left);
@@ -123,7 +123,7 @@ namespace QR
             {
                 return new CaseFailureRedirect(Resource, modify);
             }
-		}
-	}
+        }
+    }
 }
 

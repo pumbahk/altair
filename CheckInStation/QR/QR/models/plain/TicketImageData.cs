@@ -13,26 +13,26 @@ using System.Net.Http.Headers;
 namespace QR
 {
 
-	public class TicketImageData
-	{
-		public readonly TicketImageDataType Type;		
-		public string ticket_id {get;set;}
-		public string token_id { get; set; }
+    public class TicketImageData
+    {
+        public readonly TicketImageDataType Type;        
+        public string ticket_id {get;set;}
+        public string token_id { get; set; }
 
-		public byte[] image { get; set; }
+        public byte[] image { get; set; }
 
-		public string xaml {get; set;}
-		public TicketImageData(TicketImageDataType t){
-			this.Type = t;
-		}
+        public string xaml {get; set;}
+        public TicketImageData(TicketImageDataType t){
+            this.Type = t;
+        }
 
-		public static TicketImageData XamlTicketData(string token_id, string ticket_id, string xaml){
-			return new TicketImageData (TicketImageDataType.xaml){ token_id = token_id, xaml = xaml, ticket_id = ticket_id };
-		}
-		public static TicketImageData ImageTicketData(string token_id, string ticket_id, byte[] image){
-			return new TicketImageData (TicketImageDataType.image){ token_id = token_id, image = image, ticket_id = ticket_id };
-		}
-	}
+        public static TicketImageData XamlTicketData(string token_id, string ticket_id, string xaml){
+            return new TicketImageData (TicketImageDataType.xaml){ token_id = token_id, xaml = xaml, ticket_id = ticket_id };
+        }
+        public static TicketImageData ImageTicketData(string token_id, string ticket_id, byte[] image){
+            return new TicketImageData (TicketImageDataType.image){ token_id = token_id, image = image, ticket_id = ticket_id };
+        }
+    }
 
     /* TODO: split file
      * IImageFromSvg, ImageFromSvg, ImageFromSvgPostMultiPart

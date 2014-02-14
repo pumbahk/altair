@@ -2,8 +2,8 @@ using System;
 
 namespace QR
 {
-	public interface IAutoForwardingCase
-	{
-	}
+    public interface IAutoForwardingCase
+    {
+    }
 }
 

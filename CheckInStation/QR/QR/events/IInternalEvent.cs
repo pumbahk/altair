@@ -3,23 +3,23 @@ using System.Windows.Threading;
 
 namespace QR
 {
-	/// <summary>
-	/// I internal event. the Event from presentation layer;
-	/// </summary>
-	public interface IInternalEvent
-	{
-		void HandleEvent ();
+    /// <summary>
+    /// I internal event. the Event from presentation layer;
+    /// </summary>
+    public interface IInternalEvent
+    {
+        void HandleEvent ();
         void HandleEvent (Action<string> useAction);        
-		bool NotifyFlushMessage (string message);
+        bool NotifyFlushMessage (string message);
 
-		InternalEventStaus Status { get; set; }
+        InternalEventStaus Status { get; set; }
         Dispatcher CurrentDispatcher { get; set; }
-	}
+    }
 
-	public enum InternalEventStaus
-	{
-		failure,
+    public enum InternalEventStaus
+    {
+        failure,
         success,
-	}
+    }
 }
 

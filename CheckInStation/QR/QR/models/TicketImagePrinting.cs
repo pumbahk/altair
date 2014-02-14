@@ -8,9 +8,9 @@ using System.Windows.Media.Imaging;
 
 namespace QR
    {
-	public class TicketImagePrinting : ITicketPrinting
-	{
-		public IResource Resource { get; set; }
+    public class TicketImagePrinting : ITicketPrinting
+    {
+        public IResource Resource { get; set; }
 
         private LocalPrintServer ps;
         private System.Windows.Xps.XpsDocumentWriter writer;
@@ -21,12 +21,12 @@ namespace QR
         private Logger logger = LogManager.GetCurrentClassLogger();
 
         //temporary variable
-		public TicketImagePrinting (IResource resource)
-		{
-			Resource = resource;
+        public TicketImagePrinting (IResource resource)
+        {
+            Resource = resource;
             this.ps = new LocalPrintServer();
             this.DefaultPrinter = this.ps.DefaultPrintQueue;
-		}
+        }
 
         public PrintQueueCollection AvailablePrinters()
         {
@@ -74,6 +74,6 @@ namespace QR
         public void EndEnqueue()
         {
         }
-	}
+    }
 }
 

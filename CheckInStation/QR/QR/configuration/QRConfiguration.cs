@@ -2,8 +2,8 @@ using System;
 
 namespace QR
 {
-	public class QRConfiguration
-	{
+    public class QRConfiguration
+    {
         public static void SetupPrinting_Image(IResource resource)
         {
             // batik経由で券面データを画像として受け取る
@@ -18,22 +18,22 @@ namespace QR
             resource.TicketPrinting = new TicketXamlPrinting(resource);
         }
 
-		public static void IncludeMe (IConfigurator config)
-		{
-			var resource = config.Resource;
+        public static void IncludeMe (IConfigurator config)
+        {
+            var resource = config.Resource;
             QRConfiguration.SetupPrinting_Xaml(resource);
-			config.Resource.TicketDataFetcher = new TicketDataFetcher (resource);
-			config.Resource.TicketDataCollectionFetcher = new TicketDataCollectionFetcher (resource);
+            config.Resource.TicketDataFetcher = new TicketDataFetcher (resource);
+            config.Resource.TicketDataCollectionFetcher = new TicketDataCollectionFetcher (resource);
 
 
-			config.Resource.TicketDataManager = new TicketPrintedAtUpdater (resource);
-			config.Resource.VerifiedOrderDataFetcher = new VerifiedOrderDataFetcher (resource);
+            config.Resource.TicketDataManager = new TicketPrintedAtUpdater (resource);
+            config.Resource.VerifiedOrderDataFetcher = new VerifiedOrderDataFetcher (resource);
 
-			config.Resource.AdImageCollector = new AdImageCollector (resource);
+            config.Resource.AdImageCollector = new AdImageCollector (resource);
 
             //印刷後の待ち時間設定
             resource.WaitingTimeAfterFinish = Convert.ToInt32(resource.SettingValue("waittime.after.finish.millisec"));
-		}
-	}
+        }
+    }
 }
 

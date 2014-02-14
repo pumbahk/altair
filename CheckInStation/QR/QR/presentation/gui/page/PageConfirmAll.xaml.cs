@@ -30,13 +30,13 @@ namespace QR.presentation.gui.page
             this.TokenId = tdata.ordered_product_item_token_id;
         }
 
-		private readonly TicketDataMinumum coreData;
+        private readonly TicketDataMinumum coreData;
         public string ProductName { get; set; }
         public string SeatName { get; set; }
         public bool IsSelected
         {
-			get { return this.coreData.is_selected; }
-			set { this.coreData.is_selected = value; this.OnPropertyChanged("IsSelected"); }
+            get { return this.coreData.is_selected; }
+            set { this.coreData.is_selected = value; this.OnPropertyChanged("IsSelected"); }
         }
         public string TokenId { get; set; }
         public string PrintedAt { get; set; }
@@ -96,7 +96,7 @@ namespace QR.presentation.gui.page
 
         public override void OnSubmit()
         {
-            var ev = this.Event as ConfirmAllEvent;			
+            var ev = this.Event as ConfirmAllEvent;            
             base.OnSubmit();
         }
     }

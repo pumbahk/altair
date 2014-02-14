@@ -7,9 +7,9 @@ using NLog;
 
 namespace QR
 {
-	public class HttpWrapper :IHttpWrapper
-	{
-		private static Logger logger = LogManager.GetCurrentClassLogger ();
+    public class HttpWrapper :IHttpWrapper
+    {
+        private static Logger logger = LogManager.GetCurrentClassLogger ();
         
         //todo: 
         public static int RetryMaxCount = 3;
@@ -48,40 +48,40 @@ namespace QR
             return result;
         }
 
-		protected HttpClient client;
+        protected HttpClient client;
 
-		public Func<HttpClient> ClientFactory { get; set; }
+        public Func<HttpClient> ClientFactory { get; set; }
 
-		public IUrlBuilder UrlBuilder { get; set; }
+        public IUrlBuilder UrlBuilder { get; set; }
 
-		public HttpWrapper ()
-		{
-			//Don't use this, casually. (this is existed for generic new constraint)
-		}
+        public HttpWrapper ()
+        {
+            //Don't use this, casually. (this is existed for generic new constraint)
+        }
 
-		public HttpClient GetClient ()
-		{
-			if (this.client != null) {
-				throw new InvalidOperationException ("used by another something, already.");
-			}
-			this.client = this.ClientFactory ();
-			return client;
-		}
+        public HttpClient GetClient ()
+        {
+            if (this.client != null) {
+                throw new InvalidOperationException ("used by another something, already.");
+            }
+            this.client = this.ClientFactory ();
+            return client;
+        }
 
-		public HttpWrapper (Func<HttpClient> clientFactory, IUrlBuilder builder)
-		{
-			this.ClientFactory = clientFactory;
-			this.UrlBuilder = builder;
-		}
+        public HttpWrapper (Func<HttpClient> clientFactory, IUrlBuilder builder)
+        {
+            this.ClientFactory = clientFactory;
+            this.UrlBuilder = builder;
+        }
 
-		public HttpWrapper (Func<HttpClient> clientFactory, string url)
-		{
-			this.ClientFactory = clientFactory;
-			this.UrlBuilder = new TrasparentUrlBuilder (url);
-		}
+        public HttpWrapper (Func<HttpClient> clientFactory, string url)
+        {
+            this.ClientFactory = clientFactory;
+            this.UrlBuilder = new TrasparentUrlBuilder (url);
+        }
 
-		public void Dispose ()
-		{
+        public void Dispose ()
+        {
             try
             {
                 if (client != null)
@@ -97,106 +97,106 @@ namespace QR
                 logger.ErrorException("dispose", e);
                 throw;
             }
-		}
+        }
 
-		public Task<HttpResponseMessage> GetAsync ()
-		{
-			var client = this.GetClient ();
-			var url = this.UrlBuilder.Build ();
-			return this.RetryAsyncCall<HttpResponseMessage>(() => client.GetAsync (url), url);
-		}
+        public Task<HttpResponseMessage> GetAsync ()
+        {
+            var client = this.GetClient ();
+            var url = this.UrlBuilder.Build ();
+            return this.RetryAsyncCall<HttpResponseMessage>(() => client.GetAsync (url), url);
+        }
 
-		public Task<HttpResponseMessage> GetAsync (CancellationToken ct)
-		{
-			var client = this.GetClient ();
-			var url = this.UrlBuilder.Build ();
-			return this.RetryAsyncCall<HttpResponseMessage>(() => client.GetAsync (url, ct), url);
-		}
+        public Task<HttpResponseMessage> GetAsync (CancellationToken ct)
+        {
+            var client = this.GetClient ();
+            var url = this.UrlBuilder.Build ();
+            return this.RetryAsyncCall<HttpResponseMessage>(() => client.GetAsync (url, ct), url);
+        }
 
-		public Task<Stream> GetStreamAsync ()
-		{
-			var client = this.GetClient ();
-			var url = this.UrlBuilder.Build ();
-			return this.RetryAsyncCall<Stream>(() => client.GetStreamAsync (url), url);
-		}
+        public Task<Stream> GetStreamAsync ()
+        {
+            var client = this.GetClient ();
+            var url = this.UrlBuilder.Build ();
+            return this.RetryAsyncCall<Stream>(() => client.GetStreamAsync (url), url);
+        }
 
-		public async Task<String> GetStringAsync ()
-		{
-			var client = this.GetClient ();
-			var url = this.UrlBuilder.Build ();
-			var result = await client.GetStringAsync (url);
-			logger.Trace("* API Output:{0}", result);
-			return result;
-		}
+        public async Task<String> GetStringAsync ()
+        {
+            var client = this.GetClient ();
+            var url = this.UrlBuilder.Build ();
+            var result = await client.GetStringAsync (url);
+            logger.Trace("* API Output:{0}", result);
+            return result;
+        }
 
-		public Task<HttpResponseMessage> DeleteAsync ()
-		{
-			var client = this.GetClient ();
-			var url = this.UrlBuilder.Build ();
+        public Task<HttpResponseMessage> DeleteAsync ()
+        {
+            var client = this.GetClient ();
+            var url = this.UrlBuilder.Build ();
             return this.RetryAsyncCall<HttpResponseMessage>(() => client.DeleteAsync(url), url);
-		}
+        }
 
-		public Task<HttpResponseMessage> DeleteAsync (CancellationToken ct)
-		{
-			var client = this.GetClient ();
-			var url = this.UrlBuilder.Build ();
-			return this.RetryAsyncCall<HttpResponseMessage>(() => client.DeleteAsync (url, ct), url);
-		}
+        public Task<HttpResponseMessage> DeleteAsync (CancellationToken ct)
+        {
+            var client = this.GetClient ();
+            var url = this.UrlBuilder.Build ();
+            return this.RetryAsyncCall<HttpResponseMessage>(() => client.DeleteAsync (url, ct), url);
+        }
 
-		public Task<HttpResponseMessage> PostAsync (HttpContent content)
-		{
-			var client = this.GetClient ();
-			var url = this.UrlBuilder.Build ();
-			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsync (url, content), url);
-		}
+        public Task<HttpResponseMessage> PostAsync (HttpContent content)
+        {
+            var client = this.GetClient ();
+            var url = this.UrlBuilder.Build ();
+            return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsync (url, content), url);
+        }
 
-		public Task<HttpResponseMessage> PostAsync (HttpContent content, CancellationToken ct)
-		{
-			var client = this.GetClient ();
-			var url = this.UrlBuilder.Build ();
-			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsync (url, content, ct), url);
-		}
+        public Task<HttpResponseMessage> PostAsync (HttpContent content, CancellationToken ct)
+        {
+            var client = this.GetClient ();
+            var url = this.UrlBuilder.Build ();
+            return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsync (url, content, ct), url);
+        }
 
-		public Task<HttpResponseMessage> PutAsync (HttpContent content)
-		{
-			var client = this.GetClient ();
-			var url = this.UrlBuilder.Build ();
-			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsync (url, content), url);
-		}
+        public Task<HttpResponseMessage> PutAsync (HttpContent content)
+        {
+            var client = this.GetClient ();
+            var url = this.UrlBuilder.Build ();
+            return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsync (url, content), url);
+        }
 
-		public Task<HttpResponseMessage> PutAsync (HttpContent content, CancellationToken ct)
-		{
-			var client = this.GetClient ();
-			var url = this.UrlBuilder.Build ();
-			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsync (url, content, ct), url);
-		}
+        public Task<HttpResponseMessage> PutAsync (HttpContent content, CancellationToken ct)
+        {
+            var client = this.GetClient ();
+            var url = this.UrlBuilder.Build ();
+            return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsync (url, content, ct), url);
+        }
 
-		public Task<HttpResponseMessage> PostAsJsonAsync<T> (T value)
-		{
-			var client = this.GetClient ();
-			var url = this.UrlBuilder.Build ();
-			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsJsonAsync<T> (url, value), url);
-		}
+        public Task<HttpResponseMessage> PostAsJsonAsync<T> (T value)
+        {
+            var client = this.GetClient ();
+            var url = this.UrlBuilder.Build ();
+            return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsJsonAsync<T> (url, value), url);
+        }
 
-		public Task<HttpResponseMessage> PostAsJsonAsync<T> (T value, CancellationToken ct)
-		{
-			var client = this.GetClient ();
-			var url = this.UrlBuilder.Build ();
-			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsJsonAsync<T> (url, value, ct), url);
-		}
+        public Task<HttpResponseMessage> PostAsJsonAsync<T> (T value, CancellationToken ct)
+        {
+            var client = this.GetClient ();
+            var url = this.UrlBuilder.Build ();
+            return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsJsonAsync<T> (url, value, ct), url);
+        }
 
-		public Task<HttpResponseMessage> PutAsJsonAsync<T> (T value)
-		{
-			var client = this.GetClient ();
-			var url = this.UrlBuilder.Build ();
-			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsJsonAsync<T> (url, value), url);
-		}
+        public Task<HttpResponseMessage> PutAsJsonAsync<T> (T value)
+        {
+            var client = this.GetClient ();
+            var url = this.UrlBuilder.Build ();
+            return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsJsonAsync<T> (url, value), url);
+        }
 
-		public Task<HttpResponseMessage> PutAsJsonAsync<T> (T value, CancellationToken ct)
-		{
-			var client = this.GetClient ();
-			var url = this.UrlBuilder.Build ();
-			return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsJsonAsync<T> (url, value, ct), url);
-		}
-	}
+        public Task<HttpResponseMessage> PutAsJsonAsync<T> (T value, CancellationToken ct)
+        {
+            var client = this.GetClient ();
+            var url = this.UrlBuilder.Build ();
+            return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsJsonAsync<T> (url, value, ct), url);
+        }
+    }
 }
