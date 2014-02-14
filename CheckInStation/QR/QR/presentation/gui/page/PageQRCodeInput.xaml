@@ -61,7 +61,7 @@
                     Click="OnBackwardWithBoundContext">戻る</Button>
             -->
 
-            <Button Grid.Row="7" Grid.Column="7"   
+            <Button Grid.Row="7" Grid.Column="7" HorizontalAlignment="Center" Grid.ColumnSpan="2"
                     Click="OnSubmitWithBoundContext">QRコード読み込み</Button>
 
     </Grid>
