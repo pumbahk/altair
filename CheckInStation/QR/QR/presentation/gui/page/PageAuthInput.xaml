@@ -49,7 +49,7 @@
                 <c:KeyPadPopupContext PreviewType="raw" Description="ログインユーザー名"/>
             </c:KeyPad.DataContext>
         </c:KeyPad>
-        <Button Grid.Row="7" Grid.Column="7" Click="Button_Click"
+        <Button Grid.Row="7" Grid.Column="7" Grid.ColumnSpan="2" HorizontalAlignment="Center" Click="Button_Click"
                  Style="{StaticResource SubmitButtonStyle}">決定</Button>
     </Grid>
 </Page>

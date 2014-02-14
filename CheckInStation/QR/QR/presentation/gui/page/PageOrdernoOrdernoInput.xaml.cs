@@ -105,5 +105,10 @@ namespace QR.presentation.gui.page
                 logger.ErrorException("goto another mode", ex);
             }
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            this.KeyPad_KeyPadFinish(this.KeyPad, e); //!!!Ç‹Ç¡ÇΩÇ≠ï ÇÃåoòHÇ©ÇÁRoutedEventÇ™î≠ê∂ÇµÇƒÇ¢ÇÈÇÃÇ≈ó«Ç≠Ç»Ç¢ÅB
+        }
     }
 }

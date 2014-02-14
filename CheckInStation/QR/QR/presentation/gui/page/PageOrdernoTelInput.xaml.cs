@@ -94,5 +94,10 @@ namespace QR.presentation.gui.page
             (this.DataContext as PageOrdernoTelInputDataContext).Tel = (sender as KeyPad).InputString;
             OnSubmitWithBoundContext(sender, e);
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            this.KeyPad_KeyPadFinish(this.KeyPad, e);
+        }
     }
 }

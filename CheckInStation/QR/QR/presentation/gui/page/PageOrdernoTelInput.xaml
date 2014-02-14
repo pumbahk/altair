@@ -10,25 +10,47 @@
     FocusManager.FocusedElement="{Binding ElementName=Input}"
 	Title="PageOrdernoTelInput"
     Loaded="OnLoaded">
-    <Grid Style="{StaticResource ToplevelGrid}">
-        <Grid Style="{StaticResource CenterContentGrid}">
+
+        <Grid Style="{StaticResource ToplevelGrid}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="1*"></RowDefinition>
-                <RowDefinition Height="2*"></RowDefinition>
-                <RowDefinition Height="1*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
             </Grid.RowDefinitions>
-                <c:InspectCase Grid.Row="0"></c:InspectCase>
-            <StackPanel Grid.Row="1">
-                <c:KeyPad KeyPadFinish="KeyPad_KeyPadFinish">
-                    <c:KeyPad.DataContext>
-                        <c:KeyPadPopupContext/>
-                    </c:KeyPad.DataContext>
-                    <c:TelPad></c:TelPad>
-                </c:KeyPad>
-            </StackPanel>
-            <StackPanel Grid.Row="2">
-                <Button Click="OnBackwardWithBoundContext">戻る</Button>
-            </StackPanel>
-        </Grid>
+            <c:KeyPad Grid.Row="2" Grid.Column="1" Grid.RowSpan="6" Grid.ColumnSpan="7"
+                      Style="{StaticResource UserKeyPad}"
+                      Content="{StaticResource VirtualTelKeyboard}"
+                      KeyPadFinish="KeyPad_KeyPadFinish"
+                  x:Name="KeyPad">
+                <c:KeyPad.DataContext>
+                    <c:KeyPadPopupContext PreviewType="raw" Description="電話番号(入力例: 「08012341234」数字11桁)"/>
+                </c:KeyPad.DataContext>
+            </c:KeyPad>
+            
+        <Button Grid.Row="7" Grid.Column="1" Click="OnBackwardWithBoundContext"
+                 Style="{StaticResource SubmitButtonStyle}">戻る</Button>
+        <Button Grid.Row="7" Grid.Column="7" Click="Button_Click"
+                 Style="{StaticResource SubmitButtonStyle}">決定</Button>
     </Grid>
 </Page>

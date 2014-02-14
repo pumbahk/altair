@@ -78,7 +78,8 @@
             <c:KeyPadPopupContext x:Key="KeyPadContextRaw" PreviewType="raw"/>
             
             <c:AlnumPad x:Key="VirtualInputKeyboard"/>           
-
+            <c:TelPad x:Key="VirtualTelKeyboard"/>
+            
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resource/Base.xaml"/>
                 <ResourceDictionary Source="Resource/RT.Layout.xaml"/>
