@@ -63,5 +63,6 @@ def main():
 
     for path in paths:
         shutil.move(path, pending)
+
 if __name__ == '__main__':
     main()
