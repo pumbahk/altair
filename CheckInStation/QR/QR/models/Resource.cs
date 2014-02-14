@@ -13,11 +13,13 @@ namespace QR
 		public Resource (bool verifyEnable)
 		{
 			this.VerifyEnable = verifyEnable;
+            this.WaitingTimeAfterFinish = 30;
 		}
 
 		public Resource ()
 		{
 			this.VerifyEnable = false;
+            this.WaitingTimeAfterFinish = 30;
 		}
 
 		public bool Verify ()
@@ -73,6 +75,8 @@ namespace QR
 		public AdImageCollector AdImageCollector { get; set; }
 
 		public IHttpWrapperFactory<HttpWrapper> HttpWrapperFactory { get; set; }
+
+        public int WaitingTimeAfterFinish { get; set; }
 
 		public string SettingValue (string key)
 		{

@@ -30,6 +30,9 @@ namespace QR
 			config.Resource.VerifiedOrderDataFetcher = new VerifiedOrderDataFetcher (resource);
 
 			config.Resource.AdImageCollector = new AdImageCollector (resource);
+
+            //印刷後の待ち時間設定
+            resource.WaitingTimeAfterFinish = Convert.ToInt32(resource.SettingValue("waittime.after.finish.millisec"));
 		}
 	}
 }

@@ -28,6 +28,7 @@ namespace QR
 
 		IHttpWrapperFactory<HttpWrapper> HttpWrapperFactory { get; set; }
 	}
+
 	//本当は分割した形で管理したい
 	public interface IResource : INeedForQR, INeedForAuth
 	{
@@ -36,7 +37,7 @@ namespace QR
 		EndPoint EndPoint { get; set; }
 
 		string SettingValue (string key);
-
+        int WaitingTimeAfterFinish {get;set;} // 印刷完了後の待ち時間(ミリ秒)
         string GetUniqueNameEachMachine();
 	}
 }

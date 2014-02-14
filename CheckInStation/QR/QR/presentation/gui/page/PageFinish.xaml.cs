@@ -73,7 +73,8 @@ namespace QR.presentation.gui.page
                 ctx.Status = FinishStatus.finished;
                 this.Dispatcher.InvokeAsync(async () =>               
                 {
-                    await Task.Delay(500);
+                    var waitTime = AppUtil.GetCurrentResource().WaitingTimeAfterFinish;
+                    await Task.Delay(waitTime);
                     logger.Info(String.Format("stop case {0}", ctx.Broker.FlowManager.Peek()));
                     var case_ = await ctx.SubmitAsync();
                     ctx.TreatErrorMessage();
