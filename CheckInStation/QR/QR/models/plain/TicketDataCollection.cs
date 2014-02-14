@@ -65,7 +65,7 @@ namespace QR
 
 		public bool Verify ()
 		{
-			return this.status == TokenStatus.valid;
+            return this.status == TokenStatus.valid;
 		}
 	}
 }

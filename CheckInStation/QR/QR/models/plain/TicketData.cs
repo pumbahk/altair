@@ -55,7 +55,8 @@ namespace QR
 
 		public bool Verify ()
 		{
-			return this.status == TokenStatus.valid;
+            //印刷済みということをユーザーに伝えるべきか考える。
+			return this.status == TokenStatus.valid || this.status == TokenStatus.printed;
 		}
 	}
 }

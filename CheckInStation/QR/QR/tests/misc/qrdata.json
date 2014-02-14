@@ -3,7 +3,7 @@
     "refreshed_at": "2012年12月12日", 
     "printed_at": null,
     "ordered_product_item_token_id": "-1", 
-    "status": "valid",
+    "status": "printed",
     "secret": "xxx this is needed xxxx",
     "product": {
         "name": "ダミー席"
