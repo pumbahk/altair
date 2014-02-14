@@ -38,14 +38,46 @@
         </Grid.RowDefinitions>
         <c:InspectCase Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="7" Grid.RowSpan="2"/>
         
-        <ScrollViewer Grid.Row="2" Grid.Column="1" Grid.RowSpan="5" Grid.ColumnSpan="7">
+        <ScrollViewer Grid.Row="2" Grid.Column="1" Grid.RowSpan="6" Grid.ColumnSpan="7">            
             <StackPanel>
-                <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Stretch">
-                    <TextBlock Style="{StaticResource MainText}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
-                    <TextBlock Style="{StaticResource MainText}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
-                </WrapPanel>
-                <ListView ItemsSource="{Binding DisplayTicketDataCollection}" Margin="5"
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <WrapPanel 
+                        Grid.Row="0" Grid.Column="0"
+                        HorizontalAlignment="Center" VerticalAlignment="Stretch">
+                        <TextBlock Style="{StaticResource MainText}">予約番号:</TextBlock>
+                        <TextBlock Style="{StaticResource MainText}" Text="{Binding Orderno, Mode=OneWay}"></TextBlock>
+                    </WrapPanel>
+                    <WrapPanel
+                        Grid.Row="0" Grid.Column="1"
+                        HorizontalAlignment="Center" VerticalAlignment="Stretch">
+                        <TextBlock Style="{StaticResource MainText}">お客様(氏名):</TextBlock>
+                        <TextBlock Style="{StaticResource MainText}" Text="{Binding CustomerName, Mode=OneWay}"></TextBlock>
+                    </WrapPanel>
+                    <WrapPanel
+                        Grid.Row="1" Grid.Column="0"
+                        HorizontalAlignment="Center" VerticalAlignment="Stretch">
+                        <TextBlock Style="{StaticResource MainText}">講演日時:</TextBlock>
+                        <TextBlock Style="{StaticResource MainText}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
+                    </WrapPanel>
+                    <WrapPanel
+                        Grid.Row="1" Grid.Column="1"
+                        HorizontalAlignment="Center" VerticalAlignment="Stretch">
+                        <TextBlock Style="{StaticResource MainText}">発券予定枚数:</TextBlock>
+                        <TextBlock Style="{StaticResource MainText}" Text="{Binding NumberOfPrintableTicket, Mode=OneWay}"></TextBlock>
+                    </WrapPanel>
+                </Grid>
+                <Border Margin="5" Padding="3" BorderThickness="1" CornerRadius="8" BorderBrush="Black">
+                    <ListView ItemsSource="{Binding DisplayTicketDataCollection}"
                       Style="{StaticResource ChoiceCandidatesTwoColumns}"/>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 

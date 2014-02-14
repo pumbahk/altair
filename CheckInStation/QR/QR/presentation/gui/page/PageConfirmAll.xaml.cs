@@ -44,29 +44,52 @@ namespace QR.presentation.gui.page
 
     class PageConfirmAllDataContext : InputDataContext, IConfirmAllStatusInfo, INotifyPropertyChanged
     {
-        private ConfirmAllStatus _status;
-        private TicketDataCollection _ticketDataCollection;
-        private string _performanceName;
-        private string _performanceDate;
+        private ConfirmAllStatus _Status;
         public ConfirmAllStatus Status
         {
-            get { return this._status; }
-            set { this._status = value; this.OnPropertyChanged("Status"); }
+            get { return this._Status; }
+            set { this._Status = value; this.OnPropertyChanged("Status"); }
         }
+
+        private TicketDataCollection _TicketDataCollection;
         public TicketDataCollection TicketDataCollection
         {
-            get { return this._ticketDataCollection; }
-            set { this._ticketDataCollection = value;  this.OnPropertyChanged("TicketDataCollection"); }
+            get { return this._TicketDataCollection; }
+            set { this._TicketDataCollection = value;  this.OnPropertyChanged("TicketDataCollection"); }
         }
+
+        private string _PerformanceName;        
         public string PerformanceName
         {
-            get { return this._performanceName; }
-            set { this._performanceName = value; this.OnPropertyChanged("PerformanceName"); }
+            get { return this._PerformanceName; }
+            set { this._PerformanceName = value; this.OnPropertyChanged("PerformanceName"); }
         }
+
+        private string _PerformanceDate;        
         public string PerformanceDate
         {
-            get { return this._performanceDate; }
-            set { this._performanceDate = value; this.OnPropertyChanged("PerformanceDate"); }
+            get { return this._PerformanceDate; }
+            set { this._PerformanceDate = value; this.OnPropertyChanged("PerformanceDate"); }
+        }
+
+        private string _Orderno;
+        public string Orderno
+        {
+            get { return this._Orderno; }
+            set { this._Orderno = value; this.OnPropertyChanged("Orderno"); }
+        }
+
+        private string _CustomerName;
+        public string CustomerName
+        {
+            get { return this._CustomerName; }
+            set { this._CustomerName = value; this.OnPropertyChanged("CustomerName"); }
+        }
+        private int _NumberOfPrintableTicket;
+        public int NumberOfPrintableTicket
+        {
+            get { return this._NumberOfPrintableTicket; }
+            set { this._NumberOfPrintableTicket = value; this.OnPropertyChanged("NumberOfPrintableTicket"); }
         }
 
         public ObservableCollection<DisplayTicketData> DisplayTicketDataCollection { get; set; }
@@ -105,20 +128,20 @@ namespace QR.presentation.gui.page
             return ctx;
         }
 
-        private async void Status_OnPrepared(object sender, PropertyChangedEventArgs e)
+        private void Status_OnPrepared(object sender, PropertyChangedEventArgs e)
         {
             var ctx = sender as PageConfirmAllDataContext;
             if (e.PropertyName == "Status" && ctx.Status == ConfirmAllStatus.prepared)
             {
                 ctx.Status = ConfirmAllStatus.requesting;
+                //Œã‚ÌŒp‘±‚ð“¯Šú“I‚É‘Ò‚Â•K—v‚È‚¢‚Ì‚Åawait‚µ‚È‚¢
                 if (ctx.TicketDataCollection != null)
                 {
-                    this.Dispatcher.Invoke(this.BuildDisplayItems);
+                    this.Dispatcher.InvokeAsync(this.BuildDisplayItems);
                 }
                 else
                 {
-                    //?G???[???o???????????????G???[???????J??
-                    await this.Dispatcher.InvokeAsync(async () => {
+                    this.Dispatcher.InvokeAsync(async () => {
                        var case_ = await ctx.SubmitAsync();
                        ctx.TreatErrorMessage();
                        AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
@@ -129,15 +152,32 @@ namespace QR.presentation.gui.page
 
         private void BuildDisplayItems()
         {
-            var source = this.DataContext as PageConfirmAllDataContext;
-            var displayColl = source.DisplayTicketDataCollection;
-            var performance = source.TicketDataCollection.additional.performance;
-            source.PerformanceName = performance.name;
-            source.PerformanceDate = performance.date;
-
-            foreach (var tdata in source.TicketDataCollection.collection)
+            var ctx = this.DataContext as PageConfirmAllDataContext;
+            var displayColl = ctx.DisplayTicketDataCollection;
+            var source = ctx.TicketDataCollection;
+            var performance = source.additional.performance;
+            ctx.PerformanceName = performance.name;
+            ctx.PerformanceDate = performance.date;
+            ctx.Orderno = source.additional.order.order_no;
+            ctx.CustomerName = source.additional.user;
+            ctx.NumberOfPrintableTicket = source.collection.Where(o => o.is_selected).Count();
+            foreach (var tdata in source.collection)
             {
-                displayColl.Add(new DisplayTicketData(tdata));
+                var dtdata = new DisplayTicketData(tdata);
+                dtdata.PropertyChanged += OnCountChangePrintableTicket;
+                displayColl.Add(dtdata);
+            }
+        }
+
+        void OnCountChangePrintableTicket(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "IsSelected")
+            {
+                var delta = (sender as DisplayTicketData).IsSelected? 1 : -1;
+                this.Dispatcher.InvokeAsync(() => {
+                    var ctx = this.DataContext as PageConfirmAllDataContext;
+                    ctx.NumberOfPrintableTicket += delta;
+                });
             }
         }
 
@@ -153,8 +193,13 @@ namespace QR.presentation.gui.page
             {
                 var case_ = await ctx.SubmitAsync();
                 ctx.TreatErrorMessage();
-                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
 
+                //unregister event
+                foreach (var dc in (ctx as PageConfirmAllDataContext).DisplayTicketDataCollection)
+                {
+                    dc.PropertyChanged -= OnCountChangePrintableTicket;
+                }
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }
 
@@ -165,6 +210,12 @@ namespace QR.presentation.gui.page
             {
                 var case_ = await ctx.BackwardAsync();
                 ctx.TreatErrorMessage();
+
+                //unregister event
+                foreach (var dc in (ctx as PageConfirmAllDataContext).DisplayTicketDataCollection)
+                {
+                    dc.PropertyChanged -= OnCountChangePrintableTicket;
+                }
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }
