@@ -32,6 +32,7 @@ namespace QR.presentation.gui.page
         {
             var ev = this.Event as QRInputEvent;
             ev.QRCode = this.QRCode;
+            this.QRCode = ""; //QR‚Ìsubmit‚ÉŽ¸”s‚µ‚½Žž‚Ì‚±‚Æ‚ðŒ©‰z‚µ‚Ä‹ó‚É‚µ‚Ä‚¨‚­
             base.OnSubmit();
         }
     }

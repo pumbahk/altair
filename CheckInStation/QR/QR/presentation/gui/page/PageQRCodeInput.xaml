@@ -51,7 +51,7 @@
                  HorizontalAlignment="Stretch"
                  VerticalAlignment="Center"
                  KeyDown="OnKeyDownHandler"                 
-                 Text="{Binding Mode=OneWayToSource, Path=QRCode,UpdateSourceTrigger=PropertyChanged}" x:Name="QRCodeInput"></TextBox>
+                 Text="{Binding Mode=TwoWay, Path=QRCode,UpdateSourceTrigger=PropertyChanged}" x:Name="QRCodeInput"></TextBox>
 
 
             <Button Grid.Row="0" Grid.Column="7" Grid.RowSpan="1" Grid.ColumnSpan="2" Click="OnGotoAnotherMode"
@@ -60,9 +60,9 @@
             <Button Grid.Row="7" Grid.Column="1"
                     Click="OnBackwardWithBoundContext">戻る</Button>
             -->
-            <!--
+
             <Button Grid.Row="7" Grid.Column="7"   
-                    Click="OnSubmitWithBoundContext">QRCode読み込み</Button>
-             --> 
+                    Click="OnSubmitWithBoundContext">QRコード読み込み</Button>
+
     </Grid>
 </Page>
