@@ -3,7 +3,7 @@
 import logging
 
 from paste.util.multidict import MultiDict
-from pyramid.threadlocal import get_current_registry, get_current_request
+from pyramid.threadlocal import get_current_registry
 from pyramid.renderers import render_to_response
 from sqlalchemy import distinct
 from sqlalchemy.sql import func, and_, or_
@@ -47,11 +47,9 @@ class SalesReportRecord(object):
         self.total_order_amount = 0
 
 
-def get_order_quantity(stock_ids, group_by):
+def get_order_quantity(db_session, stock_ids, group_by):
     # Stock単位の全ての予約席数 (販売区分での絞り込みは行わない)
-    request = get_current_request()
-    slave_session = get_db_session(request, name="slave")
-    query = slave_session.query(OrderedProductItem)\
+    query = db_session.query(OrderedProductItem)\
         .join(OrderedProduct).filter(OrderedProduct.deleted_at==None)\
         .join(Order).filter(Order.canceled_at==None, Order.deleted_at==None)\
         .join(Performance).filter(Performance.deleted_at==None)\
@@ -67,7 +65,7 @@ def get_order_quantity(stock_ids, group_by):
 
 class SalesTotalReporter(object):
 
-    def __init__(self, form, organization, group_by='Event'):
+    def __init__(self, request, form, organization, group_by='Event'):
         '''
         イベント毎、または公演毎に集計したレポート
         :param form: SalesReportForm
@@ -79,7 +77,6 @@ class SalesTotalReporter(object):
         self.group_by = Performance.id if group_by == 'Performance' else Event.id
         self.reports = {}
         self.stock_holder_ids = []
-        request = get_current_request()
         self.slave_session = get_db_session(request, name="slave")
 
         # レポートデータ生成
@@ -213,7 +210,7 @@ class SalesTotalReporter(object):
 
         # 残席数を算出するためのStock単位の予約席数
         stock_ids = [s.id for s in query.with_entities(Stock.id).distinct()]
-        order_quantity = get_order_quantity(stock_ids, self.group_by)
+        order_quantity = get_order_quantity(self.slave_session, stock_ids, self.group_by)
 
         query = self.slave_session.query(Stock).filter(Stock.id.in_(stock_ids))\
             .join(Performance).filter(Performance.id==Stock.performance_id)\
@@ -349,7 +346,7 @@ class SalesDetailReportRecord(object):
 
 class SalesDetailReporter(object):
 
-    def __init__(self, form):
+    def __init__(self, request, form):
         '''
         公演の販売区分毎、席種毎、商品毎に集計したレポートを返す
         :param form: SalesReportForm
@@ -357,7 +354,6 @@ class SalesDetailReporter(object):
         self.form = form
         self.reports = {}
         self.total = None
-        request = get_current_request()
         self.slave_session = get_db_session(request, name="slave")
 
         # レポートデータ生成
@@ -475,7 +471,7 @@ class SalesDetailReporter(object):
 
         # 残席数を算出するためのStock単位の予約席数
         stock_ids = [s.id for s in query.with_entities(Stock.id).distinct()]
-        order_quantity = get_order_quantity(stock_ids, Stock.id)
+        order_quantity = get_order_quantity(self.slave_session, stock_ids, Stock.id)
 
         query = query.with_entities(
             func.ifnull(Product.base_product_id, Product.id),
@@ -606,14 +602,14 @@ class SalesDetailReporter(object):
 
 class PerformanceReporter(object):
 
-    def __init__(self, form, performance):
+    def __init__(self, request, form, performance):
         self.form = SalesReportForm(**form.data)
         self.performance = performance
         self.reporters = {}
 
         # 公演合計のレポート
         self.form.sales_segment_group_id.data = None
-        self.total = SalesDetailReporter(self.form)
+        self.total = SalesDetailReporter(request, self.form)
 
         # 販売区分別のレポート
         for sales_segment in performance.sales_segments:
@@ -623,7 +619,7 @@ class PerformanceReporter(object):
                (self.form.limited_to.data and self.form.limited_to.data < sales_segment.start_at):
                 continue
             self.form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
-            self.reporters[sales_segment] = SalesDetailReporter(self.form)
+            self.reporters[sales_segment] = SalesDetailReporter(request, self.form)
 
     def sort_index(self):
         return sorted(self.reporters.keys(), key=lambda x:(x.order, x.name))
@@ -634,7 +630,7 @@ class PerformanceReporter(object):
 
 class EventReporter(object):
 
-    def __init__(self, form, event):
+    def __init__(self, request, form, event):
         self.form = SalesReportForm(**form.data)
         self.event = event
         self.reporters = {}
@@ -645,7 +641,7 @@ class EventReporter(object):
             if self.form.limited_from.data and end_on < self.form.limited_from.data:
                 continue
             self.form.performance_id.data = performance.id
-            reporter = PerformanceReporter(self.form, performance)
+            reporter = PerformanceReporter(request, self.form, performance)
             if not reporter.reporters:
                 continue
             self.reporters[performance] = reporter
