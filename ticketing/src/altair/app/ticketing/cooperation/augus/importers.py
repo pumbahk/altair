@@ -1,6 +1,10 @@
 #-*- coding: utf-8 -*-
 import datetime
 import itertools
+from sqlalchemy.orm.exc import (
+    MultipleResultsFound,
+    NoResultFound,
+    )
 from altair.app.ticketing.core.models import (
     Event,
     Performance,
@@ -19,28 +23,37 @@ from .errors import (
 
 class AugusPerformanceImpoter(object):
     def import_record(self, record):
-
-        ag_venue = AugusVenue\
-            .query.filter(AugusVenue.code==record.venue_code)\
-                  .filter(AugusVenue.version==record.venue_version)\
-                  .first()
-        if not ag_venue:
+        ag_venue = None
+        ag_performance = None
+        try:
+            ag_venue = AugusVenue\
+                .query.filter(AugusVenue.code==record.venue_code)\
+                      .filter(AugusVenue.version==record.venue_version)\
+                      .first()
+        except (NoResultFound, MultipleResultFound)as err:
             raise AugusDataImportError('Cannot import augus performance: '
                                        'no such AugusVenue: '
-                                       'code={} version={}'.format(record.venue_code, record.venue_version)
+                                       'code={} version={}: {}'.format(record.venue_code, record.venue_version, repr(err))
                                        )
 
-        ag_performance = AugusPerformance.query.get(augus_event_code=record.event_code,
-                                                    augus_performance_code=record.performance_code,
-                                                    )
-        if not ag_performance:
+        try:
+            ag_performance = AugusPerformance\
+                .query\
+                .filter(AugusPerformance.augus_event_code==record.event_code)\
+                .filter(AugusPerformance.augus_performance_code==record.performance_code)\
+                .one()
+        except MultipleResultsFound as err:
+            raise # erorr
+        except NoResultFound as err:
             ag_performance = AugusPerformance()
             ag_performance.augus_event_code = record.event_code,
             ag_performance.augus_performance_code = record.performance_code
+
         ag_performance.augus_venue_code = record.venue_code
         ag_performance.augus_venue_name = record.venue_name
         ag_performance.augus_event_name = record.event_name
         ag_performance.augus_performance_name = record.performance_name
+
         ag_performance.open_on = record.open_on_datetime
         ag_performance.start_on = record.start_on_datetime
         ag_performance.augus_venue_version = record.venue_version
