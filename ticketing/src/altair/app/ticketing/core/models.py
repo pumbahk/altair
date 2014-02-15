@@ -4226,6 +4226,9 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             raise ValueError('illegal performance')
         self.stock_type_id = stock_type.id
 
+    def delete_link(self):
+        self.stock_type_id = None
+
 
 # move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):

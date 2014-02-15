@@ -86,13 +86,13 @@ class AugusTicketImpoter(object):
                 raise AugusDataImportError('AugusPerformance not found: event_code={} performance_code={}'.format(
                     record.event_code, record.performance_code))
         else:
-            ag_performance = ag_ticket.ag_performance
+            ag_performance = ag_ticket.augus_performance
         ag_ticket.augus_venue_code = record.venue_code
-        ag_ticket.seat_type_code = record.seat_type_code
-        ag_ticket.seat_type_name = record.seat_type_name
+        ag_ticket.augus_seat_type_code = record.seat_type_code
+        ag_ticket.augus_seat_type_name = record.seat_type_name
         ag_ticket.unit_value_name = record.unit_value_name
         ag_ticket.augus_seat_type_classif = record.seat_type_classif
-        ag_ticket.avlue = record.value
+        ag_ticket.value = record.value
         ag_ticket.augus_performance_id = ag_performance.id
         ag_ticket.save()
         return ag_ticket

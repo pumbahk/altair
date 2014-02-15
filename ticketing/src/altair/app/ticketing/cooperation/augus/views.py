@@ -14,7 +14,9 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
     Performance,
+    StockType,
     AugusVenue,
+    AugusTicket,
     AugusPerformance,
     )
 from altair.augus.protocols import VenueSyncResponse
@@ -251,7 +253,6 @@ class AugusTicketView(_AugusBaseView):
         stocktype_agticket = [(stock_type, stocktypeid_agticket.get(stock_type.id, None))
                               for stock_type in self.context.event.stock_types
                               ]
-
         return dict(stocktype_agticket=stocktype_agticket,
                     event=self.context.event,
                     select_prefix=self.select_prefix,
@@ -280,13 +281,22 @@ class AugusTicketView(_AugusBaseView):
             for stock_type_txt, ag_ticket_id in self.request.params.iteritems():
                 if not stock_type_txt.startswith(self.select_prefix):
                     continue
-                stock_type_id = stock_type_txt.replace(self.select_prefix, '')
+                stock_type_id = stock_type_txt.replace(self.select_prefix, '').strip()
                 stock_type_id = int(stock_type_id)
-                ag_ticket_id = int(ag_ticket_id)
-                stock_type = StockType.query.filte(StockType.id==stock_type_id).one()
-                ag_ticket = AugusTicket.query.filter(AugusTicket.id==ag_ticket_id).one()
-                ag_ticket.link_stock_type(stock_type)
-                ag_ticket.save()
+                stock_type = StockType.query.filter(StockType.id==stock_type_id).one()
+
+                ag_ticket_id = ag_ticket_id.strip()
+                if ag_ticket_id:
+                    ag_ticket_id = int(ag_ticket_id)
+                    ag_ticket = AugusTicket.query.filter(AugusTicket.id==ag_ticket_id).one()
+                    ag_ticket.link_stock_type(stock_type)
+                    ag_ticket.save()
+                else: # delete link
+                    ag_ticket = AugusTicket.query.filter(AugusTicket.stock_type_id==stock_type_id).first()
+                    if ag_ticket:
+                        ag_ticket.delete_link()
+                        ag_ticket.save()
+
         except ValueError as err:
             raise HTTPBadRequest('invalid save data: {}'.format(repr(err)))
         return HTTPFound(self.request.route_url('augus.stock_type.show', event_id=self.context.event.id))
