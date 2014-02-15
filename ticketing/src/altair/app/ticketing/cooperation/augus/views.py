@@ -13,7 +13,9 @@ from pyramid.view import (
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
+    Performance,
     AugusVenue,
+    AugusPerformance,
     )
 from altair.augus.protocols import VenueSyncResponse
 from altair.augus.exporters import AugusExporter
@@ -202,33 +204,38 @@ class AugusPerformanceView(_AugusBaseView):
             if not performance_txt.startswith(self.select_prefix):
                 continue
 
+            performance_id = None
+            perforance_txt = performance_txt.strip()
             try:
-                performance_id = long(performance_txt)
+                performance_id = performance_txt.split('-')[1]
+            except IndexError as err:
+                raise HTTPBadRequest('Illegal format performance id: {}: {}'.format(repr(performance_txt), repr(err)))
+
+            try:
+                performance_id = long(performance_id)
             except (ValueError, TypeError) as err:
-                raise HTTPBadRequest('The performance id is invalid: {}: {}'.format(performance_id, err))
+                raise HTTPBadRequest('The performance id is invalid: {}: {}'.format(repr(performance_txt), repr(err)))
 
-            performance = Performance.get(performance_id)
-            if not performance:
-                raise HTTPBadRequest('The performance not found: {}'.format(performance_id))
-
-            if external_performance_code:
+            performance = Performance.query.filter(Performance.id==performance_id).one()
+            ag_performance_id = ag_performance_id.strip()
+            if ag_performance_id: # do link
                 try:
-                    external_performance_code = long(external_performance_code)
+                    ag_performance_id = long(ag_performance_id)
                 except (ValueError, TypeError) as err:
-                    raise HTTPBadRequest('The external performance id is invalid: {}: {}'.format(external_performance_code, err))
+                    raise HTTPBadRequest('The augus performance id is invalid: {}: {}'.format(repr(ag_performance_id), repr(err)))
 
-                external_performance = AugusPerformance.get(code=external_performance_code)
-                if not external_performance:
-                    raise HTTPBadRequest('The external performance not found: {}'.format(external_performance_code))
+                ag_performance = AugusPerformance.get(ag_performance_id)
+                if not ag_performance:
+                    raise HTTPBadRequest('The augus performance not found: {}'.format(ag_performance_id))
 
-                if external_performance.performance_id != performance.id:
-                    external_performance.performance_id = performance.id;
-                    external_performance.save()
+                if ag_performance.performance_id != performance.id:
+                    ag_performance.performance_id = performance.id;
+                    ag_performance.save()
             else: # delete link
-                external_performance = AugusPerformance.get(performance_id=performance.id)
-                if external_performance:
-                    external_performance.performance_id = None
-                    external_performance.save()
+                ag_performance = AugusPerformance.get(performance_id=performance.id)
+                if ag_performance:
+                    ag_performance.performance_id = None
+                    ag_performance.save()
         return HTTPFound(self.request.route_url('augus.performance.show', event_id=self.context.event.id))
 
 @view_defaults(route_name='augus.stock_type', decorator=with_bootstrap, permission='event_editor')
