@@ -88,7 +88,7 @@ class DateTimeInRange(object):
         if self.to is not None and self.to <= data:
             raise ValueError(field.gettext(u'Field must be a date/time before %(datetime)s') % dict(field=field.label, datetime=self.format_datetime(field, self.to, field.data.__class__)))
 
-Katakana = validators.Regexp(ur'^[ァ-ヶ]+$', message=u'カタカナで入力してください')
+Katakana = validators.Regexp(ur'^[ァ-ヶー]+$', message=u'カタカナで入力してください')
 
 class Charset(object):
     def __init__(self, encoding, message=None):
