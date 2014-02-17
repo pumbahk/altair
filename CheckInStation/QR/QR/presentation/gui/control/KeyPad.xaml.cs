@@ -94,10 +94,42 @@ namespace QR.presentation.gui.control
             remove { RemoveHandler(KeyPadFinishEvent, value); }
         }
 
-        public string InputString { get {
-            var ctx = this.DataContext as KeyPadPopupContext;
-            return ctx.InputString;
-        }}
+        public string InputString
+        {
+            get
+            {
+                var ctx = this.DataContext as KeyPadPopupContext;
+                return ctx.InputString;
+            }
+            set
+            {
+                var ctx = this.DataContext as KeyPadPopupContext;
+                var presenter = this.FindVisualChild<ContentPresenter>(this);
+                var tbox = this.ContentTemplate.FindName("KeyPad_InputString", presenter) as TextBox;
+                if (tbox != null && value != null)
+                {
+                    tbox.Text = value;
+                    tbox.Select(value.Length, 0);
+                }
+            }
+        }
+
+        private childItem FindVisualChild<childItem>(DependencyObject obj) where childItem : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
+                if (child != null && child is childItem)
+                    return (childItem)child;
+                else
+                {
+                    childItem childOfChild = FindVisualChild<childItem>(child);
+                    if (childOfChild != null)
+                        return childOfChild;
+                }
+            }
+            return null;
+        }
 
         void RaiseKeyPadFinishEvent()
         {

@@ -57,7 +57,12 @@ namespace QR.presentation.gui.page
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            await(this.DataContext as PageOrdernoOrdernoInputDataContext).PrepareAsync().ConfigureAwait(false);
+            var ctx = this.DataContext as PageOrdernoOrdernoInputDataContext;
+            await ctx.PrepareAsync().ConfigureAwait(true);
+            var data =  (ctx.Case as CaseOrdernoOrdernoInput).RequestData;
+            if(data != null){
+                (this.FindName("KeyPad") as KeyPad).InputString = data.order_no;
+            }
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
