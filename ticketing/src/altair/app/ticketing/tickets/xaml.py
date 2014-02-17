@@ -335,6 +335,11 @@ Path.d
 M=absolute, m=relative
 """
 
+def xaml_from_svg(svg, pretty_print=False):
+    svg_tree = etree.fromstring(svg)
+    xaml_tree = XAMLFromSVG().convert(svg_tree)
+    return etree.tostring(xaml_tree, encoding="utf-8", pretty_print=pretty_print)
+
 if __name__ == "__main__":
     if len(sys.argv) <=1:
         print("""svg_to_xaml.py <svg file>""")

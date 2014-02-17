@@ -135,7 +135,8 @@ def svg_list_all_template_valiation(svg_builder, vardict, ticket_templates):
     ## var dictは券面のレンダリングに利用する変数のdict
     data_list = []
     for ticket_template in ticket_templates:
-        data = {"svg": svg_builder.build(ticket_template, vardict)} 
+        xaml = ticket_template
+        data = {"svg": svg_builder.build(xaml, vardict)} 
         data[u'ticket_template_name'] = ticket_template.name
         data[u'ticket_template_id'] = unicode(ticket_template.id)
         data_list.append(data)
