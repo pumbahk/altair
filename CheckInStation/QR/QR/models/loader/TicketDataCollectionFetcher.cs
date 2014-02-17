@@ -23,13 +23,14 @@ namespace QR
             return Resource.EndPoint.DataCollectionFetchData;
         }
 
-        public async Task<ResultTuple<string, TicketDataCollection>> FetchAsync (TicketDataCollectionRequestData requestData)
+        public async Task<ResultTuple<string, TicketDataCollection>> FetchAsync(TicketDataCollectionRequestData requestData)
         {
             IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
-            using (var wrapper = factory.Create (GetCollectionFetchUrl ())) {
-                using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (requestData).ConfigureAwait (false)) {
-                    return Parse (await wrapper.ReadAsStringAsync (response.Content).ConfigureAwait (false));
-                }
+            using (var wrapper = factory.Create(GetCollectionFetchUrl()))
+            {
+                HttpResponseMessage response = await wrapper.PostAsJsonAsync(requestData).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+                return Parse(await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait(false));
             }
         }
 

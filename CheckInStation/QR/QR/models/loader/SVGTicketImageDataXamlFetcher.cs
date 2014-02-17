@@ -42,7 +42,7 @@ namespace QR
         public async Task<ResultTuple<string, List<TicketImageData>>> FetchImageDataForOneAsync (TicketData tdata)
         {
             try{
-                var response = await SVGFetcherForOne.GetSvgDataList (Resource.HttpWrapperFactory, tdata, GetSvgOneURL ());
+                var response = await SVGFetcherForOne.GetSvgDataList (Resource.HttpWrapperFactory, tdata, GetSvgOneURL ());                
                 var svg_list = SVGFetcherForOne.ParseSvgDataList (response);
                 var coll = new List<TicketImageData> ();
                 foreach (SVGData svgdata in svg_list) {

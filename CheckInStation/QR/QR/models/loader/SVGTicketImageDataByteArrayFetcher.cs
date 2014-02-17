@@ -47,7 +47,7 @@ namespace QR
             IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
             using (var wrapper = factory.Create(GetImageFromSvgURL()))
             {
-                using (HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false))
+                HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false);
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {

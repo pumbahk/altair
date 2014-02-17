@@ -26,10 +26,12 @@ namespace QR
         public async Task<ResultTuple<string, VerifiedOrdernoRequestData>> FetchAsync (OrdernoRequestData requestData)
         {
             IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
-            using (var wrapper = factory.Create (GetVerifyURL ())) {
-                using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (requestData).ConfigureAwait (false)) {
-                    return Parse (await wrapper.ReadAsStringAsync (response.Content).ConfigureAwait (false));
-                }
+            using (var wrapper = factory.Create(GetVerifyURL()))
+            {
+                HttpResponseMessage response = await wrapper.PostAsJsonAsync(requestData).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+                return Parse(await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait(false));
+
             }
         }
 

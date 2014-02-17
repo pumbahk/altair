@@ -43,29 +43,31 @@ namespace QR
          * 
          * {endpoint: {"login_status": "http://foo"}, ad_images: ["http://foo.bar.jp/foo.jpg"]}
          */
-        public async Task<EndPoint> TryLoginRequest (string name, string password)
+        public async Task<EndPoint> TryLoginRequest(string name, string password)
         {
             IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
-            using (var wrapper = factory.Create (GetLoginURL ())) {                
+            using (var wrapper = factory.Create(GetLoginURL()))
+            {
                 var device_id = this.Resource.GetUniqueNameEachMachine();
 
-                var user = new LoginUser (){ login_id = name, password = password, device_id = device_id};
-                using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (user).ConfigureAwait (false)) {
-                    // cookie取得
-                    var headers = response.Headers;
-                    factory.AddCookies(CookieUtils.GetCookiesFromResponseHeaders (GetLoginURL(), headers));
-                    
+                var user = new LoginUser() { login_id = name, password = password, device_id = device_id };
+                HttpResponseMessage response = await wrapper.PostAsJsonAsync(user).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+                // cookie取得
+                var headers = response.Headers;
+                factory.AddCookies(CookieUtils.GetCookiesFromResponseHeaders(GetLoginURL(), headers));
 
-                    // endpointの取得
-                    var result = DynamicJson.Parse (await wrapper.ReadAsStringAsync (response.Content).ConfigureAwait (false));
-                    var endpoint = new EndPoint (result.endpoint);
 
-                    //広告用の画像のurl設定
-                    string[] images = result.ad_images;
-                    endpoint.ConfigureAdImages (images); //xxx: bad-code
+                // endpointの取得
+                var result = DynamicJson.Parse(await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait(false));
+                var endpoint = new EndPoint(result.endpoint);
 
-                    return endpoint;
-                }
+                //広告用の画像のurl設定
+                string[] images = result.ad_images;
+                endpoint.ConfigureAdImages(images); //xxx: bad-code
+
+                return endpoint;
+
             }
         }
         /*

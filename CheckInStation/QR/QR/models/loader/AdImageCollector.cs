@@ -63,7 +63,7 @@ namespace QR
             this.imageCount = 0;
         }
 
-        public async Task<byte[]> fetchImageAsync (string url)
+        public async Task<byte[]> fetchImageAsync(string url)
         {
             /* TODO: get from cache
             var filepath = this.urlFromSavePath (url);
@@ -71,11 +71,11 @@ namespace QR
                 File.Read
             }
             */
-            logger.Info (String.Format ("get ad image. url:{0}", url));
-            var wrapper = Resource.HttpWrapperFactory.Create (url);
-            using (var response = await wrapper.GetAsync ().ConfigureAwait (false)) {
-                return await response.Content.ReadAsByteArrayAsync ().ConfigureAwait (false);
-            }
+            logger.Info(String.Format("get ad image. url:{0}", url));
+            var wrapper = Resource.HttpWrapperFactory.Create(url);
+            var response = await wrapper.GetAsync().ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
         }
 
         public void Add (BitmapImage data)

@@ -43,10 +43,11 @@ namespace QR
                 secret = tdata.secret
             };
 
-            using (var wrapper = factory.Create (url)) {
-                using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (data).ConfigureAwait (false)) {
-                    return (await wrapper.ReadAsStringAsync (response.Content).ConfigureAwait (false));
-                }
+            using (var wrapper = factory.Create(url))
+            {
+                HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+                return (await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait(false));
             }
         }
 
@@ -76,10 +77,12 @@ namespace QR
                 secret = collection.secret
             };
 
-            using (var wrapper = factory.Create (url)) {
-                using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (parms).ConfigureAwait (false)) {
-                    return (await wrapper.ReadAsStringAsync (response.Content).ConfigureAwait (false));
-                }
+            using (var wrapper = factory.Create(url))
+            {
+                HttpResponseMessage response = await wrapper.PostAsJsonAsync(parms).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+                return (await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait(false));
+
             }
         }
 

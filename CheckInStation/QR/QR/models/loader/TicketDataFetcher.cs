@@ -30,15 +30,17 @@ namespace QR
             return Resource.EndPoint.QRFetchData;
         }
 
-        public async Task<ResultTuple<string, TicketData>> FetchAsync (string qrcode)
+        public async Task<ResultTuple<string, TicketData>> FetchAsync(string qrcode)
         {
             IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
-            using (var wrapper = factory.Create (GetQRFetchDataUrl ())) {
-                var qrdata = new QRRequest (){ qrsigned = qrcode };
-                using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (qrdata).ConfigureAwait (false)) {
-                    return Parse (await wrapper.ReadAsStringAsync (response.Content).ConfigureAwait (false));
-                }
+            using (var wrapper = factory.Create(GetQRFetchDataUrl()))
+            {
+                var qrdata = new QRRequest() { qrsigned = qrcode };
+                HttpResponseMessage response = await wrapper.PostAsJsonAsync(qrdata).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+                return Parse(await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait(false));
             }
+
         }
 
         public ResultTuple<string, TicketData> Parse (string responseString)
