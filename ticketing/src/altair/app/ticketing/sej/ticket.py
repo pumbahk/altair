@@ -9,6 +9,8 @@ from lxml import etree
 import zipfile
 import transaction
 
+from sqlalchemy.sql.expression import or_
+
 from altair.app.ticketing.models import DBSession
 from .models import SejTicketTemplateFile, SejRefundTicket, SejRefundEvent
 from .zip_file import EnhZipFile, ZipInfo
@@ -106,10 +108,11 @@ def create_refund_zip_file():
     # 0:00-5:59の間なら当日, それ以外は翌日でファイル名を生成する
     hour = int(datetime.now().strftime('%H'))
     if hour < 6:
-        ymd = date.today().strftime('%Y%m%d')
+        now = date.today()
     else:
-        ymd = (date.today() + timedelta(days=1)).strftime('%Y%m%d')
+        now = date.today() + timedelta(days=1)
 
+    ymd = now.strftime('%Y%m%d')
     work_dir = '/tmp/'
     zip_file_name = '%s.zip' % ymd
     archive_file_name = 'archive.txt'
@@ -126,9 +129,6 @@ def create_refund_zip_file():
     refund_ticket_tsv = open(work_dir + refund_ticket_file_name, 'w')
     tsv_writer = csv.writer(refund_ticket_tsv, delimiter='\t', quoting=csv.QUOTE_NONE, lineterminator='\r\n')
     sej_refund_tickets = SejRefundTicket.query.filter(SejRefundTicket.sent_at==None).all()
-    if not sej_refund_tickets:
-        transaction.abort()
-        return None
 
     refund_event_ids = []
     for sej_refund_ticket in sej_refund_tickets:
@@ -150,7 +150,7 @@ def create_refund_zip_file():
     # SejRefundEvent -> YYYYMMDD_TPBKOEN.dat
     refund_event_tsv = open(work_dir + refund_event_file_name, 'w')
     tsv_writer = csv.writer(refund_event_tsv, delimiter='\t', quoting=csv.QUOTE_NONE, lineterminator='\r\n')
-    sej_refund_events = SejRefundEvent.query.filter(SejRefundEvent.id.in_(refund_event_ids)).all()
+    sej_refund_events = SejRefundEvent.query.filter(or_(SejRefundEvent.id.in_(refund_event_ids), now<=SejRefundEvent.end_at)).all()
     for sej_refund_event in sej_refund_events:
         tsv_writer.writerow(encode_to_sjis([
             sej_refund_event.available,
@@ -176,6 +176,10 @@ def create_refund_zip_file():
         ]))
         sej_refund_event.sent_at = datetime.now()
     refund_event_tsv.close()
+
+    if not sej_refund_events:
+        transaction.abort()
+        return None
 
     # create zip file
     zf = EnhZipFile(work_dir + zip_file_name, 'w', zipfile.ZIP_DEFLATED)
