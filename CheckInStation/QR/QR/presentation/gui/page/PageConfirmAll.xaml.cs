@@ -183,7 +183,10 @@ namespace QR.presentation.gui.page
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            await(this.DataContext as PageConfirmAllDataContext).PrepareAsync().ConfigureAwait(false);
+            var s = await (this.DataContext as PageConfirmAllDataContext).VerifyAsync();
+            if(!s){
+                this.OnSubmitWithBoundContext(sender, e); //xxx:
+            }
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)

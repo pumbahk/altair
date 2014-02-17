@@ -68,7 +68,9 @@ namespace QR
         public override ICase OnFailure (IFlow flow)
         {
             flow.Finish ();
-            return new CaseFailureRedirect (this.Resource, this.Resource.GetTokenStatusMessage (this.tokenStatus));
+            logger.Warn(String.Format("invalid status: status={0}, order_no={1}", this.tokenStatus.ToString(), this.RequestData.order_no));
+            var message = this.Resource.GetTokenStatusMessage(this.tokenStatus);
+            return new CaseFailureRedirect(Resource, message);
         }
     }
 }
