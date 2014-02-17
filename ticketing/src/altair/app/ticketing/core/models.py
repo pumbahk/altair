@@ -2613,6 +2613,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     .where(TicketPrintQueueEntry.processed_at==None)),
                 deferred=True)
 
+    @classmethod
+    def inner_channels(cls):
+        return [ChannelEnum.INNER.v, ChannelEnum.IMPORT.v]
+
     @property
     def payment_plugin_id(self):
         return self.payment_delivery_pair.payment_method.payment_plugin_id
@@ -2661,7 +2665,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def is_inner_channel(self):
-        return self.channel in [ChannelEnum.INNER.v, ChannelEnum.IMPORT.v]
+        return self.channel in self.inner_channels()
 
     def can_change_status(self, status):
         # 決済ステータスはインナー予約のみ変更可能
