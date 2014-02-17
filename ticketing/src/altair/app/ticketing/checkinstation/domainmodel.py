@@ -114,7 +114,7 @@ class SVGDataSource(object):
 
         vardict = p_todict.svg_data_from_token(token, issuer=issuer)
         ticket_templates = self.templates_cache(token)
-        vardict["svg_list"] = svg_list_all_template_valiation(svg_builder, vardict.get("data", {}), ticket_templates)
+        vardict["svg_list"] = svg_list_all_template_valiation(svg_builder, vardict.pop("data", {}), ticket_templates)
         return [vardict]
 
     def data_list_for_all(self, tokens):
@@ -126,7 +126,7 @@ class SVGDataSource(object):
             ticket_templates = self.templates_cache(ordered_product_item_token)
 
             vardict = p_todict.svg_data_from_token(ordered_product_item_token, issuer=issuer)
-            vardict["svg_list"] = svg_list_all_template_valiation(svg_builder, vardict.get("data", {}), ticket_templates)
+            vardict["svg_list"] = svg_list_all_template_valiation(svg_builder, vardict.pop("data", {}), ticket_templates)
             retval.append(vardict)
         return retval
 
