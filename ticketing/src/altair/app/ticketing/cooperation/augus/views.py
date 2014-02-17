@@ -1,5 +1,6 @@
 #-*- coding: utf-8 -*-
 import csv
+import time
 
 from pyramid.response import Response
 from pyramid.httpexceptions import (
@@ -58,7 +59,7 @@ class VenueView(_AugusBaseView):
     @view_config(route_name='augus.venue.download', request_method='GET')
     def download(self):
         res = Response()
-        filename = 'AUGUS_VENUE_DONWLOAD.csv'
+        filename = 'AUGUS_VENUE_DONWLOAD_ALTAIR_{}_{}.csv'.format(self.context.venue.id, time.strftime('%Y%m%d%H%M%S'))
         res.headers = [('Content-Type', 'application/octet-stream; charset=cp932'),
                        ('Content-Disposition', 'attachment; filename={0}'.format(filename)),
                        ]
@@ -116,7 +117,7 @@ class AugusVenueView(_AugusBaseView):
     def download(self):
         augus_venue = self.context.augus_venue
         res = Response()
-        filename = 'AUGUS_VENUE_DONWLOAD.csv'
+        filename = 'AUGUS_VENUE_DONWLOAD_AUGUS_{}_{}.csv'.format(augus_venue.id, time.strftime('%Y%m%d%H%M%S'))
         res.headers = [('Content-Type', 'application/octet-stream; charset=cp932'),
                        ('Content-Disposition', 'attachment; filename={0}'.format(filename)),
                        ]
