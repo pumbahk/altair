@@ -16,6 +16,14 @@
   購入履歴がありません。
 % endif
 
+<p/>
+<h3>抽選申込み照会</h3>
+% if lot_entries:
+  ${render_lot_entries(lot_entries)}
+% else:
+  抽選申込みがありません。
+% endif
+
 <%def name="render_shipping_address(shipping)">
   <table class="purchasedContents" summary="配送先情報">
     <tbody>
@@ -40,6 +48,28 @@
 </%def>
 
 <%def name="render_lot_entries(lot_entries)">
+  % for entry in lot_entries:
+    <div id="mypageHistory">
+      <div>
+        % if entry.is_ordered:
+          当選<br/>
+        % elif entry.is_rejected:
+          落選<br/>
+        % else:
+          抽選処理待ち<br/>
+        % endif
+        <dl>
+          <form name="${entry.entry_no}" action="/lots/review" method="POST">
+            <input type="hidden" name="entry_no" value="${entry.entry_no}"/>
+            <input type="hidden" name="tel_no" value="${entry.shipping_address.tel_1}"/>
+            <dt><a href="javascript:void(0);" onclick="document.${entry.entry_no}.submit()">${entry.lot.name}</a></dt>
+            <dd>受付番号：${entry.entry_no}　予約日時：${h.japanese_datetime(entry.created_at)}</dd>
+          </form>
+        </dl>
+      </div>
+    </div>
+  % endfor
+  ${render_pager(lot_entries)}
 </%def>
 
 <%def name="render_orders(orders)">

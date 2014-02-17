@@ -17,6 +17,13 @@
   購入履歴がありません。
 % endif
 
+<h3>抽選申込み照会</h3>
+% if lot_entries:
+  ${render_lot_entries(lot_entries)}
+% else:
+  抽選申込みがありません。
+% endif
+
 <%def name="render_shipping_address(shipping)">
 氏名（漢字）：
 ${shipping.first_name}<br/>
@@ -29,6 +36,29 @@ ${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shi
 </%def>
 
 <%def name="render_lot_entries(lot_entries)">
+  % for entry in lot_entries:
+<form name="${order.order_no}" action="/lots/review" method="POST">
+受付番号：
+${order.order_no}<br/>
+予約日時：
+${h.japanese_datetime(order.created_at)}<br/>
+ステータス：
+${h.get_order_status(order)}<br/>
+支払状況：
+${h.get_payment_status(order)}<br/>
+<input type="hidden" name="order_no" value="${order.order_no}"/>
+<input type="hidden" name="tel" value="${order.shipping_address.tel_1}"/>
+公演名：
+${order.performance.name}<br/>
+公演開始時間：
+${h.japanese_datetime(order.performance.start_on)}<br/>
+会場名：
+${order.performance.venue.name}
+<input type="submit" value="チケット詳細">
+</form>
+<hr/>
+  % endfor
+${render_pager(orders)}
 </%def>
 
 <%def name="render_pager(result)">
