@@ -15,6 +15,7 @@ from .errors import (
     AugusDataExportError,
     )
 
+
 class AugusPutbackExporter(object):
     def create_record(self, ag_putback):
         ag_stock_info = ag_putback.augus_stock_info

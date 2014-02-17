@@ -164,6 +164,7 @@ class AugusDistributionImporter(object):
         return stock_holder
 
     def import_record_all(self, records):
+        success_records = []
         allocated_seats = []
         stock_holders = {}
         for augus_event_code, _records in itertools.groupby(records, lambda record: record.event_code):
@@ -208,10 +209,10 @@ class AugusDistributionImporter(object):
 
                 if stock:
                     seat = self.import_record(record, stock, ag_performance)
+                    success_records.append(record)
                     allocated_seats.append(seat)
                     seat.save()
-
-        return allocated_seats
+        return success_records
 
     def import_(self, protocol):
         return self.import_record_all(protocol)
