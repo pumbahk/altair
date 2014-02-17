@@ -13,6 +13,7 @@ from .forms import (
     PutbackForm,
     )
 from altair.app.ticketing.core.models import (
+    Seat,
     Stock,
     AugusPerformance,
     AugusSeat,
@@ -34,7 +35,7 @@ class CooperationIndexView(_CooperationView):
 
 @view_defaults(route_name='cooperation.putback', decorator=with_bootstrap, permission="event_editor")
 class CooperationPutbackView(_CooperationView):
-    
+
     @view_config(request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/putback.html')
     def get(self):
@@ -43,7 +44,7 @@ class CooperationPutbackView(_CooperationView):
                       form=form,
                       )
         return params
-        
+
     @view_config(request_method='POST')
     def post(self):
         try:
@@ -51,14 +52,14 @@ class CooperationPutbackView(_CooperationView):
             performance_ids = map(int, self.request.params.getall('performance_ids'))
         except (TypeError, ValueError) as err:
             raise ValueError()
-        
+
         stock_holder = None
         for stock_holder in self.context.event.stock_holders:
-            if stock_holder.id == intstock_holder_id:
+            if stock_holder.id == stock_holder_id:
                 break
         else:
             raise ValueError()
-            
+
         performances = filter(lambda performance: performance.id in performance_ids,
                               self.context.event.performances)
         if not performances:
@@ -81,3 +82,18 @@ class CooperationPutbackView(_CooperationView):
                     ag_putback.save()
         res = Response()
         return res
+
+# 返券予約でやる事
+#  AugusPutbackを作る
+#  返券対象の特定
+#  - StockHolder
+#  - Performance
+#  手順
+#  Performanceの中のStockで特定のStockHolderを持つものから
+#  Stockにヒモづき、AugusStockInfo(配券済み)のものを探し出す
+#  もしSeatの中で対象でないものがひとつでも混ざっていた場合
+#  エラーするようにしておく
+
+
+# 返券処理でやる事
+# 未処理のAugusPutbackからcsvを作る

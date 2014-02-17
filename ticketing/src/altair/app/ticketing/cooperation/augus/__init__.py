@@ -37,6 +37,12 @@ ROUTE_URL_RESOURCE = {
     'augus.stock_type.show': ('/events/{event_id}/stock_types/show', SeatTypeResource),
     'augus.stock_type.edit': ('/events/{event_id}/stock_types/edit', SeatTypeResource),
     'augus.stock_type.save': ('/events/{event_id}/stock_types/save', SeatTypeResource),
+
+    # putback
+    'augus.putback.index': ('/events/{event_id}/putback', PerformanceResource),
+    'augus.putback.new': ('/events/{event_id}/putback/new', PerformanceResource),
+    'augus.putback.show': ('/events/{event_id}/putback/show/{putback_code}', PerformanceResource),
+    'augus.putback.reserve': ('/events/{event_id}/putback/reserve/{putback_code}', PerformanceResource),
     }
 
 def add_routes(config, route_url_resource):

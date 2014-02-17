@@ -4245,6 +4245,9 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_seat_id = Column(Identifier, ForeignKey('AugusSeat.id'))
     augus_seat = relationship('AugusSeat')
 
+    seat_id = Column(Identifier, ForeignKey('Seat.id'))
+    seat = relationship('Seat')
+
     def get_seat(self):
         performance = self.augus_performance
         if not performance:
@@ -4273,7 +4276,7 @@ class AugusPutbackType:
     FINAL = u'F' # 最終
 
 # move to altair.app.ticketing.orion.cooperation.augus.models
-class AugusPutback(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class AugusPutback(Base, BaseModel): #, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusPutback'
     id = Column(Identifier, primary_key=True)
     augus_putback_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'返券コード'))
@@ -4281,7 +4284,7 @@ class AugusPutback(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 
     reserved_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券予約日時'))
-    nortificated_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券通知日時'))
+    notified_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券通知日時'))
     finished_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券完了日時'))
 
     augus_putback_type = AnnotatedColumn(Unicode(32), _a_label=(u'返券区分'), default=AugusPutbackType.ROUTE)

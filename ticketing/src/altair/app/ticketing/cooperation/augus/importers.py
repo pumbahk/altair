@@ -139,6 +139,7 @@ class AugusDistributionImporter(object):
             ag_stock_info.seat_type_classif = record.seat_type_classif
             ag_stock_info.distributed_at = datetime.datetime.now()
             ag_stock_info.augus_seat_id = ag_seat.id
+            ag_stock_info.seat_id = seat.id
             ag_stock_info.quantity = record.seat_count
             ag_stock_info.save()
 
@@ -160,6 +161,7 @@ class AugusDistributionImporter(object):
         stock_holder.event_id = performance.event_id
         stock_holder.style = u'{"text": "\u8ffd", "text_color": "#a62020"}'
         stock_holder.account_id = account_id
+        stock_holder.is_putback_target = True
         stock_holder.save()
         return stock_holder
 

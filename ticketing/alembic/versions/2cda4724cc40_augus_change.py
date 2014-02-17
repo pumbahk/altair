@@ -20,9 +20,19 @@ Identifier = sa.BigInteger
 
 def upgrade():
     op.alter_column('AugusPerformance', 'performance_id', nullable=True,
-                    name='performance_id', existing_type=Identifier, existing_nullable=False)
+                   name='performance_id', existing_type=Identifier, existing_nullable=False)
+    op.alter_column('AugusPutback', 'reserverd_at', new_column_name='reserved_at',
+                   existing_type=sa.TIMESTAMP())
+    op.alter_column('AugusPutback', 'notificated_at', new_column_name='notified_at',
+                   existing_type=sa.TIMESTAMP())
+    op.add_column('AugusStockInfo', sa.Column('seat_id', Identifier(), nullable=True))
 
 
 def downgrade():
     op.alter_column('AugusPerformance', 'performance_id', nullable=False,
                     name='performance_id', existing_type=Identifier, existing_nullable=True)
+    op.alter_column('AugusPutback', 'reserved_at', new_column_name='reserverd_at',
+                   existing_type=sa.TIMESTAMP())
+    op.alter_column('AugusPutback', 'notified_at', new_column_name='notificated_at',
+                   existing_type=sa.TIMESTAMP())
+    op.drop_column('AugusStockInfo', 'seat_id')
