@@ -6,6 +6,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from pyramid.decorator import reify
 
+
 class ChoosablePerformance(object):
     def __init__(self, request, operator):
         self.request = request
@@ -72,6 +73,31 @@ class OrderData(object):
               .filter_by(organization_id=self.operator.organization_id)
               .filter_by(order_no=order_no))
         return qs.first()
+
+
+
+from altair.app.ticketing.core.utils import PrintedAtBubblingSetter
+from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.printqr.utils import history_from_token
+
+
+class PrintedAtUpdater(object):
+    def __init__(self, request, operator):
+        self.request = request
+        self.operator = operator
+
+    def update_printed_at(self, token_list, token_template_matching_dict, order, now):
+        setter = PrintedAtBubblingSetter(now)
+
+        for token in token_list:
+            DBSession.add(token)
+
+            template_id_list = token_template_matching_dict.get(unicode(token.id), [])
+            for template_id in template_id_list:
+                DBSession.add(history_from_token(self.request, self.operator.id, order.id, token, template_id=template_id))
+            setter.printed_token(token)
+
+        setter.start_bubbling()
 
 
 class SVGDataSource(object):

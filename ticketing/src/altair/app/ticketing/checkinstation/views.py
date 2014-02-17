@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 from pyramid.view import view_defaults, view_config
 import logging
+from collections import defaultdict
 logger = logging.getLogger(__name__)
-from altair.app.ticketing.models import DBSession
 from altair.now import get_now
 from pyramid.httpexceptions import HTTPBadRequest
 from webob.multidict import MultiDict
@@ -204,34 +204,33 @@ def order_no_verified_data(context, request):
 
 
 ## update printed at
-
-from altair.app.ticketing.core.utils import PrintedAtBubblingSetter
-from altair.app.ticketing.printqr.utils import history_from_token
+from .domainmodel import PrintedAtUpdater
 
 @view_config(route_name="qr.update.printed_at", permission="sales_counter", renderer="json", 
              custom_predicates=(with_secret_token,))
 def update_printed_at(context, request):
     """ticket print historyの生成とprinted_atの更新"""
     access_log("*qr.update.printed_at", context.identity)
-    if not "token_id_list" in request.json_body:
+    if not "printed_ticket_list" in request.json_body:
         raise HTTPBadRequest(u"引数が足りません")
     if not "order_no" in request.json_body:
         raise HTTPBadRequest(u"引数が足りません")
 
     token_data = ItemTokenData(request, context.operator)
-    token_id_list = request.json_body["token_id_list"]
-    token_list = token_data.get_item_token_list_from_token_id_list(token_id_list)
+    updater = PrintedAtUpdater(request, context.operator)
 
+    printed_ticket_list = request.json_body["printed_ticket_list"]
+    token_template_matching_dict = defaultdict(list)
+    for p in printed_ticket_list:
+        token_template_matching_dict[p["token_id"]].append(p["template_id"])
     order_no = request.json_body["order_no"]
+
+    token_id_list = [p["token_id"] for p in printed_ticket_list]
+    token_list = token_data.get_item_token_list_from_token_id_list(token_id_list)
     order = OrderData(request, context.operator).get_order_from_order_no(order_no)
-
     now = get_now(request)
-    setter = PrintedAtBubblingSetter(now)
 
-    for token in token_list:
-        DBSession.add(token)
-        DBSession.add(history_from_token(request, context.operator.id, order.id, token))
-        setter.printed_token(token)
+    ## printed_atを更新
+    updater.update_printed_at(token_list, token_template_matching_dict, order, now)
 
-    setter.start_bubbling()
     return {"now": str(now)}

@@ -57,13 +57,14 @@ def verify_order(order, event_id="*"):
         raise UnmatchEventException
 
 
-def history_from_token(request, operator_id, order_id, token):
+def history_from_token(request, operator_id, order_id, token, template_id=None):
     return TicketPrintHistory(
         operator_id=operator_id, 
         seat_id=token.seat_id, 
         item_token_id=token.id,
         ordered_product_item_id=token.item.id,
         order_id=order_id,
+        ticket_id=template_id
         )
 
 def add_history(request, operator_id, params):
@@ -71,7 +72,7 @@ def add_history(request, operator_id, params):
     ordered_product_item_token_id = params.get(u'ordered_product_item_token_id')
     ordered_product_item_id = params.get(u'ordered_product_item_id')
     order_id = params.get(u'order_id')
-    ticket_id = params[u'ticket_id']
+    ticket_id = params.get(u'ticket_id')
     return TicketPrintHistory(
         operator_id=operator_id, 
         seat_id=seat_id,
