@@ -68,7 +68,6 @@ def main():
                 response = DistributionSyncResponse(customer_id=consumer_id)
                 for record in request:
                     response.event_code = int(record.event_code)
-
                     res_record = response.record()
                     res_record.event_code = record.event_code
                     res_record.performance_code = record.performance_code
@@ -78,7 +77,7 @@ def main():
                     name = response.name
                     path = os.path.join(ko_staging, name)
                     AugusExporter.export(response, path)
-                time.sleep(5)
+                time.sleep(2)
         except:
             transaction.abort()
             raise
