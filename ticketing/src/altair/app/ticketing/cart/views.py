@@ -170,7 +170,7 @@ class IndexView(IndexViewMixin):
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
-        logger.debug("sales_segments: %s" % sales_segments_selection)
+        #logger.debug("sales_segments: %s" % sales_segments_selection)
 
         selected_sales_segment = None
         preferred_performance = None
@@ -234,7 +234,7 @@ class IndexView(IndexViewMixin):
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
-        logger.debug("sales_segments: %s" % sales_segments_selection)
+        #logger.debug("sales_segments: %s" % sales_segments_selection)
 
         set_rendered_event(self.request, self.context.event)
 
@@ -419,11 +419,12 @@ class IndexAjaxView(object):
                 .filter(c_models.Seat.venue_id==venue.id)\
                 .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))
             seat_groups_queries = [
-                slave_session.query(c_models.SeatGroup.l0_id, c_models.SeatGroup.name, c_models.Seat.l0_id) \
+                slave_session.query(c_models.SeatGroup.l0_id, c_models.SeatGroup.name, c_models.Seat.l0_id, include_deleted=True) \
                     .join(c_models.Seat, c_models.SeatGroup.l0_id == l0_id_column) \
                     .join(c_models.Stock, c_models.Seat.stock_id == c_models.Stock.id) \
                     .filter(c_models.SeatGroup.site_id == venue.site_id) \
-                    .filter(c_models.Seat.venue_id == venue.id)
+                    .filter(c_models.Seat.venue_id == venue.id) \
+                    .filter(c_models.Stock.deleted_at == None) \
                     for l0_id_column in [c_models.Seat.row_l0_id, c_models.Seat.group_l0_id]
                     ]
 
@@ -435,7 +436,7 @@ class IndexAjaxView(object):
                     ]
             seats = seats_query.all()
             seat_groups = {}
-            for seat_group_l0_id, seat_group_name, seat_l0_id in seat_groups_queries[0].union(*seat_groups_queries[1:]):
+            for seat_group_l0_id, seat_group_name, seat_l0_id in seat_groups_queries[0].union_all(*seat_groups_queries[1:]):
                 seat_group = seat_groups.get(seat_group_l0_id)
                 if seat_group is None:
                     seat_group = seat_groups[seat_group_l0_id] = {

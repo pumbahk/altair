@@ -3,8 +3,8 @@
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <title>滋賀レイクスターズ レイクスオンラインチケット 購入確認ページ</title>
-  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.orderreview:static/css/lakestars/style.css')}" media="all" />
+  <title>岩手ビッグブルズ ブルズチケット 購入確認ページ</title>
+  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.orderreview:static/css/bigbulls/style.css')}" media="all" />
   <script language="JavaScript" src="${request.static_url('altair.app.ticketing.orderreview:static/js/jquery.js')}"></script>
   <style type="text/css">
     .error {
@@ -16,23 +16,28 @@
   </style>
 </head>
 <body>
-  <div align="center">
-    <div class="header">
-      <img src="${request.static_url('altair.app.ticketing.orderreview:static/images/lakestars/head_title.png')}" alt="滋賀レイクスターズ" width="780" height="135" />
+	<div class="header">
+		<div class="header-inner">
+			<img src="${request.static_url('altair.app.ticketing.orderreview:static/images/bigbulls/logo.gif')}" alt="ブルズチケット" />
+		</div>
+	</div>
+  <div class="wrapper">
+    <div class="maincol">
+      <table class="layout wrapper">
+        <tr>
+          <td>
+            ${self.body()}
+          </td>
+        </tr>
+      </table>
     </div>
-    <!-- これはdisplay none指定, なぜか... -->
-    <h1 class="title">滋賀レイクスターズ レイクスオンラインチケット 購入確認ページ</h1>
-    <table class="layout" style="width:760px" class="wrapper">
-      <tr>
-        <td>
-          ${next.body()}
-        </td>
-      </tr>
-    </table>
-    <div class="footer">
+  </div>
+  <div class="footer">
+    <div class="footer-inner">
       <div class="footernav">
         <ul>
-          <li class="first"><a href="${safe_get_contact_url(request, default="")}">お問い合わせ</a></li>
+      <li class="first"><a href="http://www.ticketstar.jp/corporate">運営会社</a></li>
+          <li><a href="${safe_get_contact_url(request, default="")}">お問い合わせ</a></li>
           <li><a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a></li>
           <li class="last"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
         </ul>

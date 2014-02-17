@@ -30,7 +30,7 @@ class SalesReports(BaseView):
     def index(self):
         form = SalesReportForm()
         form.recent_report.data = True
-        event_total_reporter = SalesTotalReporter(form, self.context.organization)
+        event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
 
         return {
             'form':form,
@@ -41,7 +41,7 @@ class SalesReports(BaseView):
     def index_post(self):
         form = SalesReportForm(self.request.params)
         form.recent_report.data = False
-        event_total_reporter = SalesTotalReporter(form, self.context.organization)
+        event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
 
         return {
             'form':form,
@@ -52,7 +52,7 @@ class SalesReports(BaseView):
     def index_all(self):
         form = SalesReportForm(self.request.params)
         form.recent_report.data = False
-        event_total_reporter = SalesTotalReporter(form, self.context.organization)
+        event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
 
         return {
             'form':form,
@@ -64,8 +64,8 @@ class SalesReports(BaseView):
         event = self.context.event
 
         form = SalesReportForm(self.request.params, event_id=event.id)
-        event_total_reporter = SalesTotalReporter(form, self.context.organization)
-        performance_total_reporter = SalesTotalReporter(form, self.context.organization, group_by='Performance')
+        event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
+        performance_total_reporter = SalesTotalReporter(self.request, form, self.context.organization, group_by='Performance')
 
         return {
             'event':event,
@@ -83,7 +83,7 @@ class SalesReports(BaseView):
         return {
             'form_report_setting':ReportSettingForm(MultiDict(performance_id=performance.id), context=self.context),
             'report_settings':ReportSetting.filter_by(performance_id=performance.id).all(),
-            'performance_reporter':PerformanceReporter(form, performance),
+            'performance_reporter':PerformanceReporter(self.request, form, performance),
             }
 
     @view_config(route_name='sales_reports.preview', renderer='altair.app.ticketing:templates/sales_reports/preview.html')
@@ -129,14 +129,14 @@ class SalesReports(BaseView):
             if performance is None:
                 raise HTTPNotFound('performance id %d is not found' % performance_id)
 
-            render_param = dict(performance_reporter=PerformanceReporter(form, performance))
+            render_param = dict(performance_reporter=PerformanceReporter(self.request, form, performance))
             return render_to_response('altair.app.ticketing:templates/sales_reports/performance_mail.html', render_param, request=self.request)
         elif event_id:
             event = Event.get(event_id, organization_id=self.context.user.organization_id)
             if event is None:
                 raise HTTPNotFound('event id %d is not found' % event_id)
 
-            render_param = dict(event_reporter=EventReporter(form, event))
+            render_param = dict(event_reporter=EventReporter(self.request, form, event))
             return render_to_response('altair.app.ticketing:templates/sales_reports/event_mail.html', render_param, request=self.request)
         else:
             raise HTTPNotFound('event and performance id is not found')
@@ -160,10 +160,10 @@ class SalesReports(BaseView):
         form = SalesReportForm(self.request.params)
         if form.validate():
             if performance_id:
-                render_param = dict(performance_reporter=PerformanceReporter(form, performance))
+                render_param = dict(performance_reporter=PerformanceReporter(self.request, form, performance))
                 html = render_to_response('altair.app.ticketing:templates/sales_reports/performance_mail.html', render_param, request=self.request)
             elif event_id:
-                render_param = dict(event_reporter=EventReporter(form, event))
+                render_param = dict(event_reporter=EventReporter(self.request, form, event))
                 html = render_to_response('altair.app.ticketing:templates/sales_reports/event_mail.html', render_param, request=self.request)
 
             settings = self.request.registry.settings

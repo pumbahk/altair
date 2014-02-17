@@ -29,6 +29,7 @@ def main(argv=sys.argv):
 
     config_file = argv[1]
     app_env = bootstrap(config_file)
+    request = app_env['request']
 
     logger.info('start send_sales_report batch')
 
@@ -85,7 +86,7 @@ def main(argv=sys.argv):
                 continue
 
             if form not in reports:
-                reporter = PerformanceReporter(form, performance)
+                reporter = PerformanceReporter(request, form, performance)
                 if not reporter.reporters:
                     continue
                 render_param = dict(performance_reporter=reporter)
@@ -110,7 +111,7 @@ def main(argv=sys.argv):
                 continue
 
             if form not in reports:
-                reporter = EventReporter(form, event)
+                reporter = EventReporter(request, form, event)
                 if not reporter.reporters:
                     logger.info('continue(no report)')
                     continue
