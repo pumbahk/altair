@@ -3,6 +3,7 @@ using QR.message;
 using System.Threading.Tasks;
 using NLog;
 using System.Collections.Generic;
+using QR.support;
 
 namespace QR
 {
@@ -26,29 +27,27 @@ namespace QR
             this.tokenStatus = TokenStatus.valid;
         }
 
-        public override async Task PrepareAsync (IInternalEvent ev)
+        public override async Task PrepareAsync(IInternalEvent ev)
         {
-            await base.PrepareAsync (ev).ConfigureAwait (false);
-            try {
-                var data = new TicketDataCollectionRequestData () {
-                    order_no = this.RequestData.order_no,
-                    secret = this.RequestData.secret
-                };
-                ResultTuple<string, TicketDataCollection> result = await Resource.TicketDataCollectionFetcher.FetchAsync (data);
-                if (result.Status) {
-                    this.Collection = result.Right;
-                    this.tokenStatus = result.Right.status;
+            await base.PrepareAsync(ev).ConfigureAwait(false);
+            var data = new TicketDataCollectionRequestData()
+            {
+                order_no = this.RequestData.order_no,
+                secret = this.RequestData.secret
+            };
+            ResultTuple<string, TicketDataCollection> result = await new DispatchResponse<TicketDataCollection>(Resource).Dispatch(() => Resource.TicketDataCollectionFetcher.FetchAsync(data)).ConfigureAwait(false);
+            if (result.Status)
+            {
+                this.Collection = result.Right;
+                this.tokenStatus = result.Right.status;
 
-                    var subject = this.PresentationChanel as ConfirmAllEvent;
-                    subject.SetCollection(this.Collection);
-                } else {
-                    //modelからpresentation層へのメッセージ
-                    PresentationChanel.NotifyFlushMessage ((result as Failure<string,TicketDataCollection>).Result);
-                    this.tokenStatus = TokenStatus.unknown;
-                }
-            } catch (Exception ex) {
-                logger.ErrorException (":", ex);
-                PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
+                var subject = this.PresentationChanel as ConfirmAllEvent;
+                subject.SetCollection(this.Collection);
+            }
+            else
+            {
+                //modelからpresentation層へのメッセージ
+                PresentationChanel.NotifyFlushMessage((result as Failure<string, TicketDataCollection>).Result);
                 this.tokenStatus = TokenStatus.unknown;
             }
         }

@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using QR.message;
 using NLog;
+using QR.support;
 
 namespace QR
 {
@@ -23,26 +24,26 @@ namespace QR
             tokenStatus = TokenStatus.valid;
         }
 
-        public override async Task<bool> VerifyAsync ()
+        public override async Task<bool> VerifyAsync()
         {
-            try {
-                ResultTuple<string, TicketData> result = await Resource.TicketDataFetcher.FetchAsync (this.QRCode);
-                if (result.Status) {
-                    this.TicketData = result.Right;
-                    if (this.TicketData.Verify ()) {
-                        return true;
-                    } else {
-                        this.tokenStatus = this.TicketData.status;
-                        return false;
-                    }
-                } else {
-                    //modelからpresentation層へのメッセージ
-                    PresentationChanel.NotifyFlushMessage ((result as Failure<string,TicketData>).Result);
+            ResultTuple<string, TicketData> result = await new DispatchResponse<TicketData>(Resource).Dispatch(() => Resource.TicketDataFetcher.FetchAsync(this.QRCode)).ConfigureAwait(false);
+            if (result.Status)
+            {
+                this.TicketData = result.Right;
+                if (this.TicketData.Verify())
+                {
+                    return true;
+                }
+                else
+                {
+                    this.tokenStatus = this.TicketData.status;
                     return false;
                 }
-            } catch (Exception ex) {
-                logger.ErrorException (":", ex);
-                PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
+            }
+            else
+            {
+                //modelからpresentation層へのメッセージ
+                PresentationChanel.NotifyFlushMessage((result as Failure<string, TicketData>).Result);
                 return false;
             }
         }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Net.Http;
 using NLog;
+using QR.message;
 
 namespace QR
 {
@@ -23,21 +24,17 @@ namespace QR
 			return Resource.EndPoint.UpdatePrintedAt;
 		}
 
-		public async Task<bool> UpdatePrintedAtAsync (UpdatePrintedAtRequestData data)
-		{
-			try {
-				IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
-				using (var wrapper = factory.Create (GetUpdatePrintedAtURL ())) {
-					using (HttpResponseMessage response = await wrapper.PostAsJsonAsync (data).ConfigureAwait (false)) {
-						await wrapper.ReadAsStringAsync (response.Content).ConfigureAwait (false);
-						return true;
-					}
-				}
-			} catch (Exception ex) {
-				logger.ErrorException (":", ex);
-				return false;
-			}
-		}
+        public async Task<bool> UpdatePrintedAtAsync(UpdatePrintedAtRequestData data)
+        {
+            IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
+            using (var wrapper = factory.Create(GetUpdatePrintedAtURL()))
+            {
+                HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+                await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait(false);
+                return true;
+            }
+        }
 	}
 }
 

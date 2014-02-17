@@ -5,6 +5,7 @@ using System.Linq;
 using QR.message;
 using NLog;
 using System.Net;
+using QR.support;
 
 namespace QR
 {
@@ -29,33 +30,21 @@ namespace QR
             this.AggregateTicketPrinting = new AggregateTicketPrinting(this.Resource.TicketPrinting);
         }
 
-        public override async Task PrepareAsync (IInternalEvent ev)
+        public override async Task PrepareAsync(IInternalEvent ev)
         {
-            await base.PrepareAsync (ev).ConfigureAwait (false);
+            await base.PrepareAsync(ev).ConfigureAwait(false);
             var subject = this.PresentationChanel as PrintingEvent;
 
-            try
+            var result = this.PrintingTargets = await new DispatchResponse<List<TicketImageData>>(Resource).Dispatch(() => Resource.SVGImageFetcher.FetchImageDataForAllAsync(this.DataCollection)).ConfigureAwait(false);
+            if (result.Status)
             {
-                var result = this.PrintingTargets = await Resource.SVGImageFetcher.FetchImageDataForAllAsync(this.DataCollection).ConfigureAwait(false);
-                if (result.Status)
-                {
-                    //印刷枚数設定
-                    subject.ConfigureByTotalPrinted(result.Right.Count);
-                }
-                else
-                {
-                    subject.ConfigureByTotalPrinted(0); //失敗時;
-                }
+                //印刷枚数設定
+                subject.ConfigureByTotalPrinted(result.Right.Count);
             }
-            catch (WebException ex)
+            else
             {
-                logger.ErrorException(":", ex);
-                this.PrintingTargets = new Failure<string, List<TicketImageData>>(Resource.GetWebExceptionMessage());
-            }
-            catch (Exception ex)
-            {
-                logger.ErrorException(":", ex);
-                this.PrintingTargets = new Failure<string, List<TicketImageData>>(Resource.GetDefaultErrorMessage());
+                this.PresentationChanel.NotifyFlushMessage(result.Left);
+                subject.ConfigureByTotalPrinted(0); //失敗時;
             }
         }
                 

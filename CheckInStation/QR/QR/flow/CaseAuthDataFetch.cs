@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using QR.message;
 using NLog;
+using QR.support;
 
 namespace QR
 {
@@ -22,21 +23,19 @@ namespace QR
             LoginPassword = password;
         }
 
-        public override async Task<bool> VerifyAsync ()
+        public override async Task<bool> VerifyAsync()
         {
-            try {
-                ResultTuple<string, AuthInfo> result = await Resource.Authentication.AuthAsync (LoginName, LoginPassword);
-                if (result.Status) {
-                    Resource.AuthInfo = result.Right;
-                    return true;
-                } else {
-                    //modelからpresentation層へのメッセージ
-                    PresentationChanel.NotifyFlushMessage ((result as Failure<string,AuthInfo>).Result);
-                    return false;
-                }
-            } catch (Exception ex) {
-                logger.ErrorException (":", ex);
-                PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
+            var d = new DispatchResponse<AuthInfo>(this.Resource);
+            ResultTuple<string, AuthInfo> result = await d.Dispatch(() => Resource.Authentication.AuthAsync(LoginName, LoginPassword)).ConfigureAwait(false);
+            if (result.Status)
+            {
+                Resource.AuthInfo = result.Right;
+                return true;
+            }
+            else
+            {
+                //modelからpresentation層へのメッセージ
+                PresentationChanel.NotifyFlushMessage((result as Failure<string, AuthInfo>).Result);
                 return false;
             }
         }

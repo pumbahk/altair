@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using QR.support;
 
 namespace QR
 {
@@ -19,9 +20,14 @@ namespace QR
         public override async Task<bool> VerifyAsync ()
         {
             (this.PresentationChanel as FinishEvent).ChangeState(FinishStatus.requesting);
-            var s = await Resource.TicketDataManager.UpdatePrintedAtAsync (this.RequsetData);
+            var result = await new DispatchResponse<bool>(Resource).Dispatch(() => Resource.TicketDataManager.UpdatePrintedAtAsync (this.RequsetData)).ConfigureAwait(false);
             (this.PresentationChanel as FinishEvent).ChangeState(FinishStatus.saved);
-            return s;
+            if (!result.Status)
+            {
+                this.PresentationChanel.NotifyFlushMessage(result.Left);
+                return false;
+            }
+            return true;
         }
 
         public override ICase OnSuccess (IFlow flow)

@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using NLog;
 using QR.message;
+using QR.support;
 
 namespace QR
 {
@@ -23,22 +24,21 @@ namespace QR
             this.RequestData = data;
         }
 
-        public override async Task<bool> VerifyAsync ()
+        public override async Task<bool> VerifyAsync()
         {
-            try {
-                ResultTuple<string, VerifiedOrdernoRequestData> result = await Resource.VerifiedOrderDataFetcher.FetchAsync (this.RequestData);
-                if (result.Status) {
-                    this.VerifiedData = result.Right;
-                    return true;
-                } else {
-                    //modelからpresentation層へのメッセージ
-
-                    PresentationChanel.NotifyFlushMessage ((result as Failure<string,VerifiedOrdernoRequestData>).Result);
-                    return false;
-                }
-            } catch (Exception ex) {
-                logger.ErrorException (":", ex);
-                PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
+            ResultTuple<string, VerifiedOrdernoRequestData> result = await new DispatchResponse<VerifiedOrdernoRequestData>(Resource).Dispatch(() =>
+            {
+                return Resource.VerifiedOrderDataFetcher.FetchAsync(this.RequestData);
+            }).ConfigureAwait(false);
+            if (result.Status)
+            {
+                this.VerifiedData = result.Right;
+                return true;
+            }
+            else
+            {
+                //modelからpresentation層へのメッセージ
+                PresentationChanel.NotifyFlushMessage((result as Failure<string, VerifiedOrdernoRequestData>).Result);
                 return false;
             }
         }
