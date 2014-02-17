@@ -46,6 +46,11 @@ namespace QR
             }
             messages.Clear ();
         }
+
+        public string GetMessageString()
+        {
+            return string.Join(Environment.NewLine, this.messages);
+        }
     }
 }
 

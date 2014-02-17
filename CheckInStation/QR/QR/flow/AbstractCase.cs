@@ -61,10 +61,14 @@ namespace QR
             });
         }
 
-        public virtual ICase OnFailure (IFlow flow)
+        public virtual ICase OnFailure(IFlow flow)
         {
-            flow.Finish ();
-            return new CaseFailureRedirect (Resource);
+            flow.Finish();
+            var message = this.PresentationChanel.GetMessageString();
+            if (message == "")
+                return new CaseFailureRedirect(Resource);
+            else
+                return new CaseFailureRedirect(Resource, message);
         }
 
         public abstract ICase OnSuccess (IFlow flow);
