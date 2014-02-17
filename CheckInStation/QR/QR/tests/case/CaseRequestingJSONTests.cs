@@ -212,7 +212,7 @@ namespace QR
 
                 // case 初期化
                 var data = new UpdatePrintedAtRequestData () {
-                    token_id_list = new string[]{ "-9999" },
+                    printed_ticket_list = new _PrintedTicket[]{new _PrintedTicket(){token_id="9999",template_id="1"}},
                     secret = "this-is-secret"
                 };
                 ICase target = new CasePrintFinish (resource, data);

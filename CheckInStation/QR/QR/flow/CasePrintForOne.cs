@@ -6,8 +6,10 @@ using NLog;
 using System.Linq;
 using System.Net;
 
+
 namespace QR
 {
+
     /// <summary>
     /// Case QR print for one. 印刷(1枚)
     /// </summary>
@@ -17,7 +19,7 @@ namespace QR
 
         public ResultTuple<string, List<TicketImageData>> PrintingTargets { get; set; }
 
-        public ResultStatusCollector<string> StatusCollector { get; set; }
+        public AggregateTicketPrinting AggregateTicketPrinting { get; set; }
 
         public UpdatePrintedAtRequestData RequestData{ get; set; }
 
@@ -26,7 +28,7 @@ namespace QR
         public CasePrintForOne (IResource resource, TicketData ticketdata) : base (resource)
         {
             TicketData = ticketdata;
-            StatusCollector = new ResultStatusCollector<string> ();
+            this.AggregateTicketPrinting = new AggregateTicketPrinting(resource.TicketPrinting);
         }
 
         public override async Task PrepareAsync (IInternalEvent ev)
@@ -64,37 +66,21 @@ namespace QR
             // 印刷対象の画像の取得に失敗した時
             if (!this.PrintingTargets.Status) {
                 PresentationChanel.NotifyFlushMessage(this.PrintingTargets.Left);
-                PresentationChanel.NotifyFlushMessage ((this.PrintingTargets as Failure<string,List<TicketImageData>>).Result);
                 return false;
             }
+
+            // 印刷開始
             var subject = this.PresentationChanel as PrintingEvent;
             subject.ChangeState(PrintingStatus.printing);
-            ITicketPrinting printing = Resource.TicketPrinting;
-            try {
+            
+            await this.AggregateTicketPrinting.Act(subject, this.PrintingTargets.Right);
+            this.RequestData = UpdatePrintedAtRequestData.Build(this.TicketData, this.AggregateTicketPrinting.SuccessList);
 
-                printing.BeginEnqueue();
-                foreach (var imgdata in this.PrintingTargets.Right) {
-                    var status = await printing.EnqueuePrinting(imgdata, subject).ConfigureAwait(true);
-                    subject.PrintFinished(); //印刷枚数インクリメント
-                    StatusCollector.Add (imgdata.token_id, status);
-                }
-                printing.EndEnqueue();
-
-                this.RequestData = new UpdatePrintedAtRequestData () {
-                    token_id_list = StatusCollector.Result ().SuccessList.ToArray (),
-                    secret = this.TicketData.secret,
-                    order_no = this.TicketData.additional.order.order_no
-                };
-                subject.ChangeState(PrintingStatus.finished);
-                return StatusCollector.Status;
-            } catch (Exception ex) {
-                if (printing != null)
-                    printing.EndEnqueue();
-
-                logger.ErrorException (":", ex);
-                PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetTaskCancelMessage (Resource));
-                return false;
+            var s = this.AggregateTicketPrinting.Status;
+            if(!s){
+                PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetLoginFailureMessageFormat (Resource));
             }
+            return s;
         }
 
         public override ICase OnSuccess (IFlow flow)
@@ -107,9 +93,9 @@ namespace QR
             flow.Finish ();
             Func<Task<bool>> modify = (async () => {
                 if (this.RequestData != null) {
-                    IEnumerable<string> used = StatusCollector.Result ().SuccessList;
-                    foreach (var k in used) {
-                        logger.Warn ("{0} is printed. but all status is failure", k);
+                    foreach (var p in this.RequestData.printed_ticket_list)
+                    {
+                        logger.Warn("token_id={0}, template_id={1} is printed. but all status is failure", p.token_id,p.template_id);
                     }
                     await Resource.TicketDataManager.UpdatePrintedAtAsync (this.RequestData);
                 }

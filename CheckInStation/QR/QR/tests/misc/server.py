@@ -1,11 +1,19 @@
 # -*- coding:utf-8 -*-
 import SimpleHTTPServer
+import BaseHTTPServer
 import SocketServer
 import logging
 import cgi
 import time
 
 class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    def parse_request(self):
+        print("----------------------------------------")
+        print(self.raw_requestline)
+        result = SimpleHTTPServer.SimpleHTTPRequestHandler.parse_request(self)
+        print(self.headers)
+        print("----------------------------------------")
+        return result
 
     def do_GET(self):
         logging.info(self.headers)
@@ -24,6 +32,8 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         # for item in form.list:
         #     logging.error(item)
         SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+        print("body:")
+        print(self.rfile.read())
 
 import sys
 if len(sys.argv) >= 2:
@@ -31,7 +41,9 @@ if len(sys.argv) >= 2:
 else:
     PORT = 8000
 Handler = ServerHandler
-httpd = SocketServer.TCPServer(("", PORT), Handler)
+#Server = SocketServer.TCPServer
+Server = BaseHTTPServer.HTTPServer
+httpd = Server(("", PORT), Handler)
 
 print "serving at port", PORT
 httpd.serve_forever()
