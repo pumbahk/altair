@@ -110,7 +110,7 @@ def setup_product_item(quantity, quantity_only, organization):
 
     sales_segment = SalesSegment(start_at=datetime(2000, 1, 1), 
                          end_at=datetime(2000, 1, 1, 23), 
-                         upper_limit=8, 
+                         max_quantity=8, 
                          seat_choice=True
                          )
     sales_segment.sales_segment_group = SalesSegmentGroup(
@@ -156,7 +156,7 @@ def setup_product_item(quantity, quantity_only, organization):
             site=Site()
         )
     )
-    performance.settings.append(PerformanceSetting())
+    PerformanceSetting().performance = performance
 
     product_item = ProductItem(
         name=":ProductItem:name", 
@@ -442,20 +442,7 @@ class CheckinStationAPITests(BaseTests):
         self.assertEquals(len(result["datalist"]), 1)
         self.assertEquals(result["datalist"][0][u'ordered_product_item_token_id'], self.token.id)
 
-        ##データ
-        self.assertEquals(result["datalist"][0]["data"][u"イベント名"], ":Event:title")
-        self.assertEquals(result["datalist"][0]["data"][u"対戦名"], ":Performance:name")
-        self.assertEquals(result["datalist"][0]["data"][u"開始時刻"], u"10時 00分")
-        self.assertEquals(result["datalist"][0]["data"][u"会場名"], ":Venue:name")
-        self.assertEquals(result["datalist"][0]["data"][u"チケット価格"], u"14,000円")
-        self.assertEquals(result["datalist"][0]["data"][u"席種名"], ":StockType:name")
-        self.assertEquals(result["datalist"][0]["data"][u"商品名"], ":ProductItem:name")
-        self.assertEquals(result["datalist"][0]["data"][u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
-
-        ##発券番号
-        self.assertEquals(result["datalist"][0]["data"][u"発券番号"], 1)
-
-        ##svg
+        ##svg(xaml)
         self.assertEquals(len(result["datalist"][0]["svg_list"]), 2)
         self.assertEquals(result["datalist"][0]["svg_list"][0]["svg"], self.DRAWING_DATA)
         self.assertEquals(result["datalist"][0]["svg_list"][1]["svg"], u"副券")
@@ -472,30 +459,7 @@ class CheckinStationAPITests(BaseTests):
         self.assertEquals(result["datalist"][0][u'ordered_product_item_token_id'], self.token.id)
         self.assertTrue(result["datalist"][1][u'ordered_product_item_token_id'])
 
-        ## データ
-        self.assertEquals(result["datalist"][0]["data"][u"イベント名"], ":Event:title")
-        self.assertEquals(result["datalist"][0]["data"][u"対戦名"], ":Performance:name")
-        self.assertEquals(result["datalist"][0]["data"][u"開始時刻"], u"10時 00分")
-        self.assertEquals(result["datalist"][0]["data"][u"会場名"], ":Venue:name")
-        self.assertEquals(result["datalist"][0]["data"][u"チケット価格"], u"14,000円")
-        self.assertEquals(result["datalist"][0]["data"][u"席種名"], ":StockType:name")
-        self.assertEquals(result["datalist"][0]["data"][u"商品名"], ":ProductItem:name")
-        self.assertEquals(result["datalist"][0]["data"][u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
-
-        self.assertEquals(result["datalist"][1]["data"][u"イベント名"], ":Event:title")
-        self.assertEquals(result["datalist"][1]["data"][u"対戦名"], ":Performance:name")
-        self.assertEquals(result["datalist"][1]["data"][u"開始時刻"], u"10時 00分")
-        self.assertEquals(result["datalist"][1]["data"][u"会場名"], ":Venue:name")
-        self.assertEquals(result["datalist"][1]["data"][u"チケット価格"], u"14,000円")
-        self.assertEquals(result["datalist"][1]["data"][u"席種名"], ":StockType:name")
-        self.assertEquals(result["datalist"][1]["data"][u"商品名"], ":ProductItem:name")
-        self.assertEquals(result["datalist"][1]["data"][u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
-
-        ## 発券番号
-        self.assertEquals(result["datalist"][0]["data"][u"発券番号"], 1)
-        self.assertEquals(result["datalist"][1]["data"][u"発券番号"], 2)
-
-        ## svg
+        ## svg(xaml)
         self.assertEquals(len(result["datalist"][0]["svg_list"]), 2)
         self.assertEquals(result["datalist"][0]["svg_list"][0]["svg"], self.DRAWING_DATA)
         self.assertEquals(result["datalist"][0]["svg_list"][1]["svg"], u"副券")
@@ -522,9 +486,11 @@ class CheckinStationAPITests(BaseTests):
 
         with SetUpTearDownManager(teardown=teardown):
             prev = TicketPrintHistory.query.count()
+            printed_ticket_list = [{"token_id": unicode(t.id), "template_id": 1}
+                                   for t in self.item.tokens]
             result = do_view(
                 _getTarget(), 
-                request=DummyRequest(json_body={"token_id_list": [unicode(t.id) for t in self.item.tokens], 
+                request=DummyRequest(json_body={"printed_ticket_list": printed_ticket_list, 
                                                 "order_no": self.order.order_no})
             )
             self.assertTrue(TicketPrintHistory.query.count() > prev)
