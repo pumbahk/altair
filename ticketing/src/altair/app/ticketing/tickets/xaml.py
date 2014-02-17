@@ -209,7 +209,11 @@ class XAMLFromSVG(object):
         self.height = "0"
 
     def convert(self, svg_tree):
-        root = svg_tree.getroot()
+        if hasattr(svg_tree, "getroot"):
+            root = svg_tree.getroot() #lxml.etree._ElementTree
+        else:
+            root = svg_tree #lxml.etree.Element
+
         attrib = root.attrib
         self.width = attrib.get("width", "0")
         self.height = attrib.get("height", "0")

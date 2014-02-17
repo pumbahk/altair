@@ -57,12 +57,12 @@ def setup_ticket_bundle(event, drawing):
                     event=event,
                     organization=event.organization,
                     data={"drawing": drawing})
-    ##副券
+    ##<svg>副券</svg>
     ticket2 = Ticket(name="Ticket:name2",
                      ticket_format=ticket_format,
                      event=event,
                      organization=event.organization,
-                     data={"drawing": u"副券"})
+                     data={"drawing": u"<svg>副券</svg>"})
     bundle = TicketBundle(name=":TicketBundle:name", event=event, tickets=[ticket, ticket2])
     return bundle
 
@@ -288,7 +288,7 @@ class BaseTests(unittest.TestCase):
 
 class CheckinStationAPITests(BaseTests):
     TOKEN_ID = 9999
-    DRAWING_DATA = "drawing-data-for-svg"
+    DRAWING_DATA = "<svg>drawing-data-for-svg</svg>"
     EXIST_ORDER_NO = "Demo:OrderNO:01"
 
     @classmethod
@@ -429,7 +429,7 @@ class CheckinStationAPITests(BaseTests):
         self.assertIn("status", result)
 
 
-
+    EMPTY_XAML="""<FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><PageContent><FixedPage Width="0" Height="0"/></PageContent></FixedDocument>"""
     def test_svgsource_one_from_one_token(self):
         def _getTarget():
             from .views import svgsource_one_from_token
@@ -444,8 +444,8 @@ class CheckinStationAPITests(BaseTests):
 
         ##svg(xaml)
         self.assertEquals(len(result["datalist"][0]["svg_list"]), 2)
-        self.assertEquals(result["datalist"][0]["svg_list"][0]["svg"], self.DRAWING_DATA)
-        self.assertEquals(result["datalist"][0]["svg_list"][1]["svg"], u"副券")
+        self.assertEquals(result["datalist"][0]["svg_list"][0]["svg"], self.EMPTY_XAML)
+        self.assertEquals(result["datalist"][0]["svg_list"][1]["svg"], self.EMPTY_XAML)
 
     def test_svgsource_all_from_token_id_list(self):
         def _getTarget():
@@ -461,10 +461,10 @@ class CheckinStationAPITests(BaseTests):
 
         ## svg(xaml)
         self.assertEquals(len(result["datalist"][0]["svg_list"]), 2)
-        self.assertEquals(result["datalist"][0]["svg_list"][0]["svg"], self.DRAWING_DATA)
-        self.assertEquals(result["datalist"][0]["svg_list"][1]["svg"], u"副券")
-        self.assertEquals(result["datalist"][1]["svg_list"][0]["svg"], self.DRAWING_DATA)
-        self.assertEquals(result["datalist"][1]["svg_list"][1]["svg"], u"副券")
+        self.assertEquals(result["datalist"][0]["svg_list"][0]["svg"], self.EMPTY_XAML)
+        self.assertEquals(result["datalist"][0]["svg_list"][1]["svg"], self.EMPTY_XAML)
+        self.assertEquals(result["datalist"][1]["svg_list"][0]["svg"], self.EMPTY_XAML)
+        self.assertEquals(result["datalist"][1]["svg_list"][1]["svg"], self.EMPTY_XAML)
 
 
     @mock.patch("altair.app.ticketing.checkinstation.views.get_now")

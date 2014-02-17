@@ -46,7 +46,7 @@ class TokenStatusDictBuilder(object):
         if self._is_unprinted_yet(self.order, self.token):
             return {"printed_at": None}
         else:
-            return {"printed_at":japanese_datetime(self.token.printed_at), "status": TokenStatus.printed}
+            return {"printed_at":japanese_datetime((self.token or self.order).printed_at), "status": TokenStatus.printed}
 
     def canceled_status_dict(self):
         order=self.order

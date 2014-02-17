@@ -130,13 +130,15 @@ class SVGDataSource(object):
             retval.append(vardict)
         return retval
 
+from altair.app.ticketing.tickets.xaml import xaml_from_svg
+def transform(svg):
+    return xaml_from_svg(svg).decode("utf-8")
 
 def svg_list_all_template_valiation(svg_builder, vardict, ticket_templates):
     ## var dictは券面のレンダリングに利用する変数のdict
     data_list = []
     for ticket_template in ticket_templates:
-        xaml = ticket_template
-        data = {"svg": svg_builder.build(xaml, vardict)} 
+        data = {"svg": svg_builder.build(ticket_template, vardict, transform=transform)} 
         data[u'ticket_template_name'] = ticket_template.name
         data[u'ticket_template_id'] = unicode(ticket_template.id)
         data_list.append(data)
