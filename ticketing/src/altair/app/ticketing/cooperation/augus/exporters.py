@@ -1,11 +1,17 @@
 #-*- coding: utf-8 -*-
+import os
 import datetime
+import itertools
 from StringIO import StringIO
 from altair.app.ticketing.core.models import (
     AugusTicket,
     AugusPutback,
     AugusSeatStatus,
     orders_seat_table,
+    )
+from altair.augus.types import (
+    DateType,
+    HourMinType,
     )
 from altair.augus.protocols.putback import (
     PutbackResponseRecord,
@@ -37,8 +43,8 @@ class AugusPutbackExporter(object):
         record.putback_code = ag_putback.augus_putback_code
         record.seat_type_code = ag_ticket.augus_seat_type_code
         record.unit_value_code = ag_ticket.unit_value_code
-        record.date = ag_performance.start_on # record側で日付にformatting
-        record.start_on = ag_performance.start_on
+        record.date = ag_performance.start_on.strftime(DateType.FORMAT)
+        record.start_on = ag_performance.start_on.strftime(HourMinType.FORMAT)
         record.block = ag_seat.block
         record.coordy = ag_seat.coordy
         record.coordx = ag_seat.coordx
@@ -55,19 +61,27 @@ class AugusPutbackExporter(object):
         record.putback_type = ag_putback.augus_putback_type
         return record
 
-    def create_response(self, putbacks=[]):
-        response = PutbackResponse()
+    def create_responses(self, putbacks=[]):
         if not putbacks:
             putbacks = AugusPutback.query.filter(AugusPutback.notified_at==None)\
                                          .filter(AugusPutback.reserved_at!=None)\
                                          .all()
-        response.extend([self.create_record(putback) for putback in putbacks])
+
+        responses = []
+        for event_code, putbacks_in_event in itertools.groupby(putbacks, lambda putback: putback.augus_stock_info.augus_performance.augus_event_code):
+            response = PutbackResponse()
+            response.event_code = event_code
+            response.extend([self.create_record(putback) for putback in putbacks_in_event])
+            responses.append(response)
+        return responses
 
     def export(self, path, customer_id):
-        response = self.create_response()
-        response.customer_id = customer_id
-        AugusPutbackExporter.export(path, customer_id)
-        return response
+        responses = self.create_responses()
+        for response in responses:
+            response.customer_id = customer_id
+            resfile_path = os.path.join(path, response.name)
+            AugusExporter.export(response, resfile_path)
+        return responses
 
 class AugusAchievementExporter(object):
     def create_record(self):

@@ -30,10 +30,6 @@ def main():
     mkdir_p(rt_pending)
     mkdir_p(ko_staging)
 
-    importer = AugusDistributionImporter()
-    target = DistributionSyncRequest
-    request_success = []
-
     exporter = AugusPutbackExporter()
     try:
         request = exporter.export(ko_staging, consumer_id)

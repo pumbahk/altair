@@ -18,8 +18,9 @@ from sqlalchemy.sql import functions as sqlf
 Identifier = sa.BigInteger
 
 def upgrade():
-    op.add_column('AugusStockInfo',
-                  sa.Column('unit_value_code', sa.Integer(), nullable=True))
+    op.add_column('AugusTicket',
+                  sa.Column('unit_value_code', sa.Integer(), nullable=False))
+    op.execute('UPDATE `AugusTicket` SET unit_value_code=0')
 
 def downgrade():
-    op.drop_column('AugusStockInfo', 'unit_value_code')
+    op.drop_column('AugusTicket', 'unit_value_code')

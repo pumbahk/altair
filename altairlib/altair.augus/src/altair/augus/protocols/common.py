@@ -269,6 +269,7 @@ class RecordAttribute(object):
 
     @putback_status.setter
     def putback_status(self, value):
+        value = str(value)
         self._putback_status = PutbackStatus.validate(value)
 
     @property
@@ -285,6 +286,7 @@ class RecordAttribute(object):
 
     @putback_type.setter
     def putback_type(self, value):
+        value = str(value)
         self._putback_type = PutbackType.validate(value)
 
     @property
