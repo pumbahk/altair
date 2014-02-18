@@ -57,6 +57,17 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
   text-align: center;
   line-height: 100px;
 }
+
+#venue-viewer-guide {
+  position: absolute;
+  width: 400px;
+  height: 300px;
+  left: 50%;
+  top: 50%;
+  margin-left: -200px;
+  margin-top: -150px;
+  text-align: center;
+}
 </style>
 
 <%include file="./_detail_table.html" args="expanded=false" />
@@ -645,11 +656,19 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
   }
 
   $(function() {
+    var guide = $('#venue-viewer-guide');
+
     $('#sales_summary-form').find('select[name="sales_segment_id"]').change(function() {
       var metadata = "${data_source.get('metadata')|n}"
       venueEditorRoot.data('venueeditor').dataSource.metadata = metadata + '&sales_segment_id=' + $(this).val();
       venueEditorRoot.venueeditor('load');
+      venueEditorRoot.find(guide).remove();
       getSalesSummary();
+    });
+
+    guide.find('.btn').click(function() {
+      venueEditorRoot.venueeditor('load');
+      venueEditorRoot.find(guide).remove();
     });
 
     $('#sales-counter-button').click(function() { switchToSalesCounterMode(); });
@@ -660,6 +679,8 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       getOrderForm(stock_id ? parseInt(stock_id): void(0));
     });
 
+    // initialize
+    venueEditorRoot.append(guide);
     getSalesSummary();
   });
 </script>
@@ -676,5 +697,13 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 <div id="screen" style="display:none;">
   <div class="splash">
     Now loading...
+  </div>
+</div>
+
+<div id="venue-viewer-guide">
+  <div class="hero-unit">
+    <h2>会場図で座席選択</h2>
+    <p>予約を確認したり、座席を選択して予約することができます。</p>
+    <p><a class="btn btn-primary">表示</a></p>
   </div>
 </div>
