@@ -73,19 +73,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 <%include file="./_detail_table.html" args="expanded=false" />
 <div>
   <div class="pull-left">
-    <form class="form-horizontal" id="sales_summary-form" style="margin:0">
-      <input type="hidden" name="performance_id" value="${performance.id}" />
-      <label style="display:inline-block">
-        販売区分
-        <select name="sales_segment_id" style="width:10em">
-          <option value=""></option>
-          <% from altair.app.ticketing.core.helpers import build_sales_segment_list_for_inner_sales %>
-          % for sales_segment in build_sales_segment_list_for_inner_sales(performance.sales_segments):
-          <option value="${sales_segment.id}" ${'selected=""' if sales_segment.id == int(sales_segment_id or 0) else ''|n}>${sales_segment.name}</option>
-          % endfor
-        </select>
-      </label>
-    </form>
+    <form class="form-horizontal" id="sales_segment-form" style="margin:0"></form>
   </div>
   <div class="pull-right">
     <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%;" value="当日窓口発券モードにする" />
@@ -203,7 +191,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       return;
     orderFormOpening = true;
     var param = {'seats':[], 'stocks':[], 'performance_id':${performance.id}};
-    var sales_segment_id = $('#sales_summary-form').find('select[name="sales_segment_id"]').val();
+    var sales_segment_id = $('#sales_segment-form').find('select[name="sales_segment_id"]').val();
     if (sales_segment_id) param['sales_segment_id'] = sales_segment_id;
     if (stock_id) {
       param['stocks'].push(stock_id);
@@ -322,7 +310,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
   }
 
   function getSalesSummary() {
-    var form = $('#sales_summary-form');
+    var form = $('#sales_segment-form');
     var body = form.serialize();
     var table = '#sales-summary';
     var url = '${request.route_path('orders.sales_summary')}';
@@ -655,21 +643,16 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     });
   }
 
-  $(function() {
+
+  /* application */
+  var reservation = {};
+
+  reservation.init = function(options) {
+    this.app = new reservation.ApplicationController();
+    this.app.init(options);
+
+
     var guide = $('#venue-viewer-guide');
-
-    $('#sales_summary-form').find('select[name="sales_segment_id"]').change(function() {
-      var metadata = "${data_source.get('metadata')|n}"
-      venueEditorRoot.data('venueeditor').dataSource.metadata = metadata + '&sales_segment_id=' + $(this).val();
-      venueEditorRoot.venueeditor('load');
-      venueEditorRoot.find(guide).remove();
-      getSalesSummary();
-    });
-
-    guide.find('.btn').click(function() {
-      venueEditorRoot.venueeditor('load');
-      venueEditorRoot.find(guide).remove();
-    });
 
     $('#sales-counter-button').click(function() { switchToSalesCounterMode(); });
 
@@ -679,9 +662,132 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       getOrderForm(stock_id ? parseInt(stock_id): void(0));
     });
 
-    // initialize
-    venueEditorRoot.append(guide);
     getSalesSummary();
+  };
+
+  reservation.ApplicationController = function() {
+  };
+
+  reservation.ApplicationController.prototype.init = function(options) {
+    this.GuidePresenter = new reservation.GuidePresenter({viewType: reservation.GuideView});
+    this.GuidePresenter.initialize(options);
+    this.GuidePresenter.show();
+
+    this.SalesSegmentSelectPresenter = new reservation.SalesSegmentSelectPresenter(
+      {viewType: reservation.SalesSegmentSelectView, guide: this.GuidePresenter}
+    );
+    this.SalesSegmentSelectPresenter.initialize(options);
+    this.SalesSegmentSelectPresenter.show();
+  };
+
+  /* presenter */
+  reservation.GuidePresenter = function(params) {
+    for (var k in params) this[k] = params[k];
+  };
+
+  reservation.GuidePresenter.prototype = {
+    defaults: {
+    },
+    initialize: function(options) {
+      var self = this;
+      this.options = options;
+      this.view = new this.viewType({
+        el: $('<div id="venue-viewer-guide"/>'),
+        presenter: this,
+      });
+    },
+    show: function() {
+      this.view.render();
+    }
+  }
+
+  reservation.SalesSegmentSelectPresenter = function(params) {
+    for (var k in params) this[k] = params[k];
+  };
+
+  reservation.SalesSegmentSelectPresenter.prototype = {
+    defaults: {
+    },
+    initialize: function(options) {
+      var self = this;
+      this.options = options;
+      this.view = new this.viewType({
+        el: $('#sales_segment-form'),
+        presenter: this,
+      });
+    },
+    removeGuide: function() {
+      this.guide.view.remove();
+    },
+    show: function() {
+      this.view.render();
+    }
+  }
+
+  /* view */
+  reservation.GuideView = Backbone.View.extend({
+    initialize: function() {
+      this.el = this.options.el;
+      this.presenter = this.options.presenter;
+    },
+    events: {
+      'click .btn-init-load': 'load'
+    },
+    load: function() {
+      venueEditorRoot.venueeditor('load');
+      this.remove();
+    },
+    remove: function() {
+      this.$el.empty();
+    },
+    render: function() {
+      var self = this;
+      var div = $('<div class="hero-unit"/>');
+      div.append($('<h2>会場図で座席選択</h2>'));
+      div.append($('<p>予約を確認したり、座席を選択して予約することができます。</p>'));
+      div.append($('<p><a class="btn btn-primary btn-init-load">表示</a></p>'));
+      this.$el.append(div);
+      venueEditorRoot.append(this.$el);
+    }
+  });
+
+  reservation.SalesSegmentSelectView = Backbone.View.extend({
+    initialize: function() {
+      this.el = this.options.el;
+      this.presenter = this.options.presenter;
+    },
+    events: {
+      'change select[name="sales_segment_id"]': 'onChange'
+    },
+    onChange: function(e) {
+      var metadata = "${data_source.get('metadata')|n}"
+      venueEditorRoot.data('venueeditor').dataSource.metadata = metadata + '&sales_segment_id=' + $(e.target).val();
+      venueEditorRoot.venueeditor('load');
+      this.presenter.removeGuide();
+      getSalesSummary();
+    },
+    render: function() {
+      var self = this;
+
+      var performance_id = $('<input type="hidden" name="performance_id" value="${performance.id}" />');
+      this.$el.append(performance_id);
+
+      var label = $('<label style="display:inline-block" for="sales_segment_id" />');
+      label.append('販売区分');
+      this.$el.append(label);
+
+      var select = $('<select id="sales_segment_id" name="sales_segment_id" style="width:10em" />');
+      select.append($('<option value=""></option>'));
+      <% from altair.app.ticketing.core.helpers import build_sales_segment_list_for_inner_sales %>
+      % for sales_segment in build_sales_segment_list_for_inner_sales(performance.sales_segments):
+      select.append($('<option value="${sales_segment.id}" ${'selected=""' if sales_segment.id == int(sales_segment_id or 0) else ''|n}>${sales_segment.name}</option>'));
+      % endfor
+      this.$el.append(select);
+    }
+  });
+
+  $(function() {
+    reservation.init();
   });
 </script>
     </%def>
@@ -691,19 +797,12 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 <div>
   <%include file="_legend_seat_status.html" />
 </div>
+
 <div id="sales-summary"></div>
 <div id="reserve-form"></div>
 <div id="applet-tag"></div>
 <div id="screen" style="display:none;">
   <div class="splash">
     Now loading...
-  </div>
-</div>
-
-<div id="venue-viewer-guide">
-  <div class="hero-unit">
-    <h2>会場図で座席選択</h2>
-    <p>予約を確認したり、座席を選択して予約することができます。</p>
-    <p><a class="btn btn-primary">表示</a></p>
   </div>
 </div>
