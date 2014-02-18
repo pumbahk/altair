@@ -95,6 +95,7 @@ class AugusTicketImpoter(object):
         ag_ticket.augus_seat_type_code = record.seat_type_code
         ag_ticket.augus_seat_type_name = record.seat_type_name
         ag_ticket.unit_value_name = record.unit_value_name
+        ag_ticket.unit_value_code = record.unit_value_code
         ag_ticket.augus_seat_type_classif = record.seat_type_classif
         ag_ticket.value = record.value
         ag_ticket.augus_performance_id = ag_performance.id
