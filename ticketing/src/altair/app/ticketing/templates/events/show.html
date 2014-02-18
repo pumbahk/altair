@@ -6,7 +6,7 @@
 // ajax modal
 $(function(){
   $("a.id-action").click(function() {
-    var form = $(this).closest('form'); 
+    var form = $(this).closest('form');
     var pk = form.find("input:radio:checked, input:checkbox:checked").val();
     if(!pk){ return false; }
     $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
@@ -179,6 +179,15 @@ $(function(){
   </a>
 </div>
 
+%if event.organization_id == 15:
+<!-- 楽天チケットのみ -->
+<div class="btn-group" style="float: left;">
+  <a class="btn" href="${request.route_path('augus.event.show', event_id=event.id)}" style="margin-left: 10px;">
+    オーガス連携
+  </a>
+</div>
+%endif
+
 <%include file="./_send_event_mixin.html" />
 
 <div style="clear: left;"></div>
@@ -235,7 +244,7 @@ $(function(){
       var is_sending = {};
       $("#send_event").click(function(e){
         var $e = $(e.currentTarget);
-        if(is_sending[$e.attr("href")]){ 
+        if(is_sending[$e.attr("href")]){
           return false;
         }
         is_sending[$e.attr("href")] = true;

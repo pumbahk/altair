@@ -350,4 +350,3 @@ def putback(stock_holder):
             seat.save()
             ag_putback.save()
     return putback_code
-

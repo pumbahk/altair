@@ -9,43 +9,34 @@ import transaction
 from ..exporters import AugusPutbackExporter
 from ..errors import AugusDataImportError
 
-
-def get_settings(env=None):
-    if env:
-        return env['registry'].settings
-    else: # DEBUG
-        from pit import Pit
-        return Pit.get('augus_ftp',
-                       {'require': {'staging': '',
-                                    'pending': '',
-                                }})
-
-def init_env(conf):
-    env = None
-    if conf:
-        env = bootstrap(conf)
-    settings = get_settings(env)
-    staging = settings['from_staging']
-    pending = settings['from_pending']
-    mkdir_p(staging)
-    mkdir_p(pending)
-    return staging, pending
-
-
 def mkdir_p(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-CUSTOMER_ID = 12345678
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('conf', nargs='?', default=None)
     args = parser.parse_args()
-    staging, pending = init_env(args.conf)
+    env = bootstrap(args.conf)
+    settings = env['registry'].settings
+
+    consumer_id = int(settings['augus_consumer_id'])
+    rt_staging = settings['rt_staging']
+    rt_pending = settings['rt_pending']
+    ko_staging = settings['ko_staging']
+
+    mkdir_p(rt_staging)
+    mkdir_p(rt_pending)
+    mkdir_p(ko_staging)
+
+    importer = AugusDistributionImporter()
+    target = DistributionSyncRequest
+    request_success = []
+
     exporter = AugusPutbackExporter()
     try:
-        request = exporter.export(staging, CUSTOMER_ID)
+        request = exporter.export(ko_staging, consumer_id)
     except AugusDataImportError as err:
         transaction.abort()
         raise
@@ -54,5 +45,6 @@ def main():
         raise
     else:
         transaction.commit()
+
 if __name__ == '__main__':
     main()

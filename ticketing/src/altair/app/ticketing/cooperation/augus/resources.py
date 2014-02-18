@@ -168,11 +168,7 @@ class SeatTypeResource(TicketingAdminResource):
     @reify
     def ag_tickets(self):
         performance_ids = [pfc.id for pfc in self.event.performances]
-        ag_performances = AugusPerformance.query.filter(AugusPerformance.performance_id.in_(performance_ids)).all()
-        if ag_performances:
-            ag_event_code = ag_performances[0].augus_event_code
-            ag_performance_codes = [ag_performance.augus_performance_code for ag_performance in ag_performances]
-            ag_ticekts = AugusTicket.query.filter(AugusTicket.augus_performance_code.in_(ag_performance_codes)).all()
-            return [ag_ticket for ag_ticekt in ag_tickets if ag_ticket.augus_event_code == ag_event_code]
-        else:
-            return []
+        ag_performance_ids = [ag_performance.id
+                              for ag_performance in AugusPerformance.query.filter(AugusPerformance.performance_id.in_(performance_ids)).all()]
+        ag_tickets = AugusTicket.query.filter(AugusTicket.augus_performance_id.in_(ag_performance_ids)).all()
+        return ag_tickets
