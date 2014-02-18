@@ -2,13 +2,6 @@
 
 <h2>マイページ</h2>
 
-<h3>会員情報</h3>
-% if shipping_address:
-  ${render_shipping_address(shipping_address)}
-% else:
-  会員情報が設定されていません。
-% endif
-
 <h3>購入履歴照会</h3>
 % if orders:
   ${render_orders(orders)}
