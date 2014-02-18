@@ -2,6 +2,7 @@
 import datetime
 from StringIO import StringIO
 from altair.app.ticketing.core.models import (
+    AugusTicket,
     AugusPutback,
     AugusSeatStatus,
     orders_seat_table,
@@ -20,11 +21,12 @@ class AugusPutbackExporter(object):
     def create_record(self, ag_putback):
         ag_stock_info = ag_putback.augus_stock_info
         ag_seat = ag_stock_info.augus_seat
-        ag_performance = ag_stock_info.augus_performane
+        ag_performance = ag_stock_info.augus_performance
         seat = ag_putback.seat
         stock = seat.stock
         stock_type = stock.stock_type
-        ag_ticket = AugusTicket.get(stock_type_id=stock_type.id)
+
+        ag_ticket = AugusTicket.query.filter(AugusTicket.stock_type_id==stock_type.id).first()
         if not ag_ticket:
             raise AugusDataExportError('Stock type unlinked: StockType.id={}'.format(stock_type.id))
 
