@@ -4208,6 +4208,7 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_venue_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス会場コード'))
     augus_seat_type_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス席種コード'))
     augus_seat_type_name = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'オーガス席種名'))
+    unit_value_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス単価コード'))
     unit_value_name = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'単価名称'))
     augus_seat_type_classif = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'席区分'))
     value = AnnotatedColumn(Integer, nullable=False, _a_label=(u'売値'))
