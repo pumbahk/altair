@@ -56,7 +56,9 @@ class AugusPutbackExporter(object):
     def create_response(self, putbacks=[]):
         response = PutbackResponse()
         if not putbacks:
-            putbacks = AugusPutback.query.filter(AugusPutback.nortificated_at==None).all()
+            putbacks = AugusPutback.query.filter(AugusPutback.notified_at==None)\
+                                         .filter(AugusPutback.reserved_at!=None)\
+                                         .all()
         response.extend([self.create_record(putback) for putback in putbacks])
 
     def export(self, path, customer_id):
