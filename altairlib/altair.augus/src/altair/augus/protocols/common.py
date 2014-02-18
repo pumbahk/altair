@@ -521,9 +521,6 @@ class ProtocolBase(list):
         raise ValueError('Illegal data: {}'.format(value))
 
 
-
-
-
     CREATED_AT_FORMAT = '%Y%m%d%H%M%S'
     @property
     def created_at(self):
