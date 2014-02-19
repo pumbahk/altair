@@ -112,12 +112,13 @@ class AugusAchievementExporter(object):
         record = AchievementResponse.record()
         record.event_code = stock_info.augus_performance.augus_event_code
         record.performance_code = stock_info.augus_performance.augus_performance_code
-        record.trader_code = 1 # 業者コード
         record.distribution_code = stock_info.augus_distribution_code
         record.seat_type_code = stock_info.augus_ticket.augus_seat_type_code
         record.unit_value_code = stock_info.augus_ticket.unit_value_code
-        record.date = stock_info.augus_performance.start_on
-        record.start_on = stock_info.augus_performance.start_on
+
+        record.date = stock_info.augus_performance.start_on.strftime(DateType.FORMAT)
+        record.start_on = stock_info.augus_performance.start_on.strftime(HourMinType.FORMAT)
+
         record.reservation_number = self.get_order_no(opitem)
         record.block = stock_info.augus_seat.block
         record.coordy = stock_info.augus_seat.coordy

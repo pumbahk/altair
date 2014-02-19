@@ -369,16 +369,6 @@ class RecordAttribute(object):
         self._seat_count = NumberType.validate(value)
 
     @property
-    def trader_code(self):
-        """業者コード
-        """
-        return self._trader_code
-
-    @trader_code.setter
-    def trader_code(self, value):
-        self._trader_code = NumberType.validate(value)
-
-    @property
     def unit_value_code(self):
         """単価コード
         定価の場合は0
