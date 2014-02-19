@@ -60,4 +60,4 @@ class DistributionSyncResponse(_DistributionProtocol):
     """
     record = DistributionSyncResponseRecord
     pattern = '^RT(?P<customer_id>.{7})HAR(?P<event_code>[^_]{0,9})_(?P<date>\d{12})_(?P<created_at>\d{14})\.csv$'
-    fmt = 'RT{customer_id:07d}HAR{event_code:09d}_{start_on:12}_{created_at:14}.csv'
+    fmt = 'RT{customer_id:07d}HAR{event_code:09d}_{date:12}_{created_at:14}.csv'

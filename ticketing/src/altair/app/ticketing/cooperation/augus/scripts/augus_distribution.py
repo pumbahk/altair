@@ -52,6 +52,7 @@ def main():
                 path = os.path.join(rt_staging, name)
                 paths.append(path)
                 request = AugusParser.parse(path)
+                import pdb; pdb.set_trace()
                 date = request.date
                 success_records = importer.import_(request)
                 request_success.append((request, success_records))
@@ -68,6 +69,7 @@ def main():
         try:
             for request, success in request_success:
                 response = DistributionSyncResponse(customer_id=consumer_id)
+                import pdb; pdb.set_trace()
                 response.date = date
                 for record in request:
                     response.event_code = int(record.event_code)
