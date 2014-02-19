@@ -127,6 +127,19 @@ class AugusDistributionImporter(object):
                                       column=record.column,
                                       number=record.number,
                                       )
+
+        ag_ticket = None
+        try:
+            ag_ticket = AugusTicket\
+                .query\
+                .filter(AugusTicket.augus_performance_id==ag_performance.id)\
+                .filter(AugusTicket.augus_seat_type_code==record.seat_type_code)\
+                .filter(AugusTicket.unit_value_code==record.unit_value_code)\
+                .one()
+        except (MultipleResultsFound, NoResultFound) as err:
+            raise AugusDataImportError('no such augus ticket: {}: augus performance id={}, augus seat type code={}, augus unit value code={}'
+                                       .format(repr(err), ag_performance.id, record.seat_type_code, record.unit_value_code))
+
         seat = self.augus_seat_to_real_seat(ag_performance, ag_seat)
         old_stock = seat.stock
 
@@ -141,6 +154,7 @@ class AugusDistributionImporter(object):
             ag_stock_info.distributed_at = datetime.datetime.now()
             ag_stock_info.augus_seat_id = ag_seat.id
             ag_stock_info.seat_id = seat.id
+            ag_stock_info.augus_ticket_id = ag_ticket.id
             ag_stock_info.quantity = record.seat_count
             ag_stock_info.save()
 

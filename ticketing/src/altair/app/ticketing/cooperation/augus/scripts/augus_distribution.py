@@ -44,6 +44,7 @@ def main():
     request_success = []
     paths = []
 
+    date = ''
     try:
         for name in filter(target.match_name, os.listdir(rt_staging)):
             try:
@@ -51,6 +52,7 @@ def main():
                 path = os.path.join(rt_staging, name)
                 paths.append(path)
                 request = AugusParser.parse(path)
+                date = request.date
                 success_records = importer.import_(request)
                 request_success.append((request, success_records))
             except AugusDataImportError as err:
@@ -66,6 +68,7 @@ def main():
         try:
             for request, success in request_success:
                 response = DistributionSyncResponse(customer_id=consumer_id)
+                response.date = date
                 for record in request:
                     response.event_code = int(record.event_code)
                     res_record = response.record()
