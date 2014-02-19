@@ -39,6 +39,7 @@ from .csveditor import (
     AugusCSVEditor,
     AugusVenueImporter,
     )
+from .exporters import AugusAchievementExporter
 from .utils import SeatAugusSeatPairs
 from .errors import (
     NoSeatError,
@@ -388,3 +389,27 @@ class AugusPutbackView(_AugusBaseView):
             putback.reserved_at = now
             putback.save()
         return HTTPFound(self.request.route_url('augus.putback.show', event_id=self.context.event.id, putback_code=putback_code))
+
+@view_defaults(route_name='augus.achievement', decorator=with_bootstrap, permission='event_editor')
+class AugusAchievementView(_AugusBaseView):
+
+    @view_config(route_name='augus.achievement.get', request_method='GET')
+    def achievement_get(self):
+        performance_ids = [performance.id for performance in self.context.event.performances]
+        augus_performances = AugusPerformance.query.filter(AugusPerformance.performance_id.in_(performance_ids)).all()
+        res = Response()
+        exporter = AugusAchievementExporter()
+        event_codes = list(set([ag_performance.augus_event_code for ag_performance in augus_performances]))
+        length = len(event_codes)
+        if length > 1:
+            raise HTTPBadRequest(u'bad cooperation performance: augus event code: {}'.format(repr(event_codes)))
+        elif length == 0:
+            raise HTTPBadRequest(u'no  performance: augus event code:'.format(repr(event_codes)))
+        augus_event_code = event_codes[0]
+        res_proto = exporter.export_from_augus_event_code(augus_event_code)
+        res_proto.customer_id = CUSTOMER_ID
+        AugusExporter.exportfp(res_proto, res)
+        res.headers = [('Content-Type', 'application/octet-stream; charset=cp932'),
+                       ('Content-Disposition', 'attachment; filename={0}'.format(res_proto.name)),
+                       ]
+        return res

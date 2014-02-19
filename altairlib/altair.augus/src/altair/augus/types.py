@@ -32,7 +32,22 @@ class _TimeType(_ValueType):
 
     @classmethod
     def get(cls, value):
-        return time.strptime(value, cls.FORMAT)
+        try:
+            return time.strptime(value, cls.FORMAT)
+        except TypeError as err:
+            pass
+
+        try:
+            time.strftime(cls.FORMAT, value)
+            return value
+        except TypeError as err:
+            pass
+
+        try:
+            value.strftime(cls.FORMAT)
+            return value
+        except (AttributeError, TypeError) as err:
+            raise TypeError('bad format: value={}, FORMAT="{}": {}'.format(repr(value), cls.FORMAT, repr(err)))
 
     @classmethod
     def now(cls):

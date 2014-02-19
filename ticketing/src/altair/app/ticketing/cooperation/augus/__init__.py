@@ -43,6 +43,9 @@ ROUTE_URL_RESOURCE = {
     'augus.putback.new': ('/events/{event_id}/putback/new', PerformanceResource),
     'augus.putback.show': ('/events/{event_id}/putback/show/{putback_code}', PerformanceResource),
     'augus.putback.reserve': ('/events/{event_id}/putback/reserve/{putback_code}', PerformanceResource),
+
+    # achievement
+    'augus.achievement.get': ('/events/{event_id}/achievement', PerformanceResource),
     }
 
 def add_routes(config, route_url_resource):
