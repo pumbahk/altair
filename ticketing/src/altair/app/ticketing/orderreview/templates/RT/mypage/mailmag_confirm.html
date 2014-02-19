@@ -1,0 +1,50 @@
+<%inherit file="../commons/layout.html" />
+
+${render_confirm_mailmagazine(mailmagazines_to_subscribe, subscribe_ids, mails)}
+
+<%def name="render_confirm_mailmagazine(mailmagazines_to_subscribe, subscribe_ids, mails)">
+
+  % if subscribe_ids:
+    <h2>メールマガジンの購読</h2>
+    以下のメールマガジンを、購読します。<p/>
+  % endif
+
+  % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+    % if str(mailmagazine.id) in subscribe_ids:
+      <h3>${mailmagazine.name}</h3>
+      ${mailmagazine.description|n}
+
+      <h3>購読するメールアドレス</h3>
+      % for mail in mails:
+        ${mail}<br/>
+      % endfor
+    % endif
+  % endfor
+
+  % if len(subscribe_ids) < len(mailmagazines_to_subscribe):
+    <h2>メールマガジンの購読解除</h2>
+    以下のメールマガジンを購読解除します。<p/>
+  % endif
+
+  % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+    % if not str(mailmagazine.id) in subscribe_ids:
+      <h3>${mailmagazine.name}</h3>
+      ${mailmagazine.description|n}
+
+      <h3>購読するメールアドレス</h3>
+      % for mail in mails:
+        ${mail}<br/>
+      % endfor
+    % endif
+  % endfor
+
+  <form id="mail_form" name="mail_form" action="${request.route_path('mypage.mailmag.complete')}" method="POST">
+    % for id in subscribe_ids:
+      <input type="hidden" name="mailmagazine" value="${id}" />
+    % endfor
+    <a href="${request.route_path('mypage.show')}">
+      <input type="button" value="戻る">
+    </a>
+    <input type="submit" value="設定変更">
+  </form>
+</%def>

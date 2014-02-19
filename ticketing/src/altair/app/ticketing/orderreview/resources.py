@@ -78,7 +78,7 @@ class OrderReviewResource(object):
     def get_shipping_address(self, user):
         shipping_address = ShippingAddress.query.filter(
             ShippingAddress.user_id==user.id
-        ).first()
+        ).order_by(ShippingAddress.updated_at.desc()).first()
         return shipping_address
 
     def get_orders(self, user, page, per):
