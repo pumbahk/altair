@@ -63,6 +63,7 @@ def main():
 
         try:
             exporter.export(ko_staging, request, status)
+            shutil.move(path, rt_pending)
         except Exception:
             transaction.abort()
             raise
