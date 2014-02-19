@@ -32,7 +32,22 @@ class _TimeType(_ValueType):
 
     @classmethod
     def get(cls, value):
-        return time.strptime(value, cls.FORMAT)
+        try:
+            return time.strptime(value, cls.FORMAT)
+        except TypeError as err:
+            pass
+
+        try:
+            time.strftime(cls.FORMAT, value)
+            return value
+        except TypeError as err:
+            pass
+
+        try:
+            value.strftime(cls.FORMAT)
+            return value
+        except (AttributeError, TypeError) as err:
+            raise TypeError('bad format: value={}, FORMAT="{}": {}'.format(repr(value), cls.FORMAT, repr(err)))
 
     @classmethod
     def now(cls):
@@ -50,10 +65,10 @@ class StringType(_ValueType):
             return unicode(value)
         except (UnicodeEncodeError, UnicodeDecodeError) as err:
             raise err.__class__(repr(value), *err.args[1:])
-        
+
 class DateType(_TimeType):
     FORMAT = '%Y%m%d'
-    
+
 class HourMinType(_TimeType):
     FORMAT = '%H%M'
 
@@ -76,8 +91,8 @@ class SeatTypeClassif(_ExtendEnum):
 class Status(_ExtendEnum):
     """状態フラグ
     """
-    OK = 'OK'
-    NG = 'NG'
+    OK = '1' # OK
+    NG = '2' # NG
 
 class PutbackStatus(_ExtendEnum):
     """状態コード(返券)
@@ -88,4 +103,3 @@ class PutbackStatus(_ExtendEnum):
 class AchievementStatus(_ExtendEnum):
     RESERVE = '0' # 予約
     SOLD = '1'    # 販売済み
-

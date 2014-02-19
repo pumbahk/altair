@@ -12,7 +12,15 @@
   <h1>${account.name}</h1>
 </div>
 
-<%include file="/organizations/_detail.html" args="form=form_organization, organization=account.user.organization, sej_tenants=sej_tenants" />
+<table class="table">
+  <tbody>
+    <tr>
+      <th>種別<th>
+      <td>${account.account_type_label}</td>
+    </tr>
+  </tbody>
+</table>
+
 <div style="margin-top: 20px;">
   <%include file="/organizations/_events.html" args="events=owner_events, title=u'配券している'" />
 </div>

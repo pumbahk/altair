@@ -21,6 +21,8 @@ ROUTE_URL_RESOURCE = {
                                    AugusVenueResource),
     'augus.augus_venue.upload': ('/augus_venues/{augus_venue_code}/version/{augus_venue_version}/upload',
                                  AugusVenueResource),
+    'augus.augus_venue.complete': ('/augus_venues/{augus_venue_code}/version/{augus_venue_version}/complete',
+                                 AugusVenueResource),
 
     # event
     'augus.event.show': ('/events/{event_id}', PerformanceResource),
@@ -35,6 +37,15 @@ ROUTE_URL_RESOURCE = {
     'augus.stock_type.show': ('/events/{event_id}/stock_types/show', SeatTypeResource),
     'augus.stock_type.edit': ('/events/{event_id}/stock_types/edit', SeatTypeResource),
     'augus.stock_type.save': ('/events/{event_id}/stock_types/save', SeatTypeResource),
+
+    # putback
+    'augus.putback.index': ('/events/{event_id}/putback', PerformanceResource),
+    'augus.putback.new': ('/events/{event_id}/putback/new', PerformanceResource),
+    'augus.putback.show': ('/events/{event_id}/putback/show/{putback_code}', PerformanceResource),
+    'augus.putback.reserve': ('/events/{event_id}/putback/reserve/{putback_code}', PerformanceResource),
+
+    # achievement
+    'augus.achievement.get': ('/events/{event_id}/achievement', PerformanceResource),
     }
 
 def add_routes(config, route_url_resource):

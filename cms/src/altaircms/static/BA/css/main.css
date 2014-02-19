@@ -230,6 +230,14 @@ color:#fff;
     right: 0px;
 }
 
+.gnavi a{
+	color:white;
+}
+
+.gnavi a:hover{
+	color:white;
+}
+
 .main-top{
 	margin-top: 10px;
 }
