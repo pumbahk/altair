@@ -3,7 +3,7 @@
 import codecs
 import csv
 import re
-import time
+import os
 from datetime import date, time, datetime, timedelta
 from lxml import etree
 import zipfile
@@ -36,8 +36,10 @@ class SejTicketDataXml(object):
         return xml.decode("utf-8")
 
 def package_ticket_template_to_zip(template_id,
-                                   shop_id = u'30520'):
-
+                                   shop_id = u'30520',
+                                   now=None):
+    if now is None:
+        now = datetime.now()
     sej_tickets = SejTicketTemplateFile.query.filter_by(deleted_at = None).all()
 
     archive_txt_buffer = list()
@@ -49,7 +51,7 @@ def package_ticket_template_to_zip(template_id,
             archive_txt_buffer.append("%s/%s.htm" % (template_id, template_id))
         if sej_ticket.ticket_css:
             archive_txt_buffer.append("%s/%s.css" % (template_id, template_id))
-        sej_ticket.sent_at = datetime.now()
+        sej_ticket.sent_at = now
         csv_text_buffer.append(','.join([
             sej_ticket.status,
             shop_id,
@@ -67,14 +69,14 @@ def package_ticket_template_to_zip(template_id,
 
     #
 
-    zi = ZipInfo('archive.txt', time.localtime()[:6])
+    zi = ZipInfo('archive.txt', now.timetuple()[:6])
     zi.external_attr = 0666 << 16L
     w = zf.start_entry(zi)
     w.write(archive_txt_body)
     w.close()
     zf.finish_entry()
 
-    zi = ZipInfo('TTEMPLATE.CSV', time.localtime()[:6])
+    zi = ZipInfo('TTEMPLATE.CSV', now.timetuple()[:6])
     zi.external_attr = 0666 << 16L
     w = zf.start_entry(zi)
     w.write(csv_text_body.encode('sjis'))
@@ -83,7 +85,7 @@ def package_ticket_template_to_zip(template_id,
 
     for sej_ticket in sej_tickets:
         if sej_ticket.ticket_html:
-            zi = ZipInfo("%s/%s.htm" % (template_id, template_id), time.localtime()[:6])
+            zi = ZipInfo("%s/%s.htm" % (template_id, template_id), now.timetuple()[:6])
             zi.external_attr = 0666 << 16L
             w = zf.start_entry(zi)
             w.write(sej_ticket.ticket_html)
@@ -91,7 +93,7 @@ def package_ticket_template_to_zip(template_id,
             zf.finish_entry()
 
         if sej_ticket.ticket_css:
-            zi = ZipInfo("%s/%s.css" % (template_id, template_id), time.localtime()[:6])
+            zi = ZipInfo("%s/%s.css" % (template_id, template_id), now.timetuple()[:6])
             zi.external_attr = 0666 << 16L
             w = zf.start_entry(zi)
             w.write(sej_ticket.ticket_css)
@@ -104,31 +106,34 @@ def package_ticket_template_to_zip(template_id,
     DBSession.flush()
     return zip_file_name
 
-def create_refund_zip_file():
-    hour = int(datetime.now().strftime('%H'))
+def create_refund_zip_file(now=None, work_dir='/tmp'):
+    if now is None:
+        now = datetime.now()
+    hour = now.hour
     if hour < 6:
-        target_date = date.today()
+        target_date = now.date()
     else:
-        target_date = date.today() + timedelta(days=1)
+        target_date = (now + timedelta(days=1)).date()
     target_ymd = target_date.strftime('%Y%m%d')
     target_from = datetime.combine(target_date + timedelta(days=-1), time(6,0))
     target_to = datetime.combine(target_date, time(6,0))
 
     # 0:00-5:59の間なら当日, それ以外は翌日でファイル名を生成する
-    work_dir = '/tmp/'
     zip_file_name = '%s.zip' % target_ymd
     archive_file_name = 'archive.txt'
     refund_event_file_name = target_ymd + '_TPBKOEN.dat'
     refund_ticket_file_name = target_ymd + '_TPBTICKET.dat'
 
     # archive.txt
-    archive_txt = codecs.open(work_dir + archive_file_name, 'w', 'shift_jis')
+    archive_txt_file_path = os.path.join(work_dir, archive_file_name)
+    archive_txt = codecs.open(archive_txt_file_path, 'w', 'shift_jis')
     archive_txt.write(refund_event_file_name + '\r\n')
     archive_txt.write(refund_ticket_file_name + '\r\n')
     archive_txt.close()
 
     # SejRefundTicket -> YYYYMMDD_TPBTICKET.dat
-    refund_ticket_tsv = open(work_dir + refund_ticket_file_name, 'w')
+    refund_ticket_file_path = os.path.join(work_dir, refund_ticket_file_name)
+    refund_ticket_tsv = open(refund_ticket_file_path, 'w')
     tsv_writer = csv.writer(refund_ticket_tsv, delimiter='\t', quoting=csv.QUOTE_NONE, lineterminator='\r\n')
     query = SejRefundTicket.query.filter(or_(
         SejRefundTicket.sent_at==None,
@@ -148,13 +153,14 @@ def create_refund_zip_file():
             int(sej_refund_ticket.refund_ticket_amount),
             int(sej_refund_ticket.refund_other_amount)
             ]))
-        sej_refund_ticket.sent_at = datetime.now()
+        sej_refund_ticket.sent_at = now
         if sej_refund_ticket.refund_event_id not in refund_event_ids:
             refund_event_ids.append(sej_refund_ticket.refund_event_id)
     refund_ticket_tsv.close()
 
     # SejRefundEvent -> YYYYMMDD_TPBKOEN.dat
-    refund_event_tsv = open(work_dir + refund_event_file_name, 'w')
+    refund_event_file_path = os.path.join(work_dir, refund_event_file_name)
+    refund_event_tsv = open(refund_event_file_path, 'w')
     tsv_writer = csv.writer(refund_event_tsv, delimiter='\t', quoting=csv.QUOTE_NONE, lineterminator='\r\n')
     query = SejRefundEvent.query
     if len(refund_event_ids) > 0:
@@ -185,7 +191,7 @@ def create_refund_zip_file():
             sej_refund_event.un_use_04,
             sej_refund_event.un_use_05
             ]))
-        sej_refund_event.sent_at = datetime.now()
+        sej_refund_event.sent_at = now
     refund_event_tsv.close()
 
     if not sej_refund_events:
@@ -193,16 +199,17 @@ def create_refund_zip_file():
         return None
 
     # create zip file
-    zf = EnhZipFile(work_dir + zip_file_name, 'w', zipfile.ZIP_DEFLATED)
-    zf.append_file(work_dir + archive_file_name, archive_file_name)
-    zf.append_file(work_dir + refund_event_file_name, refund_event_file_name)
-    zf.append_file(work_dir + refund_ticket_file_name, refund_ticket_file_name)
+    zip_file_path = os.path.join(work_dir, zip_file_name)
+    zf = EnhZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED)
+    zf.append_file(archive_txt_file_path, archive_file_name)
+    zf.append_file(refund_event_file_path, refund_event_file_name)
+    zf.append_file(refund_ticket_file_path, refund_ticket_file_name)
     zf.close()
 
     DBSession.flush()
     transaction.commit()
 
-    return work_dir + zip_file_name
+    return zip_file_path
 
 def encode_to_sjis(row):
     encoded = []

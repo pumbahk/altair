@@ -4,10 +4,42 @@ import os
 import time
 import threading
 from zipfile import *
-import zipfile
-import zlib, binascii, struct
+import zlib, struct
 
-zipfile.structCentralDir = "<4s4B4Hl2L5H2L"
+
+monkeypatched = False
+
+def do_monkeypatching():
+    global monkeypatched
+    if monkeypatched:
+        return
+
+    import zipfile
+    zipfile.structCentralDir = "<4s4B4Hl2L5H2L"
+
+    class BugFreeZipExtFile(zipfile.ZipExtFile):
+        def _update_crc(self, newdata, eof):
+            # Update the CRC using the given data.
+            if self._expected_crc is None:
+                # No need to compute the CRC if we don't have a reference value
+                return
+            self._running_crc = zlib.crc32(newdata, self._running_crc) & 0xffffffff
+            # Check the CRC if we're at the end of the file
+            if eof and self._running_crc != (self._expected_crc & 0xffffffff):
+                raise BadZipfile("Bad CRC-32 for file %r" % self.name)
+
+        def close(self):
+            try:
+                if self._close_fileobj:
+                    self._fileobj.close()
+            finally:
+                super(ZipExtFile, self).close()
+
+
+    zipfile.ZipExtFile = BugFreeZipExtFile
+    monkeypatched = True
+
+do_monkeypatching()
 
 class ZipEntryWriter(threading.Thread):
     def __init__(self, zf, zinfo, fileobj):
@@ -45,7 +77,7 @@ class ZipEntryWriter(threading.Thread):
                 break
 
             file_size = file_size + len(buf)
-            CRC = binascii.crc32(buf, CRC)
+            CRC = zlib.crc32(buf, CRC)
             if cmpr:
                 buf = cmpr.compress(buf)
                 compress_size = compress_size + len(buf)
