@@ -4,6 +4,7 @@ import os
 import shutil
 import logging
 import argparse
+import urlparse
 from altair.app.ticketing.core.models import OrganizationSetting
 from altair.augus.transporters import FTPTransporter
 from altair.augus.parsers import AugusParser
@@ -38,7 +39,10 @@ def main():
         transporter.chdir(url.path)
         for name in transporter.listdir():
             if AugusParser.is_protocol(name):
-                transporter.get(name, os.path.join(rt_staging, name), remove=True)
+                src = name
+                dst = os.path.join(rt_staging, name)
+                logger.info('augus file download: {} -> {}'.format(src, dst))
+                transporter.get(src, dst, remove=True)
 
 if __name__ == '__main__':
     main()
