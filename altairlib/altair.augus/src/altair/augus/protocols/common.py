@@ -493,12 +493,19 @@ class ProtocolBase(list):
 
     @property
     def name(self):
-        return self.fmt.format(customer_id=self.customer_id,
-                               event_code=self.event_code,
-                               venue_code=self.venue_code,
-                               date=self.date,
-                               created_at=self.created_at,
-                               )
+        try:
+            return self.fmt.format(customer_id=self.customer_id,
+                                   event_code=self.event_code,
+                                   venue_code=self.venue_code,
+                                   date=self.date,
+                                   created_at=self.created_at,
+                                   start_on=self.date,
+                                   )
+        except ValueError as err:
+            raise ValueError('illegal format: FORMAT={}, data: customer_id={}, event_code={}, venue_code={}, date={}, created_at={}, start_on={}'
+                             .format(self.fmt, repr(self.customer_id), repr(self.event_code), repr(self.venue_code),
+                                     repr(self.date), repr(self.created_at), repr(self.date))) # date == start_on
+
 
     DATE_FORMAT = '%Y%m%d%H%M'
     @property
@@ -520,7 +527,14 @@ class ProtocolBase(list):
         except (TypeError, ValueError):
             pass
 
-        raise ValueError('Illegal data: {}'.format(value))
+        try:
+            value = value.strftime(self.DATE_FORMAT)
+            self._date = time.strptime(value, self.DATE_FORMAT)
+            return
+        except (TypeError, ValueError, AttributeError):
+            pass
+
+        raise ValueError('Illegal data: format="{}", value={}'.format(self.DATE_FORMAT, repr(value)))
 
 
     CREATED_AT_FORMAT = '%Y%m%d%H%M%S'

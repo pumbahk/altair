@@ -4240,14 +4240,18 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     distributed_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'配券日時'))
     quantity = AnnotatedColumn(Integer, _a_label=(u'席数'), nullable=False)
 
-    augus_performance_id = Column(Identifier, ForeignKey('AugusPerformance.id'), nullable=True)
+    augus_performance_id = Column(Identifier, ForeignKey('AugusPerformance.id'), nullable=False)
     augus_performance = relationship('AugusPerformance')
 
-    augus_seat_id = Column(Identifier, ForeignKey('AugusSeat.id'))
+    augus_ticket_id = Column(Identifier, ForeignKey('AugusTicket.id'), nullable=False)
+    augus_ticket = relationship('AugusTicket')
+
+    augus_seat_id = Column(Identifier, ForeignKey('AugusSeat.id'), nullable=False)
     augus_seat = relationship('AugusSeat')
 
-    seat_id = Column(Identifier, ForeignKey('Seat.id'))
+    seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=False)
     seat = relationship('Seat')
+
 
     def get_seat(self):
         performance = self.augus_performance
@@ -4306,7 +4310,7 @@ class AugusPutback(Base, BaseModel): #, WithTimestamp, LogicallyDeleted):
 # move to altair.app.ticketing.orion.models
 class AugusSeatStatus(object):
     RESERVE = 0
-    SOULD = 1
+    SOLD = 1
     OTHER = 99
 
     @classmethod
