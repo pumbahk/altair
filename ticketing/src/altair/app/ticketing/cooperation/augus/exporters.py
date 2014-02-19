@@ -101,6 +101,7 @@ class AugusPutbackExporter(object):
         responses = self.create_responses()
         for response in responses:
             response.customer_id = customer_id
+            response.start_on = response[0].start_on
             resfile_path = os.path.join(path, response.name)
             AugusExporter.export(response, resfile_path)
         return responses
