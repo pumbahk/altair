@@ -91,6 +91,10 @@
       <td>${u'バラ席を許可する' if organization_setting.entrust_separate_seats else u'バラ席を許可しない'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.augus_use)}</th>
+      <td>${u'使う' if organization_setting.augus_use  else u'使わない'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.augus_url)}</th>
       <td>${organization_setting.augus_url}</td>
     </tr>

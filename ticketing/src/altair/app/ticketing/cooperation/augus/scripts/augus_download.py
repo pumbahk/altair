@@ -1,24 +1,34 @@
 #! /usr/bin/env python
 #-*- coding: utf-8 -*-
 import os
+import shutil
+import logging
 import argparse
-import urlparse
+from altair.app.ticketing.core.models import OrganizationSetting
 from altair.augus.transporters import FTPTransporter
 from altair.augus.parsers import AugusParser
+from pyramid.paster import bootstrap
 
-from ..utils import (
-    get_argument_parser,
-    get_settings,
-    mkdir_p,
-    )
+logger = logging.getLogger(__name__)
+
+def mkdir_p(path):
+    if not os.path.isdir(path):
+        os.makedirs(path)
 
 def main():
-    parser = get_argument_parser()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('conf', nargs='?', default=None)
     args = parser.parse_args()
-    settings = get_settings(args.conf)
+    env = bootstrap(args.conf)
+    settings = env['registry'].settings
 
-    staging = settings['staging']
-    mkdir_p(staging)
+    rt_staging = settings['rt_staging']
+    rt_pending = settings['rt_pending']
+    ko_staging = settings['ko_staging']
+
+    mkdir_p(rt_staging)
+    mkdir_p(rt_pending)
+
 
     url = urlparse.urlparse(settings['url'])
     transporter = FTPTransporter(hostname=url.netloc,

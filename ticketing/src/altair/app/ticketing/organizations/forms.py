@@ -267,6 +267,9 @@ class OrganizationSettingForm(OurForm):
     entrust_separate_seats = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.entrust_separate_seats)['label']
         )
+    augus_use = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.augus_use)['label']
+        )
     augus_url = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.augus_url)['label']
         )

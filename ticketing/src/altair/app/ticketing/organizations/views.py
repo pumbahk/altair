@@ -213,6 +213,7 @@ class OrganizationSettings(BaseView):
         organization_setting.notify_point_granting_failure = f.notify_point_granting_failure.data
         organization_setting.bcc_recipient = f.bcc_recipient.data
         organization_setting.entrust_separate_seats = f.entrust_separate_seats.data
+        organization_setting.augus_use = f.augus_use.data
         organization_setting.augus_url = f.augus_url.data
         organization_setting.augus_username = f.augus_username.data
         organization_setting.augus_password = f.augus_password.data
