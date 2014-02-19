@@ -10,7 +10,9 @@ from . import schemas
 from . import api
 from altair.mobile import mobile_view_config
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
+from altair.app.ticketing.core.api import get_organization
 from datetime import datetime
+from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe, multi_unsubscribe
 
 import helpers as h
 from ..users.api import get_user
@@ -61,11 +63,72 @@ class MypageView(object):
         orders = self.context.get_orders(user, page, per)
         entries = self.context.get_lots_entries(user, page, per)
 
+        magazines_to_subscribe = get_magazines_to_subscribe(get_organization(self.request), shipping_address.emails)
         return dict(
             shipping_address=shipping_address,
             orders=orders,
             lot_entries=entries,
+            mailmagazines_to_subscribe=magazines_to_subscribe,
             h=h,
+        )
+
+    @mobile_view_config(route_name='mypage.mailmag.confirm', request_method="POST", custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_confirm_mobile.html"))
+    @mobile_view_config(route_name='mypage.mailmag.confirm', request_method="POST", custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_confirm_mobile.html"))
+    @view_config(route_name='mypage.mailmag.confirm', request_method="POST", custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_confirm.html"))
+    @view_config(route_name='mypage.mailmag.confirm', request_method="POST", custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_confirm.html"))
+    def mailmag_confirm(self):
+
+        authenticated_user = self.context.authenticated_user()
+        user = get_user(authenticated_user)
+
+        if not user:
+            raise HTTPNotFound()
+
+        shipping_address = self.context.get_shipping_address(user)
+        magazines_to_subscribe = get_magazines_to_subscribe(get_organization(self.request), shipping_address.emails)
+        subscribe_ids = self.request.params.getall('mailmagazine')
+
+        return dict(
+            mails=shipping_address.emails,
+            mailmagazines_to_subscribe=magazines_to_subscribe,
+            subscribe_ids=subscribe_ids,
+            h=h,
+        )
+
+    @mobile_view_config(route_name='mypage.mailmag.complete', request_method="POST", custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_complete_mobile.html"))
+    @mobile_view_config(route_name='mypage.mailmag.complete', request_method="POST", custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_complete_mobile.html"))
+    @view_config(route_name='mypage.mailmag.complete', request_method="POST", custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_complete.html"))
+    @view_config(route_name='mypage.mailmag.complete', request_method="POST", custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_complete.html"))
+    def mailmag_complete(self):
+
+        authenticated_user = self.context.authenticated_user()
+        user = get_user(authenticated_user)
+
+        if not user:
+            raise HTTPNotFound()
+
+        shipping_address = self.context.get_shipping_address(user)
+        magazines_to_subscribe = get_magazines_to_subscribe(get_organization(self.request), shipping_address.emails)
+        emails = shipping_address.emails
+        subscribe_ids = self.request.params.getall('mailmagazine')
+
+        unsubscribe_ids = []
+        for mailmagazine, subscribed in magazines_to_subscribe:
+            if not str(mailmagazine.id) in subscribe_ids:
+                unsubscribe_ids.append(mailmagazine.id)
+
+        multi_subscribe(user, emails, subscribe_ids)
+        multi_unsubscribe(user, emails, unsubscribe_ids)
+
+        return dict(
         )
 
 class MypageLoginView(object):

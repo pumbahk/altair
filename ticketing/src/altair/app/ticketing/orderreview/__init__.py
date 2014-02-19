@@ -94,6 +94,8 @@ def import_view(config):
 
     ## mypage
     config.add_route('mypage.show', '/mypage')
+    config.add_route('mypage.mailmag.confirm', '/mypage/mailmag/confirm')
+    config.add_route('mypage.mailmag.complete', '/mypage/mailmag/complete')
 
     ## misc
     config.add_route('contact', '/contact')
