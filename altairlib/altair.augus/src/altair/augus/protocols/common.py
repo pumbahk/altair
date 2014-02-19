@@ -527,7 +527,14 @@ class ProtocolBase(list):
         except (TypeError, ValueError):
             pass
 
-        raise ValueError('Illegal data: {}'.format(value))
+        try:
+            value = value.strftime(self.DATE_FORMAT)
+            self._date = time.strptime(value, self.DATE_FORMAT)
+            return
+        except (TypeError, ValueError, AttributeError):
+            pass
+
+        raise ValueError('Illegal data: format="{}", value={}'.format(self.DATE_FORMAT, repr(value)))
 
 
     CREATED_AT_FORMAT = '%Y%m%d%H%M%S'
