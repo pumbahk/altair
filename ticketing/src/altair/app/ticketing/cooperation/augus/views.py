@@ -254,49 +254,54 @@ class AugusTicketView(_AugusBaseView):
     select_prefix = 'stock_type-'
 
     @view_config(route_name='augus.stock_type.show', request_method='GET',
-                 renderer='altair.app.ticketing:templates/cooperation/augus/events/stock_types/show.html')
+                 renderer='altair.app.ticketing:templates/cooperation/augus/events/stock_types/show2.html')
     def show(self):
-        stocktypeid_agticket = dict([(ag_ticket.stock_type.id, ag_ticket)
-                                     for ag_ticket in self.context.ag_tickets
-                                     if ag_ticket.stock_type])
-        stocktype_agticket = [(stock_type, stocktypeid_agticket.get(stock_type.id, None))
-                              for stock_type in self.context.event.stock_types
-                              ]
-        return dict(stocktype_agticket=stocktype_agticket,
-                    event=self.context.event,
+        return dict(event=self.context.event,
+                    stock_types=self.context.event.stock_types,
+                    ag_tickets = self.context.ag_tickets,
                     select_prefix=self.select_prefix,
                     )
 
+        # stocktypeid_agticket = dict([(ag_ticket.stock_type.id, ag_ticket)
+        #                              for ag_ticket in self.context.ag_tickets
+        #                              if ag_ticket.stock_type])
+        # stocktype_agticket = [(stock_type, stocktypeid_agticket.get(stock_type.id, None))
+        #                       for stock_type in self.context.event.stock_types
+        #                       ]
+        # return dict(stocktype_agticket=stocktype_agticket,
+        #             event=self.context.event,
+        #             select_prefix=self.select_prefix,
+        #             )
+
 
     @view_config(route_name='augus.stock_type.edit', request_method='GET',
-                 renderer='altair.app.ticketing:templates/cooperation/augus/events/stock_types/edit.html')
+                 renderer='altair.app.ticketing:templates/cooperation/augus/events/stock_types/edit2.html')
     def edit(self):
-        stocktypeid_agticket = dict([(ag_ticket.stock_type.id, ag_ticket)
-                                     for ag_ticket in self.context.ag_tickets
-                                     if ag_ticket.stock_type])
-        stocktype_agticket = [(stock_type, stocktypeid_agticket.get(stock_type.id, None))
-                              for stock_type in self.context.event.stock_types
-                              ]
+        # stocktypeid_agticket = dict([(ag_ticket.stock_type.id, ag_ticket)
+        #                              for ag_ticket in self.context.ag_tickets
+        #                              if ag_ticket.stock_type])
+        # stocktype_agticket = [(stock_type, stocktypeid_agticket.get(stock_type.id, None))
+        #                       for stock_type in self.context.event.stock_types
+        #                       ]
 
-        return dict(stocktype_agticket=stocktype_agticket,
-                    event=self.context.event,
-                    ag_tickets=self.context.ag_tickets,
+        return dict(event=self.context.event,
+                    stock_types=self.context.event.stock_types,
+                    ag_tickets = self.context.ag_tickets,
                     select_prefix=self.select_prefix,
                     )
 
     @view_config(route_name='augus.stock_type.save', request_method='POST')
     def save(self):
         try:
-            for stock_type_txt, ag_ticket_id in self.request.params.iteritems():
-                if not stock_type_txt.startswith(self.select_prefix):
+            for ag_ticket_txt, stock_type_id in self.request.params.iteritems():
+                if not ag_ticket_txt.startswith(self.select_prefix):
                     continue
-                stock_type_id = stock_type_txt.replace(self.select_prefix, '').strip()
+
+                ag_ticket_id = int(ag_ticket_txt.replace(self.select_prefix, '').strip())
                 stock_type_id = int(stock_type_id)
                 stock_type = StockType.query.filter(StockType.id==stock_type_id).one()
 
-                ag_ticket_id = ag_ticket_id.strip()
                 if ag_ticket_id:
-                    ag_ticket_id = int(ag_ticket_id)
                     ag_ticket = AugusTicket.query.filter(AugusTicket.id==ag_ticket_id).one()
                     ag_ticket.link_stock_type(stock_type)
                     ag_ticket.save()
