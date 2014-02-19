@@ -262,28 +262,9 @@ class AugusTicketView(_AugusBaseView):
                     select_prefix=self.select_prefix,
                     )
 
-        # stocktypeid_agticket = dict([(ag_ticket.stock_type.id, ag_ticket)
-        #                              for ag_ticket in self.context.ag_tickets
-        #                              if ag_ticket.stock_type])
-        # stocktype_agticket = [(stock_type, stocktypeid_agticket.get(stock_type.id, None))
-        #                       for stock_type in self.context.event.stock_types
-        #                       ]
-        # return dict(stocktype_agticket=stocktype_agticket,
-        #             event=self.context.event,
-        #             select_prefix=self.select_prefix,
-        #             )
-
-
     @view_config(route_name='augus.stock_type.edit', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/stock_types/edit2.html')
     def edit(self):
-        # stocktypeid_agticket = dict([(ag_ticket.stock_type.id, ag_ticket)
-        #                              for ag_ticket in self.context.ag_tickets
-        #                              if ag_ticket.stock_type])
-        # stocktype_agticket = [(stock_type, stocktypeid_agticket.get(stock_type.id, None))
-        #                       for stock_type in self.context.event.stock_types
-        #                       ]
-
         return dict(event=self.context.event,
                     stock_types=self.context.event.stock_types,
                     ag_tickets = self.context.ag_tickets,
@@ -298,18 +279,15 @@ class AugusTicketView(_AugusBaseView):
                     continue
 
                 ag_ticket_id = int(ag_ticket_txt.replace(self.select_prefix, '').strip())
-                stock_type_id = int(stock_type_id)
-                stock_type = StockType.query.filter(StockType.id==stock_type_id).one()
-
-                if ag_ticket_id:
-                    ag_ticket = AugusTicket.query.filter(AugusTicket.id==ag_ticket_id).one()
+                ag_ticket = AugusTicket.query.filter(AugusTicket.id==ag_ticket_id).one()
+                if stock_type_id:
+                    stock_type_id = int(stock_type_id)
+                    stock_type = StockType.query.filter(StockType.id==stock_type_id).one()
                     ag_ticket.link_stock_type(stock_type)
                     ag_ticket.save()
                 else: # delete link
-                    ag_ticket = AugusTicket.query.filter(AugusTicket.stock_type_id==stock_type_id).first()
-                    if ag_ticket:
-                        ag_ticket.delete_link()
-                        ag_ticket.save()
+                    ag_ticket.delete_link()
+                    ag_ticket.save()
 
         except ValueError as err:
             raise HTTPBadRequest('invalid save data: {}'.format(repr(err)))
