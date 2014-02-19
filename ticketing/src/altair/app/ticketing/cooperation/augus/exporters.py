@@ -73,6 +73,11 @@ class AugusPutbackExporter(object):
             response.event_code = event_code
             response.extend([self.create_record(putback) for putback in putbacks_in_event])
             responses.append(response)
+
+        now = datetime.datetime.now()
+        for putback in putbacks:
+            putback.notified_at = now
+            putback.save()
         return responses
 
     def export(self, path, customer_id):
