@@ -112,7 +112,6 @@ class AugusAchievementExporter(object):
         record = AchievementResponse.record()
         record.event_code = stock_info.augus_performance.augus_event_code
         record.performance_code = stock_info.augus_performance.augus_performance_code
-        record.trader_code = 1 # 業者コード
         record.distribution_code = stock_info.augus_distribution_code
         record.seat_type_code = stock_info.augus_ticket.augus_seat_type_code
         record.unit_value_code = stock_info.augus_ticket.unit_value_code
