@@ -3979,7 +3979,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
 
     # augus
     augus_use = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"オーガス連携", _a_label=u"オーガス連携")
-    augus_url = AnnotatedColumn(Unicode(255), nullable=False, default='', doc=u'オーガス用サーバのURL', _a_label=u'オーガス用サーバのURL')
+    augus_upload_url = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのアップロードURL', _a_label=u'オーガス用サーバのアップロードURL')
+    augus_download_url = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのダウンロードURL', _a_label=u'オーガス用サーバのダウンロードURL')
     augus_username = AnnotatedColumn(Unicode(255), nullable=False, default='', doc=u'オーガス用サーバのユーザ名', _a_label=u'オーガス用サーバのユーザ名')
     augus_password = AnnotatedColumn(Unicode(255), nullable=False, default='', doc=u'オーガス用サーバのパスワード', _a_label=u'オーガス用サーバのパスワード')
 

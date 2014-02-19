@@ -23,22 +23,22 @@ def main():
     settings = env['registry'].settings
 
     rt_staging = settings['rt_staging']
-    rt_pending = settings['rt_pending']
-    ko_staging = settings['ko_staging']
 
     mkdir_p(rt_staging)
-    mkdir_p(rt_pending)
 
-
-    url = urlparse.urlparse(settings['url'])
-    transporter = FTPTransporter(hostname=url.netloc,
-                                 username=settings['username'],
-                                 password=settings['password'],
-                                 )
-    transporter.chdir(url.path)
-    for name in transporter.listdir():
-        if AugusParser.is_protocol(name):
-            transporter.get(name, os.path.join(staging, name), remove=True)
+    org_settings = OrganizationSetting.query.filter(OrganizationSetting.augus_use==True).all()
+    for org_setting in org_settings:
+        if org_setting.organization_id != 15:# RT only
+            continue
+        url = urlparse.urlparse(org_setting.augus_download_url)
+        transporter = FTPTransporter(hostname=url.netloc,
+                                     username=org_setting.augus_username,
+                                     password=org_setting.augus_password,
+                                     )
+        transporter.chdir(url.path)
+        for name in transporter.listdir():
+            if AugusParser.is_protocol(name):
+                transporter.get(name, os.path.join(rt_staging, name), remove=True)
 
 if __name__ == '__main__':
     main()

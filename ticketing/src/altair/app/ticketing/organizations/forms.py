@@ -270,8 +270,11 @@ class OrganizationSettingForm(OurForm):
     augus_use = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.augus_use)['label']
         )
-    augus_url = OurTextField(
-        label=get_annotations_for(c_models.OrganizationSetting.augus_url)['label']
+    augus_upload_url = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.augus_upload_url)['label']
+        )
+    augus_download_url = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.augus_download_url)['label']
         )
     augus_username = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.augus_username)['label']
