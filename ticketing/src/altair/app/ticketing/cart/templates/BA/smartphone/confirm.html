@@ -183,34 +183,6 @@
 	</div>
   </div>
 
-  % if mailmagazines_to_subscribe:
-  <div class="settlementBox">
-	<div class="settlementBoxInner">
-      <div class="dispBoxInner">
-        <div id="mailMagazineBox">
-          <div id="mailMagazineBoxInner">
-            <div class="dispBox">
-              <%m:header>メールマガジンの配信</%m:header>
-              ご利用いただいた方には、ブラウブリッツチケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br/><br/>
-                % for mailmagazine, subscribed in mailmagazines_to_subscribe:
-                <div${subscribed and u' class="subscribed"' or u''|n}>
-                  <div>
-                    <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
-                    <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
-                  </div>
-                  <div>
-                    ${mailmagazine.description|n}
-                  </div>
-                </div>
-                % endfor
-            </div>
-          </div>
-        </div>
-      </div>
-	</div>
-  </div>
-  % endif
-  
   % if delegator:
     ${delegator['submit']}
   % else:

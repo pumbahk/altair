@@ -325,7 +325,11 @@ def get_cart_user_identifiers(request):
 
 def is_smartphone_organization(context, request):
     organization = c_api.get_organization(request)
-    return organization.id == 15 or organization.id == 24 or organization.id == 26
+    smartphone_organization = [4, 15, 24, 25, 26]
+    for org in smartphone_organization:
+        if organization.id == org:
+            return True
+    return False
 
 def is_point_input_organization(context, request):
     organization = c_api.get_organization(request)

@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 #-*- coding: utf-8 -*-
 import os
+import shutil
+import logging
 import argparse
 from altair.augus.protocols import PerformanceSyncRequest
 from altair.augus.parsers import AugusParser
@@ -9,59 +11,51 @@ import transaction
 from ..importers import AugusPerformanceImpoter
 from ..errors import AugusDataImportError
 
-
-def get_settings(env=None):
-    if env:
-        return env['registry'].settings
-    else: # DEBUG
-        from pit import Pit
-        return Pit.get('augus_ftp',
-                       {'require': {'staging': '',
-                                    'pending': '',
-                                }})
-
-def init_env(conf):
-    env = None
-    if conf:
-        env = bootstrap(conf)
-    settings = get_settings(env)
-    staging = settings['to_staging']
-    pending = settings['to_pending']
-    mkdir_p(staging)
-    mkdir_p(pending)
-    return staging, pending
-
+logger = logging.getLogger(__name__)
 
 def mkdir_p(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('conf', nargs='?', default=None)
     args = parser.parse_args()
-    staging, pending = init_env(args.conf)
+    env = bootstrap(args.conf)
+    settings = env['registry'].settings
+
+    rt_staging = settings['rt_staging']
+    rt_pending = settings['rt_pending']
+    ko_staging = settings['ko_staging']
+
+    mkdir_p(rt_staging)
+    mkdir_p(rt_pending)
+    mkdir_p(ko_staging)
 
     importer = AugusPerformanceImpoter()
     target = PerformanceSyncRequest
     paths = []
     try:
-        for name in filter(target.match_name, os.listdir(staging)):
-            path = os.path.join(staging, name)
-            paths.append(path)
-            request = AugusParser.parse(path)
-            importer.import_(request)
-    except AugusDataImportError as err:
-        transaction.abort()
-        raise
+        for name in filter(target.match_name, os.listdir(rt_staging)):
+            try:
+                logger.info('start import augus performance: {}'.format(name))
+                path = os.path.join(rt_staging, name)
+                paths.append(path)
+                request = AugusParser.parse(path)
+                importer.import_(request)
+            except AugusDataImportError as err:
+                logger.error('Illegal AugusPerformance Format: {}: {}'.format(path, repr(err)))
+                raise
+            except Exception as err:
+                logger.error('AugusPerformance Cannot Import: {}: {}'.format(path, repr(err)))
+                raise
     except:
         transaction.abort()
         raise
     else:
         transaction.commit()
+        for path in paths:
+            shutil.move(path, rt_pending)
 
-    for path in paths:
-        shutil.move(path, pending)
 if __name__ == '__main__':
     main()

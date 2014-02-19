@@ -47,9 +47,9 @@ from .interfaces import (
 )
 
 from altair.app.ticketing.models import (
-    Base, DBSession, 
-    MutationDict, JSONEncodedDict, 
-    LogicallyDeleted, Identifier, DomainConstraintError, 
+    Base, DBSession,
+    MutationDict, JSONEncodedDict,
+    LogicallyDeleted, Identifier, DomainConstraintError,
     WithTimestamp, BaseModel,
     is_any_of
 )
@@ -684,7 +684,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'open_on':open_on,
             'start_on':start_on,
             'end_on':end_on,
-            "code": self.code or "", 
+            "code": self.code or "",
             'sales':[s.get_cms_data() for s in sales_segments],
             'public':self.public
         }
@@ -709,7 +709,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
         return qs
-        
+
     def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False, query=None):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
         if query is None:
@@ -751,7 +751,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             assert len(performance.code) == 12
         performance.original_id = template.id
         performance.venue_id = template.venue.id
-        performance.create_venue_id = template.venue.id       
+        performance.create_venue_id = template.venue.id
         performance.save()
         logger.info('[copy] Performance end')
 
@@ -942,9 +942,9 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def _get_self_cms_data(self):
         return {'id':self.id,
                 'title':self.title,
-                'code': self.code, 
+                'code': self.code,
                 'subtitle':self.abbreviated_title,
-                "organization_id": self.organization.id, 
+                "organization_id": self.organization.id,
                 }
 
     def get_cms_data(self, validation=True):
@@ -952,7 +952,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         CMSに連携するデータを生成する
         インターフェースのデータ構造は以下のとおり
         削除データには "deleted":"true" をいれる
-        
+
         see:ticketing.core.tests_event_notify_data.py
         '''
         # 論理削除レコードも含めて取得
@@ -1137,7 +1137,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
         return qs
-        
+
     def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False, query=None):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
         if query is None:
@@ -1427,7 +1427,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
 
     system_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'システム利用料'))
     system_fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
-    
+
     transaction_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'決済手数料'))
     delivery_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'引取手数料'))
     discount = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'割引額'))
@@ -1548,7 +1548,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     @property
     def per_product_fee(self):
         return self.system_fee_per_product + self.special_fee_per_product + self.delivery_fee_per_product + self.transaction_fee_per_product
-    
+
     @property
     def per_ticket_fee(self):
         return self.system_fee_per_ticket + self.special_fee_per_ticket + self.delivery_fee_per_ticket + self.transaction_fee_per_ticket
@@ -1595,7 +1595,7 @@ class ServiceFeeMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
     fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
-    organization = relationship('Organization', uselist=False, backref='service_fee_method_list') 
+    organization = relationship('Organization', uselist=False, backref='service_fee_method_list')
     system_fee_default = Column(Boolean, nullable=False, default=True)
 
     @property
@@ -1603,7 +1603,7 @@ class ServiceFeeMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for ft in FeeTypeEnum:
             if ft.v[0] == self.fee_type:
                 return ft.v[1]
-    
+
 class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethod'
     id = Column(Identifier, primary_key=True)
@@ -1619,7 +1619,7 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     # 払込票を表示しないオプション（SEJ専用）
     hide_voucher = Column(Boolean, default=False)
-    
+
     _payment_plugin = relationship('PaymentMethodPlugin', uselist=False)
     @hybrid_property
     def payment_plugin(self):
@@ -1654,7 +1654,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', uselist=False , backref='delivery_method_list')
 
-    
+
     delivery_plugin_id = Column(Identifier, ForeignKey('DeliveryMethodPlugin.id'))
     _delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
 
@@ -1945,9 +1945,9 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
     account_id = Column(Identifier, ForeignKey('Account.id'))
-    
+
     is_putback_target = Column(Boolean, nullable=True) # CooperationTypeEnum
-    
+
     style = deferred(Column(MutationDict.as_mutable(JSONEncodedDict(1024))))
     stocks = relationship('Stock', backref='stock_holder')
 
@@ -2409,7 +2409,7 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def get_cms_data(self):
         return {"organization_id": self.id, "organization_source": "oauth"}
-    
+
 
 orders_seat_table = Table("orders_seat", Base.metadata,
     Column("seat_id", Identifier, ForeignKey("Seat.id")),
@@ -2513,10 +2513,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     total_amount = Column(Numeric(precision=16, scale=2), nullable=False)
     system_fee = Column(Numeric(precision=16, scale=2), nullable=False)
-    
+
     special_fee_name = Column(String(255), nullable=False, default="")
     special_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0)
-    
+
     transaction_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     delivery_fee = Column(Numeric(precision=16, scale=2), nullable=False)
 
@@ -2613,6 +2613,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     .where(TicketPrintQueueEntry.processed_at==None)),
                 deferred=True)
 
+    @classmethod
+    def inner_channels(cls):
+        return [ChannelEnum.INNER.v, ChannelEnum.IMPORT.v]
+
     @property
     def payment_plugin_id(self):
         return self.payment_delivery_pair.payment_method.payment_plugin_id
@@ -2661,7 +2665,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def is_inner_channel(self):
-        return self.channel in [ChannelEnum.INNER.v, ChannelEnum.IMPORT.v]
+        return self.channel in self.inner_channels()
 
     def can_change_status(self, status):
         # 決済ステータスはインナー予約のみ変更可能
@@ -2945,7 +2949,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if not self.can_delete() and not force:
             logger.info('order (%s) cannot delete status (%s)' % (self.id, self.status))
             raise Exception(u'キャンセル以外は非表示にできません')
-            
+
         # delete OrderedProduct
         for ordered_product in self.items:
             ordered_product.delete()
@@ -3011,8 +3015,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     )
                 for i, seat in ordered_product_item.iterate_serial_and_seat():
                     token = OrderedProductItemToken(
-                        serial = i, 
-                        seat = seat, 
+                        serial = i,
+                        seat = seat,
                         valid=True #valid=Falseの時は何時だろう？
                         )
                     ordered_product_item.tokens.append(token)
@@ -3066,7 +3070,7 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @ordered_product_items.setter
     def ordered_product_items(self, value):
-        self.elements = value 
+        self.elements = value
 
     ordered_product_items = deprecation.deprecated(ordered_product_items, 'use elements property instead')
 
@@ -3312,14 +3316,14 @@ for event_kind in ['before_insert', 'before_update']:
     event.listen(Ticket, event_kind, lambda mapper, conn, target: target.before_insert_or_update())
 
 class TicketBundleAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = "TicketBundleAttribute" 
+    __tablename__ = "TicketBundleAttribute"
     id = Column(Identifier, primary_key=True)
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id', ondelete='CASCADE'), nullable=False)
     name = Column(String(255), nullable=False)
     value = Column(String(1023))
 
     __table_args__= (
-        UniqueConstraint("ticket_bundle_id", "name", "deleted_at", name="ib_unique_1"), 
+        UniqueConstraint("ticket_bundle_id", "name", "deleted_at", name="ib_unique_1"),
         )
 
 class TicketPrintQueueEntry(Base, BaseModel):
@@ -3347,11 +3351,11 @@ class TicketPrintQueueEntry(Base, BaseModel):
 
     @classmethod
     def enqueue(self, operator, ticket, data, summary, ordered_product_item=None, seat=None):
-        entry = TicketPrintQueueEntry(operator=operator, 
-                                      ticket=ticket, 
-                                      data=data, 
-                                      summary=summary, 
-                                      ordered_product_item=ordered_product_item, 
+        entry = TicketPrintQueueEntry(operator=operator,
+                                      ticket=ticket,
+                                      data=data,
+                                      summary=summary,
+                                      ordered_product_item=ordered_product_item,
                                       seat=seat)
         DBSession.add(entry)
         DBSession.flush()
@@ -3414,7 +3418,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
         return entries
 
 
-    
+
 from ..operators.models import Operator
 
 class TicketCover(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -3614,7 +3618,7 @@ class Mailer(object):
 
         encoding = self.settings['mail.message.encoding']
         if html:
-            mime_type = 'html' 
+            mime_type = 'html'
             mime_text = html
         else:
             mime_type = 'plain'
@@ -3762,7 +3766,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
         return qs
-        
+
     def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False, query=None):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
         if query is None:
@@ -3775,7 +3779,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         ).filter(
             Order.sales_segment_id==self.id
         )
-        
+
         if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
         return qs
@@ -3806,7 +3810,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     @property
     def stocks(self):
-        """ この販売区分で販売可能な在庫 
+        """ この販売区分で販売可能な在庫
         商品 -> 商品アイテム -> 在庫
         """
         return Stock.query.filter(
@@ -3841,18 +3845,18 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             return u"<不明>"
         else:
             return enum.v
-        
+
     def get_cms_data(self):
         products = DBSession.query(Product, include_deleted=True).filter_by(sales_segment_id=self.id).all()
         data = {
-            "id": self.id, 
-            "kind_name": self.kind, 
+            "id": self.id,
+            "kind_name": self.kind,
             "kind_label": self.kind_label,
             "publicp": self.public,
             "group_publicp": self.sales_segment_group.public,
             "name": self.name,
-            "start_on" : isodate.datetime_isoformat(self.start_at) if self.start_at else '', 
-            "end_on" : isodate.datetime_isoformat(self.end_at) if self.end_at else '', 
+            "start_on" : isodate.datetime_isoformat(self.start_at) if self.start_at else '',
+            "end_on" : isodate.datetime_isoformat(self.end_at) if self.end_at else '',
             'group_id':self.sales_segment_group_id,
             'tickets':[p.get_cms_data() for p in products],
             'seat_choice':'true' if self.seat_choice else 'false',
@@ -4131,7 +4135,7 @@ class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusSeat'
     __table_args__= (
-        UniqueConstraint('area_code', 'info_code', 'floor', 
+        UniqueConstraint('area_code', 'info_code', 'floor',
                          'column', 'num', 'augus_venue_id',
                          name="uix_AugusSeat"),
     )
@@ -4143,7 +4147,7 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     doorway_name = AnnotatedColumn(Unicode(32), nullable=False,
                                    _a_label=(u'出入口'), default=u'')
     priority = AnnotatedColumn(Integer, nullable=False, default=u'', _a_label=(u'優先度'))
-    floor = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"階"))    
+    floor = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"階"))
     column = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"列"))
     num = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u"番"))
     block = AnnotatedColumn(Integer, nullable=False, _a_label=(u'ブロック'))
@@ -4155,7 +4159,7 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     info_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'付加情報コード'))
     doorway_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'出入口コード'))
     version = AnnotatedColumn(Integer, nullable=False, _a_label=(u'会場バージョン'))
-    
+
     augus_venue_id = Column(Identifier, ForeignKey('AugusVenue.id', ondelete='CASCADE'), nullable=False)
     seat_id = Column(Identifier, ForeignKey('Seat.id'))
     augus_venue = relationship('AugusVenue', backref='augus_seats')
@@ -4171,7 +4175,7 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                           self.column,
                                           self.num
                                       ]))
-    
+
 # move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusPerformance'
@@ -4185,13 +4189,13 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     open_on = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'開場日時'))
     start_on = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'公演日時'))
     augus_venue_version = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス会場バージョン'))
-    
-    performance_id = Column(Identifier, 
+
+    performance_id = Column(Identifier,
                             ForeignKey("Performance.id"),
                             nullable=True, unique=True)
     performance = relationship('Performance')
     augus_stock_infos = relationship('AugusStockInfo')
-        
+
     @property
     def code(self):
         return self.augus_performance_code
@@ -4204,6 +4208,7 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_venue_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス会場コード'))
     augus_seat_type_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス席種コード'))
     augus_seat_type_name = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'オーガス席種名'))
+    unit_value_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス単価コード'))
     unit_value_name = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'単価名称'))
     augus_seat_type_classif = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'席区分'))
     value = AnnotatedColumn(Integer, nullable=False, _a_label=(u'売値'))
@@ -4221,8 +4226,11 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if not self.augus_performance.performance in stock_type.event.performances:
             raise ValueError('illegal performance')
         self.stock_type_id = stock_type.id
-        
-        
+
+    def delete_link(self):
+        self.stock_type_id = None
+
+
 # move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusStockInfo'
@@ -4234,21 +4242,24 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     augus_performance_id = Column(Identifier, ForeignKey('AugusPerformance.id'), nullable=True)
     augus_performance = relationship('AugusPerformance')
-    
+
     augus_seat_id = Column(Identifier, ForeignKey('AugusSeat.id'))
     augus_seat = relationship('AugusSeat')
-    
+
+    seat_id = Column(Identifier, ForeignKey('Seat.id'))
+    seat = relationship('Seat')
+
     def get_seat(self):
         performance = self.augus_performance
         if not performance:
             return None
         venue = performance.venue
-        l0_id = self.augus_seat.seat.l0_id        
+        l0_id = self.augus_seat.seat.l0_id
         for seat in venue.seats:
             if seat.l0_id == l0_id:
                 return seat
         return None
-        
+
     def get_augus_ticket(self):
         seat = self.get_seat()
         if seat:
@@ -4266,19 +4277,19 @@ class AugusPutbackType:
     FINAL = u'F' # 最終
 
 # move to altair.app.ticketing.orion.cooperation.augus.models
-class AugusPutback(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class AugusPutback(Base, BaseModel): #, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusPutback'
     id = Column(Identifier, primary_key=True)
     augus_putback_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'返券コード'))
     quantity = AnnotatedColumn(Integer, nullable=False, _a_label=(u'数量'))
 
-    
+
     reserved_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券予約日時'))
-    nortificated_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券通知日時'))
+    notified_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券通知日時'))
     finished_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券完了日時'))
 
     augus_putback_type = AnnotatedColumn(Unicode(32), _a_label=(u'返券区分'), default=AugusPutbackType.ROUTE)
-    
+
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
     seat = relationship('Seat')
 
@@ -4328,10 +4339,10 @@ class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     header_url = Column(Unicode(255))
     background_url = Column(Unicode(255))
     icon_url = Column(Unicode(255))
-    
+
     qr_enabled = Column(Boolean)
     pattern = Column(Unicode(255))
-    
+
     coupon_2_name = Column(Unicode(255))
     coupon_2_qr_enabled = Column(Boolean)
     coupon_2_pattern = Column(Unicode(255))

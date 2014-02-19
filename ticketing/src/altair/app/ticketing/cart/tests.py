@@ -320,7 +320,13 @@ class TicketingCartResourceTestBase(object):
         self.config = testing.setUp(settings=self._settings)
         self.config.include('altair.app.ticketing.cart')
         self.config.registry.settings['altair_cart.expire_time'] = '10'
+        from altair.sqlahelper import register_sessionmaker_with_engine
         self.session = _setup_db()
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
         self.organization = self._add_organization(1)
 
     def tearDown(self):

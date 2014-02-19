@@ -81,22 +81,6 @@ ${shipping.tel_1}
 ${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
 </div>
 
-% if mailmagazines_to_subscribe:
-<%mobile:header>メールマガジンの配信</%mobile:header>
-ご利用いただいた方には、ブラウブリッツチケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br />
-% for mailmagazine, subscribed in mailmagazines_to_subscribe:
-% if subscribed:
-<font color="red">(購読済)</font>
-% else:
-<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
-% endif
-${mailmagazine.name}<br/>
-<div><font size="-2">
-${mailmagazine.description|n}
-</font></div>
-% endfor
-% endif
-
 <hr />
 <input type="submit" name="back" value="戻る" />
 % if delegator:

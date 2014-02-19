@@ -56,14 +56,15 @@ def setup_temporary_store(config):
     from datetime import timedelta
     from altair.app.ticketing.interfaces import ITemporaryStore
     from altair.app.ticketing.temp_store import TemporaryCookieStore
-    from .api import get_order_for_read_by_order_no
+    from altair.app.ticketing.cart.models import Cart
 
     def extra_secret_provider(request, value):
-        order = get_order_for_read_by_order_no(request, value)
-        if order is None:
+        # master を見ないとダメ
+        cart = Cart.query.filter_by(order_no=value).first()
+        if cart is None:
             return ''
         else:
-            return order.created_at.isoformat()
+            return cart.created_at.isoformat()
 
     key = config.registry.settings['altair.cart.completion_page.temporary_store.cookie_name']
     secret = config.registry.settings['altair.cart.completion_page.temporary_store.secret']

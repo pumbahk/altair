@@ -46,7 +46,7 @@ class RecordAttribute(object):
     @area_name.setter
     def area_name(self, value):
         self._area_name = StringType.validate(value)
-        
+
     @property
     def block(self):
         """ブロックNo.
@@ -78,51 +78,51 @@ class RecordAttribute(object):
     @coordx.setter
     def coordx(self, value):
         self._coordx = NumberType.validate(value)
-        
+
     @property
     def coordx_whole(self):
         """全体座標X
-        自由席の場合は 0 になる。        
+        自由席の場合は 0 になる。
         """
         return self._coordx_whole
 
     @coordx_whole.setter
     def coordx_whole(self, value):
         self._coordx_whole = NumberType.validate(value)
-        
+
     @property
     def coordy(self):
         """座標Y
-        自由席の場合は 0 になる。        
+        自由席の場合は 0 になる。
         """
         return self._coordy
 
     @coordy.setter
     def coordy(self, value):
         self._coordy = NumberType.validate(value)
-        
+
     @property
     def coordy_whole(self):
         """全体座標Y
-        自由席の場合は 0 になる。        
+        自由席の場合は 0 になる。
         """
         return self._coordy_whole
 
     @coordy_whole.setter
     def coordy_whole(self, value):
         self._coordy_whole = NumberType.validate(value)
-        
+
     @property
     def date(self):
         """公演日
         """
         return self._date
-    
+
     DATE_FORMAT = '%Y%m%d' # 公演日
     @date.setter
     def date(self, value):
         self._date = DateType.validate(value)
-        
+
     @property
     def distribution_code(self):
         """配券コード
@@ -132,7 +132,7 @@ class RecordAttribute(object):
     @distribution_code.setter
     def distribution_code(self, value):
         self._distribution_code = NumberType.validate(value)
-        
+
     @property
     def doorway_code(self):
         """出入り口コード
@@ -142,7 +142,7 @@ class RecordAttribute(object):
     @doorway_code.setter
     def doorway_code(self, value):
         self._doorway_code = NumberType.validate(value)
-        
+
     @property
     def doorway_name(self):
         """出入り口名
@@ -152,7 +152,7 @@ class RecordAttribute(object):
     @doorway_name.setter
     def doorway_name(self, value):
         self._doorway_name = StringType.validate(value)
-        
+
     @property
     def event_code(self):
         """事業コード
@@ -162,7 +162,7 @@ class RecordAttribute(object):
     @event_code.setter
     def event_code(self, value):
         self._event_code = NumberType.validate(value)
-        
+
     @property
     def event_name(self):
         """事業名
@@ -172,7 +172,7 @@ class RecordAttribute(object):
     @event_name.setter
     def event_name(self, value):
         self._event_name = StringType.validate(value)
-        
+
     @property
     def floor(self):
         """階
@@ -182,7 +182,7 @@ class RecordAttribute(object):
     @floor.setter
     def floor(self, value):
         self._floor = StringType.validate(value)
-        
+
     @property
     def info_code(self):
         """付加情報コード
@@ -192,7 +192,7 @@ class RecordAttribute(object):
     @info_code.setter
     def info_code(self, value):
         self._info_code = NumberType.validate(value)
-        
+
     @property
     def info_name(self):
         """付加情報名
@@ -202,7 +202,7 @@ class RecordAttribute(object):
     @info_name.setter
     def info_name(self, value):
         self._info_name = StringType.validate(value)
-        
+
     @property
     def processed_at(self):
         """処理年月日時分秒
@@ -212,7 +212,7 @@ class RecordAttribute(object):
     @processed_at.setter
     def processed_at(self, value):
         self._processed_at = DateTimeType.validate(value)
-        
+
     @property
     def number(self):
         """番
@@ -222,17 +222,17 @@ class RecordAttribute(object):
     @number.setter
     def number(self, value):
         self._number = StringType.validate(value)
-        
+
     @property
     def open_on(self):
         """開場時間
         """
         return self._open_on
-    
+
     @open_on.setter
     def open_on(self, value):
         self._open_on = HourMinType.validate(value)
-        
+
     @property
     def performance_code(self):
         """公演コード
@@ -242,7 +242,7 @@ class RecordAttribute(object):
     @performance_code.setter
     def performance_code(self, value):
         self._performance_code = NumberType.validate(value)
-        
+
     @property
     def performance_name(self):
         """公演名
@@ -252,7 +252,7 @@ class RecordAttribute(object):
     @performance_name.setter
     def performance_name(self, value):
         self._performance_name = StringType.validate(value)
-        
+
     @property
     def priority(self):
         """優先順位
@@ -262,13 +262,14 @@ class RecordAttribute(object):
     @priority.setter
     def priority(self, value):
         self._priority = NumberType.validate(value)
-    
+
     @property
     def putback_status(self):
         return self._putback_status
 
     @putback_status.setter
     def putback_status(self, value):
+        value = str(value)
         self._putback_status = PutbackStatus.validate(value)
 
     @property
@@ -285,8 +286,9 @@ class RecordAttribute(object):
 
     @putback_type.setter
     def putback_type(self, value):
+        value = str(value)
         self._putback_type = PutbackType.validate(value)
-        
+
     @property
     def putback_code(self):
         """返券コード
@@ -296,7 +298,7 @@ class RecordAttribute(object):
     @putback_code.setter
     def putback_code(self, value):
         self._putback_code = NumberType.validate(value)
-        
+
     @property
     def reservation_number(self):
         """予約番号
@@ -306,7 +308,7 @@ class RecordAttribute(object):
     @reservation_number.setter
     def reservation_number(self, value):
         self._reservation_number = StringType.validate(value)
-        
+
     @property
     def seat_type_classif(self):
         """席種区分
@@ -317,7 +319,7 @@ class RecordAttribute(object):
     def seat_type_classif(self, value):
         self._seat_type_classif = SeatTypeClassif.validate(value)
 
-        
+
     @property
     def seat_type_code(self):
         """席種コード
@@ -327,7 +329,7 @@ class RecordAttribute(object):
     @seat_type_code.setter
     def seat_type_code(self, value):
         self._seat_type_code = NumberType.validate(value)
-        
+
     @property
     def seat_type_name(self):
         """席種名
@@ -337,7 +339,7 @@ class RecordAttribute(object):
     @seat_type_name.setter
     def seat_type_name(self, value):
         self._seat_type_name = StringType.validate(value)
-                
+
     @property
     def start_on(self):
         return self._start_on
@@ -345,7 +347,7 @@ class RecordAttribute(object):
     @start_on.setter
     def start_on(self, value):
         self._start_on = HourMinType.validate(value)
-        
+
     @property
     def status(self):
         return self._status
@@ -365,7 +367,7 @@ class RecordAttribute(object):
     @seat_count.setter
     def seat_count(self, value):
         self._seat_count = NumberType.validate(value)
-        
+
     @property
     def trader_code(self):
         """業者コード
@@ -375,7 +377,7 @@ class RecordAttribute(object):
     @trader_code.setter
     def trader_code(self, value):
         self._trader_code = NumberType.validate(value)
-        
+
     @property
     def unit_value_code(self):
         """単価コード
@@ -386,7 +388,7 @@ class RecordAttribute(object):
     @unit_value_code.setter
     def unit_value_code(self, value):
         self._unit_value_code = NumberType.validate(value)
-        
+
     @property
     def unit_value_name(self):
         """単価名称
@@ -397,7 +399,7 @@ class RecordAttribute(object):
     @unit_value_name.setter
     def unit_value_name(self, value):
         self._unit_value_name = StringType.validate(value)
-        
+
     @property
     def unit_value(self):
         """単価
@@ -408,7 +410,7 @@ class RecordAttribute(object):
     @unit_value.setter
     def unit_value(self, value):
         self._unit_value = NumberType.validate(value)
-        
+
     @property
     def value(self):
         """売価
@@ -419,7 +421,7 @@ class RecordAttribute(object):
     @value.setter
     def value(self, value):
         self._value = NumberType.validate(value)
-        
+
     @property
     def venue_code(self):
         """会場コード
@@ -429,7 +431,7 @@ class RecordAttribute(object):
     @venue_code.setter
     def venue_code(self, value):
         self._venue_code = NumberType.validate(value)
-        
+
     @property
     def venue_name(self):
         """会場名
@@ -439,7 +441,7 @@ class RecordAttribute(object):
     @venue_name.setter
     def venue_name(self, value):
         self._venue_name = StringType.validate(value)
-        
+
     @property
     def venue_version(self):
         """会場バージョン
@@ -455,7 +457,7 @@ class RecordAttribute(object):
 
 class RecordIF(object):
     attributes = []
-    
+
     def dump(self):
         return [getattr(self, name)for name in self.attributes]
 
@@ -470,7 +472,7 @@ class RecordIF(object):
 
 class RecordBase(RecordIF, RecordAttribute):
     pass
-        
+
 class ProtocolBase(list):
     record = RecordBase
     pattern = ''
@@ -488,7 +490,7 @@ class ProtocolBase(list):
     def match_name(cls, name):
         regx = re.compile(cls.pattern, re.I)
         return regx.match(name)
-        
+
     @property
     def name(self):
         return self.fmt.format(customer_id=self.customer_id,
@@ -510,7 +512,7 @@ class ProtocolBase(list):
             return
         except (TypeError, ValueError):
             pass
-        
+
         try:
             time.strftime(self.DATE_FORMAT, value)
             self._date = value
@@ -519,9 +521,6 @@ class ProtocolBase(list):
             pass
 
         raise ValueError('Illegal data: {}'.format(value))
-
-    
-    
 
 
     CREATED_AT_FORMAT = '%Y%m%d%H%M%S'
@@ -536,7 +535,7 @@ class ProtocolBase(list):
             return
         except (TypeError, ValueError):
             pass
-        
+
         try:
             time.strftime(self.CREATED_AT_FORMAT, value)
             self._created_at = value
@@ -575,7 +574,7 @@ class ProtocolBase(list):
     @classmethod
     def create_record(cls):
         return cls.record()
-    
+
     def set_now(self):
         self.date = time.localtime()
         self.created_at = self.date

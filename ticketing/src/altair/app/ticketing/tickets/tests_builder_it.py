@@ -1242,3 +1242,26 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
         # self.assertEquals(data[u"発券日時s"], u"2000/01/01 (土) 01:13")
 
         #self.assertEquals(data[u"発券番号"], "*NumberIssuer*")
+
+class BuilderItCoverCreateTest(_IntegrationAssertionMixin, unittest.TestCase):
+    """see: https://redmine.ticketstar.jp/issues/5138"""
+    def tearDown(self):
+        transaction.abort()
+
+    def _getTarget(self):
+        from altair.app.ticketing.tickets.vars_builder import TicketCoverDictBuilder
+        return TicketCoverDictBuilder
+
+    def _makeOne(self, *args, **kwargs):
+        from altair.app.ticketing.formatter import Japanese_Japan_Formatter
+        return self._getTarget()(Japanese_Japan_Formatter(), *args, **kwargs)
+
+    def _makeIssuer(self):
+        return lambda x: "*NumberIssuer*"
+
+    def test(self):
+        ordered_product_item = get_ordered_product_item__full_relation(1, False)
+        target = self._makeOne()
+        result = target.build_dict_from_order(ordered_product_item.ordered_product.order)
+        self.assertEqual(result[u'氏名'], u':last_name :first_name')
+        self.assertEqual(result[u'氏名カナ'], u':last_name_kana :first_name_kana')
