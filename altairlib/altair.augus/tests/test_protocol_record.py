@@ -181,7 +181,6 @@ protocol_attribute_type = {
     AchievementResponse: (
         ('event_code', NumberType),
         ('performance_code', NumberType),
-        ('trader_code', NumberType),
         ('distribution_code', NumberType),
         ('seat_type_code', NumberType),
         ('unit_value_code', NumberType),
@@ -221,8 +220,8 @@ class ProtocolRecordAttributeMismatchTest(TestCase):
     @skip('')
     def test_all_checked(self):
         self.fail()
-        
-    
+
+
     def test_attribute_name_mismatch(self):
         for protocol, testattributes in self._generate_protocol_attributes():
             record = protocol.record
@@ -231,7 +230,7 @@ class ProtocolRecordAttributeMismatchTest(TestCase):
                 self.assertEqual(attr, testattr,
                                  '{} attribute mismatch: {} != {} (index={})'\
                                  .format(protocol.__name__, attr, testattr, ii))
-    
+
     def test_attribute_length_mismatch(self):
         for protocol, testattributes in self._generate_protocol_attributes():
             record = protocol.record
@@ -254,7 +253,7 @@ class ProtocolRecordAttributeTypeTest(TestCase):
 
     def test_number_type(self):
         for protocol, attributes in self._generate_protocol_attributes(NumberType):
-            record = protocol.create_record()            
+            record = protocol.create_record()
             for attr in attributes:
                 for value in range(-100, 100):
                     input_value = str(value)
@@ -267,13 +266,13 @@ class ProtocolRecordAttributeTypeTest(TestCase):
                                      'Type mismatch: {}.{} value={}'\
                                      .format(record.__class__.__name__,
                                              attr, repr(input_value)))
-                    
+
             with self.assertRaises(ValueError) as err:
                 setattr(record, attr, 'A')
 
             with self.assertRaises(TypeError) as err:
                 setattr(record, attr, None)
-                
+
     def test_str_type(self):
         japanese = [u'日', u'本', u'語']
         for protocol, attr in self._generate_protocol_attribute(StringType):
@@ -294,7 +293,7 @@ class ProtocolRecordAttributeTypeTest(TestCase):
             record = protocol.record
             name = '{}.{}'.format(record.__name__, attr)
             rec = record()
-            
+
             for data in typ:
                 value = data.value
                 setattr(rec, attr, value)
@@ -317,13 +316,13 @@ class ProtocolRecordAttributeTypeTest(TestCase):
             self.assertEqual(value, rc,
                              'Mismatch: {} != {} ({})'.format(
                                  repr(value), repr(rc), name))
-            
-        
+
+
     def test_date_type(self):
         self._testing_datetime_it(DateType)
 
     def test_hourmin_type(self):
-        self._testing_datetime_it(HourMinType)        
+        self._testing_datetime_it(HourMinType)
 
     def test_date_time_type(self):
         self._testing_datetime_it(DateTimeType)
@@ -332,7 +331,7 @@ class ProtocolRecordAttributeTypeTest(TestCase):
         self._testing_type_it(Status)
 
     def test_seat_type_classif_type(self):
-        self._testing_type_it(SeatTypeClassif)        
+        self._testing_type_it(SeatTypeClassif)
 
     def test_putback_status_type(self):
         self._testing_type_it(PutbackStatus)
@@ -361,4 +360,3 @@ class PerformanceRequestRecordDateTimeTypeTest(TestCase):
         fmt = '%Y%m%d%H%M'
         self.assertEqual(record.open_on_datetime.strftime(fmt),
                          now.strftime(fmt))
-
