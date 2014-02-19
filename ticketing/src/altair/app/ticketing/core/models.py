@@ -3977,6 +3977,11 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     entrust_separate_seats = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"バラ席のおまかせが有効", _a_label=u"おまかせ座席選択でバラ席を許可する")
     notify_point_granting_failure = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"ポイント付与失敗時のメール通知on/off", _a_label=u"ポイント付与失敗時のメール通知を有効にする")
 
+    # augus
+    augus_url = AnnotatedColumn(Unicode(255), nullable=False, default='', doc=u'オーガス用サーバのURL', _a_label=u'オーガス用サーバのURL')
+    augus_username = AnnotatedColumn(Unicode(255), nullable=False, default='', doc=u'オーガス用サーバのユーザ名', _a_label=u'オーガス用サーバのユーザ名')
+    augus_password = AnnotatedColumn(Unicode(255), nullable=False, default='', doc=u'オーガス用サーバのパスワード', _a_label=u'オーガス用サーバのパスワード')
+
     @property
     def container(self):
         return self.organization

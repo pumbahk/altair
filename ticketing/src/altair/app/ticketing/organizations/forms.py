@@ -267,6 +267,16 @@ class OrganizationSettingForm(OurForm):
     entrust_separate_seats = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.entrust_separate_seats)['label']
         )
+    augus_url = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.augus_url)['label']
+        )
+    augus_username = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.augus_username)['label']
+        )
+    augus_password = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.augus_password)['label']
+        )
+
 
 class HostForm(OurForm):
     host_name = OurTextField(
