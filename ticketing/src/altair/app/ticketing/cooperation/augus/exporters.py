@@ -32,12 +32,41 @@ from altair.augus.protocols.putback import (
     PutbackResponse,
     )
 from altair.augus.protocols import (
+    DistributionSyncResponse,
     AchievementResponse,
     )
 from altair.augus.exporters import AugusExporter
 from .errors import (
     AugusDataExportError,
     )
+
+
+
+class AugusDistributionExporter(object):
+    def create_response(self, request, status):
+        response = DistributionSyncResponse()
+
+        res_record_data = list(set(
+            [(rec.event_code, rec.performance_code, rec.distribution_code)
+             for rec in request]))
+
+        response.customer_id = request.customer_id
+        response.event_code = request.event_code
+        response.date = request.date
+
+        for event_code, performance_code, distribution_code in res_record_data:
+            record = response.record()
+            record.event_code = event_code
+            record.performance_code = performance_code
+            record.distribution_code = distribution_code
+            record.status = status.value
+            response.append(record)
+        return response
+
+    def export(self, path, request, status):
+        response = self.create_response(request, status)
+        resfile_path = os.path.join(path, response.name)
+        AugusExporter.export(response, resfile_path)
 
 
 class AugusPutbackExporter(object):

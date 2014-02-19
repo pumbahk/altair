@@ -1,7 +1,9 @@
 #! /usr/bin/env python
 #-*- coding: utf-8 -*-
+import sys
 import os
 import time
+import traceback
 import shutil
 import logging
 import argparse
@@ -15,6 +17,7 @@ from altair.augus.parsers import AugusParser
 from pyramid.paster import bootstrap
 import transaction
 from ..importers import AugusDistributionImporter
+from ..exporters import AugusDistributionExporter
 from ..errors import AugusDataImportError
 
 logger = logging.getLogger(__name__)
@@ -40,54 +43,34 @@ def main():
     mkdir_p(ko_staging)
 
     importer = AugusDistributionImporter()
+    exporter = AugusDistributionExporter()
     target = DistributionSyncRequest
-    request_success = []
-    paths = []
 
-    date = ''
-    try:
-        for name in filter(target.match_name, os.listdir(rt_staging)):
-            try:
-                logger.info('start import augus distribution: {}'.format(name))
-                path = os.path.join(rt_staging, name)
-                paths.append(path)
-                request = AugusParser.parse(path)
-                date = request.date
-                success_records = importer.import_(request)
-                request_success.append((request, success_records))
-            except AugusDataImportError as err:
-                logger.error('Illegal AugusDistribution format: {}: {}'.format(path, repr(err)))
-                raise
-            except Exception as err:
-                logger.error('AugusDisrtibution cannot import: {}: {}'.format(path, repr(err)))
-                raise
-    except:
-        transaction.abort()
-        raise
-    else:
+    for name in filter(target.match_name, os.listdir(rt_staging)):
+        time.sleep(1.5) # ファイル名/StockHolder名が含む日時をずらす為sleepを入れる
+
+        logger.info('start import augus distribution: {}'.format(name))
+        path = os.path.join(rt_staging, name)
+        status = Status.NG
+        request = AugusParser.parse(path)
         try:
-            for request, success in request_success:
-                response = DistributionSyncResponse(customer_id=consumer_id)
-                response.date = date
-                for record in request:
-                    response.event_code = int(record.event_code)
-                    res_record = response.record()
-                    res_record.event_code = record.event_code
-                    res_record.performance_code = record.performance_code
-                    res_record.distribution_code = record.distribution_code
-                    res_record.status = Status.OK.value if record in success else Status.NG.value
-                    response.append(res_record)
-                    name = response.name
-                    path = os.path.join(ko_staging, name)
-                    AugusExporter.export(response, path)
-                time.sleep(2)
-        except:
+            importer.import_(request)
+            status = Status.OK
+        except AugusDataImportError as err:
+            logger.error('Illegal AugusDistribution format: {}: {}'.format(path, repr(err)))
+        except Exception as err:
+            logger.error('AugusDisrtibution cannot import: {}: {}'.format(path, repr(err)))
+
+        try:
+            exporter.export(ko_staging, request, status)
+        except Exception:
             transaction.abort()
             raise
         else:
-            transaction.commit()
-            for path in paths:
-                shutil.move(path, rt_pending)
+            if status == Status.OK:
+                transaction.commit()
+            else:
+                transaction.abort()
 
 if __name__ == '__main__':
     main()

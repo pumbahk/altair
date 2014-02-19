@@ -22,7 +22,7 @@ class AugusParser(object):
             if protocol.match_name(name):
                 return protocol
         raise ProtocolNotFound(path)
-                
+
     @classmethod
     def parse(cls, path):
         with open(path, 'rb') as fp:
@@ -33,8 +33,10 @@ class AugusParser(object):
         if protocol is None:
             protocol = cls.get_protocol(fp.name)
         reader = csv.reader(fp)
-        return cls.parserows(reader, protocol)
-                
+        proto = cls.parserows(reader, protocol)
+        proto.load_file_name(fp.name)
+        return proto
+
     @classmethod
     def parserows(cls, rows, protocol, encoding=DEFAULT_ENCODING):
         _dec = lambda data: data.decode(encoding)

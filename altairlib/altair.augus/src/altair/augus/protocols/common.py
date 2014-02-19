@@ -1,5 +1,6 @@
 #-*- coding: utf-8 -*-
 import re
+import os.path
 import time
 from enum import Enum
 from ..errors import ProtocolFormatError
@@ -483,10 +484,16 @@ class ProtocolBase(list):
 
     @property
     def name(self):
+        def _int_or_stupid(value):
+            try:
+                return int(value)
+            except (ValueError, TypeError) as err:
+                return value
+
         try:
-            return self.fmt.format(customer_id=self.customer_id,
-                                   event_code=self.event_code,
-                                   venue_code=self.venue_code,
+            return self.fmt.format(customer_id=_int_or_stupid(self.customer_id),
+                                   event_code=_int_or_stupid(self.event_code),
+                                   venue_code=_int_or_stupid(self.venue_code),
                                    date=self.date,
                                    created_at=self.created_at,
                                    start_on=self.date,
@@ -582,3 +589,11 @@ class ProtocolBase(list):
     def set_now(self):
         self.date = time.localtime()
         self.created_at = self.date
+
+    def load_file_name(self, name):
+        name = os.path.basename(name)
+        match = re.match(self.pattern, name)
+        if match:
+            attr_value = match.groupdict()
+            for attr_name, value in attr_value.iteritems():
+                setattr(self, attr_name, value)
