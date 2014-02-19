@@ -27,7 +27,8 @@ def main():
 
     mkdir_p(rt_staging)
 
-    org_settings = OrganizationSetting.query.filter(OrganizationSetting.augus_use==True).all()
+    org_settings = OrganizationSetting.query.filter(
+        OrganizationSetting.augus_use==True).all()
     for org_setting in org_settings:
         if org_setting.organization_id != 15:# RT only
             continue
