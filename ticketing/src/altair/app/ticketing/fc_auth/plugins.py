@@ -50,10 +50,10 @@ class FCAuthPlugin(object):
                 userdata = pickle.loads(identity['repoze.who.plugins.auth_tkt.userid'].decode('base64'))
                 if 'membership' in userdata:
                     userdata['identify'] = True
-                    logger.debug('fc auth identified %s' % userdata)
+                    logger.debug('identified %s' % userdata)
                     is_guest = userdata.get('is_guest', False)
                     if is_guest:
-                        logger.debug('fc auth this is guest')
+                        logger.debug('this is guest')
                     return userdata
             except Exception, e:
                 logger.exception(e)
@@ -90,7 +90,7 @@ class FCAuthPlugin(object):
 
         # 以下の処理も関数にわけるべきか
         if not (membership and username and password) and not is_identify:
-            logger.debug('fc_auth identity was not found : %s' % identity)
+            logger.debug('identity was not found : %s' % identity)
             return
 
         user_query = u_m.User.query.filter(
@@ -132,9 +132,9 @@ class FCAuthPlugin(object):
     def challenge(self, environ, status, app_headers, forget_headers):
         logger.debug('challenge')
         if not self.is_auth_required(environ):
-            logger.debug('fc auth is not required')
+            logger.debug('authentication is not required')
             return
-        logger.debug('fc auth is required')
+        logger.debug('authentication is required')
         request = get_current_request(environ)
         session = request.session.setdefault(SESSION_KEY, {})
         session['return_url'] = wsgiref.util.request_uri(environ)
