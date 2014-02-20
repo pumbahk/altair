@@ -24,9 +24,8 @@ def upgrade():
     op.add_column('OrganizationSetting', sa.Column('augus_download_url', sa.Unicode(length=255), nullable=True, default=u''))
     op.add_column('OrganizationSetting', sa.Column('augus_username', sa.Unicode(length=255), nullable=True, default=u''))
     op.add_column('OrganizationSetting', sa.Column('augus_password', sa.Unicode(length=255), nullable=True, default=u''))
-
     op.add_column('AugusPerformance', sa.Column('is_report_target', sa.Boolean(), nullable=True, default=False))
-    op.add_column('AugusStockInfo', sa.Column('augus_putback_id', Identifier, nullable=False))
+    op.add_column('AugusStockInfo', sa.Column('putbacked_at', sa.TIMESTAMP(), nullable=True))
 
 def downgrade():
     op.drop_column('OrganizationSetting', 'augus_use')
@@ -36,4 +35,4 @@ def downgrade():
     op.drop_column('OrganizationSetting', 'augus_username')
     op.drop_column('OrganizationSetting', 'augus_password')
     op.drop_column('AugusPerformance', 'is_report_target')
-    op.drop_column('AugusStockInfo', 'augus_putback_id')
+    op.drop_column('AugusStockInfo', 'putbacked_at')

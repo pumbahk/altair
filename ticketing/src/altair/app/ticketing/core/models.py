@@ -4262,10 +4262,7 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=False)
     seat = relationship('Seat')
 
-
-    augus_putback_id = Column(Identifier, ForeignKey('AugusPutback.id'), nullable=True)
-    augus_putback = relationship('AugusPutback')
-
+    putbacked_at = Column(DateTime, nullable=True, default=None)
 
     def get_seat(self):
         performance = self.augus_performance
