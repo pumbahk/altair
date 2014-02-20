@@ -378,11 +378,12 @@ function buildStockHolderTypeTables(venue) {
     var swatch = $('<span class="swatch"></span>').css('text-color', style.text_color).text(style.text||'　');
     var head = $('<h5 class="ui-header" style="float: left;"></h5>').text(' ' + stockHolder.get('name'));
     var transfer = $('<a class="transfer btn btn-mini btn-inverse" href="javascript:buildTransferModal(' + stockHolder.id + ');">枠移動</a>');
-    var rest = $('<span class="rest label hide"></span>');
-    stockHolder.on('change:available', function () {
-      rest.removeClass('hide');
+    var rest = $('<span class="rest label"></span>');
+    function refresh() {
       rest.text('残席: ' + stockHolder.get('available') + '席');
-    });
+    }
+    stockHolder.on('change:available', refresh);
+    refresh();
     stockHolder.recalculateQuantity();
     var div = $('<div></div>').css('display', 'none');
     var table = $('<table class="table table-bordered"></table>');
