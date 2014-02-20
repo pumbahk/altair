@@ -73,10 +73,10 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 <%include file="./_detail_table.html" args="expanded=false" />
 <div>
   <div class="pull-left">
-    <form class="form-horizontal" id="sales_segment-form" style="margin:0 0 5px 0"></form>
+    <form class="form-horizontal" id="sales_segment-form" style="margin:0 0 5px 5px;"></form>
   </div>
   <div class="pull-left">
-    <form class="form-horizontal" id="performance-form" style="margin:0 0 5px 10px"></form>
+    <form class="form-horizontal" id="performance-form" style="margin:0 0 5px 25px;"></form>
   </div>
   <div class="pull-right">
     <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%;" value="当日窓口発券モードにする" />
@@ -814,34 +814,45 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     initialize: function() {
       this.el = this.options.el;
       this.presenter = this.options.presenter;
+      this.current = ${performance.id};
     },
     events: {
       'change select[name="performance_id"]': 'onChange'
     },
     onChange: function(e) {
       var id = $(e.target).val();
-      if (id) {
+      if (id != this.current) {
         var url = "${request.route_path('performances.show', performance_id='{id}')|n}";
         url = url.replace(encodeURIComponent('{id}'), id);
-        window.open(url + '/reservation', '_blank');
+        var target = '_self';
+        if ($('#performance_opener').attr('checked')) {
+          target = '_blank';
+          $(e.target).val(this.current);
+        }
+        window.open(url + '/reservation', target);
       }
     },
     render: function() {
       var self = this;
 
-      var label = $('<label style="display:inline-block" for="performance_id" />');
-      label.append('別の公演');
+      var label = $('<label style="display:inline-block" for="performance_selector" />');
+      label.append('公演');
       this.$el.append(label);
 
-      var select = $('<select id="performance_id" name="performance_id" style="width:30em; margin-left:3px;" />');
+      var select = $('<select id="performance_selector" name="performance_id" style="width:30em; margin-left:3px;" />');
       <% from altair.app.ticketing.core.helpers import build_sales_segment_list_for_inner_sales %>
-      select.append($('<option value=""></option>'));
       % for p in performance.event.performances:
-        % if p.id != performance.id:
         select.append($('<option value="${p.id}">${u"{0} - {1} - {2}".format(p.name, p.start_on.strftime("%Y年%m月%d日(%a) %H:%M").decode('utf-8'), p.venue.name)}</option>'));
-        % endif
       % endfor
+      select.val(this.current);
       this.$el.append(select);
+
+      var checkbox = $('<input type="checkbox" id="performance_opener" class="checkbox" checked="checked" style="margin:3px;" />');
+      this.$el.append(checkbox);
+
+      label = $('<label style="display:inline-block" for="performance_opener" />');
+      label.append('別画面で開く');
+      this.$el.append(label);
     }
   });
 
