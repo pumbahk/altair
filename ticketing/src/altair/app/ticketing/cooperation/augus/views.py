@@ -398,11 +398,20 @@ class AugusPutbackView(_AugusBaseView):
 
 @view_defaults(route_name='augus.achievement', decorator=with_bootstrap, permission='event_editor')
 class AugusAchievementView(_AugusBaseView):
+    @view_config(route_name='augus.achievement.index', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/augus/events/achievement/index.html')
+    def index(self):
+        performance_ids = [performance.id for performance in self.context.event.performances]
+        augus_performances = AugusPerformance.query.filter(AugusPerformance.performance_id.in_(performance_ids)).all()
+        return dict(event=self.context.event,
+                    augus_performances=augus_performances,
+                    )
 
     @view_config(route_name='augus.achievement.get', request_method='GET')
     def achievement_get(self):
-        performance_ids = [performance.id for performance in self.context.event.performances]
-        augus_performances = AugusPerformance.query.filter(AugusPerformance.performance_id.in_(performance_ids)).all()
+        augus_performance_id = int(self.request.matchdict.get('augus_performance_id'))
+        #performance_ids = [performance.id for performance in self.context.event.performances]
+        augus_performances = AugusPerformance.query.filter(AugusPerformance.id==augus_performance_id).all()
         res = Response()
         exporter = AugusAchievementExporter()
         event_codes = list(set([ag_performance.augus_event_code for ag_performance in augus_performances]))
@@ -419,3 +428,15 @@ class AugusAchievementView(_AugusBaseView):
                        ('Content-Disposition', 'attachment; filename={0}'.format(res_proto.name)),
                        ]
         return res
+
+
+    @view_config(route_name='augus.achievement.reserve', request_method='GET')
+    def achievement_reserve(self):
+        augus_performance_id = int(self.request.matchdict.get('augus_performance_id'))
+        #performance_ids = [performance.id for performance in self.context.event.performances]
+        augus_performance = AugusPerformance.query.filter(AugusPerformance.id==augus_performance_id).one()
+        augus_performance.is_report_target = True
+        augus_performance.save()
+        self.request.session.flash(u'販売実績戻しを予約しました')
+        url = self.request.route_path('augus.achievement.index', event_id=self.context.event.id)
+        return HTTPFound(url)

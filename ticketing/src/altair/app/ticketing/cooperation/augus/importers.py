@@ -17,6 +17,7 @@ from altair.app.ticketing.core.models import (
     AugusVenue,
     AugusTicket,
     AugusSeat,
+    AugusPutback,
     AugusStockInfo,
     SeatStatusEnum,
     )
