@@ -226,7 +226,7 @@ class AugusDistributionImporter(object):
                 stock_holder = stock_holders.get(ag_performance.performance.event, None)
                 if not stock_holder:
                     name = u'オーガス連携:' + time.strftime('%Y-%m-%d-%H-%M-%S')
-                    account_id = 97 # キョードー大阪
+                    account_id = 35 # 楽天チケット　ううっ(直したい)
                     stock_holder = self._create_stock_holder(ag_performance.performance,
                                                              name, account_id)
                     stock_holders[ag_performance.performance.event] = stock_holder
