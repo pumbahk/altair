@@ -218,7 +218,8 @@ class AugusDistributionImporter(object):
                 stock = None
                 for stock in stock_holder.stocks:
                     # stockが持つstock_typeのidとaugus_ticketがもつstock_typeのidが同じものが対象
-                    if stock.stock_type_id == ag_ticket.stock_type.id:
+                    if stock.stock_type_id == ag_ticket.stock_type.id and\
+                       stock.performance_id == ag_performance.performance_id:
                         break
                 else: # 対象となるStockがない
                     raise AugusDataImportError(
@@ -251,7 +252,7 @@ class AugusDistributionImporter(object):
         venue = Venue.query.filter(Venue.performance_id==performance.id).one()
         seat = Seat.query.filter(Seat.l0_id==base_seat.l0_id)\
                          .filter(Seat.venue_id==venue.id)\
-                         .one()
+                         .first()
         if seat:
             return seat
         else:

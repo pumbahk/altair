@@ -56,6 +56,7 @@ def main():
         try:
             importer.import_(request)
             status = Status.OK
+            logger.info('augus distribution: OK: {}'.format(path))
         except AugusDataImportError as err:
             logger.error('Illegal AugusDistribution format: {}: {}'.format(path, repr(err)))
         except Exception as err:
