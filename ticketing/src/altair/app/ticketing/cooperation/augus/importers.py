@@ -116,6 +116,9 @@ class AugusTicketImpoter(object):
 
 class AugusDistributionImporter(object):
     def import_record(self, record, stock, ag_performance):
+        if int(record.seat_type_classif) != 1: # 指定席以外はエラー
+            AugusDataImportError('augus seat type classif error: {}'.format(record.seat_type_classif))
+
         ag_venue = AugusVenue.query.filter(AugusVenue.code==ag_performance.augus_venue_code)\
                                    .filter(AugusVenue.version==ag_performance.augus_venue_version)\
                                    .one()
