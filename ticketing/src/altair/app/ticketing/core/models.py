@@ -3979,6 +3979,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
 
     # augus
     augus_use = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"オーガス連携", _a_label=u"オーガス連携")
+    augus_customer_id = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス取引先ID', _a_label=u'オーガス取引先ID')
     augus_upload_url = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのアップロードURL', _a_label=u'オーガス用サーバのアップロードURL')
     augus_download_url = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのダウンロードURL', _a_label=u'オーガス用サーバのダウンロードURL')
     augus_username = AnnotatedColumn(Unicode(255), nullable=False, default='', doc=u'オーガス用サーバのユーザ名', _a_label=u'オーガス用サーバのユーザ名')
@@ -4197,6 +4198,8 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_on = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'公演日時'))
     augus_venue_version = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス会場バージョン'))
 
+    is_report_target = Column(Boolean, nullable=True, default=False)
+
     performance_id = Column(Identifier,
                             ForeignKey("Performance.id"),
                             nullable=True, unique=True)
@@ -4258,6 +4261,10 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=False)
     seat = relationship('Seat')
+
+
+    augus_putback_id = Column(Identifier, ForeignKey('AugusPutback.id'), nullable=True)
+    augus_putback = relationship('AugusPutback')
 
 
     def get_seat(self):

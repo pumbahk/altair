@@ -95,6 +95,10 @@
       <td>${u'使う' if organization_setting.augus_use  else u'使わない'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.augus_customer_id)}</th>
+      <td>${organization_setting.augus_customer_id}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.augus_upload_url)}</th>
       <td>${organization_setting.augus_upload_url}</td>
     </tr>
