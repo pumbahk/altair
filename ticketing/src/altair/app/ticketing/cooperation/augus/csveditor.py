@@ -315,6 +315,7 @@ def putback(stock_holder):
 
     can_putback_statuses = (SeatStatusEnum.NotOnSales,
                             SeatStatusEnum.Vacant,
+                            SeatStatusEnum.Canceled,
                             )
 
     putback_code = unicode(time.strftime('%Y-%m-%d-%H-%M-%S'))

@@ -166,7 +166,7 @@ class AugusDistributionImporter(object):
         seat = self.augus_seat_to_real_seat(ag_performance, ag_seat)
         old_stock = seat.stock
 
-        if old_stock.stock_holder == None and seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v]:
+        if old_stock.stock_holder == None and seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
             # 未割当 かつ 配席可能な状態
 
             # 有効なAugusStockInfoがあるものは追券できない(追券済みだから)
