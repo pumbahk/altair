@@ -25,6 +25,25 @@ from .errors import (
     NoSeatError,
     )
 
+def get_enable_stock_info(seat):
+    print 'A'*30
+    stock_infos = AugusStockInfo.query.filter(AugusStockInfo.seat_id==seat.id).all()
+    enables = []
+    for info in stock_infos:
+        if AugusPutback.query.filter(AugusPutback.augus_stock_info_id==info.id).first():
+            print 'B'*30
+            continue
+        enables.append(info)
+    if len(enables) == 1:
+        print 'C'*30
+        return enables[0]
+    elif len(enables) == 0:
+        print 'D'*30
+        return None
+    else: # なぜか複数の有効なAugusStockInfoがある
+        print 'E'*30
+        raise AugusDataImportError('two enable augus stock info: AugusStockInfo.seat_id={}'.format(seat.id))
+
 class AugusPerformanceImpoter(object):
     def import_record(self, record):
         ag_venue = None
@@ -148,6 +167,14 @@ class AugusDistributionImporter(object):
 
         if old_stock.stock_holder == None and seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v]:
             # 未割当 かつ 配席可能な状態
+
+            # 有効なAugusStockInfoがあるものは追券できない(追券済みだから)
+            # 有効なAugusStockInfo
+            #  - seat_idをもち
+            #  - AugusPutbackとのヒモ付けがないもの
+            ag_stock_info = get_enable_stock_info(seat)
+            if ag_stock_info:
+                raise AugusDataImportError('already exist AugusStockInfo: AugusStockInfo.id={}'.format(ag_stock_info.id))
 
             # AugusStockInfo生成
             ag_stock_info = AugusStockInfo()

@@ -47,6 +47,7 @@ from .errors import (
     SeatImportError,
     AlreadyExist,
     )
+from .importers import get_enable_stock_info
 
 @view_config(route_name='augus.test')
 def test(*args, **kwds):
@@ -349,11 +350,16 @@ class AugusPutbackView(_AugusBaseView):
         try:
             for seat in seats:
                 # 連携/配券できていないもが含まれていた場合エラーする
-                ag_stock_info = AugusStockInfo.query.filter(AugusStockInfo.seat_id==seat.id).one()
-                already = AugusPutback.query.filter(AugusPutback.augus_stock_info_id==ag_stock_info.id).all()
-                if already:
-                    codes = set([putback.augus_putback_code for putback in already])
-                    raise HTTPBadRequest(u'augus stock info already putbacked: augus putback codes={}'.format(codes))
+                #ag_stock_info = AugusStockInfo.query.filter(AugusStockInfo.seat_id==seat.id).all()
+                ag_stock_info = get_enable_stock_info(seat)
+                if not ag_stock_info:
+                    raise HTTPBadRequest(u'Enable AugusStockInfo not found: AugusStockInfo.seat_id={}'.format(seat.id))
+
+                # already = AugusPutback.query.filter(AugusPutback.augus_stock_info_id==ag_stock_info.id).all()
+                # if already:
+                #     codes = set([putback.augus_putback_code for putback in already])
+                #     raise HTTPBadRequest(u'augus stock info already putbacked: augus putback codes={}'.format(codes))
+
                 ag_putback = AugusPutback()
                 ag_putback.augus_putback_code = putback_code
                 ag_putback.quantity = ag_stock_info.quantity # 席指定のみのためすべて(1)返しても良い/ 自由席の場合はここが問題になる
