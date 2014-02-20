@@ -589,6 +589,21 @@ allocation.ApplicationController.prototype.init = function(options) {
   this.GuidePresenter = new allocation.GuidePresenter({viewType: allocation.GuideView});
   this.GuidePresenter.initialize(options);
   this.GuidePresenter.show();
+
+  window.onbeforeunload = function(){
+    var warn = false;
+    var venue = venueEditorRoot.venueeditor('model');
+    if (venue) {
+      var changeData = venue.toJSON();
+      for (var data in changeData) {
+        if (changeData[data].length > 0) {
+          warn = true;
+          break;
+        }
+      }
+    }
+    if (warn) {return '保存されていない変更があります。';}
+  };
 };
 
 /* presenter */
