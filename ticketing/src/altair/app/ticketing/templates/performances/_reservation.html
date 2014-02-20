@@ -73,7 +73,10 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 <%include file="./_detail_table.html" args="expanded=false" />
 <div>
   <div class="pull-left">
-    <form class="form-horizontal" id="sales_segment-form" style="margin:0"></form>
+    <form class="form-horizontal" id="sales_segment-form" style="margin:0 0 5px 0"></form>
+  </div>
+  <div class="pull-left">
+    <form class="form-horizontal" id="performance-form" style="margin:0 0 5px 10px"></form>
   </div>
   <div class="pull-right">
     <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%;" value="当日窓口発券モードにする" />
@@ -651,9 +654,6 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     this.app = new reservation.ApplicationController();
     this.app.init(options);
 
-
-    var guide = $('#venue-viewer-guide');
-
     $('#sales-counter-button').click(function() { switchToSalesCounterMode(); });
 
     // 「おまかせ」ボタンはajaxで追加されるので、delegateを使わないとうまく動かない
@@ -678,6 +678,10 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     );
     this.SalesSegmentSelectPresenter.initialize(options);
     this.SalesSegmentSelectPresenter.show();
+
+    this.PerformanceSelectPresenter = new reservation.PerformanceSelectPresenter({viewType: reservation.PerformanceSelectView});
+    this.PerformanceSelectPresenter.initialize(options);
+    this.PerformanceSelectPresenter.show();
   };
 
   /* presenter */
@@ -718,6 +722,26 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     },
     removeGuide: function() {
       this.guide.view.remove();
+    },
+    show: function() {
+      this.view.render();
+    }
+  }
+
+  reservation.PerformanceSelectPresenter = function(params) {
+    for (var k in params) this[k] = params[k];
+  };
+
+  reservation.PerformanceSelectPresenter.prototype = {
+    defaults: {
+    },
+    initialize: function(options) {
+      var self = this;
+      this.options = options;
+      this.view = new this.viewType({
+        el: $('#performance-form'),
+        presenter: this,
+      });
     },
     show: function() {
       this.view.render();
@@ -776,11 +800,46 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       label.append('販売区分');
       this.$el.append(label);
 
-      var select = $('<select id="sales_segment_id" name="sales_segment_id" style="width:10em" />');
+      var select = $('<select id="sales_segment_id" name="sales_segment_id" style="width:10em; margin-left:3px;" />');
       select.append($('<option value=""></option>'));
       <% from altair.app.ticketing.core.helpers import build_sales_segment_list_for_inner_sales %>
       % for sales_segment in build_sales_segment_list_for_inner_sales(performance.sales_segments):
       select.append($('<option value="${sales_segment.id}" ${'selected=""' if sales_segment.id == int(sales_segment_id or 0) else ''|n}>${sales_segment.name}</option>'));
+      % endfor
+      this.$el.append(select);
+    }
+  });
+
+  reservation.PerformanceSelectView = Backbone.View.extend({
+    initialize: function() {
+      this.el = this.options.el;
+      this.presenter = this.options.presenter;
+    },
+    events: {
+      'change select[name="performance_id"]': 'onChange'
+    },
+    onChange: function(e) {
+      var id = $(e.target).val();
+      if (id) {
+        var url = "${request.route_path('performances.show', performance_id='{id}')|n}";
+        url = url.replace(encodeURIComponent('{id}'), id);
+        window.open(url + '/reservation', '_blank');
+      }
+    },
+    render: function() {
+      var self = this;
+
+      var label = $('<label style="display:inline-block" for="performance_id" />');
+      label.append('別の公演');
+      this.$el.append(label);
+
+      var select = $('<select id="performance_id" name="performance_id" style="width:30em; margin-left:3px;" />');
+      <% from altair.app.ticketing.core.helpers import build_sales_segment_list_for_inner_sales %>
+      select.append($('<option value=""></option>'));
+      % for p in performance.event.performances:
+        % if p.id != performance.id:
+        select.append($('<option value="${p.id}">${u"{0} - {1} - {2}".format(p.name, p.start_on.strftime("%Y年%m月%d日(%a) %H:%M").decode('utf-8'), p.venue.name)}</option>'));
+        % endif
       % endfor
       this.$el.append(select);
     }
