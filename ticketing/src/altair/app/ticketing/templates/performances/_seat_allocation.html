@@ -540,7 +540,7 @@ function saveStocks() {
 var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
 var tab2 = venueEditorSide.find("#venue-editor-main-side-tab2");
 
-callbacks.load = function (viewer) {
+callbacks.load = callbacks.refresh = function (viewer) {
   tab1.empty();
   tab1.append(buildStockHolderTypeTables(viewer.venue));
   tab2.empty();
