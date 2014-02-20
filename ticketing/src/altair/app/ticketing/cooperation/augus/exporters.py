@@ -113,7 +113,8 @@ class AugusPutbackExporter(object):
                                          .all()
 
         responses = []
-        for event_code, putbacks_in_event in itertools.groupby(putbacks, lambda putback: putback.augus_stock_info.augus_performance.augus_event_code):
+        for (event_code, putback_code), putbacks_in_event \
+            in itertools.groupby(putbacks, lambda putback: (putback.augus_stock_info.augus_performance.augus_event_code, putback.augus_putback_code):
             response = PutbackResponse()
             response.event_code = event_code
             response.extend([self.create_record(putback) for putback in putbacks_in_event])
