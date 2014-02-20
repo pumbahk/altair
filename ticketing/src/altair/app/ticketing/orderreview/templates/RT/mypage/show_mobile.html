@@ -1,24 +1,24 @@
 <%inherit file="../commons/layout_mobile.html" />
 <%namespace file="../commons/tags_mobile.html" name="mobile" />
-<%mobile:header>マイページ</%mobile:header>
-
-<hr/>
-<h3>購入履歴照会</h3>
+<%mobile:header>購入履歴照会</%mobile:header>
 % if orders:
   ${render_orders(orders)}
 % else:
   購入履歴がありません。
 % endif
 
-<h3>抽選申込み照会</h3>
+<%mobile:header>抽選申込み照会</%mobile:header>
 % if lot_entries:
   ${render_lot_entries(lot_entries)}
 % else:
   抽選申込みがありません。
 % endif
 
-<h3>メールマガジン</h3>
+<%mobile:header>メールマガジン</%mobile:header>
 ${render_mailmagazine(request)}
+
+<%mobile:header>楽天ポイントのご確認</%mobile:header>
+<a href="https://point.rakuten.co.jp/">楽天ポイントのご確認はこちら</a>
 
 <%def name="render_shipping_address(shipping)">
 氏名（漢字）：
