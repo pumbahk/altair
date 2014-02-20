@@ -817,19 +817,27 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       this.current = ${performance.id};
     },
     events: {
-      'change select[name="performance_id"]': 'onChange'
+      'change select[name="performance_id"]': 'onChangeSelect',
+      'click input[type="checkbox"]': 'onChangeCheckbox',
+      'click a.btn': 'reset'
     },
-    onChange: function(e) {
+    onChangeSelect: function(e) {
       var id = $(e.target).val();
       if (id != this.current) {
         var url = "${request.route_path('performances.show', performance_id='{id}')|n}";
         url = url.replace(encodeURIComponent('{id}'), id);
-        var target = '_self';
-        if ($('#performance_opener').attr('checked')) {
-          target = '_blank';
-          $(e.target).val(this.current);
-        }
-        window.open(url + '/reservation', target);
+        var btn = this.el.find('.btn');
+        btn.attr('href', url + '/reservation');
+      }
+    },
+    onChangeCheckbox: function(e) {
+      var target = ($(e.target).attr('checked') ? '_blank' : '_self');
+      var btn = this.el.find('.btn');
+      btn.attr('target', target);
+    },
+    reset: function(e) {
+      if ($('#performance_opener').attr('checked')) {
+        this.el.find('select[name="performance_id"]').val(this.current);
       }
     },
     render: function() {
@@ -839,7 +847,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       label.append('公演');
       this.$el.append(label);
 
-      var select = $('<select id="performance_selector" name="performance_id" style="width:30em; margin-left:3px;" />');
+      var select = $('<select id="performance_selector" name="performance_id" style="width:30em; margin: 0 3px 0 3px;" />');
       <% from altair.app.ticketing.core.helpers import build_sales_segment_list_for_inner_sales %>
       % for p in performance.event.performances:
         select.append($('<option value="${p.id}">${u"{0} - {1} - {2}".format(p.name, p.start_on.strftime("%Y年%m月%d日(%a) %H:%M").decode('utf-8'), p.venue.name)}</option>'));
@@ -847,11 +855,15 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       select.val(this.current);
       this.$el.append(select);
 
+      var btn = $('<a href="#" class="btn btn-primary btn-small" rel="noreferrer" target="_blank" />');
+      btn.text('開く');
+      this.$el.append(btn);
+
       var checkbox = $('<input type="checkbox" id="performance_opener" class="checkbox" checked="checked" style="margin:3px;" />');
       this.$el.append(checkbox);
 
       label = $('<label style="display:inline-block" for="performance_opener" />');
-      label.append('別画面で開く');
+      label.append('別画面');
       this.$el.append(label);
     }
   });
