@@ -146,6 +146,7 @@ def setup_order_product_attribute_metadata(config):
 def includeme(config):
     config.include(setup_cart)
     config.include('altair.mobile')
+    config.include('altair.sqlahelper')
     config.include(setup_views)
     config.include(setup_excviews)
     config.include(setup_plugins_views)
