@@ -4,6 +4,7 @@
 
 <div class="page-header">
   <h3>オーガス公演連携 - ${event.title}</h3>
+  <%include file="../_menu.html" args="event=event" />
 </div>
 
 <a class="btn entry" href="${request.route_path('augus.performance.edit', event_id=event.id)}">連携を編集</a>
@@ -17,7 +18,7 @@
     <th>オーガス公演</th>
     <th>オーガス公演コード</th>
   </tr>
-  
+
   %for performance, ag_performance in performance_agperformance:
   <tr>
     <td>${performance.name}</td>

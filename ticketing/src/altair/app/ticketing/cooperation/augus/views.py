@@ -301,7 +301,7 @@ class AugusPutbackView(_AugusBaseView):
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/putback/index.html')
     def index(self):
         putback_codes = set([putback.augus_putback_code for putback in AugusPutback.query.all()])
-        return dict(event_id=self.context.event.id,
+        return dict(event=self.context.event,
                     putback_codes=putback_codes,
                     )
 
@@ -310,7 +310,7 @@ class AugusPutbackView(_AugusBaseView):
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/putback/new.html')
     def new_get(self):
         stock_holders = filter(lambda stock_holder: stock_holder.is_putback_target, self.context.event.stock_holders)
-        return dict(event_id=self.context.event.id,
+        return dict(event=self.context.event,
                     performances=self.context.event.performances,
                     stock_holders=stock_holders,
                     )
@@ -372,7 +372,7 @@ class AugusPutbackView(_AugusBaseView):
         putbacks = AugusPutback.query.filter(AugusPutback.augus_putback_code==putback_code).all()
         if 0 == len(putbacks):
             raise HTTPBadRequest(u'putback not found')
-        return dict(event_id=self.context.event.id,
+        return dict(event=self.context.event,
                     putbacks=putbacks,
                     putback_code=putback_code,
                     )

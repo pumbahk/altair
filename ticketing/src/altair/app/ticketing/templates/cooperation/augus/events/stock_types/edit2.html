@@ -4,7 +4,9 @@
 
 <div class="page-header">
   <h3>オーガスチケット連携</h3>
+  <%include file="../_menu.html" args="event=event" />
 </div>
+
 <form role="form" method="POST" action="${request.route_url('augus.stock_type.save', event_id=event.id)}">
 <button class="btn" type="submit">連携を保存</button>
 <table class="table">

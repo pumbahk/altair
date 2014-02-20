@@ -4,7 +4,10 @@
 
 <div class="page-header">
   <h3>オーガスチケット連携</h3>
+  <%include file="../_menu.html" args="event=event" />
 </div>
+
+
 
 <a class="btn entry" href="${request.route_path('augus.stock_type.edit', event_id=event.id)}">連携を編集</a>
 

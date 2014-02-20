@@ -4,8 +4,9 @@
 
 <div class="page-header">
   <h3>オーガス返券確認</h3>
+  <%include file="../_menu.html" args="event=event" />
 </div>
-<form role="form" method="POST" action="${request.route_url('augus.putback.reserve', event_id=event_id, putback_code=putback_code)}">
+<form role="form" method="POST" action="${request.route_url('augus.putback.reserve', event_id=event.id, putback_code=putback_code)}">
 <button class="btn" type="submit">返券を確定</button>
 <table class="table">
   <tr>
