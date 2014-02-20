@@ -41,7 +41,6 @@ from .errors import (
     )
 
 
-
 class AugusDistributionExporter(object):
     def create_response(self, request, status):
         response = DistributionSyncResponse()
@@ -206,6 +205,11 @@ class AugusAchievementExporter(object):
                 .all()
 
             for stock_info in stock_infos:
+                # 返券済みのものは出力しない
+                if stock_info.putbacked_at:
+                    continue
+
+
                 # 未販売は出力しない
                 if stock_info.seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
                     continue

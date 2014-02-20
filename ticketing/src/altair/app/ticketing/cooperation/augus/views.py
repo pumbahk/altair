@@ -429,18 +429,15 @@ class AugusAchievementView(_AugusBaseView):
     @view_config(route_name='augus.achievement.get', request_method='GET')
     def achievement_get(self):
         augus_performance_id = int(self.request.matchdict.get('augus_performance_id'))
-        #performance_ids = [performance.id for performance in self.context.event.performances]
-        augus_performances = AugusPerformance.query.filter(AugusPerformance.id==augus_performance_id).all()
+        augus_performance = AugusPerformance.query.filter(AugusPerformance.id==augus_performance_id).first()
+        if not augus_performance:
+            self.request.session.flash(u'連携していません')
+            url = self.request.route_path('augus.achievement.index', event_id=self.context.event.id)
+            return HTTPFound(url)
         res = Response()
         exporter = AugusAchievementExporter()
-        event_codes = list(set([ag_performance.augus_event_code for ag_performance in augus_performances]))
-        length = len(event_codes)
-        if length > 1:
-            raise HTTPBadRequest(u'bad cooperation performance: augus event code: {}'.format(repr(event_codes)))
-        elif length == 0:
-            raise HTTPBadRequest(u'no  performance: augus event code:'.format(repr(event_codes)))
-        augus_event_code = event_codes[0]
-        res_proto = exporter.export_from_augus_event_code(augus_event_code)
+        res_proto = exporter.export_from_augus_performance(augus_performance)
+        res_proto.event_code = augus_performance.augus_event_code
         res_proto.customer_id = CUSTOMER_ID
         AugusExporter.exportfp(res_proto, res)
         res.headers = [('Content-Type', 'application/octet-stream; charset=cp932'),
