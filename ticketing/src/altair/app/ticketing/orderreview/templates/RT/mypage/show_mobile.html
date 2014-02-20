@@ -17,6 +17,9 @@
   抽選申込みがありません。
 % endif
 
+<h3>メールマガジン</h3>
+${render_mailmagazine(request)}
+
 <%def name="render_shipping_address(shipping)">
 氏名（漢字）：
 ${shipping.first_name}<br/>
@@ -80,4 +83,17 @@ ${entry.lot.name}<br/>
 <hr/>
   % endfor
 ${render_pager(lot_entries)}
+</%def>
+
+<%def name="render_mailmagazine(request)">
+<form id="mail_form" name="mail_form" method="post" action="${request.route_path('mypage.mailmag.confirm')}">
+  楽天チケットからのメールマガジンの購読を選択できます。<br/><br/>
+% for mailmagazine, subscribed in mailmagazines_to_subscribe:
+ <input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+ <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label><br/><br/>
+ ${mailmagazine.description|n}
+ <br/><br/>
+% endfor
+  <input type="submit" value="次へ">
+</form>
 </%def>
