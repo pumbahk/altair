@@ -2,6 +2,7 @@
 import csv
 import time
 import datetime
+import transaction
 from sqlalchemy.orm.exc import (
     MultipleResultsFound,
     NoResultFound,
@@ -301,7 +302,11 @@ class AugusPutbackView(_AugusBaseView):
     @view_config(route_name='augus.putback.index', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/putback/index.html')
     def index(self):
-        putback_codes = set([putback.augus_putback_code for putback in AugusPutback.query.all()])
+
+        putback_codes = set([putback.augus_putback_code
+                             for putback in AugusPutback.query.all()
+                             if putback.augus_stock_info.augus_performance.performance.event_id == self.context.event.id
+                             ])
         return dict(event=self.context.event,
                     putback_codes=putback_codes,
                     )
@@ -387,14 +392,16 @@ class AugusPutbackView(_AugusBaseView):
     def reserve(self):
         now = datetime.datetime.now()
         putback_code = int(self.request.matchdict['putback_code'])
+        url = self.request.route_url('augus.putback.show', event_id=self.context.event.id, putback_code=putback_code)
         putbacks = AugusPutback.query.filter(AugusPutback.augus_putback_code==putback_code)
         for putback in putbacks:
-            if putback.reserved_at: # 既に返券予約済みのものが含まれていた場合エラーにする
-                raise HTTPBadRequest(u'already putback: putback_code={} putback.id={}'.format(
-                    putback.augus_putback_code, putback.id))
+            if putback.reserved_at or putback.putbacked_at: # 既に返券予約済みのものが含まれていた場合エラーにする
+                self.request.session.flash(u'既に返券予約済みのものがありました: AugusPutback.id={}'.format(putback.id))
+                transaction.abort()
+                break
             putback.reserved_at = now
             putback.save()
-        return HTTPFound(self.request.route_url('augus.putback.show', event_id=self.context.event.id, putback_code=putback_code))
+        return HTTPFound(url)
 
 @view_defaults(route_name='augus.achievement', decorator=with_bootstrap, permission='event_editor')
 class AugusAchievementView(_AugusBaseView):
