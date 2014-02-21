@@ -6,95 +6,139 @@
       xmlns:c="clr-namespace:QR.presentation.gui.control"
       xmlns:l="clr-namespace:QR"
       mc:Ignorable="d" 
-      d:DesignHeight="50" d:DesignWidth="50"
+      d:DesignHeight="768" d:DesignWidth="1366"
     ShowsNavigationUI="False"
 	Title="PageConfirmAll"
     Loaded="OnLoaded">
-    <Grid Style="{StaticResource ToplevelGrid}">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+    <Grid>
+        <Viewbox>
+            <Grid Background="{StaticResource LogoBackgroundBrush}">
+                <Canvas Width="1366" Height="728">
+                    <Border Canvas.Top="-17" Canvas.Left="0" Width="1366" Height="768" BorderThickness="3" BorderBrush="Blue"></Border>
 
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <c:InspectCase Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="7" Grid.RowSpan="2"/>
-        
-        <ScrollViewer Grid.Row="2" Grid.Column="1" Grid.RowSpan="6" Grid.ColumnSpan="7">            
-            <StackPanel>
-                <StackPanel.Style>
-                    <Style TargetType="StackPanel">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Status, Mode=OneWay}" Value="{x:Static l:ConfirmAllStatus.starting}">
-                                <Setter Property="Visibility" Value="Hidden"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                        <Setter Property="Visibility" Value="Visible"/>
-                    </Style>
-                </StackPanel.Style>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition></ColumnDefinition>
-                        <ColumnDefinition></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <WrapPanel 
-                        Grid.Row="0" Grid.Column="0"
-                        HorizontalAlignment="Center" VerticalAlignment="Stretch">
-                        <TextBlock Style="{StaticResource MainText}">予約番号:</TextBlock>
-                        <TextBlock Style="{StaticResource MainText}" Text="{Binding Orderno, Mode=OneWay}"></TextBlock>
-                    </WrapPanel>
-                    <WrapPanel
-                        Grid.Row="0" Grid.Column="1"
-                        HorizontalAlignment="Center" VerticalAlignment="Stretch">
-                        <TextBlock Style="{StaticResource MainText}">お客様(氏名):</TextBlock>
-                        <TextBlock Style="{StaticResource MainText}" Text="{Binding CustomerName, Mode=OneWay}"></TextBlock>
-                    </WrapPanel>
-                    <WrapPanel
-                        Grid.Row="1" Grid.Column="0"
-                        HorizontalAlignment="Center" VerticalAlignment="Stretch">
-                        <TextBlock Style="{StaticResource MainText}">講演日時:</TextBlock>
-                        <TextBlock Style="{StaticResource MainText}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
-                    </WrapPanel>
-                    <WrapPanel
+                    <!-- 情報 -->
+                    <Grid
+                        Canvas.Top="17"
+                        Canvas.Left="264"
+                        Height="70"
+                        Width="1040"
+                        Background="#eeeeee"
+                        >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="12"/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition Height="12"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28"/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="28"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- todo padding 23-->
+                        <WrapPanel 
                         Grid.Row="1" Grid.Column="1"
-                        HorizontalAlignment="Center" VerticalAlignment="Stretch">
-                        <TextBlock Style="{StaticResource MainText}">発券予定枚数:</TextBlock>
-                        <TextBlock Style="{StaticResource MainText}" Text="{Binding NumberOfPrintableTicket, Mode=OneWay}"></TextBlock>
-                    </WrapPanel>
-                </Grid>
-                <Border Margin="5" Padding="3" BorderThickness="1" CornerRadius="8" BorderBrush="Black">
-                    <ListView ItemsSource="{Binding DisplayTicketDataCollection}"
-                      Style="{StaticResource ChoiceCandidatesTwoColumns}"/>
-                </Border>
-            </StackPanel>
-        </ScrollViewer>
+                        HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                            <TextBlock Style="{StaticResource MainText}">予約番号:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding Orderno, Mode=OneWay}"></TextBlock>
+                        </WrapPanel>
+                        <WrapPanel
+                        Grid.Row="1" Grid.Column="2"
+                        HorizontalAlignment="Right" VerticalAlignment="Stretch">
+                            <TextBlock Style="{StaticResource MainText}">お客様(氏名):</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding CustomerName, Mode=OneWay}"></TextBlock>
+                        </WrapPanel>
+                        <WrapPanel
+                        Grid.Row="2" Grid.Column="1"
+                        HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                            <TextBlock Style="{StaticResource MainText}">試合日時:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
+                        </WrapPanel>
+                        <WrapPanel
+                        Grid.Row="2" Grid.Column="2"
+                        HorizontalAlignment="Right" VerticalAlignment="Stretch">
+                            <TextBlock Style="{StaticResource MainText}">発券予定枚数:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding NumberOfPrintableTicket, Mode=OneWay}"></TextBlock>
+                        </WrapPanel>
+                    </Grid>
 
-        <Button Grid.Row="7" Grid.Column="1" Click="OnBackwardWithBoundContext"
-                 Style="{StaticResource SubmitButtonStyle}">戻る</Button>
-        <Button Grid.Row="7" Grid.Column="7" Click="OnSubmitWithBoundContext"
-                 Style="{StaticResource SubmitButtonStyle}">発券する</Button>
+                    <!-- 説明(description)-->
+                    <StackPanel
+                        Canvas.Top="100"
+                        Orientation="Horizontal"
+                        >
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Style.Triggers>
+                                    <Trigger Property="Orientation" Value="Horizontal">
+                                        <Setter Property="Canvas.Left" 
+                                                Value="{Binding RelativeSource={RelativeSource Self}, 
+                                                Path=ActualWidth,
+                                                Converter={StaticResource MathConverter}, 
+                                                ConverterParameter=(1366-@VALUE)*0.5}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock 
+                        d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
+                        Text="{Binding Description}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontSize" Value="30"/>
+                                    <Setter Property="Foreground" Value="{StaticResource ConfirmAllMainTextBrush}"/>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!-- メインコンテンツ -->
+                    <Border 
+                        Canvas.Left="50"
+                        Canvas.Top="148"
+                        Style="{StaticResource MainBorder}">
+                        <ListView 
+                    Margin="40,20,0,20"
+                    ItemsSource="{Binding DisplayTicketDataCollection}"
+                    d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
+                    Style="{StaticResource ChoiceCandidatesTwoColumns}">
+                            <ListView.Resources>
+                                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+                            </ListView.Resources>
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Width="1200" Orientation="Horizontal">
+                                    </WrapPanel>
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Width" Value="580"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                        </ListView>
+                    </Border>
+
+                    <!-- ボタン -->
+                    <Button
+                        Canvas.Right="60"
+                        Canvas.Top="655"
+                        Style="{StaticResource SubmitButton}"
+                        Click="OnSubmitWithBoundContext"
+            >
+                        <TextBlock FontSize="20">発券する</TextBlock>
+                    </Button>
+                    <Button
+                        Canvas.Left="60"
+                        Canvas.Top="655"
+                        Style="{StaticResource BackwardButton}"
+                        Click="OnBackwardWithBoundContext"
+            >
+                        <TextBlock FontSize="20">戻る</TextBlock>
+                    </Button>
+                </Canvas>
+            </Grid>
+        </Viewbox>
     </Grid>
 </Page>

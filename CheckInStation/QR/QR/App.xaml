@@ -23,8 +23,6 @@
             <c:AlnumPad x:Key="VirtualInputKeyboard"/>           
             <c:TelPad x:Key="VirtualTelKeyboard"/>
 
-            <SolidColorBrush Color="Beige" x:Key="ConfirmAllMainBorderBrush"/>
-
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Styles\Base\Themes.Text.xaml" />
                 <ResourceDictionary Source="Styles\Base\Themes.Window.xaml" />
