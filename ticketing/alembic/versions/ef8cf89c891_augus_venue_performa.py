@@ -25,7 +25,7 @@ def upgrade():
         sa.Column('name', sa.Unicode(32), nullable=False),
         sa.Column('version', sa.Integer, nullable=False),
         # links
-        sa.Column('venue_id', Identifier, nullable=False, unique=True),        
+        sa.Column('venue_id', Identifier, nullable=False, unique=True),
         # for super class
         sa.Column('created_at', sa.TIMESTAMP(), server_default=text('CURRENT_TIMESTAMP'), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
@@ -33,7 +33,7 @@ def upgrade():
         )
     op.create_table(
         'AugusSeat',
-        sa.Column('id', Identifier, primary_key=True),        
+        sa.Column('id', Identifier, primary_key=True),
         sa.Column('area_name', sa.Unicode(32), nullable=False, default=u''),
         sa.Column('info_name', sa.Unicode(32), nullable=False, default=u''),
         sa.Column('doorway_name', sa.Unicode(32), nullable=False, default=u''),
@@ -60,9 +60,9 @@ def upgrade():
         )
     op.create_table(
         'AugusPerformance',
-        sa.Column('id', Identifier, primary_key=True),        
-        sa.Column('augus_event_code', sa.Integer, nullable=False),        
-        sa.Column('augus_performance_code', sa.Integer, nullable=False),        
+        sa.Column('id', Identifier, primary_key=True),
+        sa.Column('augus_event_code', sa.Integer, nullable=False),
+        sa.Column('augus_performance_code', sa.Integer, nullable=False),
         sa.Column('augus_venue_code', sa.Integer, nullable=False),
         sa.Column('augus_venue_name', sa.Unicode(32), nullable=False),
         sa.Column('augus_event_name', sa.Unicode(32), nullable=False),
@@ -71,7 +71,7 @@ def upgrade():
         sa.Column('augus_venue_version', sa.Integer, nullable=False),
         sa.Column('start_on', sa.TIMESTAMP(), nullable=True),
         # links
-        sa.Column('performance_id', Identifier, nullable=False, unique=True),        
+        sa.Column('performance_id', Identifier, nullable=False, unique=True),
         # for super class
         sa.Column('created_at', sa.TIMESTAMP(), server_default=text('CURRENT_TIMESTAMP'), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
@@ -95,7 +95,7 @@ def upgrade():
         )
     op.create_table(
         'AugusStockInfo',
-        sa.Column('id', Identifier, primary_key=True),        
+        sa.Column('id', Identifier, primary_key=True),
         sa.Column('augus_performance_id', Identifier, nullable=False),
         sa.Column('augus_distribution_code', sa.Integer),
         sa.Column('seat_type_classif', sa.Unicode(32)),
@@ -110,7 +110,7 @@ def upgrade():
     op.create_table(
         'AugusPutback',
         sa.Column('id', Identifier, primary_key=True),
-        sa.Column('augus_putback_code', sa.Integer, nullable=False),                
+        sa.Column('augus_putback_code', sa.Integer, nullable=False),
         sa.Column('quantity', sa.Integer, nullable=False),
         sa.Column('augus_stock_info_id', Identifier, nullable=False),
         sa.Column('reserverd_at', sa.TIMESTAMP(), nullable=True),

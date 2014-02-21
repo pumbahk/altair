@@ -4250,6 +4250,20 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def delete_link(self):
         self.stock_type_id = None
 
+class AugusStockDetail(Base, BaseModel):
+    __tablename__ = 'AugusStockDetail'
+    id = Column(Identifier, primary_key=True)
+    augus_distribution_code = AnnotatedColumn(Integer, nullable=False)
+    augus_seat_type_code = AnnotatedColumn(Integer, nullable=False)
+    augus_unit_value_code = AnnotatedColumn(Integer, nullable=False)
+    start_on = AnnotatedColumn(DateTime, nullable=False)
+    seat_tye_classif = AnnotatedColumn(Integer, nullable=False)
+    augus_unit_value_code = AnnotatedColumn(Integer, nullable=False)
+    quantity = AnnotatedColumn(Integer, nullable=False, default=0)
+    augus_stock_info_id = AnnotatedColumn(Identifier, nullable=False)
+    augus_putback_id = AnnotatedColumn(Identifier, nullable=True)
+    augus_ticket_id = AnnotatedColumn(Identifier, nullable=False)
+
 
 # move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -4287,6 +4301,7 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def get_augus_ticket(self):
         seat = self.get_seat()
+
         if seat:
             stock_type = seat.stock.stock_type if seat.stock else None
             if stock_type:
@@ -4320,6 +4335,9 @@ class AugusPutback(Base, BaseModel): #, WithTimestamp, LogicallyDeleted):
 
     augus_stock_info_id = Column(Identifier, ForeignKey('AugusStockInfo.id'), nullable=True)
     augus_stock_info = relationship('AugusStockInfo', backref='augus_putback')
+
+    augus_stock_detail_id = Column(Identifier, ForeignKey('AugusStockDetail.id'), nullable=True)
+    augus_stock_detail = relationship('AugusStockDetail', backref='augus_putback')
 
     @property
     def putback_status(self):
