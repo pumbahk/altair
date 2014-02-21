@@ -10,6 +10,9 @@
     ShowsNavigationUI="False"
 	Title="PageConfirmAll"
     Loaded="OnLoaded">
+    <Page.Resources>
+
+    </Page.Resources>
     <Grid>
         <Viewbox>
             <Grid Background="{StaticResource LogoBackgroundBrush}">
@@ -103,9 +106,6 @@
                     ItemsSource="{Binding DisplayTicketDataCollection}"
                     d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
                     Style="{StaticResource ChoiceCandidatesTwoColumns}">
-                            <ListView.Resources>
-                                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
-                            </ListView.Resources>
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel Width="1200" Orientation="Horizontal">
@@ -115,6 +115,16 @@
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="ListBoxItem">
                                     <Setter Property="Width" Value="580"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <ContentPresenter
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                />
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
                                 </Style>
                             </ListView.ItemContainerStyle>
                         </ListView>

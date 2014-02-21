@@ -13,42 +13,42 @@
     </Style>
 
     <DataTemplate x:Key="SelectingTicketItemBoxData">
-    <Border
+        <Border
         Style="{StaticResource GrayoutIfNeedCheckBoxBorder}"
         Margin="19,2,19,2">
-      <CheckBox IsChecked="{Binding IsSelected}" Style="{StaticResource GrayoutIfNeedCheckBox}"
+            <CheckBox IsChecked="{Binding IsSelected}" Style="{StaticResource GrayoutIfNeedCheckBox}"
                 HorizontalAlignment="Center"
                 Height="49"
                 Width="520"
                 Margin="5,4,0,4"
                 >
-        <StackPanel>
-          <WrapPanel>
-            <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">商品:</TextBlock>
-            <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding ProductName}"/>
-            <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">席:</TextBlock>
-            <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding SeatName}"/>
-          </WrapPanel>
-          <WrapPanel>
-            <WrapPanel.Style>
-              <Style TargetType="WrapPanel">
-                <Style.Triggers>
-                  <DataTrigger Binding="{Binding Path=Text,ElementName=PrintedAt}" Value="">
-                    <Setter Property="Visibility" Value="Hidden"/>
-                  </DataTrigger>
-                </Style.Triggers>
-                <Setter Property="Visibility" Value="Visible"/>
-              </Style>
-            </WrapPanel.Style>
-            <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">印刷済み:</TextBlock>
-            <TextBlock Name="PrintedAt" Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding PrintedAt}"/>
-          </WrapPanel>
-        </StackPanel>
-      </CheckBox>
-    </Border>
-  </DataTemplate>
+                <StackPanel>
+                    <WrapPanel>
+                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">商品:</TextBlock>
+                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding ProductName}"/>
+                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">席:</TextBlock>
+                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding SeatName}"/>
+                    </WrapPanel>
+                    <WrapPanel>
+                        <WrapPanel.Style>
+                            <Style TargetType="WrapPanel">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=Text,ElementName=PrintedAt}" Value="">
+                                        <Setter Property="Visibility" Value="Hidden"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </Style>
+                        </WrapPanel.Style>
+                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">印刷済み:</TextBlock>
+                        <TextBlock Name="PrintedAt" Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding PrintedAt}"/>
+                    </WrapPanel>
+                </StackPanel>
+            </CheckBox>
+        </Border>
+    </DataTemplate>
 
-  <Style TargetType="ListView" x:Key="ChoiceCandidatesTwoColumns">
+    <Style TargetType="ListView" x:Key="ChoiceCandidatesTwoColumns">
     <Setter Property="Template" Value="{StaticResource DisableScrolviewer}"/>
     <Setter Property="ItemTemplate" Value="{StaticResource SelectingTicketItemBoxData}"/>
   </Style>
