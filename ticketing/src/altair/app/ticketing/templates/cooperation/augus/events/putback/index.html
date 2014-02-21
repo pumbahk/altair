@@ -4,17 +4,19 @@
 
 <div class="page-header">
   <h3>オーガス返券一覧</h3>
+  <%include file="../_menu.html" args="event=event" />
 </div>
-<a class="btn entry" href="${request.route_url('augus.putback.new', event_id=event_id)}">返券予約を作成</a>
+
+<a class="btn entry" href="${request.route_url('augus.putback.new', event_id=event.id)}">返券予約を作成</a>
 <table class="table">
   <tr>
-    <th>返券一覧</th>
+    <th>返券コード</th>
   </tr>
   %for putback_code in putback_codes:
   <tr>
     <td>
-      <a href="${request.route_url('augus.putback.show', event_id=event_id, putback_code=putback_code)}">
-        ${putback_code}
+      <a href="${request.route_url('augus.putback.show', event_id=event.id, putback_code=putback_code)}">
+        返券-${putback_code}
       </a>
     </td>
   </tr>

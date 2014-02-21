@@ -4,23 +4,34 @@
 
 <div class="page-header">
   <h3>オーガスチケット連携</h3>
+  <%include file="../_menu.html" args="event=event" />
 </div>
+
+
 
 <a class="btn entry" href="${request.route_path('augus.stock_type.edit', event_id=event.id)}">連携を編集</a>
 
 <table class="table">
   <tr>
     <th>オーガスチケットID</th>
+    <th>オーガス席種コード</th>
+    <th>オーガス単価コード</th>
     <th>オーガス席種名</th>
     <th>オーガス単価名</th>
+    <th>オーガス席種区分</th>
+    <th>売価</th>
     <th>Altair席種名</th>
   </tr>
 
   %for ag_ticket in ag_tickets:
   <tr>
     <td>${ag_ticket.id}</td>
+    <td>${ag_ticket.augus_seat_type_code}</td>
+    <td>${ag_ticket.unit_value_code}</td>
     <td>${ag_ticket.augus_seat_type_name}</td>
     <td>${ag_ticket.unit_value_name}</td>
+    <td>${ag_ticket.augus_seat_type_classif}</td>
+    <td>${ag_ticket.value}</td>
     <td>
       %if ag_ticket.stock_type:
         ${ag_ticket.stock_type.name}

@@ -2,6 +2,7 @@
 import csv
 import time
 import datetime
+import transaction
 from sqlalchemy.orm.exc import (
     MultipleResultsFound,
     NoResultFound,
@@ -47,6 +48,7 @@ from .errors import (
     SeatImportError,
     AlreadyExist,
     )
+from .importers import get_enable_stock_info
 
 @view_config(route_name='augus.test')
 def test(*args, **kwds):
@@ -300,8 +302,12 @@ class AugusPutbackView(_AugusBaseView):
     @view_config(route_name='augus.putback.index', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/putback/index.html')
     def index(self):
-        putback_codes = set([putback.augus_putback_code for putback in AugusPutback.query.all()])
-        return dict(event_id=self.context.event.id,
+
+        putback_codes = set([putback.augus_putback_code
+                             for putback in AugusPutback.query.all()
+                             if putback.augus_stock_info.augus_performance.performance.event_id == self.context.event.id
+                             ])
+        return dict(event=self.context.event,
                     putback_codes=putback_codes,
                     )
 
@@ -310,60 +316,77 @@ class AugusPutbackView(_AugusBaseView):
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/putback/new.html')
     def new_get(self):
         stock_holders = filter(lambda stock_holder: stock_holder.is_putback_target, self.context.event.stock_holders)
-        return dict(event_id=self.context.event.id,
+        return dict(event=self.context.event,
                     performances=self.context.event.performances,
                     stock_holders=stock_holders,
                     )
 
     @view_config(route_name='augus.putback.new', request_method='POST')
     def new_post(self):
-        # get new putback code
-        putback_code = 1
-        last_putback = AugusPutback.query.order_by(AugusPutback.augus_putback_code.desc()).first()
-        if last_putback:
-            putback_code = last_putback.augus_putback_code
-
         stock_holder_id = int(self.request.params.get('stock_holder'))
         performance_ids = map(int, self.request.params.getall('performance'))
+
+        success_url = self.request.route_url('augus.putback.index', event_id=self.context.event.id)
+        error_url = self.request.route_url('augus.putback.new', event_id=self.context.event.id)
+
         stock_holder = StockHolder.query.filter(StockHolder.id==stock_holder_id).one()
         if not stock_holder.is_putback_target:
-            raise HTTPBadRequest(u'This stock holder is not putback target: {}'.format(stock_holder.id))
+            self.request.session.flash(u'この枠は返券できません(返券する為には外部返券利用をONにしてください): StockHolder.id={}'.format(stock_holder.id))
+            return HTTPFound(error_url)
 
-        performances = Performance.query.filter(Performance.id.in_(performance_ids)).all()
-        if len(performance_ids) != len(performances):
-            raise HTTPBadRequest(u'Unmatch performance count: len(performance_ids={} != len(performance)={}'.format(
-                len(performance_ids), len(performances)))
-
-        # 対象のseatを探す
-        seats = [seat
-                 for performance in performances
-                 for stock in performance.stocks
-                 if stock.stock_holder_id == stock_holder.id
-                 for seat in stock.seats
-                 ]
-        if 0 == len(seats):
-            raise HTTPBadRequest(u'not seat')
-
+        putback_codes = []
         now = datetime.datetime.now()
-        seat = None
-        try:
-            for seat in seats:
-                # 連携/配券できていないもが含まれていた場合エラーする
-                ag_stock_info = AugusStockInfo.query.filter(AugusStockInfo.seat_id==seat.id).one()
-                already = AugusPutback.query.filter(AugusPutback.augus_stock_info_id==ag_stock_info.id).all()
-                if already:
-                    codes = set([putback.augus_putback_code for putback in already])
-                    raise HTTPBadRequest(u'augus stock info already putbacked: augus putback codes={}'.format(codes))
-                ag_putback = AugusPutback()
-                ag_putback.augus_putback_code = putback_code
-                ag_putback.quantity = ag_stock_info.quantity # 席指定のみのためすべて(1)返しても良い/ 自由席の場合はここが問題になる
-                ag_putback.augus_stock_info_id = ag_stock_info.id
-                ag_putback.seat_id = seat.id
-                ag_putback.save()
-        except (MultipleResultsFound, NoResultFound) as err:
-            seat_id = seat.id if seat else None
-            raise HTTPBadRequest(u'cannot putback: seat.id={}: {}'.format(seat_id, repr(err)))
-        return HTTPFound(self.request.route_url('augus.putback.show', event_id=self.context.event.id, putback_code=putback_code))
+        for performance_id in performance_ids:
+            ag_performance = AugusPerformance.query.filter(AugusPerformance.performance_id==performance_id).first()
+            if not ag_performance or not ag_performance.performance_id:
+                self.request.session.flash(u'連携していないもしくは不正な公演が指定されました: Performance.id={}'.format(performance_id) )
+                transaction.abort()
+                return HTTPFound(error_url)
+
+            seats = [seat
+                     for stock in stock_holder.stocks
+                     if stock.performance_id == performance_id
+                     for seat in stock.seats
+                     ]
+
+            if 0 == len(seats):
+                self.request.session.flash(u'対象になる座席がありません: Performance.id={}'.format(performance_id) )
+                transaction.abort()
+                return HTTPFound(error_url)
+
+            # get new putback code
+            putback_code = 1
+            last_putback = AugusPutback.query.order_by(AugusPutback.augus_putback_code.desc()).first()
+            if last_putback:
+                putback_code = last_putback.augus_putback_code + 1
+
+            try:
+                for seat in seats:
+                    # 連携/配券できていないもが含まれていた場合エラーする
+                    #ag_stock_info = AugusStockInfo.query.filter(AugusStockInfo.seat_id==seat.id).all()
+                    ag_stock_info = get_enable_stock_info(seat)
+                    if not ag_stock_info:
+                        self.request.session.flash(u'配券がされていない座席は返券できません。もし席があるのであれば返券予約済みかもしれません: Seat.id={}'.format(seat.id))
+                        transaction.abort()
+                        return HTTPFound(error_url)
+
+                    ag_putback = AugusPutback()
+                    ag_putback.augus_putback_code = putback_code
+                    ag_putback.quantity = ag_stock_info.quantity # 席指定のみのためすべて(1)返しても良い/ 自由席の場合はここが問題になる
+                    ag_putback.augus_stock_info_id = ag_stock_info.id
+                    ag_putback.seat_id = seat.id
+                    ag_putback.save()
+
+                    ag_stock_info.putbacked_at = now
+                    ag_stock_info.save()
+                    putback_codes.append(putback_code)
+            except (MultipleResultsFound, NoResultFound) as err:
+                seat_id = seat.id if seat else None
+                self.request.session.flash(u'返券できない座席がありました: Seat.id={}'.format(seat_id))
+                transaction.abort()
+                return HTTPFound(error_url)
+        self.request.session.flash(u'次の返券コードで返券データを作成しました。実際に返券するには確定をしてください。: {}'.format(putback_codes))
+        return HTTPFound(success_url)
 
     @view_config(route_name='augus.putback.show', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/putback/show.html')
@@ -372,7 +395,7 @@ class AugusPutbackView(_AugusBaseView):
         putbacks = AugusPutback.query.filter(AugusPutback.augus_putback_code==putback_code).all()
         if 0 == len(putbacks):
             raise HTTPBadRequest(u'putback not found')
-        return dict(event_id=self.context.event.id,
+        return dict(event=self.context.event,
                     putbacks=putbacks,
                     putback_code=putback_code,
                     )
@@ -381,35 +404,55 @@ class AugusPutbackView(_AugusBaseView):
     def reserve(self):
         now = datetime.datetime.now()
         putback_code = int(self.request.matchdict['putback_code'])
+        url = self.request.route_url('augus.putback.show', event_id=self.context.event.id, putback_code=putback_code)
         putbacks = AugusPutback.query.filter(AugusPutback.augus_putback_code==putback_code)
         for putback in putbacks:
-            if putback.reserved_at: # 既に返券予約済みのものが含まれていた場合エラーにする
-                raise HTTPBadRequest(u'already putback: putback_code={} putback.id={}'.format(
-                    putback.augus_putback_code, putback.id))
+            if putback.reserved_at or putback.putbacked_at: # 既に返券予約済みのものが含まれていた場合エラーにする
+                self.request.session.flash(u'既に返券予約済みのものがありました: AugusPutback.id={}'.format(putback.id))
+                transaction.abort()
+                break
             putback.reserved_at = now
             putback.save()
-        return HTTPFound(self.request.route_url('augus.putback.show', event_id=self.context.event.id, putback_code=putback_code))
+        return HTTPFound(url)
 
 @view_defaults(route_name='augus.achievement', decorator=with_bootstrap, permission='event_editor')
 class AugusAchievementView(_AugusBaseView):
+    @view_config(route_name='augus.achievement.index', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/augus/events/achievement/index.html')
+    def index(self):
+        performance_ids = [performance.id for performance in self.context.event.performances]
+        augus_performances = AugusPerformance.query.filter(AugusPerformance.performance_id.in_(performance_ids)).all()
+        return dict(event=self.context.event,
+                    augus_performances=augus_performances,
+                    )
 
     @view_config(route_name='augus.achievement.get', request_method='GET')
     def achievement_get(self):
-        performance_ids = [performance.id for performance in self.context.event.performances]
-        augus_performances = AugusPerformance.query.filter(AugusPerformance.performance_id.in_(performance_ids)).all()
+        augus_performance_id = int(self.request.matchdict.get('augus_performance_id'))
+        augus_performance = AugusPerformance.query.filter(AugusPerformance.id==augus_performance_id).first()
+        if not augus_performance:
+            self.request.session.flash(u'連携していません')
+            url = self.request.route_path('augus.achievement.index', event_id=self.context.event.id)
+            return HTTPFound(url)
         res = Response()
         exporter = AugusAchievementExporter()
-        event_codes = list(set([ag_performance.augus_event_code for ag_performance in augus_performances]))
-        length = len(event_codes)
-        if length > 1:
-            raise HTTPBadRequest(u'bad cooperation performance: augus event code: {}'.format(repr(event_codes)))
-        elif length == 0:
-            raise HTTPBadRequest(u'no  performance: augus event code:'.format(repr(event_codes)))
-        augus_event_code = event_codes[0]
-        res_proto = exporter.export_from_augus_event_code(augus_event_code)
+        res_proto = exporter.export_from_augus_performance(augus_performance)
+        res_proto.event_code = augus_performance.augus_event_code
         res_proto.customer_id = CUSTOMER_ID
         AugusExporter.exportfp(res_proto, res)
         res.headers = [('Content-Type', 'application/octet-stream; charset=cp932'),
                        ('Content-Disposition', 'attachment; filename={0}'.format(res_proto.name)),
                        ]
         return res
+
+
+    @view_config(route_name='augus.achievement.reserve', request_method='GET')
+    def achievement_reserve(self):
+        augus_performance_id = int(self.request.matchdict.get('augus_performance_id'))
+        #performance_ids = [performance.id for performance in self.context.event.performances]
+        augus_performance = AugusPerformance.query.filter(AugusPerformance.id==augus_performance_id).one()
+        augus_performance.is_report_target = True
+        augus_performance.save()
+        self.request.session.flash(u'販売実績戻しを予約しました')
+        url = self.request.route_path('augus.achievement.index', event_id=self.context.event.id)
+        return HTTPFound(url)

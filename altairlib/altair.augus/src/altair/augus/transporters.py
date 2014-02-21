@@ -25,7 +25,7 @@ class FTPTransporter(_Transporter):
         session = ftplib.FTP(*args, **kwds)
         session.set_pasv(self.passive) # self... (--;)
         return session
-        
+
     def connect(self):
         if not self.is_connect:
             self._conn = ftputil.FTPHost(
@@ -42,7 +42,7 @@ class FTPTransporter(_Transporter):
     @reconnect
     def chdir(self, path):
         self._conn.chdir(path)
-        
+
     @reconnect
     def get(self, src, dst, remove=False, force=False):
         download = self._conn.download if force else self._conn.download_if_newer
@@ -50,14 +50,14 @@ class FTPTransporter(_Transporter):
         if status and remove: # success
             status = self.remove(src, force=force)
         return status
-            
+
     @reconnect
     def put(self, src, dst, parents=False, force=False):
         # mkdir -p
         if parents:
             dirname = os.path.dirname(dst)
             self.makedirs(dirname)
-        
+
         # upload
         upload = self._conn.upload if force else self._conn.upload_if_newer
         return upload(src, dst)

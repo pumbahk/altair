@@ -17,6 +17,7 @@ from altair.app.ticketing.core.models import (
     AugusVenue,
     AugusTicket,
     AugusSeat,
+    AugusPutback,
     AugusStockInfo,
     SeatStatusEnum,
     )
@@ -24,6 +25,25 @@ from .errors import (
     AugusDataImportError,
     NoSeatError,
     )
+
+def get_enable_stock_info(seat):
+    print 'A'*30
+    stock_infos = AugusStockInfo.query.filter(AugusStockInfo.seat_id==seat.id).all()
+    enables = []
+    for info in stock_infos:
+        if AugusPutback.query.filter(AugusPutback.augus_stock_info_id==info.id).first():
+            print 'B'*30
+            continue
+        enables.append(info)
+    if len(enables) == 1:
+        print 'C'*30
+        return enables[0]
+    elif len(enables) == 0:
+        print 'D'*30
+        return None
+    else: # なぜか複数の有効なAugusStockInfoがある
+        print 'E'*30
+        raise AugusDataImportError('two enable augus stock info: AugusStockInfo.seat_id={}'.format(seat.id))
 
 class AugusPerformanceImpoter(object):
     def import_record(self, record):
@@ -116,6 +136,9 @@ class AugusTicketImpoter(object):
 
 class AugusDistributionImporter(object):
     def import_record(self, record, stock, ag_performance):
+        if int(record.seat_type_classif) != 1: # 指定席以外はエラー
+            AugusDataImportError('augus seat type classif error: {}'.format(record.seat_type_classif))
+
         ag_venue = AugusVenue.query.filter(AugusVenue.code==ag_performance.augus_venue_code)\
                                    .filter(AugusVenue.version==ag_performance.augus_venue_version)\
                                    .one()
@@ -143,8 +166,16 @@ class AugusDistributionImporter(object):
         seat = self.augus_seat_to_real_seat(ag_performance, ag_seat)
         old_stock = seat.stock
 
-        if old_stock.stock_holder == None and seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v]:
+        if old_stock.stock_holder == None and seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
             # 未割当 かつ 配席可能な状態
+
+            # 有効なAugusStockInfoがあるものは追券できない(追券済みだから)
+            # 有効なAugusStockInfo
+            #  - seat_idをもち
+            #  - AugusPutbackとのヒモ付けがないもの
+            ag_stock_info = get_enable_stock_info(seat)
+            if ag_stock_info:
+                raise AugusDataImportError('already exist AugusStockInfo: AugusStockInfo.id={}'.format(ag_stock_info.id))
 
             # AugusStockInfo生成
             ag_stock_info = AugusStockInfo()
@@ -196,7 +227,7 @@ class AugusDistributionImporter(object):
                 stock_holder = stock_holders.get(ag_performance.performance.event, None)
                 if not stock_holder:
                     name = u'オーガス連携:' + time.strftime('%Y-%m-%d-%H-%M-%S')
-                    account_id = 97 # キョードー大阪
+                    account_id = 35 # 楽天チケット　ううっ(直したい)
                     stock_holder = self._create_stock_holder(ag_performance.performance,
                                                              name, account_id)
                     stock_holders[ag_performance.performance.event] = stock_holder
@@ -218,7 +249,8 @@ class AugusDistributionImporter(object):
                 stock = None
                 for stock in stock_holder.stocks:
                     # stockが持つstock_typeのidとaugus_ticketがもつstock_typeのidが同じものが対象
-                    if stock.stock_type_id == ag_ticket.stock_type.id:
+                    if stock.stock_type_id == ag_ticket.stock_type.id and\
+                       stock.performance_id == ag_performance.performance_id:
                         break
                 else: # 対象となるStockがない
                     raise AugusDataImportError(
@@ -251,7 +283,7 @@ class AugusDistributionImporter(object):
         venue = Venue.query.filter(Venue.performance_id==performance.id).one()
         seat = Seat.query.filter(Seat.l0_id==base_seat.l0_id)\
                          .filter(Seat.venue_id==venue.id)\
-                         .one()
+                         .first()
         if seat:
             return seat
         else:

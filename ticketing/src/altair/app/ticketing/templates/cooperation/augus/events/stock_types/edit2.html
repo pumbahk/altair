@@ -4,21 +4,31 @@
 
 <div class="page-header">
   <h3>オーガスチケット連携</h3>
+  <%include file="../_menu.html" args="event=event" />
 </div>
+
 <form role="form" method="POST" action="${request.route_url('augus.stock_type.save', event_id=event.id)}">
 <button class="btn" type="submit">連携を保存</button>
 <table class="table">
   <tr>
     <th>オーガスチケットID</th>
+    <th>オーガス席種コード</th>
+    <th>オーガス単価コード</th>
     <th>オーガス席種名</th>
     <th>オーガス単価名</th>
+    <th>オーガス席種区分</th>
+    <th>売価</th>
     <th>Altair席種名</th>
   </tr>
   %for ag_ticket in ag_tickets:
   <tr>
     <td>${ag_ticket.id}</td>
+    <td>${ag_ticket.augus_seat_type_code}</td>
+    <td>${ag_ticket.unit_value_code}</td>
     <td>${ag_ticket.augus_seat_type_name}</td>
     <td>${ag_ticket.unit_value_name}</td>
+    <td>${ag_ticket.augus_seat_type_classif}</td>
+    <td>${ag_ticket.value}</td>
     <td>
       <select class="selectpicker" name="${select_prefix}${ag_ticket.id}">
         <option value=""/>

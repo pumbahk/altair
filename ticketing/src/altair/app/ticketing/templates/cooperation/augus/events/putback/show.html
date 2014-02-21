@@ -4,43 +4,52 @@
 
 <div class="page-header">
   <h3>オーガス返券確認</h3>
+  <%include file="../_menu.html" args="event=event" />
 </div>
-<form role="form" method="POST" action="${request.route_url('augus.putback.reserve', event_id=event_id, putback_code=putback_code)}">
+<form role="form" method="POST" action="${request.route_url('augus.putback.reserve', event_id=event.id, putback_code=putback_code)}">
 <button class="btn" type="submit">返券を確定</button>
 <table class="table">
   <tr>
-    <th>id</th>
-    <th>Altair会場ID</th>
+    <th>返券コード</th>
+    <th>返券タイプ</th>
+    <th>公演名</th>
+    <th>開始日時</th>
     <th>会場名</th>
-    <th>座席id</th>
     <th>座席名</th>
     <th>l0_id</th>
-    <th>Augus会場ID</th>
-    <th>会場名</th>
-    <th>コード</th>
-    <th>バージョン</th>
-    <th>階</th>
-    <th>列</th>
-    <th>番</th>
+    <th>オーガス事業名</th>
+    <th>オーガス公演名</th>
+    <th>オーガス開始日時</th>
+    <th>オーガス会場名</th>
+    <th>オーガス座席名</th>
     <th>予約日時</th>
     <th>通知日時</th>
     <th>完了日時</th>
   </tr>
   %for putback in putbacks:
   <tr>
-    <td>${putback.id}</td>
-    <td>${putback.seat.venue.id}</td>
+    <td>
+      <a href="${request.route_url('augus.putback.show', event_id=event.id, putback_code=putback.augus_putback_code)}">
+        返券-${putback.augus_putback_code}
+      </a>
+    </td>
+    <td>${putback.augus_putback_type}</td>
+    <td>${putback.augus_stock_info.augus_performance.performance.name}</td>
     <td>${putback.seat.venue.name}</td>
-    <td>${putback.seat.id}</td>
+    <td>${putback.augus_stock_info.augus_performance.performance.start_on}</td>
     <td>${putback.seat.name}</td>
     <td>${putback.seat.l0_id}</td>
-    <td>${putback.augus_stock_info.augus_seat.augus_venue.id}</td>
+    <td>${putback.augus_stock_info.augus_performance.augus_event_name}</td>
+    <td>${putback.augus_stock_info.augus_performance.augus_performance_name}</td>
+    <td>${putback.augus_stock_info.augus_performance.start_on}</td>
     <td>${putback.augus_stock_info.augus_seat.augus_venue.name}</td>
-    <td>${putback.augus_stock_info.augus_seat.augus_venue.code}</td>
-    <td>${putback.augus_stock_info.augus_seat.augus_venue.version}</td>
-    <td>${putback.augus_stock_info.augus_seat.floor}</td>
-    <td>${putback.augus_stock_info.augus_seat.column}</td>
-    <td>${putback.augus_stock_info.augus_seat.num}</td>
+    <td>
+      ${putback.augus_stock_info.augus_seat.area_name}
+      ${putback.augus_stock_info.augus_seat.info_name}
+      ${putback.augus_stock_info.augus_seat.floor}
+      ${putback.augus_stock_info.augus_seat.column}
+      ${putback.augus_stock_info.augus_seat.num}
+    </td>
     <td>${putback.reserved_at}</td>
     <td>${putback.notified_at}</td>
     <td>${putback.finished_at}</td>
@@ -48,3 +57,5 @@
   %endfor
 </table>
 </form>
+
+返券タイプ: R(途中)/F(最終)

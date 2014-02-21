@@ -3977,6 +3977,14 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     entrust_separate_seats = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"バラ席のおまかせが有効", _a_label=u"おまかせ座席選択でバラ席を許可する")
     notify_point_granting_failure = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"ポイント付与失敗時のメール通知on/off", _a_label=u"ポイント付与失敗時のメール通知を有効にする")
 
+    # augus
+    augus_use = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"オーガス連携", _a_label=u"オーガス連携")
+    augus_customer_id = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス取引先ID', _a_label=u'オーガス取引先ID')
+    augus_upload_url = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのアップロードURL', _a_label=u'オーガス用サーバのアップロードURL')
+    augus_download_url = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのダウンロードURL', _a_label=u'オーガス用サーバのダウンロードURL')
+    augus_username = AnnotatedColumn(Unicode(255), nullable=False, default='', doc=u'オーガス用サーバのユーザ名', _a_label=u'オーガス用サーバのユーザ名')
+    augus_password = AnnotatedColumn(Unicode(255), nullable=False, default='', doc=u'オーガス用サーバのパスワード', _a_label=u'オーガス用サーバのパスワード')
+
     @property
     def container(self):
         return self.organization
@@ -4190,6 +4198,8 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_on = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'公演日時'))
     augus_venue_version = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス会場バージョン'))
 
+    is_report_target = Column(Boolean, nullable=True, default=False)
+
     performance_id = Column(Identifier,
                             ForeignKey("Performance.id"),
                             nullable=True, unique=True)
@@ -4252,6 +4262,7 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=False)
     seat = relationship('Seat')
 
+    putbacked_at = Column(DateTime, nullable=True, default=None)
 
     def get_seat(self):
         performance = self.augus_performance

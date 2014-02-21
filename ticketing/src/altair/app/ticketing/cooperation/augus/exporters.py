@@ -32,12 +32,40 @@ from altair.augus.protocols.putback import (
     PutbackResponse,
     )
 from altair.augus.protocols import (
+    DistributionSyncResponse,
     AchievementResponse,
     )
 from altair.augus.exporters import AugusExporter
 from .errors import (
     AugusDataExportError,
     )
+
+
+class AugusDistributionExporter(object):
+    def create_response(self, request, status):
+        response = DistributionSyncResponse()
+
+        res_record_data = list(set(
+            [(rec.event_code, rec.performance_code, rec.distribution_code)
+             for rec in request]))
+
+        response.customer_id = request.customer_id
+        response.event_code = request.event_code
+        response.date = request.date
+
+        for event_code, performance_code, distribution_code in res_record_data:
+            record = response.record()
+            record.event_code = event_code
+            record.performance_code = performance_code
+            record.distribution_code = distribution_code
+            record.status = status.value
+            response.append(record)
+        return response
+
+    def export(self, path, request, status):
+        response = self.create_response(request, status)
+        resfile_path = os.path.join(path, response.name)
+        AugusExporter.export(response, resfile_path)
 
 
 class AugusPutbackExporter(object):
@@ -85,7 +113,8 @@ class AugusPutbackExporter(object):
                                          .all()
 
         responses = []
-        for event_code, putbacks_in_event in itertools.groupby(putbacks, lambda putback: putback.augus_stock_info.augus_performance.augus_event_code):
+        for (event_code, putback_code), putbacks_in_event \
+            in itertools.groupby(putbacks, lambda putback: (putback.augus_stock_info.augus_performance.augus_event_code, putback.augus_putback_code)):
             response = PutbackResponse()
             response.event_code = event_code
             response.extend([self.create_record(putback) for putback in putbacks_in_event])
@@ -109,6 +138,9 @@ class AugusPutbackExporter(object):
 class AugusAchievementExporter(object):
     def create_record(self, stock_info):
         opitem = self.seat2opitem(stock_info.seat)
+        if not opitem:
+            raise AugusDataExportError('No such OrderedProductItem: Seat.id={}'.formamt(stock_info.seat))
+
         record = AchievementResponse.record()
         record.event_code = stock_info.augus_performance.augus_event_code
         record.performance_code = stock_info.augus_performance.augus_performance_code
@@ -136,6 +168,26 @@ class AugusAchievementExporter(object):
         record.achievement_status = str(AugusSeatStatus.get_status(stock_info.seat))
         return record
 
+
+    def export_from_augus_performance(self, augus_performance):
+        res = AchievementResponse()
+        res.event_code = augus_performance.augus_event_code
+        res.date = augus_performance.start_on
+        stock_infos = AugusStockInfo\
+            .query\
+            .filter(AugusStockInfo.augus_performance_id==augus_performance.id)\
+            .filter(AugusStockInfo.putbacked_at==None)\
+            .all()
+
+        for stock_info in stock_infos:
+            # 未販売は出力しない
+            if stock_info.seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
+                continue
+            record = self.create_record(stock_info)
+            res.append(record)
+        return res
+
+
     def export_from_augus_event_code(self, augus_event_code):
         augus_performances = AugusPerformance\
             .query\
@@ -154,8 +206,13 @@ class AugusAchievementExporter(object):
                 .all()
 
             for stock_info in stock_infos:
+                # 返券済みのものは出力しない
+                if stock_info.putbacked_at:
+                    continue
+
+
                 # 未販売は出力しない
-                if stock_info.seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v]:
+                if stock_info.seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
                     continue
                 record = self.create_record(stock_info)
                 res.append(record)
@@ -166,11 +223,16 @@ class AugusAchievementExporter(object):
         qs = orders_seat_table.select(whereclause='seat_id={}'.format(seat.id))
         da = qs.execute()
         seatid_opitemid =da.fetchall()
-        if len(seatid_opitemid) != 1:
-            return None
-        else:
-            opitem_id = seatid_opitemid[0][1]
-            return OrderedProductItem.get(opitem_id)
+
+        for seat_id, opitem_id in seatid_opitemid:
+            opitem = OrderedProductItem.get(id=opitem_id)
+            if not opitem:
+                continue
+            elif opitem.ordered_product.order.status == 'canceled':
+                continue
+            else:
+                return opitem
+        return None
 
     @staticmethod
     def get_unit_price(opitem):

@@ -4,6 +4,7 @@
 
 <div class="page-header">
   <h3>オーガス公演連携</h3>
+  <%include file="../_menu.html" args="event=event" />
 </div>
 <form role="form" method="POST" action="${request.route_url('augus.performance.save', event_id=event.id)}">
 <button class="btn" type="submit">連携を保存</button>
@@ -30,8 +31,11 @@
                 %if ag_performance_now and ag_performance.id == ag_performance_now.id:
                 selected="true"
                 %endif
-                >${ag_performance.augus_performance_name} -
-          ${ag_performance.augus_performance_code} -
+                >
+          ${ag_performance.augus_event_name} -
+          ${ag_performance.augus_performance_name} -
+          ${ag_performance.start_on} -
+          ${ag_performance.augus_venue_name} -
         </option>
         %endfor
       </select>
