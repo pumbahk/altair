@@ -134,8 +134,7 @@ class SalesTotalReporter(object):
         query = self._create_where(query, self.form.event_start_from.data, self.form.event_start_to.data, Performance.start_on)
         query = self._create_where(query, self.form.event_end_from.data, self.form.event_end_to.data, Performance.end_on)
 
-        query = query.join(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.reporting==True)\
-            .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(self.stock_holder_ids))
+        query = query.join(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.reporting==True)
         query = self._create_range_where(query, self.form.limited_from.data, self.form.limited_to.data, \
             SalesSegment.start_at, SalesSegment.end_at)
 
@@ -360,7 +359,6 @@ class SalesDetailReporter(object):
         self.create_reports()
 
     def create_reports(self):
-        # 自社分のみが対象
         if self.form.performance_id.data:
             performance = Performance.get(self.form.performance_id.data)
             event = performance.event
@@ -369,6 +367,7 @@ class SalesDetailReporter(object):
         else:
             logger.error('event_id not found')
             return
+        # 自社分のみが対象
         self.stock_holder_ids = [sh.id for sh in StockHolder.get_own_stock_holders(event=event)]
         self.get_performance_data()
         self.get_order_data()
