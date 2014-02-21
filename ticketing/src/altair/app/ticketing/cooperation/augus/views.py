@@ -214,6 +214,7 @@ class AugusPerformanceView(_AugusBaseView):
 
     @view_config(route_name='augus.performance.save', request_method='POST')
     def save(self):
+        error_url = self.request.route_path('augus.performance.edit', event_id=self.context.event.id)
         for performance_txt, ag_performance_id in self.request.params.iteritems():
             if not performance_txt.startswith(self.select_prefix):
                 continue
@@ -242,8 +243,21 @@ class AugusPerformanceView(_AugusBaseView):
                 if not ag_performance:
                     raise HTTPBadRequest('The augus performance not found: {}'.format(ag_performance_id))
 
+                # AugusVenue.idとPerformance.venue.original_venue_idが違うものは連携できないようにする
+                ag_venue = ag_performance.get_augus_venue()
+                if not ag_venue:
+                    self.request.session.flash(u'オーガス会場がありません: AugusPerformance.id={}, (augus_venue_code={}, augus_venue_version~{})'.format(
+                        ag_performance.id, ag_performance.augus_venue_code, ag_performance.augus_venue_version))
+                    transaction.abort()
+                    raise HTTPFound(error_url)
+                elif ag_venue.venue.site_id != performance.venue.site_id:
+                    self.request.session.flash(u'会場の連携情報が不一致です: Performance.id={} AugusPerformance.id={}'.format(
+                        performance.id, ag_performance.id))
+                    transaction.abort()
+                    raise HTTPFound(error_url)
+
                 if ag_performance.performance_id != performance.id:
-                    ag_performance.performance_id = performance.id;
+                    ag_performance.performance_id = performance.id
                     ag_performance.save()
             else: # delete link
                 ag_performance = AugusPerformance.get(performance_id=performance.id)

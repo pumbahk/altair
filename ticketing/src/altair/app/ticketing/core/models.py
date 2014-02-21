@@ -4210,6 +4210,13 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def code(self):
         return self.augus_performance_code
 
+    def get_augus_venue(self):
+        try:
+            return AugusVenue.query.filter(AugusVenue.code==self.augus_venue_code)\
+                                   .filter(AugusVenue.version==self.augus_venue_version)\
+                                   .one()
+        except NoResultFound as err:
+            return None
 
 # move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
