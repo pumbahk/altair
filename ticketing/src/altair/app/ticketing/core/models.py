@@ -3982,8 +3982,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     augus_customer_id = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス取引先ID', _a_label=u'オーガス取引先ID')
     augus_upload_url = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのアップロードURL', _a_label=u'オーガス用サーバのアップロードURL')
     augus_download_url = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのダウンロードURL', _a_label=u'オーガス用サーバのダウンロードURL')
-    augus_username = AnnotatedColumn(Unicode(255), nullable=False, default='', doc=u'オーガス用サーバのユーザ名', _a_label=u'オーガス用サーバのユーザ名')
-    augus_password = AnnotatedColumn(Unicode(255), nullable=False, default='', doc=u'オーガス用サーバのパスワード', _a_label=u'オーガス用サーバのパスワード')
+    augus_username = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのユーザ名', _a_label=u'オーガス用サーバのユーザ名')
+    augus_password = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのパスワード', _a_label=u'オーガス用サーバのパスワード')
 
     @property
     def container(self):
