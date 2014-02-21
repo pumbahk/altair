@@ -1,0 +1,39 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<div class="page-header">
+  <h3>オーガス販売実績戻し</h3>
+  <%include file="../_menu.html" args="event=event" />
+</div>
+
+
+<table class="table">
+  <tr>
+    <th>オーガスイベントコード</th>
+    <th>オーガス公演コード</th>
+    <th>オーガス事業名</th>
+    <th>オーガス公演名</th>
+    <th>altair公演コード</th>
+    <th>altair公演名</th>
+    <th />
+    <th />
+  </tr>
+  %for ag_performance in augus_performances:
+  <tr>
+    <td>${ag_performance.augus_event_code}</td>
+    <td>${ag_performance.augus_performance_code}</td>
+    <td>${ag_performance.augus_event_name}</td>
+    <td>${ag_performance.augus_performance_name}</td>
+    <td>${ag_performance.performance.code}</td>
+    <td>${ag_performance.performance.name}</td>
+    <td>
+      <a class="btn entry" href="${request.route_url('augus.achievement.reserve', event_id=event.id, augus_performance_id=ag_performance.id)}">予約</a>
+    </td>
+    <td>
+      <a class="btn entry" href="${request.route_url('augus.achievement.get', event_id=event.id, augus_performance_id=ag_performance.id)}">取得</a>
+    </td>
+  </tr>
+  %endfor
+</table>
+</form>
