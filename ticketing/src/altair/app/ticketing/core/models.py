@@ -4234,7 +4234,7 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_type = relationship('StockType')
 
     augus_performance_id = Column(Identifier, ForeignKey('AugusPerformance.id'), nullable=True)
-    augus_performance = relationship('AugusPerformance')
+    augus_performance = relationship('AugusPerformance', backref='augus_tickets')
 
     augus_event_code = association_proxy('augus_performance', 'augus_event_code')
     augus_performance_code = association_proxy('augus_performance', 'augus_performance_code')
