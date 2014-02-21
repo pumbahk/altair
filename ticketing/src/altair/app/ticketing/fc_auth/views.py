@@ -53,10 +53,10 @@ class LoginView(object):
         try:
             user = user_query.one()
         except NoResultFound:
-            logger.debug('no user found for identity: %r' % identity)
+            logger.debug('no user found for user: %s' % username)
             return None
         except MultipleResultsFound:
-            logger.error('multiple records found for identity: %r' % identity)
+            logger.error('multiple records found for user: %s' % username)
             return None
         return { 'user_id': user.id }
 
@@ -68,6 +68,10 @@ class LoginView(object):
         password = self.request.params['password']
         logger.debug("authenticate for membership %s" % membership)
 
+        authenticated = None
+        headers = None
+        identity = None
+
         result = self.do_authenticate(membership, username, password)
         if result is not None:
             # result には user_id が含まれているが、これを identity とすべきかは
@@ -78,15 +82,14 @@ class LoginView(object):
                 'membership': membership,
                 'username': username,
                 }
-        else:
-            identity = { 'login': True }
-        authenticated, headers = who_api.login(identity)
+
+        if identity is not None:
+            authenticated, headers = who_api.login(identity)
 
         if authenticated is None:
             self.select_renderer(membership)
             return {'username': username,
                     'message': u'IDかパスワードが一致しません'}
-
 
         return_to_url = self.return_to_url 
         res = HTTPFound(location=return_to_url, headers=headers)
