@@ -31,8 +31,11 @@
                 %if ag_performance_now and ag_performance.id == ag_performance_now.id:
                 selected="true"
                 %endif
-                >${ag_performance.augus_performance_name} -
-          ${ag_performance.augus_performance_code} -
+                >
+          ${ag_performance.augus_event_name} -
+          ${ag_performance.augus_performance_name} -
+          ${ag_performance.start_on} -
+          ${ag_performance.augus_venue_name} -
         </option>
         %endfor
       </select>
