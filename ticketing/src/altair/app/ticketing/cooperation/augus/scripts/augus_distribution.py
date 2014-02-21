@@ -62,12 +62,14 @@ def main():
             logger.info('augus distribution: OK: {}'.format(path))
         except AugusDataImportError as err:
             logger.error('cannot import data: {}: {}'.format(path, repr(err)))
+            transaction.abort()
             continue
         except IllegalImportDataError as err:# 席が不正とかそういうの -> その場合はAugus側にエラーを通知
             logger.error('illegal data format: {}: {}'.format(path, repr(err)))
         except Exception as err:
             logger.error('AugusDisrtibution cannot import: {}: {}'.format(path, repr(err)))
-            continue
+            transaction.abort()
+            raise
 
         try:
             exporter.export(ko_staging, request, status)

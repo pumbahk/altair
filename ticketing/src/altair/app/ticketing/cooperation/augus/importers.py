@@ -185,11 +185,14 @@ class AugusDistributionImporter(object):
 
     def import_record(self, record, stock, ag_performance):
         if int(record.seat_type_classif) != 1: # 指定席以外はエラー
-            raise AugusDataImportError('augus seat type classif error: {}'.format(record.seat_type_classif))
+            raise IllegalImportDataError('augus seat type classif error: {}'.format(record.seat_type_classif))
 
         ag_venue = AugusVenue.query.filter(AugusVenue.code==ag_performance.augus_venue_code)\
                                    .filter(AugusVenue.version==ag_performance.augus_venue_version)\
-                                   .one()
+                                   .first()
+        if not ag_venue:
+            raise IllegalImportDataError('augus seat type classif error: {}'.format(record.seat_type_classif))
+
         ag_seat = self.get_augus_seat(ag_venue=ag_venue,
                                       area_code=record.area_code,
                                       info_code=record.info_code,
@@ -197,6 +200,9 @@ class AugusDistributionImporter(object):
                                       column=record.column,
                                       number=record.number,
                                       )
+        if not ag_seat:
+            raise IllegalImportDataError('augus seat type classif error: {}'.format(record.seat_type_classif))
+
 
 
         ag_ticket = None
@@ -208,7 +214,7 @@ class AugusDistributionImporter(object):
                 .filter(AugusTicket.unit_value_code==record.unit_value_code)\
                 .one()
         except (MultipleResultsFound, NoResultFound) as err:
-            raise AugusDataImportError('no such augus ticket: {}: augus performance id={}, augus seat type code={}, augus unit value code={}'
+            raise IllegalImportDataError('no such augus ticket: {}: augus performance id={}, augus seat type code={}, augus unit value code={}'
                                        .format(repr(err), ag_performance.id, record.seat_type_code, record.unit_value_code))
 
         seat = self.augus_seat_to_real_seat(ag_performance, ag_seat)
@@ -254,7 +260,7 @@ class AugusDistributionImporter(object):
             seat.save()
             return seat
         else:
-            raise AugusDataImportError('Cannot seat allocation: seat_id={} augus_seat_id={}'.format(
+            raise IllegalImportDataError('Cannot seat allocation: seat_id={} augus_seat_id={}'.format(
                 seat.id, ag_seat.id))
 
     def _create_stock_holder(self, performance, name, account_id):
@@ -277,7 +283,9 @@ class AugusDistributionImporter(object):
                     .query\
                     .filter(AugusPerformance.augus_event_code==record.event_code)\
                     .filter(AugusPerformance.augus_performance_code==record.performance_code)\
-                    .one()
+                    .first()
+                if not ag_perforamnce:
+                    raise AugusDataImportError(u'augus performance not found')
 
                 # 新しいStockHolderを作成 (初回のみ実行される事を想定)
                 stock_holder = stock_holders.get(ag_performance.performance.event, None)
@@ -287,6 +295,7 @@ class AugusDistributionImporter(object):
                     stock_holder = self._create_stock_holder(ag_performance.performance,
                                                              name, account_id)
                     stock_holders[ag_performance.performance.event] = stock_holder
+
 
                 ag_ticket = AugusTicket.query.filter(AugusTicket.augus_performance_id==ag_performance.id)\
                                              .filter(AugusTicket.augus_seat_type_code==record.seat_type_code)\
