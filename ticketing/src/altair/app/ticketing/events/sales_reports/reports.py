@@ -12,7 +12,7 @@ from sqlalchemy.orm import aliased
 from datetime import date, timedelta
 
 from altair.sqlahelper import get_db_session
-from altair.app.ticketing.core.models import Event, Mailer
+from altair.app.ticketing.core.models import Account, Event, Mailer
 from altair.app.ticketing.core.models import StockType, StockHolder, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
 from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem
 from altair.app.ticketing.events.sales_reports.forms import SalesReportForm
@@ -72,19 +72,17 @@ class SalesTotalReporter(object):
         :param organization: Organization
         :param group: 集計単位  'Event' イベント毎の集計、'Performance' 公演毎の集計
         '''
+        self.slave_session = get_db_session(request, name="slave")
         self.form = form
         self.organization = organization
         self.group_by = Performance.id if group_by == 'Performance' else Event.id
         self.reports = {}
-        self.stock_holder_ids = []
-        self.slave_session = get_db_session(request, name="slave")
+        self.account = Account.query.filter(Account.user_id==organization.user_id, Account.organization_id==organization.id).one()
 
         # レポートデータ生成
         self.create_reports()
 
     def create_reports(self):
-        # 自社分のみが対象
-        self.stock_holder_ids = [sh.id for sh in StockHolder.get_own_stock_holders(user_id=self.organization.user_id)]
         self.get_event_data()
         self.get_order_data()
         self.get_stock_data()
@@ -199,7 +197,8 @@ class SalesTotalReporter(object):
 
     def get_stock_data(self):
         # 配席数、残席数
-        query = self.slave_session.query(Stock).filter(Stock.stock_holder_id.in_(self.stock_holder_ids))\
+        query = self.slave_session.query(Stock)\
+            .join(StockHolder).filter(StockHolder.account==self.account)\
             .join(ProductItem).filter(ProductItem.deleted_at==None)\
             .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)\
             .join(Performance).filter(Performance.id==Stock.performance_id)\
@@ -350,25 +349,26 @@ class SalesDetailReporter(object):
         公演の販売区分毎、席種毎、商品毎に集計したレポートを返す
         :param form: SalesReportForm
         '''
+        self.slave_session = get_db_session(request, name="slave")
         self.form = form
         self.reports = {}
         self.total = None
-        self.slave_session = get_db_session(request, name="slave")
+        self.event = None
+        if self.form.performance_id.data:
+            performance = Performance.get(self.form.performance_id.data)
+            self.event = performance.event
+        elif self.form.event_id.data:
+            self.event = Event.get(self.form.event_id.data)
+        else:
+            logger.error('event_id not found')
+            return
+        organization = self.event.organization
+        self.account = Account.query.filter(Account.user_id==organization.user_id, Account.organization_id==organization.id).one()
 
         # レポートデータ生成
         self.create_reports()
 
     def create_reports(self):
-        if self.form.performance_id.data:
-            performance = Performance.get(self.form.performance_id.data)
-            event = performance.event
-        elif self.form.event_id.data:
-            event = Event.get(self.form.event_id.data)
-        else:
-            logger.error('event_id not found')
-            return
-        # 自社分のみが対象
-        self.stock_holder_ids = [sh.id for sh in StockHolder.get_own_stock_holders(event=event)]
         self.get_performance_data()
         self.get_order_data()
         if self.form.limited_from.data or self.form.limited_to.data:
@@ -416,10 +416,10 @@ class SalesDetailReporter(object):
     def get_performance_data(self):
         # 名称、期間
         query = self.slave_session.query(StockType)\
-            .outerjoin(Stock).filter(Stock.stock_holder_id.in_(self.stock_holder_ids))\
-            .outerjoin(StockHolder)\
-            .outerjoin(ProductItem)\
-            .outerjoin(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)
+            .join(Stock)\
+            .join(StockHolder).filter(StockHolder.event==self.event, StockHolder.account==self.account)\
+            .join(ProductItem)\
+            .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)
         query = self.add_sales_segment_filter(query)
         if self.form.performance_id.data:
             query = query.filter(ProductItem.performance_id==self.form.performance_id.data)
@@ -459,7 +459,8 @@ class SalesDetailReporter(object):
 
     def get_stock_data(self):
         # 配席数、残席数
-        query = self.slave_session.query(Stock).filter(Stock.stock_holder_id.in_(self.stock_holder_ids))\
+        query = self.slave_session.query(Stock)\
+            .join(StockHolder).filter(StockHolder.event==self.event, StockHolder.account==self.account)\
             .join(ProductItem).filter(ProductItem.deleted_at==None)\
             .join(Product).filter(and_(Product.seat_stock_type_id==Stock.stock_type_id, Product.base_product_id==None))
         query = self.add_sales_segment_filter(query)
