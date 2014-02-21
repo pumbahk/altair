@@ -15,7 +15,6 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from pyramid.threadlocal import get_current_request
-from pyramid import security
 from webob.multidict import MultiDict
 
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
@@ -1169,10 +1168,8 @@ class OutTermSalesView(object):
 @view_config(decorator=with_jquery.not_when(mobile_request), request_method="POST", route_name='cart.logout')
 @limiter.release
 def logout(request):
-    headers = security.forget(request)
-    res = back_to_top(request)
-    res.headerlist.extend(headers)
-    return res
+    api.logout(request)
+    return back_to_top(request)
 
 def _create_response(request, param):
     event_id = request.matchdict.get('event_id')

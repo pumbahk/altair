@@ -5,13 +5,15 @@ from altair.app.ticketing.core import api as core_api
 
 logger = logging.getLogger(__name__)
 
-def get_memberships(request):
+def get_memberships(request, session=None):
+    if session is None:
+        session = DBSession
     if hasattr(request, 'context') and hasattr(request.context, 'memberships'):
         logger.info('memberships retrieved from context')
         return request.context.memberships
     else:
         logger.info('memberships retrieved directly')
-        return Membership.query.filter_by(organization_id=request.organization.id).all()
+        return session.query(Membership).filter_by(organization_id=request.organization.id).all()
 
 def login_url(request):
     organization = core_api.get_organization(request)

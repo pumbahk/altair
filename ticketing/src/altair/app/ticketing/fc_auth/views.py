@@ -1,11 +1,13 @@
 # -*- coding:utf-8 -*-
 import logging
 from pyramid.httpexceptions import HTTPFound
-#from repoze.who.api import get_api as get_who_api
-from altair.auth import who_api as get_who_api
 from pyramid.view import view_config
+from altair.auth import who_api as get_who_api
+from altair.sqlahelper import get_db_session
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.core import api as core_api
+import altair.app.ticketing.users.models as u_m
 from . import SESSION_KEY
 
 logger = logging.getLogger(__name__)
@@ -18,7 +20,6 @@ class LoginView(object):
     def __init__(self, request):
         self.request = request
         self.context = request.context
-
 
     def select_renderer(self, membership):
         if cart_api.is_mobile(self.request):
@@ -38,6 +39,26 @@ class LoginView(object):
         self.select_renderer(membership)
         return dict(username='')
 
+    def do_authenticate(self, membership, username, password):
+        """認証を行う。戻り値は認証に失敗したときはNoneで、
+           成功したときは認証時に得られた何らかのメタデータなどをdictで。
+           空のdictが返ることもあるので、is not None でチェックする必要がある"""
+        session = get_db_session(self.request, 'slave')
+        user_query = session.query(u_m.User) \
+            .filter(u_m.User.id == u_m.UserCredential.user_id) \
+            .filter(u_m.Membership.id == u_m.UserCredential.membership_id) \
+            .filter(u_m.UserCredential.auth_identifier == username) \
+            .filter(u_m.UserCredential.auth_secret == password) \
+            .filter(u_m.Membership.name == membership)
+        try:
+            user = user_query.one()
+        except NoResultFound:
+            logger.debug('no user found for identity: %r' % identity)
+            return None
+        except MultipleResultsFound:
+            logger.error('multiple records found for identity: %r' % identity)
+            return None
+        return { 'user_id': user.id }
 
     @view_config(request_method="POST", route_name='fc_auth.login', renderer='string')
     def login(self):
@@ -47,11 +68,18 @@ class LoginView(object):
         password = self.request.params['password']
         logger.debug("authenticate for membership %s" % membership)
 
-        identity = {
-            'membership': membership,
-            'username': username,
-            'password': password,
-        }
+        result = self.do_authenticate(membership, username, password)
+        if result is not None:
+            # result には user_id が含まれているが、これを identity とすべきかは
+            # 議論の余地がある。user_id を identity にしてしまえば DB 負荷を
+            # かなり減らすことができるだろう。
+            identity = {
+                'login': True,
+                'membership': membership,
+                'username': username,
+                }
+        else:
+            identity = { 'login': True }
         authenticated, headers = who_api.login(identity)
 
         if authenticated is None:
@@ -73,6 +101,7 @@ class LoginView(object):
         logger.debug("guest authenticate for membership %s" % membership)
 
         identity = {
+            'login': True,
             'membership': membership,
             'is_guest': True,
         }
