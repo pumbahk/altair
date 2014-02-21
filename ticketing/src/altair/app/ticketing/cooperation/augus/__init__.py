@@ -38,6 +38,12 @@ ROUTE_URL_RESOURCE = {
     'augus.stock_type.edit': ('/events/{event_id}/stock_types/edit', SeatTypeResource),
     'augus.stock_type.save': ('/events/{event_id}/stock_types/save', SeatTypeResource),
 
+    # product
+    'augus.product.index': ('/events/{event_id}/products', SeatTypeResource),
+    'augus.product.show': ('/events/{event_id}/products/show', SeatTypeResource),
+    'augus.product.edit': ('/events/{event_id}/products/edit', SeatTypeResource),
+    'augus.product.save': ('/events/{event_id}/products/save', SeatTypeResource),
+
     # putback
     'augus.putback.index': ('/events/{event_id}/putback', PerformanceResource),
     'augus.putback.new': ('/events/{event_id}/putback/new', PerformanceResource),

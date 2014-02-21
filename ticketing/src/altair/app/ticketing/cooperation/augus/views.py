@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 import csv
 import time
+import logging
 import datetime
 import transaction
 from sqlalchemy.orm.exc import (
@@ -19,6 +20,7 @@ from pyramid.view import (
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
+    Product,
     StockHolder,
     Performance,
     StockType,
@@ -49,6 +51,8 @@ from .errors import (
     AlreadyExist,
     )
 from .importers import get_enable_stock_info
+
+logger = logging.getLogger(__name__)
 
 @view_config(route_name='augus.test')
 def test(*args, **kwds):
@@ -290,6 +294,7 @@ class AugusTicketView(_AugusBaseView):
 
     @view_config(route_name='augus.stock_type.save', request_method='POST')
     def save(self):
+        url = self.request.route_path('augus.product.show', event_id=self.context.event.id)
         try:
             for ag_ticket_txt, stock_type_id in self.request.params.iteritems():
                 if not ag_ticket_txt.startswith(self.select_prefix):
@@ -303,12 +308,72 @@ class AugusTicketView(_AugusBaseView):
                     ag_ticket.link_stock_type(stock_type)
                     ag_ticket.save()
                 else: # delete link
-                    ag_ticket.delete_link()
-                    ag_ticket.save()
-
+                    ag_ticket.stock_type_id = None
+                    product.save()
         except ValueError as err:
             raise HTTPBadRequest('invalid save data: {}'.format(repr(err)))
         return HTTPFound(self.request.route_url('augus.stock_type.show', event_id=self.context.event.id))
+
+
+@view_defaults(route_name='augus.product', decorator=with_bootstrap, permission='event_editor')
+class ProductView(_AugusBaseView):
+    select_prefix = 'product-'
+
+    @view_config(route_name='augus.product.index', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/augus/events/products/index.html')
+    def index(self):
+        url = self.request.route_path('augus.product.show', event_id=self.context.event.id)
+
+        return HTTPFound(url)
+
+    @view_config(route_name='augus.product.show', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/augus/events/products/show.html')
+    def show(self):
+        performance_ids = [performance.id for performance in self.context.event.performances]
+        augus_performances = AugusPerformance.query.filter(AugusPerformance.performance_id.in_(performance_ids)).all()
+        return dict(event=self.context.event,
+                    augus_performances=augus_performances,
+                    select_prefix=self.select_prefix,
+                    )
+
+    @view_config(route_name='augus.product.edit', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/augus/events/products/edit.html')
+    def edit(self):
+        performance_ids = [performance.id for performance in self.context.event.performances]
+        augus_performances = AugusPerformance.query.filter(AugusPerformance.performance_id.in_(performance_ids)).all()
+        return dict(event=self.context.event,
+                    augus_performances=augus_performances,
+                    select_prefix=self.select_prefix,
+                    )
+
+    @view_config(route_name='augus.product.save', request_method='POST')
+    def save(self):
+        url = self.request.route_path('augus.product.show', event_id=self.context.event.id)
+        error_url = self.request.route_path('augus.product.edit', event_id=self.context.event.id)
+
+        try:
+            for product_txt, augus_ticket_id in self.request.params.iteritems():
+                if not product_txt.startswith(self.select_prefix):
+                    continue
+
+                product_id = int(product_txt.replace(self.select_prefix, '').strip())
+                product = Product.query.filter(Product.id==product_id).one()
+                if augus_ticket_id:
+                    augus_ticket_id = int(augus_ticket_id)
+                    augus_ticket = AugusTicket.query.filter(AugusTicket.id==augus_ticket_id).one()
+                    if product.seat_stock_type_id != augus_ticket.stock_type_id:
+                        self.request.session.flash(u'席種が不一致です: Product.id={}, AugusTicket.id={}'.format(
+                            product.id, augus_ticket_id))
+                        transaction.abort()
+                        raise HTTPFound(error_url)
+                    product.augus_ticket_id = augus_ticket.id
+                    product.save()
+                else: # delete link
+                    product.augus_ticket_id = None
+                    product.save()
+        except ValueError as err:
+            raise HTTPBadRequest('invalid save data: {}'.format(repr(err)))
+        return HTTPFound(url)
 
 @view_defaults(route_name='augus.putback', decorator=with_bootstrap, permission='event_editor')
 class AugusPutbackView(_AugusBaseView):

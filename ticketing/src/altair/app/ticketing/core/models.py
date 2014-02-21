@@ -2190,6 +2190,9 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     min_product_quantity = Column(Integer, nullable=True)
     max_product_quantity = Column(Integer, nullable=True)
 
+    augus_ticket_id = Column(Identifier, ForeignKey('AugusTicket.id'), nullable=True)
+    augus_ticket = relationship('AugusTicket', backref='products')
+
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_group_id=None, stock_id=None, include_deleted=False):
         query = DBSession.query(Product, include_deleted=include_deleted)
@@ -4203,7 +4206,7 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance_id = Column(Identifier,
                             ForeignKey("Performance.id"),
                             nullable=True, unique=True)
-    performance = relationship('Performance')
+    performance = relationship('Performance', backref='augus_performances')
     augus_stock_infos = relationship('AugusStockInfo')
 
     @property

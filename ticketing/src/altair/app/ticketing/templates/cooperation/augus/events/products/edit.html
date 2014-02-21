@@ -1,0 +1,50 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+<%include file="_header.html" args="event=event" />
+
+
+
+<form role="form" method="POST" action="${request.route_url('augus.product.save', event_id=event.id)}">
+<button class="btn" type="submit">連携を保存</button>
+
+%for ag_performance in augus_performances:
+%if ag_performance.performance_id:
+<table class="table">
+  <tr>
+    <th>席種</th>
+    <th>商品名</th>
+    <th>価格</th>
+    <th>公開</th>
+    <th>オーガス商品</th>
+  </tr>
+  %for sales_segment in ag_performance.performance.sales_segments:
+  %for product in sales_segment.products:
+  <tr>
+    <td>${product.seat_stock_type.name}</td>
+    <td>${product.name}</td>
+    <td>${product.price}</td>
+    <td>${product.public}</td>
+    <td>
+      <select class="selectpicker" name="${select_prefix}${product.id}">
+        <option value=""/>
+        %for augus_ticket in ag_performance.augus_tickets:
+        <option value="${augus_ticket.id}"
+                %if product.augus_ticket_id == augus_ticket.id:
+                selected="True"
+                %endif
+                >
+          ${augus_ticket.augus_seat_type_code} -
+          ${augus_ticket.augus_seat_type_name}
+          ${augus_ticket.value}
+        </option>
+        %endfor
+      </select>
+    </td>
+  </tr>
+  %endfor
+  %endfor
+</table>
+%endif
+%endfor
+</form>
