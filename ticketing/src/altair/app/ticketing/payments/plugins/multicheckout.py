@@ -18,6 +18,7 @@ from altair.multicheckout.models import (
     MultiCheckoutOrderStatus,
     MultiCheckoutStatusEnum,
 )
+from altair.app.ticketing.utils import clear_exc
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from altair.app.ticketing.cart.interfaces import ICartPayment
@@ -47,10 +48,19 @@ logger = logging.getLogger(__name__)
 from . import MULTICHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_ID
 
 class MultiCheckoutSettlementFailure(PaymentPluginException):
-    def __init__(self, message, order_no, back_url, error_code=None, return_code=None):
-        super(MultiCheckoutSettlementFailure, self).__init__(message, order_no, back_url)
+    def __init__(self, message, order_no, back_url, ignorable=False, error_code=None, return_code=None):
+        super(MultiCheckoutSettlementFailure, self).__init__(message, order_no, back_url, ignorable)
         self.error_code = error_code
         self.return_code = return_code
+
+    @property
+    def message(self):
+        return '%s (error_code=%s, return_code=%s)' % (
+            super(MultiCheckoutSettlementFailure, self).message,
+            self.error_code,
+            self.return_code
+            )
+
 
 def back_url(request):
     return request.route_url("payment.secure3d")
@@ -139,6 +149,7 @@ class MultiCheckoutPlugin(object):
         request.session['altair.app.ticketing.payments.auth3d_notice'] = notice
         return HTTPFound(location=back_url(request))
 
+    @clear_exc
     def validate(self, request, cart):
         """ 確定前の状態確認 """
         order_no = get_order_no(request, cart)
@@ -152,6 +163,7 @@ class MultiCheckoutPlugin(object):
                 back_url=back_url(request)
                 )
 
+    @clear_exc
     def finish(self, request, cart):
         """ 売り上げ確定(3D認証) """
         order = request.session['order']
@@ -235,6 +247,7 @@ class MultiCheckoutPlugin(object):
         # finish で全部終わっているので後処理不要
         pass
 
+    @clear_exc
     def refresh(self, request, order):
         real_order_no = get_order_no(request, order)
 
@@ -327,6 +340,7 @@ class MultiCheckoutView(object):
     def __init__(self, request):
         self.request = request
 
+    @clear_exc
     @view_config(route_name='payment.secure3d', request_method="GET", renderer=_selectable_renderer('%(membership)s/pc/card_form.html'))
     @view_config(route_name='payment.secure3d', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=_selectable_renderer('%(membership)s/mobile/card_form.html'))
     @view_config(route_name='payment.secure3d', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(is_smartphone_organization, ), renderer=_selectable_renderer("%(membership)s/smartphone/card_form.html"))
@@ -353,6 +367,7 @@ class MultiCheckoutView(object):
         self.request.session['secure_type'] = 'secure_code'
         return self._secure_code(order['order_no'], order['card_number'], order['exp_year'], order['exp_month'], order['secure_code'])
 
+    @clear_exc
     @view_config(route_name='payment.secure3d', request_method="POST", renderer=_selectable_renderer('%(membership)s/pc/card_form.html'))
     @view_config(route_name='payment.secure3d', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=_selectable_renderer('%(membership)s/mobile/card_form.html'))
     @view_config(route_name='payment.secure3d', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(is_smartphone_organization, ), renderer=_selectable_renderer("%(membership)s/smartphone/card_form.html"))
@@ -461,10 +476,11 @@ class MultiCheckoutView(object):
         #     logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
         else:
             # セキュア3D認証エラー
-            logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
+            logger.info(u'secure3d not availble: order_no=%s, error_code=%s, return_code=%s' % (order['order_no'], enrol.ErrorCd, enrol.RetCd))
             self.request.session['secure_type'] = 'secure_code'
             return self._secure_code(order['order_no'], order['card_number'], order['exp_year'], order['exp_month'], order['secure_code'])
 
+    @clear_exc
     @view_config(route_name='cart.secure3d_result', request_method="POST", renderer=_selectable_renderer("%(membership)s/pc/confirm.html"))
     def card_info_secure3d_callback(self):
         """ カード情報入力(3Dセキュア)コールバック
@@ -490,13 +506,25 @@ class MultiCheckoutView(object):
 
             # TODO: エラーメッセージ
             if not auth_result.is_enable_secure3d():
-                raise MultiCheckoutSettlementFailure(
-                    message='card_info_secure3d_callback: secure3d not enabled?',
-                    order_no=order['order_no'],
-                    back_url=back_url(self.request),
-                    error_code=auth_result.ErrorCd,
-                    return_code=auth_result.RetCd
-                    )
+                # セキュア3D認証顔面で「キャンセル」ボタンを押したときに
+                # ここに遷移し得る
+                if auth_result.is_secure3d_continuable():
+                    raise MultiCheckoutSettlementFailure(
+                        message='card_info_secure3d_callback: secure3d aborted?',
+                        ignorable=True,
+                        order_no=order['order_no'],
+                        back_url=back_url(self.request),
+                        error_code=auth_result.ErrorCd,
+                        return_code=auth_result.RetCd
+                        )
+                else:
+                    raise MultiCheckoutSettlementFailure(
+                        message='card_info_secure3d_callback: secure3d not enabled?',
+                        order_no=order['order_no'],
+                        back_url=back_url(self.request),
+                        error_code=auth_result.ErrorCd,
+                        return_code=auth_result.RetCd
+                        )
 
             logger.debug('call checkout auth')
             checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
@@ -516,12 +544,14 @@ class MultiCheckoutView(object):
                     error_code=checkout_auth_result.CmnErrorCd
                     )
         except MultiCheckoutSettlementFailure as e:
-            logger.info(u'card_info_secure3d_callback: 決済エラー order_no = %s, error_code = %s' % (e.order_no, e.error_code))
+            import sys
+            logger.info(u'card_info_secure3d_callback', exc_info=sys.exc_info())
             self.request.session.flash(get_error_message(self.request, e.error_code))
             raise
         except Exception:
             # MultiCheckoutSettlementFailure 以外の例外 (通信エラーなど)
-            logger.exception('multicheckout plugin')
+            import sys
+            logger.info(u'card_info_secure3d_callback', exc_info=sys.exc_info())
             raise MultiCheckoutSettlementFailure(
                 message='uncaught exception',
                 order_no=order['order_no'],

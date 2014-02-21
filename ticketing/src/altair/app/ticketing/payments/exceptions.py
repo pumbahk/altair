@@ -3,7 +3,7 @@ import sys
 import traceback
 
 class PaymentPluginException(Exception):
-    def __init__(self, message, order_no, back_url):
+    def __init__(self, message, order_no, back_url, ignorable=False):
         """
         back_url に値がセットされている => カート救済可能
                              されていない => カート救済不可能
@@ -11,7 +11,11 @@ class PaymentPluginException(Exception):
         super(PaymentPluginException, self).__init__(message)
         self.order_no = order_no
         self.back_url = back_url
-        self.nested_exc_info = sys.exc_info()
+        nested_exc_info = sys.exc_info()
+        if nested_exc_info[0] is None:
+            nested_exc_info = None
+        self.nested_exc_info = nested_exc_info
+        self.ignorable = ignorable
 
     def __str__(self):
         buf = []

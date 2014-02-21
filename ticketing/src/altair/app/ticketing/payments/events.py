@@ -10,19 +10,13 @@ class DeliveryErrorEvent(object):
 
 
 def cancel_on_delivery_error(event):
-
-    import sys
-    import traceback
-    import StringIO
     import sqlahelper
 
     e = event.exception
     request = event.request
     order = event.order
-    exc_info = sys.exc_info()
-    out = StringIO.StringIO()
-    traceback.print_exception(*exc_info, file=out)
-    logger.error(out.getvalue())
+
+    logger.exception('order canceled because of fatal error (%r)' % e)
 
     order.cancel(request)
     order.note = str(e)
