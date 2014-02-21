@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:control="clr-namespace:QR.presentation.gui.control"
              xmlns:c="clr-namespace:QR.presentation.gui.control"
-             xmlns:WpfKb="clr-namespace:WpfKb.Controls;assembly=WpfKb"
+             xmlns:converter="clr-namespace:QR.presentation.gui.converter"
              Startup="App_Startup"
              DispatcherUnhandledException="App_DispatcherUnhandledException"
              StartupUri="presentation/gui/HomeWIndow.xaml">
@@ -12,77 +12,25 @@
 
     <Application.Resources>
         <ResourceDictionary>
-            <!-- data template-->
-            
-            <!-- プリンターの設定-->
-            <DataTemplate x:Key="InstalledPrinterListBoxData">
-                <WrapPanel>
-                    <TextBlock Style="{StaticResource SubText}" Text="{Binding FullName, Mode=OneTime}"/>
-                </WrapPanel>
-            </DataTemplate>
-            
-            <!-- ウインドウの表示方法の設定-->
-            <DataTemplate x:Key="AvailableWIndowStyleListBoxData">
-                <WrapPanel>
-                    <TextBlock Style="{StaticResource SubText}" Text="{Binding Key, Mode=OneTime}"/>
-                </WrapPanel>
-            </DataTemplate>
+          <!-- converter -->
+          <converter:MathConverter x:Key="MathConverter"/>
 
-            <!-- 券面候補の選択 -->
-            <ControlTemplate x:Key="DisableScrolviewer">
-                <ItemsPresenter />
-            </ControlTemplate>
-            
-            <DataTemplate x:Key="SelectingTicketItemBoxData">
-                <CheckBox IsChecked="{Binding IsSelected}" Style="{StaticResource GrayoutIfNeedCheckBox}"
-                          HorizontalAlignment="Center"
-                          Height="60"
-                          Width="390">
-                    <WrapPanel Margin="10,5,0,0">
-                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">商品:</TextBlock>
-                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding ProductName}"/>
-                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">席:</TextBlock>
-                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding SeatName}"/>
-                        <WrapPanel>
-                            <WrapPanel.Style>
-                                <Style TargetType="WrapPanel">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Path=Text,ElementName=PrintedAt}" Value="">
-                                            <Setter Property="Visibility" Value="Hidden"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </Style>
-                            </WrapPanel.Style>
-                            <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">印刷済み:</TextBlock>
-                            <TextBlock Name="PrintedAt" Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding PrintedAt}"/>
-                        </WrapPanel>
-                    </WrapPanel>
-                </CheckBox>
-            </DataTemplate>
-            
-            <ItemsPanelTemplate x:Key="TwoColumnsItemsPanel">
-                <WrapPanel Width="834" Orientation="Horizontal">
-                </WrapPanel>
-            </ItemsPanelTemplate>
-            
-            <Style TargetType="ListView" x:Key="ChoiceCandidatesTwoColumns">
-                <Setter Property="ItemsPanel" Value="{StaticResource TwoColumnsItemsPanel}"/>
-                <Setter Property="Template" Value="{StaticResource DisableScrolviewer}"/>
-                <Setter Property="ItemTemplate" Value="{StaticResource SelectingTicketItemBoxData}"/>
-            </Style>
-                   
-            
+
             <!-- virtual keyboard-->
             <c:KeyPadPopupContext x:Key="KeyPadContextPassword" PreviewType="password"/>
             <c:KeyPadPopupContext x:Key="KeyPadContextRaw" PreviewType="raw"/>
-            
+
             <c:AlnumPad x:Key="VirtualInputKeyboard"/>           
             <c:TelPad x:Key="VirtualTelKeyboard"/>
-            
+
+            <SolidColorBrush Color="Beige" x:Key="ConfirmAllMainBorderBrush"/>
+
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resource/Base.xaml"/>
-                <ResourceDictionary Source="Resource/RT.Layout.xaml"/>
+                <ResourceDictionary Source="Styles\Base\Themes.Text.xaml" />
+                <ResourceDictionary Source="Styles\Base\Themes.Window.xaml" />
+                <ResourceDictionary Source="Styles\Eagles\Styles.xaml"/>
+                <ResourceDictionary Source="Styles\Base\Styles.xaml"/>
+                <ResourceDictionary Source="Styles\Individual.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

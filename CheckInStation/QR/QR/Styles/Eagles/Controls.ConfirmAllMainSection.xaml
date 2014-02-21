@@ -1,0 +1,14 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <SolidColorBrush x:Key="ConfirmAllMainTextBrush">
+    <SolidColorBrush.Color>#840315</SolidColorBrush.Color>
+  </SolidColorBrush>
+
+  <SolidColorBrush x:Key="ConfirmAllMainBorderBrush">
+    <SolidColorBrush.Color>#840315</SolidColorBrush.Color>
+  </SolidColorBrush>
+
+</ResourceDictionary>
+
+

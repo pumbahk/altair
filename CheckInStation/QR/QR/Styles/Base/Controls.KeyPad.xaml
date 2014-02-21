@@ -1,0 +1,35 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:c="clr-namespace:QR.presentation.gui.control"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Style TargetType="c:KeyPad" x:Key="UserKeyPad">
+    <Setter Property="Width" Value="546"/>
+    <!--0.4-->
+    <Setter Property="Height" Value="460"></Setter>
+    <!-- 0.6-->
+  </Style>
+
+  <Style TargetType="Border" x:Key="KeyPadDebugPanel">
+    <Style.Resources>
+      <LinearGradientBrush x:Key="InputFollowBrush">
+        <GradientStop Color="lightGray" Offset="1.0"/>
+        <GradientStop Color="Gray" Offset="0.9"/>
+        <GradientStop Color="black" Offset="0.4"/>
+      </LinearGradientBrush>
+      <Style TargetType="TextBlock">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontSize" Value="24"/>
+        <Style.Triggers>
+          <DataTrigger Binding="{Binding EnableDebug}" Value="True">
+            <Setter Property="Visibility" Value="Hidden"/>
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
+    </Style.Resources>
+    <Setter Property="Padding" Value="10"/>
+    <Setter Property="VerticalAlignment" Value="Stretch"/>
+    <Setter Property="Background" Value="{StaticResource InputFollowBrush}"/>
+  </Style>
+
+</ResourceDictionary>
+
