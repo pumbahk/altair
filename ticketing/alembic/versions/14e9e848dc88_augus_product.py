@@ -32,6 +32,7 @@ def upgrade():
         sa.Column('augus_stock_info_id', Identifier, nullable=False),
         sa.Column('augus_putback_id', Identifier, nullable=True),
         sa.Column('augus_ticket_id', Identifier, nullable=False),
+        sa.Column('distribututed_at', sa.TIMESTAMP(), nullable=False),
         )
     op.add_column('AugusPutback', sa.Column('augus_stock_info_detail_id', Identifier(), nullable=True))
     op.add_column('Product', sa.Column('augus_ticket_id', Identifier(), nullable=True))

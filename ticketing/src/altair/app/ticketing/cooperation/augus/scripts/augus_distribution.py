@@ -18,7 +18,10 @@ from pyramid.paster import bootstrap
 import transaction
 from ..importers import AugusDistributionImporter
 from ..exporters import AugusDistributionExporter
-from ..errors import AugusDataImportError
+from ..errors import (
+    IllegalImportDataError,
+    AugusDataImportError,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -58,9 +61,13 @@ def main():
             status = Status.OK
             logger.info('augus distribution: OK: {}'.format(path))
         except AugusDataImportError as err:
-            logger.error('Illegal AugusDistribution format: {}: {}'.format(path, repr(err)))
+            logger.error('cannot import data: {}: {}'.format(path, repr(err)))
+            continue
+        except IllegalImportDataError as err:# 席が不正とかそういうの -> その場合はAugus側にエラーを通知
+            logger.error('illegal data format: {}: {}'.format(path, repr(err)))
         except Exception as err:
             logger.error('AugusDisrtibution cannot import: {}: {}'.format(path, repr(err)))
+            continue
 
         try:
             exporter.export(ko_staging, request, status)

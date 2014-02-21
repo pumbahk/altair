@@ -4263,7 +4263,7 @@ class AugusStockDetail(Base, BaseModel):
     augus_stock_info_id = AnnotatedColumn(Identifier, nullable=False)
     augus_putback_id = AnnotatedColumn(Identifier, nullable=True)
     augus_ticket_id = AnnotatedColumn(Identifier, nullable=False)
-
+    distributed_at = Column(DateTime, nullable=True)
 
 # move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):

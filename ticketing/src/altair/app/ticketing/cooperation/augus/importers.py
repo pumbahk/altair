@@ -22,27 +22,29 @@ from altair.app.ticketing.core.models import (
     SeatStatusEnum,
     )
 from .errors import (
+    AugusIntegrityError,
     AugusDataImportError,
     NoSeatError,
     )
 
+def get_or_create_augus_stock_info(seat):
+    try:
+        return AugusStockInfo.query.filter(AugusStockInfo.seat_id==seat.id).one()
+    except (NoResultFound, MultipleResultsFound) as err:
+        raise
+
 def get_enable_stock_info(seat):
-    print 'A'*30
     stock_infos = AugusStockInfo.query.filter(AugusStockInfo.seat_id==seat.id).all()
     enables = []
     for info in stock_infos:
         if AugusPutback.query.filter(AugusPutback.augus_stock_info_id==info.id).first():
-            print 'B'*30
             continue
         enables.append(info)
     if len(enables) == 1:
-        print 'C'*30
         return enables[0]
     elif len(enables) == 0:
-        print 'D'*30
         return None
     else: # なぜか複数の有効なAugusStockInfoがある
-        print 'E'*30
         raise AugusDataImportError('two enable augus stock info: AugusStockInfo.seat_id={}'.format(seat.id))
 
 class AugusPerformanceImpoter(object):
@@ -135,6 +137,52 @@ class AugusTicketImpoter(object):
 
 
 class AugusDistributionImporter(object):
+    def _import_record(self, record):
+        if int(record.seat_type_classif) != 1: # 指定席以外はエラー
+            raise AugusDataImportError('augus seat type classif error: {}'.format(record.seat_type_classif))
+
+        ag_performance = None
+        try:
+            ag_performance = AugusPerformance\
+                .query\
+                .filter(AugusPerformance.augus_event_code==record.event_code)\
+                .filter(AugusPerformance.augus_performance_code==record.performance_code)\
+                .one()
+        except NoResultFound as err:
+            # 未連携はNG通知しない
+            msg = 'AugusPerformance not found: event_code={} performance_code={}: {}'.format(
+                record.event_code, record.performance_code, repr(err))
+            raise AugusDataImportError(msg)
+        except MultipleResultsFound as err:
+            msg = 'AugusPerformance not found: event_code={} performance_code={}: {}'.format(
+                record.event_code, record.performance_code, repr(err))
+            raise AugusIntegrityError(msg)
+
+
+        ag_seat = None
+        try:
+            ag_seat = AugusSeat\
+                .query\
+                .filter(AugusSeat.augus_venue_id==ag_performance.augus_venue_id)\
+                .filter(AugusSeat.area_code==record.area_code)\
+                .filter(AugusSeat.info_code==record.info_code)\
+                .filter(AugusSeat.floor==record.floor)\
+                .filter(AugusSeat.column==record.column)\
+                .filter(AugusSeat.num==record.number)\
+                .one()
+        except NoResultFound as err:
+            # 席がない場合はNGを返す
+            msg = 'AugusSeat not found: AugusVenue.id={} area_code={} info_code={} floor={} column={} num={}'.format(
+                ag_performance.augus_venue_id, record.area_code, record.info_code,
+                record.floor, record.column, record.number)
+            raise IllegalImportDataError(msg)
+        except MultipleResultsFound as err:
+            msg = 'AugusSeat not found: AugusVenue.id={} area_code={} info_code={} floor={} column={} num={}'.format(
+                ag_performance.augus_venue_id, record.area_code, record.info_code,
+                record.floor, record.column, record.number)
+            raise AugusIntegrityError(msg)
+
+
     def import_record(self, record, stock, ag_performance):
         if int(record.seat_type_classif) != 1: # 指定席以外はエラー
             raise AugusDataImportError('augus seat type classif error: {}'.format(record.seat_type_classif))
@@ -142,7 +190,6 @@ class AugusDistributionImporter(object):
         ag_venue = AugusVenue.query.filter(AugusVenue.code==ag_performance.augus_venue_code)\
                                    .filter(AugusVenue.version==ag_performance.augus_venue_version)\
                                    .one()
-
         ag_seat = self.get_augus_seat(ag_venue=ag_venue,
                                       area_code=record.area_code,
                                       info_code=record.info_code,
@@ -150,6 +197,7 @@ class AugusDistributionImporter(object):
                                       column=record.column,
                                       number=record.number,
                                       )
+
 
         ag_ticket = None
         try:
@@ -173,12 +221,10 @@ class AugusDistributionImporter(object):
             # 有効なAugusStockInfo
             #  - seat_idをもち
             #  - AugusPutbackとのヒモ付けがないもの
-            ag_stock_info = get_enable_stock_info(seat)
-            if ag_stock_info:
-                raise AugusDataImportError('already exist AugusStockInfo: AugusStockInfo.id={}'.format(ag_stock_info.id))
-
-            # AugusStockInfo生成
-            ag_stock_info = AugusStockInfo()
+            # ag_stock_info = get_enable_stock_info(seat)
+            # if ag_stock_info:
+            #     raise AugusDataImportError('already exist AugusStockInfo: AugusStockInfo.id={}'.format(ag_stock_info.id))
+            ag_stock_info = get_or_create_augus_stock_info(seat)
             ag_stock_info.augus_performance_id = ag_performance.id
             ag_stock_info.augus_distribution_code = record.distribution_code
             ag_stock_info.seat_type_classif = record.seat_type_classif
@@ -188,6 +234,16 @@ class AugusDistributionImporter(object):
             ag_stock_info.augus_ticket_id = ag_ticket.id
             ag_stock_info.quantity = record.seat_count
             ag_stock_info.save()
+
+            ag_detail = AuguStockDetail()
+            ag_detail.augus_distribution_code = record.distribution_code
+            ag_detail.seat_type_classif = record.seat_type_classif
+            ag_detail.distributed_at = datetime.datetime.now()
+            ag_detail.augus_seat_type_code = record.seat_type_code
+            ag_detail.augus_unit_value_code = record.unit_value_code
+            ag_detail.augus_stock_info_id = ag_stock_info.id
+            ag_detail.augus_ticket_id = ag_ticket.id
+            ag_detail.save()
 
             # seat の割当
             seat.stock_id = stock.id
