@@ -123,7 +123,7 @@ def back_to_top(request):
 
     ReleaseCartView(request)()
 
-    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or request.context.host_base_url or "/")
+    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or request.context.host_base_url or "/", headers=request.response.headers)
 
 def back(pc=back_to_top, mobile=None):
     if mobile is None:
