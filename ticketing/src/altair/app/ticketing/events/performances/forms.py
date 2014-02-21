@@ -241,7 +241,7 @@ class OrionPerformanceForm(Form):
     )
 
     pattern = TextField(
-        label=u'パターン',
+        label=u'もぎり認証パターン',
         validators=[Optional()],
     )
 
@@ -261,6 +261,21 @@ class OrionPerformanceForm(Form):
     )
 
     coupon_2_pattern = TextField(
-        label=u'[副券] パターン',
+        label=u'[副券] もぎり認証パターン',
+        validators=[Optional()],
+    )
+
+    icon_url = TextField(
+        label=u'アイコンファイルURL',
+        validators=[Optional()],
+    )
+
+    header_url = TextField(
+        label=u'ヘッダ画像URL',
+        validators=[Optional()],
+    )
+
+    background_url = TextField(
+        label=u'背景画像URL',
         validators=[Optional()],
     )

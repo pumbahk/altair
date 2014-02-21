@@ -6,25 +6,47 @@
 
 <%page args="form, action='#'" />
 <%namespace file="/common/helpers.html" name="ch" />
+<style>
+div.short div.control-group * { display: inline-block; }
+div.img-preview { margin-bottom: 20px; }
+</style>
+<script>
+$(function() {
+    var attach = function(n) {
+        $('input[name="'+n+'"').bind('keyup change', function() {
+            $('#'+this.name+'_preview img').remove();
+	    $('<img />').attr('src', this.value).appendTo($('#'+this.name+'_preview'));
+        })
+	.change();
+    };
+    attach('icon_url');
+    attach('header_url');
+    attach('background_url');
+});
+</script>
 <form action="${action}" method="POST">
   ${ch.form_item(form.enabled)}
   <div style="margin-left: 20px;">
-  ${ch.form_item(form.web, style='width: 300px;')}
+  ${ch.form_item(form.web, style='width: 500px;')}
   ${ch.form_item(form.instruction_general, style='width: 500px;')}
   ${ch.form_item(form.instruction_performance, style='width: 500px;')}
+  
   ${ch.form_item(form.qr_enabled)}
-  ${ch.form_item(form.pattern)}
-% if False:
+  <div class="short">${ch.form_item(form.pattern, style='width: 50px;')}</div>
+
   ${ch.form_item(form.icon_url, style='width: 500px;')}
+  <div id="icon_url_preview" class="img-preview"></div>
   ${ch.form_item(form.header_url, style='width: 500px;')}
+  <div id="header_url_preview" class="img-preview"></div>
   ${ch.form_item(form.background_url, style='width: 500px;')}
-% endif
+  <div id="background_url_preview" class="img-preview"></div>
+
   <div>
   ${ch.form_item(form.coupon_2_enabled)}
   <div style="margin-left: 20px;">
   ${ch.form_item(form.coupon_2_name)}
   ${ch.form_item(form.coupon_2_qr_enabled)}
-  ${ch.form_item(form.coupon_2_pattern)}
+  <div class="short">${ch.form_item(form.coupon_2_pattern, style='width: 50px;')}</div>
   </div>
   </div>
   </div>
