@@ -197,9 +197,12 @@ class AugusPerformanceView(_AugusBaseView):
     select_prefix = 'performance-'
 
 
-    @view_config(route_name='augus.performance.index', request_method='GET')
+    @view_config(route_name='augus.performance.index', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/augus/events/performances/index.html')
     def index(self):
-        return HTTPFound(self.request.route_url('augus.performance.show', event_id=self.context.event.id))
+        return dict(augus_performances=self.context.augus_performance_all,
+                    event=self.context.event,
+                    )
 
     @view_config(route_name='augus.performance.show', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/performances/show.html')
