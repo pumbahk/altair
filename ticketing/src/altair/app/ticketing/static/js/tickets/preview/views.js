@@ -143,9 +143,9 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
         this.subCandidates = {}
         this.subsubCandidates = {}
     }, 
-    onChangeRight: function(e,rigntName){
-        var pk = rigntName || this.$middleSelect.val();
-        var sub_pk = this.$rightSelect.val();
+    onChangeRight: function(e,rightName){
+        var pk = this.$middleSelect.val();
+        var sub_pk = rightName || this.$rightSelect.val();
         this.model.changeHolder({pk: pk, name: this.modelname, sub: {pk: sub_pk,  name: "Sub"}}); //params
     }, 
     onChangeLeft: function(e, middleName){
