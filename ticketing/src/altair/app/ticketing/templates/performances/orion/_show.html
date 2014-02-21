@@ -1,0 +1,36 @@
+<%namespace file="/common/helpers.html" name="ch" />
+
+<div>
+  <h4>イベント・ゲート連携</h4>
+</div>
+
+<%page args="form, action='#'" />
+<%namespace file="/common/helpers.html" name="ch" />
+<form action="${action}" method="POST">
+  ${ch.form_item(form.enabled)}
+  <div style="margin-left: 20px;">
+  ${ch.form_item(form.web, style='width: 300px;')}
+  ${ch.form_item(form.instruction_general, style='width: 500px;')}
+  ${ch.form_item(form.instruction_performance, style='width: 500px;')}
+  ${ch.form_item(form.qr_enabled)}
+  ${ch.form_item(form.pattern)}
+% if False:
+  ${ch.form_item(form.icon_url, style='width: 500px;')}
+  ${ch.form_item(form.header_url, style='width: 500px;')}
+  ${ch.form_item(form.background_url, style='width: 500px;')}
+% endif
+  <div>
+  ${ch.form_item(form.coupon_2_enabled)}
+  <div style="margin-left: 20px;">
+  ${ch.form_item(form.coupon_2_name)}
+  ${ch.form_item(form.coupon_2_qr_enabled)}
+  ${ch.form_item(form.coupon_2_pattern)}
+  </div>
+  </div>
+  </div>
+  
+  <div class="form-actions">
+    <input class="btn btn-primary pull-right" type="submit" value="保存" />
+  </div>
+  
+</form>

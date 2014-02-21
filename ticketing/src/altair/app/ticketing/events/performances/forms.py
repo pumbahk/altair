@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, HiddenField
+from wtforms import TextField, HiddenField, TextAreaField, BooleanField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
 from altair.formhelpers import Translations, Required, NullableTextField, JISX0208, after1900
@@ -205,3 +205,62 @@ class PerformancePublicForm(Form):
                     
             if no_ticket_bundles:
                 raise ValidationError(u'券面構成が設定されていない商品設定がある為、公開できません %s' % no_ticket_bundles)
+
+class OrionPerformanceForm(Form):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(OrionPerformanceForm, self).__init__(formdata, obj, prefix, **kwargs)
+        if 'data' in kwargs and kwargs['data'] is not None:
+            d = kwargs['data']
+            for k in d.__table__.columns:
+                if k.name in self:
+                    self[k.name].data = getattr(d, k.name)
+
+    enabled = BooleanField(
+        label=u'連携する',
+        validators=[Optional()],
+    )
+
+    web = TextField(
+        label=u'Webサイト',
+        validators=[Optional()],
+    )
+
+    instruction_general = TextAreaField(
+        label=u'説明(一般)',
+        validators=[Optional()],
+    )
+
+    instruction_performance = TextAreaField(
+        label=u'説明(公演)',
+        validators=[Optional()],
+    )
+
+    qr_enabled = BooleanField(
+        label=u'QR認証を使う',
+        validators=[Optional()],
+    )
+
+    pattern = TextField(
+        label=u'パターン',
+        validators=[Optional()],
+    )
+
+    coupon_2_enabled = BooleanField(
+        label=u'副券を使う',
+        validators=[Optional()],
+    )
+
+    coupon_2_name = TextField(
+        label=u'[副券] 名称',
+        validators=[Optional()],
+    )
+
+    coupon_2_qr_enabled = BooleanField(
+        label=u'[副券] QR認証を使う',
+        validators=[Optional()],
+    )
+
+    coupon_2_pattern = TextField(
+        label=u'[副券] パターン',
+        validators=[Optional()],
+    )
