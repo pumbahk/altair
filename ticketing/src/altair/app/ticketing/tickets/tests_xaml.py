@@ -26,3 +26,40 @@ class XAMLFromSVGTests(unittest.TestCase):
         expected = """\
 <FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><PageContent><FixedPage Width="396.85037" Height="265.74802"><Canvas><TextBlock TextWrapping="Wrap" Width="85.951256" Height="14.219651" Canvas.Left="294.60844" Canvas.Top="211.74922" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{予約番号}}</TextBlock><Path Data="m 368.03009,184.69201 c 0,0 -0.80702,1.86877 -0.80702,1.86877 0,0 z" Fill="#231f20" Opacity="1"/></Canvas></FixedPage></PageContent></FixedDocument>"""
         self.assertEqual(expected, result)
+
+    def test_transform(self):
+        svg = """\
+<svg>
+  <g transform="matrix(1.25,0,0,-1.25,-4.3279125,742.61955)">
+    <g transform="scale(1,-1)">
+      <g transform="translate(-327.90607,-353.12961)" style="fill-rule:nonzero">
+        <path
+            style="fill:#f89c0e"
+            d="m 473.88,-211.16 c 1.12985,-2.86967 3.32105,-7.11032 z"
+            />
+      </g>
+    </g>
+  </g>
+</svg>"""
+        result = self._callFUT(svg, pretty_print=False)
+        expected = """<FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><PageContent><FixedPage Width="0" Height="0"><Canvas><Canvas.RenderTransform><MatrixTransform Matrix="1.25,0,0,-1.25,-4.3279125,742.61955"/></Canvas.RenderTransform><Canvas><Canvas.RenderTransform><ScaleTransform ScaleX="1" ScaleY="-1"/></Canvas.RenderTransform><Canvas><Canvas.RenderTransform><TranslateTransform X="-327.90607" Y="-353.12961"/></Canvas.RenderTransform><Path Data="m 473.88,-211.16 c 1.12985,-2.86967 3.32105,-7.11032 z" Fill="#f89c0e"/></Canvas></Canvas></Canvas></FixedPage></PageContent></FixedDocument>"""
+        self.assertEqual(expected, result)
+
+
+    def test_transform2(self):
+        svg = """\
+<svg>
+  <g transform="matrix(1.25,0,0,-1.25,-4.3279125,742.61955)">
+    <g transform="scale(1,-1)">
+        <path d="m 0,0 c 1,1 2,2 z" />
+    </g>
+    <g transform="scale(1, 1)">
+        <path d="m 20,20 c 1,1 2,2 z" />
+    </g>
+    <path d="m 30,30 c 1,1 2,2 z" />
+  </g>
+</svg>"""
+        result = self._callFUT(svg, pretty_print=False)
+
+        expected = """<FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><PageContent><FixedPage Width="0" Height="0"><Canvas><Canvas.RenderTransform><MatrixTransform Matrix="1.25,0,0,-1.25,-4.3279125,742.61955"/></Canvas.RenderTransform><Canvas><Canvas.RenderTransform><ScaleTransform ScaleX="1" ScaleY="-1"/></Canvas.RenderTransform><Path Data="m 0,0 c 1,1 2,2 z"/></Canvas><Canvas><Canvas.RenderTransform><ScaleTransform ScaleX="1" ScaleY=" 1"/></Canvas.RenderTransform><Path Data="m 20,20 c 1,1 2,2 z"/></Canvas><Path Data="m 30,30 c 1,1 2,2 z"/></Canvas></FixedPage></PageContent></FixedDocument>"""
+        self.assertEqual(expected, result)

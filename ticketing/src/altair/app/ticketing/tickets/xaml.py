@@ -112,6 +112,33 @@ class SimpleControl(object):
                 raise NotImplementedError("only support `flowRegion`, `flowPara` element (flowPara)")
         return contents
 
+    ## これはここに書くべきではないかも？
+    def _build_transform_from_attribute(self, attr):
+        keyword = attr.strip()
+        if keyword.startswith("matrix"):
+            args_string = keyword[len("matrix")+1:-1]
+            e = etree.Element("MatrixTransform")
+            e.attrib["Matrix"] = args_string
+            return e
+        elif keyword.startswith("translate"):
+            x, y = keyword[len("translate")+1:-1].split(",")
+            e = etree.Element("TranslateTransform")
+            e.attrib["X"] = x
+            e.attrib["Y"] = y
+            return e
+        elif keyword.startswith("scale"):
+            x, y = keyword[len("scale")+1:-1].split(",")
+            e = etree.Element("ScaleTransform")
+            e.attrib["ScaleX"] = x
+            e.attrib["ScaleY"] = y
+            return e
+
+    def add_transform(self, canvas, node):
+        attribute = node.attrib["transform"]
+        container = etree.Element("Canvas.RenderTransform")
+        container.append(self._build_transform_from_attribute(attribute))
+        canvas.append(container)
+
 
 class ElementBuilder(object):
     def build_path(self, attrs, data):
@@ -194,9 +221,8 @@ class ElementBuilder(object):
         page.attrib["Height"] =height
         return page
 
-    def build_canvas(self):
+    def build_canvas(self, e, current_tag=None):
         return etree.Element("Canvas")
-
 
 class XAMLFromSVG(object):
     def __init__(self, 
@@ -251,9 +277,11 @@ class XAMLFromSVG(object):
         pass
 
     def visit_g(self, this, n):
-        e = self.element_builder.build_canvas()
-        # e.attrib["Height"] = self.height
-        this.append(e)
+        e = self.element_builder.build_canvas(this, self.control.get_tag(this))
+        if "transform" in n.attrib:
+            self.control.add_transform(e, n)
+        if this != e:
+            this.append(e)
 
         for c in n.iterchildren():
             self.dispatch(e, c)
@@ -337,6 +365,14 @@ flowDiv
 ---------
 Path.d
 M=absolute, m=relative
+
+            <Canvas.RenderTransform>
+                <TransformGroup>
+                    <TranslateTransform X="-327.90607"  Y="-353.12961"/>
+                    <ScaleTransform ScaleX="1" ScaleY="-1"/>
+                    <MatrixTransform Matrix="1.25,0,0,-1.25,-4.3279125,742.61955"/>
+                </TransformGroup>
+            </Canvas.RenderTransform>
 """
 
 def xaml_from_svg(svg, pretty_print=False):
