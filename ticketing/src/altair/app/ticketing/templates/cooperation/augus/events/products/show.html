@@ -7,17 +7,21 @@
 
 %for ag_performance in augus_performances:
 %if ag_performance.performance_id:
+<h3>${ag_performance.performance.name}</h3>
+%for sales_segment in ag_performance.performance.sales_segments:
+<p>${sales_segment.sales_segment_group.name}</p>
 <table class="table">
   <tr>
+    <th>id</th>
     <th>席種</th>
     <th>商品名</th>
     <th>価格</th>
     <th>公開</th>
     <th>オーガス商品</th>
   </tr>
-  %for sales_segment in ag_performance.performance.sales_segments:
   %for product in sales_segment.products:
   <tr>
+    <td>${product.id}</td>
     <td>${product.seat_stock_type.name}</td>
     <td>${product.name}</td>
     <td>${product.price}</td>
@@ -31,7 +35,7 @@
     </td>
   </tr>
   %endfor
-  %endfor
 </table>
+%endfor
 %endif
 %endfor

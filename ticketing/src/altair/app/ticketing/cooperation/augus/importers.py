@@ -25,6 +25,7 @@ from .errors import (
     AugusIntegrityError,
     AugusDataImportError,
     NoSeatError,
+    IllegalImportDataError
     )
 
 def get_or_create_augus_stock_info(seat):
@@ -284,7 +285,7 @@ class AugusDistributionImporter(object):
                     .filter(AugusPerformance.augus_event_code==record.event_code)\
                     .filter(AugusPerformance.augus_performance_code==record.performance_code)\
                     .first()
-                if not ag_perforamnce:
+                if not ag_performance:
                     raise AugusDataImportError(u'augus performance not found')
 
                 # 新しいStockHolderを作成 (初回のみ実行される事を想定)

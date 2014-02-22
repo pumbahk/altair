@@ -10,17 +10,22 @@
 
 %for ag_performance in augus_performances:
 %if ag_performance.performance_id:
+<h3>${ag_performance.performance.name}</h3>
+%for sales_segment in ag_performance.performance.sales_segments:
+<p>${sales_segment.sales_segment_group.name}</p>
+
 <table class="table">
   <tr>
+    <th>id</th>
     <th>席種</th>
     <th>商品名</th>
     <th>価格</th>
     <th>公開</th>
     <th>オーガス商品</th>
   </tr>
-  %for sales_segment in ag_performance.performance.sales_segments:
   %for product in sales_segment.products:
   <tr>
+    <td>${product.id}</td>
     <td>${product.seat_stock_type.name}</td>
     <td>${product.name}</td>
     <td>${product.price}</td>
@@ -29,6 +34,7 @@
       <select class="selectpicker" name="${select_prefix}${product.id}">
         <option value=""/>
         %for augus_ticket in ag_performance.augus_tickets:
+        %if product.seat_stock_type_id == augus_ticket.stock_type_id:
         <option value="${augus_ticket.id}"
                 %if product.augus_ticket_id == augus_ticket.id:
                 selected="True"
@@ -38,13 +44,14 @@
           ${augus_ticket.augus_seat_type_name}
           ${augus_ticket.value}
         </option>
+        %endif
         %endfor
       </select>
     </td>
   </tr>
   %endfor
-  %endfor
 </table>
+%endfor
 %endif
 %endfor
 </form>
