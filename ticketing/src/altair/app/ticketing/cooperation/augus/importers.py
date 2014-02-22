@@ -229,15 +229,20 @@ class AugusDistributionImporter(object):
                                        .format(repr(err), ag_performance.id, record.seat_type_code, record.unit_value_code))
 
         seat = self.augus_seat_to_real_seat(ag_performance, ag_seat)
-        old_stock = seat.stock
+        stock_info = get_enable_stock_info(seat)
+        if stock_info:
+            raise IllegalImportDataError('already exit stock info: AugusStockIfo.id={}'
+                                         .format(stock_info.id))
 
+
+        old_stock = seat.stock
         if seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
             # 未割当 かつ 配席可能な状態
 
 
             # 今回移動した座席に関しては枠移動の必要がないため許容する
             # ただし席種は一致していなければならない
-            if old_stock.stock_holder == None and old_stock != stock:
+            if old_stock.stock_holder != None and old_stock != stock:
                 raise IllegalImportDataError('Cannot seat move: seat_id={}'.format(seat.id))
 
             ag_stock_info = get_or_create_augus_stock_info(seat)
