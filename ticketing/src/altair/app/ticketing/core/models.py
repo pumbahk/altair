@@ -4260,10 +4260,15 @@ class AugusStockDetail(Base, BaseModel):
     seat_type_classif = AnnotatedColumn(Integer, nullable=False)
     augus_unit_value_code = AnnotatedColumn(Integer, nullable=False)
     quantity = AnnotatedColumn(Integer, nullable=False, default=0)
-    augus_stock_info_id = AnnotatedColumn(Identifier, nullable=False)
-    augus_putback_id = AnnotatedColumn(Identifier, nullable=True)
-    augus_ticket_id = AnnotatedColumn(Identifier, nullable=False)
+
+    augus_stock_info_id = Column(Identifier, ForeignKey('AugusStockInfo.id'), nullable=True)
+    augus_stock_info = relationship('AugusStockInfo', backref='augus_stock_details')
+    augus_putback_id = Column(Identifier, ForeignKey('AugusPutback.id'), nullable=True)
+    augus_putback = relationship('AugusPutback', backref='augus_stock_details')
+    augus_ticket_id = Column(Identifier, ForeignKey('AugusTicket.id'), nullable=True)
+    augus_ticket = relationship('AugusTicket', backref='augus_stock_details')
     distributed_at = Column(DateTime, nullable=True)
+
 
 # move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -4335,9 +4340,6 @@ class AugusPutback(Base, BaseModel): #, WithTimestamp, LogicallyDeleted):
 
     augus_stock_info_id = Column(Identifier, ForeignKey('AugusStockInfo.id'), nullable=True)
     augus_stock_info = relationship('AugusStockInfo', backref='augus_putback')
-
-    augus_stock_detail_id = Column(Identifier, ForeignKey('AugusStockDetail.id'), nullable=True)
-    augus_stock_detail = relationship('AugusStockDetail', backref='augus_putback')
 
     @property
     def putback_status(self):
