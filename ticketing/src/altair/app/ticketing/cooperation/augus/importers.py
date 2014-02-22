@@ -19,6 +19,7 @@ from altair.app.ticketing.core.models import (
     AugusSeat,
     AugusPutback,
     AugusStockInfo,
+    AugusStockDetail,
     SeatStatusEnum,
     )
 from .errors import (
@@ -31,8 +32,8 @@ from .errors import (
 def get_or_create_augus_stock_info(seat):
     try:
         return AugusStockInfo.query.filter(AugusStockInfo.seat_id==seat.id).one()
-    except (NoResultFound, MultipleResultsFound) as err:
-        raise
+    except NoResultFound as err:
+        return AugusStockInfo()
 
 def get_enable_stock_info(seat):
     stock_infos = AugusStockInfo.query.filter(AugusStockInfo.seat_id==seat.id).all()
@@ -242,12 +243,13 @@ class AugusDistributionImporter(object):
             ag_stock_info.quantity = record.seat_count
             ag_stock_info.save()
 
-            ag_detail = AuguStockDetail()
+            ag_detail = AugusStockDetail()
             ag_detail.augus_distribution_code = record.distribution_code
             ag_detail.seat_type_classif = record.seat_type_classif
             ag_detail.distributed_at = datetime.datetime.now()
             ag_detail.augus_seat_type_code = record.seat_type_code
             ag_detail.augus_unit_value_code = record.unit_value_code
+            ag_detail.start_on = record.start_on
             ag_detail.augus_stock_info_id = ag_stock_info.id
             ag_detail.augus_ticket_id = ag_ticket.id
             ag_detail.save()

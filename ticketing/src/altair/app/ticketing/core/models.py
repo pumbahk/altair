@@ -4257,7 +4257,7 @@ class AugusStockDetail(Base, BaseModel):
     augus_seat_type_code = AnnotatedColumn(Integer, nullable=False)
     augus_unit_value_code = AnnotatedColumn(Integer, nullable=False)
     start_on = AnnotatedColumn(DateTime, nullable=False)
-    seat_tye_classif = AnnotatedColumn(Integer, nullable=False)
+    seat_type_classif = AnnotatedColumn(Integer, nullable=False)
     augus_unit_value_code = AnnotatedColumn(Integer, nullable=False)
     quantity = AnnotatedColumn(Integer, nullable=False, default=0)
     augus_stock_info_id = AnnotatedColumn(Identifier, nullable=False)
