@@ -47,8 +47,9 @@ def get_enable_stock_info(seat):
     stock_infos = AugusStockInfo.query.filter(AugusStockInfo.seat_id==seat.id).all()
     enables = []
     for info in stock_infos:
-        if AugusPutback.query.filter(AugusPutback.augus_stock_info_id==info.id).first():
-            continue
+        for detail in info.augus_stock_details:
+            if not detail.augus_putback_id:
+                return info
         enables.append(info)
     if len(enables) == 1:
         return enables[0]

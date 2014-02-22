@@ -17,7 +17,6 @@ from sqlalchemy.sql import functions as sqlf
 
 Identifier = sa.BigInteger
 
-
 def upgrade():
     op.create_table(
         'AugusStockDetail',
@@ -35,7 +34,15 @@ def upgrade():
         sa.Column('distributed_at', sa.DateTime, nullable=False),
         )
     op.add_column('Product', sa.Column('augus_ticket_id', Identifier(), nullable=True))
+    op.add_column('AugusPutback', sa.Column('augus_performance_id', Identifier(), nullable=False))
+    op.drop_column('AugusPutback', 'seat_id')
+    op.drop_column('AugusPutback', 'augus_stock_info_id')
+    op.drop_column('AugusPutback', 'quantity')
 
 def downgrade():
     op.drop_column('Product', 'augus_ticket_id')
+    op.drop_column('AugusPutback', 'augus_performance_id')
+    op.add_column('AugusPutback', sa.Column('seat_id', Identifier(), nullable=True))
+    op.add_column('AugusPutback', sa.Column('augus_stock_info_id', Identifier(), nullable=True))
+    op.add_column('AugusPutback', sa.Column('quantity', Identifier(), nullable=True))
     op.drop_table('AugusStockDetail')

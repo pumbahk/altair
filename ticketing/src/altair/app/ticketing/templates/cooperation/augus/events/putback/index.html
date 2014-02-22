@@ -11,14 +11,20 @@
 <table class="table">
   <tr>
     <th>返券コード</th>
+    <th>予約</th>
+    <th>通知</th>
+    <th>完了</th>
   </tr>
-  %for putback_code in putback_codes:
+  %for putback in putbacks:
   <tr>
     <td>
-      <a href="${request.route_url('augus.putback.show', event_id=event.id, putback_code=putback_code)}">
-        返券-${putback_code}
+      <a href="${request.route_url('augus.putback.show', event_id=event.id, putback_code=putback.augus_putback_code)}">
+        返券-${putback.augus_putback_code}
       </a>
     </td>
+    <td>${putback.reserved_at}</td>
+    <td>${putback.notified_at}</td>
+    <td>${putback.finished_at}</td>
   </tr>
   %endfor
 </table>

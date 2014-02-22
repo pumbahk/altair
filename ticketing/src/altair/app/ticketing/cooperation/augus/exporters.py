@@ -69,25 +69,23 @@ class AugusDistributionExporter(object):
 
 
 class AugusPutbackExporter(object):
-    def create_record(self, ag_putback):
-        ag_stock_info = ag_putback.augus_stock_info
-        ag_seat = ag_stock_info.augus_seat
-        ag_performance = ag_stock_info.augus_performance
-        seat = ag_putback.seat
+    def create_record(self, stock_detail):
+        ag_putback = stock_detail.augus_putback
+        ag_stock_info = stock_detail.augus_stock_info
+        ag_seat = stock_detail.augus_stock_info.augus_seat
+        ag_performance = stock_detail.augus_putback.augus_performance
+        seat = stock_detail.augus_stock_info.seat
         stock = seat.stock
         stock_type = stock.stock_type
-
-        ag_ticket = AugusTicket.query.filter(AugusTicket.stock_type_id==stock_type.id).first()
-        if not ag_ticket:
-            raise AugusDataExportError('Stock type unlinked: StockType.id={}'.format(stock_type.id))
+        ag_ticket = stock_detail.augus_ticket
 
         record = PutbackResponseRecord()
         record.event_code = ag_performance.augus_event_code
         record.performance_code = ag_performance.augus_performance_code
-        record.distribution_code = ag_stock_info.augus_distribution_code
-        record.putback_code = ag_putback.augus_putback_code
-        record.seat_type_code = ag_ticket.augus_seat_type_code
-        record.unit_value_code = ag_ticket.unit_value_code
+        record.distribution_code = stock_detail.augus_distribution_code
+        record.putback_code = stock_detail.augus_putback.augus_putback_code
+        record.seat_type_code = stock_detail.augus_seat_type_code
+        record.unit_value_code = stock_detail.augus_unit_value_code
         record.date = ag_performance.start_on.strftime(DateType.FORMAT)
         record.start_on = ag_performance.start_on.strftime(HourMinType.FORMAT)
         record.block = ag_seat.block
@@ -102,7 +100,7 @@ class AugusPutbackExporter(object):
         record.number = ag_seat.num
         record.seat_type_classif = ag_ticket.augus_seat_type_classif
         record.seat_count = ag_stock_info.quantity
-        record.putback_status = ag_putback.putback_status
+        record.putback_status = ag_stock_info.putback_status
         record.putback_type = ag_putback.augus_putback_type
         return record
 
@@ -112,16 +110,16 @@ class AugusPutbackExporter(object):
                                          .filter(AugusPutback.reserved_at!=None)\
                                          .all()
 
-        responses = []
-        for (event_code, putback_code), putbacks_in_event \
-            in itertools.groupby(putbacks, lambda putback: (putback.augus_stock_info.augus_performance.augus_event_code, putback.augus_putback_code)):
-            response = PutbackResponse()
-            response.event_code = event_code
-            response.extend([self.create_record(putback) for putback in putbacks_in_event])
-            responses.append(response)
-
+        # for (event_code, putback_code), putbacks_in_event \
+        #     in itertools.groupby(putbacks, lambda putback: (putback.augus_stock_info.augus_performance.augus_event_code, putback.augus_putback_code)):
         now = datetime.datetime.now()
+
+        responses = []
         for putback in putbacks:
+            response = PutbackResponse()
+            response.event_code = putback.augus_performance.augus_event_code
+            response.extend([self.create_record(stock_detail) for stock_detail in putback.augus_stock_details])
+            responses.append(response)
             putback.notified_at = now
             putback.save()
         return responses
@@ -129,6 +127,8 @@ class AugusPutbackExporter(object):
     def export(self, path, customer_id):
         responses = self.create_responses()
         for response in responses:
+            if len(response) == 0:
+                continue
             response.customer_id = customer_id
             response.start_on = response[0].start_on
             resfile_path = os.path.join(path, response.name)
