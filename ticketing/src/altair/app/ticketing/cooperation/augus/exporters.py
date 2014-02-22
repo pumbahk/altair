@@ -159,8 +159,8 @@ class AugusAchievementExporter(object):
         record.event_code = augus_stock_detail.augus_event_code
         record.performance_code = augus_stock_detail.augus_peformance_code
         record.distribution_code = augus_stock_detail.augus_distribution_code
-        record.seat_type_code = augus_stock_detail.augus_ticket.augus_seat_type_code
-        record.unit_value_code = augus_stock_detail.augus_ticket.unit_value_code
+        record.seat_type_code = augus_ticket.augus_seat_type_code
+        record.unit_value_code = augus_ticket.unit_value_code
         record.date = augus_stock_detail.augus_performance.start_on.strftime(DateType.FORMAT)
         record.start_on = augus_stock_detail.augus_performance.start_on.strftime(HourMinType.FORMAT)
         record.reservation_number = self.get_order_no(ordered_product_item)
@@ -174,7 +174,7 @@ class AugusAchievementExporter(object):
         record.number = augus_stock_detail.augus_seat.num
         record.seat_type_classif = augus_stock_detail.seat_type_classif
         record.seat_count = augus_stock_detail.quantity
-        record.unit_value = augus_stock_detail.augus_ticket.value
+        record.unit_value = augus_ticket.value
         #record.unit_value = self.get_unit_price(opitem) # こっちはaltairで実際に販売した単価(おおよそ (altairでは席の単価は厳密には出せない))
         record.processed_at = time.strftime('%Y%m%d%H%M%S')
         record.achievement_status = str(AugusSeatStatus.get_status(seat))
@@ -220,25 +220,16 @@ class AugusAchievementExporter(object):
         record.achievement_status = str(AugusSeatStatus.get_status(stock_info.seat))
         return record
 
-
-    def _export_from_augus_performance(self, augus_performance):
+    def export_from_augus_performance(self, augus_performance):
         res = AchievementResponse()
         res.event_code = augus_performance.augus_event_code
         res.date = augus_performance.start_on
-        stock_infos = AugusStockInfo\
-            .query\
-            .filter(AugusStockInfo.augus_performance_id==augus_performance.id)\
-            .filter(AugusStockInfo.putbacked_at==None)\
-            .all()
-
-        for stock_info in stock_infos:
-            # 未販売は出力しない
-            if stock_info.seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
-                continue
-            record = self.create_record(stock_info)
-            res.append(record)
+        seats = [stock_info.seat for stock_info in augus_performance.augus_stock_infos]
+        for seat in seats:
+            record = self.create_record(seat)
+            if record:
+                res.append(record)
         return res
-
 
     def _export_from_augus_event_code(self, augus_event_code):
         augus_performances = AugusPerformance\
