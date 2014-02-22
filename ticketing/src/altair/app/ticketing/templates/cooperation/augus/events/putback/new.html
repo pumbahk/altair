@@ -6,7 +6,7 @@
   <h3>オーガス返券予約</h3>
   <%include file="../_menu.html" args="event=event" />
 </div>
-<form role="form" method="POST" action="${request.route_url('augus.putback.new', event_id=event.id)}">
+<form role="form" method="GET" action="${request.route_url('augus.putback.confirm', event_id=event.id)}">
 <button class="btn" type="submit">返券を予約</button>
 <br/>
 <br/>

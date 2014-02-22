@@ -47,8 +47,10 @@ ROUTE_URL_RESOURCE = {
     # putback
     'augus.putback.index': ('/events/{event_id}/putback', PerformanceResource),
     'augus.putback.new': ('/events/{event_id}/putback/new', PerformanceResource),
+    'augus.putback.confirm': ('/events/{event_id}/putback/confirm', PerformanceResource),
+    'augus.putback.reserve': ('/events/{event_id}/putback/reserve', PerformanceResource),
     'augus.putback.show': ('/events/{event_id}/putback/show/{putback_code}', PerformanceResource),
-    'augus.putback.reserve': ('/events/{event_id}/putback/reserve/{putback_code}', PerformanceResource),
+
 
     # achievement
     'augus.achievement.index': ('/events/{event_id}/achievement', PerformanceResource),

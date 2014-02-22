@@ -403,6 +403,57 @@ class AugusPutbackView(_AugusBaseView):
                     stock_holders=stock_holders,
                     )
 
+
+    @view_config(route_name='augus.putback.confirm', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/augus/events/putback/confirm.html')
+    def confirm(self):
+        stock_holder_id = int(self.request.params.get('stock_holder'))
+        performance_ids = map(int, self.request.params.getall('performance'))
+
+        error_url = self.request.route_url('augus.putback.new', event_id=self.context.event.id)
+
+        stock_holder = StockHolder.query.filter(StockHolder.id==stock_holder_id).one()
+        if not stock_holder.is_putback_target:
+            self.request.session.flash(u'この枠は返券できません(返券する為には外部返券利用をONにしてください): StockHolder.id={}'.format(stock_holder.id))
+            raise HTTPFound(error_url)
+
+        now = datetime.datetime.now()
+        augus_stock_infos = []
+        for performance_id in performance_ids:
+            ag_performance = AugusPerformance.query.filter(AugusPerformance.performance_id==performance_id).first()
+            if not ag_performance or not ag_performance.performance_id:
+                self.request.session.flash(u'連携していないもしくは不正な公演が指定されました: Performance.id={}'.format(performance_id) )
+                raise HTTPFound(error_url)
+
+            seats = [seat
+                     for stock in stock_holder.stocks
+                     if stock.performance_id == performance_id
+                     for seat in stock.seats
+                     ]
+
+            if 0 == len(seats):
+                self.request.session.flash(u'対象になる座席がありません: Performance.id={}'.format(performance_id) )
+                return HTTPFound(error_url)
+
+            try:
+                for seat in seats:
+                    # 連携/配券できていないもが含まれていた場合エラーする
+                    #ag_stock_info = AugusStockInfo.query.filter(AugusStockInfo.seat_id==seat.id).all()
+                    ag_stock_info = get_enable_stock_info(seat)
+                    if not ag_stock_info:
+                        self.request.session.flash(u'配券がされていない座席は返券できません。もし席があるのであれば返券予約済みかもしれません: Seat.id={}'.format(seat.id))
+                        raise HTTPFound(error_url)
+                    augus_stock_infos.append(ag_stock_info)
+            except (MultipleResultsFound, NoResultFound) as err:
+                seat_id = seat.id if seat else None
+                self.request.session.flash(u'返券できない座席がありました: Seat.id={}'.format(seat_id))
+                raise  HTTPFound(error_url)
+        self.request.session.flash(u'次の追券情報を使って返券を実行します。よろしければ確定を押してください')
+        return dict(event=self.context.event,
+                    augus_stock_infos=augus_stock_infos,
+                    )
+
+
     @view_config(route_name='augus.putback.new', request_method='POST')
     def new_post(self):
         stock_holder_id = int(self.request.params.get('stock_holder'))
