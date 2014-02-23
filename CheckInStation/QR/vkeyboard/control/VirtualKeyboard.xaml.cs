@@ -40,7 +40,11 @@ namespace vkeyboard.control
             var ctl = d as VirtualKeyboard;
             if (ctl != null)
             {
-                ctl.Input.Text = ctl.Text;
+                if (ctl.Text != null)
+                {
+                    ctl.Input.Text = ctl.Text;
+                }
+                ctl.Input.Input.Select(ctl.Input.Text.Length, 0);
             }
         }
 

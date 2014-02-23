@@ -321,6 +321,7 @@ namespace vkeyboard.control
         {
             this.Caret.Width = this.CaretWidth;
             this.Caret.Height = this.CaretHeight;
+            this.MoveCustomCaret();
             //this.Caret.Background = this.CaretBrush;
         }
 
