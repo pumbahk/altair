@@ -1,9 +1,10 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-
+  <SolidColorBrush x:Key="SubmitButtonTextBrush" Color="#840315"/>
+    
   <Style x:Key="SubmitButtonTextStyle" TargetType="TextBlock">
-    <Setter Property="Foreground" Value="#840315"/>
+    <Setter Property="Foreground" Value="{StaticResource SubmitButtonTextBrush}"/>
     <Setter Property="FontSize" Value="30"/>
   </Style>
 

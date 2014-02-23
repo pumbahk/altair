@@ -25,6 +25,16 @@ namespace vkeyboard.control
             InitializeComponent();
         }
 
+        public static readonly DependencyProperty DisplayModeProperty =
+        DependencyProperty.Register("DisplayMode", typeof(CustomTextBoxDisplayMode), typeof(VirtualKeyboard),
+        new FrameworkPropertyMetadata(CustomTextBoxDisplayMode.raw));
+
+        public CustomTextBoxDisplayMode DisplayMode
+        {
+            get { return (CustomTextBoxDisplayMode)this.GetValue(DisplayModeProperty); }
+            set { this.SetValue(DisplayModeProperty, value); }
+        }
+
         private static void OnTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var ctl = d as VirtualKeyboard;

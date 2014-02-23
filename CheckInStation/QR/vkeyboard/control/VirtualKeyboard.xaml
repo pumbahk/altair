@@ -149,6 +149,7 @@
         <c:CustomTextBox
            x:Name="Input"
            ForceCursor="True" 
+           DisplayMode="{Binding ElementName=Container, Path=DisplayMode}"
            DisplayLeft="10"
            DisplayTop="5"
            Canvas.Top="24"

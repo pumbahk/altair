@@ -18,6 +18,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using vkeyboard.control;
 
 namespace QR.presentation.gui.page
 {
@@ -60,7 +61,9 @@ namespace QR.presentation.gui.page
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            await (this.DataContext as AuthPasswordDataContext).PrepareAsync().ConfigureAwait(false);
+            var ctx = this.DataContext as AuthPasswordDataContext;
+            await ctx.PrepareAsync().ConfigureAwait(true);
+            this.KeyPad.Text = (ctx.Case as CaseAuthPassword).LoginPassword;
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
@@ -73,6 +76,12 @@ namespace QR.presentation.gui.page
                 if (ctx.Event.Status == InternalEventStaus.success)
                 {
                     ctx.TreatErrorMessage();
+
+                    //xxx: display error dialog
+                    if (ctx.ErrorMessage != String.Empty)
+                    {
+                        this.ErrorDialog.Show();
+                    }
                     AppUtil.GetNavigator().NavigateToMatchedPage(case_, this, ctx.ErrorMessage); //エラーメッセージを受け渡す
 
                     //ここである必要はあまりないけれど。裏側で広告用の画像をとる
@@ -85,6 +94,12 @@ namespace QR.presentation.gui.page
                 else
                 {
                     ctx.TreatErrorMessage();
+
+                    //xxx: display error dialog
+                    if (ctx.ErrorMessage != String.Empty)
+                    {
+                        this.ErrorDialog.Show();
+                    }
                     AppUtil.GetNavigator().NavigateToMatchedPage(case_, this, ctx.ErrorMessage); //エラーメッセージを受け渡す
                 }
             });
@@ -92,7 +107,8 @@ namespace QR.presentation.gui.page
 
         private void KeyPad_KeyPadFinish(object sender, RoutedEventArgs e)
         {
-            (this.DataContext as AuthPasswordDataContext).LoginPassword = (sender as KeyPad).InputString;
+            e.Handled = true;
+            (this.DataContext as AuthPasswordDataContext).LoginPassword = (sender as VirtualKeyboard).Text;
             this.OnSubmitWithBoundContext(sender, e);
         }
 
@@ -110,7 +126,7 @@ namespace QR.presentation.gui.page
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            this.KeyPad_KeyPadFinish(this.KeyPad, e);
+            this.KeyPad.RaiseVirtualkeyboardFinishEvent();
         }
 
     }
