@@ -76,9 +76,9 @@
                     <!-- ボタン -->
                     <Button
             Canvas.Right="60"
-            Canvas.Top="643"
+            Canvas.Top="655"
             Click="Button_Click"
-            Style="{StaticResource SubmitButton}" Canvas.Left="1074"
+            Style="{StaticResource SubmitButton}"
             >
                         <TextBlock FontSize="20">決定</TextBlock>
                     </Button>
@@ -87,62 +87,3 @@
         </Viewbox>
     </Grid>
 </Page>
-
-
-<!--
-    <Page x:Class="QR.presentation.gui.page.PageAuthInput"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:control="clr-namespace:QR.presentation.gui.control"
-      xmlns:c="clr-namespace:QR.presentation.gui.control"
-      mc:Ignorable="d" 
-      d:DesignHeight="50" d:DesignWidth="50"
-    ShowsNavigationUI="False"
-	Title="PageAuthInput"
-    Loaded="OnLoaded"
-    >    
-    <Grid Style="{StaticResource ToplevelGrid}">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <c:InspectCase Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="7" Grid.RowSpan="2"/>
-        
-        <c:KeyPad Grid.Row="2" Grid.Column="1" Grid.RowSpan="6" Grid.ColumnSpan="7"
-                      Style="{StaticResource UserKeyPad}"
-                      Content="{StaticResource VirtualInputKeyboard}"
-                      KeyPadFinish="KeyPad_KeyPadFinish"
-                  x:Name="KeyPad">
-            <c:KeyPad.DataContext>
-                <c:KeyPadPopupContext PreviewType="raw" Description="ログインユーザー名"/>
-            </c:KeyPad.DataContext>
-        </c:KeyPad>
-        <Button Grid.Row="7" Grid.Column="7" Grid.ColumnSpan="1" Click="Button_Click"
-                 Style="{StaticResource SubmitButtonStyle}">決定</Button>
-    </Grid>
-</Page>
--->
