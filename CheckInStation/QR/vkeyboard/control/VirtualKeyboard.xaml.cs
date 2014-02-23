@@ -85,9 +85,10 @@ namespace vkeyboard.control
             remove { RemoveHandler(VirtualkeyboardFinishEvent, value); }
         }
 
-        void RaiseVirtualkeyboardFinishEvent()
+        public void RaiseVirtualkeyboardFinishEvent()
         {
             var e = new RoutedEventArgs(VirtualKeyboard.VirtualkeyboardFinishEvent);
+            this.Text = this.Input.Text;
             RaiseEvent(e);
         }
 
@@ -95,8 +96,7 @@ namespace vkeyboard.control
         {
             if (e.Key == Key.Return)
             {
-                    this.Text = this.Input.Text;
-                    RaiseVirtualkeyboardFinishEvent();
+                RaiseVirtualkeyboardFinishEvent();
             }
         }
 

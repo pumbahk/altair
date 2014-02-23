@@ -11,6 +11,6 @@
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
   </PropertyGroup>
   <PropertyGroup>
-    <ReferencePath>C:\Users\podhmo\work\altair\CheckInStation\QR\QR\bin\Release\;C:\Users\podhmo\work\altair\CheckInStation\QR\QR\bin\Debug\;C:\Users\podhmo\work\altair\CheckInStation\QR\QR\</ReferencePath>
+    <ReferencePath>C:\Users\podhmo\work\altair\CheckInStation\QR\vkeyboard\bin\Debug\</ReferencePath>
   </PropertyGroup>
 </Project>

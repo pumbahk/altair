@@ -88,7 +88,7 @@ namespace QR.presentation.gui.page
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            this.KeyPad_KeyPadFinish(this.KeyPad, e); //!!!まったく別の経路からRoutedEventが発生しているので良くない。
+            this.KeyPad.RaiseVirtualkeyboardFinishEvent();
         }
     }
 }

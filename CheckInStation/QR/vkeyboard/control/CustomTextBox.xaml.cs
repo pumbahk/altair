@@ -234,7 +234,7 @@ namespace vkeyboard.control
             get { return (double)this.GetValue(DisplayTopProperty); }
             set { this.SetValue(DisplayTopProperty, value); }
         }
-        public new static readonly DependencyProperty DisplayTopProperty =
+        public static readonly DependencyProperty DisplayTopProperty =
                DependencyProperty.Register("DisplayTop", typeof(double), typeof(CustomTextBox),
                new FrameworkPropertyMetadata(0.0, OnFontSizeChanged));
 

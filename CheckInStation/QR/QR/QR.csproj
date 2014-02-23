@@ -116,8 +116,9 @@
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="vkeyboard">
-      <HintPath>..\vkeyboard\bin\Release\vkeyboard.dll</HintPath>
+    <Reference Include="vkeyboard, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\vkeyboard\bin\Debug\vkeyboard.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="WpfKb, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
