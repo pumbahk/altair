@@ -1,4 +1,142 @@
-﻿<Page x:Class="QR.presentation.gui.page.PageAuthInput"
+﻿<Page x:Class="GridPaper.VirtualKeypadPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
+      xmlns:vk="clr-namespace:vkeyboard.control;assembly=vkeyboard"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:c="clr-namespace:GridPaper.Control"
+      mc:Ignorable="d" 
+      d:DesignHeight="364" d:DesignWidth="683"  
+	Title="VirtualKeypadPage">
+    <Page.Resources>
+        <Style x:Key="MainBorder" TargetType="Border">
+            <Setter Property="CornerRadius" Value="24.5"/>
+            <Setter Property="Height" Value="500"/>
+            <Setter Property="Width" Value="1100"/>
+            <Setter Property="BorderThickness" Value="10"/>
+            <Setter Property="BorderBrush" Value="{StaticResource MainBorderBrush}"/>
+        </Style>
+    </Page.Resources>
+    <Grid>
+        <Viewbox>
+            <Grid Background="{StaticResource LogoBackgroundBrush}">
+                <Canvas Width="1366" Height="728">
+                    <Border Canvas.Top="-17" Canvas.Left="0" Width="1366" Height="768" BorderThickness="3" BorderBrush="Blue"></Border>
+
+                    <!-- メインコンテンツ -->
+                    <Border 
+                        Canvas.Left="140"
+                        Canvas.Top="143"
+                        Style="{StaticResource MainBorder}">
+                        <Grid>
+                            <vk:VirtualKeyboard Text="ababba" 
+                                               Description="(入力例: RT01010101)"
+                                               DisableTenKey="False"
+                                               DisableAlphabetKey="True"/>
+                        </Grid>
+                    </Border>
+
+
+
+
+
+
+                    <!-- 情報 -->
+                    <Grid
+                        Canvas.Top="17"
+                        Canvas.Left="264"
+                        Height="70"
+                        Width="1040"
+                        Background="#eeeeee"
+                        >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="12"/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition Height="12"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28"/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="28"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- todo padding 23-->
+                        <WrapPanel 
+                        Grid.Row="1" Grid.Column="1"
+                        HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                            <TextBlock Style="{StaticResource MainText}">予約番号:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding Orderno, Mode=OneWay}"></TextBlock>
+                        </WrapPanel>
+                        <WrapPanel
+                        Grid.Row="1" Grid.Column="2"
+                        HorizontalAlignment="Right" VerticalAlignment="Stretch">
+                            <TextBlock Style="{StaticResource MainText}">お客様(氏名):</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding CustomerName, Mode=OneWay}"></TextBlock>
+                        </WrapPanel>
+                        <WrapPanel
+                        Grid.Row="2" Grid.Column="1"
+                        HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                            <TextBlock Style="{StaticResource MainText}">試合日時:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
+                        </WrapPanel>
+                        <WrapPanel
+                        Grid.Row="2" Grid.Column="2"
+                        HorizontalAlignment="Right" VerticalAlignment="Stretch">
+                            <TextBlock Style="{StaticResource MainText}">発券予定枚数:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding NumberOfPrintableTicket, Mode=OneWay}"></TextBlock>
+                        </WrapPanel>
+                    </Grid>
+
+                    <!-- 説明(description)-->
+                    <StackPanel
+                        Canvas.Top="100"
+                        Orientation="Horizontal"
+                        >
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Style.Triggers>
+                                    <Trigger Property="Orientation" Value="Horizontal">
+                                        <Setter Property="Canvas.Left" 
+                                                Value="{Binding RelativeSource={RelativeSource Self}, 
+                                                Path=ActualWidth,
+                                                Converter={StaticResource MathConverter}, 
+                                                ConverterParameter=(1366-@VALUE)*0.5}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock 
+                        d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
+                        Text="{Binding Description}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontSize" Value="30"/>
+                                    <Setter Property="Foreground" Value="{StaticResource MainTextBrush}"/>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!-- ボタン -->
+                    <Button
+            Canvas.Right="60"
+            Canvas.Top="655"
+
+            Style="{StaticResource SubmitButton}"
+            >
+                        <TextBlock FontSize="20">決定</TextBlock>
+                    </Button>
+                </Canvas>
+            </Grid>
+        </Viewbox>
+    </Grid>
+</Page>
+
+
+<!--
+    <Page x:Class="QR.presentation.gui.page.PageAuthInput"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -53,3 +191,4 @@
                  Style="{StaticResource SubmitButtonStyle}">決定</Button>
     </Grid>
 </Page>
+-->
