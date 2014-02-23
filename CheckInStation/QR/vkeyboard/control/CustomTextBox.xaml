@@ -59,7 +59,9 @@
                 </Border.Triggers>
             </Border>
 
-            <TextBlock x:Name="DisplayText" Canvas.Left="0" Canvas.Top="0">
+            <TextBlock x:Name="DisplayText"
+                       Canvas.Left="{Binding ElementName=Container,Path=DisplayLeft}"
+                       Canvas.Top="{Binding ElementName=Container,Path=DisplayTop}">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock">
                         <Style.Triggers>

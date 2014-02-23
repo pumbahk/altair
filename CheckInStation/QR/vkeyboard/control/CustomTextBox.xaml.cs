@@ -227,9 +227,26 @@ namespace vkeyboard.control
         }
         public new static readonly DependencyProperty HeightProperty =
                DependencyProperty.Register("Height", typeof(double), typeof(CustomTextBox),
-               new FrameworkPropertyMetadata(Double.NaN, OnFontSizeChanged));
+               new FrameworkPropertyMetadata(Double.NaN, OnHeightChanged));
 
-        
+        public double DisplayTop
+        {
+            get { return (double)this.GetValue(DisplayTopProperty); }
+            set { this.SetValue(DisplayTopProperty, value); }
+        }
+        public new static readonly DependencyProperty DisplayTopProperty =
+               DependencyProperty.Register("DisplayTop", typeof(double), typeof(CustomTextBox),
+               new FrameworkPropertyMetadata(0.0, OnFontSizeChanged));
+
+        public double DisplayLeft
+        {
+            get { return (double)this.GetValue(DisplayLeftProperty); }
+            set { this.SetValue(DisplayLeftProperty, value); }
+        }
+
+        public static readonly DependencyProperty DisplayLeftProperty =
+               DependencyProperty.Register("DisplayLeft", typeof(double), typeof(CustomTextBox),
+               new FrameworkPropertyMetadata(0.0, OnFontSizeChanged));
         private static void OnCaretWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var ctl = d as CustomTextBox;

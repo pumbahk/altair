@@ -148,7 +148,9 @@
         <!-- 入力要素 -->
         <c:CustomTextBox
            x:Name="Input"
-           ForceCursor="True"            
+           ForceCursor="True" 
+           DisplayLeft="10"
+           DisplayTop="5"
            Canvas.Top="24"
            Canvas.Left="24"         
            Width="560"
