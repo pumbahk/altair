@@ -1,0 +1,221 @@
+﻿<UserControl x:Class="vkeyboard.control.VirtualKeyboard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:vm="clr-namespace:vkeyboard.viewmodel"
+             xmlns:c="clr-namespace:vkeyboard.control"
+             x:Name="Container"
+             mc:Ignorable="d" 
+             Loaded="Container_Loaded"
+             MouseEnter="Container_MouseEnter"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Style>
+        <Style TargetType="UserControl">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ElementName=Container,Path=IsMouseOver}" Value="True">
+                    <Setter Property="FocusManager.FocusedElement" Value="{Binding ElementName=TestInput}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Style>
+    <UserControl.Resources>
+        <Style TargetType="c:CustomTextBox" x:Key="KeyPadInputBox2">
+            <Setter Property="Background" Value="#FEFEE0"/>
+            <Setter Property="BorderBrush" Value="{StaticResource MainBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="5"/>
+            <Setter Property="Foreground" Value="{StaticResource MainTextBrush}"/>
+            <Setter Property="Padding" Value="20,0,20,0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="40"/>
+            <Setter Property="CaretHeight" Value="35"/>
+            <Setter Property="CaretWidth" Value="7"/>
+        </Style>
+        
+        <!-- keyboard用のbrush-->
+        <LinearGradientBrush x:Key="KeyPadSurfaceBrush" StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#B70017" Offset="0.0"></GradientStop>
+            <GradientStop Color="#860010" Offset="1.0"></GradientStop>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="KeyPadMouseOverSurfaceBrush" StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#860010" Offset="0.0"></GradientStop>
+            <GradientStop Color="#B70017" Offset="1.0"></GradientStop>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="KeyPadSurfaceDisableBrush" StartPoint="0.5,0" EndPoint="0.5,1" Opacity="0.3">
+            <GradientStop Color="#CCCCCC" Offset="0.0"></GradientStop>
+            <GradientStop Color="#AAAAAA" Offset="1.0"></GradientStop>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="KeyPadMouseOverSurfaceDisableBrush" StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#AAAAAA" Offset="0.0"></GradientStop>
+            <GradientStop Color="#CCCCCC" Offset="1.0"></GradientStop>
+        </LinearGradientBrush>
+
+        <SolidColorBrush x:Key="KeyPadSurfaceBorderBrush" Color="#860010"/>
+        <SolidColorBrush x:Key="KeyPadSurfaceBorderDisableBrush" Color="#999999"/>
+
+        <Style TargetType="Border" x:Key="ObstructiveBorderAlphabetKey">
+            <Setter Property="Background" Value="Transparent"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ElementName=Container, Path=DisableAlphabetKey}" Value="False">
+                    <Setter Property="Visibility" Value="Hidden"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="Border" x:Key="ObstructiveBorderTenKey">
+            <Setter Property="Background" Value="Transparent"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ElementName=Container, Path=DisableTenKey}" Value="False">
+                    <Setter Property="Visibility" Value="Hidden"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+
+        <Style TargetType="vm:AlphabetKeyPad">
+            <Style.Resources>
+                <Style TargetType="vm:KeyboardSurface">
+                    <Setter Property="Background" Value="{StaticResource KeyPadSurfaceBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderBrush}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding DisableAlphabetKey, ElementName=Container}" Value="True">
+                            <Setter Property="Background" Value="{StaticResource KeyPadSurfaceDisableBrush}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderDisableBrush}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+                <Style TargetType="vm:MouseOverKeyboardSurface">
+                    <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderBrush}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding DisableAlphabetKey, ElementName=Container}" Value="True">
+                            <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceDisableBrush}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderDisableBrush}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Style.Resources>
+        </Style>
+        <Style TargetType="vm:TenKeyPad">
+            <Style.Resources>
+                <Style TargetType="vm:KeyboardSurface">
+                    <Setter Property="Background" Value="{StaticResource KeyPadSurfaceBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderBrush}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding DisableTenKey, ElementName=Container}" Value="True">
+                            <Setter Property="Background" Value="{StaticResource KeyPadSurfaceDisableBrush}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderDisableBrush}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+                <Style TargetType="vm:MouseOverKeyboardSurface">
+                    <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderBrush}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding DisableTenKey, ElementName=Container}" Value="True">
+                            <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceDisableBrush}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderDisableBrush}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Style.Resources>
+        </Style>
+        <Style TargetType="vm:CursorsKeyPad">
+            <Style.Resources>
+                <Style TargetType="vm:KeyboardSurface">
+                    <Setter Property="Background" Value="{StaticResource KeyPadSurfaceBrush}"/>
+                </Style>
+                <Style TargetType="vm:MouseOverKeyboardSurface">
+                    <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceBrush}"/>
+                </Style>
+            </Style.Resources>
+        </Style>
+        <Style TargetType="vm:ClearKeysPad">
+            <Style.Resources>
+                <Style TargetType="vm:KeyboardSurface">
+                    <Setter Property="Background" Value="{StaticResource KeyPadSurfaceBrush}"/>
+                </Style>
+                <Style TargetType="vm:MouseOverKeyboardSurface">
+                    <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceBrush}"/>
+                </Style>
+            </Style.Resources>
+        </Style>
+
+    </UserControl.Resources>
+    <Canvas>
+        
+        <!-- 入力要素 -->
+        <c:CustomTextBox
+           x:Name="Input"
+           ForceCursor="True"            
+           Canvas.Top="24"
+           Canvas.Left="24"         
+           Width="560"
+           Height="64"
+           Style="{StaticResource KeyPadInputBox2}" 
+           KeyDown="OnKeyDownHandler"
+           >
+        </c:CustomTextBox>
+
+        <!-- placeholder-->        
+        <TextBlock
+            x:Name="PlaceHolder"
+            Canvas.Top="24"
+            Canvas.Left="24"
+            FontSize="36"
+            Padding="26,6,6,0"
+            MouseEnter="PlaceHolder_MouseEnter"
+            Text="{Binding ElementName=Container,Path=Description,Mode=OneWay}"
+            >            
+            <TextBlock.Foreground>
+                <SolidColorBrush Color="Gray" Opacity="0.85"></SolidColorBrush>
+            </TextBlock.Foreground>
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=Text, ElementName=Input}" Value="">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                    <Setter Property="Visibility" Value="Hidden"/>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+
+        <!-- Cursor -->
+            <vm:CursorsKeyPad Width="140" Height="64"
+                                  Canvas.Left="657"
+                                  Canvas.Top="24"/>
+
+            <!-- clear なにかのせいで(0,-6) -->
+            <vm:ClearKeysPad Width="210" Height="64"
+                                  Canvas.Left="837"
+                                  Canvas.Top="24"/>
+
+
+            <!-- アルファベットキー (marginの分width+12, -6,-6移動)-->
+
+            <vm:AlphabetKeyPad Width="632" Height="342" 
+                             Canvas.Left="24" 
+                             Canvas.Top="114">
+            </vm:AlphabetKeyPad>
+            <!-- disableの時clickできないように隠す -->
+        <Border Width="632" Height="342"
+                Style="{StaticResource ObstructiveBorderAlphabetKey}"
+                        Canvas.Left="24"                
+                        Canvas.Top="114"/>
+
+
+        <!-- テンキー (marginの分Width, translate(-6,-6))-->
+            <vm:TenKeyPad
+                              Width="273" Height="343" 
+                              Canvas.Right="24"
+                              Canvas.Top="114"
+                                />
+        <Border Width="273" Height="343" Canvas.Top="114" Canvas.Right="24" Style="{StaticResource ObstructiveBorderTenKey}"/>
+        
+    </Canvas>
+</UserControl>
