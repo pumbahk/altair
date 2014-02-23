@@ -75,14 +75,18 @@
 
                     <!-- ボタン -->
                     <Button
-            Canvas.Right="60"
-            Canvas.Top="655"
-            Click="Button_Click"
-            Style="{StaticResource SubmitButton}"
-            >
+                     Canvas.Right="60"
+                     Canvas.Top="655"
+                     Click="Button_Click"
+                     Style="{StaticResource SubmitButton}">
                         <TextBlock FontSize="20">決定</TextBlock>
                     </Button>
-                </Canvas>
+
+                    <!-- エラーダイアログ -->
+                    <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
+                                      MessageText="{Binding ErrorMessage}"
+                                      ButtonText="OK"/>
+                    </Canvas>
             </Grid>
         </Viewbox>
     </Grid>

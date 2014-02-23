@@ -71,6 +71,12 @@ namespace QR.presentation.gui.page
             {
                 var case_ = await ctx.SubmitAsync(); //入力値チェック
                 ctx.TreatErrorMessage();
+
+                //xxx: display error dialog
+                if (ctx.ErrorMessage != String.Empty)
+                {
+                    this.ErrorDialog.Show(); 
+                }
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);   
             });
         }

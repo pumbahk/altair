@@ -12,56 +12,9 @@
     <Application.Resources>
         <ResourceDictionary>
           <!-- converter -->
-          <converter:MathConverter x:Key="MathConverter"/>
-<!--
-            <LinearGradientBrush x:Key="BackwardButtonBackGround"
-                             StartPoint="0.5,0"
-                             EndPoint="0.5,1">
-                <GradientStop Color="#F6F6F6" Offset="0.05"/>
-                <GradientStop Color="#BBBBBB" Offset="1.0"/>
-            </LinearGradientBrush>
-
-            <LinearGradientBrush x:Key="MouseBackwardButtonBackGround"
-                             StartPoint="0.5,0"
-                             EndPoint="0.5,1">
-                <GradientStop Color="#BBBBBB" Offset="0.05"/>
-                <GradientStop Color="#F6F6F6" Offset="1.0"/>
-            </LinearGradientBrush>
-            <LinearGradientBrush x:Key="SubmitButtonBackGround"
-                             StartPoint="0.5,0"
-                             EndPoint="0.5,1">
-                <GradientStop Color="#FFD87D" Offset="0.05"/>
-                <GradientStop Color="#F6AA00" Offset="1.0"/>
-            </LinearGradientBrush>
-
-            <LinearGradientBrush x:Key="MouseSubmitButtonBackGround"
-                             StartPoint="0.5,0"
-                             EndPoint="0.5,1">
-                <GradientStop Color="#F6AA00" Offset="0.05"/>
-                <GradientStop Color="#FFD87D" Offset="1.0"/>
-            </LinearGradientBrush>
-            <SolidColorBrush x:Key="CurrentSelectionBoxColor">
-                <SolidColorBrush.Color>#fefee0</SolidColorBrush.Color>
-            </SolidColorBrush>
-            <SolidColorBrush x:Key="DisableSelectionBoxColor">
-                <SolidColorBrush.Color>#eeeeee</SolidColorBrush.Color>
-            </SolidColorBrush>
-            <SolidColorBrush x:Key="MouseOverSelectionBoxColor">
-                <SolidColorBrush.Color>#c7ecfc</SolidColorBrush.Color>
-            </SolidColorBrush>
-            <SolidColorBrush x:Key="CheckBoxFillNormal"
-                     Color="#F4F4F4"/>
-            <SolidColorBrush x:Key="CheckBoxStroke"
-                     Color="#8E8F8F"/>
-
-            <SolidColorBrush x:Key="MainBorderBrush">
-                <SolidColorBrush.Color>#840315</SolidColorBrush.Color>
-            </SolidColorBrush>
-            <SolidColorBrush x:Key="MainTextBrush">
-                <SolidColorBrush.Color>#840315</SolidColorBrush.Color>
-            </SolidColorBrush>
--->
-
+            <converter:MathConverter x:Key="MathConverter"/>
+            <converter:NotEmptyStringConverter x:Key="NotEmptyStringConverter"/>
+            
             <!-- virtual keyboard-->
             <c:KeyPadPopupContext x:Key="KeyPadContextPassword" PreviewType="password"/>
             <c:KeyPadPopupContext x:Key="KeyPadContextRaw" PreviewType="raw"/>

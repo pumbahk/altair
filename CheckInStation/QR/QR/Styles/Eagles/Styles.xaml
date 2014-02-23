@@ -6,5 +6,7 @@
         <ResourceDictionary Source="./Controls.Checkbox.xaml" />
         <ResourceDictionary Source="./Controls.GrayoutDisabled.xaml" />
         <ResourceDictionary Source="./Controls.SubmitButton.xaml" />
+        <ResourceDictionary Source="./Controls.MessageDialog.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>
+    

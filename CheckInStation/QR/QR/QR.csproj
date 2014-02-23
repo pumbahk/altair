@@ -142,8 +142,12 @@
       <DependentUpon>KeyPad.xaml</DependentUpon>
     </Compile>
     <Compile Include="presentation\gui\control\AlnumPad.cs" />
+    <Compile Include="presentation\gui\control\MessageDialog.xaml.cs">
+      <DependentUpon>MessageDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="presentation\gui\control\TelPad.cs" />
     <Compile Include="presentation\gui\converter\MathConverter.cs" />
+    <Compile Include="presentation\gui\converter\NotEmptyStringConverter.cs" />
     <Compile Include="presentation\gui\HomeWindow.xaml.cs">
       <DependentUpon>HomeWindow.xaml</DependentUpon>
     </Compile>
@@ -346,6 +350,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="presentation\gui\control\MessageDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="presentation\gui\HomeWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -417,6 +425,10 @@
     <Page Include="Styles\Base\Themes.Text.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Eagles\Controls.MessageDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Styles\Individual.xaml">
       <SubType>Designer</SubType>
