@@ -9,13 +9,14 @@
     <!-- 0.6-->
   </Style>
 
-  <Style TargetType="Border" x:Key="KeyPadDebugPanel">
-    <Style.Resources>
-      <LinearGradientBrush x:Key="InputFollowBrush">
+    <LinearGradientBrush x:Key="InputFollowBrush">
         <GradientStop Color="lightGray" Offset="1.0"/>
         <GradientStop Color="Gray" Offset="0.9"/>
         <GradientStop Color="black" Offset="0.4"/>
-      </LinearGradientBrush>
+    </LinearGradientBrush>
+
+    <Style TargetType="Border" x:Key="KeyPadDebugPanel">
+    <Style.Resources>
       <Style TargetType="TextBlock">
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontSize" Value="24"/>

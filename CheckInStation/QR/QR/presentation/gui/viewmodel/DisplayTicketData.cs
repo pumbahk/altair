@@ -1,4 +1,5 @@
-﻿using System;
+﻿using QR.presentation.gui;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -7,8 +8,14 @@ using System.Threading.Tasks;
 
 namespace QR.presentation.gui.viewmodel
 {
-    class DisplayTicketData : ViewModel
+    public class DisplayTicketData : ViewModel
     {
+        public DisplayTicketData()
+        {
+            this.coreData = new TicketDataMinumum();
+            //for designer preview
+        }
+
         public DisplayTicketData(TicketDataMinumum tdata)
         {
             this.coreData = tdata;
@@ -30,7 +37,7 @@ namespace QR.presentation.gui.viewmodel
         public string PrintedAt { get; set; }
     }
 
-    class DisplayTicketDataCollection : ObservableCollection<DisplayTicketData>
+    public class DisplayTicketDataCollection : ObservableCollection<DisplayTicketData>
     {
         public DisplayTicketDataCollection() { }
     }
@@ -38,7 +45,7 @@ namespace QR.presentation.gui.viewmodel
     /// <summary>
     /// dummy for d:DataContext
     /// </summary>
-    class DisplayTicketDataContext
+    public class DisplayTicketDataContext
     {
         public DisplayTicketDataCollection DisplayTicketDataCollection { get; set; }
         public string Description { get; set; }

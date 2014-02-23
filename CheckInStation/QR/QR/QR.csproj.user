@@ -10,4 +10,7 @@
     <FallbackCulture>en-US</FallbackCulture>
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
   </PropertyGroup>
+  <PropertyGroup>
+    <ReferencePath>C:\Users\podhmo\work\altair\CheckInStation\QR\QR\bin\Release\;C:\Users\podhmo\work\altair\CheckInStation\QR\QR\bin\Debug\;C:\Users\podhmo\work\altair\CheckInStation\QR\QR\</ReferencePath>
+  </PropertyGroup>
 </Project>

@@ -18,6 +18,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using vkeyboard.control;
 
 namespace QR.presentation.gui.page
 {
@@ -81,7 +82,7 @@ namespace QR.presentation.gui.page
             // AuthInputDataContext.LoginNameがAuthInputEvent.LoginNameに渡され。
             // モデル側の処理はAuthInputEvent.LoginNameを見る。
             e.Handled = true;
-            (this.DataContext as AuthInputDataContext).LoginName = (sender as KeyPad).InputString;
+            (this.DataContext as AuthInputDataContext).LoginName = (sender as VirtualKeyboard).Text;
             this.OnSubmitWithBoundContext(sender, e);
         }
 

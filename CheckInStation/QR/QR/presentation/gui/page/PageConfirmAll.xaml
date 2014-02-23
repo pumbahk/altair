@@ -90,7 +90,7 @@
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="FontSize" Value="30"/>
-                                    <Setter Property="Foreground" Value="{StaticResource ConfirmAllMainTextBrush}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource MainTextBrush}"/>
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>

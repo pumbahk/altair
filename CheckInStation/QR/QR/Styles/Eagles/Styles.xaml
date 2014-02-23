@@ -1,12 +1,10 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <ResourceDictionary.MergedDictionaries>
-	<ResourceDictionary Source="./Brush.Background.xaml" />
-	<ResourceDictionary Source="./Controls.Checkbox.xaml" />
-	<ResourceDictionary Source="./Controls.ConfirmAllMainSection.xaml" />
-	<ResourceDictionary Source="./Controls.GrayoutDisabled.xaml" />
-	<ResourceDictionary Source="./Controls.SubmitButton.xaml" />
-    <ResourceDictionary Source="/Styles/Base/Styles.xaml" />
-
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="./Brush.Background.xaml" />
+        <ResourceDictionary Source="./Brush.Generic.xaml" />
+        <ResourceDictionary Source="./Controls.Checkbox.xaml" />
+        <ResourceDictionary Source="./Controls.GrayoutDisabled.xaml" />
+        <ResourceDictionary Source="./Controls.SubmitButton.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

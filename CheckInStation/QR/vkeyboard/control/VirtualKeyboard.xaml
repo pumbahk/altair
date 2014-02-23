@@ -10,16 +10,15 @@
              Loaded="Container_Loaded"
              MouseEnter="Container_MouseEnter"
              d:DesignHeight="300" d:DesignWidth="300">
-    <UserControl.Style>
-        <Style TargetType="UserControl">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding ElementName=Container,Path=IsMouseOver}" Value="True">
-                    <Setter Property="FocusManager.FocusedElement" Value="{Binding ElementName=TestInput}"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-    </UserControl.Style>
     <UserControl.Resources>
+        <SolidColorBrush x:Key="MainTextBrush">
+            <SolidColorBrush.Color>#840315</SolidColorBrush.Color>
+        </SolidColorBrush>
+
+        <SolidColorBrush x:Key="MainBorderBrush">
+            <SolidColorBrush.Color>#840315</SolidColorBrush.Color>
+        </SolidColorBrush>
+
         <Style TargetType="c:CustomTextBox" x:Key="KeyPadInputBox2">
             <Setter Property="Background" Value="#FEFEE0"/>
             <Setter Property="BorderBrush" Value="{StaticResource MainBorderBrush}"/>

@@ -79,7 +79,7 @@ namespace vkeyboard.control
 
         public new static readonly DependencyProperty BackgroundProperty =
         DependencyProperty.Register("Background", typeof(Brush), typeof(CustomTextBox),
-        new FrameworkPropertyMetadata(null, OnBackgroundChanged));
+        new FrameworkPropertyMetadata(Brushes.White, OnBackgroundChanged));
 
 
         public new Brush Background

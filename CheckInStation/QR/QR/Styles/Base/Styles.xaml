@@ -1,18 +1,17 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <ResourceDictionary.MergedDictionaries>
-    <ResourceDictionary Source="./Brush.Background.xaml" />
     <ResourceDictionary Source="./Controls.CaseInspect.xaml" />
 	<ResourceDictionary Source="./Controls.CenterContent.xaml" />
-	<ResourceDictionary Source="./Controls.ConfirmAllMainSection.xaml" />
 	<ResourceDictionary Source="./Controls.GrayoutDisabled.xaml" />
 	<ResourceDictionary Source="./Controls.HomeMenu.xaml" />
 	<ResourceDictionary Source="./Controls.KeyPad.xaml" />
 	<ResourceDictionary Source="./Controls.MetroButton.xaml" />
 	<ResourceDictionary Source="./Controls.SubmitButton.xaml" />
-	<ResourceDictionary Source="./Controls.Toplevel.xaml" />
     <ResourceDictionary Source="./Controls.Checkbox.xaml" />
     <ResourceDictionary Source="./Controls.MenuButton.xaml" />
+    <ResourceDictionary Source="./Controls.ConfirmAllMainSection.xaml" />
     <ResourceDictionary Source="./Resources.Image.xaml"/>
+    <ResourceDictionary Source="./Controls.Toplevel.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

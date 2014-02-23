@@ -9,7 +9,7 @@
         <Setter Property="Height" Value="500"/>
         <Setter Property="Width" Value="1260"/>
         <Setter Property="BorderThickness" Value="10"/>
-        <Setter Property="BorderBrush" Value="{StaticResource ConfirmAllMainBorderBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource MainBorderBrush}"/>
     </Style>
 
     <DataTemplate x:Key="SelectingTicketItemBoxData">

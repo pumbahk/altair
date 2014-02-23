@@ -52,14 +52,12 @@
     <Compile Include="converter\StarConverter.cs" />
     <Compile Include="logicalkeys\ComboKey.cs" />
     <Compile Include="viewmodel\AlphabetKeyPad.cs" />
-    <Compile Include="viewmodel\AnotherTextBox.cs" />
     <Compile Include="viewmodel\ClearKeysPad.cs" />
     <Compile Include="viewmodel\CursorsKeyPad.cs" />
     <Compile Include="viewmodel\KeyPadLayout.cs" />
     <Compile Include="viewmodel\TenKeyPad.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Include="control\CustomTextBox.xaml.cs">
       <DependentUpon>CustomTextBox.xaml</DependentUpon>

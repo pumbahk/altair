@@ -1,4 +1,5 @@
 using NLog;
+using QR.presentation.gui.viewmodel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,29 +20,7 @@ using System.Windows.Shapes;
 
 namespace QR.presentation.gui.page
 {
-    class DisplayTicketData : ViewModel
-    {
-        public DisplayTicketData(TicketDataMinumum tdata)
-        {
-            this.coreData = tdata;
-            this.ProductName = tdata.product.name;
-            this.SeatName = tdata.seat.name;
-            this.PrintedAt = tdata.printed_at; //null?
-            this.TokenId = tdata.ordered_product_item_token_id;
-        }
-
-        private readonly TicketDataMinumum coreData;
-        public string ProductName { get; set; }
-        public string SeatName { get; set; }
-        public bool IsSelected
-        {
-            get { return this.coreData.is_selected; }
-            set { this.coreData.is_selected = value; this.OnPropertyChanged("IsSelected"); }
-        }
-        public string TokenId { get; set; }
-        public string PrintedAt { get; set; }
-    }
-
+  
     class PageConfirmAllDataContext : InputDataContext, IConfirmAllStatusInfo, INotifyPropertyChanged
     {
         private ConfirmAllStatus _Status;
@@ -92,7 +71,7 @@ namespace QR.presentation.gui.page
             set { this._NumberOfPrintableTicket = value; this.OnPropertyChanged("NumberOfPrintableTicket"); }
         }
 
-        public ObservableCollection<DisplayTicketData> DisplayTicketDataCollection { get; set; }
+        public DisplayTicketDataCollection DisplayTicketDataCollection { get; set; }
 
         public override void OnSubmit()
         {
@@ -121,7 +100,7 @@ namespace QR.presentation.gui.page
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Status = ConfirmAllStatus.starting,
-                DisplayTicketDataCollection = new ObservableCollection<DisplayTicketData>()
+                DisplayTicketDataCollection = new DisplayTicketDataCollection()
             };
             ctx.Event = new ConfirmAllEvent() { StatusInfo = ctx };
             ctx.PropertyChanged += Status_OnPrepared;

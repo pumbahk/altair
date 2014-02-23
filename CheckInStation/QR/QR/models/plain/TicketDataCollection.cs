@@ -22,6 +22,11 @@ namespace QR
         [DataMember]
         internal bool is_selected;
 
+        public TicketDataMinumum()
+        {
+            //dont use
+        }
+
         public TicketDataMinumum (dynamic json)
         {
             this.ordered_product_item_token_id = json.ordered_product_item_token_id;

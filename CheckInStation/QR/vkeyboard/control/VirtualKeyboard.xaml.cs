@@ -95,11 +95,8 @@ namespace vkeyboard.control
         {
             if (e.Key == Key.Return)
             {
-                this.Dispatcher.InvokeAsync(() =>
-                {
                     this.Text = this.Input.Text;
                     RaiseVirtualkeyboardFinishEvent();
-                });
             }
         }
 
