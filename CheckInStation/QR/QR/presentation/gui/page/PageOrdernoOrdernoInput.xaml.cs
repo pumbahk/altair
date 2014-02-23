@@ -16,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using vkeyboard.control;
 
 namespace QR.presentation.gui.page
 {
@@ -61,7 +62,7 @@ namespace QR.presentation.gui.page
             await ctx.PrepareAsync().ConfigureAwait(true);
             var data =  (ctx.Case as CaseOrdernoOrdernoInput).RequestData;
             if(data != null){
-                (this.FindName("KeyPad") as KeyPad).InputString = data.order_no;
+                this.KeyPad.Text = data.order_no;
             }
         }
 
@@ -72,6 +73,11 @@ namespace QR.presentation.gui.page
             {
                 var case_ = await ctx.SubmitAsync();
                 ctx.TreatErrorMessage();
+                //xxx: display error dialog
+                if (ctx.ErrorMessage != String.Empty)
+                {
+                    this.ErrorDialog.Show();
+                }
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }
@@ -83,6 +89,11 @@ namespace QR.presentation.gui.page
             {
                 var case_ = await ctx.BackwardAsync();
                 ctx.TreatErrorMessage();
+                //xxx: display error dialog
+                if (ctx.ErrorMessage != String.Empty)
+                {
+                    this.ErrorDialog.Show();
+                }
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }
@@ -91,7 +102,7 @@ namespace QR.presentation.gui.page
         {
             //hmm.
             e.Handled = true;
-            (this.DataContext as PageOrdernoOrdernoInputDataContext).Orderno = (sender as KeyPad).InputString;
+            (this.DataContext as PageOrdernoOrdernoInputDataContext).Orderno = (sender as VirtualKeyboard).Text;
             this.OnSubmitWithBoundContext(sender, e);
         }
 
@@ -113,7 +124,7 @@ namespace QR.presentation.gui.page
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            this.KeyPad_KeyPadFinish(this.KeyPad, e); //!!!Ç‹Ç¡ÇΩÇ≠ï ÇÃåoòHÇ©ÇÁRoutedEventÇ™î≠ê∂ÇµÇƒÇ¢ÇÈÇÃÇ≈ó«Ç≠Ç»Ç¢ÅB
+            (this.KeyPad as VirtualKeyboard).RaiseVirtualkeyboardFinishEvent();
         }
     }
 }

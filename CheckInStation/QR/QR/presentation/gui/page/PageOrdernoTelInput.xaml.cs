@@ -16,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using vkeyboard.control;
 
 namespace QR.presentation.gui.page
 {
@@ -61,7 +62,7 @@ namespace QR.presentation.gui.page
             var data = (ctx.Case as CaseOrdernoTelInput).RequestData;
             if (data != null)
             {
-                (this.FindName("KeyPad") as KeyPad).InputString = data.tel;
+                this.KeyPad.Text = data.tel;
             }
         }
 
@@ -90,6 +91,11 @@ namespace QR.presentation.gui.page
             {
                 var case_ = await ctx.BackwardAsync();
                 ctx.TreatErrorMessage();
+                //xxx: display error dialog
+                if (ctx.ErrorMessage != String.Empty)
+                {
+                    this.ErrorDialog.Show();
+                }
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }
@@ -97,13 +103,13 @@ namespace QR.presentation.gui.page
         private void KeyPad_KeyPadFinish(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
-            (this.DataContext as PageOrdernoTelInputDataContext).Tel = (sender as KeyPad).InputString;
+            (this.DataContext as PageOrdernoTelInputDataContext).Tel = (sender as VirtualKeyboard).Text; 
             OnSubmitWithBoundContext(sender, e);
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            this.KeyPad_KeyPadFinish(this.KeyPad, e);
+            (this.KeyPad as VirtualKeyboard).RaiseVirtualkeyboardFinishEvent();
         }
     }
 }
