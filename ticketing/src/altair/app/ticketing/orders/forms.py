@@ -465,17 +465,16 @@ class OrderReserveForm(Form):
                     core_helpers.build_sales_segment_list_for_inner_sales(sales_segments)
                 ]
 
-            self.products.choices = []
             if 'sales_segment_id' in kwargs and kwargs['sales_segment_id']:
                 self.sales_segment_id.default = kwargs['sales_segment_id']
             elif len(self.sales_segment_id.choices) > 0:
                 self.sales_segment_id.default = self.sales_segment_id.choices[0][0]
-            query = query.filter(Product.sales_segment_id==self.sales_segment_id.default)
+
+            self.products.choices = []
             if 'stocks' in kwargs and kwargs['stocks']:
+                query = query.filter(Product.sales_segment_id==self.sales_segment_id.default)
                 for p in query.all():
-                    self.products.choices += [
-                        (p.id, dict(name=p.name, sales_segment=p.sales_segment.name, price=p.price))
-                    ]
+                    self.products.choices += [(p.id, p)]
 
             self.payment_delivery_method_pair_id.choices = []
             self.payment_delivery_method_pair_id.sej_plugin_id = []
