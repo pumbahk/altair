@@ -13,6 +13,14 @@ mac
   * xz
   * redis
 
+ubuntu
+------
+
+* apt でインストール
+
+  * build-essential git libxml2-dev redis-server mysql-server xz s3cmd python-pip python-virtualenv python-dev libxslt1-dev
+
+
 * MySQL をインストール
 
   * `MySQL Community Server 5.5.x / 5.6.x <http://dev.mysql.com/downloads/>`_
