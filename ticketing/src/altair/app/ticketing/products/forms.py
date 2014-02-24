@@ -47,6 +47,8 @@ class ProductForm(OurForm):
             seat_stock_type_id=product.seat_stock_type_id, 
             sales_segment_id=product.sales_segment_id, 
             public=1 if product.public else 0, # why integer?
+            all_sales_sagment=0,
+            performance_id=0,
             description=product.description,
             sales_segment=product.sales_segment,
             min_product_quantity=product.min_product_quantity,
@@ -59,6 +61,10 @@ class ProductForm(OurForm):
         self.performance = performance
         self.sales_segment = sales_segment
         super(ProductForm, self).__init__(formdata, obj, prefix, **kwargs)
+
+        if performance:
+            self.performance_id.data = performance.id
+
         if sales_segment is not None:
             self.sales_segment_id.choices = [(sales_segment.id, sales_segment.name)]
             self.sales_segment_id.data = sales_segment.id
@@ -125,8 +131,16 @@ class ProductForm(OurForm):
         choices=[],
         coerce=int
         )
+    performance_id = HiddenField(
+        validators=[Optional()]
+        )
     public = OurBooleanField(
         label=u'一般公開',
+        hide_on_new=True,
+        widget=CheckboxInput(),
+        )
+    all_sales_segment = OurBooleanField(
+        label=u'全ての販売区分に追加',
         hide_on_new=True,
         widget=CheckboxInput(),
         )
