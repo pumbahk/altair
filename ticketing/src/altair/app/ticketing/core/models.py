@@ -3486,7 +3486,7 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def reissueable(self, delivery_plugin_id):
         # XXX: このロジックははっきり言ってよろしくないので再実装する
         # (TicketBundleにフラグを持たせるべきか?)
-        relevant_tickets = ApplicableTicketsProducer(self).include_delivery_id_ticket_iter(delivery_plugin_id)
+        relevant_tickets = ApplicableTicketsProducer(self).include_delivery_id_ticket_iter([delivery_plugin_id])
         reissueable = False
         for ticket in relevant_tickets:
             if reissueable:

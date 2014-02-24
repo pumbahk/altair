@@ -42,12 +42,12 @@ class ApplicableTicketsProducer(object):
         else:
             self.tickets = bundle.tickets if bundle else  []
 
-    def include_delivery_id_ticket_iter(self, delivery_plugin_id, format_id=None): # ==
+    def include_delivery_id_ticket_iter(self, delivery_plugin_ids, format_id=None): # ==
         for ticket in self.tickets:
             if format_id and format_id != ticket.ticket_format_id:
                 continue
             ticket_format = ticket.ticket_format
-            if any(m.delivery_plugin_id == delivery_plugin_id for m in ticket_format.delivery_methods):
+            if any(m.delivery_plugin_id in delivery_plugin_ids for m in ticket_format.delivery_methods):
                 yield ticket
 
     def exclude_delivery_id_ticket_iter(self, delivery_plugin_id, format_id=None): # ==
@@ -60,11 +60,15 @@ class ApplicableTicketsProducer(object):
 
     def sej_only_tickets(self, format_id=None):
         """SEJ発券"""
-        return self.include_delivery_id_ticket_iter(SEJ_DELIVERY_PLUGIN_ID, format_id=format_id)
+        return self.include_delivery_id_ticket_iter([SEJ_DELIVERY_PLUGIN_ID], format_id=format_id)
 
-    def will_issued_by_own_tickets(self, format_id=None):
+    def will_issued_by_own_tickets(self, format_id=None, delivery_plugin_ids=None):
         """自社発券"""
-        return self.exclude_delivery_id_ticket_iter(SEJ_DELIVERY_PLUGIN_ID, format_id=format_id)
+        if delivery_plugin_ids is not None:
+            return self.include_delivery_id_ticket_iter(delivery_plugin_ids, format_id=format_id)
+        else:
+            return self.exclude_delivery_id_ticket_iter(SEJ_DELIVERY_PLUGIN_ID, format_id=format_id)
+            
     
     qr_only_tickets = will_issued_by_own_tickets # 今は同じ
 

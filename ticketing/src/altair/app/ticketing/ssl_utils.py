@@ -9,7 +9,7 @@ def get_certificate_info(request):
     if subject_dn_hdr is not None and serial_hdr is not None:
         subject_dn = subject_dn_hdr
         try:
-            serial = int(serial_hdr)
+            serial = int(serial_hdr, 16)
         except (ValueError, TypeError):
             pass
     else:
