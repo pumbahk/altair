@@ -141,44 +141,52 @@ class AugusAchievementExporter(object):
         if seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
             return
 
-        ordered_product_item = self.seat2opitem(seat)
-        if not ordered_product_item:
-            raise AugusDataExportError('No such OrderedProductItem: Seat.id={}'.formamt(stock_info.seat))
-
-        augus_ticket= ordered_product_item.ordered_product.product.augus_ticket
-        if not augus_ticket:
-            return
-
+        augus_ticket = None
+        augus_stock_info = None
         augus_stock_detail = None
-        for augus_stock_detail in augus_ticket.augus_stock_detals:
-            if augus_stock_detail.augus_stock_info.seat.id == seat.id:
-                break
+        ordered_product_item = self.seat2opitem(seat)
+        if ordered_product_item:
+            augus_ticket = ordered_product_item.ordered_product.product.augus_ticket
+            if not augus_ticket:
+                return
+            for augus_stock_detail in augus_ticket.augus_stock_details:
+                if augus_stock_detail.augus_stock_info.seat.id == seat.id:
+                    break
+            else:
+                raise AugusDataExportError('No such AugusStockDetail Seat.id={}'.formamt(stock_info.seat))  
         else:
-            raise AugusDataExportError('No such AugusStockDetail Seat.id={}'.formamt(stock_info.seat))
+            augus_stock_detail = AugusStockDetail.query.join(AugusStockInfo)\
+                                                 .filter(AugusStockInfo.seat_id==seat.id)\
+                                                 .filter(AugusStockDetail.augus_putback_id==None)\
+                                                 .one()
+            augus_ticket = augus_stock_detail.augus_ticket
+
+        order = self.get_order(ordered_product_item)
+        status = AugusSeatStatus.get_status(seat, order)
 
         record = AchievementResponse.record()
-        record.event_code = augus_stock_detail.augus_event_code
-        record.performance_code = augus_stock_detail.augus_peformance_code
+        record.event_code = augus_stock_detail.augus_stock_info.augus_performance.augus_event_code
+        record.performance_code = augus_stock_detail.augus_stock_info.augus_performance.augus_performance_code
         record.distribution_code = augus_stock_detail.augus_distribution_code
         record.seat_type_code = augus_ticket.augus_seat_type_code
         record.unit_value_code = augus_ticket.unit_value_code
-        record.date = augus_stock_detail.augus_performance.start_on.strftime(DateType.FORMAT)
-        record.start_on = augus_stock_detail.augus_performance.start_on.strftime(HourMinType.FORMAT)
-        record.reservation_number = self.get_order_no(ordered_product_item)
-        record.block = augus_stock_detail.augus_seat.block
-        record.coordy = augus_stock_detail.augus_seat.coordy
-        record.coordx = augus_stock_detail.augus_seat.coordx
-        record.area_code = augus_stock_detail.augus_seat.area_code
-        record.info_code = augus_stock_detail.augus_seat.info_code
-        record.floor = augus_stock_detail.augus_seat.floor
-        record.column = augus_stock_detail.augus_seat.column
-        record.number = augus_stock_detail.augus_seat.num
-        record.seat_type_classif = augus_stock_detail.seat_type_classif
+        record.date = augus_stock_detail.augus_stock_info.augus_performance.start_on.strftime(DateType.FORMAT)
+        record.start_on = augus_stock_detail.augus_stock_info.augus_performance.start_on.strftime(HourMinType.FORMAT)
+        record.reservation_number = order.order_no if order else ''
+        record.block = augus_stock_detail.augus_stock_info.augus_seat.block
+        record.coordy = augus_stock_detail.augus_stock_info.augus_seat.coordy
+        record.coordx = augus_stock_detail.augus_stock_info.augus_seat.coordx
+        record.area_code = augus_stock_detail.augus_stock_info.augus_seat.area_code
+        record.info_code = augus_stock_detail.augus_stock_info.augus_seat.info_code
+        record.floor = augus_stock_detail.augus_stock_info.augus_seat.floor
+        record.column = augus_stock_detail.augus_stock_info.augus_seat.column
+        record.number = augus_stock_detail.augus_stock_info.augus_seat.num
+        record.seat_type_classif = augus_stock_detail.augus_stock_info.seat_type_classif
         record.seat_count = augus_stock_detail.quantity
         record.unit_value = augus_ticket.value
         #record.unit_value = self.get_unit_price(opitem) # こっちはaltairで実際に販売した単価(おおよそ (altairでは席の単価は厳密には出せない))
         record.processed_at = time.strftime('%Y%m%d%H%M%S')
-        record.achievement_status = str(AugusSeatStatus.get_status(seat))
+        record.achievement_status = str(status)
         return record
 
     def export(self, performance):
@@ -285,3 +293,11 @@ class AugusAchievementExporter(object):
     @staticmethod
     def get_order_no(opitem):
         return opitem.ordered_product.order.order_no
+
+    @staticmethod
+    def get_order(opitem):
+        if opitem:
+            return opitem.ordered_product.order
+        else:
+            return None
+

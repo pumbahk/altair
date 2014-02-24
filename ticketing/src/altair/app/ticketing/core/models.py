@@ -4349,7 +4349,7 @@ class AugusSeatStatus(object):
     OTHER = 99
 
     @classmethod
-    def get_status(cls, seat):
+    def get_status(cls, seat, order=None):
         if seat.status in (SeatStatusEnum.Keep.v,
                            SeatStatusEnum.Import.v,
                            SeatStatusEnum.InCart.v,
@@ -4360,7 +4360,10 @@ class AugusSeatStatus(object):
         elif seat.status in (SeatStatusEnum.Ordered.v,
                              SeatStatusEnum.Shipped.v,
                              ):
-            return cls.SOLD
+            if order and order.payment_status == 'paid':
+                return cls.SOLD
+            else:
+                return cls.RESERVE
         else:
             return cls.OTHER
 
