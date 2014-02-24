@@ -55,6 +55,7 @@ class SSLClientCertLoginView(BaseView):
         user_id = authenticated_userid(self.request)
         user = Operator.get_by_login_id(user_id)
         if user is not None:
+            next_url = self.request.GET.get('next')
             return HTTPFound(location=next_url if next_url else self.request.route_path("login.client_cert"))
         return {
             'form':SSLClientCertLoginForm()
