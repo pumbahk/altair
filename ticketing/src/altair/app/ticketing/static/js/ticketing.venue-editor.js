@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['vNEFATTCHDHSEQ39'] = (function (exports) { (function () { 
+__LIBS__['g9MM1O3EKBR0DE1Y'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['ABFBG_2I_KWVQEI3'] = (function (exports) { (function () { 
+__LIBS__['dH7A25XBZXG573X4'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -99,7 +99,7 @@ exports.DEFAULT = {
   SEAT_RENDER_UNITS: 1000
 };
  })(); return exports; })({});
-__LIBS__['uCVW9B1GRP4TF_KX'] = (function (exports) { (function () { 
+__LIBS__['aBQPPHVI4E6NBUYP'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -276,7 +276,7 @@ timer.prototype.lap = function(msg) {
   return lap;
 };
  })(); return exports; })({});
-__LIBS__['P60DWQNWMWQSA86N'] = (function (exports) { (function () { 
+__LIBS__['K7BO5AFOQ02RG_P7'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -325,12 +325,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['wCOBYTLZAF79MOH4'] = (function (exports) { (function () { 
+__LIBS__['iPJDIW6HQIO9Y2W3'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['uCVW9B1GRP4TF_KX'];
-var CONF = __LIBS__['ABFBG_2I_KWVQEI3'];
-var IdentifiableSet = __LIBS__['P60DWQNWMWQSA86N'].IdentifiableSet;
+var util = __LIBS__['aBQPPHVI4E6NBUYP'];
+var CONF = __LIBS__['dH7A25XBZXG573X4'];
+var IdentifiableSet = __LIBS__['K7BO5AFOQ02RG_P7'].IdentifiableSet;
 
 var use_altair_collection = true;
 
@@ -1028,12 +1028,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['UZJC5AU34EDKWXVV'] = (function (exports) { (function () { 
+__LIBS__['RG39EA5PZR8JRIWJ'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['uCVW9B1GRP4TF_KX'];
-var CONF = __LIBS__['ABFBG_2I_KWVQEI3'];
-var models = __LIBS__['wCOBYTLZAF79MOH4'];
+var util = __LIBS__['aBQPPHVI4E6NBUYP'];
+var CONF = __LIBS__['dH7A25XBZXG573X4'];
+var models = __LIBS__['iPJDIW6HQIO9Y2W3'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -1216,13 +1216,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['ABFBG_2I_KWVQEI3'];
-  var models = __LIBS__['wCOBYTLZAF79MOH4'];
-  var util = __LIBS__['uCVW9B1GRP4TF_KX'];
-  var viewobjects = __LIBS__['UZJC5AU34EDKWXVV'];
-  var IdentifiableSet = __LIBS__['P60DWQNWMWQSA86N'].IdentifiableSet;
+  var CONF = __LIBS__['dH7A25XBZXG573X4'];
+  var models = __LIBS__['iPJDIW6HQIO9Y2W3'];
+  var util = __LIBS__['aBQPPHVI4E6NBUYP'];
+  var viewobjects = __LIBS__['RG39EA5PZR8JRIWJ'];
+  var IdentifiableSet = __LIBS__['K7BO5AFOQ02RG_P7'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['vNEFATTCHDHSEQ39'];
+    I18n.translations = __LIBS__['g9MM1O3EKBR0DE1Y'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -2207,7 +2207,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
               error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
             });
             aux.callbacks.loading && aux.callbacks.loading(aux.manager);
-            aux.manager.clearAll();
             break;
 
           case 'adjacency':

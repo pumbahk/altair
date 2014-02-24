@@ -73,6 +73,17 @@ span.editable {
 #venue-editor .venue-editor-main .venue-editor-main-side {
   width: 35%;
 }
+
+#venue-viewer-guide {
+  position: absolute;
+  width: 400px;
+  height: 300px;
+  left: 35%;
+  top: 50%;
+  margin-left: -200px;
+  margin-top: -150px;
+  text-align: center;
+}
 </style>
 
 <script type="text/javascript">
@@ -367,11 +378,12 @@ function buildStockHolderTypeTables(venue) {
     var swatch = $('<span class="swatch"></span>').css('text-color', style.text_color).text(style.text||'　');
     var head = $('<h5 class="ui-header" style="float: left;"></h5>').text(' ' + stockHolder.get('name'));
     var transfer = $('<a class="transfer btn btn-mini btn-inverse" href="javascript:buildTransferModal(' + stockHolder.id + ');">枠移動</a>');
-    var rest = $('<span class="rest label hide"></span>');
-    stockHolder.on('change:available', function () {
-      rest.removeClass('hide');
+    var rest = $('<span class="rest label"></span>');
+    function refresh() {
       rest.text('残席: ' + stockHolder.get('available') + '席');
-    });
+    }
+    stockHolder.on('change:available', refresh);
+    refresh();
     stockHolder.recalculateQuantity();
     var div = $('<div></div>').css('display', 'none');
     var table = $('<table class="table table-bordered"></table>');
@@ -528,7 +540,7 @@ function saveStocks() {
 var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
 var tab2 = venueEditorSide.find("#venue-editor-main-side-tab2");
 
-callbacks.load = function (viewer) {
+callbacks.load = callbacks.refresh = function (viewer) {
   tab1.empty();
   tab1.append(buildStockHolderTypeTables(viewer.venue));
   tab2.empty();
@@ -561,6 +573,91 @@ callbacks.select = function (viewer, selection) {
   }
   $('span.selection-count').text(selection_set.length);
 };
+
+
+/* application */
+var allocation = {};
+
+allocation.init = function(options) {
+  this.app = new allocation.ApplicationController();
+  this.app.init(options);
+};
+
+allocation.ApplicationController = function() {
+};
+
+allocation.ApplicationController.prototype.init = function(options) {
+  this.GuidePresenter = new allocation.GuidePresenter({viewType: allocation.GuideView});
+  this.GuidePresenter.initialize(options);
+  this.GuidePresenter.show();
+
+  window.onbeforeunload = function(){
+    var warn = false;
+    var venue = venueEditorRoot.venueeditor('model');
+    if (venue) {
+      var changeData = venue.toJSON();
+      for (var data in changeData) {
+        if (changeData[data].length > 0) {
+          warn = true;
+          break;
+        }
+      }
+    }
+    if (warn) {return '保存されていない変更があります。';}
+  };
+};
+
+/* presenter */
+allocation.GuidePresenter = function(params) {
+  for (var k in params) this[k] = params[k];
+};
+
+allocation.GuidePresenter.prototype = {
+  defaults: {
+  },
+  initialize: function(options) {
+    var self = this;
+    this.options = options;
+    this.view = new this.viewType({
+      el: $('<div id="venue-viewer-guide"/>'),
+      presenter: this,
+    });
+  },
+  show: function() {
+    this.view.render();
+  }
+}
+
+/* view */
+allocation.GuideView = Backbone.View.extend({
+  initialize: function() {
+    this.el = this.options.el;
+    this.presenter = this.options.presenter;
+  },
+  events: {
+    'click .btn-init-load': 'load'
+  },
+  load: function() {
+    venueEditorRoot.venueeditor('load');
+    this.remove();
+  },
+  remove: function() {
+    this.$el.remove();
+  },
+  render: function() {
+    var self = this;
+    var div = $('<div class="hero-unit"/>');
+    div.append($('<h2>会場図で配席</h2>'));
+    div.append($('<p>会場図上で座席を選んで配席します。大きな会場の場合、読み込みに時間がかかることがあります。</p>'));
+    div.append($('<p><a class="btn btn-primary btn-init-load">表示</a></p>'));
+    this.$el.append(div);
+    venueEditorRoot.append(this.$el);
+  }
+});
+
+$(function() {
+  allocation.init();
+});
 </script>
     </%def>
   </%vv:venueeditor>
