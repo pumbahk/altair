@@ -56,8 +56,8 @@ mac
   $ easy_install virtualenv
   $ virtualenv --setuptools --no-site-packages env
   $ env/bin/pip install --upgrade setuptools
-  $ cd deploy/dev
-  $ python bootstrap.py -d
+  $ cd altair/deploy/dev
+  $ ../../../env/bin/python bootstrap.py -c ./buildout.local.cfg
   $ ./buildout.sh
 
 * supervisor で起動
