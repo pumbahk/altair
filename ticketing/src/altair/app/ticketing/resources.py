@@ -6,6 +6,7 @@ from pyramid.security import Allow, Everyone, Authenticated, authenticated_useri
 from pyramid.decorator import reify
 
 from altair.app.ticketing.operators.models import OperatorAuth, OperatorRole, Operator
+from altair.app.ticketing.authentication.api import get_authentication_challenge_view
 
 import sqlahelper
 session = sqlahelper.get_session()

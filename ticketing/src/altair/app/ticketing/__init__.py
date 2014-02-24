@@ -7,7 +7,6 @@ import json
 import transaction
 from sqlalchemy import engine_from_config
 from pyramid.config import Configurator
-from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid_beaker import session_factory_from_settings
 from pyramid.tweens import EXCVIEW
@@ -46,7 +45,6 @@ def register_globals(event):
         vh=Namespace_vh(event['request'])
         )
 
-
 def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
     """
@@ -55,8 +53,9 @@ def main(global_config, **local_config):
         settings = dict(global_config)
         settings.update(local_config)
     
-        from .resources import TicketingAdminResource, groupfinder
+        from .resources import TicketingAdminResource
         from .authentication import CombinedAuthenticationPolicy, APIAuthenticationPolicy
+        from .authentication.config import authentication_policy_factory
         from .authentication.apikey.impl import newDBAPIKeyEntryResolver
         from sqlalchemy.pool import NullPool
 
@@ -69,21 +68,6 @@ def main(global_config, **local_config):
         config = Configurator(settings=settings,
                               root_factory=newRootFactory(TicketingAdminResource),
                               session_factory=session_factory)
-    
-        config.set_authentication_policy(
-            CombinedAuthenticationPolicy([
-                AuthTktAuthenticationPolicy(
-                    'secretstring',
-                    cookie_name='backendtkt',
-                    callback=groupfinder),
-                APIAuthenticationPolicy(
-                    resolver_factory=newDBAPIKeyEntryResolver,
-                    header_name='X-Altair-Authorization',
-                    userid_prefix='__altair_ticketing__api__',
-                    principals=['api'])
-                ])
-            )
-        config.set_authorization_policy(ACLAuthorizationPolicy())
     
         config.add_static_view('static', 'altair.app.ticketing:static', cache_max_age=3600)
  
@@ -109,6 +93,7 @@ def main(global_config, **local_config):
 
         config.include('altair.app.ticketing.core')
         config.include('altair.app.ticketing.mails')
+        config.include('altair.app.ticketing.authentication')
         config.include('altair.app.ticketing.multicheckout')
         config.include('altair.app.ticketing.checkout')
         config.include('altair.app.ticketing.operators' , route_prefix='/operators')
@@ -170,4 +155,24 @@ def main(global_config, **local_config):
 
         config.scan(".views")
         config.scan(".response")
+   
+        config.set_authentication_policy(
+            CombinedAuthenticationPolicy([
+                authentication_policy_factory(
+                    config,
+                    'altair.ticketing.admin.authentication.policy'
+                    ),
+                APIAuthenticationPolicy(
+                    resolver_factory=newDBAPIKeyEntryResolver,
+                    header_name='X-Altair-Authorization',
+                    userid_prefix='__altair_ticketing__api__',
+                    principals=['api'])
+                ])
+            )
+        config.set_authorization_policy(ACLAuthorizationPolicy())
+        config.add_challenge_view(
+            config.registry.settings.get(
+                'altair.ticketing.admin.authentication.challenge_view',
+                '.views.default_challenge_view'))
+
         return config.make_wsgi_app()
