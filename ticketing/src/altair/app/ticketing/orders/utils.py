@@ -66,11 +66,16 @@ def is_cover_print(order):
                     cover_print = True
     return cover_print
 
-def enqueue_for_order(operator, order, ticket_format_id=None):
+def enqueue_for_order(operator, order, ticket_format_id=None, delivery_plugin_ids=None):
     svg_builder = _get_svg_builder()
     for ordered_product in order.items:
         for ordered_product_item in ordered_product.ordered_product_items:
-            enqueue_item(operator, order, ordered_product_item, ticket_format_id, svg_builder=svg_builder)
+            enqueue_item(
+                operator, order, ordered_product_item,
+                ticket_format_id=ticket_format_id,
+                delivery_plugin_ids=delivery_plugin_ids,
+                svg_builder=svg_builder
+                )
 
 def enqueue_token(operator, token, ticket, i, j, ordered_product_item=None, order=None, seat=None, issuer=None):
     dict_ = build_dict_from_ordered_product_item_token(token, ticket_number_issuer=issuer)
@@ -89,12 +94,12 @@ def enqueue_token(operator, token, ticket, i, j, ordered_product_item=None, orde
         seat=seat
         )
    
-def enqueue_item(operator, order, ordered_product_item, ticket_format_id=None, svg_builder=None):
+def enqueue_item(operator, order, ordered_product_item, ticket_format_id=None, delivery_plugin_ids=None, svg_builder=None):
     bundle = ordered_product_item.product_item.ticket_bundle
     dicts = comfortable_sorted_built_dicts(ordered_product_item)
     svg_builder = svg_builder or _get_svg_builder()
     for index, (seat, dict_) in enumerate(dicts):
-        for ticket in ApplicableTicketsProducer.from_bundle(bundle).will_issued_by_own_tickets(format_id=ticket_format_id):
+        for ticket in ApplicableTicketsProducer.from_bundle(bundle).will_issued_by_own_tickets(format_id=ticket_format_id, delivery_plugin_ids=delivery_plugin_ids):
             TicketPrintQueueEntry.enqueue(
                 operator=operator,
                 ticket=ticket,
