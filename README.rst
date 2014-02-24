@@ -13,6 +13,14 @@ mac
   * xz
   * redis
 
+ubuntu
+------
+
+* apt でインストール
+
+  * build-essential git libxml2-dev redis-server mysql-server xz s3cmd python-pip python-virtualenv python-dev libxslt1-dev
+
+
 * MySQL をインストール
 
   * `MySQL Community Server 5.5.x / 5.6.x <http://dev.mysql.com/downloads/>`_
@@ -56,8 +64,8 @@ mac
   $ easy_install virtualenv
   $ virtualenv --setuptools --no-site-packages env
   $ env/bin/pip install --upgrade setuptools
-  $ cd deploy/dev
-  $ python bootstrap.py -d
+  $ cd altair/deploy/dev
+  $ ../../../env/bin/python bootstrap.py -c ./buildout.local.cfg
   $ ./buildout.sh
 
 * supervisor で起動
