@@ -27,6 +27,7 @@
       <select class="selectpicker" name="${select_prefix}${performance.id}">
         <option value=""></option>
         %for ag_performance in augus_performance_all:
+        %if ag_performance.start_on == performance.start_on:
         <option value="${ag_performance.id}"
                 %if ag_performance_now and ag_performance.id == ag_performance_now.id:
                 selected="true"
@@ -37,6 +38,7 @@
           ${ag_performance.start_on} -
           ${ag_performance.augus_venue_name} -
         </option>
+        %endif
         %endfor
       </select>
     </td>

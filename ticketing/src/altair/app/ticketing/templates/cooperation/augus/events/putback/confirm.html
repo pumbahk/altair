@@ -1,0 +1,44 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<div class="page-header">
+  <h3>オーガス返券確認</h3>
+  <%include file="../_menu.html" args="event=event" />
+</div>
+<form role="form" method="POST" action="${request.route_url('augus.putback.reserve', event_id=event.id)}">
+<button class="btn" type="submit">返券を確定</button>
+<table class="table">
+  <tr>
+    <th>公演名</th>
+    <th>開始日時</th>
+    <th>会場名</th>
+    <th>座席名</th>
+    <th>l0_id</th>
+    <th>オーガス座席エリアコード</th>
+    <th>オーガス座席情報コード</th>
+    <th>オーガス座席階</th>
+    <th>オーガス座席列</th>
+    <th>オーガス座席番</th>
+    <th>追券コード</th>
+  </tr>
+  %for augus_stock_info in augus_stock_infos:
+  <tr>
+    <input type="hidden" name="augus_stock_info_id" value="${augus_stock_info.id}"/>
+    <td>${augus_stock_info.augus_performance.performance.name}</td>
+    <td>${augus_stock_info.augus_performance.performance.start_on}</td>
+    <td>${augus_stock_info.augus_performance.performance.venue.name}</td>
+    <td>${augus_stock_info.seat.name}</td>
+    <td>${augus_stock_info.seat.l0_id}</td>
+    <td>${augus_stock_info.augus_seat.area_code}</td>
+    <td>${augus_stock_info.augus_seat.info_code}</td>
+    <td>${augus_stock_info.augus_seat.floor}</td>
+    <td>${augus_stock_info.augus_seat.column}</td>
+    <td>${augus_stock_info.augus_seat.num}</td>
+    <td>${augus_stock_info.augus_distribution_code}</td>
+  </tr>
+  %endfor
+</table>
+</form>
+
+返券タイプ: R(途中)/F(最終)

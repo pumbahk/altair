@@ -2190,6 +2190,9 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     min_product_quantity = Column(Integer, nullable=True)
     max_product_quantity = Column(Integer, nullable=True)
 
+    augus_ticket_id = Column(Identifier, ForeignKey('AugusTicket.id'), nullable=True)
+    augus_ticket = relationship('AugusTicket', backref='products')
+
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_group_id=None, stock_id=None, include_deleted=False):
         query = DBSession.query(Product, include_deleted=include_deleted)
@@ -4203,7 +4206,7 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance_id = Column(Identifier,
                             ForeignKey("Performance.id"),
                             nullable=True, unique=True)
-    performance = relationship('Performance')
+    performance = relationship('Performance', backref='augus_performances')
     augus_stock_infos = relationship('AugusStockInfo')
 
     @property
@@ -4234,7 +4237,7 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_type = relationship('StockType')
 
     augus_performance_id = Column(Identifier, ForeignKey('AugusPerformance.id'), nullable=True)
-    augus_performance = relationship('AugusPerformance')
+    augus_performance = relationship('AugusPerformance', backref='augus_tickets')
 
     augus_event_code = association_proxy('augus_performance', 'augus_event_code')
     augus_performance_code = association_proxy('augus_performance', 'augus_performance_code')
@@ -4246,6 +4249,25 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def delete_link(self):
         self.stock_type_id = None
+
+class AugusStockDetail(Base, BaseModel):
+    __tablename__ = 'AugusStockDetail'
+    id = Column(Identifier, primary_key=True)
+    augus_distribution_code = AnnotatedColumn(Integer, nullable=False)
+    augus_seat_type_code = AnnotatedColumn(Integer, nullable=False)
+    augus_unit_value_code = AnnotatedColumn(Integer, nullable=False)
+    start_on = AnnotatedColumn(DateTime, nullable=False)
+    seat_type_classif = AnnotatedColumn(Integer, nullable=False)
+    augus_unit_value_code = AnnotatedColumn(Integer, nullable=False)
+    quantity = AnnotatedColumn(Integer, nullable=False, default=0)
+
+    augus_stock_info_id = Column(Identifier, ForeignKey('AugusStockInfo.id'), nullable=True)
+    augus_stock_info = relationship('AugusStockInfo', backref='augus_stock_details')
+    augus_putback_id = Column(Identifier, ForeignKey('AugusPutback.id'), nullable=True)
+    augus_putback = relationship('AugusPutback', backref='augus_stock_details')
+    augus_ticket_id = Column(Identifier, ForeignKey('AugusTicket.id'), nullable=True)
+    augus_ticket = relationship('AugusTicket', backref='augus_stock_details')
+    distributed_at = Column(DateTime, nullable=True)
 
 
 # move to altair.app.ticketing.orion.cooperation.augus.models
@@ -4284,11 +4306,20 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def get_augus_ticket(self):
         seat = self.get_seat()
+
         if seat:
             stock_type = seat.stock.stock_type if seat.stock else None
             if stock_type:
                 return AugusTicket.get(stock_type_id=stock_type.id)
         return None
+
+    @property
+    def putback_status(self):
+        if self.seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
+            return AugusPutbackStatus.CANDO
+        else:
+            return AugusPutbackStatus.CANNOT
+
 
 class AugusPutbackStatus:
     CANDO = 0
@@ -4303,27 +4334,13 @@ class AugusPutback(Base, BaseModel): #, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusPutback'
     id = Column(Identifier, primary_key=True)
     augus_putback_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'返券コード'))
-    quantity = AnnotatedColumn(Integer, nullable=False, _a_label=(u'数量'))
-
-
     reserved_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券予約日時'))
     notified_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券通知日時'))
     finished_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'返券完了日時'))
-
     augus_putback_type = AnnotatedColumn(Unicode(32), _a_label=(u'返券区分'), default=AugusPutbackType.ROUTE)
+    augus_performance_id = Column(Identifier, ForeignKey('AugusPerformance.id'), nullable=False)
+    augus_performance = relationship('AugusPerformance')
 
-    seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
-    seat = relationship('Seat')
-
-    augus_stock_info_id = Column(Identifier, ForeignKey('AugusStockInfo.id'), nullable=True)
-    augus_stock_info = relationship('AugusStockInfo', backref='augus_putback')
-
-    @property
-    def putback_status(self):
-        if self.seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v]:
-            return AugusPutbackStatus.CANNOT
-        else:
-            return AugusPutbackStatus.CANDO
 
 # move to altair.app.ticketing.orion.models
 class AugusSeatStatus(object):
