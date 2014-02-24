@@ -288,7 +288,7 @@ function get_performance_id() {
       </td>
       <td>
         % if form.context.sales_segment_group:
-          ${u'表示' if form.context.sales_segment_group.disp_orderreview else u'非表示'}
+          ${u"表示" if form.context.sales_segment_group.setting.disp_orderreview else u"非表示"}
         % endif
       </td>
     </tr>
