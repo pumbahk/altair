@@ -82,7 +82,7 @@
         <% stock_types = set([product.seat_stock_type for product_id, product in form.products.choices]) %>
       <script type="text/javascript">
         $(function() {
-          var product_quantity = $('input[idi^="product_quantity"]');
+          var product_quantity = $('input[id^="product_quantity"]');
           product_quantity.focusout(function(){
             var total_price = 0;
             var total_quantity = 0;
