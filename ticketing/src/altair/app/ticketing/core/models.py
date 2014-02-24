@@ -1276,6 +1276,8 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_id = AnnotatedColumn(Identifier, ForeignKey('Event.id'), _a_label=_(u'イベント'))
     event = relationship('Event')
     auth3d_notice = AnnotatedColumn(UnicodeText, _a_label=_(u'クレジットカード 3D認証フォーム 注記事項'))
+    disp_orderreview = AnnotatedColumn(Boolean, default=True,
+                                  _a_label=_(u'一般チケットの購入履歴表示／非表示'))
 
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref="sales_segment_group")
@@ -3722,6 +3724,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         cascade="all",
         collection_class=list)
     auth3d_notice = AnnotatedColumn(UnicodeText, _a_label=_(u'クレジットカード 3D認証フォーム 注記事項'))
+    disp_orderreview = AnnotatedColumn(Boolean, default=True,
+                                  _a_label=_(u'一般チケットの購入履歴表示／非表示'))
 
     event_id = AnnotatedColumn(Identifier, ForeignKey("Event.id"),
                                _a_label=_(u'イベント'))
@@ -3744,6 +3748,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     use_default_printing_fee = Column(Boolean)
     use_default_registration_fee = Column(Boolean)
     use_default_auth3d_notice = Column(Boolean)
+    use_default_disp_orderreview = Column(Boolean)
 
     setting = relationship('SalesSegmentSetting', uselist=False, backref='sales_segment', cascade='all', lazy='joined')
 

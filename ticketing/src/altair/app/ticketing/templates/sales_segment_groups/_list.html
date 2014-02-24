@@ -17,6 +17,7 @@
           <%doc><th>${ch.sortable(SalesSegmentGroup.order_limit, paging)}</a></th></%doc>
           <th>${ch.sortable(SalesSegmentGroup.seat_choice, paging)}</a></th>
           <th>${ch.sortable(SalesSegmentGroup.public, paging)}</a></th>
+          <th>${ch.sortable(SalesSegmentGroup.disp_orderreview, paging)}</a></th>
           <th>${ch.sortable(SalesSegmentGroup.reporting, paging)}</a></th>
           <th>決済方法</th>
           <th>引取方法</th>
@@ -42,6 +43,7 @@
           <%doc><td ${rowspan}>${sales_segment_group.order_limit or u''}</td></%doc>
           <td ${rowspan}>${u'○' if sales_segment_group.seat_choice else u'×'}</td>
           <td ${rowspan}>${u'○' if sales_segment_group.public else u'×'}</td>
+          <td ${rowspan}>${u'○' if sales_segment_group.disp_orderreview else u'×'}</td>
           <td ${rowspan}>${u'○' if sales_segment_group.reporting else u'×'}</td>
           % if count == 0:
           <td></td>

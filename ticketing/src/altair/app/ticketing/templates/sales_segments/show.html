@@ -59,6 +59,10 @@ function get_selected_sales_segment_id() {
       <td>${u'公開' if sales_segment.public else u'非公開'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(SalesSegment.disp_orderreview)}</th>
+      <td>${u'表示' if sales_segment.disp_orderreview else u'非表示'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(SalesSegment.reporting)}</th>
       <td>${u'対象' if sales_segment.reporting else u'×対象外'}</td>
     </tr>
