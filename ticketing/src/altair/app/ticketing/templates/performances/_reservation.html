@@ -343,7 +343,9 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     if (window.ticketPrinterService)
       printOrder(result.order_id); // _printer.html
     window.open('/orders/show/' + result.order_id, '_blank');
-    venueEditorRoot.venueeditor('refresh');
+    var venue = venueEditorRoot.venueeditor('model');
+    if (venue)
+      venueEditorRoot.venueeditor('refresh');
     getSalesSummary();
   }
 
@@ -762,7 +764,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       this.remove();
     },
     remove: function() {
-      this.$el.empty();
+      this.$el.remove();
     },
     render: function() {
       var self = this;
@@ -847,10 +849,10 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       label.append('公演');
       this.$el.append(label);
 
-      var select = $('<select id="performance_selector" name="performance_id" style="width:30em; margin: 0 3px 0 3px;" />');
+      var select = $('<select id="performance_selector" name="performance_id" style="width:35em; margin: 0 3px 0 3px;" />');
       <% from altair.app.ticketing.core.helpers import build_sales_segment_list_for_inner_sales %>
       % for p in performance.event.performances:
-        select.append($('<option value="${p.id}">${u"{0} - {1} - {2}".format(p.name, p.start_on.strftime("%Y年%m月%d日(%a) %H:%M").decode('utf-8'), p.venue.name)}</option>'));
+        select.append($('<option value="${p.id}">${u"{0} - {1} - {2} - {3}".format(p.code, p.name, p.start_on.strftime("%Y年%m月%d日(%a) %H:%M").decode('utf-8'), p.venue.name)}</option>'));
       % endfor
       select.val(this.current);
       this.$el.append(select);
