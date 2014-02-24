@@ -151,6 +151,10 @@ class SalesSegmentAccessor(object):
             has_use_default=True,
             use_default_default=True
             ),
+        "disp_orderreview": dict(
+            has_use_default=True,
+            use_default_default=True
+            ),
         "reporting": dict(
             has_use_default=True,
             use_default_default=True

@@ -74,6 +74,16 @@ class SalesSegmentForm(OurForm):
         default=True,
         widget=CheckboxInput()
     )
+    disp_orderreview = OurBooleanField(
+        label=u'一般チケットの購入履歴表示/非表示',
+        default=True,
+        widget=CheckboxInput()
+    )
+    use_default_disp_orderreview = OurBooleanField(
+        label=u'グループの値を利用',
+        default=True,
+        widget=CheckboxInput()
+    )
     reporting = OurBooleanField(
         label=u'レポート対象',
         default=True,
