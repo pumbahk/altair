@@ -51,7 +51,7 @@ def get_order_quantity(db_session, stmt, group_by):
     # Stock単位の全ての予約席数 (販売区分での絞り込みは行わない)
     query = db_session.query(OrderedProductItem)\
         .join(OrderedProduct)\
-        .join(Order).filter(Order.canceled_at==None)\
+        .join(Order).filter(Order.canceled_at==None, Order.refunded_at==None)\
         .join(Performance)\
         .join(Event)\
         .join(ProductItem, ProductItem.id==OrderedProductItem.product_item_id)\
@@ -232,7 +232,7 @@ class SalesTotalReporter(object):
         # 販売金額、販売枚数
         query = self.slave_session.query(Event).filter(Event.organization_id==self.organization.id)\
             .join(Performance)\
-            .join(Order).filter(Order.canceled_at==None)\
+            .join(Order).filter(Order.canceled_at==None, Order.refunded_at==None)\
             .join(OrderedProduct)\
             .join(OrderedProductItem)\
             .join(ProductItem)\
@@ -489,7 +489,7 @@ class SalesDetailReporter(object):
         # 購入件数クエリ
         query = self.slave_session.query(OrderedProductItem)\
             .join(OrderedProduct)\
-            .join(Order).filter(Order.canceled_at==None)\
+            .join(Order).filter(Order.canceled_at==None, Order.refunded_at==None)\
             .join(ProductItem, ProductItem.id==OrderedProductItem.product_item_id)\
             .join(Stock)\
             .join(Product, and_(
