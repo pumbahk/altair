@@ -72,6 +72,7 @@ def main(argv=sys.argv):
         params = dict(
             event_id=report_setting.event_id,
             performance_id=report_setting.performance_id,
+            report_type=report_setting.report_type
         )
         if limited_from:
             params.update(dict(limited_from=limited_from))

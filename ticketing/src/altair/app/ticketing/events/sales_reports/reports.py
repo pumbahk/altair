@@ -14,7 +14,7 @@ from datetime import date, timedelta
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import Account, Event, Mailer
 from altair.app.ticketing.core.models import StockType, StockHolder, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
-from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem
+from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem, ReportTypeEnum
 from altair.app.ticketing.events.sales_reports.forms import SalesReportForm
 
 logger = logging.getLogger(__name__)
@@ -610,14 +610,18 @@ class PerformanceReporter(object):
         self.total = SalesDetailReporter(request, self.form)
 
         # 販売区分別のレポート
-        for sales_segment in performance.sales_segments:
-            if not sales_segment.reporting:
-                continue
-            if (self.form.limited_from.data and sales_segment.end_at < self.form.limited_from.data) or\
-               (self.form.limited_to.data and self.form.limited_to.data < sales_segment.start_at):
-                continue
-            self.form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
-            self.reporters[sales_segment] = SalesDetailReporter(request, self.form)
+        if self.form.is_detail_report():
+            for sales_segment in performance.sales_segments:
+                if not sales_segment.reporting:
+                    continue
+                if (self.form.limited_from.data and sales_segment.end_at < self.form.limited_from.data) or\
+                   (self.form.limited_to.data and self.form.limited_to.data < sales_segment.start_at):
+                    continue
+                self.form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
+                reporter= SalesDetailReporter(request, self.form)
+                if not reporter.reports:
+                    continue
+                self.reporters[sales_segment] = reporter
 
     def sort_index(self):
         return sorted(self.reporters.keys(), key=lambda x:(x.order, x.name))
@@ -640,8 +644,12 @@ class EventReporter(object):
                 continue
             self.form.performance_id.data = performance.id
             reporter = PerformanceReporter(request, self.form, performance)
-            if not reporter.reporters:
-                continue
+            if self.form.is_detail_report():
+                if not reporter.reporters:
+                    continue
+            else:
+                if not reporter.total.reports:
+                    continue
             self.reporters[performance] = reporter
 
     def sort_index(self):

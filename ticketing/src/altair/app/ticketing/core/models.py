@@ -773,6 +773,10 @@ class ReportPeriodEnum(StandardEnum):
     Normal = (1, u'指定期間 (前日分/前週分)')
     Entire = (2, u'全期間 (販売開始〜送信日時まで)')
 
+class ReportTypeEnum(StandardEnum):
+    Detail = (1, u'詳細 (販売区分別まで含む)')
+    Summary = (2, u'合計 (公演合計のみ)')
+
 class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = 'ReportSetting'
     id = Column(Identifier, primary_key=True)
@@ -790,6 +794,7 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     day_of_week = Column(Integer, nullable=True, default=None)
     start_on = Column(DateTime, nullable=True, default=None)
     end_on = Column(DateTime, nullable=True, default=None)
+    report_type = Column(Integer, nullable=False, default=1, server_default='1')
 
     @property
     def recipient(self):

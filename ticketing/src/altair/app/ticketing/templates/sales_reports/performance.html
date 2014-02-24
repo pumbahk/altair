@@ -28,12 +28,12 @@
 
 <%
   sales_segments = performance_reporter.sort_index()
-  if len(sales_segments) > 1:
-    sales_segments = [''] + sales_segments
+  if not (form.is_detail_report() and len(sales_segments) == 0):
+    sales_segments = [performance_reporter.total] + sales_segments
 %>
 % for ss_idx, sales_segment in enumerate(sales_segments):
   <%
-    if ss_idx == 0 and len(sales_segments) > 1:
+    if not (form.is_detail_report() and len(sales_segments) == 0) and ss_idx == 0:
       reporter = performance_reporter.total
       ss_name = u'公演合計'
     else:
