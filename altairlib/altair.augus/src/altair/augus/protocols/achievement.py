@@ -11,7 +11,7 @@ class _AchievementRecord(RecordBase):
 
 class _AchievementProtocol(ProtocolBase):
     """販売実績
-    """    
+    """
     pass
 
 
@@ -34,7 +34,6 @@ class AchievementResponseRecord(_AchievementRecord):
     attributes = (
         'event_code',
         'performance_code',
-        'trader_code',
         'distribution_code',
         'seat_type_code',
         'unit_value_code',
@@ -43,7 +42,7 @@ class AchievementResponseRecord(_AchievementRecord):
         'reservation_number',
         'block',
         'coordy',
-        'coordx',        
+        'coordx',
         'area_code',
         'info_code',
         'floor',
@@ -69,4 +68,3 @@ class AchievementResponse(_AchievementProtocol):
     record = AchievementResponseRecord
     pattern = '^RT(?P<customer_id>.{7})HAN(?P<event_code>[^_]{0,9})_(?P<date>\d{12})_(?P<created_at>\d{14})\.csv$'
     fmt = 'RT{customer_id:07d}HAN{event_code:09d}_{date:12}_{created_at:14}.csv'
-

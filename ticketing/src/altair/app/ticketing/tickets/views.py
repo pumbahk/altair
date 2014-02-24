@@ -658,7 +658,7 @@ class TicketPrintQueueEntries(BaseView):
         self.request.session.flash(u'エントリを %d 件元に戻しました' % n)
         return HTTPFound(location=self.request.route_path("tickets.queue.index"))
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
+@view_defaults(decorator=with_bootstrap, permission="sales_counter")
 class TicketPrinter(BaseView):
     @property
     def endpoints(self):

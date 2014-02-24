@@ -25,6 +25,7 @@ from altair.app.ticketing.mails.interfaces import (
     ILotsRejectedMailDelivery,
 )
 
+from altair.app.ticketing.utils import clear_exc
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 
@@ -229,6 +230,7 @@ class SejPaymentPlugin(object):
     def prepare(self, request, cart):
         """  """
 
+    @clear_exc
     def finish(self, request, cart):
         """ 売り上げ確定 """
         logger.debug('Sej Payment')
@@ -265,6 +267,7 @@ class SejPaymentPlugin(object):
 
         return bool(sej_order.billing_number)
 
+    @clear_exc
     def refresh(self, request, order):
         if order.paid_at is not None:
             raise Exception('order %s is already paid' % order.order_no)
@@ -289,6 +292,7 @@ class SejDeliveryPlugin(object):
     def prepare(self, request, cart):
         """  """
 
+    @clear_exc
     def finish(self, request, cart):
         logger.debug('Sej Delivery')
 
@@ -344,6 +348,7 @@ class SejPaymentDeliveryPlugin(object):
     def prepare(self, request, cart):
         """  """
 
+    @clear_exc
     def finish(self, request, cart):
         """  """
         logger.debug('Sej Payment and Delivery')

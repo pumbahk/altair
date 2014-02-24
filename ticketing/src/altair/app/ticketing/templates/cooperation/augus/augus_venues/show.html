@@ -11,7 +11,7 @@
     <i class="glyphicon icon-upload"></i>アップロード</button>
   <button class="btn" onclick="javascript: enable_download_dialog();">
     <i class="glyphicon icon-download"></i>ダウンロード</button>
-  <button class="btn" onclick="request.route_path('augus.augus_venue.complete, augus_venue_code=augus_venue.code, augus_venue_version=augus_venue.version)">
+  <button class="btn" onclick="location.href='${request.route_path('augus.augus_venue.complete', augus_venue_code=augus_venue.code, augus_venue_version=augus_venue.version)}'">
     <i class="glyphicon icon-download"></i>完了ファイル</button>
 </div>
 

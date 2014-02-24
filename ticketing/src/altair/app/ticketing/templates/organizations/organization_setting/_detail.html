@@ -90,7 +90,29 @@
       <th>${HH.label_text_for(c_models.OrganizationSetting.entrust_separate_seats)}</th>
       <td>${u'バラ席を許可する' if organization_setting.entrust_separate_seats else u'バラ席を許可しない'}</td>
     </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.augus_use)}</th>
+      <td>${u'使う' if organization_setting.augus_use  else u'使わない'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.augus_customer_id)}</th>
+      <td>${organization_setting.augus_customer_id}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.augus_upload_url)}</th>
+      <td>${organization_setting.augus_upload_url}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.augus_download_url)}</th>
+      <td>${organization_setting.augus_download_url}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.augus_username)}</th>
+      <td>${organization_setting.augus_username}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.augus_password)}</th>
+      <td>${u'*' * len(organization_setting.augus_password) if organization_setting.augus_password else u'-'}</td>
+    </tr>
   <tbody>
 </table>
-
-

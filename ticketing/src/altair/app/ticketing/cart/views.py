@@ -15,7 +15,6 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from pyramid.threadlocal import get_current_request
-from pyramid import security
 from webob.multidict import MultiDict
 
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
@@ -124,7 +123,7 @@ def back_to_top(request):
 
     ReleaseCartView(request)()
 
-    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or request.context.host_base_url or "/")
+    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or request.context.host_base_url or "/", headers=request.response.headers)
 
 def back(pc=back_to_top, mobile=None):
     if mobile is None:
@@ -1169,10 +1168,8 @@ class OutTermSalesView(object):
 @view_config(decorator=with_jquery.not_when(mobile_request), request_method="POST", route_name='cart.logout')
 @limiter.release
 def logout(request):
-    headers = security.forget(request)
-    res = back_to_top(request)
-    res.headerlist.extend(headers)
-    return res
+    api.logout(request)
+    return back_to_top(request)
 
 def _create_response(request, param):
     event_id = request.matchdict.get('event_id')

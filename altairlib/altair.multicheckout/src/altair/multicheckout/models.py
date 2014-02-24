@@ -36,12 +36,15 @@ class Secure3DReqEnrolResponse(Base):
     id = sa.Column(Identifier, primary_key=True)
     Md = sa.Column(sa.UnicodeText, doc="マーチャントデータ")
     ErrorCd = sa.Column(sa.Unicode(6), doc="エラーコード")
-    RetCd = sa.Column(sa.Unicode(1), doc="リターンコード")
+    RetCd = sa.Column(sa.Unicode(2), doc="リターンコード")
     AcsUrl = sa.Column(sa.UnicodeText, doc="3D 認証画面を要求するための ACS の URL")
     PaReq = sa.Column(sa.UnicodeText, doc="ACS に送信する電文内容")
 
     def is_enable_secure3d(self):
         return self.ErrorCd == '000000' and self.RetCd in ('0', '1', '2')
+
+    def is_secure3d_continuable(self):
+        return self.ErrorCd == '000000' and self.RetCd == '-1'
 
     def is_enable_auth_api(self):
         return self.ErrorCd == '000000' and self.RetCd == '0'
@@ -61,7 +64,7 @@ class Secure3DAuthResponse(Base):
     id = sa.Column(Identifier, primary_key=True)
 
     ErrorCd = sa.Column(sa.Unicode(6), doc="エラーコート")
-    RetCd = sa.Column(sa.Unicode(1), doc="リターンコート")
+    RetCd = sa.Column(sa.Unicode(2), doc="リターンコート")
     Xid = sa.Column(sa.Unicode(28), doc="トランザクションID")
     Ts = sa.Column(sa.Unicode(1), doc="トランザクションステータス")
     Cavva = sa.Column(sa.Unicode(1), doc="CAVV アルゴリズム")
@@ -71,6 +74,9 @@ class Secure3DAuthResponse(Base):
 
     def is_enable_secure3d(self):
         return self.ErrorCd == '000000' and self.RetCd in ('0', '1', '2')
+
+    def is_secure3d_continuable(self):
+        return self.ErrorCd == '000000' and self.RetCd == '-1'
 
     def is_enable_auth_checkout(self):
         return self.ErrorCd == '000000' and self.RetCd == '0'

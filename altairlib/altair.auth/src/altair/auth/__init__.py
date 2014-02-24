@@ -137,6 +137,7 @@ class MultiWhoAuthenticationPolicy(object):
         identity = self._get_identity(request)
         if identity is not None:
             return identity['repoze.who.userid']
+        return None
 
     def authenticated_userid(self, request):
         """ See IAuthenticationPolicy.
@@ -148,6 +149,7 @@ class MultiWhoAuthenticationPolicy(object):
             groups = self._callback(identity, request)
             if groups is not None:
                 return identity['repoze.who.userid']
+        return None
 
     def effective_principals(self, request):
         """ See IAuthenticationPolicy.
@@ -168,8 +170,9 @@ class MultiWhoAuthenticationPolicy(object):
         """ See IAuthenticationPolicy.
         """
 
-        api_name = decide(request)
-        api = self._getAPI(request)
+        api, api_name = self._getAPI(request)
+        if api is None:
+            return []
         identity = {'repoze.who.userid': principal,
                     'identifier': api.name_registry[self._identifier_id],
                     'auth_type': api_name,
@@ -180,7 +183,9 @@ class MultiWhoAuthenticationPolicy(object):
         """ See IAuthenticationPolicy.
         """
 
-        api = self._getAPI(request)
+        api, _ = self._getAPI(request)
+        if api is None:
+            return []
         identity = self._get_identity(request)
         return api.forget(identity)
 
@@ -198,12 +203,14 @@ class MultiWhoAuthenticationPolicy(object):
     def _getAPI(self, request):
         api_name = decide(request)
         api = who_api(request, api_name)
-        return api
+        if api is None:
+            logger.warning('no API could be resolved with name=%s', api_name)
+        return api, api_name
 
     def _get_identity(self, request):
         identity = request.environ.get('repoze.who.identity')
         if identity is None:
-            api = self._getAPI(request)
+            api, _ = self._getAPI(request)
             if api is None:
                 return None
             identity = api.authenticate()

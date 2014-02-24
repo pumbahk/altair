@@ -381,7 +381,7 @@ class PreviewApiView(object):
             return {"status": False, "message": u"補助ダイアログの通信に失敗しました"}
 
 
-@view_defaults(route_name="tickets.preview.loadsvg.api", request_method="GET", renderer="json")
+@view_defaults(route_name="tickets.preview.loadsvg.api", request_method="GET", renderer="json", permission="authenticated")
 class LoadSVGFromModelApiView(object):
     """
       data = {"svg_resource": {"model_name": "TicketBundle", model: 1}, 
@@ -399,15 +399,23 @@ class LoadSVGFromModelApiView(object):
             ticket_format_id = data["svg_resource"]["model"]
             product_item_id = data["fillvalues_resource"]["model"]
 
-            product_item = c_models.ProductItem.query.filter_by(id=product_item_id).first()
+            organization = self.context.organization
+            product_item = c_models.ProductItem.query.filter(
+                c_models.ProductItem.id==product_item_id,
+                c_models.ProductItem.performance_id==c_models.Performance.id, 
+                c_models.Performance.event_id==c_models.Event.id, 
+                c_models.Event.organization_id==organization.id).first()
+
             if product_item is None:
                 return {"status": False, "message": u"商品が見つかりません。"}
             if data.get("sub_resource"):
-                ticket = c_models.Ticket.query.filter(c_models.Ticket.id==data.get("sub_resource")["model"]).first()
+                ticket = c_models.Ticket.query.filter(c_models.Ticket.id==data.get("sub_resource")["model"], 
+                                                      c_models.Ticket.organization_id==organization.id).first()
             else:
                 ticket = c_models.Ticket.query.filter(c_models.TicketBundle.id==product_item.ticket_bundle_id, 
                                                       c_models.Ticket_TicketBundle.ticket_bundle_id==c_models.TicketBundle.id, 
                                                       c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id, 
+                                                      c_models.Ticket.organization_id==organization.id, 
                                                       c_models.Ticket.ticket_format_id==ticket_format_id).first()
             if ticket is None:
                 return {"status": False, "message": u"チケット券面が見つかりません。チケット様式を変更してpreviewを試すか。指定したチケット様式と結びつくチケット券面を作成してください"}
@@ -425,7 +433,8 @@ class LoadSVGFromModelApiView(object):
         try:
             data = json.loads(self.request.GET["data"])
             ticket_id = data["fillvalues_resource"]["model"]
-            ticket = c_models.Ticket.query.filter_by(id=ticket_id).first()
+            organization = self.context.organization
+            ticket = c_models.Ticket.query.filter_by(id=ticket_id, organization_id=organization.id).first()
             ticket_formats = [_build_ticket_format_dict(ticket.ticket_format)]
             return {"status": True, "data": ticket.drawing, "ticket_formats": ticket_formats}
         except KeyError, e:

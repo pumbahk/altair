@@ -20,9 +20,14 @@ class SeatImportError(AugusError):
 class AlreadyExist(AugusError):
     pass
 
-
 class AugusDataImportError(AugusError):
     pass
 
+class IllegalImportDataError(AugusError):
+    pass
+
 class AugusDataExportError(AugusError):
+    pass
+
+class AugusIntegrityError(AugusError):
     pass
