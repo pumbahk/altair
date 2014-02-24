@@ -39,7 +39,12 @@ class AugusParser(object):
 
     @classmethod
     def parserows(cls, rows, protocol, encoding=DEFAULT_ENCODING):
-        _dec = lambda data: data.decode(encoding)
+        def _dec(data):
+            try:
+                return data.decode(encoding)
+            except (UnicodeEncodeError, UnicodeDecodeError) as err:
+                raise err.__class__(repr(data), *err.args[1:])
+
         rows = map(lambda row: map(_dec, row), rows)
         proto = protocol()
         proto.load(rows)

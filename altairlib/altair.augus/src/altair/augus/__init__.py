@@ -1,3 +1,3 @@
 #-*- coding: utf-8 -*-
 
-DEFAULT_ENCODING = 'sjis'
+DEFAULT_ENCODING = 'cp932'
