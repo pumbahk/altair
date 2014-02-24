@@ -1,0 +1,41 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+<%include file="_header.html" args="event=event" />
+
+<a class="btn entry" href="${request.route_path('augus.product.edit', event_id=event.id)}">連携を編集</a>
+
+%for ag_performance in augus_performances:
+%if ag_performance.performance_id:
+<h3>${ag_performance.performance.name}</h3>
+%for sales_segment in ag_performance.performance.sales_segments:
+<p>${sales_segment.sales_segment_group.name}</p>
+<table class="table">
+  <tr>
+    <th>id</th>
+    <th>席種</th>
+    <th>商品名</th>
+    <th>価格</th>
+    <th>公開</th>
+    <th>オーガス商品</th>
+  </tr>
+  %for product in sales_segment.products:
+  <tr>
+    <td>${product.id}</td>
+    <td>${product.seat_stock_type.name}</td>
+    <td>${product.name}</td>
+    <td>${product.price}</td>
+    <td>${product.public}</td>
+    <td>
+      %if product.augus_ticket_id:
+      ${product.augus_ticket.augus_seat_type_code} -
+      ${product.augus_ticket.augus_seat_type_name} -
+      ${product.augus_ticket.value} 円
+      %endif
+    </td>
+  </tr>
+  %endfor
+</table>
+%endfor
+%endif
+%endfor

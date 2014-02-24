@@ -1,6 +1,6 @@
 #-*- coding: utf-8 -*-
 import os
-import .protocols
+from . import protocols
 from .errors import ProtocolNotFound
 
 def get_protocol(path):
@@ -10,4 +10,3 @@ def get_protocol(path):
             return protocol
     raise ProtocolNotFound('Cannnot found the protocol: {0}'\
                            .format(name))
-
