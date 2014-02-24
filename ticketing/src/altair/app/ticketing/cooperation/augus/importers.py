@@ -40,8 +40,8 @@ def get_augus_stock_detail(augus_stock_info, record):
     return AugusStockDetail.query.filter(AugusStockDetail.augus_stock_info_id==augus_stock_info.id)\
                                  .filter(AugusStockDetail.augus_seat_type_code==record.seat_type_code)\
                                  .filter(AugusStockDetail.augus_unit_value_code==record.unit_value_code)\
+                                 .filter(AugusStockDetail.augus_putback_id==None)\
                                  .first()
-
 
 def get_enable_stock_info(seat):
     stock_infos = AugusStockInfo.query.filter(AugusStockInfo.seat_id==seat.id).all()
@@ -50,13 +50,6 @@ def get_enable_stock_info(seat):
         for detail in info.augus_stock_details:
             if not detail.augus_putback_id:
                 return info
-        enables.append(info)
-    if len(enables) == 1:
-        return enables[0]
-    elif len(enables) == 0:
-        return None
-    else: # なぜか複数の有効なAugusStockInfoがある
-        raise AugusDataImportError('two enable augus stock info: AugusStockInfo.seat_id={}'.format(seat.id))
 
 class AugusPerformanceImpoter(object):
     def import_record(self, record):
