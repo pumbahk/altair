@@ -23,9 +23,9 @@ def upgrade():
     op.drop_column('SalesSegment', 'use_default_disp_orderreview')
     op.drop_column('SalesSegmentGroup', 'disp_orderreview')
 
-    #op.add_column('SalesSegmentSetting', sa.Column('disp_orderreview', sa.Boolean(), nullable=False,default=True, server_default=text('1')))
-    #op.add_column('SalesSegmentSetting', sa.Column('use_default_disp_orderreview', sa.Boolean(), nullable=False,default=True, server_default=text('1')))
-    #op.add_column('SalesSegmentGroupSetting', sa.Column('disp_orderreview', sa.Boolean(), nullable=False,default=True, server_default=text('1')))
+    op.add_column('SalesSegmentSetting', sa.Column('disp_orderreview', sa.Boolean(), nullable=False,default=True, server_default=text('1')))
+    op.add_column('SalesSegmentSetting', sa.Column('use_default_disp_orderreview', sa.Boolean(), nullable=False,default=True, server_default=text('1')))
+    op.add_column('SalesSegmentGroupSetting', sa.Column('disp_orderreview', sa.Boolean(), nullable=False,default=True, server_default=text('1')))
 
 
 def downgrade():

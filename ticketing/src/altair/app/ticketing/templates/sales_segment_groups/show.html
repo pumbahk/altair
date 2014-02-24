@@ -100,7 +100,7 @@ ${ch.breadcrumbs(
             <td>${sales_segment.setting.order_limit if sales_segment.setting and sales_segment.setting.order_limit else u'-'}</td>
             <td>${u'選択可' if sales_segment.seat_choice else u'×選択不可'}</td>
             <td>${u'公開' if sales_segment.public else u'非公開'}</td>
-            <td>${u'表示' if sales_segment.disp_orderreview else u'非表示'}</td>
+            <td>${u'表示' if sales_segment.setting and sales_segment.setting.disp_orderreview else u'非表示'}</td>
             <td>${u'対象' if sales_segment.reporting else u'×対象外'}</td>
           </tr>
         % endfor
