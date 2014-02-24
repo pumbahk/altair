@@ -6,7 +6,7 @@ from paste.util.multidict import MultiDict
 from pyramid.threadlocal import get_current_registry
 from pyramid.renderers import render_to_response
 from sqlalchemy import distinct
-from sqlalchemy.sql import func, and_, or_
+from sqlalchemy.sql import func, and_, or_, exists
 from sqlalchemy.orm import aliased
 
 from datetime import date, timedelta
@@ -47,7 +47,7 @@ class SalesReportRecord(object):
         self.total_order_amount = 0
 
 
-def get_order_quantity(db_session, stock_ids, group_by):
+def get_order_quantity(db_session, stmt, group_by):
     # Stock単位の全ての予約席数 (販売区分での絞り込みは行わない)
     query = db_session.query(OrderedProductItem)\
         .join(OrderedProduct)\
@@ -55,7 +55,8 @@ def get_order_quantity(db_session, stock_ids, group_by):
         .join(Performance)\
         .join(Event)\
         .join(ProductItem, ProductItem.id==OrderedProductItem.product_item_id)\
-        .join(Stock).filter(Stock.id.in_(stock_ids))\
+        .join(Stock)\
+        .join(stmt, Stock.id==stmt.c.stock_id)\
         .with_entities(
             group_by,
             func.sum(OrderedProductItem.quantity)
@@ -206,18 +207,19 @@ class SalesTotalReporter(object):
         query = self.add_form_filter(query)
 
         # 残席数を算出するためのStock単位の予約席数
-        stock_ids = [s.id for s in query.with_entities(Stock.id).distinct()]
-        order_quantity = get_order_quantity(self.slave_session, stock_ids, self.group_by)
+        stmt = query.with_entities(distinct(Stock.id).label('stock_id')).subquery()
+        order_quantity = get_order_quantity(self.slave_session, stmt, self.group_by)
 
-        query = self.slave_session.query(Stock).filter(Stock.id.in_(stock_ids))\
+        stock_query = self.slave_session.query(Stock)\
+            .join(stmt, Stock.id==stmt.c.stock_id)\
             .join(Performance).filter(Performance.id==Stock.performance_id)\
             .join(Event).filter(Event.organization_id==self.organization.id)
-        query = query.with_entities(
+        stock_query = stock_query.with_entities(
             self.group_by,
             func.sum(Stock.quantity)
         ).group_by(self.group_by)
 
-        for id, stock_quantity in query.all():
+        for id, stock_quantity in stock_query.all():
             if id not in self.reports:
                 logger.info('invalid key (%s:%s) get_stock_data' % (self.group_by, id))
                 continue
@@ -466,8 +468,8 @@ class SalesDetailReporter(object):
             query = query.join(StockType, StockType.id==Stock.stock_type_id).filter(StockType.event_id==self.form.event_id.data)
 
         # 残席数を算出するためのStock単位の予約席数
-        stock_ids = [s.id for s in query.with_entities(Stock.id).distinct()]
-        order_quantity = get_order_quantity(self.slave_session, stock_ids, Stock.id)
+        stmt = query.with_entities(distinct(Stock.id).label('stock_id')).subquery()
+        order_quantity = get_order_quantity(self.slave_session, stmt, Stock.id)
 
         query = query.with_entities(
             func.ifnull(Product.base_product_id, Product.id),
