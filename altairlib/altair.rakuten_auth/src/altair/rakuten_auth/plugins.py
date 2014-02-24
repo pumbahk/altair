@@ -115,7 +115,7 @@ class RakutenOpenIDPlugin(object):
             # check out the temporary session first
             if req.path_url == impl.extra_verify_url:
                 session = impl.get_session(req)
-                if session:
+                if session is not None:
                     remembered_identity = session.get(self.__class__.__name__ + '.identity')
                     if remembered_identity is not None:
                         logging.debug('got identity from temporary session: %s' % remembered_identity)
@@ -156,30 +156,33 @@ class RakutenOpenIDPlugin(object):
         else:
             if 'claimed_id' in identity:
                 userdata = identity
+                # ネガティブキャッシュなので、not in で調べる
+                if self.METADATA_KEY not in environ:
+                    cache = self._get_cache()
 
-                cache = self._get_cache()
+                    def get_extras():
+                        retval = self._get_extras(req, identity)
+                        browserid = get_browserid(req)
+                        retval['browserid'] = browserid
+                        return retval
 
-                def get_extras():
-                    retval = self._get_extras(req, identity)
-                    session = impl.get_session(req)
-                    browserid = get_browserid(req)
-                    retval['browserid'] = browserid
-                    return retval
-
-                extras = None
-                try:
-                    extras = cache.get(
-                        key=identity['claimed_id'],
-                        createfunc=get_extras
-                        )
-                except:
-                    logger.warning("Failed to retrieve extra information", exc_info=sys.exc_info())
-                if not extras:
+                    extras = None
+                    try:
+                        extras = cache.get(
+                            key=identity['claimed_id'],
+                            createfunc=get_extras
+                            )
+                    except:
+                        logger.warning("Failed to retrieve extra information", exc_info=sys.exc_info())
+                    environ[self.METADATA_KEY] = extras
+                else:
+                    # ネガティブキャッシュなので extras is None になる可能性
+                    extras = environ[self.METADATA_KEY]
+                if extras is None:
                     # ユーザ情報が取れない→ポイント口座番号が取れない
                     # →クリティカルな状況と考えられるので認証失敗
                     logger.info("Could not retrieve extra information")
                     return None
-                environ[self.METADATA_KEY] = extras
 
         if userdata:
             environ[self.AUTHENTICATED_KEY] = True
@@ -209,7 +212,8 @@ class RakutenOpenIDPlugin(object):
         logger.debug('forget identity')
         self._flush_cache(identity)
         session = impl.get_session(req)
-        session and session.invalidate()
+        if session is not None:
+            session.invalidate()
         rememberer = self._get_rememberer(environ)
         return rememberer.forget(environ, identity)
 
