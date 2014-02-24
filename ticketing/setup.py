@@ -80,6 +80,7 @@ requires = [
     "poster",
     "radix",
     "requests",
+    "pyOpenSSL",
     "altair.augus",
     "altair.auth",
     "altair.sqla",

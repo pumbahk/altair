@@ -38,6 +38,14 @@ altair.ticketing.cart.mq.url = amqp://guest:guest@localhost:5672/%2F
 altair.ticketing.cooperation.augus.bucket = tstar
 altair.ticketing.cooperation.augus.tort = cooperation/ftp/augus/upload/test
 
+[app:ticketing_default]
+use = ticketing
+altair.ticketing.admin.authentication.challenge_view = altair.app.ticketing.views.default_challenge_view
+
+[app:ticketing_client_cert]
+use = ticketing
+altair.ticketing.admin.authentication.challenge_view = altair.app.ticketing.views.client_cert_challenge_view
+
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s
@@ -51,15 +59,26 @@ use = egg:altair.browserid#browserid
 cookie_name = browserid
 env_key = repoze.browserid
 
-[pipeline:pipeline]
+[pipeline:pipeline_default]
 pipeline = 
     prefix
     browserid
-    ticketing
+    ticketing_default
 
-[composite:main]
+[pipeline:pipeline_client_cert]
+pipeline = 
+    prefix
+    browserid
+    ticketing_client_cert
+
+[composite:default]
 use = egg:Paste#urlmap
-/ = pipeline
+/ = pipeline_default
+/.www-check = www-check
+
+[composite:client_cert]
+use = egg:Paste#urlmap
+/ = pipeline_client_cert
 /.www-check = www-check
 
 [server:main]
