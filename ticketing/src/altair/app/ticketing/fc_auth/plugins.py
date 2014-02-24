@@ -79,6 +79,7 @@ class FCAuthPlugin(object):
         if 'repoze.who.plugins.auth_tkt.userid' in identity:
             try:
                 userdata = pickle.loads(identity['repoze.who.plugins.auth_tkt.userid'].decode('base64'))
+                # XXX: userdata が None であってもここでトラップしてもらう、あまり良いコードではない
                 userdata.pop('login', None)
             except:
                 logger.exception('unable to retrieve userdata from identity: %r' % identity)
