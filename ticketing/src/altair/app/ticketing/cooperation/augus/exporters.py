@@ -118,6 +118,7 @@ class AugusPutbackExporter(object):
         for putback in putbacks:
             response = PutbackResponse()
             response.event_code = putback.augus_performance.augus_event_code
+            response.date = putback.augus_performance.start_on
             response.extend([self.create_record(stock_detail) for stock_detail in putback.augus_stock_details])
             responses.append(response)
             putback.notified_at = now
