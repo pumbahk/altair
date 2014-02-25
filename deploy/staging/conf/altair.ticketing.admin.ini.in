@@ -136,6 +136,7 @@ propagate = 0
 level = INFO
 handlers = console, sqlalchemy
 qualname = alembic
+propagate = 0
 
 [handler_console]
 class = altair.log.filters.BrowserIdStreamHandler
