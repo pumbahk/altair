@@ -19,14 +19,7 @@ def mkdir_p(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('conf', nargs='?', default=None)
-    parser.add_argument('--force', action='store_true', default=False)
-    args = parser.parse_args()
-    env = bootstrap(args.conf)
-    settings = env['registry'].settings
-
+def export_achievement_all(settings):
     consumer_id = int(settings['augus_consumer_id'])
     ko_staging = settings['ko_staging']
 
@@ -48,6 +41,15 @@ def main():
         ag_performance.is_report_target = False
         ag_performance.save()
     transaction.commit()
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('conf', nargs='?', default=None)
+    parser.add_argument('--force', action='store_true', default=False)
+    args = parser.parse_args()
+    env = bootstrap(args.conf)
+    settings = env['registry'].settings
+    export_achievement_all(settings)
 
 if __name__ == '__main__':
     main()
