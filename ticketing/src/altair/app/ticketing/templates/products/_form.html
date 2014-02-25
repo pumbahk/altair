@@ -1,7 +1,9 @@
 <%page args="form, action='#'" />
 <%namespace file="/common/helpers.html" name="ch" />
 <form action="${action}" method="POST">
+% if form.performance_id.data:
   ${ch.form_item(form.all_sales_segment)}
+% endif
   ${ch.form_item(form.sales_segment_id)}
   ${ch.form_item(form.seat_stock_type_id)}
   ${ch.form_item(form.id)}
