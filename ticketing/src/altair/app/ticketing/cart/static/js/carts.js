@@ -172,10 +172,10 @@ cart.events = {
     ON_CART_ORDERED: "onCartOredered",
     ON_VENUE_DATASOURCE_UPDATED: "onVenueDataSourceUpdated"
 };
-cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled) {
+cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl) {
     this.app = new cart.ApplicationController();
     venueEnabled = venueEnabled && (!$.browser.msie || parseInt($.browser.version) >= 9);
-    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled);
+    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl);
     $('body').bind('selectstart', function() { return false; });
 };
 
@@ -300,7 +300,7 @@ cart.showSeparateSeatOrderDialog = function showSeparateSeatOrderDialog(title, p
 cart.ApplicationController = function() {
 };
 
-cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled) {
+cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl) {
     this.performanceSearch = new cart.PerformanceSearch({
         salesSegmentsSelection: salesSegmentsSelection,
         key: selected[1],
@@ -334,7 +334,8 @@ cart.ApplicationController.prototype.init = function(salesSegmentsSelection, sel
     this.venuePresenter = new cart.VenuePresenter({
         viewType: venueEnabled ? cart.VenueView: cart.DummyVenueView,
         performance: this.performance,
-        stockTypeListPresenter: this.stockTypeListPresenter
+        stockTypeListPresenter: this.stockTypeListPresenter,
+        spinnerPictureUrl: spinnerPictureUrl || '/cart/static/img/settlement/loading.gif'
     });
     // フォーム
     this.orderFormPresenter = new cart.OrderFormPresenter({
@@ -492,7 +493,8 @@ cart.VenuePresenter.prototype = {
             }
         };
         this.view = new this.viewType({
-            presenter: this
+            presenter: this,
+            spinnerPictureUrl: this.spinnerPictureUrl
         });
         this.performance.on("change",
             function() {self.onPerformanceChanged();});
@@ -1160,6 +1162,7 @@ cart.VenueView = Backbone.View.extend({
         this.zoomRatioMax = 2.5;
         this.updateQueue = [];
         this.currentDataSource = null;
+        this.spinnerPictureUrl = this.options.spinnerPictureUrl;
 
         var self = this;
         $('#selectSeat .btn-select-seat').click(function () {
@@ -1229,6 +1232,7 @@ cart.VenueView = Backbone.View.extend({
 
         var loadingLayer = null;
         var loadPartCount = 0;
+        var spinnerPictureUrl = this.spinnerPictureUrl;
         var _callbacks = $.extend($.extend({}, callbacks), {
             zoomRatioChanging: function (zoomRatio) {
                 return Math.min(Math.max(zoomRatio, self.zoomRatioMin), self.zoomRatioMax);
@@ -1261,7 +1265,7 @@ cart.VenueView = Backbone.View.extend({
                             .css({ position: 'absolute', width: '100%', height: '100%', backgroundColor: 'white', opacity: 0.75 })
                             .append(
                                 $('<img />')
-                                .attr('src', '/cart/static/img/settlement/loading.gif')
+                                .attr('src', spinnerPictureUrl)
                                 .css({ marginTop: self.canvas.height() / 2 - 16 })
                             )
                         )
