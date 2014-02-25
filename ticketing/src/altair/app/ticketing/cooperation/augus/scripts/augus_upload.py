@@ -16,13 +16,7 @@ def mkdir_p(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('conf', nargs='?', default=None)
-    args = parser.parse_args()
-    env = bootstrap(args.conf)
-    settings = env['registry'].settings
-
+def upload_all(settings):
     ko_staging = settings['ko_staging']
     ko_pending = settings['ko_pending']
 
@@ -50,6 +44,14 @@ def main():
                 logger.info('augus file upload: {} -> {}'.format(src, dst))
                 transporter.put(src, dst)
                 shutil.move(src, pending_dst)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('conf', nargs='?', default=None)
+    args = parser.parse_args()
+    env = bootstrap(args.conf)
+    settings = env['registry'].settings
+    upload_all(settings)
 
 if __name__ == '__main__':
     main()
