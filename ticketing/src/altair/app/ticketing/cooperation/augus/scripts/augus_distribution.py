@@ -29,13 +29,7 @@ def mkdir_p(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('conf', nargs='?', default=None)
-    args = parser.parse_args()
-    env = bootstrap(args.conf)
-    settings = env['registry'].settings
-
+def import_distribution_all(settings):
     consumer_id = int(settings['augus_consumer_id'])
     rt_staging = settings['rt_staging']
     rt_pending = settings['rt_pending']
@@ -82,6 +76,14 @@ def main():
                 transaction.commit()
             else:
                 transaction.abort()
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('conf', nargs='?', default=None)
+    args = parser.parse_args()
+    env = bootstrap(args.conf)
+    settings = env['registry'].settings
+    import_distribution_all(settings)
 
 if __name__ == '__main__':
     main()
