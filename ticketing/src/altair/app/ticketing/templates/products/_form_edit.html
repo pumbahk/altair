@@ -23,12 +23,16 @@ $(function() {
   setProductName();
 
   $('select[name="seat_stock_type_id"]').change(function(event){
+    $(':text[name="name"]').val("");
     setProductName();
   });
 
   function setProductName(){
     var seat_name = $('select[name="seat_stock_type_id"] option:selected').text();
-    $(':text[name="name"]').val(seat_name);
+
+    if (!$(':text[name="name"]').val()) {
+      $(':text[name="name"]').val(seat_name);
+    }
   }
 });
 </script>
