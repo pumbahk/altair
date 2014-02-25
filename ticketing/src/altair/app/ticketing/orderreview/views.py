@@ -18,6 +18,7 @@ from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.qr.utils import build_qr_by_history_id
 from altair.app.ticketing.qr.utils import build_qr_by_token_id
 from altair.auth import who_api as get_who_api
+from altair.app.ticketing.fc_auth.api import do_authenticate
 from .api import safe_get_contact_url, is_mypage_organization
 logger = logging.getLogger(__name__)
 
@@ -99,22 +100,31 @@ class MypageLoginView(object):
         membership = self.context.get_membership().name
         username = self.request.params['username']
         password = self.request.params['password']
-        logger.debug("authenticate for membership %s" % membership)
 
-        identity = {
-            'membership': membership,
-            'username': username,
-            'password': password,
-        }
-        authenticated, headers = who_api.login(identity)
+        authenticated = None
+        headers = None
+        identity = None
+
+        result = do_authenticate(self.request, membership, username, password)
+        if result is not None:
+            # result には user_id が含まれているが、これを identity とすべきかは
+            # 議論の余地がある。user_id を identity にしてしまえば DB 負荷を
+            # かなり減らすことができるだろう。
+            identity = {
+                'login': True,
+                'membership': membership,
+                'username': username,
+                }
+
+        if identity is not None:
+            authenticated, headers = who_api.login(identity)
 
         if authenticated is None:
             self.select_renderer(membership)
             return {'username': username,
-                    'message': u'IDかパスワードが一致しません'}
+                    'message': u'IDまたはパスワードが一致しません'}
 
         res = HTTPFound(location=self.request.route_path("mypage.show"), headers=headers)
-
         return res
 
 class OrderReviewView(object):

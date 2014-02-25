@@ -9,6 +9,7 @@ from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.core import api as core_api
 import altair.app.ticketing.users.models as u_m
 from . import SESSION_KEY
+from .api import do_authenticate
 
 logger = logging.getLogger(__name__)
 
@@ -39,27 +40,6 @@ class LoginView(object):
         self.select_renderer(membership)
         return dict(username='')
 
-    def do_authenticate(self, membership, username, password):
-        """認証を行う。戻り値は認証に失敗したときはNoneで、
-           成功したときは認証時に得られた何らかのメタデータなどをdictで。
-           空のdictが返ることもあるので、is not None でチェックする必要がある"""
-        session = get_db_session(self.request, 'slave')
-        user_query = session.query(u_m.User) \
-            .filter(u_m.User.id == u_m.UserCredential.user_id) \
-            .filter(u_m.Membership.id == u_m.UserCredential.membership_id) \
-            .filter(u_m.UserCredential.auth_identifier == username) \
-            .filter(u_m.UserCredential.auth_secret == password) \
-            .filter(u_m.Membership.name == membership)
-        try:
-            user = user_query.one()
-        except NoResultFound:
-            logger.debug('no user found for user: %s' % username)
-            return None
-        except MultipleResultsFound:
-            logger.error('multiple records found for user: %s' % username)
-            return None
-        return { 'user_id': user.id }
-
     @view_config(request_method="POST", route_name='fc_auth.login', renderer='string')
     def login(self):
         who_api = get_who_api(self.request, name="fc_auth")
@@ -72,7 +52,7 @@ class LoginView(object):
         headers = None
         identity = None
 
-        result = self.do_authenticate(membership, username, password)
+        result = do_authenticate(self.request, membership, username, password)
         if result is not None:
             # result には user_id が含まれているが、これを identity とすべきかは
             # 議論の余地がある。user_id を identity にしてしまえば DB 負荷を
@@ -93,8 +73,6 @@ class LoginView(object):
 
         return_to_url = self.return_to_url 
         res = HTTPFound(location=return_to_url, headers=headers)
-
-
         return res
 
     @view_config(request_method="POST", route_name='fc_auth.guest', renderer='string')

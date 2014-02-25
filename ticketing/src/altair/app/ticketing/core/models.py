@@ -3486,7 +3486,7 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def reissueable(self, delivery_plugin_id):
         # XXX: このロジックははっきり言ってよろしくないので再実装する
         # (TicketBundleにフラグを持たせるべきか?)
-        relevant_tickets = ApplicableTicketsProducer(self).include_delivery_id_ticket_iter(delivery_plugin_id)
+        relevant_tickets = ApplicableTicketsProducer(self).include_delivery_id_ticket_iter([delivery_plugin_id])
         reissueable = False
         for ticket in relevant_tickets:
             if reissueable:
@@ -3985,8 +3985,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     augus_customer_id = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス取引先ID', _a_label=u'オーガス取引先ID')
     augus_upload_url = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのアップロードURL', _a_label=u'オーガス用サーバのアップロードURL')
     augus_download_url = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのダウンロードURL', _a_label=u'オーガス用サーバのダウンロードURL')
-    augus_username = AnnotatedColumn(Unicode(255), nullable=False, default='', doc=u'オーガス用サーバのユーザ名', _a_label=u'オーガス用サーバのユーザ名')
-    augus_password = AnnotatedColumn(Unicode(255), nullable=False, default='', doc=u'オーガス用サーバのパスワード', _a_label=u'オーガス用サーバのパスワード')
+    augus_username = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのユーザ名', _a_label=u'オーガス用サーバのユーザ名')
+    augus_password = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのパスワード', _a_label=u'オーガス用サーバのパスワード')
 
     @property
     def container(self):
@@ -4349,7 +4349,7 @@ class AugusSeatStatus(object):
     OTHER = 99
 
     @classmethod
-    def get_status(cls, seat):
+    def get_status(cls, seat, order=None):
         if seat.status in (SeatStatusEnum.Keep.v,
                            SeatStatusEnum.Import.v,
                            SeatStatusEnum.InCart.v,
@@ -4360,7 +4360,10 @@ class AugusSeatStatus(object):
         elif seat.status in (SeatStatusEnum.Ordered.v,
                              SeatStatusEnum.Shipped.v,
                              ):
-            return cls.SOLD
+            if order and order.payment_status == 'paid':
+                return cls.SOLD
+            else:
+                return cls.RESERVE
         else:
             return cls.OTHER
 
