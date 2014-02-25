@@ -139,11 +139,10 @@ class Products(BaseView):
     def edit_xhr(self):
         product_id = int(self.request.matchdict.get('product_id', 0))
         product = Product.get(product_id)
-        performance_id = long(self.request.params.get('performance_id'))
         if product is None:
             raise HTTPNotFound('product id %d is not found' % product_id)
         f = ProductForm.from_model(product)
-        f.performance_id.data = performance_id
+
         return {
             'form':f,
             'action': self.request.path,
@@ -153,7 +152,6 @@ class Products(BaseView):
     def edit_post_xhr(self):
         product_id = int(self.request.matchdict.get('product_id', 0))
         product = Product.get(product_id)
-        performance_id = long(self.request.params.get('performance_id'))
 
         if product is None:
             return HTTPNotFound('product id %d is not found' % product_id)
@@ -161,7 +159,7 @@ class Products(BaseView):
         f = ProductForm(self.request.POST, sales_segment=product.sales_segment)
         if f.validate():
             point_grant_settings = [PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one() for point_grant_setting_id in f.applied_point_grant_settings.data]
-            product = merge_session_with_post(product, f.data)
+            product = merge_session_with_post(product, f.data, excludes={'performance_id'})
             product.point_grant_settings[:] = []
             product.point_grant_settings.extend(point_grant_settings)
             product.save()
