@@ -27,7 +27,7 @@ def sync_data(request, statuses):
         オーソリ依頼してキャンセルしていないものについて、注文ステータス問い合わせ
         この時点でキャンセル済のものはキャンセル済フラグをたてる
         売り上げ確定済のものは売り上げ確定済フラグをたてる
-訂正した場合、対応するAPIレスポンスのデータ取得が必要か？
+        訂正した場合、対応するAPIレスポンスのデータ取得が必要か？
     """
     for st in statuses:
         order_no = st.OrderNo
@@ -78,7 +78,7 @@ def get_auth_orders(request, shop_id):
                 )
         ).filter(
             m.MultiCheckoutOrderStatus.past(timedelta(hours=1))
-        )
+        ).order_by(m.MultiCheckoutOrderStatus.updated_at.desc())
     return q.all()
 
 def cancel_auth(request, statuses):
