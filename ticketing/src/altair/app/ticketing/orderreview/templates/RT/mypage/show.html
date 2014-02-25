@@ -54,9 +54,9 @@ ${render_mailmagazine(request)}
 </%def>
 
 <%def name="render_lot_entries(lot_entries)">
-  % for entry in lot_entries:
-    <div id="mypageHistory">
-      <div>
+  <div id="mypageHistory">
+    % for entry in lot_entries:
+      <div class="box">
         <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/images/RT/mypage/' + h.get_entry_status_image(entry))}" alt="${h.get_entry_status(entry)}" width="60" height="60" /></p>
         <dl>
           <form name="${entry.entry_no}" action="/lots/review" method="POST">
@@ -67,8 +67,8 @@ ${render_mailmagazine(request)}
           </form>
         </dl>
       </div>
-    </div>
-  % endfor
+    % endfor
+  </div>
 <div style="text-align: right">
 ${render_pager(lot_entries)}
 </div>
