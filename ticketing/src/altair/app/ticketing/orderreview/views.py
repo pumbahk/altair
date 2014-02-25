@@ -69,6 +69,7 @@ class MypageView(object):
             orders=orders,
             lot_entries=entries,
             mailmagazines_to_subscribe=magazines_to_subscribe,
+<<<<<<< HEAD
             h=h,
         )
 
@@ -99,6 +100,38 @@ class MypageView(object):
             h=h,
         )
 
+=======
+            h=h,
+        )
+
+    @mobile_view_config(route_name='mypage.mailmag.confirm', request_method="POST", custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_confirm_mobile.html"))
+    @mobile_view_config(route_name='mypage.mailmag.confirm', request_method="POST", custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_confirm_mobile.html"))
+    @view_config(route_name='mypage.mailmag.confirm', request_method="POST", custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_confirm.html"))
+    @view_config(route_name='mypage.mailmag.confirm', request_method="POST", custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_confirm.html"))
+    def mailmag_confirm(self):
+
+        authenticated_user = self.context.authenticated_user()
+        user = get_user(authenticated_user)
+
+        if not user:
+            raise HTTPNotFound()
+
+        shipping_address = self.context.get_shipping_address(user)
+        magazines_to_subscribe = get_magazines_to_subscribe(get_organization(self.request), shipping_address.emails)
+        subscribe_ids = self.request.params.getall('mailmagazine')
+
+        return dict(
+            mails=shipping_address.emails,
+            mailmagazines_to_subscribe=magazines_to_subscribe,
+            subscribe_ids=subscribe_ids,
+            h=h,
+        )
+
+>>>>>>> origin/fix/okada/7174
     @mobile_view_config(route_name='mypage.mailmag.complete', request_method="POST", custom_predicates=(is_mypage_organization, ),
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_complete_mobile.html"))
     @mobile_view_config(route_name='mypage.mailmag.complete', request_method="POST", custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
