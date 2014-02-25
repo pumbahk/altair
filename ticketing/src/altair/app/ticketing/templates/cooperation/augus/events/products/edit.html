@@ -41,8 +41,10 @@
                 %endif
                 >
           ${augus_ticket.augus_seat_type_code} -
-          ${augus_ticket.augus_seat_type_name}
-          ${augus_ticket.value}
+          ${augus_ticket.unit_value_code} -
+          ${augus_ticket.augus_seat_type_name} -
+          ${augus_ticket.unit_value_name} -
+          ${augus_ticket.value} 円
         </option>
         %endif
         %endfor

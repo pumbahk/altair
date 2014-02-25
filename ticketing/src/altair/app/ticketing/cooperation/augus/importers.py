@@ -105,6 +105,7 @@ class AugusTicketImpoter(object):
         ag_ticket = AugusTicket.get(augus_event_code=record.event_code,
                                     augus_performance_code=record.performance_code,
                                     augus_seat_type_code=record.seat_type_code,
+                                    unit_value_code=record.unit_value_code,
                                     )
         ag_performance = None
         if not ag_ticket:

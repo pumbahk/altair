@@ -15,6 +15,13 @@ class LoginForm(Form):
     login_id = TextField(u'ユーザー名', validators=[Required()])
     password = PasswordField(u'パスワード', validators=[Required(), Regexp("^[a-zA-Z0-9@!#$%&'()*+,\-./_]+$", 0, message=u'英数記号を入力してください。')])
 
+
+class SSLClientCertLoginForm(Form):
+    def _get_translations(self):
+        return Translations()
+
+    password = PasswordField(u'パスワード', validators=[Required(), Regexp("^[a-zA-Z0-9@!#$%&'()*+,\-./_]+$", 0, message=u'英数記号を入力してください。')])
+
 class ResetForm(Form):
 
     def _get_translations(self):

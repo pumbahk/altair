@@ -94,6 +94,12 @@ from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketCover
 from altair.app.ticketing.core.modelmanage import OrderAttributeManager
 
+# XXX
+INNER_DELIVERY_PLUGIN_IDS = [
+    payments_plugins.SHIPPING_DELIVERY_PLUGIN_ID,
+    payments_plugins.RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
+    ]
+
 logger = logging.getLogger(__name__)
 
 def available_ticket_formats_for_orders(orders):
@@ -1262,7 +1268,7 @@ class OrderDetailView(BaseView):
                     break_p = True
             elif not order.queued:
                 utils.enqueue_cover(operator=self.context.user, order=order)
-                utils.enqueue_for_order(operator=self.context.user, order=order)
+                utils.enqueue_for_order(operator=self.context.user, order=order, delivery_plugin_ids=INNER_DELIVERY_PLUGIN_IDS)
 
         logger.info("*ticketing print queue many* clean session")
         session_values = self.request.session.get("orders", [])
@@ -1297,7 +1303,7 @@ class OrderDetailView(BaseView):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.query.get(order_id)
         utils.enqueue_cover(operator=self.context.user, order=order)
-        utils.enqueue_for_order(operator=self.context.user, order=order)
+        utils.enqueue_for_order(operator=self.context.user, order=order, delivery_plugin_ids=INNER_DELIVERY_PLUGIN_IDS)
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
 
@@ -1590,7 +1596,7 @@ class OrdersReserveView(BaseView):
 
 
             if with_enqueue:
-                utils.enqueue_for_order(operator=self.context.user, order=order)
+                utils.enqueue_for_order(operator=self.context.user, order=order, delivery_plugin_ids=INNER_DELIVERY_PLUGIN_IDS)
 
             # clear session
             api.remove_cart(self.request)

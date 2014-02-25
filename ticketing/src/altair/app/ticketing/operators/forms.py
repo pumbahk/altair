@@ -83,7 +83,7 @@ class OperatorForm(Form):
         label=u'ログインID',
         validators=[
             Required(),
-            Length(4, 32, message=u'4文字以上32文字以内で入力してください'),
+            Length(4, 384, message=u'4文字以上384文字以内で入力してください'),
         ]
     )
     password = PasswordField(
