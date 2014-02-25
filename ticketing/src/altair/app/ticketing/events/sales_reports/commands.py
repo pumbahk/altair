@@ -3,11 +3,11 @@
 import logging
 import os
 import sys
+import argparse
 from datetime import datetime, timedelta
 from paste.util.multidict import MultiDict
-from pyramid.threadlocal import get_current_registry
 from pyramid.renderers import render_to_response
-from pyramid.paster import bootstrap
+from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy import or_, and_
 
 from altair.app.ticketing.events.sales_reports.reports import EventReporter, PerformanceReporter
@@ -20,21 +20,19 @@ def main(argv=sys.argv):
     from altair.app.ticketing.events.sales_reports.forms import SalesReportForm
     from altair.app.ticketing.events.sales_reports.reports import sendmail
 
-    if len(sys.argv) < 3:
-        print 'ERROR: invalid args %s' % sys.argv
-        return
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config')
+    args = parser.parse_args()
 
-    log_file = os.path.abspath(argv[2])
-    logging.config.fileConfig(log_file)
-
-    config_file = argv[1]
-    app_env = bootstrap(config_file)
-    request = app_env['request']
+    setup_logging(args.config)
+    env = bootstrap(args.config)
+    request = env['request']
+    registry = env['registry']
 
     logger.info('start send_sales_report batch')
 
     now = datetime.now().replace(minute=0, second=0)
-    settings = get_current_registry().settings
+    settings = registry.settings
 
     query = ReportSetting.query.filter(and_(
         ReportSetting.time==now.hour,
