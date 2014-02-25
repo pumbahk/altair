@@ -10,6 +10,7 @@ from pyramid.paster import bootstrap
 import transaction
 from ..importers import AugusTicketImpoter
 from ..errors import AugusDataImportError
+from .. import multilock
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,13 @@ def main():
     args = parser.parse_args()
     env = bootstrap(args.conf)
     settings = env['registry'].settings
-    import_ticket_all(settings)
+
+
+    try:
+        with multilock.MultiStartLock('augus_ticket'):
+            import_ticket_all(settings)
+    except multilock.AlreadyStartUpError as err:
+        logger.warn('{}'.format(repr(err)))
 
 if __name__ == '__main__':
     main()

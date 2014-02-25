@@ -11,6 +11,7 @@ from altair.augus.parsers import AugusParser
 from altair.augus.protocols import AchievementRequest
 from altair.app.ticketing.core.models import AugusPerformance
 from ..exporters import AugusAchievementExporter
+from .. import multilock
 
 
 logger = logging.getLogger(__name__)
@@ -49,7 +50,13 @@ def main():
     args = parser.parse_args()
     env = bootstrap(args.conf)
     settings = env['registry'].settings
-    export_achievement_all(settings, force=args.force)
+
+    try:
+        with multilock.MultiStartLock('augus_achievement'):
+            export_achievement_all(settings, force=args.force)
+    except multilock.AlreadyStartUpError as err:
+        logger.warn('{}'.format(repr(err)))
+
 
 if __name__ == '__main__':
     main()

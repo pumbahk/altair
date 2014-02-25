@@ -45,7 +45,15 @@ def main():
     args = parser.parse_args()
     env = bootstrap(args.conf)
     settings = env['registry'].settings
-    download_all(settings)
+
+    try:
+        with multilock.MultiStartLock('augus_download'):
+            download_all(settings)
+    except multilock.AlreadyStartUpError as err:
+        logger.warn('{}'.format(repr(err)))
+
+
+
 
 if __name__ == '__main__':
     main()
