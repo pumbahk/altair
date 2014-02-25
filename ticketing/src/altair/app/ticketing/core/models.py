@@ -4027,6 +4027,8 @@ class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted,
     sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'))
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'))
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
+    disp_orderreview = AnnotatedColumn(Boolean, default=True,
+                                  _a_label=_(u'一般チケットの購入履歴表示／非表示'))
 
     @classmethod
     def create_from_template(cls, template, **kwargs):
@@ -4042,8 +4044,12 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'))
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
+    disp_orderreview = AnnotatedColumn(Boolean, default=True,
+                                  _a_label=_(u'一般チケットの購入履歴表示／非表示'))
+
     use_default_order_limit = Column(Boolean)
     use_default_max_quantity_per_user = Column(Boolean)
+    use_default_disp_orderreview = Column(Boolean)
 
     @property
     def super(self):
