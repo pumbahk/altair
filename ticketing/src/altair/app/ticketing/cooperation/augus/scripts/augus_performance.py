@@ -17,13 +17,7 @@ def mkdir_p(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('conf', nargs='?', default=None)
-    args = parser.parse_args()
-    env = bootstrap(args.conf)
-    settings = env['registry'].settings
-
+def import_performance_all(settings):
     rt_staging = settings['rt_staging']
     rt_pending = settings['rt_pending']
     ko_staging = settings['ko_staging']
@@ -56,6 +50,14 @@ def main():
         transaction.commit()
         for path in paths:
             shutil.move(path, rt_pending)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('conf', nargs='?', default=None)
+    args = parser.parse_args()
+    env = bootstrap(args.conf)
+    settings = env['registry'].settings
+    import_performamce_all(settings)
 
 if __name__ == '__main__':
     main()
