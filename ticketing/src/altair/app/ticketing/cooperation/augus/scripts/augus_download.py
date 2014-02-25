@@ -16,13 +16,7 @@ def mkdir_p(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('conf', nargs='?', default=None)
-    args = parser.parse_args()
-    env = bootstrap(args.conf)
-    settings = env['registry'].settings
-
+def download_all(settings):
     rt_staging = settings['rt_staging']
 
     mkdir_p(rt_staging)
@@ -44,6 +38,14 @@ def main():
                 dst = os.path.join(rt_staging, name)
                 logger.info('augus file download: {} -> {}'.format(src, dst))
                 transporter.get(src, dst, remove=True)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('conf', nargs='?', default=None)
+    args = parser.parse_args()
+    env = bootstrap(args.conf)
+    settings = env['registry'].settings
+    download_all(settings)
 
 if __name__ == '__main__':
     main()
