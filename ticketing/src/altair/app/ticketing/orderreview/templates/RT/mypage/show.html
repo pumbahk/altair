@@ -109,6 +109,7 @@ ${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示
 </%def>
 
 <%def name="render_mailmagazine(request)">
+  % if mailmagazines_to_subscribe:
   <form id="mail_form" name="mail_form" method="post" action="${request.route_path('mypage.mailmag.confirm')}">
   <div class="settlementBox">
 		<div class="settlementBoxInner">
@@ -140,5 +141,6 @@ ${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示
   </div>
   <input type="submit" value="次へ">
   </form>
+  % endif
 </%def>
 

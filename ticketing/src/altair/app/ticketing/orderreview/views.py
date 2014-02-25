@@ -63,7 +63,10 @@ class MypageView(object):
         orders = self.context.get_orders(user, page, per)
         entries = self.context.get_lots_entries(user, page, per)
 
-        magazines_to_subscribe = get_magazines_to_subscribe(get_organization(self.request), shipping_address.emails)
+        magazines_to_subscribe = None
+        if shipping_address:
+            magazines_to_subscribe = get_magazines_to_subscribe(get_organization(self.request), shipping_address.emails)
+
         return dict(
             shipping_address=shipping_address,
             orders=orders,

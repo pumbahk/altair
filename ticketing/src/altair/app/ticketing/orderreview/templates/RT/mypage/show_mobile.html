@@ -14,7 +14,6 @@
   抽選申込みがありません。
 % endif
 
-<%mobile:header>メールマガジン</%mobile:header>
 ${render_mailmagazine(request)}
 
 <%mobile:header>楽天ポイントのご確認</%mobile:header>
@@ -86,6 +85,8 @@ ${render_pager(lot_entries)}
 </%def>
 
 <%def name="render_mailmagazine(request)">
+% if mailmagazines_to_subscribe:
+<%mobile:header>メールマガジン</%mobile:header>
 <form id="mail_form" name="mail_form" method="post" action="${request.route_path('mypage.mailmag.confirm')}">
   楽天チケットからのメールマガジンの購読を選択できます。<br/><br/>
 % for mailmagazine, subscribed in mailmagazines_to_subscribe:
@@ -96,4 +97,5 @@ ${render_pager(lot_entries)}
 % endfor
   <input type="submit" value="次へ">
 </form>
+% endif
 </%def>
