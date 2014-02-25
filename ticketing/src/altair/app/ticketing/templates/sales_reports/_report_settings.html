@@ -1,10 +1,12 @@
 <%page args="form, form_report_setting=None, event=None, performance=None, report_settings=None" />
 <%namespace file="/common/helpers.html" name="ch" />
+<%! from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum, ReportTypeEnum %>
 
 <script type="text/javascript">
-  function preview(email){
+  function preview(email, report_type) {
     var params = $('#limitation').serialize();
     if (email) params += '&recipient=' + encodeURIComponent(email);
+    if (report_type) params += '&report_type=' + report_type;
     $(location).attr('href', '/events/sales_reports/preview/?' + params);
   };
 </script>
@@ -36,7 +38,6 @@
 <h4>レポート送信設定</h4>
 <%include file="/sales_reports/_action_button.html" args="event=event, performance=performance" />
 <%include file="/sales_reports/_modal.html" args="modal_id='modal-report_setting'" />
-<a href="javascript:preview();" class="btn">全送信先に送信 プレビュー</a>
 % endif
 
 % if report_settings and form_report_setting:
@@ -51,9 +52,14 @@
     <th>送信期間</th>
     <th>対象</th>
     <th>レポート対象期間</th>
-    <th></th>
+    <th>レポート内容</th>
+    <th>
+<div class="btn-group">
+  <button onclick="javascript:preview();" class="btn btn-mini">全送信先(詳細)</button>
+  <button onclick="javascript:preview('', ${ReportTypeEnum.Summary.v[0]});" class="btn btn-mini">全送信先(合計)</button>
+</div>
+</th>
   </tr>
-  <%! from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum %>
   % for rs in report_settings:
     <%
       name = rs.operator.name if rs.operator else rs.name
@@ -71,7 +77,8 @@
     </td>
     <td>${u'公演' if rs.performance_id else u'イベント'}</td>
     <td>${''.join([enum.v[1] for enum in ReportPeriodEnum if enum.v[0] == rs.period])}</td>
-    <td><input class="btn btn-mini" type="button" value="メール送信 プレビュー" onclick="javascript:preview('${email}');"></td>
+    <td>${''.join([enum.v[1] for enum in ReportTypeEnum if enum.v[0] == rs.report_type])}</td>
+    <td><input class="btn btn-mini" type="button" value="レポートプレビュー" onclick="javascript:preview('${email}', ${rs.report_type});"></td>
   </tr>
   % endfor
 </table>

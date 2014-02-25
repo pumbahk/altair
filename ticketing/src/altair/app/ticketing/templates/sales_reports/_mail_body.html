@@ -9,12 +9,12 @@
 <h3 style="margin-top: 30px;">${performance.name}　開催日: ${vh.datetime(performance.start_on)}</h3>
 <%
   sales_segments = performance_reporter.sort_index()
-  if len(sales_segments) > 1:
-    sales_segments = [''] + sales_segments
+  if not (form.is_detail_report() and len(sales_segments) == 0):
+    sales_segments = [performance_reporter.total] + sales_segments
 %>
 % for ss_idx, sales_segment in enumerate(sales_segments):
   <%
-    if ss_idx == 0 and len(sales_segments) > 1:
+    if not (form.is_detail_report() and len(sales_segments) == 0) and ss_idx == 0:
       reporter = performance_reporter.total
       ss_name = u'公演合計'
     else:
@@ -22,7 +22,9 @@
       ss_name = sales_segment.name
   %>
 <h4>会場: ${performance.venue.name}</h4>
+% if form.is_detail_report():
 <h4>${ss_name}</h4>
+% endif
 <table border="1" bordercolor="#888" width="98%" style="border-collapse:collapse;">
   % if form.limited_from.data or form.limited_to.data:
   <tr style="background-color:#ddd;">
