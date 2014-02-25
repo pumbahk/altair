@@ -11,6 +11,7 @@ from altair.augus.parsers import AugusParser
 from altair.augus.protocols import AchievementRequest
 from altair.app.ticketing.core.models import AugusPerformance
 from ..exporters import AugusAchievementExporter
+from .. import multilock
 
 
 logger = logging.getLogger(__name__)
@@ -19,14 +20,7 @@ def mkdir_p(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('conf', nargs='?', default=None)
-    parser.add_argument('--force', action='store_true', default=False)
-    args = parser.parse_args()
-    env = bootstrap(args.conf)
-    settings = env['registry'].settings
-
+def export_achievement_all(settings, force=False):
     consumer_id = int(settings['augus_consumer_id'])
     ko_staging = settings['ko_staging']
 
@@ -34,7 +28,7 @@ def main():
 
     exporter = AugusAchievementExporter()
     ag_performances = AugusPerformance.query
-    if not args.force:
+    if not force:
         ag_performances = ag_performances\
             .filter(AugusPerformance.is_report_target==True)
     for ag_performance in ag_performances.all():
@@ -48,6 +42,21 @@ def main():
         ag_performance.is_report_target = False
         ag_performance.save()
     transaction.commit()
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('conf', nargs='?', default=None)
+    parser.add_argument('--force', action='store_true', default=False)
+    args = parser.parse_args()
+    env = bootstrap(args.conf)
+    settings = env['registry'].settings
+
+    try:
+        with multilock.MultiStartLock('augus_achievement'):
+            export_achievement_all(settings, force=args.force)
+    except multilock.AlreadyStartUpError as err:
+        logger.warn('{}'.format(repr(err)))
+
 
 if __name__ == '__main__':
     main()

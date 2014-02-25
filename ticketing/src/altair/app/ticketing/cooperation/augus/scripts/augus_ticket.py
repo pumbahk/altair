@@ -10,6 +10,7 @@ from pyramid.paster import bootstrap
 import transaction
 from ..importers import AugusTicketImpoter
 from ..errors import AugusDataImportError
+from .. import multilock
 
 logger = logging.getLogger(__name__)
 
@@ -17,13 +18,7 @@ def mkdir_p(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('conf', nargs='?', default=None)
-    args = parser.parse_args()
-    env = bootstrap(args.conf)
-    settings = env['registry'].settings
-
+def import_ticket_all(settings):
     rt_staging = settings['rt_staging']
     rt_pending = settings['rt_pending']
     ko_staging = settings['ko_staging']
@@ -56,6 +51,20 @@ def main():
         transaction.commit()
         for path in paths:
             shutil.move(path, rt_pending)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('conf', nargs='?', default=None)
+    args = parser.parse_args()
+    env = bootstrap(args.conf)
+    settings = env['registry'].settings
+
+
+    try:
+        with multilock.MultiStartLock('augus_ticket'):
+            import_ticket_all(settings)
+    except multilock.AlreadyStartUpError as err:
+        logger.warn('{}'.format(repr(err)))
 
 if __name__ == '__main__':
     main()
