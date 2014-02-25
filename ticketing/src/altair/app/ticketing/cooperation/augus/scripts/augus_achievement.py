@@ -19,7 +19,7 @@ def mkdir_p(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
-def export_achievement_all(settings):
+def export_achievement_all(settings, force=False):
     consumer_id = int(settings['augus_consumer_id'])
     ko_staging = settings['ko_staging']
 
@@ -27,7 +27,7 @@ def export_achievement_all(settings):
 
     exporter = AugusAchievementExporter()
     ag_performances = AugusPerformance.query
-    if not args.force:
+    if not force:
         ag_performances = ag_performances\
             .filter(AugusPerformance.is_report_target==True)
     for ag_performance in ag_performances.all():
@@ -49,7 +49,7 @@ def main():
     args = parser.parse_args()
     env = bootstrap(args.conf)
     settings = env['registry'].settings
-    export_achievement_all(settings)
+    export_achievement_all(settings, force=args.force)
 
 if __name__ == '__main__':
     main()

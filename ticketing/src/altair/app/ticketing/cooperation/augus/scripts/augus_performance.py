@@ -57,7 +57,7 @@ def main():
     args = parser.parse_args()
     env = bootstrap(args.conf)
     settings = env['registry'].settings
-    import_performamce_all(settings)
+    import_performance_all(settings)
 
 if __name__ == '__main__':
     main()
