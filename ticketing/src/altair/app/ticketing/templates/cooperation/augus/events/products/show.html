@@ -28,11 +28,13 @@
     <td>${product.public}</td>
     <td>
       %if product.augus_ticket_id:
-      ${product.augus_ticket.augus_seat_type_code} -
-      ${product.augus_ticket.unit_value_code} -
       ${product.augus_ticket.augus_seat_type_name} -
       ${product.augus_ticket.unit_value_name} -
       ${product.augus_ticket.value} 円
+      (
+      ${product.augus_ticket.augus_seat_type_code} /
+      ${product.augus_ticket.unit_value_code} /
+      )
       %endif
     </td>
   </tr>
