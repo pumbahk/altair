@@ -24,7 +24,7 @@ class DefaultLoginView(BaseView):
         user = Operator.get_by_login_id(user_id)
         if user is not None:
             next_url = self.request.GET.get('next')
-            return HTTPFound(location=next_url if next_url else self.request.route_path("login.default"))
+            return HTTPFound(location=next_url if next_url else self.request.route_path("index"))
         return {
             'form':LoginForm()
         }
@@ -42,7 +42,7 @@ class DefaultLoginView(BaseView):
             merge_and_flush(operator)
             headers = remember(self.request, form.data.get('login_id'))
             next_url = self.request.GET.get('next')
-            return HTTPFound(location=next_url if next_url else self.request.route_path("login.default"), headers=headers)
+            return HTTPFound(location=next_url if next_url else self.request.route_path("index"), headers=headers)
         else:
             return {
                 'form':form
@@ -56,7 +56,7 @@ class SSLClientCertLoginView(BaseView):
         user = Operator.get_by_login_id(user_id)
         if user is not None:
             next_url = self.request.GET.get('next')
-            return HTTPFound(location=next_url if next_url else self.request.route_path("login.client_cert"))
+            return HTTPFound(location=next_url if next_url else self.request.route_path("index"))
         return {
             'form':SSLClientCertLoginForm()
         }
@@ -80,7 +80,7 @@ class SSLClientCertLoginView(BaseView):
             merge_and_flush(operator)
             headers = remember(self.request, auth_identifier)
             next_url = self.request.GET.get('next')
-            return HTTPFound(location=next_url if next_url else self.request.route_path("login.default"), headers=headers)
+            return HTTPFound(location=next_url if next_url else self.request.route_path("index"), headers=headers)
         else:
             return {
                 'form':form
