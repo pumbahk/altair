@@ -208,7 +208,6 @@ class SalesSegments(BaseView):
             'max_quantity': sales_segment_group.max_quantity,
             'max_product_quatity': sales_segment_group.max_product_quatity,
             'order_limit': sales_segment_group.order_limit,
-            'disp_orderreview': sales_segment_group.disp_orderreview,
             'seat_choice': sales_segment_group.seat_choice,
             'public': sales_segment_group.public,
             'reporting': sales_segment_group.reporting,

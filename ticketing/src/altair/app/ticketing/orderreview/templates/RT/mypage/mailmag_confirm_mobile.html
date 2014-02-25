@@ -40,9 +40,9 @@ ${render_confirm_mailmagazine(mailmagazines_to_subscribe, subscribe_ids, mails)}
     % for id in subscribe_ids:
       <input type="hidden" name="mailmagazine" value="${id}" />
     % endfor
+    <input type="submit" value="設定変更">
     <a href="${request.route_path('mypage.show')}">
       <input type="button" value="戻る">
     </a>
-    <input type="submit" value="設定変更">
   </form>
 </%def>
