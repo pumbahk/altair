@@ -9,5 +9,5 @@ def includeme(config):
         factory='.resources.FCAuthResource')
 
     #config.add_tween('.tweens.FCAuthTween', under=pyramid.tweens.EXCVIEW)
-    config.add_static_view('fc_static', 'altair.app.ticketing.fc_auth:static')
+    config.add_static_view('fc_auth/static', 'altair.app.ticketing.fc_auth:static')
     config.scan('.views')

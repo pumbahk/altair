@@ -120,4 +120,16 @@ def send_to_orion(request, context, recipient):
 
 def is_mypage_organization(context, request):
     organization = c_api.get_organization(request)
-    return organization.id == 24
+    mypage_orgs = [15, 24]
+    for org in mypage_orgs:
+        if organization.id == org:
+            return True
+    return False
+
+def is_rakuten_auth_organization(context, request):
+    organization = c_api.get_organization(request)
+    rakuten_auth_orgs = [15]
+    for org in rakuten_auth_orgs:
+        if organization.id == org:
+            return True
+    return False
