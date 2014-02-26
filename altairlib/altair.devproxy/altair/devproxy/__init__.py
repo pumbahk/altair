@@ -27,6 +27,7 @@ SUBDOMAINS = [
     'blaublitz',
     'grouses',
     'tbc',
+    'toukon',
     ]
 
 class ProxyConnectClientDecoder(object):
