@@ -4,15 +4,18 @@ import os
 import time
 import logging
 import argparse
+from pyramid.renderers import render_to_response
 from pyramid.paster import bootstrap
 import transaction
 from altair.augus.exporters import AugusExporter
 from altair.augus.parsers import AugusParser
 from altair.augus.protocols import AchievementRequest
-from altair.app.ticketing.core.models import AugusPerformance
+from altair.app.ticketing.core.models import (
+    Mailer,
+    AugusPerformance,
+    )
 from ..exporters import AugusAchievementExporter
 from .. import multilock
-
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +29,7 @@ def export_achievement_all(settings, force=False):
 
     mkdir_p(ko_staging)
 
+    ag_performance_ids = []
     exporter = AugusAchievementExporter()
     ag_performances = AugusPerformance.query
     if not force:
@@ -41,7 +45,10 @@ def export_achievement_all(settings, force=False):
         AugusExporter.export(res, path)
         ag_performance.is_report_target = False
         ag_performance.save()
+        ag_performance_ids.append(ag_performance.id)
     transaction.commit()
+    return ag_performance_ids
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -51,11 +58,30 @@ def main():
     env = bootstrap(args.conf)
     settings = env['registry'].settings
 
+    ag_performance_ids = []
     try:
         with multilock.MultiStartLock('augus_achievement'):
-            export_achievement_all(settings, force=args.force)
+            ag_performance_ids = export_achievement_all(settings, force=args.force)
     except multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
+
+    sender = settings['mail.augus.sender']
+    recipient = settings['mail.augus.recipient']
+
+    mailer = Mailer(settings)
+
+    augus_performances = AugusPerformance.query.filter(AugusPerformance.id.in_(ag_performance_ids)).all()
+    params = {'augus_performances': augus_performances,
+              }
+    body = render_to_response('altair.app.ticketing:templates/cooperation/augus/mails/augus_achievement.html', params)
+
+    mailer.create_message(
+        sender=sender,
+        recipient=recipient,
+        subject=u'【オーガス連携】販売実績通知のお知らせ',
+        body=body.text,
+        )
+    mailer.send(sender, [recipient])
 
 if __name__ == '__main__':
     main()
