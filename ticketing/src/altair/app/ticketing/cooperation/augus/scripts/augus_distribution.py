@@ -58,13 +58,13 @@ def import_distribution_all(settings):
             importer.import_(request)
             status = Status.OK
             logger.info('augus distribution: OK: {}'.format(path))
-        except AugusDataImportError as err:
+        except AugusDataImportError as err:# まだ連携できてないとかそういうの -> その場合はAugus側には通知せず次のターンで再度試みる
             logger.error('cannot import data: {}: {}'.format(path, repr(err)))
             transaction.abort()
             continue
         except IllegalImportDataError as err:# 席が不正とかそういうの -> その場合はAugus側にエラーを通知
             logger.error('illegal data format: {}: {}'.format(path, repr(err)))
-        except Exception as err:
+        except Exception as err: # 未知のエラーはそのまま上位に送出
             logger.error('AugusDisrtibution cannot import: {}: {}'.format(path, repr(err)))
             transaction.abort()
             raise
