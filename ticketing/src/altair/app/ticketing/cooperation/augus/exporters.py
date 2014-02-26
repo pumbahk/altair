@@ -150,10 +150,10 @@ class AugusAchievementExporter(object):
             if not augus_ticket:
                 return
             for augus_stock_detail in augus_ticket.augus_stock_details:
-                if augus_stock_detail.augus_stock_info.seat.id == seat.id:
+                if augus_stock_detail.augus_putback_id == None and augus_stock_detail.augus_stock_info.seat.id == seat.id:
                     break
             else:
-                raise AugusDataExportError('No such AugusStockDetail Seat.id={}'.formamt(stock_info.seat))  
+                raise AugusDataExportError('No such AugusStockDetail Seat.id={}'.formamt(stock_info.seat))
         else:
             augus_stock_detail = AugusStockDetail.query.join(AugusStockInfo)\
                                                  .filter(AugusStockInfo.seat_id==seat.id)\
@@ -300,4 +300,3 @@ class AugusAchievementExporter(object):
             return opitem.ordered_product.order
         else:
             return None
-
