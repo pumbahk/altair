@@ -4,10 +4,16 @@ import os
 import shutil
 import logging
 import argparse
+import transaction
+from pyramid.paster import bootstrap
+from pyramid.renderers import render_to_response
+from altair.app.ticketing.core.models import (
+    Mailer,
+    AugusPerformance,
+    AugusTicket,
+    )
 from altair.augus.protocols import TicketSyncRequest
 from altair.augus.parsers import AugusParser
-from pyramid.paster import bootstrap
-import transaction
 from ..importers import AugusTicketImpoter
 from ..errors import AugusDataImportError
 from .. import multilock
@@ -30,6 +36,8 @@ def import_ticket_all(settings):
     importer = AugusTicketImpoter()
     target = TicketSyncRequest
     paths = []
+
+    augus_ticket_ids = []
     try:
         for name in filter(target.match_name, os.listdir(rt_staging)):
             logger.info('start import AugusTicket: {}'.format(name))
@@ -37,7 +45,8 @@ def import_ticket_all(settings):
                 path = os.path.join(rt_staging, name)
                 paths.append(path)
                 request = AugusParser.parse(path)
-                importer.import_(request)
+                augus_tickets = importer.import_(request)
+                augus_ticket_ids.extend([agt.id for agt in augus_tickets])
             except AugusDataImportError as err:
                 logger.error('Illegal AugusTIcket format: {}: {}'.format(path, repr(err)))
                 raise
@@ -51,6 +60,7 @@ def import_ticket_all(settings):
         transaction.commit()
         for path in paths:
             shutil.move(path, rt_pending)
+    return augus_ticket_ids
 
 def main():
     parser = argparse.ArgumentParser()
@@ -59,13 +69,38 @@ def main():
     env = bootstrap(args.conf)
     settings = env['registry'].settings
 
-
+    augus_ticket_ids = []
     try:
         with multilock.MultiStartLock('augus_ticket'):
-            import_ticket_all(settings)
+            augus_ticket_ids = import_ticket_all(settings)
     except multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
-        return
+    else:
+        ticket_count = len(augus_ticket_ids)
+        if 0 == ticket_count:
+            return
+        sender = settings['mail.augus.sender']
+        recipient = settings['mail.augus.recipient']
+
+        augus_performances = AugusPerformance\
+            .query\
+            .join(AugusTicket)\
+            .filter(AugusTicket.id.in_(augus_ticket_ids))\
+            .all()
+        augus_performances = list(set(augus_performances))
+        mailer = Mailer(settings)
+        params = {'augus_performances': augus_performances,
+                  'count': ticket_count,
+                  }
+        body = render_to_response('altair.app.ticketing:templates/cooperation/augus/mails/augus_ticket.html', params)
+        mailer.create_message(
+            sender=sender,
+            recipient=recipient,
+            subject=u'【オーガス連携】チケット連携のお知らせ',
+            body=body.text,
+        )
+        mailer.send(sender, [recipient])
+
 
 if __name__ == '__main__':
     main()

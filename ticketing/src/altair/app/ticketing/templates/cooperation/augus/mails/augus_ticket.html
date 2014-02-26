@@ -1,0 +1,5 @@
+オーガス連携により以下の公演のチケットが 合計 ${count} 枚取り込まれました。
+
+%for augus_performance in augus_performances:
+ - ${augus_performance.augus_event_name}/${augus_performance.augus_performance_name}(会場: ${augus_performance.augus_venue_name}/開演: ${augus_performance.start_on})
+%endfor{
