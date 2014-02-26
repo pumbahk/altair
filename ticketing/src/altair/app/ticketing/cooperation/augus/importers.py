@@ -142,50 +142,50 @@ class AugusTicketImpoter(object):
 
 
 class AugusDistributionImporter(object):
-    def _import_record(self, record):
-        if int(record.seat_type_classif) != 1: # 指定席以外はエラー
-            raise AugusDataImportError('augus seat type classif error: {}'.format(record.seat_type_classif))
+    # def _import_record(self, record):
+    #     if int(record.seat_type_classif) != 1: # 指定席以外はエラー
+    #         raise AugusDataImportError('augus seat type classif error: {}'.format(record.seat_type_classif))
 
-        ag_performance = None
-        try:
-            ag_performance = AugusPerformance\
-                .query\
-                .filter(AugusPerformance.augus_event_code==record.event_code)\
-                .filter(AugusPerformance.augus_performance_code==record.performance_code)\
-                .one()
-        except NoResultFound as err:
-            # 未連携はNG通知しない
-            msg = 'AugusPerformance not found: event_code={} performance_code={}: {}'.format(
-                record.event_code, record.performance_code, repr(err))
-            raise AugusDataImportError(msg)
-        except MultipleResultsFound as err:
-            msg = 'AugusPerformance not found: event_code={} performance_code={}: {}'.format(
-                record.event_code, record.performance_code, repr(err))
-            raise AugusIntegrityError(msg)
+    #     ag_performance = None
+    #     try:
+    #         ag_performance = AugusPerformance\
+    #             .query\
+    #             .filter(AugusPerformance.augus_event_code==record.event_code)\
+    #             .filter(AugusPerformance.augus_performance_code==record.performance_code)\
+    #             .one()
+    #     except NoResultFound as err:
+    #         # 未連携はNG通知しない
+    #         msg = 'AugusPerformance not found: event_code={} performance_code={}: {}'.format(
+    #             record.event_code, record.performance_code, repr(err))
+    #         raise AugusDataImportError(msg)
+    #     except MultipleResultsFound as err:
+    #         msg = 'AugusPerformance not found: event_code={} performance_code={}: {}'.format(
+    #             record.event_code, record.performance_code, repr(err))
+    #         raise AugusIntegrityError(msg)
 
 
-        ag_seat = None
-        try:
-            ag_seat = AugusSeat\
-                .query\
-                .filter(AugusSeat.augus_venue_id==ag_performance.augus_venue_id)\
-                .filter(AugusSeat.area_code==record.area_code)\
-                .filter(AugusSeat.info_code==record.info_code)\
-                .filter(AugusSeat.floor==record.floor)\
-                .filter(AugusSeat.column==record.column)\
-                .filter(AugusSeat.num==record.number)\
-                .one()
-        except NoResultFound as err:
-            # 席がない場合はNGを返す
-            msg = 'AugusSeat not found: AugusVenue.id={} area_code={} info_code={} floor={} column={} num={}'.format(
-                ag_performance.augus_venue_id, record.area_code, record.info_code,
-                record.floor, record.column, record.number)
-            raise IllegalImportDataError(msg)
-        except MultipleResultsFound as err:
-            msg = 'AugusSeat not found: AugusVenue.id={} area_code={} info_code={} floor={} column={} num={}'.format(
-                ag_performance.augus_venue_id, record.area_code, record.info_code,
-                record.floor, record.column, record.number)
-            raise AugusIntegrityError(msg)
+    #     ag_seat = None
+    #     try:
+    #         ag_seat = AugusSeat\
+    #             .query\
+    #             .filter(AugusSeat.augus_venue_id==ag_performance.augus_venue_id)\
+    #             .filter(AugusSeat.area_code==record.area_code)\
+    #             .filter(AugusSeat.info_code==record.info_code)\
+    #             .filter(AugusSeat.floor==record.floor)\
+    #             .filter(AugusSeat.column==record.column)\
+    #             .filter(AugusSeat.num==record.number)\
+    #             .one()
+    #     except NoResultFound as err:
+    #         # 席がない場合はNGを返す
+    #         msg = 'AugusSeat not found: AugusVenue.id={} area_code={} info_code={} floor={} column={} num={}'.format(
+    #             ag_performance.augus_venue_id, record.area_code, record.info_code,
+    #             record.floor, record.column, record.number)
+    #         raise IllegalImportDataError(msg)
+    #     except MultipleResultsFound as err:
+    #         msg = 'AugusSeat not found: AugusVenue.id={} area_code={} info_code={} floor={} column={} num={}'.format(
+    #             ag_performance.augus_venue_id, record.area_code, record.info_code,
+    #             record.floor, record.column, record.number)
+    #         raise AugusIntegrityError(msg)
 
 
     def import_record(self, record, stock, ag_performance):

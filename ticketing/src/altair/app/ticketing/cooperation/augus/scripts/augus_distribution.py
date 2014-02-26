@@ -95,6 +95,8 @@ def main():
     except multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
         return
+    else:
+        pass
 
 
 if __name__ == '__main__':
