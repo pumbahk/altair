@@ -204,7 +204,7 @@ class Testsync_data(unittest.TestCase):
         mock_models.MultiCheckoutOrderStatus.set_status.assert_called_with(
             "testing-order",
             "test-shop",
-            -100,
+            -10,
             u"by cancel auth batch",
         )
 

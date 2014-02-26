@@ -18,8 +18,8 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm
-from altair.app.ticketing.core.models import Performance, PerformanceSetting, OrderImportTask, ImportStatusEnum
+from altair.app.ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm, OrionPerformanceForm
+from altair.app.ticketing.core.models import Performance, PerformanceSetting, OrderImportTask, ImportStatusEnum, OrionPerformance
 from altair.app.ticketing.core.api import get_organization
 from altair.app.ticketing.products.forms import ProductForm
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm, OrderImportForm
@@ -246,6 +246,59 @@ class PerformanceShowView(BaseView):
             task.delete()
             self.request.session.flash(u'予約インポートを削除しました')
         return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+
+    @view_config(route_name="performances.orion.index", request_method='GET')
+    def orion_index_view(self):
+        form = OrionPerformanceForm(
+            self.request.params,
+            data=self.performance.orion)
+        if self.performance.orion is not None:
+            form.enabled.data = True
+            if self.performance.orion.coupon_2_name is not None:
+                form.coupon_2_enabled.data = True
+
+        data = {
+            'tab': 'orion',
+            'action': '',
+            'performance': self.performance,
+            'form' : form,
+        }
+        return data
+
+    @view_config(route_name="performances.orion.index", request_method='POST')
+    def orion_index_update(self):
+        form = OrionPerformanceForm(self.request.params)
+        
+        if form.coupon_2_enabled.data == False or form.coupon_2_name.data is None or form.coupon_2_name.data == "":
+            form.coupon_2_name.data = None
+            form.coupon_2_qr_enabled.data = None
+            form.coupon_2_pattern.data = None
+        
+        if form.validate():
+            if form.enabled.data == False:
+                # delete
+                if self.performance.orion != None:
+                    self.performance.orion.delete()
+            elif self.performance.orion is None:
+                # insert
+                op = merge_session_with_post(
+                    OrionPerformance(
+                        performance_id=self.performance.id
+                    ),
+                    form.data
+                )
+                op.save()
+            else:
+                # update
+                op = merge_session_with_post(
+                    self.performance.orion,
+                    form.data
+                )
+                op.save()
+
+            return HTTPFound(self.request.route_url('performances.orion.index', performance_id=self.performance.id))
+        
+        return self.orion_index_view()
 
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")

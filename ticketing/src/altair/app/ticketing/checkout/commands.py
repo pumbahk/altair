@@ -4,8 +4,9 @@ import os
 import sys
 import logging
 import transaction
+import argparse
 
-from pyramid.paster import bootstrap
+from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.sql import and_
 from sqlalchemy.sql.expression import not_
 from sqlalchemy.orm import join
@@ -19,11 +20,13 @@ from altair.app.ticketing.payments.plugins.checkout import CheckoutPlugin
 def rakuten_checkout_sales():
     ''' 楽天あんしん支払いサービスの売上処理
     '''
-    config_file = sys.argv[1]
-    log_file = os.path.abspath(sys.argv[2])
-    logging.config.fileConfig(log_file)
-    app_env = bootstrap(config_file)
-    request = app_env['request']
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config')
+    args = parser.parse_args()
+
+    setup_logging(args.config)
+    env = bootstrap(args.config)
+    request = env['request']
 
     logging.info('start checkout sales batch')
 

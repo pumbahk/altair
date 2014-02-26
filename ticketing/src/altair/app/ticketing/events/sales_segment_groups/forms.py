@@ -146,6 +146,10 @@ class SalesSegmentGroupForm(OurForm):
         label=u'一般公開',
         hide_on_new=True
     )
+    disp_orderreview = OurBooleanField(
+        label=u'一般チケットの購入履歴の表示/非表示',
+        hide_on_new=True
+    )
     reporting = OurBooleanField(
         label=u'レポート対象',
         hide_on_new=True

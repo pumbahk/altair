@@ -21,7 +21,9 @@ ${order.performance.venue.name}<br />
 % endif
 　￥${h.format_number(product.price * product.quantity)}<br />
 %endfor
-・ステータス:${h.order_status(order)}<br/>
+・ステータス:${h.get_order_status(order)}<br/>
+・支払状況:${h.get_payment_status(order)}<br/>
+・発券状況:${h.get_print_status(order)}<br/>
 ・システム利用料: ￥${h.format_number(order.system_fee)}<br />
 %if order.special_fee > 0:
 ・${order.special_fee_name}: ￥${h.format_number(order.special_fee)}<br />

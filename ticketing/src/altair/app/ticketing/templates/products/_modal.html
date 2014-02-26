@@ -7,7 +7,11 @@
         if (!sales_segment_id) return false;
         load_modal_form(
           modal_product,
-          '${request.route_path('products.new', _query=dict(sales_segment_id='__sales_segment_id__'))}'.replace('__sales_segment_id__', sales_segment_id),
+          % if performance:
+            '${request.route_path('products.new', _query=dict(sales_segment_id='__sales_segment_id__', performance_id=performance.id))}'.replace('__sales_segment_id__', sales_segment_id),
+          % else:
+            '${request.route_path('products.new', _query=dict(sales_segment_id='__sales_segment_id__'))}'.replace('__sales_segment_id__', sales_segment_id),
+          % endif
           null,
           null
         );
