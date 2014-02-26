@@ -4,10 +4,15 @@ import os
 import shutil
 import logging
 import argparse
+import transaction
+from pyramid.paster import bootstrap
+from pyramid.renderers import render_to_response
+from altair.app.ticketing.core.models import (
+    Mailer,
+    AugusPerformance,
+    )
 from altair.augus.protocols import PerformanceSyncRequest
 from altair.augus.parsers import AugusParser
-from pyramid.paster import bootstrap
-import transaction
 from ..importers import AugusPerformanceImpoter
 from ..errors import AugusDataImportError
 from .. import multilock
@@ -30,6 +35,8 @@ def import_performance_all(settings):
     importer = AugusPerformanceImpoter()
     target = PerformanceSyncRequest
     paths = []
+    augus_performance_ids = []
+
     try:
         for name in filter(target.match_name, os.listdir(rt_staging)):
             try:
@@ -37,7 +44,8 @@ def import_performance_all(settings):
                 path = os.path.join(rt_staging, name)
                 paths.append(path)
                 request = AugusParser.parse(path)
-                importer.import_(request)
+                augus_performances = importer.import_(request)
+                augus_performance_ids.extend([agp.id for agp in augus_performances])
             except AugusDataImportError as err:
                 logger.error('Illegal AugusPerformance Format: {}: {}'.format(path, repr(err)))
                 raise
@@ -51,6 +59,7 @@ def import_performance_all(settings):
         transaction.commit()
         for path in paths:
             shutil.move(path, rt_pending)
+    return augus_performance_ids
 
 def main():
     parser = argparse.ArgumentParser()
@@ -58,13 +67,34 @@ def main():
     args = parser.parse_args()
     env = bootstrap(args.conf)
     settings = env['registry'].settings
+    augus_performance_ids = []
 
     try:
         with multilock.MultiStartLock('augus_performance'):
-            import_performance_all(settings)
+            augus_performance_ids = import_performance_all(settings)
     except multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
+        return
 
+    if len(augus_performance_ids) == 0:
+        return
+
+    sender = settings['mail.augus.sender']
+    recipient = settings['mail.augus.recipient']
+    augus_performances = AugusPerformance.query.filter(AugusPerformance.id.in_(augus_performance_ids)).all()
+    mailer = Mailer(settings)
+
+    params = {'augus_performances': augus_performances,
+              }
+    body = render_to_response('altair.app.ticketing:templates/cooperation/augus/mails/augus_performance.html', params)
+
+    mailer.create_message(
+        sender=sender,
+        recipient=recipient,
+        subject=u'【オーガス連携】公演連携のお知らせ',
+        body=body.text,
+        )
+    mailer.send(sender, [recipient])
 
 
 if __name__ == '__main__':

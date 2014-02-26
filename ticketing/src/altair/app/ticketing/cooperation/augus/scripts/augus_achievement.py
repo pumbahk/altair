@@ -64,6 +64,7 @@ def main():
             ag_performance_ids = export_achievement_all(settings, force=args.force)
     except multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
+        return
 
     sender = settings['mail.augus.sender']
     recipient = settings['mail.augus.recipient']
