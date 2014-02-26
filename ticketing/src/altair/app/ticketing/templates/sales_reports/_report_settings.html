@@ -38,6 +38,16 @@
 <h4>レポート送信設定</h4>
 <%include file="/sales_reports/_action_button.html" args="event=event, performance=performance" />
 <%include file="/sales_reports/_modal.html" args="modal_id='modal-report_setting'" />
+<div class="btn-group">
+  <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+    レポートプレビュー 全送信先
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu">
+    <li><a href="javascript:preview();">詳細</a></li>
+    <li><a href="javascript:preview('', ${ReportTypeEnum.Summary.v[0]});">合計</a></li>
+  </ul>
+</div>
 % endif
 
 % if report_settings and form_report_setting:
@@ -53,12 +63,7 @@
     <th>対象</th>
     <th>レポート対象期間</th>
     <th>レポート内容</th>
-    <th>
-<div class="btn-group">
-  <button onclick="javascript:preview();" class="btn btn-mini">全送信先(詳細)</button>
-  <button onclick="javascript:preview('', ${ReportTypeEnum.Summary.v[0]});" class="btn btn-mini">全送信先(合計)</button>
-</div>
-</th>
+    <th></th>
   </tr>
   % for rs in report_settings:
     <%
