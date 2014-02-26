@@ -30,6 +30,9 @@ def mkdir_p(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
+class DistributionExcutionError(Exception):
+    pass
+
 def import_distribution_all(settings):
     consumer_id = int(settings['augus_consumer_id'])
     rt_staging = settings['rt_staging']
@@ -43,7 +46,7 @@ def import_distribution_all(settings):
     importer = AugusDistributionImporter()
     exporter = AugusDistributionExporter()
     target = DistributionSyncRequest
-
+    err = DistributionExcutionError()
     for name in filter(target.match_name, os.listdir(rt_staging)):
         time.sleep(1.5) # ファイル名/StockHolder名が含む日時をずらす為sleepを入れる
 
@@ -77,6 +80,7 @@ def import_distribution_all(settings):
                 transaction.commit()
             else:
                 transaction.abort()
+                raise err
 
 def main():
     parser = argparse.ArgumentParser()
@@ -90,8 +94,6 @@ def main():
             import_distribution_all(settings)
     except multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
-
-
 
 
 if __name__ == '__main__':
