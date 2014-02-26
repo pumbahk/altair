@@ -1,0 +1,146 @@
+<%inherit file="../commons/layout.html" />
+
+<h2>マイページ</h2>
+
+<h3>購入履歴照会</h3>
+% if orders:
+  ${render_orders(orders)}
+% else:
+  購入履歴がありません。
+% endif
+
+<br/><br/>
+
+<h3>抽選申込み照会</h3>
+% if lot_entries:
+  ${render_lot_entries(lot_entries)}
+% else:
+  抽選申込みがありません。
+% endif
+
+<br/><br/>
+
+<h3>メールマガジン</h3>
+${render_mailmagazine(request)}
+
+<br/><br/>
+
+<h3>楽天ポイントのご確認</h3>
+<a href="https://point.rakuten.co.jp/">楽天ポイントのご確認はこちら</a>
+
+<br/><br/>
+
+<%def name="render_shipping_address(shipping)">
+  <table class="purchasedContents" summary="配送先情報">
+    <tbody>
+      <tr>
+        <th scope="row"><span style="color: #000000">氏名（漢字）</span></th>
+        <td>${shipping.last_name} ${shipping.first_name}</td>
+      </tr>
+      <tr>
+        <th scope="row"><span style="color: #000000">氏名（カナ）</span></th>
+        <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
+      </tr>
+      <tr>
+        <th scope="row"><span style="color: #000000">電話番号</span></th>
+        <td>${shipping.tel_1}</td>
+      </tr>
+      <tr>
+        <th scope="row"><span style="color: #000000">住所</span></th>
+        <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
+      </tr>
+    </tbody>
+  </table>
+</%def>
+
+<%def name="render_lot_entries(lot_entries)">
+  <div id="mypageHistory">
+    % for entry in lot_entries:
+      <div class="box">
+        <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/images/RT/mypage/' + h.get_entry_status_image(entry))}" alt="${h.get_entry_status(entry)}" width="60" height="60" /></p>
+        <dl>
+          <form name="${entry.entry_no}" action="/lots/review" method="POST">
+            <input type="hidden" name="entry_no" value="${entry.entry_no}"/>
+            <input type="hidden" name="tel_no" value="${entry.shipping_address.tel_1}"/>
+            <dt><a href="javascript:void(0);" onclick="document.${entry.entry_no}.submit()">${entry.lot.name}</a></dt>
+            <dd>受付番号：${entry.entry_no}　予約日時：${h.japanese_datetime(entry.created_at)}</dd>
+          </form>
+        </dl>
+      </div>
+    % endfor
+  </div>
+<div style="text-align: right">
+${render_pager(lot_entries)}
+</div>
+</%def>
+
+<%def name="render_orders(orders)">
+
+<div id="mypageHistory">
+<div class="inner">
+
+% for order in orders:
+
+<div class="box">
+<p><img src="${request.static_url('altair.app.ticketing.orderreview:static/images/RT/mypage/' + h.get_order_status_image(order))}" alt="${h.get_order_status(order)}" width="60" height="60" /></p>
+<p><img src="${request.static_url('altair.app.ticketing.orderreview:static/images/RT/mypage/' + h.get_payment_status_image(order))}" alt="${h.get_payment_status(order)}" width="60" height="60" /></p>
+<dl>
+<form name="${order.order_no}" action="${request.route_path('order_review.show')}" method="POST">
+<input type="hidden" name="order_no" value="${order.order_no}"/>
+<input type="hidden" name="tel" value="${order.shipping_address.tel_1}"/>
+<dt><a href="javascript:void(0);" onclick="document.${order.order_no}.submit()">${order.performance.name}</a></dt>
+<dd>受付番号：${order.order_no}　予約日時：${h.japanese_datetime(order.created_at)}</dd>
+<dd>${h.japanese_datetime(order.performance.start_on)}開演 ${order.performance.venue.name}</dd>
+</form>
+</dl>
+</div>
+
+% endfor
+</div>
+</div>
+
+<div style="text-align: right">
+${render_pager(orders)}
+</div>
+</%def>
+
+<%def name="render_pager(result)">
+${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示 $link_next $link_last ")}
+</%def>
+
+<%def name="render_mailmagazine(request)">
+  % if mailmagazines_to_subscribe:
+  <form id="mail_form" name="mail_form" method="post" action="${request.route_path('mypage.mailmag.confirm')}">
+  <div class="settlementBox">
+		<div class="settlementBoxInner">
+			<div id="mailMagazineBox">
+				<div id="mailMagazineBoxInner">
+					<dl>
+						<dt>
+							楽天チケットからのメールマガジンの購読を選択できます。
+						</dt>
+						<dd>
+							<ul>
+								% for mailmagazine, subscribed in mailmagazines_to_subscribe:
+								<li${subscribed and u' class="subscribed"' or u''|n}>
+									<div>
+										<input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+										<label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+									</div>
+									<div>
+										${mailmagazine.description|n}
+									</div>
+								</li>
+								% endfor
+							</ul>
+						</dd>
+					</dl>
+				</div>
+			</div>
+		</div>
+  </div>
+  <input type="submit" value="次へ" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+  </form>
+  % endif
+</%def>
+

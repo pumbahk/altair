@@ -773,6 +773,10 @@ class ReportPeriodEnum(StandardEnum):
     Normal = (1, u'指定期間 (前日分/前週分)')
     Entire = (2, u'全期間 (販売開始〜送信日時まで)')
 
+class ReportTypeEnum(StandardEnum):
+    Detail = (1, u'詳細 (販売区分別まで含む)')
+    Summary = (2, u'合計 (公演合計のみ)')
+
 class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = 'ReportSetting'
     id = Column(Identifier, primary_key=True)
@@ -790,6 +794,7 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     day_of_week = Column(Integer, nullable=True, default=None)
     start_on = Column(DateTime, nullable=True, default=None)
     end_on = Column(DateTime, nullable=True, default=None)
+    report_type = Column(Integer, nullable=False, default=1, server_default='1')
 
     @property
     def recipient(self):
@@ -4027,6 +4032,8 @@ class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted,
     sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'))
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'))
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
+    disp_orderreview = AnnotatedColumn(Boolean, default=True,
+                                  _a_label=_(u'一般チケットの購入履歴表示／非表示'))
 
     @classmethod
     def create_from_template(cls, template, **kwargs):
@@ -4042,8 +4049,12 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'))
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
+    disp_orderreview = AnnotatedColumn(Boolean, default=True,
+                                  _a_label=_(u'一般チケットの購入履歴表示／非表示'))
+
     use_default_order_limit = Column(Boolean)
     use_default_max_quantity_per_user = Column(Boolean)
+    use_default_disp_orderreview = Column(Boolean)
 
     @property
     def super(self):

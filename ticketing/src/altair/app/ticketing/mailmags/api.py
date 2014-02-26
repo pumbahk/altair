@@ -47,4 +47,9 @@ def multi_subscribe(user, emails, magazine_ids):
             else:
                 logger.debug("User %s is already subscribing %s for <%s>" % (user, magazine.name, email))
 
-
+def multi_unsubscribe(user, emails, magazine_ids):
+    logger.debug("magazines: %s" % magazine_ids)
+    for magazine in mailmag_models.MailMagazine.query.filter(mailmag_models.MailMagazine.id.in_(magazine_ids)).all():
+        for email in emails:
+            magazine.unsubscribe(user, email)
+            logger.debug("User %s end subscribing %s for <%s>" % (user, magazine.name, email))

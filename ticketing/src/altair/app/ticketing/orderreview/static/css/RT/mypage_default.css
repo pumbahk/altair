@@ -1,0 +1,182 @@
+@charset "utf-8";
+
+/* --------------------------------------------------------
+
+mypage.html
+orderreview.html
+に適用
+----------------------------------------------------------- */
+
+/* reset
+----------------------------------------------------------- */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, font, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	outline: 0;
+	font-size: 100%;
+	vertical-align: baseline;
+	background: transparent;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+ 
+/* remember to define focus styles! */
+:focus {
+	outline: 0;
+}
+ 
+/* remember to highlight inserts somehow! */
+ins {
+	text-decoration: none;
+}
+del {
+	text-decoration: line-through;
+}
+ 
+/* tables still need 'cellspacing=&quot;0&quot;' in the markup */
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+/* option */
+p { line-height: 1.5em; }
+ul, li { list-style: none; }
+
+/* common
+----------------------------------------------------------- */
+
+.f10 { font-size:10px !important; } 
+.f11 { font-size:11px !important; } 
+.f12 { font-size:12px !important; } 
+.f13 { font-size:13px !important; } 
+.f14 { font-size:14px !important; } 
+.f15 { font-size:15px !important; } 
+.f16 { font-size:16px !important; } 
+.f17 { font-size:17px !important; } 
+.f18 { font-size:18px !important; } 
+.f19 { font-size:19px !important; } 
+.f20 { font-size:20px !important; } 
+.f21 { font-size:21px !important; } 
+.f22 { font-size:22px !important; } 
+.f23 { font-size:23px !important; } 
+.f24 { font-size:24px !important; } 
+.f25 { font-size:25px !important; } 
+.f26 { font-size:26px !important; } 
+.f27 { font-size:27px !important; } 
+.f28 { font-size:28px !important; } 
+.f29 { font-size:29px !important; } 
+.f30 { font-size:30px !important; } 
+.f31 { font-size:31px !important; } 
+.f32 { font-size:32px !important; } 
+.f33 { font-size:33px !important; } 
+.f34 { font-size:34px !important; } 
+.f35 { font-size:35px !important; } 
+.f36 { font-size:36px !important; } 
+.f37 { font-size:37px !important; } 
+.f38 { font-size:38px !important; } 
+.f39 { font-size:39px !important; } 
+.f40 { font-size:40px !important; }
+
+.mgt10 { margin-top:10px !important; } 
+.mgt20 { margin-top:20px !important; } 
+.mgt30 { margin-top:30px !important; } 
+.mgt40 { margin-top:40px !important; } 
+.mgt50 { margin-top:50px !important; } 
+
+.mgb10 { margin-bottom:10px !important; } 
+.mgb20 { margin-bottom:20px !important; } 
+.mgb30 { margin-bottom:30px !important; } 
+.mgb40 { margin-bottom:40px !important; } 
+.mgb50 { margin-bottom:50px !important; } 
+
+.mgl10 { margin-left:10px !important; } 
+.mgl20 { margin-left:20px !important; } 
+.mgl30 { margin-left:30px !important; } 
+.mgl40 { margin-left:40px !important; } 
+.mgl50 { margin-left:50px !important; } 
+
+.mgr10 { margin-right:10px !important; } 
+.mgr20 { margin-right:20px !important; } 
+.mgr30 { margin-right:30px !important; } 
+.mgr40 { margin-right:40px !important; } 
+.mgr50 { margin-right:50px !important; } 
+
+.mg10 { margin:10px !important; } 
+.mg20 { margin:20px !important; } 
+.mg30 { margin:30px !important; } 
+.mg40 { margin:40px !important; } 
+.mg50 { margin:50px !important; } 
+
+.pdt10 { padding-top:10px !important; } 
+.pdt20 { padding-top:20px !important; } 
+.pdt30 { padding-top:30px !important; } 
+.pdt40 { padding-top:40px !important; } 
+.pdt50 { padding-top:50px !important; } 
+
+.pdb10 { padding-bottom:10px !important; } 
+.pdb20 { padding-bottom:20px !important; } 
+.pdb30 { padding-bottom:30px !important; } 
+.pdb40 { padding-bottom:40px !important; } 
+.pdb50 { padding-bottom:50px !important; } 
+
+.pdl10 { padding-left:10px !important; } 
+.pdl20 { padding-left:20px !important; } 
+.pdl30 { padding-left:30px !important; } 
+.pdl40 { padding-left:40px !important; } 
+.pdl50 { padding-left:50px !important; } 
+
+.pdr10 { padding-right:10px !important; } 
+.pdr20 { padding-right:20px !important; } 
+.pdr30 { padding-right:30px !important; } 
+.pdr40 { padding-right:40px !important; } 
+.pdr50 { padding-right:50px !important; } 
+
+.pd10 { padding:10px !important; } 
+.pd20 { padding:20px !important; } 
+.pd30 { padding:30px !important; } 
+.pd40 { padding:40px !important; } 
+.pd50 { padding:50px !important; } 
+
+.lh150{ line-height: 150% }
+.lh180{ line-height: 180% }
+
+.txtL { text-align: left; }
+.txtL { text-align: right; }
+.txtC { text-align: center; }
+
+.floL { float: left; }
+.floR { float: left; }
+.clear{ clear: both; }
+
+
+/* clearfix */
+.clearfix {width:100%;}
+.clearfix:after {
+  content: ""; 
+  display: block; 
+  clear: both;
+ }
+
+.red { color: red}

@@ -203,6 +203,11 @@ class SalesSegmentAccessor(object):
             has_use_default=True,
             use_default_default=True
             ),
+        "disp_orderreview": dict(
+            setting=True,
+            has_use_default=True,
+            use_default_default=True
+            )
         }
 
     def sync_attr(self, dest, src, attr):

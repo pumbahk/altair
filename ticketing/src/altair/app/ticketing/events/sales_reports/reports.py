@@ -6,15 +6,15 @@ from paste.util.multidict import MultiDict
 from pyramid.threadlocal import get_current_registry
 from pyramid.renderers import render_to_response
 from sqlalchemy import distinct
-from sqlalchemy.sql import func, and_, or_
+from sqlalchemy.sql import func, and_, or_, exists
 from sqlalchemy.orm import aliased
 
 from datetime import date, timedelta
 
 from altair.sqlahelper import get_db_session
-from altair.app.ticketing.core.models import Event, Mailer
+from altair.app.ticketing.core.models import Account, Event, Mailer
 from altair.app.ticketing.core.models import StockType, StockHolder, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
-from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem
+from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem, ReportTypeEnum
 from altair.app.ticketing.events.sales_reports.forms import SalesReportForm
 
 logger = logging.getLogger(__name__)
@@ -47,15 +47,16 @@ class SalesReportRecord(object):
         self.total_order_amount = 0
 
 
-def get_order_quantity(db_session, stock_ids, group_by):
+def get_order_quantity(db_session, stmt, group_by):
     # Stock単位の全ての予約席数 (販売区分での絞り込みは行わない)
     query = db_session.query(OrderedProductItem)\
-        .join(OrderedProduct).filter(OrderedProduct.deleted_at==None)\
-        .join(Order).filter(Order.canceled_at==None, Order.deleted_at==None)\
-        .join(Performance).filter(Performance.deleted_at==None)\
-        .join(Event).filter(Event.deleted_at==None)\
+        .join(OrderedProduct)\
+        .join(Order).filter(Order.canceled_at==None, Order.refunded_at==None)\
+        .join(Performance)\
+        .join(Event)\
         .join(ProductItem, ProductItem.id==OrderedProductItem.product_item_id)\
-        .join(Stock).filter(Stock.id.in_(stock_ids))\
+        .join(Stock)\
+        .join(stmt, Stock.id==stmt.c.stock_id)\
         .with_entities(
             group_by,
             func.sum(OrderedProductItem.quantity)
@@ -72,19 +73,17 @@ class SalesTotalReporter(object):
         :param organization: Organization
         :param group: 集計単位  'Event' イベント毎の集計、'Performance' 公演毎の集計
         '''
+        self.slave_session = get_db_session(request, name="slave")
         self.form = form
         self.organization = organization
         self.group_by = Performance.id if group_by == 'Performance' else Event.id
         self.reports = {}
-        self.stock_holder_ids = []
-        self.slave_session = get_db_session(request, name="slave")
+        self.account = Account.query.filter(Account.user_id==organization.user_id, Account.organization_id==organization.id).one()
 
         # レポートデータ生成
         self.create_reports()
 
     def create_reports(self):
-        # 自社分のみが対象
-        self.stock_holder_ids = [sh.id for sh in StockHolder.get_own_stock_holders(user_id=self.organization.user_id)]
         self.get_event_data()
         self.get_order_data()
         self.get_stock_data()
@@ -117,8 +116,7 @@ class SalesTotalReporter(object):
     def get_event_data(self):
         # イベント名称/公演名称、販売期間
         # 一般公開されている販売区分のみ対象
-        query = self.slave_session.query(Event).filter(Event.organization_id==self.organization.id)\
-            .join(Performance).filter(Performance.deleted_at==None)
+        query = self.slave_session.query(Event).filter(Event.organization_id==self.organization.id).join(Performance)
 
         if self.form.recent_report.data:
             today = date.today()
@@ -134,8 +132,7 @@ class SalesTotalReporter(object):
         query = self._create_where(query, self.form.event_start_from.data, self.form.event_start_to.data, Performance.start_on)
         query = self._create_where(query, self.form.event_end_from.data, self.form.event_end_to.data, Performance.end_on)
 
-        query = query.join(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.reporting==True)\
-            .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(self.stock_holder_ids))
+        query = query.join(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.reporting==True)
         query = self._create_range_where(query, self.form.limited_from.data, self.form.limited_to.data, \
             SalesSegment.start_at, SalesSegment.end_at)
 
@@ -200,8 +197,9 @@ class SalesTotalReporter(object):
 
     def get_stock_data(self):
         # 配席数、残席数
-        query = self.slave_session.query(Stock).filter(Stock.stock_holder_id.in_(self.stock_holder_ids))\
-            .join(ProductItem).filter(ProductItem.deleted_at==None)\
+        query = self.slave_session.query(Stock)\
+            .join(StockHolder).filter(StockHolder.account==self.account)\
+            .join(ProductItem)\
             .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)\
             .join(Performance).filter(Performance.id==Stock.performance_id)\
             .join(Event).filter(Event.organization_id==self.organization.id)
@@ -209,18 +207,19 @@ class SalesTotalReporter(object):
         query = self.add_form_filter(query)
 
         # 残席数を算出するためのStock単位の予約席数
-        stock_ids = [s.id for s in query.with_entities(Stock.id).distinct()]
-        order_quantity = get_order_quantity(self.slave_session, stock_ids, self.group_by)
+        stmt = query.with_entities(distinct(Stock.id).label('stock_id')).subquery()
+        order_quantity = get_order_quantity(self.slave_session, stmt, self.group_by)
 
-        query = self.slave_session.query(Stock).filter(Stock.id.in_(stock_ids))\
+        stock_query = self.slave_session.query(Stock)\
+            .join(stmt, Stock.id==stmt.c.stock_id)\
             .join(Performance).filter(Performance.id==Stock.performance_id)\
             .join(Event).filter(Event.organization_id==self.organization.id)
-        query = query.with_entities(
+        stock_query = stock_query.with_entities(
             self.group_by,
             func.sum(Stock.quantity)
         ).group_by(self.group_by)
 
-        for id, stock_quantity in query.all():
+        for id, stock_quantity in stock_query.all():
             if id not in self.reports:
                 logger.info('invalid key (%s:%s) get_stock_data' % (self.group_by, id))
                 continue
@@ -232,13 +231,13 @@ class SalesTotalReporter(object):
     def get_order_data(self):
         # 販売金額、販売枚数
         query = self.slave_session.query(Event).filter(Event.organization_id==self.organization.id)\
-            .outerjoin(Performance).filter(Performance.deleted_at==None)\
-            .outerjoin(Order).filter(Order.canceled_at==None, Order.deleted_at==None)\
-            .outerjoin(OrderedProduct).filter(OrderedProduct.deleted_at==None)\
-            .outerjoin(OrderedProductItem).filter(OrderedProductItem.deleted_at==None)\
-            .outerjoin(ProductItem).filter(ProductItem.deleted_at==None)\
-            .outerjoin(Stock).filter(Stock.deleted_at==None)\
-            .outerjoin(Product, and_(
+            .join(Performance)\
+            .join(Order).filter(Order.canceled_at==None, Order.refunded_at==None)\
+            .join(OrderedProduct)\
+            .join(OrderedProductItem)\
+            .join(ProductItem)\
+            .join(Stock)\
+            .join(Product, and_(
                 Product.id==OrderedProduct.product_id,
                 Product.id==ProductItem.product_id,
                 Product.seat_stock_type_id==Stock.stock_type_id
@@ -351,25 +350,26 @@ class SalesDetailReporter(object):
         公演の販売区分毎、席種毎、商品毎に集計したレポートを返す
         :param form: SalesReportForm
         '''
+        self.slave_session = get_db_session(request, name="slave")
         self.form = form
         self.reports = {}
         self.total = None
-        self.slave_session = get_db_session(request, name="slave")
+        self.event = None
+        if self.form.performance_id.data:
+            performance = Performance.get(self.form.performance_id.data)
+            self.event = performance.event
+        elif self.form.event_id.data:
+            self.event = Event.get(self.form.event_id.data)
+        else:
+            logger.error('event_id not found')
+            return
+        organization = self.event.organization
+        self.account = Account.query.filter(Account.user_id==organization.user_id, Account.organization_id==organization.id).one()
 
         # レポートデータ生成
         self.create_reports()
 
     def create_reports(self):
-        # 自社分のみが対象
-        if self.form.performance_id.data:
-            performance = Performance.get(self.form.performance_id.data)
-            event = performance.event
-        elif self.form.event_id.data:
-            event = Event.get(self.form.event_id.data)
-        else:
-            logger.error('event_id not found')
-            return
-        self.stock_holder_ids = [sh.id for sh in StockHolder.get_own_stock_holders(event=event)]
         self.get_performance_data()
         self.get_order_data()
         if self.form.limited_from.data or self.form.limited_to.data:
@@ -397,10 +397,7 @@ class SalesDetailReporter(object):
             query = query.filter(SalesSegment.start_at <= form.limited_to.data)
 
         if form.sales_segment_group_id.data:
-            query = query.join(SalesSegmentGroup).filter(and_(
-                SalesSegmentGroup.id==form.sales_segment_group_id.data,
-                SalesSegmentGroup.deleted_at==None
-            ))
+            query = query.join(SalesSegmentGroup).filter(SalesSegmentGroup.id==form.sales_segment_group_id.data)
         if form.performance_id.data:
             ss = aliased(SalesSegment, name='SalesSegment_alias')
             query = query.outerjoin(ss, and_(
@@ -417,10 +414,10 @@ class SalesDetailReporter(object):
     def get_performance_data(self):
         # 名称、期間
         query = self.slave_session.query(StockType)\
-            .outerjoin(Stock).filter(Stock.stock_holder_id.in_(self.stock_holder_ids))\
-            .outerjoin(StockHolder)\
-            .outerjoin(ProductItem)\
-            .outerjoin(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)
+            .join(Stock)\
+            .join(StockHolder).filter(StockHolder.event==self.event, StockHolder.account==self.account)\
+            .join(ProductItem)\
+            .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)
         query = self.add_sales_segment_filter(query)
         if self.form.performance_id.data:
             query = query.filter(ProductItem.performance_id==self.form.performance_id.data)
@@ -460,8 +457,9 @@ class SalesDetailReporter(object):
 
     def get_stock_data(self):
         # 配席数、残席数
-        query = self.slave_session.query(Stock).filter(Stock.stock_holder_id.in_(self.stock_holder_ids))\
-            .join(ProductItem).filter(ProductItem.deleted_at==None)\
+        query = self.slave_session.query(Stock)\
+            .join(StockHolder).filter(StockHolder.event==self.event, StockHolder.account==self.account)\
+            .join(ProductItem)\
             .join(Product).filter(and_(Product.seat_stock_type_id==Stock.stock_type_id, Product.base_product_id==None))
         query = self.add_sales_segment_filter(query)
         if self.form.performance_id.data:
@@ -470,8 +468,8 @@ class SalesDetailReporter(object):
             query = query.join(StockType, StockType.id==Stock.stock_type_id).filter(StockType.event_id==self.form.event_id.data)
 
         # 残席数を算出するためのStock単位の予約席数
-        stock_ids = [s.id for s in query.with_entities(Stock.id).distinct()]
-        order_quantity = get_order_quantity(self.slave_session, stock_ids, Stock.id)
+        stmt = query.with_entities(distinct(Stock.id).label('stock_id')).subquery()
+        order_quantity = get_order_quantity(self.slave_session, stmt, Stock.id)
 
         query = query.with_entities(
             func.ifnull(Product.base_product_id, Product.id),
@@ -490,10 +488,10 @@ class SalesDetailReporter(object):
     def get_order_data(self, all_period=True):
         # 購入件数クエリ
         query = self.slave_session.query(OrderedProductItem)\
-            .join(OrderedProduct).filter(OrderedProduct.deleted_at==None)\
-            .join(Order).filter(Order.canceled_at==None)\
+            .join(OrderedProduct)\
+            .join(Order).filter(Order.canceled_at==None, Order.refunded_at==None)\
             .join(ProductItem, ProductItem.id==OrderedProductItem.product_item_id)\
-            .join(Stock).filter(Stock.deleted_at==None)\
+            .join(Stock)\
             .join(Product, and_(
                 Product.id==OrderedProduct.product_id,
                 Product.id==ProductItem.product_id,
@@ -612,14 +610,18 @@ class PerformanceReporter(object):
         self.total = SalesDetailReporter(request, self.form)
 
         # 販売区分別のレポート
-        for sales_segment in performance.sales_segments:
-            if not sales_segment.reporting:
-                continue
-            if (self.form.limited_from.data and sales_segment.end_at < self.form.limited_from.data) or\
-               (self.form.limited_to.data and self.form.limited_to.data < sales_segment.start_at):
-                continue
-            self.form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
-            self.reporters[sales_segment] = SalesDetailReporter(request, self.form)
+        if self.form.is_detail_report():
+            for sales_segment in performance.sales_segments:
+                if not sales_segment.reporting:
+                    continue
+                if (self.form.limited_from.data and sales_segment.end_at < self.form.limited_from.data) or\
+                   (self.form.limited_to.data and self.form.limited_to.data < sales_segment.start_at):
+                    continue
+                self.form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
+                reporter= SalesDetailReporter(request, self.form)
+                if not reporter.reports:
+                    continue
+                self.reporters[sales_segment] = reporter
 
     def sort_index(self):
         return sorted(self.reporters.keys(), key=lambda x:(x.order, x.name))
@@ -642,8 +644,12 @@ class EventReporter(object):
                 continue
             self.form.performance_id.data = performance.id
             reporter = PerformanceReporter(request, self.form, performance)
-            if not reporter.reporters:
-                continue
+            if self.form.is_detail_report():
+                if not reporter.reporters:
+                    continue
+            else:
+                if not reporter.total.reports:
+                    continue
             self.reporters[performance] = reporter
 
     def sort_index(self):

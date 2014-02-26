@@ -27,11 +27,13 @@ def update_seat_status():
 def _keep_to_vacant():
     ''' 座席ステータスがKeepのままの座席をVacantに戻す
     '''
-    config_file = sys.argv[1]
-    log_file = os.path.abspath(sys.argv[2])
-    logging.config.fileConfig(log_file)
-    app_env = bootstrap(config_file)
-    registry = app_env['registry']
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config')
+    args = parser.parse_args()
+
+    setup_logging(args.config)
+    env = bootstrap(args.config)
+    registry = env['registry']
 
     logging.info('start update seat_status batch')
 

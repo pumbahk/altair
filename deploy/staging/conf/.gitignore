@@ -1,9 +1,3 @@
-cancel_auth_expired_carts.conf
-copy_seat_adjacency.conf
-rakuten_checkout_sales.conf
-send_sales_reports.conf
-update_seat_status.conf
-import_orders.conf
 altair.cms.admin.ini
 altair.cms.usersite.ini
 altair.newsletter.admin.ini
