@@ -50,6 +50,7 @@ def main():
             export_putback_all(settings)
     except multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
+        return
 
 
 if __name__ == '__main__':

@@ -65,6 +65,7 @@ def main():
             import_ticket_all(settings)
     except multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
+        return
 
 if __name__ == '__main__':
     main()
