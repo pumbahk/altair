@@ -252,7 +252,7 @@ class AugusDistributionImporter(object):
 
             ag_detail = get_augus_stock_detail(ag_stock_info, record)
             if ag_detail: # 既に同じ席に対して同じ席種コード、同じ単価コードの配券があった場合はエラーする
-                raise AugusDataImportError('already exit AugusStockDetail: id={}'.format(ag_detail))
+                raise IllegalImportDataError('already exit AugusStockDetail: id={}'.format(ag_detail))
             else:
                 # 新規の配券
                 # 1つの席に席種コードや単価コードが違う複数の配券はありえるのでそれは許容する
