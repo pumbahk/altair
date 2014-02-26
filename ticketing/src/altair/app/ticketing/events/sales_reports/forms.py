@@ -11,7 +11,7 @@ from altair.formhelpers import (
     OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField,
     OurTimeField, zero_as_none, after1900)
 from altair.app.ticketing.core.models import Operator, ReportSetting
-from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
+from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum, ReportTypeEnum
 
 
 class SalesReportForm(OurForm):
@@ -95,6 +95,15 @@ class SalesReportForm(OurForm):
         validators=[Optional()],
         default=False,
     )
+    report_type = HiddenField(
+        validators=[Optional()],
+        default=ReportTypeEnum.Detail.v[0],
+    )
+
+    def is_detail_report(self):
+        if not self.report_type.data:
+            self.report_type.data = self.report_type.default
+        return int(self.report_type.data) == ReportTypeEnum.Detail.v[0]
 
 
 class ReportSettingForm(OurForm):
@@ -182,6 +191,12 @@ class ReportSettingForm(OurForm):
         label=u'レポート対象期間',
         validators=[Required()],
         choices=sorted([(kind.v[0], kind.v[1]) for kind in ReportPeriodEnum]),
+        coerce=int
+    )
+    report_type = SelectField(
+        label=u'レポート内容',
+        validators=[Required()],
+        choices=sorted([(kind.v[0], kind.v[1]) for kind in ReportTypeEnum]),
         coerce=int
     )
 

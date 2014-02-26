@@ -111,11 +111,21 @@ class Products(BaseView):
         f = ProductForm(self.request.POST, performance=performance, sales_segment=sales_segment)
         if f.validate():
             point_grant_settings = [PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one() for point_grant_setting_id in f.applied_point_grant_settings.data]
-            sales_segment_for_product = SalesSegment.query.filter_by(id=f.sales_segment_id.data).filter(Organization.id==self.context.user.organization_id).one()
-            product = merge_session_with_post(Product(), f.data)
-            product.performance_id = sales_segment_for_product.performance.id
-            product.point_grant_settings.extend(point_grant_settings)
-            product.save()
+
+            if f.all_sales_segment.data and performance:
+                sales_segment_for_products = SalesSegment.query.filter(SalesSegment.performance_id==performance.id).filter(Organization.id==self.context.user.organization_id)
+                for sales_segment_for_product in sales_segment_for_products:
+                    product = merge_session_with_post(Product(), f.data)
+                    product.sales_segment_id = sales_segment_for_product.id
+                    product.performance_id = sales_segment_for_product.performance.id
+                    product.point_grant_settings.extend(point_grant_settings)
+                    product.save()
+            else:
+                sales_segment_for_product = SalesSegment.query.filter_by(id=f.sales_segment_id.data).filter(Organization.id==self.context.user.organization_id).one()
+                product = merge_session_with_post(Product(), f.data)
+                product.performance_id = sales_segment_for_product.performance.id
+                product.point_grant_settings.extend(point_grant_settings)
+                product.save()
 
             self.request.session.flash(u'商品を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
@@ -125,29 +135,31 @@ class Products(BaseView):
                 'action': self.request.path,
                 }
 
-    @view_config(route_name="products.edit", request_method="GET", renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
+    @view_config(route_name="products.edit", request_method="GET", renderer='altair.app.ticketing:templates/products/_form_edit.html', xhr=True)
     def edit_xhr(self):
         product_id = int(self.request.matchdict.get('product_id', 0))
         product = Product.get(product_id)
         if product is None:
             raise HTTPNotFound('product id %d is not found' % product_id)
         f = ProductForm.from_model(product)
+
         return {
             'form':f,
             'action': self.request.path,
             }
 
-    @view_config(route_name='products.edit', request_method='POST', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
+    @view_config(route_name='products.edit', request_method='POST', renderer='altair.app.ticketing:templates/products/_form_edit.html', xhr=True)
     def edit_post_xhr(self):
         product_id = int(self.request.matchdict.get('product_id', 0))
         product = Product.get(product_id)
+
         if product is None:
             return HTTPNotFound('product id %d is not found' % product_id)
 
         f = ProductForm(self.request.POST, sales_segment=product.sales_segment)
         if f.validate():
             point_grant_settings = [PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one() for point_grant_setting_id in f.applied_point_grant_settings.data]
-            product = merge_session_with_post(product, f.data)
+            product = merge_session_with_post(product, f.data, excludes={'performance_id'})
             product.point_grant_settings[:] = []
             product.point_grant_settings.extend(point_grant_settings)
             product.save()

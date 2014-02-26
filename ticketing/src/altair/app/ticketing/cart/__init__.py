@@ -16,6 +16,7 @@ from pyramid.exceptions import ConfigurationError
 from sqlalchemy import engine_from_config
 
 from altair.app.ticketing.core.api import get_organization
+from altair.app.ticketing.wsgi import direct_static_serving_filter_factory
 
 logger = logging.getLogger(__name__)
 
@@ -265,6 +266,11 @@ def import_mail_module(config):
     config.include('altair.app.ticketing.mails')
     config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
 
+STATIC_URL_PREFIX = '/static'
+STATIC_ASSET_SPEC = 'altair.app.ticketing.cart:static/'
+FC_AUTH_URL_PREFIX = '/fc_auth/static/'
+FC_AUTH_STATIC_ASSET_SPEC = "altair.app.ticketing.fc_auth:static/"
+
 def main(global_config, **local_config):
     settings = dict(global_config)
     settings.update(local_config)
@@ -287,8 +293,8 @@ def main(global_config, **local_config):
     config.add_cdn_static_path(S3StaticPathFactory(
             settings["s3.bucket_name"], 
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
-            mapping={"altair.app.ticketing.fc_auth:static/": "/fc_auth/static/"}))
-    config.add_static_view('static', 'altair.app.ticketing.cart:static', cache_max_age=3600)
+            mapping={FC_AUTH_STATIC_ASSET_SPEC: FC_AUTH_URL_PREFIX}))
+    config.add_static_view(STATIC_URL_PREFIX, STATIC_ASSET_SPEC, cache_max_age=3600)
 
     ### includes altair.*
     config.include('altair.exclog')
@@ -341,4 +347,9 @@ def main(global_config, **local_config):
     
     ### preview
     config.include(".preview")
-    return config.make_wsgi_app()
+    app = config.make_wsgi_app()
+
+    return direct_static_serving_filter_factory({
+        STATIC_URL_PREFIX: STATIC_ASSET_SPEC,
+        FC_AUTH_URL_PREFIX: FC_AUTH_STATIC_ASSET_SPEC,
+    })(global_config, app)

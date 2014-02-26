@@ -89,11 +89,12 @@ class SalesSegmentGroups(BaseView):
                     organization=self.context.organization,
                     setting=SalesSegmentGroupSetting(
                         order_limit=f.order_limit.data,
-                        max_quantity_per_user=f.max_quantity_per_user.data
+                        max_quantity_per_user=f.max_quantity_per_user.data,
+                        disp_orderreview=True,
                         )
                     ),
                 f.data,
-                excludes={'order_limit', 'max_quantity_per_user'}
+                excludes={'order_limit', 'max_quantity_per_user', 'disp_orderreview'}
                 )
             sales_segment_group.save()
             accessor = SalesSegmentAccessor()
@@ -112,7 +113,7 @@ class SalesSegmentGroups(BaseView):
     def edit_xhr(self):
         sales_segment_group = self.context.sales_segment_group
         form = SalesSegmentGroupForm(obj=sales_segment_group, context=self.context)
-        for k in ['order_limit', 'max_quantity_per_user']:
+        for k in ['order_limit', 'max_quantity_per_user', 'disp_orderreview']:
             getattr(form, k).data = getattr(sales_segment_group.setting, k)
         return {
             'form': form,
@@ -132,9 +133,10 @@ class SalesSegmentGroups(BaseView):
             f.id.data = id_map[self.context.sales_segment_group.id]
             # XXX: なぜこれを取り直す必要が? create_from_template がそのまま実体を返せば済む話では?
             new_sales_segment_group = SalesSegmentGroup.query.filter_by(id=f.id.data).one()
-            new_sales_segment_group = merge_session_with_post(new_sales_segment_group, f.data, excludes={'order_limit', 'max_quantity_per_user'})
+            new_sales_segment_group = merge_session_with_post(new_sales_segment_group, f.data, excludes={'order_limit', 'max_quantity_per_user', 'disp_orderreview'})
             new_sales_segment_group.setting.order_limit = f.order_limit.data
             new_sales_segment_group.setting.max_quantity_per_user = f.max_quantity_per_user.data
+            new_sales_segment_group.setting.disp_orderreview = f.disp_orderreview.data
             new_sales_segment_group.save()
 
             accessor = SalesSegmentAccessor()
@@ -159,11 +161,12 @@ class SalesSegmentGroups(BaseView):
             new_sales_segment_group.sync_member_group_to_children()
             
         else:
-            sales_segment_group = merge_session_with_post(sales_segment_group, f.data, excludes={'order_limit', 'max_quantity_per_user'})
+            sales_segment_group = merge_session_with_post(sales_segment_group, f.data, excludes={'order_limit', 'max_quantity_per_user', 'disp_orderreview'})
             if sales_segment_group.setting is None:
                 sales_segment_group.setting = SalesSegmentGroupSetting()
             sales_segment_group.setting.order_limit = f.order_limit.data
             sales_segment_group.setting.max_quantity_per_user = f.max_quantity_per_user.data
+            sales_segment_group.setting.disp_orderreview = f.disp_orderreview.data
             sales_segment_group.save()
 
             sales_segment_group.sync_member_group_to_children()

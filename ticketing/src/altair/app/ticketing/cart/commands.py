@@ -2,8 +2,9 @@
 import os
 import sys
 import logging
+import argparse
 from datetime import datetime, timedelta
-from pyramid.paster import bootstrap
+from pyramid.paster import bootstrap, setup_logging
 
 import transaction
 from altair.app.ticketing.core import models as o_m
@@ -58,24 +59,25 @@ def join_cart_and_order():
 def release_carts():
     """ 期限切れカートのオーソリをキャンセルする
     """
-
     from . import models as m
-    config_file = sys.argv[1]
-    target_from = sys.argv[3] if len(sys.argv) > 3 else None
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config')
+    args = parser.parse_args()
+
+    setup_logging(args.config)
+    env = bootstrap(args.config)
+
+    target_from = sys.argv[2] if len(sys.argv) > 2 else None
     if target_from:
         target_from = datetime.strptime(target_from, '%Y-%m-%d %H:%M:%S')
-
-    logfile = os.path.abspath(sys.argv[2])
-    logging.config.fileConfig(logfile)
-
-    app_env = bootstrap(config_file)
 
     import sqlahelper
     assert sqlahelper.get_session().bind
     m.DBSession.bind = m.DBSession.bind or sqlahelper.get_session().bind
     
-    request = app_env['request']
-    registry = app_env['registry']
+    request = env['request']
+    registry = env['registry']
     settings = registry.settings
     expire_time = int(settings['altair_cart.expire_time'])
 

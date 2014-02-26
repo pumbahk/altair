@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 
 @implementer(IRakutenOpenID)
 class RakutenOpenID(object):
+    SESSION_KEY = '_%s_session' % __name__
+
     def __init__(self,
             endpoint,
             verify_url,
@@ -46,8 +48,13 @@ class RakutenOpenID(object):
         return Session(request, id=None, **self.session_args)
 
     def get_session(self, request):
-        id = self.get_session_id(request)
-        return id and Session(request, id=id, **self.session_args)
+        session = getattr(request, self.SESSION_KEY, None)
+        if session is None:
+            id = self.get_session_id(request)
+            if id is not None:
+                session = Session(request, id=id, **self.session_args)
+                setattr(request, self.SESSION_KEY, session)
+        return session
 
     def combine_session_id(self, url, session):
         return urljoin(url, '?ak=' + urllib.quote(session.id))

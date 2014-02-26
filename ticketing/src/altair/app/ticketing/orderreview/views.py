@@ -10,7 +10,9 @@ from . import schemas
 from . import api
 from altair.mobile import mobile_view_config
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
+from altair.app.ticketing.core.api import get_organization
 from datetime import datetime
+from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe, multi_unsubscribe
 
 import helpers as h
 from ..users.api import get_user
@@ -19,7 +21,8 @@ from altair.app.ticketing.qr.utils import build_qr_by_history_id
 from altair.app.ticketing.qr.utils import build_qr_by_token_id
 from altair.auth import who_api as get_who_api
 from altair.app.ticketing.fc_auth.api import do_authenticate
-from .api import safe_get_contact_url, is_mypage_organization
+from .api import safe_get_contact_url, is_mypage_organization, is_rakuten_auth_organization
+
 logger = logging.getLogger(__name__)
 
 DBSession = sqlahelper.get_session()
@@ -40,7 +43,11 @@ class MypageView(object):
 
     @mobile_view_config(route_name='mypage.show', request_method="GET", custom_predicates=(is_mypage_organization, ),
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/show_mobile.html"))
+    @mobile_view_config(route_name='mypage.show', request_method="GET", custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/show_mobile.html"))
     @view_config(route_name='mypage.show', request_method="GET", custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/show.html"))
+    @view_config(route_name='mypage.show', request_method="GET", custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/show.html"))
     def show(self):
 
@@ -56,11 +63,75 @@ class MypageView(object):
         orders = self.context.get_orders(user, page, per)
         entries = self.context.get_lots_entries(user, page, per)
 
+        magazines_to_subscribe = None
+        if shipping_address:
+            magazines_to_subscribe = get_magazines_to_subscribe(get_organization(self.request), shipping_address.emails)
+
         return dict(
             shipping_address=shipping_address,
             orders=orders,
             lot_entries=entries,
+            mailmagazines_to_subscribe=magazines_to_subscribe,
             h=h,
+        )
+
+    @mobile_view_config(route_name='mypage.mailmag.confirm', request_method="POST", custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_confirm_mobile.html"))
+    @mobile_view_config(route_name='mypage.mailmag.confirm', request_method="POST", custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_confirm_mobile.html"))
+    @view_config(route_name='mypage.mailmag.confirm', request_method="POST", custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_confirm.html"))
+    @view_config(route_name='mypage.mailmag.confirm', request_method="POST", custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_confirm.html"))
+    def mailmag_confirm(self):
+
+        authenticated_user = self.context.authenticated_user()
+        user = get_user(authenticated_user)
+
+        if not user:
+            raise HTTPNotFound()
+
+        shipping_address = self.context.get_shipping_address(user)
+        magazines_to_subscribe = get_magazines_to_subscribe(get_organization(self.request), shipping_address.emails)
+        subscribe_ids = self.request.params.getall('mailmagazine')
+
+        return dict(
+            mails=shipping_address.emails,
+            mailmagazines_to_subscribe=magazines_to_subscribe,
+            subscribe_ids=subscribe_ids,
+            h=h,
+        )
+
+    @mobile_view_config(route_name='mypage.mailmag.complete', request_method="POST", custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_complete_mobile.html"))
+    @mobile_view_config(route_name='mypage.mailmag.complete', request_method="POST", custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_complete_mobile.html"))
+    @view_config(route_name='mypage.mailmag.complete', request_method="POST", custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_complete.html"))
+    @view_config(route_name='mypage.mailmag.complete', request_method="POST", custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_complete.html"))
+    def mailmag_complete(self):
+
+        authenticated_user = self.context.authenticated_user()
+        user = get_user(authenticated_user)
+
+        if not user:
+            raise HTTPNotFound()
+
+        shipping_address = self.context.get_shipping_address(user)
+        magazines_to_subscribe = get_magazines_to_subscribe(get_organization(self.request), shipping_address.emails)
+        emails = shipping_address.emails
+        subscribe_ids = self.request.params.getall('mailmagazine')
+
+        unsubscribe_ids = []
+        for mailmagazine, subscribed in magazines_to_subscribe:
+            if not str(mailmagazine.id) in subscribe_ids:
+                unsubscribe_ids.append(mailmagazine.id)
+
+        multi_subscribe(user, emails, subscribe_ids)
+        multi_unsubscribe(user, emails, unsubscribe_ids)
+
+        return dict(
         )
 
 class MypageLoginView(object):
@@ -83,8 +154,8 @@ class MypageLoginView(object):
             self.request.override_renderer = self.renderer_tmpl.format(membership=membership)
         """
 
-    @view_config(request_method="GET", route_name='order_review.form'
-        , custom_predicates=(is_mypage_organization, ), renderer='json', http_cache=60)
+    @view_config(request_method="GET", route_name='order_review.form', renderer='json', http_cache=60,
+                 custom_predicates=(is_mypage_organization, ))
     def login_form(self):
         membership = self.context.get_membership().name
         self.select_renderer(membership)
@@ -93,10 +164,11 @@ class MypageLoginView(object):
         form = schemas.OrderReviewSchema(self.request.params)
         return dict(username='', form=form)
 
-    @view_config(request_method="POST", route_name='order_review.form', renderer='string'
-        , custom_predicates=(is_mypage_organization, ))
+    @view_config(request_method="POST", route_name='order_review.form', renderer='string',
+                 custom_predicates=(is_mypage_organization, ))
     def login(self):
         who_api = get_who_api(self.request, name="fc_auth")
+
         membership = self.context.get_membership().name
         username = self.request.params['username']
         password = self.request.params['password']

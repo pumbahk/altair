@@ -299,9 +299,9 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 
 
-    @hybrid_method
     def available_on(self, now):
-        return self.start_at <= now <= self.end_at
+        return ((self.start_at is None) or (self.start_at <= now)) and \
+               ((self.end_at is None) or (now <= self.end_at))
 
     @classmethod
     def has_product(cls, product):
@@ -316,7 +316,6 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def performances(self):
         return list(set([p.performance for p in self.products]))
-
 
     @property
     def start_at(self):
