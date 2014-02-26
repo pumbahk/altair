@@ -788,8 +788,10 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     onChange: function(e) {
       var metadata = "${data_source.get('metadata')|n}"
       venueEditorRoot.data('venueeditor').dataSource.metadata = metadata + '&sales_segment_id=' + $(e.target).val();
-      venueEditorRoot.venueeditor('load');
-      this.presenter.removeGuide();
+      if (venueEditorRoot.venueeditor('model')) {
+        venueEditorRoot.venueeditor('load');
+        this.presenter.removeGuide();
+      }
       getSalesSummary();
     },
     render: function() {
