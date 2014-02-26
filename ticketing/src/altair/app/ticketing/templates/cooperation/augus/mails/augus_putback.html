@@ -1,0 +1,6 @@
+オーガス連携により以下の公演の座席が返券されました。
+
+%for augus_putback in augus_putbacks:
+ - ${augus_putback.augus_performance.augus_event_name}/${augus_putback.augus_performance.augus_performance_name}(会場: ${augus_putback.augus_performance.augus_venue_name}/開演: ${augus_putback.augus_performance.start_on})
+   ${len(augus_putback)} 席 (返券コード: ${augus_putback.augus_putback_code})
+%endfor{
