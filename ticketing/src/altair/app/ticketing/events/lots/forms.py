@@ -161,10 +161,19 @@ class LotForm(Form):
         accessor = SalesSegmentAccessor()
         sales_segment = accessor.create_sales_segment_for_lot(sales_segment_group, lot)
         sales_segment.sales_segment_group_id=self.data['sales_segment_group_id']
-        sales_segment.start_at=self.data['start_at']
+
         sales_segment.use_default_start_at=self.data['use_default_start_at']
-        sales_segment.end_at=self.data['end_at']
+        if sales_segment.use_default_start_at:
+            sales_segment.start_at=sales_segment_group.start_at
+        else:
+            sales_segment.start_at=self.data['start_at']
+
         sales_segment.use_default_end_at=self.data['use_default_end_at']
+        if sales_segment.use_default_end_at:
+            sales_segment.end_at=sales_segment_group.end_at
+        else:
+            sales_segment.end_at=self.data['end_at']
+
         sales_segment.max_quantity=self.data['max_quantity']
         sales_segment.seat_choice=self.data['seat_choice']
         sales_segment.account_id=sales_segment_group.account_id
@@ -176,13 +185,22 @@ class LotForm(Form):
     def update_lot(self, lot):
         sales_segment = lot.sales_segment
         sales_segment.sales_segment_group_id=self.data['sales_segment_group_id']
-        sales_segment.start_at=self.data['start_at']
-        sales_segment.use_default_start_at=self.data['use_default_start_at']
-        sales_segment.end_at=self.data['end_at']
-        sales_segment.use_default_end_at=self.data['use_default_end_at']
         sales_segment.max_quantity=self.data['max_quantity']
         sales_segment.seat_choice=self.data['seat_choice']
         sales_segment.auth3d_notice = self.data['auth3d_notice']
+
+        sales_segment_group = sales_segment.sales_segment_group
+        sales_segment.use_default_start_at=self.data['use_default_start_at']
+        if sales_segment.use_default_start_at:
+            sales_segment.start_at=sales_segment_group.start_at
+        else:
+            sales_segment.start_at=self.data['start_at']
+
+        sales_segment.use_default_end_at=self.data['use_default_end_at']
+        if sales_segment.use_default_end_at:
+            sales_segment.end_at=sales_segment_group.end_at
+        else:
+            sales_segment.end_at=self.data['end_at']
 
         lot.name=self.data['name']
         lot.limit_wishes=self.data['limit_wishes']
