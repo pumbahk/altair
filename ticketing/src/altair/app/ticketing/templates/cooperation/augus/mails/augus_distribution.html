@@ -1,0 +1,35 @@
+%if successes:
+配席完了
+===============
+
+オーガス連携により以下の公演の座席が配席されました。
+
+%for augus_distribution in successes:
+ - ${augus_distribution.augus_event_name}/${augus_distribution.augus_performance_name}(会場: ${augus_distribution.augus_venue_name}/開演: ${augus_distribution.start_on}) ${len(augus_distribution)} 席
+%endfor
+%endif
+
+%if errors:
+配席エラー
+===============
+
+以下の公演の座席がを配席しようとしましたが、
+不正な座席が含まれていたためオーガス側にエラーを通知しました。
+
+%for augus_distribution in errors:
+ - ${augus_distribution.augus_event_name}/${augus_distribution.augus_performance_name}(会場: ${augus_distribution.augus_venue_name}/開演: ${augus_distribution.start_on})
+%endfor
+%endif
+
+%if not_yets:
+未連携
+===============
+
+以下の公演の座席がを配席しようとしましたが未連携であったため失敗しました。
+これらは次回取り込み時に再度取り込み処理をおこないますので、
+それまでに各種連携設定をお願いします。
+
+%for augus_distribution in not_yets:
+ - ${augus_distribution.augus_event_name}/${augus_distribution.augus_performance_name} (会場: ${augus_distribution.augus_venue_name}/開演: ${augus_distribution.start_on}) ${augus_distribution.augus_distribution_code}
+%endfor{
+%endif
