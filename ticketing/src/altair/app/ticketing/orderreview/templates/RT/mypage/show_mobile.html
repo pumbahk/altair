@@ -68,7 +68,7 @@ ${render_pager(orders)}
   % for entry in lot_entries:
 受付番号：
 ${entry.entry_no}<br/>
-予約日時：
+申込日時：
 ${h.japanese_datetime(entry.created_at)}<br/>
 ステータス：
 ${h.get_entry_status(entry)}<br/>

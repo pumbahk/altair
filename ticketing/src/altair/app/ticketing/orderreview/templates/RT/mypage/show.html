@@ -63,7 +63,7 @@ ${render_mailmagazine(request)}
             <input type="hidden" name="entry_no" value="${entry.entry_no}"/>
             <input type="hidden" name="tel_no" value="${entry.shipping_address.tel_1}"/>
             <dt><a href="javascript:void(0);" onclick="document.${entry.entry_no}.submit()">${entry.lot.name}</a></dt>
-            <dd>受付番号：${entry.entry_no}　予約日時：${h.japanese_datetime(entry.created_at)}</dd>
+            <dd>受付番号：${entry.entry_no}　申込日時：${h.japanese_datetime(entry.created_at)}</dd>
           </form>
         </dl>
       </div>
