@@ -62,6 +62,11 @@ namespace QR.presentation.gui.page
             var ctx = this.DataContext as AuthInputDataContext;
             await ctx.PrepareAsync().ConfigureAwait(true);
             this.KeyPad.Text = (ctx.Case as CaseAuthInput).LoginName;
+            //xxx: display error dialog
+            if (ctx.ErrorMessage != String.Empty)
+            {
+                this.ErrorDialog.Show();
+            }
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)

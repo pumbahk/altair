@@ -70,19 +70,27 @@ namespace QR
 
     public class SVGFetcherForAll
     {
-        public static async Task<string> GetSvgDataList (IHttpWrapperFactory<HttpWrapper> factory, TicketDataCollection collection, string url)
+        public static async Task<Stream> GetSvgDataList (IHttpWrapperFactory<HttpWrapper> factory, TicketDataCollection collection, string url)
         {
-            var parms = new {
-                token_id_list = collection.collection.Where(o => o.is_selected).Select (o => o.ordered_product_item_token_id).ToArray (),
-                secret = collection.secret
-            };
-
-            using (var wrapper = factory.Create(url))
+            using (new TimeIt("      All"))
             {
-                HttpResponseMessage response = await wrapper.PostAsJsonAsync(parms).ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
-                return (await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait(false));
-
+                var parms = new
+                {
+                    token_id_list = collection.collection.Where(o => o.is_selected).Select(o => o.ordered_product_item_token_id).ToArray(),
+                    secret = collection.secret
+                };
+                using (new TimeIt("        Get and Read"))
+                {
+                    using (var wrapper = factory.Create(url))
+                    {
+                        HttpResponseMessage response = await wrapper.PostAsJsonAsync(parms).ConfigureAwait(false);
+                        response.EnsureSuccessStatusCode();
+                        using (new TimeIt("          Read"))
+                        {
+                            return (await wrapper.(response.Content.ReadAsStreamAsync()).ConfigureAwait(false));
+                        }
+                    }
+                }
             }
         }
 

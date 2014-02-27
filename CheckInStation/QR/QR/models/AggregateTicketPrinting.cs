@@ -34,9 +34,12 @@ using NLog;
             {
                 try
                 {
-                    var status = await printing.EnqueuePrinting(imgdata, subject).ConfigureAwait(true);
-                    subject.PrintFinished(); //印刷枚数インクリメント
-                    this.pushedRequestCollector.Add(Tuple.Create(imgdata.token_id, imgdata.ticket_id), status);
+                    using (new TimeIt(String.Format("    {0}@Enqueue", this.GetType())))
+                    {
+                        var status = await printing.EnqueuePrinting(imgdata, subject).ConfigureAwait(true);
+                        subject.PrintFinished(); //印刷枚数インクリメント
+                        this.pushedRequestCollector.Add(Tuple.Create(imgdata.token_id, imgdata.ticket_id), status);
+                    }
                 }
                 catch (Exception ex)
                 {

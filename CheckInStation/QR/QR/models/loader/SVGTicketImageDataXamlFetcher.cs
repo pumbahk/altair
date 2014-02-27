@@ -61,22 +61,42 @@ namespace QR
             }
         }
 
-        public async Task<ResultTuple<string, List<TicketImageData>>>FetchImageDataForAllAsync (TicketDataCollection collection)
+        public async Task<ResultTuple<string, List<TicketImageData>>> FetchImageDataForAllAsync(TicketDataCollection collection)
         {
-            try {
-                var response = await SVGFetcherForAll.GetSvgDataList (Resource.HttpWrapperFactory, collection, GetSvgAllURL ()).ConfigureAwait (false);
-                var svg_list = SVGFetcherForAll.ParseSvgDataList (response);
-                var r = new List<TicketImageData> ();
-                foreach (SVGData svgdata in svg_list) {
-                    r.Add (TicketImageData.XamlTicketData(svgdata.token_id, svgdata.template.id, svgdata.svg));
+            string response;
+            IEnumerable<SVGData> svg_list;
+
+            try
+            {
+                using (new TimeIt(String.Format("    {0}@FetchImageDataForAllAsync@GetSvgDataList", this.GetType())))
+                {
+                    response = await SVGFetcherForAll.GetSvgDataList(Resource.HttpWrapperFactory, collection, GetSvgAllURL()).ConfigureAwait(false);
                 }
-                return new Success<string,List<TicketImageData>> (r);
-            } catch (System.Xml.XmlException e) {
-                logger.ErrorException (":", e);
-                return new Failure<string,List<TicketImageData>> (Resource.GetInvalidOutputMessage ());
-            } catch (Exception e) {
-                logger.ErrorException (":", e);
-                return new Failure<string, List<TicketImageData>> (Resource.GetDefaultErrorMessage ());
+
+                using (new TimeIt(String.Format("    {0}@FetchImageDataForAllAsync@ParseSVGDataList", this.GetType())))
+                {
+                    svg_list = SVGFetcherForAll.ParseSvgDataList(response);
+                }
+
+                using (new TimeIt(String.Format("    {0}@FetchImageDataForAllAsync@ConvertSVGDataList", this.GetType())))
+                {
+                    var r = new List<TicketImageData>();
+                    foreach (SVGData svgdata in svg_list)
+                    {
+                        r.Add(TicketImageData.XamlTicketData(svgdata.token_id, svgdata.template.id, svgdata.svg));
+                    }
+                    return new Success<string, List<TicketImageData>>(r);
+                }
+            }
+            catch (System.Xml.XmlException e)
+            {
+                logger.ErrorException(":", e);
+                return new Failure<string, List<TicketImageData>>(Resource.GetInvalidOutputMessage());
+            }
+            catch (Exception e)
+            {
+                logger.ErrorException(":", e);
+                return new Failure<string, List<TicketImageData>>(Resource.GetDefaultErrorMessage());
             }
         }
 
