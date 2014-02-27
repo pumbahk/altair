@@ -17,6 +17,16 @@
     <Setter Property="Background" Value="{StaticResource Grayout_CurrentSelectionBoxColor}" />
   </Style>
 
+    <Style x:Key="GrayoutIfNeedToggleButton" TargetType="ToggleButton" BasedOn="{StaticResource MyToggleButtonStyle}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsSelected, Mode=OneTime}" Value="False">
+                <Setter Property="IsEnabled" Value="False"/>
+                <Setter Property="IsChecked" Value="False"/>
+            </DataTrigger>
+        </Style.Triggers>
+        <Setter Property="IsChecked" Value="True"/>
+    </Style>
+    
   <Style x:Key="GrayoutIfNeedCheckBox" TargetType="CheckBox" BasedOn="{StaticResource MyCheckBoxStyle}">
     <Style.Triggers>
       <DataTrigger Binding="{Binding IsSelected, Mode=OneTime}" Value="False">

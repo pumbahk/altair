@@ -9,6 +9,7 @@
 	<ResourceDictionary Source="./Controls.MetroButton.xaml" />
 	<ResourceDictionary Source="./Controls.SubmitButton.xaml" />
     <ResourceDictionary Source="./Controls.Checkbox.xaml" />
+    <ResourceDictionary Source="./Controls.ToggleButton.xaml" />
     <ResourceDictionary Source="./Controls.MenuButton.xaml" />
     <ResourceDictionary Source="./Controls.ConfirmAllMainSection.xaml" />
     <ResourceDictionary Source="./Resources.Image.xaml"/>

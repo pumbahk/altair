@@ -102,10 +102,10 @@
                         Canvas.Top="148"
                         Style="{StaticResource MainBorder}">
                         <ListView 
-                    Margin="40,20,0,20"
+                    Margin="50,50,-10,-10"
                     ItemsSource="{Binding DisplayTicketDataCollection}"
                     d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
-                    Style="{StaticResource ChoiceCandidatesTwoColumns}">
+                    Style="{StaticResource ChoiceCandidatesTwoColumns}" >
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <WrapPanel Width="1200" Orientation="Horizontal">

@@ -8,6 +8,7 @@
         <ResourceDictionary Source="./Controls.SubmitButton.xaml" />
         <ResourceDictionary Source="./Controls.MessageDialog.xaml"/>
         <ResourceDictionary Source="../Base/Styles.xaml"/>
+        <ResourceDictionary Source="./Controls.ToggleButton.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>
     
