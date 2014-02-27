@@ -48,6 +48,13 @@ namespace QR
             return result;
         }
 
+        public Task<Stream> ReadAsStreamAsync(HttpContent content)
+        {
+            //todo. remove await;
+            return content.ReadAsStreamAsync();
+        }
+
+
         protected HttpClient client;
 
         public Func<HttpClient> ClientFactory { get; set; }

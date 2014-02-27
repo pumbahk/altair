@@ -4,6 +4,7 @@ using System.Net.Http;
 using Codeplex.Data;
 using QR.message;
 using NLog;
+using System.IO;
 
 namespace QR
 {
@@ -38,15 +39,15 @@ namespace QR
                 var qrdata = new QRRequest() { qrsigned = qrcode };
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(qrdata).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
-                return Parse(await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait(false));
+                return Parse(await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false));
             }
 
         }
 
-        public ResultTuple<string, TicketData> Parse (string responseString)
+        public ResultTuple<string, TicketData> Parse (Stream response)
         {
             try {
-                var json = DynamicJson.Parse (responseString);
+                var json = DynamicJson.Parse (response);
                 return new Success<string, TicketData> (new TicketData (json));
             } catch (System.Xml.XmlException e) {
                 logger.ErrorException (":", e);

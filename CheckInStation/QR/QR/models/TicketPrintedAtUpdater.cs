@@ -31,7 +31,7 @@ namespace QR
             {
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
-                await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait(false);
+                await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false);
                 return true;
             }
         }

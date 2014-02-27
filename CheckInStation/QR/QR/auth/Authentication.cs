@@ -59,7 +59,7 @@ namespace QR
 
 
                 // endpointの取得
-                var result = DynamicJson.Parse(await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait(false));
+                var result = DynamicJson.Parse(await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false));
                 var endpoint = new EndPoint(result.endpoint);
 
                 //広告用の画像のurl設定

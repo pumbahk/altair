@@ -63,7 +63,7 @@ namespace QR
 
         public async Task<ResultTuple<string, List<TicketImageData>>> FetchImageDataForAllAsync(TicketDataCollection collection)
         {
-            string response;
+            Stream response;
             IEnumerable<SVGData> svg_list;
 
             try

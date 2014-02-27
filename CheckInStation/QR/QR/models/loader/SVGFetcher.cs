@@ -36,7 +36,7 @@ namespace QR
 
     public class SVGFetcherForOne
     {
-        public static async Task<string> GetSvgDataList (IHttpWrapperFactory<HttpWrapper> factory, TicketData tdata, string url)
+        public static async Task<Stream> GetSvgDataList (IHttpWrapperFactory<HttpWrapper> factory, TicketData tdata, string url)
         {
             var data = new {
                 ordered_product_item_token_id = tdata.ordered_product_item_token_id,
@@ -47,11 +47,11 @@ namespace QR
             {
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
-                return (await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait(false));
+                return (await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false));
             }
         }
 
-        public static IEnumerable<SVGData> ParseSvgDataList (string response)
+        public static IEnumerable<SVGData> ParseSvgDataList (Stream response)
         {
             var json = DynamicJson.Parse (response); //throwable System.xml.XmlException
             var r = new List<SVGData> ();
@@ -87,14 +87,14 @@ namespace QR
                         response.EnsureSuccessStatusCode();
                         using (new TimeIt("          Read"))
                         {
-                            return (await wrapper.(response.Content.ReadAsStreamAsync()).ConfigureAwait(false));
+                            return (await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false));
                         }
                     }
                 }
             }
         }
 
-        public static IEnumerable<SVGData> ParseSvgDataList (string response)
+        public static IEnumerable<SVGData> ParseSvgDataList (Stream response)
         {
             var json = DynamicJson.Parse (response); //throwable System.xml.XmlException
             var r = new List<SVGData> ();

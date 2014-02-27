@@ -4,6 +4,7 @@ using QR.message;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Codeplex.Data;
+using System.IO;
 
 namespace QR
 {
@@ -30,15 +31,15 @@ namespace QR
             {
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(requestData).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
-                return Parse(await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait(false));
+                return Parse(await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false));
 
             }
         }
 
-        public ResultTuple<string, VerifiedOrdernoRequestData> Parse (string responseString)
+        public ResultTuple<string, VerifiedOrdernoRequestData> Parse (Stream response)
         {
             try {
-                var json = DynamicJson.Parse (responseString);
+                var json = DynamicJson.Parse (response);
                 return new Success<string, VerifiedOrdernoRequestData> (new VerifiedOrdernoRequestData(json));
             } catch (System.Xml.XmlException e) {
                 logger.ErrorException (":", e);
