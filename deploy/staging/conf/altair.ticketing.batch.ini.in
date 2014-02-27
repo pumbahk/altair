@@ -8,12 +8,8 @@ cache.type = ${altair:beaker_backend_type}
 ; altair.httpsession
 altair.httpsession.persistence.type = ${altair:beaker_backend_type}
 
-# augus
-augus_consumer_id = 1000001
-rt_staging = /tmp/augus/toRT/staging
-rt_pending = /tmp/augus/toRT/pending
-ko_staging = /tmp/augus/toKO/staging
-ko_pending = /tmp/augus/toKO/pending
+; augus
+mail.augus.recipient = dev@ticketstar.jp
 
 [loggers]
 keys = root, ticketing
