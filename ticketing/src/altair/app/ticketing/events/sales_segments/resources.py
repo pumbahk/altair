@@ -244,11 +244,8 @@ class SalesSegmentAccessor(object):
 
     def attr_get_default(self, sales_segment_group, performance, name):
         getter = self.attributes[name].get('getter')
-        if getter is not None:
-            if performance is not None:
-                return getter(sales_segment_group, performance)
-            else:
-                return None
+        if getter is not None and performance is not None:
+            return getter(sales_segment_group, performance)
         else:
             return self.attr_get(sales_segment_group, name)
 
