@@ -5,6 +5,7 @@ from datetime import datetime
 
 from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, TextAreaField
+from wtforms.widgets import CheckboxInput
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
 
@@ -13,6 +14,7 @@ from altair.formhelpers import (
     after1900, CheckboxMultipleSelect, BugFreeSelectMultipleField,
     NFKC, Zenkaku, Katakana, strip_spaces, ignore_space_hyphen,
     LazySelectMultipleField,
+    OurBooleanField,
 )
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator
@@ -107,11 +109,21 @@ class LotForm(Form):
         ],
     )
 
+    use_default_start_at = OurBooleanField(
+        label=u'グループの値を利用',
+        widget=CheckboxInput()
+    )
+
     end_at = DateTimeField(
         label=u"販売終了",
         validators=[
             Required(),
         ],
+    )
+
+    use_default_end_at = OurBooleanField(
+        label=u'グループの値を利用',
+        widget=CheckboxInput()
     )
 
     max_quantity = IntegerField(
@@ -150,7 +162,9 @@ class LotForm(Form):
         sales_segment = accessor.create_sales_segment_for_lot(sales_segment_group, lot)
         sales_segment.sales_segment_group_id=self.data['sales_segment_group_id']
         sales_segment.start_at=self.data['start_at']
+        sales_segment.use_default_start_at=self.data['use_default_start_at']
         sales_segment.end_at=self.data['end_at']
+        sales_segment.use_default_end_at=self.data['use_default_end_at']
         sales_segment.max_quantity=self.data['max_quantity']
         sales_segment.seat_choice=self.data['seat_choice']
         sales_segment.account_id=sales_segment_group.account_id
@@ -163,7 +177,9 @@ class LotForm(Form):
         sales_segment = lot.sales_segment
         sales_segment.sales_segment_group_id=self.data['sales_segment_group_id']
         sales_segment.start_at=self.data['start_at']
+        sales_segment.use_default_start_at=self.data['use_default_start_at']
         sales_segment.end_at=self.data['end_at']
+        sales_segment.use_default_end_at=self.data['use_default_end_at']
         sales_segment.max_quantity=self.data['max_quantity']
         sales_segment.seat_choice=self.data['seat_choice']
         sales_segment.auth3d_notice = self.data['auth3d_notice']

@@ -91,7 +91,7 @@ Lot_SalesSegment = sa.Table(
 
 class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Lot'
-    
+
     id = sa.Column(Identifier, primary_key=True)
     name = sa.Column(sa.String(255))
 
@@ -100,7 +100,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_id = sa.Column(Identifier, sa.ForeignKey('Event.id'))
     event = orm.relationship('Event', backref='lots')
 
-    # performances = orm.relationship('Performance', 
+    # performances = orm.relationship('Performance',
     #     secondary=Lot_Performance)
 
     # TODO: 席種が必要か確認（商品から辿れるはず）
@@ -214,7 +214,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def start_lotting(self):
         logger.info("start lotting lot id={lot.id}".format(lot=self))
         self.status = int(LotStatusEnum.Lotting)
-        
+
 
     def start_electing(self):
         logger.info("start electing lot id={lot.id}".format(lot=self))
@@ -324,10 +324,22 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.sales_segment.start_at
 
     @property
+    def use_default_start_at(self):
+        if self.sales_segment is None:
+            return None
+        return self.sales_segment.use_default_start_at
+
+    @property
     def end_at(self):
         if self.sales_segment is None:
             return None
         return self.sales_segment.end_at
+
+    @property
+    def use_default_end_at(self):
+        if self.sales_segment is None:
+            return None
+        return self.sales_segment.use_default_end_at
 
     @property
     def sales_segment_group(self):
@@ -352,7 +364,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if self.sales_segment is None:
             return None
         return self.sales_segment.seat_choice
-    
+
     @property
     def auth3d_notice(self):
         if self.sales_segment is None:
@@ -387,9 +399,9 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 @implementer(IPurchase)
 class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """ 抽選申し込み """
-    
+
     __tablename__ = 'LotEntry'
-    
+
     id = sa.Column(Identifier, primary_key=True)
 
     entry_no = sa.Column(sa.Unicode(20), unique=True, doc=u"抽選申し込み番号")
@@ -429,7 +441,7 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @order_no.setter
     def order_no(self, value):
-        self.entry_no = value 
+        self.entry_no = value
 
     #xxx: for order
     @property
@@ -479,7 +491,7 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return None
         return self.order.special_fee_name
 
-        
+
     @property
     def transaction_fee(self):
         if self.order is None:
@@ -532,7 +544,7 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return retval
 
     @hybrid_property
-    def is_elected(self):   
+    def is_elected(self):
         return self.elected_at != None and self.rejected_at == None
 
     @hybrid_property
@@ -661,7 +673,7 @@ class TemporaryLotEntryWish(LotEntryWishSupport):
         self.lot_entry = TemporaryLotEntry(payment_delivery_method_pair, sales_segment)
         self.products = []
 
-    
+
 class LotEntryWish(LotEntryWishSupport, Base, BaseModel, WithTimestamp, LogicallyDeleted):
     u""" 抽選申し込み希望 """
     __tablename__ = 'LotEntryWish'
@@ -758,7 +770,7 @@ class LotEntryWish(LotEntryWishSupport, Base, BaseModel, WithTimestamp, Logicall
 class LotEntryProduct(LotEntryProductSupport, Base, BaseModel, WithTimestamp, LogicallyDeleted):
     u""" 抽選申し込み商品 """
     __tablename__ = 'LotEntryProduct'
-    
+
     id = sa.Column(Identifier, primary_key=True)
     quantity = sa.Column(sa.Integer, doc=u"購入予定枚数")
 
