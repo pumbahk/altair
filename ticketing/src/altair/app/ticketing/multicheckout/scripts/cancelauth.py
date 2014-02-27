@@ -37,7 +37,7 @@ def sync_data(request, statuses):
         if inquiry.CmnErrorCd == '001407':  # 取引詳細操作不可
             m.MultiCheckoutOrderStatus.set_status(
                 inquiry.OrderNo,
-                inquiry.Storecd, -10,
+                inquiry.Storecd, u"-10",
                 u"by cancel auth batch")
         elif (inquiry.CmnErrorCd == '000000'
               and inquiry.Status
