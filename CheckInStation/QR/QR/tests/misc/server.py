@@ -17,6 +17,12 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         logging.info(self.headers)
+	import random
+	N = random.random()
+	print(N)
+	if N > 0.5:
+	    print("error")
+	    return
         SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
     def do_POST(self):
@@ -31,7 +37,7 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         #              })
         # for item in form.list:
         #     logging.error(item)
-        SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+	self.do_GET()
         print("body:")
         print(self.rfile.read())
 
