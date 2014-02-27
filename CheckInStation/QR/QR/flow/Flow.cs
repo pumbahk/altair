@@ -11,6 +11,23 @@ namespace QR
         verified
     }
 
+    public class TimeIt : IDisposable{
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+        public System.Diagnostics.Stopwatch Stopwatch {get; set;}
+        public string Prefix { get; set; }
+
+        public TimeIt(string prefix)
+        {
+            this.Prefix = prefix;
+            this.Stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        }
+        public void Dispose()
+        {
+            this.Stopwatch.Stop();
+            logger.Info("TimeIt: -- {0} -- ({1})", this.Prefix, this.Stopwatch.Elapsed);
+        }
+    }
+
     public class Flow : IFlow
     {
         public ICase Case { get; set; }
@@ -41,20 +58,28 @@ namespace QR
                 await PrepareAsync().ConfigureAwait(false);
             }
 
-            var status = await Case.VerifyAsync ();
-            var evStatus = status ? InternalEventStaus.success : InternalEventStaus.failure;
-            Manager.GetInternalEvent ().Status = evStatus;
+            {
+                bool status;
+                using (new TimeIt(String.Format("{0}@VerifyAsync", this.Case.GetType())))
+                {
+                    status = await Case.VerifyAsync();
+                }
+                var evStatus = status ? InternalEventStaus.success : InternalEventStaus.failure;
+                Manager.GetInternalEvent().Status = evStatus;
 
-            this.ChangeState (FlowState.verified);
-            this.verifyResult = status;
-            return status;
+                this.ChangeState(FlowState.verified);
+                this.verifyResult = status;
+                return status;
+            }
         }
 
-        public virtual Task PrepareAsync ()
+        public async virtual Task PrepareAsync ()
         {
-            var r = Case.PrepareAsync (Manager.GetInternalEvent ());
+            using (new TimeIt(String.Format("{0}@PrepareAsync", this.Case.GetType())))
+            {
+                await Case.PrepareAsync(Manager.GetInternalEvent());
+            }
             this.ChangeState (FlowState.prepared);
-            return r;
         }
 
         public IFlowDefinition GetFlowDefinition ()
