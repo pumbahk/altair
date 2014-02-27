@@ -2,13 +2,6 @@
                     xmlns:c="clr-namespace:QR.presentation.gui.control"
 					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-  <Style TargetType="c:KeyPad" x:Key="UserKeyPad">
-    <Setter Property="Width" Value="546"/>
-    <!--0.4-->
-    <Setter Property="Height" Value="460"></Setter>
-    <!-- 0.6-->
-  </Style>
-
     <LinearGradientBrush x:Key="InputFollowBrush">
         <GradientStop Color="lightGray" Offset="1.0"/>
         <GradientStop Color="Gray" Offset="0.9"/>

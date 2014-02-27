@@ -15,14 +15,6 @@
             <converter:MathConverter x:Key="MathConverter"/>
             <converter:NotEmptyStringConverter x:Key="NotEmptyStringConverter"/>
             
-            <!-- virtual keyboard-->
-            <c:KeyPadPopupContext x:Key="KeyPadContextPassword" PreviewType="password"/>
-            <c:KeyPadPopupContext x:Key="KeyPadContextRaw" PreviewType="raw"/>
-
-            <c:AlnumPad x:Key="VirtualInputKeyboard"/>           
-            <c:TelPad x:Key="VirtualTelKeyboard"/>
-
-
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Styles\Base\Themes.Text.xaml" />
                 <ResourceDictionary Source="Styles\Base\Themes.Window.xaml" />

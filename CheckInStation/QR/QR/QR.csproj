@@ -138,9 +138,6 @@
     <Compile Include="presentation\gui\control\InspectCase.xaml.cs">
       <DependentUpon>InspectCase.xaml</DependentUpon>
     </Compile>
-    <Compile Include="presentation\gui\control\KeyPad.xaml.cs">
-      <DependentUpon>KeyPad.xaml</DependentUpon>
-    </Compile>
     <Compile Include="presentation\gui\control\AlnumPad.cs" />
     <Compile Include="presentation\gui\control\MessageDialog.xaml.cs">
       <DependentUpon>MessageDialog.xaml</DependentUpon>
@@ -343,10 +340,6 @@
       <SubType>Designer</SubType>
     </DesignData>
     <Page Include="presentation\gui\control\InspectCase.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="presentation\gui\control\KeyPad.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

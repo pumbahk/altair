@@ -18,12 +18,6 @@
             </Grid.RowDefinitions>
             <c:InspectCase Grid.Row="0"></c:InspectCase>
             <StackPanel Grid.Row="1">
-                <c:KeyPad KeyPadFinish="KeyPad_KeyPadFinish" Style="{StaticResource UserKeyPad}">
-                    <c:KeyPad.DataContext>
-                        <c:KeyPadPopupContext/>
-                    </c:KeyPad.DataContext>
-                    <c:TelPad></c:TelPad>
-                </c:KeyPad>
             </StackPanel>
             <StackPanel Grid.Row="2">
                 <Button>進む</Button>
