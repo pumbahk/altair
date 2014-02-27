@@ -43,34 +43,49 @@ class secure3d_acs_form_Tests(unittest.TestCase):
         )
 
 
-class get_multicheckout_service_Tests(unittest.TestCase):
+class get_multicheckout_impl_Tests(unittest.TestCase):
     def setUp(self):
-        self.config = testing.setUp()
-        #self.session = _setup_db()
-
-        #from altair.app.ticketing.core.models import Organization, Host
-        #organization = Organization(id=1, name=u'organization_name', short_name=u'org')
-        #self.session.add(organization)
-
-        #host = Host(host_name=u'example.com', organization_id=1)
-        #self.session.add(host)
-
-        #self.session.flush()
+        self.config = testing.setUp(settings={
+            u'altair.multicheckout.endpoint.base_url': u'http://example.com/api/',
+            u'altair.multicheckout.endpoint.timeout': '90',
+            })
+        self.config.include('altair.multicheckout.setup_components')
 
     def tearDown(self):
         testing.tearDown()
         #_teardown_db()
 
     def _callFUT(self, request, *args, **kwargs):
-        settings = {
-            u'altair_checkout3d.base_url': u'http://example.com/api/',
-            u'altair_checkout3d.timeout': '90',
-        }
-        self.config.registry.settings.update(settings)
-        request.config = self.config
-        request.altair_checkout3d_override_shop_name = u'SHOP'
+        return api.get_multicheckout_impl(request, *args, **kwargs)
 
-        return api.get_multicheckout_service(request)
+    def test_deprecated(self):
+        import warnings
+        from ..interfaces import IMulticheckoutSettingFactory
+        dummy_setting = testing.DummyResource(
+            shop_name=u'DEPRECATED',
+            shop_id=1,
+            auth_id=u'DEPRECATED:AUTHID',
+            auth_password=u'DEPRECATED:AUTHPASS',
+            )
+        self.config.registry.registerUtility(
+            lambda request, name: dummy_setting,
+            IMulticheckoutSettingFactory,
+            )
+        request = testing.DummyRequest()
+        request.altair_checkout3d_override_shop_name = u'DEPRECATED'
+        with warnings.catch_warnings(record=True) as w:
+            warnings.filterwarnings('always')
+            impl = self._callFUT(request)
+        self.assertEqual(len(w), 1)
+        self.assertTrue(issubclass(w[0].category, DeprecationWarning))
+
+        self.assertEqual(impl.shop_code, 1)
+        self.assertEqual(impl.auth_id, u'DEPRECATED:AUTHID')
+        self.assertEqual(impl.auth_password, u'DEPRECATED:AUTHPASS')
+        self.assertEqual(impl.api_base_url, u'http://example.com/api/')
+
+        with self.assertRaises(Exception):
+            self._callFUT(request, 'OOPS!')
 
     def test_it(self):
         from ..interfaces import IMulticheckoutSettingFactory
@@ -85,32 +100,60 @@ class get_multicheckout_service_Tests(unittest.TestCase):
             IMulticheckoutSettingFactory,
             )
         request = testing.DummyRequest()
-        service = self._callFUT(request)
+        impl = self._callFUT(request)
 
-        self.assertEqual(service.shop_code, 1)
-        self.assertEqual(service.auth_id, u'AUTHID')
-        self.assertEqual(service.auth_password, u'AUTHPASS')
-        self.assertEqual(service.api_base_url, u'http://example.com/api/')
+        self.assertEqual(impl.shop_code, 1)
+        self.assertEqual(impl.auth_id, u'AUTHID')
+        self.assertEqual(impl.auth_password, u'AUTHPASS')
+        self.assertEqual(impl.api_base_url, u'http://example.com/api/')
 
 
-class get_pares_Tests(unittest.TestCase):
-    def test_it(self):
+class Multicheckout3DAPITests(unittest.TestCase):
+    def _getDummyImpl(self):
+        from ..testing import DummyCheckout3D
+        return DummyCheckout3D()
+
+    def _getDummySession(self):
+        import mock
+        return mock.Mock()
+
+    def _getTarget(self):
+        return api.Multicheckout3DAPI
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_get_pares(self):
         request = testing.DummyRequest()
         request.params = dict(PaRes='test_paras')
-        self.assertEqual(api.get_pares(request), 'test_paras')
+        multicheckout_3d_api = self._makeOne(request, self._getDummyImpl(), self._getDummySession())
+        self.assertEqual(multicheckout_3d_api.get_pares(), 'test_paras')
 
-
-class get_md_Tests(unittest.TestCase):
-    def test_it(self):
+    def test_get_md(self):
         request = testing.DummyRequest()
         request.params = dict(MD='test_md')
-        self.assertEqual(api.get_md(request), 'test_md')
+        multicheckout_3d_api = self._makeOne(request, self._getDummyImpl(), self._getDummySession())
+        self.assertEqual(multicheckout_3d_api.get_md(), 'test_md')
 
+    def test_is_enable_secure_3d(self):
+        request = testing.DummyRequest()
+        multicheckout_3d_api = self._makeOne(request, self._getDummyImpl(), self._getDummySession())
+        self.assertFalse(multicheckout_3d_api.is_enable_secure3d(''))
+        self.assertFalse(multicheckout_3d_api.is_enable_secure3d('123456789012345'))
+        self.assertTrue(multicheckout_3d_api.is_enable_secure3d('1234567890123456'))
+        self.assertFalse(multicheckout_3d_api.is_enable_secure3d('12345678901234567'))
 
 class sanitize_card_number_Tests(unittest.TestCase):
+    def _getTarget(self):
+        from ..util import sanitize_card_number
+        return sanitize_card_number
+
+    def _callFUT(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
     def test_no_parameter(self):
         xml_data = None
-        self.assertEqual(api.sanitize_card_number(xml_data), None)
+        self.assertEqual(self._callFUT(xml_data), None)
 
     def test_secure_code(self):
         xml_data = '''
@@ -163,7 +206,7 @@ class sanitize_card_number_Tests(unittest.TestCase):
             </Auth>
         </Message>
         '''
-        self.assertTrue(compare_xml(api.sanitize_card_number(xml_data), result))
+        self.assertTrue(compare_xml(self._callFUT(xml_data), result))
 
     def test_enrol(self):
         xml_data = '''
@@ -184,7 +227,7 @@ class sanitize_card_number_Tests(unittest.TestCase):
             <Currency>392</Currency>
         </Message>
         '''
-        self.assertTrue(compare_xml(api.sanitize_card_number(xml_data), result))
+        self.assertTrue(compare_xml(self._callFUT(xml_data), result))
 
     def test_secure3d(self):
         xml_data = '''
@@ -255,27 +298,42 @@ class sanitize_card_number_Tests(unittest.TestCase):
             </Auth>
         </Message>
         '''
-        self.assertTrue(compare_xml(api.sanitize_card_number(xml_data), result))
+        self.assertTrue(compare_xml(self._callFUT(xml_data), result))
 
 
-class is_enable_secure3d_Tests(unittest.TestCase):
-    def test_it(self):
-        request = testing.DummyRequest()
-        self.assertFalse(api.is_enable_secure3d(request, ''))
-        self.assertFalse(api.is_enable_secure3d(request, '123456789012345'))
-        self.assertTrue(api.is_enable_secure3d(request, '1234567890123456'))
-        self.assertFalse(api.is_enable_secure3d(request, '12345678901234567'))
+class DummyResponseFactory(object):
+    def create_multicheckout_response_card(self):
+        from .. import models as m
+        return m.MultiCheckoutResponseCard()
+
+    def create_multicheckout_inquiry_response_card(self):
+        from .. import models as m
+        return m.MultiCheckoutInquiryResponseCard()
+
+    def create_multicheckout_inquiry_response_card_history(self):
+        from .. import models as m
+        return m.MultiCheckoutInquiryResponseCardHistory()
+
+    def create_secure3d_req_enrol_response(self):
+        from .. import models as m
+        return m.Secure3DReqEnrolResponse()
+
+    def create_secure3d_auth_response(self):
+        from .. import models as m
+        return m.Secure3DAuthResponse()
 
 
 class Checkout3DTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
+        self.dummy_response_factory = DummyResponseFactory()
 
     def tearDown(self):
         testing.tearDown()
 
     def _getTarget(self):
-        return api.Checkout3D
+        from .. import impl
+        return impl.Checkout3D
 
     def _makeOne(self, *args, **kwargs):
         # quick hack
@@ -574,7 +632,7 @@ class Checkout3DTests(unittest.TestCase):
         target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
 
         el = etree.XML(xml_data)
-        result = target._parse_response_card_xml(el)
+        result = target._parse_response_card_xml(self.dummy_response_factory, el)
 
         self.assertEqual(result.__class__, models.MultiCheckoutResponseCard)
         self.assertEqual(result.BizClassCd, "AA")
@@ -638,7 +696,7 @@ class Checkout3DTests(unittest.TestCase):
         target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
 
         el = etree.XML(data)
-        result = target._parse_inquiry_response_card_xml(el)
+        result = target._parse_inquiry_response_card_xml(self.dummy_response_factory, el)
 
         self.assertEqual(result.__class__, models.MultiCheckoutInquiryResponseCard)
         self.assertEqual(result.Storecd, "1111111111")
@@ -758,7 +816,7 @@ class Checkout3DTests(unittest.TestCase):
 
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
         target._httplib = DummyHTTPLib(res_data)
-        result = target.request_card_check(order_no, params)
+        result = target.request_card_check(self.dummy_response_factory, order_no, params)
 
         self.assertEqual(target._httplib.path, "/SHOP/card/OrderNo/this-is-order-no/Check")
         self.assertEqual(result.__class__, models.MultiCheckoutResponseCard)
@@ -822,7 +880,7 @@ class Checkout3DTests(unittest.TestCase):
 
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
         target._httplib = DummyHTTPLib(res_data)
-        result = target.request_card_auth(order_no, params)
+        result = target.request_card_auth(self.dummy_response_factory, order_no, params)
 
         self.assertEqual(target._httplib.path, "/SHOP/card/OrderNo/this-is-order-no/Auth")
         self.assertEqual(result.__class__, models.MultiCheckoutResponseCard)
@@ -886,7 +944,7 @@ class Checkout3DTests(unittest.TestCase):
 
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
         target._httplib = DummyHTTPLib(res_data)
-        result = target.request_card_cancel_auth(order_no)
+        result = target.request_card_cancel_auth(self.dummy_response_factory, order_no)
 
         self.assertEqual(target._httplib.path, "/SHOP/card/OrderNo/this-is-order-no/AuthCan")
         self.assertEqual(result.__class__, models.MultiCheckoutResponseCard)
@@ -950,7 +1008,7 @@ class Checkout3DTests(unittest.TestCase):
 
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
         target._httplib = DummyHTTPLib(res_data)
-        result = target.request_card_sales(order_no)
+        result = target.request_card_sales(self.dummy_response_factory, order_no)
 
         self.assertEqual(target._httplib.path, "/SHOP/card/OrderNo/this-is-order-no/Sales")
         self.assertEqual(result.__class__, models.MultiCheckoutResponseCard)
@@ -1004,7 +1062,7 @@ class Checkout3DTests(unittest.TestCase):
 
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
         target._httplib = DummyHTTPLib(res_data)
-        result = target.request_card_sales_part_cancel(order_no, params)
+        result = target.request_card_sales_part_cancel(self.dummy_response_factory, order_no, params)
 
         self.assertEqual(target._httplib.path, "/SHOP/card/OrderNo/this-is-order-no/SalesPartCan")
         self.assertEqual(result.__class__, models.MultiCheckoutResponseCard)
@@ -1060,7 +1118,7 @@ class Checkout3DTests(unittest.TestCase):
 
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
         target._httplib = DummyHTTPLib(res_data)
-        result = target.request_card_cancel_sales(order_no)
+        result = target.request_card_cancel_sales(self.dummy_response_factory, order_no)
 
         self.assertEqual(target._httplib.path, "/SHOP/card/OrderNo/this-is-order-no/SalesCan")
         self.assertEqual(result.__class__, models.MultiCheckoutResponseCard)
@@ -1150,7 +1208,7 @@ class Checkout3DTests(unittest.TestCase):
 
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
         target._httplib = DummyHTTPLib(res_data)
-        result = target.request_card_inquiry(order_no)
+        result = target.request_card_inquiry(self.dummy_response_factory, order_no)
 
         self.assertEqual(target._httplib.path, "/SHOP/card/OrderNo/this-is-order-no")
         self.assertEqual(result.__class__, models.MultiCheckoutInquiryResponseCard)
@@ -1202,7 +1260,7 @@ class Checkout3DTests(unittest.TestCase):
 
         element = etree.XML(data)
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
-        result = target._parse_secure3d_enrol_response(element)
+        result = target._parse_secure3d_enrol_response(self.dummy_response_factory, element)
 
         self.assertEqual(result.__class__, models.Secure3DReqEnrolResponse)
         self.assertEqual(result.Md, "this-is-merchant-data")
@@ -1264,7 +1322,7 @@ class Checkout3DTests(unittest.TestCase):
 
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
         target._httplib = DummyHTTPLib(res_data)
-        result = target.secure3d_enrol(order_no, enrol)
+        result = target.secure3d_enrol(self.dummy_response_factory, order_no, enrol)
 
         self.assertTrue(compare_xml(target._httplib.body, req_data))
         self.assertEqual(result.__class__, models.Secure3DReqEnrolResponse)
@@ -1307,7 +1365,7 @@ class Checkout3DTests(unittest.TestCase):
 
         element = etree.XML(data)
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
-        result = target._parse_secure3d_auth_response(element)
+        result = target._parse_secure3d_auth_response(self.dummy_response_factory, element)
 
         self.assertEqual(result.__class__, models.Secure3DAuthResponse)
         self.assertEqual(result.ErrorCd, "012345")
@@ -1346,7 +1404,7 @@ class Checkout3DTests(unittest.TestCase):
 
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
         target._httplib = DummyHTTPLib(res_data)
-        result = target.secure3d_auth(order_no, auth)
+        result = target.secure3d_auth(self.dummy_response_factory, order_no, auth)
 
         self.assertTrue(compare_xml(target._httplib.body, req_data))
         self.assertEqual(target._httplib.path, "/SHOP/3D-Secure/OrderNo/this-is-order-no/Auth")

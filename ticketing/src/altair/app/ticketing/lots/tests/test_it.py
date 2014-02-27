@@ -27,23 +27,21 @@ class keep_authTests(unittest.TestCase):
         cls.config.include('pyramid_layout')
         cls.config.include('altair.app.ticketing.lots')
 
-    @mock.patch('altair.multicheckout.api.save_api_response')
-    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.save_api_response')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_impl')
     def test_it(self, mock_service_factory, mock_save_api_response):
-        from altair.multicheckout.api import checkout_sales
         from altair.multicheckout.testing import DummyCheckout3D
-
+        from altair.multicheckout.api import get_multicheckout_3d_api
         mock_service_factory.return_value = DummyCheckout3D()
+
         request = DummyRequest()
+        multicheckout_api = get_multicheckout_3d_api(request)
         order_no = 'test_order_no'        
 
-        result = checkout_sales(
-            request,
-            order_no,
-            )
+        result = multicheckout_api.checkout_sales(order_no)
 
         self.assertEqual(result.OrderNo, order_no)
-        mock_save_api_response.assert_called_with(request, result)
+        mock_save_api_response.assert_called_with(result)
 
 
 class EntryLotViewTests(unittest.TestCase):

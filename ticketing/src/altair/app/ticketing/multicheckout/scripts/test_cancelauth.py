@@ -3,7 +3,10 @@ from datetime import datetime
 import unittest
 import mock
 from pyramid import testing
-from altair.multicheckout.interfaces import IMulticheckoutSettingListFactory
+from altair.multicheckout.interfaces import (
+    IMulticheckoutSettingListFactory,
+    IMulticheckoutImplFactory,
+    )
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
 class Testcancel_auth(unittest.TestCase):
@@ -11,33 +14,33 @@ class Testcancel_auth(unittest.TestCase):
         from . cancelauth import cancel_auth
         return cancel_auth(*args, **kwargs)
 
-    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.get_multicheckout_3d_api')
     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
     def test_empty(self, mock_models, mock_api):
         statuses = []
         request = testing.DummyRequest()
 
-        self._callFUT(request, statuses)
+        self._callFUT(request, statuses, 'shop_name')
 
-        self.assertFalse(mock_api.checkout_auth_cancel.called)
+        self.assertFalse(mock_api.return_value.checkout_auth_cancel.called)
         self.assertFalse(mock_models._session.commit.called)
 
     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.is_cancelable')
-    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.get_multicheckout_3d_api')
     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
     def test_not_cancelable(self, mock_models, mock_api, mock_cancelable):
         statuses = [testing.DummyModel(OrderNo="testing-order")]
         mock_cancelable.return_value = False
         request = testing.DummyRequest()
 
-        self._callFUT(request, statuses)
+        self._callFUT(request, statuses, 'shop_name')
 
         mock_cancelable.assert_called_with(request, statuses[0])
-        self.assertFalse(mock_api.checkout_auth_cancel.called)
+        self.assertFalse(mock_api.return_value.checkout_auth_cancel.called)
         self.assertFalse(mock_models._session.commit.called)
 
     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.is_cancelable')
-    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.get_multicheckout_3d_api')
     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
     def test_with_cancelable_without_authorized(self, mock_models, mock_api, mock_cancelable):
         statuses = [testing.DummyModel(OrderNo="testing-order",
@@ -46,14 +49,14 @@ class Testcancel_auth(unittest.TestCase):
         mock_cancelable.return_value = True
         request = testing.DummyRequest()
 
-        self._callFUT(request, statuses)
+        self._callFUT(request, statuses, 'shop_name')
 
         mock_cancelable.assert_called_with(request, statuses[0])
         self.assertFalse(mock_api.checkout_auth_cancel.called)
         self.assertFalse(mock_models._session.commit.called)
 
     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.is_cancelable')
-    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.get_multicheckout_3d_api')
     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
     def test_with_cancelable_with_authorized(self, mock_models, mock_api, mock_cancelable):
         statuses = [testing.DummyModel(OrderNo="testing-order",
@@ -62,11 +65,10 @@ class Testcancel_auth(unittest.TestCase):
         mock_cancelable.return_value = True
         request = testing.DummyRequest()
 
-        self._callFUT(request, statuses)
+        self._callFUT(request, statuses, 'shop_name')
 
         mock_cancelable.assert_called_with(request, statuses[0])
-        mock_api.checkout_auth_cancel.assert_called_with(request,
-                                                         'testing-order')
+        mock_api.return_value.checkout_auth_cancel.assert_called_with('testing-order')
         mock_models._session.commit.assert_called_with()
 
 
@@ -127,20 +129,21 @@ class Testsync_data(unittest.TestCase):
         from .cancelauth import sync_data
         return sync_data(*args, **kwargs)
 
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.get_multicheckout_3d_api')
     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
-    def test_empty(self, mock_models):
+    def test_empty(self, mock_models, mock_api):
         request = testing.DummyRequest()
         statuses = []
 
-        self._callFUT(request, statuses)
+        self._callFUT(request, statuses, 'shop_name')
 
         self.assertFalse(mock_models._session.commit.called)
 
-    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.get_multicheckout_3d_api')
     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
     def test_one_authorized_actualy_authorized(self, mock_models, mock_api):
         import altair.multicheckout.models as m
-        mock_api.checkout_inquiry.return_value = testing.DummyResource(
+        mock_api.return_value.checkout_inquiry.return_value = testing.DummyResource(
             Status='110',
             CmnErrorCd="000000",
         )
@@ -151,15 +154,15 @@ class Testsync_data(unittest.TestCase):
                 Status=unicode(m.MultiCheckoutStatusEnum.Authorized),
             )]
 
-        self._callFUT(request, statuses)
+        self._callFUT(request, statuses, 'shop_name')
         mock_models._session.commit.assert_called_once()
         self.assertFalse(mock_models.MultiCheckoutOrderStatus.set_status.called)
 
-    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.get_multicheckout_3d_api')
     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
     def test_one_unknown_actualy_authorized(self, mock_models, mock_api):
         import altair.multicheckout.models as m
-        mock_api.checkout_inquiry.return_value = testing.DummyResource(
+        mock_api.return_value.checkout_inquiry.return_value = testing.DummyResource(
             Status='110', OrderNo="testing-order", Storecd="test-shop",
             CmnErrorCd="000000",
         )
@@ -170,11 +173,9 @@ class Testsync_data(unittest.TestCase):
                 Status=None,
             )]
 
-        self._callFUT(request, statuses)
+        self._callFUT(request, statuses, 'shop_name')
         mock_models._session.commit.assert_called_once()
-        mock_api.checkout_inquiry.assert_called_with(
-            request,
-            "testing-order")
+        mock_api.return_value.checkout_inquiry.assert_called_with("testing-order")
         mock_models.MultiCheckoutOrderStatus.set_status.assert_called_with(
             "testing-order",
             "test-shop",
@@ -182,10 +183,10 @@ class Testsync_data(unittest.TestCase):
             u"by cancel auth batch",
         )
 
-    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.get_multicheckout_3d_api')
     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
     def test_one_invalid_order(self, mock_models, mock_api):
-        mock_api.checkout_inquiry.return_value = testing.DummyResource(
+        mock_api.return_value.checkout_inquiry.return_value = testing.DummyResource(
             Status='110', OrderNo="testing-order", Storecd="test-shop",
             CmnErrorCd="001407",
         )
@@ -196,11 +197,9 @@ class Testsync_data(unittest.TestCase):
                 Status=None,
             )]
 
-        self._callFUT(request, statuses)
+        self._callFUT(request, statuses, 'shop_name')
         mock_models._session.commit.assert_called_once()
-        mock_api.checkout_inquiry.assert_called_with(
-            request,
-            "testing-order")
+        mock_api.return_value.checkout_inquiry.assert_called_with("testing-order")
         mock_models.MultiCheckoutOrderStatus.set_status.assert_called_with(
             "testing-order",
             "test-shop",
@@ -208,10 +207,10 @@ class Testsync_data(unittest.TestCase):
             u"by cancel auth batch",
         )
 
-    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.api')
+    @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.get_multicheckout_3d_api')
     @mock.patch('altair.app.ticketing.multicheckout.scripts.cancelauth.m')
     def test_one_bad_response(self, mock_models, mock_api):
-        mock_api.checkout_inquiry.return_value = testing.DummyResource(
+        mock_api.return_value.checkout_inquiry.return_value = testing.DummyResource(
             Status='110', OrderNo="testing-order", Storecd="test-shop",
             CmnErrorCd="999999",
         )
@@ -222,11 +221,9 @@ class Testsync_data(unittest.TestCase):
                 Status=None,
             )]
 
-        self._callFUT(request, statuses)
+        self._callFUT(request, statuses, 'shop_name')
         mock_models._session.commit.assert_called_once()
-        mock_api.checkout_inquiry.assert_called_with(
-            request,
-            "testing-order")
+        mock_api.return_value.checkout_inquiry.assert_called_with("testing-order")
         self.assertFalse(mock_models.MultiCheckoutOrderStatus.set_status.called)
 
 class Testrun(unittest.TestCase):
@@ -247,6 +244,13 @@ class Testrun(unittest.TestCase):
             "",
             lambda request: [],
         )
+        self.multicheckout_impl = mock.Mock()
+        self.config.registry.utilities.register(
+            [],
+            IMulticheckoutImplFactory,
+            "",
+            lambda request, override_name: self.multicheckout_impl
+        )
         request = testing.DummyRequest()
         result = self._callFUT(request)
 
@@ -266,5 +270,4 @@ class Testrun(unittest.TestCase):
         request = testing.DummyRequest()
         result = self._callFUT(request)
 
-        mock_process_shop.assert_called_with(
-            request, 'testing', 'testing-shop')
+        mock_process_shop.assert_called_with(request, 'testing', 'testing-shop')

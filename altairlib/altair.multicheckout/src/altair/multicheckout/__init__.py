@@ -5,12 +5,16 @@
 
 import logging
 import functools
+import warnings
 from .interfaces import (
     ICardBrandDetecter,
     IMulticheckoutSettingFactory,
     IMulticheckoutSettingListFactory,
+    IMulticheckoutImplFactory,
 )
-from .util import ahead_coms
+from zope.interface import implementer
+from pyramid.config import ConfigurationError
+
 logger = logging.getLogger(__name__)
 
 class DBSessionContext(object):
@@ -42,32 +46,70 @@ def multicheckout_dbsession_tween(handler, registry):
             return handler(request)
     return tween
             
-def detect_card_brand(request, card_number):
-    detecter = request.registry.getUtility(ICardBrandDetecter)
-    return detecter(card_number)
+@implementer(IMulticheckoutImplFactory)
+class MulticheckoutImplFactory(object):
+    def __init__(self, config):
+        registry = config.registry
+        base_url = registry.settings.get('altair.multicheckout.endpoint.base_url')
+        if base_url is None:
+            base_url = registry.settings.get('altair_checkout3d.base_url')
+            if base_url is None:
+                raise ConfigurationError("altair.multicheckout.endpoint.base_url is not given")
+            else:
+                logger.warning("altair.multicheckout.endpoint.base_url is not given; using the value of deprecated altair_checkout3d.base_url setting instead")
 
-def get_card_ahead_com_name(request, code):
-    if code in ahead_coms:
-        return ahead_coms[code]
-    return u"その他"
+        timeout = registry.settings.get('altair.multicheckout.endpoint.timeout')
+        if timeout is None:
+            timeout = registry.settings.get('altair_checkout3d.timeout')
+            if timeout is None:
+                raise ConfigurationError("altair.multicheckout.endpoint.timeout is not given")
+            else:
+                logger.warning("altair.multicheckout.endpoint.timeout is not given; using the value of deprecated altair_checkout3d.timeout setting instead")
+        self.base_url = base_url
+        self.timeout = timeout
 
-def includeme(config):
+    def __call__(self, request, override_name=None):
+        if hasattr(request, 'altair_checkout3d_override_shop_name'):
+            if override_name is None:
+                warnings.warn(DeprecationWarning('request.altair_checkout3d_override_shop_name is deprecated.'))
+                override_name = getattr(request, 'altair_checkout3d_override_shop_name')
+            else:
+                raise Exception('both override_name and request.altair_checkout3d_override_shop_name are given')
+        from . import api
+        from .impl import Checkout3D
+        setting = api.get_multicheckout_setting(request, override_name=override_name)
+        return Checkout3D(
+            setting.auth_id,
+            setting.auth_password,
+            shop_code=setting.shop_id,
+            api_base_url=self.base_url,
+            api_timeout=self.timeout
+            )
+
+
+def setup_private_db_session(config):
     from sqlalchemy import engine_from_config
     from sqlalchemy.pool import NullPool
     from .models import _session
     engine = engine_from_config(config.registry.settings, poolclass=NullPool)
     _session.remove()
     _session.configure(bind=engine)
-
     config.add_tween(".multicheckout_dbsession_tween")
 
+def setup_components(config):
     reg = config.registry
     reg.registerUtility(config.maybe_dotted(".util.detect_card_brand"), 
                         ICardBrandDetecter)
+    reg.registerUtility(MulticheckoutImplFactory(config), IMulticheckoutImplFactory)
+
+def includeme(config):
+    setup_private_db_session(config)
+    setup_components(config)
     config.add_directive("set_multicheckout_setting_factory",
                          set_multicheckout_setting_factory)
     config.add_directive("set_multicheckout_setting_list_factory",
                          set_multicheckout_setting_list_factory)
+
 
 def set_multicheckout_setting_factory(config, factory):
     reg = config.registry

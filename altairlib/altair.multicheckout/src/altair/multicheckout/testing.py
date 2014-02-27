@@ -1,56 +1,58 @@
 from pyramid import testing
 
 class DummyCheckout3D(object):
-    def __init__(self, CmnErrorCd='000000'):
+    def __init__(self, CmnErrorCd='000000', ErrorCd='000000', RetCd=''):
         self.CmnErrorCd = CmnErrorCd
+        self.ErrorCd = ErrorCd
+        self.RetCd = RetCd
 
-    def secure3d_enrol(self, order_no, enrol):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            CmnErrorCd=self.CmnErrorCd,
-            )
+    def secure3d_enrol(self, response_factory, order_no, enrol):
+        resp = response_factory.create_secure3d_req_enrol_response()
+        resp.ErrorCd = self.ErrorCd
+        resp.RetCd = self.RetCd
+        return resp
 
-    def secure3d_auth(self, order_no, auth):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            CmnErrorCd=self.CmnErrorCd,
-            )
+    def secure3d_auth(self, response_factory, order_no, auth):
+        resp = response_factory.create_secure3d_auth_response()
+        resp.ErrorCd = self.ErrorCd
+        resp.RetCd = self.RetCd
+        return resp
     
-    def request_card_auth(self, order_no, card_auth):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            CmnErrorCd=self.CmnErrorCd,
-            )
+    def request_card_auth(self, response_factory, order_no, card_auth):
+        resp = response_factory.create_multicheckout_response_card()
+        resp.OrderNo = order_no
+        resp.CmnErrorCd = self.CmnErrorCd
+        return resp
 
-    def request_card_sales(self, order_no):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            CmnErrorCd=self.CmnErrorCd,
-            )
+    def request_card_sales(self, response_factory, order_no):
+        resp = response_factory.create_multicheckout_response_card()
+        resp.OrderNo = order_no
+        resp.CmnErrorCd = self.CmnErrorCd
+        return resp
 
-    def request_card_cancel_auth(self, order_no):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            CmnErrorCd=self.CmnErrorCd,
-            )
+    def request_card_cancel_auth(self, response_factory, order_no):
+        resp = response_factory.create_multicheckout_response_card()
+        resp.OrderNo = order_no
+        resp.CmnErrorCd = self.CmnErrorCd
+        return resp
 
-    def request_card_sales_part_cancel(self, order_no, params):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            CmnErrorCd=self.CmnErrorCd,
-            )
+    def request_card_sales_part_cancel(self, response_factory, order_no, params):
+        resp = response_factory.create_multicheckout_response_card()
+        resp.OrderNo = order_no
+        resp.CmnErrorCd = self.CmnErrorCd
+        return resp
 
-    def request_card_cancel_sales(self, order_no):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            CmnErrorCd=self.CmnErrorCd,
-            )
+    def request_card_cancel_sales(self, response_factory, order_no):
+        resp = response_factory.create_multicheckout_response_card()
+        resp.OrderNo = order_no
+        resp.CmnErrorCd = self.CmnErrorCd
+        return resp
 
-    def request_card_inquiry(self, order_no):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            CmnErrorCd=self.CmnErrorCd,
-            )
+    def request_card_inquiry(self, response_factory, order_no):
+        resp = response_factory.create_multicheckout_inquiry_response_card()
+        resp.OrderNo = order_no
+        resp.CmnErrorCd = self.CmnErrorCd
+        return resp
 
 
 class DummySecure3D(object):

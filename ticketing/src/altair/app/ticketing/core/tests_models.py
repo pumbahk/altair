@@ -1,5 +1,8 @@
 import unittest
+import mock
 from altair.app.ticketing.testing import _setup_db, _teardown_db
+from pyramid import testing
+from .testing import CoreTestMixin
 
 class SalesSegmentTests(unittest.TestCase):
     def setUp(self):
@@ -512,3 +515,165 @@ class SalesSegmentGroupTests(unittest.TestCase):
         result = target.end_for_performance(performance)
 
         self.assertEqual(result, datetime(2013, 8, 21, 11, 0))
+
+
+class OrderTests(unittest.TestCase, CoreTestMixin):
+    @property 
+    def payment_plugins(self):
+        from altair.app.ticketing.payments import plugins as p
+        return {
+            'multicheckout': p.MULTICHECKOUT_PAYMENT_PLUGIN_ID,
+            'checkout': p.CHECKOUT_PAYMENT_PLUGIN_ID,
+            'sej': p.SEJ_PAYMENT_PLUGIN_ID,
+            'reserve_number': p.RESERVE_NUMBER_PAYMENT_PLUGIN_ID,
+            }
+
+    @property
+    def delivery_plugins(self):
+        from altair.app.ticketing.payments import plugins as p
+        return {
+            'shipping': p.SHIPPING_DELIVERY_PLUGIN_ID,
+            'sej': p.SEJ_DELIVERY_PLUGIN_ID,
+            'reserve_number': p.RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
+            'qr': p.QR_DELIVERY_PLUGIN_ID,
+            'orion': p.ORION_DELIVERY_PLUGIN_ID,
+            }
+
+    def _next_order_no(self):
+        self.order_no_seq += 1
+        return 'XX%010d' % self.order_no_seq
+
+    def setUp(self):
+        self.config = testing.setUp(settings={
+            'altair.sej.template_file': ''
+            })
+        self.config.include('altair.app.ticketing.renderers')
+        self.config.include('altair.app.ticketing.payments')
+        self.config.include('altair.app.ticketing.payments.plugins')
+        self.session = _setup_db(['altair.app.ticketing.core.models'])
+        from .models import SalesSegmentGroup, OrganizationSetting
+        CoreTestMixin.setUp(self)
+        self.stock_types = self._create_stock_types(1)
+        self.stocks = self._create_stocks(self.stock_types)
+        self.product = self._create_products(self.stocks)[0]
+        self.session.add(OrganizationSetting(organization=self.organization, multicheckout_shop_name='XX'))
+        self.sales_segment_group = SalesSegmentGroup(event=self.event)
+        self.session.add(self.sales_segment_group)
+        from altair.app.ticketing.checkout.models import RakutenCheckoutSetting
+        self.session.add(RakutenCheckoutSetting(organization_id=self.organization.id, channel=1))
+        self.order_no_seq = 0
+        patches = []
+        patch = mock.patch('altair.app.ticketing.checkout.api.Checkout.request_cancel_order')
+        patches.append(patch)
+        self.checkout_request_cancel_order = patch.start()
+        patch = mock.patch('altair.app.ticketing.sej.api.cancel_sej_order')
+        patches.append(patch)
+        self.sej_cancel_sej_order = patch.start()
+        patch = mock.patch('altair.app.ticketing.sej.api.refund_sej_order')
+        patches.append(patch)
+        self.sej_refund_sej_order = patch.start()
+        patch = mock.patch('altair.multicheckout.api.get_multicheckout_3d_api')
+        patches.append(patch)
+        self.multicheckout_get_multicheckout_3d_api = patch.start()
+        self.multicheckout_get_multicheckout_3d_api.return_value.checkout_sales_part_cancel.return_value.CmnErrorCd = '000000'
+        self.multicheckout_get_multicheckout_3d_api.return_value.checkout_sales_part_cancel.return_value.CardErrorCd = '000000'
+        self.patches = patches
+        self.session.flush()
+
+    def tearDown(self):
+        for patch in self.patches:
+            patch.stop()
+        _teardown_db()
+        testing.tearDown()
+
+    def _getTarget(self):
+        from .models import Order
+        return Order
+
+    def _makeOne(self, *args, **kwargs):
+        from altair.app.ticketing.payments import plugins as p
+        from altair.app.ticketing.cart.models import Cart
+        from .models import OrderedProduct, OrderedProductItem
+        retval = self._getTarget()(*args, **kwargs)
+        retval.order_no = self._next_order_no()
+        retval.items = [
+            OrderedProduct(
+                price=1,
+                product=self.product,
+                elements=[OrderedProductItem(price=1, product_item=self.product.items[0])]
+                )
+            ]
+        cart = Cart(
+            payment_delivery_pair=retval.payment_delivery_pair,
+            _order_no=retval.order_no
+            )
+        self.session.add(cart)
+        retval.cart = cart
+        if retval.payment_delivery_pair.payment_method.payment_plugin_id == p.CHECKOUT_PAYMENT_PLUGIN_ID:
+            from altair.app.ticketing.checkout.models import Checkout
+            self.session.flush()
+            self.session.add(Checkout(orderId=retval.order_no, orderCartId=cart.id, orderControlId='0123456'))
+        if retval.payment_delivery_pair.payment_method.payment_plugin_id == p.SEJ_PAYMENT_PLUGIN_ID or \
+           retval.payment_delivery_pair.delivery_method.delivery_plugin_id == p.SEJ_DELIVERY_PLUGIN_ID:
+            from altair.app.ticketing.sej.models import SejOrder, SejTicket
+            ticket = SejTicket(order_no=retval.order_no)
+            self.session.add(ticket)
+            sej_order = SejOrder(order_no=retval.order_no, tickets=[ticket])
+            ticket.order = sej_order
+            self.session.add(sej_order)
+        self.session.flush()
+        return retval
+
+    def _create_payment_delivery_method_pair(self, payment_plugin_id, delivery_plugin_id):
+        from .models import PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod
+        retval = PaymentDeliveryMethodPair(
+            sales_segment_group=self.sales_segment_group,
+            system_fee=0,
+            delivery_fee=0,
+            transaction_fee=0,
+            discount=0,
+            payment_method=PaymentMethod(payment_plugin_id=payment_plugin_id, fee=0),
+            delivery_method=DeliveryMethod(delivery_plugin_id=delivery_plugin_id, fee=0)
+            )
+        self.session.add(retval)
+        return retval
+
+    def test_cancel_unpaid(self):
+        request = testing.DummyRequest()
+        for pn, payment_plugin_id in self.payment_plugins.items():
+            for dn, delivery_plugin_id in self.delivery_plugins.items():
+                description = 'payment_plugin=%s, delivery_plugin=%s' % (pn, dn)
+                payment_delivery_method_pair = self._create_payment_delivery_method_pair(payment_plugin_id, delivery_plugin_id)
+                target = self._makeOne(
+                    organization_id=self.organization.id,
+                    payment_delivery_pair=payment_delivery_method_pair,
+                    total_amount=0,
+                    system_fee=0,
+                    transaction_fee=0,
+                    delivery_fee=0
+                    )
+                target.cancel(request)
+                self.assertTrue(target.is_canceled(), description)
+
+    def test_cancel_paid(self):
+        from datetime import datetime
+        from altair.app.ticketing.payments import plugins as p
+        request = testing.DummyRequest()
+        for pn, payment_plugin_id in self.payment_plugins.items():
+            for dn, delivery_plugin_id in self.delivery_plugins.items():
+                description = 'payment_plugin=%s, delivery_plugin=%s' % (pn, dn)
+                payment_delivery_method_pair = self._create_payment_delivery_method_pair(payment_plugin_id, delivery_plugin_id)
+                target = self._makeOne(
+                    organization_id=self.organization.id,
+                    payment_delivery_pair=payment_delivery_method_pair,
+                    total_amount=0,
+                    system_fee=0,
+                    transaction_fee=0,
+                    delivery_fee=0,
+                    paid_at=datetime(2014, 1, 1)
+                    )
+                target.cancel(request)
+                if payment_plugin_id == p.SEJ_PAYMENT_PLUGIN_ID:
+                    self.assertTrue(self.sej_refund_sej_order.called)
+                self.assertTrue(target.is_canceled(), description)
+

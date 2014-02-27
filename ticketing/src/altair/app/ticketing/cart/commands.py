@@ -9,7 +9,6 @@ from pyramid.paster import bootstrap, setup_logging
 import transaction
 from altair.app.ticketing.core import models as o_m
 from altair.app.ticketing.core.api import get_channel
-from altair.multicheckout import api as multicheckout_api
 from altair.multicheckout.exceptions import MultiCheckoutAPITimeoutError
 from altair.app.ticketing.checkout import api as checkout_api
 from . import api
@@ -24,18 +23,6 @@ def get_order_no(request, cart):
         #return "%012d" % cart.id + "00"
         return cart.order_no + "00"
     return cart.order_no
-
-def inquiry_demo():
-    logger = logging.getLogger(__name__)
-    config_file = sys.argv[1]
-    app_env = bootstrap(config_file)
-    request = app_env['request']
-    order_no = sys.argv[2]
-    inquiry = multicheckout_api.checkout_inquiry(request, order_no)
-
-    print inquiry.Status
-
-    multicheckout_api.checkout_auth_cancel(request, order_no)
 
 def join_cart_and_order():
     """ 過去データのcart.orderを補正する
