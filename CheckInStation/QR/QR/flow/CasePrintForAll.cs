@@ -34,17 +34,24 @@ namespace QR
         {
             await base.PrepareAsync(ev).ConfigureAwait(false);
             var subject = this.PresentationChanel as PrintingEvent;
+            {
+                ResultTuple<string, List<TicketImageData>> result;
 
-            var result = this.PrintingTargets = await new DispatchResponse<List<TicketImageData>>(Resource).Dispatch(() => Resource.SVGImageFetcher.FetchImageDataForAllAsync(this.DataCollection)).ConfigureAwait(false);
-            if (result.Status)
-            {
-                //印刷枚数設定
-                subject.ConfigureByTotalPrinted(result.Right.Count);
-            }
-            else
-            {
-                this.PresentationChanel.NotifyFlushMessage(result.Left);
-                subject.ConfigureByTotalPrinted(0); //失敗時;
+                using (new TimeIt(String.Format("  {0}@PrepareAsync@FetchImageData", this.GetType())))
+                {
+                    result = this.PrintingTargets = await new DispatchResponse<List<TicketImageData>>(Resource).Dispatch(() => Resource.SVGImageFetcher.FetchImageDataForAllAsync(this.DataCollection)).ConfigureAwait(false);
+                }
+
+                if (result.Status)
+                {
+                    //印刷枚数設定
+                    subject.ConfigureByTotalPrinted(result.Right.Count);
+                }
+                else
+                {
+                    this.PresentationChanel.NotifyFlushMessage(result.Left);
+                    subject.ConfigureByTotalPrinted(0); //失敗時;
+                }            
             }
         }
                 
@@ -61,7 +68,10 @@ namespace QR
             var subject = this.PresentationChanel as PrintingEvent;
             subject.ChangeState(PrintingStatus.printing);
 
-            await this.AggregateTicketPrinting.Act(subject, this.PrintingTargets.Right);
+            using (new TimeIt(String.Format("  {0}@VerifyAsync@TicketPrinting", this.GetType())))
+            {
+                await this.AggregateTicketPrinting.Act(subject, this.PrintingTargets.Right);
+            }
             this.RequestData = UpdatePrintedAtRequestData.Build(this.DataCollection, this.AggregateTicketPrinting.SuccessList);
 
             var s = this.AggregateTicketPrinting.Status;

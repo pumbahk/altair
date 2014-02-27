@@ -72,29 +72,26 @@ namespace QR.presentation.gui.page
                 CurrentDispatcher = this.Dispatcher,
                 StatusInfo = ctx as IPrintingStatusInfo,
             };
-            ctx.PropertyChanged += OnPrintingStart;
             return ctx;
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            await(this.DataContext as PagePrintingDataContext).PrepareAsync().ConfigureAwait(false);
+            using (new TimeIt("Page.OnLoaded"))
+            {
+                await (this.DataContext as PagePrintingDataContext).PrepareAsync();
+            }
+            await OnPrintingStart();
         }
 
-        private async void OnPrintingStart(object sender, PropertyChangedEventArgs e)
+        private async Task OnPrintingStart()
         {
-            var ctx = sender as PagePrintingDataContext;
-            if (e.PropertyName == "Status" && ctx.Status == PrintingStatus.prepared)
-            {
-                ctx.Status = PrintingStatus.requesting;
-                logger.Trace("** status is requesting");
-                await this.Dispatcher.InvokeAsync(async () =>
-                {
-                    var case_ = await ctx.SubmitAsync();
-                    ctx.TreatErrorMessage();
-                    AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
-                });
-            }
+            var ctx = this.DataContext as PagePrintingDataContext;
+            ctx.Status = PrintingStatus.requesting;
+            logger.Trace("** status is requesting");
+            var case_ = await ctx.SubmitAsync();
+            ctx.TreatErrorMessage();
+            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
         }
     }
 }
