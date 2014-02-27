@@ -77,10 +77,7 @@ namespace QR.presentation.gui.page
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            using (new TimeIt("Page.OnLoaded"))
-            {
-                await (this.DataContext as PagePrintingDataContext).PrepareAsync();
-            }
+            await (this.DataContext as PagePrintingDataContext).PrepareAsync();
             await OnPrintingStart();
         }
 

@@ -42,7 +42,6 @@ namespace QR
 
         public async Task<string> ReadAsStringAsync(HttpContent content)
         {
-            //todo. remove await;
             var result = await content.ReadAsStringAsync().ConfigureAwait(false);
             logger.Trace("* API Output:{0}", result);
             return result;

@@ -35,12 +35,7 @@ namespace QR
             await base.PrepareAsync(ev).ConfigureAwait(false);
             var subject = this.PresentationChanel as PrintingEvent;
             {
-                ResultTuple<string, List<TicketImageData>> result;
-
-                using (new TimeIt(String.Format("  {0}@PrepareAsync@FetchImageData", this.GetType())))
-                {
-                    result = this.PrintingTargets = await new DispatchResponse<List<TicketImageData>>(Resource).Dispatch(() => Resource.SVGImageFetcher.FetchImageDataForAllAsync(this.DataCollection)).ConfigureAwait(false);
-                }
+                var result = this.PrintingTargets = await new DispatchResponse<List<TicketImageData>>(Resource).Dispatch(() => Resource.SVGImageFetcher.FetchImageDataForAllAsync(this.DataCollection)).ConfigureAwait(false);
 
                 if (result.Status)
                 {
@@ -68,10 +63,7 @@ namespace QR
             var subject = this.PresentationChanel as PrintingEvent;
             subject.ChangeState(PrintingStatus.printing);
 
-            using (new TimeIt(String.Format("  {0}@VerifyAsync@TicketPrinting", this.GetType())))
-            {
-                await this.AggregateTicketPrinting.Act(subject, this.PrintingTargets.Right);
-            }
+            await this.AggregateTicketPrinting.Act(subject, this.PrintingTargets.Right);
             this.RequestData = UpdatePrintedAtRequestData.Build(this.DataCollection, this.AggregateTicketPrinting.SuccessList);
 
             var s = this.AggregateTicketPrinting.Status;

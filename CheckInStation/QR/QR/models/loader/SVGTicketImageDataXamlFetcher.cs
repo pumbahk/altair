@@ -63,30 +63,18 @@ namespace QR
 
         public async Task<ResultTuple<string, List<TicketImageData>>> FetchImageDataForAllAsync(TicketDataCollection collection)
         {
-            Stream response;
-            IEnumerable<SVGData> svg_list;
-
             try
             {
-                using (new TimeIt(String.Format("    {0}@FetchImageDataForAllAsync@GetSvgDataList", this.GetType())))
-                {
-                    response = await SVGFetcherForAll.GetSvgDataList(Resource.HttpWrapperFactory, collection, GetSvgAllURL()).ConfigureAwait(false);
-                }
+                var response = await SVGFetcherForAll.GetSvgDataList(Resource.HttpWrapperFactory, collection, GetSvgAllURL()).ConfigureAwait(false);
 
-                using (new TimeIt(String.Format("    {0}@FetchImageDataForAllAsync@ParseSVGDataList", this.GetType())))
-                {
-                    svg_list = SVGFetcherForAll.ParseSvgDataList(response);
-                }
+                var svg_list = SVGFetcherForAll.ParseSvgDataList(response);
 
-                using (new TimeIt(String.Format("    {0}@FetchImageDataForAllAsync@ConvertSVGDataList", this.GetType())))
+                var r = new List<TicketImageData>();
+                foreach (SVGData svgdata in svg_list)
                 {
-                    var r = new List<TicketImageData>();
-                    foreach (SVGData svgdata in svg_list)
-                    {
-                        r.Add(TicketImageData.XamlTicketData(svgdata.token_id, svgdata.template.id, svgdata.svg));
-                    }
-                    return new Success<string, List<TicketImageData>>(r);
+                    r.Add(TicketImageData.XamlTicketData(svgdata.token_id, svgdata.template.id, svgdata.svg));
                 }
+                return new Success<string, List<TicketImageData>>(r);
             }
             catch (System.Xml.XmlException e)
             {
@@ -99,7 +87,5 @@ namespace QR
                 return new Failure<string, List<TicketImageData>>(Resource.GetDefaultErrorMessage());
             }
         }
-
     }
-        
 }
