@@ -78,7 +78,7 @@ class SalesTotalReporter(object):
         self.organization = organization
         self.group_by = Performance.id if group_by == 'Performance' else Event.id
         self.reports = {}
-        self.account = Account.query.filter(Account.user_id==organization.user_id, Account.organization_id==organization.id).one()
+        self.accounts = Account.query.filter(Account.user_id==organization.user_id, Account.organization_id==organization.id).all()
 
         # レポートデータ生成
         self.create_reports()
@@ -198,7 +198,7 @@ class SalesTotalReporter(object):
     def get_stock_data(self):
         # 配席数、残席数
         query = self.slave_session.query(Stock)\
-            .join(StockHolder).filter(StockHolder.account==self.account)\
+            .join(StockHolder).filter(StockHolder.account_id.in_([a.id for a in self.accounts]))\
             .join(ProductItem)\
             .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)\
             .join(Performance).filter(Performance.id==Stock.performance_id)\
@@ -364,7 +364,7 @@ class SalesDetailReporter(object):
             logger.error('event_id not found')
             return
         organization = self.event.organization
-        self.account = Account.query.filter(Account.user_id==organization.user_id, Account.organization_id==organization.id).one()
+        self.accounts = Account.query.filter(Account.user_id==organization.user_id, Account.organization_id==organization.id).all()
 
         # レポートデータ生成
         self.create_reports()
@@ -415,7 +415,7 @@ class SalesDetailReporter(object):
         # 名称、期間
         query = self.slave_session.query(StockType)\
             .join(Stock)\
-            .join(StockHolder).filter(StockHolder.event==self.event, StockHolder.account==self.account)\
+            .join(StockHolder).filter(StockHolder.event==self.event, StockHolder.account_id.in_([a.id for a in self.accounts]))\
             .join(ProductItem)\
             .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)
         query = self.add_sales_segment_filter(query)
@@ -458,7 +458,7 @@ class SalesDetailReporter(object):
     def get_stock_data(self):
         # 配席数、残席数
         query = self.slave_session.query(Stock)\
-            .join(StockHolder).filter(StockHolder.event==self.event, StockHolder.account==self.account)\
+            .join(StockHolder).filter(StockHolder.event==self.event, StockHolder.account_id.in_([a.id for a in self.accounts]))\
             .join(ProductItem)\
             .join(Product).filter(and_(Product.seat_stock_type_id==Stock.stock_type_id, Product.base_product_id==None))
         query = self.add_sales_segment_filter(query)
