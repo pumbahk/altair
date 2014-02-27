@@ -157,7 +157,7 @@ class LotForm(Form):
         sales_segment.auth3d_notice=self.data['auth3d_notice']
 
         return lot
-    
+
 
     def update_lot(self, lot):
         sales_segment = lot.sales_segment
@@ -551,4 +551,3 @@ class LotEntryReportMailForm(Form):
         obj.start_on = self.start_on.data
         obj.end_on = self.end_on.data
         obj.period = self.period.data
-
