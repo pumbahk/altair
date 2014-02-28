@@ -59,6 +59,8 @@ class SalesSegmentEditorTests(unittest.TestCase):
                 testing.DummyModel(name="use_default_order_limit", data=None),
                 testing.DummyModel(name="max_quantity_per_user", data=None),
                 testing.DummyModel(name="use_default_max_quantity_per_user", data=None),
+                testing.DummyModel(name="disp_orderreview", data=None),
+                testing.DummyModel(name="use_default_disp_orderreview", data=None),
             ],
         )
 
@@ -117,6 +119,8 @@ class SalesSegmentEditorTests(unittest.TestCase):
                 testing.DummyModel(name="use_default_order_limit", data=None),
                 testing.DummyModel(name="max_quantity_per_user", data=None),
                 testing.DummyModel(name="use_default_max_quantity_per_user", data=None),
+                testing.DummyModel(name="disp_orderreview", data=None),
+                testing.DummyModel(name="use_default_disp_orderreview", data=None),
             ],
         )
 
@@ -176,7 +180,8 @@ class SalesSegmentAccessorTest(unittest.TestCase):
             auth3d_notice=u"testing",
             setting=testing.DummyModel(
                 order_limit=20, 
-                max_quantity_per_user=40
+                max_quantity_per_user=40,
+                disp_orderreview=True
                 )
             )
 
@@ -210,8 +215,10 @@ class SalesSegmentAccessorTest(unittest.TestCase):
             setting=testing.DummyModel(
                 order_limit=120,
                 max_quantity_per_user=43,
+                disp_orderreview=False,
                 use_default_order_limit=True,
-                use_default_max_quantity_per_user=True
+                use_default_max_quantity_per_user=True,
+                use_default_disp_orderreview=True
                 )
             )
 
@@ -233,6 +240,7 @@ class SalesSegmentAccessorTest(unittest.TestCase):
         self.assertEqual(ss.auth3d_notice, u"testing")
         self.assertEqual(ss.setting.order_limit, 20)
         self.assertEqual(ss.setting.max_quantity_per_user, 40)
+        self.assertEqual(ss.setting.disp_orderreview, True)
 
     def test_update_sales_segment_use_owns(self):
         from datetime import datetime, time
@@ -257,7 +265,8 @@ class SalesSegmentAccessorTest(unittest.TestCase):
             auth3d_notice=u"testing",
             setting=testing.DummyModel(
                 order_limit=120,
-                max_quantity_per_user=43
+                max_quantity_per_user=43,
+                disp_orderreview=False
                 )
             )
 
@@ -278,6 +287,7 @@ class SalesSegmentAccessorTest(unittest.TestCase):
             use_default_registration_fee=False,
             use_default_auth3d_notice=False, 
             use_default_max_product_quatity=False,           
+            use_default_disp_orderreview=False,           
             seat_choice=True,
             public=False,
             reporting=True,
@@ -294,8 +304,10 @@ class SalesSegmentAccessorTest(unittest.TestCase):
             setting=testing.DummyModel(
                 order_limit=120,
                 max_quantity_per_user=43,
+                disp_orderreview=True,
                 use_default_order_limit=False,
-                use_default_max_quantity_per_user=False
+                use_default_max_quantity_per_user=False,
+                use_default_disp_orderreview=False
                 )
             )
 
@@ -316,3 +328,6 @@ class SalesSegmentAccessorTest(unittest.TestCase):
         self.assertEqual(ss.printing_fee, 1350)
         self.assertEqual(ss.registration_fee, 1450)
         self.assertEqual(ss.auth3d_notice, u"testing-own")
+        self.assertEqual(ss.setting.order_limit, 120)
+        self.assertEqual(ss.setting.max_quantity_per_user, 43)
+        self.assertEqual(ss.setting.disp_orderreview, True)
