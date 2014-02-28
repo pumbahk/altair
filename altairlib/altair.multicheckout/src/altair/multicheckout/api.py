@@ -91,7 +91,7 @@ class Multicheckout3DAPI(object):
 
     def save_api_response(self, res):
         self.session.add(res)
-        if hasattr(res, 'OrderNo'):
+        if hasattr(res, 'OrderNo') and hasattr(res, 'Storecd'):
             m.MultiCheckoutOrderStatus.set_status(res.OrderNo, res.Storecd, res.Status, u"call by %s" % self.request.url)
         self.session.commit()
 
@@ -106,9 +106,10 @@ class Multicheckout3DAPI(object):
             TotalAmount=int(total_amount),
             Currency=self.currency,
         )
-
+        self.session.add(enrol)
         res = self.impl.secure3d_enrol(self, order_no, enrol)
         events.Secure3DEnrolEvent.notify(self.request, order_no, res)
+        res.request = enrol
         self.save_api_response(res)
         return res
 
@@ -121,9 +122,10 @@ class Multicheckout3DAPI(object):
             Md=md,
             PaRes=pares,
         )
-
+        self.session.add(auth)
         res = self.impl.secure3d_auth(self, order_no, auth)
         events.Secure3DAuthEvent.notify(self.request, order_no, res)
+        res.request = auth
         self.save_api_response(res)
         return res
 

@@ -1331,6 +1331,7 @@ class Checkout3DTests(unittest.TestCase):
         self.assertEqual(result.RetCd, "0")
         self.assertEqual(result.AcsUrl, "http://example.com/acs")
         self.assertEqual(result.PaReq, "this-is-pa-req")
+        self.assertEqual(result.OrderNo, order_no)
 
     def test_create_secure3d_auth_xml(self):
         auth = models.Secure3DAuthRequest(
@@ -1416,3 +1417,4 @@ class Checkout3DTests(unittest.TestCase):
         self.assertEqual(result.Cavv, "0123456789012345678901234567")
         self.assertEqual(result.Eci, "01")
         self.assertEqual(result.Mvn, "0123456789")
+        self.assertEqual(result.OrderNo, order_no)

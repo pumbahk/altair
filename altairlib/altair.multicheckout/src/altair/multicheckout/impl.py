@@ -57,14 +57,18 @@ class Checkout3D(object):
         url = self.secure3d_enrol_url(order_no)
         res = self._request(url, message)
         logger.debug("got response %s" % etree.tostring(res))
-        return self._parse_secure3d_enrol_response(response_factory, res)
+        res_obj = self._parse_secure3d_enrol_response(response_factory, res)
+        res_obj.OrderNo = order_no
+        return res_obj
 
     def secure3d_auth(self, response_factory, order_no, auth):
         message = self._create_secure3d_auth_xml(auth)
         url = self.secure3d_auth_url(order_no)
         res = self._request(url, message)
         logger.debug("got response %s" % etree.tostring(res))
-        return self._parse_secure3d_auth_response(response_factory, res)
+        res_obj = self._parse_secure3d_auth_response(response_factory, res)
+        res_obj.OrderNo = order_no
+        return res_obj
 
     def request_card_check(self, response_factory, order_no, card_auth):
         message = self._create_request_card_xml(card_auth, check=True)

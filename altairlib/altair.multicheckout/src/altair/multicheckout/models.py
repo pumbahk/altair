@@ -34,6 +34,9 @@ class Secure3DReqEnrolResponse(Base):
     """
     __tablename__ = 'secure3d_req_enrol_response'
     id = sa.Column(Identifier, primary_key=True)
+    request_id = sa.Column(Identifier, sa.ForeignKey('secure3d_req_enrol_request.id'), nullable=True)
+    request = orm.relationship(Secure3DReqEnrolRequest)
+    OrderNo = sa.Column(sa.Unicode(32), doc=u"受注番号") # for reference
     Md = sa.Column(sa.UnicodeText, doc="マーチャントデータ")
     ErrorCd = sa.Column(sa.Unicode(6), doc="エラーコード")
     RetCd = sa.Column(sa.Unicode(2), doc="リターンコード")
@@ -62,7 +65,9 @@ class Secure3DAuthResponse(Base):
     """
     __tablename__ = 'secure3d_req_auth_response'
     id = sa.Column(Identifier, primary_key=True)
-
+    request_id = sa.Column(Identifier, sa.ForeignKey('secure3d_req_auth_request.id'), nullable=True)
+    request = orm.relationship(Secure3DAuthRequest)
+    OrderNo = sa.Column(sa.Unicode(32), doc=u"受注番号") # for reference
     ErrorCd = sa.Column(sa.Unicode(6), doc="エラーコート")
     RetCd = sa.Column(sa.Unicode(2), doc="リターンコート")
     Xid = sa.Column(sa.Unicode(28), doc="トランザクションID")
