@@ -63,7 +63,7 @@ class OperatorActionHistory(Base):
 
 class OperatorAuth(Base, BaseModel, WithTimestamp):
     __tablename__ = 'OperatorAuth'
-    id = Column(BigInteger, primary_key=True, autoincrement=True, nullable=False)
+    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
     operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=False)
     login_id = Column(String(384), nullable=False, unique=True)
     password = Column(String(32))
