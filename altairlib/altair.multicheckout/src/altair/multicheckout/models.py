@@ -170,6 +170,8 @@ class MultiCheckoutResponseCard(Base):
     ReqYmd = sa.Column(sa.Unicode(8), doc=u"依頼年月日(YYYYMMDD)")
     CmnErrorCd = sa.Column(sa.Unicode(6), doc=u"共通エラーコード")
 
+    request_id = sa.Column(Identifier, sa.ForeignKey('multicheckout_request_card.id'), nullable=True)
+    request = orm.relationship(MultiCheckoutRequestCard)
 
 class MultiCheckoutInquiryResponseCardHistory(Base):
     """ 取引照会レスポンス履歴情報

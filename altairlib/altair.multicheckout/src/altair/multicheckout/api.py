@@ -108,8 +108,8 @@ class Multicheckout3DAPI(object):
         )
         self.session.add(enrol)
         res = self.impl.secure3d_enrol(self, order_no, enrol)
-        events.Secure3DEnrolEvent.notify(self.request, order_no, res)
         res.request = enrol
+        events.Secure3DEnrolEvent.notify(self.request, order_no, res)
         self.save_api_response(res)
         return res
 
@@ -124,8 +124,8 @@ class Multicheckout3DAPI(object):
         )
         self.session.add(auth)
         res = self.impl.secure3d_auth(self, order_no, auth)
-        events.Secure3DAuthEvent.notify(self.request, order_no, res)
         res.request = auth
+        events.Secure3DAuthEvent.notify(self.request, order_no, res)
         self.save_api_response(res)
         return res
 
@@ -160,6 +160,7 @@ class Multicheckout3DAPI(object):
             CavvAlgorithm=cavv_algorithm,
         )
         res = self.impl.request_card_auth(self, order_no, params)
+        res.request = params
         events.CheckoutAuthSecure3DEvent.notify(self.request, order_no, res)
         self.save_api_response(res)
         return res
@@ -263,6 +264,7 @@ class Multicheckout3DAPI(object):
             SecureCode=secure_code,
         )
         res = self.impl.request_card_auth(self, order_no, params)
+        res.request = params
         events.CheckoutAuthSecureCodeEvent.notify(self.request, order_no, res)
         self.save_api_response(res)
         return res
