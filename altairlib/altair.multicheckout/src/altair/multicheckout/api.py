@@ -162,6 +162,7 @@ class Multicheckout3DAPI(object):
         res = self.impl.request_card_auth(self, order_no, params)
         res.request = params
         events.CheckoutAuthSecure3DEvent.notify(self.request, order_no, res)
+        self.session.add(params)
         self.save_api_response(res)
         return res
 
@@ -213,6 +214,7 @@ class Multicheckout3DAPI(object):
         )
         res = self.impl.request_card_sales_part_cancel(self, order_no, params)
         events.CheckoutSalesPartCancelEvent.notify(self.request, order_no, res)
+        self.session.add(params)
         self.save_api_response(res)
         return res
 
@@ -266,6 +268,7 @@ class Multicheckout3DAPI(object):
         res = self.impl.request_card_auth(self, order_no, params)
         res.request = params
         events.CheckoutAuthSecureCodeEvent.notify(self.request, order_no, res)
+        self.session.add(params)
         self.save_api_response(res)
         return res
 

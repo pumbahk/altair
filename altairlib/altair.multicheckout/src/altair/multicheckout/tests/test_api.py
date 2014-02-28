@@ -85,7 +85,7 @@ class Multicheckout3DAPITests(unittest.TestCase):
         item_name = 'testing item'
         amount = "1000"
         tax = "0"
-        client_name = "あああああ"
+        client_name = u"あああああ"
         mail_address = "testing@example.com"
         card_no = "x" * 16
         card_limit = "13/09"
@@ -211,7 +211,7 @@ class Multicheckout3DAPITests(unittest.TestCase):
         item_name = 'testing item'
         amount = "1000"
         tax = "0"
-        client_name = "あああああ"
+        client_name = u"あああああ"
         mail_address = "testing@example.com"
         card_no = "x" * 16
         card_limit = "13/09"

@@ -2,6 +2,7 @@
 
 """ TBA
 """
+import re
 from datetime import datetime
 import sqlahelper
 import sqlalchemy as sa
@@ -121,8 +122,8 @@ class MultiCheckoutRequestCard(Base):
     MailSend = sa.Column(sa.Unicode(1), doc=u"メール送信フラグ")
 
     # card
-    CardNo = sa.Column(sa.Unicode(16), doc=u"カード番号")
-    CardLimit = sa.Column(sa.Unicode(4), doc=u"カード有効期限")
+    CardNo = sa.Column('CardNo', sa.Unicode(16), doc=u"カード番号")
+    CardLimit = sa.Column('CardLimit', sa.Unicode(4), doc=u"カード有効期限")
     CardHolderName = sa.Column(sa.Unicode(42), doc=u"カード名義人")
     PayKindCd = sa.Column(sa.Unicode(2), doc=u"支払区分コード")
     PayCount = sa.Column(sa.Integer, doc=u"支払回数")
@@ -140,6 +141,31 @@ class MultiCheckoutRequestCard(Base):
     ECI = sa.Column(sa.Unicode(2), doc=u"ECI")
     CAVV = sa.Column(sa.Unicode(28), doc=u"CAVV")
     CavvAlgorithm = sa.Column(sa.Unicode(1), doc=u"CAVVアルゴリズム")
+
+def _mask_sensitive_information(mapper, conn, target):
+    card_number = target.CardNo
+    if isinstance(card_number, basestring) and len(card_number) >= 8:
+        card_number = card_number[0:4] + u'*' * (len(card_number) - 8) + card_number[-4:]
+        target.CardNo = card_number
+    card_limit = target.CardLimit
+    if isinstance(card_limit, basestring) and len(card_limit) == 4:
+        card_limit = card_limit[0:2] + u'*' * 2
+        target.CardLimit = card_limit
+    mail_address = target.MailAddress
+    if isinstance(mail_address, basestring):
+        i = mail_address.find('@')
+        if i < 0:
+            mail_address = u'*' * len(mail_address)
+        else:
+            mail_address = u'*' * i + '@' + mail_address[i + 1:]
+        target.MailAddress = mail_address
+    card_holder_name = target.CardHolderName
+    if isinstance(card_holder_name, basestring):
+        card_holder_name = re.sub(ur'[^ ]', '*', card_holder_name)
+        target.CardHolderName = card_holder_name
+
+sa.event.listen(MultiCheckoutRequestCard, 'before_insert', _mask_sensitive_information)
+sa.event.listen(MultiCheckoutRequestCard, 'before_update', _mask_sensitive_information)
 
 class MultiCheckoutStatusEnum(StandardEnum):
     NotAuthorized   = u'100'
@@ -231,6 +257,10 @@ class MultiCheckoutInquiryResponseCard(Base):
     @hybrid_property
     def is_authorized(self):
         return self.Status == str(MultiCheckoutStatusEnum.Authorized)
+
+
+sa.event.listen(MultiCheckoutInquiryResponseCard, 'before_insert', _mask_sensitive_information)
+sa.event.listen(MultiCheckoutInquiryResponseCard, 'before_update', _mask_sensitive_information)
 
 class MultiCheckoutOrderStatus(Base, WithTimestamp):
     """ 取引照会レスポンス
