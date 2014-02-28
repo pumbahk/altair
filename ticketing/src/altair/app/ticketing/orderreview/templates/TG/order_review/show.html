@@ -12,7 +12,7 @@
       <tbody>
         %for product in order.items:
         <tr>
-          <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="22" height="21" /> <span style="color: #000000">${product.product.name}</span></th>
+          <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="22" height="21" />${product.product.name}</th>
           % if product.seats:
           % if product.product.sales_segment.seat_choice:
           <td><strong>${product.seat_quantity}</strong>枚</td>
