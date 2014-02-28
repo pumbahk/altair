@@ -7,6 +7,7 @@ import cgi
 import time
 
 class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    unstable = False	
     def parse_request(self):
         print("----------------------------------------")
         print(self.raw_requestline)
@@ -17,12 +18,13 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         logging.info(self.headers)
-	import random
-	N = random.random()
-	print(N)
-	if N > 0.5:
-	    print("error")
-	    return
+	if self.unstable:
+	    import random
+	    N = random.random()
+	    print(N)
+	    if N > 0.5:
+	        print("error")
+	        return
         SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
     def do_POST(self):
@@ -46,9 +48,19 @@ if len(sys.argv) >= 2:
     PORT = int(sys.argv[1])
 else:
     PORT = 8000
+
+try:
+    unstable = bool(sys.argv[2])
+    print("unstable error rate = 0.5")
+except:
+    unstable = False
+
 Handler = ServerHandler
 #Server = SocketServer.TCPServer
 Server = BaseHTTPServer.HTTPServer
+
+#xxx:
+Handler.unstable = unstable
 httpd = Server(("", PORT), Handler)
 
 print "serving at port", PORT

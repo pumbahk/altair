@@ -45,6 +45,11 @@ namespace QR.support
                 logger.ErrorException("xml:", e);
                 return new Failure<string, T>(e.ToString());
            }
+           catch (TaskCanceledException e)
+            {
+                logger.ErrorException("task cancel", e);
+               return new Failure<string, T>(Resource.GetDefaultErrorMessage());
+            }
         }
 
         public async Task<ResultTuple<string, T>> Dispatch(Func<Task<T>> fn)
