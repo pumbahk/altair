@@ -3,6 +3,7 @@
 *.pyc
 build
 ticket-designer/doc/build
+altairlib/altair.versiontools/setup.cfg
 cms/doc/build
 cms/src/.idea
 cms/src/schema.*
