@@ -1,10 +1,10 @@
 <%def name="band(bgcolor, align=None)">
 <div style="background-color:${bgcolor}" bgcolor="${bgcolor}"${u' align="%(align)s" style="text-align:%(align)s"' % dict(align=align) if align is not None else u''|n}>${caller.body()}</div>
 </%def>
-<%def name="header(bgcolor='#09355f', align=None)">
+<%def name="header(bgcolor='#d00000', align=None)">
 <%self:band bgcolor="${bgcolor}" align="${align}"><font color="white">${caller.body()}</font></%self:band>
 </%def>
-<%def name="form_header(markercolor='#ea9f27', requiredmarkcolor='#ff0000', required=False)">
+<%def name="form_header(markercolor='#ff9900', requiredmarkcolor='#ff0000', required=False)">
 <div><font color="${markercolor}">■</font>${caller.body()}</font>
 %if required:
 <font color="${requiredmarkcolor}">*</font>

@@ -325,7 +325,7 @@ def get_cart_user_identifiers(request):
 
 def is_smartphone_organization(context, request):
     organization = c_api.get_organization(request)
-    smartphone_organization = [4, 15, 24, 25, 26, 29, 30]
+    smartphone_organization = [4, 15, 24, 25, 26, 28, 29, 30]
     for org in smartphone_organization:
         if organization.id == org:
             return True
