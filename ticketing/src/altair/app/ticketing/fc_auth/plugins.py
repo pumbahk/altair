@@ -97,6 +97,8 @@ class FCAuthPlugin(object):
         else:
             logger.debug('authentication for non-guest')
             userdata = nonguest_authenticate(environ, identity, userdata)
+        if userdata is None:
+            return None
         return pickle.dumps(userdata).encode('base64')
         
     def is_auth_required(self, environ):
