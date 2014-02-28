@@ -48,7 +48,7 @@ namespace QR.support
            catch (TaskCanceledException e)
             {
                 logger.ErrorException("task cancel", e);
-               return new Failure<string, T>(Resource.GetDefaultErrorMessage());
+               return new Failure<string, T>(Resource.GetDefaultErrorMessage()  );
             }
         }
 

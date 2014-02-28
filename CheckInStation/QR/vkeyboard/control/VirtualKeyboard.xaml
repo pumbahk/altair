@@ -42,7 +42,7 @@
             <GradientStop Color="#B70017" Offset="1.0"></GradientStop>
         </LinearGradientBrush>
 
-        <LinearGradientBrush x:Key="KeyPadSurfaceDisableBrush" StartPoint="0.5,0" EndPoint="0.5,1" Opacity="0.3">
+        <LinearGradientBrush x:Key="KeyPadSurfaceDisableBrush" StartPoint="0.5,0" EndPoint="0.5,1" Opacity="0.95">
             <GradientStop Color="#CCCCCC" Offset="0.0"></GradientStop>
             <GradientStop Color="#AAAAAA" Offset="1.0"></GradientStop>
         </LinearGradientBrush>
