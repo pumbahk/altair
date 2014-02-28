@@ -15,4 +15,4 @@ def add_credential(membership, membergroup, username, password, organization_sho
                         auth_identifier=username,
                         auth_secret=password)
     
-    return u
+    return uc
