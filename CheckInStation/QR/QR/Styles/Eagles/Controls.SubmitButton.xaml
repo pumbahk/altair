@@ -8,7 +8,13 @@
     <Setter Property="FontSize" Value="30"/>
   </Style>
 
-  <LinearGradientBrush x:Key="SubmitButtonBackGroundBrush"
+    <Style x:Key="SubmitButtonLongTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource SubmitButtonTextBrush}"/>
+        <Setter Property="FontSize" Value="22"/>
+    </Style>
+
+
+    <LinearGradientBrush x:Key="SubmitButtonBackGroundBrush"
                        StartPoint="0.5,0"
                        EndPoint="0.5,1">
     <GradientStop Color="#FFD87D" Offset="0.05"/>

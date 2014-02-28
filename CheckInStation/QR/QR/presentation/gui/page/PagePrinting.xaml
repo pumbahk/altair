@@ -3,34 +3,72 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:QR"
-      xmlns:control="clr-namespace:QR.presentation.gui.control"
-      Name="CurrentPage"
+      xmlns:c="clr-namespace:QR.presentation.gui.control"
       mc:Ignorable="d" 
-      d:DesignHeight="50" d:DesignWidth="640"
-    ShowsNavigationUI="False"
-	Title="PagePrinting"
+      d:DesignHeight="364" d:DesignWidth="683"  
+    ShowsNavigationUI="False"     
+	Title="PageFinish"
     Loaded="OnLoaded">
-    <Grid Style="{StaticResource ToplevelGrid}">
-        <Grid Style="{StaticResource CenterContentGrid}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="1*"></RowDefinition>
-                <RowDefinition Height="4*"></RowDefinition>
-                <RowDefinition></RowDefinition>
-            </Grid.RowDefinitions>
-            <control:InspectCase Grid.Row="0"></control:InspectCase>
-            <StackPanel Background="White" Grid.Row="1" HorizontalAlignment="Center">
-                <Image Source="/Resource/printing.gif" Style="{StaticResource PrintingImageStyle}"></Image>
-            </StackPanel>
-            <TextBlock Grid.Row="2">
-                <TextBlock.Text>
-                    <MultiBinding StringFormat="印刷中: {0}/{1} ({2})">
-                        <Binding Path="FinishedPrinted" Mode="OneWay"/>
-                        <Binding Path="TotalPrinted" Mode="OneWay" />
-                        <Binding Path="Status" Mode="OneWay"/>
-                    </MultiBinding>
-                </TextBlock.Text></TextBlock>
-        </Grid>
+    <Grid>
+        <Viewbox>
+            <Grid Background="{StaticResource LogoBackgroundBrush}">
+                <Canvas Width="1366" Height="728">
+
+                    <c:InspectCase Canvas.Top="7" Canvas.Left="298" Width="882" Height="84"/>
+                    
+                    <!-- メインコンテンツ -->
+                    <Border Background="White" Width="717" Height="477"
+                            CornerRadius="24"
+                            Padding="40,20,40,20"
+                            Canvas.Left="327" 
+                            Canvas.Top="169">
+                        <StackPanel HorizontalAlignment="Stretch">                            
+                            <TextBlock HorizontalAlignment="Center" FontSize="40" Foreground="Black">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="印刷中: {0}/{1}">
+                                        <Binding Path="FinishedPrinted" Mode="OneWay"/>
+                                        <Binding Path="TotalPrinted" Mode="OneWay" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                            <Image Stretch="Uniform" MaxHeight="350" Source="{Binding AdImage, Mode=OneTime}"/>
+                            <TextBlock HorizontalAlignment="Center" FontSize="30" Foreground="Black"
+                                Text="{Binding SubDescription}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 説明(description)-->
+                    <StackPanel
+                        Canvas.Top="100"
+                        Orientation="Horizontal"
+                        >
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Style.Triggers>
+                                    <Trigger Property="Orientation" Value="Horizontal">
+                                        <Setter Property="Canvas.Left" 
+                                                Value="{Binding RelativeSource={RelativeSource Self}, 
+                                                Path=ActualWidth,
+                                                Converter={StaticResource MathConverter}, 
+                                                ConverterParameter=(1366-@VALUE)*0.5}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock 
+                        d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
+                        Text="{Binding Description}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontSize" Value="30"/>
+                                    <Setter Property="Foreground" Value="{StaticResource MainTextBrush}"/>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+
+                </Canvas>
+            </Grid>
+        </Viewbox>
     </Grid>
-    </Page>
-    
+</Page>

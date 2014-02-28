@@ -24,7 +24,8 @@ namespace QR.presentation.gui.page
         private int _finishedPrinted;
         private int _totalPrinted;
         private PrintingStatus _status;
-        
+        private string _subDescription;
+
         public int TotalPrinted {
             get { return this._totalPrinted;}
             set { this._totalPrinted = value; this.OnPropertyChanged("TotalPrinted"); }
@@ -33,18 +34,49 @@ namespace QR.presentation.gui.page
             get { return this._finishedPrinted; }
             set { this._finishedPrinted = value; this.OnPropertyChanged("FinishedPrinted"); }
         }
+        public BitmapImage AdImage { get; set; }
         public PrintingStatus Status 
         {
             get {return this._status;}
-            set {this._status = value;
-                 this.OnPropertyChanged("Status");
+            set
+            {
+                this._status = value;
+                this.OnPropertyChanged("Status");
             }
-        } 
+        }
+
+        public string SubDescription
+        {
+            get { return this._subDescription; }
+            set
+            {
+                this._subDescription = value;
+                this.OnPropertyChanged("SubDescription");
+            }
+        }
 
         public override void OnSubmit()
         {
             var ev = this.Event as IInternalEvent;
             base.OnSubmit();
+        }
+        
+        public string SubDescriptionFromStatus(PrintingStatus status){
+            switch (status)
+            {
+                case PrintingStatus.starting:
+                    return "データを取得しています";
+                case PrintingStatus.prepared:
+                    return "データ取得完了しました";
+                case PrintingStatus.requesting:
+                    return "印刷しています";
+                case PrintingStatus.printing:
+                    return "印刷しています";
+                case PrintingStatus.finished:
+                    return "印刷完了しました";
+                default:
+                    return "-";
+            }
         }
     }
 
@@ -64,15 +96,29 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
+            var resource = AppUtil.GetCurrentResource();
             var ctx = new PagePrintingDataContext()
             {
                 Broker = AppUtil.GetCurrentBroker(),
+                AdImage = resource.AdImageCollector.GetImage(),
             };
+            ctx.SubDescription = ctx.SubDescriptionFromStatus(ctx.Status);
+
             ctx.Event = new PrintingEvent() {
                 CurrentDispatcher = this.Dispatcher,
                 StatusInfo = ctx as IPrintingStatusInfo,
             };
+            ctx.PropertyChanged += ctx_PropertyChanged;
             return ctx;
+        }
+
+        void ctx_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "Status")
+            {
+                var ctx = sender as PagePrintingDataContext;
+                ctx.SubDescription = ctx.SubDescriptionFromStatus(ctx.Status);
+            }
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs e)

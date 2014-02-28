@@ -1,30 +1,57 @@
-<Page x:Class="QR.presentation.gui.page.PageFinish"
+﻿<Page x:Class="QR.presentation.gui.page.PageFinish"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:c="clr-namespace:QR.presentation.gui.control"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:control="clr-namespace:QR.presentation.gui.control"
       mc:Ignorable="d" 
-      d:DesignHeight="50" d:DesignWidth="50"
+      d:DesignHeight="364" d:DesignWidth="683"  
     ShowsNavigationUI="False"     
 	Title="PageFinish"
     Loaded="OnLoaded">
-    <Grid Style="{StaticResource ToplevelGrid}">
-        <Grid Style="{StaticResource CenterContentGrid}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="1*"></RowDefinition>
-                <RowDefinition Height="2*"></RowDefinition>
-                <RowDefinition Height="1*"></RowDefinition>
-            </Grid.RowDefinitions>
-       <control:InspectCase Grid.Row="0"></control:InspectCase>
-            <Image Grid.Row="1" Style="{StaticResource AdImageStyle}" Source="{Binding AdImage, Mode=OneTime}"></Image>
-            <TextBlock Grid.Row="2">
-                <TextBlock.Text>
-                    <MultiBinding StringFormat="status:{0}}">
-                        <Binding Path="Status" Mode="OneWay"></Binding>
-                    </MultiBinding>                    
-                </TextBlock.Text>
-            </TextBlock>
-        </Grid>
+    <Grid>
+        <Viewbox>
+            <Grid Background="{StaticResource LogoBackgroundBrush}">
+                <Canvas Width="1366" Height="728">
+                    
+                    <c:InspectCase Canvas.Top="7" Canvas.Left="298" Width="882" Height="84"/>
+
+                    <!-- メインコンテンツ -->
+
+                    
+                    <!-- 説明(description)-->
+                    <StackPanel
+                        Canvas.Top="100"
+                        Orientation="Horizontal"
+                        >
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Style.Triggers>
+                                    <Trigger Property="Orientation" Value="Horizontal">
+                                        <Setter Property="Canvas.Left" 
+                                                Value="{Binding RelativeSource={RelativeSource Self}, 
+                                                Path=ActualWidth,
+                                                Converter={StaticResource MathConverter}, 
+                                                ConverterParameter=(1366-@VALUE)*0.5}" />
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock 
+                        d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
+                        Text="{Binding Description}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontSize" Value="30"/>
+                                    <Setter Property="Foreground" Value="{StaticResource MainTextBrush}"/>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+
+                </Canvas>
+            </Grid>
+        </Viewbox>
     </Grid>
 </Page>

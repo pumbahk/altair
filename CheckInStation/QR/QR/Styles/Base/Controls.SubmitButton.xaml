@@ -11,7 +11,7 @@
     <Setter Property="Background" Value="{Binding Path=Background, RelativeSource={RelativeSource FindAncestor,AncestorLevel=1,AncestorType={x:Type Button}}}"/>
     <Setter Property="CornerRadius" Value="10"/>
     <Setter Property="BorderThickness" Value="3"/>
-    <Setter Property="Padding" Value="67,37,67,3"/>
+    <Setter Property="Padding" Value="27,37,27,3"/>
     <Setter Property="BorderBrush" Value="{StaticResource SubmitButtonBorderBrush}"/>
   </Style>
 

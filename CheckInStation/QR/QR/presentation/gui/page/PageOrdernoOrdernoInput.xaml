@@ -81,7 +81,7 @@
                      Canvas.Top="655"
                      Click="Button_Click"
                      Style="{StaticResource SubmitButton}">
-                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">電話番号入力へ進む</TextBlock>
+                        <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}">電話番号入力へ</TextBlock>
                     </Button>
                     <Button
                     Canvas.Left="60"
@@ -91,6 +91,16 @@
                     >
                         <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
                     </Button>
+
+
+                    <!-- change mode-->
+                    <Button Click="OnGotoAnotherMode"
+                    Style="{StaticResource HeaderMenuButtonStyle}"
+                            Canvas.Top="17"
+                            RenderTransformOrigin="10.794,2.52"
+                            Canvas.Left="1060"
+                            Height="64" Width="240">QRで認証</Button>
+
                     <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
                                       MessageText="{Binding ErrorMessage}"
