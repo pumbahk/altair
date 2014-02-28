@@ -73,7 +73,7 @@
     </tr>
     <%
       group_key = None
-      if ss_idx == 0 and len(sales_segments) > 1:
+      if not (form.is_detail_report() and len(sales_segments) <= 1) and ss_idx == 0:
         sorted_records = reporter.sort_and_merge_data()
       else:
         sorted_records = reporter.sort_data()
