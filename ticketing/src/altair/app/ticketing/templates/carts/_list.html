@@ -59,12 +59,8 @@ url = request.current_route_path(_query=params)
         </td>
         % endif
         <td>
-          % if cart.order_id:
-            <a href="${request.route_path('orders.show', order_id=cart.order_id)}">${cart.order_no}</a>
-          % else:
-            ${cart.order_no}
-          % endif
-          </td>
+          <a href="${request.route_path('cart.show', order_no=cart.order_no)}">${cart.order_no}</a>
+        </td>
         <td>${vh.datetime(cart.created_at)}</td>
         <td>${vh.datetime(cart.finished_at)}</td>
         <td style="text-align: right;">${vh.price(cart.total_amount) if cart.sales_segment and cart.payment_delivery_pair else u'-'}</td>

@@ -1,8 +1,8 @@
-<%page args="order,shipping_address"/>
+<%page args="order_like,shipping_address"/>
           <table class="table table-striped table-bordered">
             <tr>
               <th class="span2">引取方法</th>
-              <td class="span3">${order.payment_delivery_pair.delivery_method.name}</td>
+              <td class="span3">${order_like.payment_delivery_pair.delivery_method.name}</td>
             </tr>
             <tr>
               <th>氏名</th>
