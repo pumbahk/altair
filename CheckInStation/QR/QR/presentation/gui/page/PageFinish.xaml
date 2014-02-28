@@ -12,15 +12,48 @@
     Loaded="OnLoaded">
     <Grid>
         <Viewbox>
-            <Grid Background="{StaticResource LogoBackgroundBrush}">
+            <Grid Background="{StaticResource OnePointBackgroundBrush}">
                 <Canvas Width="1366" Height="728">
                     
                     <c:InspectCase Canvas.Top="7" Canvas.Left="298" Width="882" Height="84"/>
 
                     <!-- メインコンテンツ -->
 
+                    <!-- message-->
+                    <StackPanel
+                            Width="682"
+                            Height="138"
+                            Canvas.Top="215"
+                            Canvas.Left="345"
+                        >
+                        <StackPanel.Resources>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontSize" Value="38"/>
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="TextWrapping" Value="Wrap"/>
+                                <Setter Property="Foreground" Value="{StaticResource MainTextBrush}"/>
+                            </Style>
+                        </StackPanel.Resources>
+                        <TextBlock>
+                        発券完了しました
+                        </TextBlock>
+                        <TextBlock>
+                        ありがとうございました
+                        </TextBlock>
+                        <TextBlock>
+                        チケットに記載の入場ゲートからご入場ください
+                        </TextBlock>
+                    </StackPanel>
+                    
+                    <!-- team logo-->
+                    <Border 
+                        Canvas.Left="345"
+                        Canvas.Top="413"
+                        Width="682" Height="173" Background="{StaticResource TeamLogoBrush}"/>
+                    
                     
                     <!-- 説明(description)-->
+                    <!--
                     <StackPanel
                         Canvas.Top="100"
                         Orientation="Horizontal"
@@ -49,7 +82,8 @@
                             </TextBlock.Style>
                         </TextBlock>
                     </StackPanel>
-
+                    -->
+                    
                 </Canvas>
             </Grid>
         </Viewbox>
