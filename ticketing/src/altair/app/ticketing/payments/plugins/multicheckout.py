@@ -522,6 +522,7 @@ class MultiCheckoutView(object):
                 else:
                     raise MultiCheckoutSettlementFailure(
                         message='card_info_secure3d_callback: secure3d not enabled?',
+                        ignorable=True,
                         order_no=order['order_no'],
                         back_url=back_url(self.request),
                         error_code=auth_result.ErrorCd,
@@ -541,6 +542,7 @@ class MultiCheckoutView(object):
             if checkout_auth_result.CmnErrorCd != '000000':
                 raise MultiCheckoutSettlementFailure(
                     message='card_info_secure3d_callback: generic failure',
+                    ignorable=True,
                     order_no=order['order_no'],
                     back_url=back_url(self.request),
                     error_code=checkout_auth_result.CmnErrorCd
