@@ -14,7 +14,7 @@
     <Style x:Key="MessageDialogMessageTextStyle" TargetType="TextBlock">
         <Setter Property="Foreground" Value="#840315"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
-        <Setter Property="FontSize" Value="35"/>
+        <Setter Property="FontSize" Value="33"/>
     </Style>
         
     <Style TargetType="c:MessageDialog" x:Key="ErrorDialogStyle">

@@ -18,22 +18,28 @@
                                 Background="{Binding ElementName=Container, Path=InnerBackground}"                                
                                 Width="750" Height="450"
                                 Padding="45">
-            <StackPanel
+            <Grid
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center">
-                <TextBlock
-                            Margin="0,0,0,75"
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="3*"/>
+                    <RowDefinition Height="2*"/>
+                </Grid.RowDefinitions>
+                <ScrollViewer Grid.Row="0">
+                    <TextBlock
                             Style="{StaticResource MessageDialogMessageTextStyle}"
                             Text="{Binding ElementName=Container, Path=MessageText}"
                          />
+                </ScrollViewer>
                 <Button
+                    Grid.Row="1"
                                        Click="Button_Click"
                                        Width="357" Height="135"
                                        Style="{StaticResource SubmitButton}">
                     <TextBlock Style="{StaticResource SubmitButtonTextStyle}"
                                        Text="{Binding ElementName=Container, Path=ButtonText}"/>
                 </Button>
-            </StackPanel>
+            </Grid>
         </Border>
     </Canvas>
 </Popup>

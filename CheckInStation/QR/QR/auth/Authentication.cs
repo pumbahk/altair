@@ -4,6 +4,7 @@ using System.Net.Http;
 using QR.message;
 using Codeplex.Data;
 using NLog;
+using QR.support;
 
 namespace QR
 {
@@ -52,7 +53,7 @@ namespace QR
 
                 var user = new LoginUser() { login_id = name, password = password, device_id = device_id };
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(user).ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCodeExtend();
                 // cookie取得
                 var headers = response.Headers;
                 factory.AddCookies(CookieUtils.GetCookiesFromResponseHeaders(GetLoginURL(), headers));

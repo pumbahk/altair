@@ -208,6 +208,8 @@
     <Compile Include="flow\Flow.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="support\DispatchResponse.cs" />
+    <Compile Include="support\EnsureResponse.cs" />
+    <Compile Include="support\TransparentMessageException.cs" />
     <Compile Include="tests\flow\FlowTests.cs" />
     <Compile Include="flow\CaseFailureRedirect.cs" />
     <Compile Include="flow\IFlowDefinition.cs" />
