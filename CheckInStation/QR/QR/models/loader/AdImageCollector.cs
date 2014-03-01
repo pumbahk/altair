@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using NLog;
 using System.Windows.Media.Imaging;
+using QR.support;
 
 namespace QR
 {
@@ -74,7 +75,7 @@ namespace QR
             logger.Info(String.Format("get ad image. url:{0}", url));
             var wrapper = Resource.HttpWrapperFactory.Create(url);
             var response = await wrapper.GetAsync().ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+            response.EnsureSuccessStatusCodeExtend();
             return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
         }
 

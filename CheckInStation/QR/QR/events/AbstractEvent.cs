@@ -13,6 +13,8 @@ namespace QR
 
         public List<string> messages;
 
+        public string ShorthandError {get;set;}
+
         public virtual string GetMessageFormat ()
         {
             return "{0}";

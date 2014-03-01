@@ -147,7 +147,12 @@ namespace QR.presentation.gui
             {
                 coll.Add(s);
             });
-            this.ErrorMessage = String.Join(Environment.NewLine, coll.ToArray<string>());
+
+            var message = String.Join(Environment.NewLine, coll.ToArray<string>());
+            //E@:で始まるのはserver側で返されたエラーメッセージ
+            message = message.TrimStart("E@:".ToArray<char>());
+
+            this.ErrorMessage = message;
         }
 
         public void PassingErrorMessage(string message)

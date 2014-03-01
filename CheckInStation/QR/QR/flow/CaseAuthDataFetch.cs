@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using QR.message;
 using NLog;
 using QR.support;
+using QR.flow;
 
 namespace QR
 {
@@ -14,7 +15,7 @@ namespace QR
         public string LoginName { get; set; }
 
         public string LoginPassword { get; set; }
-
+        public AggregateShorthandError TreatShorthandError { get; set; }
         private static Logger logger = LogManager.GetCurrentClassLogger ();
 
         public CaseAuthDataFetch (IResource resource, string name, string password) : base (resource)
@@ -35,7 +36,8 @@ namespace QR
             else
             {
                 //modelからpresentation層へのメッセージ
-                PresentationChanel.NotifyFlushMessage((result as Failure<string, AuthInfo>).Result);
+                this.TreatShorthandError = new AggregateShorthandError(this.PresentationChanel);
+                this.TreatShorthandError.Parse(result.Left);
                 return false;
             }
         }
@@ -48,6 +50,10 @@ namespace QR
 
         public override ICase OnFailure (IFlow flow)
         {
+            if (this.TreatShorthandError != null)
+            {
+                return this.TreatShorthandError.Redirect(flow);
+            }
             flow.Finish ();
             return new CaseAuthInput (Resource, this.LoginName, this.LoginPassword);
         }

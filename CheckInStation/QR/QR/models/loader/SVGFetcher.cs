@@ -9,6 +9,7 @@ using QR.message;
 using System.IO;
 using System.Text;
 using System.Net.Http.Headers;
+using QR.support;
 
 namespace QR
 {
@@ -46,7 +47,7 @@ namespace QR
             using (var wrapper = factory.Create(url))
             {
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCodeExtend();
                 return (await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false));
             }
         }
@@ -80,7 +81,7 @@ namespace QR
             using (var wrapper = factory.Create(url))
             {
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(parms).ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCodeExtend();
                 return (await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false));
             }
         }

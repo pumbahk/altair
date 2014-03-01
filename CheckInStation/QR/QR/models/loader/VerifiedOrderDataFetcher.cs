@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using Codeplex.Data;
 using System.IO;
+using QR.support;
 
 namespace QR
 {
@@ -30,7 +31,7 @@ namespace QR
             using (var wrapper = factory.Create(GetVerifyURL()))
             {
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(requestData).ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCodeExtend();
                 return Parse(await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false));
 
             }

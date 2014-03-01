@@ -118,10 +118,9 @@ namespace QR
 
         public Task<IFlow> Backward ()
         {
-            //XXX:
-            return Task.Run<IFlow> (() => {
-                return this;
-            });
+            var ts = new TaskCompletionSource<IFlow>();
+            ts.SetResult(this);
+            return ts.Task;
         }
 
         public bool IsAutoForwarding ()

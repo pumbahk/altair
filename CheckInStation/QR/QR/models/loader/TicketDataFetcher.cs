@@ -5,6 +5,7 @@ using Codeplex.Data;
 using QR.message;
 using NLog;
 using System.IO;
+using QR.support;
 
 namespace QR
 {
@@ -38,7 +39,7 @@ namespace QR
             {
                 var qrdata = new QRRequest() { qrsigned = qrcode };
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(qrdata).ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCodeExtend();
                 return Parse(await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false));
             }
 

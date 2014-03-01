@@ -5,6 +5,7 @@ namespace QR
 {
     public interface IFlow
     {
+        FlowManager Manager { get; }
         Task<IFlow> Forward ();
         //TODO:implement
         Task<IFlow> Backward ();

@@ -64,6 +64,10 @@ namespace QR.presentation.gui.page
             if(data != null){
                 this.KeyPad.Text = data.order_no;
             }
+            if (ctx.ErrorMessage != String.Empty)
+            {
+                this.ErrorDialog.Show();
+            }
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)

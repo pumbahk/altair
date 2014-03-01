@@ -52,7 +52,7 @@ namespace QR.support
             }
             catch (TransparentMessageException e)
             {
-                return new Failure<string, T>(String.Format("E:{0}", e.Message));
+                return new Failure<string, T>(e.Message);
             }
         }
 

@@ -64,6 +64,10 @@ namespace QR.presentation.gui.page
             {
                 this.KeyPad.Text = data.tel;
             }
+            if (ctx.ErrorMessage != String.Empty)
+            {
+                this.ErrorDialog.Show();
+            }
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
@@ -79,6 +83,10 @@ namespace QR.presentation.gui.page
                     case_ = await ctx.SubmitAsync();
                 }
                 ctx.TreatErrorMessage();
+                if (ctx.ErrorMessage != String.Empty)
+                {
+                    this.ErrorDialog.Show();
+                }
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }

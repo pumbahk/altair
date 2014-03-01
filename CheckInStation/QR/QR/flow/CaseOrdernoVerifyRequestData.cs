@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using NLog;
 using QR.message;
 using QR.support;
+using QR.flow;
 
 namespace QR
 {
@@ -18,6 +19,8 @@ namespace QR
         public VerifiedOrdernoRequestData VerifiedData { get; set; }
 
         public TicketDataCollection Collection { get; set; }
+
+        public AggregateShorthandError TreatShorthandError { get; set; }
 
         public CaseOrdernoVerifyRequestData (IResource resource, OrdernoRequestData data) : base (resource)
         {
@@ -38,7 +41,8 @@ namespace QR
             else
             {
                 //modelからpresentation層へのメッセージ
-                PresentationChanel.NotifyFlushMessage((result as Failure<string, VerifiedOrdernoRequestData>).Result);
+                this.TreatShorthandError = new AggregateShorthandError(this.PresentationChanel);
+                this.TreatShorthandError.Parse(result.Left);
                 return false;
             }
         }
@@ -46,6 +50,15 @@ namespace QR
         public override ICase OnSuccess (IFlow flow)
         {
             return new CaseOrdernoConfirmForAll (this.Resource, this.VerifiedData);
+        }
+
+        public override ICase OnFailure(IFlow flow)
+        {
+            if (this.TreatShorthandError != null)
+            {
+                return this.TreatShorthandError.Redirect(flow);
+            }
+            return base.OnFailure(flow);
         }
     }
 }

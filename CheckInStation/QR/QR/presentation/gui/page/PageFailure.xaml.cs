@@ -24,8 +24,15 @@ namespace QR.presentation.gui.page
         private string _message;
         public string Message
         {
-            get { return this._message; }
-            set { this._message = value; this.OnPropertyChanged("Message"); }
+            get
+            {
+                return this._message;
+            }
+            set
+            {
+                this._message = value;
+                this.OnPropertyChanged("Message");
+            }
         }
 
         public override void OnSubmit()

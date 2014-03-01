@@ -11,6 +11,7 @@ namespace QR
         void HandleEvent ();
         void HandleEvent (Action<string> useAction);        
         bool NotifyFlushMessage (string message);
+        string ShorthandError { get; set; }
         string GetMessageString();
         InternalEventStaus Status { get; set; }
         Dispatcher CurrentDispatcher { get; set; }

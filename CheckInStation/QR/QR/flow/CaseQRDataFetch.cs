@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using QR.message;
 using NLog;
 using QR.support;
+using QR.flow;
 
 namespace QR
 {
@@ -14,9 +15,12 @@ namespace QR
         public string QRCode { get; set; }
 
         private static Logger logger = LogManager.GetCurrentClassLogger ();
+
         private TokenStatus tokenStatus;
 
         public TicketData TicketData { get; set; }
+
+        public AggregateShorthandError TreatShorthandError { get; set; }
 
         public CaseQRDataFetch (IResource resource, string qrcode) : base (resource)
         {
@@ -43,7 +47,8 @@ namespace QR
             else
             {
                 //modelからpresentation層へのメッセージ
-                PresentationChanel.NotifyFlushMessage((result as Failure<string, TicketData>).Result);
+                this.TreatShorthandError = new AggregateShorthandError(this.PresentationChanel);
+                this.TreatShorthandError.Parse(result.Left);
                 return false;
             }
         }
@@ -53,7 +58,14 @@ namespace QR
             flow.Finish ();
             if (this.tokenStatus == TokenStatus.valid)
             {
-                return base.OnFailure(flow);
+                if (this.TreatShorthandError != null)
+                {
+                    return this.TreatShorthandError.Redirect(flow);
+                }
+                else
+                {
+                    return base.OnFailure(flow);
+                }
             }
             logger.Error(String.Format("invalid status: status={0}, token_id={1}", this.tokenStatus.ToString(), this.TicketData.ordered_product_item_token_id));
             var message = this.Resource.GetTokenStatusMessage (this.tokenStatus);

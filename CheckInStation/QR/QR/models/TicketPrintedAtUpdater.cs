@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using NLog;
 using QR.message;
+using QR.support;
 
 namespace QR
 {
@@ -30,7 +31,7 @@ namespace QR
             using (var wrapper = factory.Create(GetUpdatePrintedAtURL()))
             {
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCodeExtend();
                 await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false);
                 return true;
             }

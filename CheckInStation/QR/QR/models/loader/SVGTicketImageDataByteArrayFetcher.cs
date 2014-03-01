@@ -9,6 +9,7 @@ using QR.message;
 using System.IO;
 using System.Text;
 using System.Net.Http.Headers;
+using QR.support;
 
 namespace QR
 {
@@ -97,7 +98,7 @@ namespace QR
             var wrapper = factory.Create(GetImageFromSvgURL());
             //todo:???s??????????????(status!=200)
             HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode(); //throw exception?
+            response.EnsureSuccessStatusCodeExtend(); //throw exception?
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
