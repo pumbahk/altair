@@ -1,5 +1,16 @@
 # encoding: utf-8
 
+multicheckout_statuses = {
+    '100': u'未オーソリ',
+    '105': u'オーソリ待ち',
+    '110': u'オーソリ OK',
+    '109': u'オーソリ NG',
+    '115': u'売上待ち',
+    '120': u'売上確定',
+    '130': u'売上一部取消',
+    '210': u'カード有効性チェックOK',
+    }
+
 multicheckout_common_errors = {
     '000000': u'正常終了',
     '001001': u'店舗コード不正',
@@ -202,6 +213,9 @@ multicheckout_card_errors = {
     '210G44': u'セキュリティコードエラー',
     '999999': u'その他エラー',
     }
+
+def get_multicheckout_status_description(code):
+    return multicheckout_statuses.get(code)
 
 def get_multicheckout_error_message(code):
     return multicheckout_common_errors.get(code, u'不明なエラー')

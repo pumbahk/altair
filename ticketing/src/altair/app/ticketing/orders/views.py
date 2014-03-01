@@ -79,6 +79,7 @@ from . import utils
 from .card_utils import (
     get_multicheckout_error_message,
     get_multicheckout_card_error_message,
+    get_multicheckout_status_description,
     )
 
 from .api import (
@@ -2315,9 +2316,10 @@ class CartView(BaseView):
         decorated_order_no = decorate_order_no(self.request, cart.order_no)
         multicheckout_records = []
         from altair.multicheckout.models import MultiCheckoutRequestCard, MultiCheckoutResponseCard, Secure3DAuthRequest, Secure3DAuthResponse
-        for multicheckout_response in slave_session.query(MultiCheckoutResponseCard).outerjoin(MultiCheckoutResponseCard.request).filter(MultiCheckoutResponseCard.OrderNo == decorated_order_no):
+        for multicheckout_response in slave_session.query(MultiCheckoutResponseCard).outerjoin(MultiCheckoutResponseCard.request).filter(MultiCheckoutResponseCard.OrderNo == decorated_order_no).order_by(MultiCheckoutResponseCard.id):
             multicheckout_records.append({
                 'status': multicheckout_response.Status,
+                'status_description': get_multicheckout_status_description(multicheckout_response.Status),
                 'ahead_com_cd': multicheckout_response.AheadComCd,
                 'error_cd': multicheckout_response.CmnErrorCd,
                 'card_error_cd': multicheckout_response.CardErrorCd,
@@ -2330,6 +2332,7 @@ class CartView(BaseView):
         for secure3d_auth_response in slave_session.query(Secure3DAuthResponse).outerjoin(Secure3DAuthResponse.request).filter(Secure3DAuthResponse.OrderNo == decorated_order_no):
             multicheckout_records.append({
                 'status': None,
+                'status_description': None,
                 'ahead_com_cd': None,
                 'error_cd': secure3d_auth_response.ErrorCd,
                 'card_error_cd': None,

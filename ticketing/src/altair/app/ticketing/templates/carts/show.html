@@ -9,7 +9,7 @@
 </style>
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-    names=[u'トップ', u'カート追跡'],
+    names=[u'トップ', u'カート追跡', u'カート情報'],
     urls=[request.route_path('index'), request.route_path('cart.search')]
   )}
 </%block>
@@ -26,6 +26,10 @@
     <tr>
       <th>カート生成日時</th>
       <td>${vh.datetime(cart.created_at)}</td>
+    </tr>
+    <tr>
+      <th>browserid</th>
+      <td>${cart.browserid}</td>
     </tr>
     % if cart.shipping_address:
     <% user = cart.shipping_address.user %>
@@ -129,7 +133,12 @@
     <tbody>
     % for multicheckout_record in multicheckout_records:
       <tr>
-        <td>${multicheckout_record['status'] or u'(セキュア3D)'}</td>
+        <td>
+          ${multicheckout_record['status'] or u'-'}
+          % if multicheckout_record['status_description']:
+          (${multicheckout_record['status_description']})
+          % endif
+        </td>
         <td>${multicheckout_record['error_cd'] or u'-'}</td>
         <td>${multicheckout_record['card_error_cd'] or u'-'}</td>
         <td>${multicheckout_record['ahead_com_cd'] or u'-'}</td>
