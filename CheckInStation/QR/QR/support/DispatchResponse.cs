@@ -48,15 +48,20 @@ namespace QR.support
            catch (TaskCanceledException e)
             {
                 logger.ErrorException("task cancel", e);
-               return new Failure<string, T>(Resource.GetDefaultErrorMessage()  );
+                return new Failure<string, T>(Resource.GetDefaultErrorMessage()  );
+            }
+            catch (TransparentMessageException e)
+            {
+                return new Failure<string, T>(String.Format("E:{0}", e.Message));
             }
         }
 
         public async Task<ResultTuple<string, T>> Dispatch(Func<Task<T>> fn)
         {
-            try{
-                return new Success<string,T>(await fn().ConfigureAwait(false));
-                        }
+            try
+            {
+                return new Success<string, T>(await fn().ConfigureAwait(false));
+            }
             catch (System.Net.WebException e)
             {
                 logger.ErrorException("net:", e);
@@ -72,11 +77,15 @@ namespace QR.support
                 logger.ErrorException("httprequest", e);
                 return new Failure<string, T>(Resource.GetWebExceptionMessage());
             }
-           catch (System.Xml.XmlException e)
+            catch (System.Xml.XmlException e)
             {
                 logger.ErrorException("xml:", e);
                 return new Failure<string, T>(e.ToString());
-           }
+            }
+            catch (TransparentMessageException e)
+            {
+                return new Failure<string, T>(e.Message);
+            }
         }
     }
 }

@@ -81,14 +81,17 @@ namespace QR.presentation.gui.page
                     if (ctx.ErrorMessage != String.Empty)
                     {
                         this.ErrorDialog.Show();
-                    }
+                    } 
                     AppUtil.GetNavigator().NavigateToMatchedPage(case_, this, ctx.ErrorMessage); //エラーメッセージを受け渡す
 
-                    //ここである必要はあまりないけれど。裏側で広告用の画像をとる
-                    var resource = AppUtil.GetCurrentResource();
-                    if (resource.AdImageCollector.State == CollectorState.starting)
+                    if (ctx.Event.Status == InternalEventStaus.success)
                     {
-                        await resource.AdImageCollector.Run(resource.EndPoint.AdImages).ConfigureAwait(false);
+                        //ここである必要はあまりないけれど。裏側で広告用の画像をとる
+                        var resource = AppUtil.GetCurrentResource();
+                        if (resource.AdImageCollector.State == CollectorState.starting)
+                        {
+                            await resource.AdImageCollector.Run(resource.EndPoint.AdImages).ConfigureAwait(false);
+                        }
                     }
                 }
                 else
