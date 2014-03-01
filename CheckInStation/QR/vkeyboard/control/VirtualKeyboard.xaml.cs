@@ -70,6 +70,16 @@ namespace vkeyboard.control
             set { this.SetValue(DescriptionProperty, value); }
         }
 
+        public static readonly DependencyProperty DisableModifyKeyProperty =
+        DependencyProperty.Register("DisableModifyKey", typeof(bool), typeof(VirtualKeyboard),
+        new FrameworkPropertyMetadata(false));
+
+        public bool DisableModifyKey
+        {
+            get { return (bool)this.GetValue(DisableModifyKeyProperty); }
+            set { this.SetValue(DisableModifyKeyProperty, value); }
+        }
+
         public static readonly DependencyProperty DisableTenKeyProperty =
         DependencyProperty.Register("DisableTenKey", typeof(bool), typeof(VirtualKeyboard),
         new FrameworkPropertyMetadata(false));

@@ -51,12 +51,18 @@
   <ItemGroup>
     <Compile Include="converter\StarConverter.cs" />
     <Compile Include="logicalkeys\ComboKey.cs" />
+    <Compile Include="logicalkeys\HasStateKey.cs" />
+    <Compile Include="logicalkeys\HasStateKeyFactory.cs" />
+    <Compile Include="logicalkeys\ToggleStateKey.cs" />
+    <Compile Include="logicalkeys\VirtualCapsLockKeyState.cs" />
     <Compile Include="viewmodel\AlphabetKeyPad.cs" />
     <Compile Include="viewmodel\ClearKeysPad.cs" />
     <Compile Include="viewmodel\CursorsKeyPad.cs" />
     <Compile Include="viewmodel\KeyPadLayout.cs" />
+    <Compile Include="viewmodel\ModifyKeysPad.cs" />
     <Compile Include="viewmodel\TenKeyPad.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="viewmodel\VirtualCapsLockKeyFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="control\CustomTextBox.xaml.cs">

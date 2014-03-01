@@ -38,6 +38,7 @@
                                                x:Name="KeyPad"
                                                Description="(入力例:08012341234)"
                                                VirtualkeyboardFinish="KeyPad_KeyPadFinish"
+                                               DisableModifyKey="True"                                               
                                                DisableTenKey="False"
                                                DisableAlphabetKey="True"/>
                         </Grid>

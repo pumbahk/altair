@@ -11,6 +11,8 @@
              MouseEnter="Container_MouseEnter"
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
+        <vm:VirtualCapsLockKeyFactory x:Key="KeyEnv"/>
+
         <SolidColorBrush x:Key="MainTextBrush">
             <SolidColorBrush.Color>#840315</SolidColorBrush.Color>
         </SolidColorBrush>
@@ -71,7 +73,14 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-
+        <Style TargetType="Border" x:Key="ObstructiveBorderModifyKey">
+            <Setter Property="Background" Value="Transparent"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ElementName=Container, Path=DisableModifyKey}" Value="False">
+                    <Setter Property="Visibility" Value="Hidden"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
 
         <Style TargetType="vm:AlphabetKeyPad">
             <Style.Resources>
@@ -142,6 +151,31 @@
             </Style.Resources>
         </Style>
 
+        <Style TargetType="vm:ModifyKeysPad">
+            <Style.Resources>
+                <Style TargetType="vm:KeyboardSurface">
+                    <Setter Property="Background" Value="{StaticResource KeyPadSurfaceBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderBrush}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding DisableModifyKey, ElementName=Container}" Value="True">
+                            <Setter Property="Background" Value="{StaticResource KeyPadSurfaceDisableBrush}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderDisableBrush}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+                <Style TargetType="vm:MouseOverKeyboardSurface">
+                    <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderBrush}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding DisableModifyKey, ElementName=Container}" Value="True">
+                            <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceDisableBrush}"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderDisableBrush}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Style.Resources>
+        </Style>
+
     </UserControl.Resources>
     <Canvas>
         
@@ -188,11 +222,20 @@
 
 
         <!-- Cursor -->
+             <!--
             <vm:CursorsKeyPad Width="140" Height="64"
                                   Canvas.Left="657"
                                   Canvas.Top="24"/>
+            -->
+           <vm:ModifyKeysPad Width="100" Height="64"
+                             Env="{StaticResource KeyEnv}" Canvas.Left="674" Canvas.Top="24"/>
+           <Border Width="100" Height="64"
+                            Style="{StaticResource ObstructiveBorderModifyKey}"
+                            Canvas.Left="674"                
+                            Canvas.Top="24"/>
 
-            <!-- clear なにかのせいで(0,-6) -->
+
+        <!-- clear なにかのせいで(0,-6) -->
             <vm:ClearKeysPad Width="210" Height="64"
                                   Canvas.Left="837"
                                   Canvas.Top="24"/>
@@ -201,6 +244,7 @@
             <!-- アルファベットキー (marginの分width+12, -6,-6移動)-->
 
             <vm:AlphabetKeyPad Width="632" Height="342" 
+                               Env="{StaticResource KeyEnv}"
                              Canvas.Left="24" 
                              Canvas.Top="114">
             </vm:AlphabetKeyPad>
@@ -214,6 +258,7 @@
         <!-- テンキー (marginの分Width, translate(-6,-6))-->
             <vm:TenKeyPad
                               Width="273" Height="343" 
+                              Env="{StaticResource KeyEnv}"
                               Canvas.Right="24"
                               Canvas.Top="114"
                                 />

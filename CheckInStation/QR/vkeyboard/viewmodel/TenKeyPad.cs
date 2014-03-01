@@ -7,6 +7,28 @@ namespace vkeyboard.viewmodel
    
     public class TenKeyPad : UniformOnScreenKeyboard
     {
+        private VirtualCapsLockKeyFactory env;
+        public VirtualCapsLockKeyFactory Env
+        {
+            get { return this.env; }
+            set
+            {
+                this.env = value;
+                this.UpdateKeyMap();
+            }
+        }
+
+        private void UpdateKeyMap()
+        {
+            var ks = this.Env.OnTenKeyPadEnhanced();
+            foreach (var k in ks)
+            {
+                k.Layout = new KeyPadKeyLayout(k);
+            }
+
+            this.Keys = ks;
+        }
+
         public TenKeyPad()
             : base()
         {

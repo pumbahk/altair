@@ -12,6 +12,28 @@ namespace vkeyboard.viewmodel
 
     public class AlphabetKeyPad : UniformOnScreenKeyboard
     {
+        private VirtualCapsLockKeyFactory env;
+        public VirtualCapsLockKeyFactory Env
+        {
+            get { return this.env; }
+            set
+            {
+                this.env = value;
+                this.UpdateKeyMap();
+            }
+        }
+
+        private void UpdateKeyMap()
+        {
+            var ks = this.Env.OnAlphabetKeyPadEnhanced();
+            foreach (var k in ks)
+            {
+                k.Layout = new KeyPadKeyLayout(k);
+            }
+
+            this.Keys = ks;
+        }
+
         public AlphabetKeyPad()
             : base()
         {
