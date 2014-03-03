@@ -58,7 +58,7 @@ def sex_value(value):
 
 def order_status(order):
     if order.status == 'canceled':
-        return u"キャンセル"
+        return u"無効"
     elif order.status == 'delivered':
         return u"配送済み"
     elif order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
@@ -75,7 +75,7 @@ def safe_strftime(s, format='%Y-%m-%d %H:%M'):
 
 def get_order_status(order):
     if order.status == 'canceled':
-        return u"キャンセル"
+        return u"無効"
     elif order.status == 'delivered':
         return u"配送済"
     else:
@@ -117,7 +117,9 @@ def get_print_status(order):
         return u"未発券"
 
 def get_entry_status(entry):
-    if entry.is_ordered:
+    if entry.canceled_at:
+        return u"無効"
+    elif entry.is_ordered:
         return u"当選"
     elif entry.is_rejected:
         return u"落選"
@@ -125,7 +127,9 @@ def get_entry_status(entry):
         return u"結果抽選待ち"
 
 def get_entry_status_image(entry):
-    if entry.is_ordered:
+    if entry.canceled_at:
+        return u"icon_cancel.gif"
+    elif entry.is_ordered:
         return u"icon_tousen.gif"
     elif entry.is_rejected:
         return u"icon_rakusen.gif"
