@@ -14,6 +14,7 @@ __all__ = (
     'Katakana',
     'JISX0208',
     'CP932',
+    'ASCII',
     'SejCompliantEmail',
     'Zenkaku',
     'after1900',
@@ -113,6 +114,7 @@ class Charset(object):
             except UnicodeEncodeError:
                 yield c
 
+ASCII = Charset('ASCII')
 JISX0208 = Charset('Shift_JIS')
 CP932 = Charset('CP932')
 

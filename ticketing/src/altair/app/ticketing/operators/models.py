@@ -76,6 +76,13 @@ class OperatorAuth(Base, BaseModel, WithTimestamp):
         return  DBSession.query(OperatorAuth, include_deleted=True)\
                                         .filter(OperatorAuth.login_id==user_id).first()
 
+def ensure_ascii(login_id):
+    if isinstance(login_id, unicode):
+        login_id = login_id.encode('ascii', errors='ignore')
+    elif isinstance(login_id, (bytes, str)):
+        login_id = login_id.decode('ascii', errors='ignore').encode('ascii')
+    return login_id
+
 class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Operator'
     id = Column(Identifier, primary_key=True)
@@ -90,9 +97,10 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     auth = relationship('OperatorAuth', uselist=False, backref='operator')
 
     @staticmethod
-    def get_by_login_id(user_id):
+    def get_by_login_id(login_id):
+        login_id = ensure_ascii(login_id)
         return Operator.filter().join(OperatorAuth)\
-        .filter(OperatorAuth.login_id==user_id).first()
+            .filter(OperatorAuth.login_id==login_id).first()
 
     @staticmethod
     def get_by_email(email):
@@ -100,6 +108,7 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def login(login_id, password):
+        login_id = ensure_ascii(login_id)
         operator = Operator.filter().join(OperatorAuth)\
                 .filter(OperatorAuth.login_id==login_id)\
                 .filter(OperatorAuth.password==hashlib.md5(password).hexdigest()).first()

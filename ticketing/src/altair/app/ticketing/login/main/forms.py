@@ -4,7 +4,7 @@ from wtforms import TextField, PasswordField, HiddenField
 from wtforms.validators import Regexp, Email, Length, EqualTo, Optional, ValidationError
 from wtforms import Form
 
-from altair.formhelpers import Translations, Required
+from altair.formhelpers import Translations, Required, ASCII, halfwidth
 from altair.app.ticketing.operators.models import Operator, OperatorAuth
 
 class LoginForm(Form):
@@ -12,7 +12,16 @@ class LoginForm(Form):
     def _get_translations(self):
         return Translations()
 
-    login_id = TextField(u'ユーザー名', validators=[Required()])
+    login_id = TextField(
+        u'ユーザー名',
+        filters=[
+            halfwidth
+            ],
+        validators=[
+            Required(),
+            ASCII
+            ]
+        )
     password = PasswordField(u'パスワード', validators=[Required(), Regexp("^[a-zA-Z0-9@!#$%&'()*+,\-./_]+$", 0, message=u'英数記号を入力してください。')])
 
 
