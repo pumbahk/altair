@@ -320,6 +320,12 @@ class IndexAjaxView(object):
                         'cart.seats',
                         performance_id=sales_segment.performance_id,
                         sales_segment_id=sales_segment.id,
+                        _query=dict(seat_type_id=_dict['id'])
+                        ),
+                    seats_url2=self.request.route_url(
+                        'cart.seats',
+                        performance_id=sales_segment.performance_id,
+                        sales_segment_id=sales_segment.id,
                         _query=dict(stock_id='__stock_id__')
                         ),
                     **_dict

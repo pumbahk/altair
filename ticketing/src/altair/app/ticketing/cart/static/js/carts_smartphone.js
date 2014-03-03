@@ -554,7 +554,7 @@ cart.VenuePresenter.prototype = {
         }
     },
     currentSeatsUrl: function () {
-        return this.selectedStockType.get('seats_url').replace(/__stock_id__/, this.stockIdToSelect);
+        return this.selectedStockType.get('seats_url2').replace(/__stock_id__/, this.stockIdToSelect);
     },
     selectable: function (viewer, seat) {
         if (!this.selectedStockType) {
