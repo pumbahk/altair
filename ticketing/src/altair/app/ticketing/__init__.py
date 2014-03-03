@@ -100,7 +100,6 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.login' , route_prefix='/login')
         config.include('altair.app.ticketing.organizations' , route_prefix='/organizations')
         config.include('altair.app.ticketing.api' , route_prefix='/api')
-        config.include('altair.app.ticketing.admin' , route_prefix='/admin')
         config.include('altair.app.ticketing.events' , route_prefix='/events')
         config.include('altair.app.ticketing.orders' , route_prefix='/orders')
         config.include('altair.app.ticketing.master' , route_prefix='/master')
