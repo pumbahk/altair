@@ -1,9 +1,11 @@
 [DEFAULT]
 www_check_docroot = %(here)s/../var/www-check/altair.ticketing.admin
+sqlalchemy.url = ${altair:ticketing.db_url.master}
+altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.master}
+altair.sqlahelper.sessions.slave.session_class = altair.logicaldeleting.LogicalDeletableSession
 
 [app:ticketing]
 use = config:%(here)s/../../baseconf/common.ini#ticketing
-sqlalchemy.url = ${altair:ticketing.db_url.master}
 pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_beaker pyramid_mailer altair.findable_label altair.queryprofile pyramid_beaker
 
 ;mail
@@ -38,6 +40,17 @@ altair.ticketing.cart.mq.url = amqp://guest:guest@localhost:5672/%2F
 altair.ticketing.cooperation.augus.bucket = tstar
 altair.ticketing.cooperation.augus.tort = cooperation/ftp/augus/upload/test
 
+[app:ticketing_default]
+use = ticketing
+altair.ticketing.admin.authentication.challenge_view = altair.app.ticketing.views.default_challenge_view
+
+[app:ticketing_client_cert]
+use = ticketing
+altair.ticketing.admin.authentication.challenge_view = altair.app.ticketing.views.client_cert_challenge_view
+
+[app:main]
+use = ticketing
+
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s
@@ -51,15 +64,26 @@ use = egg:altair.browserid#browserid
 cookie_name = browserid
 env_key = repoze.browserid
 
-[pipeline:pipeline]
+[pipeline:pipeline_default]
 pipeline = 
     prefix
     browserid
-    ticketing
+    ticketing_default
 
-[composite:main]
+[pipeline:pipeline_client_cert]
+pipeline = 
+    prefix
+    browserid
+    ticketing_client_cert
+
+[composite:default]
 use = egg:Paste#urlmap
-/ = pipeline
+/ = pipeline_default
+/.www-check = www-check
+
+[composite:client_cert]
+use = egg:Paste#urlmap
+/ = pipeline_client_cert
 /.www-check = www-check
 
 [server:main]
@@ -76,13 +100,12 @@ setup = altair.app.ticketing.scripts.pshell.setup
 [alembic]
 script_location = %(here)s/../../../ticketing/alembic
 # file_template = %%(rev)s_%%(slug)s
-sqlalchemy.echo = true
-sqlalchemy.url = ${altair:ticketing.db_url.master}
+sqlalchemy.echo = false
 
 # Begin logging configuration
 
 [loggers]
-keys = root, altair, ticketing, sqlalchemy
+keys = root, altair, ticketing, sqlalchemy, alembic
 
 [handlers]
 keys = console, fluent, sqlalchemy
@@ -110,6 +133,12 @@ propagate = 0
 level = INFO
 handlers = sqlalchemy
 qualname = sqlalchemy.engine
+propagate = 0
+
+[logger_alembic]
+level = INFO
+handlers = console, sqlalchemy
+qualname = alembic
 propagate = 0
 
 [handler_console]

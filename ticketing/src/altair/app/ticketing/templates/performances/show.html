@@ -51,6 +51,7 @@ ${performance.code} | ${performance.name}
     <li id="reservation-tab"><a href="${route_path}/reservation">予約</a></li>
     <li id="order-tab"><a href="${route_path}/order">購入情報</a></li>
     <li id="import_orders-tab"><a href="${request.route_path('performances.import_orders.index', performance_id=performance.id)}">予約インポート</a></li>
+    <li id="orion-tab"><a href="${request.route_path('performances.orion.index', performance_id=performance.id)}">イベント・ゲート</a></li>
   </ul>
   <div class="tab-content" id="tabbable-tab-content">
     % if tab == 'summary':
@@ -78,6 +79,10 @@ ${performance.code} | ${performance.name}
       % else:
         <%include file="./import_orders/_index.html" args="performance=performance, form=form, order_import_tasks=order_import_tasks" />
       % endif
+    </div>
+    % elif tab == 'orion':
+    <div class="tab-pane" id="orion">
+      <%include file="./orion/_show.html" args="performance=performance, stats=stats" />
     </div>
     % elif HH.has_permission('event_editor'):
     <div class="tab-pane" id="seat-allocation">

@@ -4,6 +4,7 @@
 
 <div class="page-header">
   <h3>オーガス公演連携</h3>
+  <%include file="../_menu.html" args="event=event" />
 </div>
 <form role="form" method="POST" action="${request.route_url('augus.performance.save', event_id=event.id)}">
 <button class="btn" type="submit">連携を保存</button>
@@ -21,13 +22,23 @@
     <td>${performance.code}</td>
     <td>${performance.start_on}</td>
     <td>${performance.venue.name}</td>
-    
+
     <td>
       <select class="selectpicker" name="${select_prefix}${performance.id}">
+        <option value=""></option>
         %for ag_performance in augus_performance_all:
-        <option value="${ag_performance.id}">${ag_performance.name} -
-          ${ag_performance.code} -
+        %if ag_performance.start_on == performance.start_on:
+        <option value="${ag_performance.id}"
+                %if ag_performance_now and ag_performance.id == ag_performance_now.id:
+                selected="true"
+                %endif
+                >
+          ${ag_performance.augus_event_name} -
+          ${ag_performance.augus_performance_name} -
+          ${ag_performance.start_on} -
+          ${ag_performance.augus_venue_name} -
         </option>
+        %endif
         %endfor
       </select>
     </td>

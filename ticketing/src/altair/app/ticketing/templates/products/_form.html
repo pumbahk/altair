@@ -1,17 +1,37 @@
 <%page args="form, action='#'" />
 <%namespace file="/common/helpers.html" name="ch" />
 <form action="${action}" method="POST">
+% if form.performance_id.data:
+  ${ch.form_item(form.all_sales_segment)}
+% endif
+  ${ch.form_item(form.sales_segment_id)}
+  ${ch.form_item(form.seat_stock_type_id)}
   ${ch.form_item(form.id)}
   ${ch.form_item(form.name, style='width: 300px;', maxlength=255)}
   ${ch.form_item(form.price, style='width: 150px;')}
   ${ch.form_item(form.display_order)}
   ${ch.form_item(form.min_product_quantity)}
   ${ch.form_item(form.max_product_quantity)}
-  ${ch.form_item(form.seat_stock_type_id)}
-  ${ch.form_item(form.sales_segment_id)}
   ${ch.form_item(form.public)}
   ${ch.form_item(form.description)}
+  ${form.performance_id}
 % if request.context.organization.point_feature_enabled and form.applied_point_grant_settings.choices:
   ${ch.form_item(form.applied_point_grant_settings)}
 % endif
 </form>
+
+<script type="text/javascript">
+$(function() {
+
+  setProductName();
+
+  $('select[name="seat_stock_type_id"]').change(function(event){
+    setProductName();
+  });
+
+  function setProductName(){
+    var seat_name = $('select[name="seat_stock_type_id"] option:selected').text();
+    $(':text[name="name"]').val(seat_name);
+  }
+});
+</script>

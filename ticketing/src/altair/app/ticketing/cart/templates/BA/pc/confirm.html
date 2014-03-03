@@ -130,38 +130,6 @@ ${self.widget.flow_widget(3)}
 	</div>
   </div>
 
-	% if mailmagazines_to_subscribe:
-	<div class="settlementBox">
-    <div class="settlementBoxInner">
-			<h2><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
-      <div id="mailMagazineBox">
-				<div id="mailMagazineBoxInner">
-					<dl>
-						<dt>
-							ご利用いただいた方には、ブラウブリッツチケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
-						</dt>
-						<dd>
-							<ul>
-								% for mailmagazine, subscribed in mailmagazines_to_subscribe:
-								<li${subscribed and u' class="subscribed"' or u''|n}>
-									<div>
-										<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
-										<label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
-									</div>
-									<div>
-										${mailmagazine.description|n}
-									</div>
-								</li>
-								% endfor
-							</ul>
-						</dd>
-					</dl>
-				</div>
-      </div>
-    </div>
-	</div>
-	% endif
-
   <table style="margin-left: auto; margin-right: auto;">
     <tr>
       <td style="width: 320px; text-align: center;">

@@ -73,6 +73,12 @@
     </td>
   </tr>
   <tr>
+    <th>${HH.label_text_for(SalesSegmentGroupSetting.disp_orderreview)}</th>
+    <td id="disp_orderreview">
+        ${u'表示' if sales_segment_group.setting and sales_segment_group.setting.disp_orderreview else u'非表示'}
+    </td>
+  </tr>
+  <tr>
     <th>${HH.label_text_for(SalesSegmentGroup.reporting)}</th>
     <td id="reporting" value="${sales_segment_group.reporting}">
       ${u'対象' if sales_segment_group.reporting else u'×対象外'}

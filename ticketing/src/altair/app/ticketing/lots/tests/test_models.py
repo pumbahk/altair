@@ -218,6 +218,39 @@ class LotTests(unittest.TestCase):
         self.assertEqual([l.entry_no for l in result],
                          ["testing-rejectable"])
 
+    def test_available_on_app_context(self):
+        from altair.app.ticketing.core.models import SalesSegment
+        from datetime import datetime
+        target = self._makeOne(
+            sales_segment=SalesSegment(
+                start_at=None,
+                end_at=None
+                )
+            )
+        self.assertTrue(target.available_on(datetime(1990, 1, 1)))
+        self.assertTrue(target.available_on(datetime(2000, 1, 1)))
+        self.assertTrue(target.available_on(datetime(2010, 1, 1)))
+
+        target = self._makeOne(
+            sales_segment=SalesSegment(
+                start_at=datetime(2000, 1, 1),
+                end_at=None
+                )
+            )
+        self.assertFalse(target.available_on(datetime(1990, 1, 1)))
+        self.assertTrue(target.available_on(datetime(2000, 1, 1)))
+        self.assertTrue(target.available_on(datetime(2010, 1, 1)))
+
+        target = self._makeOne(
+            sales_segment=SalesSegment(
+                start_at=datetime(2000, 1, 1),
+                end_at=datetime(2005, 1, 1)
+                )
+            )
+        self.assertFalse(target.available_on(datetime(1990, 1, 1)))
+        self.assertTrue(target.available_on(datetime(2000, 1, 1)))
+        self.assertFalse(target.available_on(datetime(2010, 1, 1)))
+
 
 class LotEntryTests(unittest.TestCase):
     def _getTarget(self):

@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.security import remember, forget
-from pyramid.url import route_path
 from pyramid.security import authenticated_userid
 
 from altair.app.ticketing.models import merge_and_flush, record_to_multidict, merge_session_with_post
@@ -13,23 +12,24 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import *
 from altair.app.ticketing.operators.models import Operator
-from .forms import LoginForm, OperatorForm, ResetForm
+from .forms import SSLClientCertLoginForm, LoginForm, OperatorForm, ResetForm
 from altair.app.ticketing.operators import api as o_api
+from .utils import get_auth_identifier_from_client_certified_request
 
-@view_defaults(decorator=with_bootstrap)
-class Login(BaseView):
-
-    @view_config(route_name='login.index', request_method='GET', renderer='altair.app.ticketing:templates/login/index.html')
+@view_defaults(decorator=with_bootstrap, route_name='login.default', renderer='altair.app.ticketing:templates/login/default.html')
+class DefaultLoginView(BaseView):
+    @view_config(request_method='GET')
     def index_get(self):
         user_id = authenticated_userid(self.request)
         user = Operator.get_by_login_id(user_id)
         if user is not None:
-            return HTTPFound(location=route_path('index', self.request))
+            next_url = self.request.GET.get('next')
+            return HTTPFound(location=next_url if next_url else self.request.route_path("index"))
         return {
             'form':LoginForm()
         }
 
-    @view_config(route_name='login.index', request_method='POST', renderer='altair.app.ticketing:templates/login/index.html')
+    @view_config(request_method='POST')
     def index_post(self):
         form = LoginForm(self.request.POST)
         if form.validate():
@@ -42,25 +42,66 @@ class Login(BaseView):
             merge_and_flush(operator)
             headers = remember(self.request, form.data.get('login_id'))
             next_url = self.request.GET.get('next')
-            return HTTPFound(location=next_url if next_url else route_path("index", self.request), headers=headers)
+            return HTTPFound(location=next_url if next_url else self.request.route_path("index"), headers=headers)
         else:
             return {
                 'form':form
             }
 
-    @view_config(route_name='login.reset', request_method='GET', renderer='altair.app.ticketing:templates/login/reset.html')
+@view_defaults(decorator=with_bootstrap, route_name='login.client_cert', renderer='altair.app.ticketing:templates/login/client_cert.html')
+class SSLClientCertLoginView(BaseView):
+    @view_config(request_method='GET')
+    def index_get(self):
+        user_id = authenticated_userid(self.request)
+        user = Operator.get_by_login_id(user_id)
+        if user is not None:
+            next_url = self.request.GET.get('next')
+            return HTTPFound(location=next_url if next_url else self.request.route_path("index"))
+        return {
+            'form':SSLClientCertLoginForm()
+        }
+
+    @view_config(request_method='POST')
+    def index_post(self):
+        form = SSLClientCertLoginForm(self.request.POST)
+        auth_identifier = get_auth_identifier_from_client_certified_request(self.request)
+        if auth_identifier is None:
+            self.request.session.flash(u'クライアント証明書が提示されていません')
+            return {
+                'form': form
+                }
+        if form.validate():
+            operator = Operator.login(auth_identifier, form.data.get('password'))
+            if operator is None:
+                self.request.session.flash(u'パスワードが違います。')
+                return {
+                    'form':form
+                    }
+            merge_and_flush(operator)
+            headers = remember(self.request, auth_identifier)
+            next_url = self.request.GET.get('next')
+            return HTTPFound(location=next_url if next_url else self.request.route_path("index"), headers=headers)
+        else:
+            return {
+                'form':form
+            }
+
+
+@view_defaults(decorator=with_bootstrap, route_name='login.reset', renderer='altair.app.ticketing:templates/login/reset.html')
+class LoginPasswordResetView(BaseView):
+    @view_config(request_method='GET')
     def reset_get(self):
         return {
             'form':ResetForm()
         }
 
-    @view_config(route_name='login.reset', request_method='POST', renderer='altair.app.ticketing:templates/login/reset.html')
+    @view_config(request_method='POST')
     def reset_post(self):
         f = ResetForm(self.request.POST)
         if f.validate():
             operator = Operator.get_by_email(f.data.get('email'))
             # TODO: operator.notify_reset_password()  # パスワード再設定URLをメール通知
-            return HTTPFound(location=route_path('login.reset.complete', self.request))
+            return HTTPFound(location=self.request.route_path('login.reset.complete'))
         else:
             return {
                 'form':f
@@ -73,7 +114,6 @@ class Login(BaseView):
 
 @view_defaults(decorator=with_bootstrap, permission='authenticated')
 class LoginUser(BaseView):
-
     @view_config(route_name='login.info', renderer='altair.app.ticketing:templates/login/info.html')
     def info(self):
         login_id = authenticated_userid(self.request)
@@ -116,7 +156,7 @@ class LoginUser(BaseView):
 
             self.request.session.flash(u'ログイン情報を更新しました')
             headers = remember(self.request, operator.auth.login_id)
-            return HTTPFound(location=route_path('login.info', self.request), headers=headers)
+            return HTTPFound(location=self.request.route_path('login.info'), headers=headers)
         else:
             return {
                 'form':f
@@ -125,4 +165,4 @@ class LoginUser(BaseView):
     @view_config(route_name='login.logout')
     def logout(self):
         headers = forget(self.request)
-        return HTTPFound(location=self.request.route_url('login.index'), headers=headers)
+        return HTTPFound(location=self.request.route_url('index'), headers=headers)

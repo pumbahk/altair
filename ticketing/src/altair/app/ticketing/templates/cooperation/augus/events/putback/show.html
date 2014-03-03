@@ -1,0 +1,52 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<div class="page-header">
+  <h3>オーガス返券確認</h3>
+  <%include file="../_menu.html" args="event=event" />
+</div>
+
+<p>返券コード: ${putback.augus_putback_code}</p>
+<p>返券タイプ: ${putback.augus_putback_type}</p>
+<p>返券予約: ${putback.reserved_at}</p>
+<p>返券通知: ${putback.notified_at}</p>
+<p>返券完了: ${putback.finished_at}</p>
+
+<table class="table">
+  <tr>
+    <th>公演名</th>
+    <th>開始日時</th>
+    <th>会場名</th>
+    <th>座席名</th>
+    <th>l0_id</th>
+    <th>オーガス事業名</th>
+    <th>オーガス公演名</th>
+    <th>オーガス開始日時</th>
+    <th>オーガス会場名</th>
+    <th>オーガス座席名</th>
+  </tr>
+  %for stock_detail in putback.augus_stock_details:
+  <tr>
+    <td>${stock_detail.augus_stock_info.augus_performance.performance.name}</td>
+    <td>${stock_detail.augus_stock_info.augus_performance.performance.start_on}</td>
+    <td>${stock_detail.augus_stock_info.seat.venue.name}</td>
+    <td>${stock_detail.augus_stock_info.seat.name}</td>
+    <td>${stock_detail.augus_stock_info.seat.l0_id}</td>
+    <td>${stock_detail.augus_stock_info.augus_performance.augus_event_name}</td>
+    <td>${stock_detail.augus_stock_info.augus_performance.augus_performance_name}</td>
+    <td>${stock_detail.augus_stock_info.augus_performance.start_on}</td>
+    <td>${stock_detail.augus_stock_info.augus_seat.augus_venue.name}</td>
+    <td>
+      ${stock_detail.augus_stock_info.augus_seat.area_name}
+      ${stock_detail.augus_stock_info.augus_seat.info_name}
+      ${stock_detail.augus_stock_info.augus_seat.floor}
+      ${stock_detail.augus_stock_info.augus_seat.column}
+      ${stock_detail.augus_stock_info.augus_seat.num}
+    </td>
+  </tr>
+  %endfor
+</table>
+
+
+返券タイプ: R(途中)/F(最終)

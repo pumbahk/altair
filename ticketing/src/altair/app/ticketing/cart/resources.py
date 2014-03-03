@@ -12,6 +12,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm import joinedload, joinedload_all
 from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
+from altair.sqlahelper import get_db_session
 from .interfaces import ICartPayment, ICartDelivery
 from altair.app.ticketing.payments.interfaces import IOrderPayment, IOrderDelivery 
 from altair.app.ticketing.users import api as user_api
@@ -270,8 +271,8 @@ class TicketingCartResourceBase(object):
                 # 設定なしの場合は何度でも購入可能
                 container = setting.container
                 if IOrderQueryable.providedBy(container):
-                    from altair.app.ticketing.models import DBSession
-                    query = DBSession.query(
+                    slave_session = get_db_session(self.request, name="slave")
+                    query = slave_session.query(
                         sql.expression.func.count(sql.expression.distinct(c_models.Order.id)),
                         sql.expression.func.sum(c_models.OrderedProductItem.quantity)
                         ) \

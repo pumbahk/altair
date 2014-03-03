@@ -3,24 +3,27 @@ from pyramid import testing
 from altair.auth import REQUEST_KEY
 from altair.auth.testing import DummySession
 from altair.app.ticketing.testing import _setup_db, _teardown_db
+from altair.sqlahelper import register_sessionmaker_with_engine
 from .testing import add_credential
 
 class FCAuthPluginTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.session = _setup_db(modules=[
+    def setUp(self):
+        self.config = testing.setUp()
+        self.session = _setup_db(modules=[
                 'altair.app.ticketing.core.models',
                 #'altair.app.ticketing.tickets.models',
                 'altair.app.ticketing.operators.models',
                 #'altair.app.ticketing.users.models',
                 ])
-
-    @classmethod
-    def tearDownClass(cls):
-        _teardown_db()
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
 
     def tearDown(self):
         _teardown_db()
+        testing.tearDown()
 
     def _getTarget(self):
         from .plugins import FCAuthPlugin
@@ -31,7 +34,7 @@ class FCAuthPluginTests(unittest.TestCase):
 
 
     def _makeEnv(self, *kwargs):
-        environ = {}
+        environ = { REQUEST_KEY: testing.DummyRequest() }
         from wsgiref.util import setup_testing_defaults
         setup_testing_defaults(environ)
         environ.update(kwargs)
@@ -64,9 +67,10 @@ class FCAuthPluginTests(unittest.TestCase):
         self.assertFalse(result)
 
     def _addCredential(self, membership, membergroup, username, password):
-        user = add_credential(membership, membergroup, username, password)
-        self.session.add(user)
-        return user
+        user_credential = add_credential(membership, membergroup, username, password)
+        self.session.add(user_credential)
+        self.session.flush()
+        return user_credential
 
     def test_authenticate(self):
         membership = "fc"
@@ -78,7 +82,7 @@ class FCAuthPluginTests(unittest.TestCase):
         identity = {
             "membership": membership,
             "username": username,
-            "password": password,
+            "login": True,
             }
         environ = self._makeEnv()
 
@@ -89,26 +93,24 @@ class FCAuthPluginTests(unittest.TestCase):
         self.assertTrue(result)
 
 class TestIt(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.session = _setup_db(modules=[
+    def setUp(self):
+        self.request = testing.DummyRequest()
+        self.config = testing.setUp(request=self.request)
+        self.session = _setup_db(modules=[
                 'altair.app.ticketing.core.models',
                 #'altair.app.ticketing.tickets.models',
                 'altair.app.ticketing.operators.models',
                 #'altair.app.ticketing.users.models',
                 ])
-
-    @classmethod
-    def tearDownClass(cls):
-        _teardown_db()
-
-    def setUp(self):
-        self.request = testing.DummyRequest()
-        self.config = testing.setUp(request=self.request)
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
 
     def tearDown(self):
-        testing.tearDown()
         _teardown_db()
+        testing.tearDown()
 
     def _makeAPIFactory(self, *args, **kwargs):
         
@@ -140,16 +142,17 @@ class TestIt(unittest.TestCase):
         return factory
 
     def _makeEnv(self, *kwargs):
-        environ = {}
+        environ = { REQUEST_KEY: self.request }
         from wsgiref.util import setup_testing_defaults
         setup_testing_defaults(environ)
         environ.update(kwargs)
         return environ
 
     def _addCredential(self, membership, membergroup, username, password, organization_short_name="testing"):
-        user = add_credential(membership, membergroup, username, password, organization_short_name)
-        self.session.add(user)
-        return user
+        user_credential = add_credential(membership, membergroup, username, password, organization_short_name)
+        self.session.add(user_credential)
+        self.session.flush()
+        return user_credential
 
     def test_it(self):
         factory = self._makeAPIFactory()
@@ -163,15 +166,16 @@ class TestIt(unittest.TestCase):
         password = "secret"
         self._addCredential(membership, membergroup, username, password)
         creds = {
+            "login": True,
             "membership": membership,
             "username": username,
-            "password": password,
             }
 
         authenticated, headers = api.login(creds)
 
         import pickle
-        self.assertEqual(pickle.loads(authenticated['repoze.who.userid'].decode('base64')), 
+        self.assertEqual(
+            pickle.loads(authenticated['repoze.who.userid'].decode('base64')), 
             {'username': 'test_user', 'membership': 'fc', 'membergroup': 'fc_plutinum', "is_guest": False})
 
     def test_challenge_not_required(self):
@@ -223,42 +227,41 @@ class TestIt(unittest.TestCase):
 
 
 class guest_authenticateTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.session = _setup_db(modules=[
+    def setUp(self):
+        self.config = testing.setUp()
+        self.session = _setup_db(modules=[
                 'altair.app.ticketing.core.models',
                 #'altair.app.ticketing.tickets.models',
                 'altair.app.ticketing.operators.models',
                 #'altair.app.ticketing.users.models',
                 ])
-
-    @classmethod
-    def tearDownClass(cls):
-        _teardown_db()
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
 
     def tearDown(self):
         _teardown_db()
+        testing.tearDown()
 
     def _callFUT(self, *args, **kwargs):
         from .plugins import guest_authenticate
         return guest_authenticate(*args, **kwargs)
 
     def test_empty(self):
-        environ = {
-        }
-        identity = {
-        }
-        result = self._callFUT(environ, identity)
+        environ = { REQUEST_KEY: testing.DummyRequest() }
+        identity = {}
+        userdata = {}
+        result = self._callFUT(environ, identity, userdata)
 
         self.assertIsNone(result)
 
     def test_no_geust_membergroup(self):
-        environ = {
-        }
-        identity = {
-            "membership": 'testing',
-        }
-        result = self._callFUT(environ, identity)
+        environ = { REQUEST_KEY: testing.DummyRequest() }
+        identity = {}
+        userdata = { "membership": 'testing' }
+        result = self._callFUT(environ, identity, userdata)
 
         self.assertIsNone(result)
 
@@ -273,22 +276,15 @@ class guest_authenticateTests(unittest.TestCase):
 
     def test_it(self):
         import pickle
-        environ = {
-        }
-        identity = {
-            "membership": 'testing',
-        }
+        environ = { REQUEST_KEY: testing.DummyRequest() }
+        identity = {}
+        userdata = { "membership": 'testing' }
 
-        self._create_guest(identity['membership'])
-        result = self._callFUT(environ, identity)
-        try:
-            result = pickle.loads(result.decode('base64'))
-        except:
-            print result
-        else:
-            self.assertEqual(result['membership'], 'testing')
-            self.assertEqual(result['membergroup'], 'testing_guest')
-            self.assertTrue(result['is_guest'])
+        self._create_guest(userdata['membership'])
+        result = self._callFUT(environ, identity, userdata)
+        self.assertEqual(result['membership'], 'testing')
+        self.assertEqual(result['membergroup'], 'testing_guest')
+        self.assertTrue(result['is_guest'])
 
 class LoginViewTests(unittest.TestCase):
     

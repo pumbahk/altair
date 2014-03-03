@@ -40,6 +40,7 @@ class TicketCoverDictBuilder(object):
             retval.update({
                     u'住所': u"{shipping.zip} {shipping.prefecture}{shipping.city}{shipping.address_1}{shipping.address_2}".format(shipping=shipping_address), 
                     u"氏名": u"{shipping.last_name} {shipping.first_name}".format(shipping=shipping_address), 
+                    u"氏名カナ": u"{shipping.last_name_kana} {shipping.first_name_kana}".format(shipping=shipping_address), 
                     u"電話番号": shipping_address.tel_1, 
                     u"メールアドレス": shipping_address.email_1 or shipping_address.email_2
                     })

@@ -81,7 +81,6 @@ def get_order_status(order):
     else:
         return u"受付済"
 
-
 def get_order_status_image(order):
     if order.status == 'canceled':
         return u"icon_cancel.gif"
@@ -116,3 +115,19 @@ def get_print_status(order):
         return u"発券済"
     else:
         return u"未発券"
+
+def get_entry_status(entry):
+    if entry.is_ordered:
+        return u"当選"
+    elif entry.is_rejected:
+        return u"落選"
+    else:
+        return u"結果抽選待ち"
+
+def get_entry_status_image(entry):
+    if entry.is_ordered:
+        return u"icon_tousen.gif"
+    elif entry.is_rejected:
+        return u"icon_rakusen.gif"
+    else:
+        return u"icon_kekkachusenmachi.gif"

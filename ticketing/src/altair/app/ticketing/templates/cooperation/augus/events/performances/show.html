@@ -4,6 +4,7 @@
 
 <div class="page-header">
   <h3>オーガス公演連携 - ${event.title}</h3>
+  <%include file="../_menu.html" args="event=event" />
 </div>
 
 <a class="btn entry" href="${request.route_path('augus.performance.edit', event_id=event.id)}">連携を編集</a>
@@ -14,26 +15,30 @@
     <th>公演コード</th>
     <th>日時</th>
     <th>開場</th>
-    <th>オーガス公演</th>
-    <th>オーガス公演コード</th>
+    <th>オーガス事業名</th>
+    <th>オーガス公演名</th>
+    <th>オーガス開演時間</th>
+    <th>オーガス会場名</th>
   </tr>
-  
+
   %for performance, ag_performance in performance_agperformance:
   <tr>
     <td>${performance.name}</td>
     <td>${performance.code}</td>
     <td>${performance.start_on}</td>
     <td>${performance.venue.name}</td>
-    <td>
-      %if ag_performance:
-      ${ag_performance.augus_performance_name}
-      %endif
-    </td>
-    <td>
-      %if ag_performance:
-      ${ag_performance.augus_performance_code}
-      %endif
-    </td>
+
+    %if ag_performance:
+    <td>${ag_performance.augus_event_name}</td>
+    <td>${ag_performance.augus_performance_name}</td>
+    <td>${ag_performance.start_on}</td>
+    <td>${ag_performance.augus_venue_name}</td>
+    %else:
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    %endif
   </tr>
   %endfor
 </table>

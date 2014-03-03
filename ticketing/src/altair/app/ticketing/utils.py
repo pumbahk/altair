@@ -10,6 +10,7 @@ import pytz
 import urllib
 import re
 import sys
+import functools
 
 __all__ = [
     'DigitCodec',
@@ -377,3 +378,10 @@ def todate(d):
         return d.date()
     else:
         return d
+
+def clear_exc(fn):
+    def _(*args, **kwargs):
+        sys.exc_clear()
+        return fn(*args, **kwargs)
+    functools.update_wrapper(_, fn)
+    return _

@@ -9,11 +9,11 @@ cache.type = ${altair:beaker_backend_type}
 altair.httpsession.persistence.type = ${altair:beaker_backend_type}
 
 # augus
-to_staging = /tmp/staging
-to_pending = /tmp/pending
-
-from_staging = /tmp/staging
-from_pending = /tmp/pending
+augus_consumer_id = 1000001
+rt_staging = /tmp/augus/toRT/staging
+rt_pending = /tmp/augus/toRT/pending
+ko_staging = /tmp/augus/toKO/staging
+ko_pending = /tmp/augus/toKO/pending
 
 [loggers]
 keys = root, ticketing

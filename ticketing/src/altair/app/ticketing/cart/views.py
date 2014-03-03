@@ -15,7 +15,6 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from pyramid.threadlocal import get_current_request
-from pyramid import security
 from webob.multidict import MultiDict
 
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
@@ -124,7 +123,7 @@ def back_to_top(request):
 
     ReleaseCartView(request)()
 
-    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or request.context.host_base_url or "/")
+    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or request.context.host_base_url or "/", headers=request.response.headers)
 
 def back(pc=back_to_top, mobile=None):
     if mobile is None:
@@ -170,7 +169,7 @@ class IndexView(IndexViewMixin):
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
-        logger.debug("sales_segments: %s" % sales_segments_selection)
+        #logger.debug("sales_segments: %s" % sales_segments_selection)
 
         selected_sales_segment = None
         preferred_performance = None
@@ -234,7 +233,7 @@ class IndexView(IndexViewMixin):
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
-        logger.debug("sales_segments: %s" % sales_segments_selection)
+        #logger.debug("sales_segments: %s" % sales_segments_selection)
 
         set_rendered_event(self.request, self.context.event)
 
@@ -419,11 +418,12 @@ class IndexAjaxView(object):
                 .filter(c_models.Seat.venue_id==venue.id)\
                 .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))
             seat_groups_queries = [
-                slave_session.query(c_models.SeatGroup.l0_id, c_models.SeatGroup.name, c_models.Seat.l0_id) \
+                slave_session.query(c_models.SeatGroup.l0_id, c_models.SeatGroup.name, c_models.Seat.l0_id, include_deleted=True) \
                     .join(c_models.Seat, c_models.SeatGroup.l0_id == l0_id_column) \
                     .join(c_models.Stock, c_models.Seat.stock_id == c_models.Stock.id) \
                     .filter(c_models.SeatGroup.site_id == venue.site_id) \
-                    .filter(c_models.Seat.venue_id == venue.id)
+                    .filter(c_models.Seat.venue_id == venue.id) \
+                    .filter(c_models.Stock.deleted_at == None) \
                     for l0_id_column in [c_models.Seat.row_l0_id, c_models.Seat.group_l0_id]
                     ]
 
@@ -435,7 +435,7 @@ class IndexAjaxView(object):
                     ]
             seats = seats_query.all()
             seat_groups = {}
-            for seat_group_l0_id, seat_group_name, seat_l0_id in seat_groups_queries[0].union(*seat_groups_queries[1:]):
+            for seat_group_l0_id, seat_group_name, seat_l0_id in seat_groups_queries[0].union_all(*seat_groups_queries[1:]):
                 seat_group = seat_groups.get(seat_group_l0_id)
                 if seat_group is None:
                     seat_group = seat_groups[seat_group_l0_id] = {
@@ -1168,10 +1168,8 @@ class OutTermSalesView(object):
 @view_config(decorator=with_jquery.not_when(mobile_request), request_method="POST", route_name='cart.logout')
 @limiter.release
 def logout(request):
-    headers = security.forget(request)
-    res = back_to_top(request)
-    res.headerlist.extend(headers)
-    return res
+    api.logout(request)
+    return back_to_top(request)
 
 def _create_response(request, param):
     event_id = request.matchdict.get('event_id')

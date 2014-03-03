@@ -1,0 +1,17 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+  names=[u'トップ', u'メールマガジン', u'新規メールマガジン'],
+  urls=[request.route_path('index'), request.route_path('mailmags.index')]
+)}
+</%block>
+
+<div class="page-header">
+  <h3>新規メールマガジン</h3>
+</div>
+
+<div class="mailmags">
+  <%include file="_form.html" args='route_path=request.url, route_name=u"新規作成"' />
+</div>

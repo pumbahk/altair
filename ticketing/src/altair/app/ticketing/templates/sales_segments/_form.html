@@ -277,6 +277,21 @@ function get_performance_id() {
         % endif
       </td>
     </tr>
+    <tr class="SalesSegment_disp_orderreview">
+      <th>
+        ${form.disp_orderreview.label}
+        ${form.use_default_disp_orderreview(_widget=LabelledCheckboxInput())}
+      </th>
+      <td>
+        ${form.disp_orderreview}
+        ${ch.validate_errors(form.disp_orderreview)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${u"表示" if form.context.sales_segment_group.setting.disp_orderreview else u"非表示"}
+        % endif
+      </td>
+    </tr>
     <tr class="SalesSegment_reporting">
       <th>
         ${form.reporting.label}
@@ -492,6 +507,12 @@ function get_performance_id() {
       if (data['public'] !== void(0))
         originalValue.text(data['public'] ? "公開": "非公開");
     },
+    'disp_orderreview': function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data['disp_orderreview'] !== void(0))
+        originalValue.text(data['disp_orderreview'] ? "表示": "非表示");
+    },
     reporting: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
@@ -535,6 +556,7 @@ function get_performance_id() {
         'max_quantity',
         'seat_choice',
         'public',
+        'disp_orderreview',
         'reporting',
         'auth3d_notice',
         'order_limit',

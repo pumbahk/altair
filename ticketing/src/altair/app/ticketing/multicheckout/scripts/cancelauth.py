@@ -27,7 +27,7 @@ def sync_data(request, statuses):
         オーソリ依頼してキャンセルしていないものについて、注文ステータス問い合わせ
         この時点でキャンセル済のものはキャンセル済フラグをたてる
         売り上げ確定済のものは売り上げ確定済フラグをたてる
-訂正した場合、対応するAPIレスポンスのデータ取得が必要か？
+        訂正した場合、対応するAPIレスポンスのデータ取得が必要か？
     """
     for st in statuses:
         order_no = st.OrderNo
@@ -37,7 +37,7 @@ def sync_data(request, statuses):
         if inquiry.CmnErrorCd == '001407':  # 取引詳細操作不可
             m.MultiCheckoutOrderStatus.set_status(
                 inquiry.OrderNo,
-                inquiry.Storecd, -100,
+                inquiry.Storecd, u"-10",
                 u"by cancel auth batch")
         elif (inquiry.CmnErrorCd == '000000'
               and inquiry.Status

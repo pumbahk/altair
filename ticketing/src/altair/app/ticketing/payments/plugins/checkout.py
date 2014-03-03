@@ -11,6 +11,7 @@ from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
 from webhelpers.html.builder import literal
 
+from altair.app.ticketing.utils import clear_exc
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.mails.interfaces import ICompleteMailPayment
 from altair.app.ticketing.mails.interfaces import IOrderCancelMailPayment
@@ -54,10 +55,18 @@ def back_url(request):
     return request.route_url('payment.confirm')
 
 class CheckoutSettlementFailure(PaymentPluginException):
-    def __init__(self, message, order_no, back_url, error_code=None, return_code=None):
-        super(CheckoutSettlementFailure, self).__init__(message, order_no, back_url)
+    def __init__(self, message, order_no, back_url, ignorable=False, error_code=None, return_code=None):
+        super(CheckoutSettlementFailure, self).__init__(message, order_no, back_url, ignorable)
         self.error_code = error_code
         self.return_code = return_code
+
+    @property
+    def message(self):
+        return '%s (error_code=%s, return_code=%s)' % (
+            super(CheckoutSettlementFailure, self).message,
+            self.error_code,
+            self.return_code
+            )
 
 
 @implementer(IPaymentPlugin)
@@ -87,6 +96,7 @@ class CheckoutPlugin(object):
         cart.finish()
         return order
 
+    @clear_exc
     def sales(self, request, order):
         """ 売り上げ確定 """
         service = api.get_checkout_service(request, order.performance.event.organization, get_channel(order.channel))
@@ -155,6 +165,7 @@ class CheckoutView(object):
         self.request = request
         self.context = request.context
 
+    @clear_exc
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.checkout.login', renderer='altair.app.ticketing.payments.plugins:templates/checkout_login.html', request_method='POST')
     @view_config(route_name='payment.checkout.login', renderer=selectable_renderer("%(membership)s/mobile/checkout_login_mobile.html"), request_method='POST', request_type='altair.mobile.interfaces.IMobileRequest')
@@ -234,6 +245,7 @@ class CheckoutCallbackView(object):
         self.request = request
         self.context = request.context
 
+    @clear_exc
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.checkout.callback.success', renderer=selectable_renderer("%(membership)s/pc/completion.html"), request_method='GET')
     @view_config(route_name='payment.checkout.callback.success', request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"), request_method='GET')
@@ -259,6 +271,7 @@ class CheckoutCallbackView(object):
 
         return dict(order=cart.order)
 
+    @clear_exc
     @view_config(route_name='payment.checkout.callback.error', request_method='GET')
     def error(self):
         cart = a.get_cart(self.request)

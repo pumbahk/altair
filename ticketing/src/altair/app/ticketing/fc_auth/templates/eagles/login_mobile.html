@@ -18,10 +18,10 @@
 <input type="hidden" name="membership" value="eagles" />
 <div>
   会員ID<br/>
-  <input type="text" name="username" size="22" value="${username}" istyle="4">
+  <input type="text" name="username" size="22" value="${username}" istyle="4" format="*N" MODE="numeric">
   <br/>
   パスワード<br/>
-  <input type="password" size="22" name="password">
+  <input type="password" size="22" name="password" istyle="4" format="*N" MODE="numeric">
 %if message:
 <br/><font color="red">IDまたはパスワードが一致しません</font>
 %endif

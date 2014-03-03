@@ -213,6 +213,12 @@ class OrganizationSettings(BaseView):
         organization_setting.notify_point_granting_failure = f.notify_point_granting_failure.data
         organization_setting.bcc_recipient = f.bcc_recipient.data
         organization_setting.entrust_separate_seats = f.entrust_separate_seats.data
+        organization_setting.augus_use = f.augus_use.data
+        organization_setting.augus_customer_id = f.augus_customer_id.data
+        organization_setting.augus_upload_url = f.augus_upload_url.data
+        organization_setting.augus_download_url = f.augus_download_url.data
+        organization_setting.augus_username = f.augus_username.data
+        organization_setting.augus_password = f.augus_password.data
 
         self.request.session.flash(u'その他の設定を保存しました')
         return HTTPFound(location=route_path('organizations.show', self.request, organization_id=organization_id))
@@ -380,7 +386,7 @@ class Hosts(BaseView):
         host_id = long(self.request.matchdict['host_id'])
         host = Host.query.filter_by(organization_id=organization_id, id=host_id).one()
         host.delete()
-        return HTTPFound(   
+        return HTTPFound(
             location=self.request.route_path(
                 'organizations.show',
                 organization_id=organization_id)
@@ -401,8 +407,8 @@ class MailInfoNewView(BaseView):
         formclass = template.as_formclass()
         mailtype = self.request.matchdict["mailtype"]
         form = formclass(**(organization.extra_mailinfo.data.get(mailtype, {}) if organization.extra_mailinfo else {}))
-        return {"organization": organization, "form": form, "mailtype": mailtype, "choice_form": choice_form, 
-                "extra_mailinfo": organization.extra_mailinfo, 
+        return {"organization": organization, "form": form, "mailtype": mailtype, "choice_form": choice_form,
+                "extra_mailinfo": organization.extra_mailinfo,
                 "mutil": mutil, "choices": MailTypeChoices}
 
     @view_config(request_method="POST")
@@ -424,5 +430,5 @@ class MailInfoNewView(BaseView):
             logger.debug("mailinfo.data: %s" % mailinfo.data)
             DBSession.add(mailinfo)
             self.request.session.flash(u"メールの付加情報を登録しました")
-        return {"organization": organization, "form": form, "mailtype": mailtype, "choice_form": choice_form, 
+        return {"organization": organization, "form": form, "mailtype": mailtype, "choice_form": choice_form,
                 "mutil": mutil, "choices": MailTypeChoices}

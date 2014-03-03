@@ -52,6 +52,29 @@ class MailMagazinesView(BaseView):
             mailmag.description = mailmag_form.description.data
             mailmag.save()
             self.request.session.flash(u'メールマガジンの情報を更新しました')
+            return HTTPFound(location=self.request.route_path('mailmags.index'))
+        return dict(
+            mailmag=mailmag,
+            mailmag_form=mailmag_form
+            )
+
+    @view_config(route_name='mailmags.new', renderer='altair.app.ticketing:templates/mailmags/new.html', request_method='GET')
+    def new(self):
+        return dict(
+            mailmag_form=MailMagazineForm()
+            )
+
+    @view_config(route_name='mailmags.new', renderer='altair.app.ticketing:templates/mailmags/new.html', request_method='POST')
+    def new_post(self):
+        mailmag_form = MailMagazineForm(self.request.params)
+        if mailmag_form.validate():
+            mailmag = MailMagazine()
+            mailmag.organization = self.context.organization
+            mailmag.name = mailmag_form.name.data
+            mailmag.description = mailmag_form.description.data
+            mailmag.save()
+            self.request.session.flash(u'メールマガジンを追加しました')
+            return HTTPFound(location=self.request.route_path('mailmags.index'))
         return dict(
             mailmag=mailmag,
             mailmag_form=mailmag_form

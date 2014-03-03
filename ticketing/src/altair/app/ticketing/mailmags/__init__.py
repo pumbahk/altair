@@ -2,6 +2,7 @@
 
 def includeme(config):
     config.add_route('mailmags.index', '/')
+    config.add_route('mailmags.new', '/new')
     config.add_route('mailmags.show', '/{id}')
     config.add_route('mailmags.edit', '/{id}/edit')
     config.add_route('mailmags.download', '/download/{id}')

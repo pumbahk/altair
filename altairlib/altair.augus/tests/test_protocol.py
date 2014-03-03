@@ -92,7 +92,7 @@ class ProtocolRecordAttributeMismatchTest(TestCase):
             'block',
             'coordy',
             'coordx',
-            'coordy_whole',            
+            'coordy_whole',
             'coordx_whole',
             'area_code',
             'info_code',
@@ -226,7 +226,6 @@ class ProtocolRecordAttributeMismatchTest(TestCase):
         AchievementResponse: (
             'event_code',
             'performance_code',
-            'trader_code',
             'distribution_code',
             'seat_type_code',
             'unit_value_code',
@@ -249,7 +248,7 @@ class ProtocolRecordAttributeMismatchTest(TestCase):
             ),
         }
 
-    
+
     def test_attribute_name_mismatch(self):
         for protocol in ALL:
             testattributes = self.protocol_attributes[protocol]
@@ -259,7 +258,7 @@ class ProtocolRecordAttributeMismatchTest(TestCase):
                 self.assertEqual(attr, testattr,
                                  '{0} attribute mismatch: {1} != {2} (index={3})'\
                                  .format(protocol.__name__, attr, testattr, ii))
-    
+
     def test_attribute_length_mismatch(self):
         for protocol in ALL:
             testattributes = self.protocol_attributes[protocol]
@@ -279,16 +278,16 @@ class ProtocolHeaderTest(TestCase):
             stamp = time.strftime(fmt, now)
             proto.date = stamp
             self.assertEqual(proto.date, stamp)
-            
+
             proto.date = now
             self.assertEqual(proto.date, stamp)
 
             with self.assertRaises(ValueError):
                 proto.date = None
-            
+
             with self.assertRaises(ValueError):
                 proto.date = 'aaaaaa'
-            
+
 
     def test_created_at(self):
         for protocol_class in ALL:
@@ -298,13 +297,12 @@ class ProtocolHeaderTest(TestCase):
             stamp = time.strftime(fmt, now)
             proto.created_at = stamp
             self.assertEqual(proto.created_at, stamp)
-            
+
             proto.created_at = now
             self.assertEqual(proto.created_at, stamp)
 
             with self.assertRaises(ValueError):
                 proto.created_at = None
-            
+
             with self.assertRaises(ValueError):
                 proto.created_at = 'aaaaaa'
-    

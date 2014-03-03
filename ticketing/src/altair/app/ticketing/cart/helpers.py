@@ -18,6 +18,7 @@ from altair.app.ticketing.mails.helpers import render_delivery_lots_elected_mail
 from altair.app.ticketing.mails.helpers import render_delivery_lots_rejected_mail_viewlet, render_payment_lots_rejected_mail_viewlet
 import logging
 from .api import get_nickname
+import json as _json
 
 logger = logging.getLogger(__name__)
 
@@ -242,3 +243,6 @@ def format_name(request, event=None, performance=None, sales_segment=None):
     else:
         raise ValueError()
     return u''.join(out)
+
+def json_encode(value):
+    return _json.dumps(value)

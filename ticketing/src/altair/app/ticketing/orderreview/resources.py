@@ -6,7 +6,7 @@ from dateutil import parser
 from pyramid.decorator import reify
 from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
-from altair.app.ticketing.core.models import DBSession, Order, ShippingAddress
+from altair.app.ticketing.core.models import DBSession, Order, SalesSegment, SalesSegmentSetting, ShippingAddress
 from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.sej.api import get_sej_order
@@ -55,10 +55,11 @@ class OrderReviewResource(object):
 
     def get_order(self):
         order_no = self.order_no
-        order = self.session.query(Order).filter_by(
-            organization_id=self.organization_id,
-            order_no=order_no
-        ).first()
+        order = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
+            join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
+            filter(Order.organization_id==self.organization_id). \
+            filter(Order.order_no==order_no). \
+            filter(SalesSegmentSetting.disp_orderreview==True).first()
         logger.info("organization_id=%s, order_no=%s, order=%s" % (self.organization_id, order_no, order))
         sej_order = None
         if order:
@@ -78,13 +79,17 @@ class OrderReviewResource(object):
     def get_shipping_address(self, user):
         shipping_address = ShippingAddress.query.filter(
             ShippingAddress.user_id==user.id
-        ).first()
+        ).order_by(ShippingAddress.updated_at.desc()).first()
         return shipping_address
 
     def get_orders(self, user, page, per):
-        orders = Order.query.filter(
-            Order.user_id==user.id
-        ).order_by(Order.updated_at.desc())
+        orders = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
+            join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
+            filter(Order.organization_id==self.organization_id). \
+            filter(Order.user_id==user.id). \
+            filter(SalesSegmentSetting.disp_orderreview==True). \
+            order_by(Order.updated_at.desc())
+
         orders = paginate.Page(orders.all(), page, per, url=paginate.PageURL_WebOb(self.request))
         return orders
 

@@ -74,13 +74,14 @@ requires = [
     'boto',
     'fluent-logger == 0.3.3moriyoshi5',
     'Pillow', # for qrcode.image.pil
-    'altair.findable_label', 
+    'altair.findable_label',
     'altair.log',
-    "jsonrpclib", 
+    "jsonrpclib",
     "poster",
     "radix",
     "requests",
-    "altair.augus",    
+    "pyOpenSSL",
+    "altair.augus",
     "altair.auth",
     "altair.sqla",
     "altair.exclog",
@@ -103,7 +104,7 @@ requires = [
     ]
 
 tests_require = [
-    "nose", 
+    "nose",
     "coverage"
     "testfixtures",
 ]
@@ -136,18 +137,18 @@ setup(name='altair.app.ticketing',
       dependency_links = [
         'file:../commons#egg=altair-commons-0.0',
         'file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0',
-        "file:../altairlib/altair.findable_label#egg=altair.findable_label-0.0", 
-        "file:../altairlib/altair.log#egg=altair.log-0.0.1", 
-        "file:../altairlib/altair.auth#egg=altair.auth-1.0", 
-        "file:../altairlib/altair.sqla#egg=altair.sqla-1.0", 
-        "file:../altairlib/altair.exclog#egg=altair.exclog-0.0", 
-        "file:../altairlib/altair.now#egg=altair.now-0.0", 
-        "file:../altairlib/altair.logicaldeleting#egg=altair.logicaldeleting-0.0", 
-        "file:../altairlib/altair.mq#egg=altair.mq-0.0", 
+        "file:../altairlib/altair.findable_label#egg=altair.findable_label-0.0",
+        "file:../altairlib/altair.log#egg=altair.log-0.0.1",
+        "file:../altairlib/altair.auth#egg=altair.auth-1.0",
+        "file:../altairlib/altair.sqla#egg=altair.sqla-1.0",
+        "file:../altairlib/altair.exclog#egg=altair.exclog-0.0",
+        "file:../altairlib/altair.now#egg=altair.now-0.0",
+        "file:../altairlib/altair.logicaldeleting#egg=altair.logicaldeleting-0.0",
+        "file:../altairlib/altair.mq#egg=altair.mq-0.0",
         "file:../altairlib/altair.pyramid_assets#egg=altair.pyramid_assets-0.0.1",
         "file:../altairlib/altair.pyramid_boto#egg=altair.pyramid_boto-0.0.1",
         "file:../altairlib/altair.mobile#egg=altair.mobile-0.0.1",
-        "file:../altairlib/altair.mq#egg=altair.mq-0.0", 
+        "file:../altairlib/altair.mq#egg=altair.mq-0.0",
         "file:../altairlib/altair.pyramid_tz#egg=altair.pyramid_tz-0.0.0",
         "file:../altairlib/altair.rakuten_auth#egg=altair.rakuten_auth-0.0.0",
         "file:../altairlib/altair.saannotation#egg=altair.saannotation-0.0",
@@ -160,7 +161,7 @@ setup(name='altair.app.ticketing',
         'http://py-radix.googlecode.com/files/py-radix-0.5.tar.gz#egg=radix-0.5',
       ],
       tests_require=tests_require,
-      extras_require=extras_require, 
+      extras_require=extras_require,
       test_suite="altair.app.ticketing",
       entry_points = """\
       [paste.app_factory]
@@ -192,13 +193,13 @@ setup(name='altair.app.ticketing',
       sej_parse_file=altair.app.ticketing.sej.scripts.sej_parse_file:main
       publish_lot_electing=altair.app.ticketing.events.lots.commands.publish_lot_electing:main
       fix_seat_adjacency=altair.app.ticketing.scripts.fix_seat_adjacency:main
-      augus_performance=altair.app.ticketing.cooperation.augus.scripts.augus_performance:main
       augus_download=altair.app.ticketing.cooperation.augus.scripts.augus_download:main
       augus_upload=altair.app.ticketing.cooperation.augus.scripts.augus_upload:main
+      augus_performance=altair.app.ticketing.cooperation.augus.scripts.augus_performance:main
+      augus_ticket=altair.app.ticketing.cooperation.augus.scripts.augus_ticket:main
       augus_distribution=altair.app.ticketing.cooperation.augus.scripts.augus_distribution:main
       augus_putback=altair.app.ticketing.cooperation.augus.scripts.augus_putback:main
       augus_achievement=altair.app.ticketing.cooperation.augus.scripts.augus_achievement:main
       """,
       paster_plugins=['pyramid'],
       )
-

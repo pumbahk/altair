@@ -1,12 +1,15 @@
 # -*- coding:utf-8 -*-
 import logging
 from pyramid.httpexceptions import HTTPFound
-#from repoze.who.api import get_api as get_who_api
-from altair.auth import who_api as get_who_api
 from pyramid.view import view_config
+from altair.auth import who_api as get_who_api
+from altair.sqlahelper import get_db_session
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.core import api as core_api
+import altair.app.ticketing.users.models as u_m
 from . import SESSION_KEY
+from .api import do_authenticate
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +21,6 @@ class LoginView(object):
     def __init__(self, request):
         self.request = request
         self.context = request.context
-
 
     def select_renderer(self, membership):
         if cart_api.is_mobile(self.request):
@@ -38,7 +40,6 @@ class LoginView(object):
         self.select_renderer(membership)
         return dict(username='')
 
-
     @view_config(request_method="POST", route_name='fc_auth.login', renderer='string')
     def login(self):
         who_api = get_who_api(self.request, name="fc_auth")
@@ -47,23 +48,31 @@ class LoginView(object):
         password = self.request.params['password']
         logger.debug("authenticate for membership %s" % membership)
 
-        identity = {
-            'membership': membership,
-            'username': username,
-            'password': password,
-        }
-        authenticated, headers = who_api.login(identity)
+        authenticated = None
+        headers = None
+        identity = None
+
+        result = do_authenticate(self.request, membership, username, password)
+        if result is not None:
+            # result には user_id が含まれているが、これを identity とすべきかは
+            # 議論の余地がある。user_id を identity にしてしまえば DB 負荷を
+            # かなり減らすことができるだろう。
+            identity = {
+                'login': True,
+                'membership': membership,
+                'username': username,
+                }
+
+        if identity is not None:
+            authenticated, headers = who_api.login(identity)
 
         if authenticated is None:
             self.select_renderer(membership)
             return {'username': username,
                     'message': u'IDかパスワードが一致しません'}
 
-
         return_to_url = self.return_to_url 
         res = HTTPFound(location=return_to_url, headers=headers)
-
-
         return res
 
     @view_config(request_method="POST", route_name='fc_auth.guest', renderer='string')
@@ -73,6 +82,7 @@ class LoginView(object):
         logger.debug("guest authenticate for membership %s" % membership)
 
         identity = {
+            'login': True,
             'membership': membership,
             'is_guest': True,
         }

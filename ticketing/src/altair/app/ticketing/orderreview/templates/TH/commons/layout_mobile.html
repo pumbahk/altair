@@ -1,0 +1,25 @@
+<html>
+<% from altair.app.ticketing.orderreview.api import safe_get_contact_url %>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>東北放送 購入確認ページ</title>
+</head>
+<body style="background-color:#FFF" bgcolor="#FFF">
+  <div style="text-align: center">  
+    <a href="http://tbc.tstar.jp/">
+      <img src="${request.static_url('altair.app.ticketing.orderreview:static/images/TH/mobile/logo.gif')}"
+           alt="東北放送" width="100%"/>
+    </a>
+  </div>
+  
+<%block name="header">
+</%block>
+</div>
+  ${next.body()}
+  <hr />
+  <a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a> / <a href="http://www.ticketstar.jp/legal/">特定商取引法に基づく表示</a>
+  <div>
+    Copyright &copy; 2010-2014 TicketStar, Inc. All Rights Reserved. 
+  </div>
+</body>
+</html>

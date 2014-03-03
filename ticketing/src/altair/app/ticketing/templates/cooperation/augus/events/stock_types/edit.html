@@ -12,13 +12,20 @@
     <th>席種</th>
     <th>オーガスチケット</th>
   </tr>
-  %for stock_type, ag_ticekt_now in stocktype_agticket:
+  %for stock_type, ag_ticket_now in stocktype_agticket:
   <tr>
     <td>${stock_type.name}</td>
     <td>
       <select class="selectpicker" name="${select_prefix}${stock_type.id}">
+        <option value=""/>
         %for ag_ticket in ag_tickets:
-        <option value="${ag_ticket.id}">${ag_ticket.code} - ${ag_ticket.name}</option>
+        <option value="${ag_ticket.id}"
+                %if ag_ticket_now and ag_ticket.id == ag_ticket_now.id:
+                selected="True"
+                %endif
+                >
+          ${ag_ticket.augus_seat_type_code} - ${ag_ticket.augus_seat_type_name}
+        </option>
         %endfor
       </select>
     </td>

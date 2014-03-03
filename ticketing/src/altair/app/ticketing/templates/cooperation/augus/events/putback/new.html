@@ -1,0 +1,46 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<div class="page-header">
+  <h3>オーガス返券予約</h3>
+  <%include file="../_menu.html" args="event=event" />
+</div>
+<form role="form" method="GET" action="${request.route_url('augus.putback.confirm', event_id=event.id)}">
+<button class="btn" type="submit">返券を予約</button>
+<br/>
+<br/>
+<p>
+枠
+  <select class="selectpicker" name="stock_holder">
+    %for stock_holder in stock_holders:
+    <option value="${stock_holder.id}">
+      ${stock_holder.name}
+    </option>
+    %endfor
+  </select>
+</p>
+
+<table class="table">
+  <tr>
+    <th>返券予約</th>
+    <th>公演コード</th>
+    <th>公演名</th>
+    <th>日時</th>
+    <th>会場</th>
+  </tr>
+  %for performance in performances:
+  <tr>
+    <td>
+      <input type="checkbox"
+             name="performance"
+             value="${performance.id}"/>
+    </td>
+    <td>${performance.name}</td>
+    <td>${performance.code}</td>
+    <td>${performance.start_on}</td>
+    <td>${performance.venue.name}</td>
+  </tr>
+  %endfor
+</table>
+</form>
