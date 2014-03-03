@@ -1,6 +1,7 @@
 <%page args="form, action='#'" />
 <%namespace file="/common/helpers.html" name="ch" />
 <form action="${action}" method="POST">
+  ${ch.form_item(form.public)}
 % if form.performance_id.data:
   ${ch.form_item(form.all_sales_segment)}
 % endif
@@ -12,7 +13,6 @@
   ${ch.form_item(form.display_order)}
   ${ch.form_item(form.min_product_quantity)}
   ${ch.form_item(form.max_product_quantity)}
-  ${ch.form_item(form.public)}
   ${ch.form_item(form.description)}
   ${form.performance_id}
 % if request.context.organization.point_feature_enabled and form.applied_point_grant_settings.choices:
