@@ -499,27 +499,29 @@ cart.VenuePresenter.prototype = {
         this.performance.on("change",
             function() {self.onPerformanceChanged();});
         this.selectedStockType = null;
+        this.quantityToSelect = null;
+        this.stockIdToSelect = null;
         this.seatGroups = {};
         this.seatIdToSeatGroup = {};
     },
     onPerformanceChanged: function() {
         if (!this.view.readOnly) {
-            this.setStockType(null);
+            this.setStocks(null, null);
             this.view.reset();
         }
         var dataSource = this.performance.createDataSource(this);
         this.view.updateVenueViewer(dataSource, this.callbacks);
     },
     onCancelPressed: function () {
-        this.setStockType(null);
+        this.setStocks(null, null);
         this.view.reset();
     },
     onSelectPressed: function () {
         var selection = this.view.getChoices();
-        if (selection.length < this.quantityToSelect.total_quantity) {
-            cart.showErrorDialog(null, "あと " + (this.quantityToSelect.total_quantity - selection.length) + " 席選んでください", "btn-close");
+        if (selection.length < this.quantityToSelect) {
+            cart.showErrorDialog(null, "あと " + (this.quantityToSelect - selection.length) + " 席選んでください", "btn-close");
             return;
-        } else if (selection.length != this.quantityToSelect.total_quantity) {
+        } else if (selection.length != this.quantityToSelect) {
             cart.showErrorDialog("エラー", "購入枚数と選択した席の数が一致していません。", "btn-close");
             return;
         }
@@ -528,14 +530,14 @@ cart.VenuePresenter.prototype = {
     },
     setStockType: function (stock_type, quantity_to_select) {
         this.selectedStockType = stock_type;
-        this.quantityToSelect = quantity_to_select;
         var self = this;
         if (this.selectedStockType) {
+            self.quantityToSelect = quantity_to_select;
             self.stockTypeListPresenter.setActivePane('venue');
             if (self.view.currentDataSource._reset !== void(0))
                 self.view.currentDataSource._reset();
             this.view.currentViewer.venueviewer('loadSeats', function() {
-                self.view.setAdjacency(self.quantityToSelect.total_quantity);
+                self.view.setAdjacency(self.quantityToSelect);
                 self.view.render();
                 self.view.currentDataSource.seatGroups(function (data) {
                     self.seatGroups = data;
@@ -550,8 +552,54 @@ cart.VenuePresenter.prototype = {
                 });
             });
         } else {
+            self.quantityToSelect = null;
             self.stockTypeListPresenter.setActivePane('stockTypeList');
         }
+    },
+    setStocks: function (stock_type, quantities_per_stock_id) {
+        this.selectedStockType = stock_type;
+        var self = this;
+        if (this.selectedStockType) {
+            var quantityToSelect = null;
+            var stockIdToSelect = null;
+            for (var stockId in quantities_per_stock_id) {
+                if (quantities_per_stock_id[stockId] > 0) {
+                    if (stockIdToSelect)
+                        throw new Exception("more than one stock");
+                    quantityToSelect = quantities_per_stock_id[stockId];
+                    stockIdToSelect = stockId;
+                }
+            }
+            if (!stockIdToSelect)
+                throw new Exception("no stocks");
+            self.stockIdToSelect = stockIdToSelect;
+            self.quantityToSelect = quantityToSelect;
+            self.stockTypeListPresenter.setActivePane('venue');
+            if (self.view.currentDataSource._reset !== void(0))
+                self.view.currentDataSource._reset();
+            this.view.currentViewer.venueviewer('loadSeats', function() {
+                self.view.setAdjacency(self.quantityToSelect);
+                self.view.render();
+                self.view.currentDataSource.seatGroups(function (data) {
+                    self.seatGroups = data;
+                    var seatIdToSeatGroup = {};
+                    for (var k in data) {
+                        var seatGroup = data[k];
+                        var seats = seatGroup['seats'];
+                        for (var i = seats.length; --i >= 0; )
+                            seatIdToSeatGroup[seats[i]] = k;
+                    }
+                    self.seatIdToSeatGroup = seatIdToSeatGroup;
+                });
+            });
+        } else {
+            self.stockIdToSelect = null;
+            self.quantityToSelect = null;
+            self.stockTypeListPresenter.setActivePane('stockTypeList');
+        }
+    },
+    currentSeatsUrl: function () {
+        return this.selectedStockType.get('seats_url').replace(/__stock_id__/, this.stockIdToSelect);
     },
     selectable: function (viewer, seat) {
         if (!this.selectedStockType) {
@@ -582,7 +630,7 @@ cart.VenuePresenter.prototype = {
             if (seat.selected()) {
                 seat.selected(false);
             } else {
-                if (viewer.selectionCount < self.quantityToSelect.total_quantity)
+                if (viewer.selectionCount < self.quantityToSelect)
                     seat.selected(true);
             }
         });
@@ -689,7 +737,7 @@ cart.Performance = Backbone.Model.extend({
     createDataSource: function(venuePresenter) {
         var params = this.attributes;
         var factory_i = newMetadataLoaderFactory(params['data_source']['info']);
-        var factory_s = newMetadataLoaderFactory(function () { return venuePresenter.selectedStockType.get('seats_url') });
+        var factory_s = newMetadataLoaderFactory(function () { return venuePresenter.currentSeatsUrl(); });
         var drawingCache = {};
         return {
             drawing: function (page) {
@@ -851,6 +899,7 @@ cart.OrderFormPresenter.prototype = {
         var total_quantity = 0;
         var total_product_quantity = 0;
         var quantities = {};
+        var quantities_per_stock_id = {}
         var selection = this.view.getChoices();
         for (var product_id in selection) {
             var product_quantity = selection[product_id];
@@ -860,13 +909,20 @@ cart.OrderFormPresenter.prototype = {
                 quantity: quantity,
                 product_quantity: product_quantity
             };
+            var elements = product.get('elements');
+            for (stock_id in elements) {
+                var element = elements[stock_id];
+                if (element['is_seat_stock_type'])
+                    quantities_per_stock_id[stock_id] = (quantities_per_stock_id[stock_id] || 0) + element['quantity'] * product_quantity;
+            }
             total_quantity += quantity;
             total_product_quantity += product_quantity;
         }
         return {
             total_quantity: total_quantity,
             total_product_quantity: total_product_quantity,
-            quantities: quantities
+            quantities: quantities,
+            quantities_per_stock_id: quantities_per_stock_id
         };
     },
     assertQuantityWithinBounds: function () {
@@ -875,29 +931,52 @@ cart.OrderFormPresenter.prototype = {
             this.showNoSelectProductMessage();
             return false;
         }
-        if (this.stock_type.min_quantity != null && this.stock_type.min_quantity > result.total_quantity) {
-            this.showTicketCountBelowLowerBoundMessage(this.stock_type.min_quantity);
+        var min_quantity = this.stock_type.get('min_quantity');
+        var max_quantity = this.stock_type.get('max_quantity');
+        var min_product_quantity = this.stock_type.get('min_product_quantity');
+        var max_product_quantity = this.stock_type.get('max_product_quantity');
+        if (min_quantity != null && min_quantity > result.total_quantity) {
+            this.showTicketCountBelowLowerBoundMessage(min_quantity);
             return false;
         }
-        if (this.stock_type.max_quantity != null && this.stock_type.max_quantity < result.total_quantity) {
-            this.showTicketCountAboveUpperBoundMessage(this.stock_type.max_quantity);
+        if (max_quantity != null && max_quantity < result.total_quantity) {
+            this.showTicketCountAboveUpperBoundMessage(max_quantity);
             return false;
         }
-        if (this.stock_type.min_product_quantity != null && this.stock_type.min_product_quantity > result.total_product_quantity) {
-            this.showProductCountBelowLowerBoundMessage(this.stock_type.min_product_quantity);
+        if (min_product_quantity != null && min_product_quantity > result.total_product_quantity) {
+            this.showProductCountBelowLowerBoundMessage(min_product_quantity);
             return false;
         }
-        if (this.stock_type.max_product_quantity != null && this.stock_type.max_product_quantity < result.total_product_quantity) {
-            this.showProductCountAboveUpperBoundMessage(this.stock_type.max_product_quantity);
+        if (max_product_quantity != null && max_product_quantity < result.total_product_quantity) {
+            this.showProductCountAboveUpperBoundMessage(max_product_quantity);
+            return false;
+        }
+        var stocks = this.stock_type.get('stocks');
+        var l = 0;
+        for (var stockId in result.quantities_per_stock_id) {
+            for (var i = stocks.length; --i >= 0; ) {
+                if (stockId == stocks[i])
+                    break;
+            }
+            if (i < 0) {
+                this.showInfeasiblePurchaseMessage();
+                return false;
+            }
+            if (result.quantities_per_stock_id[stockId] != 0)
+                ++l;
+        }
+        if (l != 1) {
+            // FIXME
+            this.showInfeasiblePurchaseMessage();
             return false;
         }
         return result;
     },
     onSelectSeatPressed: function () {
-        var quantity_to_select = this.assertQuantityWithinBounds();
-        if (!quantity_to_select)
+        var result = this.assertQuantityWithinBounds();
+        if (!result)
             return;
-        this.venuePresenter.setStockType(this.stock_type, quantity_to_select);
+        this.venuePresenter.setStocks(this.stock_type, result.quantities_per_stock_id);
     },
     onEntrustPressed: function (order_url) {
         if (!this.assertQuantityWithinBounds())
@@ -926,6 +1005,10 @@ cart.OrderFormPresenter.prototype = {
     }, 
     showProductCountBelowLowerBoundMessage: function(max_quantity) {
         cart.showErrorDialog(null, '商品個数は合計' + max_quantity + '個以上にしてください', 'btn-close');
+        return;
+    }, 
+    showInfeasiblePurchaseMessage: function() {
+        cart.showErrorDialog(null, '申し訳ございませんが、その商品の組み合わせはお選びいただけません', 'btn-close');
         return;
     }, 
     onBuyPressed: function () {

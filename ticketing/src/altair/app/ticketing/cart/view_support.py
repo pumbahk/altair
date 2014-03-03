@@ -103,6 +103,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
     products_for_stock_type = dict()
     product_items_for_product = dict()
     stock_for_product_item = dict()
+    stocks_for_stock_type = dict()
 
     availability_per_product_map = dict()
     for stock_type, product, product_item, stock, available in q:
@@ -127,6 +128,11 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
         else:
             availability_per_product = min(availability_per_product, available)
         availability_per_product_map[product.id] = availability_per_product
+
+        stocks = stocks_for_stock_type.get(stock_type.id)
+        if stocks is None:
+            stocks = stocks_for_stock_type[stock_type.id] = []
+        stocks.append(stock.id)
 
     max_quantity_per_user = None
     # このクエリが重い可能性が高いので、一時的に蓋閉め
@@ -220,7 +226,18 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                     min_product_quantity_from_product=product.min_product_quantity,
                     max_product_quantity_from_product=product.max_product_quantity,
                     min_product_quantity_per_product=min_product_quantity_per_product,
-                    max_product_quantity_per_product=max_product_quantity_per_product
+                    max_product_quantity_per_product=max_product_quantity_per_product,
+                    elements=dict(
+                        (
+                            product_item.stock_id,
+                            dict(
+                                quantity=product_item.quantity,
+                                is_primary_seat_stock_type=(stock_for_product_item[product_item.id].stock_type_id == product.seat_stock_type_id),
+                                is_seat_stock_type=(not stock_types[stock_for_product_item[product_item.id].stock_type_id].quantity_only)
+                                )
+                            )
+                        for product_item in product_items_for_product[product.id]
+                        )
                     )
                 )
         retval.append(dict(
@@ -228,6 +245,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             name=stock_type.name,
             description=stock_type.description,
             style=stock_type.style,
+            stocks=stocks_for_stock_type[stock_type.id],
             availability=availability_for_stock_type,
             actual_availability=actual_availability_for_stock_type,
             availability_text=h.get_availability_text(actual_availability_for_stock_type),

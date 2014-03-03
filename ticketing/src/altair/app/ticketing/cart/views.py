@@ -11,7 +11,7 @@ from sqlalchemy.orm import joinedload
 
 from markupsafe import Markup
 
-from pyramid.httpexceptions import HTTPNotFound, HTTPFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPBadRequest
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from pyramid.threadlocal import get_current_request
@@ -320,7 +320,7 @@ class IndexAjaxView(object):
                         'cart.seats',
                         performance_id=sales_segment.performance_id,
                         sales_segment_id=sales_segment.id,
-                        _query=dict(seat_type_id=_dict['id'])
+                        _query=dict(stock_id='__stock_id__')
                         ),
                     **_dict
                     )
@@ -405,6 +405,10 @@ class IndexAjaxView(object):
         """会場&座席情報"""
         venue = self.context.performance.venue
         stock_type_id = self.request.params.get('seat_type_id')
+        stock_id = self.request.params.get('stock_id')
+
+        if stock_type_id is not None and stock_id is not None:
+            raise HTTPBadRequest()
 
         slave_session = get_db_session(self.request, name="slave")
         sales_segment = slave_session.query(c_models.SalesSegment).filter(c_models.SalesSegment.id==self.context.sales_segment.id).one()
@@ -426,8 +430,14 @@ class IndexAjaxView(object):
                     .filter(c_models.Stock.deleted_at == None) \
                     for l0_id_column in [c_models.Seat.row_l0_id, c_models.Seat.group_l0_id]
                     ]
-
-            if stock_type_id is not None:
+            if stock_id is not None:
+                stock_id_list = stock_id.split(',')
+                seats_query = seats_query.filter(c_models.Stock.id.in_(stock_id_list))
+                seat_groups_queries = [
+                    seat_groups_query.filter(c_models.Stock.id.in_(stock_id_list))
+                    for seat_groups_query in seat_groups_queries
+                    ]
+            elif stock_type_id is not None:
                 seats_query = seats_query.filter(c_models.Stock.stock_type_id == stock_type_id)
                 seat_groups_queries = [
                     seat_groups_query.filter(c_models.Stock.stock_type_id == stock_type_id) 
