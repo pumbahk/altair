@@ -37,7 +37,7 @@ def login_post_api_view(context, request):
         return context.on_after_login(form.operator)
     else:
         logger.info("*login login failure name=%s", form.data["login_id"])
-        return HTTPBadRequest(str(form.errors))
+        return HTTPBadRequest(u"E@:{}".format(form.errors["login_id"][0])) #xxx:
 
 def logout_api_view(context, request):
     operator = context.operator
