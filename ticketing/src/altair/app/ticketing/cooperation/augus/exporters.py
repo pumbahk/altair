@@ -145,20 +145,20 @@ class AugusAchievementExporter(object):
         augus_stock_info = None
         augus_stock_detail = None
         ordered_product_item = self.seat2opitem(seat)
+
+        augus_stock_detail = AugusStockDetail.query.join(AugusStockInfo)\
+                                                   .filter(AugusStockInfo.seat_id==seat.id)\
+                                                   .filter(AugusStockDetail.augus_putback_id==None)\
+                                                   .one() # MultiplFound: 多重配席, NoResultFound: 未配席
         if ordered_product_item:
             augus_ticket = ordered_product_item.ordered_product.product.augus_ticket
             if not augus_ticket:
-                return
-            for augus_stock_detail in augus_ticket.augus_stock_details:
-                if augus_stock_detail.augus_putback_id == None and augus_stock_detail.augus_stock_info.seat.id == seat.id:
-                    break
-            else:
-                raise AugusDataExportError('No such AugusStockDetail Seat.id={}'.formamt(stock_info.seat))
+                raise AugusDataExportError(
+                    'No cooperation product to augus: OrderedProductItem.id={} Product.id={}'.format(
+                        ordered_product_item.id, ordered_product_item.ordered_product.product.id
+                        )) # チケット連携されていない
+
         else:
-            augus_stock_detail = AugusStockDetail.query.join(AugusStockInfo)\
-                                                 .filter(AugusStockInfo.seat_id==seat.id)\
-                                                 .filter(AugusStockDetail.augus_putback_id==None)\
-                                                 .one()
             augus_ticket = augus_stock_detail.augus_ticket
 
         order = self.get_order(ordered_product_item)
