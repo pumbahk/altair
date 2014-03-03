@@ -107,6 +107,7 @@ class Multicheckout3DAPI(object):
             Currency=self.currency,
         )
         self.session.add(enrol)
+        self.session.commit()
         res = self.impl.secure3d_enrol(self, order_no, enrol)
         res.request = enrol
         events.Secure3DEnrolEvent.notify(self.request, order_no, res)
@@ -123,6 +124,7 @@ class Multicheckout3DAPI(object):
             PaRes=pares,
         )
         self.session.add(auth)
+        self.session.commit()
         res = self.impl.secure3d_auth(self, order_no, auth)
         res.request = auth
         events.Secure3DAuthEvent.notify(self.request, order_no, res)
@@ -159,10 +161,11 @@ class Multicheckout3DAPI(object):
             CAVV=cavv,
             CavvAlgorithm=cavv_algorithm,
         )
+        self.session.add(params)
+        self.session.commit()
         res = self.impl.request_card_auth(self, order_no, params)
         res.request = params
         events.CheckoutAuthSecure3DEvent.notify(self.request, order_no, res)
-        self.session.add(params)
         self.save_api_response(res)
         return res
 
@@ -212,9 +215,10 @@ class Multicheckout3DAPI(object):
             SalesAmountCancellation=int(sales_amount_cancellation),
             TaxCarriageCancellation=int(tax_carriage_cancellation),
         )
+        self.session.add(params)
+        self.session.commit()
         res = self.impl.request_card_sales_part_cancel(self, order_no, params)
         events.CheckoutSalesPartCancelEvent.notify(self.request, order_no, res)
-        self.session.add(params)
         self.save_api_response(res)
         return res
 
@@ -264,11 +268,12 @@ class Multicheckout3DAPI(object):
             PayCount=None,
             SecureKind=u'2',
             SecureCode=secure_code,
-        )
+            )
+        self.session.add(params)
+        self.session.commit()
         res = self.impl.request_card_auth(self, order_no, params)
         res.request = params
         events.CheckoutAuthSecureCodeEvent.notify(self.request, order_no, res)
-        self.session.add(params)
         self.save_api_response(res)
         return res
 

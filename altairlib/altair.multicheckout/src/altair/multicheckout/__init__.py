@@ -91,9 +91,9 @@ def setup_private_db_session(config):
     from sqlalchemy import engine_from_config
     from sqlalchemy.pool import NullPool
     from .models import _session
-    engine = engine_from_config(config.registry.settings, poolclass=NullPool)
+    from sqlahelper import get_engine
     _session.remove()
-    _session.configure(bind=engine)
+    _session.configure(bind=get_engine())
     config.add_tween(".multicheckout_dbsession_tween")
 
 def setup_components(config):
