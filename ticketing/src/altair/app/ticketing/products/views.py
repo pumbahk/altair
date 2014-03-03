@@ -299,7 +299,15 @@ class Products(BaseView):
         if product is None:
             return HTTPNotFound('product id %d is not found' % product_id)
 
+        try:
+            performance_id = long(self.request.params.get('performance_id'))
+        except (TypeError, ValueError):
+            performance_id = None
+
         location = route_path('products.index', self.request, performance_id=product.sales_segment.performance_id)
+        if performance_id:
+            location = self.request.route_path('performances.show', performance_id=performance_id) + '/product'
+
         try:
             product.delete()
             self.request.session.flash(u'商品を削除しました')

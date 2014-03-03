@@ -28,7 +28,11 @@
       delete_product = function delete_product(id) {
         if (!id) return false;
         var modal = $('#modal-delete');
-        modal.find('#delete').attr('href', '${request.route_path('products.delete', product_id='{id}')}'.replace(encodeURIComponent('{id}'), id));
+        % if performance:
+          modal.find('#delete').attr('href', '${request.route_path('products.delete', product_id='{id}', _query=dict(performance_id=performance.id))}'.replace(encodeURIComponent('{id}'), id));
+        % else:
+          modal.find('#delete').attr('href', '${request.route_path('products.delete', product_id='{id}')}'.replace(encodeURIComponent('{id}'), id));
+        % endif
         modal.find('#message').text('選択した商品を削除します。よろしいですか？');
         modal.modal('toggle');
       };
