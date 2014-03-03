@@ -1476,6 +1476,12 @@ class OrdersReserveView(BaseView):
                 'message':u'パフォーマンスが存在しません',
             }))
 
+        # 古いカートのセッションが残っていたら削除
+        old_cart = api.get_cart(self.request)
+        if old_cart:
+            old_cart.release()
+            api.remove_cart(self.request)
+
         try:
             post_data.update(self.get_inner_cart_session())
             logger.debug('order reserve confirm post_data=%s' % post_data)
