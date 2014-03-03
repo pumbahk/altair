@@ -66,10 +66,14 @@ class OrderInfoDefaultMixin(object):
     def get_seat_no(order):
         seat_no = []
         for p in order.items:
-            if p.product.sales_segment.seat_choice:
-                seat_no += [u"* {0}".format(seat["name"]) for seat in p.seats]
-            elif p.product.seat_stock_type:
-                seat_no += [u"{0} {1}席".format(p.product.seat_stock_type.name, p.seat_quantity)]
+            if p.seats:
+                if p.product.sales_segment.seat_choice:
+                    seat_no += [u"* {0}".format(seat["name"]) for seat in p.seats]
+                elif p.product.seat_stock_type:
+                    seat_no += [u"{0} {1}席".format(p.product.seat_stock_type.name, p.seat_quantity)]
+            else:
+                seat_no += [u"{0} {1}席".format(p.product.seat_stock_type.name, p.quantity)]
+                
         return u"\n".join(seat_no)
 
     def get_product_description(order):
