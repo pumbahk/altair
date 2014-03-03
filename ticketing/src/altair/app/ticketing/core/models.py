@@ -4352,6 +4352,8 @@ class AugusPutback(Base, BaseModel): #, WithTimestamp, LogicallyDeleted):
     augus_performance_id = Column(Identifier, ForeignKey('AugusPerformance.id'), nullable=False)
     augus_performance = relationship('AugusPerformance')
 
+    def __len__(self):
+        return len(self.augus_stock_details)
 
 # move to altair.app.ticketing.orion.models
 class AugusSeatStatus(object):

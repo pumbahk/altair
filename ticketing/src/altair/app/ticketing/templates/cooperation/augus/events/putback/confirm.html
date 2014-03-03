@@ -6,8 +6,23 @@
   <h3>オーガス返券確認</h3>
   <%include file="../_menu.html" args="event=event" />
 </div>
-<form role="form" method="POST" action="${request.route_url('augus.putback.reserve', event_id=event.id)}">
-<button class="btn" type="submit">返券を確定</button>
+
+<script>
+  <!--
+    $(function(){
+        putback = function putback(){
+            var modal = $('#modal_confirm');
+            modal.find('#message').text('返券を確定します。よろしいですか?');
+            modal.modal('toggle');
+        };
+    });
+    -->
+</script>
+
+<p><a class="btn" data-toggle="modal" href="#augus_confirm" >返券を確定</a></p>
+
+<form role="form" method="POST" action="${request.route_url('augus.putback.reserve', event_id=event.id)}" id="putback-form">
+<!-- <button class="btn" type="submit">返券を確定</button>-->
 <table class="table">
   <tr>
     <th>公演名</th>
@@ -42,3 +57,17 @@
 </form>
 
 返券タイプ: R(途中)/F(最終)
+<div class="modal hide" id="augus_confirm">
+  <div class="modal-header">
+    <button class="close" data-dismiss="modal">×</button>
+    <h3>返券処理</h3>
+  </div>
+  <div class="modal-body">
+    <p>本当に返券処理を行いますか?</p>
+    <p>返券を実施した場合、元には戻せません。</p>
+  </div>
+  <div class="modal-footer">
+    <a id="putback" href="javascript:void(0);" class="btn btn-primary" onclick="$('#putback-form').submit();">返券を実行</a>
+    <a href="javascript:void(0);" onclick="$('#augus_confirm').modal('hide');" class="btn secondary">キャンセル</a>
+  </div>
+</div>

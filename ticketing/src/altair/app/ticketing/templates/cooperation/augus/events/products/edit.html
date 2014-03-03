@@ -40,11 +40,13 @@
                 selected="True"
                 %endif
                 >
-          ${augus_ticket.augus_seat_type_code} -
-          ${augus_ticket.unit_value_code} -
-          ${augus_ticket.augus_seat_type_name} -
-          ${augus_ticket.unit_value_name} -
+          ${augus_ticket.augus_seat_type_name}
+          ${augus_ticket.unit_value_name}
           ${augus_ticket.value} 円
+          (
+          ${augus_ticket.augus_seat_type_code} /
+          ${augus_ticket.unit_value_code}
+          )
         </option>
         %endif
         %endfor
