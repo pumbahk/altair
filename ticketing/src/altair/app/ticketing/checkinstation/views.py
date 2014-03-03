@@ -82,7 +82,7 @@ from .todict import (
 def ticket_data_from_signed_string(context, request):
     access_log("*qr ticketdata", context.identity)
     if not "qrsigned" in request.json_body:
-        raise HTTPBadRequest(u"引数が足りません")
+        raise HTTPBadRequest(u"E@:引数が足りません")
 
     ticket_data = TicketData(request, context.operator)
     try:
@@ -90,7 +90,7 @@ def ticket_data_from_signed_string(context, request):
             order, history = ticket_data.get_order_and_history_from_signed(request.json_body["qrsigned"])
         except TypeError:
             logger.warn("*qr ticketdata: history not found: json=%s", request.json_body)
-            raise HTTPBadRequest(u"不正な入力が渡されました!")
+            raise HTTPBadRequest(u"E@:不正な入力が渡されました!")
 
         data = ticket_data_dict_from_history(history)
         ## 付加情報追加
@@ -102,7 +102,7 @@ def ticket_data_from_signed_string(context, request):
         return data
     except KeyError:
         logger.warn("*qr ticketdata: KeyError: json=%s", request.json_body)
-        raise HTTPBadRequest(u"不正な入力が渡されました!!")
+        raise HTTPBadRequest(u"E@:不正な入力が渡されました!!")
 
 
 
@@ -118,7 +118,7 @@ from .todict import (
 def ticket_data_collection_from_order_no(context, request):
     access_log("*qr ticketdata.collection", context.identity)
     if not "order_no" in request.json_body:
-        raise HTTPBadRequest(u"引数が足りません")
+        raise HTTPBadRequest(u"E@:引数が足りません")
 
     order_no = request.json_body["order_no"]
 
@@ -188,13 +188,13 @@ def order_no_verified_data(context, request):
     logger.info("json_body:%s", request.json_body)
     form = VerifyOrderReuestDataForm(MultiDict(request.json_body))
     if not form.validate():
-        raise HTTPBadRequest(form.errors["order_no"][0]) #xxx:
+        raise HTTPBadRequest(u"E@:{}".format(form.errors["order_no"][0])) #xxx:
 
     order_no = request.json_body["order_no"]
     order = OrderData(request, context.operator).get_order_from_order_no(order_no)
 
     if not form.object_validate(request, order):
-        raise HTTPBadRequest(form.errors["order_no"][0]) #xxx:
+        raise HTTPBadRequest(u"E@:{}".format(form.errors["order_no"][0])) #xxx:
 
     data = {"order_no": order.order_no}
     ## 認証用の文字列追加
