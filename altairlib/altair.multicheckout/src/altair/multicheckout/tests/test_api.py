@@ -3,122 +3,102 @@ import unittest
 import mock
 from pyramid import testing
 
-from ..testing import DummyCheckout3D
-
-class secure3d_enrolTests(unittest.TestCase):
-
+class Multicheckout3DAPITests(unittest.TestCase):
     def setUp(self):
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import Session
+        from ..testing import DummyCheckout3D
+        import sqlahelper
+
         self.config = testing.setUp()
+        self.dummy_impl = DummyCheckout3D()
+        self.request = testing.DummyRequest()
+        engine = create_engine("sqlite:///")
+        sqlahelper.add_engine(engine)
+        self.session = Session(bind=engine)
+
+        from .. import models
+
+        sqlahelper.get_base().metadata.create_all()
 
     def tearDown(self):
+        import sqlahelper
+        sqlahelper.get_base().metadata.drop_all()
         testing.tearDown()
 
-    def _callFUT(self, *args, **kwargs):
-        from ..api import secure3d_enrol
-        return secure3d_enrol(*args, **kwargs)
+    def _getTarget(self):
+        from ..api import Multicheckout3DAPI
+        return Multicheckout3DAPI
 
-    @mock.patch('altair.multicheckout.api.save_api_response')
-    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
-    def test_it(self, mock_service_factory, mock_save_api_response):
-        mock_service_factory.return_value = DummyCheckout3D()
+    def _makeOne(self, **kwargs):
+        return self._getTarget()(self.request, self.dummy_impl, self.session, **kwargs)
+
+    def test_secure3d_enrol(self):
+        from .. import models as m
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.Secure3DEnrolEvent')
-        request = testing.DummyRequest()
-        order_no = 'test_order_no'
-        card_number = 'x' * 16
-        exp_year = '20'
-        exp_month = '12'
+        order_no = u'test_order_no'
+        card_number = u'x' * 16
+        exp_year = u'20'
+        exp_month = u'12'
         total_amount = 9999
 
-        result = self._callFUT(
-            request,
+        target = self._makeOne()
+        result = target.secure3d_enrol(
             order_no,
             card_number,
             exp_year,
             exp_month,
             total_amount)
 
-        self.assertEqual(result.OrderNo, order_no)
-        mock_save_api_response.assert_called_with(request, result)
         self.assertEqual(mock_handler.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler.call_args[0][0].api, 'secure3d_enrol')
+        self.assertEqual(self.session.query(m.Secure3DReqEnrolResponse).all(), [result])
 
-class secure3d_authTests(unittest.TestCase):
-
-    def setUp(self):
-        self.config = testing.setUp()
-
-    def tearDown(self):
-        testing.tearDown()
-
-    def _callFUT(self, *args, **kwargs):
-        from ..api import secure3d_auth
-        return secure3d_auth(*args, **kwargs)
-
-    @mock.patch('altair.multicheckout.api.save_api_response')
-    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
-    def test_it(self, mock_service_factory, mock_save_api_response):
-        mock_service_factory.return_value = DummyCheckout3D()
+    def test_secure3d_auth(self):
+        from .. import models as m
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.Secure3DAuthEvent')
-        request = testing.DummyRequest()
-        order_no = 'test_order_no'
-        pares = 'pares' * 30
-        md = 'md' * 40
 
-        result = self._callFUT(
-            request,
+        order_no = u'test_order_no'
+        pares = u'pares' * 30
+        md = u'md' * 40
+
+        target = self._makeOne()
+        result = target.secure3d_auth(
             order_no,
             pares,
             md,)
 
-
-        self.assertEqual(result.OrderNo, order_no)
-        mock_save_api_response.assert_called_with(request, result)
         self.assertEqual(mock_handler.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler.call_args[0][0].api, 'secure3d_auth')
+        self.assertEqual(self.session.query(m.Secure3DAuthResponse).all(), [result])
 
-class checkout_auth_secure3dTests(unittest.TestCase):
-
-    def setUp(self):
-        self.config = testing.setUp()
-
-    def tearDown(self):
-        testing.tearDown()
-
-    def _callFUT(self, *args, **kwargs):
-        from ..api import checkout_auth_secure3d
-        return checkout_auth_secure3d(*args, **kwargs)
-
-    @mock.patch('altair.multicheckout.api.save_api_response')
-    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
-    def test_it(self, mock_service_factory, mock_save_api_response):
-        mock_service_factory.return_value = DummyCheckout3D()
+    def test_checkout_auth_secure3d(self):
+        from .. import models as m
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.CheckoutAuthSecure3DEvent')
-        request = testing.DummyRequest()
-        order_no = 'test_order_no'
-        item_name = 'testing item'
+        order_no = u'test_order_no'
+        item_name = u'testing item'
         amount = "1000"
         tax = "0"
-        client_name = "あああああ"
-        mail_address = "testing@example.com"
-        card_no = "x" * 16
-        card_limit = "13/09"
-        card_holder_name = "TEST CARD"
-        mvn = "mvn" * 40
-        xid = "xid" * 50
-        ts = "ts" * 30
-        eci = "eci" * 20
-        cavv = "cavv"
-        cavv_algorithm = "cavv_al"
-        
+        client_name = u"あああああ"
+        mail_address = u"testing@example.com"
+        card_no = u"x" * 16
+        card_limit = u"13/09"
+        card_holder_name = u"TEST CARD"
+        mvn = u"mvn" * 40
+        xid = u"xid" * 50
+        ts = u"ts" * 30
+        eci = u"eci" * 20
+        cavv = u"cavv"
+        cavv_algorithm = u"cavv_al"
 
-        result = self._callFUT(
-            request,
+        target = self._makeOne()
+        result = target.checkout_auth_secure3d(
             order_no,
             item_name,
             amount,
@@ -136,104 +116,53 @@ class checkout_auth_secure3dTests(unittest.TestCase):
             cavv_algorithm,
             )
 
-
         self.assertEqual(result.OrderNo, order_no)
-        mock_save_api_response.assert_called_with(request, result)
         self.assertEqual(mock_handler.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler.call_args[0][0].api, 'checkout_auth_secure3d')
+        self.assertEqual(self.session.query(m.MultiCheckoutResponseCard).all(), [result])
 
-class checkout_salesTests(unittest.TestCase):
-
-    def setUp(self):
-        self.config = testing.setUp()
-
-    def tearDown(self):
-        testing.tearDown()
-
-    def _callFUT(self, *args, **kwargs):
-        from ..api import checkout_sales
-        return checkout_sales(*args, **kwargs)
-
-    @mock.patch('altair.multicheckout.api.save_api_response')
-    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
-    def test_it(self, mock_service_factory, mock_save_api_response):
-        mock_service_factory.return_value = DummyCheckout3D()
+    def test_checkout_sales(self):
+        from .. import models as m
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.CheckoutSalesSecure3DEvent')
-        request = testing.DummyRequest()
         order_no = 'test_order_no'        
 
-        result = self._callFUT(
-            request,
-            order_no,
-            )
-
+        target = self._makeOne()
+        result = target.checkout_sales(order_no)
 
         self.assertEqual(result.OrderNo, order_no)
-        mock_save_api_response.assert_called_with(request, result)
         self.assertEqual(mock_handler.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler.call_args[0][0].api, 'checkout_sales_secure3d')
+        self.assertEqual(self.session.query(m.MultiCheckoutResponseCard).all(), [result])
 
-class checkout_auth_cancelTests(unittest.TestCase):
-
-    def setUp(self):
-        self.config = testing.setUp()
-
-    def tearDown(self):
-        testing.tearDown()
-
-    def _callFUT(self, *args, **kwargs):
-        from ..api import checkout_auth_cancel
-        return checkout_auth_cancel(*args, **kwargs)
-
-    @mock.patch('altair.multicheckout.api.save_api_response')
-    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
-    def test_it(self, mock_service_factory, mock_save_api_response):
-        mock_service_factory.return_value = DummyCheckout3D()
+    def test_checkout_auth_cancel(self):
+        from .. import models as m
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.CheckoutAuthCancelEvent')
-        request = testing.DummyRequest()
-        order_no = 'test_order_no'        
+        order_no = u'test_order_no'        
 
-        result = self._callFUT(
-            request,
+        target = self._makeOne()
+        result = target.checkout_auth_cancel(
             order_no,
             )
 
-
         self.assertEqual(result.OrderNo, order_no)
-        mock_save_api_response.assert_called_with(request, result)
         self.assertEqual(mock_handler.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler.call_args[0][0].api, 'checkout_auth_cancel')
+        self.assertEqual(self.session.query(m.MultiCheckoutResponseCard).all(), [result])
 
-
-class checkout_sales_part_cancelTests(unittest.TestCase):
-
-    def setUp(self):
-        self.config = testing.setUp()
-
-    def tearDown(self):
-        testing.tearDown()
-
-    def _callFUT(self, *args, **kwargs):
-        from ..api import checkout_sales_part_cancel
-        return checkout_sales_part_cancel(*args, **kwargs)
-
-    @mock.patch('altair.multicheckout.api.save_api_response')
-    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
-    def test_it(self, mock_service_factory, mock_save_api_response):
-        mock_service_factory.return_value = DummyCheckout3D()
+    def test_checkout_part_cancel(self):
+        from .. import models as m
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.CheckoutSalesPartCancelEvent')
-        request = testing.DummyRequest()
-        order_no = 'test_order_no'        
+        order_no = u'test_order_no'        
         sales_amount_cancellation = 999
         tax_carriage_cancellation = 9
-        result = self._callFUT(
-            request,
+        target = self._makeOne()
+        result = target.checkout_sales_part_cancel(
             order_no,
             sales_amount_cancellation,
             tax_carriage_cancellation,
@@ -241,111 +170,57 @@ class checkout_sales_part_cancelTests(unittest.TestCase):
 
 
         self.assertEqual(result.OrderNo, order_no)
-        mock_save_api_response.assert_called_with(request, result)
         self.assertEqual(mock_handler.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler.call_args[0][0].api, 'checkout_sales_part_cancel')
+        self.assertEqual(self.session.query(m.MultiCheckoutResponseCard).all(), [result])
 
 
-class checkout_sales_cancelTests(unittest.TestCase):
-
-    def setUp(self):
-        self.config = testing.setUp()
-
-    def tearDown(self):
-        testing.tearDown()
-
-    def _callFUT(self, *args, **kwargs):
-        from ..api import checkout_sales_cancel
-        return checkout_sales_cancel(*args, **kwargs)
-
-    @mock.patch('altair.multicheckout.api.save_api_response')
-    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
-    def test_it(self, mock_service_factory, mock_save_api_response):
-        mock_service_factory.return_value = DummyCheckout3D()
+    def test_checkout_sales_cancel(self):
+        from .. import models as m
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.CheckoutSalesCancelEvent')
-        request = testing.DummyRequest()
         order_no = 'test_order_no'        
-        result = self._callFUT(
-            request,
-            order_no,
-            )
-
-
+        target = self._makeOne()
+        result = target.checkout_sales_cancel(order_no)
         self.assertEqual(result.OrderNo, order_no)
-        mock_save_api_response.assert_called_with(request, result)
         self.assertEqual(mock_handler.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler.call_args[0][0].api, 'checkout_sales_cancel')
+        self.assertEqual(self.session.query(m.MultiCheckoutResponseCard).all(), [result])
 
-
-class checkout_inquiryTests(unittest.TestCase):
-
-    def setUp(self):
-        self.config = testing.setUp()
-
-    def tearDown(self):
-        testing.tearDown()
-
-    def _callFUT(self, *args, **kwargs):
-        from ..api import checkout_inquiry
-        return checkout_inquiry(*args, **kwargs)
-
-    @mock.patch('altair.multicheckout.api.save_api_response')
-    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
-    def test_it(self, mock_service_factory, mock_save_api_response):
-        mock_service_factory.return_value = DummyCheckout3D()
+    def test_checkout_inquiry_cancel(self):
+        from .. import models as m
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.CheckoutInquiryEvent')
-        request = testing.DummyRequest()
-        order_no = 'test_order_no'        
-        result = self._callFUT(
-            request,
-            order_no,
-            )
-
+        order_no = u'test_order_no'
+        target = self._makeOne()
+        result = target.checkout_inquiry(order_no)
 
         self.assertEqual(result.OrderNo, order_no)
-        mock_save_api_response.assert_called_with(request, result)
-        self.assertEqual(mock_handler.call_args[0][0].order_no, 'test_order_no')
+        self.assertEqual(mock_handler.call_args[0][0].order_no, u'test_order_no')
         self.assertEqual(mock_handler.call_args[0][0].api, 'checkout_inquiry')
+        self.assertEqual(self.session.query(m.MultiCheckoutInquiryResponseCard).all(), [result])
 
-
-class checkout_auth_secure_codeTests(unittest.TestCase):
-
-    def setUp(self):
-        self.config = testing.setUp()
-
-    def tearDown(self):
-        testing.tearDown()
-
-    def _callFUT(self, *args, **kwargs):
-        from ..api import checkout_auth_secure_code
-        return checkout_auth_secure_code(*args, **kwargs)
-
-    @mock.patch('altair.multicheckout.api.save_api_response')
-    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
-    def test_it(self, mock_service_factory, mock_save_api_response):
-        mock_service_factory.return_value = DummyCheckout3D()
+    def test_checkout_auth_secure_code(self):
+        from .. import models as m
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.CheckoutAuthSecureCodeEvent')
-        request = testing.DummyRequest()
-        order_no = 'test_order_no'
-        item_name = 'testing item'
-        amount = "1000"
-        tax = "0"
-        client_name = "あああああ"
-        mail_address = "testing@example.com"
-        card_no = "x" * 16
-        card_limit = "13/09"
-        card_holder_name = "TEST CARD"
-        secure_code = 'SECURE'
+        order_no = u'test_order_no'
+        item_name = u'testing item'
+        amount = u"1000"
+        tax = u"0"
+        client_name = u"あああああ"
+        mail_address = u"testing@example.com"
+        card_no = u"x" * 16
+        card_limit = u"13/09"
+        card_holder_name = u"TEST CARD"
+        secure_code = u'SECURE'
         
 
-        result = self._callFUT(
-            request,
+        target = self._makeOne()
+        result = target.checkout_auth_secure_code(
             order_no,
             item_name,
             amount,
@@ -360,39 +235,24 @@ class checkout_auth_secure_codeTests(unittest.TestCase):
 
 
         self.assertEqual(result.OrderNo, order_no)
-        mock_save_api_response.assert_called_with(request, result)
-        self.assertEqual(mock_handler.call_args[0][0].order_no, 'test_order_no')
-        self.assertEqual(mock_handler.call_args[0][0].api, 'checkout_auth_secure_code')
+        self.assertEqual(mock_handler.call_args[0][0].order_no, u'test_order_no')
+        self.assertEqual(mock_handler.call_args[0][0].api, u'checkout_auth_secure_code')
+        self.assertEqual(self.session.query(m.MultiCheckoutResponseCard).all(), [result])
 
 
-class checkout_sales_different_amountTests(unittest.TestCase):
-
-    def setUp(self):
-        self.config = testing.setUp()
-
-    def tearDown(self):
-        testing.tearDown()
-
-    def _callFUT(self, *args, **kwargs):
-        from ..api import checkout_sales_different_amount
-        return checkout_sales_different_amount(*args, **kwargs)
-
-    @mock.patch('altair.multicheckout.api.save_api_response')
-    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
-    def test_it(self, mock_service_factory, mock_save_api_response):
-        mock_service_factory.return_value = DummyCheckout3D()
+    def test_checkout_sales_different_amount(self):
+        from .. import models as m
         mock_handler1 = mock.Mock()
         self.config.add_subscriber(mock_handler1,
                                    'altair.multicheckout.events.CheckoutSalesSecure3DEvent')
         mock_handler2 = mock.Mock()
         self.config.add_subscriber(mock_handler2,
                                    'altair.multicheckout.events.CheckoutSalesPartCancelEvent')
-        request = testing.DummyRequest()
-        order_no = 'test_order_no'
+        order_no = u'test_order_no'
         different_amount = 999
 
-        result = self._callFUT(
-            request,
+        target = self._makeOne()
+        result = target.checkout_sales_different_amount(
             order_no,
             different_amount,
             )
@@ -401,19 +261,19 @@ class checkout_sales_different_amountTests(unittest.TestCase):
         print mock_handler2.call_args
 
         self.assertEqual(result.OrderNo, order_no)
-
-        mock_save_api_response.assert_called_with(request, result)
         self.assertEqual(mock_handler1.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler1.call_args[0][0].api, 'checkout_sales_secure3d')
 
-        mock_save_api_response.assert_called_with(request, result)
         self.assertEqual(mock_handler2.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler2.call_args[0][0].api, 'checkout_sales_part_cancel')
+        results = self.session.query(m.MultiCheckoutResponseCard).all()
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[1], result)
 
-    @mock.patch('altair.multicheckout.api.save_api_response')
-    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
-    def test_with_sales_error(self, mock_service_factory, mock_save_api_response):
-        mock_service_factory.return_value = DummyCheckout3D(CmnErrorCd='999999')
+    def test_with_sales_error(self):
+        from ..testing import DummyCheckout3D
+        from .. import models as m
+        self.dummy_impl = DummyCheckout3D(CmnErrorCd=u'999999')
         mock_handler1 = mock.Mock()
         self.config.add_subscriber(mock_handler1,
                                    'altair.multicheckout.events.CheckoutSalesSecure3DEvent')
@@ -421,21 +281,18 @@ class checkout_sales_different_amountTests(unittest.TestCase):
         self.config.add_subscriber(mock_handler2,
                                    'altair.multicheckout.events.CheckoutSalesPartCancelEvent')
         request = testing.DummyRequest()
-        order_no = 'test_order_no'
+        order_no = u'test_order_no'
         different_amount = 999
 
-        result = self._callFUT(
-            request,
+        target = self._makeOne()
+        result = target.checkout_sales_different_amount(
             order_no,
             different_amount,
             )
 
 
         self.assertEqual(result.OrderNo, order_no)
-        self.assertEqual(result.CmnErrorCd, '999999')
-
-        mock_save_api_response.assert_called_with(request, result)
+        self.assertEqual(result.CmnErrorCd, u'999999')
         self.assertEqual(mock_handler1.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler1.call_args[0][0].api, 'checkout_sales_secure3d')
-
-        mock_save_api_response.assert_not_called()
+        self.assertEqual(self.session.query(m.MultiCheckoutResponseCard).all(), [result])

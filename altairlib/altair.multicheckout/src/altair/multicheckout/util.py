@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from xml.etree import ElementTree as etree
 
 cart_prefixes = {
     u"AMEX": ["34", "37"],
@@ -25,3 +26,26 @@ def detect_card_brand(card_number):
             if card_number.startswith(prefix):
                 return brand
 
+def sanitize_card_number(xml_data):
+    et = None
+    try:
+        if isinstance(xml_data, str) and len(xml_data) > 0:
+            et = etree.fromstring(xml_data)
+            target = ['Auth/Card/CardNo', 'CardNumber', 'Auth/Secure3D/CardNo']
+            for t in target:
+                if et.find(t) is not None:
+                    et.find(t).text = 'XXXXXXXXXXXXXXXX'
+    except Exception, e:
+        logger.warn('credit card number sanitize error: %s' % e.message)
+    return etree.tostring(et) if et is not None else xml_data
+
+
+def maybe_unicode(u, encoding="utf-8"):
+    if u is None:
+        return None
+    elif isinstance(u, unicode):
+        return u
+    elif isinstance(u, (str, bytes)):
+        return u.decode(encoding=encoding)
+    else:
+        raise ValueError, "expect str or unicode, but got %s" % type(u).__name__

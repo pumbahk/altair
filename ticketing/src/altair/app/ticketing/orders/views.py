@@ -76,6 +76,12 @@ from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.loyalty import api as loyalty_api
 
 from . import utils
+from .card_utils import (
+    get_multicheckout_error_message,
+    get_multicheckout_card_error_message,
+    get_multicheckout_status_description,
+    )
+
 from .api import (
     CartSearchQueryBuilder,
     OrderSummarySearchQueryBuilder,
@@ -2258,6 +2264,10 @@ class MailInfoView(BaseView):
         self.request.session.flash(u'メール再送信しました')
         return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
+def decorate_order_no(request, order_no):
+    if request.registry.settings.get('multicheckout.testing', False):
+        order_no = order_no + "00"
+    return order_no
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class CartView(BaseView):
@@ -2292,4 +2302,44 @@ class CartView(BaseView):
             )
 
         return { 'form_search': form, 'carts': carts, 'url': self.request.path }
+
+    @view_config(route_name='cart.show', renderer="altair.app.ticketing:templates/carts/show.html")
+    def show(self):
+        slave_session = get_db_session(self.request, name="slave")
+
+        organization_id = self.context.organization.id
+        order_no = self.request.matchdict['order_no']
+        cart = slave_session.query(Cart) \
+            .filter(Cart.organization_id == organization_id) \
+            .filter(Cart.deleted_at == None) \
+            .filter(Cart.order_no == order_no).one()
+        decorated_order_no = decorate_order_no(self.request, cart.order_no)
+        multicheckout_records = []
+        from altair.multicheckout.models import MultiCheckoutRequestCard, MultiCheckoutResponseCard, Secure3DAuthRequest, Secure3DAuthResponse
+        for multicheckout_response in slave_session.query(MultiCheckoutResponseCard).outerjoin(MultiCheckoutResponseCard.request).filter(MultiCheckoutResponseCard.OrderNo == decorated_order_no).order_by(MultiCheckoutResponseCard.id):
+            multicheckout_records.append({
+                'status': multicheckout_response.Status,
+                'status_description': get_multicheckout_status_description(multicheckout_response.Status),
+                'ahead_com_cd': multicheckout_response.AheadComCd,
+                'error_cd': multicheckout_response.CmnErrorCd,
+                'card_error_cd': multicheckout_response.CardErrorCd,
+                'message': u'%s / %s' % (
+                    get_multicheckout_error_message(multicheckout_response.CmnErrorCd),
+                    get_multicheckout_card_error_message(multicheckout_response.CardErrorCd),
+                    ),
+                'secure3d_ret_cd': None,
+                })
+        for secure3d_auth_response in slave_session.query(Secure3DAuthResponse).outerjoin(Secure3DAuthResponse.request).filter(Secure3DAuthResponse.OrderNo == decorated_order_no):
+            multicheckout_records.append({
+                'status': None,
+                'status_description': None,
+                'ahead_com_cd': None,
+                'error_cd': secure3d_auth_response.ErrorCd,
+                'card_error_cd': None,
+                'message': get_multicheckout_error_message(secure3d_auth_response.ErrorCd),
+                'secure3d_ret_cd': secure3d_auth_response.RetCd,
+                })
+
+        return { 'cart': cart, 'multicheckout_records': multicheckout_records }
+
 

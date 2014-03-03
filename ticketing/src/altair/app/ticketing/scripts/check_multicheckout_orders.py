@@ -21,7 +21,7 @@ from sqlalchemy.orm.properties import ColumnProperty
 from dateutil.parser import parse as parsedate
 
 from altair.multicheckout import models as mc_models
-from altair.multicheckout.api import checkout_inquiry
+from altair.multicheckout.api import get_multicheckout_3d_api, get_all_multicheckout_settings
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
@@ -54,6 +54,14 @@ def dump(obj, indent=0):
 
 def check(env, start, end):
     request = env['request']
+    settings = dict(
+        (setting.shop_id, setting)
+        for setting in get_all_multicheckout_settings(request)
+        )
+
+    def get_shop_name_by_shop_id(shop_id):
+        return settings[shop_id].shop_name
+
     q = DBSession.query(mc_models.MultiCheckoutResponseCard, c_models.Order) \
         .outerjoin(c_models.Order, mc_models.MultiCheckoutResponseCard.OrderNo == c_models.Order.order_no) \
         .filter(mc_models.MultiCheckoutResponseCard.Status.in_(
@@ -66,9 +74,9 @@ def check(env, start, end):
     for resp, order in q.all():
         logger.debug('Checking order %s...' % resp.OrderNo)
         if order is None:
+            api = get_multicheckout_3d_api(request, get_shop_name_by_shop_id(resp.Storecd))
             organization_id = c_models.OrganizationSetting.query.filter_by(multicheckout_shop_id=resp.Storecd).first().organization_id
-            request.host = c_models.Host.query.filter_by(organization_id=organization_id).first().host_name
-            result = checkout_inquiry(request, resp.OrderNo)
+            result = api.checkout_inquiry(resp.OrderNo)
             if result.Status == mc_models.MultiCheckoutStatusEnum.Settled.v:
                 print >>sys.stderr, "%s: no corresponding order found!" % (resp.OrderNo, )
                 try:

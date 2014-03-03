@@ -2737,13 +2737,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # 入金済みなら決済をキャンセル
             if self.payment_status in ['paid', 'refunding']:
                 # 売り上げキャンセル
-                from altair.multicheckout import api as multicheckout_api
+                from altair.multicheckout.api import get_multicheckout_3d_api
+                organization = Organization.get(self.organization_id)
+                multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
 
                 order_no = self.order_no
                 if request.registry.settings.get('multicheckout.testing', False):
                     order_no = self.order_no + "00"
-                organization = Organization.get(self.organization_id)
-                request.altair_checkout3d_override_shop_name = organization.setting.multicheckout_shop_name
 
                 # キャンセルAPIでなく売上一部取消APIを使う
                 # - 払戻期限を越えてもキャンセルできる為
@@ -2753,15 +2753,15 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     logger.info(u'売上一部取消APIで払戻 %s' % self.order_no)
                     prev = self.prev
                     total_amount = prev.refund.item(prev) + prev.refund.fee(prev)
-                    multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(request, order_no, total_amount, 0)
+                    multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(order_no, total_amount, 0)
                 else:
                     sales_part_cancel_enabled_from = '2012-12-03 08:00'
                     if self.created_at < datetime.strptime(sales_part_cancel_enabled_from, "%Y-%m-%d %H:%M"):
                         logger.info(u'キャンセルAPIでキャンセル %s' % self.order_no)
-                        multi_checkout_result = multicheckout_api.checkout_sales_cancel(request, order_no)
+                        multi_checkout_result = multicheckout_api.checkout_sales_cancel(order_no)
                     else:
                         logger.info(u'売上一部取消APIで全額取消 %s' % self.order_no)
-                        multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(request, order_no, self.total_amount, 0)
+                        multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(order_no, self.total_amount, 0)
 
                 error_code = ''
                 if multi_checkout_result.CmnErrorCd and multi_checkout_result.CmnErrorCd != '000000':

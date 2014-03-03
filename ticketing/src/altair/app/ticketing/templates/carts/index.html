@@ -3,7 +3,7 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-    names=[u'トップ', u'購入情報'],
+    names=[u'トップ', u'カート追跡'],
     urls=[request.route_path('index')]
   )}
 </%block>
@@ -18,7 +18,6 @@
 <div style="clear: both;"></div>
 
 % if carts:
-<p> ${max(carts.items_per_page * (carts.page-1) + 1,0)}～${min(carts.items_per_page * carts.page, carts.item_count)} / ${carts.item_count}件</p>
 <div class="carts">
   <%include file="_list.html" args="carts=carts, formdata=form_search.data" />
 </div>

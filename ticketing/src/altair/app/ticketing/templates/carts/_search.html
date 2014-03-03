@@ -69,7 +69,9 @@ import json
           <th><label for="name">${form.name.label.text}</label></th>
           <td>${form.name()}</td>
           <th><label for="email">${form.email.label.text}</label></th>
-          <td colspan="3">${form.email()}</td>
+          <td>${form.email()}</td>
+          <th><label>${form.browserid.label}</label></th>
+          <td>${form.browserid}</td>
         </tr>
         <tr>
           <th><label>${form.carted_from.label.text}</label></th>
@@ -78,28 +80,20 @@ import json
             ${form.carted_to()}
           </td>
         </tr>
-      </tbody>
-    </table>
-    <table>
-      <tbody>
         <tr>
           <th><label for="event_id">${form.event_id.label.text}</label></th>
-          <td>${form.event_id(style="width:750px", size=4)}</td>
+          <td colspan="5">${form.event_id(style="width:750px", size=4)}</td>
         </tr>
         <tr>
           <th><label for="performance_id">${form.performance_id.label.text}</label></th>
-          <td>${form.performance_id(style="width:750px", size=4)}</td>
+          <td colspan="5">${form.performance_id(style="width:750px", size=4)}</td>
         </tr>
-      </tbody>
-    </table>
-    <table>
-      <tbody>
         <tr>
           <th><label for="sales_segment_group_id">${form.sales_segment_group_id.label.text}</label></th>
           <td>${form.sales_segment_group_id(size=4)}</td>
           <th><label for="payment_method">${form.payment_method.label.text}</label></th>
           <td>${form.payment_method(size=4)}
-            <th><label for="delivery_method">${form.delivery_method.label.text}</label></th>
+          <th><label for="delivery_method">${form.delivery_method.label.text}</label></th>
           <td>${form.delivery_method(size=4)}</td>
         </tr>
         <tr>
@@ -109,13 +103,9 @@ import json
             ${form.start_on_to()}
           </td>
         </tr>
-      </tbody>
-    </table>
-    <table>
-      <tbody>
         <tr>
-          <th><label>状態</label></th>
-          <td>${form.status}</label></td>
+          <th><label>${form.status.label}</label></th>
+          <td colspan="5">${form.status}</label></td>
         </tr>
       </tbody>
     </table>

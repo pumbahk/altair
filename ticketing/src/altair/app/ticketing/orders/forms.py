@@ -1104,6 +1104,10 @@ class CartSearchForm(SearchFormBase):
             ),
         widget=OurDateTimeWidget()
     )
+    browserid = TextField(
+        label=u'browserid',
+        validators=[Optional()]
+        )
     status = SelectField(
         label=u'状態',
         validators=[Optional()],

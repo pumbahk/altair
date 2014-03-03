@@ -12,13 +12,13 @@ from pyramid.paster import bootstrap, setup_logging
 import sqlahelper
 from sqlalchemy.sql import or_
 from altair.multicheckout import models as m
-from altair.multicheckout import api
+from altair.multicheckout.api import get_multicheckout_3d_api, get_all_multicheckout_settings
 from altair.multicheckout.interfaces import ICancelFilter
 
 logger = logging.getLogger(__name__)
 
 
-def sync_data(request, statuses):
+def sync_data(request, statuses, shop_name):
     """
     前処理（データ訂正）
     
@@ -29,10 +29,11 @@ def sync_data(request, statuses):
         売り上げ確定済のものは売り上げ確定済フラグをたてる
         訂正した場合、対応するAPIレスポンスのデータ取得が必要か？
     """
+    api = get_multicheckout_3d_api(request, shop_name)
     for st in statuses:
         order_no = st.OrderNo
         logger.debug("sync for %s" % order_no)
-        inquiry = api.checkout_inquiry(request, order_no)
+        inquiry = api.checkout_inquiry(order_no)
 
         if inquiry.CmnErrorCd == '001407':  # 取引詳細操作不可
             m.MultiCheckoutOrderStatus.set_status(
@@ -81,12 +82,13 @@ def get_auth_orders(request, shop_id):
         )
     return q.all()
 
-def cancel_auth(request, statuses):
+def cancel_auth(request, statuses, shop_name):
     """
     本処理
     
         キャンセル条件にしたがってオーソリ依頼データを取得
     """
+    api = get_multicheckout_3d_api(request, shop_name)
     for st in statuses:
         if not is_cancelable(request, st):
             continue
@@ -99,7 +101,7 @@ def cancel_auth(request, statuses):
             continue
 
         logger.debug('call auth cancel api for %s' % order_no)
-        api.checkout_auth_cancel(request, order_no)
+        api.checkout_auth_cancel(order_no)
 
         m._session.commit()
 
@@ -142,7 +144,7 @@ def main():
 def run(request):
     # multicheckoutsettingsごとに行う
     processed_shops = []
-    for multicheckout_setting in api.get_all_multicheckout_settings(request):
+    for multicheckout_setting in get_all_multicheckout_settings(request):
         shop_name = multicheckout_setting.shop_name
         shop_id = multicheckout_setting.shop_id
         if shop_id in processed_shops:
@@ -157,23 +159,21 @@ def run(request):
     return processed_shops
 
 def process_shop(request, shop_id, shop_name):
-        request.altair_checkout3d_override_shop_name = shop_name
+    logger.info("starting get_auth_orders %s" % shop_name)
+    statuses = get_auth_orders(request, shop_id)
+    logger.info("finished get_auth_orders %s" % shop_name)
+    logger.info(
+        "shop:%s auth orders count = %d" % (shop_name, len(statuses)))
+    if not statuses:
+        return 
 
-        logger.info("starting get_auth_orders %s" % shop_name)
-        statuses = get_auth_orders(request, shop_id)
-        logger.info("finished get_auth_orders %s" % shop_name)
-        logger.info(
-            "shop:%s auth orders count = %d" % (shop_name, len(statuses)))
-        if not statuses:
-            return 
+    logger.info("starting sync_data %s" % shop_name)
+    sync_data(request, statuses, shop_name)
+    logger.info("finished sync_data %s" % shop_name)
 
-        logger.info("starting sync_data %s" % shop_name)
-        sync_data(request, statuses)
-        logger.info("finished sync_data %s" % shop_name)
-
-        logger.info("starting cancel_auth %s" % shop_name)
-        cancel_auth(request, statuses)
-        logger.info("finished cancel_auth %s" % shop_name)
+    logger.info("starting cancel_auth %s" % shop_name)
+    cancel_auth(request, statuses, shop_name)
+    logger.info("finished cancel_auth %s" % shop_name)
 
 if __name__ == '__main__':
     main()

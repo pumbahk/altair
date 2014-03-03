@@ -66,6 +66,7 @@ def includeme(config):
 
     config.add_route("orders.mailinfo"                  , "/orders/{order_id}/mailinfo/{action}")
     config.add_route("cart.search",                       "/carts/")
+    config.add_route("cart.show",                       "/carts/{order_no}")
     config.scan(".")
 
     # 団体予約、インナー予約でcartパッケージを使う為の設定

@@ -236,6 +236,11 @@ class CartSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin
             query = query.filter(self.targets['subject'].order_id == None)
         return query
 
+    def _browserid(self, query, value):
+        query = query.filter(self.targets['subject'].browserid == value)
+        return query
+
+
 class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin):
     targets = {
         'subject': Order,
