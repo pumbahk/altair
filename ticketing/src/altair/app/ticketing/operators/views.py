@@ -14,7 +14,7 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import DBSession, merge_session_with_post
 from altair.app.ticketing.organizations.forms import OrganizationForm
 from altair.app.ticketing.core.models import Organization
-from altair.app.ticketing.operators.models import Operator, OperatorRole, Permission
+from altair.app.ticketing.operators.models import Operator, OperatorRole, Permission, PermissionCategory
 from altair.app.ticketing.operators.forms import OperatorForm, OperatorRoleForm
 
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
@@ -154,16 +154,16 @@ class OperatorRoles(BaseView):
             direction = 'asc'
 
         query = DBSession.query(OperatorRole).order_by(sort + ' ' + direction)
-
         roles = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
-            items_per_page=20,
+            items_per_page=10,
             url=paginate.PageURL_WebOb(self.request)
         )
 
         return {
-            'roles':roles
+            'roles':roles,
+            'permission_categories':PermissionCategory.query.all()
         }
 
     @view_config(route_name='operator_roles.new', request_method='GET', renderer='altair.app.ticketing:templates/operator_roles/edit.html')

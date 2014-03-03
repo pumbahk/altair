@@ -1,4 +1,4 @@
-<%page args="form, roles" />
+<%page args="form, roles, permission_categories" />
 <%namespace file="/common/helpers.html" name="ch"/>
 <%namespace file="/common/modal.html" import="delete_modal" />
 
@@ -12,38 +12,48 @@
 </script>
 
 <form>
-  <div style="float: left;">
+  <div class="float-left">
     <div class="btn-group">
       <a href="${request.route_path('operator_roles.new')}" class="btn"><i class="icon-plus"></i> 新規</a>
     </div>
   </div>
   <div class="clearfix"></div>
 
-  <table class="table fullwidth table-striped" style="margin-top: 10px;">
+  <table class="table table-bordered" style="margin-top: 10px;">
     <thead>
     <tr>
-      <th>ロール名</th>
-      <th>ロール名(日本語表記)</th>
+      <th class="span4"></th>
+      <th colspan="${len(roles)}">ロール名</th>
+    </tr>
+    <tr>
       <th>権限</th>
-      <th class="span3">操作</th>
+      % for role in roles.items:
+      <th class="span2">
+        ${role.name_kana}
+        <div class="btn-group">
+          <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href="${request.route_path('operator_roles.edit', operator_role_id=role.id)}"><i class="icon-pencil"></i> 編集</a></li>
+            <li><a href="javascript:delete_role(${role.id});"><i class="icon-minus"></i> 削除</a></li>
+          </ul>
+        </div>
+      </th>
+      % endfor
     </tr>
     </thead>
     <tbody>
-    % for role in roles.items:
+    % for category in permission_categories:
     <tr>
-      <td>${role.name}</td>
-      <td>${role.name_kana}</td>
+      <td>${category.name_kana}</td>
+      % for role in roles.items:
       <td>
-        % for permission in role.permissions:
-          ${permission.category.name_kana}
-        % endfor
+        % if category.id in [p.category_id for p in role.permissions]:
+        <i class="icon-ok"></i>
+        % endif
       </td>
-      <td>
-        <div class="btn-group">
-          <a class="btn" href="${request.route_path('operator_roles.edit', operator_role_id=role.id)}"><i class="icon-pencil"></i> 編集</a>
-          <a class="btn btn-danger" href="javascript:delete_role(${role.id});"><i class="icon-minus"></i> 削除</a>
-        </div>
-      </td>
+      % endfor
     </tr>
     % endfor
     </tbody>
