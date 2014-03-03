@@ -150,7 +150,7 @@ class Checkout3D(object):
         except (socket.timeout, ssl.SSLError), e:
             logger.warn('multicheckout api request timeout: %s(%s)' % (type(e), e.message))
             raise MultiCheckoutAPITimeoutError(e)
-        except Exception, e:
+        except Exception as e:
             logger.error('multicheckout api request error: %s(%s)' % (type(e), e.message))
             raise MultiCheckoutAPIError(e)
         finally:

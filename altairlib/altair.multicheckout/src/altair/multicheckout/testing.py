@@ -1,7 +1,7 @@
 from pyramid import testing
 
 class DummyCheckout3D(object):
-    def __init__(self, CmnErrorCd='000000', ErrorCd='000000', RetCd=''):
+    def __init__(self, CmnErrorCd=u'000000', ErrorCd=u'000000', RetCd=u''):
         self.CmnErrorCd = CmnErrorCd
         self.ErrorCd = ErrorCd
         self.RetCd = RetCd

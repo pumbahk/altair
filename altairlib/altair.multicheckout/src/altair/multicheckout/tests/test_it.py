@@ -360,7 +360,7 @@ class Checkout3DTests(unittest.TestCase):
         params = models.MultiCheckoutRequestCard(
             ItemCd='this-is-item-cd',
             ItemName=u'商品名',
-            OrderYMD='20120520',
+            OrderYMD=u'20120520',
             SalesAmount=100,
             TaxCarriage=50,
             FreeData=u'任意項目',
@@ -368,11 +368,11 @@ class Checkout3DTests(unittest.TestCase):
             MailAddress='ticketstar@example.com',
             MailSend='1',
             CardNo='1111111111111111',
-            CardLimit='2009',
-            CardHolderName='RAKUTEN TAROU',
-            PayKindCd='61',
-            PayCount='10',
-            SecureKind='1',
+            CardLimit=u'2009',
+            CardHolderName=u'RAKUTEN TAROU',
+            PayKindCd=u'61',
+            PayCount=u'10',
+            SecureKind=u'1',
             SecureCode=None,
             Mvn=None,
             Xid=None,
@@ -415,22 +415,22 @@ class Checkout3DTests(unittest.TestCase):
         target = self._makeOne(None, None, None, None)
 
         params = models.MultiCheckoutRequestCard(
-            ItemCd='this-is-item-cd',
+            ItemCd=u'this-is-item-cd',
             ItemName=u'商品名',
-            OrderYMD='20120520',
+            OrderYMD=u'20120520',
             SalesAmount=100,
             TaxCarriage=50,
             FreeData=u'任意項目',
             ClientName=u'楽天太郎',
-            MailAddress='ticketstar@example.com',
-            MailSend='1',
-            CardNo='1111111111111111',
-            CardLimit='2009',
-            CardHolderName='RAKUTEN TAROU',
-            PayKindCd='61',
-            PayCount='10',
-            SecureKind='2',
-            SecureCode='aaaa',
+            MailAddress=u'ticketstar@example.com',
+            MailSend=u'1',
+            CardNo=u'1111111111111111',
+            CardLimit=u'2009',
+            CardHolderName=u'RAKUTEN TAROU',
+            PayKindCd=u'61',
+            PayCount=u'10',
+            SecureKind=u'2',
+            SecureCode=u'aaaa',
             Mvn=None,
             Xid=None,
             Ts=None,
@@ -477,26 +477,26 @@ class Checkout3DTests(unittest.TestCase):
         params = models.MultiCheckoutRequestCard(
             ItemCd='this-is-item-cd',
             ItemName=u'商品名',
-            OrderYMD='20120520',
+            OrderYMD=u'20120520',
             SalesAmount=100,
             TaxCarriage=50,
             FreeData=u'任意項目',
             ClientName=u'楽天太郎',
-            MailAddress='ticketstar@example.com',
-            MailSend='1',
-            CardNo='1111111111111111',
-            CardLimit='2009',
-            CardHolderName='RAKUTEN TAROU',
-            PayKindCd='61',
-            PayCount='10',
-            SecureKind='3',
+            MailAddress=u'ticketstar@example.com',
+            MailSend=u'1',
+            CardNo=u'1111111111111111',
+            CardLimit=u'2009',
+            CardHolderName=u'RAKUTEN TAROU',
+            PayKindCd=u'61',
+            PayCount=u'10',
+            SecureKind=u'3',
             SecureCode=None,
-            Mvn='mvn',
-            Xid='Xid',
-            Ts='Ts',
-            ECI='ECI',
-            CAVV='CAVV',
-            CavvAlgorithm='CavvAlgorithm',
+            Mvn=u'mvn',
+            Xid=u'Xid',
+            Ts=u'Ts',
+            ECI=u'ECI',
+            CAVV=u'CAVV',
+            CavvAlgorithm=u'CavvAlgorithm',
         )
         result = target._create_request_card_xml(params)
 
@@ -565,47 +565,47 @@ class Checkout3DTests(unittest.TestCase):
 
     def test_secure3d_enrol_url(self):
         target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
-        order_no = '123456789012'
+        order_no = u'123456789012'
         self.assertEqual(target.secure3d_enrol_url(order_no), 'http://example.com/SHOP/3D-Secure/OrderNo/%s/Enrol' % order_no)
 
     def test_secure3d_auth_url(self):
         target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
-        order_no = '123456789013'
+        order_no = u'123456789013'
         self.assertEqual(target.secure3d_auth_url(order_no), 'http://example.com/SHOP/3D-Secure/OrderNo/%s/Auth' % order_no)
 
     def test_card_check_url(self):
         target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
-        order_no = '123456789014'
+        order_no = u'123456789014'
         self.assertEqual(target.card_check_url(order_no), 'http://example.com/SHOP/card/OrderNo/%s/Check' % order_no)
 
     def test_card_auth_url(self):
         target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
-        order_no = '123456789015'
+        order_no = u'123456789015'
         self.assertEqual(target.card_auth_url(order_no), 'http://example.com/SHOP/card/OrderNo/%s/Auth' % order_no)
 
     def test_card_auth_cancel_url(self):
         target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
-        order_no = '123456789016'
+        order_no = u'123456789016'
         self.assertEqual(target.card_auth_cancel_url(order_no), 'http://example.com/SHOP/card/OrderNo/%s/AuthCan' % order_no)
 
     def test_card_sales_url(self):
         target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
-        order_no = '123456789017'
+        order_no = u'123456789017'
         self.assertEqual(target.card_sales_url(order_no), 'http://example.com/SHOP/card/OrderNo/%s/Sales' % order_no)
 
     def test_card_sales_part_cancel_url(self):
         target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
-        order_no = '123456789018'
+        order_no = u'123456789018'
         self.assertEqual(target.card_sales_part_cancel_url(order_no), 'http://example.com/SHOP/card/OrderNo/%s/SalesPartCan' % order_no)
 
     def test_card_cancel_sales_url(self):
         target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
-        order_no = '123456789018'
+        order_no = u'123456789018'
         self.assertEqual(target.card_cancel_sales_url(order_no), 'http://example.com/SHOP/card/OrderNo/%s/SalesCan' % order_no)
 
     def test_card_inquiry_url(self):
         target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
-        order_no = '123456789019'
+        order_no = u'123456789019'
         self.assertEqual(target.card_inquiry_url(order_no), 'http://example.com/SHOP/card/OrderNo/%s' % order_no)
 
     def test_parse_response_card_xml(self):

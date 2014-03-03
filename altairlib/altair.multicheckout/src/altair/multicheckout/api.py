@@ -57,8 +57,8 @@ def get_card_ahead_com_name(request, code):
 
 @implementer(IMulticheckoutResponseFactory, IMulticheckout3DAPI)
 class Multicheckout3DAPI(object):
-    DEFAULT_ITEM_CODE = "120"  # 通販
-    CURRENCY = "392" # 日本円
+    DEFAULT_ITEM_CODE = u"120"  # 通販
+    CURRENCY = u"392" # 日本円
 
     def __init__(self, request, impl, session, now=None, default_item_cd=None, currency=None):
         if now is None:
@@ -135,7 +135,7 @@ class Multicheckout3DAPI(object):
         if item_cd is None:
             item_cd = self.default_item_cd
         order_no = maybe_unicode(order_no)
-        order_ymd = self.now.strftime('%Y%m%d')
+        order_ymd = self.now.strftime('%Y%m%d').decode('ascii')
         params = m.MultiCheckoutRequestCard(
             ItemCd=item_cd,
             ItemName=item_name,
@@ -145,13 +145,13 @@ class Multicheckout3DAPI(object):
             FreeData=free_data,
             ClientName=client_name,
             MailAddress=mail_address,
-            MailSend='0',
+            MailSend=u'0',
             CardNo=card_no,
             CardLimit=card_limit,
             CardHolderName=card_holder_name,
-            PayKindCd='10',
+            PayKindCd=u'10',
             PayCount=None,
-            SecureKind='3',
+            SecureKind=u'3',
             Mvn=mvn,
             Xid=xid,
             Ts=ts,
@@ -244,7 +244,7 @@ class Multicheckout3DAPI(object):
         if item_cd is None:
             item_cd = self.default_item_cd
         order_no = maybe_unicode(order_no)
-        order_ymd = self.now.strftime('%Y%m%d')
+        order_ymd = self.now.strftime('%Y%m%d').decode('ascii')
         params = m.MultiCheckoutRequestCard(
             ItemCd=item_cd,
             ItemName=item_name,
@@ -254,15 +254,15 @@ class Multicheckout3DAPI(object):
             FreeData=free_data,
             ClientName=client_name,
             MailAddress=mail_address,
-            MailSend='0',
+            MailSend=u'0',
 
             CardNo=card_no,
             CardLimit=card_limit,
             CardHolderName=card_holder_name,
 
-            PayKindCd='10',
+            PayKindCd=u'10',
             PayCount=None,
-            SecureKind='2',
+            SecureKind=u'2',
             SecureCode=secure_code,
         )
         res = self.impl.request_card_auth(self, order_no, params)

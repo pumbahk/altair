@@ -38,10 +38,10 @@ class Multicheckout3DAPITests(unittest.TestCase):
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.Secure3DEnrolEvent')
-        order_no = 'test_order_no'
-        card_number = 'x' * 16
-        exp_year = '20'
-        exp_month = '12'
+        order_no = u'test_order_no'
+        card_number = u'x' * 16
+        exp_year = u'20'
+        exp_month = u'12'
         total_amount = 9999
 
         target = self._makeOne()
@@ -62,9 +62,9 @@ class Multicheckout3DAPITests(unittest.TestCase):
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.Secure3DAuthEvent')
 
-        order_no = 'test_order_no'
-        pares = 'pares' * 30
-        md = 'md' * 40
+        order_no = u'test_order_no'
+        pares = u'pares' * 30
+        md = u'md' * 40
 
         target = self._makeOne()
         result = target.secure3d_auth(
@@ -81,21 +81,21 @@ class Multicheckout3DAPITests(unittest.TestCase):
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.CheckoutAuthSecure3DEvent')
-        order_no = 'test_order_no'
-        item_name = 'testing item'
+        order_no = u'test_order_no'
+        item_name = u'testing item'
         amount = "1000"
         tax = "0"
         client_name = u"あああああ"
-        mail_address = "testing@example.com"
-        card_no = "x" * 16
-        card_limit = "13/09"
-        card_holder_name = "TEST CARD"
-        mvn = "mvn" * 40
-        xid = "xid" * 50
-        ts = "ts" * 30
-        eci = "eci" * 20
-        cavv = "cavv"
-        cavv_algorithm = "cavv_al"
+        mail_address = u"testing@example.com"
+        card_no = u"x" * 16
+        card_limit = u"13/09"
+        card_holder_name = u"TEST CARD"
+        mvn = u"mvn" * 40
+        xid = u"xid" * 50
+        ts = u"ts" * 30
+        eci = u"eci" * 20
+        cavv = u"cavv"
+        cavv_algorithm = u"cavv_al"
 
         target = self._makeOne()
         result = target.checkout_auth_secure3d(
@@ -141,7 +141,7 @@ class Multicheckout3DAPITests(unittest.TestCase):
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.CheckoutAuthCancelEvent')
-        order_no = 'test_order_no'        
+        order_no = u'test_order_no'        
 
         target = self._makeOne()
         result = target.checkout_auth_cancel(
@@ -158,7 +158,7 @@ class Multicheckout3DAPITests(unittest.TestCase):
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.CheckoutSalesPartCancelEvent')
-        order_no = 'test_order_no'        
+        order_no = u'test_order_no'        
         sales_amount_cancellation = 999
         tax_carriage_cancellation = 9
         target = self._makeOne()
@@ -193,12 +193,12 @@ class Multicheckout3DAPITests(unittest.TestCase):
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.CheckoutInquiryEvent')
-        order_no = 'test_order_no'
+        order_no = u'test_order_no'
         target = self._makeOne()
         result = target.checkout_inquiry(order_no)
 
         self.assertEqual(result.OrderNo, order_no)
-        self.assertEqual(mock_handler.call_args[0][0].order_no, 'test_order_no')
+        self.assertEqual(mock_handler.call_args[0][0].order_no, u'test_order_no')
         self.assertEqual(mock_handler.call_args[0][0].api, 'checkout_inquiry')
         self.assertEqual(self.session.query(m.MultiCheckoutInquiryResponseCard).all(), [result])
 
@@ -207,16 +207,16 @@ class Multicheckout3DAPITests(unittest.TestCase):
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
                                    'altair.multicheckout.events.CheckoutAuthSecureCodeEvent')
-        order_no = 'test_order_no'
-        item_name = 'testing item'
-        amount = "1000"
-        tax = "0"
+        order_no = u'test_order_no'
+        item_name = u'testing item'
+        amount = u"1000"
+        tax = u"0"
         client_name = u"あああああ"
-        mail_address = "testing@example.com"
-        card_no = "x" * 16
-        card_limit = "13/09"
-        card_holder_name = "TEST CARD"
-        secure_code = 'SECURE'
+        mail_address = u"testing@example.com"
+        card_no = u"x" * 16
+        card_limit = u"13/09"
+        card_holder_name = u"TEST CARD"
+        secure_code = u'SECURE'
         
 
         target = self._makeOne()
@@ -235,8 +235,8 @@ class Multicheckout3DAPITests(unittest.TestCase):
 
 
         self.assertEqual(result.OrderNo, order_no)
-        self.assertEqual(mock_handler.call_args[0][0].order_no, 'test_order_no')
-        self.assertEqual(mock_handler.call_args[0][0].api, 'checkout_auth_secure_code')
+        self.assertEqual(mock_handler.call_args[0][0].order_no, u'test_order_no')
+        self.assertEqual(mock_handler.call_args[0][0].api, u'checkout_auth_secure_code')
         self.assertEqual(self.session.query(m.MultiCheckoutResponseCard).all(), [result])
 
 
@@ -248,7 +248,7 @@ class Multicheckout3DAPITests(unittest.TestCase):
         mock_handler2 = mock.Mock()
         self.config.add_subscriber(mock_handler2,
                                    'altair.multicheckout.events.CheckoutSalesPartCancelEvent')
-        order_no = 'test_order_no'
+        order_no = u'test_order_no'
         different_amount = 999
 
         target = self._makeOne()
@@ -273,7 +273,7 @@ class Multicheckout3DAPITests(unittest.TestCase):
     def test_with_sales_error(self):
         from ..testing import DummyCheckout3D
         from .. import models as m
-        self.dummy_impl = DummyCheckout3D(CmnErrorCd='999999')
+        self.dummy_impl = DummyCheckout3D(CmnErrorCd=u'999999')
         mock_handler1 = mock.Mock()
         self.config.add_subscriber(mock_handler1,
                                    'altair.multicheckout.events.CheckoutSalesSecure3DEvent')
@@ -281,7 +281,7 @@ class Multicheckout3DAPITests(unittest.TestCase):
         self.config.add_subscriber(mock_handler2,
                                    'altair.multicheckout.events.CheckoutSalesPartCancelEvent')
         request = testing.DummyRequest()
-        order_no = 'test_order_no'
+        order_no = u'test_order_no'
         different_amount = 999
 
         target = self._makeOne()
@@ -292,7 +292,7 @@ class Multicheckout3DAPITests(unittest.TestCase):
 
 
         self.assertEqual(result.OrderNo, order_no)
-        self.assertEqual(result.CmnErrorCd, '999999')
+        self.assertEqual(result.CmnErrorCd, u'999999')
         self.assertEqual(mock_handler1.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler1.call_args[0][0].api, 'checkout_sales_secure3d')
         self.assertEqual(self.session.query(m.MultiCheckoutResponseCard).all(), [result])
