@@ -236,7 +236,7 @@ class SalesSegmentAccessor(object):
 
     def get_use_default(self, obj, name):
         if not self.attributes.get(name).get('has_use_default'):
-            return False 
+            return False
         if self.attributes.get(name).get('setting'):
             return getattr(obj.setting, 'use_default_%s' % name)
         else:
@@ -244,11 +244,8 @@ class SalesSegmentAccessor(object):
 
     def attr_get_default(self, sales_segment_group, performance, name):
         getter = self.attributes[name].get('getter')
-        if getter is not None:
-            if performance is not None:
-                return getter(sales_segment_group, performance)
-            else:
-                return None
+        if getter is not None and performance is not None:
+            return getter(sales_segment_group, performance)
         else:
             return self.attr_get(sales_segment_group, name)
 
@@ -319,7 +316,7 @@ class SalesSegmentAccessor(object):
         lot.sales_segment = ss
         self.update_sales_segment(ss)
         return ss
-            
+
 
 class SalesSegmentEditor(object):
     def __init__(self, sales_segment_group, form):
@@ -328,7 +325,7 @@ class SalesSegmentEditor(object):
         self.accessor = SalesSegmentAccessor()
 
     def apply_changes(self, obj):
-        for k, desc in self.accessor.attributes.items(): 
+        for k, desc in self.accessor.attributes.items():
             field = getattr(self.form, k)
             if k == "payment_delivery_method_pairs":
                 value = self.get_value(k, obj.performance)
