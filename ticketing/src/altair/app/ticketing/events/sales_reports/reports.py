@@ -50,10 +50,10 @@ class SalesReportRecord(object):
 def get_order_quantity(db_session, stmt, group_by):
     # Stock単位の全ての予約席数 (販売区分での絞り込みは行わない)
     query = db_session.query(OrderedProductItem)\
-        .join(OrderedProduct)\
-        .join(Order).filter(Order.canceled_at==None, Order.refunded_at==None)\
-        .join(Performance)\
-        .join(Event)\
+        .join(OrderedProduct).filter(OrderedProduct.deleted_at==None)\
+        .join(Order).filter(Order.canceled_at==None, Order.refunded_at==None, Order.deleted_at==None)\
+        .join(Performance).filter(Performance.deleted_at==None)\
+        .join(Event).filter(Event.deleted_at==None)\
         .join(ProductItem, ProductItem.id==OrderedProductItem.product_item_id)\
         .join(Stock)\
         .join(stmt, Stock.id==stmt.c.stock_id)\
@@ -116,7 +116,8 @@ class SalesTotalReporter(object):
     def get_event_data(self):
         # イベント名称/公演名称、販売期間
         # 一般公開されている販売区分のみ対象
-        query = self.slave_session.query(Event).filter(Event.organization_id==self.organization.id).join(Performance)
+        query = self.slave_session.query(Event).filter(Event.organization_id==self.organization.id)\
+            .join(Performance).filter(Performance.deleted_at==None)
 
         if self.form.recent_report.data:
             today = date.today()
@@ -199,7 +200,7 @@ class SalesTotalReporter(object):
         # 配席数、残席数
         query = self.slave_session.query(Stock)\
             .join(StockHolder).filter(StockHolder.account_id.in_([a.id for a in self.accounts]))\
-            .join(ProductItem)\
+            .join(ProductItem).filter(ProductItem.deleted_at==None)\
             .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)\
             .join(Performance).filter(Performance.id==Stock.performance_id)\
             .join(Event).filter(Event.organization_id==self.organization.id)
@@ -231,12 +232,12 @@ class SalesTotalReporter(object):
     def get_order_data(self):
         # 販売金額、販売枚数
         query = self.slave_session.query(Event).filter(Event.organization_id==self.organization.id)\
-            .join(Performance)\
-            .join(Order).filter(Order.canceled_at==None, Order.refunded_at==None)\
-            .join(OrderedProduct)\
-            .join(OrderedProductItem)\
-            .join(ProductItem)\
-            .join(Stock)\
+            .join(Performance).filter(Performance.deleted_at==None)\
+            .join(Order).filter(Order.canceled_at==None, Order.refunded_at==None, Order.deleted_at==None)\
+            .join(OrderedProduct).filter(OrderedProduct.deleted_at==None)\
+            .join(OrderedProductItem).filter(OrderedProductItem.deleted_at==None)\
+            .join(ProductItem).filter(ProductItem.deleted_at==None)\
+            .join(Stock).filter(Stock.deleted_at==None)\
             .join(Product, and_(
                 Product.id==OrderedProduct.product_id,
                 Product.id==ProductItem.product_id,
@@ -397,7 +398,10 @@ class SalesDetailReporter(object):
             query = query.filter(SalesSegment.start_at <= form.limited_to.data)
 
         if form.sales_segment_group_id.data:
-            query = query.join(SalesSegmentGroup).filter(SalesSegmentGroup.id==form.sales_segment_group_id.data)
+            query = query.join(SalesSegmentGroup).filter(and_(
+                SalesSegmentGroup.id==form.sales_segment_group_id.data,
+                SalesSegmentGroup.deleted_at==None
+            ))
         if form.performance_id.data:
             ss = aliased(SalesSegment, name='SalesSegment_alias')
             query = query.outerjoin(ss, and_(
@@ -459,7 +463,7 @@ class SalesDetailReporter(object):
         # 配席数、残席数
         query = self.slave_session.query(Stock)\
             .join(StockHolder).filter(StockHolder.event==self.event, StockHolder.account_id.in_([a.id for a in self.accounts]))\
-            .join(ProductItem)\
+            .join(ProductItem).filter(ProductItem.deleted_at==None)\
             .join(Product).filter(and_(Product.seat_stock_type_id==Stock.stock_type_id, Product.base_product_id==None))
         query = self.add_sales_segment_filter(query)
         if self.form.performance_id.data:
@@ -488,10 +492,10 @@ class SalesDetailReporter(object):
     def get_order_data(self, all_period=True):
         # 購入件数クエリ
         query = self.slave_session.query(OrderedProductItem)\
-            .join(OrderedProduct)\
+            .join(OrderedProduct).filter(OrderedProduct.deleted_at==None)\
             .join(Order).filter(Order.canceled_at==None, Order.refunded_at==None)\
             .join(ProductItem, ProductItem.id==OrderedProductItem.product_item_id)\
-            .join(Stock)\
+            .join(Stock).filter(Stock.deleted_at==None)\
             .join(Product, and_(
                 Product.id==OrderedProduct.product_id,
                 Product.id==ProductItem.product_id,
