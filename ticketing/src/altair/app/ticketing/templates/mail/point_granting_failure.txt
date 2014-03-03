@@ -57,7 +57,7 @@ ${get("for_product").body}
 %if get("system_fee").status:
 ${get("system_fee").label} ${get("system_fee").body}
 %endif
-%if get("special_fee").status:
+%if get("special_fee").body != u'\\0':
 ${get("special_fee_name").body} ${get("special_fee").body}
 %endif
 %if get("transaction_fee").status:
