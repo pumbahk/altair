@@ -3,30 +3,27 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'トップ', u'ロール', route_name],
+      names=[u'トップ', u'オペレーター', u'ロール', route_name],
       urls=[
         request.route_path('index'),
+        request.route_path('operators.index'),
         request.route_path('operator_roles.index'),
       ]
   )}
 </%block>
-<div class="container row">
-  <div class="span12">
-    <div class="page-header">
-      <h3>ロール ${route_name}</h3>
-    </div>
 
-    <div class="well">
-      <form class="form-horizontal" action="${route_path}" method="POST">
-        <fieldset>
-          ${ch.form_item(form.id)}
-          ${ch.form_item(form.name, class_='span5', maxlength=255)}
-          ${ch.form_item(form.permissions)}
-        </fieldset>
-        <div class="form-actions">
-          <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
-        </div>
-      </form>
-    </div>
-  </div>
+<div class="page-header">
+  <h1>ロール ${route_name}</h1>
 </div>
+
+<form class="form-horizontal" action="${route_path}" method="POST">
+  <fieldset>
+    ${ch.form_item(form.name, class_='span5', maxlength=255)}
+    ${ch.form_item(form.name_kana, class_='span5', maxlength=255)}
+    ${ch.form_item(form.permissions)}
+    ${ch.form_item(form.id)}
+  </fieldset>
+  <div class="form-actions">
+    <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+  </div>
+</form>

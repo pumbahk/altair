@@ -20,7 +20,7 @@
       route_name='operators.new',
     ),
     'role':dict(
-      label=u'ロール設定',
+      label=u'ロール',
       url=request.route_path('operator_roles.index'),
       icon='icon-th-list',
       route_name='operator_roles.index',
@@ -30,6 +30,12 @@
       url=request.route_path('permissions.index'),
       icon='icon-th-list',
       route_name='permissions.index',
+    ),
+    'list':dict(
+      label=u'一覧',
+      url=request.route_path('operators.index'),
+      icon='icon-list-alt',
+      route_name='operators.index',
     )
   }
 

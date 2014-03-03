@@ -2,8 +2,9 @@
 
 import hashlib
 
-from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey, Unicode
 from sqlalchemy.orm import join, column_property, mapper
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from altair.app.ticketing.utils import StandardEnum
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession, Identifier, relationship
@@ -22,8 +23,13 @@ class Permission(Base):
     id = Column(Identifier, primary_key=True)
     operator_role_id = Column(Identifier, ForeignKey('OperatorRole.id'))
     operator_role = relationship('OperatorRole', uselist=False)
-    category_name = Column(String(255), index=True)
+    category_id = Column(Identifier, ForeignKey('PermissionCategory.id'))
+    category = relationship('PermissionCategory', backref='permissions')
     permit = Column(Integer)
+
+    @hybrid_property
+    def category_name(self):
+        return self.category.name
 
     @staticmethod
     def all():
@@ -31,19 +37,24 @@ class Permission(Base):
 
     @staticmethod
     def get_by_key(category_name):
-        #return Permission.filter(Permission.category_name==category_name).first()
-        return DBSession.query(Permission).filter(Permission.category_name == category_name).first()
+        return DBSession.query(Permission).filter(Permission.category_name==category_name).first()
 
     @staticmethod
     def list_in(category_names):
-        #return Permission.filter(Permission.category_name.in_(category_names)).all()
         return DBSession.query(Permission)\
             .filter(Permission.category_name.in_(category_names)).all()
+
+class PermissionCategory(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'PermissionCategory'
+    id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), nullable=False)
+    name_kana = Column(Unicode(255), nullable=True)
 
 class OperatorRole(Base, BaseModel, WithTimestamp):
     __tablename__ = 'OperatorRole'
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
+    name_kana = Column(Unicode(255))
     operators = relationship('Operator', secondary=OperatorRole_Operator.__table__)
     permissions = relationship('Permission')
     status = Column('status',Integer, default=1)

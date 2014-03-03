@@ -7,7 +7,7 @@ from pyramid.security import has_permission, ACLAllowed
 
 from altair.formhelpers import Translations, Required
 from altair.formhelpers.fields import DateTimeField, LazySelectMultipleField
-from altair.app.ticketing.operators.models import Operator, OperatorAuth, OperatorRole, Permission
+from altair.app.ticketing.operators.models import Operator, OperatorAuth, OperatorRole, PermissionCategory
 from altair.app.ticketing.models import DBSession
 
 class OperatorRoleForm(Form):
@@ -15,25 +15,31 @@ class OperatorRoleForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
 
-        category_names = DBSession.query(Permission.category_name).distinct().all()
-        self.permissions.choices = [(name[0], name[0]) for name in category_names]
         if obj and obj.permissions:
-            self.permissions.data = [p.category_name for p in obj.permissions]
+            self.permissions.data = [p.category_id for p in obj.permissions]
 
     id = HiddenField(
         label=u'ID',
         validators=[Optional()],
     )
     name = TextField(
-        label=u'名前',
+        label=u'ロール名',
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
-    permissions = SelectMultipleField(
+    name_kana = TextField(
+        label=u'ロール名(日本語表記)',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+    permissions = LazySelectMultipleField(
         label=u"権限", 
-        choices=[]
+        choices=lambda field: [(pc.id, pc.name_kana) for pc in PermissionCategory.all()],
+        coerce=int,
     )
 
 class OperatorForm(Form):
@@ -60,7 +66,7 @@ class OperatorForm(Form):
         validators=[Required()],
     )
     name = TextField(
-        label=u'名前',
+        label=u'オペレーター名',
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
@@ -93,11 +99,10 @@ class OperatorForm(Form):
             Regexp("^[a-zA-Z0-9@!#$%&'()*+,\-./_]+$", 0, message=u'英数記号を入力してください。'),
         ]
     )
-
     role_ids = LazySelectMultipleField(
-        label=u'権限',
+        label=u'ロール',
         validators=[Optional()],
-        choices=lambda field: [(role.id, role.name) for role in OperatorRole.all()],
+        choices=lambda field: [(role.id, role.name_kana) for role in OperatorRole.all()],
         coerce=int,
     )
 

@@ -9,9 +9,9 @@
 </%block>
 
 <div class="page-header">
-  <h3>オペレーター詳細</h3>
+  <h1>オペレーター</h1>
 </div>
 
-<%include file="/operators/_action_button.html" args="operator=operator, order=['edit', 'delete']" />
+<%include file="/operators/_action_button.html" args="operator=operator, order=['list', 'edit', 'delete']" />
 
 <%include file="/operators/_detail.html" args="form=form, operator=operator" />

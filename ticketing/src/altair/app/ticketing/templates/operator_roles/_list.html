@@ -12,33 +12,37 @@
 </script>
 
 <form>
-  <div class="ui-toolbar">
-    <a href="${request.route_path('operator_roles.new')}" class="btn">新規ロール</a>
+  <div style="float: left;">
+    <div class="btn-group">
+      <a href="${request.route_path('operator_roles.new')}" class="btn"><i class="icon-plus"></i> 新規</a>
+    </div>
   </div>
-  <table class="table fullwidth table-striped">
+  <div class="clearfix"></div>
+
+  <table class="table fullwidth table-striped" style="margin-top: 10px;">
     <thead>
     <tr>
-      <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></td>
-      <th class="minwidth">ID</th>
       <th>ロール名</th>
-      <th>パーミッション</th>
-      <th class="span2">操作</th>
+      <th>ロール名(日本語表記)</th>
+      <th>権限</th>
+      <th class="span3">操作</th>
     </tr>
     </thead>
     <tbody>
     % for role in roles.items:
     <tr>
-      <td><input type="checkbox" /></td>
-      <td>${role.id}</td>
       <td>${role.name}</td>
+      <td>${role.name_kana}</td>
       <td>
         % for permission in role.permissions:
-          ${permission.category_name}
+          ${permission.category.name_kana}
         % endfor
       </td>
       <td>
-        <a class="btn btn-small" href="${request.route_path('operator_roles.edit', operator_role_id=role.id)}">編集</a>
-        <a class="btn btn-small btn-danger" href="javascript:delete_role(${role.id});">削除</a>
+        <div class="btn-group">
+          <a class="btn" href="${request.route_path('operator_roles.edit', operator_role_id=role.id)}"><i class="icon-pencil"></i> 編集</a>
+          <a class="btn btn-danger" href="javascript:delete_role(${role.id});"><i class="icon-minus"></i> 削除</a>
+        </div>
       </td>
     </tr>
     % endfor

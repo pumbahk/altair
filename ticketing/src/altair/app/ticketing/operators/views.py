@@ -180,8 +180,8 @@ class OperatorRoles(BaseView):
         if f.validate():
             operator_role = merge_session_with_post(OperatorRole(), f.data)
             permissions = []
-            for p in f.permissions.data:
-                permissions.append(Permission(category_name=p, permit=1))
+            for id in f.permissions.data:
+                permissions.append(Permission(category_id=id, permit=1))
             operator_role.permissions = permissions
             operator_role.save()
 
@@ -219,13 +219,13 @@ class OperatorRoles(BaseView):
             operator_role = merge_session_with_post(operator_role, f.data)
             permissions = []
             for p in operator_role.permissions:
-                if p.category_name not in f.permissions.data:
+                if p.category_id not in f.permissions.data:
                     DBSession.delete(p)
                 else:
-                    permissions.append(p.category_name)
-            for p in f.permissions.data:
-                if p not in permissions:
-                    operator_role.permissions.append(Permission(category_name=p, permit=1))
+                    permissions.append(p.category_id)
+            for id in f.permissions.data:
+                if id not in permissions:
+                    operator_role.permissions.append(Permission(category_id=id, permit=1))
             operator_role.save()
 
             self.request.session.flash(u'ロールを保存しました')
