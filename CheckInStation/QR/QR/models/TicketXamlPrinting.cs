@@ -47,6 +47,19 @@ namespace QR
             }
         }
 
+        //TODO:move
+        public string NormalizedXaml(string xaml)
+        {
+            // Convert From:
+            //<@qrclass@ xmlns:@ns@="clr-namespace:@fullns;assembly=@ns" 
+            // To:
+            //<QR:QRCodeCanvas xmlns:QR="clr-namespace:QR.presentation.gui.control;assembly=QR"
+            xaml = xaml.Replace("@fullns@", "@ns@.presentation.gui.control");
+            xaml = xaml.Replace("@qrclass@", "@ns@:QRCodeCanvas");
+            xaml = ReplaceExecutableNamespaceName.Replace(xaml, "@ns@");
+            return xaml;
+        }
+
         #region ITicketPrinting implementation
         public PrintQueue DefaultPrinter { get; set; }
 
@@ -57,8 +70,7 @@ namespace QR
             this.writer = PrintQueue.CreateXpsDocumentWriter(pq);
 
             //@ns@‚ðassembly–¼‚É•ÏŠ·‚µ‚Ä‚©‚ç“Ç‚Ýž‚Þ
-            var r = new StringReader(InjectExecutableNamespaceName.Inject(imageData.xaml, "@ns@"));
-            var xmlreader = XmlReader.Create(r);
+            var xmlreader = XmlReader.Create(new StringReader(this.NormalizedXaml(imageData.xaml)));
 
             //xaml‚ðobject‰»‚Å‚«‚é‚Ì‚Íui thread ‚Ì‚Ý
             FixedDocument doc = await ev.CurrentDispatcher.InvokeAsync<FixedDocument>(() =>

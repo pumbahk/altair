@@ -12,19 +12,19 @@ namespace QR.support
     /// e.g. xmlns:c="clr-namespace:@ns@.control;assembly=@ns@"
     /// => xmlns:c="clr-namespace:App.control;assembly=App"
     /// </summary>
-    public static class InjectExecutableNamespaceName
+    public static class ReplaceExecutableNamespaceName
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public static string Name = null;
         public static string FullName = null;
 
-        public static string Inject(string target)
+        public static string Replace(string target)
         {
-            return Inject(target, "@ns@");
+            return Replace(target, "@ns@");
         }
 
-        public static string Inject(string target, string pattern)
+        public static string Replace(string target, string pattern)
         {
             return target.Replace(pattern, GetName());
         }
