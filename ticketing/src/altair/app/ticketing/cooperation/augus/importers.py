@@ -206,7 +206,8 @@ class AugusDistributionImporter(object):
                                       number=record.number,
                                       )
         if not ag_seat:
-            raise IllegalImportDataError('augus seat type classif error: {}'.format(record.seat_type_classif))
+            raise IllegalImportDataError('Not foud augus seat: venue={}/area={}/info={}/floor={}/column={}/num={}'.format(
+                    ag_venue.id, record.area_code, record.info_code, record.floor, record.column, record.number))
 
 
 
@@ -359,7 +360,7 @@ class AugusDistributionImporter(object):
                               .filter(AugusSeat.floor==floor)\
                               .filter(AugusSeat.column==column)\
                               .filter(AugusSeat.num==number)\
-                              .one()
+                              .first()
 
     @staticmethod
     def augus_seat_to_real_seat(ag_performance, ag_seat):

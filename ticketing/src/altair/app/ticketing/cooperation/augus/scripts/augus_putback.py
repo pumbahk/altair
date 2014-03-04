@@ -66,7 +66,7 @@ def main():
 
         augus_putbacks = AugusPutback\
             .query\
-            .filter(AugusPutback.augus_putback_code.in_(augus_putback_codes))\
+            .filter(AugusPutback.augus_putback_code.in_(putback_codes))\
             .order_by(AugusPutback.augus_performance_id)\
             .all()
         mailer = Mailer(settings)
