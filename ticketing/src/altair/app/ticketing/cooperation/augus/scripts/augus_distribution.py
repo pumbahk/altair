@@ -199,7 +199,6 @@ def import_distribution_all(settings):
                     mailer.add_error(request)
                     raise err
     finally:
-        print 'SEND MAL '* 30
         mailer.send()
 
 
