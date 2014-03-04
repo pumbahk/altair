@@ -314,7 +314,7 @@ class AugusTicketView(_AugusBaseView):
                     ag_ticket.save()
                 else: # delete link
                     ag_ticket.stock_type_id = None
-                    product.save()
+                    ag_ticket.save()
         except ValueError as err:
             raise HTTPBadRequest('invalid save data: {}'.format(repr(err)))
         return HTTPFound(self.request.route_url('augus.stock_type.show', event_id=self.context.event.id))
