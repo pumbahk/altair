@@ -107,8 +107,10 @@ class Multicheckout3DAPI(object):
             Currency=self.currency,
         )
         self.session.add(enrol)
-        self.session.commit()
-        res = self.impl.secure3d_enrol(self, order_no, enrol)
+        try:
+            res = self.impl.secure3d_enrol(self, order_no, enrol)
+        finally:
+            self.session.commit()
         res.request = enrol
         events.Secure3DEnrolEvent.notify(self.request, order_no, res)
         self.save_api_response(res)
@@ -124,8 +126,10 @@ class Multicheckout3DAPI(object):
             PaRes=pares,
         )
         self.session.add(auth)
-        self.session.commit()
-        res = self.impl.secure3d_auth(self, order_no, auth)
+        try:
+            res = self.impl.secure3d_auth(self, order_no, auth)
+        finally:
+            self.session.commit()
         res.request = auth
         events.Secure3DAuthEvent.notify(self.request, order_no, res)
         self.save_api_response(res)
@@ -162,8 +166,10 @@ class Multicheckout3DAPI(object):
             CavvAlgorithm=cavv_algorithm,
         )
         self.session.add(params)
-        self.session.commit()
-        res = self.impl.request_card_auth(self, order_no, params)
+        try:
+            res = self.impl.request_card_auth(self, order_no, params)
+        finally:
+            self.session.commit()
         res.request = params
         events.CheckoutAuthSecure3DEvent.notify(self.request, order_no, res)
         self.save_api_response(res)
@@ -216,8 +222,10 @@ class Multicheckout3DAPI(object):
             TaxCarriageCancellation=int(tax_carriage_cancellation),
         )
         self.session.add(params)
-        self.session.commit()
-        res = self.impl.request_card_sales_part_cancel(self, order_no, params)
+        try:
+            res = self.impl.request_card_sales_part_cancel(self, order_no, params)
+        finally:
+            self.session.commit()
         events.CheckoutSalesPartCancelEvent.notify(self.request, order_no, res)
         self.save_api_response(res)
         return res
@@ -270,8 +278,10 @@ class Multicheckout3DAPI(object):
             SecureCode=secure_code,
             )
         self.session.add(params)
-        self.session.commit()
-        res = self.impl.request_card_auth(self, order_no, params)
+        try:
+            res = self.impl.request_card_auth(self, order_no, params)
+        finally:
+            self.session.commit()
         res.request = params
         events.CheckoutAuthSecureCodeEvent.notify(self.request, order_no, res)
         self.save_api_response(res)
