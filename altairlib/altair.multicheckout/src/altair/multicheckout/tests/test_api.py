@@ -257,9 +257,6 @@ class Multicheckout3DAPITests(unittest.TestCase):
             different_amount,
             )
 
-        print mock_handler1.call_args
-        print mock_handler2.call_args
-
         self.assertEqual(result.OrderNo, order_no)
         self.assertEqual(mock_handler1.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler1.call_args[0][0].api, 'checkout_sales_secure3d')
@@ -296,3 +293,35 @@ class Multicheckout3DAPITests(unittest.TestCase):
         self.assertEqual(mock_handler1.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler1.call_args[0][0].api, 'checkout_sales_secure3d')
         self.assertEqual(self.session.query(m.MultiCheckoutResponseCard).all(), [result])
+
+    def test_unmasked_before_building_request(self):
+        from .. import models as m
+        order_no = u'test_order_no'
+        item_name = u'testing item'
+        amount = u"1000"
+        tax = u"0"
+        client_name = u"あああああ"
+        mail_address = u"testing@example.com"
+        card_no = u"x" * 16
+        card_limit = u"13/09"
+        card_holder_name = u"TEST CARD"
+        secure_code = u'SECURE'
+
+        target = self._makeOne()
+        result = target.checkout_auth_secure_code(
+            order_no,
+            item_name,
+            amount,
+            tax,
+            client_name,
+            mail_address,
+            card_no,
+            card_limit,
+            card_holder_name,
+            secure_code,
+            )
+        self.assertEqual(int(amount), self.dummy_impl.last_params['SalesAmount'])
+        self.assertEqual(client_name, self.dummy_impl.last_params['ClientName'])
+        self.assertEqual(card_no, self.dummy_impl.last_params['CardNo'])
+        self.assertEqual(card_limit, self.dummy_impl.last_params['CardLimit'])
+        self.assertEqual(mail_address, self.dummy_impl.last_params['MailAddress'])
