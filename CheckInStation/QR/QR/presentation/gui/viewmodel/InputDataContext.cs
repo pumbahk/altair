@@ -31,29 +31,6 @@ namespace QR.presentation.gui
         public IInternalEvent Event { get; set; }
         
 
-        // 不要かもしれない
-        private InternalEventStaus _submitStatus;
-        public InternalEventStaus SubmitStatus
-        {
-            get { return this._submitStatus; }
-            set
-            {
-                this._submitStatus = value;
-                if(this._submitStatus==InternalEventStaus.failure){
-                    this.OnPropertyChanged("IsSubmitNotSuccessYet");
-                }
-                this.OnPropertyChanged("SubmitStatus");
-            }
-        }
-        public bool IsSubmitNotSuccessYet
-        {
-            get {
-                return this._submitStatus != InternalEventStaus.success; 
-            }
-        }
-
-
-
         private string errorMessage;
 
         protected Logger logger = LogManager.GetCurrentClassLogger();
@@ -87,7 +64,6 @@ namespace QR.presentation.gui
             this.OnSubmit();
             logger.Debug("SubmitAsync this:{0}, Event:{1}, Case:{2}", this, this.Event, this.Case);
             var result = await this.Broker.SubmitAsync(this.Event).ConfigureAwait(false);
-            this.SubmitStatus = this.Event.Status;
             //本当はOnPropertyChangeでCaseが変わり。そのOnProeprtyChangeでCaseNameが変わるのが良い。
             this.OnPropertyChanged("CaseName");
             this.OnPropertyChanged("Description");
@@ -117,7 +93,6 @@ namespace QR.presentation.gui
             this.OnVerify();
             logger.Debug("VerifyAsync this:{0}, Event:{1}, Case:{2}", this, this.Event, this.Case);
             var result = await this.Broker.VerifyAsync(this.Event).ConfigureAwait(false);
-            this.SubmitStatus = this.Event.Status;
             return result;
         }
 
