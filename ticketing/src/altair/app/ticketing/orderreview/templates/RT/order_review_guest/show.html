@@ -140,7 +140,7 @@ shipping =order.shipping_address
           </th>
           <td><strong>${product.seat_quantity}</strong>枚</td>
           <td>
-          % if product.product.sales_segment.seat_choice:
+          % if product.product.sales_segment.setting.display_seat_no:
             % for seat in product.seats:
               ${seat['name']}<br/>
             % endfor

@@ -31,6 +31,7 @@ def append_error(field, error):
 class SalesSegmentGroupForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         fix_boolean(formdata, 'seat_choice')
+        fix_boolean(formdata, 'display_seat_no')
         fix_boolean(formdata, 'public')
         fix_boolean(formdata, 'reporting')
         context = kwargs.pop('context', None)
@@ -111,10 +112,14 @@ class SalesSegmentGroupForm(OurForm):
         format='%Y-%m-%d %H:%M',
         hide_on_new=False
     )
-
     seat_choice = OurBooleanField(
         label=u'座席選択可',
         widget=CheckboxInput(),
+    )
+    display_seat_no = OurBooleanField(
+        label=label_text_for(SalesSegmentGroupSetting.display_seat_no),
+        widget=CheckboxInput(),
+        hide_on_new=True
     )
     max_quantity = OurIntegerField(
         label=label_text_for(SalesSegmentGroup.max_quantity),
@@ -263,6 +268,12 @@ class SalesSegmentGroupForm(OurForm):
                     return False
         return True
 
+    def _validate_display_seat_no(self, *args, **kwargs):
+        if self.seat_choice.data and not self.display_seat_no.data:
+            append_error(self.display_seat_no, ValidationError(u'座席選択可の場合は座席番号は非表示にできません'))
+            return False
+        return True
+
     def _validate_term(self, *args, **kwargs):
         if self.end_at.data is not None and self.start_at.data is not None and self.end_at.data < self.start_at.data:
             append_error(self.end_at, ValidationError(u'開演日時より過去の日時は入力できません'))
@@ -274,7 +285,8 @@ class SalesSegmentGroupForm(OurForm):
             super(type(self), self).validate,
             self._validate_start,
             self._validate_end,
-            self._validate_term
+            self._validate_term,
+            self._validate_display_seat_no
             ]])
 
 

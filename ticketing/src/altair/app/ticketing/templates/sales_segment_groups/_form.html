@@ -21,6 +21,7 @@
   ${ch.form_item(form.max_product_quatity)}
   ${ch.form_item(form.order_limit)}
   ${ch.form_item(form.seat_choice)}
+  ${ch.form_item(form.display_seat_no)}
   ${ch.form_item(form.public)}
   ${ch.form_item(form.disp_orderreview)}
   ${ch.form_item(form.reporting)}
@@ -50,6 +51,15 @@
           $('#copy-products-fields').css('display', 'block');
         } else {
           $('#copy-products-fields').css('display', 'none');
+        }
+      }).change();
+
+      form.find('#seat_choice').change(function() {
+        var display_seat_no = form.find('#display_seat_no');
+        if ($(this).attr('checked')) {
+          display_seat_no.attr('disabled', 'disabled').attr('checked','checked').change();
+        } else {
+          display_seat_no.removeAttr('disabled');
         }
       }).change();
     })($('script:last').parent());

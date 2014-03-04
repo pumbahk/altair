@@ -262,6 +262,21 @@ function get_performance_id() {
         % endif
       </td>
     </tr>
+    <tr class="SalesSegment_display_seat_no">
+      <th>
+        ${form.display_seat_no.label}
+        ${form.use_default_display_seat_no(_widget=LabelledCheckboxInput())}
+      </th>
+      <td>
+        ${form.display_seat_no}
+        ${ch.validate_errors(form.display_seat_no)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${u'表示' if form.context.sales_segment_group.setting.display_seat_no else u'非表示'}
+        % endif
+      </td>
+    </tr>
     <tr class="SalesSegment_public">
       <th>
         ${form.public.label}
@@ -501,6 +516,12 @@ function get_performance_id() {
       if (data['seat_choice'] !== void(0))
         originalValue.text(data['seat_choice'] ? "選択可": "×選択不可");
     },
+    display_seat_no: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data.display_seat_no !== void(0))
+        originalValue.text(data.display_seat_no ? "表示": "非表示");
+    },
     'public': function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
@@ -555,6 +576,7 @@ function get_performance_id() {
         'registration_fee',
         'max_quantity',
         'seat_choice',
+        'display_seat_no',
         'public',
         'disp_orderreview',
         'reporting',
@@ -571,6 +593,15 @@ function get_performance_id() {
   formElements.change(onChangeHandler);
   if (formElements.filter('input[type="hidden"]').length != 2)
     onChangeHandler();
+
+  form.find('#seat_choice').change(function() {
+    var display_seat_no = form.find('#display_seat_no');
+    if ($(this).attr('checked')) {
+      display_seat_no.attr('disabled', 'disabled').attr('checked','checked').change();
+    } else {
+      display_seat_no.removeAttr('disabled');
+    }
+  }).change();
 })($);
 </script>
 </form>
