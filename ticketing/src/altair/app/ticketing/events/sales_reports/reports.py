@@ -79,6 +79,7 @@ class SalesTotalReporter(object):
         self.group_by = Performance.id if group_by == 'Performance' else Event.id
         self.reports = {}
         self.accounts = Account.query.filter(Account.user_id==organization.user_id, Account.organization_id==organization.id).all()
+        self.total = None
 
         # レポートデータ生成
         self.create_reports()
@@ -87,6 +88,7 @@ class SalesTotalReporter(object):
         self.get_event_data()
         self.get_order_data()
         self.get_stock_data()
+        self.calculate_total()
 
     def add_form_filter(self, query):
         if self.form.performance_id.data:
@@ -284,6 +286,16 @@ class SalesTotalReporter(object):
         values = self.reports.values()
         return values.pop() if values else None
 
+    def calculate_total(self):
+        total = SalesReportRecord(None, None, None, None, None)
+        for record in self.sort_data():
+            total.stock_quantity += record.stock_quantity
+            total.vacant_quantity += record.vacant_quantity
+            total.total_order_quantity += record.total_order_quantity
+            total.total_order_amount += record.total_order_amount
+            total.order_quantity += record.order_quantity
+            total.order_amount += record.order_amount
+        self.total = total
 
 class SalesDetailReportRecord(object):
 
