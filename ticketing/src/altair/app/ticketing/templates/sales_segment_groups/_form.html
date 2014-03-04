@@ -53,6 +53,15 @@
           $('#copy-products-fields').css('display', 'none');
         }
       }).change();
+
+      form.find('#seat_choice').change(function() {
+        var display_seat_no = form.find('#display_seat_no');
+        if ($(this).attr('checked')) {
+          display_seat_no.attr('disabled', 'disabled').attr('checked','checked').change();
+        } else {
+          display_seat_no.removeAttr('disabled');
+        }
+      }).change();
     })($('script:last').parent());
   </script>
 </form>

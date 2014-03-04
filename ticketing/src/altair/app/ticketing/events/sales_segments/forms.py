@@ -313,12 +313,20 @@ class SalesSegmentForm(OurForm):
                 return False
         return True
 
+    def _validate_display_seat_no(self, *args, **kwargs):
+        if self.seat_choice.data and not self.display_seat_no.data:
+            self.display_seat_no.errors.append(u'座席選択可の場合は座席番号は非表示にできません')
+            return False
+        return True
+
     def validate(self):
         if super(SalesSegmentForm, self).validate():
             if not self._validate_terms():
                 return False
             #if not self._validate_performance_terms():
             #    return False
+            if not self._validate_display_seat_no():
+                return False
 
             return True
 

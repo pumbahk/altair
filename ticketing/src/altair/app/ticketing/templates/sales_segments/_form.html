@@ -593,6 +593,15 @@ function get_performance_id() {
   formElements.change(onChangeHandler);
   if (formElements.filter('input[type="hidden"]').length != 2)
     onChangeHandler();
+
+  form.find('#seat_choice').change(function() {
+    var display_seat_no = form.find('#display_seat_no');
+    if ($(this).attr('checked')) {
+      display_seat_no.attr('disabled', 'disabled').attr('checked','checked').change();
+    } else {
+      display_seat_no.removeAttr('disabled');
+    }
+  }).change();
 })($);
 </script>
 </form>
