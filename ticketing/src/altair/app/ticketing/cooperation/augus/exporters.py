@@ -22,6 +22,7 @@ from altair.app.ticketing.core.models import (
     AugusSeatStatus,
     AugusPerformance,
     orders_seat_table,
+    AugusStockDetail,
     )
 from altair.augus.types import (
     DateType,
