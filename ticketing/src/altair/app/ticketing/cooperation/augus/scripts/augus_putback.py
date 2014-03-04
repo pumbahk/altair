@@ -58,8 +58,8 @@ def main():
     except multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
     else:
-        ticket_count = len(augus_ticket_ids)
-        if 0 == ticket_count:
+        count = len(putback_codes)
+        if 0 == putback_codes:
             return
         sender = settings['mail.augus.sender']
         recipient = settings['mail.augus.recipient']
