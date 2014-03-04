@@ -13,7 +13,7 @@ ${order.performance.venue.name}<br />
 %for product in order.items:
 ・${product.product.name}
 % if product.seats:
-% if product.product.sales_segment.seat_choice:
+% if product.product.sales_segment.setting.display_seat_no:
   (${product.seat_quantity}枚)<br />
   % for seat in product.seats:
   　${seat['name']}<br/>
