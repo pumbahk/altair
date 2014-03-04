@@ -135,6 +135,7 @@
     <Compile Include="flow\AggregateShorthandError.cs" />
     <Compile Include="flow\CaseAuthPassword.cs" />
     <Compile Include="models\AggregateTicketPrinting.cs" />
+    <Compile Include="presentation\gui\BindingErrorDialogAction.cs" />
     <Compile Include="presentation\gui\CandidateCreator.cs" />
     <Compile Include="presentation\gui\control\InspectCase.xaml.cs">
       <DependentUpon>InspectCase.xaml</DependentUpon>

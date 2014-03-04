@@ -64,10 +64,7 @@ namespace QR.presentation.gui.page
             if(data != null){
                 this.KeyPad.Text = data.order_no;
             }
-            if (ctx.ErrorMessage != String.Empty)
-            {
-                this.ErrorDialog.Show();
-            }
+            new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
@@ -76,12 +73,7 @@ namespace QR.presentation.gui.page
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
                 var case_ = await ctx.SubmitAsync();
-                ctx.TreatErrorMessage();
-                //xxx: display error dialog
-                if (ctx.ErrorMessage != String.Empty)
-                {
-                    this.ErrorDialog.Show();
-                }
+                ctx.TreatErrorMessage();              
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }
@@ -92,12 +84,7 @@ namespace QR.presentation.gui.page
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
                 var case_ = await ctx.BackwardAsync();
-                ctx.TreatErrorMessage();
-                //xxx: display error dialog
-                if (ctx.ErrorMessage != String.Empty)
-                {
-                    this.ErrorDialog.Show();
-                }
+                ctx.TreatErrorMessage();               
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }

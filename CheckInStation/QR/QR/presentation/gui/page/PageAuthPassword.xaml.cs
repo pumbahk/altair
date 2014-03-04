@@ -64,6 +64,7 @@ namespace QR.presentation.gui.page
             var ctx = this.DataContext as AuthPasswordDataContext;
             await ctx.PrepareAsync().ConfigureAwait(true);
             this.KeyPad.Text = (ctx.Case as CaseAuthPassword).LoginPassword;
+            new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
@@ -76,12 +77,6 @@ namespace QR.presentation.gui.page
                 {
                     case_ = await ctx.SubmitAsync(); // call login api
                     ctx.TreatErrorMessage();
-
-                    //xxx: display error dialog
-                    if (ctx.ErrorMessage != String.Empty)
-                    {
-                        this.ErrorDialog.Show();
-                    } 
                     AppUtil.GetNavigator().NavigateToMatchedPage(case_, this, ctx.ErrorMessage); //エラーメッセージを受け渡す
 
                     if (ctx.Event.Status == InternalEventStaus.success)
@@ -97,12 +92,6 @@ namespace QR.presentation.gui.page
                 else
                 {
                     ctx.TreatErrorMessage();
-
-                    //xxx: display error dialog
-                    if (ctx.ErrorMessage != String.Empty)
-                    {
-                        this.ErrorDialog.Show();
-                    }
                     AppUtil.GetNavigator().NavigateToMatchedPage(case_, this, ctx.ErrorMessage); //エラーメッセージを受け渡す
                 }
             });

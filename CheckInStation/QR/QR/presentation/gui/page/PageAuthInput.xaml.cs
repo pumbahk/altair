@@ -62,11 +62,9 @@ namespace QR.presentation.gui.page
             var ctx = this.DataContext as AuthInputDataContext;
             await ctx.PrepareAsync().ConfigureAwait(true);
             this.KeyPad.Text = (ctx.Case as CaseAuthInput).LoginName;
-            //xxx: display error dialog
-            if (ctx.ErrorMessage != String.Empty)
-            {
-                this.ErrorDialog.Show();
-            }
+
+            // ErrorMessageが変更されたときにエラーダイアログを表示させる
+            new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
@@ -76,12 +74,6 @@ namespace QR.presentation.gui.page
             {
                 var case_ = await ctx.SubmitAsync(); //入力値チェック
                 ctx.TreatErrorMessage();
-
-                //xxx: display error dialog
-                if (ctx.ErrorMessage != String.Empty)
-                {
-                    this.ErrorDialog.Show(); 
-                }
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);   
             });
         }

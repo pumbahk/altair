@@ -64,10 +64,7 @@ namespace QR.presentation.gui.page
             {
                 this.KeyPad.Text = data.tel;
             }
-            if (ctx.ErrorMessage != String.Empty)
-            {
-                this.ErrorDialog.Show();
-            }
+            new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
@@ -80,16 +77,9 @@ namespace QR.presentation.gui.page
                 if (ctx.Event.Status == InternalEventStaus.success)
                 {
                     case_ = await ctx.SubmitAsync();
-                    ctx.TreatErrorMessage();
                 }
-                else
-                {
-                    ctx.TreatErrorMessage();
-                    if (ctx.ErrorMessage != String.Empty)
-                    {
-                        this.ErrorDialog.Show();
-                    }
-                }
+                ctx.TreatErrorMessage();
+
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this, ctx.ErrorMessage);
             });
         }
@@ -102,11 +92,6 @@ namespace QR.presentation.gui.page
             {
                 var case_ = await ctx.BackwardAsync();
                 ctx.TreatErrorMessage();
-                //xxx: display error dialog
-                if (ctx.ErrorMessage != String.Empty)
-                {
-                    this.ErrorDialog.Show();
-                }
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }

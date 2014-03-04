@@ -63,7 +63,9 @@ namespace QR.presentation.gui.page
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            await(this.DataContext as PageQRCodeInputDataContext).PrepareAsync().ConfigureAwait(false);
+            var ctx = this.DataContext as PageQRCodeInputDataContext;
+            await ctx.PrepareAsync().ConfigureAwait(true);
+            new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
@@ -72,21 +74,11 @@ namespace QR.presentation.gui.page
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
                 var case_ = await ctx.SubmitAsync();
-                ctx.TreatErrorMessage();
-                //xxx: display error dialog
-                if (ctx.ErrorMessage != String.Empty)
-                {
-                    this.ErrorDialog.Show();
-                }
+                ctx.TreatErrorMessage();              
                 if (ctx.Event.Status == InternalEventStaus.success)
                 {
                     case_ = await ctx.SubmitAsync();
-                    ctx.TreatErrorMessage();
-                    //xxx: display error dialog
-                    if (ctx.ErrorMessage != String.Empty)
-                    {
-                        this.ErrorDialog.Show();
-                    }
+                    ctx.TreatErrorMessage();                   
                 }
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
