@@ -22,7 +22,10 @@ def upgrade():
     op.add_column(u'SalesSegmentGroupSetting', sa.Column(u'display_seat_no', sa.Boolean, default=True, server_default='1'))
     op.add_column(u'SalesSegmentSetting', sa.Column(u'display_seat_no', sa.Boolean, default=True, server_default='1'))
     op.add_column(u'SalesSegmentSetting', sa.Column(u'use_default_display_seat_no', sa.Boolean))
-    op.execute(u'UPDATE SalesSegmentSetting SET use_default_display_seat_no = 1')
+    op.execute(u'UPDATE SalesSegmentSetting se, SalesSegment ss SET se.display_seat_no = ss.seat_choice, se.use_default_display_seat_no = ss.use_default_seat_choice WHERE se.sales_segment_id = ss.id')
+    op.execute(u'UPDATE SalesSegmentGroupSetting se, SalesSegmentGroup ssg SET se.display_seat_no = ssg.seat_choice WHERE se.sales_segment_group_id = ssg.id')
+    op.execute(u'UPDATE SalesSegmentSetting se, SalesSegment ss SET se.display_seat_no = 1 WHERE se.sales_segment_id = ss.id AND ss.organization_id = 24')
+    op.execute(u'UPDATE SalesSegmentGroupSetting se, SalesSegmentGroup ssg SET se.display_seat_no = 1 WHERE se.sales_segment_group_id = ssg.id AND ssg.organization_id = 24')
 
 def downgrade():
     op.drop_column(u'SalesSegmentSetting', u'use_default_display_seat_no')
