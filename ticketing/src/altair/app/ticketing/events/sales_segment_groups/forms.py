@@ -269,9 +269,10 @@ class SalesSegmentGroupForm(OurForm):
         return True
 
     def _validate_display_seat_no(self, *args, **kwargs):
-        if self.seat_choice.data and not self.display_seat_no.data:
-            append_error(self.display_seat_no, ValidationError(u'座席選択可の場合は座席番号は非表示にできません'))
-            return False
+        if self.id.data:
+            if self.seat_choice.data and not self.display_seat_no.data:
+                append_error(self.display_seat_no, ValidationError(u'座席選択可の場合は座席番号は非表示にできません'))
+                return False
         return True
 
     def _validate_term(self, *args, **kwargs):
