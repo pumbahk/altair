@@ -8,6 +8,11 @@ using System.Windows.Markup;
 using System.Windows.Media.Imaging;
 using System.Xml;
 
+using QR.support;
+using Microsoft.TeamFoundation.Controls.WPF;
+using QR.presentation.gui.control;
+using System.Windows.Shapes;
+
 namespace QR
    {
     public class TicketXamlPrinting :ITicketPrinting
@@ -28,6 +33,20 @@ namespace QR
             this.DefaultPrinter = this.ps.DefaultPrintQueue;
         }
 
+        //TODO:move
+        public void EmitQRCodeIfExists(FixedDocument doc)
+        {
+            foreach (var p in doc.Pages)
+            {
+                var qr = WpfUtil.FindVisualChild<QRCodeCanvas>(p.Child);
+                if (qr != null)
+                {
+                    qr.RaiseEvent(new System.Windows.RoutedEventArgs(QRCodeCanvas.LoadedEvent));
+                    p.Child.Children.Add(new Rectangle()); // dummy;
+                }
+            }
+        }
+
         #region ITicketPrinting implementation
         public PrintQueue DefaultPrinter { get; set; }
 
@@ -37,15 +56,19 @@ namespace QR
             PrintQueue pq = this.DefaultPrinter;
             this.writer = PrintQueue.CreateXpsDocumentWriter(pq);
 
-            var r = new StringReader(imageData.xaml);
+            //@ns@‚ğassembly–¼‚É•ÏŠ·‚µ‚Ä‚©‚ç“Ç‚İ‚Ş
+            var r = new StringReader(InjectExecutableNamespaceName.Inject(imageData.xaml, "@ns@"));
             var xmlreader = XmlReader.Create(r);
 
-            //xaml‚ğobject‰»‚·‚é‚Ì‚Íui thread ‚Ì‚İ
+            //xaml‚ğobject‰»‚Å‚«‚é‚Ì‚Íui thread ‚Ì‚İ
             FixedDocument doc = await ev.CurrentDispatcher.InvokeAsync<FixedDocument>(() =>
             {
                 return XamlReader.Load(xmlreader) as FixedDocument;
             }, System.Windows.Threading.DispatcherPriority.Send);
-            
+
+            //QR‚Ìw’è‚ª‚ª‚ ‚Á‚½‚Æ‚«‚É‚ÍAQR‚ğ–„‚ß‚Ş
+            this.EmitQRCodeIfExists(doc);
+
             writer.Write(doc); //todo: PrintTicket
             return true;
         }
