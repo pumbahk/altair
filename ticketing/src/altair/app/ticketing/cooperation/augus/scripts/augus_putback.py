@@ -59,7 +59,7 @@ def main():
         logger.warn('{}'.format(repr(err)))
     else:
         count = len(putback_codes)
-        if 0 == putback_codes:
+        if 0 == count:
             return
         sender = settings['mail.augus.sender']
         recipient = settings['mail.augus.recipient']
