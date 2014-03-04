@@ -71,6 +71,16 @@
       <td class="price">${vh.price(record.order_amount)}</td>
     </tr>
     % endfor
+    <tr>
+      <td>合計</td>
+      <td>-</td>
+      <td class="numeric">${vh.number(event_total_reporter.total.stock_quantity)}</td>
+      <td class="numeric">${vh.number(event_total_reporter.total.vacant_quantity)}</td>
+      <td class="numeric">${vh.number(event_total_reporter.total.total_order_quantity)}</td>
+      <td class="price">${vh.price(event_total_reporter.total.total_order_amount)}</td>
+      <td class="numeric">${vh.number(event_total_reporter.total.order_quantity)}</td>
+      <td class="price">${vh.price(event_total_reporter.total.order_amount)}</td>
+    </tr>
   % else:
     <tr>
       <td colspan="9">該当する公演がありません。</td>
