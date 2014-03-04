@@ -77,17 +77,20 @@ namespace QR.presentation.gui.page
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
                 var case_ = await ctx.SubmitAsync();
-                //slackoff
                 if (ctx.Event.Status == InternalEventStaus.success)
                 {
                     case_ = await ctx.SubmitAsync();
+                    ctx.TreatErrorMessage();
                 }
-                ctx.TreatErrorMessage();
-                if (ctx.ErrorMessage != String.Empty)
+                else
                 {
-                    this.ErrorDialog.Show();
+                    ctx.TreatErrorMessage();
+                    if (ctx.ErrorMessage != String.Empty)
+                    {
+                        this.ErrorDialog.Show();
+                    }
                 }
-                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this, ctx.ErrorMessage);
             });
         }
 

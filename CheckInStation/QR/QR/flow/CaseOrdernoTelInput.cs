@@ -7,7 +7,7 @@ namespace QR
     /// <summary>
     /// Case CaseOrdernoTelInput. 電話番号読み込み
     /// </summary>
-    public class CaseOrdernoTelInput : AbstractCase, ICase
+    public class CaseOrdernoTelInput : AbstractCase, ICase, IAutoForwardingCase
     {
         private static Logger logger = LogManager.GetCurrentClassLogger ();
 
