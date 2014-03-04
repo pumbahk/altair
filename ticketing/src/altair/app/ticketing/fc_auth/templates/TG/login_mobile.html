@@ -1,22 +1,22 @@
 <html lang="ja">
 <head>
-  <title>ブラウブリッツチケット</title>
+  <title>富山グラウジーズ　オンラインチケット</title>
 </head>
 <body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
 <div align="center">
-  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/BA/images/logo_mobile.gif')}" width="240" height="96" alt="ブラウブリッツチケット" />
+  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/TG/images/logo_mobile.gif')}" width="240" height="96" alt="富山グラウジーズ　オンラインチケット" />
 </div>
 <div>
-<div style="background-color:#09355F" bgcolor="#09355F"><font color="white">チケット購入</font></div>
+<div style="background-color:#d00000" bgcolor="#d00000"><font color="white">チケット購入</font></div>
 
 <p style="text-align:center;">
 <div id="login_form">
-<div><font color="#EA9F27">■</font>各種会員の方はこちらから</font>
+<div><font color="#FF9900">■</font>各種会員の方はこちらから</font>
 </div>
 
 </div>
 <form action="${request.path}" method="post">
-<input type="hidden" name="membership" value="BA" />
+<input type="hidden" name="membership" value="TG" />
 <div>
   会員ID<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
@@ -24,14 +24,14 @@
   <br/><span style="color: red">IDまたはパスワードが一致しません</span>
   %endif
 
-  <input type="hidden" name="password" value="blaublitz">
+  <input type="hidden" name="password" value="grouses">
 </div>
 <input type="submit" value="ログイン" />
 </form>
 </div>
 
 <div>
-<div><font color="#EA9F27">■</font>一般の方はこちらから</font>
+<div><font color="#FF9900">■</font>一般の方はこちらから</font>
 </div>
 
 </div>
