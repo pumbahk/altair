@@ -88,12 +88,20 @@ namespace QR.presentation.gui.page{
             var ctx = this.DataContext as HomeMenuDataContext;
             var stylePair = ctx.SelectedWindowStyle;
 
-            //todo:validation
+            //アプリケーションのwindow表示
             AppUtil.GetCurrentResource().Authentication.LoginURL = ctx.SelectedServerUrl;
             var win = new MainWindow() {
                 Style = stylePair.Value,
+                ShowsNavigationUI=false
             };
             win.Show();
+
+            //ホームメニューのwindow終了
+            var currentWindow = Window.GetWindow(this);
+            if (currentWindow != null)
+            {
+                currentWindow.Close();
+            }
         }
 
         private object CreateDataContext()
