@@ -1,12 +1,14 @@
 # -*- coding:utf-8 -*-
 import unittest
+
+##todo: まじめにtest
+
 class XAMLFromSVGTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
         from altair.app.ticketing.tickets.xaml import xaml_from_svg
         return xaml_from_svg(*args, **kwargs)
 
     def test_it(self):
-        ##todo: まじめにtest
         svg = """\
 <ns0:svg xmlns:ns0="http://www.w3.org/2000/svg" xmlns:ns1="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:ns2="http://www.inkscape.org/namespaces/inkscape" height="265.74802" id="svg2" version="1.2" width="396.85037" ns2:version="0.48.4 r9939">
   <ns0:defs id="defs200"/>
@@ -62,4 +64,24 @@ class XAMLFromSVGTests(unittest.TestCase):
         result = self._callFUT(svg, pretty_print=False)
 
         expected = """<FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><PageContent><FixedPage Width="0" Height="0"><Canvas><Canvas.RenderTransform><MatrixTransform Matrix="1.25,0,0,-1.25,-4.3279125,742.61955"/></Canvas.RenderTransform><Canvas><Canvas.RenderTransform><ScaleTransform ScaleX="1" ScaleY="-1"/></Canvas.RenderTransform><Path Data="m 0,0 c 1,1 2,2 z"/></Canvas><Canvas><Canvas.RenderTransform><ScaleTransform ScaleX="1" ScaleY=" 1"/></Canvas.RenderTransform><Path Data="m 20,20 c 1,1 2,2 z"/></Canvas><Path Data="m 30,30 c 1,1 2,2 z"/></Canvas></FixedPage></PageContent></FixedDocument>"""
+        self.assertEqual(expected, result)
+
+    def test_qr(self):
+        svg = """\
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+>
+<g>
+    <rect
+       style="fill:#0000ff;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="QR"
+       width="91.473824"
+       height="81.106789"
+       x="54.274467"
+       y="131.58641"
+       inkscape:label="test-message-is-here." />
+</g>
+</svg>
+"""
+        result = self._callFUT(svg, pretty_print=False)
+        expected = """<FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><PageContent><FixedPage Width="0" Height="0"><Canvas><@qrclass@ xmlns:@ns@="clr-namespace:@fullns@;assembly=@ns@" Width="91.473824" Height="81.106789" Foreground="Black" Canvas.Left="54.274467" Canvas.Top="131.58641" QRCode="test-message-is-here."/></Canvas></FixedPage></PageContent></FixedDocument>"""
         self.assertEqual(expected, result)

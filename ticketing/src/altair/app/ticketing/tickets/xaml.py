@@ -306,8 +306,42 @@ class XAMLFromSVG(object):
                 prev_element = e
                 prev_region = region
 
+    CLR_NS_FORMAT = "clr-namespace:{fullns};assembly={ns}"
+    CLR_MODULE_NAME = "at-ns-at"
+    CLR_FULL_NAMESPACE = "at-full-ns-at"
+    CLR_TARGET_CLASS_NAME = "at-class-at"
+
     def visit_rect(self, this, n):
-        pass
+        parent = this.getparent()
+        if self.control.get_tag(parent) == "flowRegion":
+            logger.info("flowRegion's rect is just a geometry for clipping")
+        else:
+            attrib = self.control.get_new_attrs(n)
+            id = attrib.get("id")
+
+            if id and id.lower().startswith("qr"):
+                ## qr用のrect
+                clrns = self.CLR_MODULE_NAME
+                e = etree.Element(self.CLR_TARGET_CLASS_NAME, 
+                                  nsmap={clrns: self.CLR_NS_FORMAT.format(ns=clrns, fullns=self.CLR_FULL_NAMESPACE)}) #xxx:
+                if "width" in attrib:
+                    e.attrib["Width"] = attrib["width"]
+                if "height" in attrib:
+                    e.attrib["Height"] = attrib["height"]
+                if "fill" in attrib:
+                    #e.attrib["Foreground"] = attrib["fill"]
+                    e.attrib["Foreground"] = "Black"
+                if "x" in attrib:
+                    e.attrib["Canvas.Left"] = attrib["x"]
+                if "y" in attrib:
+                    e.attrib["Canvas.Top"] = attrib["y"]
+                ## todo: improvement
+                for k, v in attrib.items():
+                    if k.endswith("}label"):
+                        e.attrib["QRCode"] = v
+                this.append(e)
+            else:
+                pass#todo: implement ordinary rectangle
 
     def visit_path(self, this, n):
         parent = n.getparent()
@@ -378,7 +412,11 @@ M=absolute, m=relative
 def xaml_from_svg(svg, pretty_print=False):
     svg_tree = etree.fromstring(svg)
     xaml_tree = XAMLFromSVG().convert(svg_tree)
-    return etree.tostring(xaml_tree, encoding="utf-8", pretty_print=pretty_print)
+    s = etree.tostring(xaml_tree, encoding="utf-8", pretty_print=pretty_print)
+    return (s
+            .replace(XAMLFromSVG.CLR_MODULE_NAME, "@ns@")
+            .replace(XAMLFromSVG.CLR_FULL_NAMESPACE, "@fullns@")
+            .replace(XAMLFromSVG.CLR_TARGET_CLASS_NAME, "@qrclass@"))
 
 if __name__ == "__main__":
     if len(sys.argv) <=1:
