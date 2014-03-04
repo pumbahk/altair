@@ -25,12 +25,12 @@
                     <RowDefinition Height="3*"/>
                     <RowDefinition Height="2*"/>
                 </Grid.RowDefinitions>
-                <ScrollViewer Grid.Row="0">
-                    <TextBlock
+                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                        <TextBlock
                             Style="{StaticResource MessageDialogMessageTextStyle}"
                             Text="{Binding ElementName=Container, Path=MessageText}"
                          />
-                </ScrollViewer>
+                    </ScrollViewer>
                 <Button
                     Grid.Row="1"
                                        Click="Button_Click"
