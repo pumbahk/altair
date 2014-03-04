@@ -304,6 +304,8 @@ class AugusDistributionImporter(object):
                     .first()
                 if not ag_performance:
                     raise AugusDataImportError(u'augus performance not found')
+                elif not ag_performance.performance:
+                    raise AugusDataImportError(u'This performance has not been cooperation: AugusPerformance.id={}'.format(ag_performance.id))
 
                 # 新しいStockHolderを作成 (初回のみ実行される事を想定)
                 stock_holder = stock_holders.get(ag_performance.performance.event, None)
