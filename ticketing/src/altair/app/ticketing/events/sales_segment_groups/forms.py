@@ -31,6 +31,7 @@ def append_error(field, error):
 class SalesSegmentGroupForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         fix_boolean(formdata, 'seat_choice')
+        fix_boolean(formdata, 'display_seat_no')
         fix_boolean(formdata, 'public')
         fix_boolean(formdata, 'reporting')
         context = kwargs.pop('context', None)
@@ -111,10 +112,14 @@ class SalesSegmentGroupForm(OurForm):
         format='%Y-%m-%d %H:%M',
         hide_on_new=False
     )
-
     seat_choice = OurBooleanField(
         label=u'座席選択可',
         widget=CheckboxInput(),
+    )
+    display_seat_no = OurBooleanField(
+        label=label_text_for(SalesSegmentGroupSetting.display_seat_no),
+        widget=CheckboxInput(),
+        hide_on_new=True
     )
     max_quantity = OurIntegerField(
         label=label_text_for(SalesSegmentGroup.max_quantity),

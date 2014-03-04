@@ -55,6 +55,10 @@ function get_selected_sales_segment_id() {
       <td>${u'選択可' if sales_segment.seat_choice else u'×選択不可'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(SalesSegmentSetting.display_seat_no)}</th>
+      <td>${u'表示' if sales_segment.setting.display_seat_no else u'非表示'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(SalesSegment.public)}</th>
       <td>${u'公開' if sales_segment.public else u'非公開'}</td>
     </tr>

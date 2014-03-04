@@ -67,6 +67,12 @@
     </td>
   </tr>
   <tr>
+    <th>${HH.label_text_for(SalesSegmentGroupSetting.display_seat_no)}</th>
+    <td id="seat_choice" value="${sales_segment_group.setting.display_seat_no}">
+      ${u'表示' if sales_segment_group.setting.display_seat_no else u'非表示'}
+    </td>
+  </tr>
+  <tr>
     <th>${HH.label_text_for(SalesSegmentGroup.public)}</th>
     <td id="public" value="${sales_segment_group.public}">
       ${u'公開' if sales_segment_group.public else u'非公開'}

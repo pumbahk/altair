@@ -64,6 +64,16 @@ class SalesSegmentForm(OurForm):
         default=True,
         widget=CheckboxInput()
     )
+    display_seat_no = OurBooleanField(
+        label=label_text_for(SalesSegmentSetting.display_seat_no),
+        default=True,
+        widget=CheckboxInput()
+    )
+    use_default_display_seat_no = OurBooleanField(
+        label=u'グループの値を利用',
+        default=True,
+        widget=CheckboxInput()
+    )
     public = OurBooleanField(
         label=u'一般公開',
         default=True,

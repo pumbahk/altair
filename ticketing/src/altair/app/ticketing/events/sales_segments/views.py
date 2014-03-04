@@ -131,10 +131,11 @@ class SalesSegments(BaseView):
         sales_segment_group_id = f.sales_segment_group_id.data
         sales_segment_group = SalesSegmentGroup.query.filter_by(id=sales_segment_group_id).one()
         sales_segment = sales_segment_group.new_sales_segment()
-        sales_segment = merge_session_with_post(sales_segment, f.data, excludes={'order_limit', 'max_quantity_per_user', 'disp_orderreview'})
+        sales_segment = merge_session_with_post(sales_segment, f.data, excludes={'order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no'})
         sales_segment.setting.order_limit = f.order_limit.data
         sales_segment.setting.max_quantity_per_user = f.max_quantity_per_user.data
         sales_segment.setting.disp_orderreview = f.disp_orderreview.data
+        sales_segment.setting.display_seat_no = f.display_seat_no.data
         assert sales_segment.event == sales_segment_group.event
         assert sales_segment.performance is None or sales_segment.performance.event == sales_segment.event
 
@@ -209,6 +210,7 @@ class SalesSegments(BaseView):
             'max_product_quatity': sales_segment_group.max_product_quatity,
             'order_limit': sales_segment_group.order_limit,
             'seat_choice': sales_segment_group.seat_choice,
+            'display_seat_no': sales_segment_group.setting.display_seat_no,
             'public': sales_segment_group.public,
             'reporting': sales_segment_group.reporting,
             'margin_ratio': stringize(sales_segment_group.margin_ratio),
@@ -242,7 +244,7 @@ class EditSalesSegment(BaseView):
     def get(self):
         sales_segment = self.context.sales_segment
         form = SalesSegmentForm(obj=sales_segment, formdata=self.request.GET, context=self.context)
-        for k in ['order_limit', 'max_quantity_per_user', 'disp_orderreview']:
+        for k in ['order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no']:
             dk = 'use_default_%s' % k
             getattr(form, k).data = getattr(sales_segment.setting, k)
             getattr(form, dk).data = getattr(sales_segment.setting, dk)
