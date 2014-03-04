@@ -18,10 +18,11 @@ class DummyCheckout3D(object):
         resp.RetCd = self.RetCd
         return resp
     
-    def request_card_auth(self, response_factory, order_no, card_auth):
+    def request_card_auth(self, response_factory, order_no, params):
         resp = response_factory.create_multicheckout_response_card()
         resp.OrderNo = order_no
         resp.CmnErrorCd = self.CmnErrorCd
+        self.last_params = dict((k, getattr(params, k)) for k in dir(params))
         return resp
 
     def request_card_sales(self, response_factory, order_no):
@@ -40,6 +41,7 @@ class DummyCheckout3D(object):
         resp = response_factory.create_multicheckout_response_card()
         resp.OrderNo = order_no
         resp.CmnErrorCd = self.CmnErrorCd
+        self.last_params = dict((k, getattr(params, k)) for k in dir(params))
         return resp
 
     def request_card_cancel_sales(self, response_factory, order_no):
