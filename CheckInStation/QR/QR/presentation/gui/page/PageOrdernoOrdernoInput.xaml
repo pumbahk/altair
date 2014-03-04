@@ -84,6 +84,7 @@
                      Style="{StaticResource SubmitButton}">
                         <TextBlock Style="{StaticResource SubmitButtonLongTextStyle}">電話番号入力へ</TextBlock>
                     </Button>
+                    <!--
                     <Button
                     Canvas.Left="60"
                     Canvas.Top="655"
@@ -92,7 +93,7 @@
                     >
                         <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
                     </Button>
-
+                    -->
 
                     <!-- change mode-->
                     <Button Click="OnGotoAnotherMode"
