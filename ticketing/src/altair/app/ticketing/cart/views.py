@@ -688,7 +688,7 @@ class ReserveView(object):
                     cart=dict(products=[dict(name=p.product.name, 
                                              quantity=p.quantity,
                                              price=int(p.product.price),
-                                             seats=p.seats if sales_segment.seat_choice else [],
+                                             seats=p.seats if sales_segment.setting.display_seat_no else [],
                                              unit_template=h.build_unit_template(p.product.items),
                                         )
                                         for p in cart.items],

@@ -64,6 +64,16 @@ class SalesSegmentForm(OurForm):
         default=True,
         widget=CheckboxInput()
     )
+    display_seat_no = OurBooleanField(
+        label=label_text_for(SalesSegmentSetting.display_seat_no),
+        default=True,
+        widget=CheckboxInput()
+    )
+    use_default_display_seat_no = OurBooleanField(
+        label=u'グループの値を利用',
+        default=True,
+        widget=CheckboxInput()
+    )
     public = OurBooleanField(
         label=u'一般公開',
         default=True,
@@ -303,12 +313,20 @@ class SalesSegmentForm(OurForm):
                 return False
         return True
 
+    def _validate_display_seat_no(self, *args, **kwargs):
+        if self.seat_choice.data and not self.display_seat_no.data:
+            self.display_seat_no.errors.append(u'座席選択可の場合は座席番号は非表示にできません')
+            return False
+        return True
+
     def validate(self):
         if super(SalesSegmentForm, self).validate():
             if not self._validate_terms():
                 return False
             #if not self._validate_performance_terms():
             #    return False
+            if not self._validate_display_seat_no():
+                return False
 
             return True
 

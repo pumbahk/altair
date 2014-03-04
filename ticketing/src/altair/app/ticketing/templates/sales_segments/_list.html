@@ -1,5 +1,5 @@
 <%page args="sales_segments" />
-<% from altair.app.ticketing.core.models import SalesSegment %>
+<% from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting %>
 <%namespace file="/common/helpers.html" name="ch" />
 % if sales_segments:
 <div class="row-fluid">
@@ -18,6 +18,7 @@
           <th>${ch.sortable(SalesSegment.max_quantity)}</a></th>
           <%doc><th>${ch.sortable(SalesSegment.order_limit)}</a></th></%doc>
           <th>${ch.sortable(SalesSegment.seat_choice)}</a></th>
+          <th>${ch.sortable(SalesSegmentSetting.display_seat_no)}</a></th>
           <th>${ch.sortable(SalesSegment.public)}</a></th>
           <th>${ch.sortable(SalesSegment.reporting)}</a></th>
           <th>決済方法</th>
@@ -46,6 +47,7 @@
           <td ${rowspan}>${sales_segment.account.name}</td>
           <td ${rowspan}>${u'%s枚' % sales_segment.max_quantity if sales_segment.max_quantity else u'-'} / ${u'%s枚' % sales_segment.setting.max_quantity_per_user if sales_segment.setting and sales_segment.setting.max_quantity_per_user else u'-'} / ${u'%s個' % sales_segment.max_product_quatity if sales_segment.max_product_quatity else u'-'}</td>
           <td ${rowspan}>${u'選択可' if sales_segment.seat_choice else u'×選択不可'}</td>
+          <td ${rowspan}>${u'表示' if sales_segment.setting.display_seat_no else u'非表示'}</td>
           <td ${rowspan}>${u'公開' if sales_segment.public else u'非公開'}</td>
           <td ${rowspan}>${u'対象' if sales_segment.reporting else u'×対象外'}</td>
           % if count == 0:

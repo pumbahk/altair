@@ -147,6 +147,12 @@ class SalesSegmentAccessor(object):
             use_default_default=True,
             use_default_default_for_lot=False
             ),
+        "display_seat_no": dict(
+            setting=True,
+            has_use_default=True,
+            use_default_default=True,
+            use_default_default_for_lot=False
+            ),
         "public": dict(
             has_use_default=True,
             use_default_default=True

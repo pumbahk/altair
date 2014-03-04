@@ -67,7 +67,7 @@ class OrderInfoDefaultMixin(object):
         seat_no = []
         for p in order.items:
             if p.seats:
-                if p.product.sales_segment.seat_choice:
+                if p.product.sales_segment.display_seat_no:
                     seat_no += [u"* {0}".format(seat["name"]) for seat in p.seats]
                 elif p.product.seat_stock_type:
                     seat_no += [u"{0} {1}席".format(p.product.seat_stock_type.name, p.seat_quantity)]

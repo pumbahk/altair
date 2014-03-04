@@ -15,7 +15,7 @@
         <tr>
           <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="22" height="21" /> ${product.product.name}</th>
           % if product.seats:
-          % if product.product.sales_segment.seat_choice:
+          % if product.product.sales_segment.setting.display_seat_no:
           <td><strong>${product.seat_quantity}</strong>枚</td>
           <td>
           % for seat in product.seats:
