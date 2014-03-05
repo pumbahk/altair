@@ -12,15 +12,15 @@
         -->
         <ControlTemplate>
             <Popup IsOpen="{Binding ElementName=Container, Path=IsOpen, Mode=TwoWay}"
-                   Placement="{Binding ElementName=Container,Path=Placement, Mode=OneWay}"
-                   PlacementTarget="{Binding ElementName=Container,Path=PlacementTarget, Mode=OneWay}">
+                   Placement="{Binding ElementName=Container,Path=Placement}"
+                   PlacementTarget="{Binding ElementName=Container,Path=PlacementTarget}">
                 <Border Style="{StaticResource PopupDialogStyle}">
                     <Canvas>
                         <Button Command="{Binding ElementName=Container, Path=CloseCommand}"
                                 Width="30" Height="30"
                                 CommandParameter="{Binding ElementName=Container}"
-                                Canvas.Right="0" Canvas.Top="0">X</Button>
-                        <StackPanel>
+                                Canvas.Right="0" Canvas.Top="0" Panel.ZIndex="10">X</Button>
+                        <StackPanel HorizontalAlignment="Stretch">
                             <TextBlock Text="{Binding ElementName=Container, Path=Title}"/>
                             <ContentPresenter Content="{Binding ElementName=Container,Path=Content}"/>
                         </StackPanel>

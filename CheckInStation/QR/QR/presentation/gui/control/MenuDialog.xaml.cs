@@ -56,7 +56,7 @@ namespace QR.presentation.gui.control
 
         public static readonly DependencyProperty PlacementTargetProperty =
         DependencyProperty.Register("PlacementTarget", typeof(UIElement), typeof(MenuDialog),
-        new FrameworkPropertyMetadata(false));
+        new FrameworkPropertyMetadata(null));
 
         public UIElement PlacementTarget
         {

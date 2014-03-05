@@ -36,99 +36,86 @@
     
     <Grid Background="{StaticResource BackgroundImageBrush}">
         <StackPanel Name="MenulistPanel" Style="{StaticResource CenterContentStackPanel}" VerticalAlignment="Center">
-            <Popup IsOpen="{Binding IsServerUrlPopupOpen, Mode=TwoWay}"
-                   Placement="Center"
-                   PlacementTarget="{Binding ElementName=MenulistPanel}">
-                <Border Style="{StaticResource PopupDialogStyle}">
-                    <StackPanel>
-                        <TextBlock>通信先サーバー設定</TextBlock>
-                        <Border Padding="20" Background="LightGray">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource MainText}">現在の通信先サーバー</TextBlock>
-                                <TextBox Text="{Binding SelectedServerUrl,Mode=TwoWay}"/>
-                            </StackPanel>
-                        </Border>
-                        <ToggleButton Name="ServerUrlSelectButton_Popup" 
-                          IsChecked="{Binding IsServerUrlPopupOpen}"
-                        >閉じる
-                        </ToggleButton>
-                    </StackPanel>
-                </Border>
-            </Popup>
-        
-            <Popup IsOpen="{Binding IsPrinterPopupOpen, Mode=TwoWay}"
-                   Placement="Center"
-                   PlacementTarget="{Binding ElementName=MenulistPanel}">
-                <Border Style="{StaticResource PopupDialogStyle}">
-                    <StackPanel>
-                        <TextBlock>プリンター設定</TextBlock>
-                        <Border Padding="20" Background="LightGray">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource MainText}">現在のプリンター</TextBlock>
-                                <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedPrinterName, Mode=OneWay}"></TextBlock>
-                            </StackPanel>
-                        </Border>
-                        <ListBox 
+            <c:MenuDialog Placement="Center" PlacementTarget="{Binding ElementName=MenulistPanel}"
+                          x:Name="MenuDialogAccessURL"
+                          Title="通信先サーバー設定">
+                <StackPanel>
+                    <Border Padding="20" Background="LightGray" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorLevel=1, AncestorType=Border}}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource MainText}">現在の通信先サーバー</TextBlock>
+                            <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedServerUrl}"/>
+                        </StackPanel>
+                    </Border>
+                    <TextBox Text="{Binding SelectedServerUrl,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+            </c:MenuDialog>
+
+            <c:MenuDialog Placement="Center"  PlacementTarget="{Binding ElementName=MenulistPanel}"
+                          x:Name="MenuDialogPrinter"                          
+                          Title="プリンター設定">
+                <StackPanel>
+                    <Border Padding="20" Background="LightGray" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorLevel=1, AncestorType=Border}}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource MainText}">現在のプリンター</TextBlock>
+                            <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedPrinterName, Mode=OneWay}"></TextBlock>
+                        </StackPanel>
+                    </Border>
+                    <ListBox 
                  ItemsSource="{Binding AvailablePrinters}"
                  ItemTemplate="{StaticResource InstalledPrinterListBoxData}"
+                 Padding="20,0,20,0"
                  SelectionChanged="OnPrinterSelected">
-                        </ListBox>
-                    </StackPanel>
-                </Border>
-            </Popup>
+                    </ListBox>
+                </StackPanel>
+            </c:MenuDialog>
 
-
-            <Popup IsOpen="{Binding IsWindowPopupOpen, Mode=TwoWay}"
-                   Placement="Center"
-                   PlacementTarget="{Binding ElementName=MenulistPanel}">
-                <Border Style="{StaticResource PopupDialogStyle}">
-                    <StackPanel>
-                        <TextBlock>ウインドウの表示の設定</TextBlock>
-                        <Border Padding="20" Background="LightGray">
-                            <StackPanel>
-                                <TextBlock Style="{StaticResource MainText}">現在のウインドウの表示</TextBlock>
-                                <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedWindowName.Key, Mode=OneWay}"></TextBlock>
-                            </StackPanel>
-                        </Border>
-                        <ListBox 
+            <c:MenuDialog Placement="Center" PlacementTarget="{Binding ElementName=MenulistPanel}"
+                          x:Name="MenuDialogWindow"
+                          Title="ウインドウの表示の設定">
+                <StackPanel>
+                    <Border Padding="20" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorLevel=1, AncestorType=Border}}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource MainText}">現在のウインドウの表示</TextBlock>
+                            <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedWindowStyle.Key, Mode=OneWay}"></TextBlock>
+                        </StackPanel>
+                    </Border>
+                    <ListBox 
                  ItemsSource="{Binding AvailableWindowStyles}"
                  ItemTemplate="{StaticResource AvailableWIndowStyleListBoxData}"
+                 Padding="20,0,20,0"
                  SelectionChanged="OnWindowStyleSelected">
-                        </ListBox>
-                    </StackPanel>
-                </Border>
-            </Popup>
+                    </ListBox>
+                </StackPanel>
+            </c:MenuDialog>
 
             <!-- main menu -->
             <WrapPanel>
                 <TextBlock Style="{StaticResource SubText}">現在の通信先サーバー:</TextBlock>
                 <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedServerUrl, Mode=OneWay}"></TextBlock>
             </WrapPanel>
-            <ToggleButton Name="ServerUrlSelectButton" 
-                          IsChecked="{Binding IsServerUrlPopupOpen}"
-                          Focusable="True"
-                          Style="{StaticResource MenuSelectToggleButtonFirst}">通信先サーバー設定
-            </ToggleButton>
+            <Button Command="{Binding ElementName=MenuDialogAccessURL, Path=OpenCommand}"
+                    CommandParameter="{Binding ElementName=MenuDialogAccessURL}"
+                    Style="{StaticResource MenuSelectButtonFirst}">
+                通信先サーバー設定
+            </Button>
 
             <WrapPanel>
                 <TextBlock Style="{StaticResource SubText}">現在のプリンター:</TextBlock>
                 <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedPrinterName, Mode=OneWay}"></TextBlock>
             </WrapPanel>
-            <ToggleButton Name="PrinterSelectButton" 
-                          IsChecked="{Binding IsPrinterPopupOpen}"
-                          Focusable="True"
-                          Style="{StaticResource MenuSelectToggleButtonFirst}">プリンター設定                           
-            </ToggleButton>
+            <Button Command="{Binding ElementName=MenuDialogPrinter, Path=OpenCommand}"
+                    CommandParameter="{Binding ElementName=MenuDialogPrinter}"
+                    Style="{StaticResource MenuSelectButtonFirst}">プリンター設定                           
+            </Button>
 
             <WrapPanel>
                 <TextBlock Style="{StaticResource SubText}">現在のウィンドウの表示:</TextBlock>
                 <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedWindowStyle.Key, Mode=OneWay}"/>
             </WrapPanel>
-            <ToggleButton Name="WindowStyleSelectButton"
-                          IsChecked="{Binding IsWindowPopupOpen}"
-                          Focusable="True"
-                          Style="{StaticResource MenuSelectToggleButtonFirst}">ウィンドウの表示の設定
-            </ToggleButton>
+            <Button Command="{Binding ElementName=MenuDialogWindow, Path=OpenCommand}"
+                    CommandParameter="{Binding ElementName=MenuDialogWindow}"
+                    Style="{StaticResource MenuSelectButtonFirst}">ウィンドウの表示の設定
+            </Button>
 
             
             <Button Style="{StaticResource MenuSelectButtonLast}"

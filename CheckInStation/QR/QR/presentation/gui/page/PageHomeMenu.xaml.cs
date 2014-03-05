@@ -31,24 +31,12 @@ namespace QR.presentation.gui.page{
             get { return this._selectedPrinterName; }
             set { this._selectedPrinterName = value; this.OnPropertyChanged("SelectedPrinterName"); }
         }
-        private bool _isPrinterPopupOpen;
-        public bool IsPrinterPopupOpen
-        {
-            get { return this._isPrinterPopupOpen; }
-            set { this._isPrinterPopupOpen = value; this.OnPropertyChanged("IsPrinterPopupOpen");}
-        }
-
+        
         private string _selectedServerUrl;
         public string SelectedServerUrl
         {
             get { return this._selectedServerUrl; }
             set { this._selectedServerUrl = value; this.OnPropertyChanged("SelectedServerUrl"); }
-        }
-        private bool _isServerUrlPopupOpen;
-        public bool IsServerUrlPopupOpen
-        {
-            get { return this._isServerUrlPopupOpen; }
-            set { this._isServerUrlPopupOpen = value; this.OnPropertyChanged("IsServerUrlPopupOpen"); }
         }
 
         public ObservableCollection<UnitPair<Style>> AvailableWindowStyles { get; set; }
@@ -57,13 +45,6 @@ namespace QR.presentation.gui.page{
         {
             get { return this._selectedWindowStyle; }
             set { this._selectedWindowStyle = value; this.OnPropertyChanged("SelectedWindowStyle");}
-        }
-
-        private bool _isWindowPopupOpen;
-        public bool IsWindowPopupOpen
-        {
-            get { return this._isWindowPopupOpen; }
-            set { this._isWindowPopupOpen = value; this.OnPropertyChanged("IsWindowPopupOpen"); }
         }
     }
 
@@ -128,7 +109,6 @@ namespace QR.presentation.gui.page{
             AppUtil.GetCurrentResource().TicketPrinting.DefaultPrinter = selected;
             var ctx = (this.DataContext as HomeMenuDataContext);
             ctx.SelectedPrinterName = selected.FullName;
-            ctx.IsPrinterPopupOpen = false;
         }
 
         private void OnWindowStyleSelected(object sender, SelectionChangedEventArgs e)
@@ -136,7 +116,6 @@ namespace QR.presentation.gui.page{
             var selected = (sender as ListBox).SelectedItem as UnitPair<Style>;
             var ctx = (this.DataContext as HomeMenuDataContext);
             ctx.SelectedWindowStyle = selected;
-            ctx.IsWindowPopupOpen = false;
         }
     }
 }
