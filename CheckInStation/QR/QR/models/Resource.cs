@@ -33,6 +33,8 @@ namespace QR
 
         public bool FullVerify ()
         {
+            if (Validation == null)
+                throw new InvalidOperationException ("Validation is null");
             if (TicketDataFetcher == null)
                 throw new InvalidOperationException ("TicketDataFetcher is NULL");
             if (TicketDataCollectionFetcher == null)
@@ -53,6 +55,7 @@ namespace QR
                 throw new InvalidOperationException ("HttpWrapperFactory is null");
             return true;
         }
+        public IModelValidation Validation { get; set; }
 
         public IDataFetcher<string, TicketData> TicketDataFetcher { get; set; }
 

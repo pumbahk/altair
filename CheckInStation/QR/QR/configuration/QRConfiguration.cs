@@ -22,6 +22,7 @@ namespace QR
         {
             var resource = config.Resource;
             QRConfiguration.SetupPrinting_Xaml(resource);
+            config.Resource.Validation = new ModelValidation();
             config.Resource.TicketDataFetcher = new TicketDataFetcher (resource);
             config.Resource.TicketDataCollectionFetcher = new TicketDataCollectionFetcher (resource);
 

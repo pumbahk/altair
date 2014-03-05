@@ -23,16 +23,16 @@ namespace QR
 
         public override Task<bool> VerifyAsync ()
         {
-            return Task.Run(() => {
-                var subject = this.PresentationChanel as AuthenticationEvent;
-                this.LoginName = subject.LoginName;
-                if (LoginName.Equals(""))
-                {
-                    subject.NotifyFlushMessage("名前が未入力です。入力してください");
-                    return false;
-                }
-                return true;
-            });
+            var ts = new TaskCompletionSource<bool>();
+            var subject = this.PresentationChanel as AuthenticationEvent;
+            this.LoginName = subject.LoginName;
+            var r = this.Resource.Validation.ValidateAuthLoginName(this.LoginName);
+            ts.SetResult(r.Status);
+            if (!r.Status)
+            {
+                subject.NotifyFlushMessage(r.Left);
+            }
+            return ts.Task;
         }
 
         public override ICase OnSuccess (IFlow flow)

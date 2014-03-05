@@ -20,11 +20,16 @@ namespace QR
 
         public override Task<bool> VerifyAsync ()
         {
-            return Task.Run (() => {
-                var subject = this.PresentationChanel as OrdernoInputEvent;
-                this.RequestData.order_no = subject.Orderno;
-                return this.RequestData.order_no != null;
-            });
+            var ts = new TaskCompletionSource<bool>();
+            var subject = this.PresentationChanel as OrdernoInputEvent;
+            this.RequestData.order_no = subject.Orderno;
+            var r = this.Resource.Validation.ValidateOrderno(this.RequestData.order_no);
+            ts.SetResult(r.Status);
+            if (!r.Status)
+            {
+                this.PresentationChanel.NotifyFlushMessage(r.Left);
+            }
+            return ts.Task;            
         }
 
         public override ICase OnSuccess (IFlow flow)
@@ -34,7 +39,6 @@ namespace QR
 
         public override ICase OnFailure (IFlow flow)
         {
-            PresentationChanel.NotifyFlushMessage ("failure");
             return this;
         }
     }
