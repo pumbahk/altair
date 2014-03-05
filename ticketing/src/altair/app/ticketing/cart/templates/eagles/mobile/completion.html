@@ -21,7 +21,7 @@ ${product.seat_quantity} 枚<br/>
 ${product.quantity} 枚<br/>
 % endif
 &yen;${h.format_number(product.product.price * product.quantity)}<br/>
-% if product.seats:
+% if product.product.sales_segment.setting.display_seat_no:
   % for seat in product.seats:
   ${seat['name']}<br/>
   % endfor
