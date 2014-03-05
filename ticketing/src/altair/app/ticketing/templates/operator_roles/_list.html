@@ -45,7 +45,7 @@
     </thead>
     <tbody>
     % for category in permission_categories:
-    <tr>
+    <tr class="category-${category.id}">
       <td>${category.name_kana}</td>
       % for role in roles.items:
       <td>
@@ -55,6 +55,32 @@
       </td>
       % endfor
     </tr>
+    <tr class="permit-action-${category.id}" style="display:none;">
+      <td colspan="${len(roles)+1}">
+      <%
+        route_permission = request.registry.route_permission if hasattr(request.registry, 'route_permission') else None
+        permit_actions = []
+        for route_name in sorted(route_permission.keys()):
+          if category.name == route_permission[route_name]:
+            permit_actions.append(route_name)
+      %>
+      % if len(permit_actions) > 0:
+        <table class="table table-condensed well">
+          <tr><th>この権限で利用できる機能</th></tr>
+          % for action in permit_actions:
+          <tr><td>${action}</td></tr>
+          % endfor
+        </table>
+      % endif
+      </td>
+    </tr>
+    <script type="text/javascript">
+      $(function() {
+        $('.category-${category.id}').click(function(){
+          $('.permit-action-${category.id}').toggle('slow');
+        });
+      })
+    </script>
     % endfor
     </tbody>
   </table>
