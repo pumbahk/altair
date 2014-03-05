@@ -81,7 +81,7 @@ namespace QR
             //QR‚Ìw’è‚ª‚ª‚ ‚Á‚½‚Æ‚«‚É‚ÍAQR‚ğ–„‚ß‚Ş
             this.EmitQRCodeIfExists(doc);
 
-            writer.Write(doc); //todo: PrintTicket
+            writer.Write(doc, pq.UserPrintTicket);
             return true;
         }
 
