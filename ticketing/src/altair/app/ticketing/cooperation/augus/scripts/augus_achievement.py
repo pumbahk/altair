@@ -82,7 +82,7 @@ def main():
             recipient=recipient,
             subject=u'【オーガス連携】販売実績通知のお知らせ',
             body=body.text,
-            }
+            )
         mailer.send(sender, [recipient])
 
 if __name__ == '__main__':
