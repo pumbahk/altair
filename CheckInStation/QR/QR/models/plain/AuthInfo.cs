@@ -19,6 +19,8 @@ namespace QR
         //        [DataMember]
         //        internal string secret;
         [DataMember]
+        internal string organization_code;
+        [DataMember]
         internal string device_id;
         [DataMember]
         internal string organization_id;
@@ -28,6 +30,7 @@ namespace QR
             login = json.login;
             loginname = json.loginuser.name;
             organization_id = json.organization.id;
+            organization_code = json.organization.code;
             device_id = json.identity.device_id;
         }
 

@@ -60,9 +60,14 @@ namespace QR.presentation.gui.page
         {
             var ctx = this.DataContext as PageOrdernoOrdernoInputDataContext;
             await ctx.PrepareAsync().ConfigureAwait(true);
-            var data =  (ctx.Case as CaseOrdernoOrdernoInput).RequestData;
-            if(data != null){
-                this.KeyPad.Text = data.order_no;
+            var data = (ctx.Case as CaseOrdernoOrdernoInput).RequestData;
+            {
+                string orderno;
+                if (data != null && data.order_no != null)
+                    orderno = data.order_no;
+                else
+                    orderno = AppUtil.GetCurrentResource().AuthInfo.organization_code;
+                this.KeyPad.Text = orderno;
             }
             new BindingErrorDialogAction(ctx, this.ErrorDialog).Bind();
         }

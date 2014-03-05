@@ -27,7 +27,7 @@ namespace QR
             LoginURL = loginURL;
         }
 
-        public class LoginUser
+        class LoginUser
         {
             public string login_id { get; set; }
 
