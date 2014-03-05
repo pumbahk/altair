@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -136,6 +136,7 @@
     <Compile Include="events\ConfirmOneEvent.cs" />
     <Compile Include="events\FailureEvent.cs" />
     <Compile Include="events\FinishEvent.cs" />
+    <Compile Include="events\GlobalStaticEvent.cs" />
     <Compile Include="flow\AggregateShorthandError.cs" />
     <Compile Include="flow\CaseAuthPassword.cs" />
     <Compile Include="models\AggregateTicketPrinting.cs" />

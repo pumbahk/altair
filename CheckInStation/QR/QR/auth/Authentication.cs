@@ -5,6 +5,7 @@ using QR.message;
 using Codeplex.Data;
 using NLog;
 using QR.support;
+using QR.events;
 
 namespace QR
 {
@@ -51,6 +52,8 @@ namespace QR
             {
                 var device_id = this.Resource.GetUniqueNameEachMachine();
 
+                //@global ev:
+                //GlobalStaticEvent.FireDescriptionMessageEvent(this, "ログイン処理中です");
                 var user = new LoginUser() { login_id = name, password = password, device_id = device_id };
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(user).ConfigureAwait(false);
                 response.EnsureSuccessStatusCodeExtend();
@@ -60,6 +63,8 @@ namespace QR
 
 
                 // endpointの取得
+                //@global ev:
+                GlobalStaticEvent.FireDescriptionMessageEvent(this, "アプリケーションに必要な情報を取得しています");
                 var result = DynamicJson.Parse(await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false));
                 var endpoint = new EndPoint(result.endpoint);
 

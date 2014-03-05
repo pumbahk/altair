@@ -1,4 +1,5 @@
 ﻿using NLog;
+using QR.events;
 using QR.presentation.gui.control;
 using System;
 using System.Collections.Generic;
@@ -48,7 +49,21 @@ namespace QR.presentation.gui.page
         {
             InitializeComponent();
             this.DataContext = this.CreateDataContext();
+            var ctx = this.DataContext as AuthPasswordDataContext;
+
+            //@global ev
+            GlobalStaticEvent.DescriptionMessageEvent += GlobalStaticEvent_DescriptionMessageEvent;
         }
+
+        void GlobalStaticEvent_DescriptionMessageEvent(object sender, DescriptionMessageEventArgs e)
+        {
+            this.Dispatcher.InvokeAsync(() =>
+            {
+                var ctx = this.DataContext as AuthPasswordDataContext;
+                ctx.Description = e.Message;
+            });
+        }
+        
 
         private InputDataContext CreateDataContext()
         {
@@ -94,6 +109,8 @@ namespace QR.presentation.gui.page
                     ctx.TreatErrorMessage();
                     AppUtil.GetNavigator().NavigateToMatchedPage(case_, this, ctx.ErrorMessage); //エラーメッセージを受け渡す
                 }
+                //@global ev
+                GlobalStaticEvent.DescriptionMessageEvent -= this.GlobalStaticEvent_DescriptionMessageEvent;
             });
         }
 
@@ -113,6 +130,8 @@ namespace QR.presentation.gui.page
                 var case_ = await ctx.BackwardAsync();
                 ctx.TreatErrorMessage();
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+                //@global ev
+                GlobalStaticEvent.DescriptionMessageEvent -= this.GlobalStaticEvent_DescriptionMessageEvent;
             });
         }
 

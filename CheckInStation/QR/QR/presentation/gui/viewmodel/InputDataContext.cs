@@ -45,12 +45,21 @@ namespace QR.presentation.gui
             }
         }
 
+        private string _Description;
         public string Description
         {
             get {
-                var result = this.Case.Description;
+                if (this._Description == null)
+                {
+                    this.Description = this.Case.Description;
+                }
                 //logger.Debug("case:{0} description:{1}", this.Case, result);
-                return result;
+                return this._Description;
+            }
+            set
+            {
+                this._Description = value;
+                this.OnPropertyChanged("Description");
             }
         }
 
@@ -66,8 +75,7 @@ namespace QR.presentation.gui
             var result = await this.Broker.SubmitAsync(this.Event).ConfigureAwait(false);
             //本当はOnPropertyChangeでCaseが変わり。そのOnProeprtyChangeでCaseNameが変わるのが良い。
             this.OnPropertyChanged("CaseName");
-            this.OnPropertyChanged("Description");
-
+            this.Description = result.Description;
             return result;
         }
 
@@ -81,6 +89,7 @@ namespace QR.presentation.gui
             logger.Debug("BackwardAsync this:{0}, Event:{1}, Case:{2}", this, this.Event, this.Case);
             var result = await this.Broker.BackwardAsync().ConfigureAwait(false);
             this.OnPropertyChanged("CaseName");
+            this.Description = result.Description;
             return result;
         }
 
