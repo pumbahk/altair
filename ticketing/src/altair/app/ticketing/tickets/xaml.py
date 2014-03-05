@@ -226,13 +226,31 @@ class ElementBuilder(object):
 
 class XAMLFromSVG(object):
     def __init__(self, 
+                 scale_x=None, 
+                 scale_y=None, 
                  control=SimpleControl(AttrsGetter()), 
                  element_builder=ElementBuilder()
     ):
+        self.scale_x = scale_x
+        self.scale_y = scale_y
         self.element_builder = element_builder
         self.control = control
         self.width = "0"
         self.height = "0"
+
+    def get_scaled_x(self, v):
+        if self.scale_x is None:
+            return v
+
+        if isinstance(v, (str, unicode)):
+            return unicode(float(v)*self.scale_x)
+
+    def get_scaled_y(self, v):
+        if self.scale_y is None:
+            return v
+
+        if isinstance(v, (str, unicode)):
+            return unicode(float(v)*self.scale_y)
 
     def convert(self, svg_tree):
         if hasattr(svg_tree, "getroot"):
@@ -241,8 +259,8 @@ class XAMLFromSVG(object):
             root = svg_tree #lxml.etree.Element
 
         attrib = root.attrib
-        self.width = attrib.get("width", "0")
-        self.height = attrib.get("height", "0")
+        self.width = self.get_scaled_x(attrib.get("width", "0"))
+        self.height = self.get_scaled_y(attrib.get("height", "0"))
 
         doc = self.element_builder.build_document()
         content = self.element_builder.build_pagecontent()
@@ -250,8 +268,18 @@ class XAMLFromSVG(object):
 
         doc.append(content)
         content.append(page)
-
-        self.convert_from_root(page, root)
+        if self.scale_y is None and  self.scale_x is None:
+            self.convert_from_root(page, root)
+        else:
+            ## todo:improvement
+            canvas = etree.SubElement(page, "Canvas")
+            wrapper = etree.SubElement(canvas, "Canvas.RenderTransform")
+            transform = etree.SubElement(wrapper, "ScaleTransform")
+            if self.scale_x:
+                transform.attrib["ScaleX"] = unicode(self.scale_x)
+            if self.scale_y:
+                transform.attrib["ScaleY"] = unicode(self.scale_y)
+            self.convert_from_root(canvas, root)
         return doc
 
     def convert_from_root(self, this, root):
@@ -409,9 +437,9 @@ M=absolute, m=relative
             </Canvas.RenderTransform>
 """
 
-def xaml_from_svg(svg, pretty_print=False):
+def xaml_from_svg(svg, pretty_print=False, scale_x=(96/90.0), scale_y=(96/90.0)):
     svg_tree = etree.fromstring(svg)
-    xaml_tree = XAMLFromSVG().convert(svg_tree)
+    xaml_tree = XAMLFromSVG(scale_y=scale_y, scale_x=scale_x).convert(svg_tree)
     s = etree.tostring(xaml_tree, encoding="utf-8", pretty_print=pretty_print)
     return (s
             .replace(XAMLFromSVG.CLR_MODULE_NAME, "@ns@")

@@ -24,7 +24,7 @@ class XAMLFromSVGTests(unittest.TestCase):
     <ns0:path d="m 368.03009,184.69201 c 0,0 -0.80702,1.86877 -0.80702,1.86877 0,0 z" id="path3337" style="fill:#231f20;fill-opacity:1;fill-rule:nonzero;stroke:none" ns2:connector-curvature="0"/>
   </ns0:g>
 </ns0:svg>"""
-        result = self._callFUT(svg, pretty_print=False)
+        result = self._callFUT(svg, pretty_print=False, scale_x=None, scale_y=None)
         expected = """\
 <FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><PageContent><FixedPage Width="396.85037" Height="265.74802"><Canvas><TextBlock TextWrapping="Wrap" Width="85.951256" Height="14.219651" Canvas.Left="294.60844" Canvas.Top="211.74922" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{予約番号}}</TextBlock><Path Data="m 368.03009,184.69201 c 0,0 -0.80702,1.86877 -0.80702,1.86877 0,0 z" Fill="#231f20" Opacity="1"/></Canvas></FixedPage></PageContent></FixedDocument>"""
         self.assertEqual(expected, result)
@@ -43,7 +43,7 @@ class XAMLFromSVGTests(unittest.TestCase):
     </g>
   </g>
 </svg>"""
-        result = self._callFUT(svg, pretty_print=False)
+        result = self._callFUT(svg, pretty_print=False, scale_x=None, scale_y=None)
         expected = """<FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><PageContent><FixedPage Width="0" Height="0"><Canvas><Canvas.RenderTransform><MatrixTransform Matrix="1.25,0,0,-1.25,-4.3279125,742.61955"/></Canvas.RenderTransform><Canvas><Canvas.RenderTransform><ScaleTransform ScaleX="1" ScaleY="-1"/></Canvas.RenderTransform><Canvas><Canvas.RenderTransform><TranslateTransform X="-327.90607" Y="-353.12961"/></Canvas.RenderTransform><Path Data="m 473.88,-211.16 c 1.12985,-2.86967 3.32105,-7.11032 z" Fill="#f89c0e"/></Canvas></Canvas></Canvas></FixedPage></PageContent></FixedDocument>"""
         self.assertEqual(expected, result)
 
@@ -61,7 +61,7 @@ class XAMLFromSVGTests(unittest.TestCase):
     <path d="m 30,30 c 1,1 2,2 z" />
   </g>
 </svg>"""
-        result = self._callFUT(svg, pretty_print=False)
+        result = self._callFUT(svg, pretty_print=False, scale_x=None, scale_y=None)
 
         expected = """<FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><PageContent><FixedPage Width="0" Height="0"><Canvas><Canvas.RenderTransform><MatrixTransform Matrix="1.25,0,0,-1.25,-4.3279125,742.61955"/></Canvas.RenderTransform><Canvas><Canvas.RenderTransform><ScaleTransform ScaleX="1" ScaleY="-1"/></Canvas.RenderTransform><Path Data="m 0,0 c 1,1 2,2 z"/></Canvas><Canvas><Canvas.RenderTransform><ScaleTransform ScaleX="1" ScaleY=" 1"/></Canvas.RenderTransform><Path Data="m 20,20 c 1,1 2,2 z"/></Canvas><Path Data="m 30,30 c 1,1 2,2 z"/></Canvas></FixedPage></PageContent></FixedDocument>"""
         self.assertEqual(expected, result)
@@ -82,6 +82,16 @@ class XAMLFromSVGTests(unittest.TestCase):
 </g>
 </svg>
 """
-        result = self._callFUT(svg, pretty_print=False)
+        result = self._callFUT(svg, pretty_print=False, scale_x=None, scale_y=None)
         expected = """<FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><PageContent><FixedPage Width="0" Height="0"><Canvas><@qrclass@ xmlns:@ns@="clr-namespace:@fullns@;assembly=@ns@" Width="91.473824" Height="81.106789" Foreground="Black" Canvas.Left="54.274467" Canvas.Top="131.58641" QRCode="test-message-is-here."/></Canvas></FixedPage></PageContent></FixedDocument>"""
+        self.assertEqual(expected, result)
+
+    def test_scale(self):
+        svg = """\
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+Width="100" Height="100">
+</svg>
+"""
+        result = self._callFUT(svg, pretty_print=False, scale_x=2.0, scale_y=3.0)
+        expected = """<FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><PageContent><FixedPage Width="200.0" Height="300.0"><Canvas><Canvas.RenderTransform><ScaleTransform ScaleX="2.0" ScaleY="3.0"/></Canvas.RenderTransform></Canvas></FixedPage></PageContent></FixedDocument>"""
         self.assertEqual(expected, result)
