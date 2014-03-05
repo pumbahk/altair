@@ -5,7 +5,10 @@ import shutil
 import logging
 import argparse
 import transaction
-from pyramid.paster import bootstrap
+from pyramid.paster import (
+    bootstrap,
+    setup_logging,
+    )
 from pyramid.renderers import render_to_response
 from altair.app.ticketing.core.models import (
     Mailer,
@@ -65,6 +68,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('conf', nargs='?', default=None)
     args = parser.parse_args()
+    setup_logging(args.conf)
     env = bootstrap(args.conf)
     settings = env['registry'].settings
     augus_performance_ids = []

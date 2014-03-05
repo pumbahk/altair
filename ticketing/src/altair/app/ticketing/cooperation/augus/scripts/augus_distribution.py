@@ -20,7 +20,10 @@ from altair.augus.protocols import (
     DistributionSyncResponse,
     )
 from altair.augus.parsers import AugusParser
-from pyramid.paster import bootstrap
+from pyramid.paster import (
+    bootstrap,
+    setup_logging,
+    )
 import transaction
 from ..importers import AugusDistributionImporter
 from ..exporters import AugusDistributionExporter
@@ -206,6 +209,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('conf', nargs='?', default=None)
     args = parser.parse_args()
+    setup_logging(args.conf)
     env = bootstrap(args.conf)
     settings = env['registry'].settings
 

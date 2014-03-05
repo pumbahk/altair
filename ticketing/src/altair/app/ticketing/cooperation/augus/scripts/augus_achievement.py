@@ -5,7 +5,10 @@ import time
 import logging
 import argparse
 from pyramid.renderers import render_to_response
-from pyramid.paster import bootstrap
+from pyramid.paster import (
+    bootstrap,
+    setup_logging,
+    )
 import transaction
 from altair.augus.exporters import AugusExporter
 from altair.augus.parsers import AugusParser
@@ -55,6 +58,7 @@ def main():
     parser.add_argument('conf', nargs='?', default=None)
     parser.add_argument('--force', action='store_true', default=False)
     args = parser.parse_args()
+    setup_logging(args.conf)
     env = bootstrap(args.conf)
     settings = env['registry'].settings
 
