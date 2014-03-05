@@ -72,17 +72,18 @@ def main():
     mailer = Mailer(settings)
 
     augus_performances = AugusPerformance.query.filter(AugusPerformance.id.in_(ag_performance_ids)).all()
-    params = {'augus_performances': augus_performances,
-              }
-    body = render_to_response('altair.app.ticketing:templates/cooperation/augus/mails/augus_achievement.html', params)
+    if augus_performances:
+        params = {'augus_performances': augus_performances,
+                  }
+        body = render_to_response('altair.app.ticketing:templates/cooperation/augus/mails/augus_achievement.html', params)
 
-    mailer.create_message(
-        sender=sender,
-        recipient=recipient,
-        subject=u'【オーガス連携】販売実績通知のお知らせ',
-        body=body.text,
-        )
-    mailer.send(sender, [recipient])
+        mailer.create_message(
+            sender=sender,
+            recipient=recipient,
+            subject=u'【オーガス連携】販売実績通知のお知らせ',
+            body=body.text,
+            }
+        mailer.send(sender, [recipient])
 
 if __name__ == '__main__':
     main()
