@@ -78,7 +78,7 @@ namespace QR.presentation.gui.page
                 if (ctx.Event.Status == InternalEventStaus.success)
                 {
                     case_ = await ctx.SubmitAsync();
-                    ctx.TreatErrorMessage();                   
+                    ctx.TreatErrorMessage();
                 }
                 AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
@@ -119,6 +119,11 @@ namespace QR.presentation.gui.page
             {
                 logger.ErrorException("goto another mode", ex);
             }
+        }
+
+        private void ErrorDialog_MessageDialogComplete(object sender, RoutedEventArgs e)
+        {
+            this.QRCodeInput.Focus();
         }
     }
 }

@@ -102,6 +102,7 @@
 
                     <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
+                                      MessageDialogComplete="ErrorDialog_MessageDialogComplete"
                                       MessageText="{Binding ErrorMessage}"
                                       ButtonText="OK"/>
                 </Canvas>
