@@ -316,7 +316,7 @@ class SalesSegmentForm(OurForm):
     def _validate_display_seat_no(self, *args, **kwargs):
         ssg = SalesSegmentGroup.query.filter_by(id=self.sales_segment_group_id.data).one()
         seat_choice = ssg.seat_choice if self.use_default_seat_choice.data else self.seat_choice.data
-        display_seat_no = ssg.display_seat_no if self.use_default_display_seat_no.data else self.display_seat_no.data
+        display_seat_no = ssg.setting.display_seat_no if self.use_default_display_seat_no.data else self.display_seat_no.data
         if seat_choice and not display_seat_no:
             self.display_seat_no.errors.append(u'座席選択可の場合は座席番号は非表示にできません')
             return False
