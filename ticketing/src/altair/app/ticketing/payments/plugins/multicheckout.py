@@ -229,7 +229,7 @@ class MultiCheckoutPlugin(object):
     def finished(self, request, order):
         """ 売上確定済か判定 """
         multicheckout_api = get_multicheckout_3d_api(request)
-        status = multicheckout_api.get_order_status_by_order_no(order_no)
+        status = multicheckout_api.get_order_status_by_order_no(order.order_no)
         if status is None:
             return False
 

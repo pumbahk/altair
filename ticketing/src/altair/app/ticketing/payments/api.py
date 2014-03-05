@@ -15,12 +15,14 @@ logger = logging.getLogger(__name__)
 def is_finished_payment(request, pdmp, order):
     if order is None:
         return False
+    request.altair_checkout3d_override_shop_name = order.organization.setting.multicheckout_shop_name
     plugin = get_payment_plugin(request, pdmp.payment_method.payment_plugin_id)
     return plugin.finished(request, order)
 
 def is_finished_delivery(request, pdmp, order):
     if order is None:
         return False
+    request.altair_checkout3d_override_shop_name = order.organization.setting.multicheckout_shop_name
     plugin = get_delivery_plugin(request, pdmp.delivery_method.delivery_plugin_id)
     return plugin.finished(request, order)
 

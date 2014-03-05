@@ -36,6 +36,7 @@ from altair.app.ticketing.core.models import (
 )
 from altair.app.ticketing.core.models import (
     ReportFrequencyEnum,
+    Organization,
     #ReportPeriodEnum,
 )
 from altair.app.ticketing.lots.models import (
@@ -57,6 +58,7 @@ other_electing = LotElectWork.__table__.alias()
 class LotWishSummary(Base):
     __mapper_args__ = dict(
         include_properties=[
+            LotEntry.__table__.c.organization_id,
             LotEntryWish.__table__.c.id,
             LotEntryWish.__table__.c.created_at,
             LotEntry.__table__.c.entry_no,
@@ -104,6 +106,8 @@ class LotWishSummary(Base):
 
     id = LotEntryWish.id
     created_at = LotEntryWish.__table__.c.created_at
+    organization_id = LotEntry.__table__.c.organization_id
+    organization = orm.relationship('Organization', primaryjoin=(organization_id==Organization.id))
     entry_no = LotEntry.__table__.c.entry_no
     wish_order = LotEntryWish.__table__.c.wish_order
     performance_name = Performance.__table__.c.name
