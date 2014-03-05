@@ -31,6 +31,7 @@ def _build_order(*args, **kwargs):
         Seat,
         Product,
         SalesSegment,
+        SalesSegmentSetting,
         Organization,
         OrganizationSetting,
         ShippingAddress,
@@ -87,7 +88,12 @@ def _build_order(*args, **kwargs):
         product=Product(
             name=kwargs.get("product0__name", "product-name"), 
             price=kwargs.get("product0__price", 400.00),
-            sales_segment=SalesSegment(seat_choice=kwargs.get("product0__seat_choice", True))))
+            sales_segment=SalesSegment(
+                seat_choice=kwargs.get("product0__seat_choice", True),
+                setting=SalesSegmentSetting(
+                    display_seat_no=kwargs.get("product0__display_seat_no", True)
+                    )
+                )))
     ordered_product_item0 = OrderedProductItem()
     ordered_product_item0.seats.append(Seat(name=kwargs.get("seat0__name")))
     ordererd_product0.elements.append(ordered_product_item0)
@@ -98,7 +104,12 @@ def _build_order(*args, **kwargs):
         product=Product(
             name=kwargs.get("product1__name", "product-name"), 
             price=kwargs.get("product1__price", 400.00),
-            sales_segment=SalesSegment(seat_choice=kwargs.get("product1__seat_choice", True))))
+            sales_segment=SalesSegment(
+                seat_choice=kwargs.get("product1__seat_choice", True),
+                setting=SalesSegmentSetting(
+                    display_seat_no=kwargs.get("product1__display_seat_no", True)
+                    )
+                )))
     ordered_product_item1 = OrderedProductItem()
     ordered_product_item1.seats.append(Seat(name=kwargs.get("seat1__name")))
     ordererd_product1.elements.append(ordered_product_item1)

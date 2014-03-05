@@ -76,7 +76,15 @@ class CartTests(unittest.TestCase):
         return cart
 
     def test_total_amount_empty(self):
-        from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, Product, ProductItem, SalesSegment
+        from altair.app.ticketing.core.models import (
+            PaymentDeliveryMethodPair,
+            PaymentMethod,
+            DeliveryMethod,
+            Product,
+            ProductItem,
+            SalesSegment,
+            SalesSegmentSetting,
+            )
         target = self._makeOne(
             payment_delivery_pair=PaymentDeliveryMethodPair(
                 transaction_fee=0,
@@ -86,13 +94,21 @@ class CartTests(unittest.TestCase):
                 delivery_method=DeliveryMethod(fee_type=0, fee=0),
                 discount=0
                 ),
-            sales_segment=SalesSegment()
+            sales_segment=SalesSegment(setting=SalesSegmentSetting())
             )
         self.assertEqual(target.total_amount, 0)
 
     def test_total_amount(self):
         from . import models
-        from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, Product, ProductItem, SalesSegment
+        from altair.app.ticketing.core.models import (
+            PaymentDeliveryMethodPair,
+            PaymentMethod,
+            DeliveryMethod,
+            Product,
+            ProductItem,
+            SalesSegment,
+            SalesSegmentSetting,
+            )
         target = self._makeOne(
             payment_delivery_pair=PaymentDeliveryMethodPair(
                 transaction_fee=0,
@@ -821,7 +837,30 @@ class ReserveViewTests(unittest.TestCase):
 
     @mock.patch("altair.app.ticketing.core.api.get_organization")
     def test_it(self, get_organization):
-        from altair.app.ticketing.core.models import Seat, SeatAdjacency, Seat_SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockType, StockStatus, Product, ProductItem, Performance, Event, SalesSegment, SalesSegmentGroup, SalesSegmentKindEnum, Organization, Host, PaymentDeliveryMethodPair, SeatIndex, SeatIndexType
+        from altair.app.ticketing.core.models import (
+            Seat,
+            SeatAdjacency,
+            Seat_SeatAdjacency,
+            SeatAdjacencySet,
+            SeatStatus,
+            SeatStatusEnum,
+            Stock,
+            StockType,
+            StockStatus,
+            Product,
+            ProductItem,
+            Performance,
+            Event,
+            SalesSegment,
+            SalesSegmentSetting,
+            SalesSegmentGroup,
+            SalesSegmentKindEnum,
+            Organization,
+            Host,
+            PaymentDeliveryMethodPair,
+            SeatIndex,
+            SeatIndexType,
+            )
         from .models import Cart
         from .resources import EventOrientedTicketingCartResource
         from webob.multidict import MultiDict
@@ -852,12 +891,17 @@ class ReserveViewTests(unittest.TestCase):
         event = Event(id=event_id, organization=organization)
         performance = Performance(id=performance_id, event=event, public=True)
         sales_segment_group = SalesSegmentGroup(id=sales_segment_group_id, event=event, kind=SalesSegmentKindEnum.normal.k, public=True)
-        sales_segment = SalesSegment(id=sales_segment_id, performance=performance, sales_segment_group=sales_segment_group,
-                                     start_at=now - timedelta(days=1), end_at=now + timedelta(days=1), public=True, max_quantity=10,
-                                     payment_delivery_method_pairs=[
-                                        PaymentDeliveryMethodPair(system_fee=0, transaction_fee=0, delivery_fee=0, discount=0)
-                                        ],
-                                     seat_choice=True)
+        sales_segment = SalesSegment(
+            id=sales_segment_id, performance=performance, sales_segment_group=sales_segment_group,
+            start_at=now - timedelta(days=1), end_at=now + timedelta(days=1), public=True, max_quantity=10,
+            payment_delivery_method_pairs=[
+                PaymentDeliveryMethodPair(system_fee=0, transaction_fee=0, delivery_fee=0, discount=0)
+                ],
+            seat_choice=True,
+            setting=SalesSegmentSetting(
+                display_seat_no=True
+                )
+            )
         product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1, performance=performance)
         product = Product(id=1, price=100, items=[product_item], name=u"S席", sales_segment=sales_segment)
         self.session.add(performance)
@@ -945,8 +989,30 @@ class ReserveViewTests(unittest.TestCase):
 
     @mock.patch("altair.app.ticketing.core.api.get_organization")
     def test_it_no_stock(self, get_organization):
-
-        from altair.app.ticketing.core.models import Seat, SeatAdjacency, Seat_SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockType, StockStatus, Product, ProductItem, Performance, Event, SalesSegment, SalesSegmentGroup, SalesSegmentKindEnum, PaymentDeliveryMethodPair, Organization
+        from altair.app.ticketing.core.models import (
+            Seat,
+            SeatAdjacency,
+            Seat_SeatAdjacency,
+            SeatAdjacencySet,
+            SeatStatus,
+            SeatStatusEnum,
+            Stock,
+            StockType,
+            StockStatus,
+            Product,
+            ProductItem,
+            Performance,
+            Event,
+            SalesSegment,
+            SalesSegmentSetting,
+            SalesSegmentGroup,
+            SalesSegmentKindEnum,
+            Organization,
+            Host,
+            PaymentDeliveryMethodPair,
+            SeatIndex,
+            SeatIndexType,
+            )
         from .models import Cart
         from .resources import EventOrientedTicketingCartResource
         from webob.multidict import MultiDict
@@ -977,11 +1043,16 @@ class ReserveViewTests(unittest.TestCase):
         event = Event(id=event_id, organization=organization)
         performance = Performance(id=performance_id, event=event, public=True)
         sales_segment_group = SalesSegmentGroup(id=sales_segment_group_id, event=event, kind=SalesSegmentKindEnum.normal.k)
-        sales_segment = SalesSegment(id=sales_segment_id, performance_id=performance_id, sales_segment_group=sales_segment_group,
-                                     start_at=now - timedelta(days=1), end_at=now + timedelta(days=1), public=True, max_quantity=10,
-                                     payment_delivery_method_pairs=[
-                                        PaymentDeliveryMethodPair(system_fee=0, transaction_fee=0, delivery_fee=0, discount=0)
-                                        ])
+        sales_segment = SalesSegment(
+            id=sales_segment_id, performance_id=performance_id, sales_segment_group=sales_segment_group,
+            start_at=now - timedelta(days=1), end_at=now + timedelta(days=1), public=True, max_quantity=10,
+            payment_delivery_method_pairs=[
+                PaymentDeliveryMethodPair(system_fee=0, transaction_fee=0, delivery_fee=0, discount=0)
+                ],
+            setting=SalesSegmentSetting(
+                display_seat_no=True
+                )
+            )
         product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1, performance=performance)
         product = Product(id=1, price=100, items=[product_item], sales_segment=sales_segment)
         self.session.add(performance)

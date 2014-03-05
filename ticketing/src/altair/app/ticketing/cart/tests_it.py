@@ -55,7 +55,12 @@ class ReserveViewTests(unittest.TestCase):
         # sales_segment_Group
         sales_segment_group = c_m.SalesSegmentGroup(event=event)
         # sales_segment
-        sales_segment = c_m.SalesSegment(sales_segment_group=sales_segment_group, performance=performance, max_quantity=100)
+        sales_segment = c_m.SalesSegment(
+            sales_segment_group=sales_segment_group,
+            performance=performance,
+            max_quantity=100,
+            setting=c_m.SalesSegmentSetting()
+            )
         # site
         site = c_m.Site()
         # venue
