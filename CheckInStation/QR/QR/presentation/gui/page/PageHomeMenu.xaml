@@ -3,12 +3,16 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:c="clr-namespace:QR.presentation.gui.control"
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300"
 	Title="PageHomeMenu">
     <Page.Resources>
         
         <!-- もうちょっときれいにまとめる方法ありそうな気がする.. -->
+        <Style TargetType="TextBox">
+            <Setter Property="FontSize" Value="20"/>
+        </Style>
         <Style TargetType="Button"  x:Key="MenuSelectButton">
             <Setter Property="Margin" Value="0,10,0,10"/>
         </Style>
@@ -30,7 +34,7 @@
         
     </Page.Resources>
     
-    <Grid Style="{StaticResource ToplevelGrid}">
+    <Grid Background="{StaticResource BackgroundImageBrush}">
         <StackPanel Name="MenulistPanel" Style="{StaticResource CenterContentStackPanel}" VerticalAlignment="Center">
             <Popup IsOpen="{Binding IsServerUrlPopupOpen, Mode=TwoWay}"
                    Placement="Center"

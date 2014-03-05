@@ -15,46 +15,11 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace QR.presentation.gui.control
-{
+{      
     /// <summary>
     /// MessageDialog.xaml の相互作用ロジック
     /// </summary>
-    public class MessageDialogOpenCommand : ICommand
-    {
-
-        public bool CanExecute(object parameter)
-        {
-            return true;
-        }
-
-        public event EventHandler CanExecuteChanged;
-
-        public void Execute(object parameter)
-        {
-            (parameter as MessageDialog).Show();
-        }
-    }
-
-    public class MessageDialogCloseCommand : ICommand
-    {
-
-        public bool CanExecute(object parameter)
-        {
-            return true;
-        }
-
-        public event EventHandler CanExecuteChanged;
-
-        public void Execute(object parameter)
-        {
-            (parameter as MessageDialog).Hide();
-        }
-    }
-
-    /// <summary>
-    /// MessageDialog.xaml の相互作用ロジック
-    /// </summary>
-    public partial class MessageDialog : Popup
+    public partial class MessageDialog : Popup, IDialog
     {
         public ICommand OpenCommand { get; private set; }
         public ICommand CloseCommand { get; private set; }
@@ -137,8 +102,8 @@ namespace QR.presentation.gui.control
         {
             InitializeComponent();
             this.MessageDialogComplete += this.OnCompleteClose;
-            this.OpenCommand = new MessageDialogOpenCommand();
-            this.CloseCommand = new MessageDialogCloseCommand();
+            this.OpenCommand = new DialogOpenCommand();
+            this.CloseCommand = new DialogCloseCommand();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
