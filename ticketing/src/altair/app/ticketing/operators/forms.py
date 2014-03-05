@@ -18,6 +18,9 @@ class OperatorRoleForm(Form):
         if obj and obj.permissions:
             self.permissions.data = [p.category_id for p in obj.permissions]
 
+    def _get_translations(self):
+        return Translations()
+
     id = HiddenField(
         label=u'ID',
         validators=[Optional()],
