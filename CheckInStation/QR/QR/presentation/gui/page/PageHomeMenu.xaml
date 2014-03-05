@@ -31,7 +31,44 @@
         <Style TargetType="ToggleButton" x:Key="MenuSelectToggleButtonLast" BasedOn="{StaticResource MenuSelectToggleButton}">
             <Setter Property="Margin" Value="0,10,0,0"/>
         </Style>
+
         
+        <!-- content templateの中でName属性付加できないので-->
+        <StackPanel x:Key="_PrintTestPopupContent">
+            <StackPanel.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Margin" Value="2"/>
+                </Style>
+                <Style TargetType="ToggleButton">
+                    <Setter Property="Margin" Value="2"/>
+                </Style>
+            </StackPanel.Resources>
+
+            <Button Click="MenuDialogTesting_OnTestPrinting">テスト印刷をしてみる</Button>
+            <TextBlock Style="{StaticResource SubText}">印刷ステータス:</TextBlock>
+            <TextBlock Style="{StaticResource SubText}" Text="{Binding TestStatusDescription}"/>
+            <TextBlock Style="{StaticResource SubText}">※テスト印刷: ボタンを押すとテスト用の券面データで印刷されます</TextBlock>
+        </StackPanel>
+
+        <StackPanel x:Key="_QRTestPopupContent">
+            <StackPanel.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Margin" Value="2"/>
+                </Style>
+                <Style TargetType="ToggleButton">
+                    <Setter Property="Margin" Value="2"/>
+                </Style>
+            </StackPanel.Resources>
+            <ToggleButton Name="_PrintTestQRToggleButton">QR読み込みのテストをする</ToggleButton>
+            <c:QRCodeCanvas Width="80" Height="80" QRCode="test message!#$%" Margin="20"/>
+            <TextBox x:Name="_PrintTestQRInput" FontSize="9" KeyDown="_PrintTestQRInput_KeyDown">
+            </TextBox>
+            <StackPanel>
+                <TextBlock Style="{StaticResource SubText}">QRで認識された文字列:</TextBlock>
+                <TextBlock Style="{StaticResource SubText}" Text="{Binding LoadedQRCode}"/>
+            </StackPanel>
+            <TextBlock Style="{StaticResource SubText}">※QRコードの認識: "test message!#$%"と表示されればok</TextBlock>
+        </StackPanel>
     </Page.Resources>
     
     <Grid Background="{StaticResource BackgroundImageBrush}">
@@ -73,7 +110,7 @@
                           x:Name="MenuDialogWindow"
                           Title="ウインドウの表示の設定">
                 <StackPanel>
-                    <Border Padding="20" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorLevel=1, AncestorType=Border}}">
+                    <Border Padding="20" Background="LightGray" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorLevel=1, AncestorType=Border}}">
                         <StackPanel>
                             <TextBlock Style="{StaticResource MainText}">現在のウインドウの表示</TextBlock>
                             <TextBlock Style="{StaticResource SubText}" Text="{Binding SelectedWindowStyle.Key, Mode=OneWay}"></TextBlock>
@@ -87,6 +124,25 @@
                     </ListBox>
                 </StackPanel>
             </c:MenuDialog>
+
+            <c:MenuDialog Placement="Center" PlacementTarget="{Binding ElementName=MenulistPanel}"
+                         x:Name="MenuDialogQRTesting"
+                         Title="テスト読み取り">
+                <StackPanel>
+                    <Border Padding="20" Child="{StaticResource _QRTestPopupContent}">
+                    </Border>
+                </StackPanel>
+            </c:MenuDialog>
+
+            <c:MenuDialog Placement="Center" PlacementTarget="{Binding ElementName=MenulistPanel}"
+                         x:Name="MenuDialogPrintTesting"
+                         Title="テスト印刷">
+                <StackPanel>
+                    <Border Padding="20" Child="{StaticResource _PrintTestPopupContent}">
+                    </Border>
+                </StackPanel>
+            </c:MenuDialog>
+
 
             <!-- main menu -->
             <WrapPanel>
@@ -117,8 +173,18 @@
                     Style="{StaticResource MenuSelectButtonFirst}">ウィンドウの表示の設定
             </Button>
 
-            
+            <TextBlock Style="{StaticResource SubText}">テスト印刷•テスト読み取り</TextBlock>
+            <Button Command="{Binding ElementName=MenuDialogQRTesting, Path=OpenCommand}"
+                    CommandParameter="{Binding ElementName=MenuDialogQRTesting}"
+                    Click="Button_Click_1"
+                    Style="{StaticResource MenuSelectButtonFirst}">テスト読み取り</Button>
+            <Button Command="{Binding ElementName=MenuDialogPrintTesting, Path=OpenCommand}"
+                    CommandParameter="{Binding ElementName=MenuDialogPrintTesting}"
+                    Style="{StaticResource MenuSelectButtonFirst}">テスト印刷</Button>
+
+
             <Button Style="{StaticResource MenuSelectButtonLast}"
+                    Margin="0,30,0,0"                        
                     Focusable="True"
                     Click="Button_Click">受付開始</Button>
         </StackPanel>

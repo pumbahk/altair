@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -341,6 +341,7 @@
     <EmbeddedResource Include="tests\misc\svgone.json" />
     <EmbeddedResource Include="tests\misc\svgall.json" />
     <EmbeddedResource Include="tests\misc\update.printed_at.json" />
+    <EmbeddedResource Include="tests\misc\sample.qr.svg" />
     <EmbeddedResource Include="tests\misc\server.py" />
   </ItemGroup>
   <ItemGroup>
