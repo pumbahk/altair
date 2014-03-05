@@ -998,6 +998,20 @@ class OrderSearchBase(list):
         finally:
             cur.close()
 
+    def total(self):
+        sql = select([func.sum(t_order.c.total_amount)],
+                     from_obj=[self.target],
+                     whereclause=self.condition,
+        )
+
+        logger.debug("sql = {0}".format(sql))
+        cur = self.db_session.bind.execute(sql)
+        try:
+            r = cur.fetchone()
+            return r[0]
+        finally:
+            cur.close()
+
 
     def __getslice__(self, start, stop):
         return self.execute(start, stop)
