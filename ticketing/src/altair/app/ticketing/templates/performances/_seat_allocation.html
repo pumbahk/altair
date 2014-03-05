@@ -95,6 +95,7 @@ span.editable {
   <%vv:venueeditor data_source="${data_source}">
     <%def name="toolbar_extra()">
       <div style="float:right">
+	<a name="csv-seat-allocation" href="javascript:csv_seat_allocation();" class="btn">CSV座席選択</a>
 	<input type="button" class="btn venue-editor-main-side-toggle active" value="配席" />
 	<a name="save" href="javascript:saveStocks();" class="btn btn-primary">保存する</a>
       </div>
@@ -537,6 +538,39 @@ function saveStocks() {
   });
 }
 
+
+
+function csv_seat_allocation() {
+    var modal = $('#modal-csv-seat-allocation');
+    modal.modal('show');
+}
+
+
+$('#csv-seat-allocation-form').submit(function(){
+    var $form, fd;
+    $form = $(this);
+    fd = new FormData($form[0]);
+    $.ajax($form.attr('action'), {
+        type: 'GET',
+        processData: false,
+        contentType: false,
+        data: fd,
+        dataType: 'json',
+        success: function(data){
+            alert('OK');
+            console.log(data);
+
+        },
+        error: function (data){
+            alert('NG');
+        }
+
+    });
+    return true;
+});
+
+
+
 var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
 var tab2 = venueEditorSide.find("#venue-editor-main-side-tab2");
 
@@ -739,4 +773,29 @@ $(function() {
   <div class="modal-footer">
     <a href="javascript:void(0);" onclick="$('#modal-result').modal('hide');" class="btn secondary">閉じる</a>
   </div>
+</div>
+
+
+<div id="modal-csv-seat-allocation" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>CSV座席選択</h3>
+  </div>
+  <form id="csv-seat-allocation-form" method="GET" actionn="/" enctype="multipart/form-data"
+        action="${request.route_path('cooperation.convert2altair', performance_id=performance.id)}">
+  <div class="modal-body">
+    <p id="message">CSVを使って座席を選択します。</p>
+
+    <select class="selectpicker" name="csv_type">
+      <option value="Altair" selected="true">Altair</option>
+      <option value="Gettii" selected="true">Gettii</option>
+    </select>
+    <div><input type="file" name="csvfile"></div>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#csv-seat-allocation-form').submit();" class="btn secondary">選択</a>
+    <a href="javascript:void(0);" onclick="$('#modal-csv-seat-allocation').modal('hide');" class="btn secondary">閉じる</a>
+  </div>
+  </form>
 </div>
