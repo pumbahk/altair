@@ -11,8 +11,6 @@ class PermissionCategory(object):
         'sales_viewer'    : u'営業管理閲覧',
         'sales_editor'    : u'営業管理編集',
         'sales_counter'   : u'窓口業務',
-        'authenticated'   : u'認証済みユーザー',
-        'everybody'       : u'一般ユーザー',
         'asset_viewer'    : u'アセット閲覧',
         'asset_editor'    : u'アセット編集',
         'magazine_viewer' : u'マガジン閲覧',
@@ -24,6 +22,8 @@ class PermissionCategory(object):
         'tag_editor'      : u'タグ編集',
         'layout_viewer'   : u'レイアウト閲覧',
         'layout_editor'   : u'レイアウト編集',
+        'authenticated'   : u'認証済みユーザー',
+        'everybody'       : u'一般ユーザー',
         }
 
     @classmethod
@@ -37,6 +37,10 @@ class PermissionCategory(object):
     @classmethod
     def all(cls):
         return cls.permissions
+
+    @classmethod
+    def items(cls):
+        return sorted(cls.permissions.items(), key=lambda x: x[0])
 
 
 class RouteConfig(object):

@@ -43,7 +43,7 @@ class OperatorRoleForm(Form):
     )
     permissions = PHPCompatibleSelectMultipleField(
         label=u"権限", 
-        choices=lambda field: [(category_name, label) for category_name, label in PermissionCategory.all().items()],
+        choices=lambda field: [(category_name, label) for category_name, label in PermissionCategory.items()],
         widget=CheckboxMultipleSelect(multiple=True)
     )
 

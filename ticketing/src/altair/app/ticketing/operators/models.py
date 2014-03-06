@@ -45,7 +45,7 @@ class OperatorRole(Base, BaseModel, WithTimestamp):
     name = Column(String(255))
     name_kana = Column(Unicode(255))
     operators = relationship('Operator', secondary=OperatorRole_Operator.__table__)
-    permissions = relationship('Permission')
+    permissions = relationship('Permission', cascade='all,delete-orphan')
     status = Column('status',Integer, default=1)
 
 class OperatorActionHistoryTypeENum(StandardEnum):

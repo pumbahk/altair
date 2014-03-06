@@ -16,7 +16,6 @@ from altair.app.ticketing.organizations.forms import OrganizationForm
 from altair.app.ticketing.core.models import Organization
 from altair.app.ticketing.operators.models import Operator, OperatorRole, Permission
 from altair.app.ticketing.operators.forms import OperatorForm, OperatorRoleForm
-from altair.app.ticketing.permissions.utils import PermissionCategory
 
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
 class Operators(BaseView):
@@ -164,7 +163,6 @@ class OperatorRoles(BaseView):
 
         return {
             'roles':roles,
-            'permission_categories':PermissionCategory.all()
         }
 
     @view_config(route_name='operator_roles.new', request_method='GET', renderer='altair.app.ticketing:templates/operator_roles/edit.html')
