@@ -72,7 +72,10 @@ class OrderInfoDefaultMixin(object):
                 elif p.product.seat_stock_type:
                     seat_no += [u"{0} {1}席".format(p.product.seat_stock_type.name, p.seat_quantity)]
             else:
-                seat_no += [u"{0} {1}席".format(p.product.seat_stock_type.name, p.quantity)]
+                if p.product.seat_stock_type.type:
+                    seat_no += [u"{0} {1}".format(p.product.seat_stock_type.name, p.quantity)]
+                else:
+                    seat_no += [u"{0} {1}席".format(p.product.seat_stock_type.name, p.quantity)]
                 
         return u"\n".join(seat_no)
 
