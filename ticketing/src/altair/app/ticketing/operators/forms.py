@@ -5,8 +5,9 @@ from wtforms import TextField, HiddenField, DateField, PasswordField, SelectMult
 from wtforms.validators import Length, Email, Optional, Regexp
 from pyramid.security import has_permission, ACLAllowed
 
-from altair.formhelpers import Translations, Required
+from altair.formhelpers import Translations, Required, PHPCompatibleSelectMultipleField
 from altair.formhelpers.fields import DateTimeField, LazySelectMultipleField
+from altair.formhelpers.widgets import CheckboxMultipleSelect
 from altair.app.ticketing.operators.models import Operator, OperatorAuth, OperatorRole, Permission
 from altair.app.ticketing.permissions.utils import PermissionCategory
 from altair.app.ticketing.models import DBSession
@@ -40,9 +41,10 @@ class OperatorRoleForm(Form):
             Length(max=255, message=u'255文字以内で入力してください'),
         ]
     )
-    permissions = LazySelectMultipleField(
+    permissions = PHPCompatibleSelectMultipleField(
         label=u"権限", 
-        choices=lambda field: [set(p) for p in PermissionCategory.all()],
+        choices=lambda field: [(category_name, label) for category_name, label in PermissionCategory.all().items()],
+        widget=CheckboxMultipleSelect(multiple=True)
     )
 
 class OperatorForm(Form):
