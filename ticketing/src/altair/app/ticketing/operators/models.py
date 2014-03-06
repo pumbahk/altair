@@ -3,7 +3,7 @@
 import hashlib
 
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey, Unicode
-from sqlalchemy.orm import join, column_property, mapper
+from sqlalchemy.orm import join, column_property, mapper, joinedload
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from altair.app.ticketing.utils import StandardEnum
@@ -99,8 +99,8 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def get_by_login_id(login_id):
         login_id = ensure_ascii(login_id)
-        return Operator.filter().join(OperatorAuth)\
-            .filter(OperatorAuth.login_id==login_id).first()
+        return Operator.query.join(OperatorAuth).filter(OperatorAuth.login_id==login_id)\
+            .options(joinedload(Operator.roles)).first()
 
     @staticmethod
     def get_by_email(email):

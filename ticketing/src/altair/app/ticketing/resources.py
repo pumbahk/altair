@@ -4,6 +4,7 @@ from zope.interface.verify import verifyObject
 from pyramid.interfaces import IView, IRoutesMapper, IRouteRequest, IViewClassifier, IMultiView
 from pyramid.security import Allow, Everyone, Authenticated, authenticated_userid
 from pyramid.decorator import reify
+from sqlalchemy.orm import joinedload
 
 from altair.app.ticketing.core.models import DBSession
 from altair.app.ticketing.operators.models import OperatorAuth, OperatorRole, Operator
@@ -33,7 +34,7 @@ class TicketingAdminResource(object):
     def __acl__(self):
         acl = self._base_acl[:]
         # build ACL
-        roles = OperatorRole.all()
+        roles = OperatorRole.query.options(joinedload(OperatorRole.permissions)).all()
         for role in roles:
             for permission in role.permissions:
                 acl.append((Allow, role.name, permission.category_name))
@@ -58,7 +59,7 @@ def groupfinder(userid, request):
     if hasattr(request, 'context') and hasattr(request.context, 'user'):
         user = request.context.user
     else:
-        user = Operator.query.join(OperatorAuth).filter(OperatorAuth.login_id==userid).first()
+        user = Operator.get_by_login_id(userid)
         if user is None:
             return []
     return [role.name for role in user.roles]

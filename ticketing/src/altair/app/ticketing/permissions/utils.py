@@ -300,7 +300,7 @@ class RouteConfig(object):
         'performances.orion.index'  : u'',
         'performances.show'         : u'公演 詳細',
         'performances.show_tab'     : u'',
-        'permissions.index'         : u'公演 一覧',
+        'permissions.index'         : u'権限 一覧',
         'point_grant_settings.delete'       : u'',
         'point_grant_settings.delete_confirm'   : u'',
         'point_grant_settings.edit' : u'',
