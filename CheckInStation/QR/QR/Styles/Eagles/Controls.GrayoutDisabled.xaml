@@ -10,6 +10,12 @@
   <SolidColorBrush x:Key="Grayout_MouseOverSelectionBoxColor">
     <SolidColorBrush.Color>#c7ecfc</SolidColorBrush.Color>
   </SolidColorBrush>
-
+    
+  <SolidColorBrush x:Key="Grayout_ActiveTextColor">
+        <SolidColorBrush.Color>White</SolidColorBrush.Color>
+  </SolidColorBrush>
+  <SolidColorBrush x:Key="Grayout_InactiveTextColor">
+     <SolidColorBrush.Color>Gray</SolidColorBrush.Color>
+  </SolidColorBrush>
 </ResourceDictionary>
 

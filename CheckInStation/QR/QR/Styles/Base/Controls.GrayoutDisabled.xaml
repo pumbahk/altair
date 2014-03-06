@@ -41,14 +41,16 @@
   <Style x:Key="GrayoutIfNeedTextBlock" BasedOn="{StaticResource MainText}" TargetType="TextBlock">
     <Style.Triggers>
       <DataTrigger Binding="{Binding IsSelected, Mode=OneTime}" Value="False">
-        <Setter Property="Foreground" Value="Gray"></Setter>
+        <Setter Property="Foreground" Value="{StaticResource Grayout_InactiveTextColor}"></Setter>
       </DataTrigger>
       <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorLevel=1, AncestorType=CheckBox, Mode=FindAncestor}}" Value="False">
-        <Setter Property="Foreground" Value="Gray"></Setter>
+        <Setter Property="Foreground" Value="{StaticResource Grayout_InactiveTextColor}"></Setter>
+      </DataTrigger>
+      <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorLevel=1, AncestorType=ToggleButton, Mode=FindAncestor}}" Value="False">
+         <Setter Property="Foreground" Value="{StaticResource Grayout_InactiveTextColor}"></Setter>
       </DataTrigger>
     </Style.Triggers>
-    <Setter Property="Foreground" Value="Black"/>
+    <Setter Property="Foreground" Value="{StaticResource Grayout_ActiveTextColor}"/>
   </Style>
-
 </ResourceDictionary>
 
