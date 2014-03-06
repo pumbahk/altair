@@ -75,7 +75,9 @@ def main():
 
     mailer = Mailer(settings)
 
-    augus_performances = AugusPerformance.query.filter(AugusPerformance.id.in_(ag_performance_ids)).all()
+    augus_performances = []
+    if ag_performance_ids:
+        augus_performances = AugusPerformance.query.filter(AugusPerformance.id.in_(ag_performance_ids)).all()
     if augus_performances:
         params = {'augus_performances': augus_performances,
                   }
