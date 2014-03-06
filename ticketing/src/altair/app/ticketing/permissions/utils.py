@@ -22,8 +22,6 @@ class PermissionCategory(object):
         'tag_editor'      : u'タグ編集',
         'layout_viewer'   : u'レイアウト閲覧',
         'layout_editor'   : u'レイアウト編集',
-        'authenticated'   : u'認証済みユーザー',
-        'everybody'       : u'一般ユーザー',
         }
 
     @classmethod
