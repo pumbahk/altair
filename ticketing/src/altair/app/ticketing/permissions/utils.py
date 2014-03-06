@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-class PermissionConfig(object):
+class PermissionCategory(object):
     permissions = {
         'administrator'   : u'オーガニーション管理',
         'event_viewer'    : u'公演管理閲覧',
@@ -33,6 +33,10 @@ class PermissionConfig(object):
             return retval
         else:
             return cls.permissions.get(permission, permission)
+
+    @classmethod
+    def all(cls):
+        return cls.permissions
 
 
 class RouteConfig(object):

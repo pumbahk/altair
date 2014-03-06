@@ -25,7 +25,7 @@
   </thead>
   <tbody>
   <%
-    from altair.app.ticketing.permissions.utils import RouteConfig as RC, PermissionConfig as PC
+    from altair.app.ticketing.permissions.utils import RouteConfig as RC, PermissionCategory as PC
     route_permission = request.registry.route_permission if hasattr(request.registry, 'route_permission') else None
   %>
   % for route_name, route_permission in sorted(route_permission.items(), key=lambda x:(x[0])):

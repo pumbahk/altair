@@ -23,13 +23,8 @@ class Permission(Base):
     id = Column(Identifier, primary_key=True)
     operator_role_id = Column(Identifier, ForeignKey('OperatorRole.id'))
     operator_role = relationship('OperatorRole', uselist=False)
-    category_id = Column(Identifier, ForeignKey('PermissionCategory.id'))
-    category = relationship('PermissionCategory', backref='permissions')
+    category_name = Column(String(255), index=True)
     permit = Column(Integer)
-
-    @hybrid_property
-    def category_name(self):
-        return self.category.name
 
     @staticmethod
     def all():
@@ -43,12 +38,6 @@ class Permission(Base):
     def list_in(category_names):
         return DBSession.query(Permission)\
             .filter(Permission.category_name.in_(category_names)).all()
-
-class PermissionCategory(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = 'PermissionCategory'
-    id = Column(Identifier, primary_key=True)
-    name = Column(Unicode(255), nullable=False)
-    name_kana = Column(Unicode(255), nullable=True)
 
 class OperatorRole(Base, BaseModel, WithTimestamp):
     __tablename__ = 'OperatorRole'

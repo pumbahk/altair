@@ -32,25 +32,25 @@
     </tr>
     </thead>
     <tbody>
-    % for category in permission_categories:
-    <tr class="category-${category.id}">
-      <td>${category.name_kana}</td>
+    % for category_name, label in permission_categories.items():
+    <tr class="category-${category_name}">
+      <td>${label}</td>
       % for role in roles.items:
       <td>
-        % if category.id in [p.category_id for p in role.permissions]:
+        % if category_name in [p.category_name for p in role.permissions]:
         <i class="icon-ok"></i>
         % endif
       </td>
       % endfor
     </tr>
-    <tr class="permit-action-${category.id}" style="display:none;">
+    <tr class="permit-action-${category_name}" style="display:none;">
       <td colspan="${len(roles)+1}">
       <%
-        from altair.app.ticketing.permissions.utils import RouteConfig as RC, PermissionConfig as PC
+        from altair.app.ticketing.permissions.utils import RouteConfig as RC, PermissionCategory as PC
         route_permission = request.registry.route_permission if hasattr(request.registry, 'route_permission') else None
         permit_actions = []
         for route_name in sorted(route_permission.keys()):
-          if category.name == route_permission[route_name]:
+          if category_name == route_permission[route_name]:
             permit_actions.append(route_name)
       %>
         <table class="table table-condensed well">
@@ -67,8 +67,8 @@
     </tr>
     <script type="text/javascript">
       $(function() {
-        $('.category-${category.id}').click(function(){
-          $('.permit-action-${category.id}').toggle('slow');
+        $('.category-${category_name}').click(function(){
+          $('.permit-action-${category_name}').toggle('slow');
         });
       })
     </script>

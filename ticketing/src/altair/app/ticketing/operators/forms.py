@@ -7,7 +7,8 @@ from pyramid.security import has_permission, ACLAllowed
 
 from altair.formhelpers import Translations, Required
 from altair.formhelpers.fields import DateTimeField, LazySelectMultipleField
-from altair.app.ticketing.operators.models import Operator, OperatorAuth, OperatorRole, PermissionCategory
+from altair.app.ticketing.operators.models import Operator, OperatorAuth, OperatorRole, Permission
+from altair.app.ticketing.permissions.utils import PermissionCategory
 from altair.app.ticketing.models import DBSession
 
 class OperatorRoleForm(Form):
@@ -16,7 +17,7 @@ class OperatorRoleForm(Form):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
 
         if obj and obj.permissions:
-            self.permissions.data = [p.category_id for p in obj.permissions]
+            self.permissions.data = [p.category_name for p in obj.permissions]
 
     def _get_translations(self):
         return Translations()
@@ -41,8 +42,7 @@ class OperatorRoleForm(Form):
     )
     permissions = LazySelectMultipleField(
         label=u"権限", 
-        choices=lambda field: [(pc.id, pc.name_kana) for pc in PermissionCategory.all()],
-        coerce=int,
+        choices=lambda field: [set(p) for p in PermissionCategory.all()],
     )
 
 class OperatorForm(Form):
