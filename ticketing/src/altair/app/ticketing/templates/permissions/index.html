@@ -23,8 +23,7 @@
   </tr>
   </thead>
   <tbody>
-  <% route_permission = request.registry.route_permission if hasattr(request.registry, 'route_permission') else None %>
-  % for route_name, permission in sorted(route_permission.items(), key=lambda x:(x[0])):
+  % for route_name, permission in sorted(request.route_permission.items(), key=lambda x:(x[0])):
     % if HH.route_label(route_name) or HH.has_permission('administrator'):
   <tr>
     <td>${HH.route_label(route_name) or route_name}</td>

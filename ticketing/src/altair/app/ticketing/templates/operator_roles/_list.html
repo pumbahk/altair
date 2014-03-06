@@ -46,7 +46,7 @@
     <tr class="permit-action-${category_name}" style="display:none;">
       <td colspan="${len(roles)+1}">
       <%
-        route_permission = request.registry.route_permission if hasattr(request.registry, 'route_permission') else None
+        route_permission = request.route_permission
         permit_actions = []
         for route_name in sorted(route_permission.keys()):
           if category_name == route_permission[route_name]:

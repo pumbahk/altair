@@ -120,7 +120,6 @@ class AdminHelperAdapter(object):
             )
 
     def action_button(self, actions, order=None, vertical=True, options=None, dropup=False, extra_classes=None):
-        route_permission = getattr(self.request.registry, 'route_permission', None)
         count = 0
         if order is None:
             order = actions.keys()
@@ -142,6 +141,7 @@ class AdminHelperAdapter(object):
 
         html = []
         html.append(u'<div class="btn-group">')
+        route_permission = self.request.route_permission
         if route_permission:
             count = 0
             for key in order:

@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from zope.interface import Interface, implements
+from pyramid.interfaces import IView, IRoutesMapper, IRouteRequest, IViewClassifier, IMultiView
+
 
 class PermissionCategory(object):
     permissions = {
@@ -413,3 +416,43 @@ class RouteConfig(object):
     @classmethod
     def label(cls, route):
         return cls.routes.get(route, u'')
+
+
+
+class IRoutePermission(Interface):
+    pass
+
+
+def setup_role_and_permissions(config):
+    def route_permission(request):
+        registry = request.registry
+        route_permission = request.registry.queryUtility(IRoutePermission)
+
+        # dict(route_name:permission)を生成
+        # viewでのリンク生成時に権限有無の確認につかう
+        if not route_permission:
+            route_permission = {}
+            mapper = registry.queryUtility(IRoutesMapper)
+            if mapper:
+                routes = mapper.get_routes()
+                for route in routes:
+                    request_iface = registry.queryUtility(IRouteRequest, name=route.name)
+                    if request_iface:
+                        view_callable = registry.adapters.lookup(
+                            (IViewClassifier, request_iface, Interface), IView, name='', default=None
+                            )
+                        if IMultiView.providedBy(view_callable):
+                            permissions = []
+                            for order, view, phash in view_callable.get_views(request):
+                                permissions.append(getattr(view, '__permission__', None))
+                            permissions = list(set(permissions))
+                            if len(permissions) == 1:
+                                route_permission[route.name] = permissions[0]
+                            else:
+                                route_permission[route.name] = permissions
+                        else:
+                            route_permission[route.name] = getattr(view_callable, '__permission__', None)
+                request.registry.registerUtility(route_permission, IRoutePermission)
+        return route_permission
+    config.set_request_property(route_permission, 'route_permission', reify=True)
+

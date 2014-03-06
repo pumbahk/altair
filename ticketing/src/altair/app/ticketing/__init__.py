@@ -131,6 +131,8 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.carturl')
         config.include('altair.app.ticketing.description')
 
+        config.include('altair.app.ticketing.permissions.utils.setup_role_and_permissions')
+
         ## TBA
         config.add_route("qr.make", "___________") ##xxx:
         config.include('altair.app.ticketing.cart.import_mail_module')
