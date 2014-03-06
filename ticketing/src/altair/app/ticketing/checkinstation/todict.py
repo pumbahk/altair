@@ -67,7 +67,7 @@ class TokenStatusDictBuilder(object):
     def printable_date_status_dict(self):
         if self.today is None:
             return {}
-        elif self._is_printable_date(self.performance, self.today):
+        elif self._is_printable_date(self.order, self.today):
             return {}
         else:
             order = self.order
@@ -81,8 +81,14 @@ class TokenStatusDictBuilder(object):
         return ((token is None or not token.is_printed()) 
                 and (order and order.printed_at is None))
 
-    def _is_printable_date(self, performance, today):
-        return today >= (performance.start_on or performance.open_on).date()
+    def _is_printable_date(self, order, today):
+        performance = order.performance
+        issuing_start_at = order.payment_delivery_method_pair.issuing_start_at
+        if issuing_start_at:
+            return today >= issuing_start_at
+        else:
+            logger.info("check printable date: issuing start at is not set. using performance.open_on (order id=%s)", order.id)
+            return today >= (performance.start_on or performance.open_on).date()
 
     def _is_supported_order(self, order):
         delivery_method = order.payment_delivery_method_pair.delivery_method
