@@ -15,16 +15,17 @@
     </Page.Resources>
     <Grid>
         <Viewbox>
-            <Grid Background="{StaticResource LogoBackgroundBrush}">
+            <Grid Background="{StaticResource LogoBackgroundBrush2}">
                 <Canvas Width="1366" Height="728">
+                    <!--
                     <Border Canvas.Top="-17" Canvas.Left="0" Width="1366" Height="768" BorderThickness="3" BorderBrush="Blue"></Border>
-
+                    -->
                     <!-- 情報 -->
                     <Grid
                         Canvas.Top="17"
-                        Canvas.Left="264"
+                        Canvas.Left="284"
                         Height="70"
-                        Width="1040"
+                        Width="1000"
                         Background="#eeeeee"
                         >
                         <Grid.RowDefinitions>
@@ -101,33 +102,41 @@
                         Canvas.Left="50"
                         Canvas.Top="148"
                         Style="{StaticResource MainBorder}">
-                        <ListView 
-                    Margin="50,50,-10,-10"
+                        <StackPanel Margin="50,20,50,20">
+                            <TextBlock 
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                LineHeight="25"
+                                FontSize="25"
+                                Style="{StaticResource MainText}">発券対象のチケットが自動で選択されています。発券したくないチケットを選びチェックを外してください</TextBlock>
+                            <ListView 
+                    Margin="0,25,0,0"
                     ItemsSource="{Binding DisplayTicketDataCollection}"
                     d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
                     Style="{StaticResource ChoiceCandidatesTwoColumns}" >
-                            <ListView.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel Width="1200" Orientation="Horizontal">
-                                    </WrapPanel>
-                                </ItemsPanelTemplate>
-                            </ListView.ItemsPanel>
-                            <ListView.ItemContainerStyle>
-                                <Style TargetType="ListBoxItem">
-                                    <Setter Property="Width" Value="580"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="ListBoxItem">
-                                                <ContentPresenter
+                                <ListView.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Width="1200" Orientation="Horizontal">
+                                        </WrapPanel>
+                                    </ItemsPanelTemplate>
+                                </ListView.ItemsPanel>
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="Width" Value="580"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ListBoxItem">
+                                                    <ContentPresenter
                                 Content="{TemplateBinding Content}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
                                 />
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </ListView.ItemContainerStyle>
-                        </ListView>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                            </ListView>
+                        </StackPanel>
                     </Border>
 
                     <!-- ボタン -->
