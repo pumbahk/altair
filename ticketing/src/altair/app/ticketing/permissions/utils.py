@@ -412,4 +412,4 @@ class RouteConfig(object):
 
     @classmethod
     def label(cls, route):
-        return cls.routes.get(route, route) or route
+        return cls.routes.get(route, u'')

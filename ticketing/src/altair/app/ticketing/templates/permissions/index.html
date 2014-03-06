@@ -29,16 +29,18 @@
     route_permission = request.registry.route_permission if hasattr(request.registry, 'route_permission') else None
   %>
   % for route_name, route_permission in sorted(route_permission.items(), key=lambda x:(x[0])):
+    % if RC.label(route_name):
   <tr>
     <td>${RC.label(route_name)}</td>
-    % if not route_permission:
+      % if not route_permission:
     <td style="background-color: #DA4F49;">
-    % else:
+      % else:
     <td>
-    % endif
+      % endif
       ${PC.label(route_permission) or u'未設定'}
     </td>
   </tr>
+    % endif
   % endfor
   </tbody>
 </table>

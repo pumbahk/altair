@@ -59,7 +59,9 @@
           <tr><th>この権限で利用できる機能</th></tr>
           % if len(permit_actions) > 0:
             % for action in permit_actions:
+              % if RC.label(action):
           <tr><td>${RC.label(action)}</td></tr>
+              % endif
             % endfor
           % else:
           <tr><td>ありません</td></tr>
