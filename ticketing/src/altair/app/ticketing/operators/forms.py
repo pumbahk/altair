@@ -6,7 +6,7 @@ from wtforms.validators import Length, Email, Optional, Regexp
 from pyramid.security import has_permission, ACLAllowed
 
 from altair.formhelpers import Translations, Required, PHPCompatibleSelectMultipleField
-from altair.formhelpers.fields import DateTimeField, LazySelectMultipleField
+from altair.formhelpers.fields import DateTimeField
 from altair.formhelpers.widgets import CheckboxMultipleSelect
 from altair.app.ticketing.operators.models import Operator, OperatorAuth, OperatorRole, Permission
 from altair.app.ticketing.permissions.utils import PermissionCategory
@@ -104,11 +104,12 @@ class OperatorForm(Form):
             Regexp("^[a-zA-Z0-9@!#$%&'()*+,\-./_]+$", 0, message=u'英数記号を入力してください。'),
         ]
     )
-    role_ids = LazySelectMultipleField(
+    role_ids = PHPCompatibleSelectMultipleField(
         label=u'ロール',
         validators=[Optional()],
         choices=lambda field: [(role.id, role.name_kana) for role in OperatorRole.all()],
         coerce=int,
+        widget=CheckboxMultipleSelect(multiple=True)
     )
 
     def validate_login_id(form, field):
