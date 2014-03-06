@@ -145,7 +145,7 @@ class RouteConfig(object):
         'login.default'             : u'',
         'login.info'                : u'',
         'login.info.edit'           : u'',
-        'login.logout'              : u'ログアウト',
+        'login.logout'              : u'',
         'login.missing_redirect_url': u'',
         'login.reset'               : u'',
         'login.reset.complete'      : u'',

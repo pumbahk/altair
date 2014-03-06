@@ -243,10 +243,14 @@ class OperatorRoles(BaseView):
         if operator_role is None:
             return HTTPNotFound("OperatorRole id %d is not found" % operator_role_id)
 
-        DBSession.delete(operator_role)
+        if operator_role.name in ['administrator', 'superuser', 'operator']:
+            self.request.session.flash(u'このロールは削除できません')
+        else:
+            DBSession.delete(operator_role)
+            self.request.session.flash(u'ロールを削除しました')
 
-        self.request.session.flash(u'ロールを削除しました')
         return HTTPFound(location=route_path('operator_roles.index', self.request))
+
 
 @view_defaults(decorator=with_bootstrap, permission="administrator")
 class Permissions(BaseView):

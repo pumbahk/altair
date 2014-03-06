@@ -5,10 +5,10 @@ from wtforms import TextField, HiddenField, DateField, PasswordField, SelectMult
 from wtforms.validators import Length, Email, Optional, Regexp
 from pyramid.security import has_permission, ACLAllowed
 
-from altair.formhelpers import Translations, Required, PHPCompatibleSelectMultipleField
+from altair.formhelpers import Translations, Required, PHPCompatibleSelectMultipleField, strip_spaces, NFKC
 from altair.formhelpers.fields import DateTimeField
 from altair.formhelpers.widgets import CheckboxMultipleSelect
-from altair.app.ticketing.operators.models import Operator, OperatorAuth, OperatorRole, Permission
+from altair.app.ticketing.operators.models import Operator, OperatorAuth, OperatorRole, Permission, ensure_ascii
 from altair.app.ticketing.permissions.utils import PermissionCategory
 from altair.app.ticketing.models import DBSession
 
@@ -29,13 +29,16 @@ class OperatorRoleForm(Form):
     )
     name = TextField(
         label=u'ロール名',
+        filters=[strip_spaces],
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
+            Regexp("^[a-zA-Z0-9]+$", 0, message=u'英数文字のみ入力可能です。'),
         ]
     )
     name_kana = TextField(
         label=u'ロール名(日本語表記)',
+        filters=[strip_spaces, NFKC],
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
@@ -46,6 +49,14 @@ class OperatorRoleForm(Form):
         choices=lambda field: [(category_name, label) for category_name, label in PermissionCategory.items()],
         widget=CheckboxMultipleSelect(multiple=True)
     )
+
+    def validate_name(form, field):
+        query = OperatorRole.query.filter(OperatorRole.name==field.data)
+        if not form.id.data:
+            query = query.filter(OperatorRole.id!=form.id.data)
+        if query.count() > 0:
+            raise ValidationError(u'ロール名が重複しています。')
+
 
 class OperatorForm(Form):
 
@@ -72,6 +83,7 @@ class OperatorForm(Form):
     )
     name = TextField(
         label=u'オペレーター名',
+        filters=[strip_spaces, NFKC],
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
@@ -92,9 +104,11 @@ class OperatorForm(Form):
 
     login_id = TextField(
         label=u'ログインID',
+        filters=[strip_spaces],
         validators=[
             Required(),
             Length(4, 384, message=u'4文字以上384文字以内で入力してください'),
+            Regexp("^[a-zA-Z0-9@!#$%&'()*+,\-./_]+$", 0, message=u'英数記号を入力してください。'),
         ]
     )
     password = PasswordField(
@@ -113,13 +127,13 @@ class OperatorForm(Form):
     )
 
     def validate_login_id(form, field):
-        operator_auth = OperatorAuth.get_by_login_id(field.data)
+        operator_auth = OperatorAuth.get_by_login_id(ensure_ascii(field.data))
         if operator_auth is not None:
             if not form.id.data or operator_auth.operator_id != int(form.id.data):
                 raise ValidationError(u'ログインIDが重複しています。')
 
     def validate_id(form, field):
-        # administratorロールのオペレータはadministratorロールがないと編集できない
+        # administratorロールのオペレータはadministrator権限がないと編集できない
         if field.data:
             if not isinstance(has_permission('administrator', form.request.context, form.request), ACLAllowed):
                 operator = Operator.filter_by(id=field.data).first()
