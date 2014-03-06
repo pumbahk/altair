@@ -5,11 +5,11 @@ from pyramid.interfaces import IView, IRoutesMapper, IRouteRequest, IViewClassif
 from pyramid.security import Allow, Everyone, Authenticated, authenticated_userid
 from pyramid.decorator import reify
 
+from altair.app.ticketing.core.models import DBSession
 from altair.app.ticketing.operators.models import OperatorAuth, OperatorRole, Operator
 from altair.app.ticketing.authentication.api import get_authentication_challenge_view
 
 import sqlahelper
-session = sqlahelper.get_session()
 
 
 class ExemptionResource(object):
@@ -55,7 +55,10 @@ class TicketingAdminResource(object):
         self.user = Operator.get_by_login_id(self.user_id) if self.user_id is not None else None
 
 def groupfinder(userid, request):
-    user = session.query(Operator).join(OperatorAuth).filter(OperatorAuth.login_id == userid).first()
-    if user is None:
-        return []
+    if hasattr(request, 'context') and hasattr(request.context, 'user'):
+        user = request.context.user
+    else:
+        user = Operator.query.join(OperatorAuth).filter(OperatorAuth.login_id==userid).first()
+        if user is None:
+            return []
     return [role.name for role in user.roles]
