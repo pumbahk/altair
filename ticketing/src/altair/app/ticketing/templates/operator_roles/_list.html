@@ -32,10 +32,7 @@
     </tr>
     </thead>
     <tbody>
-    <%
-      from altair.app.ticketing.permissions.utils import RouteConfig as RC, PermissionCategory as PC
-    %>
-    % for category_name, label in PC.items():
+    % for category_name, label in HH.permissions():
     <tr class="category-${category_name}">
       <td>${label}</td>
       % for role in roles.items:
@@ -59,8 +56,8 @@
           <tr><th>この権限で利用できる機能</th></tr>
           % if len(permit_actions) > 0:
             % for action in permit_actions:
-              % if RC.label(action):
-          <tr><td>${RC.label(action)}</td></tr>
+              % if HH.route_label(action):
+          <tr><td>${HH.route_label(action)}</td></tr>
               % endif
             % endfor
           % else:

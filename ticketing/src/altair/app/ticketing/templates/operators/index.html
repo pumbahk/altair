@@ -3,7 +3,7 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'トップ', u'オペレーター'],
+      names=[HH.route_label('index'), HH.route_label('operators.index')],
       urls=[request.route_path('index')]
   )}
 </%block>

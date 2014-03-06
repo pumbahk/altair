@@ -3,7 +3,7 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'トップ', u'オペレーター', u'権限'],
+      names=[HH.route_label('index'), HH.route_label('operators.index'), HH.route_label('permissions.index')],
       urls=[request.route_path('index'), request.route_path('operators.index')]
   )}
 </%block>
@@ -23,20 +23,17 @@
   </tr>
   </thead>
   <tbody>
-  <%
-    from altair.app.ticketing.permissions.utils import RouteConfig as RC, PermissionCategory as PC
-    route_permission = request.registry.route_permission if hasattr(request.registry, 'route_permission') else None
-  %>
+  <% route_permission = request.registry.route_permission if hasattr(request.registry, 'route_permission') else None %>
   % for route_name, permission in sorted(route_permission.items(), key=lambda x:(x[0])):
-    % if RC.label(route_name) or HH.has_permission('administrator'):
+    % if HH.route_label(route_name) or HH.has_permission('administrator'):
   <tr>
-    <td>${RC.label(route_name) or route_name}</td>
+    <td>${HH.route_label(route_name) or route_name}</td>
       % if not permission:
     <td style="background-color: #DA4F49;">
       % else:
     <td>
       % endif
-      ${PC.label(permission) or u'未設定'}
+      ${HH.permission_label(permission) or u'未設定'}
     </td>
   </tr>
     % endif

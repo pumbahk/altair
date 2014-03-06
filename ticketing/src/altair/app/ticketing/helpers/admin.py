@@ -1,11 +1,12 @@
 # encoding: utf-8
 
+import json as json_
+from markupsafe import Markup
 from pyramid.security import has_permission as security_has_permission
 from pyramid.security import ACLAllowed
-from markupsafe import Markup
-import json as json_
-from altair.app.ticketing.core.models import OrderCancelReasonEnum
 from webhelpers.util import html_escape
+from altair.app.ticketing.core.models import OrderCancelReasonEnum
+from altair.app.ticketing.permissions.utils import RouteConfig, PermissionCategory
 
 def render_label(label_text, label_type=None):
     if not label_text:
@@ -176,3 +177,12 @@ class AdminHelperAdapter(object):
         html.append(u'</div>')
   
         return Markup(u''.join(html)) 
+
+    def route_label(self, route_name):
+        return RouteConfig.label(route_name)
+
+    def permission_label(self, permission):
+        return PermissionCategory.label(permission)
+
+    def permissions(self):
+        return PermissionCategory.items()

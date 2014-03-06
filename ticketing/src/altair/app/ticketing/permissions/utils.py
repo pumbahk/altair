@@ -138,7 +138,7 @@ class RouteConfig(object):
         'events.tickets.bundles.new'        : u'',
         'events.tickets.bundles.show'       : u'',
         'events.tickets.index'      : u'',
-        'index'                     : u'',
+        'index'                     : u'トップ',
         'login.access_token'        : u'',
         'login.authorize'           : u'',
         'login.client_cert'         : u'',
