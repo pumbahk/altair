@@ -12,25 +12,32 @@
   <h1>権限</h1>
 </div>
 
-<table class="table table-bordered table-condensed">
+<div>
+  <%include file="/operators/_action_button.html" args="order=['operators', 'roles']" />
+</div>
+
+<table class="table table-bordered table-condensed" style="margin-top: 10px;">
   <thead>
   <tr>
-    <th>権限</th>
     <th>機能</th>
+    <th>権限</th>
   </tr>
   </thead>
   <tbody>
-  <% route_permission = request.registry.route_permission if hasattr(request.registry, 'route_permission') else None %>
-  % for route_name in sorted(route_permission.keys()):
+  <%
+    from altair.app.ticketing.permissions.utils import RouteConfig as RC, PermissionConfig as PC
+    route_permission = request.registry.route_permission if hasattr(request.registry, 'route_permission') else None
+  %>
+  % for route_name, route_permission in sorted(route_permission.items(), key=lambda x:(x[0])):
   <tr>
-    % if not route_permission[route_name]:
+    <td>${RC.label(route_name)}</td>
+    % if not route_permission:
     <td style="background-color: #DA4F49;">
     % else:
     <td>
     % endif
-      ${route_permission[route_name] or u'未設定'}
+      ${PC.label(route_permission) or u'未設定'}
     </td>
-    <td>${route_name}</td>
   </tr>
   % endfor
   </tbody>

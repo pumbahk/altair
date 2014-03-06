@@ -4,7 +4,7 @@
 
 <form>
   <div>
-    <%include file="/operators/_action_button.html" args="order=['new', 'role', 'permission']" />
+    <%include file="/operators/_action_button.html" args="order=['new_operator', 'roles', 'permissions']" />
   </div>
   <table class="table fullwidth checkboxed_table" style="margin-top: 10px;">
     <thead>
@@ -30,7 +30,7 @@
         % endfor
       </td>
       <td>
-        <%include file="/operators/_action_button.html" args="operator=operator, order=['edit', 'delete']" />
+        <%include file="/operators/_action_button.html" args="operator=operator, order=['edit_operator', 'delete_operator']" />
       </td>
     </tr>
     % endfor

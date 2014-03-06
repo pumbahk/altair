@@ -2,22 +2,10 @@
 <%namespace file="/common/helpers.html" name="ch"/>
 <%namespace file="/common/modal.html" import="delete_modal" />
 
-<script type="text/javascript">
-  function delete_role(id) {
-    var modal = $('#modal-delete');
-    modal.find('#delete').attr('href', '/operators/roles/delete/' + id);
-    modal.find('#message').text('選択したロールを削除します。よろしいですか？');
-    modal.modal('toggle');
-  }
-</script>
-
 <form>
-  <div class="float-left">
-    <div class="btn-group">
-      <a href="${request.route_path('operator_roles.new')}" class="btn"><i class="icon-plus"></i> 新規</a>
-    </div>
+  <div>
+    <%include file="/operators/_action_button.html" args="order=['new_role', 'operators', 'permissions']" />
   </div>
-  <div class="clearfix"></div>
 
   <table class="table table-bordered" style="margin-top: 10px;">
     <thead>
@@ -58,20 +46,23 @@
     <tr class="permit-action-${category.id}" style="display:none;">
       <td colspan="${len(roles)+1}">
       <%
+        from altair.app.ticketing.permissions.utils import RouteConfig as RC, PermissionConfig as PC
         route_permission = request.registry.route_permission if hasattr(request.registry, 'route_permission') else None
         permit_actions = []
         for route_name in sorted(route_permission.keys()):
           if category.name == route_permission[route_name]:
             permit_actions.append(route_name)
       %>
-      % if len(permit_actions) > 0:
         <table class="table table-condensed well">
           <tr><th>この権限で利用できる機能</th></tr>
-          % for action in permit_actions:
-          <tr><td>${action}</td></tr>
-          % endfor
+          % if len(permit_actions) > 0:
+            % for action in permit_actions:
+          <tr><td>${RC.label(action)}</td></tr>
+            % endfor
+          % else:
+          <tr><td>ありません</td></tr>
+          % endif
         </table>
-      % endif
       </td>
     </tr>
     <script type="text/javascript">
