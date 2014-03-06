@@ -1275,4 +1275,37 @@ table.schedule tr.row td.presale, table.schedule tr.row td.onsale {
 	background: #fff;
 }
 
-
+.historybtn {
+background:#ff9900;
+-moz-box-shadow:inset 0px 1px 0px 0px ##FFD24D;
+-webkit-box-shadow:inset 0px 1px 0px 0px #FFD24D;
+box-shadow:inset 0px 1px 0px 0px #FFD24D;
+background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ff9900), color-stop(1, #d05d00) );
+background:-moz-linear-gradient( center top, #ff9900 5%, #d05d00 100% );
+filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff9900', endColorstr='#d05d00');
+background-color:#979346;
+-moz-border-radius:6px;
+-webkit-border-radius:6px;
+border-radius:6px;
+border:1px solid #333;
+text-shadow:1px 1px 0px #333;
+display:inline-block;
+color:#fff;
+font-size:12px;
+font-weight:700;
+text-decoration:none;
+margin-bottom:8px;
+padding:6px 70px;
+}
+.historybtn:hover {
+background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #d05d00), color-stop(1, #ff9900) );
+background:-moz-linear-gradient( center top, #d05d00 5%, #ff9900 100% );
+filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#d05d00', endColorstr='#ff9900');
+background-color:#d05d00;
+color:#fff;
+}
+.historybtn:active {
+position:relative;
+top:1px;
+color:#fff;
+}
