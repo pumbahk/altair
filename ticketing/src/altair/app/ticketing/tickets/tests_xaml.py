@@ -89,7 +89,7 @@ class XAMLFromSVGTests(unittest.TestCase):
     def test_scale(self):
         svg = """\
 <svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-Width="100" Height="100">
+width="100" height="100">
 </svg>
 """
         result = self._callFUT(svg, pretty_print=False, scale_x=2.0, scale_y=3.0)

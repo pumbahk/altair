@@ -429,7 +429,7 @@ class CheckinStationAPITests(BaseTests):
         self.assertIn("status", result)
 
 
-    EMPTY_XAML="""<FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><PageContent><FixedPage Width="0" Height="0"/></PageContent></FixedDocument>"""
+    EMPTY_XAML="""<FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><PageContent><FixedPage Width="0.0" Height="0.0"><Canvas><Canvas.RenderTransform><ScaleTransform ScaleX="1.06666666667" ScaleY="1.06666666667"/></Canvas.RenderTransform></Canvas></FixedPage></PageContent></FixedDocument>"""
     def test_svgsource_one_from_one_token(self):
         def _getTarget():
             from .views import svgsource_one_from_token

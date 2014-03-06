@@ -83,9 +83,9 @@ class TokenStatusDictBuilder(object):
 
     def _is_printable_date(self, order, today):
         performance = order.performance
-        issuing_start_at = order.payment_delivery_method_pair.issuing_start_at
-        if issuing_start_at:
-            return today >= issuing_start_at
+        pdmp = order.payment_delivery_method_pair
+        if pdmp and pdmp.issuing_start_at:
+            return today >= pdmp.issuing_start_at
         else:
             logger.info("check printable date: issuing start at is not set. using performance.open_on (order id=%s)", order.id)
             return today >= (performance.start_on or performance.open_on).date()

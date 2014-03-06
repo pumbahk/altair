@@ -91,7 +91,7 @@ class TokenStatusTests(unittest.TestCase):
 
         order.performance.open_on = datetime(2013, 1, 6, 9)
         order.payment_delivery_pair = PaymentDeliveryMethodPair(issuing_start_at=datetime(2012, 1, 1, 9))
-        today = date(2013, 1, 1, 9)
+        today = datetime(2013, 1, 1, 9)
         self.assertTrue(target._is_printable_date(order, today))
 
     def test_supported_status__QRDelivery__supported(self):
