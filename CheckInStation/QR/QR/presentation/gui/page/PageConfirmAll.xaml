@@ -44,7 +44,7 @@
                         <WrapPanel 
                         Grid.Row="1" Grid.Column="1"
                         HorizontalAlignment="Left" VerticalAlignment="Stretch">
-                            <TextBlock Style="{StaticResource MainText}">予約番号:</TextBlock>
+                            <TextBlock Style="{StaticResource MainText}">受付番号:</TextBlock>
                             <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding Orderno, Mode=OneWay}"></TextBlock>
                         </WrapPanel>
                         <WrapPanel

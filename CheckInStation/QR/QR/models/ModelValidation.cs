@@ -41,9 +41,9 @@ namespace QR
         public message.ResultTuple<string, bool> ValidateOrderno(string orderno)
         {
             if (orderno == null)
-                return new NG("購入時の予約番号を入力してください(例 RE0101010101)");
+                return new NG("購入時の受付番号を入力してください(例 RE0101010101)");
             if (orderno.Length != 12)
-                return new NG("予約番号は数字アルファベット大文字12桁です(例 RE0101010101)");
+                return new NG("受付番号は数字アルファベット大文字12桁です(例 RE0101010101)");
             return OK;
         }
 
