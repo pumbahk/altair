@@ -3,16 +3,24 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[HH.route_label('index'), HH.route_label('operators.index'), HH.route_label('permissions.index')],
-      urls=[request.route_path('index'), request.route_path('operators.index')]
+      names=[
+          HH.route_label('index'),
+          HH.route_label('operators.index'),
+          HH.route_label('permissions.index')
+          ],
+      urls=[
+          request.route_path('index'),
+          request.route_path('operators.index')
+          ]
   )}
 </%block>
 
 <div class="page-header">
-  <h1>権限</h1>
+  <h1>${HH.route_label(request.matched_route.name)}</h1>
 </div>
 
 <%include file="/operators/_guide.html" />
+
 <div class="pull-right">
   <%include file="/operators/_action_button.html" args="order=['operators', 'roles']" />
 </div>
@@ -27,7 +35,7 @@
   </thead>
   <tbody>
   % for route_name, permission in sorted(request.route_permission.items(), key=lambda x:(x[0])):
-    % if HH.route_label(route_name) or HH.has_permission('administrator'):
+    % if HH.has_permission('administrator') or (permission and HH.route_label(route_name)):
   <tr>
     <td>${HH.route_label(route_name) or route_name}</td>
       % if not permission:

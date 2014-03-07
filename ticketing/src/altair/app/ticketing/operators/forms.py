@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from pyramid.threadlocal import get_current_request
+
 from wtforms import Form, ValidationError
 from wtforms import TextField, HiddenField, DateField, PasswordField, SelectMultipleField
 from wtforms.validators import Length, Email, Optional, Regexp
@@ -66,8 +68,9 @@ class OperatorRoleForm(Form):
 
     def validate_id(form, field):
         if field.data:
-            operator_role = OperatorRole.get(form.organization_id.data, field.data)
-            if operator_role and operator_role.name in ['administrator', 'superuser', 'operator']:
+            operator_role = OperatorRole.query.filter_by(id=field.data).first()
+            request = get_current_request()
+            if not operator_role.is_editable() and not request.context.has_permission('administrator'):
                 raise ValidationError(u'このロールは変更できません')
 
 
@@ -147,10 +150,8 @@ class OperatorForm(Form):
                 raise ValidationError(u'ログインIDが重複しています。')
 
     def validate_id(form, field):
-        from pyramid.threadlocal import get_current_request
-        request = get_current_request()
-
         # administratorロールのオペレータはadministrator権限がないと編集できない
+        request = get_current_request()
         if field.data and not request.context.has_permission('administrator'):
             operator = Operator.get(form.organization_id.data, field.data)
             if 'administrator' in [(role.name) for role in operator.roles]:

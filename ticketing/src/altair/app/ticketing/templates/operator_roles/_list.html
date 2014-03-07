@@ -2,6 +2,8 @@
 <%namespace file="/common/helpers.html" name="ch"/>
 <%namespace file="/common/modal.html" import="delete_modal" />
 
+<% is_admin = request.context.has_permission('administrator') %>
+
 <form>
   <div class="pull-left">
     <%include file="/operators/_action_button.html" args="order=['new_role']" />
@@ -22,6 +24,7 @@
       % for role in roles.items:
       <th class="span2">
         ${role.name_kana}
+        % if is_admin or role.is_editable():
         <div class="btn-group">
           <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">
             <span class="caret"></span>
@@ -31,6 +34,7 @@
             <li><a href="javascript:delete_role(${role.id});"><i class="icon-minus"></i> 削除</a></li>
           </ul>
         </div>
+        % endif
       </th>
       % endfor
     </tr>
@@ -49,13 +53,13 @@
     </tr>
     <tr class="permit-action-${category_name}" style="display:none;">
       <td colspan="${len(roles)+1}">
-      <%
-        route_permission = request.route_permission
-        permit_actions = []
-        for route_name in sorted(route_permission.keys()):
-          if category_name == route_permission[route_name]:
-            permit_actions.append(route_name)
-      %>
+        <%
+          route_permission = request.route_permission
+          permit_actions = []
+          for route_name in sorted(route_permission.keys()):
+            if category_name == route_permission[route_name]:
+              permit_actions.append(route_name)
+        %>
         <div style="width:50%; margin-left:auto;margin-right:auto;">
           <table class="table table-condensed well">
             <tr><th>この権限で利用できる機能</th></tr>

@@ -40,6 +40,9 @@ class Permission(Base):
         return DBSession.query(Permission)\
             .filter(Permission.category_name.in_(category_names)).all()
 
+
+COMMON_DEFAULT_ROLES = ['administrator', 'superuser', 'operator']
+
 class OperatorRole(Base, BaseModel, WithTimestamp):
     __tablename__ = 'OperatorRole'
     id = Column(Identifier, primary_key=True)
@@ -68,6 +71,9 @@ class OperatorRole(Base, BaseModel, WithTimestamp):
     @staticmethod
     def all(organization_id):
         return OperatorRole.query_all(organization_id).all()
+
+    def is_editable(self):
+        return self.name not in COMMON_DEFAULT_ROLES
 
 class OperatorActionHistoryTypeENum(StandardEnum):
     View      = 1
