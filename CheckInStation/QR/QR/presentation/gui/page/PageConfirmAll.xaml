@@ -108,7 +108,7 @@
                                 VerticalAlignment="Center"
                                 LineHeight="25"
                                 FontSize="25"
-                                Style="{StaticResource MainText}">発券対象のチケットが自動で選択されています。発券したくないチケットを選びチェックを外してください</TextBlock>
+                                Style="{StaticResource MainText}">発券対象のチケットが自動で選択されています。発券しないチケットは選択を解除してください</TextBlock>
                             <ListView 
                     Margin="0,25,0,0"
                     ItemsSource="{Binding DisplayTicketDataCollection}"
