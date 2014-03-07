@@ -18,6 +18,7 @@
     <p:PageConfirmAllDataContext.DisplayTicketDataCollection>
         <l:DisplayTicketDataCollection>
             <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
@@ -25,6 +26,7 @@
                 <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
             </l:DisplayTicketData>
             <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
                 <l:DisplayTicketData.IsSelected>false</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
@@ -32,6 +34,7 @@
                 <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
             </l:DisplayTicketData>
             <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
@@ -39,6 +42,7 @@
                 <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
             </l:DisplayTicketData>
             <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
                 <l:DisplayTicketData.IsSelected>false</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
@@ -46,6 +50,7 @@
                 <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
             </l:DisplayTicketData>
             <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
                 <l:DisplayTicketData.IsSelected>false</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
@@ -53,6 +58,7 @@
                 <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
             </l:DisplayTicketData>
             <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
@@ -60,6 +66,7 @@
                 <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
             </l:DisplayTicketData>
             <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
@@ -67,6 +74,7 @@
                 <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
             </l:DisplayTicketData>
             <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
@@ -74,6 +82,7 @@
                 <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
             </l:DisplayTicketData>
             <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
@@ -81,6 +90,7 @@
                 <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
             </l:DisplayTicketData>
             <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
@@ -88,6 +98,7 @@
                 <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
             </l:DisplayTicketData>
             <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
@@ -95,6 +106,7 @@
                 <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
             </l:DisplayTicketData>
             <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>

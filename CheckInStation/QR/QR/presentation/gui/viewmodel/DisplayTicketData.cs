@@ -13,11 +13,13 @@ namespace QR.presentation.gui.viewmodel
         public DisplayTicketData()
         {
             this.coreData = new TicketDataMinumum();
+            this.Today = DateTime.Today;
             //for designer preview
         }
 
         public DisplayTicketData(TicketDataMinumum tdata)
         {
+            this.Today = DateTime.Today;
             this.coreData = tdata;
             this.ProductName = tdata.product.name;
             this.SeatName = tdata.seat.name;
@@ -26,6 +28,7 @@ namespace QR.presentation.gui.viewmodel
         }
 
         private readonly TicketDataMinumum coreData;
+        public DateTime Today { get; set; }
         public string ProductName { get; set; }
         public string SeatName { get; set; }
         public bool IsSelected
