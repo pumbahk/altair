@@ -23,3 +23,4 @@ def includeme(config):
     config.add_route('performances.import_orders.delete', '/import_orders/{performance_id}/delete/{task_id}', factory=factory)
 
     config.add_route('performances.orion.index', '/orion/{performance_id}', factory=factory)
+    ##altair.app.ticketing.print_progress.__init__.pyでperformances.print_progress.showが定義されている

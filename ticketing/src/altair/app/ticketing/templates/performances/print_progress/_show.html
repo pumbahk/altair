@@ -1,0 +1,5 @@
+<h4>発券進捗状況</h4>
+<%include file="/print_progress/_list.html" args="progress=progress"/>
+
+<hr/>
+<a href="${request.route_path("events.print_progress.show", event_id=performance.event_id)}">イベント毎の発券進捗状況確認ページへ</a>
