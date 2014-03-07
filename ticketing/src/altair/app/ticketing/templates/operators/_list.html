@@ -3,9 +3,14 @@
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <form>
-  <div>
-    <%include file="/operators/_action_button.html" args="order=['new_operator', 'roles', 'permissions']" />
+  <div class="pull-left">
+    <%include file="/operators/_action_button.html" args="order=['new_operator']" />
   </div>
+  <div class="pull-right">
+    <%include file="/operators/_action_button.html" args="order=['roles', 'permissions']" />
+  </div>
+  <div class="clearfix"></div>
+
   <table class="table fullwidth checkboxed_table" style="margin-top: 10px;">
     <thead>
     <tr>

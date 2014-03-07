@@ -3,9 +3,13 @@
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <form>
-  <div>
-    <%include file="/operators/_action_button.html" args="order=['new_role', 'operators', 'permissions']" />
+  <div class="pull-left">
+    <%include file="/operators/_action_button.html" args="order=['new_role']" />
   </div>
+  <div class="pull-right">
+    <%include file="/operators/_action_button.html" args="order=['operators', 'permissions']" />
+  </div>
+  <div class="clearfix"></div>
 
   <table class="table table-bordered" style="margin-top: 10px;">
     <thead>
@@ -52,18 +56,20 @@
           if category_name == route_permission[route_name]:
             permit_actions.append(route_name)
       %>
-        <table class="table table-condensed well">
-          <tr><th>この権限で利用できる機能</th></tr>
-          % if len(permit_actions) > 0:
-            % for action in permit_actions:
-              % if HH.route_label(action):
-          <tr><td>${HH.route_label(action)}</td></tr>
-              % endif
-            % endfor
-          % else:
-          <tr><td>ありません</td></tr>
-          % endif
-        </table>
+        <div style="width:50%; margin-left:auto;margin-right:auto;">
+          <table class="table table-condensed well">
+            <tr><th>この権限で利用できる機能</th></tr>
+            % if len(permit_actions) > 0:
+              % for action in permit_actions:
+                % if HH.route_label(action):
+            <tr><td>${HH.route_label(action)}</td></tr>
+                % endif
+              % endfor
+            % else:
+            <tr><td>ありません</td></tr>
+            % endif
+          </table>
+        </div>
       </td>
     </tr>
     <script type="text/javascript">

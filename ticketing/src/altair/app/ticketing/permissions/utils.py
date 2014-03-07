@@ -6,7 +6,7 @@ from pyramid.interfaces import IView, IRoutesMapper, IRouteRequest, IViewClassif
 
 class PermissionCategory(object):
     permissions = {
-        'administrator'   : u'オーガニーション管理',
+        'administrator'   : u'オーガニゼーション管理',
         'event_viewer'    : u'公演管理閲覧',
         'event_editor'    : u'公演管理編集',
         'master_viewer'   : u'マスタ管理閲覧',
