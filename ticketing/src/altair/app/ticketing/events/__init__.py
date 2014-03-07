@@ -25,4 +25,5 @@ def includeme(config):
     config.include('altair.app.ticketing.events.sales_reports', route_prefix='sales_reports')
     config.include('altair.app.ticketing.events.lots', route_prefix='lots')
     config.include('altair.app.ticketing.events.cooperation', route_prefix='cooperation')
+    config.include('altair.app.ticketing.events.print_progress', route_prefix='print_progress')
     config.scan(".")
