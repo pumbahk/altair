@@ -12,6 +12,12 @@
   <h1>オペレーター</h1>
 </div>
 
-<%include file="/operators/_action_button.html" args="operator=operator, order=['operators', 'edit_operator', 'delete_operator']" />
+<div class="pull-left">
+  <%include file="/operators/_action_button.html" args="operator=operator, order=['edit_operator', 'delete_operator']" />
+</div>
+<div class="pull-right">
+  <%include file="/operators/_action_button.html" args="operator=operator, order=['operators']" />
+</div>
+<div class="clearfix"></div>
 
 <%include file="/operators/_detail.html" args="form=form, operator=operator" />

@@ -5,6 +5,7 @@ import hashlib
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey, Unicode
 from sqlalchemy.orm import join, column_property, mapper, joinedload
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.sql.expression import or_
 
 from altair.app.ticketing.utils import StandardEnum
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession, Identifier, relationship
@@ -47,6 +48,26 @@ class OperatorRole(Base, BaseModel, WithTimestamp):
     operators = relationship('Operator', secondary=OperatorRole_Operator.__table__)
     permissions = relationship('Permission', cascade='all,delete-orphan')
     status = Column('status',Integer, default=1)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization = relationship('Organization', uselist=False)
+
+    @staticmethod
+    def get(organization_id, id):
+        return OperatorRole.query.filter(
+            OperatorRole.id==id,
+            OperatorRole.organization_id==organization_id
+            ).first()
+
+    @staticmethod
+    def query_all(organization_id):
+        return OperatorRole.query.filter(or_(
+            OperatorRole.organization_id==None,
+            OperatorRole.organization_id==organization_id
+            ))
+
+    @staticmethod
+    def all(organization_id):
+        return OperatorRole.query_all(organization_id).all()
 
 class OperatorActionHistoryTypeENum(StandardEnum):
     View      = 1
@@ -95,6 +116,13 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', uselist=False, backref='operators')
     roles = relationship('OperatorRole', secondary=OperatorRole_Operator.__table__)
     auth = relationship('OperatorAuth', uselist=False, backref='operator')
+
+    @staticmethod
+    def get(organization_id, id):
+        return Operator.query.filter(
+            Operator.id==id,
+            Operator.organization_id==organization_id
+            ).first()
 
     @staticmethod
     def get_by_login_id(login_id):

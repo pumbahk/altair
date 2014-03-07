@@ -20,12 +20,18 @@ class OperatorRoleForm(Form):
         if obj and obj.permissions:
             self.permissions.data = [p.category_name for p in obj.permissions]
 
+        if 'organization_id' in kwargs:
+            self.organization_id.data = kwargs['organization_id']
+
     def _get_translations(self):
         return Translations()
 
     id = HiddenField(
         label=u'ID',
         validators=[Optional()],
+    )
+    organization_id = HiddenField(
+        validators=[Required()],
     )
     name = TextField(
         label=u'ロール名',
@@ -51,25 +57,34 @@ class OperatorRoleForm(Form):
     )
 
     def validate_name(form, field):
-        query = OperatorRole.query.filter(OperatorRole.name==field.data)
-        if not form.id.data:
+        query = OperatorRole.query_all(form.organization_id.data)
+        query = query.filter(OperatorRole.name==field.data)
+        if form.id.data:
             query = query.filter(OperatorRole.id!=form.id.data)
         if query.count() > 0:
             raise ValidationError(u'ロール名が重複しています。')
+
+    def validate_id(form, field):
+        if field.data:
+            operator_role = OperatorRole.get(form.organization_id.data, field.data)
+            if operator_role and operator_role.name in ['administrator', 'superuser', 'operator']:
+                raise ValidationError(u'このロールは変更できません')
 
 
 class OperatorForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
+
         if obj:
             self.login_id.data = obj.auth.login_id
             self.role_ids.data = [role.id for role in obj.roles]
             self.password.validators.append(Optional())
         else:
             self.password.validators.append(Required())
-        if 'request' in kwargs:
-            self.request = kwargs['request']
+
+        if 'organization_id' in kwargs:
+            self.role_ids.choices = [(role.id, role.name_kana) for role in OperatorRole.all(kwargs['organization_id'])]
 
     def _get_translations(self):
         return Translations()
@@ -121,7 +136,6 @@ class OperatorForm(Form):
     role_ids = PHPCompatibleSelectMultipleField(
         label=u'ロール',
         validators=[Optional()],
-        choices=lambda field: [(role.id, role.name_kana) for role in OperatorRole.all()],
         coerce=int,
         widget=CheckboxMultipleSelect(multiple=True)
     )
@@ -133,9 +147,11 @@ class OperatorForm(Form):
                 raise ValidationError(u'ログインIDが重複しています。')
 
     def validate_id(form, field):
+        from pyramid.threadlocal import get_current_request
+        request = get_current_request()
+
         # administratorロールのオペレータはadministrator権限がないと編集できない
-        if field.data:
-            if not isinstance(has_permission('administrator', form.request.context, form.request), ACLAllowed):
-                operator = Operator.filter_by(id=field.data).first()
-                if 'administrator' in [(role.name) for role in operator.roles]:
-                    raise ValidationError(u'このオペレータを編集する権限がありません')
+        if field.data and not request.context.has_permission('administrator'):
+            operator = Operator.get(form.organization_id.data, field.data)
+            if 'administrator' in [(role.name) for role in operator.roles]:
+                raise ValidationError(u'このオペレータを編集する権限がありません')

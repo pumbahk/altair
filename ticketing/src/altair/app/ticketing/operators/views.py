@@ -20,9 +20,6 @@ from altair.app.ticketing.operators.forms import OperatorForm, OperatorRoleForm
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
 class Operators(BaseView):
 
-    def _role_id_list_to_role_list(self, role_id_list):
-        return [DBSession.query(OperatorRole).filter(OperatorRole.id==role_id).one() for role_id in role_id_list]
-
     @view_config(route_name='operators.index', renderer='altair.app.ticketing:templates/operators/index.html')
     def index(self):
         sort = self.request.GET.get('sort', 'Operator.id')
@@ -30,44 +27,37 @@ class Operators(BaseView):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = Operator.filter_by(organization_id=self.context.user.organization_id).order_by(sort + ' ' + direction)
+        query = Operator.query.filter_by(organization_id=self.context.organization.id).order_by(sort + ' ' + direction)
 
         operators = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
             items_per_page=20,
             url=paginate.PageURL_WebOb(self.request)
-        )
+            )
 
         return {
             'operators': operators
-        }
+            }
 
     @view_config(route_name='operators.show', renderer='altair.app.ticketing:templates/operators/show.html')
     def show(self):
-        operator_id = int(self.request.matchdict.get('operator_id', 0))
-        operator = Operator.get(operator_id)
-        if operator is None:
-            return HTTPNotFound("operator_id %d is not found" % operator_id)
-
         return {
-            'form':OperatorForm(),
+            'form':OperatorForm(organization_id=self.context.organization.id),
             'form_organization':OrganizationForm(),
-            'operator':operator,
-        }
+            'operator':self.context.operator,
+            }
 
     @view_config(route_name='operators.new', request_method='GET', renderer='altair.app.ticketing:templates/operators/edit.html')
     def new_get(self):
         return {
-            'form':OperatorForm(organization_id=self.context.user.organization_id),
-            'route_name': u'登録',
-        }
+            'form':OperatorForm(organization_id=self.context.organization.id),
+            }
 
     @view_config(route_name='operators.new', request_method='POST', renderer='altair.app.ticketing:templates/operators/edit.html')
     def new_post(self):
-        f = OperatorForm(self.request.POST, request=self.request)
+        f = OperatorForm(self.request.POST, organization_id=self.context.organization.id)
         if f.validate():
-            #operator = merge_session_with_post(Operator(), f.data, filters={'roles':self._role_id_list_to_role_list()})
             operator = merge_session_with_post(Operator(), f.data)
             operator.expire_at = datetime.today() + timedelta(days=180)
             operator.role_ids = f.data['role_ids']
@@ -78,40 +68,29 @@ class Operators(BaseView):
         else:
             return {
                 'form': f,
-                'route_name': u'登録',
-            }
+                }
 
     @view_config(route_name='operators.edit', request_method='GET', renderer='altair.app.ticketing:templates/operators/edit.html')
     def edit_get(self):
-        operator_id = int(self.request.matchdict.get('operator_id', 0))
-        operator = Operator.get(operator_id)
-        if operator is None:
-            return HTTPNotFound("Operator id %d is not found" % operator_id)
-
-        f = OperatorForm(obj=operator, request=self.request)
+        f = OperatorForm(obj=self.context.operator, organization_id=self.context.organization.id)
         try:
             f.validate_id(f.id)
         except Exception, e:
             self.request.session.flash(e.message)
-            return HTTPFound(location=route_path('operators.show', self.request, operator_id=operator.id))
+            return HTTPFound(location=route_path('operators.show', self.request, operator_id=self.context.operator_id))
 
         return {
             'form':f,
-            'route_name': u'編集',
-        }
+            }
 
     @view_config(route_name='operators.edit', request_method='POST', renderer='altair.app.ticketing:templates/operators/edit.html')
     def edit_post(self):
-        operator_id = int(self.request.matchdict.get('operator_id', 0))
-        operator = Operator.get(operator_id)
-        if operator is None:
-            return HTTPNotFound("Operator id %d is not found" % operator_id)
+        operator = self.context.operator
 
-        f = OperatorForm(self.request.POST, request=self.request)
+        f = OperatorForm(self.request.POST, organization_id=self.context.organization.id)
         f.password.data = operator.auth.password
         f.expire_at.data = operator.expire_at
         if f.validate():
-            #operator = merge_session_with_post(operator, f.data, filters={'roles':self._role_id_list_to_role_list()})
             operator = merge_session_with_post(operator, f.data)
             operator.role_ids = f.data['role_ids']
             operator.save()
@@ -121,17 +100,13 @@ class Operators(BaseView):
         else:
             return {
                 'form':f,
-                'route_name': u'編集',
-            }
+                }
 
     @view_config(route_name='operators.delete')
     def delete(self):
-        operator_id = int(self.request.matchdict.get('operator_id', 0))
-        operator = Operator.get(operator_id)
-        if operator is None:
-            return HTTPNotFound("Operator id %d is not found" % operator_id)
+        operator = self.context.operator
 
-        f = OperatorForm(obj=operator, request=self.request)
+        f = OperatorForm(obj=operator, organization_id=self.context.organization.id)
         try:
             f.validate_id(f.id)
         except Exception, e:
@@ -139,11 +114,10 @@ class Operators(BaseView):
             return HTTPFound(location=route_path('operators.show', self.request, operator_id=operator.id))
 
         operator.delete()
-
         self.request.session.flash(u'オペレーターを削除しました')
         return HTTPFound(location=route_path('operators.index', self.request))
 
-@view_defaults(decorator=with_bootstrap, permission='administrator')
+@view_defaults(decorator=with_bootstrap, permission='master_editor')
 class OperatorRoles(BaseView):
 
     @view_config(route_name='operator_roles.index', renderer='altair.app.ticketing:templates/operator_roles/index.html')
@@ -153,29 +127,27 @@ class OperatorRoles(BaseView):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = DBSession.query(OperatorRole).order_by(sort + ' ' + direction)
+        query = OperatorRole.query_all(organization_id=self.context.organization.id).order_by(sort + ' ' + direction)
         roles = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
             items_per_page=10,
             url=paginate.PageURL_WebOb(self.request)
-        )
+            )
 
         return {
             'roles':roles,
-        }
+            }
 
     @view_config(route_name='operator_roles.new', request_method='GET', renderer='altair.app.ticketing:templates/operator_roles/edit.html')
     def new_get(self):
         return {
-            'form':OperatorRoleForm(),
-            'route_name': u'登録',
-            'route_path': self.request.path,
-        }
+            'form':OperatorRoleForm(organization_id=self.context.organization.id),
+            }
 
     @view_config(route_name='operator_roles.new', request_method='POST', renderer='altair.app.ticketing:templates/operator_roles/edit.html')
     def new_post(self):
-        f = OperatorRoleForm(self.request.POST)
+        f = OperatorRoleForm(self.request.POST, organization_id=self.context.organization.id)
         if f.validate():
             operator_role = merge_session_with_post(OperatorRole(), f.data)
             permissions = []
@@ -189,31 +161,19 @@ class OperatorRoles(BaseView):
         else:
             return {
                 'form':f,
-                'route_name': u'登録',
-                'route_path': self.request.path,
-            }
+                }
 
     @view_config(route_name='operator_roles.edit', request_method='GET', renderer='altair.app.ticketing:templates/operator_roles/edit.html')
     def edit_get(self):
-        operator_role_id = int(self.request.matchdict.get('operator_role_id', 0))
-        operator_role = OperatorRole.get(operator_role_id)
-        if operator_role is None:
-            return HTTPNotFound("OperatorRole id %d is not found" % operator_role_id)
-
         return {
-            'form':OperatorRoleForm(obj=operator_role),
-            'route_name': u'編集',
-            'route_path': self.request.path,
-        }
+            'form':OperatorRoleForm(obj=self.context.operator_role),
+            }
 
     @view_config(route_name='operator_roles.edit', request_method='POST', renderer='altair.app.ticketing:templates/operator_roles/edit.html')
     def edit_post(self):
-        operator_role_id = int(self.request.matchdict.get('operator_role_id', 0))
-        operator_role = OperatorRole.get(operator_role_id)
-        if operator_role is None:
-            return HTTPNotFound("OperatorRole id %d is not found" % operator_role_id)
+        operator_role = self.context.operator_role
 
-        f = OperatorRoleForm(self.request.POST)
+        f = OperatorRoleForm(self.request.POST, organization_id=self.context.organization.id)
         if f.validate():
             operator_role = merge_session_with_post(operator_role, f.data)
             permissions = []
@@ -232,27 +192,23 @@ class OperatorRoles(BaseView):
         else:
             return {
                 'form':f,
-                'route_name': u'編集',
-                'route_path': self.request.path,
-            }
+                }
 
     @view_config(route_name='operator_roles.delete')
     def delete(self):
-        operator_role_id = int(self.request.matchdict.get('operator_role_id', 0))
-        operator_role = OperatorRole.get(operator_role_id)
-        if operator_role is None:
-            return HTTPNotFound("OperatorRole id %d is not found" % operator_role_id)
+        operator_role = self.context.operator_role
 
-        if operator_role.name in ['administrator', 'superuser', 'operator']:
-            self.request.session.flash(u'このロールは削除できません')
-        else:
-            DBSession.delete(operator_role)
-            self.request.session.flash(u'ロールを削除しました')
+        f = OperatorRoleForm(obj=operator_role)
+        try:
+            if f.validate_id(f.id):
+                DBSession.delete(operator_role)
+                self.request.session.flash(u'ロールを削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
 
         return HTTPFound(location=route_path('operator_roles.index', self.request))
 
-
-@view_defaults(decorator=with_bootstrap, permission="administrator")
+@view_defaults(decorator=with_bootstrap, permission='master_editor')
 class Permissions(BaseView):
 
     @view_config(route_name='permissions.index', renderer='altair.app.ticketing:templates/permissions/index.html')

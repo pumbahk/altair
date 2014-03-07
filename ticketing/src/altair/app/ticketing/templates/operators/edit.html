@@ -3,16 +3,20 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'トップ', u'オペレーター', route_name],
+      names=[
+        HH.route_label('index'),
+        HH.route_label('operators.index'),
+        HH.route_label(request.matched_route.name)
+        ],
       urls=[
         request.route_path('index'),
         request.route_path('operators.index'),
-      ]
+        ]
   )}
 </%block>
 
 <div class="page-header">
-  <h1>オペレーター ${route_name}</h1>
+  <h1>${HH.route_label(request.matched_route.name)}</h1>
 </div>
 
 <form class="form-horizontal" action="${request.path}" method="POST">
@@ -28,6 +32,6 @@
     ${ch.form_item(form.organization_id)}
   </fieldset>
   <div class="form-actions">
-    <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+    <input class="btn btn-primary" type="submit" name="submit" value="${HH.route_label(request.matched_route.name)}">
   </div>
 </form>
