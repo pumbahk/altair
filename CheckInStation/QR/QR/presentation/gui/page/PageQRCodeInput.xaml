@@ -98,7 +98,7 @@
                             Canvas.Top="17"
                             RenderTransformOrigin="10.794,2.52"
                             Canvas.Left="1060"
-                            Height="64" Width="240">予約番号で認証</Button>
+                            Height="64" Width="240">受付番号で認証</Button>
 
                     <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
@@ -169,7 +169,7 @@
 
 
             <Button Grid.Row="0" Grid.Column="7" Grid.RowSpan="1" Grid.ColumnSpan="2" Click="OnGotoAnotherMode"
-                    Style="{StaticResource HeaderMenuButtonStyle}">予約番号で認証</Button>
+                    Style="{StaticResource HeaderMenuButtonStyle}">受付番号で認証</Button>
 
             <Button Grid.Row="7" Grid.Column="7" HorizontalAlignment="Center" Grid.ColumnSpan="2"
                     Click="OnSubmitWithBoundContext">QRコード読み込み</Button>

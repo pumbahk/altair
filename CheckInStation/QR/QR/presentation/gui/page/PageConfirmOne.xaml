@@ -27,7 +27,7 @@
                 </ListViewItem>
                 <ListViewItem>
                     <WrapPanel>
-                        <TextBlock>予約番号</TextBlock>
+                        <TextBlock>受付番号</TextBlock>
                         <TextBlock Text="{Binding OrderNo}"/>
                     </WrapPanel>
                 </ListViewItem>
