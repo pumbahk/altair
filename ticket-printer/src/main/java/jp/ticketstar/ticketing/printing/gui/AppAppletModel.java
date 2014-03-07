@@ -5,6 +5,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.List;
+import java.util.ArrayList;
 
 import javax.print.PrintService;
 import javax.swing.event.SwingPropertyChangeSupport;
@@ -26,7 +28,8 @@ public class AppAppletModel implements AppModel {
 	GenericComboBoxModel<OurPageFormat> pageFormats;
 	TicketFormat ticketFormat = null;
 	GenericComboBoxModel<TicketFormat> ticketFormats;
-	Integer orderId = null;
+	String orderId = null;
+    List<String> queueIds = null;
 
 	public AppAppletModel() {
 		initialize();
@@ -84,6 +87,7 @@ public class AppAppletModel implements AppModel {
 		propertyChangeSupport.firePropertyChange("ticketFormats", null, ticketFormats);
 		propertyChangeSupport.firePropertyChange("ticketFormat", null, ticketFormat);
 		propertyChangeSupport.firePropertyChange("orderId", null, orderId);
+		propertyChangeSupport.firePropertyChange("queueIds", null, queueIds);
 		propertyChangeSupport.firePropertyChange("printingStatus", true, false);
 	}
 
@@ -247,13 +251,23 @@ public class AppAppletModel implements AppModel {
 		return ticketFormats;
 	}
 
-	public Integer getOrderId() {
+	public String getOrderId() {
 		return orderId;
 	}
 
-	public void setOrderId(Integer orderId) {
-		final Integer prevValue = this.orderId;
+	public void setOrderId(String orderId) {
+		final String prevValue = this.orderId;
 		this.orderId = orderId;
 		propertyChangeSupport.firePropertyChange("orderId", prevValue, orderId);
 	}
+
+    public List<String> getQueueIds() {
+        return queueIds;
+    }
+ 
+    public void setQueueIds(List<String> queueIds) {
+        final List<String> prevValue = this.queueIds;
+        this.queueIds = new ArrayList<String>(queueIds);
+        propertyChangeSupport.firePropertyChange("queueIds", prevValue, queueIds);
+    }
 }

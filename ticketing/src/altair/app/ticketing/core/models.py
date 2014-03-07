@@ -3382,16 +3382,29 @@ class TicketPrintQueueEntry(Base, BaseModel):
         DBSession.flush()
 
     @classmethod
-    def peek(self, operator, ticket_format_id, order_id=None):
+    def query(cls, operator, ticket_format_id, order_id=None, queue_ids=None, include_masked=False, include_unmasked=True):
         q = DBSession.query(TicketPrintQueueEntry) \
-            .filter_by(processed_at=None, operator=operator, masked_at=None) \
-            .filter(Ticket.ticket_format_id==ticket_format_id) \
+            .filter_by(processed_at=None, operator=operator) \
+            .join(TicketPrintQueueEntry.ticket) \
             .options(joinedload(TicketPrintQueueEntry.seat))
+        if not include_masked:
+            q = q.filter(TicketPrintQueueEntry.masked_at == None)
+        if not include_unmasked:
+            q = q.filter(TicketPrintQueueEntry.masked_at != None)
+        if ticket_format_id is not None:
+            q = q.filter(Ticket.ticket_format_id == ticket_format_id)
         if order_id is not None:
             q = q.join(OrderedProductItem) \
                 .join(OrderedProduct) \
                 .filter(OrderedProduct.order_id==order_id)
-        q = q.order_by(*self.printing_order_condition())
+        if queue_ids:
+            q = q.filter(cls.id.in_(queue_ids))
+        q = q.order_by(*cls.printing_order_condition())
+        return q
+
+    @classmethod
+    def peek(cls, operator, ticket_format_id, order_id=None, queue_ids=None):
+        q = cls.query(operator, ticket_format_id, order_id, queue_ids)
         return q.all()
 
     @classmethod
