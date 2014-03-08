@@ -83,9 +83,6 @@
         <artifactId>maven-jar-plugin</artifactId> 
         <version>2.4</version>
         <configuration>
-           <descriptors>
-             <descriptor>src/main/assembly/descriptor-bin.xml</descriptor>
-           </descriptors>
           <archive>
             <index>true</index>
             <manifest>
@@ -94,13 +91,20 @@
           </manifest>
           </archive>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jarsigner-plugin</artifactId> 
         <executions>
           <execution>
             <goals>
               <goal>sign</goal>
             </goals>
-            <phase>package</phase>
             <configuration>
+              <archiveDirectory>${project.build.directory}</archiveDirectory>
+              <includes>
+                <include>*.jar</include>
+              </includes>
               <keystore>src/main/keystore/signing-jar.keystore</keystore>
               <alias>applet</alias>
               <storepass>applet</storepass>
