@@ -17,8 +17,8 @@ apmv9.1b.vpc.altr	userapp
 apmv9.1c.vpc.altr	userapp
 apmv10.1b.vpc.altr	userapp
 apmv10.1c.vpc.altr	userapp
-btmv1.1b.vpc.altr	batch
-btmv1.1c.vpc.altr	batch
+btmv2.1b.vpc.altr	batch
+btmv2.1c.vpc.altr	batch
 samv1.1b.vpc.altr	newsletter
 samv1.1c.vpc.altr	newsletter
 apcv1.1c.vpc.altr	sej
