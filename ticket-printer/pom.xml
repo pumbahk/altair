@@ -88,7 +88,11 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <mainClass>jp.ticketstar.ticketing.printing.App</mainClass>
-          </manifest>
+            </manifest>
+            <manifestEntries>
+              <permissions>all-permissions</permissions>
+              <applicationName>ticket-printer</applicationName>
+            </manifestEntries>
           </archive>
         </configuration>
       </plugin>
