@@ -56,7 +56,9 @@ from altair.app.ticketing.core.models import (
     OrderedProductItemToken,
     PaymentDeliveryMethodPair,
     PaymentMethod,
-    DeliveryMethod
+    DeliveryMethod, 
+    Event, 
+    Performance, 
 )
 from altair.app.ticketing.payments import plugins
 from datetime import datetime
@@ -74,10 +76,10 @@ class FixtureFactory(object):
     def __init__(self, organization_id=organization_id):
         self.organization_id = organization_id
 
-    def order(self, pdmp=None, performance_id=None):
+    def order(self, pdmp=None, performance=None):
         return Order(organization_id=self.organization_id, 
                      payment_delivery_pair=pdmp, 
-                     performance_id=performance_id, 
+                     performance=performance, 
 
                      total_amount=600, 
                      system_fee=100, 
@@ -129,7 +131,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
     order_id = 1
     performance_id = 1111
 
-    def _create_fixture_1111(self):
+    def _create_fixture_1111(self, performance):
         """Order : OrderedProduct : OrderedProductItem : OrderedProductItemToken = 1:1:1:1"""
         from altair.app.ticketing.models import DBSession as session
         fixture = FixtureFactory(self.order_id)
@@ -149,17 +151,17 @@ class PerformancePrintProgressTests(unittest.TestCase):
         session.add(fixture.ordered_product_item_token(
             fixture.ordered_product_item(
                 fixture.ordered_product(
-                    fixture.order(pdmp=qr_pdmp, performance_id=self.performance_id)))))
+                    fixture.order(pdmp=qr_pdmp, performance=performance)))))
         session.add(fixture.ordered_product_item_token(
             fixture.ordered_product_item(
                 fixture.ordered_product(
-                    fixture.order(pdmp=sej_pdmp, performance_id=self.performance_id)))))
+                    fixture.order(pdmp=sej_pdmp, performance=performance)))))
         session.add(fixture.ordered_product_item_token(
             fixture.ordered_product_item(
                 fixture.ordered_product(
-                    fixture.order(pdmp=shipping_pdmp, performance_id=self.performance_id)))))
+                    fixture.order(pdmp=shipping_pdmp, performance=performance)))))
 
-    def _create_fixture_1244(self):
+    def _create_fixture_1244(self, performance):
         """Order : OrderedProduct : OrderedProductItem : OrderedProductItemToken = 1:2:4:4"""
         from altair.app.ticketing.models import DBSession as session
         fixture = FixtureFactory(self.order_id)
@@ -176,7 +178,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
             plugins.SHIPPING_DELIVERY_PLUGIN_ID
         )
 
-        qr_order = fixture.order(pdmp=qr_pdmp, performance_id=self.performance_id)
+        qr_order = fixture.order(pdmp=qr_pdmp, performance=performance)
         qr_ordered_product0 = fixture.ordered_product(qr_order)
         qr_ordered_product1 = fixture.ordered_product(qr_order)
 
@@ -190,7 +192,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
         session.add(fixture.ordered_product_item_token(qr_ordered_product_item10))
         session.add(fixture.ordered_product_item_token(qr_ordered_product_item11))
 
-        sej_order = fixture.order(pdmp=sej_pdmp, performance_id=self.performance_id)
+        sej_order = fixture.order(pdmp=sej_pdmp, performance=performance)
         sej_ordered_product0 = fixture.ordered_product(sej_order)
         sej_ordered_product1 = fixture.ordered_product(sej_order)
 
@@ -204,7 +206,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
         session.add(fixture.ordered_product_item_token(sej_ordered_product_item10))
         session.add(fixture.ordered_product_item_token(sej_ordered_product_item11))
 
-        shipping_order = fixture.order(pdmp=shipping_pdmp, performance_id=self.performance_id)
+        shipping_order = fixture.order(pdmp=shipping_pdmp, performance=performance)
         shipping_ordered_product0 = fixture.ordered_product(shipping_order)
         shipping_ordered_product1 = fixture.ordered_product(shipping_order)
 
@@ -218,7 +220,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
         session.add(fixture.ordered_product_item_token(shipping_ordered_product_item10))
         session.add(fixture.ordered_product_item_token(shipping_ordered_product_item11))
 
-    def _create_fixture_1248(self):
+    def _create_fixture_1248(self, performance):
         """Order : OrderedProduct : OrderedProductItem : OrderedProductItemToken = 1:2:4:8"""
         from altair.app.ticketing.models import DBSession as session
         fixture = FixtureFactory(self.order_id)
@@ -235,7 +237,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
             plugins.SHIPPING_DELIVERY_PLUGIN_ID
         )
 
-        qr_order = fixture.order(pdmp=qr_pdmp, performance_id=self.performance_id)
+        qr_order = fixture.order(pdmp=qr_pdmp, performance=performance)
         qr_ordered_product0 = fixture.ordered_product(qr_order)
         qr_ordered_product1 = fixture.ordered_product(qr_order)
 
@@ -253,7 +255,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
         session.add(fixture.ordered_product_item_token(qr_ordered_product_item10, printed_at=datetime(2000, 1, 1)))
         session.add(fixture.ordered_product_item_token(qr_ordered_product_item11, printed_at=datetime(2000, 1, 1)))
 
-        sej_order = fixture.order(pdmp=sej_pdmp, performance_id=self.performance_id)
+        sej_order = fixture.order(pdmp=sej_pdmp, performance=performance)
         sej_ordered_product0 = fixture.ordered_product(sej_order)
         sej_ordered_product1 = fixture.ordered_product(sej_order)
 
@@ -271,7 +273,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
         session.add(fixture.ordered_product_item_token(sej_ordered_product_item10, printed_at=datetime(2000, 1, 1)))
         session.add(fixture.ordered_product_item_token(sej_ordered_product_item11, printed_at=datetime(2000, 1, 1)))
 
-        shipping_order = fixture.order(pdmp=shipping_pdmp, performance_id=self.performance_id)
+        shipping_order = fixture.order(pdmp=shipping_pdmp, performance=performance)
         shipping_ordered_product0 = fixture.ordered_product(shipping_order)
         shipping_ordered_product1 = fixture.ordered_product(shipping_order)
 
@@ -290,7 +292,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
         session.add(fixture.ordered_product_item_token(shipping_ordered_product_item11, printed_at=datetime(2000, 1, 1)))
 
 
-    def _create_shipping_ordered_product_item_token(self):
+    def _create_shipping_ordered_product_item_token(self, performance):
         fixture = FixtureFactory(self.order_id)
         shipping_pdmp = fixture.payment_delivery_method_pair(
             plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID, 
@@ -299,7 +301,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
         return fixture.ordered_product_item_token(
             fixture.ordered_product_item(
                 fixture.ordered_product(
-                    fixture.order(pdmp=shipping_pdmp, performance_id=self.performance_id))))
+                    fixture.order(pdmp=shipping_pdmp, performance=performance))))
 
 
     def test_unprinted_shipping(self):
@@ -310,7 +312,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
         session.add(token)
 
         assert self.performance_id == 1111
-        target = self._makeOne(1111)
+        target = self._makeOne(Performance(id=1111))
         self.assertEqual(target.total, 1)
         self.assertEqual(target.shipping.total, 1)
         self.assertEqual(target.shipping.unprinted, 1)
@@ -324,7 +326,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
         session.add(token)
 
         assert self.performance_id == 1111
-        target = self._makeOne(1111)
+        target = self._makeOne(Performance(id=1111))
         self.assertEqual(target.total, 1)
         self.assertEqual(target.shipping.total, 1)
         self.assertEqual(target.shipping.unprinted, 0)
@@ -339,7 +341,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
         session.add(token)
 
         assert self.performance_id == 1111
-        target = self._makeOne(1111)
+        target = self._makeOne(Performance(id=1111))
         self.assertEqual(target.total, 1)
         self.assertEqual(target.shipping.total, 1)
         self.assertEqual(target.shipping.unprinted, 1)
@@ -354,7 +356,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
         session.add(token)
 
         assert self.performance_id == 1111
-        target = self._makeOne(1111)
+        target = self._makeOne(Performance(id=1111))
         self.assertEqual(target.total, 1)
         self.assertEqual(target.shipping.total, 1)
         self.assertEqual(target.shipping.unprinted, 0)
@@ -364,7 +366,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
         self._create_fixture_1111()
 
         assert self.performance_id == 1111
-        target = self._makeOne(1111)
+        target = self._makeOne(Performance(id=1111))
 
         self.assertEqual(target.total, 3)
         self.assertEqual(target.qr.total, 1)
@@ -381,7 +383,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
         self._create_fixture_1111()
 
         assert self.performance_id != 2222
-        target = self._makeOne(2222)
+        target = self._makeOne(Performance(id=2222))
 
         self.assertEqual(target.total, 0)
         self.assertEqual(target.qr.total, 0)
@@ -404,7 +406,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
                 ob.canceled_at = datetime(2000, 1, 1)
 
         assert self.performance_id == 1111
-        target = self._makeOne(1111)
+        target = self._makeOne(Performance(id=1111))
 
         self.assertEqual(target.total, 0)
         self.assertEqual(target.qr.total, 0)
@@ -422,7 +424,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
         self._create_fixture_1244()
 
         assert self.performance_id == 1111
-        target = self._makeOne(1111)
+        target = self._makeOne(Performance(id=1111))
 
         self.assertEqual(target.total, 12)
         self.assertEqual(target.qr.total, 4)
@@ -440,7 +442,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
         self._create_fixture_1248()
 
         assert self.performance_id == 1111
-        target = self._makeOne(1111)
+        target = self._makeOne(Performance(id=1111))
 
         self.assertEqual(target.total, 24)
         self.assertEqual(target.qr.total, 8)

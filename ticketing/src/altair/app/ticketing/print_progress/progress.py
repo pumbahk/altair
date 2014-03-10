@@ -29,10 +29,10 @@ class PrintProgressGetter(object):
         self.organization = organization
 
     def get_event_progress(self, event):
-        return DummyPrintProgress()
+        return EventPrintProgress(event)
 
     def get_performance_progress(self, performance):
-        return DummyPrintProgress()
+        return PerformancePrintProgress(performance)
 
 class DummyPrintProgress(object):
     @reify
@@ -87,20 +87,9 @@ class TokenQueryFilter(object):
                 )
         )
 
-class PerformancePrintProgress(object):
-    def __init__(self, performance_id):
-        self.performance_id = performance_id
-        self.filtering = TokenQueryFilter()
-
-    @reify
-    def ordered_product_item_token_query(self):
-        return (OrderedProductItemToken.query
-                .join(OrderedProductItem)
-                .join(OrderedProduct)
-                .join(Order)
-                .filter(Order.performance_id==self.performance_id)
-                .filter(Order.canceled_at==None)
-                .filter(Order.deleted_at==None))
+class PrintProgressBase(object):
+    filtering = None
+    ordered_product_item_token_query = None
 
     @reify
     def total(self):
@@ -139,3 +128,38 @@ class PerformancePrintProgress(object):
         total = query.count()
         printed = self.filtering.filter_by_printed_token(query).count()
         return ProgressData(total=total, printed=printed, unprinted=total-printed)
+
+
+class PerformancePrintProgress(PrintProgressBase):
+    def __init__(self, performance):
+        self.performance = performance
+        self.filtering = TokenQueryFilter()
+
+    @reify
+    def ordered_product_item_token_query(self):
+        return (OrderedProductItemToken.query
+                .join(OrderedProductItem)
+                .join(OrderedProduct)
+                .join(Order)
+                .filter(Order.performance==self.performance)
+                .filter(Order.canceled_at==None)
+                .filter(Order.deleted_at==None))
+
+class EventPrintProgress(PrintProgressBase):
+    def __init__(self, event):
+        self.event = event
+        self.filtering = TokenQueryFilter()
+
+    @reify
+    def performance_id_list(self):
+        return Performance.query.filter(Performance.event==self.event).with_entities(Performance.id).all()
+
+    @reify
+    def ordered_product_item_token_query(self):
+        return (OrderedProductItemToken.query
+                .join(OrderedProductItem)
+                .join(OrderedProduct)
+                .join(Order)
+                .filter(Order.performance_id.in_(self.performance_id_list))
+                .filter(Order.canceled_at==None)
+                .filter(Order.deleted_at==None))
