@@ -1,0 +1,75 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<div class="page-header">
+  <h3>Gettii会場図連携 - ${venue.name}</h3>
+</div>
+
+<div class="container">
+  <ul>
+    %for external_venue in external_venues:
+    <li>
+      ${external_venue.name} - ${external_venue.code}
+    </li>
+    %endfor
+  </ul>
+</div>
+
+<div class="container">
+  <button class="btn" onclick="javascript: enable_upload_dialog();">
+    <i class="glyphicon icon-upload"></i>アップロード</button>
+  <button class="btn" onclick="javascript: enable_download_dialog();">
+    <i class="glyphicon icon-download"></i>ダウンロード</button>
+</div>
+
+<script type="text/javascript">
+  <!--
+      function enable_upload_dialog(){
+          var modal = $('#modal-external-venue-upload');
+          modal.find('#display').attr('checked', 'checked');
+          modal.modal('toggle');
+      }
+
+      function enable_download_dialog(){
+          var modal = $('#modal-external-venue-download');
+          modal.find('#display').attr('checked', 'checked');
+          modal.modal('toggle');
+      }
+    -->
+</script>
+
+<div id="modal-external-venue-download" class="modal hide">
+  <form method="GET" action="${request.route_path('gettii.venue.download', venue_id=venue.id)}">
+    <div class="modal-header">
+      <h3>ダウンロード</h3>
+    </div>
+    <div class="modal-body">
+      会場図と連携させるためのCSVをダウンロードします。
+    </div>
+    <div class="modal-footer">
+      <input type="submit" class="btn" value="ダウンロード"></input>
+      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    </div>
+  </form>
+</div>
+
+
+<div id="modal-external-venue-upload" class="modal hide">
+  <form method="POST" action="${request.route_path('gettii.venue.upload', venue_id=venue.id)}"
+        enctype="multipart/form-data">
+    <div class="modal-header">
+      <h3>アップロード</h3>
+    </div>
+    <div class="modal-body">
+      会場図と連携させるためのCSVをアップロードします。(新規作成)
+      ${ch.form_item(upload_form.csv_file)}
+    </div>
+    <div class="modal-footer">
+      <input type="submit" class="btn" value="アップロード"></input>
+      <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    </div>
+  </form>
+</div>
+
+${delete_modal()}
