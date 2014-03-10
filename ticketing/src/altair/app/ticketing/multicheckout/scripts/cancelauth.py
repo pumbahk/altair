@@ -31,6 +31,9 @@ def sync_data(request, statuses, shop_name):
     """
     api = get_multicheckout_3d_api(request, shop_name)
     for st in statuses:
+        if not is_cancelable(request, st):
+            continue
+
         order_no = st.OrderNo
         logger.debug("sync for %s" % order_no)
         inquiry = api.checkout_inquiry(order_no)
