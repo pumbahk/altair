@@ -152,7 +152,7 @@ class EventPrintProgress(PrintProgressBase):
 
     @reify
     def performance_id_list(self):
-        return Performance.query.filter(Performance.event==self.event).with_entities(Performance.id).all()
+        return [p.id for p in self.event.performances]
 
     @reify
     def ordered_product_item_token_query(self):

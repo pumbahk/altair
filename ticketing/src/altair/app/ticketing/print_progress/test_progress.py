@@ -65,7 +65,7 @@ from datetime import datetime
 
 def setUpModule():
     from altair.app.ticketing.testing import _setup_db
-    _setup_db(["altair.app.ticketing.core.models"])
+    _setup_db(["altair.app.ticketing.core.models"], echo=False)
 
 def  _teardown_db():
     from altair.app.ticketing.testing import _teardown_db
@@ -114,27 +114,14 @@ class FixtureFactory(object):
             delivery_method=delivery_method
         )
 
-
-class PerformancePrintProgressTests(unittest.TestCase):
-    """qr, sej, shipping 1枚ずつ。"""
-    def tearDown(self):
-        import transaction
-        transaction.abort()
-
-    def _getTarget(self):
-        from altair.app.ticketing.print_progress.progress import PerformancePrintProgress
-        return PerformancePrintProgress
-
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
-
-    order_id = 1
-    performance_id = 1111
+class FixtureSet(object):
+    def __init__(self, organization_id):
+        self.organization_id = organization_id
 
     def _create_fixture_1111(self, performance):
         """Order : OrderedProduct : OrderedProductItem : OrderedProductItemToken = 1:1:1:1"""
         from altair.app.ticketing.models import DBSession as session
-        fixture = FixtureFactory(self.order_id)
+        fixture = FixtureFactory(self.organization_id)
         qr_pdmp = fixture.payment_delivery_method_pair(
             plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID, 
             plugins.QR_DELIVERY_PLUGIN_ID
@@ -164,7 +151,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
     def _create_fixture_1244(self, performance):
         """Order : OrderedProduct : OrderedProductItem : OrderedProductItemToken = 1:2:4:4"""
         from altair.app.ticketing.models import DBSession as session
-        fixture = FixtureFactory(self.order_id)
+        fixture = FixtureFactory(self.organization_id)
         qr_pdmp = fixture.payment_delivery_method_pair(
             plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID, 
             plugins.QR_DELIVERY_PLUGIN_ID
@@ -223,7 +210,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
     def _create_fixture_1248(self, performance):
         """Order : OrderedProduct : OrderedProductItem : OrderedProductItemToken = 1:2:4:8"""
         from altair.app.ticketing.models import DBSession as session
-        fixture = FixtureFactory(self.order_id)
+        fixture = FixtureFactory(self.organization_id)
         qr_pdmp = fixture.payment_delivery_method_pair(
             plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID, 
             plugins.QR_DELIVERY_PLUGIN_ID
@@ -293,7 +280,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
 
 
     def _create_shipping_ordered_product_item_token(self, performance):
-        fixture = FixtureFactory(self.order_id)
+        fixture = FixtureFactory(self.organization_id)
         shipping_pdmp = fixture.payment_delivery_method_pair(
             plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID, 
             plugins.SHIPPING_DELIVERY_PLUGIN_ID
@@ -304,15 +291,32 @@ class PerformancePrintProgressTests(unittest.TestCase):
                     fixture.order(pdmp=shipping_pdmp, performance=performance))))
 
 
+
+class PerformancePrintProgressTests(unittest.TestCase):
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+
+    def _getTarget(self):
+        from altair.app.ticketing.print_progress.progress import PerformancePrintProgress
+        return PerformancePrintProgress
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    organization_id = 1
+    performance_id = 1111
+
     def test_unprinted_shipping(self):
         """未発券(printed_at=None)"""
         from altair.app.ticketing.models import DBSession as session
-        token = self._create_shipping_ordered_product_item_token()
+        performance = Performance(id=self.performance_id)
+        token = FixtureSet(self.organization_id)._create_shipping_ordered_product_item_token(performance)
         token.printed_at = None
         session.add(token)
 
         assert self.performance_id == 1111
-        target = self._makeOne(Performance(id=1111))
+        target = self._makeOne(performance)
         self.assertEqual(target.total, 1)
         self.assertEqual(target.shipping.total, 1)
         self.assertEqual(target.shipping.unprinted, 1)
@@ -321,12 +325,13 @@ class PerformancePrintProgressTests(unittest.TestCase):
     def test_printed_shipping(self):
         """発券済み(printed_at!=None)"""
         from altair.app.ticketing.models import DBSession as session
-        token = self._create_shipping_ordered_product_item_token()
+        performance = Performance(id=self.performance_id)
+        token = FixtureSet(self.organization_id)._create_shipping_ordered_product_item_token(performance)
         token.printed_at = datetime(2000, 1, 1)
         session.add(token)
 
         assert self.performance_id == 1111
-        target = self._makeOne(Performance(id=1111))
+        target = self._makeOne(performance)
         self.assertEqual(target.total, 1)
         self.assertEqual(target.shipping.total, 1)
         self.assertEqual(target.shipping.unprinted, 0)
@@ -335,13 +340,14 @@ class PerformancePrintProgressTests(unittest.TestCase):
     def test_refreshed_shipping(self):
         """再発券許可時(printed_at < refreshed_at)"""
         from altair.app.ticketing.models import DBSession as session
-        token = self._create_shipping_ordered_product_item_token()
+        performance = Performance(id=self.performance_id)
+        token = FixtureSet(self.organization_id)._create_shipping_ordered_product_item_token(performance)
         token.printed_at = datetime(2000, 1, 1)
         token.refreshed_at = datetime(2001, 1, 1)
         session.add(token)
 
         assert self.performance_id == 1111
-        target = self._makeOne(Performance(id=1111))
+        target = self._makeOne(performance)
         self.assertEqual(target.total, 1)
         self.assertEqual(target.shipping.total, 1)
         self.assertEqual(target.shipping.unprinted, 1)
@@ -350,23 +356,25 @@ class PerformancePrintProgressTests(unittest.TestCase):
     def test_printed_after_refreshed_shipping(self):
         """再発券許可後印刷済み(printed_at > refreshed_at)"""
         from altair.app.ticketing.models import DBSession as session
-        token = self._create_shipping_ordered_product_item_token()
+        performance = Performance(id=self.performance_id)
+        token = FixtureSet(self.organization_id)._create_shipping_ordered_product_item_token(performance)
         token.printed_at = datetime(2002, 1, 1)
         token.refreshed_at = datetime(2001, 1, 1)
         session.add(token)
 
         assert self.performance_id == 1111
-        target = self._makeOne(Performance(id=1111))
+        target = self._makeOne(performance)
         self.assertEqual(target.total, 1)
         self.assertEqual(target.shipping.total, 1)
         self.assertEqual(target.shipping.unprinted, 0)
         self.assertEqual(target.shipping.printed, 1)
 
     def test_it_matched_performance_exists(self):
-        self._create_fixture_1111()
+        performance = Performance(id=self.performance_id)
+        FixtureSet(self.organization_id)._create_fixture_1111(performance)
 
         assert self.performance_id == 1111
-        target = self._makeOne(Performance(id=1111))
+        target = self._makeOne(performance)
 
         self.assertEqual(target.total, 3)
         self.assertEqual(target.qr.total, 1)
@@ -380,7 +388,8 @@ class PerformancePrintProgressTests(unittest.TestCase):
         self.assertEqual(target.other.unprinted, 1)
 
     def test_it_matched_performance_notfound(self):
-        self._create_fixture_1111()
+        performance = Performance(id=self.performance_id)
+        FixtureSet(self.organization_id)._create_fixture_1111(performance)
 
         assert self.performance_id != 2222
         target = self._makeOne(Performance(id=2222))
@@ -398,7 +407,8 @@ class PerformancePrintProgressTests(unittest.TestCase):
 
     def test_it_order_is_canceled(self):
         from altair.app.ticketing.models import DBSession as session
-        self._create_fixture_1111()
+        performance = Performance(id=self.performance_id)
+        FixtureSet(self.organization_id)._create_fixture_1111(performance)
 
         ### cancel
         for ob in session.new:
@@ -406,7 +416,7 @@ class PerformancePrintProgressTests(unittest.TestCase):
                 ob.canceled_at = datetime(2000, 1, 1)
 
         assert self.performance_id == 1111
-        target = self._makeOne(Performance(id=1111))
+        target = self._makeOne(performance)
 
         self.assertEqual(target.total, 0)
         self.assertEqual(target.qr.total, 0)
@@ -421,10 +431,11 @@ class PerformancePrintProgressTests(unittest.TestCase):
 
     def test_it_1244(self):
         """Order : OrderedProduct : OrderedProductItem : OrderedProductItemToken = 1:2:4:4"""
-        self._create_fixture_1244()
+        performance = Performance(id=self.performance_id)
+        FixtureSet(self.organization_id)._create_fixture_1244(performance)
 
         assert self.performance_id == 1111
-        target = self._makeOne(Performance(id=1111))
+        target = self._makeOne(performance)
 
         self.assertEqual(target.total, 12)
         self.assertEqual(target.qr.total, 4)
@@ -439,10 +450,11 @@ class PerformancePrintProgressTests(unittest.TestCase):
 
     def test_it_1248(self):
         """Order : OrderedProduct : OrderedProductItem : OrderedProductItemToken = 1:2:4:8"""
-        self._create_fixture_1248()
+        performance = Performance(id=self.performance_id)
+        FixtureSet(self.organization_id)._create_fixture_1248(performance)
 
         assert self.performance_id == 1111
-        target = self._makeOne(Performance(id=1111))
+        target = self._makeOne(performance)
 
         self.assertEqual(target.total, 24)
         self.assertEqual(target.qr.total, 8)
@@ -456,4 +468,203 @@ class PerformancePrintProgressTests(unittest.TestCase):
         self.assertEqual(target.other.unprinted, 4)
 
 class EventPrintProgressTests(unittest.TestCase):
-    pass
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+
+    def _getTarget(self):
+        from altair.app.ticketing.print_progress.progress import EventPrintProgress
+        return EventPrintProgress
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    organization_id = 1
+    performance_id = 1111
+
+    def test_unprinted_shipping(self):
+        """未発券(printed_at=None)"""
+        from altair.app.ticketing.models import DBSession as session
+        performance = Performance(id=self.performance_id)
+        token = FixtureSet(self.organization_id)._create_shipping_ordered_product_item_token(performance)
+        token.printed_at = None
+        session.add(token)
+
+        assert self.performance_id == 1111
+        performance.event = Event()
+        target = self._makeOne(performance.event)
+        self.assertEqual(target.total, 1)
+        self.assertEqual(target.shipping.total, 1)
+        self.assertEqual(target.shipping.unprinted, 1)
+        self.assertEqual(target.shipping.printed, 0)
+
+    def test_printed_shipping(self):
+        """発券済み(printed_at!=None)"""
+        from altair.app.ticketing.models import DBSession as session
+        performance = Performance(id=self.performance_id)
+        token = FixtureSet(self.organization_id)._create_shipping_ordered_product_item_token(performance)
+        token.printed_at = datetime(2000, 1, 1)
+        session.add(token)
+
+        assert self.performance_id == 1111
+        performance.event = Event()
+        target = self._makeOne(performance.event)
+        self.assertEqual(target.total, 1)
+        self.assertEqual(target.shipping.total, 1)
+        self.assertEqual(target.shipping.unprinted, 0)
+        self.assertEqual(target.shipping.printed, 1)
+
+    def test_refreshed_shipping(self):
+        """再発券許可時(printed_at < refreshed_at)"""
+        from altair.app.ticketing.models import DBSession as session
+        performance = Performance(id=self.performance_id)
+        token = FixtureSet(self.organization_id)._create_shipping_ordered_product_item_token(performance)
+        token.printed_at = datetime(2000, 1, 1)
+        token.refreshed_at = datetime(2001, 1, 1)
+        session.add(token)
+
+        assert self.performance_id == 1111
+        performance.event = Event()
+        target = self._makeOne(performance.event)
+        self.assertEqual(target.total, 1)
+        self.assertEqual(target.shipping.total, 1)
+        self.assertEqual(target.shipping.unprinted, 1)
+        self.assertEqual(target.shipping.printed, 0)
+
+    def test_printed_after_refreshed_shipping(self):
+        """再発券許可後印刷済み(printed_at > refreshed_at)"""
+        from altair.app.ticketing.models import DBSession as session
+        performance = Performance(id=self.performance_id)
+        token = FixtureSet(self.organization_id)._create_shipping_ordered_product_item_token(performance)
+        token.printed_at = datetime(2002, 1, 1)
+        token.refreshed_at = datetime(2001, 1, 1)
+        session.add(token)
+
+        assert self.performance_id == 1111
+        performance.event = Event()
+        target = self._makeOne(performance.event)
+        self.assertEqual(target.total, 1)
+        self.assertEqual(target.shipping.total, 1)
+        self.assertEqual(target.shipping.unprinted, 0)
+        self.assertEqual(target.shipping.printed, 1)
+
+    def test_it_matched_performance_exists(self):
+        performance = Performance(id=self.performance_id)
+        FixtureSet(self.organization_id)._create_fixture_1111(performance)
+
+        assert self.performance_id == 1111
+        performance.event = Event()
+        target = self._makeOne(performance.event)
+
+        self.assertEqual(target.total, 3)
+        self.assertEqual(target.qr.total, 1)
+        self.assertEqual(target.qr.printed, 0)
+        self.assertEqual(target.qr.unprinted, 1)
+        self.assertEqual(target.shipping.total, 1)
+        self.assertEqual(target.shipping.printed, 0)
+        self.assertEqual(target.shipping.unprinted, 1)
+        self.assertEqual(target.other.total, 1)
+        self.assertEqual(target.other.printed, 0)
+        self.assertEqual(target.other.unprinted, 1)
+
+    def test_it_matched_performance_notfound(self):
+        performance = Performance(id=self.performance_id)
+        FixtureSet(self.organization_id)._create_fixture_1111(performance)
+
+        assert self.performance_id != 2222
+        performance2 = Performance(event=Event())
+        target = self._makeOne(performance2.event)
+
+        self.assertEqual(target.total, 0)
+        self.assertEqual(target.qr.total, 0)
+        self.assertEqual(target.qr.printed, 0)
+        self.assertEqual(target.qr.unprinted, 0)
+        self.assertEqual(target.shipping.total, 0)
+        self.assertEqual(target.shipping.printed, 0)
+        self.assertEqual(target.shipping.unprinted, 0)
+        self.assertEqual(target.other.total, 0)
+        self.assertEqual(target.other.printed, 0)
+        self.assertEqual(target.other.unprinted, 0)
+
+    def test_it_matched_event_notfound(self):
+        performance = Performance(id=self.performance_id)
+        FixtureSet(self.organization_id)._create_fixture_1111(performance)
+
+        performance.event = Event()
+        target = self._makeOne(Event())
+
+        self.assertEqual(target.total, 0)
+        self.assertEqual(target.qr.total, 0)
+        self.assertEqual(target.qr.printed, 0)
+        self.assertEqual(target.qr.unprinted, 0)
+        self.assertEqual(target.shipping.total, 0)
+        self.assertEqual(target.shipping.printed, 0)
+        self.assertEqual(target.shipping.unprinted, 0)
+        self.assertEqual(target.other.total, 0)
+        self.assertEqual(target.other.printed, 0)
+        self.assertEqual(target.other.unprinted, 0)
+
+    def test_it_order_is_canceled(self):
+        from altair.app.ticketing.models import DBSession as session
+        performance = Performance(id=self.performance_id)
+        FixtureSet(self.organization_id)._create_fixture_1111(performance)
+
+        ### cancel
+        for ob in session.new:
+            if isinstance(ob, Order):
+                ob.canceled_at = datetime(2000, 1, 1)
+
+        assert self.performance_id == 1111
+        performance.event = Event()
+        target = self._makeOne(performance.event)
+
+        self.assertEqual(target.total, 0)
+        self.assertEqual(target.qr.total, 0)
+        self.assertEqual(target.qr.printed, 0)
+        self.assertEqual(target.qr.unprinted, 0)
+        self.assertEqual(target.shipping.total, 0)
+        self.assertEqual(target.shipping.printed, 0)
+        self.assertEqual(target.shipping.unprinted, 0)
+        self.assertEqual(target.other.total, 0)
+        self.assertEqual(target.other.printed, 0)
+        self.assertEqual(target.other.unprinted, 0)
+
+    def test_it_1244(self):
+        """Order : OrderedProduct : OrderedProductItem : OrderedProductItemToken = 1:2:4:4"""
+        performance = Performance(id=self.performance_id)
+        FixtureSet(self.organization_id)._create_fixture_1244(performance)
+
+        assert self.performance_id == 1111
+        performance.event = Event()
+        target = self._makeOne(performance.event)
+
+        self.assertEqual(target.total, 12)
+        self.assertEqual(target.qr.total, 4)
+        self.assertEqual(target.qr.printed, 0)
+        self.assertEqual(target.qr.unprinted, 4)
+        self.assertEqual(target.shipping.total, 4)
+        self.assertEqual(target.shipping.printed, 0)
+        self.assertEqual(target.shipping.unprinted, 4)
+        self.assertEqual(target.other.total, 4)
+        self.assertEqual(target.other.printed, 0)
+        self.assertEqual(target.other.unprinted, 4)
+
+    def test_it_1248(self):
+        """Order : OrderedProduct : OrderedProductItem : OrderedProductItemToken = 1:2:4:8"""
+        performance = Performance(id=self.performance_id)
+        FixtureSet(self.organization_id)._create_fixture_1248(performance)
+
+        assert self.performance_id == 1111
+        performance.event = Event()
+        target = self._makeOne(performance.event)
+
+        self.assertEqual(target.total, 24)
+        self.assertEqual(target.qr.total, 8)
+        self.assertEqual(target.qr.printed, 4)
+        self.assertEqual(target.qr.unprinted, 4)
+        self.assertEqual(target.shipping.total, 8)
+        self.assertEqual(target.shipping.printed, 4)
+        self.assertEqual(target.shipping.unprinted, 4)
+        self.assertEqual(target.other.total, 8)
+        self.assertEqual(target.other.printed, 4)
+        self.assertEqual(target.other.unprinted, 4)
