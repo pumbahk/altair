@@ -29,9 +29,11 @@ class PrintProgressGetter(object):
         self.organization = organization
 
     def get_event_progress(self, event):
+        assert event.organization_id == self.organization_id
         return EventPrintProgress(event)
 
     def get_performance_progress(self, performance):
+        assert performance.event.organization_id == self.organization_id
         return PerformancePrintProgress(performance)
 
 class DummyPrintProgress(object):
