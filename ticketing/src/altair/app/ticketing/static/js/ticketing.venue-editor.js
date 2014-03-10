@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['g9MM1O3EKBR0DE1Y'] = (function (exports) { (function () { 
+__LIBS__['oTQ82ZO51D4U4RDA'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['dH7A25XBZXG573X4'] = (function (exports) { (function () { 
+__LIBS__['CE820YUADAXTYFXI'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -99,7 +99,7 @@ exports.DEFAULT = {
   SEAT_RENDER_UNITS: 1000
 };
  })(); return exports; })({});
-__LIBS__['aBQPPHVI4E6NBUYP'] = (function (exports) { (function () { 
+__LIBS__['rE4_BBHIFW8HI2HE'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -276,7 +276,7 @@ timer.prototype.lap = function(msg) {
   return lap;
 };
  })(); return exports; })({});
-__LIBS__['K7BO5AFOQ02RG_P7'] = (function (exports) { (function () { 
+__LIBS__['oERBXWYPSX_BWTCZ'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -325,12 +325,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['iPJDIW6HQIO9Y2W3'] = (function (exports) { (function () { 
+__LIBS__['K_U5GWYJR8183ORT'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['aBQPPHVI4E6NBUYP'];
-var CONF = __LIBS__['dH7A25XBZXG573X4'];
-var IdentifiableSet = __LIBS__['K7BO5AFOQ02RG_P7'].IdentifiableSet;
+var util = __LIBS__['rE4_BBHIFW8HI2HE'];
+var CONF = __LIBS__['CE820YUADAXTYFXI'];
+var IdentifiableSet = __LIBS__['oERBXWYPSX_BWTCZ'].IdentifiableSet;
 
 var use_altair_collection = true;
 
@@ -1028,12 +1028,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['RG39EA5PZR8JRIWJ'] = (function (exports) { (function () { 
+__LIBS__['gPZUF4_5HGZ763H6'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['aBQPPHVI4E6NBUYP'];
-var CONF = __LIBS__['dH7A25XBZXG573X4'];
-var models = __LIBS__['iPJDIW6HQIO9Y2W3'];
+var util = __LIBS__['rE4_BBHIFW8HI2HE'];
+var CONF = __LIBS__['CE820YUADAXTYFXI'];
+var models = __LIBS__['K_U5GWYJR8183ORT'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -1216,13 +1216,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['dH7A25XBZXG573X4'];
-  var models = __LIBS__['iPJDIW6HQIO9Y2W3'];
-  var util = __LIBS__['aBQPPHVI4E6NBUYP'];
-  var viewobjects = __LIBS__['RG39EA5PZR8JRIWJ'];
-  var IdentifiableSet = __LIBS__['K7BO5AFOQ02RG_P7'].IdentifiableSet;
+  var CONF = __LIBS__['CE820YUADAXTYFXI'];
+  var models = __LIBS__['K_U5GWYJR8183ORT'];
+  var util = __LIBS__['rE4_BBHIFW8HI2HE'];
+  var viewobjects = __LIBS__['gPZUF4_5HGZ763H6'];
+  var IdentifiableSet = __LIBS__['oERBXWYPSX_BWTCZ'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['g9MM1O3EKBR0DE1Y'];
+    I18n.translations = __LIBS__['oTQ82ZO51D4U4RDA'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -2207,6 +2207,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
               error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
             });
             aux.callbacks.loading && aux.callbacks.loading(aux.manager);
+            aux.manager.unselectAll();
             break;
 
           case 'adjacency':
