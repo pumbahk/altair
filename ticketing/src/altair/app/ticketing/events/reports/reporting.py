@@ -221,7 +221,7 @@ def export_for_sales(event):
             end_at = SalesSegment.query.filter(and_(SalesSegment.performance_id==p.id, SalesSegment.public==True))\
                                        .with_entities(func.max(SalesSegment.end_at)).scalar()
             record = report_sheet.SalesSchedulePerformanceRecord(
-                datetime_=(p.open_on and formatter.format_date(p.open_on)),
+                datetime_=(p.start_on and formatter.format_date(p.start_on)),
                 open_=(p.open_on and formatter.format_time(p.open_on)),
                 start=(p.start_on and formatter.format_time(p.start_on)),
                 price_name=label,
