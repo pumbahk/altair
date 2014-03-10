@@ -2206,7 +2206,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if event_id:
             query = query.filter(Product.event_id==event_id)
         if sales_segment_group_id:
-            query = query.filter(Product.sales_segment_group_id==sales_segment_id)
+            query = query.filter(Product.sales_segment_group_id==sales_segment_group_id)
         if stock_id:
             if not performance_id:
                 query = query.join(Product.items)
