@@ -1,0 +1,21 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <SolidColorBrush x:Key="Grayout_CurrentSelectionBoxColor">
+    <SolidColorBrush.Color>#fefee0</SolidColorBrush.Color>
+  </SolidColorBrush>
+  <SolidColorBrush x:Key="Grayout_DisableSelectionBoxColor">
+    <SolidColorBrush.Color>#eeeeee</SolidColorBrush.Color>
+  </SolidColorBrush>
+  <SolidColorBrush x:Key="Grayout_MouseOverSelectionBoxColor">
+    <SolidColorBrush.Color>#c7ecfc</SolidColorBrush.Color>
+  </SolidColorBrush>
+    
+  <SolidColorBrush x:Key="Grayout_ActiveTextColor">
+        <SolidColorBrush.Color>White</SolidColorBrush.Color>
+  </SolidColorBrush>
+  <SolidColorBrush x:Key="Grayout_InactiveTextColor">
+     <SolidColorBrush.Color>Gray</SolidColorBrush.Color>
+  </SolidColorBrush>
+</ResourceDictionary>
+

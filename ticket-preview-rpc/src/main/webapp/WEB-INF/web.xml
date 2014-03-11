@@ -14,4 +14,14 @@
     <servlet-name>svgrpc</servlet-name>
     <url-pattern>/</url-pattern>
   </servlet-mapping>
+
+  <servlet>
+    <servlet-name>svgrpcRawImage</servlet-name>
+    <servlet-class>jp.ticketstar.ticketing.svgrpc.SVGRenderingRawImageServlet</servlet-class>	
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>svgrpcRawImage</servlet-name>
+    <url-pattern>/raw</url-pattern>
+  </servlet-mapping>
 </web-app>
