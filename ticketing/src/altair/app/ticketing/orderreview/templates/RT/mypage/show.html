@@ -109,37 +109,27 @@ ${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示
 </%def>
 
 <%def name="render_mailmagazine(request)">
+
   % if mailmagazines_to_subscribe:
+
   <form id="mail_form" name="mail_form" method="post" action="${request.route_path('mypage.mailmag.confirm')}">
-  <div class="settlementBox">
-		<div class="settlementBoxInner">
-			<div id="mailMagazineBox">
-				<div id="mailMagazineBoxInner">
-					<dl>
-						<dt>
-							楽天チケットからのメールマガジンの購読を選択できます。
-						</dt>
-						<dd>
-							<ul>
-								% for mailmagazine, subscribed in mailmagazines_to_subscribe:
-								<li${subscribed and u' class="subscribed"' or u''|n}>
-									<div>
-										<input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
-										<label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
-									</div>
-									<div>
-										${mailmagazine.description|n}
-									</div>
-								</li>
-								% endfor
-							</ul>
-						</dd>
-					</dl>
-				</div>
-			</div>
-		</div>
+  <div id="mypageHistory">
+    楽天チケットからのメールマガジンの購読を選択できます。<br/><br/>
+    % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+      <div class="box">
+        <dl>
+            <input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+            <b><label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label></b>
+            <br/><br/>
+
+            ${mailmagazine.description|n}
+        </dl>
+      </div>
+    % endfor
   </div>
-  <input type="submit" value="次へ" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+  <div style="text-align: center">
+    <input type="submit" value="変更する" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+  </div>
   </form>
   % endif
 </%def>
