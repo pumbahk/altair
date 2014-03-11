@@ -46,7 +46,7 @@ def setup_operator(auth_id=AUTH_ID, organization_id=ORGANIZATION_ID):
         OperatorAuth(operator=operator, login_id=auth_id)
     return operator
 
-def setup_product_item(quantity, quantity_only, organization):
+def setup_product_item(quantity, quantity_only, organization, stock_type=None):
     from altair.app.ticketing.core.models import Stock
     from altair.app.ticketing.core.models import StockStatus
     from altair.app.ticketing.core.models import StockType
@@ -136,6 +136,7 @@ def setup_product_item(quantity, quantity_only, organization):
             stock_status=StockStatus(quantity=10)
         )
     )
+    product_item.product.seat_stock_type = stock_type or StockType()
     return product_item
 
 def setup_shipping_address(mail_address="my@test.mail.com"):
@@ -159,13 +160,13 @@ def setup_shipping_address(mail_address="my@test.mail.com"):
             fax=":fax")
 
 
-def setup_ordered_product_item(quantity, quantity_only, organization, order_no="Order:order_no", product_item=None):
+def setup_ordered_product_item(quantity, quantity_only, organization, order_no="Order:order_no", product_item=None, stock_type=None):
     """copied. from altair/ticketing/src/altair/app/ticketing/printqr/test_functional.py"""
     from altair.app.ticketing.core.models import OrderedProductItem
     from altair.app.ticketing.core.models import OrderedProduct
     from altair.app.ticketing.core.models import Order
 
-    product_item = product_item or setup_product_item(quantity, quantity_only, organization) #xxx:
+    product_item = product_item or setup_product_item(quantity, quantity_only, organization, stock_type) #xxx:
     payment_delivery_method_pair = product_item.product.sales_segment.payment_delivery_method_pairs[0] #xxx:
     order = Order(
         shipping_address=setup_shipping_address(), #xxx:
@@ -192,19 +193,20 @@ def setup_ordered_product_item(quantity, quantity_only, organization, order_no="
         order=order, 
         quantity=quantity
     )
+    ordered_product.
     return OrderedProductItem(price=14000, quantity=quantity, product_item=product_item, ordered_product=ordered_product)
 
-def setup_order(quantity, quantity_only, organization, order_no="Order:order_no", product_item=None):
-    ordered_product_item = setup_ordered_product_item(quantity, quantity_only, organization, order_no=order_no, product_item=product_item)
+def setup_order(quantity, quantity_only, organization, order_no="Order:order_no", product_item=None, stock_type=None):
+    ordered_product_item = setup_ordered_product_item(quantity, quantity_only, organization, order_no=order_no, product_item=product_item, stock_type=stock_type)
     return ordered_product_item.ordered_product.order
 
-def setup_lot_entry(quantity, quantity_only, organization, entry_no="LotEntry:entry_no", product_item=None):
+def setup_lot_entry(quantity, quantity_only, organization, entry_no="LotEntry:entry_no", product_item=None, stock_type=None):
     from altair.app.ticketing.lots.models import (
         LotEntryWish, 
         LotEntry, 
         Lot
     )
-    product_item = product_item or setup_product_item(quantity, quantity_only, organization)
+    product_item = product_item or setup_product_item(quantity, quantity_only, organization, stock_type)
     sales_segment = product_item.product.sales_segment
     payment_delivery_method_pair = sales_segment.payment_delivery_method_pairs[0] #xxx:
     lot_entry = LotEntry(
@@ -268,15 +270,33 @@ class MailTemplateCreationTest(unittest.TestCase):
             raise AssertionError(e.text)
 
     def test_purchase_complete_mail(self):
-        from altair.app.ticketing.core.models import MailTypeEnum
+        from altair.app.ticketing.core.models import MailTypeEnum, StockType, StockTypeEnum
         operator = setup_operator()
         order_no = "*orderno*"
+        stock_type = StockType()
+        stock_type.type = StockTypeEnum.Other.v
         order = setup_order(quantity=2,
                             quantity_only=True,
                             organization=operator.organization, 
-                            order_no=order_no)
+                            order_no=order_no,
+                            stock_type=stock_type)
         request = _make_request(operator.organization)
 
+        with mock.patch("altair.app.ticketing.mails.complete.ch.render_payment_finished_mail_viewlet") as prender:
+            with mock.patch("altair.app.ticketing.mails.complete.ch.render_delivery_finished_mail_viewlet") as drender:
+                result = self._callAction(request, order, MailTypeEnum.PurchaseCompleteMail)
+                self.assertTrue(result.body.data, str) #xxx:
+                self.assertIn("*orderno*", result.body.data)
+                self.assertTrue(prender.called)
+                self.assertTrue(drender.called)
+
+        stock_type = StockType()
+        stock_type.type = StockTypeEnum.Seat.v
+        order = setup_order(quantity=2,
+                            quantity_only=True,
+                            organization=operator.organization,
+                            order_no=order_no,
+                            stock_type=stock_type)
         with mock.patch("altair.app.ticketing.mails.complete.ch.render_payment_finished_mail_viewlet") as prender:
             with mock.patch("altair.app.ticketing.mails.complete.ch.render_delivery_finished_mail_viewlet") as drender:
                 result = self._callAction(request, order, MailTypeEnum.PurchaseCompleteMail)
