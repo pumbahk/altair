@@ -16,6 +16,10 @@ namespace QR
 
         public InternalApplication ()
         {
+            if (!logger.IsInfoEnabled)
+            {
+                throw new InvalidOperationException("logger is disabled");
+            }
             logger.Info("Internal Application starting.");
             var config = new Configurator (new Resource (true));
             this.Resource = config.Resource;
