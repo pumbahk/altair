@@ -2533,6 +2533,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_delivery_method_pair_id = Column(Identifier, ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = relationship("PaymentDeliveryMethodPair", backref='orders')
 
+    @property
+    def payment_delivery_method_pair(self):
+        return self.payment_delivery_pair
+
     paid_at = Column(DateTime, nullable=True, default=None)
     delivered_at = Column(DateTime, nullable=True, default=None)
     canceled_at = Column(DateTime, nullable=True, default=None)

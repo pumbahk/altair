@@ -1,0 +1,102 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTemplate x:Key="DisableScrolviewer">
+    <ItemsPresenter />
+  </ControlTemplate>
+
+    <Style x:Key="MainBorder" TargetType="Border">
+        <Setter Property="CornerRadius" Value="24.5"/>
+        <Setter Property="Height" Value="500"/>
+        <Setter Property="Width" Value="1260"/>
+        <Setter Property="BorderThickness" Value="10"/>
+        <Setter Property="BorderBrush" Value="{StaticResource MainBorderBrush}"/>
+    </Style>
+
+    <SolidColorBrush x:Key="StampColorBrush" Color="White" Opacity="0.8"/>
+    
+    <Style TargetType="Canvas" x:Key="StampCanvas">
+        <Style.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{StaticResource StampColorBrush}"/>
+                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="Height" Value="24"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+            </Style>
+            <Style TargetType="Ellipse">
+                <Setter Property="StrokeThickness" Value="4"/>
+                <Setter Property="Stroke" Value="{StaticResource StampColorBrush}"/>
+            </Style>
+            <Style TargetType="Rectangle">
+                <Setter Property="StrokeThickness" Value="4"/>
+                <Setter Property="Stroke" Value="{StaticResource StampColorBrush}"/>
+            </Style>
+        </Style.Resources>
+        <Setter Property="Panel.ZIndex" Value="1"/>
+        <Setter Property="Visibility" Value="Hidden"/>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                <Setter Property="Visibility" Value="Visible"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    
+    <DataTemplate x:Key="SelectingTicketItemBoxData">
+        <!-- スタンプ -->
+        <StackPanel>
+            <Canvas Width="0" Height="0" Margin="350,-30,0,0"
+                    Style="{StaticResource StampCanvas}"
+                    >
+                <Canvas.LayoutTransform>
+                    <TransformGroup>
+                        <SkewTransform AngleX="-30" AngleY="20"/>
+                        <ScaleTransform ScaleX="0.9" ScaleY="0.9"/>
+                    </TransformGroup>
+                </Canvas.LayoutTransform>
+                <Ellipse Width="100" Height="70"/>
+                <Rectangle Width="94" Margin="4,24,0,0"></Rectangle>
+                <Rectangle Width="94" Margin="4,43,0,0"></Rectangle>
+                <TextBlock Margin="5,24,0,0" Text="{Binding Today, Mode=OneTime, StringFormat={}{0:yyyy\,MM.dd}}"/>
+                <TextBlock Margin="26,4,0,0">チケット</TextBlock>
+                <TextBlock Margin="20,44,0,0">発券予定</TextBlock>
+            </Canvas>
+            <ToggleButton IsChecked="{Binding IsSelected}" Style="{StaticResource GrayoutIfNeedToggleButton}"
+            HorizontalAlignment="Center"
+            Height="60"
+            Width="520"
+            BorderThickness="2"
+            Margin="2,2,2,2"
+            >
+                <StackPanel>
+                    <WrapPanel>
+                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">商品:</TextBlock>
+                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding ProductName}"/>
+                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">席:</TextBlock>
+                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding SeatName}"/>
+                    </WrapPanel>
+                    <WrapPanel>
+                        <WrapPanel.Style>
+                            <Style TargetType="WrapPanel">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=Text,ElementName=PrintedAt}" Value="">
+                                        <Setter Property="Visibility" Value="Hidden"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </Style>
+                        </WrapPanel.Style>
+                        <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">印刷済み:</TextBlock>
+                        <TextBlock Name="PrintedAt" Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding PrintedAt}"/>
+                    </WrapPanel>
+                </StackPanel>
+            </ToggleButton>
+        </StackPanel>
+    </DataTemplate>
+
+    <Style TargetType="ListView" x:Key="ChoiceCandidatesTwoColumns">
+    <Setter Property="Template" Value="{StaticResource DisableScrolviewer}"/>
+    <Setter Property="ItemTemplate" Value="{StaticResource SelectingTicketItemBoxData}"/>
+  </Style>
+</ResourceDictionary>
+
+

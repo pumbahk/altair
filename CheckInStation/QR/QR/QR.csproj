@@ -1,0 +1,581 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4FEE0284-8205-4705-BA9F-9F8AFDC87B97}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>QR</RootNamespace>
+    <AssemblyName>QR</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG; TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG; TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>QR.App</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Reference Include="InputSimulator, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\WpfKb\bin\Release\InputSimulator.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.TeamFoundation.Controls, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Moq">
+      <HintPath>..\packages\Moq.4.2.1312.1622\lib\net40\Moq.dll</HintPath>
+    </Reference>
+    <Reference Include="MsgPack">
+      <HintPath>..\packages\MsgPack.Cli.0.4.1\lib\net40-client\MsgPack.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog.Targets.Fluentd">
+      <HintPath>..\packages\NLog.Targets.Fluentd.1.0.1\lib\net45\NLog.Targets.Fluentd.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="PresentationFramework.Aero2" />
+    <Reference Include="ReachFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Printing" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\WpfKb\bin\Release\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Net">
+      <HintPath>opt\local\lib\mono\4.5\System.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http">
+      <HintPath>opt\local\lib\mono\4.5\System.Net.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Net.Http.Formatting">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.1.0\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="NLog">
+      <HintPath>..\packages\NLog.2.1.0\lib\net45\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="WpfKb, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\WpfKb\bin\Release\WpfKb.dll</HintPath>
+    </Reference>
+    <Reference Include="zxing">
+      <HintPath>..\packages\ZXing.Net.0.12.0.0\lib\net40\zxing.dll</HintPath>
+    </Reference>
+    <Reference Include="zxing.presentation">
+      <HintPath>..\packages\ZXing.Net.0.12.0.0\lib\net40\zxing.presentation.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DynamicJson.cs" />
+    <Compile Include="events\ConfirmAllEvent.cs" />
+    <Compile Include="events\ConfirmOneEvent.cs" />
+    <Compile Include="events\FailureEvent.cs" />
+    <Compile Include="events\FinishEvent.cs" />
+    <Compile Include="events\GlobalStaticEvent.cs" />
+    <Compile Include="flow\AggregateShorthandError.cs" />
+    <Compile Include="flow\CaseAuthPassword.cs" />
+    <Compile Include="models\AggregateTicketPrinting.cs" />
+    <Compile Include="models\IModelValidation.cs" />
+    <Compile Include="models\ModelValidation.cs" />
+    <Compile Include="presentation\gui\BindingErrorDialogAction.cs" />
+    <Compile Include="presentation\gui\CandidateCreator.cs" />
+    <Compile Include="presentation\gui\command\DialogCloseCommand.cs" />
+    <Compile Include="presentation\gui\command\DialogOpenCommand.cs" />
+    <Compile Include="presentation\gui\control\IDialog.cs" />
+    <Compile Include="presentation\gui\control\InspectCase.xaml.cs">
+      <DependentUpon>InspectCase.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\control\AlnumPad.cs" />
+    <Compile Include="presentation\gui\control\MenuDialog.xaml.cs">
+      <DependentUpon>MenuDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\control\MessageDialog.xaml.cs">
+      <DependentUpon>MessageDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\control\QRCodeCanvas.cs" />
+    <Compile Include="presentation\gui\control\TelPad.cs" />
+    <Compile Include="presentation\gui\converter\MathConverter.cs" />
+    <Compile Include="presentation\gui\converter\NotEmptyStringConverter.cs" />
+    <Compile Include="presentation\gui\HomeWindow.xaml.cs">
+      <DependentUpon>HomeWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageAuthPassword.xaml.cs">
+      <DependentUpon>PageAuthPassword.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageDummy.xaml.cs">
+      <DependentUpon>PageDummy.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageHomeMenu.xaml.cs">
+      <DependentUpon>PageHomeMenu.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\ProgressSingletonAction.cs" />
+    <Compile Include="presentation\gui\PageNavigator.cs" />
+    <Compile Include="presentation\gui\page\IDataContextHasCase.cs" />
+    <Compile Include="presentation\gui\MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageAuthInput.xaml.cs">
+      <DependentUpon>PageAuthInput.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageInputStrategySelect.xaml.cs">
+      <DependentUpon>PageInputStrategySelect.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageQRCodeInput.xaml.cs">
+      <DependentUpon>PageQRCodeInput.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageOrdernoOrdernoInput.xaml.cs">
+      <DependentUpon>PageOrdernoOrdernoInput.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageOrdernoTelInput.xaml.cs">
+      <DependentUpon>PageOrdernoTelInput.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageConfirmOne.xaml.cs">
+      <DependentUpon>PageConfirmOne.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageConfirmAll.xaml.cs">
+      <DependentUpon>PageConfirmAll.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PagePrinting.xaml.cs">
+      <DependentUpon>PagePrinting.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageFinish.xaml.cs">
+      <DependentUpon>PageFinish.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageFailure.xaml.cs">
+      <DependentUpon>PageFailure.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\viewmodel\DisplayTicketData.cs" />
+    <Compile Include="presentation\gui\viewmodel\InputDataContext.cs" />
+    <Compile Include="presentation\gui\viewmodel\ViewModel.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="flow\FlowManager.cs" />
+    <Compile Include="flow\IFlow.cs" />
+    <Compile Include="flow\CaseQRCodeInput.cs" />
+    <Compile Include="flow\ICase.cs" />
+    <Compile Include="flow\AbstractCase.cs" />
+    <Compile Include="flow\CaseQRDataFetch.cs" />
+    <Compile Include="flow\CaseQRConfirmForOne.cs" />
+    <Compile Include="flow\CaseQRConfirmForAll.cs" />
+    <Compile Include="flow\Flow.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="support\DispatchResponse.cs" />
+    <Compile Include="support\EnsureResponse.cs" />
+    <Compile Include="support\ReplaceExecutableNamespaceName.cs" />
+    <Compile Include="support\TransparentMessageException.cs" />
+    <Compile Include="tests\flow\FlowTests.cs" />
+    <Compile Include="flow\CaseFailureRedirect.cs" />
+    <Compile Include="flow\IFlowDefinition.cs" />
+    <Compile Include="flow\FlowDefinitionDefault.cs" />
+    <Compile Include="flow\CaseAuthInput.cs" />
+    <Compile Include="events\IInternalEvent.cs" />
+    <Compile Include="RequestBroker.cs" />
+    <Compile Include="events\EmptyEvent.cs" />
+    <Compile Include="events\AuthenticationEvent.cs" />
+    <Compile Include="auth\Authentication.cs" />
+    <Compile Include="auth\FakeAuthentication.cs" />
+    <Compile Include="auth\IAuthentication.cs" />
+    <Compile Include="web\IHTTPWrapper.cs" />
+    <Compile Include="web\IUrlBuilder.cs" />
+    <Compile Include="web\TrasparentUrlBuilder.cs" />
+    <Compile Include="web\FakeHttpContent.cs" />
+    <Compile Include="web\FakeHttpMessageHandler.cs" />
+    <Compile Include="web\HttpWrapperFactory.cs" />
+    <Compile Include="web\IHttpWrapperFactory.cs" />
+    <Compile Include="web\FakeHttpWrapperFactory.cs" />
+    <Compile Include="web\tests\FakeGetUrlTests.cs" />
+    <Compile Include="web\HttpWrapper.cs" />
+    <Compile Include="Configurator.cs" />
+    <Compile Include="InternalApplication.cs" />
+    <Compile Include="flow\CaseAuthDataFetch.cs" />
+    <Compile Include="tests\case\AuthenticationTests.cs" />
+    <Compile Include="tests\case\QRCodeInputTests.cs" />
+    <Compile Include="message\ResultTuple.cs" />
+    <Compile Include="web\tests\ClientCreateTests.cs" />
+    <Compile Include="web\CookieUtils.cs" />
+    <Compile Include="configuration\AuthConfiguration.cs" />
+    <Compile Include="IConfigurator.cs" />
+    <Compile Include="configuration\QRConfiguration.cs" />
+    <Compile Include="configuration\HttpCommunicationConfiguration.cs" />
+    <Compile Include="presentation\cli\AuthInput.cs" />
+    <Compile Include="message\MessageResourceUtil.cs" />
+    <Compile Include="tests\GetMessageFromAppConfigTests.cs" />
+    <Compile Include="tests\auth\AuthUsingTests.cs" />
+    <Compile Include="message\UrlResourceUtil.cs" />
+    <Compile Include="presentation\cli\QRInput.cs" />
+    <Compile Include="events\QRInputEvent.cs" />
+    <Compile Include="events\AbstractEvent.cs" />
+    <Compile Include="tests\IntegrationTests.cs" />
+    <Compile Include="tests\Testing.cs" />
+    <Compile Include="models\ResultStatusCollector.cs" />
+    <Compile Include="tests\models\ResultStatusCollectorTests.cs" />
+    <Compile Include="models\FakeTicketImagePrinting.cs" />
+    <Compile Include="tests\case\CaseRequestingJSONTests.cs" />
+    <Compile Include="presentation\cli\SelectInputStrategy.cs" />
+    <Compile Include="events\SelectInputStragetyEvent.cs" />
+    <Compile Include="flow\CaseInputStrategySelect.cs" />
+    <Compile Include="flow\CaseOrdernoOrdernoInput.cs" />
+    <Compile Include="events\OrdernoInputEvent.cs" />
+    <Compile Include="flow\CaseOrdernoTelInput.cs" />
+    <Compile Include="flow\CasePrintFinish.cs" />
+    <Compile Include="flow\CasePrintForAll.cs" />
+    <Compile Include="flow\CasePrintForOne.cs" />
+    <Compile Include="flow\CaseOrdernoConfirmAll.cs" />
+    <Compile Include="presentation\cli\OrdernoInput.cs" />
+    <Compile Include="models\plain\AuthInfo.cs" />
+    <Compile Include="models\plain\Endpoint.cs" />
+    <Compile Include="models\plain\TicketData.cs" />
+    <Compile Include="models\plain\TicketDataCollection.cs" />
+    <Compile Include="models\plain\OrdernoRequestData.cs" />
+    <Compile Include="models\loader\FakeDataLoader.cs" />
+    <Compile Include="models\loader\IDataFetcher.cs" />
+    <Compile Include="models\loader\TicketDataCollectionFetcher.cs" />
+    <Compile Include="models\loader\TicketDataFetcher.cs" />
+    <Compile Include="models\Resource.cs" />
+    <Compile Include="models\IResource.cs" />
+    <Compile Include="models\plain\TicketDataCollectionRequestData.cs" />
+    <Compile Include="flow\CaseOrdernoVerifyRequestData.cs" />
+    <Compile Include="models\loader\VerifiedOrderDataFetcher.cs" />
+    <Compile Include="models\plain\AdditionalData.cs" />
+    <Compile Include="tests\flow\BackwardTests.cs" />
+    <Compile Include="flow\FakeFlow.cs" />
+    <Compile Include="flow\IAutoForwardingCase.cs" />
+    <Compile Include="models\plain\UpdatePrintedAtRequestData.cs" />
+    <Compile Include="message\EnumUtil.cs" />
+    <Compile Include="models\loader\AdImageCollector.cs" />
+    <Compile Include="tests\models\GetAdImageTests.cs" />
+    <Compile Include="events\PrintingEvent.cs" />
+    <Compile Include="tests\flow\FlowForEaglesTests.cs" />
+    <Compile Include="tests\flow\BackwardForEaglesTests.cs" />
+    <Compile Include="models\loader\SVGTicketImageDataXamlFetcher.cs" />
+    <Compile Include="models\loader\SVGTicketImageDataByteArrayFetcher.cs" />
+    <Compile Include="models\ISVGTicketImageDataFetcher.cs" />
+    <Compile Include="models\plain\TicketImageData.cs" />
+    <Compile Include="models\loader\SVGFetcher.cs" />
+    <Compile Include="models\ITicketPrinting.cs" />
+    <Compile Include="models\TicketImagePrinting.cs" />
+    <Compile Include="models\TicketXamlPrinting.cs" />
+    <Compile Include="models\TicketPrintedAtUpdater.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="models\core\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resource\qrload.png" />
+    <Resource Include="Resource\printing.gif" />
+    <Resource Include="Resource\background.png" />
+    <None Include="app.config" />
+    <Content Include="NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="tests\misc\gen.sh" />
+    <EmbeddedResource Include="tests\misc\login.json" />
+    <EmbeddedResource Include="tests\misc\login.status.json" />
+    <EmbeddedResource Include="tests\misc\qrdata.json" />
+    <EmbeddedResource Include="tests\misc\qrdata.all.json" />
+    <EmbeddedResource Include="tests\misc\svgone.json" />
+    <EmbeddedResource Include="tests\misc\svgall.json" />
+    <EmbeddedResource Include="tests\misc\update.printed_at.json" />
+    <EmbeddedResource Include="tests\misc\sample.qr.svg" />
+    <EmbeddedResource Include="tests\misc\server.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </ApplicationDefinition>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <DesignData Include="Data\DisplayTicketData.xaml">
+      <SubType>Designer</SubType>
+    </DesignData>
+    <Page Include="presentation\gui\control\InspectCase.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\control\MenuDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\control\MessageDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\HomeWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageAuthInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageAuthPassword.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="presentation\gui\page\PageDummy.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageHomeMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageInputStrategySelect.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageQRCodeInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageOrdernoOrdernoInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageOrdernoTelInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageConfirmOne.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageConfirmAll.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PagePrinting.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageFinish.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageFailure.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.Checkbox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.MenuButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.ToggleButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Themes.Text.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Eagles\Controls.MessageDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Eagles\Controls.ToggleButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Individual.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Brush.Background.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.CaseInspect.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.CenterContent.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.GrayoutDisabled.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.HomeMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.KeyPad.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.MetroButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.SubmitButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.ConfirmAllMainSection.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.Toplevel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Styles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Themes.Window.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Eagles\Brush.Background.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Eagles\Controls.Checkbox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Eagles\Brush.Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Eagles\Controls.GrayoutDisabled.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Eagles\Controls.SubmitButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Resources.Image.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Eagles\Styles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 および x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\vkeyboard\vkeyboard.csproj">
+      <Project>{dfc39375-9e53-4294-8970-6061b38b411c}</Project>
+      <Name>vkeyboard</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WpfKb\WpfKb.csproj">
+      <Project>{0784cdc9-0f52-4b8b-9488-6589c11e94e2}</Project>
+      <Name>WpfKb</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>このプロジェクトは、このコンピューターにはない NuGet パッケージを参照しています。これらをダウンロードするには、NuGet パッケージの復元を有効にしてください。詳細については、http://go.microsoft.com/fwlink/?LinkID=322105 を参照してください。不足しているファイルは {0} です。</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
+</Project>
