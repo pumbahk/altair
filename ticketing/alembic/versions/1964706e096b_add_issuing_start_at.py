@@ -1,14 +1,14 @@
 """add_issuing_start_at_issuing_end_at_payment_due_at_to_order
 
 Revision ID: 1964706e096b
-Revises: 3e2e37602d0b
+Revises: 427835e63482
 Create Date: 2013-11-29 15:02:40.492401
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '1964706e096b'
-down_revision = '3e2e37602d0b'
+down_revision = '427835e63482'
 
 from alembic import op
 import sqlalchemy as sa
