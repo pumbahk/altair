@@ -1,0 +1,118 @@
+﻿<p:PageConfirmAllDataContext xmlns:l="clr-namespace:QR.presentation.gui.viewmodel"
+                            xmlns:p="clr-namespace:QR.presentation.gui.page">
+    <p:PageConfirmAllDataContext.Description>
+        まとめて発券されるチケットは以下です
+    </p:PageConfirmAllDataContext.Description>
+    <p:PageConfirmAllDataContext.Orderno>
+        RT01010101
+    </p:PageConfirmAllDataContext.Orderno>
+    <p:PageConfirmAllDataContext.CustomerName>
+        苗字名前
+    </p:PageConfirmAllDataContext.CustomerName>
+    <p:PageConfirmAllDataContext.PerformanceDate>
+        2012年12月24日
+    </p:PageConfirmAllDataContext.PerformanceDate>
+    <p:PageConfirmAllDataContext.NumberOfPrintableTicket>
+        10
+    </p:PageConfirmAllDataContext.NumberOfPrintableTicket>
+    <p:PageConfirmAllDataContext.DisplayTicketDataCollection>
+        <l:DisplayTicketDataCollection>
+            <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
+                <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
+                <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
+                <l:DisplayTicketData.SeatName>A席(1)</l:DisplayTicketData.SeatName>
+                <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
+            </l:DisplayTicketData>
+            <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
+                <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.IsSelected>false</l:DisplayTicketData.IsSelected>
+                <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
+                <l:DisplayTicketData.SeatName>A席(2)</l:DisplayTicketData.SeatName>
+                <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
+            </l:DisplayTicketData>
+            <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
+                <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
+                <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
+                <l:DisplayTicketData.SeatName>A席(3)</l:DisplayTicketData.SeatName>
+                <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
+            </l:DisplayTicketData>
+            <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
+                <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.IsSelected>false</l:DisplayTicketData.IsSelected>
+                <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
+                <l:DisplayTicketData.SeatName>A席(4)</l:DisplayTicketData.SeatName>
+                <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
+            </l:DisplayTicketData>
+            <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
+                <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.IsSelected>false</l:DisplayTicketData.IsSelected>
+                <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
+                <l:DisplayTicketData.SeatName>A席(5)</l:DisplayTicketData.SeatName>
+                <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
+            </l:DisplayTicketData>
+            <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
+                <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
+                <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
+                <l:DisplayTicketData.SeatName>A席(6)</l:DisplayTicketData.SeatName>
+                <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
+            </l:DisplayTicketData>
+            <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
+                <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
+                <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
+                <l:DisplayTicketData.SeatName>A席(7)</l:DisplayTicketData.SeatName>
+                <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
+            </l:DisplayTicketData>
+            <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
+                <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
+                <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
+                <l:DisplayTicketData.SeatName>A席(8)</l:DisplayTicketData.SeatName>
+                <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
+            </l:DisplayTicketData>
+            <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
+                <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
+                <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
+                <l:DisplayTicketData.SeatName>A席(9)</l:DisplayTicketData.SeatName>
+                <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
+            </l:DisplayTicketData>
+            <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
+                <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
+                <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
+                <l:DisplayTicketData.SeatName>A席(10)</l:DisplayTicketData.SeatName>
+                <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
+            </l:DisplayTicketData>
+            <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
+                <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
+                <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
+                <l:DisplayTicketData.SeatName>A席(11)</l:DisplayTicketData.SeatName>
+                <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
+            </l:DisplayTicketData>
+            <l:DisplayTicketData>
+                <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
+                <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
+                <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
+                <l:DisplayTicketData.SeatName>A席(12)</l:DisplayTicketData.SeatName>
+                <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
+            </l:DisplayTicketData>
+        </l:DisplayTicketDataCollection>
+    </p:PageConfirmAllDataContext.DisplayTicketDataCollection>
+</p:PageConfirmAllDataContext>

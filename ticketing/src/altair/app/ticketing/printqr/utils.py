@@ -4,56 +4,38 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
 from altair.app.ticketing.models import DBSession
-from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.core.models import Order
 from altair.app.ticketing.core.models import TicketPrintHistory
 from altair.app.ticketing.core.models import OrderedProductItemToken
 from altair.app.ticketing.core.models import OrderedProductItem
 from altair.app.ticketing.core.models import OrderedProduct
-from altair.app.ticketing.core.models import PageFormat
-
 
 from altair.app.ticketing.payments.plugins.qr import DELIVERY_PLUGIN_ID as QR_DELIVERY_ID
 from altair.app.ticketing.core import models as c_models
+from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 
-from altair.app.ticketing.tickets.utils import build_dict_from_ordered_product_item_token
-from altair.app.ticketing.tickets.utils import NumberIssuer
-from altair.app.ticketing.utils import json_safe_coerce
 
 import logging
 from . import helpers as h
 logger = logging.getLogger(__name__)
 
+
+from altair.app.ticketing.tickets.utils import NumberIssuer
+
+_issuer = None
+def get_issuer():
+    global _issuer
+    if _issuer is None:
+        _issuer = NumberIssuer()
+    return _issuer
+
+def reset_issuer():
+    get_issuer().clear()
+
 class UnmatchEventException(Exception):
     pass
 
-def ticket_format_to_dict(ticket_format):
-    data = dict(ticket_format.data)
-    data[u'id'] = ticket_format.id
-    data[u'name'] = ticket_format.name
-    return data
-
-def ticket_to_dict(ticket):
-    data = dict(ticket.data)
-    data[u'id'] = ticket.id
-    data[u'name'] = ticket.name
-    data[u'ticket_format_id'] = ticket.ticket_format_id
-    return data
-
-def page_format_to_dict(page_format):
-    data = dict(page_format.data)
-    data[u'id'] = page_format.id
-    data[u'name'] = page_format.name
-    data[u'printer_name'] = page_format.printer_name
-    return data
-
-def page_formats_for_organization(organization):
-    return [
-        page_format_to_dict(page_format) \
-        for page_format in DBSession.query(PageFormat).filter_by(organization=organization)
-        ]
-
-def _order_and_history_from_qrdata(qrdata):
+def order_and_history_from_qrdata(qrdata):
     qs =  DBSession.query(Order, TicketPrintHistory)\
         .filter(TicketPrintHistory.id==qrdata["serial"])\
         .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
@@ -67,128 +49,22 @@ def _order_and_history_from_qrdata(qrdata):
                  orm.joinedload(TicketPrintHistory.seat))
     return qs.first()
 
-def ticketdata_from_qrdata(qrdata, event_id="*"):
-    order, history = _order_and_history_from_qrdata(qrdata)
+def verify_order(order, event_id="*"):
     performance = order.performance
-    shipping_address = order.shipping_address
-    product_name = history.ordered_product_item.ordered_product.product.name
-    token = history.item_token
-    seat = history.seat
-    performance_name = u"%s (%s)" % (performance.name, performance.venue.name)
-    note = order.note
-
     if event_id != "*" and str(performance.event_id) != str(event_id):
         fmt = "ticketdata_from_qrdata: unmatched event id (order.id=%s, expected event_id=%s, event_id=%s)"
         logger.warn(fmt % (order.id, event_id, performance.event_id))
         raise UnmatchEventException
 
-    ##history.idがあればQRコードを再生成できるそう。それに気づいてもデータがなければ見れなそうなのでhash化しなくて良い
-    #codeno = hashlib.sha1(str(history.id)).hexdigest()
-    codeno = history.id
-    return {
-        "user": shipping_address.full_name_kana if shipping_address else u"", 
-        "codeno": codeno, 
-        "ordered_product_item_token_id": token.id, 
-        "ordered_product_item_id": history.ordered_product_item.id, 
-        "refreshed_at": str(token.refreshed_at) if token.refreshed_at else None, 
-        "printed_at": str(token.printed_at) if token.printed_at else None, 
-        "printed": str(token.printed_at) if token.is_printed() else None, 
-        "canceled": str(order.canceled_at) if order.is_canceled() else None, ##todo:データ整理
-        "orderno": order.order_no, 
-        "order_id": order.id, 
-        "performance_name": performance_name, 
-        "performance_date": h.japanese_datetime(performance.start_on), 
-        "event_id": performance.event_id, 
-        "product_name": product_name, 
-        "seat_id": seat.id if seat else None,
-        "seat_name": seat.name if seat else u"自由席",
-        "note": note,
-        }
 
-_issuer = None
-def get_issuer():
-    global _issuer
-    if _issuer is None:
-        _issuer = NumberIssuer()
-    return _issuer
-
-def reset_issuer():
-    get_issuer().clear()
-
-def vars_dict_and_seat_pair_from_token(token):
-    d = build_dict_from_ordered_product_item_token(token, ticket_number_issuer=get_issuer())
-    if d is None:
-        return None
-    return d, token.seat    
-
-def svg_data_from_token(ordered_product_item_token):
-    pair = vars_dict_and_seat_pair_from_token(ordered_product_item_token)
-    if pair is None:
-        logger.info("*printqr avg_data_from_token pair=None (token_id=%s)" % ordered_product_item_token.id)
-        return []
-    
-    retval_data = {
-        u'ordered_product_item_token_id': ordered_product_item_token.id,
-        u'ordered_product_item_id': ordered_product_item_token.item.id,
-        u'order_id': ordered_product_item_token.item.ordered_product.order.id,
-        u'seat_id': ordered_product_item_token.seat_id or "",
-        u'serial': ordered_product_item_token.serial,
-        u'data': json_safe_coerce(pair[0]),
-        }
-    producer = ApplicableTicketsProducer.from_bundle(ordered_product_item_token.item.product_item.ticket_bundle)
-    
-    data_list = []
-    for ticket_template in producer.qr_only_tickets():
-        if ticket_template is None:
-            logger.info("*printqr avg_data_from_token ticket_template=None (token_id=%s)" % ordered_product_item_token.id)
-        else:
-            data = retval_data.copy()
-            data[u'ticket_template_name'] = ticket_template.name
-            data[u'ticket_template_id'] = ticket_template.id
-            data_list.append(data)
-    return data_list
-
-def svg_data_from_token_with_descinfo(history, ordered_product_item_token):
-    pair = vars_dict_and_seat_pair_from_token(ordered_product_item_token)
-    if pair is None:
-        logger.error("*printqr avg_data_from_token_with_desc_info pair=None (token_id=%s)" % ordered_product_item_token.id)
-        return []
-
-    seat = ordered_product_item_token.seat
-    item = ordered_product_item_token.item
-    ticket_name = "%s(%s)" % (item.ordered_product.product.name, seat.name if seat else u"自由席")
-    retval_data = {
-            u'codeno': history.id, 
-            u'ordered_product_item_token_id': ordered_product_item_token.id,
-            u'ordered_product_item_id': ordered_product_item_token.item.id,
-            u'order_id': ordered_product_item_token.item.ordered_product.order.id,
-            u'seat_id': ordered_product_item_token.seat_id or "",
-            u'serial': ordered_product_item_token.serial,
-            u"ticket_name": ticket_name, 
-            u'data': json_safe_coerce(pair[0]), 
-            u"printed_at": str(ordered_product_item_token.printed_at) if ordered_product_item_token.printed_at else None, 
-            u"refreshed_at": str(ordered_product_item_token.refreshed_at) if ordered_product_item_token.refreshed_at else None
-            }
-    data_list = []
-    producer = ApplicableTicketsProducer.from_bundle(item.product_item.ticket_bundle)
-    for ticket_template in producer.qr_only_tickets():
-        if ticket_template is None:
-            logger.error("*printqr avg_data_from_token ticket_template=None (token_id=%s)" % ordered_product_item_token.id)
-        else:
-            data = retval_data.copy()
-            data[u'ticket_template_name'] = ticket_template.name
-            data[u'ticket_template_id'] = ticket_template.id
-            data[u'ticket_name']= u"{}--{}".format(data[u"ticket_name"], ticket_template.name)
-            data_list.append(data)
-    return data_list
-
-def history_from_token(request, operator_id, order_id, token):
+def history_from_token(request, operator_id, order_id, token, template_id=None):
     return TicketPrintHistory(
         operator_id=operator_id, 
         seat_id=token.seat_id, 
         item_token_id=token.id,
         ordered_product_item_id=token.item.id,
         order_id=order_id,
+        ticket_id=template_id
         )
 
 def add_history(request, operator_id, params):
@@ -196,7 +72,7 @@ def add_history(request, operator_id, params):
     ordered_product_item_token_id = params.get(u'ordered_product_item_token_id')
     ordered_product_item_id = params.get(u'ordered_product_item_id')
     order_id = params.get(u'order_id')
-    ticket_id = params[u'ticket_id']
+    ticket_id = params.get(u'ticket_id')
     return TicketPrintHistory(
         operator_id=operator_id, 
         seat_id=seat_id,
@@ -205,6 +81,39 @@ def add_history(request, operator_id, params):
         order_id=order_id,
         ticket_id=ticket_id
         )
+
+def ordered_product_item_token_query_on_organization(organization_id):
+    return (DBSession.query(OrderedProductItemToken) 
+            .join(OrderedProductItem) 
+            .join(OrderedProduct) 
+            .filter(Order.id==OrderedProduct.order_id) 
+            .filter(Order.organization_id==organization_id))
+
+def get_matched_ordered_product_item_token(ordered_product_item_token_id, organization_id):
+    qs = ordered_product_item_token_query_on_organization(organization_id)
+    return qs.filter(OrderedProductItemToken.id==ordered_product_item_token_id).first()
+
+class EnableTicketTemplatesCache(object):
+    def __init__(self):
+        self.cache = {}
+
+    def __call__(self, ordered_product_item_token):
+        bundle = ordered_product_item_token.item.product_item.ticket_bundle
+        if bundle.id in self.cache:
+            return self.cache[bundle.id][:]
+        else:
+            self.cache[bundle.id] = enable_ticket_template_list(ordered_product_item_token)
+            return self.cache[bundle.id]
+
+def enable_ticket_template_list(ordered_product_item_token):
+    producer = ApplicableTicketsProducer.from_bundle(ordered_product_item_token.item.product_item.ticket_bundle)
+    r = []
+    for ticket_template in producer.qr_only_tickets():
+        if ticket_template is None:
+            logger.error("*enable_ticket_template_list ticket_template=None (token_id=%s)" % ordered_product_item_token.id)
+        r.append(ticket_template)
+    return r
+
 
 ## progress
 def performance_data_from_performance_id(event_id, performance_id):
