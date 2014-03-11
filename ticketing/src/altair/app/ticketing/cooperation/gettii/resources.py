@@ -1,4 +1,5 @@
 #-*- coding: utf-8 -*-
+from pyramid.decorator import reify
 from pyramid.httpexceptions import (
     HTTPNotFound,
     HTTPBadRequest,

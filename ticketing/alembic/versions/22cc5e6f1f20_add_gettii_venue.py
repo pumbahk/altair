@@ -30,11 +30,12 @@ def upgrade():
     op.create_table(
         'GettiiSeat',
         sa.Column('id', Identifier, primary_key=True),
-        sa.Column('no', sa.Unicode(32), nullable=False),
+        sa.Column('l0_id', sa.Unicode(32), nullable=False),
         sa.Column('coordx', sa.Unicode(32), nullable=False),
         sa.Column('coordy', sa.Unicode(32), nullable=False),
         sa.Column('posx', sa.Unicode(32), nullable=False),
         sa.Column('posy', sa.Unicode(32), nullable=False),
+        sa.Column('angle', sa.Unicode(32), nullable=False),
         sa.Column('floor', sa.Unicode(32), nullable=False),
         sa.Column('column', sa.Unicode(32), nullable=False),
         sa.Column('num', sa.Unicode(32), nullable=False),

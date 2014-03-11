@@ -4399,3 +4399,43 @@ class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     coupon_2_name = Column(Unicode(255))
     coupon_2_qr_enabled = Column(Boolean)
     coupon_2_pattern = Column(Unicode(255))
+
+
+class GettiiVenue(Base, BaseModel):
+    __tablename__ = 'GettiiVenue'
+
+    id = Column(Identifier, primary_key=True)
+    code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'会場コード'))
+    venue_id = Column(Identifier, ForeignKey('Venue.id'), nullable=False)
+    venue = relationship('Venue')
+
+
+class GettiiSeat(Base, BaseModel):
+    __tablename__ = 'GettiiSeat'
+
+    id = Column(Identifier, primary_key=True)
+    l0_id = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'座席連番'), default=u'')
+    coordx = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'座標X'), default=u'')
+    coordy = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'座標Y'), default=u'')
+    posx = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'位置X'), default=u'')
+    posy = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'位置Y'), default=u'')
+    angle = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'角度'), default=u'')
+    floor = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'階'), default=u'')
+    column = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'列'), default=u'')
+    num = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'番号'), default=u'')
+    block = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'ブロック'), default=u'')
+    gate = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'ゲート'), default=u'')
+    priority_floor = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'優先順位階'), default=u'')
+    priority_area_code = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'優先順位エリアコード'), default=u'')
+    priority_block = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'優先順位ブロック'), default=u'')
+    priority_seat = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'優先順位座席'), default=u'')
+    seat_flag = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'座席フラグ'), default=u'')
+    seat_classif = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'座席区分'), default=u'')
+    net_block = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'ネットブロック'), default=u'')
+    modified_by = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'更新担当者コード'), default=u'')
+    modified_at = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'更新日'), default=u'')
+    # link
+    gettii_venue_id = Column(Identifier, ForeignKey('GettiiVenue.id', ondelete='CASCADE'), nullable=False)
+    seat_id = Column(Identifier, ForeignKey('Seat.id'))
+    gettii_venue = relationship('GettiiVenue', backref='gettii_seats')
+    seat = relationship('Seat')
