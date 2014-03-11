@@ -89,10 +89,15 @@ class Multicheckout3DAPI(object):
     def create_secure3d_auth_response(self):
         return m.Secure3DAuthResponse()
 
-    def save_api_response(self, res):
+    def save_api_response(self, res, invoker=None):
         self.session.add(res)
         if hasattr(res, 'OrderNo') and hasattr(res, 'Storecd'):
-            m.MultiCheckoutOrderStatus.set_status(res.OrderNo, res.Storecd, res.Status, u"call by %s" % self.request.url)
+            status = res.Status
+            if res.CmnErrorCd == '001407':  # 取引詳細操作不可
+                status = u"-10"
+            if invoker is None:
+                invoker = u"call by %s" % self.request.url
+            m.MultiCheckoutOrderStatus.set_status(res.OrderNo, res.Storecd, status, invoker)
         self.session.commit()
 
     def secure3d_enrol(self, order_no, card_number, exp_year, exp_month, total_amount):
@@ -241,13 +246,13 @@ class Multicheckout3DAPI(object):
         return res
 
 
-    def checkout_inquiry(self, order_no):
+    def checkout_inquiry(self, order_no, invoker=None):
         """ 取引照会"""
 
         order_no = maybe_unicode(order_no)
         res = self.impl.request_card_inquiry(self, order_no)
         events.CheckoutInquiryEvent.notify(self.request, order_no, res)
-        self.save_api_response(res)
+        self.save_api_response(res, invoker)
         return res
 
 
