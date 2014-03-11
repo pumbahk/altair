@@ -3880,6 +3880,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             sales_segment.setting = SalesSegmentSetting.create_from_template(template.setting)
         if 'performance_id' in kwargs:
             sales_segment.performance_id = kwargs['performance_id']
+            p = Performance.query.get(kwargs['performance_id'])
+            sales_segment.event_id = p.event_id
         if 'sales_segment_group_id' in kwargs:
             sales_segment.sales_segment_group_id = kwargs['sales_segment_group_id']
             new_pdmps = []
