@@ -77,7 +77,7 @@ class OrderInfoDefaultMixin(object):
                 if p.product.seat_stock_type is not None:
                     seat_no += [u"{0} {1}席".format(p.product.seat_stock_type.name, p.quantity)]
                 else:
-                    seat_no += [u"{0} {1}席".format(p.product.name, p.quantity)]
+                    seat_no += [u"{0} x{1}".format(p.product.name, p.quantity)]
                 
         return u"\n".join(seat_no)
 
