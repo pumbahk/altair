@@ -8,6 +8,11 @@ from sqlalchemy.ext.declarative import declarative_base
 import sqlahelper
 
 class ModelUtilityTest(unittest.TestCase):
+    @classmethod
+    def tearDownClass(cls):
+        from altair.app.ticketing.core.models import Base
+        sqlahelper.set_base(Base)
+
     def setUp(self):
         self.session = _setup_db()
         sqlahelper.set_base(declarative_base(self.session.bind))
