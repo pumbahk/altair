@@ -151,6 +151,10 @@ class SalesSegments(BaseView):
     @view_config(route_name='sales_segments.delete')
     def delete(self):
         location = route_path('sales_segment_groups.show', self.request, sales_segment_group_id=self.context.sales_segment.sales_segment_group_id)
+        performance_id = self.request.params.get('performance_id')
+        if performance_id:
+            location = route_path('performances.show', self.request, performance_id=long(performance_id))
+
         try:
             self.context.sales_segment.delete()
             self.request.session.flash(u'販売区分を削除しました')
