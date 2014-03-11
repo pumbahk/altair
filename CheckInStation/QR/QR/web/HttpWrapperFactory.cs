@@ -3,6 +3,8 @@ using System.Net;
 using System.Net.Http;
 using System.Collections.Generic;
 using NLog;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
 
 namespace QR
 {
@@ -61,6 +63,11 @@ namespace QR
         public virtual HttpClient CreateHttpClient ()
         {
             //temporary: 
+            ServicePointManager.ServerCertificateValidationCallback =
+          (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) =>
+          {
+              return true;
+          };
             var handler = new HttpClientHandler() { Credentials = new NetworkCredential("kenta", "matsui") };
             CookieUtils.PutCokkiesToRequestHandler(handler, this.cookieContainer);
             var client = new HttpClient (handler);
