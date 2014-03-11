@@ -193,7 +193,6 @@ def setup_ordered_product_item(quantity, quantity_only, organization, order_no="
         order=order, 
         quantity=quantity
     )
-    ordered_product.
     return OrderedProductItem(price=14000, quantity=quantity, product_item=product_item, ordered_product=ordered_product)
 
 def setup_order(quantity, quantity_only, organization, order_no="Order:order_no", product_item=None, stock_type=None):
