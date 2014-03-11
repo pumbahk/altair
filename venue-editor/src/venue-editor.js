@@ -991,6 +991,7 @@
               error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
             });
             aux.callbacks.loading && aux.callbacks.loading(aux.manager);
+            aux.manager.unselectAll();
             break;
 
           case 'adjacency':
