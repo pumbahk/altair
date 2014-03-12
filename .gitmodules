@@ -7,3 +7,6 @@
 	url = git@github.com:ticketstar/altair-cms-templates.git
     branch = master
     ignore = untracked
+[submodule "CheckInStation/NLog.Targets.Fluentd"]
+	path = CheckInStation/NLog.Targets.Fluentd
+	url = https://github.com/moriyoshi/NLog.Targets.Fluentd.git

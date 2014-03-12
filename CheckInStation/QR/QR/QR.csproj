@@ -82,16 +82,8 @@
     <Reference Include="Moq">
       <HintPath>..\packages\Moq.4.2.1312.1622\lib\net40\Moq.dll</HintPath>
     </Reference>
-    <Reference Include="MsgPack, Version=0.4.0.0, Culture=neutral, PublicKeyToken=a2625990d5dc0167, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MsgPack.Cli.0.4.1\lib\net40-client\MsgPack.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="NLog.Targets.Fluentd, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NLog.Targets.Fluentd.1.0.1\lib\net45\NLog.Targets.Fluentd.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -129,10 +121,6 @@
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
-    <Reference Include="WpfKb, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\WpfKb\bin\Release\WpfKb.dll</HintPath>
-    </Reference>
     <Reference Include="zxing">
       <HintPath>..\packages\ZXing.Net.0.12.0.0\lib\net40\zxing.dll</HintPath>
     </Reference>
@@ -564,6 +552,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\NLog.Targets.Fluentd\src\NLog.Targets.Fluentd\NLog.Targets.Fluentd.csproj">
+      <Project>{cc980146-b798-4b17-8582-ecbabffcb2c9}</Project>
+      <Name>NLog.Targets.Fluentd</Name>
+    </ProjectReference>
     <ProjectReference Include="..\vkeyboard\vkeyboard.csproj">
       <Project>{dfc39375-9e53-4294-8970-6061b38b411c}</Project>
       <Name>vkeyboard</Name>
@@ -572,6 +564,13 @@
       <Project>{0784cdc9-0f52-4b8b-9488-6589c11e94e2}</Project>
       <Name>WpfKb</Name>
     </ProjectReference>
+    <ProjectReference Include="..\WpfKb\WpfKb.csproj">
+      <Project>{0784cdc9-0f52-4b8b-9488-6589c11e94e2}</Project>
+      <Name>WpfKb</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
