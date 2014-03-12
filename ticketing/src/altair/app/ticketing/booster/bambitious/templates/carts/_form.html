@@ -8,8 +8,8 @@
     <tr>
       <th>新規／継続 <span class="red">*</span></th>
       <td>
-        % for c in form.cont:
-        ${c.label}${c(disabled="disabled", class_="has-permission") if c.data == "yes" else c()}
+        % for cont in form.cont:
+        ${cont.label}${cont()}
         % endfor
         <br>
         <small>お分かりの場合、下記に2012-13年の会員番号をご入力ください</small><br>

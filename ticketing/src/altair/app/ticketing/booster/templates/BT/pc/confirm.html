@@ -43,6 +43,12 @@
                   <th>新規／継続</th>
                   <td>${u'継続' if pm.get('cont') == 'yes' else u'新規'}</td>
                 </tr>
+                % if pm.get('old_id_number'):
+              　<tr>
+                  <th>2012-13会員番号</th>
+                  <td>${pm.get('old_id_number')}</td>
+                </tr>
+                % endif
                 <tr>
                   <th>会員種別</th>
                   <td>${cart.items[0].product.name}</td>
