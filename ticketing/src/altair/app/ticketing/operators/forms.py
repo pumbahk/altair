@@ -156,3 +156,11 @@ class OperatorForm(Form):
             operator = Operator.get(form.organization_id.data, field.data)
             if 'administrator' in [(role.name) for role in operator.roles]:
                 raise ValidationError(u'このオペレータを編集する権限がありません')
+
+    def validate_role_ids(form, field):
+        # administratorロールはadministrator権限がないと付与できない
+        request = get_current_request()
+        if not request.context.has_permission('administrator'):
+            query = OperatorRole.query_all(form.organization_id.data).filter(OperatorRole.id.in_(field.data))
+            if 'administrator' in [role.name for role in query.all()]:
+                raise ValidationError(u'このロールを付与する権限がありません')

@@ -69,8 +69,10 @@
     })
 
     if 'administrator' in [(role.name) for role in operator.roles] and not HH.has_permission('administrator'):
-      order.remove('edit_operator')
-      order.remove('delete_operator')
+      if 'edit_operator' in order:
+        order.remove('edit_operator')
+      if 'delete_operator' in order:
+        order.remove('delete_operator')
 
   order = iter(order)
 %>
