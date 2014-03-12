@@ -82,8 +82,18 @@
     <Reference Include="Moq">
       <HintPath>..\packages\Moq.4.2.1312.1622\lib\net40\Moq.dll</HintPath>
     </Reference>
+    <Reference Include="MsgPack">
+      <HintPath>..\packages\MsgPack.Cli.0.4.1\lib\net40-client\MsgPack.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog, Version=2.1.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\NLog.2.1.0\lib\net45\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog.Targets.Fluentd">
+      <HintPath>..\packages\NLog.Targets.Fluentd.1.0.2\bin\Release\NLog.Targets.Fluentd.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -113,9 +123,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="NLog">
-      <HintPath>..\packages\NLog.2.1.0\lib\net45\NLog.dll</HintPath>
-    </Reference>
     <Reference Include="System.Numerics" />
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
@@ -552,10 +559,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\NLog.Targets.Fluentd\src\NLog.Targets.Fluentd\NLog.Targets.Fluentd.csproj">
-      <Project>{cc980146-b798-4b17-8582-ecbabffcb2c9}</Project>
-      <Name>NLog.Targets.Fluentd</Name>
-    </ProjectReference>
     <ProjectReference Include="..\vkeyboard\vkeyboard.csproj">
       <Project>{dfc39375-9e53-4294-8970-6061b38b411c}</Project>
       <Name>vkeyboard</Name>
