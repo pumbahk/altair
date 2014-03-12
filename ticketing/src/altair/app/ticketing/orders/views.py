@@ -15,7 +15,7 @@ from paste.util.multidict import MultiDict
 import webhelpers.paginate as paginate
 from wtforms import ValidationError
 from wtforms.validators import Optional
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import or_, desc
 from sqlalchemy.orm import joinedload, undefer
@@ -318,11 +318,14 @@ def index(request):
         url=paginate.PageURL_WebOb(request)
     )
 
+    total = query.total()
+
     return {
         'form':OrderForm(),
         'form_search':form_search,
         'orders':orders,
         'page': page,
+        'total': total,
     }
 
 #@view_config(route_name='orders.download')

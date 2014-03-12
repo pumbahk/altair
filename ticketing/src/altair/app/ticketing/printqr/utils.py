@@ -94,21 +94,22 @@ def get_matched_ordered_product_item_token(ordered_product_item_token_id, organi
     return qs.filter(OrderedProductItemToken.id==ordered_product_item_token_id).first()
 
 class EnableTicketTemplatesCache(object):
-    def __init__(self):
+    def __init__(self, delivery_plugin_ids=None):
         self.cache = {}
+        self.delivery_plugin_ids = delivery_plugin_ids
 
     def __call__(self, ordered_product_item_token):
         bundle = ordered_product_item_token.item.product_item.ticket_bundle
         if bundle.id in self.cache:
             return self.cache[bundle.id][:]
         else:
-            self.cache[bundle.id] = enable_ticket_template_list(ordered_product_item_token)
+            self.cache[bundle.id] = enable_ticket_template_list(ordered_product_item_token, delivery_plugin_ids=self.delivery_plugin_ids)
             return self.cache[bundle.id]
 
-def enable_ticket_template_list(ordered_product_item_token):
+def enable_ticket_template_list(ordered_product_item_token, delivery_plugin_ids=None):
     producer = ApplicableTicketsProducer.from_bundle(ordered_product_item_token.item.product_item.ticket_bundle)
     r = []
-    for ticket_template in producer.qr_only_tickets():
+    for ticket_template in producer.will_issued_by_own_tickets(delivery_plugin_ids=delivery_plugin_ids):
         if ticket_template is None:
             logger.error("*enable_ticket_template_list ticket_template=None (token_id=%s)" % ordered_product_item_token.id)
         r.append(ticket_template)

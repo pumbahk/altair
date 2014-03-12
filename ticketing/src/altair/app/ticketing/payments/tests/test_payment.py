@@ -3,6 +3,7 @@
 import unittest
 import mock
 from pyramid import testing
+from datetime import datetime
 from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
 
 model_dependencies = [
@@ -160,9 +161,22 @@ class PaymentTests(unittest.TestCase):
     @mock.patch("transaction.commit")
     def test_call_payment_with_peymend_delivery_plugin(self, mock_commit, mock_get_preparer):
         from altair.app.ticketing.core.models import Order, Performance, Event, Organization
-        order = Order(total_amount=10, system_fee=1234,
+        order = Order(
+            total_amount=10, system_fee=1234,
             transaction_fee=234, delivery_fee=234,
-            performance=Performance(event=Event(organization=Organization(short_name="this-is-test", id=11111))))
+            issuing_start_at=datetime(1970, 1, 1),
+            issuing_end_at=datetime(1970, 1, 1),
+            payment_start_at=datetime(1970, 1, 1),
+            payment_due_at=datetime(1970, 1, 1),
+            performance=Performance(
+                event=Event(
+                    organization=Organization(
+                        short_name="this-is-test",
+                        id=11111
+                        )
+                    )
+                )
+            )
         self.session.add(order)
         self.session.flush()
         payment_delivery_plugin = mock.Mock()
@@ -192,9 +206,22 @@ class PaymentTests(unittest.TestCase):
     @mock.patch("transaction.commit")
     def test_call_payment_with_peymend_plugin_delivery_plugin(self, mock_commit, mock_get_preparer):
         from altair.app.ticketing.core.models import Order, Performance, Event, Organization
-        order = Order(total_amount=10, system_fee=1234,
+        order = Order(
+            total_amount=10, system_fee=1234,
             transaction_fee=234, delivery_fee=234,
-            performance=Performance(event=Event(organization=Organization(short_name="this-is-test", id=11111))))
+            issuing_start_at=datetime(1970, 1, 1),
+            issuing_end_at=datetime(1970, 1, 1),
+            payment_start_at=datetime(1970, 1, 1),
+            payment_due_at=datetime(1970, 1, 1),
+            performance=Performance(
+                event=Event(
+                    organization=Organization(
+                        short_name="this-is-test",
+                        id=11111
+                        )
+                    )
+                )
+            )
         self.session.add(order)
         self.session.flush()
         payment_plugin = mock.Mock()
@@ -229,10 +256,24 @@ class PaymentTests(unittest.TestCase):
         from altair.app.ticketing.payments.exceptions import PaymentPluginException
         event_id = 768594
         order_no = "error-order"
-        order = Order(total_amount=10, system_fee=1234,
+        order = Order(
+            total_amount=10, system_fee=1234,
             order_no=order_no,
             transaction_fee=234, delivery_fee=234,
-            performance=Performance(event=Event(id=event_id, organization=Organization(short_name="this-is-test", id=11111))))
+            issuing_start_at=datetime(1970, 1, 1),
+            issuing_end_at=datetime(1970, 1, 1),
+            payment_start_at=datetime(1970, 1, 1),
+            payment_due_at=datetime(1970, 1, 1),
+            performance=Performance(
+                event=Event(
+                    id=event_id,
+                    organization=Organization(
+                        short_name="this-is-test",
+                        id=11111
+                        )
+                    )
+                )
+            )
         self.session.add(order)
         self.session.flush()
 

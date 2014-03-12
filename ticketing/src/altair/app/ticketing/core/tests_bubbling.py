@@ -30,7 +30,17 @@ class IssuedPrintedSetterTests(unittest.TestCase):
     def test_order_non_printed(self):
         from altair.app.ticketing.core.models import Order
         import sqlahelper
-        order = Order(total_amount=0, system_fee=0, transaction_fee=0, delivery_fee=0,  id=1)
+        order = Order(
+            id=1,
+            total_amount=0,
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            issuing_start_at=datetime(1970, 1, 1),
+            issuing_end_at=datetime(1970, 1, 1),
+            payment_start_at=datetime(1970, 1, 1),
+            payment_due_at=datetime(1970, 1, 1)
+            )
         sqlahelper.get_session().add(order)
 
         now_date = datetime(2000, 1, 1)
@@ -47,7 +57,19 @@ class IssuedPrintedSetterTests(unittest.TestCase):
     def test_order_printed(self):
         from altair.app.ticketing.core.models import Order
         import sqlahelper
-        order = Order(total_amount=0, system_fee=0, transaction_fee=0, delivery_fee=0,  id=1, printed_at=datetime(1950, 1, 1), issued_at=datetime(1900, 1, 1))
+        order = Order(
+            id=1,
+            total_amount=0,
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            issuing_start_at=datetime(1970, 1, 1),
+            issuing_end_at=datetime(1970, 1, 1),
+            payment_start_at=datetime(1970, 1, 1),
+            payment_due_at=datetime(1970, 1, 1),
+            printed_at=datetime(1950, 1, 1),
+            issued_at=datetime(1900, 1, 1)
+            )
         sqlahelper.get_session().add(order)
 
         now_date = datetime(2000, 1, 1)
@@ -64,7 +86,17 @@ class IssuedPrintedSetterTests(unittest.TestCase):
     def test_bubling_from_item(self):
         from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem
         import sqlahelper
-        order = Order(total_amount=0, system_fee=0, transaction_fee=0, delivery_fee=0,  id=1)
+        order = Order(
+            id=1,
+            total_amount=0,
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            issuing_start_at=datetime(1970, 1, 1),
+            issuing_end_at=datetime(1970, 1, 1),
+            payment_start_at=datetime(1970, 1, 1),
+            payment_due_at=datetime(1970, 1, 1)
+            )
         sqlahelper.get_session().add(order)
 
         ordered_product = OrderedProduct(price=0, id=1, order=order)
@@ -90,7 +122,17 @@ class IssuedPrintedSetterTests(unittest.TestCase):
     def test_bubling_from_token(self):
         from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
         import sqlahelper
-        order = Order(total_amount=0, system_fee=0, transaction_fee=0, delivery_fee=0,  id=1)
+        order = Order(
+            id=1,
+            total_amount=0,
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            issuing_start_at=datetime(1970, 1, 1),
+            issuing_end_at=datetime(1970, 1, 1),
+            payment_start_at=datetime(1970, 1, 1),
+            payment_due_at=datetime(1970, 1, 1)
+            )
         sqlahelper.get_session().add(order)
 
         ordered_product = OrderedProduct(price=0, id=1, order=order)

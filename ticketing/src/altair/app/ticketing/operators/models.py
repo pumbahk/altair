@@ -2,8 +2,10 @@
 
 import hashlib
 
-from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey
-from sqlalchemy.orm import join, column_property, mapper
+from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey, Unicode
+from sqlalchemy.orm import join, column_property, mapper, joinedload
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.sql.expression import or_
 
 from altair.app.ticketing.utils import StandardEnum
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession, Identifier, relationship
@@ -31,22 +33,47 @@ class Permission(Base):
 
     @staticmethod
     def get_by_key(category_name):
-        #return Permission.filter(Permission.category_name==category_name).first()
-        return DBSession.query(Permission).filter(Permission.category_name == category_name).first()
+        return DBSession.query(Permission).filter(Permission.category_name==category_name).first()
 
     @staticmethod
     def list_in(category_names):
-        #return Permission.filter(Permission.category_name.in_(category_names)).all()
         return DBSession.query(Permission)\
             .filter(Permission.category_name.in_(category_names)).all()
+
+
+COMMON_DEFAULT_ROLES = ['administrator', 'superuser', 'operator']
 
 class OperatorRole(Base, BaseModel, WithTimestamp):
     __tablename__ = 'OperatorRole'
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
+    name_kana = Column(Unicode(255))
     operators = relationship('Operator', secondary=OperatorRole_Operator.__table__)
-    permissions = relationship('Permission')
+    permissions = relationship('Permission', cascade='all,delete-orphan')
     status = Column('status',Integer, default=1)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization = relationship('Organization', uselist=False)
+
+    @staticmethod
+    def get(organization_id, id):
+        return OperatorRole.query.filter(
+            OperatorRole.id==id,
+            OperatorRole.organization_id==organization_id
+            ).first()
+
+    @staticmethod
+    def query_all(organization_id):
+        return OperatorRole.query.filter(or_(
+            OperatorRole.organization_id==None,
+            OperatorRole.organization_id==organization_id
+            ))
+
+    @staticmethod
+    def all(organization_id):
+        return OperatorRole.query_all(organization_id).all()
+
+    def is_editable(self):
+        return self.name not in COMMON_DEFAULT_ROLES
 
 class OperatorActionHistoryTypeENum(StandardEnum):
     View      = 1
@@ -97,10 +124,17 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     auth = relationship('OperatorAuth', uselist=False, backref='operator')
 
     @staticmethod
+    def get(organization_id, id):
+        return Operator.query.filter(
+            Operator.id==id,
+            Operator.organization_id==organization_id
+            ).first()
+
+    @staticmethod
     def get_by_login_id(login_id):
         login_id = ensure_ascii(login_id)
-        return Operator.filter().join(OperatorAuth)\
-            .filter(OperatorAuth.login_id==login_id).first()
+        return Operator.query.join(OperatorAuth).filter(OperatorAuth.login_id==login_id)\
+            .options(joinedload(Operator.roles)).first()
 
     @staticmethod
     def get_by_email(email):

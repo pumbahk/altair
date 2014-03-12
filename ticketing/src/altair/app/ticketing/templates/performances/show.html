@@ -52,6 +52,7 @@ ${performance.code} | ${performance.name}
     <li id="order-tab"><a href="${route_path}/order">購入情報</a></li>
     <li id="import_orders-tab"><a href="${request.route_path('performances.import_orders.index', performance_id=performance.id)}">予約インポート</a></li>
     <li id="orion-tab"><a href="${request.route_path('performances.orion.index', performance_id=performance.id)}">イベント・ゲート</a></li>
+    <li id="print_progress-tab"><a href="${request.route_path('performances.print_progress.show', performance_id=performance.id)}">発券進捗状況確認</a></li>
   </ul>
   <div class="tab-content" id="tabbable-tab-content">
     % if tab == 'summary':
@@ -83,6 +84,10 @@ ${performance.code} | ${performance.name}
     % elif tab == 'orion':
     <div class="tab-pane" id="orion">
       <%include file="./orion/_show.html" args="performance=performance, stats=stats" />
+    </div>
+    % elif tab == 'print_progress':
+    <div class="tab-pane" id="print_progress">
+      <%include file="./print_progress/_show.html" args="performance=performance, progress=progress" />
     </div>
     % elif HH.has_permission('event_editor'):
     <div class="tab-pane" id="seat-allocation">
