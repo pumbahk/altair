@@ -6,6 +6,8 @@
     使われていたチケット
     <ul id="ticket_url">
     </ul>
+    <div id="error">
+    </div>
   </div>
 
   <div class="modal-body">
@@ -26,7 +28,6 @@
 <script type="text/javascript">
 $(function(){
   var cont = null;
-
   var url = "${request.route_path("orders.item.preview.getdata", item_id=item.id, ticket_format_id="__id__")}";
   var MAX_SIZE_OF_PREVIEW_ITEM = 2;
 
@@ -88,7 +89,13 @@ $(function(){
     });
   };
 
-  draw_viewer(url, $("#preview_select select[name='ticket_format_id']").val());
+  var ticket_format_id = $("#preview_select select[name='ticket_format_id']").val();
+  if (ticket_format_id == null) {
+    $("#error").html("<div style='color: red'>引取方法が券面に紐付いていません。設定を見直して下さい。</div>")
+  } else {
+    draw_viewer(url, ticket_format_id);
+  }
+
   $("#preview_select select[name='ticket_format_id']").change(function(){
     var ticket_format_id = $(this).val();
     draw_viewer(url, ticket_format_id);
