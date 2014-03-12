@@ -78,19 +78,14 @@ def _overridable_delivery(path):
     else:
         return _template(path, type='overridable', for_='payments', plugin_type='delivery', plugin_id=DELIVERY_PLUGIN_ID)
 
-def get_payment_due_at(current_date, cart):
-    payment_period_days = cart.payment_delivery_pair.payment_period_days or 3
-    payment_due_at = current_date + timedelta(days=payment_period_days)
-    payment_due_at = payment_due_at.replace(hour=23, minute=59, second=59)
-    return payment_due_at
+def get_payment_due_at(current_date, order_like):
+    return order_like.payment_due_at
 
-def get_ticketing_start_at(current_date, cart):
-    if cart.payment_delivery_pair.issuing_start_at:
-        ticketing_start_at = cart.payment_delivery_pair.issuing_start_at
-    else:
-        ticketing_start_at = current_date + timedelta(days=cart.payment_delivery_pair.issuing_interval_days)
-        ticketing_start_at = ticketing_start_at.replace(hour=00, minute=00, second=00)
-    return ticketing_start_at
+def get_ticketing_start_at(current_date, order_like):
+    return order_like.issuing_start_at
+
+def get_ticketing_due_at(current_date, order_like):
+    return order_like.issuing_end_at
 
 def get_sej_ticket_data(product_item, svg):
     performance = product_item.performance
@@ -173,7 +168,7 @@ def build_sej_args(payment_type, order_like, now):
     tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')
     tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
     ticketing_start_at = get_ticketing_start_at(now, order_like)
-    ticketing_due_at = order_like.payment_delivery_pair.issuing_end_at
+    ticketing_due_at = get_ticketing_due_at(now, order_like)
     performance = order_like.performance
     if int(payment_type) == int(SejPaymentType.Paid):
         total_price         = 0

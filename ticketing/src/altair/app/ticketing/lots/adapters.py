@@ -98,6 +98,21 @@ class LotSessionCart(object):
     def name(self):
         return "LOT" + str(self.lot.id)
 
+    @property
+    def issuing_start_at(self):
+        # オーソリの際にしか使われないのでこれは None でよい
+        return None
+
+    @property
+    def issuing_end_at(self):
+        # オーソリの際にしか使われないのでこれは None でよい
+        return None
+
+    @property
+    def payment_due_at(self):
+        # オーソリの際にしか使われないのでこれは None でよい
+        return None
+
 
 class LotEntryStatus(object):
     def __init__(self, lot, request=None):

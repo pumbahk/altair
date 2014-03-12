@@ -2567,6 +2567,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
     sales_segment = relationship('SalesSegment', backref='orders')
 
+    issuing_start_at = Column(DateTime, nullable=True)
+    issuing_end_at   = Column(DateTime, nullable=True)
+    payment_start_at = Column(DateTime, nullable=True)
+    payment_due_at   = Column(DateTime, nullable=True)
+
     @property
     def organization(self):
         return self.ordered_from
@@ -3009,7 +3014,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             organization_id=cart.sales_segment.sales_segment_group.event.organization_id,
             channel=cart.channel,
             operator=cart.operator,
-            user=cart.shipping_address and cart.shipping_address.user
+            user=cart.shipping_address and cart.shipping_address.user,
+            issuing_start_at=cart.issuing_start_at,
+            issuing_end_at=cart.issuing_end_at,
+            payment_start_at=cart.payment_start_at,
+            payment_due_at=cart.payment_due_at
             )
 
         for product in cart.items:
@@ -4410,3 +4419,36 @@ class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     coupon_2_name = Column(Unicode(255))
     coupon_2_qr_enabled = Column(Boolean)
     coupon_2_pattern = Column(Unicode(255))
+
+
+class CartMixin(object):
+    @property
+    def issuing_start_at(self):
+        assert self.payment_delivery_pair is not None
+        assert self.created_at is not None
+        if self.payment_delivery_pair.issuing_start_at:
+            issuing_start_at = self.payment_delivery_pair.issuing_start_at
+        else:
+            issuing_start_at = self.created_at + timedelta(days=self.payment_delivery_pair.issuing_interval_days)
+            issuing_start_at = issuing_start_at.replace(hour=0, minute=0, second=0)
+        return issuing_start_at
+
+    @property
+    def issuing_end_at(self):
+        assert self.payment_delivery_pair is not None
+        assert self.created_at is not None
+        return self.payment_delivery_pair.issuing_end_at
+
+    @property
+    def payment_start_at(self):
+        # 暫定
+        return self.issuing_start_at
+
+    @property
+    def payment_due_at(self):
+        assert self.payment_delivery_pair is not None
+        assert self.created_at is not None
+        payment_period_days = self.payment_delivery_pair.payment_period_days or 3
+        payment_due_at = self.created_at + timedelta(days=payment_period_days)
+        payment_due_at = payment_due_at.replace(hour=23, minute=59, second=59)
+        return payment_due_at

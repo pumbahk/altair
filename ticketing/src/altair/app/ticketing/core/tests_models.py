@@ -35,30 +35,47 @@ class SalesSegmentTests(unittest.TestCase):
         other = User()
         orders = []
         for i in range(2):
-            order = Order(
+            cart = Cart(
                 user=user,
                 sales_segment=target,
                 total_amount=0,
                 system_fee=0, transaction_fee=0, delivery_fee=0)
+            order = Order(user=user, cart=cart,
+                          total_amount=0,
+                          system_fee=0, transaction_fee=0, delivery_fee=0,
+                          issuing_start_at=datetime(1970, 1, 1),
+                          issuing_end_at=datetime(1970, 1, 1),
+                          payment_start_at=datetime(1970, 1, 1),
+                          payment_due_at=datetime(1970, 1, 1)
+                          )
             orders.append(order)
 
         others = []
         for i in range(2):
+            cart = Cart(sales_segment=target)
             order = Order(
-                user=other,
-                sales_segment=target,
+                user=other, cart=cart,
                 total_amount=0,
-                system_fee=0, transaction_fee=0, delivery_fee=0)
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_start_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
+                )
             others.append(order)
 
         cancels = []
         for i in range(2):
+            cart = Cart(sales_segment=target)
             order = Order(
-                user=user,
-                sales_segment=target,
-                canceled_at=datetime.now(),
+                user=user, cart=cart, canceled_at=datetime.now(),
                 total_amount=0,
-                system_fee=0, transaction_fee=0, delivery_fee=0)
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_start_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
+                )
             cancels.append(order)
 
         self.session.add(target)
@@ -83,44 +100,62 @@ class SalesSegmentTests(unittest.TestCase):
         orders = []
         for i in range(2):
             shipping_address = ShippingAddress(email_1=mail_addr)
+            cart = Cart(sales_segment=target)
             order = Order(
-                sales_segment=target,
+                cart=cart,
                 shipping_address=shipping_address,
                 total_amount=0,
-                system_fee=0, transaction_fee=0, delivery_fee=0)
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
+                )
             self.session.add(order)
             orders.append(order)
         
         for i in range(2):
             shipping_address = ShippingAddress(email_2=mail_addr)
+            cart = Cart(sales_segment=target)
             order = Order(
-                sales_segment=target,
+                cart=cart,
                 shipping_address=shipping_address,
                 total_amount=0,
-                system_fee=0, transaction_fee=0, delivery_fee=0)
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
+                )
             self.session.add(order)
             orders.append(order)
 
         cancels = []
         for i in range(2):
             shipping_address = ShippingAddress(email_1=mail_addr)
+            cart = Cart(sales_segment=target)
             order = Order(
-                sales_segment=target,
-                canceled_at=datetime.now(),
+                cart=cart, canceled_at=datetime.now(),
                 shipping_address=shipping_address,
                 total_amount=0,
-                system_fee=0, transaction_fee=0, delivery_fee=0)
-            self.session.add(order)
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
+                )
             cancels.append(order)
 
         others = []
         for i in range(2):
             shipping_address = ShippingAddress(email_1=mail_addr_other)
+            cart = Cart(sales_segment=target)
             order = Order(
-                sales_segment=target,
+                cart=cart,
                 shipping_address=shipping_address,
                 total_amount=0,
-                system_fee=0, transaction_fee=0, delivery_fee=0)
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
+                )
             self.session.add(order)
             others.append(order)
 
