@@ -2,7 +2,7 @@
 
 import csv
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.response import Response
 from altair.app.ticketing.views import BaseView
 from .export import MailMagCSV, get_japanese_columns
@@ -83,7 +83,11 @@ class MailMagazinesView(BaseView):
     @view_config(route_name='mailmags.show', renderer='altair.app.ticketing:templates/mailmags/show.html')
     def show(self):
         mailmag_id = self.request.matchdict.get('id')
-        mailmag = MailMagazine.query.filter_by(id=mailmag_id, organization=self.request.context.organization).one()
+        mailmag = MailMagazine.query.filter_by(id=mailmag_id, organization=self.request.context.organization).first()
+
+        if not mailmag:
+            raise HTTPNotFound()
+
         search_text = self.request.params.get('search_text')
         mail_subscriptions_query = MailSubscription.query.filter_by(segment=mailmag)
         if search_text:

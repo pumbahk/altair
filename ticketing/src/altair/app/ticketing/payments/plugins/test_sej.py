@@ -19,7 +19,7 @@ class FindApplicableTicketsTest(unittest.TestCase):
         class bundle(object):
             class sej_ticket:
                 class ticket_format:
-                    sej_delivery_method = testing.DummyResource(fee=0, delivery_plugin_id=DELIVERY_PLUGIN_ID)                    
+                    sej_delivery_method = testing.DummyResource(fee=0, delivery_plugin_id=DELIVERY_PLUGIN_ID)
                     delivery_methods = [sej_delivery_method]
             tickets = [sej_ticket]
 
@@ -31,12 +31,12 @@ class FindApplicableTicketsTest(unittest.TestCase):
         class bundle(object):
             class sej_ticket:
                 class ticket_format:
-                    sej_delivery_method = testing.DummyResource(fee=0, delivery_plugin_id=DELIVERY_PLUGIN_ID)                    
+                    sej_delivery_method = testing.DummyResource(fee=0, delivery_plugin_id=DELIVERY_PLUGIN_ID)
                     delivery_methods = [sej_delivery_method]
 
             class another_ticket:
                 class ticket_format:
-                    another_delivery_method = testing.DummyResource(fee=0, delivery_plugin_id=-100)                    
+                    another_delivery_method = testing.DummyResource(fee=0, delivery_plugin_id=-100)
                     delivery_methods = [another_delivery_method]
                     
             tickets = [sej_ticket, another_ticket, sej_ticket, another_ticket, sej_ticket]
@@ -1612,6 +1612,12 @@ class BuildSejArgsTest(unittest.TestCase):
         ]
 
     def setUp(self):
+        from altair.app.ticketing.core.models import CartMixin
+        class DummyCart(CartMixin):
+            def __init__(self, payment_delivery_pair, created_at):
+                self.payment_delivery_pair = payment_delivery_pair
+                self.created_at = created_at
+
         self.pdmps = [
             testing.DummyModel(
                 issuing_start_at=datetime(2013, 1, 5, 0, 0, 0),
@@ -1708,24 +1714,31 @@ class BuildSejArgsTest(unittest.TestCase):
                 ),
             ]
 
-        self.orders = [
-            testing.DummyModel(
-                order_no='00000001',
-                shipping_address=shipping_address,
-                payment_delivery_pair=payment_delivery_pair,
-                total_amount=1000,
-                system_fee=300,
-                transaction_fee=400,
-                delivery_fee=200,
-                special_fee=0,
-                performance=testing.DummyModel(
-                    start_on=datetime(2013, 3, 1, 1, 2, 3),
-                    end_on=datetime(2013, 3, 1, 2, 3, 4)
+        orders = []
+        for payment_delivery_pair in self.pdmps:
+            for shipping_address in self.shipping_addresses:
+                cart = DummyCart(payment_delivery_pair, self.now)
+                orders.append(
+                    testing.DummyModel(
+                        order_no='00000001',
+                        shipping_address=shipping_address,
+                        payment_delivery_pair=payment_delivery_pair,
+                        total_amount=1000,
+                        system_fee=300,
+                        transaction_fee=400,
+                        delivery_fee=200,
+                        special_fee=0,
+                        issuing_start_at=cart.issuing_start_at,
+                        issuing_end_at=cart.issuing_end_at,
+                        payment_start_at=cart.payment_start_at,
+                        payment_due_at=cart.payment_due_at,
+                        performance=testing.DummyModel(
+                            start_on=datetime(2013, 3, 1, 1, 2, 3),
+                            end_on=datetime(2013, 3, 1, 2, 3, 4)
+                            )
+                        )
                     )
-                )
-            for payment_delivery_pair in self.pdmps
-            for shipping_address in self.shipping_addresses
-            ]
+        self.orders = orders
 
     def _callFUT(self, *args, **kwargs):
         from .sej import build_sej_args

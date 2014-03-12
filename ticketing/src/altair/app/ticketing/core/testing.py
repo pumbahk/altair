@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 from decimal import Decimal
+from datetime import datetime
 
 class CoreTestMixin(object):
     def setUp(self):
@@ -229,6 +230,10 @@ class CoreTestMixin(object):
             transaction_fee=Decimal(pdmp and pdmp.transaction_fee or 0.),
             delivery_fee=Decimal(pdmp and pdmp.delivery_fee or 0.),
             special_fee=Decimal(special_fee),
+            issuing_start_at=datetime(1970, 1, 1),
+            issuing_end_at=datetime(1970, 1, 1),
+            payment_start_at=datetime(1970, 1, 1),
+            payment_due_at=datetime(1970, 1, 1),
             issued=False,
             items=items,
             performance=performance

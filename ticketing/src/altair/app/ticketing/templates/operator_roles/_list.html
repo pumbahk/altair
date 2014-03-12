@@ -2,45 +2,87 @@
 <%namespace file="/common/helpers.html" name="ch"/>
 <%namespace file="/common/modal.html" import="delete_modal" />
 
-<script type="text/javascript">
-  function delete_role(id) {
-    var modal = $('#modal-delete');
-    modal.find('#delete').attr('href', '/operators/roles/delete/' + id);
-    modal.find('#message').text('選択したロールを削除します。よろしいですか？');
-    modal.modal('toggle');
-  }
-</script>
+<% is_admin = request.context.has_permission('administrator') %>
 
 <form>
-  <div class="ui-toolbar">
-    <a href="${request.route_path('operator_roles.new')}" class="btn">新規ロール</a>
+  <div class="pull-left">
+    <%include file="/operators/_action_button.html" args="order=['new_role']" />
   </div>
-  <table class="table fullwidth table-striped">
+  <div class="pull-right">
+    <%include file="/operators/_action_button.html" args="order=['operators', 'permissions']" />
+  </div>
+  <div class="clearfix"></div>
+
+  <table class="table table-bordered" style="margin-top: 10px;">
     <thead>
     <tr>
-      <th class="minwidth"><input type="checkbox" class="__action__-select_all" /></td>
-      <th class="minwidth">ID</th>
-      <th>ロール名</th>
-      <th>パーミッション</th>
-      <th class="span2">操作</th>
+      <th class="span4"></th>
+      <th colspan="${len(roles)}">ロール名</th>
+    </tr>
+    <tr>
+      <th>権限</th>
+      % for role in roles.items:
+      <th class="span2">
+        ${role.name_kana}
+        % if is_admin or role.is_editable():
+        <div class="btn-group">
+          <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href="${request.route_path('operator_roles.edit', operator_role_id=role.id)}"><i class="icon-pencil"></i> 編集</a></li>
+            <li><a href="javascript:delete_role(${role.id});"><i class="icon-minus"></i> 削除</a></li>
+          </ul>
+        </div>
+        % endif
+      </th>
+      % endfor
     </tr>
     </thead>
     <tbody>
-    % for role in roles.items:
-    <tr>
-      <td><input type="checkbox" /></td>
-      <td>${role.id}</td>
-      <td>${role.name}</td>
+    % for category_name, label in HH.permissions():
+    <tr class="category-${category_name}">
+      <td>${label}</td>
+      % for role in roles.items:
       <td>
-        % for permission in role.permissions:
-          ${permission.category_name}
-        % endfor
+        % if category_name in [p.category_name for p in role.permissions]:
+        <i class="icon-ok"></i>
+        % endif
       </td>
-      <td>
-        <a class="btn btn-small" href="${request.route_path('operator_roles.edit', operator_role_id=role.id)}">編集</a>
-        <a class="btn btn-small btn-danger" href="javascript:delete_role(${role.id});">削除</a>
+      % endfor
+    </tr>
+    <tr class="permit-action-${category_name}" style="display:none;">
+      <td colspan="${len(roles)+1}">
+        <%
+          route_permission = request.route_permission
+          permit_actions = []
+          for route_name in sorted(route_permission.keys()):
+            if category_name == route_permission[route_name]:
+              permit_actions.append(route_name)
+        %>
+        <div style="width:50%; margin-left:auto;margin-right:auto;">
+          <table class="table table-condensed well">
+            <tr><th>この権限で利用できる機能</th></tr>
+            % if len(permit_actions) > 0:
+              % for action in permit_actions:
+                % if HH.route_label(action):
+            <tr><td>${HH.route_label(action)}</td></tr>
+                % endif
+              % endfor
+            % else:
+            <tr><td>ありません</td></tr>
+            % endif
+          </table>
+        </div>
       </td>
     </tr>
+    <script type="text/javascript">
+      $(function() {
+        $('.category-${category_name}').click(function(){
+          $('.permit-action-${category_name}').toggle('slow');
+        });
+      })
+    </script>
     % endfor
     </tbody>
   </table>

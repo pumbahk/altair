@@ -29,6 +29,10 @@ def setup_order(gensym=gensym):
         organization_id=-1, 
         payment_delivery_method_pair_id=-1, 
         performance_id=-1, 
+        issuing_start_at=datetime(1970, 1, 1),
+        issuing_end_at=datetime(1970, 1, 1),
+        payment_start_at=datetime(1970, 1, 1),
+        payment_due_at=datetime(1970, 1, 1)
     )
 
 class AttributesManagerTests(unittest.TestCase):

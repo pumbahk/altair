@@ -5,6 +5,7 @@ import csv
 import logging
 import transaction
 import json
+from dateutil.parser import parse as parsedate
 from datetime import datetime
 from standardenum import StandardEnum
 from collections import OrderedDict
@@ -36,7 +37,8 @@ from altair.app.ticketing.core.models import (
     SeatStatus,
     Venue,
     OrderImportTask,
-    ImportStatusEnum
+    ImportStatusEnum,
+    CartMixin,
 )
 from altair.app.ticketing.orders.api import create_inner_order
 from altair.app.ticketing.orders.export import japanese_columns
@@ -61,8 +63,7 @@ class TemporaryModel(object):
 
 
 @implementer(IPaymentCart)
-class TemporaryCart(TemporaryModel):
-
+class TemporaryCart(TemporaryModel, CartMixin):
     def __init__(self, **kwargs):
         self.order = None
         self.order_no = None
@@ -496,8 +497,8 @@ class OrderImporter(object):
             channel             = ChannelEnum.IMPORT.v,
             _shipping_address   = self.create_temporary_shipping_address(row, user),
             _carted_product     = dict(),
-            paid_at             = row.get(u'order.paid_at'),
-            created_at          = row.get(u'order.created_at'),
+            paid_at             = parsedate(row.get(u'order.paid_at')),
+            created_at          = parsedate(row.get(u'order.created_at')),
         )
         return cart
 

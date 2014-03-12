@@ -3,13 +3,17 @@
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <form>
-  <div>
-    <%include file="/operators/_action_button.html" args="order=['new', 'role', 'permission']" />
+  <div class="pull-left">
+    <%include file="/operators/_action_button.html" args="order=['new_operator']" />
   </div>
+  <div class="pull-right">
+    <%include file="/operators/_action_button.html" args="order=['roles', 'permissions']" />
+  </div>
+  <div class="clearfix"></div>
+
   <table class="table fullwidth checkboxed_table" style="margin-top: 10px;">
     <thead>
     <tr>
-      <th class="minwidth">ID</th>
       <th>ログインID</th>
       <th>名前</th>
       <th>会社名</th>
@@ -20,19 +24,18 @@
     <tbody>
     % for operator in operators.items:
     <tr>
-      <td><a href="${request.route_path('operators.show', operator_id=operator.id)}">${operator.id}</a></td>
       <td><a href="${request.route_path('operators.show', operator_id=operator.id)}">${operator.auth.login_id}</a></td>
       <td><a href="${request.route_path('operators.show', operator_id=operator.id)}">${operator.name}</a></td>
       <td><a href="${request.route_path('organizations.show', organization_id=operator.organization.id)}">${operator.organization.name}</a></td>
       <td>
         % for role in operator.roles:
         <ul>
-          <li>${role.name}</li>
+          <li>${role.name_kana}</li>
         </ul>
         % endfor
       </td>
       <td>
-        <%include file="/operators/_action_button.html" args="operator=operator, order=['edit', 'delete']" />
+        <%include file="/operators/_action_button.html" args="operator=operator, order=['edit_operator', 'delete_operator']" />
       </td>
     </tr>
     % endfor

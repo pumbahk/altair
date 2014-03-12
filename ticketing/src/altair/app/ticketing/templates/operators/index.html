@@ -3,7 +3,7 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'トップ', u'オペレーター'],
+      names=[HH.route_label('index'), HH.route_label('operators.index')],
       urls=[request.route_path('index')]
   )}
 </%block>
@@ -12,4 +12,5 @@
   <h1>オペレーター</h1>
 </div>
 
+<%include file="/operators/_guide.html" />
 <%include file="/operators/_list.html" args="form=form, operators=operators" />
