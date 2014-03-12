@@ -20,7 +20,7 @@ ${layout.product_name}
 <%mobile:form_header>新規／継続:</%mobile:form_header>
 ${u'継続' if pm.get('cont') == 'yes' else u'新規'}
 % if pm.get('cont') == 'yes' and pm.get('old_id_number'):
-<%mobile:form_header>2012-13会員番号</%mobile:form_header>
+<%mobile:form_header>2013-14会員番号</%mobile:form_header>
 ${pm.get('old_id_number')}
 % endif
 <%mobile:form_header>会員種別</%mobile:form_header>
