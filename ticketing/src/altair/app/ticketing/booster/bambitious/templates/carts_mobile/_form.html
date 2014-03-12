@@ -113,6 +113,11 @@ ${h.error(['fax'])}
   ${form.email_1_confirm(istyle="3", iprof="mail1")}<br />
   ${h.error('email_1_confirm')}
 </div>
+<%mobile:form_header required="true">バンビシャス奈良からのメールマガジンを購読</%mobile:form_header>
+<div>
+  ${form.extra.mail_permission}メルマガ購読を希望<br />
+${h.error('extra.mail_permission')}
+</div>
 <%mobile:form_header required="true">会員特典受取方法</%mobile:form_header>
 <div>
   ${form.product_delivery_method(istyle="3", iprof="mail1")}<br />

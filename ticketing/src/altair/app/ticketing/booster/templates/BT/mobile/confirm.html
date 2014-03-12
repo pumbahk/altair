@@ -41,6 +41,8 @@ pm = request.context.load_user_profile()
 <div>${pm['fax']}</div>
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 <div>${pm['email_1']}</div>
+<%mobile:form_header>${layout.team_name}からのメールマガジンの配信</%mobile:form_header>
+<div>${u'希望する' if pm['extra']['mail_permission'] else u'希望しない'}</div>
 <%mobile:form_header>会員特典受取方法</%mobile:form_header>
 <div>${pm['product_delivery_method_name']}</div>
 <hr />
