@@ -3,10 +3,16 @@
 <form method="post" action="${request.url}">
 <%mobile:form_header required="true">新規/継続</%mobile:form_header>
 <div>
-% for c in form.cont:
-  ${c.label}${c(disabled="disabled", class_="has-permission") if c.data == "yes" else c()} <br />
+% for cont in form.cont:
+  ${cont()}${cont.label}<br />
 % endfor
 ${h.error('cont')}
+</div>
+<div>
+[継続]を選択した方は2012-13年の会員番号をご入力ください:<br />
+(半角数字8ケタ)<br />
+${form.old_id_number(istyle="4")}<br />
+${h.error(['cont','old_id_number'])}
 </div>
 <%mobile:form_header required="true">会員種別</%mobile:form_header>
 <div>
