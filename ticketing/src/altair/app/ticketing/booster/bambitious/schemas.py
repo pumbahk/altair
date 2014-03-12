@@ -12,6 +12,11 @@ from datetime import date
 from ..schemas import length_limit_for_sej, length_limit_long
 from ..widgets import ymd_widget, radio_list_widget, get_year_choices, get_year_months, get_year_days
 
+class ExtraForm(Form):
+    mail_permission = fields.BooleanField(
+        u"メルマガ配信",
+        default=True)
+
 class OrderFormSchema(Form):
     def validate_day(self, field):
         try:
@@ -52,7 +57,9 @@ class OrderFormSchema(Form):
     email_1_confirm = fields.TextField(u"メールアドレス（確認用）", filters=[strip_spaces, NFKC], validators=[v.Required(), SejCompliantEmail(), v.EqualTo('email_1', u'確認用メールアドレスが一致しません。')])
 
     product_delivery_method = fields.SelectField(label=u"会員特典受取方法", validators=[v.Required()], choices=[])
-    
+
+    extra = fields.FormField(ExtraForm)
+
 class OrderReviewSchema(Form):
     order_no = fields.TextField(u"注文番号", filters=[strip_spaces, NFKC], validators=[v.Required()])
     tel = fields.TextField(u"電話番号", filters=[strip_spaces, strip_hyphen(), NFKC], validators=[v.Required()])

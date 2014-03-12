@@ -105,6 +105,10 @@
                   <td>${pm['email_1']}</td>
                 </tr>
                 <tr>
+                  <th>${layout.team_name}からのメールマガジンの配信	</th>
+                  <td>${u'希望する' if pm['extra']['mail_permission'] else u'希望しない'}</td>
+                </tr>
+                <tr>
                   <th>会員特典受取方法</th>
                   <td>${pm['product_delivery_method_name']}</td>
                 </tr>

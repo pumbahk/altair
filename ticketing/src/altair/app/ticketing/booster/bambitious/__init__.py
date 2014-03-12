@@ -26,6 +26,7 @@ def setup_booster_settings(config):
     class PersistentProfileFactory(Default):
         attr_names = Default.attr_names[:]
         attr_names.extend([
+                u'extra.mail_permission',
                 u't_shirts_size',
                 u'product_delivery_method_name', 
                 ])
