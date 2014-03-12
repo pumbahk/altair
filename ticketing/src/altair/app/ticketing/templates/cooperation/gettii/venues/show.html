@@ -3,15 +3,15 @@
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <div class="page-header">
-  <h3>オーガス会場図連携 - ${venue.name}</h3>
+  <h3>Gettii会場図連携 - ${venue.name}</h3>
 </div>
 
 <div class="container">
   <ul>
-    %for ag_venue in ag_venues:
+    %for external_venue in external_venues:
     <li>
-      <a href="${request.route_path('augus.augus_venue.show', augus_venue_code=ag_venue.code, augus_venue_version=ag_venue.version)}">
-        ${ag_venue.name} - ${ag_venue.code} - ${ag_venue.version}
+      <a href="">
+        ${external_venue.code}
       </a>
     </li>
     %endfor
@@ -28,21 +28,21 @@
 <script type="text/javascript">
   <!--
       function enable_upload_dialog(){
-          var modal = $('#modal-augus-venue-upload');
+          var modal = $('#modal-external-venue-upload');
           modal.find('#display').attr('checked', 'checked');
           modal.modal('toggle');
       }
 
       function enable_download_dialog(){
-          var modal = $('#modal-augus-venue-download');
+          var modal = $('#modal-external-venue-download');
           modal.find('#display').attr('checked', 'checked');
           modal.modal('toggle');
       }
     -->
 </script>
 
-<div id="modal-augus-venue-download" class="modal hide">
-  <form method="GET" action="${request.route_path('augus.venue.download', venue_id=venue.id)}">
+<div id="modal-external-venue-download" class="modal hide">
+  <form method="GET" action="${request.route_path('gettii.venue.download', venue_id=venue.id)}">
     <div class="modal-header">
       <h3>ダウンロード</h3>
     </div>
@@ -57,15 +57,15 @@
 </div>
 
 
-<div id="modal-augus-venue-upload" class="modal hide">
-  <form method="POST" action="${request.route_path('augus.venue.upload', venue_id=venue.id)}"
+<div id="modal-external-venue-upload" class="modal hide">
+  <form method="POST" action="${request.route_path('gettii.venue.upload', venue_id=venue.id)}"
         enctype="multipart/form-data">
     <div class="modal-header">
       <h3>アップロード</h3>
     </div>
     <div class="modal-body">
-      オーガス会場図と連携させるためのCSVをアップロードします。(新規作成)
-      ${ch.form_item(upload_form.augus_venue_file)}
+      会場図連携用ののCSVをアップロードします。(新規作成)
+      ${ch.form_item(upload_form.csv_file)}
     </div>
     <div class="modal-footer">
       <input type="submit" class="btn" value="アップロード"></input>

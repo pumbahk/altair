@@ -1,4 +1,5 @@
 #-*- coding: utf-8 -*-
+import collections
 from altair.app.ticketing import newRootFactory
 
 def add_routes(config, route_url_resource):
@@ -101,7 +102,7 @@ class DateTimeType(RawType):
         return datetime.datetime.strftime(value, cls.FORMAT) if value else None
 
 class Record(dict):
-    fields = {}
+    fields = collections.OrderedDict()
 
     def __init__(self):
         self._install_attributes()
@@ -119,7 +120,10 @@ class Record(dict):
         return cls.fields.keys()[idx] # raise IndexError
 
     def parse(self, row):
-        pass
+        for ii, (key, type_) in enumerate(self.fields.items()):
+            data = row[ii]
+            data = type_.decode(data)
+            setattr(self, key, data)
 
     def row(self):
         return [type_.encode(getattr(self, key))
@@ -147,12 +151,12 @@ class CSVData(list):
     def install(self, record_factory):
         self.record_factory = record_factory
 
-    def read_csv(self, filneme_or_fp, encoding=None):
+    def read_csv(self, filename_or_fp, encoding=None):
         try:
             with open(filename_or_fp) as fp:
                 self._parse(fp)
         except TypeError as err: # file object
-            fp = filneme_or_fp
+            fp = filename_or_fp
             self._parse(fp)
 
     def write_csv(self, filename_or_fp):
@@ -165,8 +169,10 @@ class CSVData(list):
 
     def _parse(self, fp):
         reader = csv.reader(fp)
+        reader.next() # header
         for row in reader:
-            record = self.record_factory(row)
+            record = self.record_factory()
+            record.parse(row)
             self.append(record)
 
     def _write(self, fp):

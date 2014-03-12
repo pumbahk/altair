@@ -97,6 +97,8 @@ class AltairGettiiVenueCSVRecord(Record):
             self.gettii_modifier = ''
             self.gettii_modified_at = ''
 
+    def validate(self):
+        return bool(self.id_)
 
 
 class AltairGettiiVenueCSV(CSVData):
@@ -114,4 +116,7 @@ class AltairGettiiVenueCSV(CSVData):
             gettii_seat = id_gettii_seat.get(seat.id, None)
             record = self.record_factory()
             record.load(seat, gettii_seat)
-            self.append(record)
+            if record.validate():
+                self.append(record)
+            else:
+                print '????'

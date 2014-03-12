@@ -32,6 +32,6 @@ class VenueResource(TicketingAdminResource):
 
     @reify
     def external_venues(self):
-        return GettiiVenue.query.filter(GettieVenue.venue_id==self.venue.id)\
+        return GettiiVenue.query.filter(GettiiVenue.venue_id==self.venue.id)\
                                 .filter(Venue.organization_id==self.organization.id)\
                                 .all()

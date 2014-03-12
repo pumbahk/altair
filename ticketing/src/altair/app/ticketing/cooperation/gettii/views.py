@@ -5,10 +5,15 @@ from pyramid.view import (
     view_config,
     view_defaults,
     )
+from pyramid.httpexceptions import (
+    HTTPBadRequest,
+    HTTPFound,
+    )
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-
+from ..forms import ExternalVenueUploadForm
 from . import csvfile
+from . import importers
 
 class _GettiiBaseView(BaseView):
     pass
@@ -17,7 +22,7 @@ class _GettiiBaseView(BaseView):
 class VenueView(_GettiiBaseView):
 
     @view_config(route_name='gettii.venue.index', request_method='GET',
-                 renderer='altair.app.ticketing:templates/cooperation/gettii/venues.html')
+                 renderer='altair.app.ticketing:templates/cooperation/gettii/venues/show.html')
     def index(self):
         return {'venue': self.context.venue,
                 'external_venues': self.context.external_venues,
@@ -36,9 +41,16 @@ class VenueView(_GettiiBaseView):
                        ]
         return res
 
-    @view_config(route_name='gettii.venue.upload', request_method='GET')
+    @view_config(route_name='gettii.venue.upload', request_method='POST')
     def upload(self):
-        return {'venue': self.context.venue,
-                'external_venues': self.context.external_venues,
-                'upload_form': ExternalVenueUploadForm(),
-                }
+        form = ExternalVenueUploadForm(self.request.params)
+        if form.validate() and hasattr(form.csv_file.data, 'file'):
+            fp = form.csv_file.data.file
+            csvdata = csvfile.AltairGettiiVenueCSV()
+            csvdata.read_csv(fp)
+            importer = importers.GettiiVenueImpoter()
+            importer.import_(self.context.venue.id, csvdata)
+            url = self.request.route_path('gettii.venue.index', venue_id=self.context.venue.id)
+            self.request.session.flash(u'登録しました')
+            return HTTPFound(url)
+        raise HTTPBadRequest('error')
