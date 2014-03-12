@@ -65,7 +65,8 @@ class MultipartEmail(Mailer):
            filepath_or_object.seek(cur)
         else:
            with open(filepath_or_object, 'rb') as fp:
-               attachment.set_payload(data)
+               data = fp.read()
+        attachment.set_payload(data)
         Encoders.encode_base64(attachment)
         msg.attach(attachment)
         attachment.add_header('Content-Disposition', 'attachment', filename=filename)
@@ -113,7 +114,7 @@ def send_request_mail(settings, path):
     mailer.create_message(
         sender=sender,
         recipient=recipient,
-        subject=u'【オーガス連携】会場図データ登録のお願い',
+        subject=u'【オーガス連携】会場図データ登録のお願い {}'.format(title),
         body=body,
         filename=filename,
         filepath_or_object=path,
