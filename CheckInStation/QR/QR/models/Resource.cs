@@ -2,6 +2,7 @@ using System;
 using System.Configuration;
 using System.Net.Http;
 using NLog;
+using QR.support;
 
 namespace QR
 {
@@ -84,13 +85,13 @@ namespace QR
         public string SettingValue (string key)
         {
             var v = ConfigurationManager.AppSettings [key];
-            logger.Trace ("get from resource: key={0} value={1}", key, v);
+            logger.Trace ("get from resource: key={0} value={1}".WithMachineName(), key, v);
             return v;
         }
 
         public string GetUniqueNameEachMachine()
         {
-            return System.Environment.MachineName;
+            return MachineName.GetMachineName();
         }
     }
 }

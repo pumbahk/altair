@@ -17,6 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using vkeyboard.control;
+using QR.support;
 
 namespace QR.presentation.gui.page
 {
@@ -114,7 +115,7 @@ namespace QR.presentation.gui.page
             }
             catch (Exception ex)
             {
-                logger.ErrorException("goto another mode", ex);
+                logger.ErrorException("goto another mode".WithMachineName(), ex);
             }
         }
 

@@ -40,10 +40,10 @@ namespace QR.support
                 if(d > 0){
                     Name = FullName.Substring(0, d);
                 } else {
-                    logger.Warn("anything is wrong?(Name={0}, FullName={1})", Name, FullName);
+                    logger.Warn("anything is wrong?(Name={0}, FullName={1})".WithMachineName(), Name, FullName);
                     Name = FullName;
                 }
-                logger.Info("Getting application name: Name={0}", Name);
+                logger.Info("Getting application name: Name={0}".WithMachineName(), Name);
             }
             return Name;
         }

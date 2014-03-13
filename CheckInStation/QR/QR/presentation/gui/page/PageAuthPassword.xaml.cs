@@ -33,7 +33,7 @@ namespace QR.presentation.gui.page
         {
             var ev = this.Event as AuthenticationEvent;
             ev.LoginPassword = this.LoginPassword; //TODO:use seret string
-            //logger.Info(String.Format("Submit: Name:{0}, Password:{1}", ev.LoginName, ev.LoginPassword));
+            //logger.Info@(String.Format("Submit: Name:{0}, Password:{1}", ev.LoginName, ev.LoginPassword));
             base.OnSubmit();
         }
     }

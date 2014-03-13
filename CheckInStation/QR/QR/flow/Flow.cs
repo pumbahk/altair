@@ -1,6 +1,7 @@
 using NLog;
 using System;
 using System.Threading.Tasks;
+using QR.support;
 
 namespace QR
 {
@@ -24,7 +25,7 @@ namespace QR
         public void Dispose()
         {
             this.Stopwatch.Stop();
-            logger.Info("TimeIt: -- {0} -- ({1})", this.Prefix, this.Stopwatch.Elapsed);
+            logger.Info("TimeIt: -- {0} -- ({1})".WithMachineName(), this.Prefix, this.Stopwatch.Elapsed);
         }
     }
 
@@ -89,7 +90,7 @@ namespace QR
 
         public async Task<ICase> NextCase ()
         {
-            logger.Trace(String.Format("Next Case current FlowState: {0}", this.state));
+            logger.Trace(String.Format("Next Case current FlowState: {0}".WithMachineName(), this.state));
             //verify if not then calling.
             bool isVerifySuccess;
             if (this.state < FlowState.verified) {

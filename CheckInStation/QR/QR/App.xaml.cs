@@ -9,6 +9,7 @@ using System.Windows.Controls;
 
 using QR.presentation.gui;
 using NLog;
+using QR.support;
 
 namespace QR
 {
@@ -66,14 +67,14 @@ namespace QR
         void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             Exception ex = e.ExceptionObject as Exception;
-            logger.ErrorException("unhandled:", ex);
+            logger.ErrorException("unhandled:".WithMachineName(), ex);
             MessageBox.Show(ex.Message, "例外発生(UI スレッド外)",
                                   MessageBoxButton.OK, MessageBoxImage.Error);
             this.Shutdown();
         }
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            logger.ErrorException("unhandled(ui):", e.Exception);
+            logger.ErrorException("unhandled(ui):".WithMachineName(), e.Exception);
             MessageBox.Show(e.Exception.Message, "システムエラーが発生しました。終了します",
                                   MessageBoxButton.OK, MessageBoxImage.Error);
             e.Handled = true;

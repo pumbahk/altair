@@ -18,6 +18,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using QR.support;
 
 namespace QR.presentation.gui.page{
 
@@ -156,7 +157,7 @@ namespace QR.presentation.gui.page{
             }
             catch (Exception ex)
             {
-                logger.WarnException("test printing:", ex);
+                logger.WarnException("test printing:".WithMachineName(), ex);
             }
             printing.EndEnqueue();
 

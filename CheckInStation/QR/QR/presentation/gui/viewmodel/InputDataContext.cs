@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using QR.support;
 
 namespace QR.presentation.gui
 {
@@ -24,8 +25,8 @@ namespace QR.presentation.gui
 
         public IInternalEvent Event
         {
-            get { logger.Debug("get event: parent={3} parent.id={0} value={1} value.id={2}", this.GetHashCode(), this._event, this._event.GetHashCode(), this); return this._event; }
-            set { logger.Debug("set event: parent={3} parent.id={0} value={1} value.id={2}", this.GetHashCode(), value, value.GetHashCode(), this); this._event = value; }
+            get { logger.Debug@("get event: parent={3} parent.id={0} value={1} value.id={2}", this.GetHashCode(), this._event, this._event.GetHashCode(), this); return this._event; }
+            set { logger.Debug@("set event: parent={3} parent.id={0} value={1} value.id={2}", this.GetHashCode(), value, value.GetHashCode(), this); this._event = value; }
         }
          */
         public IInternalEvent Event { get; set; }
@@ -40,7 +41,7 @@ namespace QR.presentation.gui
             get
             {
                 var case_ = this.Broker.FlowManager.Peek().Case;
-                //logger.Debug(String.Format("Case: {0}", case_));
+                //logger.Debug@(String.Format("Case: {0}", case_));
                 return case_;  //なぜかこれを直接Bindingで呼び出したとき""が返るっぽい。
             }
         }
@@ -53,7 +54,7 @@ namespace QR.presentation.gui
                 {
                     this.Description = this.Case.Description;
                 }
-                //logger.Debug("case:{0} description:{1}", this.Case, result);
+                //logger.Debug@("case:{0} description:{1}", this.Case, result);
                 return this._Description;
             }
             set
@@ -71,7 +72,7 @@ namespace QR.presentation.gui
         public virtual async Task<ICase> SubmitAsync()
         {
             this.OnSubmit();
-            logger.Debug("SubmitAsync this:{0}, Event:{1}, Case:{2}", this, this.Event, this.Case);
+            logger.Debug("SubmitAsync this:{0}, Event:{1}, Case:{2}".WithMachineName(), this, this.Event, this.Case);
             var result = await this.Broker.SubmitAsync(this.Event).ConfigureAwait(false);
             //本当はOnPropertyChangeでCaseが変わり。そのOnProeprtyChangeでCaseNameが変わるのが良い。
             this.OnPropertyChanged("CaseName");
@@ -86,7 +87,7 @@ namespace QR.presentation.gui
         public virtual async Task<ICase> BackwardAsync()
         {
             this.OnBackward();
-            logger.Debug("BackwardAsync this:{0}, Event:{1}, Case:{2}", this, this.Event, this.Case);
+            logger.Debug("BackwardAsync this:{0}, Event:{1}, Case:{2}".WithMachineName(), this, this.Event, this.Case);
             var result = await this.Broker.BackwardAsync().ConfigureAwait(false);
             this.OnPropertyChanged("CaseName");
             this.Description = result.Description;
@@ -100,7 +101,7 @@ namespace QR.presentation.gui
         public virtual async Task<bool> VerifyAsync()
         {
             this.OnVerify();
-            logger.Debug("VerifyAsync this:{0}, Event:{1}, Case:{2}", this, this.Event, this.Case);
+            logger.Debug("VerifyAsync this:{0}, Event:{1}, Case:{2}".WithMachineName(), this, this.Event, this.Case);
             var result = await this.Broker.VerifyAsync(this.Event).ConfigureAwait(false);
             return result;
         }
@@ -112,7 +113,7 @@ namespace QR.presentation.gui
         public virtual async Task PrepareAsync()
         {
             this.OnPrepare();
-            logger.Debug("PrepareAsync this:{0}, Event:{1}, Case:{2}", this, this.Event, this.Case);           
+            logger.Debug("PrepareAsync this:{0}, Event:{1}, Case:{2}".WithMachineName(), this, this.Event, this.Case);           
             await this.Broker.PrepareAsync(this.Event).ConfigureAwait(false);
         }
 

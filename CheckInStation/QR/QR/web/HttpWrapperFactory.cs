@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using NLog;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
+using QR.support;
 
 namespace QR
 {
@@ -41,7 +42,7 @@ namespace QR
             }
             else
             {
-                logger.Warn("this is not invalid behavior. overwrited via new container.");
+                logger.Warn("this is not invalid behavior. overwrited via new container.".WithMachineName());
                 this.cookieContainer = container;
             }
         }
