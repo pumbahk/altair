@@ -49,10 +49,10 @@ namespace QR
 
         public message.ResultTuple<string, bool> ValidateTel(string tel)
         {
-            int n;
+            long n;
             if (tel == null || tel == "")
                 return new NG("電話番号を入力してください");
-            if (!int.TryParse(tel, out n))
+            if (!long.TryParse(tel, out n))
             {
                 return new NG("電話番号は数字のみです");
             }
