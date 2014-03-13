@@ -26,9 +26,9 @@
           <TextBlock TextWrapping="Wrap" Width="81.401337" Height="24.78035" Canvas.Left="294.066862" Canvas.Top="14.295634" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{公演名略称}}</TextBlock>
           <TextBlock TextWrapping="Wrap" Width="81.801025" Height="27.586683" Canvas.Left="295.69369" Canvas.Top="78.093044" FontSize="8px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{商品名}}</TextBlock>
           <@qrclass@ xmlns:@ns@="clr-namespace:@fullns@;assembly=@ns@" Width="34.150227" Height="34.150227" Canvas.Left="298.81448" Canvas.Top="165.73663">
-<@qrclass@.QRCode>{{予約番号}}-{{発券番号}},{{開催日}},{{seat.name}}</@qrclass@.QRCode>
+<@qrclass@.QRCode>{{予約番号}}{{seat.name}}</@qrclass@.QRCode>
 </@qrclass@>
-          <TextBlock TextWrapping="Wrap" Width="191.77975" Height="18.072269" Canvas.Left="89.165499" Canvas.Top="27.928596" FontSize="9px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{公演名副題}}</TextBlock>
+         <TextBlock TextWrapping="Wrap" Width="191.77975" Height="18.072269" Canvas.Left="89.165499" Canvas.Top="27.928596" FontSize="9px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{公演名副題}}</TextBlock>
           <TextBlock TextWrapping="Wrap" Width="266.78827" Height="19.901747" Canvas.Left="14.156965" Canvas.Top="79.960272" FontSize="9px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{公演名}}</TextBlock>
           <TextBlock TextWrapping="Wrap" Width="264.9588" Height="15.632968" Canvas.Left="13.782044" Canvas.Top="99.683978" FontSize="9px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{会場名}}</TextBlock>
           <TextBlock TextWrapping="Wrap" Width="264.9588" Height="15.632968" Canvas.Left="15.073963" Canvas.Top="114.268016" FontSize="9px" FontFamily="MS PGothic" Foreground="#000" FontStyle="Normal" FontWeight="Bold">{{商品名}}</TextBlock>
