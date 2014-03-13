@@ -123,3 +123,7 @@ class StaticKindView(object):
     @smartphone_site_view_config(match_param="kind=information", renderer=selectable_renderer('altairsite.smartphone:templates/page/information.html'))
     def move_information(self):
         return {}
+
+    @smartphone_site_view_config(match_param="kind=mente", renderer=selectable_renderer('altairsite.smartphone:templates/page/mente.html'))
+    def move_mente(self):
+        return {}
