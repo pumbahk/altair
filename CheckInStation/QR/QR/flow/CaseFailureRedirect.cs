@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using QR.message;
 using NLog;
+using QR.support;
 
 namespace QR
 {
@@ -20,7 +21,7 @@ namespace QR
             get
             {
                 var result = String.Format("{0} (マシン名:{2} 現在の時間: {1})", this._message, DateTime.Now.ToString("yyyy/M/d hh:mm:ss"), this.Resource.GetUniqueNameEachMachine());
-                logger.Warn("error is occurred: `{0}`", result);
+                logger.Warn("error is occurred: `{0}`".WithMachineName(), result);
                 return result;
             }
             set { this._message = value; }
@@ -57,7 +58,7 @@ namespace QR
         public override async Task<bool> VerifyAsync ()
         {
             // message
-            logger.Info (String.Format ("failure message {0}", this.Message));
+            logger.Info("failure message {0}".WithMachineName(), this.Message);
             if (this.Modify != null) {
                 await this.Modify ();
             }

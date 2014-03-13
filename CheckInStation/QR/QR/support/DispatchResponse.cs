@@ -27,27 +27,27 @@ namespace QR.support
             }          
             catch (System.Net.WebException e)
             {
-                logger.ErrorException("net:", e);
+                logger.ErrorException("net:".WithMachineName(), e);
                 return new Failure<string, T>(Resource.GetWebExceptionMessage());
             }
             catch (System.Net.Sockets.SocketException e)
             {
-                logger.ErrorException("net(socket):", e);
+                logger.ErrorException("net(socket):".WithMachineName(), e);
                 return new Failure<string, T>(Resource.GetWebExceptionMessage());
             }
             catch (System.Net.Http.HttpRequestException e)
             {
-                logger.ErrorException("httprequest", e);
+                logger.ErrorException("httprequest".WithMachineName(), e);
                 return new Failure<string, T>(Resource.GetWebExceptionMessage());
             }
            catch (System.Xml.XmlException e)
             {
-                logger.ErrorException("xml:", e);
+                logger.ErrorException("xml:".WithMachineName(), e);
                 return new Failure<string, T>(e.ToString());
            }
            catch (TaskCanceledException e)
             {
-                logger.ErrorException("task cancel", e);
+                logger.ErrorException("task cancel".WithMachineName(), e);
                 return new Failure<string, T>(Resource.GetDefaultErrorMessage()  );
             }
             catch (TransparentMessageException e)
@@ -64,22 +64,22 @@ namespace QR.support
             }
             catch (System.Net.WebException e)
             {
-                logger.ErrorException("net:", e);
+                logger.ErrorException("net:".WithMachineName(), e);
                 return new Failure<string, T>(Resource.GetWebExceptionMessage());
             }
             catch (System.Net.Sockets.SocketException e)
             {
-                logger.ErrorException("net(socket):", e);
+                logger.ErrorException("net(socket):".WithMachineName(), e);
                 return new Failure<string, T>(Resource.GetWebExceptionMessage());
             }
             catch (System.Net.Http.HttpRequestException e)
             {
-                logger.ErrorException("httprequest", e);
+                logger.ErrorException("httprequest".WithMachineName(), e);
                 return new Failure<string, T>(Resource.GetWebExceptionMessage());
             }
             catch (System.Xml.XmlException e)
             {
-                logger.ErrorException("xml:", e);
+                logger.ErrorException("xml:".WithMachineName(), e);
                 return new Failure<string, T>(e.ToString());
             }
             catch (TransparentMessageException e)

@@ -1,5 +1,6 @@
 using System;
 using NLog;
+using QR.support;
 
 namespace QR
 {
@@ -103,7 +104,7 @@ namespace QR
                     this.CurrentInputUnit = InputUnit.qrcode;
                     return new CaseQRCodeInput(previous.Resource);
                 default:
-                    logger.Warn("invalid redirect is found. (get alternative case from {0})", previous);
+                    logger.Warn("invalid redirect is found. (get alternative case from {0})".WithMachineName(), previous);
                     this.CurrentInputUnit = InputUnit.before_auth;
                     return new CaseAuthInput(previous.Resource);
             }
@@ -116,7 +117,7 @@ namespace QR
 
         public static ICase GetInputCaseByInputUnit (IResource resource, InputUnit Selected)
         {
-            logger.Debug ("InputUnit: {0}.. lookup redirect point.", Selected.ToString ());
+            logger.Debug("InputUnit: {0}.. lookup redirect point.".WithMachineName(), Selected.ToString ());
             switch (Selected) {
             case InputUnit.qrcode:
                 return new CaseQRCodeInput (resource);
@@ -125,7 +126,7 @@ namespace QR
             case InputUnit.before_auth:
                 return new CaseAuthInput (resource);
             default:
-                logger.Info ("InputUnit: {0} is unknown value. default={1} is selected", Selected.ToString (), default(InputUnit));
+                logger.Info("InputUnit: {0} is unknown value. default={1} is selected".WithMachineName(), Selected.ToString (), default(InputUnit));
                 return new CaseQRCodeInput (resource);
             }
         }

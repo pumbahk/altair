@@ -86,7 +86,7 @@ namespace QR
                 if (this.RequestData != null) {
                     foreach (var p in this.RequestData.printed_ticket_list)
                     {
-                        logger.Warn("token_id={0}, template_id={1} is printed. but all status is failure", p.token_id, p.template_id);
+                        logger.Warn("token_id={0}, template_id={1} is printed. but all status is failure".WithMachineName(), p.token_id, p.template_id);
                     }
                     await Resource.TicketDataManager.UpdatePrintedAtAsync (this.RequestData);
                 }

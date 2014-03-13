@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using NLog;
 using QR.message;
+using QR.support;
 
 namespace QR
 {
@@ -14,7 +15,7 @@ namespace QR
         public IInternalEvent PresentationChanel { 
             get {
                 if (this._presentationChanel == null) {
-                    logger.Warn ("use presentation chanel before binding event.");
+                    logger.Warn ("use presentation chanel before binding event.".WithMachineName());
                     this._presentationChanel = new EmptyEvent ();
                 }
                 return this._presentationChanel;
@@ -30,7 +31,7 @@ namespace QR
                 }
                 catch (Exception ex)
                   {
-                    logger.ErrorException("missing:", ex);
+                    logger.ErrorException("missing:".WithMachineName(), ex);
                     return "<??????????????????????!!>";
                   }
             }

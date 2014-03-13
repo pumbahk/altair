@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using NLog;
+using QR.support;
 
 namespace QR
 {
@@ -24,7 +25,7 @@ namespace QR
                 InputUnit unit;
                 bool status;
                 if (subject.InputUnitString == null) {
-                    logger.Warn("subject.InputUnitString is null");
+                    logger.Warn("subject.InputUnitString is null".WithMachineName());
                     unit = InputUnit.qrcode;
                     status = true;
                 } else {

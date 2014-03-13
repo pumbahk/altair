@@ -72,7 +72,7 @@ namespace QR
                 File.Read
             }
             */
-            logger.Info(String.Format("get ad image. url:{0}", url));
+            logger.Info(String.Format("get ad image. url:{0}".WithMachineName(), url));
             var wrapper = Resource.HttpWrapperFactory.Create(url);
             var response = await wrapper.GetAsync().ConfigureAwait(false);
             response.EnsureSuccessStatusCodeExtend();
@@ -101,7 +101,7 @@ namespace QR
             }
             var images = await Task.WhenAll (tq);
             foreach (var img in images) {
-                logger.Debug("image: Length={0}", img.Length);
+                logger.Debug("image: Length={0}".WithMachineName(), img.Length);
                 this.Add(this.CreateImage(img));
             }
             this.State = CollectorState.ending;

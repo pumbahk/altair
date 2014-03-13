@@ -1,8 +1,9 @@
 using NLog;
 using System;
 using System.Threading.Tasks;
+using QR.support;
 
-namespace QR
+namespace QR    
 {
     public class InternalApplication
     {
@@ -20,11 +21,11 @@ namespace QR
             {
                 throw new InvalidOperationException("logger is disabled");
             }
-            logger.Info("Internal Application starting.");
+            logger.Info("Internal Application starting.".WithMachineName());
             var config = new Configurator (new Resource (true));
             this.Resource = config.Resource;
-            config.Include (AuthConfiguration.MockIncludeMe);
-            //config.Include(AuthConfiguration.IncludeMe);
+            //config.Include (AuthConfiguration.MockIncludeMe);
+            config.Include(AuthConfiguration.IncludeMe);
             config.Include (QRConfiguration.IncludeMe);
             config.Include (HttpCommunicationConfiguration.IncludeMe);
 
@@ -32,14 +33,14 @@ namespace QR
             this.RequestBroker = new RequestBroker (FlowManager);
 
             // verify
-            logger.Info("internal Application configuration checking.");
+            logger.Info("internal Application configuration checking.".WithMachineName());
             if (!this.RequestBroker.IsConfigurationOK () || !config.Verify ()) {
                 throw new InvalidProgramException ("configuration is not end");
             }
         }
         public void ShutDown()
         {
-            logger.Info("Internal Application shutdown.");
+            logger.Info("Internal Application shutdown.".WithMachineName());
         }
 
         public async Task Run (ICase case_)

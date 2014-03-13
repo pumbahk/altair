@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using QR.support;
 
 namespace QR
 {
@@ -40,7 +41,7 @@ using NLog;
                 }
                 catch (Exception ex)
                 {
-                    logger.WarnException("", ex);
+                    logger.WarnException("".WithMachineName(), ex);
                     this.pushedRequestCollector.Add(Tuple.Create(imgdata.token_id, imgdata.ticket_id), false);
                 }
             }

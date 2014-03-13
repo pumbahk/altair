@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using NLog;
+using QR.support;
 
 namespace QR
 {
@@ -45,7 +46,7 @@ namespace QR
             case PrintUnit.all:
                 return new CaseQRConfirmForAll (Resource, TicketData);
             default:
-                logger.Info ("PrintUnit: {0} is unknown value. default={1} is selected", Unit.ToString(), default(PrintUnit));
+                logger.Info ("PrintUnit: {0} is unknown value. default={1} is selected".WithMachineName(), Unit.ToString(), default(PrintUnit));
                 return new CasePrintForOne (Resource, TicketData);
             }
         }

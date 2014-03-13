@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using QR.support;
 
 namespace QR.presentation.gui.page
 {
@@ -73,7 +74,7 @@ namespace QR.presentation.gui.page
                 {
                     var waitTime = AppUtil.GetCurrentResource().WaitingTimeAfterFinish;
                     await Task.Delay(waitTime);
-                    logger.Info(String.Format("stop case {0}", ctx.Broker.FlowManager.Peek()));
+                    logger.Info("stop case {0}".WithMachineName(), ctx.Broker.FlowManager.Peek());
                     var case_ = await ctx.SubmitAsync();
                     ctx.TreatErrorMessage();
                     AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);

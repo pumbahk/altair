@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using QR.support;
 
 namespace QR.presentation.gui.page
 {
@@ -49,7 +50,7 @@ namespace QR.presentation.gui.page
         {
             InitializeComponent();
             this.DataContext = this.CreateDataContext();
-            logger.Info("!initialize page: {0}, context: {1}, event: {2}, case: ", this, this.DataContext, (this.DataContext as PageQRCodeInputDataContext).Event, (this.DataContext as PageQRCodeInputDataContext).Case);
+            logger.Info("!initialize page: {0}, context: {1}, event: {2}, case: ".WithMachineName(), this, this.DataContext, (this.DataContext as PageQRCodeInputDataContext).Event, (this.DataContext as PageQRCodeInputDataContext).Case);
         }
 
         private InputDataContext CreateDataContext()
@@ -117,7 +118,7 @@ namespace QR.presentation.gui.page
             }
             catch (Exception ex)
             {
-                logger.ErrorException("goto another mode", ex);
+                logger.ErrorException("goto another mode".WithMachineName(), ex);
             }
         }
 

@@ -7,6 +7,7 @@ using System.Windows.Controls;
 
 using QR.presentation.gui.page;
 using NLog;
+using QR.support;
 
 namespace QR.presentation.gui
 {
@@ -68,7 +69,7 @@ namespace QR.presentation.gui
                 var nextPage = this.Choice(case_, previous);
                 if (previous != nextPage)
                 {
-                    logger.Debug("navigate page: {0}", nextPage);
+                    logger.Debug("navigate page: {0}".WithMachineName(), nextPage);
                     var service = previous.NavigationService;
                     if (service != null)
                     {
@@ -80,7 +81,7 @@ namespace QR.presentation.gui
                     }
                     else
                     {
-                        logger.Info("previous: {0}, case: {1}, NavigationService is not found", previous, case_);
+                        logger.Info("previous: {0}, case: {1}, NavigationService is not found".WithMachineName(), previous, case_);
                     }
                 }
             });
@@ -93,7 +94,7 @@ namespace QR.presentation.gui
                 var nextPage = this.Choice(case_, previous);
                 if (previous != nextPage)
                 {
-                    logger.Debug("navigate page: {0}", nextPage);
+                    logger.Debug("navigate page: {0}".WithMachineName(), nextPage);
                     var service = previous.NavigationService;
                     if (service != null)
                     {
@@ -101,7 +102,7 @@ namespace QR.presentation.gui
                     }
                     else
                     {
-                        logger.Info("previous: {0}, case: {1}, NavigationService is not found", previous, case_);
+                        logger.Info("previous: {0}, case: {1}, NavigationService is not found".WithMachineName(), previous, case_);
                     }
                 }
             });

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using QR.message;
 using NLog;
+using QR.support;
 
 namespace QR
 {

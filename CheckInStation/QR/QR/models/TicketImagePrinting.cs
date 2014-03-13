@@ -5,6 +5,7 @@ using System.Printing;
 using System.Threading.Tasks;
 using System.Windows.Documents;
 using System.Windows.Media.Imaging;
+using QR.support;
 
 namespace QR
    {
@@ -68,7 +69,7 @@ namespace QR
 
         public void BeginEnqueue()
         {
-            logger.Info("Printer: {0}", this.DefaultPrinter.FullName);
+            logger.Info("Printer: {0}".WithMachineName(), this.DefaultPrinter.FullName);
         }
 
         public void EndEnqueue()

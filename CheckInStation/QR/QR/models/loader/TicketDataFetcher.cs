@@ -51,7 +51,7 @@ namespace QR
                 var json = DynamicJson.Parse (response);
                 return new Success<string, TicketData> (new TicketData (json));
             } catch (System.Xml.XmlException e) {
-                logger.ErrorException (":", e);
+                logger.ErrorException (":".WithMachineName(), e);
                 return new Failure<string, TicketData> (Resource.GetInvalidInputMessage ());
             }
         }

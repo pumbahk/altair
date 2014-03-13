@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using QR.support;
 
 namespace QR.presentation.gui.page
 {
@@ -131,7 +132,7 @@ namespace QR.presentation.gui.page
         {
             var ctx = this.DataContext as PagePrintingDataContext;
             ctx.Status = PrintingStatus.requesting;
-            logger.Trace("** status is requesting");
+            logger.Trace("** status is requesting".WithMachineName());
             var case_ = await ctx.SubmitAsync();
             ctx.TreatErrorMessage();
             AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);

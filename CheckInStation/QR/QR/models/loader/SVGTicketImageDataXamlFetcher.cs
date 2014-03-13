@@ -9,6 +9,7 @@ using QR.message;
 using System.IO;
 using System.Text;
 using System.Net.Http.Headers;
+using QR.support;
 
 namespace QR
 {
@@ -53,10 +54,10 @@ namespace QR
                 }
             return new Success<string, List<TicketImageData>> (coll);
             } catch (System.Xml.XmlException e) {
-                logger.ErrorException (":", e);
+                logger.ErrorException (":".WithMachineName(), e);
                 return new Failure<string,List<TicketImageData>> (Resource.GetInvalidOutputMessage ());
             } catch (Exception e) {
-                logger.ErrorException (":", e);
+                logger.ErrorException (":".WithMachineName(), e);
                 return new Failure<string, List<TicketImageData>> (Resource.GetDefaultErrorMessage ());
             }
         }
@@ -78,12 +79,12 @@ namespace QR
             }
             catch (System.Xml.XmlException e)
             {
-                logger.ErrorException(":", e);
+                logger.ErrorException(":".WithMachineName(), e);
                 return new Failure<string, List<TicketImageData>>(Resource.GetInvalidOutputMessage());
             }
             catch (Exception e)
             {
-                logger.ErrorException(":", e);
+                logger.ErrorException(":".WithMachineName(), e);
                 return new Failure<string, List<TicketImageData>>(Resource.GetDefaultErrorMessage());
             }
         }
