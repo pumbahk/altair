@@ -31,6 +31,7 @@ from .exceptions import (
     NoPerformanceError,
     OverOrderLimitException,
     OverQuantityLimitException,
+    InvalidCartStatusError,
 )
 from zope.deprecation import deprecate
 from altair.now import get_now
@@ -72,6 +73,7 @@ class TicketingCartResourceBase(object):
         self._sales_segment_id = sales_segment_id
         self._sales_segment = None
         self._populate_params()
+        self._validate_sales_segment()
 
     def _populate_params(self):
         if self.request.matchdict:
@@ -82,6 +84,22 @@ class TicketingCartResourceBase(object):
             self._sales_segment_id = long(self.request.matchdict.get('sales_segment_id'))
         except (ValueError, TypeError):
             pass
+
+    def _validate_sales_segment(self):
+        """現在認証済みのユーザが選択済みの販売区分を選択できるか"""
+        cart = None
+        try:
+            cart = self.cart
+        except NoCartError as e:
+            logger.debug('cart is not created (%s)' % e)
+
+        if cart and cart.sales_segment:
+            logger.info('validate sales_segment_id:%s' % cart.sales_segment_id)
+            user = self.authenticated_user()
+            if not cart.sales_segment.applicable(user=self.authenticated_user(), now=cart.created_at):
+                logger.warn('sales_segment_id({0}) does not permit membership({1})'.format(cart.sales_segment_id, self.membership))
+                raise InvalidCartStatusError(cart.id)
+        return
 
     @reify
     def cart(self):
