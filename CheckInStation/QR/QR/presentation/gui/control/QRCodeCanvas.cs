@@ -47,8 +47,8 @@ namespace QR.presentation.gui.control
                 return;
 
             // temporary
-            var y = -this.Height / 2;
-            var default_x = -this.Width / 2;
+            var y = -this.Height / 2.0;
+            var default_x = -this.Width / 2.0;
             var x = default_x;
 
             var path = new Path() { Fill = this.Foreground, Stroke = this.Foreground };
@@ -57,8 +57,8 @@ namespace QR.presentation.gui.control
             var writer = new ZXing.QrCode.QRCodeWriter();
             var matrix = writer.encode(this.QRCode, ZXing.BarcodeFormat.QR_CODE, 96, 96);
 
-            var w = (2 * this.Width / matrix.Width);
-            var h = (2 * this.Height / matrix.Height);
+            var w = (2.0 * this.Width / matrix.Width);
+            var h = (2.0 * this.Height / matrix.Height);
 
             for (var i = 0; i < matrix.Height; i++)
             {
