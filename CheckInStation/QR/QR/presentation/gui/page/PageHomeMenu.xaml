@@ -60,14 +60,14 @@
                 </Style>
             </StackPanel.Resources>
             <ToggleButton Name="_PrintTestQRToggleButton">QR読み込みのテストをする</ToggleButton>
-            <c:QRCodeCanvas Width="80" Height="80" QRCode="test message!#$%" Margin="20"/>
+            <c:QRCodeCanvas Width="80" Height="80" QRCode="test message!#$%*+;{" Margin="20"/>
             <TextBox x:Name="_PrintTestQRInput" FontSize="9" KeyDown="_PrintTestQRInput_KeyDown">
             </TextBox>
             <StackPanel>
                 <TextBlock Style="{StaticResource SubText}">QRで認識された文字列:</TextBlock>
                 <TextBlock Style="{StaticResource SubText}" Text="{Binding LoadedQRCode}"/>
             </StackPanel>
-            <TextBlock Style="{StaticResource SubText}">※QRコードの認識: "test message!#$%"と表示されればok</TextBlock>
+            <TextBlock Style="{StaticResource SubText}">※QRコードの認識: "test message!#$%*+;{"と表示されればok</TextBlock>
         </StackPanel>
     </Page.Resources>
     
