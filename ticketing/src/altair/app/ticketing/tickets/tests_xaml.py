@@ -83,7 +83,7 @@ class XAMLFromSVGTests(unittest.TestCase):
 </svg>
 """
         result = self._callFUT(svg, pretty_print=False, scale_x=None, scale_y=None)
-        expected = """<FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><PageContent><FixedPage Width="0" Height="0"><Canvas><@qrclass@ xmlns:@ns@="clr-namespace:@fullns@;assembly=@ns@" Width="91.473824" Height="81.106789" Foreground="Black" Canvas.Left="54.274467" Canvas.Top="131.58641" QRCode="test-message-is-here."/></Canvas></FixedPage></PageContent></FixedDocument>"""
+        expected = """<FixedDocument xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"><PageContent><FixedPage Width="0" Height="0"><Canvas><@qrclass@ xmlns:@ns@="clr-namespace:@fullns@;assembly=@ns@" Width="91.473824" Height="81.106789" Foreground="Black" Canvas.Left="54.274467" Canvas.Top="131.58641"><@qrclass@.QRCode>test-message-is-here.</@qrclass@.QRCode></@qrclass@></Canvas></FixedPage></PageContent></FixedDocument>"""
         self.assertEqual(expected, result)
 
     def test_scale(self):
