@@ -230,6 +230,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="support\DispatchResponse.cs" />
     <Compile Include="support\EnsureResponse.cs" />
+    <Compile Include="support\MachineName.cs" />
     <Compile Include="support\ReplaceExecutableNamespaceName.cs" />
     <Compile Include="support\TransparentMessageException.cs" />
     <Compile Include="tests\flow\FlowTests.cs" />
@@ -337,6 +338,7 @@
     <None Include="app.config" />
     <Content Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <None Include="packages.config" />
   </ItemGroup>
