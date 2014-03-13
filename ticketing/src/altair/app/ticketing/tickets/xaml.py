@@ -359,7 +359,7 @@ class XAMLFromSVG(object):
         ## todo: improvement
         for k, v in attrib.items():
             if k.endswith("}label"):
-                content = etree.SubElement(e"{}.QRCode".format(self.CLR_TARGET_CLASS_NAME))
+                content = etree.SubElement(e, "{}.QRCode".format(self.CLR_TARGET_CLASS_NAME))
                 content.text = v
         this.append(e)
 
