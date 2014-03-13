@@ -60,13 +60,16 @@ namespace QR.presentation.gui.control
             var w = (2.0 * this.Width / matrix.Width);
             var h = (2.0 * this.Height / matrix.Height);
 
+            var realW = this.Width / matrix.Width;
+            var realH = this.Height / matrix.Height;
+
             for (var i = 0; i < matrix.Height; i++)
             {
                 for (var j = 0; j < matrix.Width; j++)
                 {
                     if (matrix[j, i] == true)
                     {
-                        var rect = new RectangleGeometry() { Rect = new Rect(x, y, w, h) };
+                        var rect = new RectangleGeometry() { Rect = new Rect(x, y, realW, realH) }; //xxx:おかしい!!
                         group.Children.Add(rect);
                     }
                     x += w;
