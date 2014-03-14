@@ -27,14 +27,6 @@ namespace QR
             LoginURL = loginURL;
         }
 
-        class LoginUser
-        {
-            public string login_id { get; set; }
-
-            public string password { get; set; }
-
-            public string device_id { get; set; } //端末ごとにuniqueなid(e.g. xxxのPC)
-        }
         // url
         public string GetLoginURL ()
         {
@@ -57,6 +49,10 @@ namespace QR
                 var user = new LoginUser() { login_id = name, password = password, device_id = device_id };
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(user).ConfigureAwait(false);
                 response.EnsureSuccessStatusCodeExtend();
+
+                //成功後
+                this.Resource.LoginUser = user;
+
                 // cookie取得
                 var headers = response.Headers;
                 factory.AddCookies(CookieUtils.GetCookiesFromResponseHeaders(GetLoginURL(), headers));

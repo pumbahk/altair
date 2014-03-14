@@ -6,6 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using QR.support;
+using System.Windows.Controls;
+using System.Windows.Input;
+using QR.presentation.gui.command;
 
 namespace QR.presentation.gui
 {
@@ -18,6 +21,13 @@ namespace QR.presentation.gui
 
     public class InputDataContext : ViewModel, INotifyPropertyChanged
     {
+        public InputDataContext (Page page){
+            this.AppCloseCommand = new AppCloseCommand(page);
+        }
+        public InputDataContext()
+        {
+        }
+
         public DataContextProgress Progress;
         public RequestBroker Broker { get; set; }
         /*
@@ -30,8 +40,9 @@ namespace QR.presentation.gui
         }
          */
         public IInternalEvent Event { get; set; }
-        
 
+        public ICommand AppCloseCommand { get; private set; }
+    
         private string errorMessage;
 
         protected Logger logger = LogManager.GetCurrentClassLogger();

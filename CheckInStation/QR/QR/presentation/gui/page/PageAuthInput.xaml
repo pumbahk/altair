@@ -7,6 +7,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       mc:Ignorable="d" 
       d:DesignHeight="364" d:DesignWidth="683"
+    x:Name="CurrentPage"
     ShowsNavigationUI="False"
     Loaded="OnLoaded"
 	Title="PageAuthInput">
@@ -31,6 +32,7 @@
                     <Border 
                         Canvas.Left="140"
                         Canvas.Top="143"
+                        x:Name="MainBorder"
                         Style="{StaticResource MainBorder}">
                         <Grid>
                             <vk:VirtualKeyboard Text="" 
@@ -87,7 +89,11 @@
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
                                       MessageText="{Binding ErrorMessage}"
                                       ButtonText="OK"/>
-                    </Canvas>
+                    
+                    
+                    <!-- 終了ボタン-->
+                    <Button Command="{Binding AppCloseCommand}">exit</Button>
+                </Canvas>
             </Grid>
         </Viewbox>
     </Grid>

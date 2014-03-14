@@ -2,6 +2,7 @@
 using System;
 using System.Windows.Input;
 
+
 public class DialogCloseCommand : ICommand
 {
 

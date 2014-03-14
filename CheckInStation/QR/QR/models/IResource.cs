@@ -12,6 +12,7 @@ namespace QR
 
         //認証用
         IAuthentication Authentication { get; set; }
+        LoginUser LoginUser { get; set; }
 
         AuthInfo AuthInfo { get; set; }
 
