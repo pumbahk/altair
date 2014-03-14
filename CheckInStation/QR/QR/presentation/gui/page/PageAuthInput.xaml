@@ -89,10 +89,13 @@
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
                                       MessageText="{Binding ErrorMessage}"
                                       ButtonText="OK"/>
-                    
-                    
+
+
                     <!-- 終了ボタン-->
-                    <Button Command="{Binding AppCloseCommand}">exit</Button>
+                    <Button Command="{Binding AppCloseCommand}" Canvas.Left="158" Canvas.Top="12" Height="75" Width="181"
+                            Background="Transparent"
+                            Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
+                            />
                 </Canvas>
             </Grid>
         </Viewbox>
