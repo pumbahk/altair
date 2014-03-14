@@ -7,8 +7,7 @@ from altair.now import get_now
 from pyramid.httpexceptions import HTTPBadRequest
 from webob.multidict import MultiDict
 from .signer import with_secret_token
-
-
+from datetime import datetime
 
 class BaseView(object):
     def __init__(self, context, request):
@@ -110,8 +109,11 @@ def ticket_data_from_signed_string(context, request):
 
 from .todict import (
    ticket_data_collection_dict_from_tokens, 
-   additional_data_dict_from_order
+   additional_data_dict_from_order, 
+   TokenMaskPredicate
 )
+from .masking import (TokenReservationFilter, TokenMaskPredicate)
+
 
 @view_config(route_name="qr.ticketdata.collection", permission="sales_counter", renderer="json", 
              custom_predicates=(with_secret_token,))
@@ -121,11 +123,16 @@ def ticket_data_collection_from_order_no(context, request):
         raise HTTPBadRequest(u"E@:引数が足りません")
 
     order_no = request.json_body["order_no"]
+    now = datetime.now()
 
     order = OrderData(request, context.operator).get_order_from_order_no(order_no)
     token_list = ItemTokenData(request, context.operator).get_item_token_list_from_order_no(order_no)
+    reservertaion_generator = TokenReservationFilter(request, context.identity, token_list)
 
-    data = ticket_data_collection_dict_from_tokens(token_list)
+    not_masked_reservaions, masked_reservations = reservertaion_generator.get_partationed_reservations(now)
+    mask_predicate = TokenMaskPredicate(masked_reservations)
+    data = ticket_data_collection_dict_from_tokens(token_list, mask_predicate=mask_predicate)
+
     ## 付加情報追加
     data.update(additional_data_dict_from_order(order))
     ## 認証用の文字列追加
@@ -151,6 +158,8 @@ def svgsource_one_from_token(context, request):
     svg_source = SVGDataSource(request)
 
     token = token_data.get_item_token_from_id(request.json_body["ordered_product_item_token_id"])
+    if token.is_printed():
+        return {"datalist": []}
     datalist = svg_source.data_list_for_one(token)
     return {"datalist": datalist}
 
@@ -170,6 +179,7 @@ def svgsource_all_from_token_id_list(context, request):
     svg_source = SVGDataSource(request)
 
     token_list = token_data.get_item_token_list_from_token_id_list(token_id_list)
+    token_list = [t for t in token_list if t.is_printed()]
     datalist = svg_source.data_list_for_all(token_list)
     return {"datalist": datalist}
 

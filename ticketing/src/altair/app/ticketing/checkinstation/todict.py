@@ -22,7 +22,6 @@ class TokenStatus:
     not_supported = "not_supported"
     unknown = "unknown"
 
-
 class TokenStatusDictBuilder(object):
     def __init__(self, order, history=None, today=None):
         self.order = order
@@ -118,7 +117,7 @@ def additional_data_dict_from_order(order):
                 }
             }}
 
-def ticket_data_collection_dict_from_tokens(tokens):
+def ticket_data_collection_dict_from_tokens(tokens, mask_predicate=None):
     collection = []
     for token in tokens:
         seat = token.seat
@@ -133,6 +132,8 @@ def ticket_data_collection_dict_from_tokens(tokens):
             "product": {
                 "name": token.item.ordered_product.product.name
             }}
+        if mask_predicate and mask_predicate.is_masked(token.id):
+            D["printed_at"] = u"(他端末で発券中)"
         collection.append(D)
     return {"collection": collection}
 
