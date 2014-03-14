@@ -8,7 +8,10 @@ from pyramid.httpexceptions import HTTPBadRequest
 from webob.multidict import MultiDict
 from .signer import with_secret_token
 
-
+@view_config(route_name="top", renderer="string")
+def top_view(context, request):
+    return "ok"
+    
 
 class BaseView(object):
     def __init__(self, context, request):
