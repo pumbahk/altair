@@ -14,7 +14,7 @@
 
     </Page.Resources>
     <Grid>
-        <Viewbox>
+        <Viewbox Style="{StaticResource ContentViewboxStyle}">
             <Grid Background="{StaticResource LogoBackgroundBrush2}">
                 <Canvas Width="1366" Height="728">
                     <!--

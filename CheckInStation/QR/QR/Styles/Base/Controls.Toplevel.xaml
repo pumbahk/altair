@@ -5,5 +5,8 @@
         <Setter Property="Background" Value="{StaticResource BackgroundImageBrush}"/>
     </Style>
     
+    <Style TargetType="Viewbox" x:Key="ContentViewboxStyle">
+        <Setter Property="Margin" Value="0,-10,0,0"/>
+    </Style>
 </ResourceDictionary>
 
