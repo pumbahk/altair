@@ -149,8 +149,10 @@
     <Compile Include="models\AggregateTicketPrinting.cs" />
     <Compile Include="models\IModelValidation.cs" />
     <Compile Include="models\ModelValidation.cs" />
+    <Compile Include="models\plain\LoginUser.cs" />
     <Compile Include="presentation\gui\BindingErrorDialogAction.cs" />
     <Compile Include="presentation\gui\CandidateCreator.cs" />
+    <Compile Include="presentation\gui\command\AppCloseCommand.cs" />
     <Compile Include="presentation\gui\command\DialogCloseCommand.cs" />
     <Compile Include="presentation\gui\command\DialogOpenCommand.cs" />
     <Compile Include="presentation\gui\control\IDialog.cs" />
@@ -173,6 +175,9 @@
     </Compile>
     <Compile Include="presentation\gui\page\PageAuthPassword.xaml.cs">
       <DependentUpon>PageAuthPassword.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageCloseConfirm.xaml.cs">
+      <DependentUpon>PageCloseConfirm.xaml</DependentUpon>
     </Compile>
     <Compile Include="presentation\gui\page\PageDummy.xaml.cs">
       <DependentUpon>PageDummy.xaml</DependentUpon>
@@ -395,6 +400,10 @@
     <Page Include="presentation\gui\page\PageAuthPassword.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="presentation\gui\page\PageCloseConfirm.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="presentation\gui\page\PageDummy.xaml">
       <SubType>Designer</SubType>

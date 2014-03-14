@@ -73,6 +73,7 @@ namespace QR
         public EndPoint EndPoint { get; set; }
 
         public AuthInfo AuthInfo { get; set; }
+        public LoginUser LoginUser { get; set; }
 
         public IAuthentication Authentication { get; set; }
 

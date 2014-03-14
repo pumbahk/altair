@@ -22,6 +22,8 @@ namespace QR.presentation.gui.page
 
     class PageQRCodeInputDataContext : InputDataContext
     {
+        public PageQRCodeInputDataContext(Page page): base(page){}
+
         private string _QRCode;
         public string QRCode
         {
@@ -55,7 +57,7 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
-            return new PageQRCodeInputDataContext()
+            return new PageQRCodeInputDataContext(this)
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new QRInputEvent()
