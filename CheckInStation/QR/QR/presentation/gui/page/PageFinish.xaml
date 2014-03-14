@@ -11,7 +11,7 @@
 	Title="PageFinish"
     Loaded="OnLoaded">
     <Grid>
-        <Viewbox>
+        <Viewbox Style="{StaticResource ContentViewboxStyle}">
             <Grid Background="{StaticResource OnePointBackgroundBrush}">
                 <Canvas Width="1366" Height="728">
                     

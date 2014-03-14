@@ -46,7 +46,7 @@
             PreviewMouseMove="DragHandle_PreviewMouseMove"
             PreviewMouseUp="DragHandle_PreviewMouseUp"
             >
-            <Viewbox>
+            <Viewbox Style="{StaticResource ContentViewboxStyle}">
                 <TextBlock Text="Drag to move" Style="{DynamicResource Text.Detail}">
                     <Interactivity:Interaction.Behaviors>
                         <Behaviors:AutoHideBehavior
