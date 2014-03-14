@@ -786,11 +786,25 @@ $(function() {
   <div class="modal-body">
     <p id="message">CSVを使って座席を選択します。</p>
 
+    CSVファイル
+    <div><input type="file" name="csvfile"></div>
+
+    CSVのスタイル
+    <div>
     <select class="selectpicker" name="csv_type">
-      <option value="Altair" selected="true">Altair</option>
+      <!--<option value="Altair" selected="true">Altair</option>-->
       <option value="Gettii" selected="true">Gettii</option>
     </select>
-    <div><input type="file" name="csvfile"></div>
+    </div>
+
+    席種が設定されていない席が移動された場合の席種
+    <div>
+    <select class="selectpicker" name="default_stock_type">
+      %for stock_type in performance.event.stock_types:
+      <option value="${stock_type.id}">${stock_type.name}</option>
+      %endfor
+    </select>
+    </div>
   </div>
 
   <div class="modal-footer">

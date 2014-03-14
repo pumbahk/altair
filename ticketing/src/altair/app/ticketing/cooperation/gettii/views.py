@@ -54,3 +54,15 @@ class VenueView(_GettiiBaseView):
             self.request.session.flash(u'登録しました')
             return HTTPFound(url)
         raise HTTPBadRequest('error')
+
+
+@view_defaults(route_name='gettii.test', decorator=with_bootstrap, permission='event_editor')
+class TestView(_GettiiBaseView):
+
+    @view_config(route_name='gettii.test.index', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/gettii/test.html')
+    def index(self):
+        from altair.app.ticketing.core.models import Performance
+        performance = Performance.query.get(7278)
+        return {'performance': performance,
+                }
