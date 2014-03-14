@@ -129,7 +129,7 @@ def ticket_data_collection_from_order_no(context, request):
     reservertaion_generator = TokenReservationFilter(request, context.identity, token_list)
 
     not_masked_reservaions, masked_reservations = reservertaion_generator.get_partationed_reservations(now)
-    mask_predicate = TokenMaskPredicate(masked_reservations)
+    mask_predicate = TokenMaskPredicate(not_masked_reservaions, masked_reservations)
     data = ticket_data_collection_dict_from_tokens(token_list, mask_predicate=mask_predicate)
 
     ## 付加情報追加
