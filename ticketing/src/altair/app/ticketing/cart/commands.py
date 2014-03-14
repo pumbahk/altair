@@ -3,6 +3,7 @@ import os
 import sys
 import logging
 import argparse
+import sqlahelper
 from datetime import datetime, timedelta
 from pyramid.paster import bootstrap, setup_logging
 
@@ -18,9 +19,7 @@ from sqlalchemy.sql.expression import not_
 
 # copied from altair.app.ticketing.payments.plugins.multicheckout
 def get_order_no(request, cart):
-    
     if request.registry.settings.get('multicheckout.testing', False):
-        #return "%012d" % cart.id + "00"
         return cart.order_no + "00"
     return cart.order_no
 
@@ -54,19 +53,15 @@ def release_carts():
 
     setup_logging(args.config)
     env = bootstrap(args.config)
-
-    target_from = sys.argv[2] if len(sys.argv) > 2 else None
-    if target_from:
-        target_from = datetime.strptime(target_from, '%Y-%m-%d %H:%M:%S')
-
-    import sqlahelper
-    assert sqlahelper.get_session().bind
-    m.DBSession.bind = m.DBSession.bind or sqlahelper.get_session().bind
-    
     request = env['request']
     registry = env['registry']
     settings = registry.settings
     expire_time = int(settings['altair_cart.expire_time'])
+
+    target_to = datetime.now() - timedelta(minutes=expire_time)
+    target_from = sys.argv[2] if len(sys.argv) > 2 else None
+    if target_from:
+        target_from = datetime.strptime(target_from, '%Y-%m-%d %H:%M:%S')
 
     # 多重起動防止
     LOCK_NAME = release_carts.__name__
@@ -77,45 +72,38 @@ def release_carts():
         logging.warn('lock timeout: already running process')
         return
 
-    carts_to_skip = set()
-    logging.info("start auth cancel batch")
-    while True:
-        now = datetime.now()
-        # 期限切れカート取得 1件ずつ処理
-        cart_q = m.Cart.query.filter(
-            m.Cart.created_at < now - timedelta(minutes=expire_time)
-        ).filter(
-            m.Cart.finished_at == None
-        ).filter(
-            m.Cart.deleted_at == None
-        ).with_lockmode('read')
-        if carts_to_skip:
-            cart_q = cart_q.filter(not_(m.Cart.id.in_(carts_to_skip)))
-        if target_from:
-            cart_q = cart_q.filter(m.Cart.created_at > target_from)
+    logging.info("start release_cart")
 
-        cart = cart_q.with_lockmode('update').first()
+    # 期限切れカート取得
+    query = m.Cart.query.filter(
+        m.Cart.created_at < target_to,
+        m.Cart.finished_at == None,
+        m.Cart.deleted_at == None,
+        m.Cart.order_id == None
+    ).with_entities(
+        m.Cart.id
+    )
+    if target_from:
+        query = query.filter(m.Cart.created_at > target_from)
 
-        if cart is None:
-            logging.info('not found unfinished cart')
-            break
-
+    count = 0
+    for (cart_id,) in query.all():
+        cart = m.Cart.query.filter_by(id=cart_id).with_lockmode('update').one()
         try:
             order_no = get_order_no(request, cart)
         except InvalidCartStatusError:
             order_no = None
 
-        cart_id = cart.id
         logging.info("begin releasing cart (id=%d, order_no=%s)" % (cart_id, order_no))
         if not cart.release():
             logging.info('failed to release cart (id=%d). transaction will be aborted shortly' % cart_id)
             transaction.abort()
-            carts_to_skip.add(cart_id)
             continue
 
-        cart.finished_at = now
+        cart.finished_at = datetime.now()
         logging.info('TRANSACTION IS BEING COMMITTED...')
         transaction.commit()
+        count += 1
 
     conn.close()
-    logging.info("end auth cancel batch")
+    logging.info('end release_cart (count={0})'.format(count))
