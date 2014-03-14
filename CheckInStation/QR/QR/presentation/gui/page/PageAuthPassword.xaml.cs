@@ -26,7 +26,7 @@ namespace QR.presentation.gui.page
 
     class AuthPasswordDataContext : InputDataContext
     {
-
+        public AuthPasswordDataContext(Page page) : base(page) { }
         public string LoginPassword { get; set; }
 
         public override void OnSubmit()
@@ -67,7 +67,7 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
-            return new AuthPasswordDataContext()
+            return new AuthPasswordDataContext(this)
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new AuthenticationEvent(),

@@ -156,6 +156,13 @@
             >
                         <TextBlock FontSize="20">戻る</TextBlock>
                     </Button>
+
+                    <!-- 終了ボタン-->
+                    
+                    <Button Command="{Binding AppCloseCommand}" Canvas.Left="89" Canvas.Top="8" Height="97" Width="187"
+                            Background="Transparent"
+                            Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
+                            />
                 </Canvas>
             </Grid>
         </Viewbox>
