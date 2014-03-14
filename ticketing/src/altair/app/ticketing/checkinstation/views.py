@@ -110,7 +110,6 @@ def ticket_data_from_signed_string(context, request):
 from .todict import (
    ticket_data_collection_dict_from_tokens, 
    additional_data_dict_from_order, 
-   TokenMaskPredicate
 )
 from .masking import (TokenReservationFilter, TokenMaskPredicate)
 

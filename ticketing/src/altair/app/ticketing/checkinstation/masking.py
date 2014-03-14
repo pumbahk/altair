@@ -17,7 +17,8 @@ class TokenReservationFilter(object):
         token_id_list = [t.id for t in self.token_list]
         query = (OrderedProductItemToken.query
                  .filter(OrderedProductItemToken.id.in_(token_id_list))
-                 .outerjoin(CheckinTokenReservation, CheckinTokenReservation.token_id==OrderedProductItemToken.id))
+                 .outerjoin(CheckinTokenReservation, CheckinTokenReservation.token_id==OrderedProductItemToken.id)
+                 .with_entities(OrderedProductItemToken, CheckinTokenReservation))
 
         expire_at = now + self.expire_interval
 
