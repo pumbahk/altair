@@ -13,8 +13,8 @@ def includeme(config):
     config.add_static_view('static', 'altair.app.ticketing.checkinstation:static', cache_max_age=3600)
     config.include(".adimagecollector")
 
-    ## sample http://placekitten.com/790/590
-    config.add_ad_image(imagespec="altair.app.ticketing.checkinstation:static/ad/sample.jpg")
+    ## sample eagles clutch. todo: �����ǽ��
+    config.add_ad_image(imagespec="altair.app.ticketing.checkinstation:static/ad/clutch.gif")
 
     ## endpoint
     config.include(".endpointcollector")
@@ -30,6 +30,8 @@ def includeme(config):
     ## extra url
     config.add_endpoint_extra("image_from_svg", "http://localhost:8000") ##impl xxx
 
+    ##
+    config.add_route("top", "/")
     config.scan(".views")
 
 """
