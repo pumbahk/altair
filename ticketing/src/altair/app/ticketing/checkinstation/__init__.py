@@ -30,6 +30,8 @@ def includeme(config):
     ## extra url
     config.add_endpoint_extra("image_from_svg", "http://localhost:8000") ##impl xxx
 
+    ##
+    config.add_route("top", "/")
     config.scan(".views")
 
 """
