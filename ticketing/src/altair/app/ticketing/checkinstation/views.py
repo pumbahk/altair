@@ -178,7 +178,7 @@ def svgsource_all_from_token_id_list(context, request):
     svg_source = SVGDataSource(request)
 
     token_list = token_data.get_item_token_list_from_token_id_list(token_id_list)
-    token_list = [t for t in token_list if t.is_printed()]
+    token_list = [t for t in token_list if not t.is_printed()]
     datalist = svg_source.data_list_for_all(token_list)
     return {"datalist": datalist}
 
