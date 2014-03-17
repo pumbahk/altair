@@ -56,7 +56,8 @@ class TicketingAdminResource(object):
         self.user = Operator.get_by_login_id(self.user_id) if self.user_id is not None else None
 
 def groupfinder(userid, request):
-    if hasattr(request, 'context') and hasattr(request.context, 'user') and request.context.user is not None:
+    if hasattr(request, 'context') and hasattr(request.context, 'user') \
+       and request.context.user is not None and request.context.user.auth.login_id == userid:
         user = request.context.user
     else:
         user = Operator.get_by_login_id(userid)

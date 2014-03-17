@@ -134,7 +134,7 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def get_by_login_id(login_id):
         login_id = ensure_ascii(login_id)
         return Operator.query.join(OperatorAuth).filter(OperatorAuth.login_id==login_id)\
-            .options(joinedload(Operator.roles)).first()
+            .options(joinedload(Operator.auth), joinedload(Operator.roles)).first()
 
     @staticmethod
     def get_by_email(email):
