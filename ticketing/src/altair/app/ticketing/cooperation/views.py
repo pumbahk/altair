@@ -12,6 +12,8 @@ from altair.app.ticketing.core.models import (
     Event,
     Performance,
     AugusPerformance,
+    AugusVenue,
+    GettiiVenue,
     )
 
 from .forms import (
@@ -48,6 +50,49 @@ class CooperationView(BaseView):
                     }
         else:
             raise HTTPNotFound('event_id: {0}'.format(event_id))
+
+    @view_config(route_name='cooperation.get_seat_l0_ids', request_method='POST', renderer='json')
+    def get_seat_l0_ids(self):
+        performance_id = int(self.request.matchdict.get('performance_id'))
+        performance = Performance.query.filter(Performance.id==performance_id).one()
+        fmt_ = self.request.params.get('format')
+
+        parent_venue = Venue.query.filter(Venue.site_id==performance.venue.site_id)\
+                                  .filter(Venue.performance_id==None)\
+                                  .one()
+        if fmt_ == 'altair':
+            seats = dict([(seat.l0_id, seat.l0_id) for seat in parent_venue.seats])
+            return {'success': seats,
+                    'fail': {},
+                    }
+        elif fmt_ == 'gettii':
+            import .gettii.csvfile import GettiiSeatCSV
+            external_seat_csv = GettiiSeatCSV.read_csv(self.request.POST['csvfile'].file)
+            records = [record for record in external_seat_csv]
+            external_venue_codes = list(set([row.venue_code for row in records]))
+            if len(external_venue_codes) != 1:
+                raise HTTPBadRequest(u'会場コードが混ざっている')
+            external_venue_code = external_venue_codes[0]
+            external_venue = GettiiVenue.query.filter(GettiiVenue.code==external_venue_code).one()
+            id_seat = dict([(ex_seat.l0_id, ex_seat) for ex_seat in external_venue.gettii_searts])
+
+            success = {}
+            fail = {}
+
+            for record in records:
+                ex_seat = id_seat.get(record.l0_id, None)
+                if ex_seat:
+                    success[record.l0_id] = ex_seat.seat.l0_id
+                else:
+                    fail[record.l0_id] = None
+            return {'success': success,
+                    'fail': fail,
+                    }
+
+        elif fmt_ == 'augus':
+            raise HTTPBadRequest('Not supported format: {}'.format(fmt_))
+        else:
+            raise HTTPBadRequest('Not supported format: {}'.format(fmt_))
 
     @view_config(route_name='cooperation.convert2altair', request_method='GET', renderer='json')
     def convert2altair(self):

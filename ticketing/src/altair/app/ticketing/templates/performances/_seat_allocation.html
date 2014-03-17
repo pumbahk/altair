@@ -529,7 +529,9 @@ function transferStocksSelected() {
   venue.seats.each(function(seat){
       if (seat.get('selected')){
           var stock_type_id = seat.get('stock').get('stockType').get("id");
-          var stock = venue.perStockHolderStockMap[to_stock_holder_id][stock_type_id];
+          var stock_holder = venue.perStockHolderStockMap[to_stock_holder_id];
+          var stock = stock_holder[stock_type_id];
+          /*var stock = venue.perStockHolderStockMap[to_stock_holder_id][stock_type_id];*/
           if (stock){
               seat.set('stock', stock);
           } else {
@@ -584,35 +586,51 @@ function csv_seat_allocation() {
 }
 
 
-function csv_seat_allocation() {
-    var modal = $('#modal-csv-seat-allocation');
-    modal.modal('show');
+function update_tables(){
+    $("#toolbar-action-refresh").click();
+    var selection = venueEditorRoot.venueeditor('selection');
+    alert(selection.length);
+    $('span.selection-count').text(selection.length);
 }
 
 
-$('#csv-seat-allocation-form').submit(function(){
-    var $form, fd;
-    $form = $(this);
+function select_seats_by_csv(){
+    var fd;
+    var modal = $("#modal-csv-seat-allocation");
+    var $form = $("#csv-seat-allocation-form");
+    var url = "${request.route_path('cooperation.get_seat_l0_ids', performance_id=performance.id)}"
+    var venue = venueEditorRoot.venueeditor('model');
+    var fails = [];
+    var txt = '';
     fd = new FormData($form[0]);
-    $.ajax($form.attr('action'), {
-        type: 'GET',
+    $.ajax(url, {
+        type: "POST",
         processData: false,
         contentType: false,
         data: fd,
-        dataType: 'json',
+        dataType: "json",
         success: function(data){
-            alert('OK');
-            console.log(data);
+            for (var name in data.success){
+                var l0_id = data.success[name];
+                venue.seats.each(function(seat){
+                    if (seat.get('id') == l0_id){
+                        seat.set('selected', true);
+                        if (seat.get('selected') != true){
+                            txt += l0_id;
+                        }
+                        return false;
 
+                    }
+                });
+            }
         },
-        error: function (data){
-            alert('NG');
+        error: function(data){
+            alert("NG");
         }
-
     });
-    return true;
-});
-
+    modal.modal('hide');
+    setTimeout(update_tables, 1000);
+}
 
 
 var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
@@ -841,8 +859,8 @@ $(function() {
     <a href="#" class="close">&times;</a>
     <h3>CSV座席選択</h3>
   </div>
-  <form id="csv-seat-allocation-form" method="GET" actionn="/" enctype="multipart/form-data"
-        action="${request.route_path('cooperation.convert2altair', performance_id=performance.id)}">
+  <form id="csv-seat-allocation-form" method="POST" enctype="multipart/form-data"
+        action="${request.route_path('cooperation.get_seat_l0_ids', performance_id=performance.id)}">
   <div class="modal-body">
     <p id="message">CSVを使って座席を選択します。</p>
 
@@ -851,24 +869,15 @@ $(function() {
 
     CSVのスタイル
     <div>
-    <select class="selectpicker" name="csv_type">
-      <!--<option value="Altair" selected="true">Altair</option>-->
-      <option value="Gettii" selected="true">Gettii</option>
-    </select>
-    </div>
-
-    席種が設定されていない席が移動された場合の席種
-    <div>
-    <select class="selectpicker" name="default_stock_type">
-      %for stock_type in performance.event.stock_types:
-      <option value="${stock_type.id}">${stock_type.name}</option>
-      %endfor
+    <select class="selectpicker" name="format">
+      <option value="altair" >Altair</option>
+      <option value="gettii" >Gettii</option>
     </select>
     </div>
   </div>
 
   <div class="modal-footer">
-    <a href="javascript:void(0);" onclick="$('#csv-seat-allocation-form').submit();" class="btn secondary">選択</a>
+    <a href="javascript:void(0);" onclick="select_seats_by_csv();" class="btn secondary">選択</a>
     <a href="javascript:void(0);" onclick="$('#modal-csv-seat-allocation').modal('hide');" class="btn secondary">閉じる</a>
   </div>
   </form>

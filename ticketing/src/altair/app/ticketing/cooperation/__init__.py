@@ -6,6 +6,7 @@ from .resources import CooperationResource
 ROUTE_URL_RESOURCE = {
     # converter
     'cooperation.convert2altair': ('/convert2altair/{performance_id}', None),
+    'cooperation.get_seat_l0_ids': ('/get_seat_l0_ids/{performance_id}', None),
     # cooperation events
     'cooperation2.events': ('/events/{event_id}', None),
     # cooperation performance web api
