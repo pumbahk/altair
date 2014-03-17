@@ -16,7 +16,7 @@ from datetime import datetime
 
 import helpers
 
-@view_defaults(decorator=with_bootstrap,  permission='administrator')
+@view_defaults(decorator=with_bootstrap,  permission='event_editor')
 class MailMagazinesView(BaseView):
     @view_config(route_name='mailmags.index', renderer='altair.app.ticketing:templates/mailmags/index.html')
     def index(self):
@@ -133,7 +133,7 @@ class MailMagazinesView(BaseView):
         writer.writerows([encode_to_cp932(column) for column in columns] for columns in mailmags_csv(mail_subscriptions_query))
         return response
 
-@view_defaults(decorator=with_bootstrap,  permission='administrator')
+@view_defaults(decorator=with_bootstrap,  permission='event_editor')
 class MailSubscriptionsView(BaseView):
     @view_config(route_name='mailmags.subscriptions.edit', request_method='POST')
     def edit(self):

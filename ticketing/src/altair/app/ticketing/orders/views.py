@@ -898,7 +898,7 @@ class OrderDetailView(BaseView):
             self.request.session.flash(u'受注(%s)をキャンセルできません' % order.order_no)
             raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
-    @view_config(route_name='orders.delete', permission='administrator')
+    @view_config(route_name='orders.delete', permission='sales_editor')
     def delete(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.organization.id)
