@@ -26,6 +26,8 @@
           <option value="${k}" data-selection="${i}" data-permission="${" ".join(form.permission_dict.get(k))}" ${"selected=selected" if s else ''}>${val}</option>
           % endfor
         </select>
+        <br/>
+        <small class="red">※継続の方には、カレンダーが無料でついてきます。</small>
         ${h.error('member_type')}
       </td>
     </tr>

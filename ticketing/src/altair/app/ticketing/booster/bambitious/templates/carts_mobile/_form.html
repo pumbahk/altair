@@ -16,6 +16,7 @@ ${h.error(['cont','old_id_number'])}
 </div>
 <%mobile:form_header required="true">会員種別</%mobile:form_header>
 <div>
+  <div">※継続の方には、カレンダーが無料でついてきます。</div>
   <select id="member_type" name="member_type" class="">
     <option value="">選択してください</option>
   % for val in form.member_type.iter_choices():
