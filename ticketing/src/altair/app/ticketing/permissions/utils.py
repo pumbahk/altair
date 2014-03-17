@@ -433,6 +433,8 @@ def setup_role_and_permissions(config):
             if mapper:
                 routes = mapper.get_routes()
                 for route in routes:
+                    if route.name.startswith('__'):
+                        continue
                     request_iface = registry.queryUtility(IRouteRequest, name=route.name)
                     if request_iface:
                         view_callable = registry.adapters.lookup(
@@ -452,4 +454,3 @@ def setup_role_and_permissions(config):
                 request.registry.registerUtility(route_permission, IRoutePermission)
         return route_permission
     config.set_request_property(route_permission, 'route_permission', reify=True)
-
