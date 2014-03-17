@@ -96,6 +96,7 @@ span.editable {
     <%def name="toolbar_extra()">
       <div style="float:right">
 	<a name="csv-seat-allocation" href="javascript:csv_seat_allocation();" class="btn">CSV座席選択</a>
+	<a name="csv-seat-allocation" href="javascript:buildTransferStocksSelectedModal()" class="btn">選択した座席を枠移動</a>
 	<input type="button" class="btn venue-editor-main-side-toggle active" value="配席" />
 	<a name="save" href="javascript:saveStocks();" class="btn btn-primary">保存する</a>
       </div>
@@ -468,6 +469,7 @@ function buildTransferModal(id) {
   modal.show();
 }
 
+
 function transferStocks() {
   var modal = $('#modal-transfer');
   var body = modal.find('.modal-body');
@@ -502,6 +504,42 @@ function transferStocks() {
   }
   modal.hide();
 }
+
+function buildTransferStocksSelectedModal() {
+  var id = id || "";
+  var modal = $('#modal-transfer-selected');
+  var body = modal.find('.modal-body');
+  var venue = venueEditorRoot.venueeditor('model');
+  var current = $('<p>選択した枠：' +  + '</p>');
+  var select = $('<p>移動先の枠：</p><select name="to"></select>');
+  venue.stockHolders.each(function (stockHolder) {
+      select.append($("<option>").text(stockHolder.get('name')).attr("value", stockHolder.get('id')));
+  });
+  body.empty().append(select);
+  modal.show();
+}
+
+
+function transferStocksSelected() {
+  var modal = $('#modal-transfer-selected');
+  var body = modal.find('.modal-body');
+  var venue = venueEditorRoot.venueeditor('model');
+  var to_stock_holder_id = body.find('select[name="to"]').val();
+
+  venue.seats.each(function(seat){
+      if (seat.get('selected')){
+          var stock_type_id = seat.get('stock').get('stockType').get("id");
+          var stock = venue.perStockHolderStockMap[to_stock_holder_id][stock_type_id];
+          if (stock){
+              seat.set('stock', stock);
+          } else {
+              alert("NG");
+          }
+      }
+  });
+  modal.hide();
+}
+
 
 function saveStocks() {
   var modal = $('#modal-result');
@@ -538,6 +576,12 @@ function saveStocks() {
   });
 }
 
+
+
+function csv_seat_allocation() {
+    var modal = $('#modal-csv-seat-allocation');
+    modal.modal('show');
+}
 
 
 function csv_seat_allocation() {
@@ -720,6 +764,22 @@ $(function() {
   <div class="modal-footer">
     <a href="javascript:void(0);" onclick="$('#modal-transfer').hide();" class="btn secondary btn-close">閉じる</a>
     <a href="javascript:transferStocks();" class="btn danger">まとめて移動する</a>
+  </div>
+</div>
+
+<div id="modal-transfer-selected" class="modal hide">
+  <div class="modal-header">
+    <a href="javascript:void(0);" onclick="$('#modal-transfer').hide();" class="close btn-close">&times;</a>
+    <h3>選択した座席を枠移動</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>選択した座席を枠移動します。</p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-transfer-selected').hide();" class="btn secondary btn-close">閉じる</a>
+    <a href="javascript:transferStocksSelected();" class="btn danger">移動</a>
   </div>
 </div>
 
