@@ -31,8 +31,7 @@ class PermissionCategory(object):
     @classmethod
     def label(cls, permission):
         if isinstance(permission, list):
-            retval = [cls.permissions.get(p, p) for p in permission]
-            return retval
+            return u', '.join([cls.permissions.get(p, p) for p in permission if p is not None])
         else:
             return cls.permissions.get(permission, permission)
 
@@ -83,7 +82,6 @@ class RouteConfig(object):
         'augus.putback.reserve'     : u'オーガス連携 返券予約',
         'augus.putback.show'        : u'オーガス連携 返券詳細',
         'augus.stock_type.edit'     : u'オーガス連携 席種編集',
-        'augus.stock_type.index'    : u'オーガス連携 席種一覧',
         'augus.stock_type.save'     : u'オーガス連携 席種保存',
         'augus.stock_type.show'     : u'オーガス連携 席種詳細',
         'augus.test'                : None,
@@ -93,7 +91,6 @@ class RouteConfig(object):
         'cart.search'               : u'カート 検索',
         'cart.secure3d_result'      : None,
         'cart.show'                 : u'カート 詳細',
-        'cooperation.achievement'   : u'オーガス連携 販売実績',
         'cooperation.distribution'  : u'オーガス連携 追券',
         'cooperation.index'         : u'オーガス連携 閲覧',
         'cooperation.performances'  : u'オーガス連携 公演',
@@ -131,8 +128,6 @@ class RouteConfig(object):
         'events.tickets.boundtickets.delete': u'チケット券面 削除',
         'events.tickets.boundtickets.download'  : u'チケット券面 ダウンロード',
         'events.tickets.boundtickets.edit'  : u'チケット券面 編集',
-        'events.tickets.boundtickets.index' : u'チケット券面 一覧',
-        'events.tickets.boundtickets.new'   : u'チケット券面 作成',
         'events.tickets.boundtickets.show'  : u'チケット券面 詳細',
         'events.tickets.bundles.delete'     : u'チケット券面構成 削除',
         'events.tickets.bundles.edit'       : u'チケット券面構成 編集',
@@ -210,7 +205,6 @@ class RouteConfig(object):
         'orders.api.performance'    : None,
         'orders.api.performances'   : None,
         'orders.api.sales_segment_groups'   : None,
-        'orders.api.sales_segments' : None,
         'orders.attributes_edit'    : u'予約 属性編集',
         'orders.cancel'             : u'予約 キャンセル',
         'orders.change_status'      : u'予約 ステータス変更',
