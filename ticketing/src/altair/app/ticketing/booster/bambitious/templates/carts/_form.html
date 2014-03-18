@@ -1,196 +1,24 @@
 <%page args="layout,form,h"/>
-<table cellpadding="0" cellspacing="0" class="formbambitious">
-  <colgroup>
-    <col style="width:180px;">
-    <col style="width:310px;">
-  </colgroup>
-  <tbody>
-    <tr>
-      <th>新規／継続 <span class="red">*</span></th>
-      <td>
-        % for cont in form.cont:
-        ${cont.label}${cont()}
-        % endfor
-        <br>
-        <small>お分かりの場合、下記に2013-14年の会員番号をご入力ください</small><br>
-        ${form.old_id_number()}<small>(半角数字8ケタ)</small>
-        ${h.error(['cont','old_id_number'])}
-      </td>
-    </tr>
-    <tr>
-      <th>会員種別 <span class="red">*</span></th>
-      <td>
-        <select id="member_type" name="member_type" class="">
-          <option value="">選択してください</option>
-          % for i, (k, val, s) in enumerate(form.member_type.iter_choices()):
-          <option value="${k}" data-selection="${i}" data-permission="${" ".join(form.permission_dict.get(k))}" ${"selected=selected" if s else ''}>${val}</option>
-          % endfor
-        </select>
-        <br/>
-        <small class="red">※継続の方には、カレンダーが無料でついてきます。</small>
-        ${h.error('member_type')}
-      </td>
-    </tr>
-    <tr >
-      <th>ブースターシャツサイズ</th>
-      <td>
-        ${form.t_shirts_size(id='t_shirts_size',disabled="disabled",class_=" ".join(["has-permission","t_shirts_size"]))} <span><small>${layout.t_shirts_mesaage}</small></span>
-        ${h.error('t_shirts_size')}
-      </td>
-    </tr>
-    <tr>
-      <th>
-        氏名 <span class="red">*</span>
-      </th>
-      <td>
-        姓${form.last_name(size="45")}<small>（全角）</small><br>
-        名${form.first_name(size="45")}<small>（全角）</small>
-        ${h.error(['last_name','first_name'])}
-      </td>
-    </tr>
-    <tr>
-      <th>
-        氏名（フリガナ） <span class="red">*</span>
-      </th>
-      <td>
-        セイ${form.last_name_kana(size="45")}<small>（全角カナ）</small><br>
-        メイ${form.first_name_kana(size="45")}<small>（全角カナ）</small>
-        ${h.error(['last_name_kana','first_name_kana'])}
-      </td>
-    </tr>
-    <tr>
-      <th>
-        誕生日 <span class="red">*</span>
-      </th>
-      <td>
-        ${form.year}年${form.month}月${form.day}日
-        ${h.error(['year','month', 'day'])}
-      </td>
-    </tr>
-    <tr>
-      <th>
-        性別 <span class="red">*</span>
-      </th>
-      <td>
-        % for c in form.sex:
-        ${c.label}${c()}
-        % endfor
-        ${h.error('sex')}
-      </td>
-    </tr>
-    <tr>
-      <th>
-        郵便番号 <span class="red">*</span>
-      </th>
-      <td>
-        ${form.zipcode1(size="6", maxlength="3")}-${form.zipcode2(size="6", maxlength="4")}<span><small>（半角英数）</small></span>
-        ${h.error(['zipcode1', 'zipcode2'])}
-      </td>
-    </tr>
-    <tr>
-      <th>
-        住所 <span class="red">*</span>
-      </th>
-      <td>
-        <!-- TODO: 選択 -->
-        都道府県
-        ${form.prefecture()}<br>
-        市区町村
-        ${form.city(size=25)}
-        （例：奈良市） <br>
-        町名番地 ${form.address1(size=25)}
-        （例：大宮町99丁目99番99号）
-        <br>
-        建物名等 ${form.address2(size=25)}
-        （例：XXビル253号）
-        ${h.error(['prefecture', 'city', 'address1', 'address2'])}
-      </td>
-    </tr>
-    <tr>
-      <th rowspan="2">
-        電話番号 <span class="red">*</span><br />
-        <span class="red">（携帯・自宅のどちらか必須）</span>
-      </th>
-      <td>
-        (携帯) ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}</small></span>
-        ${h.error(['tel_1'])}
-      </td>
-    </tr>
-    <tr>
-      <td>
-        (自宅) ${form.tel_2(size=12)}<span><small>${layout.dont_include_hyphen_message}</small></span>
-        ${h.error(['tel_2'])}
-      </td>
-    </tr>
-    <tr>
-      <th>
-        FAX番号
-      </th>
-      <td>
-        ${form.fax(size=12)}<span><small>${layout.dont_include_hyphen_message}</small></span>
-        ${h.error(['fax'])}
-      </td>
-    </tr>
-    <tr>
-      <th>
-        メールアドレス <span class="red">*</span>
-      </th>
-      <td>
-        ${form.email_1}<span><small>（半角英数）（PC・携帯のどちらも入力可）</small></span>
-        ${h.error('email_1')}
-        <p class="red">${layout.mail_support_message}</p>
-      </td>
-    </tr>
-    <tr>
-      <th>
-        メールアドレス（確認用）<span class="red">*</span>
-      </th>
-      <td>
-        ${form.email_1_confirm}
-        ${h.error('email_1_confirm')}
-      </td>
-    </tr>
-    <tr>
-      <th>
-        ${layout.team_name}からのメールマガジンの配信
-      </th>
-      <td>
-        ${form.extra.mail_permission}
-        ${h.error('extra.mail_permission')}
-      </td>
-    </tr>
-    <tr>
-      <th>
-        ${form.product_delivery_method.label} <span class="red">*</span>
-      </th>
-      <td>
-        ${form.product_delivery_method}<span><small>（配送の場合は、配送料700円程度が別途必要）</small>
-        ${h.error('product_delivery_method')}
-      </td>
-    </tr>
-    <tr>
-      <td colspan="2" style="text-align:center">
-        <div class="textRight red" style="font-size:12px;">*は入力必須項目です。電話番号は携帯・自宅のどちらか一方で構いません。</div>
-        <input type="submit" value="次に進む" class="submit" style="width:400px;height:50px;">
-      </td>
-    </tr>
-  </tbody>
-</table>
 
-<script type="text/javascript">
-$('#member_type').on("change", function(e) {
-  $("input.has-permission,select.has-permission").attr("disabled","disabled");
-  var $this = $(e.currentTarget)
-  var $selected_child = $this.find('option:selected');
-  if($selected_child.length >= 1){
-    var ks = $selected_child.attr("data-permission").split(" ");
-    if(ks.length >= 1 && ks[0] != ""){
-      for(var i=0,j=ks.length; i<j; i++){
-        var $e = $("."+ks[i]);
-        if($e.attr("disabled")){$e.removeAttr("disabled");}
-      }
-    }
-  }
-});
-$("#member_type").change();
-</script>
+    <div align="center">
+	    <table class="layout" style="width:760px" class="wrapper">
+        <tr>
+		      <td>
+            <div class="formWrapper">
+              <table cellpadding="0" cellspacing="0" class="formbambitious">
+                <tbody>
+                  <tr>
+                    <td>
+
+
+
+<h4>準備中</h4>
+2014-2015シーズンのクラブバンビシャスのお申込みの受付開始は3/22（土）15：00～を予定しております。<br/>
+しばらくの間、お待ちください。
+</ul>
+
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
