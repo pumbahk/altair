@@ -49,8 +49,10 @@ using NLog;
             }
             if (actualTotalPrinted != expectedTotalPrinted) //xxx:
             {
+                logger.Error("ticket printing: expected ={0}, but printed ={1}", expectedTotalPrinted, actualTotalPrinted);
                 throw new TransparentMessageException("発券された枚数に間違いがあります");
             }
+            subject.StatusInfo.Status = PrintingStatus.finished;
             this.printing.EndEnqueue();
         }
 
