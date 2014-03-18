@@ -136,7 +136,7 @@ namespace QR.presentation.gui.page{
             ctx.SelectedWindowStyle = selected;
         }
 
-        private async void MenuDialogTesting_OnTestPrinting(object sender, RoutedEventArgs e)
+        private void MenuDialogTesting_OnTestPrinting(object sender, RoutedEventArgs e)
         {
             var resource = AppUtil.GetCurrentResource();
             var printing = resource.TicketPrinting;
@@ -153,7 +153,7 @@ namespace QR.presentation.gui.page{
             printing.BeginEnqueue();
             try
             {
-               await printing.EnqueuePrinting(data, ev);
+               printing.EnqueuePrinting(data, ev);
             }
             catch (Exception ex)
             {

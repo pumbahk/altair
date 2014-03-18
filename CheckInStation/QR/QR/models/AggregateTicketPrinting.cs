@@ -28,15 +28,17 @@ using NLog;
             this.pushedRequestCollector = new TokenTicketTemplatePairCollector();
         }
 
-        public async Task Act(PrintingEvent subject, IEnumerable<TicketImageData> source)
+        public void Act(PrintingEvent subject, IEnumerable<TicketImageData> source, int expectedTotalPrinted)
         {
             this.printing.BeginEnqueue();
+            var actualTotalPrinted = 0;
             foreach (var imgdata in source)
             {
                 try
                 {
-                    var status = await printing.EnqueuePrinting(imgdata, subject).ConfigureAwait(true);
+                    var status = printing.EnqueuePrinting(imgdata, subject);
                     subject.PrintFinished(); //印刷枚数インクリメント
+                    actualTotalPrinted += 1;
                     this.pushedRequestCollector.Add(Tuple.Create(imgdata.token_id, imgdata.ticket_id), status);
                 }
                 catch (Exception ex)
@@ -44,6 +46,10 @@ using NLog;
                     logger.WarnException("".WithMachineName(), ex);
                     this.pushedRequestCollector.Add(Tuple.Create(imgdata.token_id, imgdata.ticket_id), false);
                 }
+            }
+            if (actualTotalPrinted != expectedTotalPrinted)
+            {
+                throw new TransparentMessageException("発券された枚数に間違いがあります");
             }
             this.printing.EndEnqueue();
         }

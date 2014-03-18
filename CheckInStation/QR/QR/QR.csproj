@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -96,7 +96,7 @@
       <HintPath>..\packages\NLog.2.1.0\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="NLog.Targets.Fluentd">
-      <HintPath>..\packages\NLog.Targets.Fluentd.1.0.2\bin\Release\NLog.Targets.Fluentd.dll</HintPath>
+      <HintPath>..\packages\NLog.Targets.Fluentd.1.0.4\bin\Release\NLog.Targets.Fluentd.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />

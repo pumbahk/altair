@@ -34,36 +34,33 @@ namespace QR
             return this.ps.GetPrintQueues();
         }
 
-        public Task<bool> EnqueuePrinting(TicketImageData imageData, IInternalEvent ev)
+        public bool EnqueuePrinting(TicketImageData imageData, IInternalEvent ev)
         {
-            return Task.Run(() =>
-            {
-                PrintQueue pq = this.DefaultPrinter;
-                this.writer = PrintQueue.CreateXpsDocumentWriter(pq);
-                this.doc = new FixedDocument();
+            PrintQueue pq = this.DefaultPrinter;
+            this.writer = PrintQueue.CreateXpsDocumentWriter(pq);
+            this.doc = new FixedDocument();
 
-                // get image
-                var bmi = ImageUtil.LoadImage(imageData.image);
-                var img = new System.Windows.Controls.Image() { Width = bmi.PixelWidth, Height = bmi.PixelHeight, Source = bmi };
+            // get image
+            var bmi = ImageUtil.LoadImage(imageData.image);
+            var img = new System.Windows.Controls.Image() { Width = bmi.PixelWidth, Height = bmi.PixelHeight, Source = bmi };
 
-                // build fixed document
-                var pageContent = new PageContent() { Width = img.Width, Height = img.Height };
-                var page = new FixedPage() { Width = img.Width, Height = img.Height };
+            // build fixed document
+            var pageContent = new PageContent() { Width = img.Width, Height = img.Height };
+            var page = new FixedPage() { Width = img.Width, Height = img.Height };
 
-                ///xxx:
-                FixedPage.SetTop(img, 0);
-                FixedPage.SetLeft(img, 0);
+            ///xxx:
+            FixedPage.SetTop(img, 0);
+            FixedPage.SetLeft(img, 0);
 
-                //add queue
-                page.Children.Add(img);
-                pageContent.Child = page;
-                this.doc.Pages.Add(pageContent);
-                writer.Write(doc); //todo: PrintTicket
+            //add queue
+            page.Children.Add(img);
+            pageContent.Child = page;
+            this.doc.Pages.Add(pageContent);
+            writer.Write(doc); //todo: PrintTicket
 
-                this.doc = null;
-                this.writer = null;
-                return true;
-            });
+            this.doc = null;
+            this.writer = null;
+            return true;
         }
         
 

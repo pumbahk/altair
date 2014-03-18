@@ -48,26 +48,29 @@ namespace QR
             }
         }
 
-        public override async Task<bool> VerifyAsync ()
+        public override Task<bool> VerifyAsync ()
         {
+            var ts = new TaskCompletionSource<bool>();
             // 印刷対象の画像の取得に失敗した時
             if (!this.PrintingTargets.Status) {
+                ts.SetResult(false);
                 PresentationChanel.NotifyFlushMessage(this.PrintingTargets.Left);
-                return false;
+                return ts.Task;
             }
 
             // 印刷開始
             var subject = this.PresentationChanel as PrintingEvent;
             subject.ChangeState(PrintingStatus.printing);
             
-            await this.AggregateTicketPrinting.Act(subject, this.PrintingTargets.Right);
+            this.AggregateTicketPrinting.Act(subject, this.PrintingTargets.Right,  (this.PresentationChanel as PrintingEvent).StatusInfo.TotalPrinted);
             this.RequestData = UpdatePrintedAtRequestData.Build(this.TicketData, this.AggregateTicketPrinting.SuccessList);
 
             var s = this.AggregateTicketPrinting.Status;
+            ts.SetResult(s);
             if(!s){
                 PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetLoginFailureMessageFormat (Resource));
             }
-            return s;
+            return ts.Task;
         }
 
         public override ICase OnSuccess (IFlow flow)
