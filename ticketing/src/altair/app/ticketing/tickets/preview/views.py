@@ -105,7 +105,7 @@ def preview_ticket(context, request):
     return {"apis": apis, "ticket_formats": ticket_formats}
 
 
-@view_config(route_name="tickets.preview", request_method="POST", permission='event_editor')
+@view_config(route_name="tickets.preview", request_method="POST", permission='sales_counter')
 def preview_ticket_post(context, request):
     """
     curl -Fsvgfile=@<file> <url> > out.png
@@ -125,7 +125,7 @@ def preview_ticket_post(context, request):
         raise HTTPBadRequest(str(e))
 
 
-@view_config(route_name="tickets.preview", request_method="POST", permission='event_editor', request_param="type=sej") # +svgfile
+@view_config(route_name="tickets.preview", request_method="POST", permission='sales_counter', request_param="type=sej") # +svgfile
 def preview_ticket_post_sej(context, request):
     preview = SEJPreviewCommunication.get_instance(request)
 
@@ -141,13 +141,13 @@ def preview_ticket_post_sej(context, request):
     return as_filelike_response(request, imgdata)
 
 
-@view_config(route_name="tickets.preview.download", request_method="POST", permission='event_editor', request_param="svg")
+@view_config(route_name="tickets.preview.download", request_method="POST", permission='sales_counter', request_param="svg")
 def preview_ticket_download(context, request):
     io = StringIO(request.POST["svg"].encode("utf-8"))
     return FileLikeResponse(io, request=request, filename="preview.svg")
 
 
-@view_config(route_name="tickets.preview.enqueue", request_method="POST", permission='event_editor', request_param="svg", renderer="json")
+@view_config(route_name="tickets.preview.enqueue", request_method="POST", permission='sales_counter', request_param="svg", renderer="json")
 def ticket_preview_enqueue(context, request):
     svg = request.POST["svg"]
     ticket_format_id = request.POST["ticket_format_id"]
@@ -184,7 +184,7 @@ def combbox_for_preview(context, request):
 """
 raw svg -> normalize svg -> base64 png
 """
-@view_defaults(route_name="tickets.preview.api", request_method="POST", renderer="json", permission='event_editor')
+@view_defaults(route_name="tickets.preview.api", request_method="POST", renderer="json", permission='sales_counter')
 class PreviewApiView(object):
     def __init__(self, context, request):
         self.context = context
@@ -445,7 +445,7 @@ class LoadSVGFromModelApiView(object):
             logger.exception(e)
             return {"status": False, "message": str(e)}
 
-@view_defaults(route_name="tickets.preview.combobox.api", request_method="GET", renderer="json", permission='event_editor')
+@view_defaults(route_name="tickets.preview.combobox.api", request_method="GET", renderer="json", permission='sales_counter')
 class ComboboxApiView(object):
     def __init__(self, context, request):
         self.context = context
