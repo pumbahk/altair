@@ -110,20 +110,6 @@ class CooperationView(BaseView):
                 'message':u'この機能はまだ使用できません',
             }))
 
-    @view_config(route_name='cooperation.convert2altair', request_method='GET', renderer='json')
-    def convert2altair(self):
-        #performance_id = self.request.matchdict.get('performance_id')
-        #organization_id = self.request.params.get('organization_id')
-        #performance = Performance.query.filter(Performnace.id==performance_id)\
-        #                               .filter(Perfomrnace.organization_id==organization_id)\
-        #                               .one()
-        entries = []
-        return {'total': len(entries),
-                'page': 1,
-                'records': len(entries),
-                'rows': entries,
-                }
-
     # distribution
     @view_config(route_name='cooperation2.distribution', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/distribution.html')
