@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -97,7 +97,7 @@
       <HintPath>..\packages\NLog.2.1.0\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="NLog.Targets.Fluentd">
-      <HintPath>..\packages\NLog.Targets.Fluentd.1.0.4\bin\Release\NLog.Targets.Fluentd.dll</HintPath>
+      <HintPath>..\packages\NLog.Targets.Fluentd.1.0.4\lib\net45\NLog.Targets.Fluentd.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -610,5 +610,13 @@
       <Output TaskParameter="CommitHash" PropertyName="Revision" />
     </GitVersion>
     <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.cs" AssemblyTitle="CheckinStation" AssemblyDescription="altair checkin station" AssemblyProduct="CheckinStation" AssemblyCopyright="Copyright @ 2014" ComVisible="false" AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Revision)" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" />
+  </Target>
+  <Target Name="CompressOutputDirectory" BeforeTargets="AfterBuild"
+          Condition=" '$(Configuration)' == 'Release' ">
+    <Message Text="compressing target $(MSBuildProjectDirectory)\bin\$(Configuration)" />
+    <ItemGroup>
+      <ReleaseApplicationFiles Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\**\*.*" Exclude="$(MSBuildProjectDirectory)\bin\$(Configuration)\*vshost.exe*; $(MSBuildProjectDirectory)\bin\$(Configuration)\*.pdb*" />
+    </ItemGroup>
+    <Zip Files="@(ReleaseApplicationFiles)" WorkingDirectory="$(MSBuildProjectDirectory)\bin" ZipFileName="$(MSBuildProjectDirectory)\bin\$(Configuration).zip" />
   </Target>
 </Project>
