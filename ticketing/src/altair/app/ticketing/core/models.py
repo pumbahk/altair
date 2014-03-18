@@ -3955,7 +3955,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             for product, quantity in product_quantities])
 
     def applicable(self, user=None, now=None, type='available'):
-        return build_sales_segment_query(sales_segment_id=self.id, user=user, now=now, type=type).exists()
+        return build_sales_segment_query(sales_segment_id=self.id, user=user, now=now, type=type).count() > 0
 
 class SettingMixin(object):
     def describe_iter(self):
