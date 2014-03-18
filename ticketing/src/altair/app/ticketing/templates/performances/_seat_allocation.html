@@ -520,6 +520,9 @@ function buildTransferStocksSelectedModal() {
 }
 
 function buildCannotSeatActionModal(seats, message){
+    if (seats.length == 0){
+        return; // no error
+    }
     var modal = $('#modal-cannot-seat-action');
     var msg = modal.find('#cannot-seat-action-message');
     var body = modal.find('.modal-body');
@@ -634,7 +637,7 @@ function select_seats_by_csv(){
     var $form = $("#csv-seat-allocation-form");
     var url = "${request.route_path('cooperation.get_seat_l0_ids', performance_id=performance.id)}"
     var venue = venueEditorRoot.venueeditor('model');
-    var fails = [];
+    var errors = [];
     var txt = '';
     fd = new FormData($form[0]);
     $.ajax(url, {
@@ -650,10 +653,9 @@ function select_seats_by_csv(){
                     if (seat.get('id') == l0_id){
                         seat.set('selected', true);
                         if (seat.get('selected') != true){
-                            txt += l0_id;
+                            errors.push(seat);
                         }
                         return false;
-
                     }
                 });
             }
@@ -663,6 +665,7 @@ function select_seats_by_csv(){
         }
     });
     modal.modal('hide');
+    buildCannotSeatActionModal(errors, '選択できなかった座席がありました');
     setTimeout(update_tables, 1000);
 }
 
