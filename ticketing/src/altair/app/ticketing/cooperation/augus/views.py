@@ -56,7 +56,7 @@ from .importers import get_enable_stock_info
 
 logger = logging.getLogger(__name__)
 
-@view_config(route_name='augus.test')
+@view_config(route_name='augus.test', permission='event_editor')
 def test(*args, **kwds):
     return ValueError()
 

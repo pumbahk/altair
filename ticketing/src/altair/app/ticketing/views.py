@@ -47,7 +47,7 @@ class BaseView(object):
 @view_defaults(decorator=with_bootstrap)
 class CommonView(BaseView):
 
-    @view_config(route_name='index', renderer='altair.app.ticketing:templates/index.html')
+    @view_config(route_name='index', renderer='altair.app.ticketing:templates/index.html', permission='authenticated')
     def index(self):
         return HTTPFound(location=route_path('events.index', self.request))
 
