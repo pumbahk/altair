@@ -22,7 +22,7 @@ from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core.interfaces import IOrderQueryable
 from altair.app.ticketing.users import models as u_models
 from . import models as m
-from .api import get_cart_safe
+from . import api as cart_api
 from .exceptions import NoCartError
 from .interfaces import ICartContext
 from .exceptions import (
@@ -98,12 +98,18 @@ class TicketingCartResourceBase(object):
             user = self.authenticated_user()
             if not cart.sales_segment.applicable(user=self.authenticated_user(), now=cart.created_at):
                 logger.warn('sales_segment_id({0}) does not permit membership({1})'.format(cart.sales_segment_id, self.membership))
+                try:
+                    cart_api.release_cart(self.request, cart)
+                    cart_api.remove_cart(self.request)
+                except NoCartError:
+                    import sys
+                    logger.info('exception ignored', exc_info=sys.exc_info())
                 raise InvalidCartStatusError(cart.id)
         return
 
     @reify
     def cart(self):
-        return get_cart_safe(self.request, for_update=True) 
+        return cart_api.get_cart_safe(self.request, for_update=True)
 
     @property
     def sales_segments(self):
