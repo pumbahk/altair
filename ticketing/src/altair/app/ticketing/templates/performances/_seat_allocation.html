@@ -95,6 +95,8 @@ span.editable {
   <%vv:venueeditor data_source="${data_source}">
     <%def name="toolbar_extra()">
       <div style="float:right">
+	<a name="csv-seat-allocation" href="javascript:csv_seat_allocation();" class="btn">CSV座席選択</a>
+	<a name="csv-seat-allocation" href="javascript:buildTransferStocksSelectedModal()" class="btn">選択した座席を枠移動</a>
 	<input type="button" class="btn venue-editor-main-side-toggle active" value="配席" />
 	<a name="save" href="javascript:saveStocks();" class="btn btn-primary">保存する</a>
       </div>
@@ -467,6 +469,7 @@ function buildTransferModal(id) {
   modal.show();
 }
 
+
 function transferStocks() {
   var modal = $('#modal-transfer');
   var body = modal.find('.modal-body');
@@ -502,6 +505,44 @@ function transferStocks() {
   modal.hide();
 }
 
+function buildTransferStocksSelectedModal() {
+  var id = id || "";
+  var modal = $('#modal-transfer-selected');
+  var body = modal.find('.modal-body');
+  var venue = venueEditorRoot.venueeditor('model');
+  var current = $('<p>選択した枠：' +  + '</p>');
+  var select = $('<p>移動先の枠：</p><select name="to"></select>');
+  venue.stockHolders.each(function (stockHolder) {
+      select.append($("<option>").text(stockHolder.get('name')).attr("value", stockHolder.get('id')));
+  });
+  body.empty().append(select);
+  modal.show();
+}
+
+
+function transferStocksSelected() {
+  var modal = $('#modal-transfer-selected');
+  var body = modal.find('.modal-body');
+  var venue = venueEditorRoot.venueeditor('model');
+  var to_stock_holder_id = body.find('select[name="to"]').val();
+
+  venue.seats.each(function(seat){
+      if (seat.get('selected')){
+          var stock_type_id = seat.get('stock').get('stockType').get("id");
+          var stock_holder = venue.perStockHolderStockMap[to_stock_holder_id];
+          var stock = stock_holder[stock_type_id];
+          /*var stock = venue.perStockHolderStockMap[to_stock_holder_id][stock_type_id];*/
+          if (stock){
+              seat.set('stock', stock);
+          } else {
+              alert("NG");
+          }
+      }
+  });
+  modal.hide();
+}
+
+
 function saveStocks() {
   var modal = $('#modal-result');
   modal.find('.modal-body .alert').remove();
@@ -536,6 +577,61 @@ function saveStocks() {
     }
   });
 }
+
+
+
+function csv_seat_allocation() {
+    var modal = $('#modal-csv-seat-allocation');
+    modal.modal('show');
+}
+
+
+function update_tables(){
+    $("#toolbar-action-refresh").click();
+    var selection = venueEditorRoot.venueeditor('selection');
+    alert(selection.length);
+    $('span.selection-count').text(selection.length);
+}
+
+
+function select_seats_by_csv(){
+    var fd;
+    var modal = $("#modal-csv-seat-allocation");
+    var $form = $("#csv-seat-allocation-form");
+    var url = "${request.route_path('cooperation.get_seat_l0_ids', performance_id=performance.id)}"
+    var venue = venueEditorRoot.venueeditor('model');
+    var fails = [];
+    var txt = '';
+    fd = new FormData($form[0]);
+    $.ajax(url, {
+        type: "POST",
+        processData: false,
+        contentType: false,
+        data: fd,
+        dataType: "json",
+        success: function(data){
+            for (var name in data.success){
+                var l0_id = data.success[name];
+                venue.seats.each(function(seat){
+                    if (seat.get('id') == l0_id){
+                        seat.set('selected', true);
+                        if (seat.get('selected') != true){
+                            txt += l0_id;
+                        }
+                        return false;
+
+                    }
+                });
+            }
+        },
+        error: function(data){
+            alert("NG");
+        }
+    });
+    modal.modal('hide');
+    setTimeout(update_tables, 1000);
+}
+
 
 var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
 var tab2 = venueEditorSide.find("#venue-editor-main-side-tab2");
@@ -689,6 +785,22 @@ $(function() {
   </div>
 </div>
 
+<div id="modal-transfer-selected" class="modal hide">
+  <div class="modal-header">
+    <a href="javascript:void(0);" onclick="$('#modal-transfer').hide();" class="close btn-close">&times;</a>
+    <h3>選択した座席を枠移動</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>選択した座席を枠移動します。</p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-transfer-selected').hide();" class="btn secondary btn-close">閉じる</a>
+    <a href="javascript:transferStocksSelected();" class="btn danger">移動</a>
+  </div>
+</div>
+
 <div id="modal-report" class="modal hide">
   <div class="modal-header">
     <a href="javascript:void(0);" class="close btn-close">&times;</a>
@@ -739,4 +851,34 @@ $(function() {
   <div class="modal-footer">
     <a href="javascript:void(0);" onclick="$('#modal-result').modal('hide');" class="btn secondary">閉じる</a>
   </div>
+</div>
+
+
+<div id="modal-csv-seat-allocation" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>CSV座席選択</h3>
+  </div>
+  <form id="csv-seat-allocation-form" method="POST" enctype="multipart/form-data"
+        action="${request.route_path('cooperation.get_seat_l0_ids', performance_id=performance.id)}">
+  <div class="modal-body">
+    <p id="message">CSVを使って座席を選択します。</p>
+
+    CSVファイル
+    <div><input type="file" name="csvfile"></div>
+
+    CSVのスタイル
+    <div>
+    <select class="selectpicker" name="format">
+      <option value="altair" >Altair</option>
+      <option value="gettii" >Gettii</option>
+    </select>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="select_seats_by_csv();" class="btn secondary">選択</a>
+    <a href="javascript:void(0);" onclick="$('#modal-csv-seat-allocation').modal('hide');" class="btn secondary">閉じる</a>
+  </div>
+  </form>
 </div>
