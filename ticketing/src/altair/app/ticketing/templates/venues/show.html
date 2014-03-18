@@ -14,6 +14,7 @@
       <a class="btn" href="/venues/edit/${venue.id}">
         <i class="icon-edit"></i>編集
       </a>
+      %if not venue.performance_id:
       <a class="btn"
          href="${request.route_path('augus.venue.index', venue_id=venue.id)}">
         <i class="icon-edit"></i>Augus連携
@@ -22,6 +23,7 @@
          href="${request.route_path('gettii.venue.index', venue_id=venue.id)}">
         <i class="icon-edit"></i>Gettii連携
       </a>
+      %endif
     </div>
   </span>
   <h3>${venue.name} (venue id=${venue.id})</h3>
