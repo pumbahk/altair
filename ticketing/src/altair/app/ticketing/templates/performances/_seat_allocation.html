@@ -519,27 +519,62 @@ function buildTransferStocksSelectedModal() {
   modal.show();
 }
 
+function buildCannotSeatActionModal(seats, message){
+    var modal = $('#modal-cannot-seat-action');
+    var msg = modal.find('#cannot-seat-action-message');
+    var body = modal.find('.modal-body');
+
+    var table = $('<table><tr>'+
+                  '<th>l0_id</th>'+
+                  '<th>座席名</th>'+
+                  '<th></></tr></table>');
+
+    $.each(seats, function(index, seat){
+        var row = $('<tr>'+
+                    '<td>'+seat.get('id')+'</td>' +
+                    '<td>'+seat.get('name')+'</td>' +
+                    '/tr');
+        table.append(row);
+    });
+
+    msg.text(message);
+    body.empty();
+    body.append(table);
+    modal.show();
+}
+
 
 function transferStocksSelected() {
   var modal = $('#modal-transfer-selected');
   var body = modal.find('.modal-body');
   var venue = venueEditorRoot.venueeditor('model');
   var to_stock_holder_id = body.find('select[name="to"]').val();
-
+  var stocks = venue.perStockHolderStockMap[to_stock_holder_id];
+  var errors = [];
   venue.seats.each(function(seat){
       if (seat.get('selected')){
-          var stock_type_id = seat.get('stock').get('stockType').get("id");
-          var stock_holder = venue.perStockHolderStockMap[to_stock_holder_id];
-          var stock = stock_holder[stock_type_id];
-          /*var stock = venue.perStockHolderStockMap[to_stock_holder_id][stock_type_id];*/
-          if (stock){
-              seat.set('stock', stock);
-          } else {
-              alert("NG");
+          var stock = seat.get('stock');
+          var stock_type = stock.get('stockType');
+          var stock_type_id = stock_type.get('id');
+
+          if (stock_type_id){
+              var stock = stocks[stock_type_id];
+              if (stock){
+                  seat.set('stock', stock);
+                  if (seat.get('stock') == stock){
+                      seat.set('selected', false);
+                  }
+              }else{
+                  errors.push(seat);
+              }
+          }else{
+              errors.push(seat);
           }
       }
   });
   modal.hide();
+  buildCannotSeatActionModal(errors, '枠移動ができなかった座席がありました');
+  setTimeout(update_tables, 1000);
 }
 
 
@@ -589,7 +624,6 @@ function csv_seat_allocation() {
 function update_tables(){
     $("#toolbar-action-refresh").click();
     var selection = venueEditorRoot.venueeditor('selection');
-    alert(selection.length);
     $('span.selection-count').text(selection.length);
 }
 
@@ -879,6 +913,33 @@ $(function() {
   <div class="modal-footer">
     <a href="javascript:void(0);" onclick="select_seats_by_csv();" class="btn secondary">選択</a>
     <a href="javascript:void(0);" onclick="$('#modal-csv-seat-allocation').modal('hide');" class="btn secondary">閉じる</a>
+  </div>
+  </form>
+</div>
+
+<div id="modal-cannot-seat-action" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3 id="cannot-seat-action-message">座席の移動ができませんでした</h3>
+  </div>
+  <div class="modal-body">
+    <table >
+    <tr>
+    <th>id</th>
+    <th>l0_id</th>
+    <th>座席名</th>
+    <th>座種</th>
+    <th>枠</th>
+    </tr>
+    %for ii in range(100):
+    <tr>
+    <td>テスト</td>
+    </tr>
+    %endfor
+    </table>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-cannot-seat-action').hide();" class="btn secondary">閉じる</a>
   </div>
   </form>
 </div>
