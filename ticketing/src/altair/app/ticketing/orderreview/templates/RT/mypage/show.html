@@ -85,9 +85,8 @@ ${render_pager(lot_entries)}
 <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/images/RT/mypage/' + h.get_order_status_image(order))}" alt="${h.get_order_status(order)}" width="60" height="60" /></p>
 <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/images/RT/mypage/' + h.get_payment_status_image(order))}" alt="${h.get_payment_status(order)}" width="60" height="60" /></p>
 <dl>
-<form name="${order.order_no}" action="${request.route_path('order_review.show')}" method="POST">
+<form name="${order.order_no}" action="${request.route_path('mypage.order.show')}" method="POST">
 <input type="hidden" name="order_no" value="${order.order_no}"/>
-<input type="hidden" name="tel" value="${order.shipping_address.tel_1}"/>
 <dt><a href="javascript:void(0);" onclick="document.${order.order_no}.submit()">${order.performance.name}</a></dt>
 <dd>受付番号：${order.order_no}　予約日時：${h.japanese_datetime(order.created_at)}</dd>
 <dd>${h.japanese_datetime(order.performance.start_on)}開演 ${order.performance.venue.name}</dd>

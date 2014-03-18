@@ -75,6 +75,25 @@ class MypageView(object):
             h=h,
         )
 
+    @mobile_view_config(route_name='mypage.order.show', custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/order_show_mobile.html"))
+    @mobile_view_config(route_name='mypage.order.show', custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/order_show_mobile.html"))
+    @view_config(route_name='mypage.order.show', custom_predicates=(is_mypage_organization, ),
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/order_show.html"))
+    @view_config(route_name='mypage.order.show', custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/order_show.html"))
+    def order_show(self):
+
+        authenticated_user = self.context.authenticated_user()
+        user = get_user(authenticated_user)
+
+        if not user:
+            raise HTTPNotFound()
+
+        order, sej_order = self.context.get_order()
+        return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
+
     @mobile_view_config(route_name='mypage.mailmag.confirm', request_method="POST", custom_predicates=(is_mypage_organization, ),
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/mypage/mailmag_confirm_mobile.html"))
     @mobile_view_config(route_name='mypage.mailmag.confirm', request_method="POST", custom_predicates=(is_mypage_organization, is_rakuten_auth_organization), permission='rakuten_auth',
