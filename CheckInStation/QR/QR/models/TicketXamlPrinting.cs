@@ -20,9 +20,6 @@ namespace QR
         public IResource Resource { get; set; }
 
         private LocalPrintServer ps;
-        private System.Windows.Xps.XpsDocumentWriter writer;
-        private FixedDocument doc;
-
         private Logger logger = LogManager.GetCurrentClassLogger();
 
         //temporary variable
@@ -67,7 +64,7 @@ namespace QR
         {
 
             PrintQueue pq = this.DefaultPrinter;
-            this.writer = PrintQueue.CreateXpsDocumentWriter(pq);
+            var writer = PrintQueue.CreateXpsDocumentWriter(pq);
 
             //@ns@ÇassemblyñºÇ…ïœä∑ÇµÇƒÇ©ÇÁì«Ç›çûÇﬁ
             var xmlreader = XmlReader.Create(new StringReader(this.NormalizedXaml(imageData.xaml)));
@@ -95,8 +92,6 @@ namespace QR
         }
         public void EndEnqueue ()
         {
-            this.doc = null;
-            this.writer = null;
         }
         #endregion
     }
