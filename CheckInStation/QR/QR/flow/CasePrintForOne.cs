@@ -61,14 +61,23 @@ namespace QR
             // 印刷開始
             var subject = this.PresentationChanel as PrintingEvent;
             subject.ChangeState(PrintingStatus.printing);
-            
-            this.AggregateTicketPrinting.Act(subject, this.PrintingTargets.Right,  (this.PresentationChanel as PrintingEvent).StatusInfo.TotalPrinted);
-            this.RequestData = UpdatePrintedAtRequestData.Build(this.TicketData, this.AggregateTicketPrinting.SuccessList);
+            try
+            {
+                this.AggregateTicketPrinting.Act(subject, this.PrintingTargets.Right, (this.PresentationChanel as PrintingEvent).StatusInfo.TotalPrinted);
+                this.RequestData = UpdatePrintedAtRequestData.Build(this.TicketData, this.AggregateTicketPrinting.SuccessList);
 
-            var s = this.AggregateTicketPrinting.Status;
-            ts.SetResult(s);
-            if(!s){
-                PresentationChanel.NotifyFlushMessage (MessageResourceUtil.GetLoginFailureMessageFormat (Resource));
+                var s = this.AggregateTicketPrinting.Status;
+                ts.SetResult(s);
+                if (!s)
+                {
+                    PresentationChanel.NotifyFlushMessage(MessageResourceUtil.GetLoginFailureMessageFormat(Resource));
+                }
+            }
+            catch (TransparentMessageException ex)
+            {
+                PresentationChanel.NotifyFlushMessage(ex.Message);
+                this.PrintingTargets.Left = ex.Message;
+                ts.SetResult(false);
             }
             return ts.Task;
         }

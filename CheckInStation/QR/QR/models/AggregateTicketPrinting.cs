@@ -47,7 +47,7 @@ using NLog;
                     this.pushedRequestCollector.Add(Tuple.Create(imgdata.token_id, imgdata.ticket_id), false);
                 }
             }
-            if (actualTotalPrinted != expectedTotalPrinted)
+            if (actualTotalPrinted != expectedTotalPrinted) //xxx:
             {
                 throw new TransparentMessageException("発券された枚数に間違いがあります");
             }
