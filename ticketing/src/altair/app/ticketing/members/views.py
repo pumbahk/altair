@@ -27,14 +27,14 @@ def correct_organization(info, request):
     return False
 
 @view_config(route_name="members.membership.index", 
-             permission="administrator", 
+             permission="member_editor",
              decorator=with_bootstrap, renderer="altair.app.ticketing:templates/members/membership_index.html")
 def members_membership_index_view(context, request):
     memberships = context.memberships
     return {"memberships": memberships}
 
 @view_config(route_name="members.index", 
-             permission="administrator", 
+             permission="member_editor",
              custom_predicates=(correct_organization, ), 
              decorator=with_bootstrap, renderer="altair.app.ticketing:templates/members/index.html")
 def members_index_view(context, request):
@@ -77,7 +77,7 @@ def members_index_view(context, request):
             "membergroup_id": membergroup_id, 
             "membergroups": membergroups}
 
-@view_defaults(route_name="members.member", permission="administrator", decorator=with_bootstrap)
+@view_defaults(route_name="members.member", permission="member_editor", decorator=with_bootstrap)
 class MemberView(BaseView):
     @view_config(match_param="action=delete_all_dialog", 
                  renderer="altair.app.ticketing:templates/members/_delete_member_all_dialog.html")
@@ -231,7 +231,7 @@ class MemberView(BaseView):
                                 content_encoding=content_encoding)
 
 
-@view_defaults(permission="administrator", decorator=with_bootstrap, route_name="members.loginuser")
+@view_defaults(permission="member_editor", decorator=with_bootstrap, route_name="members.loginuser")
 class LoginUserView(object):
     def __init__(self, context, request):
         self.context = context

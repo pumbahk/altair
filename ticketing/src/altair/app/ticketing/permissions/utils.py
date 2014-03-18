@@ -25,6 +25,7 @@ class PermissionCategory(object):
         'tag_editor'      : u'タグ編集',
         'layout_viewer'   : u'レイアウト閲覧',
         'layout_editor'   : u'レイアウト編集',
+        'member_editor'   : u'会員管理',
         }
 
     @classmethod
@@ -89,9 +90,6 @@ class RouteConfig(object):
         'augus.venue.download'      : u'オーガス連携 会場図ダウンロード',
         'augus.venue.index'         : u'オーガス連携 会場図一覧',
         'augus.venue.upload'        : u'オーガス連携 会場図アップロード',
-        'bookmark.edit'             : None,
-        'bookmark.index'            : None,
-        'bookmark.new'              : None,
         'cart.search'               : u'カート 検索',
         'cart.secure3d_result'      : None,
         'cart.show'                 : u'カート 詳細',
@@ -436,6 +434,8 @@ def setup_role_and_permissions(config):
             if mapper:
                 routes = mapper.get_routes()
                 for route in routes:
+                    if route.name.startswith('__'):
+                        continue
                     request_iface = registry.queryUtility(IRouteRequest, name=route.name)
                     if request_iface:
                         view_callable = registry.adapters.lookup(
@@ -455,4 +455,3 @@ def setup_role_and_permissions(config):
                 request.registry.registerUtility(route_permission, IRoutePermission)
         return route_permission
     config.set_request_property(route_permission, 'route_permission', reify=True)
-

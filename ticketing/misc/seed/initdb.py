@@ -9,7 +9,6 @@ from altair.app.ticketing.operators.models import *
 from altair.app.ticketing.users.models import *
 from altair.app.ticketing.core.models import *
 from altair.app.ticketing.sej.models import *
-from altair.app.ticketing.bookmark.models import *
 from altair.app.ticketing.cart.models import *
 from altair.app.ticketing.payments.plugins.models import *
 from altair.app.ticketing.multicheckout.models import *
