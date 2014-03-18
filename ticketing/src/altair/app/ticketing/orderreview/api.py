@@ -80,8 +80,10 @@ def send_to_orion(request, context, recipient):
     orion = performance.orion
     
     obj = dict()
+    obj['token'] = data.id
     obj['recipient'] = dict(mail = recipient)
     obj['order'] = dict(number = order.order_no,
+                        sequence = data.serial,
                         created_at = str(order.paid_at))
     obj['performance'] = dict(code = performance.code, name = performance.name,
                               open_on = str(performance.open_on) if performance.open_on is not None else None,
@@ -93,12 +95,17 @@ def send_to_orion(request, context, recipient):
     obj['performance']['web'] = orion.web
     obj['segment'] = dict(name = segment.name)
     obj['product'] = dict(name = product.name, price = int(product.price))
-    obj['seat'] = dict(name = seat.name, type = seat.stock.stock_type.name, number = seat.seat_no)
-    for k, v in seat.attributes.items():
-        if k not in obj['seat']:
-            obj['seat'][k] = v
+    if seat is not None:
+        obj['seat'] = dict(name = seat.name, type = seat.stock.stock_type.name, number = seat.seat_no)
+        for k, v in seat.attributes.items():
+            if k not in obj['seat']:
+                obj['seat'][k] = v
+    else:
+        obj['seat'] = dict(name = product.seat_stock_type.name)
     obj['coupons'] = list()
-    obj['coupons'].append(dict(name = data.seat.name, qr = (orion.qr_enabled==1), pattern = orion.pattern))
+    obj['coupons'].append(dict(name = seat.name if seat is not None else product.name,
+                               qr = (orion.qr_enabled==1),
+                               pattern = orion.pattern))
     if (not orion.coupon_2_name is None) and (not orion.coupon_2_name == u''):
         obj['coupons'].append(dict(name = orion.coupon_2_name, qr = (orion.coupon_2_qr_enabled==1), pattern = orion.coupon_2_pattern))
     obj['instruction'] = dict(general = orion.instruction_general,
