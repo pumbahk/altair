@@ -73,6 +73,8 @@
     
     <Grid Background="{StaticResource BackgroundImageBrush}">
         <StackPanel Name="MenulistPanel" Style="{StaticResource CenterContentStackPanel}" VerticalAlignment="Center">
+            <TextBlock Padding="0,0,40,0" Style="{StaticResource MainText}" Text="{Binding ApplicationVersion,Mode=OneTime,StringFormat={}チケット発券ステーション(ver {0})}"/>
+
             <c:MenuDialog Placement="Center" PlacementTarget="{Binding ElementName=MenulistPanel}"
                           x:Name="MenuDialogAccessURL"
                           Title="通信先サーバー設定">

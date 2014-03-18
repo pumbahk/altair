@@ -60,6 +60,8 @@ namespace QR.presentation.gui.page{
             get { return this._TestStatusDescription; }
             set { this._TestStatusDescription = value; this.OnPropertyChanged("TestStatusDescription"); }
         }
+
+        public string ApplicationVersion { get; set; }
     }
 
 
@@ -114,7 +116,8 @@ namespace QR.presentation.gui.page{
                 SelectedWindowStyle = windowStyles[0],
                 SelectedServerUrl = resource.Authentication.LoginURL,
                 LoadedQRCode = "<準備中>",
-                TestStatusDescription = "<準備中>"
+                TestStatusDescription = "<準備中>",
+                ApplicationVersion=EnvironmentName.GetApplicationInformationalVersion()
             };
            
             return ctx;

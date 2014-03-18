@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -28,6 +28,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <MSBuildCommunityTasksPath>$(SolutionDir)\packages\MSBuildTasks.1.4.0.65\tools\</MSBuildCommunityTasksPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -237,7 +238,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="support\DispatchResponse.cs" />
     <Compile Include="support\EnsureResponse.cs" />
-    <Compile Include="support\MachineName.cs" />
+    <Compile Include="support\EnvironmentName.cs" />
     <Compile Include="support\ReplaceExecutableNamespaceName.cs" />
     <Compile Include="support\TransparentMessageException.cs" />
     <Compile Include="tests\flow\FlowTests.cs" />
@@ -594,5 +595,20 @@
       <ErrorText>このプロジェクトは、このコンピューターにはない NuGet パッケージを参照しています。これらをダウンロードするには、NuGet パッケージの復元を有効にしてください。詳細については、http://go.microsoft.com/fwlink/?LinkID=322105 を参照してください。不足しているファイルは {0} です。</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
+  <Import Project="$(SolutionDir)\.build\MSBuild.Community.Tasks.targets" />
+  <Target Name="Version" BeforeTargets="BeforeBuild">
+    <Message Text="setting git commit hash" />
+    <PropertyGroup>
+      <Major>0</Major>
+      <Minor>0</Minor>
+      <Build>0</Build>
+      <Revision>0</Revision>
+      <GitHash>unknown</GitHash>
+    </PropertyGroup>
+    <GitVersion Localpath="$(MSBuildProjectDirectory)" short="false">
+      <Output TaskParameter="CommitHash" PropertyName="Revision" />
+    </GitVersion>
+    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.cs" AssemblyTitle="CheckinStation" AssemblyDescription="altair checkin station" AssemblyProduct="CheckinStation" AssemblyCopyright="Copyright @ 2014" ComVisible="false" CLSCompliant="true" AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Revision)" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" />
   </Target>
 </Project>
