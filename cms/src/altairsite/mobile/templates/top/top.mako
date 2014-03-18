@@ -7,8 +7,7 @@
 <div>
 ├<a href="https://member.id.rakuten.co.jp/rms/mid/vc?__event=regist&c2=313131784">楽天会員登録 (無料)</a><br />
 ├<a href="/order">購入履歴確認</a><br />
-├<a href="/information">中止・変更情報</a><br />
-└<a href="/mente">メンテナンスのお知らせ</a><br />
+└<a href="/information">中止・変更情報</a><br />
 </div>
 <br />
 <%include file='../common/_search.mako' args="form=form, genre=form.genre.data, sub_genre=form.sub_genre.data"/>
