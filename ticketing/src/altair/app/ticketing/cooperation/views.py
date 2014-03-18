@@ -66,7 +66,7 @@ class CooperationView(BaseView):
                     'fail': {},
                     }
         elif fmt_ == 'gettii':
-            import .gettii.csvfile import GettiiSeatCSV
+            from .gettii.csvfile import GettiiSeatCSV
             external_seat_csv = GettiiSeatCSV.read_csv(self.request.POST['csvfile'].file)
             records = [record for record in external_seat_csv]
             external_venue_codes = list(set([row.venue_code for row in records]))
