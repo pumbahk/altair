@@ -49,8 +49,8 @@ namespace QR
                 }            
             }
         }
-                
-        public override Task<bool> VerifyAsync ()
+
+        public override Task<bool> VerifyAsync()
         {
             var ts = new TaskCompletionSource<bool>();
             // 印刷対象の画像の取得に失敗した時
@@ -65,18 +65,28 @@ namespace QR
             var subject = this.PresentationChanel as PrintingEvent;
             subject.ChangeState(PrintingStatus.printing);
 
-            this.AggregateTicketPrinting.Act(subject, this.PrintingTargets.Right,
-                 (this.PresentationChanel as PrintingEvent).StatusInfo.TotalPrinted);
-            this.RequestData = UpdatePrintedAtRequestData.Build(this.DataCollection, this.AggregateTicketPrinting.SuccessList);
-
-            var s = this.AggregateTicketPrinting.Status;
-            ts.SetResult(s);
-            if (!s)
+            try
             {
-                PresentationChanel.NotifyFlushMessage(MessageResourceUtil.GetLoginFailureMessageFormat(Resource));
+                this.AggregateTicketPrinting.Act(subject, 
+                     this.PrintingTargets.Right,
+                     (this.PresentationChanel as PrintingEvent).StatusInfo.TotalPrinted);
+                this.RequestData = UpdatePrintedAtRequestData.Build(this.DataCollection, this.AggregateTicketPrinting.SuccessList);
+                var s = this.AggregateTicketPrinting.Status;
+                ts.SetResult(s);
+                if (!s)
+                {
+                    PresentationChanel.NotifyFlushMessage(MessageResourceUtil.GetLoginFailureMessageFormat(Resource));
+                }
+            } 
+            catch (TransparentMessageException ex)
+            {
+                PresentationChanel.NotifyFlushMessage(ex.Message);
+                this.PrintingTargets.Left = ex.Message;
+                ts.SetResult(false);
             }
             return ts.Task;
         }
+    
 
         public override ICase OnSuccess (IFlow flow)
         {
