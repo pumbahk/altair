@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -597,7 +597,7 @@
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
   </Target>
   <Import Project="$(SolutionDir)\.build\MSBuild.Community.Tasks.targets" />
-  <Target Name="Version" BeforeTargets="BeforeBuild">
+  <Target Name="Version" BeforeTargets="BeforeBuild" Condition=" '$(Configuration)' == 'Release' ">
     <Message Text="setting git commit hash" />
     <PropertyGroup>
       <Major>0</Major>
@@ -609,6 +609,6 @@
     <GitVersion Localpath="$(MSBuildProjectDirectory)" short="false">
       <Output TaskParameter="CommitHash" PropertyName="Revision" />
     </GitVersion>
-    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.cs" AssemblyTitle="CheckinStation" AssemblyDescription="altair checkin station" AssemblyProduct="CheckinStation" AssemblyCopyright="Copyright @ 2014" ComVisible="false" CLSCompliant="true" AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Revision)" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" />
+    <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.cs" AssemblyTitle="CheckinStation" AssemblyDescription="altair checkin station" AssemblyProduct="CheckinStation" AssemblyCopyright="Copyright @ 2014" ComVisible="false" AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Revision)" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" />
   </Target>
 </Project>
