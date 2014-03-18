@@ -67,14 +67,15 @@ class CooperationView(BaseView):
                     }
         elif fmt_ == 'gettii':
             from .gettii.csvfile import GettiiSeatCSV
-            external_seat_csv = GettiiSeatCSV.read_csv(self.request.POST['csvfile'].file)
+            external_seat_csv = GettiiSeatCSV()
+            external_seat_csv.read_csv(self.request.POST['csvfile'].file)
             records = [record for record in external_seat_csv]
             external_venue_codes = list(set([row.venue_code for row in records]))
             if len(external_venue_codes) != 1:
                 raise HTTPBadRequest(u'会場コードが混ざっている')
             external_venue_code = external_venue_codes[0]
             external_venue = GettiiVenue.query.filter(GettiiVenue.code==external_venue_code).one()
-            id_seat = dict([(ex_seat.l0_id, ex_seat) for ex_seat in external_venue.gettii_searts])
+            id_seat = dict([(ex_seat.l0_id, ex_seat) for ex_seat in external_venue.gettii_seats])
 
             success = {}
             fail = {}
@@ -88,7 +89,6 @@ class CooperationView(BaseView):
             return {'success': success,
                     'fail': fail,
                     }
-
         elif fmt_ == 'augus':
             raise HTTPBadRequest('Not supported format: {}'.format(fmt_))
         else:
