@@ -92,7 +92,7 @@ namespace QR
 
         public string GetUniqueNameEachMachine()
         {
-            return MachineName.GetMachineName();
+            return EnvironmentName.GetMachineName();
         }
     }
 }
