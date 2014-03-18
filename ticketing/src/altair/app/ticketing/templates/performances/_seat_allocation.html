@@ -547,6 +547,37 @@ function buildCannotSeatActionModal(seats, message){
 }
 
 
+function buildCannotSeatConvertModal(ex_l0_ids, message){
+    var errors = [];
+    $.each(ex_l0_ids, function (l0_id, value){
+        errors.push(l0_id);
+    }
+
+    if (errors.length == 0){
+        return; // no error
+    }
+    var modal = $('#modal-cannot-seat-convert');
+    var msg = modal.find('#cannot-seat-action-message');
+    var body = modal.find('.modal-body');
+
+    var table = $('<table><tr>'+
+                  '<th>外部座席ID</th>'+
+                  '<th></></tr></table>');
+
+    $.each(errors, function (ex_l0_id, value){
+        var row = $('<tr>'+
+                    '<td>'+ex_l0_id+'</td>' +
+                    '/tr');
+        table.append(row);
+    });
+
+    msg.text(message);
+    body.empty();
+    body.append(table);
+    modal.show();
+}
+
+
 function transferStocksSelected() {
   var modal = $('#modal-transfer-selected');
   var body = modal.find('.modal-body');
@@ -626,7 +657,8 @@ function csv_seat_allocation() {
 
 function update_tables(){
     var selection = venueEditorRoot.venueeditor('selection');
-    $('span.selection-count').text(selection.length);
+    update_selection_table(false, selection);// dummy
+    /*$('span.selection-count').text(selection.length);*/
 }
 
 
@@ -637,8 +669,9 @@ function select_seats_by_csv(){
     var url = "${request.route_path('cooperation.get_seat_l0_ids', performance_id=performance.id)}"
     var venue = venueEditorRoot.venueeditor('model');
     var errors = [];
-    var txt = '';
+    var msg = '';
     fd = new FormData($form[0]);
+    modal.modal('hide');
     $.ajax(url, {
         type: "POST",
         processData: false,
@@ -646,6 +679,10 @@ function select_seats_by_csv(){
         data: fd,
         dataType: "json",
         success: function(data){
+            if (data.fail.length > 0){
+                buildCannotSeatConvertModal(data.fail, '座席の変換に失敗したものがあります。')
+            }
+            msg = '選択できなかった座席があります。';
             for (var name in data.success){
                 var l0_id = data.success[name];
                 venue.seats.each(function(seat){
@@ -660,11 +697,11 @@ function select_seats_by_csv(){
             }
         },
         error: function(data){
-            alert("NG");
+            msg = '会場コードが異なっている可能性があります。確認してください。'
         }
     });
-    modal.modal('hide');
-    buildCannotSeatActionModal(errors, '選択できなかった座席がありました');
+
+    buildCannotSeatActionModal(errors, msg);
     setTimeout(update_tables, 1000);
 }
 
@@ -679,7 +716,7 @@ callbacks.load = callbacks.refresh = function (viewer) {
   tab2.append(buildSeatDetailTable(venueEditorRoot.venueeditor('selection')));
 };
 
-callbacks.select = function (viewer, selection) {
+function update_selection_table(viewer, selection) {
   if (selection.length)
     $(".assignable").addClass("enabled");
   else
@@ -705,6 +742,8 @@ callbacks.select = function (viewer, selection) {
   }
   $('span.selection-count').text(selection_set.length);
 };
+
+callbacks.select = update_selection_table;
 
 
 /* application */
@@ -942,6 +981,33 @@ $(function() {
   </div>
   <div class="modal-footer">
     <a href="javascript:void(0);" onclick="$('#modal-cannot-seat-action').hide();" class="btn secondary">閉じる</a>
+  </div>
+  </form>
+</div>
+
+<div id="modal-cannot-seat-convert" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3 id="cannot-seat-action-message">座席の移動ができませんでした</h3>
+  </div>
+  <div class="modal-body">
+    <table >
+    <tr>
+    <th>id</th>
+    <th>l0_id</th>
+    <th>座席名</th>
+    <th>座種</th>
+    <th>枠</th>
+    </tr>
+    %for ii in range(100):
+    <tr>
+    <td>テスト</td>
+    </tr>
+    %endfor
+    </table>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-cannot-seat-convert').hide();" class="btn secondary">閉じる</a>
   </div>
   </form>
 </div>
