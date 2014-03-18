@@ -530,13 +530,13 @@ function buildCannotSeatActionModal(seats, message){
     var table = $('<table><tr>'+
                   '<th>l0_id</th>'+
                   '<th>座席名</th>'+
-                  '<th></></tr></table>');
+                  '</tr></table>');
 
     $.each(seats, function(index, seat){
         var row = $('<tr>'+
                     '<td>'+seat.get('id')+'</td>' +
                     '<td>'+seat.get('name')+'</td>' +
-                    '/tr');
+                    '</tr>');
         table.append(row);
     });
 
@@ -547,34 +547,49 @@ function buildCannotSeatActionModal(seats, message){
 }
 
 
-function buildCannotSeatConvertModal(ex_l0_ids, message){
-    var errors = [];
-    $.each(ex_l0_ids, function (l0_id, value){
-        errors.push(l0_id);
-    }
-
-    if (errors.length == 0){
-        return; // no error
-    }
+function buildCannotSeatConvertModal(errors, cannot_converts){
+    var msg = '';
     var modal = $('#modal-cannot-seat-convert');
-    var msg = modal.find('#cannot-seat-action-message');
+    var message = modal.find('#cannot-seat-action-message');
     var body = modal.find('.modal-body');
-
-    var table = $('<table><tr>'+
-                  '<th>外部座席ID</th>'+
-                  '<th></></tr></table>');
-
-    $.each(errors, function (ex_l0_id, value){
-        var row = $('<tr>'+
-                    '<td>'+ex_l0_id+'</td>' +
-                    '/tr');
-        table.append(row);
-    });
-
-    msg.text(message);
     body.empty();
-    body.append(table);
-    modal.show();
+    if (errors.length > 0){
+        msg += '選択できなかった座席 ';
+        var header = $('<h4>選択できなかった座席</h4>')
+        var error_table = $('<table><tr>'+
+                            '<th>l0_id</th>'+
+                            '<th>座席名</th>'+
+                            '</tr></table>');
+        $.each(errors, function(index, seat){
+            var row = $('<tr>'+
+                        '<td>'+seat.get('id')+'</td>' +
+                        '<td>'+seat.get('name')+'</td>' +
+                        '</tr>');
+            error_table.append(row);
+        });
+        body.append(header);
+        body.append(error_table);
+    }
+    if (cannot_converts.length > 0){
+        msg += '座席情報を変換できなかった座席 ';
+        var header = $('<h4>座席情報を変換できなかった座席</h4>')
+        var cannot_convert_table = $('<table><tr>'+
+                                     '<th>外部座席ID</th>'+
+                                     '</th></table>');
+        $.each(cannot_converts, function(index, ex_l0_id){
+            var row = $('<tr>'+
+                        '<td>'+ex_l0_id+'</td>' +
+                        '</tr>');
+            cannot_convert_table.append(row);
+        });
+        body.append(header);
+        body.append(cannot_convert_table);
+    }
+    if (errors.length > 0 ||  cannot_converts.length > 0){
+        msg += 'があります。';
+        message.text(msg);
+        modal.show();
+    }
 }
 
 
@@ -669,6 +684,7 @@ function select_seats_by_csv(){
     var url = "${request.route_path('cooperation.get_seat_l0_ids', performance_id=performance.id)}"
     var venue = venueEditorRoot.venueeditor('model');
     var errors = [];
+    var cannot_converts = [];
     var msg = '';
     fd = new FormData($form[0]);
     modal.modal('hide');
@@ -679,10 +695,10 @@ function select_seats_by_csv(){
         data: fd,
         dataType: "json",
         success: function(data){
-            if (data.fail.length > 0){
-                buildCannotSeatConvertModal(data.fail, '座席の変換に失敗したものがあります。')
-            }
-            msg = '選択できなかった座席があります。';
+            $.each(data.fail, function (ex_l0_id, value){
+                cannot_converts.push(ex_l0_id);
+            });
+
             for (var name in data.success){
                 var l0_id = data.success[name];
                 venue.seats.each(function(seat){
@@ -695,13 +711,12 @@ function select_seats_by_csv(){
                     }
                 });
             }
+            buildCannotSeatConvertModal(errors, cannot_converts);
         },
         error: function(data){
-            msg = '会場コードが異なっている可能性があります。確認してください。'
+            alert("システムエラー");
         }
     });
-
-    buildCannotSeatActionModal(errors, msg);
     setTimeout(update_tables, 1000);
 }
 
