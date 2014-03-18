@@ -131,11 +131,16 @@ namespace QR.presentation.gui.page
         private async Task OnPrintingStart()
         {
             var ctx = this.DataContext as PagePrintingDataContext;
-            ctx.Status = PrintingStatus.requesting;
-            logger.Trace("** status is requesting".WithMachineName());
-            var case_ = await ctx.SubmitAsync();
-            ctx.TreatErrorMessage();
-            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+          {
+              ctx.Status = PrintingStatus.requesting;
+              logger.Trace("** status is requesting".WithMachineName());
+
+              var case_ = await ctx.SubmitAsync();
+              ctx.TreatErrorMessage();
+              AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+          });
         }
     }
 }
+
