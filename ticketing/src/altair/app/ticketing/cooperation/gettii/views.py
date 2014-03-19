@@ -12,8 +12,11 @@ from pyramid.httpexceptions import (
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from ..forms import ExternalVenueUploadForm
-from . import csvfile
-from . import importers
+from . import (
+    csvfile,
+    importers,
+    )
+
 
 class _GettiiBaseView(BaseView):
     pass
@@ -49,7 +52,10 @@ class VenueView(_GettiiBaseView):
             csvdata = csvfile.AltairGettiiVenueCSV()
             csvdata.read_csv(fp)
             importer = importers.GettiiVenueImpoter()
-            importer.import_(self.context.venue.id, csvdata)
+            try:
+                importer.import_(self.context.venue.id, csvdata)
+            except importers.GettiiVenueImportError as err:
+                raise HTTPBadRequest(repr(err))
             url = self.request.route_path('gettii.venue.index', venue_id=self.context.venue.id)
             self.request.session.flash(u'登録しました')
             return HTTPFound(url)
