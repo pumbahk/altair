@@ -14,7 +14,9 @@
       %endif
 	    % for ticket in tickets:
 	    <tr>
+            %if widget.show_seattype:
 		    <th scope="row">${ ticket.seattype }</th>
+            %endif
 		    <td>${ ticket.name }</td>
         <td>${ h.event.price_format(ticket.price) }円 (税込)</td>
 		  </tr>
