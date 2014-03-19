@@ -23,6 +23,7 @@ from altair.app.ticketing.core.interfaces import IOrderQueryable
 from altair.app.ticketing.users import models as u_models
 from . import models as m
 from . import api as cart_api
+from .api import get_cart_safe
 from .exceptions import NoCartError
 from .interfaces import ICartContext
 from .exceptions import (
@@ -109,7 +110,7 @@ class TicketingCartResourceBase(object):
 
     @reify
     def cart(self):
-        return cart_api.get_cart_safe(self.request, for_update=True)
+        return get_cart_safe(self.request, for_update=True)
 
     @property
     def sales_segments(self):

@@ -595,12 +595,14 @@ class TicketingCartResourceTestBase(object):
         self.session.flush()
         return sales_segment, user
 
+    @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
     @mock.patch('altair.app.ticketing.cart.resources.user_api.get_user')
     @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
-    def test_check_order_limit_noset(self, get_cart_safe, get_user):
+    def test_check_order_limit_noset(self, get_cart_safe, get_user, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
         sales_segment, user = self._add_orders_user()
+        validate_sales_segment.return_value = None
         get_user.return_value = user
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
@@ -615,13 +617,15 @@ class TicketingCartResourceTestBase(object):
         result = target.check_order_limit()
         self.assert_(True)
 
+    @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
     @mock.patch('altair.app.ticketing.cart.resources.user_api.get_user')
     @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
-    def test_check_order_limit_user_over(self, get_cart_safe, get_user):
+    def test_check_order_limit_user_over(self, get_cart_safe, get_user, validate_sales_segment):
         from .models import Cart
         from .exceptions import OverOrderLimitException
         from altair.app.ticketing.core.models import ShippingAddress
         sales_segment, user = self._add_orders_user(order_limit=1)
+        validate_sales_segment.return_value = None
         get_user.return_value = user
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
@@ -637,12 +641,14 @@ class TicketingCartResourceTestBase(object):
         with self.assertRaises(OverOrderLimitException):
             target.check_order_limit()
 
+    @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
     @mock.patch('altair.app.ticketing.cart.resources.user_api.get_user')
     @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
-    def test_check_order_limit_user_under(self, get_cart_safe, get_user):
+    def test_check_order_limit_user_under(self, get_cart_safe, get_user, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
         sales_segment, user = self._add_orders_user(order_limit=3)
+        validate_sales_segment.return_value = None
         get_user.return_value = user
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
@@ -742,12 +748,14 @@ class TicketingCartResourceTestBase(object):
         self.session.flush()
         return sales_segment, None
 
+    @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
     @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
-    def test_check_order_limit_email_over(self, get_cart_safe):
+    def test_check_order_limit_email_over(self, get_cart_safe, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
         from .exceptions import OverOrderLimitException
         sales_segment, user = self._add_orders_email(order_limit=1)
+        validate_sales_segment.return_value = None
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
             shipping_address=ShippingAddress(
@@ -762,11 +770,13 @@ class TicketingCartResourceTestBase(object):
         with self.assertRaises(OverOrderLimitException):
             target.check_order_limit()
 
+    @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
     @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
-    def test_check_order_limit_email_under(self, get_cart_safe):
+    def test_check_order_limit_email_under(self, get_cart_safe, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
         sales_segment, user = self._add_orders_email(order_limit=3)
+        validate_sales_segment.return_value = None
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
             shipping_address=ShippingAddress(
@@ -1185,9 +1195,11 @@ class PaymentViewTests(unittest.TestCase):
         dummy_method_manager = DummyMethodManager()
         self.config.registry.utilities.register([], interfaces.IPaymentMethodManager, "", dummy_method_manager)
 
-    def test_it_no_cart(self):
+    @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
+    def test_it_no_cart(self, validate_sales_segment):
         from .exceptions import NoCartError
         from .resources import EventOrientedTicketingCartResource
+        validate_sales_segment.return_value = None
         request = DummyRequest()
         request.context = EventOrientedTicketingCartResource(request)
         request.registry.settings = { 'altair_cart.expire_time': "15" }
