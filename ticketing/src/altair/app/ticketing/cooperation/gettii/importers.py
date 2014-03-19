@@ -29,19 +29,19 @@ def get_or_create_gettii_venue(code, venue_id):
         if gettii_venue.venue_id is None:
             gettii_venue.venue_id = venue_id
         elif gettii_venue.venue_id != venue_id:
-            raise GettiiVenueImportError()
+            raise GettiiVenueImportError('code={}, venue_id={}'.format(code, venue_id))
     except NoResultFound:
         other_gettii_venue = GettiiVenue.query.filter(GettiiVenue.code!=code)\
                                               .filter(GettiiVenue.venue_id==venue_id)\
                                               .all()
         if other_gettii_venue:
-            raise GettiiVenueImportError()
+            raise GettiiVenueImportError('code={}, venue_id={}'.format(code, venue_id))
         else:
             gettii_venue = GettiiVenue()
             gettii_venue.venue_id = venue_id
             gettii_venue.code = code
     except MultipleResultsFound:
-        raise GettiiVenueImportError()
+        raise GettiiVenueImportError('code={}, venue_id={}'.format(code, venue_id))
     return gettii_venue
 
 def get_or_create_gettii_seat(external_venue, external_l0_id):
@@ -58,6 +58,8 @@ def get_or_create_gettii_seat(external_venue, external_l0_id):
 
 class GettiiVenueImpoter(object):
     def import_record(self, venue_id, record):
+        if not record.gettii_venue_code:
+            return
         gettii_venue = get_or_create_gettii_venue(record.gettii_venue_code, venue_id)
         gettii_venue.save()
         try:
@@ -69,7 +71,7 @@ class GettiiVenueImpoter(object):
             raise GettiiVenueImportError('Venue id mistmatch: Venue.id{} != Seat.venue_id={}'.format(
                 venue_id, seat.venue_id))
 
-        if not (record.gettii_venue_code and record.gettii_l0_id):
+        if record.gettii_venue_code and record.gettii_l0_id:
             gettii_seat = get_or_create_gettii_seat(gettii_venue, record.gettii_l0_id)
             gettii_seat.l0_id = record.gettii_l0_id
             gettii_seat.coodx = record.gettii_coodx

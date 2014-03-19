@@ -31,8 +31,6 @@ from .augus2 import (
 
 
 
-
-
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class CooperationView(BaseView):
     def _stub(self):
@@ -66,15 +64,30 @@ class CooperationView(BaseView):
                     'fail': {},
                     }
         elif fmt_ == 'gettii':
+            import datetime
             from .gettii.csvfile import GettiiSeatCSV
-            external_seat_csv = GettiiSeatCSV.read_csv(self.request.POST['csvfile'].file)
+            external_seat_csv = GettiiSeatCSV()
+            external_seat_csv.read_csv(self.request.POST['csvfile'].file)
             records = [record for record in external_seat_csv]
+
+            # 公演日時でバリデーション
+            for record in records:
+                if record.venue_code:
+                    start_on = datetime.datetime.strptime(record.start_day + ' ' + record.start_time, '%Y/%m/%d %H:%M')
+                    if start_on != performance.start_on:
+                        raise HTTPBadRequest(body=json.dumps({
+                            'message':u'公演日時が一致しないものがありました',
+                        }))
+
             external_venue_codes = list(set([row.venue_code for row in records]))
             if len(external_venue_codes) != 1:
-                raise HTTPBadRequest(u'会場コードが混ざっている')
+                raise HTTPBadRequest(body=json.dumps({
+                    'message':u'複数の会場コードは受け付けられません',
+                }))
+
             external_venue_code = external_venue_codes[0]
             external_venue = GettiiVenue.query.filter(GettiiVenue.code==external_venue_code).one()
-            id_seat = dict([(ex_seat.l0_id, ex_seat) for ex_seat in external_venue.gettii_searts])
+            id_seat = dict([(ex_seat.l0_id, ex_seat) for ex_seat in external_venue.gettii_seats])
 
             success = {}
             fail = {}
@@ -88,25 +101,14 @@ class CooperationView(BaseView):
             return {'success': success,
                     'fail': fail,
                     }
-
         elif fmt_ == 'augus':
-            raise HTTPBadRequest('Not supported format: {}'.format(fmt_))
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'この機能はまだ使用できません',
+            }))
         else:
-            raise HTTPBadRequest('Not supported format: {}'.format(fmt_))
-
-    @view_config(route_name='cooperation.convert2altair', request_method='GET', renderer='json')
-    def convert2altair(self):
-        #performance_id = self.request.matchdict.get('performance_id')
-        #organization_id = self.request.params.get('organization_id')
-        #performance = Performance.query.filter(Performnace.id==performance_id)\
-        #                               .filter(Perfomrnace.organization_id==organization_id)\
-        #                               .one()
-        entries = []
-        return {'total': len(entries),
-                'page': 1,
-                'records': len(entries),
-                'rows': entries,
-                }
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'この機能はまだ使用できません',
+            }))
 
     # distribution
     @view_config(route_name='cooperation2.distribution', request_method='GET',

@@ -95,11 +95,11 @@ class DateTimeType(RawType):
     FORMAT = '%Y/%m/%d %H:%M:%S'
     @classmethod
     def encode(cls, value):
-        return datetime.datetime.strptime(value, cls.FORMAT) if value else ''
+        return datetime.datetime.strftime(value, cls.FORMAT) if value else ''
 
     @classmethod
     def decode(cls, value):
-        return datetime.datetime.strftime(value, cls.FORMAT) if value else None
+        return datetime.datetime.strptime(value, cls.FORMAT) if value else None
 
 class Record(dict):
     fields = collections.OrderedDict()
