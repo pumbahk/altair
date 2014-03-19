@@ -1953,6 +1953,7 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
                 sales_segment=self.sales_segment,
                 pdmp=self.applicable_pdmps[0]
                 )
+            order.order_no=self.new_order_no()
             order.created_at = datetime(2012, 1, 1, 0, 0, 0)
             sej_order = self._create_sej_order(order, payment_type)
             self.session.add(order)
@@ -2056,10 +2057,13 @@ class PaymentPluginTest(PluginTestBase):
         for payment_type, (order, sej_order)  in order_pairs.items():
             with patch('altair.app.ticketing.sej.payment.SejPayment') as SejPayment:
                 SejPayment.return_value.response = {
+                    'X_shop_order_id': sej_order.order_no,
                     'X_haraikomi_no': sej_order.billing_number,
                     'X_hikikae_no': sej_order.exchange_number,
                     'X_url_info': sej_order.exchange_sheet_url,
                     'iraihyo_id_00': sej_order.exchange_sheet_number,
+                    'X_ticket_cnt': sej_order.total_ticket_count,
+                    'X_ticket_hon_cnt': sej_order.ticket_count,
                     'X_goukei_kingaku': sej_order.total_price,
                     'X_ticket_daikin': sej_order.ticket_price,
                     'X_ticket_kounyu_daikin': sej_order.commission_fee,
@@ -2111,21 +2115,29 @@ class DeliveryPluginTest(PluginTestBase):
                 self.assertTrue(new_sej_tickets[0].barcode_number, '00000001')
 
     def test_refresh(self):
+        from altair.app.ticketing.sej.models import SejPaymentType
         order_pairs = self._create_order_pairs()
         plugin = self._makeOne()
         for payment_type, (order, sej_order)  in order_pairs.items():
             with patch('altair.app.ticketing.sej.payment.SejPayment') as SejPayment:
-                SejPayment.return_value.response = {
+                response = {
+                    'X_shop_order_id': sej_order.order_no,
                     'X_haraikomi_no': sej_order.billing_number,
                     'X_hikikae_no': sej_order.exchange_number,
                     'X_url_info': sej_order.exchange_sheet_url,
                     'iraihyo_id_00': sej_order.exchange_sheet_number,
+                    'X_ticket_cnt': sej_order.total_ticket_count,
+                    'X_ticket_hon_cnt': sej_order.ticket_count,
                     'X_goukei_kingaku': sej_order.total_price,
                     'X_ticket_daikin': sej_order.ticket_price,
                     'X_ticket_kounyu_daikin': sej_order.commission_fee,
                     'X_hakken_daikin': sej_order.ticketing_fee,
-                    'X_barcode_no_01': '00000002',
                     }
+                if payment_type != SejPaymentType.PrepaymentOnly:
+                    response.update({
+                        'X_barcode_no_01': '00000002',
+                        })
+                SejPayment.return_value.response = response
                 plugin.refresh(self.request, order)
                 self.assertTrue(SejPayment.called)
                 self.assertTrue(SejPayment.return_value.request.called)
@@ -2175,21 +2187,29 @@ class PaymentDeliveryPluginTest(PluginTestBase):
                 self.assertTrue(new_sej_tickets[0].barcode_number, '00000001')
 
     def test_refresh(self):
+        from altair.app.ticketing.sej.models import SejPaymentType
         order_pairs = self._create_order_pairs()
         plugin = self._makeOne()
         for payment_type, (order, sej_order)  in order_pairs.items():
             with patch('altair.app.ticketing.sej.payment.SejPayment') as SejPayment:
-                SejPayment.return_value.response = {
+                response = {
+                    'X_shop_order_id': sej_order.order_no,
                     'X_haraikomi_no': sej_order.billing_number,
                     'X_hikikae_no': sej_order.exchange_number,
                     'X_url_info': sej_order.exchange_sheet_url,
                     'iraihyo_id_00': sej_order.exchange_sheet_number,
+                    'X_ticket_cnt': sej_order.total_ticket_count,
+                    'X_ticket_hon_cnt': sej_order.ticket_count,
                     'X_goukei_kingaku': sej_order.total_price,
                     'X_ticket_daikin': sej_order.ticket_price,
                     'X_ticket_kounyu_daikin': sej_order.commission_fee,
                     'X_hakken_daikin': sej_order.ticketing_fee,
-                    'X_barcode_no_01': '00000002',
                     }
+                if payment_type != SejPaymentType.PrepaymentOnly:
+                    response.update({
+                        'X_barcode_no_01': '00000002',
+                        })
+                SejPayment.return_value.response = response
                 plugin.refresh(self.request, order)
                 self.assertTrue(SejPayment.called)
                 self.assertTrue(SejPayment.return_value.request.called)
