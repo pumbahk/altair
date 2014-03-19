@@ -56,7 +56,7 @@ class AltairGettiiVenueCSVRecord(Record):
         self.group_l0_id = seat.group_l0_id
         self.row_l0_id = seat.row_l0_id
         if gettii_seat:
-            self.gettii_venue_code = gettii_seat.venue_code
+            self.gettii_venue_code = gettii_seat.gettii_venue.code
             self.gettii_l0_id = gettii_seat.l0_id
             self.gettii_coodx = gettii_seat.coodx
             self.gettii_coody = gettii_seat.coody
