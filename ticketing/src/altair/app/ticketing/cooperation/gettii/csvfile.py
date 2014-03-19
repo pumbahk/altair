@@ -25,7 +25,7 @@ class AltairGettiiVenueCSVRecord(Record):
          ('l0_id', UnicodeType),
          ('group_l0_id', UnicodeType),
          ('row_l0_id', UnicodeType),
-         ('gettii_venue_code', UnicodeType),
+         ('gettii_venue_code', IntegerType),
          ('gettii_l0_id', UnicodeType),
          ('gettii_coodx', UnicodeType),
          ('gettii_coody', UnicodeType),
@@ -45,7 +45,7 @@ class AltairGettiiVenueCSVRecord(Record):
          ('gettii_seat_classif', UnicodeType),
          ('gettii_net_block', UnicodeType),
          ('gettii_modifier', UnicodeType),
-         ('gettii_modified_at', DateTimeType),
+         ('gettii_modified_at', UnicodeType),
          ])
 
     def load(self, seat, gettii_seat):
@@ -58,8 +58,8 @@ class AltairGettiiVenueCSVRecord(Record):
         if gettii_seat:
             self.gettii_venue_code = gettii_seat.gettii_venue.code
             self.gettii_l0_id = gettii_seat.l0_id
-            self.gettii_coodx = gettii_seat.coodx
-            self.gettii_coody = gettii_seat.coody
+            self.gettii_coodx = gettii_seat.coordx
+            self.gettii_coody = gettii_seat.coordy
             self.gettii_posx = gettii_seat.posx
             self.gettii_posy = gettii_seat.posy
             self.gettii_angle = gettii_seat.angle
@@ -68,14 +68,14 @@ class AltairGettiiVenueCSVRecord(Record):
             self.gettii_num = gettii_seat.num
             self.gettii_block = gettii_seat.block
             self.gettii_gate = gettii_seat.gate
-            self.gettii_priority = gettii_seat.priority
-            self.gettii_area_code = gettii_seat.area_code
+            self.gettii_priority = '' #gettii_seat.priority
+            self.gettii_area_code = '' #gettii_seat.area_code
             self.gettii_priority_block = gettii_seat.priority_block
             self.gettii_priority_seat = gettii_seat.priority_seat
             self.gettii_seat_flag = gettii_seat.seat_flag
             self.gettii_seat_classif = gettii_seat.seat_classif
             self.gettii_net_block = gettii_seat.net_block
-            self.gettii_modifier = gettii_seat.modifier
+            self.gettii_modifier = '' #gettii_seat.modifier
             self.gettii_modified_at = gettii_seat.modified_at
         else:
             self.gettii_venue_code = ''
@@ -148,8 +148,8 @@ class GettiiSeatCSVRecord(Record):
         if gettii_seat:
             self.gettii_venue_code = gettii_seat.venue_code
             self.gettii_l0_id = gettii_seat.l0_id
-            self.gettii_coodx = gettii_seat.coodx
-            self.gettii_coody = gettii_seat.coody
+            self.gettii_coodx = gettii_seat.coordx
+            self.gettii_coody = gettii_seat.coordy
             self.gettii_posx = gettii_seat.posx
             self.gettii_posy = gettii_seat.posy
             self.gettii_angle = gettii_seat.angle
