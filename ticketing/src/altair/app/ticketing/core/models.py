@@ -4488,6 +4488,6 @@ class GettiiSeat(Base, BaseModel):
     modified_at = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'更新日'), default=u'')
     # link
     gettii_venue_id = Column(Identifier, ForeignKey('GettiiVenue.id', ondelete='CASCADE'), nullable=False)
-    seat_id = Column(Identifier, ForeignKey('Seat.id'))
+    seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
     gettii_venue = relationship('GettiiVenue', backref='gettii_seats')
     seat = relationship('Seat')
