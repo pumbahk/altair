@@ -49,7 +49,10 @@ class VenueView(_GettiiBaseView):
             csvdata = csvfile.AltairGettiiVenueCSV()
             csvdata.read_csv(fp)
             importer = importers.GettiiVenueImpoter()
-            importer.import_(self.context.venue.id, csvdata)
+            try:
+                importer.import_(self.context.venue.id, csvdata)
+            except GettiiVenueImportError as err:
+                raise HTTPBadRequest(repr(err))
             url = self.request.route_path('gettii.venue.index', venue_id=self.context.venue.id)
             self.request.session.flash(u'登録しました')
             return HTTPFound(url)
