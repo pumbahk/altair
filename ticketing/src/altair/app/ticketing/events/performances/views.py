@@ -10,6 +10,7 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 from pyramid.renderers import render_to_response
+from pyramid.security import has_permission, ACLAllowed
 from paste.util.multidict import MultiDict
 
 from altair.sqlahelper import get_db_session
@@ -120,7 +121,7 @@ class PerformanceShowView(BaseView):
     @view_config(route_name='performances.show_tab', permission='event_viewer')
     def show(self):
         tab = self.request.matchdict.get('tab', 'summary')
-        if not request.context.has_permission('event_editor'):
+        if not isinstance(has_permission('event_editor', self.request.context, self.request), ACLAllowed):
             if tab not in ['order', 'reservation']:
                 tab = 'reservation'
 
