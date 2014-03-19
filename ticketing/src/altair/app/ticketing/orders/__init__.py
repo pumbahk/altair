@@ -29,7 +29,6 @@ def includeme(config):
     config.add_route('orders.api.performance'           , '/api/performance/{performance_id}')
     config.add_route("orders.api.performances"          , "/api/performances")
     config.add_route("orders.api.sales_segment_groups"  , "/api/sales_segment_groups")
-    config.add_route("orders.api.sales_segments"        , "/api/sales_segments")
     config.add_route("orders.api.checkbox_status"       , "/api/checkbox_status/{action}")
     config.add_route("orders.api.orders"                , "/api/orders/{action}")
 

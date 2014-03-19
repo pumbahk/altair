@@ -57,7 +57,7 @@ def page_formats_for_organization(organization):
         for page_format in DBSession.query(PageFormat).filter_by(organization=organization)
         ]
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
+@view_defaults(decorator=with_bootstrap, permission="ticket_editor")
 class TicketMasters(BaseView):
     @view_config(route_name='tickets.index', renderer='altair.app.ticketing:templates/tickets/index.html', request_method="GET")
     def index(self):
@@ -84,7 +84,7 @@ class TicketMasters(BaseView):
                     covers=ticket_cover_qs, 
                     ticket_candidates=json.dumps(ticket_candidates))
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
+@view_defaults(decorator=with_bootstrap, permission="ticket_editor")
 class TicketFormats(BaseView):
     @view_config(route_name="tickets.ticketformats.edit",renderer='altair.app.ticketing:templates/tickets/ticketformats/new.html')
     def edit(self):
@@ -201,7 +201,7 @@ class TicketFormats(BaseView):
 
         return format.data
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
+@view_defaults(decorator=with_bootstrap, permission="ticket_editor")
 class PageFormats(BaseView):
     @view_config(route_name="tickets.pageformats.edit",renderer='altair.app.ticketing:templates/tickets/pageformats/new.html')
     def edit(self):
@@ -318,7 +318,7 @@ class PageFormats(BaseView):
 
         return format.data
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
+@view_defaults(decorator=with_bootstrap, permission="ticket_editor")
 class TicketCovers(BaseView):
     @view_config(route_name="tickets.covers.edit",renderer='altair.app.ticketing:templates/tickets/covers/new.html')
     def edit(self):
@@ -412,7 +412,7 @@ class TicketCovers(BaseView):
 
         return HTTPFound(location=self.request.route_path("tickets.index"))
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
+@view_defaults(decorator=with_bootstrap, permission="ticket_editor")
 class TicketTemplates(BaseView):
     @view_config(route_name="tickets.templates.new", renderer="altair.app.ticketing:templates/tickets/templates/new.html", 
                  request_method="GET")
@@ -595,7 +595,7 @@ class TicketTemplates(BaseView):
         data.update(dict(drawing=' '.join(to_opcodes(etree.ElementTree(etree.fromstring(template.drawing))))))
         return data
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
+@view_defaults(decorator=with_bootstrap, permission="sales_counter")
 class TicketPrintQueueEntries(BaseView):
     @view_config(route_name='tickets.queue.index', renderer='altair.app.ticketing:templates/tickets/queue/index.html')
     def index(self):
@@ -824,7 +824,7 @@ class TicketPrinter(BaseView):
             return { u'status': u'error' }
 
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
+@view_defaults(decorator=with_bootstrap, permission="sales_counter")
 class QRReaderViewDemo(BaseView):
     @view_config(route_name='tickets.printer', renderer='altair.app.ticketing:templates/tickets/qrreader-demo.html', custom_predicates=(lambda c, r: '__qrreader_demo__' in r.GET,))
     def qrreader_demo(self):

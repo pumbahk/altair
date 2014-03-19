@@ -116,6 +116,11 @@ def get_print_status(order):
     else:
         return u"未発券"
 
+def is_disabled_order(entry):
+    if entry.canceled_at:
+        return True
+    return False
+
 def get_entry_status(entry):
     if entry.canceled_at:
         return u"無効"

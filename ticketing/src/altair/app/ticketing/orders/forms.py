@@ -610,7 +610,7 @@ class OrderReserveForm(Form):
             if pdmp\
                 and pdmp.payment_method.payment_plugin_id != plugins.SEJ_PAYMENT_PLUGIN_ID\
                 and pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID\
-                and not isinstance(has_permission('administrator', form.request.context, form.request), ACLAllowed):
+                and not isinstance(has_permission('event_editor', form.request.context, form.request), ACLAllowed):
                     raise ValidationError(u'この決済引取方法を選択する権限がありません')
 
             # Sej発券の場合は20枚まで

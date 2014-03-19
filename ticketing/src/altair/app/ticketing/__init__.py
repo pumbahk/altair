@@ -109,7 +109,6 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.venues' , route_prefix='/venues')
         config.include('altair.app.ticketing.cooperation', route_prefix='/cooperation')
         config.include('altair.app.ticketing.dashboard' , route_prefix='/dashboard')
-        config.include('altair.app.ticketing.bookmark' , route_prefix='/bookmark')
         config.include('altair.app.ticketing.accounts' , route_prefix='/accounts')
         config.include('altair.app.ticketing.payment_methods' , route_prefix='/payment_methods')
         config.include('altair.app.ticketing.delivery_methods' , route_prefix='/delivery_methods')

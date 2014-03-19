@@ -33,7 +33,6 @@ ROUTE_URL_RESOURCE = {
     'augus.performance.save': ('/events/{event_id}/performances/save', PerformanceResource),
 
     # stock type
-    'augus.stock_type.index': ('/events/{event_id}/stock_types', SeatTypeResource),
     'augus.stock_type.show': ('/events/{event_id}/stock_types/show', SeatTypeResource),
     'augus.stock_type.edit': ('/events/{event_id}/stock_types/edit', SeatTypeResource),
     'augus.stock_type.save': ('/events/{event_id}/stock_types/save', SeatTypeResource),

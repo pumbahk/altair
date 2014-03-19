@@ -35,7 +35,7 @@ from .forms import (
 from altair.app.ticketing.lots import helpers as h
 
 @view_defaults(route_name='altair.app.ticketing.lots_admin.index',
-               decorator=with_bootstrap)
+               decorator=with_bootstrap, permission='event_editor')
 class IndexView(object):
     def __init__(self, context, request):
         self.context = context
@@ -124,7 +124,7 @@ class IndexView(object):
 
 
 @view_defaults(route_name='altair.app.ticketing.lots_admin.search',
-               decorator=with_bootstrap)
+               decorator=with_bootstrap, permission='event_editor')
 class SearchLotsEntryView(object):
     def __init__(self, context, request):
         self.context = context
