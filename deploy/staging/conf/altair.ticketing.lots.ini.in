@@ -4,8 +4,8 @@ pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_beaker pyramid_mailer al
 altair.auth.specs =
     rakuten=%(here)s/rakuten_who.ini
     fc_auth=%(here)s/fc_who.ini
-altair.auth.decider = altair.app.ticketing.cart:WhoDecider
-altair.auth.callback = altair.app.ticketing.cart.security:auth_model_callback
+altair.auth.decider = altair.app.ticketing.lots:WhoDecider
+altair.auth.callback = altair.app.ticketing.security:auth_model_callback
 altair.sej.template_file = %(here)s/../../../ticketing/misc/sej/template.html
 
 ; altair:site-data

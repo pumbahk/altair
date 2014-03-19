@@ -161,8 +161,6 @@ class MultiWhoAuthenticationPolicy(object):
 
         groups = self._get_groups(identity, request)
         if len(groups) > 1:
-            if 'auth_type' in identity:
-                groups.insert(0, "auth_type:%s" % identity['auth_type'])
             groups.insert(0, identity['repoze.who.userid'])
         return groups
 

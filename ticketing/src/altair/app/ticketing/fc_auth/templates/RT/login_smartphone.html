@@ -1,0 +1,24 @@
+<html lang="jp">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.cart:static/img/common/favicon.ico')}" />
+  <title>楽天チケット</title>
+</head>
+<body>
+<h1>楽天チケット</h1>
+<form action="${request.url}" method="post">
+  <label>
+    ユーザ名
+    <input type="text" class="text" name="username" id="form-field-username" />
+  </label>
+  % if message:
+  <span class="small red">IDまたはパスワードが一致しません</span>
+  % endif
+  <label>
+    パスワード
+    <input type="password" name="password" id="form-field-password" />
+  </label>
+  <input type="submit" value="申込画面へ" />
+</form>
+</body>
+</html>
