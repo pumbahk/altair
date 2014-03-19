@@ -97,7 +97,7 @@ class TicketingCartResourceBase(object):
         if cart and cart.sales_segment:
             logger.info('validate sales_segment_id:%s' % cart.sales_segment_id)
             user = self.authenticated_user()
-            if not cart.sales_segment.applicable(user=self.authenticated_user(), now=cart.created_at):
+            if not cart.sales_segment.applicable(user=self.authenticated_user(), type='all'):
                 logger.warn('sales_segment_id({0}) does not permit membership({1})'.format(cart.sales_segment_id, self.membership))
                 try:
                     cart_api.release_cart(self.request, cart)
