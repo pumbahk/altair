@@ -7,10 +7,16 @@ from wtforms import ValidationError
 from altair.app.ticketing.master.models import Prefecture
 from .. import fields as my_fields
 from altair.formhelpers import text_type_but_none_if_not_given, Zenkaku, Katakana, NFKC, lstrip, strip, strip_hyphen, strip_spaces, SejCompliantEmail, CP932
+from altair.app.ticketing.core import models as c_models
 from datetime import date
 
 from ..schemas import length_limit_for_sej, length_limit_long
 from ..widgets import ymd_widget, radio_list_widget, get_year_choices, get_year_months, get_year_days
+
+class ExtraForm(Form):
+    mail_permission = fields.BooleanField(
+        u"メルマガ配信",
+        default=True)
 
 class OrderFormSchema(Form):
     def validate_day(self, field):
@@ -23,8 +29,24 @@ class OrderFormSchema(Form):
         if not self.tel_1.data and not self.tel_2.data:
             raise ValidationError(u'電話番号は自宅か携帯かどちらかを入力してください')
 
+    def validate_member_type(self, field):
+        if self.cont.data == "yes":
+            if self.check_calendar_member_type(self.member_type.data):
+                raise ValidationError(u'継続の方は、カレンダーが無料でついてきます。カレンダーありは、選べません。')
+
+    def check_calendar_member_type(self, product_id):
+        if not product_id:
+            return False
+
+        product = c_models.Product.query.filter_by(id=product_id).first()
+        if product:
+            if product.name.find(u'カレンダー') != -1:
+                return True
+        return False
+
     # 新規・継続
     cont = fields.RadioField(u"新規／継続", validators=[v.Required()], choices=[('no', u'新規'),('yes', u'継続')], widget=radio_list_widget)
+    old_id_number = fields.TextField(u"会員番号", filters=[strip_spaces, NFKC], validators=[v.Regexp(r'\d{8}', message=u'半角数字8ケタで入力してください。'), v.Optional()])
     member_type = fields.SelectField(u"会員種別選択", validators=[v.Required()])
 
     t_shirts_size_choices = [(x, x) for x in [u"S", u"M", u"L", u"O", u"XO", u"2XO"]]
@@ -51,7 +73,9 @@ class OrderFormSchema(Form):
     email_1_confirm = fields.TextField(u"メールアドレス（確認用）", filters=[strip_spaces, NFKC], validators=[v.Required(), SejCompliantEmail(), v.EqualTo('email_1', u'確認用メールアドレスが一致しません。')])
 
     product_delivery_method = fields.SelectField(label=u"会員特典受取方法", validators=[v.Required()], choices=[])
-    
+
+    extra = fields.FormField(ExtraForm)
+
 class OrderReviewSchema(Form):
     order_no = fields.TextField(u"注文番号", filters=[strip_spaces, NFKC], validators=[v.Required()])
     tel = fields.TextField(u"電話番号", filters=[strip_spaces, strip_hyphen(), NFKC], validators=[v.Required()])
