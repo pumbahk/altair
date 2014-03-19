@@ -20,8 +20,8 @@ Identifier = sa.BigInteger
 
 def upgrade():
     op.alter_column('GettiiSeat', 'seat_id', nullable=True,
-                    name='seat_id', existing_type=Identifier, existing_nullable=False)
+                    new_column_name='seat_id', existing_type=Identifier, existing_nullable=False)
 
 def downgrade():
     op.alter_column('GettiiSeat', 'seat_id', nullable=False,
-                    name='seat_id', existing_type=Identifier, existing_nullable=True)
+                    new_column_name='seat_id', existing_type=Identifier, existing_nullable=True)
