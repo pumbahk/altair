@@ -29,7 +29,7 @@ ${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示
 
 <%def name="render_orders(orders)">
   % for order in orders:
-<form name="${order.order_no}" action="${request.route_path('order_review.show')}" method="POST">
+<form name="${order.order_no}" action="${request.route_path('mypage.order.show')}" method="POST">
 受付番号：
 ${order.order_no}<br/>
 予約日時：
@@ -39,7 +39,6 @@ ${h.get_order_status(order)}<br/>
 支払状況：
 ${h.get_payment_status(order)}<br/>
 <input type="hidden" name="order_no" value="${order.order_no}"/>
-<input type="hidden" name="tel" value="${order.shipping_address.tel_1}"/>
 公演名：
 ${order.performance.name}<br/>
 公演開始時間：

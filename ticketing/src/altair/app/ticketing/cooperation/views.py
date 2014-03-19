@@ -12,6 +12,8 @@ from altair.app.ticketing.core.models import (
     Event,
     Performance,
     AugusPerformance,
+    AugusVenue,
+    GettiiVenue,
     )
 
 from .forms import (
@@ -27,12 +29,14 @@ from .augus2 import (
     SeatImportError,
     )
 
+
+
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class CooperationView(BaseView):
     def _stub(self):
         event_id = long(self.request.matchdict['event_id']) # raise KeyError, ValueError, TypeError
         event = Event.get(event_id)
-        url = self.request.route_path('cooperation2.api.performances', event_id=event.id)        
+        url = self.request.route_path('cooperation2.api.performances', event_id=event.id)
         if event:
             pairs = []
             for performance in event.performances:
@@ -44,7 +48,68 @@ class CooperationView(BaseView):
                     }
         else:
             raise HTTPNotFound('event_id: {0}'.format(event_id))
-    
+
+    @view_config(route_name='cooperation.get_seat_l0_ids', request_method='POST', renderer='json')
+    def get_seat_l0_ids(self):
+        performance_id = int(self.request.matchdict.get('performance_id'))
+        performance = Performance.query.filter(Performance.id==performance_id).one()
+        fmt_ = self.request.params.get('format')
+
+        parent_venue = Venue.query.filter(Venue.site_id==performance.venue.site_id)\
+                                  .filter(Venue.performance_id==None)\
+                                  .one()
+        if fmt_ == 'altair':
+            seats = dict([(seat.l0_id, seat.l0_id) for seat in parent_venue.seats])
+            return {'success': seats,
+                    'fail': {},
+                    }
+        elif fmt_ == 'gettii':
+            import datetime
+            from .gettii.csvfile import GettiiSeatCSV
+            external_seat_csv = GettiiSeatCSV()
+            external_seat_csv.read_csv(self.request.POST['csvfile'].file)
+            records = [record for record in external_seat_csv]
+
+            # 公演日時でバリデーション
+            for record in records:
+                if record.venue_code:
+                    start_on = datetime.datetime.strptime(record.start_day + ' ' + record.start_time, '%Y/%m/%d %H:%M')
+                    if start_on != performance.start_on:
+                        raise HTTPBadRequest(body=json.dumps({
+                            'message':u'公演日時が一致しないものがありました',
+                        }))
+
+            external_venue_codes = list(set([row.venue_code for row in records]))
+            if len(external_venue_codes) != 1:
+                raise HTTPBadRequest(body=json.dumps({
+                    'message':u'複数の会場コードは受け付けられません',
+                }))
+
+            external_venue_code = external_venue_codes[0]
+            external_venue = GettiiVenue.query.filter(GettiiVenue.code==external_venue_code).one()
+            id_seat = dict([(ex_seat.l0_id, ex_seat) for ex_seat in external_venue.gettii_seats])
+
+            success = {}
+            fail = {}
+
+            for record in records:
+                ex_seat = id_seat.get(record.l0_id, None)
+                if ex_seat:
+                    success[record.l0_id] = ex_seat.seat.l0_id
+                else:
+                    fail[record.l0_id] = None
+            return {'success': success,
+                    'fail': fail,
+                    }
+        elif fmt_ == 'augus':
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'この機能はまだ使用できません',
+            }))
+        else:
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'この機能はまだ使用できません',
+            }))
+
     # distribution
     @view_config(route_name='cooperation2.distribution', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/distribution.html')
@@ -60,7 +125,7 @@ class CooperationView(BaseView):
     @view_config(route_name='cooperation2.putback', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/putback.html')
     def putback_get(self):
-        
+
         return self._stub()
 
     @view_config(route_name='cooperation2.putback', request_method='POST',
@@ -78,14 +143,14 @@ class CooperationView(BaseView):
                  renderer='altair.app.ticketing:templates/cooperation/achievement.html')
     def achievement_post(self):
         return self._stub()
-    
+
     # events
     @view_config(route_name='cooperation2.events', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/events.html')
     def events_get(self):
         event_id = long(self.request.matchdict['event_id']) # raise KeyError, ValueError, TypeError
         event = Event.get(event_id)
-        url = self.request.route_path('cooperation2.api.performances', event_id=event.id)        
+        url = self.request.route_path('cooperation2.api.performances', event_id=event.id)
         if event:
             pairs = []
             for performance in event.performances:
@@ -106,7 +171,7 @@ class CooperationView(BaseView):
         event = Event.get(event_id)
         entries = []
         if not event:
-            raise HTTPNotFound('Not found event: event_id={0}'.format(repr(event_id)))            
+            raise HTTPNotFound('Not found event: event_id={0}'.format(repr(event_id)))
         for performance in event.performances:
             entry = {'id': performance.id,
                      'name': performance.name,
@@ -132,7 +197,7 @@ class CooperationView(BaseView):
     def save_performances(self):
         success = {}
         illegal = {}
-        
+
         for performance_id, external_performance_code in self.request.json.items():
             try:
                 performance_id = long(performance_id)
@@ -141,19 +206,19 @@ class CooperationView(BaseView):
 
             performance = Performance.get(performance_id)
             if not performance:
-                illegal[performance_id] = external_performance_code                
-                
+                illegal[performance_id] = external_performance_code
+
             if external_performance_code:
                 try:
                     external_performance_code = long(external_performance_code)
-                except (ValueError, TypeError) as err: 
+                except (ValueError, TypeError) as err:
                     illegal[performance_id] = external_performance_code
                 external_performance = AugusPerformance.get(code=external_performance_code)
                 if external_performance:
                     if external_performance.performance_id != performance.id:
                         external_performance.performance_id = performance.id;
-                        external_performance.save() 
-                        success[performance_id] = external_performance_code                       
+                        external_performance.save()
+                        success[performance_id] = external_performance_code
                 else:
                     illegal[performance_id] = external_performance_code
             else: # delete link
@@ -165,7 +230,7 @@ class CooperationView(BaseView):
                     illegal[performance_id] = external_performance_code
         return {'illegal': illegal}
 
-        
+
     # venues
     @view_config(route_name='cooperation2.show', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/show.html')
@@ -200,7 +265,7 @@ class CooperationView(BaseView):
     @view_config(route_name='cooperation2.download', request_method='GET')
     def download(self):
         res = Response()
-        writer = csv.writer(res, delimiter=',')        
+        writer = csv.writer(res, delimiter=',')
         csveditor = CSVEditorFactory.create(self.context.cooperation_type)
         try:
             csveditor.write(writer, self.context.pairs)
@@ -209,7 +274,7 @@ class CooperationView(BaseView):
         headers = self._create_res_headers(filename=csveditor.name)
         res.headers = headers
         return res
-        
+
     @view_config(route_name='cooperation2.upload', request_method='POST')
     def upload(self):
         return_url = self.request.route_path('cooperation2.show',
@@ -245,7 +310,7 @@ class CooperationView(BaseView):
         update_form = form
         download_form = CooperationDownloadForm()
         raise HTTPFound(self.request.route_path('cooperation2.upload', venue_id=venue_id))
-        
+
         #return {'site': site,
         #        'update_form': update_form,
         #        'download_form': download_form,
@@ -258,7 +323,7 @@ class CooperationView(BaseView):
 
     def _download_url(self, venue_id):
         return self.request.route_path('cooperation2.download', venue_id=venue_id)
-        
+
 class DeterminateError(Exception):
     pass
 
@@ -285,7 +350,7 @@ class VenueDoesNotExist(Exception):
         if self.msg:
             msg += '({0})'.format(self.msg)
         return msg
-        
+
 
 class AugusVenueDoesNotExist(Exception):
     pass
@@ -321,13 +386,13 @@ def update_augus_cooperation(venue_id, organization_id, csvfile):
         augus_venue = AugusVenue()
     except MultipleResultsFound as err:
         raise
-        
+
     if not augus_venue:
         augus_venue = AugusVenue()
-    
+
     augus_seats = AugusSeat.query.filter(
         AugusSeat.augus_venue_id==augus_venue.id)
-    
+
     reader = csv.reader(csvfile)
     header = reader.next()
     for row in reader:
@@ -343,7 +408,7 @@ def update_augus_cooperation(venue_id, organization_id, csvfile):
         seat = Seat.query.get(seat_id)
         if seat is None:
             raise SeatDoesNotExist()
-        
+
         augus_seat = None
         try:
             augus_seat = augus_seats.filter(
@@ -373,15 +438,15 @@ def update_augus_cooperation(venue_id, organization_id, csvfile):
             if augus_seat.num != num:
                 raise InvalidStatus()
             if augus_seat.area_code != area_code:
-                raise InvalidStatus()                
+                raise InvalidStatus()
             if augus_seat.info_code != info_code:
-                raise InvalidStatus()                
+                raise InvalidStatus()
         augus_seat.seat_id = seat.id
         augus_seat.save()
 
 
 
-    
+
 def get_original_venue(venue_id, organization_id=None):
     venue = Venue.query.get(venue_id)
     if not venue:
@@ -402,8 +467,8 @@ def get_original_venue(venue_id, organization_id=None):
     except MultipleResultsFound as err:
         raise MultipleFound('Venue does multiple found: venue_id={0} organization_id={0}'.format(
             venue_id, organization_id))
-    
+
     if original_venue:
         return original_venue
     else:
-        raise VenueDoesNotExist(venue_id, organization_id, 'original venue')        
+        raise VenueDoesNotExist(venue_id, organization_id, 'original venue')

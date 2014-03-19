@@ -87,7 +87,7 @@ class SSLClientCertLoginView(BaseView):
             }
 
 
-@view_defaults(decorator=with_bootstrap, route_name='login.reset', renderer='altair.app.ticketing:templates/login/reset.html')
+@view_defaults(decorator=with_bootstrap, route_name='login.reset', renderer='altair.app.ticketing:templates/login/reset.html', permission='authenticated')
 class LoginPasswordResetView(BaseView):
     @view_config(request_method='GET')
     def reset_get(self):
@@ -107,7 +107,7 @@ class LoginPasswordResetView(BaseView):
                 'form':f
             }
 
-    @view_config(route_name='login.reset.complete', renderer='altair.app.ticketing:templates/login/reset_complete.html')
+    @view_config(route_name='login.reset.complete', renderer='altair.app.ticketing:templates/login/reset_complete.html', permission='authenticated')
     def reset_complete(self):
         return {}
 

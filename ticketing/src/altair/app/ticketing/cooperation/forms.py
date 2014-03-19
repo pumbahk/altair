@@ -1,4 +1,22 @@
 #-*- coding: utf-8 -*-
+from wtforms import (
+    Form,
+    FileField,
+    )
+from altair.formhelpers import (
+    Required,
+    Translations
+    )
+
+class ExternalVenueUploadForm(Form):
+    csv_file = FileField(
+        label=u'CSVファイル',
+        validators=[],
+    )
+
+
+
+
 from wtforms import Form, HiddenField, SelectField, FileField
 from wtforms.validators import Optional
 from altair.formhelpers import Required, Translations
@@ -38,7 +56,7 @@ class CooperationUpdateForm(Form):
         choices=[coop_type.v for coop_type in CooperationTypeEnum],
         coerce=int,
     )
-    
+
     cooperation_file = FileField(
         u'CSVファイル',
         validators=[],

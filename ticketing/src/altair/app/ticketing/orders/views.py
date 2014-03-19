@@ -898,7 +898,7 @@ class OrderDetailView(BaseView):
             self.request.session.flash(u'受注(%s)をキャンセルできません' % order.order_no)
             raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
-    @view_config(route_name='orders.delete', permission='administrator')
+    @view_config(route_name='orders.delete', permission='sales_editor')
     def delete(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.organization.id)
@@ -2217,7 +2217,7 @@ class SejTicketTemplate(BaseView):
             templates=templates
         )
 
-@view_defaults(decorator=with_bootstrap, permission="authenticated", route_name="orders.mailinfo")
+@view_defaults(decorator=with_bootstrap, permission="event_editor", route_name="orders.mailinfo")
 class MailInfoView(BaseView):
     @view_config(match_param="action=show", renderer="altair.app.ticketing:templates/orders/mailinfo/show.html")
     def show(self):

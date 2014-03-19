@@ -17,7 +17,7 @@ def check_initialized_or_not(request, mutil, fake_object):
 
 
 @view_config(route_name="mails.preview.organization", 
-             decorator=with_bootstrap, permission="authenticated", 
+             decorator=with_bootstrap, permission="event_editor",
              renderer="altair.app.ticketing:templates/events/mailinfo/preview.html")
 def mail_preview_preorder_with_organization(context, request):
     mutil = get_mail_utility(request, request.matchdict["mailtype"])
@@ -40,7 +40,7 @@ def mail_preview_preorder_with_organization(context, request):
             "mutil": mutil, "form": form}
 
 @view_config(route_name="mails.preview.event", 
-             decorator=with_bootstrap, permission="authenticated", 
+             decorator=with_bootstrap, permission="event_editor",
              renderer="altair.app.ticketing:templates/events/mailinfo/preview.html")
 def mail_preview_preorder_with_event(context, request):
     mutil = get_mail_utility(request, request.matchdict["mailtype"])
@@ -65,7 +65,7 @@ def mail_preview_preorder_with_event(context, request):
             "mutil": mutil, "form": form}
 
 @view_config(route_name="mails.preview.performance", 
-             decorator=with_bootstrap, permission="authenticated", 
+             decorator=with_bootstrap, permission="event_editor",
              renderer="altair.app.ticketing:templates/events/mailinfo/preview.html")
 def mail_preview_preorder_with_performance(context, request):
     mutil = get_mail_utility(request, request.matchdict["mailtype"])

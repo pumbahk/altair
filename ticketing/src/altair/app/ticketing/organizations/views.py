@@ -392,7 +392,7 @@ class Hosts(BaseView):
                 organization_id=organization_id)
             )
 
-@view_defaults(route_name="organizations.mails.new", decorator=with_bootstrap, permission="authenticated",
+@view_defaults(route_name="organizations.mails.new", decorator=with_bootstrap, permission="administrator",
                renderer="altair.app.ticketing:templates/organizations/mailinfo/new.html")
 class MailInfoNewView(BaseView):
     @view_config(request_method="GET")
