@@ -67,7 +67,13 @@ class CooperationView(BaseView):
             import datetime
             from .gettii.csvfile import GettiiSeatCSV
             external_seat_csv = GettiiSeatCSV()
-            external_seat_csv.read_csv(self.request.POST['csvfile'].file)
+            try:
+                external_seat_csv.read_csv(self.request.POST['csvfile'].file)
+            except AttributeError as err:
+                raise HTTPBadRequest(body=json.dumps({
+                    'message':u'ファイルが選択されていません',
+                }))
+
             records = [record for record in external_seat_csv]
 
             # 公演日時でバリデーション
