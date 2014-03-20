@@ -1,6 +1,8 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
 
+<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
 <script type="text/javascript">
   $(function() {
     $('form').disableOnSubmit();
@@ -19,9 +21,9 @@
     $('#title').focusin(function(){
       code_buf = [];
     });
+    $("#account_id").chosen();
   });
 </script>
-
 <%block name="breadcrumbs">
 ${ch.breadcrumbs(
     names=[u'イベント', route_name],
@@ -38,7 +40,7 @@ ${ch.breadcrumbs(
     <fieldset>
       ${ch.form_item(form.id)}
       ${ch.form_item(form.original_id)}
-      ${ch.form_item(form.account_id, class_='span5')}
+      ${ch.form_item(form.account_id, style='width:710px')}
       ${ch.form_item(form.title, class_='span8', maxlength=200)}
       ${ch.form_item(form.abbreviated_title, class_='span4', maxlength=100)}
       ${ch.form_item(form.code, style='width:100px', maxlength=7, counter=True)}
