@@ -1,4 +1,8 @@
 #-*- coding: utf-8 -*-
+from sqlalchemy.orm.exc import (
+    MultipleResultsFound,
+    NoResultFound,
+    )
 from pyramid.decorator import reify
 from pyramid.httpexceptions import (
     HTTPNotFound,
