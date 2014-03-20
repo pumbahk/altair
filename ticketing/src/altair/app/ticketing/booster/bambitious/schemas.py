@@ -32,7 +32,7 @@ class OrderFormSchema(Form):
     def validate_member_type(self, field):
         if self.cont.data == "yes":
             if self.check_calendar_member_type(self.member_type.data):
-                raise ValidationError(u'継続の方は、カレンダーが無料でついてきます。カレンダーありは、選べません。')
+                raise ValidationError(u'継続の方には、カレンダーが無料で付いてきます。<br/>継続の方はカレンダー付きではないコースをお選びください。')
 
     def check_calendar_member_type(self, product_id):
         if not product_id:
@@ -46,7 +46,7 @@ class OrderFormSchema(Form):
 
     # 新規・継続
     cont = fields.RadioField(u"新規／継続", validators=[v.Required()], choices=[('no', u'新規'),('yes', u'継続')], widget=radio_list_widget)
-    old_id_number = fields.TextField(u"会員番号", filters=[strip_spaces, NFKC], validators=[v.Regexp(r'\d{8}', message=u'半角数字8ケタで入力してください。'), v.Optional()])
+    old_id_number = fields.TextField(u"会員番号", filters=[strip_spaces, NFKC], validators=[v.Regexp(r'\d{7}$', message=u'半角数字7ケタで入力してください。'), v.Optional()])
     member_type = fields.SelectField(u"会員種別選択", validators=[v.Required()])
 
     t_shirts_size_choices = [(x, x) for x in [u"S", u"M", u"L", u"O", u"XO", u"2XO"]]
