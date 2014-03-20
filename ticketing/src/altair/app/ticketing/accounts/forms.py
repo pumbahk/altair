@@ -8,6 +8,15 @@ from altair.formhelpers import Translations, Required, BugFreeSelectField,\
     zero_as_none
 from altair.app.ticketing.core.models import Organization, Account, AccountTypeEnum
 
+class AccountSearchForm(Form):
+    account_name = TextField(
+        label=u'取引先名',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+
 class AccountForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):

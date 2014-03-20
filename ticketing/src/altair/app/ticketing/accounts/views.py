@@ -7,13 +7,14 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPForbidden
 from pyramid.renderers import render_to_response
 from pyramid.url import route_path
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Account, Event
 from altair.app.ticketing.sej.models import SejTenant
-from .forms import AccountForm
+from .forms import AccountForm, AccountSearchForm
 from altair.app.ticketing.organizations.forms import OrganizationForm
 
 logger = logging.getLogger(__name__)
@@ -25,19 +26,25 @@ class Accounts(BaseView):
     def index(self):
         sort = self.request.GET.get('sort', 'Account.id')
         direction = self.request.GET.get('direction', 'asc')
+        account_name = self.request.GET.get('account_name', '')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = Account.query.filter_by(organization_id=self.context.user.organization_id).order_by(sort + ' ' + direction)
+        query = Account.query.filter_by(organization_id=self.context.user.organization_id)
+        if account_name:
+            query = query.filter(Account.name.like('%' + account_name + '%'))
+        query = query.order_by(sort + ' ' + direction)
+
         accounts = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
             items_per_page=20,
-            url=paginate.PageURL_WebOb(self.request)
+            url=PageURL_WebOb_Ex(self.request)
         )
 
         return {
             'form':AccountForm(),
+            'search_form':AccountSearchForm(),
             'accounts':accounts,
         }
 
