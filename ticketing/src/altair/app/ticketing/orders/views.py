@@ -2217,7 +2217,7 @@ class SejTicketTemplate(BaseView):
             templates=templates
         )
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor", route_name="orders.mailinfo")
+@view_defaults(decorator=with_bootstrap, permission="sales_counter", route_name="orders.mailinfo")
 class MailInfoView(BaseView):
     @view_config(match_param="action=show", renderer="altair.app.ticketing:templates/orders/mailinfo/show.html")
     def show(self):
