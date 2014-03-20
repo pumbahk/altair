@@ -30,7 +30,6 @@ from .augus2 import (
     )
 
 
-
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class CooperationView(BaseView):
     def _stub(self):

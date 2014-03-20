@@ -36,9 +36,6 @@ from .errors import (
     )
 
 
-
-
-
 def _sjis(unistr):
     try:
         return unistr.encode('sjis')
@@ -211,6 +208,7 @@ def get_or_create_augus_venue_from_code(code, version, name=u'', venue_id=None, 
     augus_venue.venue_id = venue_id
     augus_venue.save()
     return AugusVenue.get(code=code, venue_id=venue_id, version=version)
+
 
 class AugusVenueImporter(object):
     def __init__(self, code=None, version=None):
