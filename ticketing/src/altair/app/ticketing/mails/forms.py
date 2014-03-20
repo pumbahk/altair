@@ -72,10 +72,10 @@ class OrderInfoDefaultMixin(object):
                 if p.product.sales_segment.setting.display_seat_no:
                     seat_no += [u"* {0}".format(seat["name"]) for seat in p.seats]
                 elif p.product.seat_stock_type is not None:
-                    seat_no += [u"{0} {1}席".format(p.product.seat_stock_type.name, p.seat_quantity)]
+                    seat_no += [u"{0} {1}席".format(p.product.name, p.seat_quantity)]
             else:
                 if p.product.seat_stock_type.is_seat:
-                    seat_no += [u"{0} {1}席".format(p.product.seat_stock_type.name, p.quantity)]
+                    seat_no += [u"{0} {1}席".format(p.product.name, p.seat_quantity)]
                 else:
                     seat_no += [u"{0} x{1}".format(p.product.name, p.quantity)]
                 
