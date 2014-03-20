@@ -31,6 +31,7 @@ def setup_excviews(config):
 
 def setup_views(config):
     config.add_route('index', '/')
+    config.add_route('indextest', '/boostertest')
     config.add_route('contact', '/contact')
     config.add_route('notready', '/notready')
 
@@ -43,15 +44,44 @@ def setup_views(config):
 
     config.add_view('.views.IndexView', attr='notready', route_name='notready', renderer='base/pc/cart/notready.html')
     config.add_view('.views.IndexView', attr='notready', request_type='altair.mobile.interfaces.IMobileRequest', route_name='notready', renderer='base/mobile/cart/notready.html')
-    config.add_view('.views.IndexView', route_name='index', attr='get', request_method='GET', renderer='base/pc/cart/form.html', 
+
+    ##
+    #config.add_view('.views.IndexView', route_name='index', attr='get', request_method='GET', renderer='base/pc/cart/form.html',
+    #                decorator='altair.app.ticketing.fanstatic.with_jquery')
+    #config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='index',
+    #                attr='get', request_method='GET', renderer='base/mobile/cart/form.html')
+
+    #config.add_view('.views.IndexView', route_name='index', attr='post', request_method='POST', renderer='base/pc/cart/form.html',
+    #                decorator='altair.app.ticketing.fanstatic.with_jquery')
+    #config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='index',
+    #                attr='post', request_method='POST', renderer='base/mobile/cart/form.html')
+
+
+    ## mente
+    config.add_view('.views.IndexView', route_name='index', attr='get', request_method='GET', renderer='BT/pc/mente.html',
                     decorator='altair.app.ticketing.fanstatic.with_jquery')
-    config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='index', 
+    config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='index',
+                    attr='get', request_method='GET', renderer='BT/mobile/mente.html')
+
+    config.add_view('.views.IndexView', route_name='index', attr='post', request_method='POST', renderer='BT/pc/mente.html',
+                    decorator='altair.app.ticketing.fanstatic.with_jquery')
+    config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='index',
+                    attr='post', request_method='POST', renderer='BT/mobile/mente.html')
+
+
+
+    ## boostertest
+    config.add_view('.views.IndexView', route_name='indextest', attr='get', request_method='GET', renderer='base/pc/cart/form.html',
+                    decorator='altair.app.ticketing.fanstatic.with_jquery')
+    config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='indextest',
                     attr='get', request_method='GET', renderer='base/mobile/cart/form.html')
 
-    config.add_view('.views.IndexView', route_name='index', attr='post', request_method='POST', renderer='base/pc/cart/form.html', 
+    config.add_view('.views.IndexView', route_name='indextest', attr='post', request_method='POST', renderer='base/pc/cart/form.html',
                     decorator='altair.app.ticketing.fanstatic.with_jquery')
-    config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='index', 
+    config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='indextest',
                     attr='post', request_method='POST', renderer='base/mobile/cart/form.html')
+
+    #########
 
     config.add_view('.views.PaymentView', route_name='cart.payment', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
     config.add_view('.views.PaymentView', route_name='cart.payment', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
