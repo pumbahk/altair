@@ -964,7 +964,9 @@ $(function() {
   <form id="csv-seat-allocation-form" method="POST" enctype="multipart/form-data"
         action="${request.route_path('cooperation.get_seat_l0_ids', performance_id=performance.id)}">
   <div class="modal-body">
-    <p id="message">CSVを使って座席を選択します。</p>
+    <p id="message">
+      CSVを使って座席を選択します。
+    </p>
 
     CSVファイル
     <div><input type="file" name="csvfile"></div>
@@ -973,14 +975,18 @@ $(function() {
     <div>
     <select class="selectpicker" name="format">
       <!--<option value="altair" >Altair</option>-->
+      <option value="" ></option>
       <option value="gettii" >Gettii</option>
     </select>
+
+    <p>(会場図が完全に読み込まれた状態でない場合、正しく座席選択できないことがあります)
+    </p>
     </div>
   </div>
 
   <div class="modal-footer">
-    <a href="javascript:void(0);" onclick="select_seats_by_csv();" class="btn secondary">選択</a>
     <a href="javascript:void(0);" onclick="$('#modal-csv-seat-allocation').modal('hide');" class="btn secondary">閉じる</a>
+    <a href="javascript:void(0);" onclick="select_seats_by_csv();" class="btn secondary">選択</a>    
   </div>
   </form>
 </div>
