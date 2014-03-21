@@ -92,6 +92,10 @@ class MypageView(object):
             raise HTTPNotFound()
 
         order, sej_order = self.context.get_order()
+
+        if not order:
+            raise HTTPNotFound()
+
         return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
 
     @mobile_view_config(route_name='mypage.mailmag.confirm', request_method="POST", custom_predicates=(is_mypage_organization, ),
