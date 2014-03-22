@@ -77,7 +77,7 @@
   <ItemGroup>
     <Reference Include="InputSimulator, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\WpfKb\bin\Release\InputSimulator.dll</HintPath>
+      <HintPath>..\WpfKb\References\InputSimulator\InputSimulator.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.TeamFoundation.Controls, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -611,8 +611,7 @@
     </GitVersion>
     <AssemblyInfo CodeLanguage="CS" OutputFile="Properties\AssemblyInfo.cs" AssemblyTitle="CheckinStation" AssemblyDescription="altair checkin station" AssemblyProduct="CheckinStation" AssemblyCopyright="Copyright @ 2014" ComVisible="false" AssemblyInformationalVersion="$(Major).$(Minor).$(Build).$(Revision)" AssemblyVersion="$(Major).$(Minor).$(Build)" AssemblyFileVersion="$(Major).$(Minor).$(Build)" />
   </Target>
-  <Target Name="CompressOutputDirectory" BeforeTargets="AfterBuild"
-          Condition=" '$(Configuration)' == 'Release' ">
+  <Target Name="CompressOutputDirectory" BeforeTargets="AfterBuild" Condition=" '$(Configuration)' == 'Release' ">
     <Message Text="compressing target $(MSBuildProjectDirectory)\bin\$(Configuration)" />
     <ItemGroup>
       <ReleaseApplicationFiles Include="$(MSBuildProjectDirectory)\bin\$(Configuration)\**\*.*" Exclude="$(MSBuildProjectDirectory)\bin\$(Configuration)\*vshost.exe*; $(MSBuildProjectDirectory)\bin\$(Configuration)\*.pdb*" />
