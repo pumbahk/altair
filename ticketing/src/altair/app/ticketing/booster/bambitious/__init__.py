@@ -22,6 +22,14 @@ def setup_booster_settings(config):
     config.add_panel("altair.app.ticketing.booster.panels.complete_notice", "complete_notice", renderer="altair.app.ticketing.booster.bambitious:templates/carts/_complete_notice.html")    
     config.add_panel("altair.app.ticketing.booster.panels.complete_notice", "mobile_complete_notice", renderer="altair.app.ticketing.booster.bambitious:templates/carts_mobile/_complete_notice.html")    
 
+
+    # test
+    config.add_panel("altair.app.ticketing.booster.panels.input_form", "input_form_test", renderer="altair.app.ticketing.booster.bambitious:templates/carts/_main_form.html")
+    config.add_panel("altair.app.ticketing.booster.panels.input_form", "mobile_input_form_test", renderer="altair.app.ticketing.booster.bambitious:templates/carts_mobile/_main_form.html")
+
+
+
+
     from ..persistent_profile import PersistentProfileFactory as Default
     class PersistentProfileFactory(Default):
         attr_names = Default.attr_names[:]
