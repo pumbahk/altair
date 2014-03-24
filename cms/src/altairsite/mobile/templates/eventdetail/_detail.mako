@@ -198,7 +198,11 @@ ${helper.nl2br(info['content'])|n}
                 %elif min(start_on_candidates) >= get_now(request):
                     販売前
                 %elif not end_on_candidates:
-                    % if not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
+                    % if not perf['perf'].purchase_link and perf['perf'].backend_id is None:
+                        <div class="actions">
+                            準備中
+                        </div>
+                    % elif not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
                         予定枚数終了
                     % else:
                         <div align="center">
@@ -210,7 +214,11 @@ ${helper.nl2br(info['content'])|n}
                         </div>
                     % endif
                 %elif max(end_on_candidates) >= get_now(request):
-                    % if not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
+                    % if not perf['perf'].purchase_link and perf['perf'].backend_id is None:
+                        <div class="actions">
+                            準備中
+                        </div>
+                    % elif not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
                         予定枚数終了
                     % else:
                         <div align="center">
