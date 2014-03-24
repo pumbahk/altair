@@ -66,14 +66,7 @@
                         </StackPanel.Style>
                         <TextBlock 
                         d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
-                        Text="{Binding Description}">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontSize" Value="30"/>
-                                    <Setter Property="Foreground" Value="{StaticResource MainTextBrush}"/>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                        Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
 
                     <!-- ボタン -->

@@ -8,5 +8,10 @@
     <Style TargetType="Viewbox" x:Key="ContentViewboxStyle">
         <Setter Property="Margin" Value="0,-10,0,0"/>
     </Style>
+    
+    <Style TargetType="TextBlock" x:Key="DescriptionText">
+        <Setter Property="FontSize" Value="38"/>
+        <Setter Property="Foreground" Value="{StaticResource MainTextBrush}"/>
+    </Style>
 </ResourceDictionary>
 
