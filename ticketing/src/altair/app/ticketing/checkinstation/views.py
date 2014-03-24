@@ -90,7 +90,7 @@ def ticket_data_from_signed_string(context, request):
             order, history = ticket_data.get_order_and_history_from_signed(request.json_body["qrsigned"])
         except TypeError:
             logger.warn("*qr ticketdata: history not found: json=%s", request.json_body)
-            raise HTTPBadRequest(u"E@:不正な入力が渡されました!")
+            raise HTTPBadRequest(u"E@:データが見つかりません。不正なQRコードの可能性があります!")
 
         data = ticket_data_dict_from_history(history)
         ## 付加情報追加
@@ -102,7 +102,7 @@ def ticket_data_from_signed_string(context, request):
         return data
     except KeyError:
         logger.warn("*qr ticketdata: KeyError: json=%s", request.json_body)
-        raise HTTPBadRequest(u"E@:不正な入力が渡されました!!")
+        raise HTTPBadRequest(u"E@:データが見つかりません。不正なQRコードの可能性があります!!")
 
 
 
