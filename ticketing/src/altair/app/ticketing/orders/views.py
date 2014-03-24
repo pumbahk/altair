@@ -1882,8 +1882,14 @@ class OrdersEditAPIView(BaseView):
 
         try:
             modiry_order = save_order_modification(order, order_data)
-        except Exception:
-            logger.exception('save order error')
+        except InvalidSeatSelectionException:
+            logger.info("seat selection is invalid.")
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。')))
+        except NotEnoughStockException as e:
+            logger.info("not enough stock quantity :%s" % e)
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'在庫がありません')))
+        except Exception as e:
+            logger.exception('save error (%s)' % e.message)
             raise HTTPBadRequest(body=json.dumps(dict(message=u'システムエラーが発生しました。')))
 
         self.request.session.flash(u'変更を保存しました')
