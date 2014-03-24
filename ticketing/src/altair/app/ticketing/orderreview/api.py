@@ -57,29 +57,29 @@ def safe_get_contact_url(request, default=""):
         logger.warn(str(e))
         return default
 
-def send_to_orion(request, context, recipient, ticket):
+def send_to_orion(request, context, recipient, data):
     settings = request.registry.settings
     api_url = settings.get('orion.create_url')
     if api_url is None:
         raise Exception("orion.api_uri is None")
     print "target url is %s" % api_url
     
-    order = ticket.order
-    product = ticket.product
-    item = ticket.ordered_product_item.product_item
-    performance = ticket.performance
+    order = data.item.ordered_product.order
+    product = data.item.ordered_product.product
+    item = data.item
+    performance = product.performance
     event = performance.event
     site = performance.venue.site
     org = event.organization
     segment = order.sales_segment
-    seat = ticket.seat
+    seat = data.seat
     orion = performance.orion
     
     obj = dict()
-    obj['token'] = ticket.item_token_id
+    obj['token'] = data.id
     obj['recipient'] = dict(mail = recipient)
     obj['order'] = dict(number = order.order_no,
-                        sequence = ticket.item_token.serial,
+                        sequence = data.serial,
                         created_at = str(order.paid_at))
     obj['performance'] = dict(code = performance.code, name = performance.name,
                               open_on = str(performance.open_on) if performance.open_on is not None else None,

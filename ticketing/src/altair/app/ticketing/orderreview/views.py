@@ -357,7 +357,7 @@ def order_review_qr_image(context, request):
         # orion
         print "mode orion image"
         try:
-            res_text = api.send_to_orion(request, context, None, ticket)
+            res_text = api.send_to_orion(request, context, None, ticket.item_token)
             print "response = %s" % res_text
             response = json.loads(res_text)
         except Exception, e:
@@ -393,7 +393,7 @@ def order_review_qr_print(context, request):
         try:
             if ticket.order.order_no != request.params['order_no']:
                 raise Exception(u"Wrong order number or token: (%s, %s)" % (request.params['order_no'], request.params['token']))
-            res_text = api.send_to_orion(request, context, None, ticket)
+            res_text = api.send_to_orion(request, context, None, ticket.item_token)
             print "response = %s" % res_text
             response = json.loads(res_text)
         except Exception, e:
@@ -411,7 +411,7 @@ def order_review_qr_print(context, request):
             product = ticket.ordered_product_item.ordered_product.product,
             gate = gate
         )
-    elif order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.QR_DELIVERY_PLUGIN_ID:
+    elif ticket.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.QR_DELIVERY_PLUGIN_ID:
         # altair
         
         return dict(
