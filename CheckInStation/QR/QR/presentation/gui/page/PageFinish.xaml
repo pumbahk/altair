@@ -50,40 +50,6 @@
                         Canvas.Left="345"
                         Canvas.Top="413"
                         Width="682" Height="173" Background="{StaticResource TeamLogoBrush}"/>
-                    
-                    
-                    <!-- 説明(description)-->
-                    <!--
-                    <StackPanel
-                        Canvas.Top="100"
-                        Orientation="Horizontal"
-                        >
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Style.Triggers>
-                                    <Trigger Property="Orientation" Value="Horizontal">
-                                        <Setter Property="Canvas.Left" 
-                                                Value="{Binding RelativeSource={RelativeSource Self}, 
-                                                Path=ActualWidth,
-                                                Converter={StaticResource MathConverter}, 
-                                                ConverterParameter=(1366-@VALUE)*0.5}" />
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
-                        <TextBlock 
-                        d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
-                        Text="{Binding Description}">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontSize" Value="30"/>
-                                    <Setter Property="Foreground" Value="{StaticResource MainTextBrush}"/>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </StackPanel>
-                    -->
-                    
                 </Canvas>
             </Grid>
         </Viewbox>

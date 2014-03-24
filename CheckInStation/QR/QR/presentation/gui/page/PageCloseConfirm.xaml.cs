@@ -26,7 +26,7 @@ namespace QR.presentation.gui.page
         {
             InitializeComponent();
             var name = AppUtil.GetCurrentResource().LoginUser.login_id;
-            var description = String.Format("アプリケーションを終了します。「{0}」でログインした際のパスワードを入力しログアウトボタンを押してください", name);
+            var description = String.Format("ログアウトします。「{0}」でログインした際のパスワードを入力してください", name);
             this.DataContext = new InputDataContext(this) {
                 Broker=AppUtil.GetCurrentBroker(),
                 Description=description
