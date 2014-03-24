@@ -30,6 +30,7 @@ from altair.app.ticketing.qr.utils import make_data_for_qr
 import urllib
 import urllib2
 import json
+import traceback
 
 def _accepted_object(request, obj):
     if obj is None:
@@ -141,9 +142,9 @@ def ticketdata_from_qrsigned_string(context, request):
     signed = request.params["qrsigned"]
     signed = re.sub(r"[\x01-\x1F\x7F]", "", signed.encode("utf-8")).replace("\x00", "") .decode("utf-8")
     try:
-        print "signed = %s" % signed
+        logger.info("signed = %s" % signed)
         data = builder.data_from_signed(signed)
-        print data
+        logger.info("decoded = %s" % data)
         if data.has_key("type"):
             order, history = utils.order_and_history_from_qrdata(data)
             data = todict.data_dict_from_order_and_history(order, history)
@@ -153,7 +154,7 @@ def ticketdata_from_qrsigned_string(context, request):
             api_url = settings.get('orion.search_url')
             if api_url is None:
                 raise Exception("orion.search_uri is None")
-            print "target url is %s" % api_url
+            logger.debug("target url is %s" % api_url)
             
             obj = dict(serial = data["serial"])
             req_json = json.dumps(obj)
@@ -163,12 +164,12 @@ def ticketdata_from_qrsigned_string(context, request):
             headers = stream.info()
             if stream.code == 200:
                 res_text = unicode(stream.read(), 'utf-8')
-                print res_text
+                logger.info("response = %s" % res_text)
                 res = json.loads(res_text)
                 order, token = utils.order_from_token(res["token"], data["order"])
                 data = todict.data_dict_from_order(order, token)
             else:
-                print "HTTP Response is %u" % stream.code
+                logger.warn("HTTP Response is %u" % stream.code)
                 raise HTTPNotFound()
 
         utils.verify_order(order, event_id=event_id)
@@ -177,8 +178,7 @@ def ticketdata_from_qrsigned_string(context, request):
     except InvalidSignedString:
         return {"status": "error", "message": u"不正なQRコードです"}
     except KeyError, e:
-        import traceback
-        print traceback.format_exc()
+        logger.info(traceback.format_exc())
         return {"status": "error", "message": u"うまくQRコードを読み込むことができませんでした"}
     except utils.UnmatchEventException:
         return {"status": "error", "message": u"異なるイベントのQRチケットです。このページでは発券できません"}
