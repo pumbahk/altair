@@ -72,6 +72,7 @@ namespace QR
             var cache = new CredentialCache();
             cache.Add(new Uri("https://backend.stg2.rt.ticketstar.jp/checkinstation/login"), "Basic", new NetworkCredential("kenta", "matsui"));
             var handler = new HttpClientHandler() { Credentials = cache};
+            handler.ClientCertificateOptions = ClientCertificateOption.Automatic;
             CookieUtils.PutCokkiesToRequestHandler(handler, this.cookieContainer);
             var client = new HttpClient (handler);
             return ClientAttachedSomething (client);
