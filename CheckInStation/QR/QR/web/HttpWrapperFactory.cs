@@ -17,10 +17,25 @@ namespace QR
         public Func<HttpClient,HttpClient> ClientConfig { get; set; }
 
         protected CookieContainer cookieContainer {get;set;}
-
+        public Func<CookieContainer,HttpClientHandler> HandlerFactory { get; set; }
         public HttpWrapperFactory ()
         {
-            
+            this.HandlerFactory = DefaultHandlerFactory;
+        }
+
+        public HttpWrapperFactory(Func<CookieContainer,HttpClientHandler> handlerFactory,
+                                  Func<HttpClient, HttpClient> clientConfigure)
+        {
+            this.HandlerFactory = handlerFactory;
+            this.ClientConfig = clientConfigure;
+        }
+
+        public static HttpClientHandler DefaultHandlerFactory(CookieContainer cookieContainer)
+        {
+            var cache = new CredentialCache();
+            var handler = new HttpClientHandler() { Credentials = cache };
+            CookieUtils.PutCokkiesToRequestHandler(handler, cookieContainer);
+            return handler;
         }
 
         public void AddCookies (IEnumerable<Cookie> new_cookies)
@@ -63,18 +78,7 @@ namespace QR
 
         public virtual HttpClient CreateHttpClient ()
         {
-            //temporary: 
-            ServicePointManager.ServerCertificateValidationCallback =
-          (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) =>
-          {
-              return true;
-          };
-            var cache = new CredentialCache();
-            cache.Add(new Uri("https://backend.stg2.rt.ticketstar.jp/checkinstation/login"), "Basic", new NetworkCredential("kenta", "matsui"));
-            var handler = new HttpClientHandler() { Credentials = cache};
-            handler.ClientCertificateOptions = ClientCertificateOption.Automatic;
-            CookieUtils.PutCokkiesToRequestHandler(handler, this.cookieContainer);
-            var client = new HttpClient (handler);
+            var client = new HttpClient (this.HandlerFactory(this.cookieContainer));
             return ClientAttachedSomething (client);
         }
 
