@@ -349,13 +349,15 @@ def order_review_qr_image(context, request):
     ticket_id = int(request.matchdict.get('ticket_id', 0))
     sign = request.matchdict.get('sign', 0)
     
-    data = OrderedProductItemToken.filter_by(id = ticket_id).one()
-    order = data.item.ordered_product.order
-    if order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID:
+    ticket = build_qr_by_history_id(request, ticket_id)
+    if ticket is None:
+        raise HTTPNotFound()
+
+    if ticket.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID:
         # orion
         print "mode orion image"
         try:
-            res_text = api.send_to_orion(request, context, None, data)
+            res_text = api.send_to_orion(request, context, None, ticket)
             print "response = %s" % res_text
             response = json.loads(res_text)
         except Exception, e:
@@ -363,11 +365,9 @@ def order_review_qr_image(context, request):
             ## この例外は違う...
             raise HTTPNotFound()
         
-        qr = build_qr_by_orion(request, data, response['serial'])
+        qr = build_qr_by_orion(request, ticket, response['serial'])
         return qrdata_as_image_response(qr)
     else:
-        ticket = build_qr_by_history_id(request, ticket_id)
-    
         if ticket == None or ticket.sign != sign:
             raise HTTPNotFound()
         return qrdata_as_image_response(ticket)
@@ -375,15 +375,25 @@ def order_review_qr_image(context, request):
 @mobile_view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 @view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def order_review_qr_print(context, request):
-    data = OrderedProductItemToken.filter_by(id = request.params['token']).one()
-    order = data.item.ordered_product.order
-    if order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID:
+    ticket = build_qr_by_token_id(request, request.params['order_no'], request.params['token'])
+    ## historical reason. ticket variable is one of TicketPrintHistory object.
+
+    issued_setter = IssuedAtBubblingSetter(datetime.now())
+    issued_setter.issued_token(ticket.item_token)
+    issued_setter.start_bubbling()
+        
+    if ticket.seat is None:
+        gate = None
+    else:
+        gate = ticket.seat.attributes.get("gate", None)
+
+    if ticket.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID:
         # orion
         print "mode orion"
         try:
-            if data.item.ordered_product.order.order_no != request.params['order_no']:
+            if ticket.order.order_no != request.params['order_no']:
                 raise Exception(u"Wrong order number or token: (%s, %s)" % (request.params['order_no'], request.params['token']))
-            res_text = api.send_to_orion(request, context, None, data)
+            res_text = api.send_to_orion(request, context, None, ticket)
             print "response = %s" % res_text
             response = json.loads(res_text)
         except Exception, e:
@@ -391,40 +401,19 @@ def order_review_qr_print(context, request):
             ## この例外は違う...
             raise HTTPNotFound()
         
-        issued_setter = IssuedAtBubblingSetter(datetime.now())
-        issued_setter.issued_token(data)
-        issued_setter.start_bubbling()
-
-        if data.seat is None:
-            gate = None
-        else:
-            gate = data.seat.attributes.get("gate", None)
-
-        qr = build_qr_by_orion(request, data, response['serial'])
+        qr = build_qr_by_orion(request, ticket, response['serial'])
         return dict(
             sign = qr.sign,
-            order = order,
-            ticket = data,
-            performance = order.performance,
-            event = order.performance.event,
-            product = data.item.ordered_product.product,
+            order = ticket.order,
+            ticket = ticket,
+            performance = ticket.order.performance,
+            event = ticket.order.performance.event,
+            product = ticket.ordered_product_item.ordered_product.product,
             gate = gate
         )
     elif order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.QR_DELIVERY_PLUGIN_ID:
-        # qr
+        # altair
         
-        ticket = build_qr_by_token_id(request, request.params['order_no'], request.params['token'])
-        ## historical reason. ticket variable is one of TicketPrintHistory object.
-        
-        issued_setter = IssuedAtBubblingSetter(datetime.now())
-        issued_setter.issued_token(ticket.item_token)
-        issued_setter.start_bubbling()
-        
-        if ticket.seat is None:
-            gate = None
-        else:
-            gate = ticket.seat.attributes.get("gate", None)
-
         return dict(
             sign = ticket.qr[0:8],
             order = ticket.order,
