@@ -5,6 +5,7 @@ import re
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPNotFound
 from altair.app.ticketing.qr import get_qrdata_builder
+from altair.app.ticketing.qr.builder import InvalidSignedString
 import logging
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,10 @@ from datetime import datetime
 from altair.app.ticketing.qr.utils import get_matched_token_query_from_order_no
 from altair.app.ticketing.qr.utils import get_or_create_matched_history_from_token
 from altair.app.ticketing.qr.utils import make_data_for_qr
+
+import urllib
+import urllib2
+import json
 
 def _accepted_object(request, obj):
     if obj is None:
@@ -131,17 +136,49 @@ def qrapp_view(context, request):
 @view_config(route_name="api.ticket.data", renderer="json", 
              request_param="qrsigned", xhr=True)
 def ticketdata_from_qrsigned_string(context, request):
-    signed = request.params["qrsigned"]
-    signed = re.sub(r"[\x01-\x1F\x7F]", "", signed.encode("utf-8")).replace("\x00", "") .decode("utf-8")
     builder = get_qrdata_builder(request)
     event_id = request.matchdict.get("event_id", "*")
+    signed = request.params["qrsigned"]
+    signed = re.sub(r"[\x01-\x1F\x7F]", "", signed.encode("utf-8")).replace("\x00", "") .decode("utf-8")
     try:
-        order, history = utils.order_and_history_from_qrdata(builder.data_from_signed(signed))
+        print "signed = %s" % signed
+        data = builder.data_from_signed(signed)
+        print data
+        if data.has_key("type"):
+            order, history = utils.order_and_history_from_qrdata(data)
+            data = todict.data_dict_from_order_and_history(order, history)
+        else:
+            # eventgate
+            settings = request.registry.settings
+            api_url = settings.get('orion.search_url')
+            if api_url is None:
+                raise Exception("orion.search_uri is None")
+            print "target url is %s" % api_url
+            
+            obj = dict(serial = data["serial"])
+            req_json = json.dumps(obj)
+            logger.info("Create request to Orion API: %s" % req_json);
+            req = urllib2.Request(api_url, req_json, headers={ u'Content-Type': u'text/json; charset="UTF-8"' })
+            stream = urllib2.urlopen(req);
+            headers = stream.info()
+            if stream.code == 200:
+                res_text = unicode(stream.read(), 'utf-8')
+                print res_text
+                res = json.loads(res_text)
+                order, token = utils.order_from_token(res["token"], data["order"])
+                data = todict.data_dict_from_order(order, token)
+            else:
+                print "HTTP Response is %u" % stream.code
+                raise HTTPNotFound()
+
         utils.verify_order(order, event_id=event_id)
-        data = todict.data_dict_from_order_and_history(order, history)
         return {"status": "success", 
                 "data": data}
+    except InvalidSignedString:
+        return {"status": "error", "message": u"不正なQRコードです"}
     except KeyError, e:
+        import traceback
+        print traceback.format_exc()
         return {"status": "error", "message": u"うまくQRコードを読み込むことができませんでした"}
     except utils.UnmatchEventException:
         return {"status": "error", "message": u"異なるイベントのQRチケットです。このページでは発券できません"}
