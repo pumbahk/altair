@@ -340,7 +340,7 @@
     <Folder Include="models\core\" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resource\qrload.png" />
+    <Resource Include="Resource\qr.input.jpg" />
     <Resource Include="Resource\printing.gif" />
     <Resource Include="Resource\background.png" />
     <None Include="app.config" />
