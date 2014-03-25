@@ -13,15 +13,18 @@ from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
 from altair.app.ticketing.core.api import get_organization
 from datetime import datetime
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe, multi_unsubscribe
+from altair.app.ticketing.payments import plugins
 
 import helpers as h
 from ..users.api import get_user
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.qr.utils import build_qr_by_history_id
-from altair.app.ticketing.qr.utils import build_qr_by_token_id
+from altair.app.ticketing.qr.utils import build_qr_by_token_id, build_qr_by_orion
 from altair.auth import who_api as get_who_api
 from altair.app.ticketing.fc_auth.api import do_authenticate
 from .api import safe_get_contact_url, is_mypage_organization, is_rakuten_auth_organization
+
+from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
 
 logger = logging.getLogger(__name__)
 
@@ -351,32 +354,78 @@ def order_review_qr_image(context, request):
     sign = request.matchdict.get('sign', 0)
     
     ticket = build_qr_by_history_id(request, ticket_id)
-    
-    if ticket == None or ticket.sign != sign:
+    if ticket is None:
         raise HTTPNotFound()
-    return qrdata_as_image_response(ticket)
+
+    if ticket.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID:
+        # orion
+        print "mode orion image"
+        try:
+            res_text = api.send_to_orion(request, context, None, ticket.item_token)
+            print "response = %s" % res_text
+            response = json.loads(res_text)
+        except Exception, e:
+            logger.error(e.message, exc_info=1)
+            ## この例外は違う...
+            raise HTTPNotFound()
+        
+        qr = build_qr_by_orion(request, ticket, response['serial'])
+        return qrdata_as_image_response(qr)
+    else:
+        if ticket == None or ticket.sign != sign:
+            raise HTTPNotFound()
+        return qrdata_as_image_response(ticket)
 
 @mobile_view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 @view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def order_review_qr_print(context, request):
     ticket = build_qr_by_token_id(request, request.params['order_no'], request.params['token'])
     ## historical reason. ticket variable is one of TicketPrintHistory object.
+
+    issued_setter = IssuedAtBubblingSetter(datetime.now())
+    issued_setter.issued_token(ticket.item_token)
+    issued_setter.start_bubbling()
+        
     if ticket.seat is None:
         gate = None
     else:
         gate = ticket.seat.attributes.get("gate", None)
-    issued_setter = IssuedAtBubblingSetter(datetime.now())
-    issued_setter.issued_token(ticket.item_token)
-    issued_setter.start_bubbling()
 
-    return dict(
-        sign = ticket.qr[0:8],
-        order = ticket.order,
-        ticket = ticket,
-        performance = ticket.performance,
-        event = ticket.event,
-        product = ticket.product,
-        gate = gate
+    if ticket.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID:
+        # orion
+        print "mode orion"
+        try:
+            if ticket.order.order_no != request.params['order_no']:
+                raise Exception(u"Wrong order number or token: (%s, %s)" % (request.params['order_no'], request.params['token']))
+            res_text = api.send_to_orion(request, context, None, ticket.item_token)
+            print "response = %s" % res_text
+            response = json.loads(res_text)
+        except Exception, e:
+            logger.error(e.message, exc_info=1)
+            ## この例外は違う...
+            raise HTTPNotFound()
+        
+        qr = build_qr_by_orion(request, ticket, response['serial'])
+        return dict(
+            sign = qr.sign,
+            order = ticket.order,
+            ticket = ticket,
+            performance = ticket.order.performance,
+            event = ticket.order.performance.event,
+            product = ticket.ordered_product_item.ordered_product.product,
+            gate = gate
+        )
+    elif ticket.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.QR_DELIVERY_PLUGIN_ID:
+        # altair
+        
+        return dict(
+            sign = ticket.qr[0:8],
+            order = ticket.order,
+            ticket = ticket,
+            performance = ticket.performance,
+            event = ticket.event,
+            product = ticket.product,
+            gate = gate
         )
 
 @mobile_view_config(route_name='order_review.qr_send', request_method="POST", 
@@ -447,7 +496,11 @@ def order_review_send_to_orion(context, request):
 
     res_text = None
     try:
-        res_text = api.send_to_orion(request, context, mail)
+        data = OrderedProductItemToken.filter_by(id = request.params['token']).one()
+        if data.item.ordered_product.order.order_no != request.params['order_no']:
+            raise Exception(u"Wrong order number or token: (%s, %s)" % (request.params['order_no'], request.params['token']))
+        res_text = api.send_to_orion(request, context, mail, data)
+        print "response = %s" % res_text
     except Exception, e:
         logger.error(e.message, exc_info=1)
         ## この例外は違う...
