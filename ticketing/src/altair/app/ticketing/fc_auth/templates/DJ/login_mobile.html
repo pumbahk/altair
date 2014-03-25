@@ -1,13 +1,13 @@
 <html lang="ja">
 <head>
-  <title>東京混声合唱団</title>
+  <title>デュオジャパン</title>
 </head>
 <body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
 <div align="center">
-  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/TC/images/logo_mobile.gif')}" width="240" height="96" alt="東京混声合唱団" />
+  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/DJ/images/logo_mobile.gif')}" width="240" height="96" alt="デュオジャパン" />
 </div>
 <div>
-<div style="background-color:#9154FF" bgcolor="#9154FF"><font color="white">チケット購入</font></div>
+<div style="background-color:#533B23" bgcolor="#533B23"><font color="white">チケット購入</font></div>
 
 <p style="text-align:center;">
 <div id="login_form">
@@ -16,7 +16,7 @@
 
 </div>
 <form action="${request.path}" method="post">
-<input type="hidden" name="membership" value="TC" />
+<input type="hidden" name="membership" value="DJ" />
 <div>
   会員ID<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
@@ -24,7 +24,7 @@
   <br/><span style="color: red">IDまたはパスワードが一致しません</span>
   %endif
 
-  <input type="hidden" name="password" value="toukon">
+  <input type="hidden" name="password" value="duojapan">
 </div>
 <input type="submit" value="ログイン" />
 </form>
