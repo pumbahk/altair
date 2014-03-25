@@ -420,23 +420,23 @@ SELECT
     NULL
 FROM LotEntryWish
      JOIN LotEntry
-     ON LotEntryWish.lot_entry_id = LotEntry.id
+     ON LotEntryWish.lot_entry_id = LotEntry.id AND LotEntry.deleted_at IS NULL
      JOIN Performance
-     ON LotEntryWish.performance_id = Performance.id
+     ON LotEntryWish.performance_id = Performance.id AND Performance.deleted_at IS NULL
      JOIN Venue
-     ON Performance.id = Venue.performance_id
+     ON Performance.id = Venue.performance_id AND Venue.deleted_at IS NULL
      JOIN Lot
-     ON LotEntry.lot_id = Lot.id
+     ON LotEntry.lot_id = Lot.id AND Lot.deleted_at IS NULL
      JOIN PaymentDeliveryMethodPair as PDMP
-     ON LotEntry.payment_delivery_method_pair_id = PDMP.id
+     ON LotEntry.payment_delivery_method_pair_id = PDMP.id AND PDMP.deleted_at IS NULL
      JOIN PaymentMethod
-     ON PDMP.payment_method_id = PaymentMethod.id
+     ON PDMP.payment_method_id = PaymentMethod.id AND PaymentMethod.deleted_at IS NULL
      JOIN DeliveryMethod
-     ON PDMP.delivery_method_id = DeliveryMethod.id
+     ON PDMP.delivery_method_id = DeliveryMethod.id  AND DeliveryMethod.deleted_at IS NULL
      JOIN Event
-     ON Lot.event_id = Event.id
+     ON Lot.event_id = Event.id AND Event.deleted_at IS NULL
      JOIN ShippingAddress
-     ON LotEntry.shipping_address_id = ShippingAddress.id
+     ON LotEntry.shipping_address_id = ShippingAddress.id AND ShippingAddress.deleted_at IS NULL
      JOIN (
          SELECT
              LotEntryProduct.lot_wish_id,
@@ -445,32 +445,32 @@ FROM LotEntryWish
              group_concat(StockType.name) as stock_names
          FROM LotEntryProduct
               JOIN LotEntryWish
-              ON LotEntryProduct.lot_wish_id = LotEntryWish.id
+              ON LotEntryProduct.lot_wish_id = LotEntryWish.id AND LotEntryWish.deleted_at IS NULL
               JOIN LotEntry
-              ON LotEntryWish.lot_entry_id = LotEntry.id
+              ON LotEntryWish.lot_entry_id = LotEntry.id AND LotEntry.deleted_at IS NULL
               JOIN Product
-              ON LotEntryProduct.product_id = Product.id
+              ON LotEntryProduct.product_id = Product.id AND Product.deleted_at IS NULL
               JOIN StockType
-              ON Product.seat_stock_type_id = StockType.id
+              ON Product.seat_stock_type_id = StockType.id AND StockType.deleted_at IS NULL
          WHERE LotEntry.lot_id = %s
          AND LotEntryProduct.deleted_at IS NULL
          GROUP BY LotEntryProduct.lot_wish_id
      ) p_sum
      ON p_sum.lot_wish_id = LotEntryWish.id
      LEFT JOIN User
-     ON LotEntry.user_id = User.id
+     ON LotEntry.user_id = User.id AND User.deleted_at IS NULL
      LEFT JOIN UserProfile
-     ON User.id = UserProfile.user_id
+     ON User.id = UserProfile.user_id AND UserProfile.deleted_at IS NULL
      LEFT JOIN LotElectWork
      ON LotElectWork.lot_id = Lot.id
      AND LotElectWork.lot_entry_no = LotEntry.entry_no
      AND LotElectWork.wish_order = LotEntryWish.wish_order
+     AND LotElectWork.deleted_at IS NULL
      LEFT JOIN LotRejectWork
      ON LotRejectWork.lot_id = Lot.id
      AND LotRejectWork.lot_entry_no = LotEntry.entry_no
 WHERE Lot.id = %s
-AND LotEntryWish.deleted_at IS NULL
-AND LotEntry.deleted_at IS NULL
+     AND LotEntryWish.deleted_at IS NULL
 
 """
 
