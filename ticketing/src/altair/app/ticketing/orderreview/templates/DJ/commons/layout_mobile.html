@@ -1,0 +1,25 @@
+<html>
+<% from altair.app.ticketing.orderreview.api import safe_get_contact_url %>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>東京混声合唱団 購入確認ページ</title>
+</head>
+<body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
+  <div style="text-align: center">  
+    <a href="http://toukon.tstar.jp/">
+      <img src="${request.static_url('altair.app.ticketing.orderreview:static/images/TC/mobile/logo_mobile.gif')}"
+           alt="東京混声合唱団" width="100%"/>
+    </a>
+  </div>
+  
+<%block name="header">
+</%block>
+</div>
+  ${next.body()}
+  <hr />
+  <a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a> / <a href="http://www.ticketstar.jp/legal/">特定商取引法に基づく表示</a>
+  <div>
+    Copyright &copy; 2010-2014 TicketStar, Inc. All Rights Reserved. 
+  </div>
+</body>
+</html>
