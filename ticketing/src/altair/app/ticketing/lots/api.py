@@ -37,7 +37,7 @@ from uuid import uuid4
 from sqlalchemy import sql
 #from pyramid.interfaces import IRequest
 from webob.multidict import MultiDict
-
+from altair.app.ticketing.core import api as c_api
 import altair.app.ticketing.cart.api as cart_api
 from altair.app.ticketing.utils import sensible_alnum_encode
 from altair.rakuten_auth.api import authenticated_user
@@ -54,6 +54,7 @@ from altair.app.ticketing.core.models import (
 from altair.app.ticketing.users.models import (
     MemberGroup_SalesSegment,
     MemberGroup,
+    Membership,
     SexEnum,
 )
 from altair.app.ticketing.cart.models import (
@@ -87,11 +88,16 @@ def get_member_group(request):
     user = authenticated_user(request)
     if user is None:
         return None
+
+    org = c_api.get_organization(request)
+    member_ship = user.get('membership')
     member_group_name = user.get('membergroup')
-    if member_group_name is None:
+    if member_ship is None or member_group_name is None:
         return None
     # TODO: membershipの条件
-    return MemberGroup.query.filter(MemberGroup.name==member_group_name).one()
+    return MemberGroup.query.join(Membership, Membership.id == MemberGroup.membership_id) \
+        .filter(MemberGroup.name==member_group_name)\
+        .filter(Membership.organization_id == org.id).one()
 
 def get_sales_segment(request, event, membergroup):
     # TODO: membergroup が Noneであるときにguestとしてよいか検討 guest membergroupを作らなくてもよい？

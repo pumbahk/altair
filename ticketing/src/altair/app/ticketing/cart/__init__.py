@@ -4,7 +4,6 @@ import json
 import logging
 import sqlahelper
 
-from altair.app.ticketing.models import DBSession
 from pyramid.config import Configurator
 #from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.interfaces import IDict
@@ -15,7 +14,6 @@ from pyramid.exceptions import ConfigurationError
 
 from sqlalchemy import engine_from_config
 
-from altair.app.ticketing.core.api import get_organization
 from altair.app.ticketing.wsgi import direct_static_serving_filter_factory
 
 logger = logging.getLogger(__name__)
@@ -40,18 +38,6 @@ def exception_message_renderer_factory(show_traceback):
             renderer = selectable_renderer('%(membership)s/pc/message.html')
         return HTTPInternalServerError(body=render(renderer, { 'message': u'システムエラーが発生しました。大変お手数ですが、しばらく経ってから再度トップ画面よりアクセスしてください。(このURLに再度アクセスしてもエラーが出続けることがあります)' }, request), headers=security.forget(request))
     return exception_message_renderer
-
-class WhoDecider(object):
-    def __init__(self, request):
-        self.request = request
-
-    def decide(self):
-        """ WHO API 選択
-        """
-        #return self.request.organization.setting.auth_type
-        org = get_organization(self.request)
-        DBSession.add(org) # XXX
-        return org.setting.auth_type
 
 def setup_temporary_store(config):
     from datetime import timedelta
@@ -266,7 +252,7 @@ def import_mail_module(config):
     config.include('altair.app.ticketing.mails')
     config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
 
-STATIC_URL_PREFIX = '/static'
+STATIC_URL_PREFIX = '/static/'
 STATIC_ASSET_SPEC = 'altair.app.ticketing.cart:static/'
 FC_AUTH_URL_PREFIX = '/fc_auth/static/'
 FC_AUTH_STATIC_ASSET_SPEC = "altair.app.ticketing.fc_auth:static/"
