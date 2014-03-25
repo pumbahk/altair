@@ -201,6 +201,7 @@ setup(name='altair.app.ticketing',
       augus_putback=altair.app.ticketing.cooperation.augus.scripts.augus_putback:main
       augus_achievement=altair.app.ticketing.cooperation.augus.scripts.augus_achievement:main
       augus_venue_sync_request=altair.app.ticketing.cooperation.augus.scripts.augus_venue_sync_request:main
+      augus_venue_sync_response=altair.app.ticketing.cooperation.augus.scripts.augus_venue_sync_response:main
       """,
       paster_plugins=['pyramid'],
       )

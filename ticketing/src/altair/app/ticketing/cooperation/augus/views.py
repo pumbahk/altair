@@ -168,8 +168,8 @@ class AugusVenueView(_AugusBaseView):
         else:# validate error
             raise HTTPBadRequest('validation error')
 
-    @view_config(route_name='augus.augus_venue.complete', request_method='GET')
-    def complete(self):
+    @view_config(route_name='augus.augus_venue.complete_download', request_method='GET')
+    def complete_download(self):
         augus_venue = self.context.augus_venue
         res = Response()
         venue_response = VenueSyncResponse(customer_id=CUSTOMER_ID,
@@ -185,6 +185,19 @@ class AugusVenueView(_AugusBaseView):
         venue_response.append(record)
         AugusExporter.exportfp(venue_response, res)
         return res
+
+
+    @view_config(route_name='augus.augus_venue.complete', request_method='GET')
+    def complete(self):
+        augus_venue = self.context.augus_venue
+        augus_venue.reserved_at = datetime.datetime.now()
+        augus_venue.save()
+        self.request.session.flash(u'オーガス会場の連携完了通知を予約しました')
+        url = self.request.route_path('augus.augus_venue.show',
+                                      augus_venue_code=self.context.augus_venue_code,
+                                      augus_venue_version=self.context.augus_venue_version,
+        )
+        return HTTPFound(url)
 
 
 @view_defaults(route_name='augus.events.show', decorator=with_bootstrap, permission='event_editor')
