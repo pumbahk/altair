@@ -169,14 +169,16 @@ column_label = HH.label_text_for(column)
 % endif
 </%def>
 
-<%def name="help(field, text)">
-  <%
-    return u'''
-      <span class="help-inline">
-        <a href="#" rel="popover" data-original-title="%s" data-content="%s" >
-          <i class="icon-question-sign"></i>
-        </a>
-      </span>
-    ''' % (field.label.text, text)
-  %>
+<%def name="help(field, text=None)">
+<%
+  if text is None and hasattr(field, 'help'):
+      text = field.help
+  return u'''
+    <span class="help-inline">
+      <a href="#" rel="popover" data-original-title="%s" data-content="%s" >
+        <i class="icon-question-sign"></i>
+      </a>
+    </span>
+  ''' % (field.label.text, text)
+%>
 </%def>

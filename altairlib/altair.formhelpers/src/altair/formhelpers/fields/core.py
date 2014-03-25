@@ -29,12 +29,14 @@ def _gen_field_init(klass):
     def __init__(self, label=None, *args, **kwargs):
         _form  = kwargs.pop('_form', None)
         hide_on_new = kwargs.pop('hide_on_new', False)
+        help = kwargs.pop('help', None)
         raw_input_filters = kwargs.pop('raw_input_filters', [])
         if callable(label):
             label = label()
         super(klass, self).__init__(label, *args, **kwargs)
         self.form = _form
         self.hide_on_new = hide_on_new
+        self.help = help
         self.raw_input_filters = raw_input_filters
         for base in self.__class__.__bases__[1:]:
             if hasattr(base, '__mixin_init__'):

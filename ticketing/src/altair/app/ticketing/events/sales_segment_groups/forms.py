@@ -53,6 +53,16 @@ class SalesSegmentGroupForm(OurForm):
         if 'new_form' in kwargs:
             self.reporting.data = True
 
+        self.public_kind = [
+            SalesSegmentKindEnum.normal.k,
+            SalesSegmentKindEnum.early_firstcome.k,
+            SalesSegmentKindEnum.added_sales.k,
+            SalesSegmentKindEnum.early_lottery.k,
+            SalesSegmentKindEnum.added_lottery.k,
+            SalesSegmentKindEnum.first_lottery.k,
+            SalesSegmentKindEnum.sales_counter.k
+            ]
+
     def _get_translations(self):
         return Translations()
 
@@ -63,11 +73,20 @@ class SalesSegmentGroupForm(OurForm):
     event_id = HiddenField(
         validators=[Required()]
     )
-    kind = SelectField(
+    kind = OurSelectField(
         label=u'種別',
         validators=[Required()],
         choices=[(k, getattr(SalesSegmentKindEnum, k).v) for k in SalesSegmentKindEnum.order.v],
         coerce=str,
+        help=u'''
+          この販売区分の用途を指定します。<br />
+          ・販売用途<br />
+          　一般発売, 先行先着, 追加発売, 窓口販売<br />
+          ・抽選用途<br />
+          　先行抽選, 追加抽選, 最速抽選<br />
+          ・インナー等一般公開しないもの<br />
+          　当日券, 関係者, その他
+        '''
     )
     name = TextField(
         label=u'表示名',
