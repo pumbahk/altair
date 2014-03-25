@@ -6,7 +6,6 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from pyramid.decorator import reify
 
-
 class ChoosablePerformance(object):
     def __init__(self, request, operator):
         self.request = request
