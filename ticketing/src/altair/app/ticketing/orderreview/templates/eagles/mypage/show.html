@@ -36,9 +36,11 @@
 </%def>
 
 <%def name="render_orders(orders)">
+<div id="mypageHistory">
+  <div class="inner">
+
   % for order in orders:
-    <div id="mypageHistory">
-        <div>
+        <div class="box">
             <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/images/eagles/mypage/' + h.get_order_status_image(order))}" alt="${h.get_order_status(order)}" width="60" height="60" /></p>
             <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/images/eagles/mypage/' + h.get_payment_status_image(order))}" alt="${h.get_payment_status(order)}" width="60" height="60" /></p>
             <dl>
@@ -50,9 +52,14 @@
               </form>
             </dl>
         </div>
-    </div>
   % endfor
+
+  </div>
+</div>
+
+<div style="text-align: right">
   ${render_pager(orders)}
+</div>
 </%def>
 
 <%def name="render_pager(result)">
