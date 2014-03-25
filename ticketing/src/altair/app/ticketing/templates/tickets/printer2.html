@@ -249,6 +249,7 @@ function init(tags, progressHandlers, uiUpdater) {
   var $showUnmaskedOnly = tags['showUnmaskedOnly'];
   var $maskCheckedEntries = tags['maskCheckedEntries'];
   var $unmaskCheckedEntries = tags['unmaskCheckedEntries'];
+  var $selectAll = tags['selectAll'];
 
   function disableUI() {
     $doPrint.blur();
@@ -471,6 +472,13 @@ function init(tags, progressHandlers, uiUpdater) {
       }
     }
 
+    function onSelectAllClicked(e) {
+      $queueEntryTable.find('input[name="queueId"]').each(function (_, n) {
+        var $n = $(n);
+        $n.attr('checked', $n.attr('checked') ? null: 'checked');
+      });
+    }
+
     function getCheckedQueueIds(e) {
       var _queueIds = [];
       $(e.target).closest('form').find('input[name="queueId"]:checked').each(function (_, checkbox) {
@@ -630,6 +638,7 @@ function init(tags, progressHandlers, uiUpdater) {
     $showUnmaskedOnly.change(onShowUnmaskedOnlyChange);
     $unmaskCheckedEntries.click(onUnmaskCheckedEntriesClicked);
     $maskCheckedEntries.click(onMaskCheckedEntriesClicked);
+    $selectAll.click(onSelectAllClicked);
     refreshPrintServices();
     refreshPageFormats();
     refreshTicketFormats();
@@ -741,7 +750,7 @@ ${ch.breadcrumbs(
   <div class="scrollable">
     <table class="table" id="queue-entries">
       <thead>
-        <th class="c">✔</th>
+        <th class="c"><a id="select-all">✔</a></th>
         <th class="page">ページ</th>
         <th class="order-no">注文番号</th>
         <th class="seat-name">座席番号</th>
@@ -778,7 +787,8 @@ $(function () {
       doPrint: $doPrint,
       showUnmaskedOnly: $('#show-unmasked-only'),
       maskCheckedEntries: $('#btn-mask-checked-entries'),
-      unmaskCheckedEntries: $('#btn-unmask-checked-entries')
+      unmaskCheckedEntries: $('#btn-unmask-checked-entries'),
+      selectAll: $('#select-all')
     },
     {
       start: function () {
