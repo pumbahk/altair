@@ -15,7 +15,7 @@ from altair.formhelpers import (
     DateTimeField, DateField, Max, OurDateWidget, OurDateTimeWidget,
     CheckboxMultipleSelect, BugFreeSelectField, BugFreeSelectMultipleField,
     Required, after1900, NFKC, Zenkaku, Katakana,
-    strip_spaces, ignore_space_hyphen)
+    strip_spaces, ignore_space_hyphen, OurForm)
 from altair.app.ticketing.core.models import (Organization, PaymentMethod, DeliveryMethod, SalesSegmentGroup, PaymentDeliveryMethodPair,
                                    SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
 from altair.app.ticketing.cart.schemas import ClientForm
@@ -1054,21 +1054,24 @@ class SendingMailForm(Form):
         ]
     )
 
-class PreviewTicketSelectForm(Form):
-    ticket_format_id = SelectField(
+class TicketFormatSelectionForm(OurForm):
+    ticket_format_id = BugFreeSelectField(
         label=u"チケット様式", 
         choices=[], 
+        coerce=long,
         validators=[Optional()],
-    )
-    
-    item_id = HiddenField(
     )
 
     def __init__(self, *args, **kwargs):
-        super(type(self), self).__init__(*args, **kwargs)
-        ticket_formats = kwargs.get('ticket_formats')
-        if ticket_formats:
-            self.ticket_format_id.choices = [(t.id,  t.name) for t in ticket_formats]
+        context = kwargs.pop('context')
+        super(TicketFormatSelectionForm, self).__init__(*args, **kwargs)
+        self.context = context
+        available_ticket_formats = context.available_ticket_formats
+        self.ticket_format_id.choices = [(unicode(t.id),  t.name) for t in available_ticket_formats]
+
+        if self.ticket_format_id.data is None and self.context.default_ticket_format is not None:
+            self.ticket_format_id.data = self.context.default_ticket_format.id
+
 
 class CheckedOrderTicketChoiceForm(Form):
     ticket_format_id = SelectField(
@@ -1141,4 +1144,3 @@ def OrderMemoEditFormFactory(N, memo_field_name_fmt="memo_on_order{}",
         return result
     attrs["get_result"] = get_result
     return type("OrderMemoEditForm", (Form, ), attrs)
-

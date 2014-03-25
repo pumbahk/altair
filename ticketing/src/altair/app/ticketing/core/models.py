@@ -3472,8 +3472,11 @@ class TicketCover(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     ## あとで伝搬サポートした時に移動
     @classmethod
-    def get_from_order(cls, order):
-        return TicketCover.query.filter_by(organization_id=order.organization_id).first() #todo: DeliveryMethod?
+    def get_from_order(cls, order, ticket_format_id=None):
+        q = TicketCover.query.filter_by(organization_id=order.organization_id)
+        if ticket_format_id is not None:
+            q = q.join(TicketCover.ticket).filter(Ticket.ticket_format_id == ticket_format_id)
+        return q.first() #todo: DeliveryMethod?
 
 class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundle"
