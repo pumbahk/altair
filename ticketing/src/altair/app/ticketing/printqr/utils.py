@@ -49,6 +49,18 @@ def order_and_history_from_qrdata(qrdata):
                  orm.joinedload(TicketPrintHistory.seat))
     return qs.first()
 
+def order_from_token(token, order):
+    qs =  DBSession.query(Order, OrderedProductItemToken)\
+        .filter(OrderedProductItemToken.id == token)\
+        .filter(OrderedProductItemToken.ordered_product_item_id==OrderedProductItem.id)\
+        .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
+        .filter(OrderedProduct.order_id == Order.id)\
+        .filter(Order.order_no == order)\
+        .options(orm.joinedload(Order.performance), 
+                 orm.joinedload(Order.shipping_address), 
+                 orm.joinedload(OrderedProductItemToken.seat))
+    return qs.first()
+
 def verify_order(order, event_id="*"):
     performance = order.performance
     if event_id != "*" and str(performance.event_id) != str(event_id):
