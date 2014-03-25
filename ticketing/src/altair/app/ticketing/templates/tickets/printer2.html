@@ -439,6 +439,7 @@ function init(tags, progressHandlers, uiUpdater) {
           uiUpdater({
             allPrinted: queueIds.length == 0
           });
+          onShowUnmaskedOnlyChange();
         }
       });
     }
@@ -465,7 +466,7 @@ function init(tags, progressHandlers, uiUpdater) {
     }
 
     function onShowUnmaskedOnlyChange(e) {
-      if (e.target.checked) {
+      if ($showUnmaskedOnly.attr('checked')) {
         $queueEntryTable.find('tr.masked').attr('style', 'display:none');
       } else {
         $queueEntryTable.find('tr.masked').attr('style', null);
