@@ -20,6 +20,7 @@ from sqlalchemy.sql.expression import asc, desc
 from sqlalchemy.orm import joinedload, noload, aliased, undefer
 
 from altair.pyramid_assets import get_resolver
+from altair.pyramid_assets.data import DataSchemeAssetDescriptor
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
 
 from altair.app.ticketing.models import DBSession
@@ -54,6 +55,10 @@ class VenueSiteDrawingHandler(object):
             if site._drawing_url is not None:
                 logger.debug(u'using site._drawing_url (=%s)' % site._drawing_url)
                 drawing = get_resolver(request.registry).resolve(site._drawing_url)
+            else:
+                # ダミー会場図だった
+                drawing = DataSchemeAssetDescriptor('<?xml version="1.0" ?><svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 1 1" width="1" height="1" />', 'image/svg+xml', [], None)
+
         if drawing is None:
             return Response(status_code=404)
         else:
