@@ -1,14 +1,14 @@
 """create_checkin_token_reservation
 
 Revision ID: 2b70bbe205d5
-Revises: 1964706e096b
+Revises: 4a89e94a84d9
 Create Date: 2014-03-14 10:07:00.120366
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '2b70bbe205d5'
-down_revision = '1964706e096b'
+down_revision = '4a89e94a84d9'
 
 from alembic import op
 import sqlalchemy as sa
