@@ -26,9 +26,14 @@ def delivery_type_from_built_dict(dict_):
             return "sej"
         return "other"
     except (KeyError, ValueError),  e:
-        logger.warn("orderes: preview ticket: %s" % e)
+        logger.warn("orders: preview ticket: %s" % e)
         return "other"
 
+def guess_preview_type_from_ticket_format(ticket_format):
+    if any(int(delivery_method.delivery_plugin_id) == int(SEJ_DELIVERY_PLUGIN_ID) for delivery_method in ticket_format.delivery_methods):
+        return 'sej'
+    else:
+        return 'other'
 
 def item_ticket_pairs(order, ticket_dict=None, ticket=None):
     for ordered_product in order.items:
@@ -40,8 +45,8 @@ def item_ticket_pairs(order, ticket_dict=None, ticket=None):
                 continue
             yield ordered_product_item, ticket
 
-def enqueue_cover(operator, order):
-    cover = TicketCover.get_from_order(order)
+def enqueue_cover(operator, order, ticket_format_id=None):
+    cover = TicketCover.get_from_order(order, ticket_format_id)
     if cover is None:
         logger.info("cover is not found. order = {order.id} organization_id = {operator.organization_id}".format(order=order, operator=operator))
         return
@@ -125,3 +130,4 @@ def compare_by_comfortable_order((seat, dicts_)):
 def comfortable_sorted_built_dicts(ordered_product_item):
     dicts = build_dicts_from_ordered_product_item(ordered_product_item, ticket_number_issuer=NumberIssuer())
     return sorted(dicts, key=compare_by_comfortable_order)
+

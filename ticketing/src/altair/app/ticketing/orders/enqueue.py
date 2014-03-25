@@ -21,20 +21,21 @@ from .utils import (
     )
 from altair.metadata.api import with_provided_values_iterator
 
-def get_enqueue_each_print_action(order, candidate_id_list):
+def get_enqueue_each_print_action(order, ticket_format_id, candidate_id_list):
     #token@seat@ordered_product_item.id@ticket.id
     if not candidate_id_list:
-        return DummyEachPrintByToken(order, candidate_id_list)
+        return DummyEachPrintByToken(order, ticket_format_id, candidate_id_list)
     elif candidate_id_list[0][0] == None:
-        return EachPrintWithoutToken(order, candidate_id_list)
+        return EachPrintWithoutToken(order, ticket_format_id, candidate_id_list)
     else:
-        return EachPrintWithToken(order, candidate_id_list)
+        return EachPrintWithToken(order, ticket_format_id, candidate_id_list)
 
 
 
 class DummyEachPrintByToken(object):
-    def __init__(self, order, candidate_id_list):
+    def __init__(self, order, ticket_format_id, candidate_id_list):
         self.order = order
+        self.ticket_format_id = ticket_format_id
         self.candidate_id_list = candidate_id_list
 
     def enqueue(self, operator):
@@ -48,7 +49,8 @@ def counting(xs):
     return c
 
 class TicketMaterialCounter(object):
-    def __init__(self, candidate_id_list):
+    def __init__(self, ticket_format_id, candidate_id_list):
+        self.ticket_format_id = ticket_format_id
         self.candidate_id_list = candidate_id_list
         self.token_id_list, self.seat_id_list, self.ordered_product_item_id_list, self.ticket_id_list = zip(*candidate_id_list)
 
@@ -66,16 +68,19 @@ class TicketMaterialCounter(object):
 
     @reify
     def tickets(self):
-        return Ticket.query.filter(Ticket.id.in_(self.ticket_id_list)).all()
+        q = Ticket.query.filter(Ticket.id.in_(self.ticket_id_list))
+        if self.ticket_format_id is not None:
+            q = q.filter(Ticket.ticket_format_id == self.ticket_format_id)
+        return q.all()
 
     @reify
     def seats(self):
         return Seat.query.filter(Seat.id.in_(self.seat_id_list)).all()
 
 class EachPrintWithToken(object):
-    def __init__(self, order, candidate_id_list, mcounter_impl=TicketMaterialCounter, issuer=None):
+    def __init__(self, order, ticket_format_id, candidate_id_list, mcounter_impl=TicketMaterialCounter, issuer=None):
         self.order = order
-        self.mcounter = mcounter_impl(candidate_id_list)
+        self.mcounter = mcounter_impl(ticket_format_id, candidate_id_list)
         self.issuer = issuer or NumberIssuer()
 
     def enqueue(self, operator):
@@ -100,9 +105,9 @@ class EachPrintWithToken(object):
                           seat=seat_dict.get(seat_id), issuer=self.issuer)
             
 class EachPrintWithoutToken(object):
-    def __init__(self, order, candidate_id_list, mcounter_impl=TicketMaterialCounter, issuer=None):
+    def __init__(self, order, ticket_format_id, candidate_id_list, mcounter_impl=TicketMaterialCounter, issuer=None):
         self.order = order
-        self.mcounter = mcounter_impl(candidate_id_list)
+        self.mcounter = mcounter_impl(ticket_format_id, candidate_id_list)
         self.issuer = issuer or NumberIssuer()
 
     def _with_serial_and_seat(self, ordered_product,  ordered_product_item):
@@ -169,8 +174,9 @@ class EachPrintWithoutToken(object):
 
 ##
 class JoinedObjectsForProductItemDependentsProvider(object):
-    def __init__(self, objs):
+    def __init__(self, objs, ticket_format_id=None):
         self.objs = objs
+        self.ticket_format_id = ticket_format_id
 
     @property
     def ordered_product_item_id_list(self):
@@ -218,7 +224,7 @@ class JoinedObjectsForProductItemDependentsProvider(object):
                 seat_list.append(((seat, token), []))
             else:
                 if not ticket_bundle.id in ticket_cache:
-                    ticket_cache[ticket_bundle.id] = list(ApplicableTicketsProducer.from_bundle(ticket_bundle).will_issued_by_own_tickets())
+                    ticket_cache[ticket_bundle.id] = list(ApplicableTicketsProducer.from_bundle(ticket_bundle).all(format_id=self.ticket_format_id))
                 seat_list.append(((seat, token), ticket_cache[ticket_bundle.id]))
         return r
 
@@ -253,7 +259,7 @@ class JoinedObjectsForProductItemDependentsProvider(object):
                         tickets = []
                     else:
                         if not ticket_bundle.id in ticket_cache:
-                            ticket_cache[ticket_bundle.id] = list(ApplicableTicketsProducer.from_bundle(ticket_bundle).will_issued_by_own_tickets())
+                            ticket_cache[ticket_bundle.id] = list(ApplicableTicketsProducer.from_bundle(ticket_bundle).all(format_id=self.ticket_format_id))
                         tickets = ticket_cache[ticket_bundle.id]
                     seat_list.append(((None, None), tickets))
             else:

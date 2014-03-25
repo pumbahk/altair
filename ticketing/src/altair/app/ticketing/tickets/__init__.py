@@ -43,6 +43,7 @@ def includeme(config):
     config.add_route('tickets.queue.unmask', '/queue/unmask', factory=".resources.TicketsResource")
 
     config.add_route('tickets.printer', '/print/printer')
+    config.add_route('tickets.printer2', '/print/printer2')
     config.add_route('tickets.printer.api.formats', '/print/formats')
     config.add_route('tickets.printer.api.enqueue', '/print/enqueue')
     config.add_route('tickets.printer.api.ticket', '/print/ticket/{event_id}/{id:.*}')
@@ -50,6 +51,9 @@ def includeme(config):
     config.add_route('tickets.printer.api.history', '/print/history')
     config.add_route('tickets.printer.api.peek', '/print/peek')
     config.add_route('tickets.printer.api.dequeue', '/print/dequeue')
+    config.add_route('tickets.printer.api.list', '/print/list')
+    config.add_route('tickets.printer.api.mask', '/print/unmask')
+    config.add_route('tickets.printer.api.unmask', '/print/mask')
 
     config.scan('.views')
     config.include(".preview")

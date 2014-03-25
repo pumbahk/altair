@@ -27,4 +27,10 @@ public interface MinimumAppService {
 	public List<Page> getPages();
 
 	public void addListenerForPages(PropertyChangeListener listener);
+
+	public boolean getPrintingStatus();
+
+	public void addListenerForPrintingStatus(PropertyChangeListener listener);
+	
+	public void addPageEventListener(PageEventListener listener);
 }

@@ -1,6 +1,7 @@
 package jp.ticketstar.ticketing.printing.gui;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.awt.BorderLayout;
@@ -18,13 +19,15 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadFactory;
-import java.util.logging.Logger;
+import java.util.logging.LogManager;
 
 import javax.print.PrintService;
 import javax.swing.ImageIcon;
@@ -53,12 +56,13 @@ import jp.ticketstar.ticketing.printing.AppModel;
 import jp.ticketstar.ticketing.printing.JGVTComponent;
 import jp.ticketstar.ticketing.printing.OurPageFormat;
 import jp.ticketstar.ticketing.printing.Page;
+import jp.ticketstar.ticketing.printing.PageEventListener;
 import jp.ticketstar.ticketing.printing.PageSetModel;
 import jp.ticketstar.ticketing.printing.StandardAppService;
 import jp.ticketstar.ticketing.printing.TicketFormat;
 import jp.ticketstar.ticketing.URLConnectionFactory;
+import jp.ticketstar.ticketing.printing.gui.liveconnect.JSObjectPageEventListenerProxy;
 import jp.ticketstar.ticketing.printing.gui.liveconnect.JSObjectPropertyChangeListenerProxy;
-import jp.ticketstar.ticketing.gvt.font.FontFamilyResolverPatch;
 
 import org.apache.batik.swing.gvt.Overlay;
 
@@ -143,21 +147,21 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 				gvtComponent.setName(page.getName());
 				panel.add(gvtComponent, page.getName());
 			}
-				pageSetModel.getPages().addListDataListener(new ListDataListener() {
-					public void contentsChanged(ListDataEvent evt) {}
+			pageSetModel.getPages().addListDataListener(new ListDataListener() {
+				public void contentsChanged(ListDataEvent evt) {}
 
-					public void intervalAdded(ListDataEvent evt) {}
+				public void intervalAdded(ListDataEvent evt) {}
 
-					public void intervalRemoved(ListDataEvent evt) {
-						if (panel == null)
-							return;
-						final Component[] pageComponents = panel.getComponents();
-						for (int i = evt.getIndex0(), j = evt.getIndex1(); i <= j; i++) {
-							panel.remove(pageComponents[i]);
-						}
-						panel.validate();
+				public void intervalRemoved(ListDataEvent evt) {
+					if (panel == null)
+						return;
+					final Component[] pageComponents = panel.getComponents();
+					for (int i = evt.getIndex0(), j = evt.getIndex1(); i <= j; i++) {
+						panel.remove(pageComponents[i]);
 					}
-				});
+					panel.validate();
+				}
+			});
 		}
 		public void runWithoutPreview(){
 			panel.add(noPreviewImage,"no-preview");
@@ -378,6 +382,17 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	}
 
 	public void init() {
+		/*
+		try {
+			LogManager.getLogManager().readConfiguration(new java.io.ByteArrayInputStream("jp.ticketstar.handlers=java.util.logging.FileHandler\njp.ticketstar.level=FINEST\njava.util.logging.FileHandler.level=FINEST\njava.util.logging.FileHandler.pattern=/tmp/applet.log\njava.util.logging.FileHandler.formatter = java.util.logging.SimpleFormatter".getBytes("ASCII")));
+		} catch (SecurityException e1) {
+			e1.printStackTrace();
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		*/
 		config = getConfiguration();
 		model = new AppAppletModel();
 		appServiceImpl = new AppAppletServiceImpl(this, model);
@@ -392,7 +407,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		populateModel();
 		appServiceImpl.setAppWindow(this);
 		if (!config.embedded)
-			appServiceImpl.doLoadTicketData();		
+			appServiceImpl.doLoadTicketData(null);		
 
 		if (config.callback != null) {
 			try {
@@ -512,6 +527,30 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 
 	public static PropertyChangeListener createPropertyChangeListenerProxy(JSObject jsobj) {
 		return new JSObjectPropertyChangeListenerProxy(jsobj);
+	}
+
+	public static PageEventListener createPageEventListenerProxy(JSObject jsobj) {
+		return new JSObjectPageEventListenerProxy(jsobj);
+	}
+
+	public static List<?> jsIntegerArrayToList(Integer[] jsobj) {
+		return Arrays.asList(jsobj);
+	}
+
+	public static List<?> jsDoubleArrayToList(Double[] jsobj) {
+		return Arrays.asList(jsobj);
+	}
+
+	public static List<?> jsStringArrayToList(String[] jsobj) {
+		return Arrays.asList(jsobj);
+	}
+
+	public static List<?> jsObjectArrayToList(Object[] jsobj) {
+		return Arrays.asList(jsobj);
+	}
+
+	public static void log(String level, String msg) {
+		java.util.logging.Logger.getLogger(AppApplet.class.getName()).log(java.util.logging.Level.parse(level), msg);
 	}
 
 	public Thread newThread(final Runnable runnable) {

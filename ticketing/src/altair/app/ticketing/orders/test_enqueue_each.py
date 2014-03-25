@@ -5,7 +5,8 @@ from pyramid.testing import DummyResource as O
 
 class FakeMaterialCounter(object): 
     """token@seat@ordered_product_item.id@ticket.id"""
-    def __init__(self, candidate_id_list, ordered_product_items=[], tokens=[], tickets=[], seats=[], item_children_counter={}):
+    def __init__(self, ticket_format_id, candidate_id_list, ordered_product_items=[], tokens=[], tickets=[], seats=[], item_children_counter={}):
+        self.ticket_format_id = ticket_format_id
         self.token_id_list, self.seat_id_list, self.ordered_product_item_id_list, self.ticket_id_list = zip(*candidate_id_list)
         self.ordered_product_items = ordered_product_items
         self.tokens = tokens
@@ -28,7 +29,10 @@ class DummyTicketsProducer(object):
         self.bundle = bundle 
         self.tickets = tickets
 
-    def will_issued_by_own_tickets(self):
+    def will_issued_by_own_tickets(self, format_id=None):
+        return self.tickets
+
+    def all(self, format_id=None):
         return self.tickets
 
 class DescribeProductItemTreeTests(unittest.TestCase):
@@ -127,7 +131,7 @@ class EnqueueWithTokenTests(unittest.TestCase):
                                 seats=[Seat(id="seat1"), Seat(id="seat2")], 
                                 item_children_counter={"item1": 2})
         order = Order()
-        target = self._makeOne(order, candidate_id_list, mcounter_impl=mcounter_impl, issuer="issuer")
+        target = self._makeOne(order, None, candidate_id_list, mcounter_impl=mcounter_impl, issuer="issuer")
         D = target.mcounter
         operator = Operator()
         with mock.patch("altair.app.ticketing.orders.enqueue.enqueue_token", autospec=True) as m:
@@ -146,7 +150,7 @@ class EnqueueWithTokenTests(unittest.TestCase):
                                 seats=[], 
                                 item_children_counter={"item1": 1})
         order = Order()
-        target = self._makeOne(order, candidate_id_list, mcounter_impl=mcounter_impl, issuer="issuer")
+        target = self._makeOne(order, None, candidate_id_list, mcounter_impl=mcounter_impl, issuer="issuer")
         D = target.mcounter
         operator = Operator()
         with mock.patch("altair.app.ticketing.orders.enqueue.enqueue_token", autospec=True) as m:
@@ -178,7 +182,7 @@ class EnqueueWithoutTokenTests(unittest.TestCase):
                                 ordered_product_items=[item], 
                                 tickets=[Ticket(id="ticket1")], 
                                 item_children_counter={"item1": 2})
-        target = self._makeOne(order, candidate_id_list, mcounter_impl=mcounter_impl)
+        target = self._makeOne(order, None, candidate_id_list, mcounter_impl=mcounter_impl)
         
         #item.tokens, using_tokens
         with mock.patch("altair.app.ticketing.orders.enqueue.OrderedProductItemToken", new_callable=lambda : O, ):
@@ -211,7 +215,7 @@ class EnqueueWithoutTokenTests(unittest.TestCase):
                                 ordered_product_items=[item], 
                                 tickets=[Ticket(id="ticket1")], 
                                 item_children_counter={"item1": 2})
-        target = self._makeOne(order, candidate_id_list, mcounter_impl=mcounter_impl)
+        target = self._makeOne(order, None, candidate_id_list, mcounter_impl=mcounter_impl)
         
         #item.tokens, using_tokens
         with mock.patch("altair.app.ticketing.orders.enqueue.OrderedProductItemToken", new_callable=lambda : O):
@@ -241,7 +245,7 @@ class EnqueueWithoutTokenTests(unittest.TestCase):
                                 ordered_product_items=[item], 
                                 tickets=[Ticket(id="ticket1"), Ticket(id="ticket2")], 
                                 item_children_counter={"item1": 2})
-        target = self._makeOne(order, candidate_id_list, mcounter_impl=mcounter_impl, issuer="issuer")
+        target = self._makeOne(order, None, candidate_id_list, mcounter_impl=mcounter_impl, issuer="issuer")
         tickets_copy = target.mcounter.tickets[:]
         
         operator = Operator()
@@ -269,7 +273,7 @@ class EnqueueWithoutTokenTests(unittest.TestCase):
                                 tickets=[Ticket(id="ticket1"), Ticket(id="ticket2")], 
                                 seats=[Seat(id="seat1"), Seat(id="seat2")], 
                                 item_children_counter={"item1": 2})
-        target = self._makeOne(order, candidate_id_list, mcounter_impl=mcounter_impl, issuer="issuer")
+        target = self._makeOne(order, None, candidate_id_list, mcounter_impl=mcounter_impl, issuer="issuer")
         D = target.mcounter
         operator = Operator()
         with mock.patch("altair.app.ticketing.orders.enqueue.enqueue_token", autospec=True) as m:
