@@ -63,7 +63,7 @@
     <button class="btn" type="submit"><i class="icon-gift"></i>選択した予約を配送済に変更</button>
   </form>
 </div>
-<%include file="./_modal_ticket_format.htmL" args="form=ticket_format_form, id='modal-ticket-format', endpoints=endpoints"/>
+<%include file="./_modal_ticket_format.html" args="form=ticket_format_form, id='modal-ticket-format', endpoints=endpoints"/>
 <script type="text/javascript">
   $('#btn-add-to-print-queue').click(function () {
     show_modal_enqueue_orders();
