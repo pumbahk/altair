@@ -146,7 +146,7 @@ def refresh_order(order, update_reason, api_key, api_url):
         get_tickets(order),
         lambda idx: None
         )
-    for k, v in build_sej_args(sej_order.payment_type, order, sej_order.created_at).items():
+    for k, v in build_sej_args(sej_order.payment_type, order, order.created_at).items():
         setattr(new_sej_order, k, v)
     new_sej_order.total_ticket_count = new_sej_order.ticket_count = len(new_sej_order.tickets)
 
