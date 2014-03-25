@@ -116,7 +116,7 @@ background-color:#dbced0;
 }
 
 .header {
-background:#FFFFFF;
+background:#D6A57D;
 height:82px;
 width:100%;
 position:relative;
@@ -305,20 +305,20 @@ background-color:#fb9e25;
 }
 
 .historySearchBtn {
-box-shadow:0 1px 0 0 #007BD6 inset;
+box-shadow:0 1px 0 0 #533B23 inset;
 background:0;
--moz-box-shadow:inset 0px 1px 0px 0px #007BD6;
--webkit-box-shadow:inset 0px 1px 0px 0px #007BD6;
-box-shadow:inset 0px 1px 0px 0px #007BD6;
-background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #005289), color-stop(1, #0C3A66) );
-background:-moz-linear-gradient( center top, #005289 5%, #0C3A66 100% );
-filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#005289', endColorstr='#0C3A66');
-background-color:#D7000F;
+-moz-box-shadow:inset 0px 1px 0px 0px #533B23;
+-webkit-box-shadow:inset 0px 1px 0px 0px #533B23;
+box-shadow:inset 0px 1px 0px 0px #533B23;
+background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #533B23), color-stop(1, #533B23) );
+background:-moz-linear-gradient( center top, #533B23 5%, #533B23 100% );
+filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#533B23', endColorstr='#533B23');
+background-color:#533B23;
 -moz-border-radius:6px;
 -webkit-border-radius:6px;
 border-radius:6px;
-border:1px solid #333;
-text-shadow:1px 1px 0px #333;
+border:1px solid #533B23;
+text-shadow:1px 1px 0px #533B23;
 display:inline-block;
 color:#fff;
 font-size:12px;
@@ -329,10 +329,10 @@ padding:6px 70px;
 }
 
 .historySearchBtn:hover {
-background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #007BD6), color-stop(1, #0C3A66) );
-background:-moz-linear-gradient( center top, #007BD6 5%, #0C3A66 100% );
-filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#007BD6', endColorstr='#0C3A66');
-background-color:#007BD6;
+background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #533B23), color-stop(1, #533B23) );
+background:-moz-linear-gradient( center top, #533B23 5%, #533B23 100% );
+filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#533B23', endColorstr='#533B23');
+background-color:#533B23;
 color:#fff;
 }
 
