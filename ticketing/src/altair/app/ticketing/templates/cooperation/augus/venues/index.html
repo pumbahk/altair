@@ -21,6 +21,9 @@
 <div class="container">
   <button class="btn" onclick="javascript: enable_upload_dialog();">
     <i class="glyphicon icon-upload"></i>アップロード</button>
+  <button class="btn" onclick="javascript: enable_upload_speedy_dialog();">
+    <i class="glyphicon icon-upload"></i>アップロード(speedy)</button>
+
   <button class="btn" onclick="javascript: enable_download_dialog();">
     <i class="glyphicon icon-download"></i>ダウンロード</button>
 </div>
@@ -42,7 +45,7 @@
 </script>
 
 <div id="modal-augus-venue-download" class="modal hide">
-  <form method="GET" action="${request.route_path('augus.venue.download', venue_id=venue.id)}">  
+  <form method="GET" action="${request.route_path('augus.venue.download', venue_id=venue.id)}">
     <div class="modal-header">
       <h3>ダウンロード</h3>
     </div>
@@ -71,7 +74,7 @@
       <input type="submit" class="btn" value="アップロード"></input>
       <a href="#" class="btn" data-dismiss="modal">閉じる</a>
     </div>
-  </form>    
+  </form>
 </div>
 
 ${delete_modal()}
