@@ -35,6 +35,7 @@ def setup_components(config):
         (ITentativeVenueSite, ),
         IVenueSiteDrawingProviderAdapterFactory
         )
+    config.include('.views')
 
 def includeme(config):
     from .resources import VenueAdminResource

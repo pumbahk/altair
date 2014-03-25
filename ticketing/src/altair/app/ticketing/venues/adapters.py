@@ -2,8 +2,6 @@ import re
 import sys
 import logging
 import json
-import time
-from datetime import date, timedelta
 
 from zope.interface import implementer
 from zope.deprecation import deprecate
@@ -11,7 +9,7 @@ from altair.pyramid_boto.s3.assets import IS3KeyProvider
 from altair.pyramid_assets import get_resolver
 from altair.app.ticketing.utils import myurljoin
 from .interfaces import IVenueSiteDrawingProvider, IVenueSiteDrawingProviderAdapterFactory
-from .utils import is_drawing_compressed
+from .utils import is_drawing_compressed, get_s3_url
 
 logger = logging.getLogger(__name__)
 
@@ -115,13 +113,7 @@ class VenueSiteDrawingProviderAdapter(object):
                 retval = self.request.route_url('api.get_site_drawing', site_id=self.site.id)
             else:
                 if IS3KeyProvider.providedBy(drawing):
-                    key = drawing.get_key()
-                    headers = {}
-                    if is_drawing_compressed(drawing):
-                        headers['response-content-encoding'] = 'gzip'
-                    expire_date = date.today() + timedelta(days=2)
-                    expire_epoch = time.mktime(expire_date.timetuple())
-                    retval = key.generate_url(expires_in=expire_epoch, expires_in_absolute=True, response_headers=headers)
+                    retval = get_s3_url(drawing)
                 else:
                     retval = self.request.static_url(drawing.path)
             self._direct_drawing_url = retval
