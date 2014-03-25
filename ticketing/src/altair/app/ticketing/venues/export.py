@@ -22,6 +22,7 @@ class SeatCSV(object):
     # csv header
     seat_header = OrderedDict([
         ('id', u'座席ID'),
+        ('l0_id', u'l0_id'),
         ('seat_no', u'座席番号'),
         ('name', u'座席名'),
     ])
