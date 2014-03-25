@@ -18,6 +18,7 @@ from sqlalchemy.sql.expression import asc, desc
 from sqlalchemy.orm import joinedload, noload, aliased, undefer
 
 from altair.pyramid_assets import get_resolver
+from altair.pyramid_boto.s3.assets import IS3KeyProvider
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
@@ -26,25 +27,37 @@ from altair.app.ticketing.venues.forms import SiteForm
 from altair.app.ticketing.venues.export import SeatCSV
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.app.ticketing.fanstatic import with_bootstrap
+from .utils import is_drawing_compressed
 
 logger = logging.getLogger(__name__)
 
 @view_config(route_name="api.get_site_drawing", request_method="GET", permission='event_viewer')
 def get_site_drawing(context, request):
     site_id = long(request.matchdict.get('site_id'))
+    part = request.params.get('part', 'root.svg')
     site = Site.query \
         .join(Venue.site) \
         .filter_by(id=site_id) \
         .filter(Venue.organization_id==context.user.organization_id) \
         .distinct().one()
-    drawing_url = get_venue_site_adapter(request, site).drawing_url
-    if drawing_url is None:
+    drawing = get_venue_site_adapter(request, site).get_backend_drawing(part)
+    logger.debug(u'drawing=%r' % drawing)
+    if drawing is None:
+        if site._drawing_url is not None:
+            logger.debug(u'using site._drawing_url (=%s)' % site._drawing_url)
+            drawing = get_resolver(request.registry).resolve(site._drawing_url)
+    if drawing is None:
         return Response(status_code=404)
     else:
+        headers = {
+            'Cache-Control': 'max-age=3600 private', # hard-coded!
+            }
+        if is_drawing_compressed(drawing):
+            headers['Content-Encoding'] = 'gzip'
         return Response(
             status_code=200,
             content_type='image/svg',
-            body_file=get_resolver(request.registry).resolve(drawing_url).stream()
+            body_file=drawing.stream()
             )
 
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
