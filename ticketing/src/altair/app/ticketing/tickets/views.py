@@ -7,6 +7,7 @@ import webhelpers.paginate as paginate
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.sql import expression as sql_expr
 from datetime import datetime
 from lxml import etree
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -19,7 +20,7 @@ from ..models import DBSession
 from ..core.models import DeliveryMethod
 from ..core.models import TicketFormat, PageFormat, Ticket, TicketCover
 from ..core.models import TicketPrintQueueEntry, TicketPrintHistory
-from ..core.models import OrderedProductItemToken, OrderedProductItem, OrderedProduct, Order
+from ..core.models import OrderedProductItemToken, OrderedProductItem, OrderedProduct, Order, Seat, Product
 from . import forms
 from . import helpers
 from .utils import SvgPageSetBuilder, FallbackSvgPageSetBuilder, build_dict_from_ordered_product_item_token, _default_builder
@@ -664,11 +665,15 @@ class TicketPrinter(BaseView):
     def endpoints(self):
         return dict(
             (key, self.request.route_path('tickets.printer.api.%s' % key))
-            for key in ['formats', 'peek', 'dequeue']
+            for key in ['formats', 'peek', 'dequeue', 'list', 'unmask', 'mask', 'delete']
             )
 
     @view_config(route_name='tickets.printer', renderer='altair.app.ticketing:templates/tickets/printer.html')
     def printer(self):
+        return dict(endpoints=self.endpoints)
+
+    @view_config(route_name='tickets.printer2', renderer='altair.app.ticketing:templates/tickets/printer2.html')
+    def printer2(self):
         return dict(endpoints=self.endpoints)
 
     @view_config(route_name='tickets.printer', renderer='altair.app.ticketing:templates/tickets/printer.embedded.html', custom_predicates=(lambda c, r: '__embedded__' in r.GET,))
@@ -691,9 +696,13 @@ class TicketPrinter(BaseView):
         ticket_formats = []
         for ticket_format in DBSession.query(TicketFormat).filter_by(organization=self.context.organization):
             ticket_formats.append(ticket_format_to_dict(ticket_format))
-        return { u'status': u'success',
-                 u'data': { u'page_formats': page_formats_for_organization(self.context.organization),
-                            u'ticket_formats': ticket_formats } }
+        return {
+            u'status': u'success',
+            u'data': {
+                u'page_formats': page_formats_for_organization(self.context.organization),
+                u'ticket_formats': ticket_formats,
+                }
+            }
 
     @view_config(route_name='tickets.printer.api.ticket', renderer='json')
     def ticket(self):
@@ -709,8 +718,8 @@ class TicketPrinter(BaseView):
         return {
             u'status': 'success',
             u'data': {
-                u'ticket_formats': [ticket_format_to_dict(ticket_format) for ticket_format in dict((ticket.ticket_format.id, ticket.ticket_format) for ticket in tickets).itervalues()],
                 u'page_formats': page_formats_for_organization(self.context.organization),
+                u'ticket_formats': [ticket_format_to_dict(ticket_format) for ticket_format in dict((ticket.ticket_format.id, ticket.ticket_format) for ticket in tickets).itervalues()],
                 u'ticket_templates': [ticket_to_dict(ticket) for ticket in tickets]
                 }
             }
@@ -795,6 +804,7 @@ class TicketPrinter(BaseView):
         page_format_id = self.request.json_body['page_format_id']
         ticket_format_id = self.request.json_body['ticket_format_id']
         order_id = self.request.json_body.get('order_id')
+        queue_ids = self.request.json_body.get('queue_ids')
         page_format = DBSession.query(PageFormat).filter_by(id=page_format_id).one()
         ticket_format = DBSession.query(TicketFormat).filter_by(id=ticket_format_id).one()
         try:
@@ -803,9 +813,74 @@ class TicketPrinter(BaseView):
             logger.info(u'failed to create SvgPageSetBuilder', exc_info=sys.exc_info())
             builder = FallbackSvgPageSetBuilder(page_format.data, ticket_format.data)
         tickets_per_page = builder.tickets_per_page
-        for entry in TicketPrintQueueEntry.peek(self.context.user, ticket_format_id, order_id=order_id):
+        for entry in TicketPrintQueueEntry.peek(self.context.user, ticket_format_id=ticket_format_id, order_id=order_id, queue_ids=queue_ids):
             builder.add(etree.fromstring(entry.data['drawing']), entry.id, title=(entry.summary if tickets_per_page == 1 else None))
         return builder.root
+
+    @view_config(route_name='tickets.printer.api.list', request_method='POST', renderer='json')
+    def list(self):
+        page_format_id = self.request.json_body['page_format_id']
+        ticket_format_id = self.request.json_body['ticket_format_id']
+        include_masked = self.request.json_body.get('include_masked', False)
+        include_unmasked = self.request.json_body.get('include_unmasked', True)
+        order_id = self.request.json_body.get('order_id')
+        page_format = DBSession.query(PageFormat).filter_by(id=page_format_id).one()
+        ticket_format = DBSession.query(TicketFormat).filter_by(id=ticket_format_id).one()
+        try:
+            builder = SvgPageSetBuilder(page_format.data, ticket_format.data)
+        except Exception as e:
+            logger.info(u'failed to create SvgPageSetBuilder', exc_info=sys.exc_info())
+            builder = FallbackSvgPageSetBuilder(page_format.data, ticket_format.data)
+        tickets_per_page = builder.tickets_per_page
+        q = TicketPrintQueueEntry.query(
+            self.context.user,
+            ticket_format_id=ticket_format_id,
+            order_id=order_id,
+            include_masked=include_masked,
+            include_unmasked=include_unmasked) \
+            .outerjoin(TicketPrintQueueEntry.ordered_product_item) \
+            .outerjoin(OrderedProductItem.ordered_product) \
+            .outerjoin(OrderedProduct.order) \
+            .outerjoin(OrderedProduct.product) \
+            .outerjoin(TicketPrintQueueEntry.seat) \
+            .with_entities(
+                TicketPrintQueueEntry.id,
+                TicketPrintQueueEntry.summary,
+                TicketPrintQueueEntry.masked_at,
+                Seat.id,
+                Seat.name,
+                Product.id,
+                Product.name,
+                Order.order_no)
+        entries = []
+        index = 0
+        serial = 0
+        for queue_id, summary, masked_at, \
+                seat_id, seat_name, product_id, product_name, order_no in q:
+            unmasked = masked_at is None
+            entries.append({
+                u'index': index,
+                u'serial': serial,
+                u'page': (serial / tickets_per_page) if unmasked else None,
+                u'masked': not unmasked,
+                u'queue_id': queue_id, 
+                u'summary': summary,
+                u'seat_id': seat_id,
+                u'seat_name': seat_name,
+                u'product_id': product_id,
+                u'product_name': product_name,
+                u'order_no': order_no
+                })
+            index += 1
+            if unmasked:
+                serial += 1
+        return {
+            u'status': u'success',
+            u'data': json_safe_coerce({
+                u'tickets_per_page': tickets_per_page,
+                u'entries': entries,
+                })
+            }
 
     @view_config(route_name='tickets.printer.api.dequeue', request_method='POST', renderer='json')
     def dequeue(self):
@@ -823,6 +898,33 @@ class TicketPrinter(BaseView):
         else:
             return { u'status': u'error' }
 
+    @view_config(route_name='tickets.printer.api.mask', request_method='POST', renderer='json')
+    def mask(self):
+        now = datetime.now() # XXX
+        queue_ids = self.request.json_body['queue_ids']
+        DBSession.query(TicketPrintQueueEntry) \
+            .filter(TicketPrintQueueEntry.operator_id == self.context.user.id) \
+            .filter(TicketPrintQueueEntry.id.in_(queue_ids)) \
+            .update({'masked_at': now}, synchronize_session=False)
+        return self.list()
+
+    @view_config(route_name='tickets.printer.api.unmask', request_method='POST', renderer='json')
+    def unmask(self):
+        queue_ids = self.request.json_body['queue_ids']
+        DBSession.query(TicketPrintQueueEntry) \
+            .filter(TicketPrintQueueEntry.operator_id == self.context.user.id) \
+            .filter(TicketPrintQueueEntry.id.in_(queue_ids)) \
+            .update({'masked_at': None}, synchronize_session=False)
+        return self.list()
+
+    @view_config(route_name='tickets.printer.api.delete', request_method='POST', renderer='json')
+    def unmask(self):
+        queue_ids = self.request.json_body['queue_ids']
+        DBSession.query(TicketPrintQueueEntry) \
+            .filter(TicketPrintQueueEntry.operator_id == self.context.user.id) \
+            .filter(TicketPrintQueueEntry.id.in_(queue_ids)) \
+            .delete(synchronize_session=False)
+        return self.list()
 
 @view_defaults(decorator=with_bootstrap, permission="sales_counter")
 class QRReaderViewDemo(BaseView):

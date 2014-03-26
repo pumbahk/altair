@@ -13,6 +13,22 @@ from sqlalchemy.sql import functions as sqlf
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText, TIMESTAMP, Time
 from altair.app.ticketing.models import DBSession, Base
 from altair.saannotation import AnnotatedColumn
+from pyramid.i18n import TranslationString as _
+
+class CheckinTokenReservation(Base):
+    __tablename__ = "CheckinTokenReservation"
+    identity_id = sa.Column(Identifier, sa.ForeignKey("CheckinIdentity.id"), nullable=False)
+    identity = orm.relationship("CheckinIdentity", uselist=False)
+    token_id = sa.Column(Identifier, sa.ForeignKey("OrderedProductItemToken.id"), nullable=False, primary_key=True)
+    token = orm.relationship("OrderedProductItemToken", uselist=False)
+    expire_at = AnnotatedColumn(DateTime, _a_label=_(u'解放時間'), default=datetime.now, nullable=False)
+    deleted_at = sa.Column(TIMESTAMP, nullable=True, primary_key=True) ##不要？
+
+    __table_args__= (
+        sa.UniqueConstraint('token_id', 'deleted_at', name="ix_token_id_deleted_at"),
+    )
+
+
 
 class CheckinIdentity(Base):
     __tablename__ = 'CheckinIdentity'

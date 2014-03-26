@@ -126,7 +126,8 @@ class qr:
         buf.append(self.__pair("performance", data["performance"]))
         buf.append(self.__pair("order", data["order"]))
         buf.append(self.__pair("date", self.encdate(data["date"])))
-        buf.append(self.__pair("type", self.enc32m(data["type"])))
+        if data.has_key("type"):
+            buf.append(self.__pair("type", self.enc32m(data["type"])))
 #       buf.append(self.__pair("seat", data["seat"]))
         buf.append(self.__pair("seat", self.enc42(data["seat_name"])))
 #       logger.debug("".join(buf))
@@ -144,7 +145,8 @@ class qr:
             s = s[size:]
         
         d["date"] = self.decdate(d["date"])
-        d["type"] = self.__shift32m(list(d["type"]))
+        if d.has_key("type"):
+            d["type"] = self.__shift32m(list(d["type"]))
         d["seat_name"] = self.dec42(list(d["seat"]))
         return d
     

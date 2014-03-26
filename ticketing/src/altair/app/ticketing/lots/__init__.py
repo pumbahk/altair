@@ -13,6 +13,7 @@ from pyramid.tweens import INGRESS
 from pyramid_selectable_renderer import SelectableRendererSetup
 from pyramid_selectable_renderer.custom import ReceiveTemplatePathFormat, ReceiveTemplatePathCandidatesDict, SelectByRequestGen
 from altair.app.ticketing.core.api import get_organization
+from altair.app.ticketing.wsgi import direct_static_serving_filter_factory
 
 import sqlalchemy as sa
 import sqlahelper
@@ -195,6 +196,15 @@ def setup_mailtraverser(config):
     traverser = EmailInfoTraverser()
     reg.registerUtility(traverser, name="lots")
 
+STATIC_URL_PREFIX = '/static/'
+STATIC_URL_S3_PREFIX = '/lots/static/'
+STATIC_ASSET_SPEC = 'altair.app.ticketing.lots:static/'
+CART_STATIC_URL_PREFIX = '/c_static/'
+CART_STATIC_S3_URL_PREFIX = '/cart/static/'
+CART_STATIC_ASSET_SPEC = 'altair.app.ticketing.cart:static/'
+FC_AUTH_URL_PREFIX = '/fc_auth/static/'
+FC_AUTH_STATIC_ASSET_SPEC = "altair.app.ticketing.fc_auth:static/"
+
 def main(global_config, **local_config):
     """ ひとまず機能実装のため(本番も別インスタンスにするか未定) """
     settings = dict(global_config)
@@ -209,15 +219,13 @@ def main(global_config, **local_config):
 
     config = Configurator(settings=settings,
                           session_factory=session_factory)
-    config.add_static_view('static', 'static', cache_max_age=3600)
-    config.add_static_view('c_static', 'altair.app.ticketing.cart:static', cache_max_age=3600)
-
     config.include(".")
     config.include(".sendmail")
 
     ### includes altair.*
     config.include('altair.auth')
     config.include('altair.browserid')
+    config.include('altair.sqlahelper')
     config.include('altair.exclog')
 
     config.include("altair.cdnpath")
@@ -225,11 +233,17 @@ def main(global_config, **local_config):
     config.add_cdn_static_path(S3StaticPathFactory(
             settings["s3.bucket_name"], 
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
-            mapping={"altair.app.ticketing.cart:static/": "/cart/static/"}))
+            mapping={
+                FC_AUTH_STATIC_ASSET_SPEC: FC_AUTH_URL_PREFIX,
+                CART_STATIC_ASSET_SPEC: CART_STATIC_S3_URL_PREFIX,
+                }))
+    config.add_static_view(STATIC_URL_PREFIX, STATIC_ASSET_SPEC, cache_max_age=3600)
+    config.add_static_view(CART_STATIC_URL_PREFIX, CART_STATIC_ASSET_SPEC, cache_max_age=3600)
 
     config.include('altair.mobile')
 
     config.include('altair.rakuten_auth')
+    config.include('altair.app.ticketing.fc_auth')
     config.include('altair.app.ticketing.users')
     config.include('altair.app.ticketing.multicheckout')
     config.include('altair.app.ticketing.payments')
@@ -241,4 +255,10 @@ def main(global_config, **local_config):
     config.include('altair.pyramid_tz')
 
     config.set_authorization_policy(ACLAuthorizationPolicy())
-    return config.make_wsgi_app()
+    app = config.make_wsgi_app()
+
+    return direct_static_serving_filter_factory({
+        STATIC_URL_PREFIX: STATIC_ASSET_SPEC,
+        CART_STATIC_URL_PREFIX: CART_STATIC_ASSET_SPEC,
+        FC_AUTH_URL_PREFIX: FC_AUTH_STATIC_ASSET_SPEC,
+    })(global_config, app)

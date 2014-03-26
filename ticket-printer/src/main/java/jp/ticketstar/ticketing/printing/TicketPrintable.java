@@ -11,11 +11,21 @@ import java.util.List;
 import jp.ticketstar.ticketing.PrintableEventListener;
 import jp.ticketstar.ticketing.PrintableEventSupport;
 
+@SuppressWarnings("static-access")
 public class TicketPrintable implements Printable {
+	protected static final Class<?> peekGraphicsClass;
 	protected final List<Page> pages;
 	protected final AffineTransform transform;
 	protected final PrintableEventSupport support;
 
+	static {
+		Class<?> _peekGraphicsClass = null;
+		try {
+			_peekGraphicsClass = TicketPrintable.class.forName("sun.print.PeekGraphics");
+		} catch (ClassNotFoundException e) {}
+		peekGraphicsClass = _peekGraphicsClass;
+	}
+	
 	public TicketPrintable(List<Page> pages, PrinterJob job) {
 		this(pages, job, new AffineTransform());
 	}
@@ -32,7 +42,8 @@ public class TicketPrintable implements Printable {
 		Graphics2D g = (Graphics2D)_g;
 		g.transform(transform);
 		pages.get(pageIndex).getGraphics().paint(g);
-		support.firePagePrintedEvent(pageIndex);
+		if (peekGraphicsClass == null || !peekGraphicsClass.isInstance(_g))
+			support.firePagePrintedEvent(pageIndex);
 		return PAGE_EXISTS;
 	}
 

@@ -1,0 +1,36 @@
+<%page args="form, endpoints, id='modal-tiket-format'" />
+<%namespace file="/common/helpers.html" name="ch" />
+<div id="${id}" class="modal hide">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>チケット様式の選択</h3>
+  </div>
+
+  <div class="modal-body">
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn-dismiss btn" data-dismiss="modal">閉じる</button>
+    <button class="btn-proceed btn btn-primary">印刷キューに追加</button>
+  </div>
+  <script type="text/javascript">
+  var show_modal_enqueue_orders;
+  (function ($modal) {
+    var endpoints = ${HH.json(endpoints)|n};
+
+    show_modal_enqueue_orders = function show_modal_enqueue_orders() {
+      load_modal_form(
+        $modal,
+        endpoints['enqueue_orders'],
+        null,
+        function ($form) {
+          $modal.find('.btn-proceed').click(function () {
+            $form.submit();
+            return false;
+          });
+        }
+      );
+    };
+  })($('#${id}'));
+  </script>
+</div>

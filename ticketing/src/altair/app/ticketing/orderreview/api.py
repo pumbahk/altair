@@ -57,21 +57,17 @@ def safe_get_contact_url(request, default=""):
         logger.warn(str(e))
         return default
 
-def send_to_orion(request, context, recipient):
+def send_to_orion(request, context, recipient, data):
     settings = request.registry.settings
     api_url = settings.get('orion.create_url')
     if api_url is None:
         raise Exception("orion.api_uri is None")
-    
-    data = OrderedProductItemToken.filter_by(id = request.params['token']).one()
+    print "target url is %s" % api_url
     
     order = data.item.ordered_product.order
-    if order.order_no != request.params['order_no']:
-        raise Exception(u"Wrong order number or token: (%s, %s)" % (request.params['order_no'], request.params['token']))
-    
     product = data.item.ordered_product.product
-    item = data.item.product_item
-    performance = data.item.product_item.performance
+    item = data.item
+    performance = product.performance
     event = performance.event
     site = performance.venue.site
     org = event.organization

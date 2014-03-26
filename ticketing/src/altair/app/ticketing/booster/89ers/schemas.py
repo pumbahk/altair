@@ -58,7 +58,7 @@ class OrderFormSchema(Form):
 
     # 新規・継続
     cont = fields.RadioField(u"新規／継続", validators=[v.Required()], choices=[('no', u'新規'),('yes', u'継続')], widget=radio_list_widget)
-    old_id_number = fields.TextField(u"会員番号", filters=[strip_spaces, NFKC], validators=[v.Regexp(r'\d{8}', message=u'半角数字8ケタで入力してください。'), v.Optional()])
+    old_id_number = fields.TextField(u"会員番号", filters=[strip_spaces, NFKC], validators=[v.Regexp(r'\d{8}$', message=u'半角数字8ケタで入力してください。'), v.Optional()])
     member_type = fields.SelectField(u"会員種別選択", validators=[v.Required()])
     t_shirts_size = fields.SelectField(u"Tシャツサイズ", choices=[('L', u'L'),('3L', u'3L')], validators=[v.Optional()], coerce=text_type_but_none_if_not_given)
     first_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Required(), Zenkaku, length_limit_for_sej])
