@@ -91,14 +91,14 @@
       </ul>
    </td>
     <td>
-      %if ordered_product_item.issued_at or ordered_product_item.printed_at:
-        ${ordered_product_item.issued_at or ordered_product_item.printed_at}
+      %if ordered_product_item.printed_at:
+        ${ordered_product_item.printed_at}
         <span alt="${ordered_product_item.printed_at}" class="label label-warning">済</span>
         %for operator_name in list(set([ph.operator.name for ph in ordered_product_item.print_histories if ph.operator])):
           <div>作業者: ${operator_name}</div>
         %endfor
       %else:
-        ${u"%(issued)s/%(total)s" %ordered_product_item.issued_at_status}
+        ${u"%(issued)s/%(total)s" %ordered_product_item.printed_at_status}
         <span class="label label-inverse">未発券</span>
       %endif
     </td>

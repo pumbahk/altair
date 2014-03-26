@@ -1256,6 +1256,7 @@ class OrderDetailView(BaseView):
 
         if not order.issued:
             ## printed_atをNULLにし直す
+            order.printed_at = None
             for ordered_product in order.ordered_products:
                 for ordered_product_item in ordered_product.ordered_product_items:
                     ordered_product_item.printed_at = None
