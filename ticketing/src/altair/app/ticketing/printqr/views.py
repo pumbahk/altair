@@ -301,6 +301,8 @@ class AppletAPIView(object):
     def ticket_data(self): ## svg one
         ordered_product_item_token_id = self.request.json_body.get('ordered_product_item_token_id')
         if ordered_product_item_token_id is None:
+            logger.error("no ordered_product_item_token_id given: token id=%s,  organization id=%s" \
+                             % (ordered_product_item_token_id, self.context.organization.id))
             return { u'status': u'error', u'message': u'券面取得用の番号がみつかりません' }
 
         ordered_product_item_token = utils.get_matched_ordered_product_item_token(
@@ -308,7 +310,7 @@ class AppletAPIView(object):
             self.context.organization.id)
 
         if ordered_product_item_token is None:
-            logger.warn("*api.applet.ticket data: token id=%s,  organization id=%s" \
+            logger.error("no ordered_product_item_token found: token id=%s,  organization id=%s" \
                              % (ordered_product_item_token_id, self.context.organization.id))
             return { u'status': u'error', u'message': u'券面データがみつかりません' }
 
@@ -316,7 +318,10 @@ class AppletAPIView(object):
         issuer = utils.get_issuer()
         vardict = todict.svg_data_from_token(ordered_product_item_token, issuer=issuer)
         retval = todict.svg_data_list_all_template_valiation(vardict, ticket_templates)
-        assert retval
+        if not retval:
+            logger.error("no applicable tickets found: token id=%s,  organization id=%s" \
+                             % (ordered_product_item_token_id, self.context.organization.id))
+            return { u'status': u'error', u'message': u'印刷対象となる券面データがありません' }
         return {
             u'status': u'success',
             u'data': retval
