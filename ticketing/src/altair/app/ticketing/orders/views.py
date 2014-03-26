@@ -1352,6 +1352,7 @@ class OrderDetailView(BaseView):
 
     @view_config(route_name="orders.print.queue.each", request_method="POST", request_param="submit=refresh")
     def order_tokens_refresh(self):
+        from .helpers import decode_candidate_id
         now = datetime.now()
         ## xxx: temporary
         order = self.context.order
@@ -1360,10 +1361,10 @@ class OrderDetailView(BaseView):
 
         #token@seat@ticket.id
         candidate_id_list = self.request.POST.getall("candidate_id")
-        self.context.refresh_tokens(order, candidate_id_list, now)
+        token_id_list = [decode_candidate_id(e)[0] for e in candidate_id_list]
+        self.context.refresh_tokens(order, token_id_list, now)
         self.request.session.flash(u'再発券許可しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
-
 
     @view_config(route_name='orders.print.queue')
     def order_print_queue(self):

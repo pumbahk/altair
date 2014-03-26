@@ -69,7 +69,7 @@
       <ul>
     %for i,((seat, token), ticket_list) in enumerate(seat_list):
      <li>
-       <input type="checkbox" name="token_id" value="${token}"/>
+       <input type="checkbox" name="token_id" value="${token.id}"/>
        %if seat:
           ${seat.name}
        %else:
