@@ -82,8 +82,12 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%;" value="当日窓口発券モードにする" />
     <div id="sales-counter-toolbar" style="display:none">
       <label style="display:inline-block">
-        様式
+        ページ様式
         <select id="pageFormat" style="width:13em;vertical-align: baseline;"></select>
+      </label>
+      <label style="display:inline-block">
+        チケット様式
+        <select id="ticketFormat" style="width:13em;vertical-align: baseline;"></select>
       </label>
       <label style="display:inline-block">
         プリンタ
@@ -518,9 +522,11 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
             alert('no print service');
         }
         var currentTicketFormat = getTicketFormatById($ticketFormat.val());
+        service.startBatchUpdate();
         service.setTicketFormat(currentTicketFormat);
         service.setPageFormat(currentPageFormat);
         service.setPrintService(currentPrintService);
+        service.endBatchUpdate();
         service.printAll();
     };
 
