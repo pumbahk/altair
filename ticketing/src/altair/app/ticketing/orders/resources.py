@@ -222,6 +222,20 @@ class OrderPrintEachResource(OrderResource):
     def get_dependents_models(self):
         return OrderDependentsProvider(self)
 
+    def refresh_tokens(self, order, candidate_id_list, now):
+        assert unicode(order.organization_id) == unicode(self.organization.id)
+
+        #token@seat@ordered_product_item.id@ticket.id
+        token_id_list = [e.split("@")[0] for e in candidate_id_list]
+        tokens = (OrderedProductItemToken.query
+                  .filter(OrderedProduct.order_id == order.id)
+                  .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)
+                  .filter(OrderedProductItemToken.ordered_product_item_id==OrderedProductItem.id)
+                  .filter(OrderedProductItemToken.id.in_(token_id_list)).all())
+        for t in tokens:
+            t.refreshed_at = now
+        order.printed_at = None
+
 
 class OrdersShowResource(OrderResource):
     def get_dependents_models(self):

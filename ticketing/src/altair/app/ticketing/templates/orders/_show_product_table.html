@@ -29,8 +29,8 @@
   </form>
 
   <form action="${request.route_path("orders.print.queue.each", order_id=order.id, _query={'ticket_format_id': form.ticket_format_id.data})}" method="POST">
-    <button class="btn btn-print-each"><i class="icon-print"></i>チケットを指定して発券</button>
-
+    <button type="submit" name="submit" value="print" class="btn btn-print-each"><i class="icon-print"></i>チケットを指定して発券</button>
+    <button type="submit" name="submit" value="refresh" class="btn btn-refresh"><i class="icon-cog"></i>チケットを指定して再発券許可</button>
   <table class="table table-striped table-bordered  nested-checkbox">
     <tr>
       <th colspan="2" class="span6">商品</th>
