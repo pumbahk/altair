@@ -98,7 +98,7 @@
           <div>作業者: ${operator_name}</div>
         %endfor
       %else:
-        ${u"%(issued)s/%(total)s" %ordered_product_item.printed_at_status}
+        ${u"%(printed)s/%(total)s" %ordered_product_item.printed_at_status}
         <span class="label label-inverse">未発券</span>
       %endif
     </td>
