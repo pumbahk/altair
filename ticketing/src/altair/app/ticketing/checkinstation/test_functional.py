@@ -14,13 +14,17 @@ from altair.app.ticketing.printqr.testing import (
 """
 login, logout未テスト
 """
-
 def setUpModule():
+    import transaction
+    transaction.abort()
+    import altair.app.ticketing.users.models
+    import altair.app.ticketing.core.models
     import altair.app.ticketing.checkinstation.models
     setUpSwappedDB()
 
 def tearDownModule():
     tearDownSwappedDB()
+
 
 def setup_ordered_product_token(ordered_product_item):
     from altair.app.ticketing.core.models import OrderedProductItemToken
@@ -37,6 +41,7 @@ def setup_ticket_bundle(event, drawing):
     from altair.app.ticketing.core.models import TicketFormat
     from altair.app.ticketing.core.models import PageFormat
     from altair.app.ticketing.core.models import Ticket
+    from altair.app.ticketing.core.models import DeliveryMethod
     page_format = PageFormat.query.first()
     if page_format is None:
         page_format = PageFormat(name=":PageFormat:name",
@@ -48,6 +53,7 @@ def setup_ticket_bundle(event, drawing):
         ticket_format = TicketFormat(name=":TicketFormat:name",
                                      organization=event.organization,
                                      data={})
+        ticket_format.delivery_methods.append(DeliveryMethod(fee=100,delivery_plugin_id=4))
     ticket_template = Ticket(name=":TicketTemplate:name",
                              ticket_format=ticket_format,
                              organization=event.organization,
