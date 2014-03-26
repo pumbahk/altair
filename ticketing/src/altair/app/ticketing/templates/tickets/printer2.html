@@ -249,6 +249,7 @@ function init(tags, progressHandlers, uiUpdater) {
   var $showUnmaskedOnly = tags['showUnmaskedOnly'];
   var $maskCheckedEntries = tags['maskCheckedEntries'];
   var $unmaskCheckedEntries = tags['unmaskCheckedEntries'];
+  var $deleteCheckedEntries = tags['deleteCheckedEntries'];
   var $selectAll = tags['selectAll'];
 
   function disableUI() {
@@ -519,6 +520,19 @@ function init(tags, progressHandlers, uiUpdater) {
       return false;
     }
 
+    function onDeleteCheckedEntriesClicked(e) {
+      refreshQueueEntryListSub(
+        endpoints['delete'],
+        {
+          'page_format_id': $pageFormat.val(),
+          'ticket_format_id': $ticketFormat.val(),
+          'include_masked': true,
+          'queue_ids': getCheckedQueueIds(e)
+        }
+      );
+      return false;
+    }
+
     function updateUI() {
       uiUpdater({
         allPrinted: printedQueueIdCount == queueIds.length
@@ -637,6 +651,7 @@ function init(tags, progressHandlers, uiUpdater) {
     $pageFormat.change(onPageFormatChange);
     $ticketFormat.change(onTicketFormatChange);
     $showUnmaskedOnly.change(onShowUnmaskedOnlyChange);
+    $deleteCheckedEntries.click(onDeleteCheckedEntriesClicked);
     $unmaskCheckedEntries.click(onUnmaskCheckedEntriesClicked);
     $maskCheckedEntries.click(onMaskCheckedEntriesClicked);
     $selectAll.click(onSelectAllClicked);
@@ -737,9 +752,11 @@ ${ch.breadcrumbs(
     <div class="attached-action-inner">
       <div class="attached-action-form">
         <label>キュー操作</label>
+        チェックしたものを
         <div class="btn-group">
-          <button class="btn" id="btn-mask-checked-entries">チェックしたものを除外</button>
-          <button class="btn" id="btn-unmask-checked-entries">チェックしたものを印刷対象に含める</button>
+          <button class="btn" id="btn-mask-checked-entries">除外</button>
+          <button class="btn" id="btn-unmask-checked-entries">印刷対象に含める</button>
+          <button class="btn" id="btn-delete-checked-entries">削除</button>
         </div>
         <label>
           <input type="checkbox" id="show-unmasked-only">
@@ -789,6 +806,7 @@ $(function () {
       showUnmaskedOnly: $('#show-unmasked-only'),
       maskCheckedEntries: $('#btn-mask-checked-entries'),
       unmaskCheckedEntries: $('#btn-unmask-checked-entries'),
+      deleteCheckedEntries: $('#btn-delete-checked-entries'),
       selectAll: $('#select-all')
     },
     {

@@ -54,6 +54,7 @@ def includeme(config):
     config.add_route('tickets.printer.api.list', '/print/list')
     config.add_route('tickets.printer.api.mask', '/print/unmask')
     config.add_route('tickets.printer.api.unmask', '/print/mask')
+    config.add_route('tickets.printer.api.delete', '/print/delete')
 
     config.scan('.views')
     config.include(".preview")
