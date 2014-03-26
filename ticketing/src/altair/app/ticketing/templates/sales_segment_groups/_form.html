@@ -63,12 +63,12 @@
         }
       }).change();
 
-      form.find('#kind').change(function() {
+      form.find('select[name="kind"]').change(function() {
         var public = form.find('#public');
         var public_kind = [${','.join(["'{0}'".format(pk) for pk in form.public_kind])|n}];
-        var value = $(this).val();
+        var value = $(this).find('option:selected').val();
         if ($.inArray(value, public_kind) < 0) {
-          public.attr('disabled', 'disabled');
+          public.attr('disabled', 'disabled').removeAttr('checked').change();
         } else {
           public.removeAttr('disabled');
         }
