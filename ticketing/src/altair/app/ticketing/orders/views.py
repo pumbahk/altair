@@ -1350,7 +1350,7 @@ class OrderDetailView(BaseView):
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
 
-    @view_config(route_name="orders.print.queue.enqueue", request_method="POST", request_param="submit=refresh")
+    @view_config(route_name="orders.print.queue.each", request_method="POST", request_param="submit=refresh")
     def order_tokens_refresh(self):
         now = datetime.now()
         ## xxx: temporary
