@@ -343,7 +343,7 @@ class OrderImporter(object):
             if cart.total_amount != cart.calculated_total_amount:
                 self.errors[order_no] = u'予約番号: %s  %s' % (order_no, u'合計金額が正しくありません')
             for cp in cart.items:
-                if cp.price != sum([cpi.price * cpi.quantity for cpi in cp.elements]):
+                if (cp.price * cp.quantity) != sum([cpi.price * cpi.quantity for cpi in cp.elements]):
                     self.errors[order_no] = u'予約番号: %s  %s' % (order_no, u'商品単価または商品個数が正しくありません')
 
             # 在庫数
