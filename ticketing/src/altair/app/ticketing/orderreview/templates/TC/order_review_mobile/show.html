@@ -110,6 +110,9 @@ ${shipping.address_2}
 <div>QRコード</div>
     % endif
 ${h.render_delivery_finished_viewlet(request, order)}
+% else:
+<div>${order.payment_delivery_pair.delivery_method.name}</div>
+${h.render_delivery_finished_viewlet(request, order)}
 %endif
 % endif
 <div>

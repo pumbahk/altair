@@ -6,12 +6,14 @@
             席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
             %endif
             <br />
-            % if ticket.printed_at:
+	    % if false:
+              % if ticket.printed_at:
                 発行(印刷orメール送信)済 (${ticket.printed_at})
-            % else:
+              % else:
                 未発行
+              % endif
             % endif
-            <form method="post" target="_blank" action="${request.route_path('order_review.orion_print')}">
+            <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
                 <input type="hidden" name="order_no" value="${order.order_no}" />
                 <input type="hidden" name="tel" value="${tel}" />
                 <input type="hidden" name="token" value="${ticket.token.id}" />
@@ -22,7 +24,7 @@
                 <input type="hidden" name="tel" value="${tel}" />
                 <input type="hidden" name="token" value="${ticket.token.id}" />
                 メールアドレス: <input type="text" name="mail" size="22" />
-                <input type="submit" name="send" value="メールで送る" />
+                <input type="submit" name="send" value="イベント・ゲートに送る" />
             </form>
         </div>
     % endfor
