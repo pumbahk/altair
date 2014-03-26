@@ -22,7 +22,7 @@ class CheckinTokenReservation(Base):
     token_id = sa.Column(Identifier, sa.ForeignKey("OrderedProductItemToken.id"), nullable=False, primary_key=True)
     token = orm.relationship("OrderedProductItemToken", uselist=False)
     expire_at = AnnotatedColumn(DateTime, _a_label=_(u'解放時間'), default=datetime.now, nullable=False)
-    deleted_at = sa.Column(TIMESTAMP, nullable=True, primary_key=True) ##不要？
+    deleted_at = sa.Column(TIMESTAMP, nullable=True)
 
     __table_args__= (
         sa.UniqueConstraint('token_id', 'deleted_at', name="ix_token_id_deleted_at"),
