@@ -55,17 +55,6 @@ def setup_views(config):
     config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='index',
                     attr='post', request_method='POST', renderer='base/mobile/cart/form.html')
 
-    ## boostertest
-    config.add_view('.views.IndexView', route_name='indextest', attr='get', request_method='GET', renderer='base/pc/cart/bambitest.html',
-                    decorator='altair.app.ticketing.fanstatic.with_jquery')
-    config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='indextest',
-                    attr='get', request_method='GET', renderer='base/mobile/cart/bambitest.html')
-
-    config.add_view('.views.IndexView', route_name='indextest', attr='post', request_method='POST', renderer='base/pc/cart/bambitest.html',
-                    decorator='altair.app.ticketing.fanstatic.with_jquery')
-    config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='indextest',
-                    attr='post', request_method='POST', renderer='base/mobile/cart/bambitest.html')
-
     #########
 
     config.add_view('.views.PaymentView', route_name='cart.payment', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
