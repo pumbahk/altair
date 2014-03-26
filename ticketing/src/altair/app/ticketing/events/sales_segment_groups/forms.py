@@ -300,13 +300,20 @@ class SalesSegmentGroupForm(OurForm):
             return False
         return True
 
+    def _validate_public(self, *args, **kwargs):
+        if self.public.data and self.kind.data not in self.public_kind:
+            append_error(self.kind, ValidationError(u'この種別は一般公開できません'))
+            return False
+        return True
+
     def validate(self, *args, **kwargs):
         return all([fn(*args, **kwargs) for fn in [
             super(type(self), self).validate,
             self._validate_start,
             self._validate_end,
             self._validate_term,
-            self._validate_display_seat_no
+            self._validate_display_seat_no,
+            self._validate_public
             ]])
 
 
