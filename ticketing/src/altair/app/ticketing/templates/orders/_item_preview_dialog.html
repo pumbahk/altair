@@ -11,15 +11,8 @@
   </div>
 
   <div class="modal-body">
-	<form id="preview_select">
-	  ${form.ticket_format_id.label} ${form.ticket_format_id}
-	  ${form.item_id}
-	</form>
-   <p>※ チケット様式は印刷に利用可能なものが選択可能です。何も表示されない場合には変更してみてください</p>
-
-	<div id="drawing" style="height:200px;">
-
-	</div>
+    <div id="drawing" style="height:200px;">
+    </div>
   </div>
 
 <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/spin.js")}"></script>
@@ -28,7 +21,7 @@
 <script type="text/javascript">
 $(function(){
   var cont = null;
-  var url = "${request.route_path("orders.item.preview.getdata", item_id=item.id, ticket_format_id="__id__")}";
+  var url = ${HH.json(request.route_path("orders.item.preview.getdata", item_id=item.id, ticket_format_id=ticket_format_id))|n};
   var MAX_SIZE_OF_PREVIEW_ITEM = 2;
 
   var renderPreviewImage = function(results, names, start, end, root){
@@ -57,8 +50,8 @@ $(function(){
     });
   };
 
-  var draw_viewer = function(url, ticket_format_id){
-    $.getJSON(url.replace("__id__", ticket_format_id)).done(function(data){
+  var draw_viewer = function(url) {
+    $.getJSON(url).done(function(data){
       var root = $("#drawing");
       root.empty();
       var results = data.results;
@@ -88,17 +81,6 @@ $(function(){
       }
     });
   };
-
-  var ticket_format_id = $("#preview_select select[name='ticket_format_id']").val();
-  if (ticket_format_id == null) {
-    $("#error").html("<div style='color: red'>引取方法が券面に紐付いていません。設定を見直して下さい。</div>")
-  } else {
-    draw_viewer(url, ticket_format_id);
-  }
-
-  $("#preview_select select[name='ticket_format_id']").change(function(){
-    var ticket_format_id = $(this).val();
-    draw_viewer(url, ticket_format_id);
-  });
+  draw_viewer(url);
 });
 </script>

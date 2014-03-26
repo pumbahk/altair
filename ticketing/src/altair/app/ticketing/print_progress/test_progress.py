@@ -67,7 +67,7 @@ def setUpModule():
     from altair.app.ticketing.testing import _setup_db
     _setup_db(["altair.app.ticketing.core.models"], echo=False)
 
-def  _teardown_db():
+def tearDownModule():
     from altair.app.ticketing.testing import _teardown_db
     _teardown_db()
 

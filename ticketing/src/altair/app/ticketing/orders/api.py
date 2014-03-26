@@ -599,6 +599,7 @@ def save_order_modification(order, modify_data):
     reserving = cart_api.get_reserving(request)
     stocker = cart_api.get_stocker(request)
 
+    order = Order.query.filter_by(id=order.id).with_lockmode('update').one()
     modify_order = Order.clone(order, deep=True)
     modify_order.performance_id = modify_data.get('performance_id')
     modify_order.sales_segment_id = modify_data.get('sales_segment_id')

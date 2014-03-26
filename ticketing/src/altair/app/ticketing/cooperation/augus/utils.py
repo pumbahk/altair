@@ -1,5 +1,6 @@
 #-*- coding: utf-8 -*-
 import os
+import logging
 import argparse
 from altair.app.ticketing.core.models import (
     Seat,
@@ -10,7 +11,11 @@ from altair.app.ticketing.core.models import (
 from .errors import (
     NoSeatError,
     BadRequest,
+    IllegalDataError,
     )
+logger = logging.getLogger(__name__)
+
+
 
 class SeatAugusSeatPairs(object):
     def __init__(self):
@@ -47,9 +52,20 @@ class SeatAugusSeatPairs(object):
         return self.__iter__
 
     def __iter__(self):
-        for seat in self.get_seats():
-            augus_seat = self.find_augus_seat(seat)
-            yield seat, augus_seat
+        logger.debug('AUGUS VENUE: start creating external seat pairs')
+        venue = self._venue
+        ex_venue = self._augus_venue
+        seat_id__ex_seat = {}
+        if ex_venue:
+            if ex_venue.venue.id != self._venue.id:
+                raise IllegalDatabaseError('Illegal data of AugusVenue: Venue.id={} AugusVenue.id={}'.format(self._venue.id, ex_venue.id))
+            venue = ex_venue.venue
+            logger.debug('AUGUS VENUE: create seat_id ex_seat dictionary')
+            seat_id__ex_seat = dict([(ex_seat.seat_id, ex_seat)
+                                     for ex_seat in ex_venue.augus_seats if ex_seat.seat_id is not None])
+            logger.debug('AUGUS VENUE: create seat_id ex_seat dictionary')
+        for seat in venue.seats:
+            yield seat, seat_id__ex_seat.get(seat.id, None)
 
     def _find_augus_seat(self): # co routine
         augus_seats = self.get_augus_seats()
@@ -242,5 +258,3 @@ def get_settings(conf=None):
                                     'staging': '',
                                     'pending': '',
                                     }})
-
-

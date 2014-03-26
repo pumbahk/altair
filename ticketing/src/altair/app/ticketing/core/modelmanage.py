@@ -72,6 +72,12 @@ class ApplicableTicketsProducer(object):
         else:
             return self.exclude_delivery_id_ticket_iter(SEJ_DELIVERY_PLUGIN_ID, format_id=format_id)
 
+    def all(self, format_id=None):
+        for ticket in self.tickets:
+            if format_id and format_id != ticket.ticket_format_id:
+                continue
+            yield ticket
+
     def any_exist(self, itr):
         for _ in itr:
             return True

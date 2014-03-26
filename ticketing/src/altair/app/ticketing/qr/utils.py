@@ -33,6 +33,13 @@ def build_qr_by_history(request, ticket):
     ticket.sign = ticket.qr[0:8]
     return ticket
 
+def build_qr_by_orion(request, ticket, serial):
+    params = make_data_for_orion(ticket, serial)
+    builder = get_qrdata_builder(request)
+    ticket.qr = builder.sign(builder.make(params))
+    ticket.sign = ticket.qr[0:8]
+    return ticket
+
 def get_matched_token_query_from_order_no(order_no):
     return OrderedProductItemToken.query\
         .filter(OrderedProductItemToken.ordered_product_item_id==OrderedProductItem.id)\
@@ -82,9 +89,23 @@ def make_data_for_qr(ticket):
                   date=ticket.performance.start_on.strftime("%Y%m%d"),
                   type=ticket.product.id)
     if ticket.seat:
-        params["seat"] =ticket.seat.l0_id
+        params["seat"] = ticket.seat.l0_id
         params["seat_name"] = ticket.seat.name
     else:
         params["seat"] = ""
         params["seat_name"] = "" #TicketPrintHistoryはtokenが違えば違うのでuniqueなはず
+    return params
+
+def make_data_for_orion(ticket, serial):
+    params = dict(serial=serial,
+                  performance=ticket.performance.code,
+                  order=ticket.order.order_no,
+                  date=ticket.performance.start_on.strftime("%Y%m%d"),
+                  type=ticket.ordered_product_item.ordered_product.product.id)
+    if ticket.seat:
+        params["seat"] = ticket.seat.l0_id
+        params["seat_name"] = ticket.seat.name
+    else:
+        params["seat"] = ""
+        params["seat_name"] = ""
     return params

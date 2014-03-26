@@ -90,7 +90,6 @@ def import_view(config):
 
     ## orion
     config.add_route('order_review.orion_send', '/qr/eg_send')
-    config.add_route('order_review.orion_print', '/qr/eg_print')
 
     ## mypage
     config.add_route('mypage.show', '/mypage')

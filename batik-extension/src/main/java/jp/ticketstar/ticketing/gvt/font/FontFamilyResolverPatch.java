@@ -2,12 +2,8 @@ package jp.ticketstar.ticketing.gvt.font;
 
 import java.awt.GraphicsEnvironment;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Locale;
 
 import org.apache.batik.gvt.font.FontFamilyResolver;
@@ -20,6 +16,7 @@ import org.apache.batik.gvt.font.AWTGVTFont;
 Using locale = ja_JP;
  */
 
+@SuppressWarnings("unchecked")
 public class FontFamilyResolverPatch extends FontFamilyResolver {
     static {
         /* refresh */
@@ -70,8 +67,8 @@ public class FontFamilyResolverPatch extends FontFamilyResolver {
         awtFontFamilies.add(defaultFont);
         awtFonts.add(new AWTGVTFont(defaultFont.getFamilyName(), 0, 12));
 
-        Collection fontValues = fonts.values();
-        Iterator iter = fontValues.iterator();
+        Collection<String> fontValues = fonts.values();
+        Iterator<String> iter = fontValues.iterator();
         while(iter.hasNext()) {
             String fontFamily = (String)iter.next();
             AWTFontFamily awtFontFamily = new AWTFontFamily(fontFamily);
