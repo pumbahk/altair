@@ -1292,7 +1292,7 @@ class OrderDetailView(BaseView):
                     break_p = True
             elif not order.queued:
                 utils.enqueue_cover(operator=self.context.user, order=order, ticket_format_id=ticket_format_id)
-                utils.enqueue_for_order(operator=self.context.user, order=order, ticket_format_id=ticket_format_id, delivery_plugin_ids=INNER_DELIVERY_PLUGIN_IDS)
+                utils.enqueue_for_order(operator=self.context.user, order=order, ticket_format_id=ticket_format_id)
                 count += 1
             total += 1
 
@@ -1357,7 +1357,7 @@ class OrderDetailView(BaseView):
             return HTTPBadRequest()
         ticket_format_id = form.ticket_format_id.data
         utils.enqueue_cover(operator=self.context.user, order=self.context.order, ticket_format_id=ticket_format_id)
-        utils.enqueue_for_order(operator=self.context.user, order=self.context.order, ticket_format_id=ticket_format_id, delivery_plugin_ids=INNER_DELIVERY_PLUGIN_IDS)
+        utils.enqueue_for_order(operator=self.context.user, order=self.context.order, ticket_format_id=ticket_format_id)
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=self.context.order.id))
 
