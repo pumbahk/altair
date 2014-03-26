@@ -104,7 +104,13 @@ def enqueue_item(operator, order, ordered_product_item, ticket_format_id=None, d
     dicts = comfortable_sorted_built_dicts(ordered_product_item)
     svg_builder = svg_builder or _get_svg_builder()
     for index, (seat, dict_) in enumerate(dicts):
-        for ticket in ApplicableTicketsProducer.from_bundle(bundle).will_issued_by_own_tickets(format_id=ticket_format_id, delivery_plugin_ids=delivery_plugin_ids):
+        iter_factory = ApplicableTicketsProducer.from_bundle(bundle)
+        # CXX: よくない仕様だけど互換性のため。ticket_format_id が None でないときはそちらのみを見る
+        if delivery_plugin_ids is None and ticket_format_id is not None:
+            tickets = iter_factory.all(format_id=ticket_format_id)
+        else:
+            tickets = iter_factory.will_issued_by_own_tickets(delivery_plugin_ids=delivery_plugin_ids)
+        for ticket in tickets:
             TicketPrintQueueEntry.enqueue(
                 operator=operator,
                 ticket=ticket,
