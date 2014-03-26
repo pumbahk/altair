@@ -665,7 +665,7 @@ class TicketPrinter(BaseView):
     def endpoints(self):
         return dict(
             (key, self.request.route_path('tickets.printer.api.%s' % key))
-            for key in ['formats', 'peek', 'dequeue', 'list', 'unmask', 'mask']
+            for key in ['formats', 'peek', 'dequeue', 'list', 'unmask', 'mask', 'delete']
             )
 
     @view_config(route_name='tickets.printer', renderer='altair.app.ticketing:templates/tickets/printer.html')
@@ -915,6 +915,15 @@ class TicketPrinter(BaseView):
             .filter(TicketPrintQueueEntry.operator_id == self.context.user.id) \
             .filter(TicketPrintQueueEntry.id.in_(queue_ids)) \
             .update({'masked_at': None}, synchronize_session=False)
+        return self.list()
+
+    @view_config(route_name='tickets.printer.api.delete', request_method='POST', renderer='json')
+    def unmask(self):
+        queue_ids = self.request.json_body['queue_ids']
+        DBSession.query(TicketPrintQueueEntry) \
+            .filter(TicketPrintQueueEntry.operator_id == self.context.user.id) \
+            .filter(TicketPrintQueueEntry.id.in_(queue_ids)) \
+            .delete(synchronize_session=False)
         return self.list()
 
 @view_defaults(decorator=with_bootstrap, permission="sales_counter")
