@@ -143,12 +143,18 @@ def ticketdata_from_qrsigned_string(context, request):
     signed = re.sub(r"[\x01-\x1F\x7F]", "", signed.encode("utf-8")).replace("\x00", "") .decode("utf-8")
     try:
         logger.info("signed = %s" % signed)
-        data = builder.data_from_signed(signed)
-        logger.info("decoded = %s" % data)
-        if data.has_key("type"):
-            order, history = utils.order_and_history_from_qrdata(data)
-            data = todict.data_dict_from_order_and_history(order, history)
-        else:
+        qrdata = builder.data_from_signed(signed)
+        logger.info("decoded = %s" % qrdata)
+        
+        data = None
+        if not (qrdata.has_key("order") and qrdata.has_key("serial")):
+            raise("Broken QR: %s" % qrdata)
+        if re.match(r'^[0-9]+$', qrdata["serial"]):
+            order_and_history = utils.order_and_history_from_qrdata(qrdata)
+            if order_and_history is not None:
+                order, history = order_and_history
+                data = todict.data_dict_from_order_and_history(order, history)
+        if data is None:
             # eventgate
             settings = request.registry.settings
             api_url = settings.get('orion.search_url')
@@ -156,7 +162,7 @@ def ticketdata_from_qrsigned_string(context, request):
                 raise Exception("orion.search_uri is None")
             logger.debug("target url is %s" % api_url)
             
-            obj = dict(serial = data["serial"])
+            obj = dict(serial = qrdata["serial"])
             req_json = json.dumps(obj)
             logger.info("Create request to Orion API: %s" % req_json);
             req = urllib2.Request(api_url, req_json, headers={ u'Content-Type': u'text/json; charset="UTF-8"' })
@@ -166,11 +172,20 @@ def ticketdata_from_qrsigned_string(context, request):
                 res_text = unicode(stream.read(), 'utf-8')
                 logger.info("response = %s" % res_text)
                 res = json.loads(res_text)
-                order, token = utils.order_from_token(res["token"], data["order"])
-                data = todict.data_dict_from_order(order, token)
+                if res is None:
+                    raise Exception("Unexpected response from Orion")
+                if res["result"] != "OK":
+                    raise Exception("Orion API failed: %s" % res_text)
+                if res.has_key("token"):
+                    order_and_token = utils.order_from_token(res["token"], qrdata["order"])
+                    if order_and_token is not None:
+                        order, token = order_and_token
+                        data = todict.data_dict_from_order(order, token)
+                    
             else:
                 logger.warn("HTTP Response is %u" % stream.code)
-                raise HTTPNotFound()
+        if data is None:
+            raise Exception("No such ticket: %s" % qrdata)
 
         utils.verify_order(order, event_id=event_id)
         return {"status": "success", 
