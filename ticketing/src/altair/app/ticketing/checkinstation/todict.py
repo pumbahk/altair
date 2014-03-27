@@ -97,7 +97,7 @@ class TokenStatusDictBuilder(object):
 def additional_data_dict_from_order(order):
     performance = order.performance
     shipping_address = order.shipping_address
-    performance_name = u"%s (%s)" % (performance.name, performance.venue.name)
+    performance_name = performance.name
     note = order.note
     return {"additional":
             {
