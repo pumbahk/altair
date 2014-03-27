@@ -104,9 +104,9 @@
                     <TextBlock/>
                 </Border>
             </ToggleButton>
-
             <Grid>
                 <!-- スタンプ -->
+                <!--
                 <Canvas Width="0" Height="0" Margin="350,-30,0,0"
                     Style="{StaticResource StampCanvas}"
                     >
@@ -123,6 +123,7 @@
                     <TextBlock Margin="26,4,0,0">チケット</TextBlock>
                     <TextBlock Margin="20,44,0,0">発券予定</TextBlock>
                 </Canvas>
+                -->
                 <ToggleButton Style="{StaticResource GrayoutIfNeedToggleButton}"
                               IsChecked="{Binding IsSelected,Mode=TwoWay}"
             HorizontalAlignment="Left"

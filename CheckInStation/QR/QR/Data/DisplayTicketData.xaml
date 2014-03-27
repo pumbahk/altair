@@ -12,6 +12,9 @@
     <p:PageConfirmAllDataContext.PerformanceDate>
         2012年12月24日
     </p:PageConfirmAllDataContext.PerformanceDate>
+    <p:PageConfirmAllDataContext.PerformanceName>
+        何かvs何か
+    </p:PageConfirmAllDataContext.PerformanceName>
     <p:PageConfirmAllDataContext.NumberOfPrintableTicket>
         10
     </p:PageConfirmAllDataContext.NumberOfPrintableTicket>
