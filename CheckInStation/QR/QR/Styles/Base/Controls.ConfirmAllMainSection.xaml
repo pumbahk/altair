@@ -20,16 +20,22 @@
             <DataTrigger Binding="{Binding IsSelected, Mode=OneTime}" Value="False">
                 <Setter Property="IsEnabled" Value="False"/>
                 <Setter Property="IsChecked" Value="False"/>
-            </DataTrigger>
-            <Trigger Property="IsChecked" Value="True">
-                <Setter Property="BorderBrush" Value="{StaticResource StatusBoxSelected}"/>
-            </Trigger>
-            <Trigger Property="IsChecked" Value="False">
-                <Setter Property="BorderBrush" Value="{StaticResource StatusBoxUnSelected}"/>
-            </Trigger>
+            </DataTrigger>   
         </Style.Triggers>
         <Setter Property="IsChecked" Value="True"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <ContentPresenter
+                              x:Name="contentPresenter"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              Margin="{TemplateBinding Padding}"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
         <Style.Resources>
             <Style TargetType="Border">
                 <Style.Triggers>
