@@ -140,6 +140,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="configuration\ReleaseStageType.cs" />
     <Compile Include="DynamicJson.cs" />
     <Compile Include="events\ConfirmAllEvent.cs" />
     <Compile Include="events\ConfirmOneEvent.cs" />

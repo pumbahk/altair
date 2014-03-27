@@ -8,13 +8,6 @@ namespace QR
 {
     public class HttpCommunicationConfiguration
     {
-        public enum ReleaseStageType
-        {
-            develop,
-            staging,
-            production
-        }
-
         public static Uri DefaultBasicAuthURI = new Uri("https://backend.stg2.rt.ticketstar.jp/checkinstation/login");
         public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
 
@@ -89,8 +82,7 @@ namespace QR
                return true;
            };
 
-            //TODO: dispatch
-            var env = new HttpCommunicationConfiguration(config, ReleaseStageType.production);
+            var env = new HttpCommunicationConfiguration(config, config.ReleaseStageType);
             if (env.Certificate == null)
             {
                 config.Resource.HttpWrapperFactory = new HttpWrapperFactory<HttpWrapper>(env.CreateHandler, env.ConfigClient);
