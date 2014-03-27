@@ -27,7 +27,10 @@ ${ch.form_item(form.copy_performances)}
 ${ch.form_item(form.copy_products)}
 % endif
 
+<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
 <script type="text/javascript">
+$("#account_id").chosen();
 function get_sales_segment_group_id() {
   return $('#${form.sales_segment_group_id.name}').val();
 }
@@ -118,7 +121,7 @@ function get_performance_id() {
         ${form.use_default_account_id(_widget=LabelledCheckboxInput())}
       </th>
       <td>
-        ${form.account_id}
+        ${form.account_id(style='width:350px')}
         ${ch.validate_errors(form.account_id)}
       </td>
       <td>
