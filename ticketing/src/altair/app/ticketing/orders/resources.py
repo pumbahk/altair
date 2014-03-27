@@ -147,7 +147,7 @@ class SingleOrderResource(TicketingAdminResource):
         for ticket_format in self.available_ticket_formats:
             if self.order.payment_delivery_method_pair.delivery_method in ticket_format.delivery_methods:
               return ticket_format
-        return None
+        return self.available_ticket_formats[0]
 
 class MultipleOrdersResource(TicketingAdminResource):
     @property
