@@ -13,8 +13,33 @@
     </Style>
 
     <SolidColorBrush x:Key="StampColorBrush" Color="White" Opacity="0.8"/>
+
+    <Style TargetType="TextBlock" BasedOn="{StaticResource GrayoutIfNeedTextBlock}"
+           x:Key="GrayoutGrowdownContent">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Path=Text,ElementName=PrintedAt}" Value="">
+              <Setter Property="FontSize" Value="1"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+    <Style TargetType="TextBlock" BasedOn="{StaticResource GrayoutIfNeedTextBlock}"
+           x:Key="GrayoutGrowupContent">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Path=Text,ElementName=PrintedAt}" Value="">
+                <Setter Property="FontSize" Value="19"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
     
-    <!-- todo move-->
+     <Style TargetType="WrapPanel" x:Key="GrayoutHiddenWrap">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=Text,ElementName=PrintedAt}" Value="">
+                    <Setter Property="Visibility" Value="Hidden"/>
+                </DataTrigger>
+            </Style.Triggers>
+            <Setter Property="Visibility" Value="Visible"/>
+      </Style>
+        <!-- todo move-->
     <Style x:Key="StatusBoxStyle" TargetType="ToggleButton">
         <Style.Triggers>
             <DataTrigger Binding="{Binding IsSelected, Mode=OneTime}" Value="False">
@@ -134,22 +159,12 @@
             >
                     <StackPanel>
                         <WrapPanel>
-                            <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding ProductName}"/>
-                            <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding SeatName,StringFormat={}({0})}"/>
+                            <TextBlock Style="{StaticResource GrayoutGrowupContent}" Text="{Binding ProductName}"/>
+                            <TextBlock Style="{StaticResource GrayoutGrowupContent}" Text="{Binding SeatName,StringFormat={}({0})}"/>
                         </WrapPanel>
-                        <WrapPanel>
-                            <WrapPanel.Style>
-                                <Style TargetType="WrapPanel">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Path=Text,ElementName=PrintedAt}" Value="">
-                                            <Setter Property="Visibility" Value="Hidden"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </Style>
-                            </WrapPanel.Style>
-                            <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">発券済み:</TextBlock>
-                            <TextBlock Name="PrintedAt" Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding PrintedAt}"/>
+                        <WrapPanel Style="{StaticResource GrayoutHiddenWrap}">
+                            <TextBlock Style="{StaticResource GrayoutGrowdownContent}">発券済み:</TextBlock>
+                            <TextBlock Name="PrintedAt" Style="{StaticResource GrayoutGrowdownContent}" Text="{Binding PrintedAt}"/>
                         </WrapPanel>
                     </StackPanel>
                 </ToggleButton>
