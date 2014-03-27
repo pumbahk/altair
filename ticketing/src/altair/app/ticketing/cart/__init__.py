@@ -14,9 +14,7 @@ from pyramid.exceptions import ConfigurationError
 
 from sqlalchemy import engine_from_config
 
-from altair.app.ticketing.core.api import get_organization
 from altair.app.ticketing.wsgi import direct_static_serving_filter_factory
-from altair.app.ticketing.models import DBSession
 
 logger = logging.getLogger(__name__)
 
@@ -26,18 +24,6 @@ from ..api.impl import bind_communication_api ## cmsとの通信
 ### pc smartphone switch
 from altair.mobile import PC_ACCESS_COOKIE_NAME
 PC_SWITCH_COOKIE_NAME = PC_ACCESS_COOKIE_NAME
-
-class WhoDecider(object):
-    def __init__(self, request):
-        self.request = request
-
-    def decide(self):
-        """ WHO API 選択
-        """
-        #return self.request.organization.setting.auth_type
-        org = get_organization(self.request)
-        DBSession.add(org) # XXX
-        return org.setting.auth_type
 
 def exception_message_renderer_factory(show_traceback):
     def exception_message_renderer(request, exc_info, message):
