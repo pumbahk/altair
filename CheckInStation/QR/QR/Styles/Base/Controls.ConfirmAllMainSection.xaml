@@ -54,10 +54,10 @@
             <Style TargetType="TextBlock">
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding IsSelected,Mode=OneWay}" Value="False">
-                        <Setter Property="Text" Value="発券解"/>
+                        <Setter Property="Text" Value="発券解除"/>
                     </DataTrigger>
                     <DataTrigger Binding="{Binding IsSelected, Mode=OneTime}" Value="False">
-                        <Setter Property="Text" Value="発券済"/>
+                        <Setter Property="Text" Value="発券済み"/>
                     </DataTrigger>
                 </Style.Triggers>
                 <Setter Property="VerticalAlignment" Value="Center"/>
@@ -65,7 +65,7 @@
                 <Setter Property="FontSize" Value="24"/>
                 <Setter Property="FontWeight" Value="Bold"/>
                 <Setter Property="Foreground" Value="White"/>
-                <Setter Property="Text" Value="発券予"/>
+                <Setter Property="Text" Value="発券予定"/>
             </Style>
         </Style.Resources>
     </Style>
