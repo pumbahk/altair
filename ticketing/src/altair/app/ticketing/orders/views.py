@@ -846,6 +846,15 @@ class OrdersRefundConfirmView(BaseView):
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
 class OrderDetailView(BaseView):
+
+    @view_config(route_name='orders.show_by_order_no')
+    def show_by_order_no(self):
+        order_no = self.request.matchdict.get('order_no', None)
+        order = Order.query.filter(Order.order_no==order_no, Order.organization_id==self.context.organization.id).first()
+        if order is None:
+            raise HTTPNotFound('order no %s is not found' % order_no)
+        return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
     @view_config(route_name='orders.show', renderer='altair.app.ticketing:templates/orders/show.html')
     def show(self):
         order = self.context.order
