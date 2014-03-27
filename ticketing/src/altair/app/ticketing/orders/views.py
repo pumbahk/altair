@@ -332,32 +332,34 @@ class OrderIndexView(OrderBaseView):
         params["order_no"] = " ".join(request.params.getall("order_no"))
 
         form_search = OrderSearchForm(params, organization_id=organization_id)
-        from .download import OrderSummary
-        if form_search.validate():
-            query = OrderSummary(slave_session,
-                                organization_id,
-                                condition=form_search)
-        else:
-            query = OrderSummary(slave_session,
-                                organization_id,
-                                condition=None)
 
-        if request.params.get('action') == 'checked':
-            
-            checked_orders = [o.lstrip('o:') 
-                              for o in request.session.get('orders', []) 
-                              if o.startswith('o:')]
-            query.target_order_ids = checked_orders
-            
+        orders = []
+        total = []
         page = int(request.params.get('page', 0))
-        orders = paginate.Page(
-            query,
-            page=page,
-            items_per_page=40,
-            url=paginate.PageURL_WebOb(request)
-        )
 
-        total = query.total()
+        if request.params:
+            from .download import OrderSummary
+            if form_search.validate():
+                query = OrderSummary(slave_session,
+                                    organization_id,
+                                    condition=form_search)
+            else:
+                query = OrderSummary(slave_session,
+                                    organization_id,
+                                    condition=None)
+            if request.params.get('action') == 'checked':
+                checked_orders = [o.lstrip('o:')
+                                  for o in request.session.get('orders', [])
+                                  if o.startswith('o:')]
+                query.target_order_ids = checked_orders
+
+            orders = paginate.Page(
+                query,
+                page=page,
+                items_per_page=40,
+                url=paginate.PageURL_WebOb(request)
+            )
+            total = query.total()
 
         return {
             'form':OrderForm(),
