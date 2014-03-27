@@ -84,7 +84,7 @@ class TokenStatusDictBuilder(object):
         performance = order.performance
         pdmp = order.payment_delivery_method_pair
         if pdmp and pdmp.issuing_start_at:
-            return today >= pdmp.issuing_start_at
+            return today >= min(pdmp.issuing_start_at, (performance.start_on or performance.open_on).date())
         else:
             logger.info("check printable date: issuing start at is not set. using performance.open_on (order id=%s)", order.id)
             return today >= (performance.start_on or performance.open_on).date()

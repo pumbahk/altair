@@ -20,6 +20,7 @@ class APIEndpointRouteCollector(object):
         #foo.bar -> foo_bar #for json
         endpoints = {k.replace(".", "_"):request.route_url(k) for k in self.routes}
         endpoints.update(self.extras)
+        logger.info("api endpoint: %s", endpoints)
         return endpoints
 
 def add_endpoint_route(config, name, *args, **kwargs):
