@@ -44,7 +44,7 @@
                                         Width="400"
                                         HorizontalAlignment="Center"
                                         KeyDown="OnKeyDownHandler"                 
-                                        Text="{Binding Mode=TwoWay, Path=QRCode,UpdateSourceTrigger=PropertyChanged}" x:Name="QRCodeInput"/>
+                                        x:Name="QRCodeInput"/>
                                 </StackPanel>
                             </Border>
                         </Grid>

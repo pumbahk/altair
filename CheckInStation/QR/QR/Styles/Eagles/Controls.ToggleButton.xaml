@@ -1,5 +1,20 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- 一覧左端のcheckbox的な要素 -->
+    <LinearGradientBrush x:Key="StatusBoxSelected" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Color="#88cc88" Offset="0" />
+        <GradientStop Color="#66cc66" Offset="1" />
+    </LinearGradientBrush>
+    
+    <LinearGradientBrush x:Key="StatusBoxUnSelected" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Color="#ffdddd" Offset="0" />
+        <GradientStop Color="#ffbbbb" Offset="1" />
+    </LinearGradientBrush>
+    
+    <SolidColorBrush x:Key="StatusBoxDisabled" Color="#cccccc"/>
+
+
     <LinearGradientBrush x:Key="ToggleButtonFillNormal" StartPoint="0.5,0" EndPoint="0.5,1">
         <GradientStop Color="#ffdddd" Offset="0" />
         <GradientStop Color="#ffbbbb" Offset="1" />

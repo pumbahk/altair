@@ -103,6 +103,7 @@ namespace QR.presentation.gui.page
             if (e.Key == Key.Return)
             {
                 this.Dispatcher.InvokeAsync(() => {
+                    (this.DataContext as PageQRCodeInputDataContext).QRCode = this.QRCodeInput.Text;
                     this.OnSubmitWithBoundContext(this, new RoutedEventArgs());
                 });
             }
