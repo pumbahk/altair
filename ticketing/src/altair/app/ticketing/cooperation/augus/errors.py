@@ -31,3 +31,6 @@ class AugusDataExportError(AugusError):
 
 class AugusIntegrityError(AugusError):
     pass
+
+class IllegalDataError(AugusError):
+    pass

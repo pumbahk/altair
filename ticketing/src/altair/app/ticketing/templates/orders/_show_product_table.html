@@ -1,34 +1,35 @@
-<%page args="order,performance,objects_for_describe_product_item"/>
-
+<%page args="order,form,objects_for_describe_product_item"/>
+<%namespace file="/common/helpers.html" name="ch" />
+<div id="product-table">
 %for ordered_product, item_list in objects_for_describe_product_item:
 %if loop.first:
-  <table class="table table-striped table-bordered">
-    <tr>
-      <th class="span2">イベント</th>
-      <td class="span6">${performance.event.title}</td>
-    </tr>
-    <tr>
-      <th>公演名</th>
-      <td>${performance.name}</td>
-    </tr>
-    <tr>
-      <th>公演コード</th>
-      <td>${performance.code}</td>
-    </tr>
-    <tr>
-      <th>開演日時</th>
-      <td>${performance.start_on or ''}</td>
-    </tr>
-    <tr>
-      <th>会場</th>
-      <td>${performance.venue.name}</td>
-    </tr>
-  </table>
+  <p>※このアイコン<i class="icon-eye-open"></i>をクリックすると券面のプレビューができます。</p>
 
-  <p>※このアイコン<i class="icon-eye-open"></i>をクリックすると券面のプレビューができます。(<a href="${request.route_path("orders.cover.preview", order_id=order.id)}" data-toggle="modal" data-target="#PreviewModal" class="ajax-modal">表紙のpreview</a>)</p>
+  <form action="${request.route_path("orders.print.queue.each", order_id=order.id)}" method="GET" class="form-inline">
+    <label>${form.ticket_format_id.label}
+    ${form.ticket_format_id(id='product-table-ticket_format_id')}
+    </label>
+    <script type="text/javascript">
+    $('#product-table-ticket_format_id').change(function () {
+      var $this = $(this);
+      $this.attr('disable', 'disable');
+      $.ajax({
+        url: this.form.action + '?' + $(this.form).serialize(),
+        dataType: 'html', 
+        success: function (html) {
+          $($this.get(0).form).parent().replaceWith(html);
+        },
+        complete: function () {
+          $this.attr('disable', null);
+        }
+      });
+    });
+    </script>
+    <a href="${request.route_path("orders.cover.preview", order_id=order.id, ticket_format_id=form.ticket_format_id.data)}" data-toggle="modal" data-x-target="#PreviewModal" class="btn ajax-modal">表紙のpreview</a>
+  </form>
 
-  <form action="${request.route_path("orders.print.queue.each", order_id=order.id)}" method="POST">
-    <button class="btn"><i class="icon-print"></i>チケットを指定して発券</button>
+  <form action="${request.route_path("orders.print.queue.each", order_id=order.id, _query={'ticket_format_id': form.ticket_format_id.data})}" method="POST">
+    <button class="btn btn-print-each"><i class="icon-print"></i>チケットを指定して発券</button>
 
   <table class="table table-striped table-bordered  nested-checkbox">
     <tr>
@@ -62,7 +63,7 @@
 
     <td class="span4">
       <input type="checkbox" name="item_id" value="${ordered_product_item.id}"/>
-      <a href="${request.route_path("orders.item.preview", order_id=order.id, item_id=ordered_product_item.id)}" data-toggle="modal" data-target="#PreviewModal" class="ajax-modal">
+      <a href="${request.route_path("orders.item.preview", order_id=order.id, item_id=ordered_product_item.id, ticket_format_id=form.ticket_format_id.data)}" data-toggle="modal" data-x-target="#PreviewModal" class="ajax-modal">
         ${ordered_product_item.product_item.stock_type.name} ${ordered_product_item.attributes.get('t_shirts_size') or ''}<i class="icon-eye-open"></i>
       </a>
       <ul>
@@ -77,7 +78,7 @@
        <ul>
        %for ticket in ticket_list:
        <li>
-         <input type="checkbox" name="candidate_id" value="${token}@${seat.id if seat else None}@${ordered_product_item.id}@${ticket.id}"/>         
+         <input type="checkbox" name="candidate_id" value="${build_candidate_id(token, seat, ordered_product_item, ticket)}" />
          ${ticket.name}
        </li>
        %endfor
@@ -142,19 +143,32 @@
       <td style="text-align: right;"><strong>${vh.price(order.total_amount)}</strong></td>
     </tr>
   </table>
+  <script type="text/javascript">
+    (function($form) {
+      $form.find('.nested-checkbox input[type="checkbox"]').on("click",function(e){
+        var $e = $(e.currentTarget);
+        if(!!$e.attr("checked")){
+          $e.siblings("ul").find("input[type='checkbox']").attr("checked","checked");
+        }else{
+          $e.siblings("ul").find("input[type='checkbox']").attr("checked", null);
+        }
+      });
+      $form.parent().find('a[data-x-target]').click(function (e) {
+        var $this = $(this);
+        var target = $($this.data('x-target'));
+        var toggle = $this.data('toggle');
+        var href = $(this).attr('href');
+        target.load(href, function (resp, status) {
+          if (status != 'error') {
+            if (toggle == 'modal')
+              target.modal('show');
+          }
+        });
+        return false;
+      });
+    })($('script:last').parent());
+  </script>
 </form>
 %endif
 %endfor
-
-<script>
-  $(function(){
-    $('.nested-checkbox input[type="checkbox"]').on("click",function(e){
-      var $e = $(e.currentTarget);
-      if(!!$e.attr("checked")){
-        $e.siblings("ul").find("input[type='checkbox']").attr("checked","checked");
-      }else{
-        $e.siblings("ul").find("input[type='checkbox']").attr("checked", null);
-      }
-    });
-  });
-</script>
+</div>

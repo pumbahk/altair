@@ -82,8 +82,12 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%;" value="当日窓口発券モードにする" />
     <div id="sales-counter-toolbar" style="display:none">
       <label style="display:inline-block">
-        様式
+        ページ様式
         <select id="pageFormat" style="width:13em;vertical-align: baseline;"></select>
+      </label>
+      <label style="display:inline-block">
+        チケット様式
+        <select id="ticketFormat" style="width:13em;vertical-align: baseline;"></select>
       </label>
       <label style="display:inline-block">
         プリンタ
@@ -127,7 +131,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 <script type="text/javascript">
   var callbackName = ${json.dumps(callback_name)|n};
   var appletCodeBase = ${json.dumps(request.application_url)|n};
-  var appletArchive = ${json.dumps(request.static_url('altair.app.ticketing:static/printing-0.0.0-jar-with-dependencies.jar'))|n};
+  var appletArchive = ${json.dumps(request.static_url('altair.app.ticketing:static/printing-0.0.1-jar-with-dependencies.jar'))|n};
   var appletEndpoints = ${json.dumps(endpoints_json)|n};
   var cookie = ${json.dumps(request.headers.get('cookie'))|n};
   var uiMode = 'normal';  // normal, salesCounter
@@ -452,9 +456,24 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       if (ticketFormats) {
         for (var i = ticketFormats.iterator(); i.hasNext();) {
           var ticketFormat = i.next();
-          $ticketFormat.append($('<option></option>').text(ticketFormat.getName()));
+          var id = ticketFormat.getId();
+          var name = ticketFormat.getName();
+          $ticketFormat.append($('<option></option>').attr('value', id).text(name));
         }
       }
+    }
+
+    function getTicketFormatById(id) {
+      var ticketFormats = service.getTicketFormats();
+      if (ticketFormats) {
+        for (var i = ticketFormats.iterator(); i.hasNext();) {
+          var ticketFormat = i.next();
+          if (ticketFormat.getId() == id) {
+            return ticketFormat;
+          }
+        }
+      }
+      return null;
     }
 
     function getPageFormatById(id) {
@@ -502,8 +521,12 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         if (!currentPrintService) {
             alert('no print service');
         }
-        service.setPageFormat(getPageFormatById($pageFormat.val()));
+        var currentTicketFormat = getTicketFormatById($ticketFormat.val());
+        service.startBatchUpdate();
+        service.setTicketFormat(currentTicketFormat);
+        service.setPageFormat(currentPageFormat);
         service.setPrintService(currentPrintService);
+        service.endBatchUpdate();
         service.printAll();
     };
 

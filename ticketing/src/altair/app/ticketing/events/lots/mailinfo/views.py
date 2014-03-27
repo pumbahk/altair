@@ -9,7 +9,7 @@ from ..forms import SendingMailForm
 
 ## TODO:まとめる
 
-@view_config(route_name="tickets.event.lots.mailinfo.preview", renderer="string")
+@view_config(route_name="tickets.event.lots.mailinfo.preview", renderer="string", permission="event_editor")
 def mail_preview(context, request):
     entry_id = request.matchdict['entry_id']
     organization_id = context.user.organization_id
@@ -22,7 +22,7 @@ def mail_preview(context, request):
     mutil = get_mail_utility(request, request.matchdict["mailtype"])
     return mutil.preview_text(request, (lot_entry, elected_wish))
 
-@view_config(route_name="tickets.event.lots.mailinfo.send")
+@view_config(route_name="tickets.event.lots.mailinfo.send", permission="event_editor")
 def send_mail(context, request):
     entry_id = request.matchdict['entry_id']
     organization_id = context.user.organization_id

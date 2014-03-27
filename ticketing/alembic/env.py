@@ -12,7 +12,6 @@ config = context.config
 # target_metadata = mymodel.Base.metadata
 from altair.app.ticketing import models
 
-import altair.app.ticketing.bookmark.models
 import altair.app.ticketing.cart.models
 import altair.app.ticketing.payments.plugins.models
 import altair.app.ticketing.checkout.models

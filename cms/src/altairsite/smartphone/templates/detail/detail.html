@@ -292,7 +292,11 @@ $(function () {
                                 販売前
                             </div>
                           %elif not end_on_candidates:
-                            % if not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
+                            % if not perf['perf'].purchase_link and perf['perf'].backend_id is None:
+                              <div class="actions">
+                                準備中
+                              </div>
+                            % elif not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
                               <div class="actions">
                                 予定枚数終了
                               </div>
@@ -304,7 +308,11 @@ $(function () {
                               </div>
                             % endif
                           %elif max(end_on_candidates) >= helper.now(request):
-                            % if not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
+                            % if not perf['perf'].purchase_link and perf['perf'].backend_id is None:
+                              <div class="actions">
+                                準備中
+                              </div>
+                            % elif not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
                               <div class="actions">
                                 予定枚数終了
                               </div>

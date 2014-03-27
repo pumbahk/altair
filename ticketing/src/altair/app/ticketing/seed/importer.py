@@ -27,13 +27,11 @@ from venue import *
 from product import *
 from order import *
 from user import UserData, UserProfileData, UserCredentialData
-from altair.app.ticketing.bookmark.tests.bookmark import BookmarkData
 from altair.app.ticketing.products.tests.payment_delivery_method import DeliveryMethodPluginData, PaymentMethodPluginData, DeliveryMethodData, PaymentMethodData, PaymentDeliveryMethodPairData
 from altair.app.ticketing.seed.sej import SejTicketTemplateFileData
 
 from altair.app.ticketing.oauth2.models import Service
 from altair.app.ticketing.operators.models import Operator, OperatorActionHistory, OperatorRole, Permission
-from altair.app.ticketing.bookmark.models import Bookmark
 from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejFile, SejNotification
 from altair.app.ticketing.cart.models import Cart, CartedProduct, CartedProductItem
 from altair.app.ticketing.payments.plugins.models import ReservedNumber
@@ -148,7 +146,6 @@ def import_seed_data():
              'OrderedProductOrder2Data'             : OrderedProduct,
              'OrderedProductItemOrder1Data'         : OrderedProductItem,
              'OrderedProductItemOrder2Data'         : OrderedProductItem,
-             'BookmarkData'                         : Bookmark,
              'UserData'                             : User,
              'UserProfileData'                      : UserProfile,
              'UserCredentialData'                   : UserCredential,
@@ -271,7 +268,6 @@ def import_seed_data():
         OrderedProductOrder2Data,
         OrderedProductItemOrder1Data,
         OrderedProductItemOrder2Data,
-        BookmarkData,
         UserData,
         UserProfileData,
         UserCredentialData,

@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 from zope.interface import Interface
 from zope.interface import Attribute
 
@@ -7,6 +9,9 @@ class IInternalAuthResource(Interface):
 
     def login_validate(form):
         pass
+
+    organization = Attribute(u"組織")
+    operator = Attribute(u"オペレーター")
 
     __acl__ = Attribute("__acl__")
 

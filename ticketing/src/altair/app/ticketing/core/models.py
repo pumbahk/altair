@@ -2206,7 +2206,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if event_id:
             query = query.filter(Product.event_id==event_id)
         if sales_segment_group_id:
-            query = query.filter(Product.sales_segment_group_id==sales_segment_id)
+            query = query.filter(Product.sales_segment_group_id==sales_segment_group_id)
         if stock_id:
             if not performance_id:
                 query = query.join(Product.items)
@@ -2566,6 +2566,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
     sales_segment = relationship('SalesSegment', backref='orders')
+
+    issuing_start_at = Column(DateTime, nullable=True)
+    issuing_end_at   = Column(DateTime, nullable=True)
+    payment_start_at = Column(DateTime, nullable=True)
+    payment_due_at   = Column(DateTime, nullable=True)
 
     @property
     def organization(self):
@@ -3009,7 +3014,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             organization_id=cart.sales_segment.sales_segment_group.event.organization_id,
             channel=cart.channel,
             operator=cart.operator,
-            user=cart.shipping_address and cart.shipping_address.user
+            user=cart.shipping_address and cart.shipping_address.user,
+            issuing_start_at=cart.issuing_start_at,
+            issuing_end_at=cart.issuing_end_at,
+            payment_start_at=cart.payment_start_at,
+            payment_due_at=cart.payment_due_at
             )
 
         for product in cart.items:
@@ -3373,16 +3382,29 @@ class TicketPrintQueueEntry(Base, BaseModel):
         DBSession.flush()
 
     @classmethod
-    def peek(self, operator, ticket_format_id, order_id=None):
+    def query(cls, operator, ticket_format_id, order_id=None, queue_ids=None, include_masked=False, include_unmasked=True):
         q = DBSession.query(TicketPrintQueueEntry) \
-            .filter_by(processed_at=None, operator=operator, masked_at=None) \
-            .filter(Ticket.ticket_format_id==ticket_format_id) \
+            .filter_by(processed_at=None, operator=operator) \
+            .join(TicketPrintQueueEntry.ticket) \
             .options(joinedload(TicketPrintQueueEntry.seat))
+        if not include_masked:
+            q = q.filter(TicketPrintQueueEntry.masked_at == None)
+        if not include_unmasked:
+            q = q.filter(TicketPrintQueueEntry.masked_at != None)
+        if ticket_format_id is not None:
+            q = q.filter(Ticket.ticket_format_id == ticket_format_id)
         if order_id is not None:
             q = q.join(OrderedProductItem) \
                 .join(OrderedProduct) \
                 .filter(OrderedProduct.order_id==order_id)
-        q = q.order_by(*self.printing_order_condition())
+        if queue_ids:
+            q = q.filter(cls.id.in_(queue_ids))
+        q = q.order_by(*cls.printing_order_condition())
+        return q
+
+    @classmethod
+    def peek(cls, operator, ticket_format_id, order_id=None, queue_ids=None):
+        q = cls.query(operator, ticket_format_id, order_id, queue_ids)
         return q.all()
 
     @classmethod
@@ -3450,8 +3472,11 @@ class TicketCover(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     ## あとで伝搬サポートした時に移動
     @classmethod
-    def get_from_order(cls, order):
-        return TicketCover.query.filter_by(organization_id=order.organization_id).first() #todo: DeliveryMethod?
+    def get_from_order(cls, order, ticket_format_id=None):
+        q = TicketCover.query.filter_by(organization_id=order.organization_id)
+        if ticket_format_id is not None:
+            q = q.join(TicketCover.ticket).filter(Ticket.ticket_format_id == ticket_format_id)
+        return q.first() #todo: DeliveryMethod?
 
 class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundle"
@@ -3884,6 +3909,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             sales_segment.setting = SalesSegmentSetting.create_from_template(template.setting)
         if 'performance_id' in kwargs:
             sales_segment.performance_id = kwargs['performance_id']
+            p = Performance.query.get(kwargs['performance_id'])
+            sales_segment.event_id = p.event_id
         if 'sales_segment_group_id' in kwargs:
             sales_segment.sales_segment_group_id = kwargs['sales_segment_group_id']
             new_pdmps = []
@@ -3944,7 +3971,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             for product, quantity in product_quantities])
 
     def applicable(self, user=None, now=None, type='available'):
-        return build_sales_segment_query(sales_segment_id=self.id, user=user, now=now, type=type).exists()
+        return build_sales_segment_query(sales_segment_id=self.id, user=user, now=now, type=type).count() > 0
 
 class SettingMixin(object):
     def describe_iter(self):
@@ -4408,3 +4435,75 @@ class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     coupon_2_name = Column(Unicode(255))
     coupon_2_qr_enabled = Column(Boolean)
     coupon_2_pattern = Column(Unicode(255))
+
+
+class CartMixin(object):
+    @property
+    def issuing_start_at(self):
+        assert self.payment_delivery_pair is not None
+        assert self.created_at is not None
+        if self.payment_delivery_pair.issuing_start_at:
+            issuing_start_at = self.payment_delivery_pair.issuing_start_at
+        else:
+            issuing_start_at = self.created_at + timedelta(days=self.payment_delivery_pair.issuing_interval_days)
+            issuing_start_at = issuing_start_at.replace(hour=0, minute=0, second=0)
+        return issuing_start_at
+
+    @property
+    def issuing_end_at(self):
+        assert self.payment_delivery_pair is not None
+        assert self.created_at is not None
+        return self.payment_delivery_pair.issuing_end_at
+
+    @property
+    def payment_start_at(self):
+        # 暫定
+        return self.issuing_start_at
+
+    @property
+    def payment_due_at(self):
+        assert self.payment_delivery_pair is not None
+        assert self.created_at is not None
+        payment_period_days = self.payment_delivery_pair.payment_period_days or 3
+        payment_due_at = self.created_at + timedelta(days=payment_period_days)
+        payment_due_at = payment_due_at.replace(hour=23, minute=59, second=59)
+        return payment_due_at
+
+class GettiiVenue(Base, BaseModel):
+    __tablename__ = 'GettiiVenue'
+
+    id = Column(Identifier, primary_key=True)
+    code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'会場コード'))
+    venue_id = Column(Identifier, ForeignKey('Venue.id'), nullable=False)
+    venue = relationship('Venue')
+
+
+class GettiiSeat(Base, BaseModel):
+    __tablename__ = 'GettiiSeat'
+
+    id = Column(Identifier, primary_key=True)
+    l0_id = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'座席連番'), default=u'')
+    coordx = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'座標X'), default=u'')
+    coordy = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'座標Y'), default=u'')
+    posx = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'位置X'), default=u'')
+    posy = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'位置Y'), default=u'')
+    angle = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'角度'), default=u'')
+    floor = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'階'), default=u'')
+    column = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'列'), default=u'')
+    num = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'番号'), default=u'')
+    block = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'ブロック'), default=u'')
+    gate = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'ゲート'), default=u'')
+    priority_floor = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'優先順位階'), default=u'')
+    priority_area_code = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'優先順位エリアコード'), default=u'')
+    priority_block = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'優先順位ブロック'), default=u'')
+    priority_seat = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'優先順位座席'), default=u'')
+    seat_flag = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'座席フラグ'), default=u'')
+    seat_classif = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'座席区分'), default=u'')
+    net_block = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'ネットブロック'), default=u'')
+    modified_by = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'更新担当者コード'), default=u'')
+    modified_at = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'更新日'), default=u'')
+    # link
+    gettii_venue_id = Column(Identifier, ForeignKey('GettiiVenue.id', ondelete='CASCADE'), nullable=False)
+    seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
+    gettii_venue = relationship('GettiiVenue', backref='gettii_seats')
+    seat = relationship('Seat')

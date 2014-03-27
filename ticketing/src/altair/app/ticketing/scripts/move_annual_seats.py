@@ -50,12 +50,19 @@ eagles_seat_types = {
     u'ライトEウイング4': u'ライトEウイング4',
     u'内野1塁側ペアシート': u'内野1塁側ペアシート',
     u'内野指定席1塁側A': u'内野指定席1塁側A',
+    u'内野席1塁側A': u'内野指定席1塁側A',
     u'内野指定席1塁側B': u'内野指定席1塁側B',
+    u'内野席1塁側B': u'内野指定席1塁側B',
     u'内野指定席1塁側S': u'内野指定席1塁側S',
+    u'内野席1塁側S': u'内野指定席1塁側S',
     u'内野指定席3塁側A': u'内野指定席3塁側A',
+    u'内野席3塁側A': u'内野指定席3塁側A',
     u'内野指定席3塁側B': u'内野指定席3塁側B',
+    u'内野席3塁側B': u'内野指定席3塁側B',
     u'内野指定席3塁側S': u'内野指定席3塁側S',
+    u'内野席3塁側S': u'内野指定席3塁側S',
     u'内野指定席3塁側上段': u'内野指定席3塁側上段',
+    u'内野席3塁側上段': u'内野指定席3塁側上段',
     u'内野車椅子席1塁側': u'内野車椅子席1塁側',
     u'内野車椅子席3塁側': u'内野車椅子席3塁側',
     u'外野ライトペアシート': u'外野ライト・ペアシート',
@@ -115,7 +122,7 @@ def compose_seat_locator(parsed_name):
         parsed_name['column'],
         )
 
-def gen_sql(session, file, venue_id, encoding=None):
+def gen_sql(session, file, venue_id, src_stock_holder_names=None, dest_stock_holder_name=u'年間シート', encoding=None):
     from altair.app.ticketing.core.models import (
         Venue, Seat, Stock, StockType, StockHolder, StockStatus, Event, Performance,
         )
@@ -133,21 +140,40 @@ def gen_sql(session, file, venue_id, encoding=None):
     for stock_type_id, stock_type_name, stock_type in q:
         stock_types_by_name[stock_type_name] = stock_type
         stock_types_by_id[stock_type_id] = stock_type
-    annual_seat_stocks = dict(
+
+    src_seat_stock_sets = {}
+    q = session.query(StockHolder.id, StockHolder.name, StockType.id, Stock) \
+        .join(Stock.stock_type) \
+        .outerjoin(Stock.stock_holder) \
+        .join(Venue, Venue.performance_id == Stock.performance_id) \
+        .filter(Venue.id == venue_id)
+    if src_stock_holder_names is not None:
+        q = q.filter(StockHolder.name.in_(src_stock_holder_names))
+    for stock_holder_id, stock_holder_name, stock_type_id, stock in q:
+        stocks = src_seat_stock_sets.get(stock_type_id)
+        if stocks is None:
+            stocks = src_seat_stock_sets[stock_type_id] = {}
+        stocks[stock_holder_id] = (stock_holder_name, stock)
+
+    dest_seat_stocks = dict(
         session.query(StockType.id, Stock) \
             .join(Stock.stock_type) \
             .outerjoin(Stock.stock_holder) \
             .join(Venue, Venue.performance_id == Stock.performance_id) \
             .filter(Venue.id == venue_id) \
-            .filter(StockHolder.name == u'年間シート') 
-        )
+            .filter(StockHolder.name == dest_stock_holder_name)
+            )
+    if not dest_seat_stocks:
+        raise ApplicationException(u'no such stock holder named %s' % dest_stock_holder_name)
+
     stmts = []
     seats_by_locator = {}
-    q = session.query(Seat.id, Seat.l0_id, Seat.name, Stock.id, StockType) \
+    q = session.query(Seat.id, Seat.l0_id, Seat.name, Stock.id, StockHolder.id, StockHolder.name, StockType) \
         .join(Stock, Seat.stock_id == Stock.id) \
         .join(StockType, Stock.stock_type_id == StockType.id) \
+        .join(StockHolder, Stock.stock_holder_id == StockHolder.id) \
         .filter(Seat.venue_id == venue_id)
-    for seat_id, l0_id, name, stock_id, stock_type in q:
+    for seat_id, l0_id, name, stock_id, stock_holder_id, stock_holder_name, stock_type in q:
         locator = compose_seat_locator(parse_eagles_seat_name(name))
         record = seats_by_locator.get(locator)
         if record is not None:
@@ -157,6 +183,7 @@ def gen_sql(session, file, venue_id, encoding=None):
             l0_id=l0_id,
             name=name,
             stock_id=stock_id,
+            stock_holder_name=stock_holder_name,
             stock_type=stock_type
             )
     seats_to_move_per_stock_type = dict(
@@ -183,7 +210,7 @@ def gen_sql(session, file, venue_id, encoding=None):
             if stock_type is None:
                 message('cannot find a seat type named %s at line %d. skip.' % (seat_type_name, line_no))
                 continue
-            message('seat %s will be moved to %s' % (seat['name'], stock_type.name), auxiliary=True)
+            message('seat %s (stock_holder_name=%s) will be moved to %s' % (seat['name'], seat['stock_holder_name'], dest_stock_holder_name), auxiliary=True)
             seats_to_move_per_stock_type[stock_type.id].append(seat)
     finally:
         f.close()
@@ -194,17 +221,25 @@ def gen_sql(session, file, venue_id, encoding=None):
             continue
         stock_type = stock_types_by_id[stock_type_id]
         stmts.append(u'-- %s' % stock_type.name)
-        annual_seat_stock = annual_seat_stocks.get(stock_type_id)
-        if annual_seat_stock is None:
-            raise ApplicationException(u'%s has no corresponding Stock for annual seats' % stock_type.name)
+        src_seat_stocks = src_seat_stock_sets.get(stock_type_id)
+        if src_seat_stocks is None:
+            raise ApplicationException(u'%s has no corresponding source Stock' % stock_type.name)
+        dest_seat_stock = dest_seat_stocks.get(stock_type_id)
+        if dest_seat_stock is None:
+            raise ApplicationException(u'%s has no corresponding destination Stock' % stock_type.name)
         moved_seats_per_stock = {}
         for seat in seats:
-            if seat['stock_id'] != annual_seat_stock.id:
+            applicable_seat_stocks = [stock for stock_holder_id, (stock_holder_name, stock) in src_seat_stocks.items() if seat['stock_id'] == stock.id]
+            if len(applicable_seat_stocks) == 0:
+                raise ApplicationException(u'seat (seat_id=%s, l0_id=%s) does not belong to any one of stock holders (name=%s) (actual: %s)' % (seat_id, l0_id, u', '.join(v[0] for v in src_seat_stocks.values()), seat['stock_holder_name']))
+            assert len(applicable_seat_stocks) == 1
+            applicable_seat_stock = applicable_seat_stocks[0]
+            if applicable_seat_stock.id != dest_seat_stock.id:
                 stmts.append(
                     render_sql(
                         sqlexpr.update(
                             Seat.__table__,
-                            values=dict(stock_id=annual_seat_stock.id),
+                            values=dict(stock_id=dest_seat_stock.id),
                             whereclause=(Seat.id == seat['id'])
                             )
                         )
@@ -241,7 +276,7 @@ def gen_sql(session, file, venue_id, encoding=None):
                     values=dict(
                         quantity=(StockStatus.quantity + total_number_of_moved_seats)
                         ),
-                    whereclause=(StockStatus.stock_id == annual_seat_stock.id)
+                    whereclause=(StockStatus.stock_id == dest_seat_stock.id)
                     )
                 )
             )
@@ -252,7 +287,7 @@ def gen_sql(session, file, venue_id, encoding=None):
                     values=dict(
                         quantity=(Stock.quantity + len(seats))
                         ),
-                    whereclause=(Stock.id == annual_seat_stock.id)
+                    whereclause=(Stock.id == dest_seat_stock.id)
                     )
                 )
             )
@@ -316,6 +351,8 @@ def main(argv=sys.argv):
     parser.add_argument('file', metavar='file', type=str)
     parser.add_argument('venue_id', metavar='venue_id', type=long, nargs='*',
                         help='venue_id')
+    parser.add_argument('--src-stock-holder-name', metavar='src_stock_holder_name', action='append', type=str, default=[])
+    parser.add_argument('--dest-stock-holder-name', metavar='dest_stock_holder_name', type=str, default=u'年間シート'.encode(charset))
     parser.add_argument('--config', metavar='config', type=str)
     parser.add_argument('--encoding', metavar='encoding', type=str)
     args = parser.parse_args()
@@ -327,9 +364,22 @@ def main(argv=sys.argv):
     session = sqlahelper.get_session()
 
     stmts = []
+    if not args.src_stock_holder_name:
+        src_stock_holder_names = None
+    else:
+        src_stock_holder_names = [
+            unicode(src_stock_holder_name, charset)
+            for src_stock_holder_name in args.src_stock_holder_name
+            ]
     try:
         for venue_id in args.venue_id:
-            stmts.extend(gen_sql(session, args.file, venue_id, args.encoding))
+            stmts.extend(gen_sql(
+                session,
+                args.file,
+                venue_id=venue_id,
+                src_stock_holder_names=src_stock_holder_names,
+                dest_stock_holder_name=unicode(args.dest_stock_holder_name, charset),
+                encoding=args.encoding))
     except ApplicationException as e:
         message(e.message) 
         return

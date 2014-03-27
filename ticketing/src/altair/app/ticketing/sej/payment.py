@@ -19,6 +19,7 @@ from .models import (
     SejOrderUpdateReason,
     SejPaymentType,
     SejTicketType,
+    code_from_payment_type,
     code_from_ticket_type
     )
 from .helpers import (
@@ -213,7 +214,6 @@ def create_sej_request_data(
         tickets=[]
         ticket_num = 0
         e_ticket_num = 0
-
 
     params['X_ticket_cnt']          = u'%02d' % len(tickets)
     params['X_ticket_hon_cnt']      = u'%02d' % ticket_num
@@ -466,7 +466,7 @@ def request_update_order(
         total_price=new_order.total_price,
         ticket_price=new_order.ticket_price,
         commission_fee=new_order.commission_fee,
-        payment_type=new_order.payment_type,
+        payment_type = code_from_payment_type[int(new_order.payment_type)],
         ticketing_fee=new_order.ticketing_fee,
         payment_due_at=new_order.payment_due_at,
         ticketing_start_at=new_order.ticketing_start_at,
@@ -486,8 +486,6 @@ def request_update_order(
             ],
         shop_id=new_order.shop_id
         )
-    params['X_ticket_cnt']      = '%02d' % new_order.total_ticket_count
-    params['X_ticket_hon_cnt']  = '%02d' % new_order.ticket_count
     params['X_upd_riyu']        = '%02d' % update_reason.v
     if new_order.billing_number is not None:
         params['X_haraikomi_no']    = new_order.billing_number
@@ -530,10 +528,13 @@ def request_update_order(
     for idx in range(1, 21):
         ticket = ticket_dict.get(idx)
         barcode_number = ret.get('X_barcode_no_%02d' % idx)
-        assert (not barcode_number and not ticket) or (barcode_number and ticket), '%d: %r / %r' % (idx, ret, ticket_dict)
-        if not ticket:
-            continue
-        ticket.barcode_number = barcode_number
+        if int(new_order.payment_type) == int(SejPaymentType.PrepaymentOnly):
+            assert not barcode_number, '%d: %r' % (idx, ret)
+        else:
+            assert (not barcode_number and not ticket) or (barcode_number and ticket), '%d: %r / %r' % (idx, ret, ticket_dict)
+            if not ticket:
+                continue
+            ticket.barcode_number = barcode_number
 
 def request_fileget(
         notification_type,

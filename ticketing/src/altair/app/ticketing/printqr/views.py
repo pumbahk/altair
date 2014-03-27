@@ -5,6 +5,7 @@ import re
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPNotFound
 from altair.app.ticketing.qr import get_qrdata_builder
+from altair.app.ticketing.qr.builder import InvalidSignedString
 import logging
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,11 @@ from datetime import datetime
 from altair.app.ticketing.qr.utils import get_matched_token_query_from_order_no
 from altair.app.ticketing.qr.utils import get_or_create_matched_history_from_token
 from altair.app.ticketing.qr.utils import make_data_for_qr
+
+import urllib
+import urllib2
+import json
+import traceback
 
 def _accepted_object(request, obj):
     if obj is None:
@@ -131,17 +137,63 @@ def qrapp_view(context, request):
 @view_config(route_name="api.ticket.data", renderer="json", 
              request_param="qrsigned", xhr=True)
 def ticketdata_from_qrsigned_string(context, request):
-    signed = request.params["qrsigned"]
-    signed = re.sub(r"[\x01-\x1F\x7F]", "", signed.encode("utf-8")).replace("\x00", "") .decode("utf-8")
     builder = get_qrdata_builder(request)
     event_id = request.matchdict.get("event_id", "*")
+    signed = request.params["qrsigned"]
+    signed = re.sub(r"[\x01-\x1F\x7F]", "", signed.encode("utf-8")).replace("\x00", "") .decode("utf-8")
     try:
-        order, history = utils.order_and_history_from_qrdata(builder.data_from_signed(signed))
+        logger.info("signed = %s" % signed)
+        qrdata = builder.data_from_signed(signed)
+        logger.info("decoded = %s" % qrdata)
+        
+        data = None
+        if not (qrdata.has_key("order") and qrdata.has_key("serial")):
+            raise("Broken QR: %s" % qrdata)
+        if re.match(r'^[0-9]+$', qrdata["serial"]):
+            order_and_history = utils.order_and_history_from_qrdata(qrdata)
+            if order_and_history is not None:
+                order, history = order_and_history
+                data = todict.data_dict_from_order_and_history(order, history)
+        if data is None:
+            # eventgate
+            settings = request.registry.settings
+            api_url = settings.get('orion.search_url')
+            if api_url is None:
+                raise Exception("orion.search_uri is None")
+            logger.debug("target url is %s" % api_url)
+            
+            obj = dict(serial = qrdata["serial"])
+            req_json = json.dumps(obj)
+            logger.info("Create request to Orion API: %s" % req_json);
+            req = urllib2.Request(api_url, req_json, headers={ u'Content-Type': u'text/json; charset="UTF-8"' })
+            stream = urllib2.urlopen(req);
+            headers = stream.info()
+            if stream.code == 200:
+                res_text = unicode(stream.read(), 'utf-8')
+                logger.info("response = %s" % res_text)
+                res = json.loads(res_text)
+                if res is None:
+                    raise Exception("Unexpected response from Orion")
+                if res["result"] != "OK":
+                    raise Exception("Orion API failed: %s" % res_text)
+                if res.has_key("token"):
+                    order_and_token = utils.order_from_token(res["token"], qrdata["order"])
+                    if order_and_token is not None:
+                        order, token = order_and_token
+                        data = todict.data_dict_from_order(order, token)
+                    
+            else:
+                logger.warn("HTTP Response is %u" % stream.code)
+        if data is None:
+            raise Exception("No such ticket: %s" % qrdata)
+
         utils.verify_order(order, event_id=event_id)
-        data = todict.data_dict_from_order_and_history(order, history)
         return {"status": "success", 
                 "data": data}
+    except InvalidSignedString:
+        return {"status": "error", "message": u"不正なQRコードです"}
     except KeyError, e:
+        logger.info(traceback.format_exc())
         return {"status": "error", "message": u"うまくQRコードを読み込むことができませんでした"}
     except utils.UnmatchEventException:
         return {"status": "error", "message": u"異なるイベントのQRチケットです。このページでは発券できません"}
@@ -264,6 +316,8 @@ class AppletAPIView(object):
     def ticket_data(self): ## svg one
         ordered_product_item_token_id = self.request.json_body.get('ordered_product_item_token_id')
         if ordered_product_item_token_id is None:
+            logger.error("no ordered_product_item_token_id given: token id=%s,  organization id=%s" \
+                             % (ordered_product_item_token_id, self.context.organization.id))
             return { u'status': u'error', u'message': u'券面取得用の番号がみつかりません' }
 
         ordered_product_item_token = utils.get_matched_ordered_product_item_token(
@@ -271,7 +325,7 @@ class AppletAPIView(object):
             self.context.organization.id)
 
         if ordered_product_item_token is None:
-            logger.warn("*api.applet.ticket data: token id=%s,  organization id=%s" \
+            logger.error("no ordered_product_item_token found: token id=%s,  organization id=%s" \
                              % (ordered_product_item_token_id, self.context.organization.id))
             return { u'status': u'error', u'message': u'券面データがみつかりません' }
 
@@ -279,7 +333,10 @@ class AppletAPIView(object):
         issuer = utils.get_issuer()
         vardict = todict.svg_data_from_token(ordered_product_item_token, issuer=issuer)
         retval = todict.svg_data_list_all_template_valiation(vardict, ticket_templates)
-        assert retval
+        if not retval:
+            logger.error("no applicable tickets found: token id=%s,  organization id=%s" \
+                             % (ordered_product_item_token_id, self.context.organization.id))
+            return { u'status': u'error', u'message': u'印刷対象となる券面データがありません' }
         return {
             u'status': u'success',
             u'data': retval

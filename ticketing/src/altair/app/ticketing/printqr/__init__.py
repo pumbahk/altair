@@ -48,6 +48,7 @@ def main(global_config, **local_config):
     config.add_forbidden_view("altair.app.ticketing.login.internal.views.login_view", renderer="altair.app.ticketing.printqr:templates/login.html")
 
     config.include('altair.app.ticketing.qr', route_prefix='qr')
+    config.include("altair.exclog")
     config.include(".")
     config.include(".jasmine")
     config.add_static_view('static', 'altair.app.ticketing.printqr:static', cache_max_age=3600)

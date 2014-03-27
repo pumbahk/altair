@@ -178,6 +178,11 @@ $(function(){
 	売上レポート
   </a>
 </div>
+<div class="btn-group" style="float: left;">
+  <a class="btn" href="${request.route_path('events.print_progress.show', event_id=event.id)}" style="margin-left: 10px;">
+	発券進捗状況確認
+  </a>
+</div>
 
 %if event.organization_id == 15:
 <!-- 楽天チケットのみ -->

@@ -1,0 +1,39 @@
+<%page args="progress"/>
+
+<table class="table" id="progress_tabular">
+  <tbody>
+    <tr>
+      <th rowspan="${progress.size*2}">トータル注文数</th>
+      <td rowspan="${progress.size*2}"><span id="desc_total"></span>${progress.total}枚</td>
+      <th rowspan="2">QR引き取り</th>
+      <td rowspan="2"><span id="desc_total_qr"></span>${progress.qr.total}枚</td>
+      <th>未印刷</th>
+      <td><span id="desc_qr_unprinted"></span>${progress.qr.unprinted}枚</td>
+    </tr>
+    <tr>
+      <th>印刷済み</th>
+      <td><span id="desc_qr_printed"></span>${progress.qr.printed}枚</td>
+    </tr>
+    <tr>
+      <th rowspan="2">配送</th>
+      <td rowspan="2"><span id="desc_total_shipping"></span>${progress.shipping.total}枚</td>
+      <th>未印刷</th>
+      <td><span id="desc_shipping_unprinted"></span>${progress.shipping.unprinted}枚</td>
+    </tr>
+    <tr>
+      <th>印刷済み</th>
+      <td><span id="desc_shipping_printed"></span>${progress.shipping.printed}枚</td>
+    </tr>
+    <tr>
+      <th rowspan="2">その他</th>
+      <td rowspan="2"><span id="desc_total_other"></span>${progress.other.total}枚</td>
+      <th>未印刷</th>
+      <td><span id="desc_other_unprinted"></span>${progress.other.unprinted}枚</td>
+    </tr>
+    <tr>
+      <th>印刷済み</th>
+      <td><span id="desc_other_printed"></span>${progress.other.printed}枚</td>
+    </tr>
+  </tbody>
+</table>
+

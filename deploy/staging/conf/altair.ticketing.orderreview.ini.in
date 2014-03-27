@@ -4,8 +4,8 @@ pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair_gaq altair
 altair.auth.specs =
     rakuten=%(here)s/rakuten_who.ini
     fc_auth=%(here)s/fc_who.ini
-altair.auth.decider = altair.app.ticketing.cart:WhoDecider
-altair.auth.callback = altair.app.ticketing.cart.security:auth_model_callback
+altair.auth.decider = altair.app.ticketing.security:OrganizationSettingBasedWhoDecider
+altair.auth.callback = altair.app.ticketing.security:auth_model_callback
 
 ; altair.rakuten_auth
 altair.rakuten_auth.return_to = ${altair:rakuten_auth.return_to}
@@ -20,6 +20,9 @@ altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 ; Beaker
 session.type = ${altair:beaker_backend_type}
 cache.type = ${altair:beaker_backend_type}
+
+; orion
+orion.create_url = http://orion-test.eventgate.jp/ticket_api/create
 
 [app:www-check]
 use = egg:Paste#static

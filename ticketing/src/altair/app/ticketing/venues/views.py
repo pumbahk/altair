@@ -7,17 +7,21 @@ from urllib2 import urlopen
 import re
 import logging
 from urlparse import urlparse
+from zope.interface import implementer
 
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.response import Response
 from pyramid.url import route_path
+from pyramid.settings import asbool
 from sqlalchemy import and_, distinct
 from sqlalchemy.sql import exists, join, func, or_, not_
 from sqlalchemy.sql.expression import asc, desc
 from sqlalchemy.orm import joinedload, noload, aliased, undefer
 
 from altair.pyramid_assets import get_resolver
+from altair.pyramid_assets.data import DataSchemeAssetDescriptor
+from altair.pyramid_boto.s3.assets import IS3KeyProvider
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
@@ -26,27 +30,62 @@ from altair.app.ticketing.venues.forms import SiteForm
 from altair.app.ticketing.venues.export import SeatCSV
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.app.ticketing.fanstatic import with_bootstrap
+from .utils import is_drawing_compressed, get_s3_url
+from .interfaces import IVenueSiteDrawingHandler
 
 logger = logging.getLogger(__name__)
 
+
+@implementer(IVenueSiteDrawingHandler)
+class VenueSiteDrawingHandler(object):
+    def __init__(self, config):
+        self.use_x_accel_redirect = asbool(config.registry.settings.get('altair.site_data.indirect_serving.use_x_accel_redirect', 'false'))
+
+    def __call__(self, context, request):
+        site_id = long(request.matchdict.get('site_id'))
+        part = request.params.get('part', 'root.svg')
+        site = Site.query \
+            .join(Venue.site) \
+            .filter_by(id=site_id) \
+            .filter(Venue.organization_id==context.user.organization_id) \
+            .distinct().one()
+        drawing = get_venue_site_adapter(request, site).get_backend_drawing(part)
+        logger.debug(u'drawing=%r' % drawing)
+        if drawing is None:
+            if site._drawing_url is not None:
+                logger.debug(u'using site._drawing_url (=%s)' % site._drawing_url)
+                drawing = get_resolver(request.registry).resolve(site._drawing_url)
+            else:
+                # ダミー会場図だった
+                drawing = DataSchemeAssetDescriptor('<?xml version="1.0" ?><svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 1 1" width="1" height="1" />', 'image/svg+xml', [], None)
+
+        if drawing is None:
+            return Response(status_code=404)
+        else:
+            if IS3KeyProvider.providedBy(drawing) and self.use_x_accel_redirect:
+                redirect_to = get_s3_url(drawing)
+                return Response(
+                    status_code=200,
+                    headers={ 'X-Accel-Redirect': redirect_to }
+                    )
+            else:
+                headers = {
+                    'Cache-Control': 'max-age=3600 private', # hard-coded!
+                    }
+                resp = Response(
+                    status_code=200,
+                    content_type='image/svg+xml',
+                    body_file=drawing.stream()
+                    )
+                resp.encode_content('gzip', lazy=True)
+                return resp
+
+
 @view_config(route_name="api.get_site_drawing", request_method="GET", permission='event_viewer')
 def get_site_drawing(context, request):
-    site_id = long(request.matchdict.get('site_id'))
-    site = Site.query \
-        .join(Venue.site) \
-        .filter_by(id=site_id) \
-        .filter(Venue.organization_id==context.user.organization_id) \
-        .distinct().one()
-    drawing_url = get_venue_site_adapter(request, site).drawing_url
-    if drawing_url is None:
-        return Response(status_code=404)
-    else:
-        return Response(
-            status_code=200,
-            content_type='image/svg',
-            body_file=get_resolver(request.registry).resolve(drawing_url).stream()
-            )
+    return request.registry.getUtility(IVenueSiteDrawingHandler)(context, request)
 
+ 
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):
     venue = request.context.venue
@@ -379,3 +418,9 @@ def edit_post(request):
             'route_name': u'編集',
             'route_path': request.path,
         }
+
+def includeme(config):
+    config.registry.registerUtility(
+        VenueSiteDrawingHandler(config),
+        IVenueSiteDrawingHandler
+        )

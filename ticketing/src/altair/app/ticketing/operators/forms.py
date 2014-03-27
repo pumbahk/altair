@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 
+from pyramid.threadlocal import get_current_request
+
 from wtforms import Form, ValidationError
 from wtforms import TextField, HiddenField, DateField, PasswordField, SelectMultipleField
 from wtforms.validators import Length, Email, Optional, Regexp
 from pyramid.security import has_permission, ACLAllowed
 
-from altair.formhelpers import Translations, Required
-from altair.formhelpers.fields import DateTimeField, LazySelectMultipleField
-from altair.app.ticketing.operators.models import Operator, OperatorAuth, OperatorRole, Permission
+from altair.formhelpers import Translations, Required, PHPCompatibleSelectMultipleField, strip_spaces, NFKC
+from altair.formhelpers.fields import DateTimeField
+from altair.formhelpers.widgets import CheckboxMultipleSelect
+from altair.app.ticketing.operators.models import Operator, OperatorAuth, OperatorRole, Permission, ensure_ascii
+from altair.app.ticketing.permissions.utils import PermissionCategory
 from altair.app.ticketing.models import DBSession
 
 class OperatorRoleForm(Form):
@@ -15,39 +19,11 @@ class OperatorRoleForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
 
-        category_names = DBSession.query(Permission.category_name).distinct().all()
-        self.permissions.choices = [(name[0], name[0]) for name in category_names]
         if obj and obj.permissions:
             self.permissions.data = [p.category_name for p in obj.permissions]
 
-    id = HiddenField(
-        label=u'ID',
-        validators=[Optional()],
-    )
-    name = TextField(
-        label=u'名前',
-        validators=[
-            Required(),
-            Length(max=255, message=u'255文字以内で入力してください'),
-        ]
-    )
-    permissions = SelectMultipleField(
-        label=u"権限", 
-        choices=[]
-    )
-
-class OperatorForm(Form):
-
-    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
-        if obj:
-            self.login_id.data = obj.auth.login_id
-            self.role_ids.data = [role.id for role in obj.roles]
-            self.password.validators.append(Optional())
-        else:
-            self.password.validators.append(Required())
-        if 'request' in kwargs:
-            self.request = kwargs['request']
+        if 'organization_id' in kwargs:
+            self.organization_id.data = kwargs['organization_id']
 
     def _get_translations(self):
         return Translations()
@@ -60,7 +36,72 @@ class OperatorForm(Form):
         validators=[Required()],
     )
     name = TextField(
-        label=u'名前',
+        label=u'ロール名',
+        filters=[strip_spaces],
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+            Regexp("^[a-zA-Z0-9]+$", 0, message=u'英数文字のみ入力可能です。'),
+        ]
+    )
+    name_kana = TextField(
+        label=u'ロール名(日本語表記)',
+        filters=[strip_spaces, NFKC],
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+    permissions = PHPCompatibleSelectMultipleField(
+        label=u"権限", 
+        choices=lambda field: [(category_name, label) for category_name, label in PermissionCategory.items()],
+        widget=CheckboxMultipleSelect(multiple=True)
+    )
+
+    def validate_name(form, field):
+        query = OperatorRole.query_all(form.organization_id.data)
+        query = query.filter(OperatorRole.name==field.data)
+        if form.id.data:
+            query = query.filter(OperatorRole.id!=form.id.data)
+        if query.count() > 0:
+            raise ValidationError(u'ロール名が重複しています。')
+
+    def validate_id(form, field):
+        if field.data:
+            operator_role = OperatorRole.query.filter_by(id=field.data).first()
+            request = get_current_request()
+            if not operator_role.is_editable() and not request.context.has_permission('administrator'):
+                raise ValidationError(u'このロールは変更できません')
+
+
+class OperatorForm(Form):
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+
+        if obj:
+            self.login_id.data = obj.auth.login_id
+            self.role_ids.data = [role.id for role in obj.roles]
+            self.password.validators.append(Optional())
+        else:
+            self.password.validators.append(Required())
+
+        if 'organization_id' in kwargs:
+            self.role_ids.choices = [(role.id, role.name_kana) for role in OperatorRole.all(kwargs['organization_id'])]
+
+    def _get_translations(self):
+        return Translations()
+
+    id = HiddenField(
+        label=u'ID',
+        validators=[Optional()],
+    )
+    organization_id = HiddenField(
+        validators=[Required()],
+    )
+    name = TextField(
+        label=u'オペレーター名',
+        filters=[strip_spaces, NFKC],
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
@@ -81,9 +122,11 @@ class OperatorForm(Form):
 
     login_id = TextField(
         label=u'ログインID',
+        filters=[strip_spaces],
         validators=[
             Required(),
             Length(4, 384, message=u'4文字以上384文字以内で入力してください'),
+            Regexp("^[a-zA-Z0-9@!#$%&'()*+,\-./_]+$", 0, message=u'英数記号を入力してください。'),
         ]
     )
     password = PasswordField(
@@ -93,24 +136,31 @@ class OperatorForm(Form):
             Regexp("^[a-zA-Z0-9@!#$%&'()*+,\-./_]+$", 0, message=u'英数記号を入力してください。'),
         ]
     )
-
-    role_ids = LazySelectMultipleField(
-        label=u'権限',
+    role_ids = PHPCompatibleSelectMultipleField(
+        label=u'ロール',
         validators=[Optional()],
-        choices=lambda field: [(role.id, role.name) for role in OperatorRole.all()],
         coerce=int,
+        widget=CheckboxMultipleSelect(multiple=True)
     )
 
     def validate_login_id(form, field):
-        operator_auth = OperatorAuth.get_by_login_id(field.data)
+        operator_auth = OperatorAuth.get_by_login_id(ensure_ascii(field.data))
         if operator_auth is not None:
             if not form.id.data or operator_auth.operator_id != int(form.id.data):
                 raise ValidationError(u'ログインIDが重複しています。')
 
     def validate_id(form, field):
-        # administratorロールのオペレータはadministratorロールがないと編集できない
-        if field.data:
-            if not isinstance(has_permission('administrator', form.request.context, form.request), ACLAllowed):
-                operator = Operator.filter_by(id=field.data).first()
-                if 'administrator' in [(role.name) for role in operator.roles]:
-                    raise ValidationError(u'このオペレータを編集する権限がありません')
+        # administratorロールのオペレータはadministrator権限がないと編集できない
+        request = get_current_request()
+        if field.data and not request.context.has_permission('administrator'):
+            operator = Operator.get(form.organization_id.data, field.data)
+            if 'administrator' in [(role.name) for role in operator.roles]:
+                raise ValidationError(u'このオペレータを編集する権限がありません')
+
+    def validate_role_ids(form, field):
+        # administratorロールはadministrator権限がないと付与できない
+        request = get_current_request()
+        if not request.context.has_permission('administrator'):
+            query = OperatorRole.query_all(form.organization_id.data).filter(OperatorRole.id.in_(field.data))
+            if 'administrator' in [role.name for role in query.all()]:
+                raise ValidationError(u'このロールを付与する権限がありません')

@@ -3,6 +3,7 @@
   <title>${event.title} - ${performance.name}</title>
   <meta name="viewport" content="width=device-width, minimum-scale=1.0"/>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.orderreview:static/css/common/qr.css')}" media="all" />
 </head>
 <body>
 <div align="center" style="text-align:center">
@@ -14,7 +15,7 @@
   <hr size="1" color="#ffb700" />
   <div>${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</div>
   <hr size="1" color="#ffb700" />
-  <img src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign)}" style="width: 200px; height: 200px;" width="200" height="200" /><br/>
+  <img class="qr" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign)}" /><br/>
   発券番号 ${ticket.id}<br />
   注文番号 ${order.order_no}<br />
   パフォーマンス ${performance.code}<br />

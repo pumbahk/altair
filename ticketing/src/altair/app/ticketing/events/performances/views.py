@@ -268,12 +268,12 @@ class PerformanceShowView(BaseView):
     @view_config(route_name="performances.orion.index", request_method='POST')
     def orion_index_update(self):
         form = OrionPerformanceForm(self.request.params)
-        
+
         if form.coupon_2_enabled.data == False or form.coupon_2_name.data is None or form.coupon_2_name.data == "":
             form.coupon_2_name.data = None
             form.coupon_2_qr_enabled.data = None
             form.coupon_2_pattern.data = None
-        
+
         if form.validate():
             if form.enabled.data == False:
                 # delete
@@ -297,7 +297,7 @@ class PerformanceShowView(BaseView):
                 op.save()
 
             return HTTPFound(self.request.route_url('performances.orion.index', performance_id=self.performance.id))
-        
+
         return self.orion_index_view()
 
 
@@ -379,7 +379,7 @@ class Performances(BaseView):
             route_name = u'コピー'
 
         is_copy = (self.request.matched_route.name == 'performances.copy')
-        f = PerformanceForm(    
+        f = PerformanceForm(
             obj=performance,
             organization_id=self.context.user.organization_id,
             venue_id=performance.venue.id
@@ -499,12 +499,12 @@ class Performances(BaseView):
             'performance':self.context.performance,
         }
 
-@view_config(decorator=with_bootstrap, permission="authenticated",
+@view_config(decorator=with_bootstrap, permission="event_editor",
              route_name="performances.mailinfo.index")
 def mailinfo_index_view(context, request):
     return HTTPFound(request.route_url("performances.mailinfo.edit", performance_id=context.performance.id, mailtype=MailTypeChoices[0][0]))
 
-@view_defaults(decorator=with_bootstrap, permission="authenticated", 
+@view_defaults(decorator=with_bootstrap, permission="event_editor",
                route_name="performances.mailinfo.edit", 
                renderer="altair.app.ticketing:templates/performances/mailinfo/new.html")
 class MailInfoNewView(BaseView):
@@ -518,12 +518,12 @@ class MailInfoNewView(BaseView):
         mailtype = self.request.matchdict["mailtype"]
         form = formclass(**(performance.extra_mailinfo.data.get(mailtype, {}) if performance.extra_mailinfo else {}))
         return {"performance": performance,
-                "form": form, 
+                "form": form,
                 "organization": performance.event.organization,
-                "extra_mailinfo": performance.extra_mailinfo, 
-                "mailtype": self.request.matchdict["mailtype"], 
-                "choices": MailTypeChoices, 
-                "mutil": mutil, 
+                "extra_mailinfo": performance.extra_mailinfo,
+                "mailtype": self.request.matchdict["mailtype"],
+                "choices": MailTypeChoices,
+                "mutil": mutil,
                 "choice_form": choice_form}
 
     @view_config(request_method="POST")
@@ -545,10 +545,10 @@ class MailInfoNewView(BaseView):
             DBSession.add(mailinfo)
             self.request.session.flash(u"メールの付加情報を登録しました")
 
-        return {"performance": performance, 
-                "form": form, 
-                "organization": performance.event.organization, 
-                "mailtype": self.request.matchdict["mailtype"], 
-                "mutil": mutil, 
-                "choices": MailTypeChoices, 
+        return {"performance": performance,
+                "form": form,
+                "organization": performance.event.organization,
+                "mailtype": self.request.matchdict["mailtype"],
+                "mutil": mutil,
+                "choices": MailTypeChoices,
                 "choice_form": choice_form}

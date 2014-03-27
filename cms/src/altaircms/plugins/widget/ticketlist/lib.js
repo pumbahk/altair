@@ -60,6 +60,7 @@ widget.configure({
                 "target_performance_id": root.find("#target_performance_id").val(), 
                 "target_salessegment_id": root.find("#target_salessegment_id").val(), 
                 "show_label": root.find("#show_label:checked").val() && "1", 
+                "show_seattype": root.find("#show_seattype:checked").val() && "1",
                 "caption": root.find("#caption").val()}
     };
     return widget.include("ticketlist", {

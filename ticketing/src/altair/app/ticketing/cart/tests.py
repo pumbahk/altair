@@ -531,6 +531,7 @@ class TicketingCartResourceTestBase(object):
             )
         self.session.add(performance)
         sales_segment = SalesSegment(
+            event=performance.event,
             performance=performance,
             setting=SalesSegmentSetting(
                 order_limit=order_limit,
@@ -542,53 +543,66 @@ class TicketingCartResourceTestBase(object):
         self.session.add(user)
         other = User()
         self.session.add(other)
+        orders = []
         for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
             order = Order(
-                user=user,
-                performance=performance,
+                user=user, cart=cart,
                 sales_segment=sales_segment,
                 total_amount=0,
-                system_fee=0,
-                transaction_fee=0,
-                delivery_fee=0
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_start_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
                 )
             self.session.add(order)
+            orders.append(order)
 
+        cancels = []
         for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
             order = Order(
-                user=user,
-                performance=performance,
+                user=user, cart=cart,
                 sales_segment=sales_segment,
-                total_amount=0,
-                canceled_at=datetime(1970, 1, 1),
-                system_fee=0,
-                transaction_fee=0,
-                delivery_fee=0
+                total_amount=0, canceled_at=datetime.now(),
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_start_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
                 )
             self.session.add(order)
+            cancels.append(order)
 
+        others = []
         for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
             order = Order(
-                user=other,
-                performance=performance,
+                user=other, cart=cart,
                 sales_segment=sales_segment,
                 total_amount=0,
-                system_fee=0,
-                transaction_fee=0,
-                delivery_fee=0
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_start_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
                 )
             self.session.add(order)
+            others.append(order)
 
         self.session.add(sales_segment)
         self.session.flush()
         return sales_segment, user
 
+    @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
     @mock.patch('altair.app.ticketing.cart.resources.user_api.get_user')
     @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
-    def test_check_order_limit_noset(self, get_cart_safe, get_user):
+    def test_check_order_limit_noset(self, get_cart_safe, get_user, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
         sales_segment, user = self._add_orders_user()
+        validate_sales_segment.return_value = None
         get_user.return_value = user
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
@@ -603,13 +617,15 @@ class TicketingCartResourceTestBase(object):
         result = target.check_order_limit()
         self.assert_(True)
 
+    @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
     @mock.patch('altair.app.ticketing.cart.resources.user_api.get_user')
     @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
-    def test_check_order_limit_user_over(self, get_cart_safe, get_user):
+    def test_check_order_limit_user_over(self, get_cart_safe, get_user, validate_sales_segment):
         from .models import Cart
         from .exceptions import OverOrderLimitException
         from altair.app.ticketing.core.models import ShippingAddress
         sales_segment, user = self._add_orders_user(order_limit=1)
+        validate_sales_segment.return_value = None
         get_user.return_value = user
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
@@ -625,12 +641,14 @@ class TicketingCartResourceTestBase(object):
         with self.assertRaises(OverOrderLimitException):
             target.check_order_limit()
 
+    @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
     @mock.patch('altair.app.ticketing.cart.resources.user_api.get_user')
     @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
-    def test_check_order_limit_user_under(self, get_cart_safe, get_user):
+    def test_check_order_limit_user_under(self, get_cart_safe, get_user, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
         sales_segment, user = self._add_orders_user(order_limit=3)
+        validate_sales_segment.return_value = None
         get_user.return_value = user
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
@@ -650,6 +668,7 @@ class TicketingCartResourceTestBase(object):
             self.fail() 
 
     def _add_orders_email(self, order_limit=None, max_quantity_per_user=None):
+        from .models import Cart
         from altair.app.ticketing.core.models import (
             Order,
             SalesSegment,
@@ -666,62 +685,77 @@ class TicketingCartResourceTestBase(object):
             event=Event(setting=EventSetting())
             )
         sales_segment = SalesSegment(
+            event=performance.event,
             performance=performance,
             setting=SalesSegmentSetting(
                 order_limit=order_limit,
                 max_quantity_per_user=max_quantity_per_user
                 )
             )
+        self.session.add(sales_segment)
         orders = []
         for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
             order = Order(
+                cart=cart,
                 sales_segment=sales_segment,
-                performance=performance,
                 shipping_address=ShippingAddress(email_1="testing@example.com"),
                 total_amount=0,
-                system_fee=0,
-                transaction_fee=0,
-                delivery_fee=0
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_start_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
                 )
+            self.session.add(order)
             orders.append(order)
 
         cancel = []
         for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
             order = Order(
+                cart=cart,
                 sales_segment=sales_segment,
-                performance=performance,
                 shipping_address=ShippingAddress(email_1="testing@example.com"),
-                total_amount=0,
-                canceled_at=datetime(1970, 1, 1),
-                system_fee=0,
-                transaction_fee=0,
-                delivery_fee=0
+                total_amount=0, canceled_at=datetime.now(),
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_start_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
                 )
+            self.session.add(order)
             orders.append(order)
 
         others = []
         for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
             order = Order(
+                cart=cart,
                 sales_segment=sales_segment,
-                performance=performance,
                 shipping_address=ShippingAddress(email_1="other@example.com"),
                 total_amount=0,
-                system_fee=0,
-                transaction_fee=0,
-                delivery_fee=0
+                system_fee=0, transaction_fee=0, delivery_fee=0,
+                issuing_start_at=datetime(1970, 1, 1),
+                issuing_end_at=datetime(1970, 1, 1),
+                payment_start_at=datetime(1970, 1, 1),
+                payment_due_at=datetime(1970, 1, 1)
                 )
+            self.session.add(order)
             others.append(order)
 
         self.session.add(sales_segment)
         self.session.flush()
         return sales_segment, None
 
+    @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
     @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
-    def test_check_order_limit_email_over(self, get_cart_safe):
+    def test_check_order_limit_email_over(self, get_cart_safe, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
         from .exceptions import OverOrderLimitException
         sales_segment, user = self._add_orders_email(order_limit=1)
+        validate_sales_segment.return_value = None
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
             shipping_address=ShippingAddress(
@@ -729,16 +763,20 @@ class TicketingCartResourceTestBase(object):
                 email_1="testing@example.com"
                 )
             )
+        self.session.add(get_cart_safe.return_value)
+        self.session.flush()
         request = testing.DummyRequest()
         target = self._makeOne(request)
         with self.assertRaises(OverOrderLimitException):
             target.check_order_limit()
 
+    @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
     @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
-    def test_check_order_limit_email_under(self, get_cart_safe):
+    def test_check_order_limit_email_under(self, get_cart_safe, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
         sales_segment, user = self._add_orders_email(order_limit=3)
+        validate_sales_segment.return_value = None
         get_cart_safe.return_value = Cart(
             sales_segment=sales_segment,
             shipping_address=ShippingAddress(
@@ -746,6 +784,8 @@ class TicketingCartResourceTestBase(object):
                 email_1="testing@example.com"
                 )
             )
+        self.session.add(get_cart_safe.return_value)
+        self.session.flush()
         request = testing.DummyRequest()
         target = self._makeOne(request)
 
@@ -754,6 +794,189 @@ class TicketingCartResourceTestBase(object):
             self.assert_(True)
         except:
             self.fail()
+
+    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    def test__validate_sales_segment_no_cart(self, get_organization):
+        from altair.app.ticketing.core.models import Event, Performance, Organization, SalesSegmentGroup, SalesSegmentKindEnum
+        from datetime import datetime
+        organization = get_organization.return_value = Organization(short_name='XX', code='XX')
+
+        event_id = 20L
+        performance_id = 99L
+        performance = Performance(
+            id=performance_id,
+            event=Event(
+                id=event_id,
+                organization=organization,
+                sales_segment_groups=[SalesSegmentGroup(public=True, kind=SalesSegmentKindEnum.normal.k)]
+                ),
+            public=True
+            )
+        self.session.flush()
+
+        request = DummyRequest(matchdict={'event_id': event_id})
+        self.assertIsNotNone(self._makeOne(request))
+
+    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    def test__validate_sales_segment_guest_user(self, get_cart_safe, get_organization):
+        from .models import Cart
+        from altair.app.ticketing.core.models import ShippingAddress
+        from altair.app.ticketing.users.models import User, Membership, MemberGroup
+        from altair.app.ticketing.core.models import Event, Performance, Organization, SalesSegmentGroup, SalesSegmentKindEnum
+        from datetime import datetime, timedelta
+        organization = get_organization.return_value = Organization(short_name='XX', code='XX')
+        user = User()
+        self.session.add(user)
+        ms = Membership(organization=organization)
+        mg = MemberGroup(membership=ms, is_guest=True)
+
+        event_id = 20L
+        performance_id = 99L
+        performance = Performance(
+            id=performance_id,
+            event=Event(
+                id=event_id,
+                organization=organization,
+                sales_segment_groups=[SalesSegmentGroup(public=True, kind=SalesSegmentKindEnum.normal.k)]
+                ),
+            public=True
+            )
+
+        now = datetime.now()
+        ssg = SalesSegmentGroup(
+            public=True,
+            kind=SalesSegmentKindEnum.normal.k,
+            membergroups=[mg]
+            )
+        ss = self._add_sales_segment(
+            performance=performance,
+            start_at=now+timedelta(days=-1),
+            end_at=now+timedelta(days=1),
+            )
+        ss.sales_segment_group = ssg
+        ss.membergroups = [mg]
+        self.session.flush()
+
+        get_cart_safe.return_value = Cart(
+            created_at=now,
+            sales_segment=ss,
+            shipping_address=ShippingAddress(
+                user=user,
+                )
+            )
+
+        request = DummyRequest(matchdict={'event_id': event_id})
+        self.assertIsNotNone(self._makeOne(request))
+
+    @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase.authenticated_user')
+    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    def test__validate_sales_segment_authenticated_user(self, get_cart_safe, get_organization, authenticated_user):
+        from .models import Cart
+        from altair.app.ticketing.core.models import ShippingAddress
+        from altair.app.ticketing.users.models import User, Membership, MemberGroup
+        from altair.app.ticketing.core.models import Event, Performance, Organization, SalesSegmentGroup, SalesSegmentKindEnum
+        from datetime import datetime, timedelta
+        organization = get_organization.return_value = Organization(short_name='XX', code='XX')
+        user = User()
+        self.session.add(user)
+        ms = Membership(organization=organization, name='TESTMS')
+        mg = MemberGroup(membership=ms, is_guest=False, name='TESTMG')
+
+        event_id = 20L
+        performance_id = 99L
+        performance = Performance(
+            id=performance_id,
+            event=Event(
+                id=event_id,
+                organization=organization,
+                sales_segment_groups=[SalesSegmentGroup(public=True, kind=SalesSegmentKindEnum.normal.k)]
+                ),
+            public=True
+            )
+
+        now = datetime.now()
+        ssg = SalesSegmentGroup(
+            public=True,
+            kind=SalesSegmentKindEnum.normal.k,
+            membergroups=[mg]
+            )
+        ss = self._add_sales_segment(
+            performance=performance,
+            start_at=now+timedelta(days=-1),
+            end_at=now+timedelta(days=1),
+            )
+        ss.sales_segment_group = ssg
+        ss.membergroups = [mg]
+        self.session.flush()
+
+        get_cart_safe.return_value = Cart(
+            created_at=now,
+            sales_segment=ss,
+            shipping_address=ShippingAddress(
+                user=user,
+                )
+            )
+        authenticated_user.return_value = dict(is_guest=False, membership=ms.name, membergroup=mg.name)
+
+        request = DummyRequest(matchdict={'event_id': event_id})
+        self.assertIsNotNone(self._makeOne(request))
+
+    @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase.authenticated_user')
+    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    def test__validate_sales_segment_invalid_cart(self, get_cart_safe, get_organization, authenticated_user):
+        from .models import Cart
+        from altair.app.ticketing.core.models import ShippingAddress
+        from altair.app.ticketing.users.models import User, Membership, MemberGroup
+        from .exceptions import InvalidCartStatusError
+        from altair.app.ticketing.core.models import Event, Performance, Organization, SalesSegmentGroup, SalesSegmentKindEnum
+        from datetime import datetime, timedelta
+        organization = get_organization.return_value = Organization(short_name='XX', code='XX')
+        user = User()
+        self.session.add(user)
+        ms = Membership(organization=organization, name='TESTMS')
+        mg = MemberGroup(membership=ms, is_guest=False, name='TESTMG')
+
+        event_id = 20L
+        performance_id = 99L
+        performance = Performance(
+            id=performance_id,
+            event=Event(
+                id=event_id,
+                organization=organization,
+                sales_segment_groups=[SalesSegmentGroup(public=True, kind=SalesSegmentKindEnum.normal.k)]
+                ),
+            public=True
+            )
+
+        now = datetime.now()
+        ssg = SalesSegmentGroup(
+            public=True,
+            kind=SalesSegmentKindEnum.normal.k,
+            membergroups=[mg]
+            )
+        ss = self._add_sales_segment(
+            performance=performance,
+            start_at=now+timedelta(days=-1),
+            end_at=now+timedelta(days=1),
+            )
+        ss.sales_segment_group = ssg
+        ss.membergroups = [mg]
+        self.session.flush()
+
+        get_cart_safe.return_value = Cart(
+            created_at=now,
+            sales_segment=ss,
+            shipping_address=ShippingAddress(
+                user=user,
+                )
+            )
+        authenticated_user.return_value = dict(is_guest=False, membership='OTHERMS', membergroup='OTHERMG')
+
+        request = DummyRequest(matchdict={'event_id': event_id})
+        self.assertRaises(InvalidCartStatusError, lambda: self._makeOne(request))
 
 class EventOrientedTicketingCartResourceTests(unittest.TestCase, TicketingCartResourceTestBase):
     def setUp(self):
@@ -1013,7 +1236,7 @@ class ReserveViewTests(unittest.TestCase):
             SeatIndex,
             SeatIndexType,
             )
-        from .models import Cart
+        from altair.app.ticketing.cart.models import Cart
         from .resources import EventOrientedTicketingCartResource
         from webob.multidict import MultiDict
         from datetime import datetime, timedelta
@@ -1155,9 +1378,11 @@ class PaymentViewTests(unittest.TestCase):
         dummy_method_manager = DummyMethodManager()
         self.config.registry.utilities.register([], interfaces.IPaymentMethodManager, "", dummy_method_manager)
 
-    def test_it_no_cart(self):
+    @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
+    def test_it_no_cart(self, validate_sales_segment):
         from .exceptions import NoCartError
         from .resources import EventOrientedTicketingCartResource
+        validate_sales_segment.return_value = None
         request = DummyRequest()
         request.context = EventOrientedTicketingCartResource(request)
         request.registry.settings = { 'altair_cart.expire_time': "15" }

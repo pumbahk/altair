@@ -1,3 +1,8 @@
+<%page args="pm"/>
+<tr>
+  <td>${layout.team_name}からのメールマガジンの配信	</td>
+  <td class="textR">${u'希望する' if int(pm['extra']['mail_permission']) else u'希望しない'}</td>
+</tr>
 <tr>
   <td>FAX番号</td>
   <td class="textR">${shipping.fax}</td>

@@ -10,12 +10,13 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.response import Response
 from pyramid.renderers import render_to_response
+from pyramid.decorator import reify
 from pyramid.url import route_path
 from paste.util.multidict import MultiDict
 import webhelpers.paginate as paginate
 from wtforms import ValidationError
 from wtforms.validators import Optional
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import or_, desc
 from sqlalchemy.orm import joinedload, undefer
@@ -54,11 +55,23 @@ from altair.app.ticketing.core.models import (
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from altair.app.ticketing.orders.export import OrderCSV, get_japanese_columns
-from altair.app.ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearchForm, SejOrderForm, SejTicketForm,
-                                    SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
-                                    PerformanceSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
-                                    SalesSegmentGroupSearchForm, PreviewTicketSelectForm, CartSearchForm, 
-                                               )
+from altair.app.ticketing.orders.forms import (
+    OrderForm,
+    OrderSearchForm,
+    OrderRefundSearchForm,
+    SejOrderForm,
+    SejTicketForm,
+    SejRefundEventForm,
+    SejRefundOrderForm,
+    SendingMailForm,
+    PerformanceSearchForm,
+    OrderReserveForm,
+    OrderRefundForm,
+    ClientOptionalForm,
+    SalesSegmentGroupSearchForm,
+    TicketFormatSelectionForm,
+    CartSearchForm, 
+    )
 from altair.app.ticketing.orders.forms import OrderMemoEditFormFactory
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -93,6 +106,7 @@ from .api import (
 )
 from .utils import NumberIssuer
 from .models import OrderSummary
+from .helpers import build_candidate_id
 from altair.app.ticketing.tickets.preview.api import SVGPreviewCommunication
 from altair.app.ticketing.tickets.preview.api import get_placeholders_from_ticket
 from altair.app.ticketing.tickets.preview.transform import SVGTransformer
@@ -107,29 +121,6 @@ INNER_DELIVERY_PLUGIN_IDS = [
     ]
 
 logger = logging.getLogger(__name__)
-
-def available_ticket_formats_for_orders(orders):
-    return TicketFormat.query\
-        .filter(TicketFormat.id==Ticket.ticket_format_id)\
-        .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
-        .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
-        .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
-        .filter(ProductItem.id==OrderedProductItem.product_item_id)\
-        .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
-        .filter(OrderedProduct.order_id.in_(orders))\
-        .with_entities(TicketFormat.id, TicketFormat.name)\
-        .distinct(TicketFormat.id)
-
-def available_ticket_formats_for_ordered_product_item(ordered_product_item):
-    delivery_method_id = ordered_product_item.ordered_product.order.payment_delivery_pair.delivery_method_id
-    bundle_id = ordered_product_item.product_item.ticket_bundle_id
-    return TicketFormat.query\
-        .filter(bundle_id==Ticket_TicketBundle.ticket_bundle_id, 
-                Ticket_TicketBundle.ticket_id==Ticket.id, 
-                Ticket.ticket_format_id==TicketFormat.id, 
-                TicketFormat_DeliveryMethod.delivery_method_id==delivery_method_id, 
-                TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id)\
-                .with_entities(TicketFormat.id, TicketFormat.name).distinct(TicketFormat.id)
 
 def encode_to_cp932(data):
     if not hasattr(data, "encode"):
@@ -279,297 +270,19 @@ def session_has_order_p(context, request):
     return bool(request.session.get("orders"))
 
 
-#########################################################################
-@view_config(decorator=with_bootstrap,
-             route_name='orders.index',
-             renderer='altair.app.ticketing:templates/orders/index.html',
-             #renderer="string",
-             permission='sales_counter')
-def index(request):
-    slave_session = get_db_session(request, name="slave")
+class OrderBaseView(BaseView):
+    @reify
+    def endpoints(self):
+        return {
+            'enqueue_orders': self.request.route_path('orders.checked.queue'),
+            }
 
-    organization_id = request.context.organization.id
-    params = MultiDict(request.params)
-    params["order_no"] = " ".join(request.params.getall("order_no"))
 
-    form_search = OrderSearchForm(params, organization_id=organization_id)
-    from .download import OrderSummary
-    if form_search.validate():
-        query = OrderSummary(slave_session,
-                            organization_id,
-                            condition=form_search)
-    else:
-        query = OrderSummary(slave_session,
-                            organization_id,
-                            condition=None)
-
-    if request.params.get('action') == 'checked':
-        
-        checked_orders = [o.lstrip('o:') 
-                          for o in request.session.get('orders', []) 
-                          if o.startswith('o:')]
-        query.target_order_ids = checked_orders
-        
-    page = int(request.params.get('page', 0))
-    orders = paginate.Page(
-        query,
-        page=page,
-        items_per_page=40,
-        url=paginate.PageURL_WebOb(request)
-    )
-
-    return {
-        'form':OrderForm(),
-        'form_search':form_search,
-        'orders':orders,
-        'page': page,
-    }
-
-#@view_config(route_name='orders.download')
-def download(request):
-    slave_session = get_db_session(request, name="slave")
-
-    organization_id = request.context.organization.id
-    params = MultiDict(request.params)
-    params["order_no"] = " ".join(request.params.getall("order_no"))
-
-    form_search = OrderSearchForm(params, organization_id=organization_id)
-    from .download import OrderDownload, OrderSummaryKeyBreakAdapter, japanese_columns, header_intl, SeatSummaryKeyBreakAdapter, OrderSeatDownload
-    export_type = int(request.params.get('export_type', OrderCSV.EXPORT_TYPE_ORDER))
-    excel_csv = bool(request.params.get('excel_csv'))
-
-    query_type = OrderDownload
-    if export_type == OrderCSV.EXPORT_TYPE_ORDER:
-        query_type = OrderDownload
-    elif export_type == OrderCSV.EXPORT_TYPE_SEAT:
-        query_type = OrderSeatDownload
-
-    if request.method == "POST" and form_search.validate():
-        query = query_type(slave_session,
-                              organization_id,
-                              condition=form_search)
-    else:
-        query = OrderDownload(slave_session,
-                              organization_id,
-                              condition=None)
-
-    if export_type == OrderCSV.EXPORT_TYPE_ORDER:
-        query = OrderSummaryKeyBreakAdapter(query, 'id',
-                                            ('product_price', 'product_quantity',
-                                             'product_name',
-                                             'product_sales_segment', 'product_margin_ratio'),
-                                            'product_id',
-                                            ('item_name', 'item_price', 'item_quantity'),
-                                            'product_item_id',
-                                            ('item_print_histories',),
-                                            ('seat_name',),
-                                            'seat_id',)
-        csv_headers = ([
-            "order_no",
-            "status",
-            "payment_status",
-            "created_at",
-            "paid_at",
-            "delivered_at",
-            "canceled_at",
-            "total_amount",
-            "transaction_fee",
-            "delivery_fee",
-            "system_fee",
-            "special_fee",
-            "margin",
-            "note",
-            "special_fee_name",
-            "card_brand",
-            "card_ahead_com_code",
-            "card_ahead_com_name",
-            "billing_number",
-            "exchange_number",
-            "mail_permission", #"メールマガジン受信可否",
-            "user_last_name",
-            "user_first_name",
-            "user_last_name_kana",
-            "user_first_name_kana",
-            "user_nick_name",
-            "user_sex",
-            "membership_name",
-            "membergroup_name",
-            "auth_identifier",
-            "last_name",
-            "first_name",
-            "last_name_kana",
-            "first_name_kana",
-            "zip",
-            "country",
-            "prefecture",
-            "city",
-            "address_1",
-            "address_2",
-            "tel_1",
-            "tel_2",
-            "fax",
-            "email_1",
-            "email_2",
-            "payment_method_name",
-            "delivery_method_name",
-            "event_title",
-            "performance_name",
-            "performance_code",
-            "performance_start_on",
-            "venue_name",
-        ] + query.extra_headers)
-    else:
-        query = SeatSummaryKeyBreakAdapter(query, "seat_id", "order_no", ["item_print_histories"])
-        csv_headers = [
-            "order_no",  # 予約番号
-            "status",  # ステータス
-            "payment_status",  # 決済ステータス
-            "created_at",  # 予約日時
-            "paid_at",  # 支払日時
-            "delivered_at",  # 配送日時
-            "canceled_at",  # キャンセル日時
-            "total_amount",  # 合計金額
-            "transaction_fee",  # 決済手数料
-            "delivery_fee",  # 配送手数料
-            "system_fee",  # システム利用料
-            "special_fee",  # 特別手数料
-            "margin",  # 内手数料金額
-            "note",  # メモ
-            "special_fee_name", # 特別手数料名
-            "card_brand",  # カードブランド
-            "card_ahead_com_code",  #  仕向け先企業コード
-            "card_ahead_com_name",  # 仕向け先企業名
-            "billing_number",  # SEJ払込票番号
-            "exchange_number",  # SEJ引換票番号
-            "mail_permission", #"メールマガジン受信可否",
-            "user_last_name",  # 姓
-            "user_first_name",  # 名
-            "user_last_name_kana",  # 姓(カナ)
-            "user_first_name_kana",  # 名(カナ)
-            "user_nick_name",  # ニックネーム
-            "user_sex",  # 性別
-            "membership_name",  # 会員種別名
-            "membergroup_name",  # 会員グループ名
-            "auth_identifier",  # 会員種別ID
-            "last_name",  # 配送先姓
-            "first_name",  # 配送先名
-            "last_name_kana",  # 配送先姓(カナ)
-            "first_name_kana",  # 配送先名(カナ)
-            "zip",  # 郵便番号
-            "country",  # 国
-            "prefecture",  # 都道府県
-            "city",  # 市区町村
-            "address_1",  # 住所1
-            "address_2",  # 住所2
-            "tel_1",  # 電話番号1
-            "tel_2",  # 電話番号2
-            "fax",  # FAX
-            "address_1",  # メールアドレス1
-            "address_2",  # メールアドレス2
-            "payment_method_name",  # 決済方法
-            "delivery_method_name",  # 引取方法
-            "event_title",  # イベント
-            "performance_name",  # 公演
-            "performance_code",  # 公演コード
-            "performance_start_on",  # 公演日
-            "venue_name",  # 会場
-            "product_name",  # 商品名
-            "product_price",  # 商品単価
-            "product_quantity", # 商品個数
-            "product_sales_segment",  # 販売区分
-            "item_name",  # 商品明細名
-            "item_price",  # 商品明細単価
-            #"item_quantity",  # 商品明細個数
-            "seat_quantity",  # 商品明細個数
-            "item_print_histories",  #発券作業者
-            "seat_name",  # 座席名
-        ] + query.extra_headers
-
-    headers = [
-        ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
-        ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
-    ]
-
-    response = Response(headers=headers)
-    ordered_product_metadata_provider_registry = get_ordered_product_metadata_provider_registry(request)
-    iheaders = header_intl(csv_headers, japanese_columns,
-                           ordered_product_metadata_provider_registry)
-    logger.debug("csv headers = {0}".format(csv_headers))
-    results = list(query)
-
-    # from .download import MailPermissionCache
-    # mail_perms = set([m['email'] for m in 
-    #                   MailPermissionCache(slave_session,
-    #                                       organization_id,
-    #                                       condition=form_search)])
-
-    # for row in results:
-    #     m1, m2 = row.get('email_1'), row.get('email_2')
-    #     if m1 in mail_perms or m2 in mail_perms:
-    #         row['mail_permission'] = '1'
-    #     else:
-    #         row['mail_permission'] = ''
-
-    writer = csv.writer(response, delimiter=',')
-
-    if excel_csv:
-        def render_text(v):
-            if v is None:
-                return u''
-            return u'="{0}"'.format(v)
-    else:
-        def render_text(v):
-            if v is None:
-                return u''
-            return v
-
-    def render_plain(v):
-        if not v:
-            return u''
-        return v
-
-    def render_zip(v):
-        if not v:
-            return u''
-        zip1, zip2 = v[:3], v[3:]
-        return u'{0}-{1}'.format(zip1, zip2)
-
-    def render_currency(v):
-        from altair.app.ticketing.cart.helpers import format_number
-        if v is None:
-            return u''
-        return format_number(float(v))
-
-    renderers = dict()
-    for n in ('total_amount', 'transaction_fee', 'delimiter', 'system_fee', 'special_fee', 'margin', 'product_margin', 'product_price', 'item_price'):
-        renderers[n] = render_currency
-
-    renderers['zip'] = render_zip
-
-    # for n in ('created_at', 'paid_at', 'delivered_at', 'canceled_at', 'performance_start_on', 'product_quantity', 'item_quantity', 'seat_quantity'):
-    #     renderers[n] = render_plain
-    for n in ('order_no', 'tel_1', 'tel_2', 'fax'):
-        renderers[n] = render_text
-
-    def render(name, v):
-        name, _, _ = name.partition('[')
-        renderer = renderers.get(name, render_plain)
-        return renderer(v)
-
-    writer.writerows([[encode_to_cp932(c)
-                       for c in iheaders]] +
-                     [[encode_to_cp932(render(h, columns.get(h)))
-                       for h in csv_headers]
-                      for columns in results])
-    return response
-
-#########################################################################
-
-@view_defaults(decorator=with_bootstrap, permission='sales_editor')
-class Orders(BaseView):
-
-    #@view_config(route_name='orders.index', renderer='altair.app.ticketing:templates/orders/index.html', permission='sales_counter')
-    def index(self):
+@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/index.html', permission='sales_counter')
+class OrderIndexView(OrderBaseView):
+    # XXX: 安定するまで封印
+    #@view_config(route_name='orders.index')
+    def index_new(self):
         slave_session = get_db_session(self.request, name="slave")
 
         organization_id = self.context.organization.id
@@ -604,10 +317,63 @@ class Orders(BaseView):
             'form_search':form_search,
             'orders':orders,
             'page': page,
-        }
+            'endpoints': self.endpoints,
+            }
 
+
+    # XXX: 購入情報検索に関しては古いコードを暫定的に有効化
+    @view_config(route_name='orders.index')
+    def index_old(self):
+        request = self.request
+        slave_session = get_db_session(request, name="slave")
+
+        organization_id = request.context.organization.id
+        params = MultiDict(request.params)
+        params["order_no"] = " ".join(request.params.getall("order_no"))
+
+        form_search = OrderSearchForm(params, organization_id=organization_id)
+        from .download import OrderSummary
+        if form_search.validate():
+            query = OrderSummary(slave_session,
+                                organization_id,
+                                condition=form_search)
+        else:
+            query = OrderSummary(slave_session,
+                                organization_id,
+                                condition=None)
+
+        if request.params.get('action') == 'checked':
+            
+            checked_orders = [o.lstrip('o:') 
+                              for o in request.session.get('orders', []) 
+                              if o.startswith('o:')]
+            query.target_order_ids = checked_orders
+            
+        page = int(request.params.get('page', 0))
+        orders = paginate.Page(
+            query,
+            page=page,
+            items_per_page=40,
+            url=paginate.PageURL_WebOb(request)
+        )
+
+        total = query.total()
+
+        return {
+            'form':OrderForm(),
+            'form_search':form_search,
+            'orders':orders,
+            'page': page,
+            'total': total,
+            'endpoints': self.endpoints,
+            }
+
+
+@view_defaults(decorator=with_bootstrap, permission='sales_editor') # sales_counter ではない!
+class OrderDownloadView(BaseView):
+    # downloadに関しては新しいコードがイキ
     @view_config(route_name='orders.download')
-    def download(self):
+    def download_new(self):
         slave_session = get_db_session(self.request, name="slave")
 
         organization_id = self.context.organization.id
@@ -673,6 +439,245 @@ class Orders(BaseView):
         writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
         writer.writerows([encode_to_cp932(column) for column in columns] for columns in order_csv(orders))
 
+        return response
+
+    # 古いコードも参照用にとっておいてある
+    def download_old(self):
+        request = self.request
+        slave_session = get_db_session(request, name="slave")
+
+        organization_id = request.context.organization.id
+        params = MultiDict(request.params)
+        params["order_no"] = " ".join(request.params.getall("order_no"))
+
+        form_search = OrderSearchForm(params, organization_id=organization_id)
+        from .download import OrderDownload, OrderSummaryKeyBreakAdapter, japanese_columns, header_intl, SeatSummaryKeyBreakAdapter, OrderSeatDownload
+        export_type = int(request.params.get('export_type', OrderCSV.EXPORT_TYPE_ORDER))
+        excel_csv = bool(request.params.get('excel_csv'))
+
+        query_type = OrderDownload
+        if export_type == OrderCSV.EXPORT_TYPE_ORDER:
+            query_type = OrderDownload
+        elif export_type == OrderCSV.EXPORT_TYPE_SEAT:
+            query_type = OrderSeatDownload
+
+        if request.method == "POST" and form_search.validate():
+            query = query_type(slave_session,
+                                  organization_id,
+                                  condition=form_search)
+        else:
+            query = OrderDownload(slave_session,
+                                  organization_id,
+                                  condition=None)
+
+        if export_type == OrderCSV.EXPORT_TYPE_ORDER:
+            query = OrderSummaryKeyBreakAdapter(query, 'id',
+                                                ('product_price', 'product_quantity',
+                                                 'product_name',
+                                                 'product_sales_segment', 'product_margin_ratio'),
+                                                'product_id',
+                                                ('item_name', 'item_price', 'item_quantity'),
+                                                'product_item_id',
+                                                ('item_print_histories',),
+                                                ('seat_name',),
+                                                'seat_id',)
+            csv_headers = ([
+                "order_no",
+                "status",
+                "payment_status",
+                "created_at",
+                "paid_at",
+                "delivered_at",
+                "canceled_at",
+                "total_amount",
+                "transaction_fee",
+                "delivery_fee",
+                "system_fee",
+                "special_fee",
+                "margin",
+                "note",
+                "special_fee_name",
+                "card_brand",
+                "card_ahead_com_code",
+                "card_ahead_com_name",
+                "billing_number",
+                "exchange_number",
+                "mail_permission", #"メールマガジン受信可否",
+                "user_last_name",
+                "user_first_name",
+                "user_last_name_kana",
+                "user_first_name_kana",
+                "user_nick_name",
+                "user_sex",
+                "membership_name",
+                "membergroup_name",
+                "auth_identifier",
+                "last_name",
+                "first_name",
+                "last_name_kana",
+                "first_name_kana",
+                "zip",
+                "country",
+                "prefecture",
+                "city",
+                "address_1",
+                "address_2",
+                "tel_1",
+                "tel_2",
+                "fax",
+                "email_1",
+                "email_2",
+                "payment_method_name",
+                "delivery_method_name",
+                "event_title",
+                "performance_name",
+                "performance_code",
+                "performance_start_on",
+                "venue_name",
+            ] + query.extra_headers)
+        else:
+            query = SeatSummaryKeyBreakAdapter(query, "seat_id", "order_no", ["item_print_histories"])
+            csv_headers = [
+                "order_no",  # 予約番号
+                "status",  # ステータス
+                "payment_status",  # 決済ステータス
+                "created_at",  # 予約日時
+                "paid_at",  # 支払日時
+                "delivered_at",  # 配送日時
+                "canceled_at",  # キャンセル日時
+                "total_amount",  # 合計金額
+                "transaction_fee",  # 決済手数料
+                "delivery_fee",  # 配送手数料
+                "system_fee",  # システム利用料
+                "special_fee",  # 特別手数料
+                "margin",  # 内手数料金額
+                "note",  # メモ
+                "special_fee_name", # 特別手数料名
+                "card_brand",  # カードブランド
+                "card_ahead_com_code",  #  仕向け先企業コード
+                "card_ahead_com_name",  # 仕向け先企業名
+                "billing_number",  # SEJ払込票番号
+                "exchange_number",  # SEJ引換票番号
+                "mail_permission", #"メールマガジン受信可否",
+                "user_last_name",  # 姓
+                "user_first_name",  # 名
+                "user_last_name_kana",  # 姓(カナ)
+                "user_first_name_kana",  # 名(カナ)
+                "user_nick_name",  # ニックネーム
+                "user_sex",  # 性別
+                "membership_name",  # 会員種別名
+                "membergroup_name",  # 会員グループ名
+                "auth_identifier",  # 会員種別ID
+                "last_name",  # 配送先姓
+                "first_name",  # 配送先名
+                "last_name_kana",  # 配送先姓(カナ)
+                "first_name_kana",  # 配送先名(カナ)
+                "zip",  # 郵便番号
+                "country",  # 国
+                "prefecture",  # 都道府県
+                "city",  # 市区町村
+                "address_1",  # 住所1
+                "address_2",  # 住所2
+                "tel_1",  # 電話番号1
+                "tel_2",  # 電話番号2
+                "fax",  # FAX
+                "address_1",  # メールアドレス1
+                "address_2",  # メールアドレス2
+                "payment_method_name",  # 決済方法
+                "delivery_method_name",  # 引取方法
+                "event_title",  # イベント
+                "performance_name",  # 公演
+                "performance_code",  # 公演コード
+                "performance_start_on",  # 公演日
+                "venue_name",  # 会場
+                "product_name",  # 商品名
+                "product_price",  # 商品単価
+                "product_quantity", # 商品個数
+                "product_sales_segment",  # 販売区分
+                "item_name",  # 商品明細名
+                "item_price",  # 商品明細単価
+                #"item_quantity",  # 商品明細個数
+                "seat_quantity",  # 商品明細個数
+                "item_print_histories",  #発券作業者
+                "seat_name",  # 座席名
+            ] + query.extra_headers
+
+        headers = [
+            ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
+            ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
+        ]
+
+        response = Response(headers=headers)
+        ordered_product_metadata_provider_registry = get_ordered_product_metadata_provider_registry(request)
+        iheaders = header_intl(csv_headers, japanese_columns,
+                               ordered_product_metadata_provider_registry)
+        logger.debug("csv headers = {0}".format(csv_headers))
+        results = list(query)
+
+        # from .download import MailPermissionCache
+        # mail_perms = set([m['email'] for m in 
+        #                   MailPermissionCache(slave_session,
+        #                                       organization_id,
+        #                                       condition=form_search)])
+
+        # for row in results:
+        #     m1, m2 = row.get('email_1'), row.get('email_2')
+        #     if m1 in mail_perms or m2 in mail_perms:
+        #         row['mail_permission'] = '1'
+        #     else:
+        #         row['mail_permission'] = ''
+
+        writer = csv.writer(response, delimiter=',')
+
+        if excel_csv:
+            def render_text(v):
+                if v is None:
+                    return u''
+                return u'="{0}"'.format(v)
+        else:
+            def render_text(v):
+                if v is None:
+                    return u''
+                return v
+
+        def render_plain(v):
+            if not v:
+                return u''
+            return v
+
+        def render_zip(v):
+            if not v:
+                return u''
+            zip1, zip2 = v[:3], v[3:]
+            return u'{0}-{1}'.format(zip1, zip2)
+
+        def render_currency(v):
+            from altair.app.ticketing.cart.helpers import format_number
+            if v is None:
+                return u''
+            return format_number(float(v))
+
+        renderers = dict()
+        for n in ('total_amount', 'transaction_fee', 'delimiter', 'system_fee', 'special_fee', 'margin', 'product_margin', 'product_price', 'item_price'):
+            renderers[n] = render_currency
+
+        renderers['zip'] = render_zip
+
+        # for n in ('created_at', 'paid_at', 'delivered_at', 'canceled_at', 'performance_start_on', 'product_quantity', 'item_quantity', 'seat_quantity'):
+        #     renderers[n] = render_plain
+        for n in ('order_no', 'tel_1', 'tel_2', 'fax'):
+            renderers[n] = render_text
+
+        def render(name, v):
+            name, _, _ = name.partition('[')
+            renderer = renderers.get(name, render_plain)
+            return renderer(v)
+
+        writer.writerows([[encode_to_cp932(c)
+                           for c in iheaders]] +
+                         [[encode_to_cp932(render(h, columns.get(h)))
+                           for h in csv_headers]
+                          for columns in results])
         return response
 
 
@@ -845,11 +850,12 @@ class OrderDetailView(BaseView):
         if order is None:
             raise HTTPNotFound('order id %d is not found' % self.context.order_id)
 
-        dependents = self.context.get_dependents_models(order)
+        dependents = self.context.get_dependents_models()
         order_history = dependents.histories
         mail_magazines = dependents.mail_magazines
+        default_ticket_format_id = self.context.default_ticket_format.id if self.context.default_ticket_format is not None else None
 
-        joined_objects_for_product_item = dependents.describe_objects_for_product_item_provider()
+        joined_objects_for_product_item = dependents.describe_objects_for_product_item_provider(ticket_format_id=default_ticket_format_id)
         ordered_product_attributes = joined_objects_for_product_item.get_product_item_attributes(
             get_ordered_product_metadata_provider_registry(self.request)
         )
@@ -857,11 +863,12 @@ class OrderDetailView(BaseView):
             get_order_metadata_provider_registry(self.request)
         )
 
-        forms = self.context.get_dependents_forms(order)
+        forms = self.context.get_dependents_forms()
         form_shipping_address = forms.get_shipping_address_form()
         form_order = forms.get_order_form()
         form_order_reserve = forms.get_order_reserve_form()
         form_refund = forms.get_order_refund_form()
+        form_each_print = forms.get_each_print_form(default_ticket_format_id)
 
         return {
             'is_current_order': order.deleted_at is None, 
@@ -876,8 +883,10 @@ class OrderDetailView(BaseView):
             'form_order':form_order,
             'form_order_reserve':form_order_reserve,
             'form_refund':form_refund,
+            'form_each_print': form_each_print,
             'form_order_edit_attribute': forms.get_order_edit_attribute(), 
-            "objects_for_describe_product_item": joined_objects_for_product_item()
+            "objects_for_describe_product_item": joined_objects_for_product_item(),
+            'build_candidate_id': build_candidate_id,
         }
 
     @view_config(route_name='orders.cancel', permission='sales_editor')
@@ -895,7 +904,7 @@ class OrderDetailView(BaseView):
             self.request.session.flash(u'受注(%s)をキャンセルできません' % order.order_no)
             raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
-    @view_config(route_name='orders.delete', permission='administrator')
+    @view_config(route_name='orders.delete', permission='sales_editor')
     def delete(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.organization.id)
@@ -1067,13 +1076,13 @@ class OrderDetailView(BaseView):
 
     @view_config(route_name="orders.cover.preview", request_method="GET", renderer="altair.app.ticketing:templates/orders/_cover_preview_dialog.html")
     def cover_preview_dialog(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.organization.id)
+        order = self.context.order
+        ticket_format_id = self.context.ticket_format.id
         if order is None:
-            raise HTTPNotFound('order id %d is not found' % order_id)
-        cover = TicketCover.get_from_order(order)
+            raise HTTPNotFound('order id %d is not found' % self.context.order_id)
+        cover = TicketCover.get_from_order(order, ticket_format_id)
         if cover is None:
-            raise HTTPNotFound('cover is not found. order id %d' % order_id)
+            raise HTTPNotFound('cover is not found. order id %d' % order.id)
         svg_builder = get_svg_builder(self.request)
         svg = svg_builder.build(cover.ticket, build_cover_dict_from_order(order))
         data = {"ticket_format": cover.ticket.ticket_format_id, "sx": "1", "sy": "1"}
@@ -1108,34 +1117,31 @@ class OrderDetailView(BaseView):
 
     @view_config(route_name="orders.item.preview", request_method="GET", renderer='altair.app.ticketing:templates/orders/_item_preview_dialog.html')
     def order_item_preview_dialog(self):
-        item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).first()
-        if item is None:
-            return {} ### xxx:
-        form = PreviewTicketSelectForm(item_id=item.id, ticket_formats=available_ticket_formats_for_ordered_product_item(item))
-        return {"form": form, "item": item}
+        return {
+            "item": self.context.ordered_product_item,
+            "ticket_format_id": self.context.ticket_format_id,
+            }
 
     @view_config(route_name="orders.item.preview.getdata", request_method="GET", renderer="json")
     def order_item_get_data_for_preview(self):
-        item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).one()
-        ticket_format = TicketFormat.query.filter_by(id=self.request.matchdict["ticket_format_id"]).one()
         tickets = Ticket.query \
             .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
             .filter(ProductItem.id==OrderedProductItem.product_item_id)\
             .filter(TicketBundle.id==ProductItem.ticket_bundle_id)\
             .filter(Ticket_TicketBundle.ticket_bundle_id==TicketBundle.id)\
             .filter(Ticket.id==Ticket_TicketBundle.ticket_id)\
-            .filter(Ticket.ticket_format_id==ticket_format.id)\
-            .filter(OrderedProductItem.id==item.id)\
+            .filter(Ticket.ticket_format_id==self.context.ticket_format.id)\
+            .filter(OrderedProductItem.id==self.context.ordered_product_item.id)\
             .all()
-        dicts = build_dicts_from_ordered_product_item(item, ticket_number_issuer=NumberIssuer())
-        data = dict(ticket_format.data)
-        data["ticket_format_id"] = ticket_format.id
+        dicts = build_dicts_from_ordered_product_item(self.context.ordered_product_item, ticket_number_issuer=NumberIssuer())
+        data = dict(self.context.ticket_format.data)
+        data["ticket_format_id"] = self.context.ticket_format.id
         results = []
         names = []
         svg_builder = get_svg_builder(self.request)
         for seat, dict_ in dicts:
             names.append(seat.name if seat else dict_["product"]["name"])
-            preview_type = utils.delivery_type_from_built_dict(dict_)
+            preview_type = utils.guess_preview_type_from_ticket_format(self.context.ticket_format)
 
             for ticket in tickets:
                 svg = svg_builder.build(ticket, dict_)
@@ -1252,20 +1258,32 @@ class OrderDetailView(BaseView):
     @view_config(route_name="orders.print.queue.dialog", request_method="GET", renderer="altair.app.ticketing:templates/orders/_print_queue_dialog.html")
     def print_queue_dialog(self):
         order = Order.query.get(self.request.matchdict["order_id"])
-        return {"order": order}
+        return {
+            "order": order,
+            "form": TicketFormatSelectionForm(context=self.context)
+            }
 
+    @view_config(route_name="orders.checked.queue", request_method="GET", permission='sales_counter', renderer='altair.app.ticketing:templates/orders/_form_ticket_format.html', xhr=True)
+    def show_enqueue_checked_order_form(self):
+        return {
+            'form': TicketFormatSelectionForm(context=self.context),
+            'action': self.request.current_route_path(),
+            }
 
     @view_config(route_name="orders.checked.queue", request_method="POST", permission='sales_counter')
     def enqueue_checked_order(self):
-        ords = self.request.session.get("orders", [])
-        ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
-
+        form = TicketFormatSelectionForm(self.request.params, context=self.context)
+        if not form.validate():
+            return HTTPBadRequest()
+        ticket_format_id = form.ticket_format_id.data
         qs = DBSession.query(Order)\
-            .filter(Order.deleted_at==None).filter(Order.id.in_(ords))\
+            .filter(Order.deleted_at==None).filter(Order.id.in_(self.context.order_ids))\
             .filter(Order.issued==False)\
 
         will_removes = []
         break_p = False
+        count = 0
+        total = 0
         for order in qs:
             will_removes.append(order)
             if not self.context.user.is_member_of_organization(order):
@@ -1273,8 +1291,10 @@ class OrderDetailView(BaseView):
                     self.request.session.flash(u'異なる組織({operator.organization.name})の管理者で作業したようです。「{order.organization.name}」の注文を対象にした操作はスキップされました。'.format(order=order, operator=self.context.user))
                     break_p = True
             elif not order.queued:
-                utils.enqueue_cover(operator=self.context.user, order=order)
-                utils.enqueue_for_order(operator=self.context.user, order=order, delivery_plugin_ids=INNER_DELIVERY_PLUGIN_IDS)
+                utils.enqueue_cover(operator=self.context.user, order=order, ticket_format_id=ticket_format_id)
+                utils.enqueue_for_order(operator=self.context.user, order=order, ticket_format_id=ticket_format_id)
+                count += 1
+            total += 1
 
         logger.info("*ticketing print queue many* clean session")
         session_values = self.request.session.get("orders", [])
@@ -1282,36 +1302,64 @@ class OrderDetailView(BaseView):
             session_values.remove("o:%s" % order.id)
         self.request.session["orders"] = session_values
 
-        if break_p:
-            raise HTTPFound(location=self.request.route_path("orders.index"))
+        if not break_p:
+            self.request.session.flash(u'%d個中%d個の注文を印刷キューに追加しました. (既に印刷済みの注文は印刷キューに追加されません)' % (total, count))
+            if self.request.POST.get("redirect_url"):
+                return HTTPFound(location=self.request.POST.get("redirect_url"))
 
-        # self.request.add_finished_callback(clean_session_callback)
-        self.request.session.flash(u'券面を印刷キューに追加しました. (既に印刷済みの注文は印刷キューに追加されません)')
-        if self.request.POST.get("redirect_url"):
-            return HTTPFound(location=self.request.POST.get("redirect_url"))
-        return HTTPFound(location=self.request.route_path('orders.index'))
+        return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
-    @view_config(route_name="orders.print.queue.each")
+    @view_config(route_name="orders.print.queue.each", request_method="GET", renderer="altair.app.ticketing:templates/orders/_show_product_table.html")
+    def order_tokens_print_queue_form(self):
+        order = self.context.order
+        if order is None:
+            raise HTTPNotFound('order id %d is not found' % self.context.order_id)
+        form_each_print = TicketFormatSelectionForm(self.request.GET, context=self.context)
+        if form_each_print.ticket_format_id.data is None:
+            if self.context.default_ticket_format is not None:
+                form_each_print.ticket_format_id.data = self.context.default_ticket_format.id
+        if not form_each_print.validate():
+            return HTTPBadRequest()
+
+        dependents = self.context.get_dependents_models()
+        joined_objects_for_product_item = dependents.describe_objects_for_product_item_provider(ticket_format_id=form_each_print.ticket_format_id.data)
+
+        return {
+            'order': order,
+            'form': form_each_print,
+            "objects_for_describe_product_item": joined_objects_for_product_item(),
+            'build_candidate_id': build_candidate_id,
+            }
+
+    @view_config(route_name="orders.print.queue.each", request_method="POST")
     def order_tokens_print_queue(self):
         order = self.context.order
         if order is None:
             raise HTTPNotFound('order id %d is not found' % self.context.order_id)
+        form_each_print = TicketFormatSelectionForm(self.request.GET, context=self.context)
+        if not form_each_print.validate():
+            self.request.session.flash(u'券面を印刷キューに追加できませんでした')
+            return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
 
+        ticket_format_id = form_each_print.ticket_format_id.data
+        candidate_id_list = self.request.POST.getall('candidate_id')
         #token@seat@ticket.id
-        actions = self.context.get_dependents_actions(order)
-        candidates_action = actions.get_print_candidate_action(self.request.POST.getall("candidate_id"))
+        actions = self.context.get_dependents_actions(order, ticket_format_id)
+        candidates_action = actions.get_print_candidate_action(candidate_id_list)
         candidates_action.enqueue(operator=self.context.user)
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
         
     @view_config(route_name='orders.print.queue')
     def order_print_queue(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.query.get(order_id)
-        utils.enqueue_cover(operator=self.context.user, order=order)
-        utils.enqueue_for_order(operator=self.context.user, order=order, delivery_plugin_ids=INNER_DELIVERY_PLUGIN_IDS)
+        form = TicketFormatSelectionForm(self.request.params, context=self.context)
+        if not form.validate():
+            return HTTPBadRequest()
+        ticket_format_id = form.ticket_format_id.data
+        utils.enqueue_cover(operator=self.context.user, order=self.context.order, ticket_format_id=ticket_format_id)
+        utils.enqueue_for_order(operator=self.context.user, order=self.context.order, ticket_format_id=ticket_format_id)
         self.request.session.flash(u'券面を印刷キューに追加しました')
-        return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
+        return HTTPFound(location=self.request.route_path('orders.show', order_id=self.context.order.id))
 
     @view_config(route_name="orders.checked.delivered", request_method="POST", permission='sales_counter')
     def change_checked_orders_to_delivered(self):
@@ -1879,8 +1927,14 @@ class OrdersEditAPIView(BaseView):
 
         try:
             modiry_order = save_order_modification(order, order_data)
-        except Exception:
-            logger.exception('save order error')
+        except InvalidSeatSelectionException:
+            logger.info("seat selection is invalid.")
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。')))
+        except NotEnoughStockException as e:
+            logger.info("not enough stock quantity :%s" % e)
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'在庫がありません')))
+        except Exception as e:
+            logger.exception('save error (%s)' % e.message)
             raise HTTPBadRequest(body=json.dumps(dict(message=u'システムエラーが発生しました。')))
 
         self.request.session.flash(u'変更を保存しました')
@@ -2214,7 +2268,7 @@ class SejTicketTemplate(BaseView):
             templates=templates
         )
 
-@view_defaults(decorator=with_bootstrap, permission="authenticated", route_name="orders.mailinfo")
+@view_defaults(decorator=with_bootstrap, permission="sales_counter", route_name="orders.mailinfo")
 class MailInfoView(BaseView):
     @view_config(match_param="action=show", renderer="altair.app.ticketing:templates/orders/mailinfo/show.html")
     def show(self):

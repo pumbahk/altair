@@ -100,7 +100,6 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.login' , route_prefix='/login')
         config.include('altair.app.ticketing.organizations' , route_prefix='/organizations')
         config.include('altair.app.ticketing.api' , route_prefix='/api')
-        config.include('altair.app.ticketing.admin' , route_prefix='/admin')
         config.include('altair.app.ticketing.events' , route_prefix='/events')
         config.include('altair.app.ticketing.orders' , route_prefix='/orders')
         config.include('altair.app.ticketing.master' , route_prefix='/master')
@@ -110,11 +109,11 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.venues' , route_prefix='/venues')
         config.include('altair.app.ticketing.cooperation', route_prefix='/cooperation')
         config.include('altair.app.ticketing.dashboard' , route_prefix='/dashboard')
-        config.include('altair.app.ticketing.bookmark' , route_prefix='/bookmark')
         config.include('altair.app.ticketing.accounts' , route_prefix='/accounts')
         config.include('altair.app.ticketing.payment_methods' , route_prefix='/payment_methods')
         config.include('altair.app.ticketing.delivery_methods' , route_prefix='/delivery_methods')
         config.include('altair.app.ticketing.service_fee_methods' , route_prefix='/service_fee_methods')
+        config.include('altair.app.ticketing.print_progress')
         config.include('altair.app.ticketing.qr')
         config.include('altair.app.ticketing.members', route_prefix='/members')
         config.include('altair.app.ticketing.memberships', route_prefix='/memberships')
@@ -131,6 +130,8 @@ def main(global_config, **local_config):
 
         config.include('altair.app.ticketing.carturl')
         config.include('altair.app.ticketing.description')
+
+        config.include('altair.app.ticketing.permissions.utils.setup_role_and_permissions')
 
         ## TBA
         config.add_route("qr.make", "___________") ##xxx:

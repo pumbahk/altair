@@ -29,6 +29,7 @@ class TicketlistChoiceForm(Form):
         )
     caption = fields.TextField(id="caption", label=u"価格表の説明", widget=widgets.TextArea())
     show_label = fields.BooleanField(id="show_label", label=u"見出しを表示する？", default=True)
+    show_seattype = fields.BooleanField(id="show_seattype", label=u"席種の表示", default=False)
 
     def configure(self, request, page):
         if page.event_id:
