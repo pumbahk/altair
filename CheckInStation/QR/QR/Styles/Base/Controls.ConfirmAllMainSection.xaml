@@ -134,10 +134,8 @@
             >
                     <StackPanel>
                         <WrapPanel>
-                            <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">商品:</TextBlock>
                             <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding ProductName}"/>
-                            <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}">席:</TextBlock>
-                            <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding SeatName}"/>
+                            <TextBlock Style="{StaticResource GrayoutIfNeedTextBlock}" Text="{Binding SeatName,StringFormat={}({0})}"/>
                         </WrapPanel>
                         <WrapPanel>
                             <WrapPanel.Style>
