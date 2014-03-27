@@ -37,7 +37,10 @@ namespace QR
             {
                 string certfile = config.Resource.SettingValue("https.client.certificate.p12file");
                 string certpassword = config.Resource.SettingValue("https.client.certificate.password");
-                this.Certificate = new X509Certificate2(certfile, certpassword);
+                if (certfile != null)
+                {
+                    this.Certificate = new X509Certificate2(certfile, certpassword);
+                }
             }
         }
 
