@@ -56,7 +56,6 @@ namespace QR.support
                     logger.Error("INTERNAL SERVER ERROR: message={0}".WithMachineName(),
                         StripHeader(t.Result));
                     return response.EnsureSuccessStatusCode();
-
                 }
                 logger.Warn("task timeout (wait time = 300millisec)".WithMachineName());
                 return response.EnsureSuccessStatusCode();
