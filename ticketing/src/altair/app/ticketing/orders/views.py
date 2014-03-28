@@ -1271,6 +1271,8 @@ class OrderDetailView(BaseView):
 
     @view_config(route_name="orders.checked.queue", request_method="GET", permission='sales_counter', renderer='altair.app.ticketing:templates/orders/_form_ticket_format.html', xhr=True)
     def show_enqueue_checked_order_form(self):
+        if len(self.context.order_ids) == 0:
+            return HTTPBadRequest(text=u"発券対象を選択してください");
         return {
             'form': TicketFormatSelectionForm(context=self.context),
             'action': self.request.current_route_path(),
