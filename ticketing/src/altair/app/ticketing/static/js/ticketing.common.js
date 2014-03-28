@@ -93,20 +93,25 @@ function load_modal_form(modal, url, data, callback) {
   modal.find('> .modal-body').load(
     url,
     data,
-    function () {
-      var $form = $(this).find('form');
-      $form.submit(function () {
-        if (!submitted) {
-          submitted = true;
-          var data = build_form_params($form);
-          load_modal_form(modal, $form.attr('action'), data, callback);
-        }
-        return false;
-      });
-      if (window['attach_datepicker'])
-        window['attach_datepicker']($form.find('.datetimewidget-container'));
-      if (callback)
-        callback.call(this, $form);
+    function (resp, status, xhr) {
+      if (status != 'error') {
+        var $form = $(this).find('form');
+        $form.submit(function () {
+          if (!submitted) {
+            submitted = true;
+            var data = build_form_params($form);
+            load_modal_form(modal, $form.attr('action'), data, callback);
+          }
+          return false;
+        });
+        if (window['attach_datepicker'])
+          window['attach_datepicker']($form.find('.datetimewidget-container'));
+        if (callback)
+          callback.call(this, $form, status, xhr);
+      } else {
+        $(this).empty().html(resp);
+        callback.call(this, null, status, xhr);
+      }
       modal.modal('show');
     }
   );
