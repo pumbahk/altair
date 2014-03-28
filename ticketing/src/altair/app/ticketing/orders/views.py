@@ -18,7 +18,7 @@ from wtforms import ValidationError
 from wtforms.validators import Optional
 from sqlalchemy import and_, func
 from sqlalchemy.sql import exists
-from sqlalchemy.sql.expression import or_, desc
+from sqlalchemy.sql.expression import or_, desc, func
 from sqlalchemy.orm import joinedload, undefer
 from webob.multidict import MultiDict
 from altair.sqlahelper import get_db_session
@@ -280,50 +280,18 @@ class OrderBaseView(BaseView):
 
 @view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/index.html', permission='sales_counter')
 class OrderIndexView(OrderBaseView):
-    # XXX: 安定するまで封印
-    #@view_config(route_name='orders.index')
-    def index_new(self):
-        slave_session = get_db_session(self.request, name="slave")
+    SHOW_TOTAL_KEY = 'orders.index.show_total'
+  
+    @property
+    def show_total_flag(self):
+        return self.request.session.get(self.SHOW_TOTAL_KEY, False)
 
-        organization_id = self.context.organization.id
-        query = DBSession.query(Order).filter(Order.organization_id==organization_id)
+    @show_total_flag.setter
+    def show_total_flag(self, value):
+        self.request.session[self.SHOW_TOTAL_KEY] = value
 
-        params = MultiDict(self.request.params)
-        params["order_no"] = " ".join(self.request.params.getall("order_no"))
-
-        form_search = OrderSearchForm(params, organization_id=organization_id)
-        if form_search.validate():
-            try:
-                query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id, OrderSummary.deleted_at==None))
-            except QueryBuilderError as e:
-                self.request.session.flash(e.message)
-
-        if self.request.params.get('action') == 'checked':
-            checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
-            query = query.filter(Order.id.in_(checked_orders))
-
-        page = int(self.request.params.get('page', 0))
-
-        orders = paginate.Page(
-            query,
-            page=page,
-            items_per_page=40,
-            item_count=query.count(),
-            url=paginate.PageURL_WebOb(self.request)
-        )
-
-        return {
-            'form':OrderForm(),
-            'form_search':form_search,
-            'orders':orders,
-            'page': page,
-            'endpoints': self.endpoints,
-            }
-
-
-    # XXX: 購入情報検索に関しては古いコードを暫定的に有効化
     @view_config(route_name='orders.index')
-    def index_old(self):
+    def index(self):
         request = self.request
         slave_session = get_db_session(request, name="slave")
 
@@ -332,15 +300,6 @@ class OrderIndexView(OrderBaseView):
         params["order_no"] = " ".join(request.params.getall("order_no"))
 
         form_search = OrderSearchForm(params, organization_id=organization_id)
-        from .download import OrderSummary
-        if form_search.validate():
-            query = OrderSummary(slave_session,
-                                organization_id,
-                                condition=form_search)
-        else:
-            query = OrderSummary(slave_session,
-                                organization_id,
-                                condition=None)
 
         if request.params.get('action') == 'checked':
             
@@ -348,17 +307,39 @@ class OrderIndexView(OrderBaseView):
                               for o in request.session.get('orders', []) 
                               if o.startswith('o:')]
             query.target_order_ids = checked_orders
-            
+
+        orders = None
+        total = None
         page = int(request.params.get('page', 0))
-        orders = paginate.Page(
-            query,
-            page=page,
-            items_per_page=40,
-            url=paginate.PageURL_WebOb(request)
-        )
+        if request.params:
+            from .download import OrderSummary
+            if form_search.validate():
+                query = OrderSummary(slave_session,
+                                    organization_id,
+                                    condition=form_search)
+            else:
+                query = OrderSummary(slave_session,
+                                    organization_id,
+                                    condition=None)
+            if request.params.get('action') == 'checked':
+                checked_orders = [o.lstrip('o:')
+                                  for o in request.session.get('orders', [])
+                                  if o.startswith('o:')]
+                query.target_order_ids = checked_orders
 
-        total = query.total()
+            count = None
+            if self.show_total_flag:
+                count, total = query.count_and_total()
+            else:
+                count = query.count()
 
+            orders = paginate.Page(
+                query,
+                page=page,
+                item_count=count,
+                items_per_page=40,
+                url=paginate.PageURL_WebOb(request)
+            )
         return {
             'form':OrderForm(),
             'form_search':form_search,
@@ -367,6 +348,11 @@ class OrderIndexView(OrderBaseView):
             'total': total,
             'endpoints': self.endpoints,
             }
+
+    @view_config(route_name='orders.toggle_show_total')
+    def toggle_show_total(self):
+        self.show_total_flag = not self.show_total_flag
+        return HTTPFound(location=self.request.route_path('orders.index', _query=self.request.params))
 
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor') # sales_counter ではない!
@@ -844,6 +830,15 @@ class OrdersRefundConfirmView(BaseView):
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
 class OrderDetailView(BaseView):
+
+    @view_config(route_name='orders.show_by_order_no')
+    def show_by_order_no(self):
+        order_no = self.request.matchdict.get('order_no', None)
+        order = Order.query.filter(Order.order_no==order_no, Order.organization_id==self.context.organization.id).first()
+        if order is None:
+            raise HTTPNotFound('order no %s is not found' % order_no)
+        return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
     @view_config(route_name='orders.show', renderer='altair.app.ticketing:templates/orders/show.html')
     def show(self):
         order = self.context.order
@@ -1253,6 +1248,17 @@ class OrderDetailView(BaseView):
     def issue_status(self):
         order = Order.query.get(self.request.matchdict["order_id"])
         order.issued = int(self.request.params['issued'])
+
+        if not order.issued:
+            ## printed_atをNULLにし直す
+            order.printed_at = None
+            for ordered_product in order.ordered_products:
+                for ordered_product_item in ordered_product.ordered_product_items:
+                    ordered_product_item.printed_at = None
+                    #ordered_product_item.issued_at = None
+                    for token in ordered_product_item.tokens:
+                        #token.issued_at = None
+                        token.printed_at = None
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
 
     @view_config(route_name="orders.print.queue.dialog", request_method="GET", renderer="altair.app.ticketing:templates/orders/_print_queue_dialog.html")
@@ -1331,7 +1337,7 @@ class OrderDetailView(BaseView):
             'build_candidate_id': build_candidate_id,
             }
 
-    @view_config(route_name="orders.print.queue.each", request_method="POST")
+    @view_config(route_name="orders.print.queue.each", request_method="POST", request_param="submit=print")
     def order_tokens_print_queue(self):
         order = self.context.order
         if order is None:
@@ -1349,7 +1355,23 @@ class OrderDetailView(BaseView):
         candidates_action.enqueue(operator=self.context.user)
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
-        
+
+    @view_config(route_name="orders.print.queue.each", request_method="POST", request_param="submit=refresh") #print.queueの操作ではなくrefreshする操作
+    def order_tokens_refresh(self):
+        from .helpers import decode_candidate_id
+        now = datetime.now()
+
+        order = self.context.order
+        if order is None:
+            raise HTTPNotFound('order id %d is not found' % self.context.order_id)
+
+        candidate_id_list = self.request.POST.getall("candidate_id")
+        token_id_list = [decode_candidate_id(e)[0] for e in candidate_id_list]
+        token_id_list = [t for t in token_id_list if t is not None]
+        self.context.refresh_tokens(order, token_id_list, now)
+        self.request.session.flash(u'再発券許可しました')
+        return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
+
     @view_config(route_name='orders.print.queue')
     def order_print_queue(self):
         form = TicketFormatSelectionForm(self.request.params, context=self.context)
@@ -1360,6 +1382,7 @@ class OrderDetailView(BaseView):
         utils.enqueue_for_order(operator=self.context.user, order=self.context.order, ticket_format_id=ticket_format_id)
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=self.context.order.id))
+
 
     @view_config(route_name="orders.checked.delivered", request_method="POST", permission='sales_counter')
     def change_checked_orders_to_delivered(self):

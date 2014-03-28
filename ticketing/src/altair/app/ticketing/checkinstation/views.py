@@ -8,6 +8,7 @@ from pyramid.httpexceptions import HTTPBadRequest
 from webob.multidict import MultiDict
 from .signer import with_secret_token
 from datetime import datetime
+import re
 
 @view_config(route_name="top", renderer="string")
 def top_view(context, request):
@@ -90,7 +91,9 @@ def ticket_data_from_signed_string(context, request):
     ticket_data = TicketData(request, context.operator)
     try:
         try:
-            order, history = ticket_data.get_order_and_history_from_signed(request.json_body["qrsigned"])
+            signed = request.json_body["qrsigned"]
+            signed = re.sub(r"[\x01-\x1F\x7F]", "", signed.encode("utf-8")).replace("\x00", "").decode("utf-8")
+            order, history = ticket_data.get_order_and_history_from_signed(signed)
         except TypeError:
             logger.warn("*qr ticketdata: history not found: json=%s", request.json_body)
             raise HTTPBadRequest(u"E@:不正な入力が渡されました!")

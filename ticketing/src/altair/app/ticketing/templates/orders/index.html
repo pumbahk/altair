@@ -71,10 +71,11 @@
   });
 </script>
 <p/>
+% if total is not None:
 <table class="table table-striped table-bordered">
   <thead>
     <tr>
-      <th>検索された購入金額の総合計</th>
+      <th>検索された購入金額の総合計 <a href="${request.route_path('orders.toggle_show_total', _query=request.params)}" class="btn btn-small">隠す</a></th>
     </tr>
   </thead>
   <tr>
@@ -87,9 +88,16 @@
     </td>
   </tr>
 </table>
+% else:
+  <a href="${request.route_path('orders.toggle_show_total', _query=request.params)}" class="btn btn-small">購入金額の合計を表示</a>
+% endif
 
 <div class="orders">
+  % if orders is not None:
   <%include file="/orders/_list2.html" args="form=form, orders=orders" />
+  % else:
+  <div class="alert">検索条件を指定し <button href="#" class="btn btn-small"><i class="icon-search"></i>検索</button> ボタンを押してください</div>
+  % endif
 </div>
 
 <script type="text/javascript">

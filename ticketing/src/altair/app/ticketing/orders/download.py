@@ -998,8 +998,8 @@ class OrderSearchBase(list):
         finally:
             cur.close()
 
-    def total(self):
-        sql = select([func.sum(t_order.c.total_amount)],
+    def count_and_total(self):
+        sql = select([func.count(t_order.c.id), func.sum(t_order.c.total_amount)],
                      from_obj=[self.target],
                      whereclause=self.condition,
         )
@@ -1008,7 +1008,7 @@ class OrderSearchBase(list):
         cur = self.db_session.bind.execute(sql)
         try:
             r = cur.fetchone()
-            return r[0]
+            return r
         finally:
             cur.close()
 
