@@ -13,6 +13,14 @@ namespace QR
         {
             return resource.SettingValue ("endpoint.mock.auth.login.url");
         }
+        public static string GetDevelopLoginURL(this IResource resource)
+        {
+            return resource.SettingValue("endpoint.develop.auth.login.url");
+        }
+        public static string GetStagingLoginURL(this IResource resource)
+        {
+            return resource.SettingValue("endpoint.staging.auth.login.url");
+        }
     }
 }
 

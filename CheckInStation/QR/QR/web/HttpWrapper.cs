@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.IO;
 using NLog;
+using QR.support;
 
 namespace QR
 {
@@ -27,7 +28,7 @@ namespace QR
                 if (i > retryMax) {
                     throw;
                 }
-                logger.Warn("request failure. retry(i={0}), url={1}, Delay={2}", i, uri, HttpWrapper.RetryDelay);
+                logger.Warn("request failure. retry(i={0}), url={1}, Delay={2}".WithMachineName(), i, uri, HttpWrapper.RetryDelay);
             }
 
             if (i <= retryMax) {
@@ -40,13 +41,14 @@ namespace QR
             return this.RetryAsyncCall(thunk, uri, HttpWrapper.RetryMaxCount);
         }
 
+
         public async Task<string> ReadAsStringAsync(HttpContent content)
         {
             var result = await content.ReadAsStringAsync().ConfigureAwait(false);
-            logger.Trace("* API Output:{0}", result);
+            logger.Trace("* API Output:{0}".WithMachineName(), result);
             return result;
         }
-
+        
         public Task<Stream> ReadAsStreamAsync(HttpContent content)
         {
             //todo. remove await;
@@ -92,15 +94,15 @@ namespace QR
             {
                 if (client != null)
                 {
-                    logger.Debug("begin dispose!");
+                    //logger.Debug("begin dispose!".WithMachineName());
                     client.Dispose();
-                    logger.Debug("end dispose!");
+                    //logger.Debug@("end dispose!".WithMachineName());
                 }
                 client = null;
             }
             catch (Exception e)
             {
-                logger.ErrorException("dispose", e);
+                logger.ErrorException("dispose".WithMachineName(), e);
                 throw;
             }
         }
@@ -131,7 +133,7 @@ namespace QR
             var client = this.GetClient ();
             var url = this.UrlBuilder.Build ();
             var result = await client.GetStringAsync (url);
-            logger.Trace("* API Output:{0}", result);
+            logger.Trace("* API Output:{0}".WithMachineName(), result);
             return result;
         }
 

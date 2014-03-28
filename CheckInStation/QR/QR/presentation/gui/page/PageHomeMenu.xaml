@@ -60,19 +60,21 @@
                 </Style>
             </StackPanel.Resources>
             <ToggleButton Name="_PrintTestQRToggleButton">QR読み込みのテストをする</ToggleButton>
-            <c:QRCodeCanvas Width="80" Height="80" QRCode="test message!#$%" Margin="20"/>
+            <c:QRCodeCanvas Width="80" Height="80" QRCode="test message!#$%*+;{" Margin="20"/>
             <TextBox x:Name="_PrintTestQRInput" FontSize="9" KeyDown="_PrintTestQRInput_KeyDown">
             </TextBox>
             <StackPanel>
                 <TextBlock Style="{StaticResource SubText}">QRで認識された文字列:</TextBlock>
                 <TextBlock Style="{StaticResource SubText}" Text="{Binding LoadedQRCode}"/>
             </StackPanel>
-            <TextBlock Style="{StaticResource SubText}">※QRコードの認識: "test message!#$%"と表示されればok</TextBlock>
+            <TextBlock Style="{StaticResource SubText}">※QRコードの認識: "test message!#$%*+;{"と表示されればok</TextBlock>
         </StackPanel>
     </Page.Resources>
     
     <Grid Background="{StaticResource BackgroundImageBrush}">
         <StackPanel Name="MenulistPanel" Style="{StaticResource CenterContentStackPanel}" VerticalAlignment="Center">
+            <TextBlock Padding="0,0,40,0" Style="{StaticResource MainText}" Text="{Binding ApplicationVersion,Mode=OneTime,StringFormat={}チケット発券ステーション(ver {0})}"/>
+
             <c:MenuDialog Placement="Center" PlacementTarget="{Binding ElementName=MenulistPanel}"
                           x:Name="MenuDialogAccessURL"
                           Title="通信先サーバー設定">

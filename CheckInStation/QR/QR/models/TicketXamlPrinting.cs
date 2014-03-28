@@ -20,9 +20,6 @@ namespace QR
         public IResource Resource { get; set; }
 
         private LocalPrintServer ps;
-        private System.Windows.Xps.XpsDocumentWriter writer;
-        private FixedDocument doc;
-
         private Logger logger = LogManager.GetCurrentClassLogger();
 
         //temporary variable
@@ -63,17 +60,17 @@ namespace QR
         #region ITicketPrinting implementation
         public PrintQueue DefaultPrinter { get; set; }
 
-        public async Task<bool> EnqueuePrinting (TicketImageData imageData, IInternalEvent ev)
+        public bool EnqueuePrinting (TicketImageData imageData, IInternalEvent ev)
         {
 
             PrintQueue pq = this.DefaultPrinter;
-            this.writer = PrintQueue.CreateXpsDocumentWriter(pq);
+            var writer = PrintQueue.CreateXpsDocumentWriter(pq);
 
             //@ns@ÇassemblyñºÇ…ïœä∑ÇµÇƒÇ©ÇÁì«Ç›çûÇﬁ
             var xmlreader = XmlReader.Create(new StringReader(this.NormalizedXaml(imageData.xaml)));
 
             //xamlÇobjectâªÇ≈Ç´ÇÈÇÃÇÕui thread ÇÃÇ›
-            FixedDocument doc = await ev.CurrentDispatcher.InvokeAsync<FixedDocument>(() =>
+            FixedDocument doc = ev.CurrentDispatcher.Invoke<FixedDocument>(() =>
             {
                 return XamlReader.Load(xmlreader) as FixedDocument;
             }, System.Windows.Threading.DispatcherPriority.Send);
@@ -95,8 +92,6 @@ namespace QR
         }
         public void EndEnqueue ()
         {
-            this.doc = null;
-            this.writer = null;
         }
         #endregion
     }

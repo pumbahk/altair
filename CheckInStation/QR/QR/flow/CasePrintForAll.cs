@@ -49,30 +49,44 @@ namespace QR
                 }            
             }
         }
-                
-        public override async Task<bool> VerifyAsync ()
+
+        public override Task<bool> VerifyAsync()
         {
+            var ts = new TaskCompletionSource<bool>();
             // 印刷対象の画像の取得に失敗した時
             if (!this.PrintingTargets.Status)
             {
                 PresentationChanel.NotifyFlushMessage(this.PrintingTargets.Left);
-                return false;
+                ts.SetResult(false);
+                return ts.Task;
             }
 
             // 印刷開始
             var subject = this.PresentationChanel as PrintingEvent;
             subject.ChangeState(PrintingStatus.printing);
 
-            await this.AggregateTicketPrinting.Act(subject, this.PrintingTargets.Right);
-            this.RequestData = UpdatePrintedAtRequestData.Build(this.DataCollection, this.AggregateTicketPrinting.SuccessList);
-
-            var s = this.AggregateTicketPrinting.Status;
-            if (!s)
+            try
             {
-                PresentationChanel.NotifyFlushMessage(MessageResourceUtil.GetLoginFailureMessageFormat(Resource));
+                this.AggregateTicketPrinting.Act(subject, 
+                     this.PrintingTargets.Right,
+                     (this.PresentationChanel as PrintingEvent).StatusInfo.TotalPrinted);
+                this.RequestData = UpdatePrintedAtRequestData.Build(this.DataCollection, this.AggregateTicketPrinting.SuccessList);
+                var s = this.AggregateTicketPrinting.Status;
+                ts.SetResult(s);
+                if (!s)
+                {
+                    PresentationChanel.NotifyFlushMessage(MessageResourceUtil.GetLoginFailureMessageFormat(Resource));
+                }
+            } 
+            catch (TransparentMessageException ex)
+            {
+                PresentationChanel.NotifyFlushMessage(ex.Message);
+                this.PrintingTargets.Left = ex.Message;
+                ts.SetResult(false);
             }
-            return s;
+            return ts.Task;
         }
+    
 
         public override ICase OnSuccess (IFlow flow)
         {
@@ -86,7 +100,7 @@ namespace QR
                 if (this.RequestData != null) {
                     foreach (var p in this.RequestData.printed_ticket_list)
                     {
-                        logger.Warn("token_id={0}, template_id={1} is printed. but all status is failure", p.token_id, p.template_id);
+                        logger.Warn("token_id={0}, template_id={1} is printed. but all status is failure".WithMachineName(), p.token_id, p.template_id);
                     }
                     await Resource.TicketDataManager.UpdatePrintedAtAsync (this.RequestData);
                 }

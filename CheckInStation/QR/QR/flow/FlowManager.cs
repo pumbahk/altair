@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NLog;
+using QR.support;
 
 namespace QR
 {
@@ -29,7 +30,7 @@ namespace QR
         public IInternalEvent GetInternalEvent ()
         {
             if (this.RequestBroker == null) {
-                logger.Warn("RequestBroker hasn't Internal Event.");
+                logger.Warn("RequestBroker hasn't Internal Event.".WithMachineName());
                 return new EmptyEvent ();
             }
             return this.RequestBroker.GetInternalEvent ();    
@@ -51,13 +52,13 @@ namespace QR
         public IFlow Pop()
         {
             var result = this.undoStack.Pop();
-            logger.Trace("Pop(). flow={0}, case={1}", result, result.Case);
+            logger.Trace("Pop(). flow={0}, case={1}".WithMachineName(), result, result.Case);
             return result;
         }
 
         public void Push (IFlow flow)
         {
-            logger.Trace("Manager.Push(). flow={0}, Case={1}", flow, flow.Case);
+            logger.Trace("Manager.Push(). flow={0}, Case={1}".WithMachineName(), flow, flow.Case);
             this.undoStack.Push (flow);
         }
 
@@ -77,14 +78,14 @@ namespace QR
             var cmd = this.Peek ();
             var nextCmd = await cmd.Forward ().ConfigureAwait(false);
             this.Push (nextCmd);
-            logger.Debug ("* Forward: {0} -> {1}", cmd.Case.GetType ().FullName, nextCmd.Case.GetType ().FullName);
+            logger.Debug("* Forward: {0} -> {1}".WithMachineName(), cmd.Case.GetType ().FullName, nextCmd.Case.GetType ().FullName);
             return nextCmd.Case;
         }
 
         public async Task<ICase> Backward ()
         {
             if (undoStack.Count <= 1) { //xx;
-                logger.Debug("Backward is empty or one");
+                logger.Debug("Backward is empty or one".WithMachineName());
                 return this.Peek ().Case;
             }
             // 現在の情報を捨てる
@@ -101,7 +102,7 @@ namespace QR
                 }
                 this.Push(that);
             }
-            logger.Debug("Backward: {0} -> {1}", prev.Case, that.Case);
+            logger.Debug("Backward: {0} -> {1}".WithMachineName(), prev.Case, that.Case);
             return that.Case;
         }
 

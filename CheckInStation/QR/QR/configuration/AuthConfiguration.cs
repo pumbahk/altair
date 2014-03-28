@@ -6,13 +6,25 @@ namespace QR
     {
         public static void IncludeMe(IConfigurator config)
         {
-            var loginUrl = config.Resource.GetLoginURL ();
-            config.Resource.Authentication = new Authentication (config.Resource, loginUrl);
-        }
-        public static void MockIncludeMe(IConfigurator config)
-        {
-            var loginUrl = config.Resource.GetMockLoginURL ();
-            config.Resource.Authentication = new Authentication (config.Resource, loginUrl);
+            string loginURL;
+            switch (config.ReleaseStageType)
+            {
+                case ReleaseStageType.mock:
+                    loginURL = config.Resource.GetMockLoginURL();
+                    break;
+                case ReleaseStageType.develop:
+                    loginURL = config.Resource.GetDevelopLoginURL();
+                    break;
+                case ReleaseStageType.staging:
+                    loginURL = config.Resource.GetStagingLoginURL();
+                    break;
+                case ReleaseStageType.production:
+                    loginURL = config.Resource.GetLoginURL();
+                    break;
+                default:
+                    throw new InvalidOperationException("undefined release stage type");
+            }
+            config.Resource.Authentication = new Authentication (config.Resource, loginURL);
         }
     }
 }

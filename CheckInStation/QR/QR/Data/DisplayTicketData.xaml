@@ -12,6 +12,9 @@
     <p:PageConfirmAllDataContext.PerformanceDate>
         2012年12月24日
     </p:PageConfirmAllDataContext.PerformanceDate>
+    <p:PageConfirmAllDataContext.PerformanceName>
+        楽天イーグルス vs 埼玉西武ライオンズ
+    </p:PageConfirmAllDataContext.PerformanceName>
     <p:PageConfirmAllDataContext.NumberOfPrintableTicket>
         10
     </p:PageConfirmAllDataContext.NumberOfPrintableTicket>
@@ -19,15 +22,15 @@
         <l:DisplayTicketDataCollection>
             <l:DisplayTicketData>
                 <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
-                <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.PrintedAt/>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
-                <l:DisplayTicketData.SeatName>A席(1)</l:DisplayTicketData.SeatName>
-                <l:DisplayTicketData.ProductName>ダミー座席</l:DisplayTicketData.ProductName>
+                <l:DisplayTicketData.SeatName>内野指定席1塁A/大人席</l:DisplayTicketData.SeatName>
+                <l:DisplayTicketData.ProductName>R2 B 1列 51番</l:DisplayTicketData.ProductName>
             </l:DisplayTicketData>
             <l:DisplayTicketData>
                 <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
-                <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.PrintedAt/>
                 <l:DisplayTicketData.IsSelected>false</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
                 <l:DisplayTicketData.SeatName>A席(2)</l:DisplayTicketData.SeatName>
@@ -35,7 +38,7 @@
             </l:DisplayTicketData>
             <l:DisplayTicketData>
                 <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
-                <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.PrintedAt/>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
                 <l:DisplayTicketData.SeatName>A席(3)</l:DisplayTicketData.SeatName>

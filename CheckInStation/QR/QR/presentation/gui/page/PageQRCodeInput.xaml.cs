@@ -15,12 +15,15 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using QR.support;
 
 namespace QR.presentation.gui.page
 {
 
     class PageQRCodeInputDataContext : InputDataContext
     {
+        public PageQRCodeInputDataContext(Page page): base(page){}
+
         private string _QRCode;
         public string QRCode
         {
@@ -48,13 +51,16 @@ namespace QR.presentation.gui.page
         public PageQRCodeInput()
         {
             InitializeComponent();
+            //disable IME!!!!!!!!!!!!
+            InputMethod.Current.ImeState = InputMethodState.Off;
+
             this.DataContext = this.CreateDataContext();
-            logger.Info("!initialize page: {0}, context: {1}, event: {2}, case: ", this, this.DataContext, (this.DataContext as PageQRCodeInputDataContext).Event, (this.DataContext as PageQRCodeInputDataContext).Case);
+            logger.Info("!initialize page: {0}, context: {1}, event: {2}, case: ".WithMachineName(), this, this.DataContext, (this.DataContext as PageQRCodeInputDataContext).Event, (this.DataContext as PageQRCodeInputDataContext).Case);
         }
 
         private InputDataContext CreateDataContext()
         {
-            return new PageQRCodeInputDataContext()
+            return new PageQRCodeInputDataContext(this)
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new QRInputEvent()
@@ -70,9 +76,13 @@ namespace QR.presentation.gui.page
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
         {
-            var ctx = this.DataContext as InputDataContext;
+            var ctx = this.DataContext as PageQRCodeInputDataContext;
+            logger.Info("PRessed!!".WithMachineName());
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
+                ctx.QRCode = this.QRCodeInput.Text;
+                //QR‚Ìsubmit‚ÉŽ¸”s‚µ‚½Žž‚Ì‚±‚Æ‚ðŒ©‰z‚µ‚Ä‹ó‚É‚µ‚Ä‚¨‚­            
+                this.QRCodeInput.Text= "";
                 var case_ = await ctx.SubmitAsync();
                 ctx.TreatErrorMessage();              
                 if (ctx.Event.Status == InternalEventStaus.success)
@@ -117,7 +127,7 @@ namespace QR.presentation.gui.page
             }
             catch (Exception ex)
             {
-                logger.ErrorException("goto another mode", ex);
+                logger.ErrorException("goto another mode".WithMachineName(), ex);
             }
         }
 

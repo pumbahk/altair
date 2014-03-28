@@ -18,6 +18,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using QR.support;
 
 namespace QR.presentation.gui.page{
 
@@ -59,6 +60,8 @@ namespace QR.presentation.gui.page{
             get { return this._TestStatusDescription; }
             set { this._TestStatusDescription = value; this.OnPropertyChanged("TestStatusDescription"); }
         }
+
+        public string ApplicationVersion { get; set; }
     }
 
 
@@ -113,7 +116,8 @@ namespace QR.presentation.gui.page{
                 SelectedWindowStyle = windowStyles[0],
                 SelectedServerUrl = resource.Authentication.LoginURL,
                 LoadedQRCode = "<準備中>",
-                TestStatusDescription = "<準備中>"
+                TestStatusDescription = "<準備中>",
+                ApplicationVersion=EnvironmentName.GetApplicationInformationalVersion()
             };
            
             return ctx;
@@ -135,7 +139,7 @@ namespace QR.presentation.gui.page{
             ctx.SelectedWindowStyle = selected;
         }
 
-        private async void MenuDialogTesting_OnTestPrinting(object sender, RoutedEventArgs e)
+        private void MenuDialogTesting_OnTestPrinting(object sender, RoutedEventArgs e)
         {
             var resource = AppUtil.GetCurrentResource();
             var printing = resource.TicketPrinting;
@@ -152,11 +156,11 @@ namespace QR.presentation.gui.page{
             printing.BeginEnqueue();
             try
             {
-               await printing.EnqueuePrinting(data, ev);
+               printing.EnqueuePrinting(data, ev);
             }
             catch (Exception ex)
             {
-                logger.WarnException("test printing:", ex);
+                logger.WarnException("test printing:".WithMachineName(), ex);
             }
             printing.EndEnqueue();
 

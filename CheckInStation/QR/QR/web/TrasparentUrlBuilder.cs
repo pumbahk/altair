@@ -1,5 +1,6 @@
 
 using NLog;
+using QR.support;
 namespace QR
 {
     public class TrasparentUrlBuilder :IUrlBuilder
@@ -14,7 +15,7 @@ namespace QR
 
         public string Build ()
         {
-            logger.Info("*http client* request url: {0}", this.Url);
+            logger.Info("*http client* request url: {0}".WithMachineName(), this.Url);
             return Url;
         }
     }

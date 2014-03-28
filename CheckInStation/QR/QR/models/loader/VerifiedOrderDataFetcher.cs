@@ -43,7 +43,7 @@ namespace QR
                 var json = DynamicJson.Parse (response);
                 return new Success<string, VerifiedOrdernoRequestData> (new VerifiedOrdernoRequestData(json));
             } catch (System.Xml.XmlException e) {
-                logger.ErrorException (":", e);
+                logger.ErrorException (":".WithMachineName(), e);
                 return new Failure<string, VerifiedOrdernoRequestData> (Resource.GetInvalidInputMessage ());
             }
         }

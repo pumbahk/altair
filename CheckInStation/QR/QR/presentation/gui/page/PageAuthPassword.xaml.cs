@@ -26,14 +26,14 @@ namespace QR.presentation.gui.page
 
     class AuthPasswordDataContext : InputDataContext
     {
-
+        public AuthPasswordDataContext(Page page) : base(page) { }
         public string LoginPassword { get; set; }
 
         public override void OnSubmit()
         {
             var ev = this.Event as AuthenticationEvent;
             ev.LoginPassword = this.LoginPassword; //TODO:use seret string
-            //logger.Info(String.Format("Submit: Name:{0}, Password:{1}", ev.LoginName, ev.LoginPassword));
+            //logger.Info@(String.Format("Submit: Name:{0}, Password:{1}", ev.LoginName, ev.LoginPassword));
             base.OnSubmit();
         }
     }
@@ -67,7 +67,7 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
-            return new AuthPasswordDataContext()
+            return new AuthPasswordDataContext(this)
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new AuthenticationEvent(),

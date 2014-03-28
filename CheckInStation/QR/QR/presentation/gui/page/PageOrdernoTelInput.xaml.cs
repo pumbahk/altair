@@ -23,6 +23,8 @@ namespace QR.presentation.gui.page
 
     class PageOrdernoTelInputDataContext : InputDataContext
     {
+        public PageOrdernoTelInputDataContext(Page page) : base(page) { }
+
         public string Tel { get; set; }
         public override void OnSubmit()
         {
@@ -48,7 +50,7 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
-            return new PageOrdernoTelInputDataContext()
+            return new PageOrdernoTelInputDataContext(this)
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new OrdernoInputEvent()

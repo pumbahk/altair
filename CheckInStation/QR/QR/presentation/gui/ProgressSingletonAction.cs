@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using QR.support;
 
 namespace QR.presentation.gui
 {
@@ -29,7 +30,7 @@ namespace QR.presentation.gui
             }
             else
             {
-                logger.Info("execute submit action is called. ignored. (ctx: {0})", ctx);
+                logger.Info("execute submit action is called. ignored. (ctx: {0})".WithMachineName(), ctx);
             }
         }
     }

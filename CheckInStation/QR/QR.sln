@@ -23,6 +23,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{4E6916
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{D134A8BA-762F-4780-BA39-B230DC003674}"
+	ProjectSection(SolutionItems) = preProject
+		Build.proj = Build.proj
+		.build\MSBuild.Community.Tasks.dll = .build\MSBuild.Community.Tasks.dll
+		.build\MSBuild.Community.Tasks.targets = .build\MSBuild.Community.Tasks.targets
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,7 +42,8 @@ Global
 		{4FEE0284-8205-4705-BA9F-9F8AFDC87B97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FEE0284-8205-4705-BA9F-9F8AFDC87B97}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{4FEE0284-8205-4705-BA9F-9F8AFDC87B97}.Debug|x86.Build.0 = Debug|Any CPU
-		{4FEE0284-8205-4705-BA9F-9F8AFDC87B97}.Release|Any CPU.ActiveCfg = Release|x86
+		{4FEE0284-8205-4705-BA9F-9F8AFDC87B97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FEE0284-8205-4705-BA9F-9F8AFDC87B97}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4FEE0284-8205-4705-BA9F-9F8AFDC87B97}.Release|x86.ActiveCfg = Release|x86
 		{4FEE0284-8205-4705-BA9F-9F8AFDC87B97}.Release|x86.Build.0 = Release|x86
 		{0784CDC9-0F52-4B8B-9488-6589C11E94E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

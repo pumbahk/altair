@@ -67,7 +67,7 @@ namespace QR
                     return base.OnFailure(flow);
                 }
             }
-            logger.Error(String.Format("invalid status: status={0}, token_id={1}", this.tokenStatus.ToString(), this.TicketData.ordered_product_item_token_id));
+            logger.Error("invalid status: status={0}, token_id={1}".WithMachineName(), this.tokenStatus.ToString(), this.TicketData.ordered_product_item_token_id);
             var message = this.Resource.GetTokenStatusMessage (this.tokenStatus);
             return new CaseFailureRedirect(Resource, message);
         }

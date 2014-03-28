@@ -7,6 +7,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       mc:Ignorable="d" 
       d:DesignHeight="364" d:DesignWidth="683"
+    x:Name="CurrentPage"
     ShowsNavigationUI="False"
     Loaded="OnLoaded"
 	Title="PageAuthInput">
@@ -20,7 +21,7 @@
         </Style>
     </Page.Resources>
     <Grid>
-        <Viewbox>
+        <Viewbox Style="{StaticResource ContentViewboxStyle}">
             <Grid Background="{StaticResource LogoBackgroundBrush}">
                 <Canvas Width="1366" Height="728">
 
@@ -31,6 +32,7 @@
                     <Border 
                         Canvas.Left="140"
                         Canvas.Top="143"
+                        x:Name="MainBorder"
                         Style="{StaticResource MainBorder}">
                         <Grid>
                             <vk:VirtualKeyboard Text="" 
@@ -64,14 +66,7 @@
                         </StackPanel.Style>
                         <TextBlock 
                         d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
-                        Text="{Binding Description}">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontSize" Value="30"/>
-                                    <Setter Property="Foreground" Value="{StaticResource MainTextBrush}"/>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                        Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
 
                     <!-- ボタン -->
@@ -87,7 +82,14 @@
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
                                       MessageText="{Binding ErrorMessage}"
                                       ButtonText="OK"/>
-                    </Canvas>
+
+
+                    <!-- 終了ボタン-->
+                    <Button Command="{Binding AppCloseCommand}" Canvas.Left="158" Canvas.Top="12" Height="75" Width="181"
+                            Background="Transparent"
+                            Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
+                            />
+                </Canvas>
             </Grid>
         </Viewbox>
     </Grid>

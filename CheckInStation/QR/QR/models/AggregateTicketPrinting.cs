@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using QR.support;
 
 namespace QR
 {
@@ -27,23 +28,31 @@ using NLog;
             this.pushedRequestCollector = new TokenTicketTemplatePairCollector();
         }
 
-        public async Task Act(PrintingEvent subject, IEnumerable<TicketImageData> source)
+        public void Act(PrintingEvent subject, IEnumerable<TicketImageData> source, int expectedTotalPrinted)
         {
             this.printing.BeginEnqueue();
+            var actualTotalPrinted = 0;
             foreach (var imgdata in source)
             {
                 try
                 {
-                    var status = await printing.EnqueuePrinting(imgdata, subject).ConfigureAwait(true);
+                    var status = printing.EnqueuePrinting(imgdata, subject);
                     subject.PrintFinished(); //印刷枚数インクリメント
+                    actualTotalPrinted += 1;
                     this.pushedRequestCollector.Add(Tuple.Create(imgdata.token_id, imgdata.ticket_id), status);
                 }
                 catch (Exception ex)
                 {
-                    logger.WarnException("", ex);
+                    logger.WarnException("".WithMachineName(), ex);
                     this.pushedRequestCollector.Add(Tuple.Create(imgdata.token_id, imgdata.ticket_id), false);
                 }
             }
+            if (actualTotalPrinted != expectedTotalPrinted) //xxx:
+            {
+                logger.Error("ticket printing: expected ={0}, but printed ={1}", expectedTotalPrinted, actualTotalPrinted);
+                throw new TransparentMessageException("発券された枚数に間違いがあります");
+            }
+            subject.StatusInfo.Status = PrintingStatus.finished;
             this.printing.EndEnqueue();
         }
 

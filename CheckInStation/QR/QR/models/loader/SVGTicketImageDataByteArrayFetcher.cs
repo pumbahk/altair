@@ -56,7 +56,7 @@ namespace QR
                     }
                     else
                     {
-                        logger.Info("image fetching status code: {0}", response.StatusCode);
+                        logger.Info("image fetching status code: {0}".WithMachineName(), response.StatusCode);
                         return null; //Too-Bad!!
                     }                    
                 }
@@ -106,7 +106,7 @@ namespace QR
             }
             else
             {
-                logger.Info("image fetching status code: {0}", response.StatusCode);
+                logger.Info("image fetching status code: {0}".WithMachineName(), response.StatusCode);
                 return null; //Too-bad!!
             }
 
@@ -159,7 +159,7 @@ namespace QR
                     var image = await GetImageFromSvg (svgdata.svg);
                     if (image == null)                    
                     {
-                        logger.Error("image fetching is failure. token_id={0}", svgdata.token_id);
+                        logger.Error("image fetching is failure. token_id={0}".WithMachineName(), svgdata.token_id);
                         return new Failure<string, List<TicketImageData>>(Resource.GetInvalidOutputMessage());
                     }
 
@@ -170,10 +170,10 @@ namespace QR
                 }
                 return new Success<string,List<TicketImageData>> (r);
             } catch (System.Xml.XmlException e) {
-                logger.ErrorException (":", e);
+                logger.ErrorException (":".WithMachineName(), e);
                 return new Failure<string,List<TicketImageData>> (Resource.GetInvalidOutputMessage ());
             } catch (Exception e) {
-                logger.ErrorException (":", e);
+                logger.ErrorException (":".WithMachineName(), e);
                 return new Failure<string, List<TicketImageData>> (Resource.GetDefaultErrorMessage ());
             }
         }
@@ -190,10 +190,10 @@ namespace QR
                 }
                 return new Success<string,List<TicketImageData>> (r);
             } catch (System.Xml.XmlException e) {
-                logger.ErrorException (":", e);
+                logger.ErrorException (":".WithMachineName(), e);
                 return new Failure<string,List<TicketImageData>> (Resource.GetInvalidOutputMessage ());
             } catch (Exception e) {
-                logger.ErrorException (":", e);
+                logger.ErrorException (":".WithMachineName(), e);
                 return new Failure<string, List<TicketImageData>> (Resource.GetDefaultErrorMessage ());
             }
         }

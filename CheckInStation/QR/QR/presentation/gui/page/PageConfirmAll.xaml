@@ -14,7 +14,7 @@
 
     </Page.Resources>
     <Grid>
-        <Viewbox>
+        <Viewbox Style="{StaticResource ContentViewboxStyle}">
             <Grid Background="{StaticResource LogoBackgroundBrush2}">
                 <Canvas Width="1366" Height="728">
                     <!--
@@ -87,14 +87,7 @@
                         </StackPanel.Style>
                         <TextBlock 
                         d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
-                        Text="{Binding Description}">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontSize" Value="30"/>
-                                    <Setter Property="Foreground" Value="{StaticResource MainTextBrush}"/>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                        Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
                     </StackPanel>
 
                     <!-- メインコンテンツ -->
@@ -108,27 +101,31 @@
                                 VerticalAlignment="Center"
                                 LineHeight="25"
                                 FontSize="25"
-                                Style="{StaticResource MainText}">発券対象のチケットが自動で選択されています。発券しないチケットは選択を解除してください</TextBlock>
+                                Style="{StaticResource MainText}" Margin="121,0"><Run Text="発券対象のチケットが自動で選択されています。発券しないチケットは選択を解除してください"/></TextBlock>
+                            <WrapPanel Margin="30,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                                <TextBlock FontSize="28">試合日時:</TextBlock>
+                                <TextBlock FontSize="28" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceDate, Mode=OneWay}"></TextBlock>
+                                <TextBlock Margin="50,0,0,0" FontSize="28" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
+                            </WrapPanel>
                             <ListView 
-                    Margin="0,25,0,0"
-                    ItemsSource="{Binding DisplayTicketDataCollection}"
-                    d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
-                    Style="{StaticResource ChoiceCandidatesTwoColumns}" >
+                            	Margin="0,0,0,0"
+                            	ItemsSource="{Binding DisplayTicketDataCollection}"
+                            	d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
+                            	Style="{StaticResource ChoiceCandidatesTwoColumns}" >
                                 <ListView.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <WrapPanel Width="1200" Orientation="Horizontal">
-                                        </WrapPanel>
+                                        <WrapPanel Width="1200" Orientation="Horizontal"/>
                                     </ItemsPanelTemplate>
                                 </ListView.ItemsPanel>
                                 <ListView.ItemContainerStyle>
-                                    <Style TargetType="ListBoxItem">
+                                    <Style TargetType="{x:Type ListBoxItem}">
                                         <Setter Property="Width" Value="580"/>
                                         <Setter Property="Template">
                                             <Setter.Value>
-                                                <ControlTemplate TargetType="ListBoxItem">
+                                                <ControlTemplate TargetType="{x:Type ListBoxItem}">
                                                     <ContentPresenter
-                                Content="{TemplateBinding Content}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                            							Content="{TemplateBinding Content}"
+                            							ContentTemplate="{TemplateBinding ContentTemplate}"
                                 />
                                                 </ControlTemplate>
                                             </Setter.Value>
@@ -156,6 +153,13 @@
             >
                         <TextBlock FontSize="20">戻る</TextBlock>
                     </Button>
+
+                    <!-- 終了ボタン-->
+
+                    <Button Command="{Binding AppCloseCommand}" Canvas.Left="89" Canvas.Top="8" Height="97" Width="187"
+                            Background="Transparent"
+                            Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
+                            />
                 </Canvas>
             </Grid>
         </Viewbox>

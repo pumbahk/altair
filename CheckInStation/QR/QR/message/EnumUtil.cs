@@ -1,5 +1,6 @@
 using System;
 using NLog;
+using QR.support;
 
 namespace QR
 {
@@ -18,11 +19,11 @@ namespace QR
                 result = EnumUtil.ParseEnum<T>(target);
                 return true;
             } catch (ArgumentException) {
-                logger.Error ("`{0}` is undefined value. default value {1} is selected.", target, default(T));
+                logger.Error ("`{0}` is undefined value. default value {1} is selected.".WithMachineName(), target, default(T));
                 result = default(T);
                 return true;
             } catch (Exception e) {
-                logger.ErrorException (":", e);
+                logger.ErrorException (":".WithMachineName(), e);
                 result = default(T);
                 return false;
             }

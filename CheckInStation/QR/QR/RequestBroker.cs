@@ -1,7 +1,8 @@
 using NLog;
 using System;
 using System.Threading.Tasks;
-
+using QR.support;
+                
 namespace QR
 {
     /// <summary>
@@ -35,7 +36,7 @@ namespace QR
         public IInternalEvent GetInternalEvent ()
         {
             if (Event == null) {
-                logger.Warn("Internal Event is not found.");
+                logger.Warn("Internal Event is not found.".WithMachineName());
                 return new EmptyEvent (); //TODO:implement
             } else {
                 return Event;

@@ -17,12 +17,15 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using vkeyboard.control;
+using QR.support;
 
 namespace QR.presentation.gui.page
 {
 
     class PageOrdernoOrdernoInputDataContext : InputDataContext
     {
+        public PageOrdernoOrdernoInputDataContext(Page page) : base(page) { }
+
         public string Orderno { get; set; }
 
         public override void OnSubmit()
@@ -49,7 +52,7 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
-            return new PageOrdernoOrdernoInputDataContext()
+            return new PageOrdernoOrdernoInputDataContext(this)
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Event = new OrdernoInputEvent()
@@ -114,7 +117,7 @@ namespace QR.presentation.gui.page
             }
             catch (Exception ex)
             {
-                logger.ErrorException("goto another mode", ex);
+                logger.ErrorException("goto another mode".WithMachineName(), ex);
             }
         }
 

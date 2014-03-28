@@ -23,6 +23,7 @@ namespace QR.presentation.gui.page
   
     class PageConfirmAllDataContext : InputDataContext, IConfirmAllStatusInfo, INotifyPropertyChanged
     {
+        public PageConfirmAllDataContext(Page page) : base(page) { }
         private ConfirmAllStatus _Status;
         public ConfirmAllStatus Status
         {
@@ -96,7 +97,7 @@ namespace QR.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
-            var ctx = new PageConfirmAllDataContext()
+            var ctx = new PageConfirmAllDataContext(this)
             {
                 Broker = AppUtil.GetCurrentBroker(),
                 Status = ConfirmAllStatus.starting,

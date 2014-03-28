@@ -3,6 +3,9 @@ using System.Net;
 using System.Net.Http;
 using System.Collections.Generic;
 using NLog;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
+using QR.support;
 
 namespace QR
 {
@@ -14,10 +17,25 @@ namespace QR
         public Func<HttpClient,HttpClient> ClientConfig { get; set; }
 
         protected CookieContainer cookieContainer {get;set;}
-
+        public Func<CookieContainer,HttpClientHandler> HandlerFactory { get; set; }
         public HttpWrapperFactory ()
         {
-            
+            this.HandlerFactory = DefaultHandlerFactory;
+        }
+
+        public HttpWrapperFactory(Func<CookieContainer,HttpClientHandler> handlerFactory,
+                                  Func<HttpClient, HttpClient> clientConfigure)
+        {
+            this.HandlerFactory = handlerFactory;
+            this.ClientConfig = clientConfigure;
+        }
+
+        public static HttpClientHandler DefaultHandlerFactory(CookieContainer cookieContainer)
+        {
+            var cache = new CredentialCache();
+            var handler = new HttpClientHandler() { Credentials = cache };
+            CookieUtils.PutCokkiesToRequestHandler(handler, cookieContainer);
+            return handler;
         }
 
         public void AddCookies (IEnumerable<Cookie> new_cookies)
@@ -39,7 +57,7 @@ namespace QR
             }
             else
             {
-                logger.Warn("this is not invalid behavior. overwrited via new container.");
+                logger.Warn("this is not invalid behavior. overwrited via new container.".WithMachineName());
                 this.cookieContainer = container;
             }
         }
@@ -60,10 +78,7 @@ namespace QR
 
         public virtual HttpClient CreateHttpClient ()
         {
-            //temporary: 
-            var handler = new HttpClientHandler() { Credentials = new NetworkCredential("mock", "mock") };
-            CookieUtils.PutCokkiesToRequestHandler(handler, this.cookieContainer);
-            var client = new HttpClient (handler);
+            var client = new HttpClient (this.HandlerFactory(this.cookieContainer));
             return ClientAttachedSomething (client);
         }
 

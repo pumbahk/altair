@@ -46,7 +46,19 @@ namespace QR.support
                 {
                     throw new TransparentMessageException(StripHeader(t.Result));
                 }
-                logger.Warn("task timeout (wait time = 300millisec)");
+                logger.Warn("task timeout (wait time = 300millisec)".WithMachineName());
+                return response.EnsureSuccessStatusCode();
+            } else if(response.StatusCode == System.Net.HttpStatusCode.InternalServerError){
+                var t = response.Content.ReadAsStringAsync();
+                t.Wait(300); //xxxx:
+                if (t.Status == TaskStatus.RanToCompletion)
+                {
+                    logger.Error("INTERNAL SERVER ERROR: message={0}".WithMachineName(),
+                        StripHeader(t.Result));
+                    return response.EnsureSuccessStatusCode();
+
+                }
+                logger.Warn("task timeout (wait time = 300millisec)".WithMachineName());
                 return response.EnsureSuccessStatusCode();
             } else {
                 return response.EnsureSuccessStatusCode();

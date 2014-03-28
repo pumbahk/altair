@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Input;
 
 namespace QR.presentation.gui.page
 {
@@ -24,6 +25,9 @@ namespace QR.presentation.gui.page
         {
             InitializeComponent();
             this.PreviewKeyDown += new KeyEventHandler(HandleEsc);
+
+            //disable IME!!!!!!!!!!!!
+            InputMethod.Current.ImeState = InputMethodState.Off;
         }
 
         private void Shutdown()
