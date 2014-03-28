@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 using QR.message;
 using NLog;
+using System.Net;
+using System.Text.RegularExpressions;
 
 namespace QR.support
 {
@@ -20,6 +22,7 @@ namespace QR.support
         {
             this.Resource = resource;
         }
+        public static Regex ExcludeNumber= new Regex("[^0-9]");
 
         public async Task<ResultTuple<string, T>> Dispatch(Func<Task<ResultTuple<string,T>>> fn){
             try{
@@ -28,22 +31,22 @@ namespace QR.support
             catch (System.Net.WebException e)
             {
                 logger.ErrorException("net:".WithMachineName(), e);
-                return new Failure<string, T>(Resource.GetWebExceptionMessage());
+                return new Failure<string, T>(String.Format("{0} ({1})", Resource.GetWebExceptionMessage(), ((HttpWebResponse)(e.Response)).StatusCode));
             }
             catch (System.Net.Sockets.SocketException e)
             {
                 logger.ErrorException("net(socket):".WithMachineName(), e);
-                return new Failure<string, T>(Resource.GetWebExceptionMessage());
+                return new Failure<string, T>(String.Format("{0} (X{1})", Resource.GetWebExceptionMessage(), e.ErrorCode));
             }
             catch (System.Net.Http.HttpRequestException e)
             {
                 logger.ErrorException("httprequest".WithMachineName(), e);
-                return new Failure<string, T>(Resource.GetWebExceptionMessage());
+                return new Failure<string, T>(String.Format("{0} ({1})", Resource.GetWebExceptionMessage(), DispatchResponse<T>.ExcludeNumber.Replace(e.Message, "")));
             }
            catch (System.Xml.XmlException e)
             {
                 logger.ErrorException("xml:".WithMachineName(), e);
-                return new Failure<string, T>(e.ToString());
+                return new Failure<string, T>(String.Format("{0} (xxx)", Resource.GetWebExceptionMessage()));
            }
            catch (TaskCanceledException e)
             {
@@ -65,17 +68,17 @@ namespace QR.support
             catch (System.Net.WebException e)
             {
                 logger.ErrorException("net:".WithMachineName(), e);
-                return new Failure<string, T>(Resource.GetWebExceptionMessage());
+                return new Failure<string, T>(String.Format("{0} ({1})", Resource.GetWebExceptionMessage(), ((HttpWebResponse)(e.Response)).StatusCode));
             }
             catch (System.Net.Sockets.SocketException e)
             {
                 logger.ErrorException("net(socket):".WithMachineName(), e);
-                return new Failure<string, T>(Resource.GetWebExceptionMessage());
+                return new Failure<string, T>(String.Format("{0} (X{1})", Resource.GetWebExceptionMessage(), e.ErrorCode));
             }
             catch (System.Net.Http.HttpRequestException e)
             {
                 logger.ErrorException("httprequest".WithMachineName(), e);
-                return new Failure<string, T>(Resource.GetWebExceptionMessage());
+                return new Failure<string, T>(String.Format("{0} ({1})", Resource.GetWebExceptionMessage(), DispatchResponse<T>.ExcludeNumber.Replace(e.Message, "")));
             }
             catch (System.Xml.XmlException e)
             {
