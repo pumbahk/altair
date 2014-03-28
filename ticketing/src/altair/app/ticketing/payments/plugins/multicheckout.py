@@ -11,6 +11,8 @@ from wtforms import fields
 from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.validators import Regexp, Length
 
+import markupsafe
+
 from altair.multicheckout import helpers as m_h
 from altair.multicheckout.api import detect_card_brand, get_card_ahead_com_name, get_multicheckout_3d_api
 from altair.multicheckout.models import (
@@ -29,6 +31,7 @@ from altair.formhelpers import (
     Translations,
     ignore_space_hyphen,
     capitalize,
+    OurSelectField
 )
 
 from .models import DBSession
@@ -111,6 +114,10 @@ CARD_EXP_YEAR_REGEXP = r'^\d{2}$'
 CARD_EXP_MONTH_REGEXP = r'^\d{2}$'
 CARD_SECURE_CODE_REGEXP = r'^\d{3,4}$'
 
+def card_exp_year(form):
+    now = datetime.now() # safe to use datetime.now() here
+    return [(u'%02d' % (y % 100), '%d' % y) for y in range(now.year, now.year + 20)]
+
 class CardForm(CSRFSecureForm):
     def _get_translations(self):
         return Translations({
@@ -125,11 +132,10 @@ class CardForm(CSRFSecureForm):
     card_number = fields.TextField('card',
                                    filters=[ignore_space_hyphen], 
                                    validators=[Length(14, 16), Regexp(CARD_NUMBER_REGEXP), Required()])
-    exp_year = fields.TextField('exp_year', validators=[Length(2), Regexp(CARD_EXP_YEAR_REGEXP)])
-    exp_month = fields.TextField('exp_month', validators=[Length(2), Regexp(CARD_EXP_MONTH_REGEXP)])
+    exp_year = OurSelectField('exp_year', validators=[Length(2), Regexp(CARD_EXP_YEAR_REGEXP)], choices=card_exp_year)
+    exp_month = OurSelectField('exp_month', validators=[Length(2), Regexp(CARD_EXP_MONTH_REGEXP)], choices=[(u'%02d' % i, u'%02d' % i) for i in range(1, 13)])
     card_holder_name = fields.TextField('card_holder_name', filters=[capitalize], validators=[Length(2), Regexp(CARD_HOLDER_NAME_REGEXP)])
     secure_code = fields.TextField('secure_code', validators=[Length(3, 4), Regexp(CARD_SECURE_CODE_REGEXP)])
-
 
 def get_error_message(request, error_code):
     return u'決済エラー:' + error_messages.get(error_code, u'決済に失敗しました。カードや内容を確認の上再度お試しください。')
@@ -347,6 +353,7 @@ class MultiCheckoutView(object):
         form = CardForm(formdata=self.request.params, csrf_context=self.request.session)
         return dict(form=form)
 
+    @clear_exc
     @view_config(route_name='payment.secure_code', request_method="POST", renderer=_selectable_renderer('%(membership)s/pc/card_form.html'))
     @view_config(route_name='payment.secure_code', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=_selectable_renderer('%(membership)s/mobile/card_form.html'))
     @view_config(route_name='payment.secure_code', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(is_smartphone_organization, ), renderer=_selectable_renderer('%(membership)s/pc/card_form.html'))
