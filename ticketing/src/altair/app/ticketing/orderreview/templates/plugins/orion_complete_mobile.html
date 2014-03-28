@@ -1,23 +1,63 @@
+<div>
+<!-- mobile -->
+
+%if not paid:
+
+公演当日会場専用窓口でのお受け取りです。 <br />
+<br />
+支払い完了後、このページにQRコードを表示するためのボタンが表示されます。 <br />
+表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、公演当日、チケット窓口にてQRコードをお見せください。 <br />
+<br />
+★対応スマホをお持ちの方は、専用アプリ【イベント・ゲート】にQRコードをダウンロードできます(要無料会員登録)。 <br />
+<br />
+[イベント・ゲートへのダウンロード方法] <br />
+1.支払い完了後、この画面にてメールアドレスをご入力しいただき、スマホでメールを受信 <br />
+2.メール記載のリンクをクリックし[アプリでチケットを受け取る]を選択 <br />
+※インストール・無料会員登録がまだの場合は、ここで手続きをお願いします。 <br />
+3.【イベント・ゲート】に購入済みチケットが保存されます。 <br />
+※アプリから友達に送ることもできます。詳細はアプリ内の「ヘルプ」でご確認ください。 <br />
+4.当日は、QRコードを会場窓口でご提示いただき、紙チケットを受け取りください。 <br />
+携帯電話へQRコードを送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。 <br />
+
+    <p class="red">携帯電話へ送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
+
+%else:
+
+公演当日会場専用窓口でのお受け取りです。 <br />
+表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、公演当日、チケット窓口にてQRコードをお見せください。 <br />
+<br />
+★対応スマホをお持ちの方は、専用アプリ【イベント・ゲート】にQRコードをダウンロードできます(要無料会員登録)。 <br />
+<br />
+[イベント・ゲートへのダウンロード方法] <br />
+1.下記フォームにメールアドレスをご入力しいただき、スマホでメールを受信 <br />
+2.メール記載のリンクをクリックし[アプリでチケットを受け取る]を選択 <br />
+※インストール・無料会員登録がまだの場合は、ここで手続きをお願いします。 <br />
+3.【イベント・ゲート】に購入済みチケットが保存されます。 <br />
+※アプリから友達に送ることもできます。詳細はアプリ内の「ヘルプ」でご確認ください。 <br />
+4.当日は、QRコードを会場窓口でご提示いただき、紙チケットを受け取りください。 <br />
+
+    <p class="red">携帯電話へ送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
+
 <%def name="qr_print()">
-   % for ticket in tickets:
+    % for (idx, ticket) in zip(range(0, len(tickets)), tickets):
         <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
-            商品名 ${ticket.product.name} (${ticket.product.id}) <br />
+	    ${idx+1}/${len(tickets)} <br />
+            商品名 ${ticket.product.name} <br />
             %if ticket.seat:
-            席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
+            席番号 ${ticket.seat.name} <br />
             %endif
-            <br />
 	    % if false:
               % if ticket.printed_at:
-                発行(印刷orメール送信)済 (${ticket.printed_at})
+                発行(印刷orメール送信)済 (${ticket.printed_at}) <br />
               % else:
-                未発行
+                未発行 <br />
               % endif
             % endif
             <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
                 <input type="hidden" name="order_no" value="${order.order_no}" />
                 <input type="hidden" name="tel" value="${tel}" />
                 <input type="hidden" name="token" value="${ticket.token.id}" />
-                <input type="submit" value="印刷する" />
+                <input type="submit" value="QRコードを表示" />
             </form>
             <form method="post" target="_blank" action="${request.route_path('order_review.orion_send')}">
                 <input type="hidden" name="order_no" value="${order.order_no}" />
@@ -30,20 +70,9 @@
     % endfor
 </%def>
 
-<div>
-<!-- mobile -->
-試合当日会場専用窓口でのお受け取りです。<br/>
-
-%if paid:
- 表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、チケット窓口にてQRコード（印刷したもの、あるいは携帯画面）をお見せください。
 <br/>
-
 ${qr_print()}
-
-%else:
-支払い完了後、このページにQRコードを表示するためのボタンが表示されます。表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、チケット窓口にてQRコード（印刷したもの、あるいは携帯画面）をお見せください。
 
 %endif
 
 </div>
-
