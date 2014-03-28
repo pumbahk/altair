@@ -84,7 +84,7 @@ class TokenStatusDictBuilder(object):
         performance = order.performance
         pdmp = order.payment_delivery_method_pair
         if pdmp and pdmp.issuing_start_at:
-            return today >= pdmp.issuing_start_at
+            return today >= min(pdmp.issuing_start_at, (performance.start_on or performance.open_on).date())
         else:
             logger.info("check printable date: issuing start at is not set. using performance.open_on (order id=%s)", order.id)
             return today >= (performance.start_on or performance.open_on).date()
@@ -97,7 +97,7 @@ class TokenStatusDictBuilder(object):
 def additional_data_dict_from_order(order):
     performance = order.performance
     shipping_address = order.shipping_address
-    performance_name = u"%s (%s)" % (performance.name, performance.venue.name)
+    performance_name = performance.name
     note = order.note
     return {"additional":
             {
