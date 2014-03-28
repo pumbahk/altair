@@ -861,7 +861,7 @@ class TicketPrinter(BaseView):
             entries.append({
                 u'index': index,
                 u'serial': serial,
-                u'page': (serial / tickets_per_page) if unmasked else None,
+                u'page': int(serial / tickets_per_page) if unmasked else None,
                 u'masked': not unmasked,
                 u'queue_id': queue_id, 
                 u'summary': summary,
