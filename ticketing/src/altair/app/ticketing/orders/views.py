@@ -18,7 +18,7 @@ from wtforms import ValidationError
 from wtforms.validators import Optional
 from sqlalchemy import and_, func
 from sqlalchemy.sql import exists
-from sqlalchemy.sql.expression import or_, desc
+from sqlalchemy.sql.expression import or_, desc, func
 from sqlalchemy.orm import joinedload, undefer
 from webob.multidict import MultiDict
 from altair.sqlahelper import get_db_session
@@ -280,50 +280,18 @@ class OrderBaseView(BaseView):
 
 @view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/index.html', permission='sales_counter')
 class OrderIndexView(OrderBaseView):
-    # XXX: 安定するまで封印
-    #@view_config(route_name='orders.index')
-    def index_new(self):
-        slave_session = get_db_session(self.request, name="slave")
+    SHOW_TOTAL_KEY = 'orders.index.show_total'
+  
+    @property
+    def show_total_flag(self):
+        return self.request.session.get(self.SHOW_TOTAL_KEY, False)
 
-        organization_id = self.context.organization.id
-        query = DBSession.query(Order).filter(Order.organization_id==organization_id)
+    @show_total_flag.setter
+    def show_total_flag(self, value):
+        self.request.session[self.SHOW_TOTAL_KEY] = value
 
-        params = MultiDict(self.request.params)
-        params["order_no"] = " ".join(self.request.params.getall("order_no"))
-
-        form_search = OrderSearchForm(params, organization_id=organization_id)
-        if form_search.validate():
-            try:
-                query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id, OrderSummary.deleted_at==None))
-            except QueryBuilderError as e:
-                self.request.session.flash(e.message)
-
-        if self.request.params.get('action') == 'checked':
-            checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
-            query = query.filter(Order.id.in_(checked_orders))
-
-        page = int(self.request.params.get('page', 0))
-
-        orders = paginate.Page(
-            query,
-            page=page,
-            items_per_page=40,
-            item_count=query.count(),
-            url=paginate.PageURL_WebOb(self.request)
-        )
-
-        return {
-            'form':OrderForm(),
-            'form_search':form_search,
-            'orders':orders,
-            'page': page,
-            'endpoints': self.endpoints,
-            }
-
-
-    # XXX: 購入情報検索に関しては古いコードを暫定的に有効化
     @view_config(route_name='orders.index')
-    def index_old(self):
+    def index(self):
         request = self.request
         slave_session = get_db_session(request, name="slave")
 
@@ -333,10 +301,16 @@ class OrderIndexView(OrderBaseView):
 
         form_search = OrderSearchForm(params, organization_id=organization_id)
 
-        orders = []
-        total = []
-        page = int(request.params.get('page', 0))
+        if request.params.get('action') == 'checked':
+            
+            checked_orders = [o.lstrip('o:') 
+                              for o in request.session.get('orders', []) 
+                              if o.startswith('o:')]
+            query.target_order_ids = checked_orders
 
+        orders = None
+        total = None
+        page = int(request.params.get('page', 0))
         if request.params:
             from .download import OrderSummary
             if form_search.validate():
@@ -353,14 +327,19 @@ class OrderIndexView(OrderBaseView):
                                   if o.startswith('o:')]
                 query.target_order_ids = checked_orders
 
+            count = None
+            if self.show_total_flag:
+                count, total = query.count_and_total()
+            else:
+                count = query.count()
+
             orders = paginate.Page(
                 query,
                 page=page,
+                item_count=count,
                 items_per_page=40,
                 url=paginate.PageURL_WebOb(request)
             )
-            total = query.total()
-
         return {
             'form':OrderForm(),
             'form_search':form_search,
@@ -369,6 +348,11 @@ class OrderIndexView(OrderBaseView):
             'total': total,
             'endpoints': self.endpoints,
             }
+
+    @view_config(route_name='orders.toggle_show_total')
+    def toggle_show_total(self):
+        self.show_total_flag = not self.show_total_flag
+        return HTTPFound(location=self.request.route_path('orders.index', _query=self.request.params))
 
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor') # sales_counter ではない!
