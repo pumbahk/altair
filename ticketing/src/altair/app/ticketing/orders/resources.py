@@ -89,7 +89,7 @@ class OrderDependentsProvider(object):
             qs = qs.outerjoin(OrderedProductItemToken, OrderedProductItem.id==OrderedProductItemToken.ordered_product_item_id)
             qs = qs.outerjoin(TicketBundle, ProductItem.ticket_bundle_id==TicketBundle.id)
             qs = qs.outerjoin(Seat, OrderedProductItemToken.seat_id==Seat.id)
-            qs = qs.with_entities(OrderedProduct, OrderedProductItem, ProductItem, TicketBundle, Seat, OrderedProductItemToken.id)
+            qs = qs.with_entities(OrderedProduct, OrderedProductItem, ProductItem, TicketBundle, Seat, OrderedProductItemToken)
             qs = qs.options(joinedload(ProductItem.product, Product.sales_segment))
             objs = qs.all()
             self._dependents_provider = JoinedObjectsForProductItemDependentsProvider(objs, ticket_format_id)
@@ -221,6 +221,17 @@ class OrderPrintEachResource(OrderResource):
 
     def get_dependents_models(self):
         return OrderDependentsProvider(self)
+
+    def refresh_tokens(self, order, token_id_list, now):
+        assert unicode(order.organization_id) == unicode(self.organization.id)
+        tokens = (OrderedProductItemToken.query
+                  .filter(OrderedProduct.order_id == order.id)
+                  .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)
+                  .filter(OrderedProductItemToken.ordered_product_item_id==OrderedProductItem.id)
+                  .filter(OrderedProductItemToken.id.in_(token_id_list)).all())
+        for t in tokens:
+            t.refreshed_at = now
+        order.printed_at = None
 
 
 class OrdersShowResource(OrderResource):

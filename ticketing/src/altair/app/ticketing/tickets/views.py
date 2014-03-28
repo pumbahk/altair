@@ -861,7 +861,7 @@ class TicketPrinter(BaseView):
             entries.append({
                 u'index': index,
                 u'serial': serial,
-                u'page': (serial / tickets_per_page) if unmasked else None,
+                u'page': int(serial / tickets_per_page) if unmasked else None,
                 u'masked': not unmasked,
                 u'queue_id': queue_id, 
                 u'summary': summary,
@@ -918,7 +918,7 @@ class TicketPrinter(BaseView):
         return self.list()
 
     @view_config(route_name='tickets.printer.api.delete', request_method='POST', renderer='json')
-    def unmask(self):
+    def delete(self):
         queue_ids = self.request.json_body['queue_ids']
         DBSession.query(TicketPrintQueueEntry) \
             .filter(TicketPrintQueueEntry.operator_id == self.context.user.id) \

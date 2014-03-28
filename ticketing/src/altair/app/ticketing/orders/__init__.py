@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 def includeme(config):
     config.add_route('orders.index'                     , '/')
+    config.add_route('orders.toggle_show_total'         , '/toggle_show_total')
     config.add_route('orders.checked.queue'             , '/checked/queue', factory=".resources.OrdersEnqueueingResource")
     config.add_route('orders.checked.delivered'         , '/checked/delivered')
-    config.add_route('orders.show'                      , '/show/{order_id}', factory=".resources.OrdersShowResource")
+    config.add_route('orders.show'                      , '/show/{order_id:\d+}', factory=".resources.OrdersShowResource")
+    config.add_route('orders.show_by_order_no'          , '/show/{order_no}')
     config.add_route('orders.edit.shipping_address'     , '/edit/{order_id}/shipping_address/')
     config.add_route('orders.edit.product'              , '/edit/{order_id}/product/')
     config.add_route('orders.cancel'                    , '/cancel/{order_id}')

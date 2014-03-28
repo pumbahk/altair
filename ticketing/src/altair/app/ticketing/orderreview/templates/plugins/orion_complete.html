@@ -1,26 +1,48 @@
 <div>
-    <h4>イベント・ゲート受取</h4>
+    <h4>${order.payment_delivery_pair.delivery_method.name}</h4>
 
-%if paid:
+%if not paid:
 
-    <p>対応スマホをお持ちの方は、専用アプリ【イベント・ゲート】にQRコードをダウンロード頂けます（要無料会員登録）。<br />
-      <br />
+公演当日会場専用窓口でのお受け取りです。 <br />
+<br />
+支払い完了後、このページにQRコードを表示するためのボタンが表示されます。 <br />
+表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、公演当日、チケット窓口にてQRコードをお見せください。 <br />
+<br />
+★対応スマホをお持ちの方は、専用アプリ【イベント・ゲート】にQRコードをダウンロードできます(要無料会員登録)。 <br />
+<br />
 [イベント・ゲートへのダウンロード方法] <br />
-1.下記のフォームにメールアドレスをご入力いただき、ご自分のスマホでメールを受信してください。 <br />
-2.メール受信後、リンクをクリックし[アプリでチケットを受け取る]を選択してください。 <br />
+1.支払い完了後、この画面にてメールアドレスをご入力しいただき、スマホでメールを受信 <br />
+2.メール記載のリンクをクリックし[アプリでチケットを受け取る]を選択 <br />
 ※インストール・無料会員登録がまだの場合は、ここで手続きをお願いします。 <br />
 3.【イベント・ゲート】に購入済みチケットが保存されます。 <br />
-※【イベント・ゲート】アプリから友達に送ることもできます。詳細はアプリ内の「ヘルプ」でご確認ください。 <br />
+※アプリから友達に送ることもできます。詳細はアプリ内の「ヘルプ」でご確認ください。 <br />
 4.当日は、QRコードを会場窓口でご提示いただき、紙チケットを受け取りください。 <br />
-</p>
 
-    <p class="red">携帯電話へQRチケットを送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
+    <p class="red">携帯電話へ送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
 
-    % for ticket in tickets:
+% else:
+
+公演当日会場専用窓口でのお受け取りです。 <br />
+表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、公演当日、チケット窓口にてQRコードをお見せください。 <br />
+<br />
+★対応スマホをお持ちの方は、専用アプリ【イベント・ゲート】にQRコードをダウンロードできます(要無料会員登録)。 <br />
+<br />
+[イベント・ゲートへのダウンロード方法] <br />
+1.下記フォームにメールアドレスをご入力しいただき、スマホでメールを受信 <br />
+2.メール記載のリンクをクリックし[アプリでチケットを受け取る]を選択 <br />
+※インストール・無料会員登録がまだの場合は、ここで手続きをお願いします。 <br />
+3.【イベント・ゲート】に購入済みチケットが保存されます。 <br />
+※アプリから友達に送ることもできます。詳細はアプリ内の「ヘルプ」でご確認ください。 <br />
+4.当日は、QRコードを会場窓口でご提示いただき、紙チケットを受け取りください。 <br />
+
+    <p class="red">携帯電話へ送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
+
+    % for (idx, ticket) in zip(range(0, len(tickets)), tickets):
         <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
-            商品名 ${ticket.product.name} (${ticket.product.id}) <br />
+	    ${idx+1}/${len(tickets)} <br />
+            商品名 ${ticket.product.name} <br />
             %if ticket.seat:
-            席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
+            席番号 ${ticket.seat.name} <br />
             %endif
             <br />
 	    % if false:
@@ -34,21 +56,17 @@
                   <input type="hidden" name="order_no" value="${order.order_no}" />
                   <input type="hidden" name="tel" value="${tel}" />
                   <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
-                  <input type="submit" value="印刷する" />
+                  <input type="submit" value="QRコードを表示する" />
               </form>
               <form method="post" target="_blank" action="${request.route_path('order_review.orion_send')}">
                   <input type="hidden" name="order_no" value="${order.order_no}" />
                   <input type="hidden" name="tel" value="${tel}" />
                   <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
                   メールアドレス: <input type="text" name="mail" size="40" />
-                  <input type="submit" name="send" value="イベント・ゲートに送る" />
+                  <input type="submit" name="send" value="メールで送る" />
               </form>
         </div>
     % endfor
-
-% else:
-
-    <p>支払い完了後、電子チケットを発行いただけます。</p>
 
 % endif
 

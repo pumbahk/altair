@@ -18,8 +18,8 @@
 <div class="modal-footer">
   <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
   %if order.queued or order.issued_at:
-    <button class="btn btn-primary btn-proceed" onclick="$(this).closest('div').parent().find('form').submit();">強制的に印刷キューに登録する</button>
+    <button class="btn btn-primary btn-proceed" onclick="$(this).attr('disabled', 'disabled').closest('div').parent().find('form').submit();">強制的に印刷キューに登録する</button>
   %else:
-    <button class="btn btn-primary btn-proceed"onclick="$(this).closest('div').parent().find('form').submit();">印刷キューに登録する</button>
+    <button class="btn btn-primary btn-proceed"onclick="$(this).attr('disabled', 'disabled').closest('div').parent().find('form').submit();">印刷キューに登録する</button>
   %endif
 </div>
