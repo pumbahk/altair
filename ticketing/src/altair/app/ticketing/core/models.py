@@ -3202,6 +3202,12 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         issued_count = len([i for i in self.tokens if i.issued_at])
         return dict(issued=issued_count, total=total)
 
+    @property
+    def printed_at_status(self):
+        total = len(self.tokens)
+        printed_count = len([i for i in self.tokens if i.printed_at])
+        return dict(printed=printed_count, total=total)
+
     def iterate_serial_and_seat(self):
         if self.seats:
             for i, s in enumerate(self.seats):

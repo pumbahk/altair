@@ -1264,6 +1264,17 @@ class OrderDetailView(BaseView):
     def issue_status(self):
         order = Order.query.get(self.request.matchdict["order_id"])
         order.issued = int(self.request.params['issued'])
+
+        if not order.issued:
+            ## printed_atをNULLにし直す
+            order.printed_at = None
+            for ordered_product in order.ordered_products:
+                for ordered_product_item in ordered_product.ordered_product_items:
+                    ordered_product_item.printed_at = None
+                    #ordered_product_item.issued_at = None
+                    for token in ordered_product_item.tokens:
+                        #token.issued_at = None
+                        token.printed_at = None
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
 
     @view_config(route_name="orders.print.queue.dialog", request_method="GET", renderer="altair.app.ticketing:templates/orders/_print_queue_dialog.html")
@@ -1342,7 +1353,7 @@ class OrderDetailView(BaseView):
             'build_candidate_id': build_candidate_id,
             }
 
-    @view_config(route_name="orders.print.queue.each", request_method="POST")
+    @view_config(route_name="orders.print.queue.each", request_method="POST", request_param="submit=print")
     def order_tokens_print_queue(self):
         order = self.context.order
         if order is None:
@@ -1360,7 +1371,22 @@ class OrderDetailView(BaseView):
         candidates_action.enqueue(operator=self.context.user)
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
-        
+
+    @view_config(route_name="orders.print.queue.each", request_method="POST", request_param="submit=refresh") #print.queueの操作ではなくrefreshする操作
+    def order_tokens_refresh(self):
+        from .helpers import decode_candidate_id
+        now = datetime.now()
+
+        order = self.context.order
+        if order is None:
+            raise HTTPNotFound('order id %d is not found' % self.context.order_id)
+
+        candidate_id_list = self.request.POST.getall("candidate_id")
+        token_id_list = [decode_candidate_id(e)[0] for e in candidate_id_list]
+        self.context.refresh_tokens(order, token_id_list, now)
+        self.request.session.flash(u'再発券許可しました')
+        return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
+
     @view_config(route_name='orders.print.queue')
     def order_print_queue(self):
         form = TicketFormatSelectionForm(self.request.params, context=self.context)
@@ -1371,6 +1397,7 @@ class OrderDetailView(BaseView):
         utils.enqueue_for_order(operator=self.context.user, order=self.context.order, ticket_format_id=ticket_format_id)
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=self.context.order.id))
+
 
     @view_config(route_name="orders.checked.delivered", request_method="POST", permission='sales_counter')
     def change_checked_orders_to_delivered(self):
