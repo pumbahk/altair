@@ -1372,6 +1372,7 @@ class OrderDetailView(BaseView):
 
         candidate_id_list = self.request.POST.getall("candidate_id")
         token_id_list = [decode_candidate_id(e)[0] for e in candidate_id_list]
+        token_id_list = [t for t in token_id_list if t is not None]
         self.context.refresh_tokens(order, token_id_list, now)
         self.request.session.flash(u'再発券許可しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
