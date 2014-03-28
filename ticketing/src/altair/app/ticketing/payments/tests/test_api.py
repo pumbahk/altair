@@ -37,7 +37,13 @@ class is_finished_deliveryTests(unittest.TestCase):
                 delivery_plugin_id=9999,
             ),
         )
-        order = testing.DummyModel()
+        order = testing.DummyModel(
+            organization=testing.DummyModel(
+                setting=testing.DummyModel(
+                    multicheckout_shop_name='XXX',
+                    )
+                )
+            )
 
         result = self._callFUT(request, pdmp, order)
 
@@ -58,7 +64,13 @@ class is_finished_deliveryTests(unittest.TestCase):
                 delivery_plugin_id=9999,
             ),
         )
-        order = testing.DummyModel()
+        order = testing.DummyModel(
+            organization=testing.DummyModel(
+                setting=testing.DummyModel(
+                    multicheckout_shop_name='XXX',
+                    )
+                )
+            )
 
         result = self._callFUT(request, pdmp, order)
 

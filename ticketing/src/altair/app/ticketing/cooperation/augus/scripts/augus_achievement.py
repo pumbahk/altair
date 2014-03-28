@@ -5,7 +5,10 @@ import time
 import logging
 import argparse
 from pyramid.renderers import render_to_response
-from pyramid.paster import bootstrap
+from pyramid.paster import (
+    bootstrap,
+    setup_logging,
+    )
 import transaction
 from altair.augus.exporters import AugusExporter
 from altair.augus.parsers import AugusParser
@@ -55,6 +58,7 @@ def main():
     parser.add_argument('conf', nargs='?', default=None)
     parser.add_argument('--force', action='store_true', default=False)
     args = parser.parse_args()
+    setup_logging(args.conf)
     env = bootstrap(args.conf)
     settings = env['registry'].settings
 
@@ -71,18 +75,21 @@ def main():
 
     mailer = Mailer(settings)
 
-    augus_performances = AugusPerformance.query.filter(AugusPerformance.id.in_(ag_performance_ids)).all()
-    params = {'augus_performances': augus_performances,
-              }
-    body = render_to_response('altair.app.ticketing:templates/cooperation/augus/mails/augus_achievement.html', params)
+    augus_performances = []
+    if ag_performance_ids:
+        augus_performances = AugusPerformance.query.filter(AugusPerformance.id.in_(ag_performance_ids)).all()
+    if augus_performances:
+        params = {'augus_performances': augus_performances,
+                  }
+        body = render_to_response('altair.app.ticketing:templates/cooperation/augus/mails/augus_achievement.html', params)
 
-    mailer.create_message(
-        sender=sender,
-        recipient=recipient,
-        subject=u'【オーガス連携】販売実績通知のお知らせ',
-        body=body.text,
-        )
-    mailer.send(sender, [recipient])
+        mailer.create_message(
+            sender=sender,
+            recipient=recipient,
+            subject=u'【オーガス連携】販売実績通知のお知らせ',
+            body=body.text,
+            )
+        mailer.send(sender, [recipient])
 
 if __name__ == '__main__':
     main()

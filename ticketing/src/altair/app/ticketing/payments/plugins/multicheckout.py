@@ -229,7 +229,7 @@ class MultiCheckoutPlugin(object):
     def finished(self, request, order):
         """ 売上確定済か判定 """
         multicheckout_api = get_multicheckout_3d_api(request)
-        status = multicheckout_api.get_order_status_by_order_no(order_no)
+        status = multicheckout_api.get_order_status_by_order_no(order.order_no)
         if status is None:
             return False
 
@@ -434,6 +434,7 @@ class MultiCheckoutView(object):
             if checkout_auth_result.CmnErrorCd != '000000':
                 raise MultiCheckoutSettlementFailure(
                     message='card_info_secure3d_callback: generic failure',
+                    ignorable=True,
                     order_no=order['order_no'],
                     back_url=back_url(self.request),
                     error_code=checkout_auth_result.CmnErrorCd

@@ -1,4 +1,6 @@
+import re
 from OpenSSL.crypto import load_certificate
+from OpenSSL.crypto import FILETYPE_PEM
 
 def get_certificate_info(request):
     subject_dn = None

@@ -33,6 +33,10 @@ class _TimeType(_ValueType):
     @classmethod
     def get(cls, value):
         try:
+            # Augusの仕様では時間の表現はchar型とnumber型がある
+            # char型の場合は0 paddingされるが、number型は0 paddingされない
+            value = int(value)
+            value = cls.INT_FORMAT.format(value)
             return time.strptime(value, cls.FORMAT)
         except TypeError as err:
             pass
@@ -67,12 +71,15 @@ class StringType(_ValueType):
             raise err.__class__(repr(value), *err.args[1:])
 
 class DateType(_TimeType):
+    INT_FORMAT = '{0:08d}'
     FORMAT = '%Y%m%d'
 
 class HourMinType(_TimeType):
+    INT_FORMAT = '{0:04d}'
     FORMAT = '%H%M'
 
 class DateTimeType(_TimeType):
+    INT_FORMAT = '{0:014d}'
     FORMAT = '%Y%m%d%H%M%S'
 
 

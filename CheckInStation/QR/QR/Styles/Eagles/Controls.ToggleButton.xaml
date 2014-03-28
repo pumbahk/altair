@@ -1,0 +1,17 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <LinearGradientBrush x:Key="ToggleButtonFillNormal" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Color="#ffdddd" Offset="0" />
+        <GradientStop Color="#ffbbbb" Offset="1" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="ToggleButtonStrokeNormal"  Color="#d46375"/>
+    <SolidColorBrush x:Key="ToggleButtonForegroundNormal"  Color="#000000"/>
+    <LinearGradientBrush x:Key="ToggleButtonFillSelected" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Color="#B70017" Offset="0.0"></GradientStop>
+        <GradientStop Color="#860010" Offset="1.0"></GradientStop>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="ToggleButtonStrokeSelected"  Color="#840315"/>
+    <SolidColorBrush x:Key="ToggleButtonForegroundSelected"  Color="#ffffff"/>
+    <SolidColorBrush x:Key="ToggleButtonFillDisabled" Color="#cccccc" />
+    <SolidColorBrush x:Key="ToggleButtonStrokeDisabled" Color="#888888" />
+</ResourceDictionary>

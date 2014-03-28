@@ -7,6 +7,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Dimension2D;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.print.PrintService;
 
@@ -24,8 +25,10 @@ import jp.ticketstar.ticketing.ApplicationException;
 import jp.ticketstar.ticketing.RequestBodySender;
 import jp.ticketstar.ticketing.SerializingExecutor;
 import jp.ticketstar.ticketing.printing.OurPageFormat;
+import jp.ticketstar.ticketing.printing.PageEventListener;
 import jp.ticketstar.ticketing.printing.StandardAppService;
 import jp.ticketstar.ticketing.printing.TicketFormat;
+import jp.ticketstar.ticketing.svg.ExtendedSVG12OMDocument;
 
 public class AppAppletService implements StandardAppService {
 	private AppAppletServiceImpl impl;
@@ -173,8 +176,16 @@ public class AppAppletService implements StandardAppService {
 
 	public void addListenerForPages(PropertyChangeListener listener) {
 		impl.addListenerForPages(listener);
+	} 
+
+	public boolean getPrintingStatus() {
+		return impl.getPrintingStatus();
 	}
 
+	public void addListenerForPrintingStatus(PropertyChangeListener listener) {
+		impl.addListenerForPrintingStatus(listener);
+	}
+	
 	public boolean supportExtension(String s) {
 		return impl.supportExtension(s);
 	}
@@ -225,68 +236,50 @@ public class AppAppletService implements StandardAppService {
 	}
 
 	public void loadDocument(final URI uri) {
-		executeSynchronously(new Runnable() {
-			public void run() {
-				impl.loadDocument(uri);
-				final Runnable wrapper = new Runnable() {
-					public synchronized void run() {
-						notifyAll();
-					}
-				};
-				impl.invokeWhenDocumentReady(wrapper);
-				synchronized (wrapper) {
-					try {
-						wrapper.wait();
-					} catch (InterruptedException e) {
-						displayError(e);
-					}
+		executeSynchronously(new Callable<ExtendedSVG12OMDocument>() {
+			public ExtendedSVG12OMDocument call() {
+				try {
+					return impl.loadDocument(uri).get();
+				} catch (Exception e) {
+					throw new ApplicationException(e);
 				}
 			}
 		});			
 	}
 	
 	public void loadDocument(final URLConnection conn, final RequestBodySender sender) {
-		executeSynchronously(new Runnable() {
-			public void run() {
-				impl.loadDocument(conn, sender);
-				final Runnable wrapper = new Runnable() {
-					public synchronized void run() {
-						notifyAll();
-					}
-				};
-				impl.invokeWhenDocumentReady(wrapper);
-				synchronized (wrapper) {
-					try {
-						wrapper.wait();
-					} catch (InterruptedException e) {
-						displayError(e);
-					}
+		executeSynchronously(new Callable<ExtendedSVG12OMDocument>() {
+			public ExtendedSVG12OMDocument call() {
+				try {
+					return impl.loadDocument(conn, sender).get();
+				} catch (Exception e) {
+					throw new ApplicationException(e);
 				}
 			}
 		});
 	}
 
 	@Override
-	public List<TicketFormat> getTicketFormats() {
-		return impl.getTicketFormats();
-	}
-
-	@Override
-	public TicketFormat getTicketFormat() {
-		return impl.getTicketFormat();
-	}
-
-	@Override
-	public void setTicketFormat(final TicketFormat ticketFormat) {
+    public List<TicketFormat> getTicketFormats() {
+        return impl.getTicketFormats();
+    }
+ 
+    @Override
+    public TicketFormat getTicketFormat() {
+        return impl.getTicketFormat();
+    }
+ 
+    @Override
+    public void setTicketFormat(final TicketFormat ticketFormat) {
 		executeSynchronously(new Runnable() {
-			public void run() {
-				impl.setTicketFormat(ticketFormat);
-			}
-		});
-	}
+            public void run() {
+                impl.setTicketFormat(ticketFormat);
+            }
+        });
+    }
 
 	@Override
-	public void filterByOrderId(final Integer orderId) {
+	public void filterByOrderId(final String orderId) {
 		executeSynchronously(new Runnable() {
 			public void run() {
 				impl.filterByOrderId(orderId);
@@ -295,9 +288,39 @@ public class AppAppletService implements StandardAppService {
 	}
 
 	@Override
-	public void addListenerForTicketFormat(PropertyChangeListener listener) {
-		impl.addListenerForTicketFormat(listener);
+	public void filterByQueueIds(final List<String> queueIds) {
+		executeSynchronously(new Runnable() {
+			public void run() {
+				impl.filterByQueueIds(queueIds);
+			}
+		});
 	}
+
+    @Override
+    public void addListenerForTicketFormat(PropertyChangeListener listener) {
+        impl.addListenerForTicketFormat(listener);
+    }
+   
+    @Override
+    public void addPageEventListener(PageEventListener listener) {
+    	impl.addPageEventListener(listener);
+    }
+
+    public void startBatchUpdate() {
+    	executeSynchronously(new Runnable() {
+    		public void run() {
+    	    	impl.startBatcnUpdate();
+    		}
+    	});
+    }
+
+    public void endBatchUpdate() {
+    	executeSynchronously(new Runnable() {
+    		public void run() {
+    			impl.endBatchUpdate();
+    		}
+    	});
+    }
 
 	private void executeSynchronously(Runnable runnable) {
 		try {
@@ -308,9 +331,20 @@ public class AppAppletService implements StandardAppService {
 			throw new ApplicationException(e);
 		}
 	}
-	
+
+	private <V> V executeSynchronously(Callable<V> runnable) {
+		try {
+			return executor.executeSynchronously(runnable);
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new ApplicationException(e);
+		}
+	}
+
 	public void dispose() {
 		executor.terminate();
+		impl.dispose();
 	}
 	
 	public AppAppletService(AppAppletServiceImpl impl) {

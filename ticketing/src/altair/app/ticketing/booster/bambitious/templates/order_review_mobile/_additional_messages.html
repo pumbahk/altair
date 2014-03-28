@@ -1,4 +1,7 @@
+<%page args="pm"/>
 <%namespace file="${context['layout'].relative_path('templates/tags_mobile.html')}" name="mobile" />
+<%mobile:form_header>${layout.team_name}からのメールマガジンの配信</%mobile:form_header>
+${u'希望する' if int(pm['extra']['mail_permission']) else u'希望しない'}
 <%mobile:form_header>FAX番号</%mobile:form_header>
 ${shipping.fax}
 <%mobile:form_header>Tシャツサイズ</%mobile:form_header>

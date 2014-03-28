@@ -1,37 +1,25 @@
 <%namespace file="/common/helpers.html" import="form_item"/>
-
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>券面印刷</h3>
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal">×</button>
+  <h3>券面印刷</h3>
+</div>
+<div class="modal-body">
+  %if order.issued_at:
+  <div class="alert alert-warn">この注文は${order.issued_at}に発券済みです。
+    本当に強制印刷しますか？
   </div>
-
-% if not order.issued and not order.queued:
- <form method="POST" action="${request.route_path("orders.print.queue",order_id=order.id)}">
-  <div class="modal-body">
+  %elif order.queued:
+  <div class="alert alert-warn">この注文は既に印刷キューに入っています。
+    再度、印刷キューに登録しますか？
   </div>
-
-  <div class="modal-footer">
-	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
-    <input class="btn btn-primary" type="submit" name="submit" value="印刷キューに登録する">
-  </div>
- </form>
-% else:
- <form method="POST" action="${request.route_path("orders.print.queue",order_id=order.id)}">
-  <div class="modal-body">
-    %if order.issued_at:
-    <div class="alert alert-warn">この注文は${order.issued_at}に発券済みです。
-      本当に強制印刷しますか？
-    </div>
-    %else:
-    <div class="alert alert-warn">この注文は既に印刷キューに入っています。
-      再度、印刷キューに登録しますか？
-    </div>
-    %endif
-  </div>
-
-  <div class="modal-footer">
-	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
-    <input class="btn btn-primary" type="submit" name="submit" value="強制的に印刷キューに登録する">
-  </div>
- </form>
-% endif
+  %endif
+  <%include file="./_form_ticket_format.html" args="form=form,action=request.route_path('orders.print.queue',order_id=order.id)" />
+</div>
+<div class="modal-footer">
+  <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+  %if order.queued or order.issued_at:
+    <button class="btn btn-primary btn-proceed" onclick="$(this).closest('div').parent().find('form').submit();">強制的に印刷キューに登録する</button>
+  %else:
+    <button class="btn btn-primary btn-proceed"onclick="$(this).closest('div').parent().find('form').submit();">印刷キューに登録する</button>
+  %endif
+</div>

@@ -209,6 +209,10 @@ def setup_ordered_product_item(quantity, quantity_only, organization, order_no="
         canceled_at=None, 
         created_at=datetime(2000, 1, 1, 1), 
         issued_at=datetime(2000, 1, 1, 1, 13),
+        issuing_start_at=datetime(1970, 1, 1),
+        issuing_end_at=datetime(1970, 1, 1),
+        payment_start_at=datetime(1970, 1, 1),
+        payment_due_at=datetime(1970, 1, 1),
         organization_id=organization.id, 
         ordered_from=organization,  #xxx:
         payment_delivery_pair = payment_delivery_method_pair, 
@@ -238,7 +242,7 @@ def do_view(view, context=None, request=None, attr=None):
 def qrsigned_from_token(token):
     from altair.app.ticketing.qr.utils import get_or_create_matched_history_from_token
     from altair.app.ticketing.qr import get_qrdata_builder
-    from .views import _signed_string_from_history
+    from altair.app.ticketing.qr.utils import make_data_for_qr
 
     builder = get_qrdata_builder(DummyRequest())
     assert token.ordered_product_item_id
@@ -246,7 +250,9 @@ def qrsigned_from_token(token):
     history.ordered_product_item = token.item
     assert history.ordered_product_item_id
     assert history.ordered_product_item
-    return _signed_string_from_history(builder, history)
+    params = make_data_for_qr(history)
+    return builder.sign(builder.make(params))
+
 
 ## todo: assertion strictly
 class BaseTests(unittest.TestCase):
@@ -369,7 +375,6 @@ class QRTestsWithoutSeat(BaseTests):
         event = item.product_item.performance.event
         setup_ordered_product_token(item)
         bundle = setup_ticket_bundle(event, drawing=cls.DRAWING_DATA)
-        operator = setup_operator()
         item.product_item.ticket_bundle = bundle
         DBSession.add(item)
         DBSession.add(bundle)

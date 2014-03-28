@@ -1,0 +1,15 @@
+﻿<NavigationWindow x:Class="QR.presentation.gui.page.MainWindow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             WindowStartupLocation="CenterScreen" 
+             Title="CheckinStation"
+             Source="page/PageAuthInput.xaml">
+    <!--
+    <NavigationWindow.ContextMenu>
+        <ContextMenu>
+            <MenuItem Header="アプリケーションを終了する"
+                      Click="MenuItem_Close"/>
+        </ContextMenu>
+    </NavigationWindow.ContextMenu>
+    -->
+</NavigationWindow>

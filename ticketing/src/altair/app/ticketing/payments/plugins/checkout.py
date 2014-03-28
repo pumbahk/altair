@@ -261,7 +261,7 @@ class CheckoutCallbackView(object):
             magazine_ids = self.request.session.get('altair.app.ticketing.cart.magazine_ids')
             multi_subscribe(user, emails, magazine_ids)
             logger.debug(u'subscribe mags (magazine_ids=%s)' % magazine_ids)
-        except e:
+        except Exception as e: # all exception ignored
             logger.error('Exception ignored', exc_info=sys.exc_info()) 
         finally:
             del self.request.session['altair.app.ticketing.cart.magazine_ids']

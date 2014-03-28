@@ -12,10 +12,14 @@ ${order.performance.venue.name}<br />
 %for product in order.items:
 ・${product.product.name}
 % if product.seats:
+% if product.product.sales_segment.setting.display_seat_no:
   (${product.seat_quantity}枚)<br />
   % for seat in product.seats:
   　${seat['name']}<br/>
   % endfor
+% else:
+  (${product.seat_quantity}枚)<br />
+% endif
 % else:
   (${product.quantity}枚)<br />
 % endif
@@ -107,6 +111,9 @@ ${shipping.address_2}
     % if not get_organization(request).id == 24:
 <div>QRコード</div>
     % endif
+${h.render_delivery_finished_viewlet(request, order)}
+% else:
+<div>${order.payment_delivery_pair.delivery_method.name}</div>
 ${h.render_delivery_finished_viewlet(request, order)}
 %endif
 % endif

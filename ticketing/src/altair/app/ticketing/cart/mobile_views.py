@@ -507,7 +507,7 @@ class MobileReserveView(object):
                         detail=h.product_name_with_unit(p.product.items),
                         quantity=p.quantity,
                         price=int(p.product.price),
-                        seats=p.seats if p.product.sales_segment.seat_choice else [],
+                        seats=p.seats if p.product.sales_segment.setting.display_seat_no else [],
                         seat_quantity=p.seat_quantity
                         )
                     for p in cart.items

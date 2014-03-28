@@ -28,5 +28,13 @@ class IVenueSiteDrawingProvider(Interface):
     direct_drawing_url = Attribute('''deprecated; switch to get_backend_drawings''')
 
 class IVenueSiteDrawingProviderAdapterFactory(Interface):
-    def __init__(request):
+    def __call__(request):
+        pass
+
+class IVenueSiteDrawingHandler(Interface):
+    def __call__(context, request):
+        pass
+
+class IVenueSiteDrawingHandlerFactory(Interface):
+    def __call__(config):
         pass

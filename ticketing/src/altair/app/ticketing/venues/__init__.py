@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pyramid.interfaces import IRequest
-
+from pyramid.settings import asbool
 from altair.app.ticketing import newRootFactory
 from .interfaces import IVenueSiteDrawingProviderAdapterFactory, ITentativeVenueSite
 from .adapters import VenueSiteDrawingProviderAdapterFactory
@@ -15,10 +15,13 @@ def new_venue_site_provider_factory_factory(config):
         'altair.site_data.backend_base_url',
         config.registry.settings.get('altair.site_data.base_url', '') + '../backend/'
         )
+    force_indirect_serving = asbool(config.registry.settings.get(
+        'altair.site_data.force_indirect_serving', 'false'))
 
     factory = VenueSiteDrawingProviderAdapterFactory(
         frontend_metadata_base_url,
-        backend_metadata_base_url
+        backend_metadata_base_url,
+        force_indirect_serving
         )
     def factory_factory(site):
         def _(request):
@@ -32,6 +35,7 @@ def setup_components(config):
         (ITentativeVenueSite, ),
         IVenueSiteDrawingProviderAdapterFactory
         )
+    config.include('.views')
 
 def includeme(config):
     from .resources import VenueAdminResource

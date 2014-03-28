@@ -2,8 +2,6 @@ import re
 import sys
 import logging
 import json
-import time
-from datetime import date, timedelta
 
 from zope.interface import implementer
 from zope.deprecation import deprecate
@@ -11,6 +9,7 @@ from altair.pyramid_boto.s3.assets import IS3KeyProvider
 from altair.pyramid_assets import get_resolver
 from altair.app.ticketing.utils import myurljoin
 from .interfaces import IVenueSiteDrawingProvider, IVenueSiteDrawingProviderAdapterFactory
+from .utils import is_drawing_compressed, get_s3_url
 
 logger = logging.getLogger(__name__)
 
@@ -110,39 +109,32 @@ class VenueSiteDrawingProviderAdapter(object):
         retval = self._direct_drawing_url
         if retval is None:
             drawing = self.get_backend_drawing('root.svg')
-            if drawing is None:
-                if self.site._drawing_url is not None:
-                    retval = self.request.route_url('api.get_site_drawing', site_id=self.site.id)
-                else:
-                    retval = None
+            if self._force_indirect_serving or drawing is None:
+                retval = self.request.route_url('api.get_site_drawing', site_id=self.site.id)
             else:
                 if IS3KeyProvider.providedBy(drawing):
-                    key = drawing.get_key()
-                    headers = {}
-                    if re.match('^.+\.(svgz|gz)$', drawing.path):
-                        headers['response-content-encoding'] = 'gzip'
-                    expire_date = date.today() + timedelta(days=2)
-                    expire_epoch = time.mktime(expire_date.timetuple())
-                    retval = key.generate_url(expires_in=expire_epoch, expires_in_absolute=True, response_headers=headers)
+                    retval = get_s3_url(drawing)
                 else:
                     retval = self.request.static_url(drawing.path)
             self._direct_drawing_url = retval
         return retval
 
-    def __init__(self, request, site, frontend_metadata_base_url, backend_metadata_base_url):
+    def __init__(self, request, site, frontend_metadata_base_url, backend_metadata_base_url, force_indirect_serving):
         self._direct_drawing_url = None
         self.request = request
         self.site = site
         self._frontend_metadata_base_url = frontend_metadata_base_url
         self._backend_metadata_base_url = backend_metadata_base_url
+        self._force_indirect_serving = force_indirect_serving
         self._frontend_metadata = None
         self._backend_metadata = None
 
 @implementer(IVenueSiteDrawingProviderAdapterFactory)
 class VenueSiteDrawingProviderAdapterFactory(object):
-    def __init__(self, frontend_metadata_base_url, backend_metadata_base_url):
+    def __init__(self, frontend_metadata_base_url, backend_metadata_base_url, force_indirect_serving):
         self.frontend_metadata_base_url = frontend_metadata_base_url
         self.backend_metadata_base_url = backend_metadata_base_url
+        self.force_indirect_serving = force_indirect_serving
 
     def __call__(self, request, site):
-        return VenueSiteDrawingProviderAdapter(request, site, self.frontend_metadata_base_url, self.backend_metadata_base_url)
+        return VenueSiteDrawingProviderAdapter(request, site, self.frontend_metadata_base_url, self.backend_metadata_base_url, self.force_indirect_serving)

@@ -1,0 +1,8 @@
+<%page args="form, action" />
+<%namespace file="/common/helpers.html" name="ch" />
+<form action="${action}" method="POST">
+  <fieldset>
+    ${ch.form_item(form.ticket_format_id)}
+  </fieldset>
+</form>
+

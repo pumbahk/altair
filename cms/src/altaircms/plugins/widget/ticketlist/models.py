@@ -37,6 +37,7 @@ class TicketlistWidget(Widget):
     target_salessegment = orm.relationship(SalesSegment)
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     show_label = sa.Column(sa.Boolean, doc=u"見出しを表示するか否かのフラグ", default=True, nullable=False)
+    show_seattype = sa.Column(sa.Boolean, doc=u"席種を表示するか否かのフラグ", default=False, nullable=False)
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("event")

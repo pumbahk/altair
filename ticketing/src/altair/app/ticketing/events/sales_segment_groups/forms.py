@@ -53,6 +53,16 @@ class SalesSegmentGroupForm(OurForm):
         if 'new_form' in kwargs:
             self.reporting.data = True
 
+        self.public_kind = [
+            SalesSegmentKindEnum.normal.k,
+            SalesSegmentKindEnum.early_firstcome.k,
+            SalesSegmentKindEnum.added_sales.k,
+            SalesSegmentKindEnum.early_lottery.k,
+            SalesSegmentKindEnum.added_lottery.k,
+            SalesSegmentKindEnum.first_lottery.k,
+            SalesSegmentKindEnum.sales_counter.k
+            ]
+
     def _get_translations(self):
         return Translations()
 
@@ -63,11 +73,20 @@ class SalesSegmentGroupForm(OurForm):
     event_id = HiddenField(
         validators=[Required()]
     )
-    kind = SelectField(
+    kind = OurSelectField(
         label=u'種別',
         validators=[Required()],
         choices=[(k, getattr(SalesSegmentKindEnum, k).v) for k in SalesSegmentKindEnum.order.v],
         coerce=str,
+        help=u'''
+          この販売区分の用途を指定します。<br />
+          ・販売用途<br />
+          　一般発売, 先行先着, 追加発売, 窓口販売<br />
+          ・抽選用途<br />
+          　先行抽選, 追加抽選, 最速抽選<br />
+          ・インナー等一般公開しないもの<br />
+          　当日券, 関係者, その他
+        '''
     )
     name = TextField(
         label=u'表示名',
@@ -269,14 +288,21 @@ class SalesSegmentGroupForm(OurForm):
         return True
 
     def _validate_display_seat_no(self, *args, **kwargs):
-        if self.seat_choice.data and not self.display_seat_no.data:
-            append_error(self.display_seat_no, ValidationError(u'座席選択可の場合は座席番号は非表示にできません'))
-            return False
+        if self.id.data:
+            if self.seat_choice.data and not self.display_seat_no.data:
+                append_error(self.display_seat_no, ValidationError(u'座席選択可の場合は座席番号は非表示にできません'))
+                return False
         return True
 
     def _validate_term(self, *args, **kwargs):
         if self.end_at.data is not None and self.start_at.data is not None and self.end_at.data < self.start_at.data:
             append_error(self.end_at, ValidationError(u'開演日時より過去の日時は入力できません'))
+            return False
+        return True
+
+    def _validate_public(self, *args, **kwargs):
+        if self.public.data and self.kind.data not in self.public_kind:
+            append_error(self.kind, ValidationError(u'この種別は一般公開できません'))
             return False
         return True
 
@@ -286,7 +312,8 @@ class SalesSegmentGroupForm(OurForm):
             self._validate_start,
             self._validate_end,
             self._validate_term,
-            self._validate_display_seat_no
+            self._validate_display_seat_no,
+            self._validate_public
             ]])
 
 

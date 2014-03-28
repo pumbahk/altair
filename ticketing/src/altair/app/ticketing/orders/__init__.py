@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 def includeme(config):
     config.add_route('orders.index'                     , '/')
-    config.add_route('orders.checked.queue'             , '/checked/queue')
+    config.add_route('orders.checked.queue'             , '/checked/queue', factory=".resources.OrdersEnqueueingResource")
     config.add_route('orders.checked.delivered'         , '/checked/delivered')
     config.add_route('orders.show'                      , '/show/{order_id}', factory=".resources.OrdersShowResource")
     config.add_route('orders.edit.shipping_address'     , '/edit/{order_id}/shipping_address/')
@@ -29,7 +29,6 @@ def includeme(config):
     config.add_route('orders.api.performance'           , '/api/performance/{performance_id}')
     config.add_route("orders.api.performances"          , "/api/performances")
     config.add_route("orders.api.sales_segment_groups"  , "/api/sales_segment_groups")
-    config.add_route("orders.api.sales_segments"        , "/api/sales_segments")
     config.add_route("orders.api.checkbox_status"       , "/api/checkbox_status/{action}")
     config.add_route("orders.api.orders"                , "/api/orders/{action}")
 
@@ -41,13 +40,13 @@ def includeme(config):
 
     config.add_route('orders.fraud.clear'               , '/fraud/clear/{order_id}')
 
-    config.add_route("orders.cover.preview"             , "/cover/preview/{order_id}/cover")
-    config.add_route("orders.ticket.placeholder"        , "/api/preview/order/{order_id}/placeholders", factory=".resources.OrdersPreviewResource")
-    config.add_route("orders.item.preview"              , "/item/preview/{order_id}/item/{item_id}")
-    config.add_route("orders.item.preview.getdata"      , "/api/item/{item_id}/ticket/{ticket_format_id}")
-    config.add_route('orders.print.queue'               , '/print/queue/{order_id}')
+    config.add_route("orders.cover.preview"             , "/cover/preview/{order_id}/cover/{ticket_format_id}", factory='.resources.CoverPreviewResource')
+    config.add_route("orders.ticket.placeholder"        , "/api/preview/order/{order_id}/placeholders")
+    config.add_route("orders.item.preview"              , "/item/preview/{order_id}/item/{item_id}/ticket/{ticket_format_id}", factory=".resources.OrderedProductItemPreviewResource")
+    config.add_route("orders.item.preview.getdata"      , "/api/item/{item_id}/ticket/{ticket_format_id}", factory=".resources.OrderedProductItemPreviewResource")
+    config.add_route('orders.print.queue'               , '/print/queue/{order_id}', factory=".resources.SingleOrderEnqueueingResource")
     config.add_route('orders.print.queue.each'               , '/print/queue/each/{order_id}', factory=".resources.OrderPrintEachResource")
-    config.add_route('orders.print.queue.dialog'        , '/api/print/queue/{order_id}')
+    config.add_route('orders.print.queue.dialog'        , '/api/print/queue/{order_id}', factory=".resources.SingleOrderEnqueueingResource")
 
     config.add_subscriber('.mail.on_order_canceled'     , '.events.OrderCanceled')
 

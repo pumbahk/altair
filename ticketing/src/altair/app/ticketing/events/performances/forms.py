@@ -9,7 +9,7 @@ from altair.formhelpers.form import OurForm
 from altair.formhelpers.filters import zero_as_none
 from altair.formhelpers.fields import OurIntegerField, DateTimeField, OurGroupedSelectField 
 from altair.formhelpers import replace_ambiguous
-from altair.app.ticketing.core.models import Venue, Performance, PerformanceSetting, Stock
+from altair.app.ticketing.core.models import Site, Venue, Performance, PerformanceSetting, Stock
 from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.helpers import label_text_for
@@ -20,23 +20,29 @@ class PerformanceForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         super(PerformanceForm, self).__init__(formdata, obj, prefix, **kwargs)
         if 'organization_id' in kwargs:
-            conditions = {
-                'organization_id':kwargs['organization_id'],
-                'original_venue_id':None
-            }
             venue_by_pref = dict()
-            for venue in Venue.filter_by(**conditions).order_by('name').all():
-                pref = venue.site.prefecture if venue.site.prefecture!=None and venue.site.prefecture!='' else u'(不明な都道府県)'
-                if not pref in venue_by_pref:
-                    venue_by_pref[pref] = [ ]
-                venue_by_pref[pref].append(
-                    (venue.id,venue.name+(' ('+venue.sub_name+')' if (venue.sub_name!=None and venue.sub_name!='') else ''))
-                )
+            venues = Venue.query.join(Site).filter(
+                Venue.organization_id==kwargs['organization_id'],
+                Venue.original_venue_id==None
+            ).with_entities(
+                Venue.id, Venue.name, Venue.sub_name, Site.prefecture
+            ).order_by(Venue.name, Venue.sub_name).all()
+
+            for id, name, sub_name, prefecture in venues:
+                if prefecture is None:
+                    perfecture = u'(不明な都道府県)'
+                if not prefecture in venue_by_pref:
+                    venue_by_pref[prefecture] = []
+                if sub_name is not None and sub_name != '':
+                    name = u'{0} ({1})'.format(name, sub_name)
+                venue_by_pref[prefecture].append((id, name))
+
             choices = [
-                (pref, tuple(venue_by_pref[pref])) for pref in sorted(venue_by_pref.keys(), key=lambda x:PREFECTURE_ORDER[x] if PREFECTURE_ORDER.has_key(x) else 99)
-            ]
+                (pref, tuple(venue_by_pref[pref]))
+                for pref in sorted(venue_by_pref.keys(), key=lambda x:PREFECTURE_ORDER[x] if PREFECTURE_ORDER.has_key(x) else 99)
+                ]
             if 'venue_id' in kwargs:
-                venue = Venue.get(kwargs['venue_id'])
+                venue = Venue.query.get(kwargs['venue_id'])
                 choices.insert(0, (None, [(venue.id, u'%s (現在選択されている会場)' % venue.name)]))
             self.venue_id.choices = choices
 

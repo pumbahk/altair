@@ -13,13 +13,13 @@ from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.core.models import Event, MailTypeChoices
 
 
-@view_config(decorator=with_bootstrap, permission="authenticated", 
+@view_config(decorator=with_bootstrap, permission="event_editor",
              route_name="events.mailinfo.index")
 def mailinfo_index_view(context, request):
     event_id = request.matchdict["event_id"]
     return HTTPFound(request.route_url("events.mailinfo.edit", event_id=event_id, mailtype=MailTypeChoices[0][0]))
 
-@view_defaults(decorator=with_bootstrap, permission="authenticated", 
+@view_defaults(decorator=with_bootstrap, permission="event_editor",
                route_name="events.mailinfo.edit", 
                renderer="altair.app.ticketing:templates/events/mailinfo/new.html")
 class MailInfoNewView(BaseView):

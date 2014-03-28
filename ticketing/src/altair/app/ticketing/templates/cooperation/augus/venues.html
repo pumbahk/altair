@@ -33,7 +33,6 @@
           modal.find('#display').attr('checked', 'checked');
           modal.modal('toggle');
       }
-
       function enable_download_dialog(){
           var modal = $('#modal-augus-venue-download');
           modal.find('#display').attr('checked', 'checked');
@@ -43,7 +42,7 @@
 </script>
 
 <div id="modal-augus-venue-download" class="modal hide">
-  <form method="GET" action="${request.route_path('augus.venue.download', venue_id=venue.id)}">  
+  <form method="GET" action="${request.route_path('augus.venue.download', venue_id=venue.id)}">
     <div class="modal-header">
       <h3>ダウンロード</h3>
     </div>
@@ -73,7 +72,8 @@
       <input type="submit" class="btn" value="アップロード"></input>
       <a href="#" class="btn" data-dismiss="modal">閉じる</a>
     </div>
-  </form>    
+  </form>
 </div>
+
 
 ${delete_modal()}

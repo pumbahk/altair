@@ -5,18 +5,19 @@ import re
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPNotFound
 from altair.app.ticketing.qr import get_qrdata_builder
+from altair.app.ticketing.qr.builder import InvalidSignedString
 import logging
-from altair.app.ticketing.printqr import utils 
 logger = logging.getLogger(__name__)
 
 from . import forms
 from . import helpers as h
+from . import utils
+from . import todict
+
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import Event
 from altair.app.ticketing.core.models import Performance
-from altair.app.ticketing.core.models import Order
-from altair.app.ticketing.core.models import OrderedProductItem
-from altair.app.ticketing.core.models import OrderedProduct
+from altair.app.ticketing.core.models import PageFormat
 from altair.app.ticketing.core.models import OrderedProductItemToken
 from altair.app.ticketing.core.models import Ticket
 from altair.app.ticketing.core.utils import PrintedAtBubblingSetter
@@ -25,6 +26,11 @@ from datetime import datetime
 from altair.app.ticketing.qr.utils import get_matched_token_query_from_order_no
 from altair.app.ticketing.qr.utils import get_or_create_matched_history_from_token
 from altair.app.ticketing.qr.utils import make_data_for_qr
+
+import urllib
+import urllib2
+import json
+import traceback
 
 def _accepted_object(request, obj):
     if obj is None:
@@ -131,15 +137,73 @@ def qrapp_view(context, request):
 @view_config(route_name="api.ticket.data", renderer="json", 
              request_param="qrsigned", xhr=True)
 def ticketdata_from_qrsigned_string(context, request):
+    builder = get_qrdata_builder(request)
+    event_id = request.matchdict.get("event_id", "*")
     signed = request.params["qrsigned"]
     signed = re.sub(r"[\x01-\x1F\x7F]", "", signed.encode("utf-8")).replace("\x00", "") .decode("utf-8")
-    builder = get_qrdata_builder(request)
-    event_id = request.matchdict["event_id"]
+
     try:
-        data = utils.ticketdata_from_qrdata(builder.data_from_signed(signed), event_id=event_id)
+        logger.info("signed = %s" % signed)
+        qrdata = builder.data_from_signed(signed)
+        logger.info("decoded = %s" % qrdata)
+        
+        if not (qrdata.has_key("order") and qrdata.has_key("serial") and qrdata.has_key("performance")):
+            raise Exception("Broken QR: %s" % qrdata)
+        
+        performance = Performance.query.filter_by(code=qrdata["performance"]).first()
+        if performance is None:
+            raise Exception("No such performance: %s" % qrdata["performance"])
+
+        if performance.orion is not None and performance.orion.qr_enabled == 1:
+            # coupon_2_qr_enabledは判定には使わない
+            # eventgate
+            settings = request.registry.settings
+            api_url = settings.get('orion.search_url')
+            if api_url is None:
+                raise Exception("orion.search_uri is None")
+            logger.debug("target url is %s" % api_url)
+            
+            req_json = json.dumps(dict(serial = qrdata["serial"]))
+            logger.info("Create request to Orion API: %s" % req_json)
+            
+            req = urllib2.Request(api_url, req_json, headers={ u'Content-Type': u'text/json; charset="UTF-8"' })
+            stream = urllib2.urlopen(req);
+            if stream.code != 200:
+                raise Exception("Orion API returned code %u" % stream.code)
+            
+            res_text = unicode(stream.read(), 'utf-8')
+            logger.info("response = %s" % res_text)
+            res = json.loads(res_text)
+            
+            if res is None:
+                raise Exception("Cannot open http connection to Orion API")
+            if not res.has_key("result"):
+                raise Exception("Unexpected response from Orion")
+            if res["result"] != "OK":
+                raise Exception("Orion API failed: %s" % res_text)
+            if not res.has_key("token"):
+                raise Exception("Unexpected response from Orion: %s" % res_text)
+            order_and_token = utils.order_from_token(res["token"], qrdata["order"])
+            if order_and_token is None:
+                raise Exception("No such ticket: token=%s, order=%s" % (res["token"], qrdata["order"]))
+            order, token = order_and_token
+            data = todict.data_dict_from_order(order, token)
+
+        else:
+            # legacy QR
+            order_and_history = utils.order_and_history_from_qrdata(qrdata)
+            if order_and_history is None:
+                raise Exception("No such ticket: %s" % qrdata)
+            order, history = order_and_history
+            data = todict.data_dict_from_order_and_history(order, history)
+
+        utils.verify_order(order, event_id=event_id)
         return {"status": "success", 
                 "data": data}
+    except InvalidSignedString:
+        return {"status": "error", "message": u"不正なQRコードです"}
     except KeyError, e:
+        logger.info(traceback.format_exc())
         return {"status": "error", "message": u"うまくQRコードを読み込むことができませんでした"}
     except utils.UnmatchEventException:
         return {"status": "error", "message": u"異なるイベントのQRチケットです。このページでは発券できません"}
@@ -231,7 +295,7 @@ class AppletAPIView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-        
+
     @view_config(route_name='api.applet.ticket', renderer='json')
     def ticket(self):
         event_id = self.request.matchdict['event_id']
@@ -248,33 +312,41 @@ class AppletAPIView(object):
         params = {
             u'status': 'success',
             u'data': {
-                u'ticket_formats': [utils.ticket_format_to_dict(ticket_format) for ticket_format in dict((ticket.ticket_format.id, ticket.ticket_format) for ticket in tickets).itervalues()],
-                u'page_formats': utils.page_formats_for_organization(self.context.organization),
-                u'ticket_templates': [utils.ticket_to_dict(ticket) for ticket in tickets]
+                u'ticket_formats': [todict.ticket_format_to_dict(ticket_format) for ticket_format in dict((ticket.ticket_format.id, ticket.ticket_format) for ticket in tickets).itervalues()],
+                u'page_formats':  [
+                    todict.page_format_to_dict(page_format) \
+                    for page_format in DBSession.query(PageFormat).filter_by(organization=self.context.organization)
+                ], 
+                u'ticket_templates': [todict.ticket_to_dict(ticket) for ticket in tickets]
                 }
             }
         return params
 
     @view_config(route_name='api.applet.ticket_data', request_method='POST', renderer='json')
-    def ticket_data(self):
+    def ticket_data(self): ## svg one
         ordered_product_item_token_id = self.request.json_body.get('ordered_product_item_token_id')
         if ordered_product_item_token_id is None:
+            logger.error("no ordered_product_item_token_id given: token id=%s,  organization id=%s" \
+                             % (ordered_product_item_token_id, self.context.organization.id))
             return { u'status': u'error', u'message': u'券面取得用の番号がみつかりません' }
 
-        qs = DBSession.query(OrderedProductItemToken) \
-            .filter_by(id=ordered_product_item_token_id) \
-            .join(OrderedProductItem) \
-            .join(OrderedProduct) \
-            .filter(Order.id==OrderedProduct.order_id) \
-            .filter(Order.organization_id==self.context.organization.id)
+        ordered_product_item_token = utils.get_matched_ordered_product_item_token(
+            ordered_product_item_token_id, 
+            self.context.organization.id)
 
-        ordered_product_item_token = qs.first()
         if ordered_product_item_token is None:
-            logger.warn("*api.applet.ticket data: token id=%s,  organization id=%s" \
+            logger.error("no ordered_product_item_token found: token id=%s,  organization id=%s" \
                              % (ordered_product_item_token_id, self.context.organization.id))
             return { u'status': u'error', u'message': u'券面データがみつかりません' }
-        retval = utils.svg_data_from_token(ordered_product_item_token)
-        assert retval
+
+        ticket_templates = utils.enable_ticket_template_list(ordered_product_item_token)
+        issuer = utils.get_issuer()
+        vardict = todict.svg_data_from_token(ordered_product_item_token, issuer=issuer)
+        retval = todict.svg_data_list_all_template_valiation(vardict, ticket_templates)
+        if not retval:
+            logger.error("no applicable tickets found: token id=%s,  organization id=%s" \
+                             % (ordered_product_item_token_id, self.context.organization.id))
+            return { u'status': u'error', u'message': u'印刷対象となる券面データがありません' }
         return {
             u'status': u'success',
             u'data': retval
@@ -285,13 +357,20 @@ class AppletAPIView(object):
         order_no = self.request.json_body.get('order_no')
         if order_no is None:
             return { u'status': u'error', u'message': u'注文番号がみつかりません' }
-        qs = get_matched_token_query_from_order_no(order_no)
-        
+
+        tokens = get_matched_token_query_from_order_no(order_no).all()
         retval = []
+        templates_generator = utils.EnableTicketTemplatesCache()
+        issuer = utils.get_issuer()
         try:
-            for ordered_product_item_token in qs:
+            for ordered_product_item_token in tokens:
                 history = get_or_create_matched_history_from_token(order_no, ordered_product_item_token)
-                retval.extend(utils.svg_data_from_token_with_descinfo(history, ordered_product_item_token))
+                ticket_templates = templates_generator(ordered_product_item_token)
+
+                vardict = todict.svg_data_from_token(ordered_product_item_token, issuer=issuer)
+                vardict[u'codeno'] = history.id #一覧で選択するため
+
+                retval.extend(todict.svg_data_list_all_template_valiation(vardict, ticket_templates))
             return {
                 u'status': u'success',
                 u'data': retval

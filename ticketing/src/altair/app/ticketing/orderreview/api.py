@@ -57,21 +57,17 @@ def safe_get_contact_url(request, default=""):
         logger.warn(str(e))
         return default
 
-def send_to_orion(request, context, recipient):
+def send_to_orion(request, context, recipient, data):
     settings = request.registry.settings
     api_url = settings.get('orion.create_url')
     if api_url is None:
         raise Exception("orion.api_uri is None")
-    
-    data = OrderedProductItemToken.filter_by(id = request.params['token']).one()
+    print "target url is %s" % api_url
     
     order = data.item.ordered_product.order
-    if order.order_no != request.params['order_no']:
-        raise Exception(u"Wrong order number or token: (%s, %s)" % (request.params['order_no'], request.params['token']))
-    
     product = data.item.ordered_product.product
-    item = data.item.product_item
-    performance = data.item.product_item.performance
+    item = data.item
+    performance = product.performance
     event = performance.event
     site = performance.venue.site
     org = event.organization
@@ -80,8 +76,10 @@ def send_to_orion(request, context, recipient):
     orion = performance.orion
     
     obj = dict()
+    obj['token'] = data.id
     obj['recipient'] = dict(mail = recipient)
     obj['order'] = dict(number = order.order_no,
+                        sequence = data.serial,
                         created_at = str(order.paid_at))
     obj['performance'] = dict(code = performance.code, name = performance.name,
                               open_on = str(performance.open_on) if performance.open_on is not None else None,
@@ -93,12 +91,17 @@ def send_to_orion(request, context, recipient):
     obj['performance']['web'] = orion.web
     obj['segment'] = dict(name = segment.name)
     obj['product'] = dict(name = product.name, price = int(product.price))
-    obj['seat'] = dict(name = seat.name, type = seat.stock.stock_type.name, number = seat.seat_no)
-    for k, v in seat.attributes.items():
-        if k not in obj['seat']:
-            obj['seat'][k] = v
+    if seat is not None:
+        obj['seat'] = dict(name = seat.name, type = seat.stock.stock_type.name, number = seat.seat_no)
+        for k, v in seat.attributes.items():
+            if k not in obj['seat']:
+                obj['seat'][k] = v
+    else:
+        obj['seat'] = dict(name = product.seat_stock_type.name)
     obj['coupons'] = list()
-    obj['coupons'].append(dict(name = data.seat.name, qr = (orion.qr_enabled==1), pattern = orion.pattern))
+    obj['coupons'].append(dict(name = seat.name if seat is not None else product.name,
+                               qr = (orion.qr_enabled==1),
+                               pattern = orion.pattern))
     if (not orion.coupon_2_name is None) and (not orion.coupon_2_name == u''):
         obj['coupons'].append(dict(name = orion.coupon_2_name, qr = (orion.coupon_2_qr_enabled==1), pattern = orion.coupon_2_pattern))
     obj['instruction'] = dict(general = orion.instruction_general,

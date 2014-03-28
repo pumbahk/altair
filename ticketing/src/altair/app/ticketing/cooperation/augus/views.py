@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 import csv
 import time
+import json
 import logging
 import datetime
 import itertools
@@ -56,7 +57,7 @@ from .importers import get_enable_stock_info
 
 logger = logging.getLogger(__name__)
 
-@view_config(route_name='augus.test')
+@view_config(route_name='augus.test', permission='event_editor')
 def test(*args, **kwds):
     return ValueError()
 
@@ -90,8 +91,8 @@ class VenueView(_AugusBaseView):
             raise HTTPBadRequest(err)
         return res
 
-    @view_config(route_name='augus.venue.upload', request_method='POST')
-    def upload(self):
+    #@view_config(route_name='augus.venue.upload', request_method='POST')
+    def _upload(self):
         form = AugusVenueUploadForm(self.request.params)
         if form.validate() and hasattr(form.augus_venue_file.data, 'file'):
             reader = csv.reader(form.augus_venue_file.data.file)
@@ -109,6 +110,108 @@ class VenueView(_AugusBaseView):
                 raise HTTPBadRequest(err)
         else:# validate error
             raise HTTPBadRequest('validation error')
+
+    @view_config(route_name='augus.venue.upload', request_method='POST')
+    def upload(self):
+        import csv
+        from altair.app.ticketing.core.models import Venue, AugusSeat
+
+
+        venue_id = int(self.request.matchdict['venue_id'])
+        try:
+            fp = self.request.POST['augus_venue_file'].file
+        except AttributeError as err:
+            raise HTTPBadRequest('no file')
+        else:
+            logger.info('AUGUS VENUE: start creating augus venue')
+
+            logger.info('AUGUS VENUE: parse csv')
+            reader = csv.reader(fp)
+            headers = reader.next()
+            records = [record for record in reader]
+            logger.info('AUGUS VENUE: creating target list')
+            external_venue_code_name_version_list = filter(lambda code_version: code_version != ("", "", ""),
+                                                           set([(record[6], record[7], record[23]) for record in records]))
+            count = len(external_venue_code_name_version_list)
+            if count == 0: # 対象すべてunlink
+                raise HTTPBadRequest(body=json.dumps({
+                    'message':u'連携を変更したい場合は外部会場ページを使用してください',
+                }))
+            elif count == 1:# 通常処理
+                logger.info('AUGUS VENUE: search augus venues')
+                ex_venue_code, ex_venue_name, ex_venue_version = external_venue_code_name_version_list[0]
+                ex_venue_code = int(ex_venue_code)
+                ex_venue_name = ex_venue_name.decode('cp932')
+                ex_venue_verson = int(ex_venue_version)
+                ex_venues = AugusVenue.query.filter(AugusVenue.code==ex_venue_code)\
+                                            .filter(AugusVenue.version==ex_venue_version)\
+                                            .all()
+
+                if ex_venues:
+                    raise HTTPBadRequest(body=json.dumps({
+                        'message':u'この会場は既に登録されています',
+                    }))
+
+                logger.info('AUGUS VENUE: creating augus venues')
+                venue = Venue.query.filter(Venue.id==venue_id).one()
+
+                ex_venue = AugusVenue()
+                ex_venue.code = ex_venue_code
+                ex_venue.name = ex_venue_name
+                ex_venue.version = ex_venue_version
+                ex_venue.venue_id = venue.id
+                ex_venue.save()
+
+                logger.info('AUGUS VENUE: creating augus seat target dict')
+                seat_id__record = dict([(int(record[0]), record) for record in records if record[6].strip()])
+                seat_ids = seat_id__record.keys()
+                logger.info('AUGUS VENUE: creating target seat list')
+                seats = filter(lambda seat: seat.id in seat_ids, venue.seats)
+
+                def _create_ex_seat(seat):
+                    record = seat_id__record[seat.id]
+                    _str = lambda _col: _col.decode('cp932')
+                    _int = lambda _col: int(_col) if _col.strip() else None
+                    if record[6]: # create
+                        ex_seat = AugusSeat()
+                        ex_seat.area_name = _str(record[8])
+                        ex_seat.info_name = _str(record[9])
+                        ex_seat.doorway_name = _str(record[10])
+                        ex_seat.priority = _int(record[11])
+                        ex_seat.floor = _str(record[12])
+                        ex_seat.column = _str(record[13])
+                        ex_seat.num = _str(record[14])
+                        ex_seat.block = _int(record[15])
+                        ex_seat.coordy = _int(record[16])
+                        ex_seat.coordx = _int(record[17])
+                        ex_seat.coordy_whole = _int(record[18])
+                        ex_seat.coordx_whole = _int(record[19])
+                        ex_seat.area_code = _int(record[20])
+                        ex_seat.info_code = _int(record[21])
+                        ex_seat.doorway_code = _int(record[22])
+                        ex_seat.version = _int(record[23])
+                        # link
+                        ex_seat.augus_venue_id = ex_venue.id
+                        ex_seat.seat_id = seat.id
+                        return ex_seat
+                    else:
+                        assert False, repr(record)
+                logger.info('AUGUS VENUE: creating augus seats')
+                ex_seats = map(_create_ex_seat, seats)
+                logger.info('AUGUS VENUE: saving augus seats')
+                for ex_seat in ex_seats:
+                    ex_seat.save()
+                logger.info('AUGUS VENUE: finished')
+
+                url = self.request.route_path('augus.augus_venue.show',
+                                              augus_venue_code=ex_venue.code,
+                                              augus_venue_version=ex_venue.version,
+                                              )
+                return HTTPFound(url)
+            else:
+                raise HTTPBadRequest(body=json.dumps({
+                    'message':u'複数の会場コードは受け付けられません',
+                }))
 
 CUSTOMER_ID = 1000001
 
@@ -151,22 +254,160 @@ class AugusVenueView(_AugusBaseView):
     @view_config(route_name='augus.augus_venue.upload', request_method='POST')
     def upload(self):
         form = AugusVenueUploadForm(self.request.params)
-        if form.validate() and hasattr(form.augus_venue_file.data, 'file'):
-            reader = csv.reader(form.augus_venue_file.data.file)
-            importer = AugusVenueImporter()
-            pairs = SeatAugusSeatPairs()
-            pairs.load_augus_venue(self.context.augus_venue)
-            try:
-                importer.import_(reader, pairs)
-                url = self.request.route_path('augus.augus_venue.show',
-                                              augus_venue_code=self.context.augus_venue_code,
-                                              augus_venue_version=self.context.augus_venue_version,
-                                              )
-                return HTTPFound(url)
-            except (NoSeatError, EntryFormatError, SeatImportError) as err:
-                raise HTTPBadRequest(err)
-        else:# validate error
+        if not (form.validate() and hasattr(form.augus_venue_file.data, 'file')):
             raise HTTPBadRequest('validation error')
+
+        import csv
+        from altair.app.ticketing.core.models import Venue, AugusSeat
+
+        try:
+            fp = self.request.POST['augus_venue_file'].file
+        except AttributeError as err:
+            raise HTTPBadRequest('no file')
+        else:
+            updates = set()
+
+            logger.info('AUGUS VENUE: start creating augus venue')
+            ex_venue = self.context.augus_venue
+            venue = ex_venue.venue
+            venue_id = venue.id
+
+
+            logger.info('AUGUS VENUE: load augus venue')
+            # pairs = SeatAugusSeatPairs()
+            # pairs.load_augus_venue(ex_venue)
+            # pairs = [pair for pair in pairs]
+            logger.info('AUGUS VENUE: parse csv')
+            reader = csv.reader(fp)
+            headers = reader.next()
+            records = [record for record in reader]
+            logger.info('AUGUS VENUE: creating target list')
+            external_venue_code_name_version_list = filter(lambda code_name_version: code_name_version != ("", "", ""),
+                                                           set([(record[6], record[7], record[23]) for record in records]))
+            count = len(external_venue_code_name_version_list)
+
+            # 変更がないrecordは除外
+            logger.info('AUGUS VENUE: creating augus seat name dict')
+            seat_id__ex_seat = dict([(ex_seat.seat_id, ex_seat) for ex_seat in ex_venue.augus_seats if ex_seat.seat_id])
+            _str = lambda _col: _col.decode('cp932')
+            _int = lambda _col: int(_col) if _col.strip() else None
+
+            def _is_modified(record):
+                seat_id = int(record[0])
+                ex_seat = seat_id__ex_seat.get(seat_id, None)
+                if not ex_seat:
+                    word = list(set(map(lambda _ss: _ss.strip(), record[6:])))[0]
+                    if word != '':
+                        return True
+                    else:
+                        return False
+                else:
+                    status = ex_seat.augus_venue.code == _int(record[6])\
+                        and ex_seat.area_name == _str(record[8])\
+                        and ex_seat.info_name == _str(record[9]) \
+                        and ex_seat.doorway_name == _str(record[10])\
+                        and ex_seat.priority == _int(record[11])\
+                        and ex_seat.floor == _str(record[12])\
+                        and ex_seat.column == _str(record[13])\
+                        and ex_seat.num == _str(record[14])\
+                        and ex_seat.block == _int(record[15])\
+                        and ex_seat.coordy == _int(record[16])\
+                        and ex_seat.coordx == _int(record[17])\
+                        and ex_seat.coordy_whole == _int(record[18])\
+                        and ex_seat.coordx_whole == _int(record[19])\
+                        and ex_seat.area_code == _int(record[20])\
+                        and ex_seat.info_code == _int(record[21])\
+                        and ex_seat.doorway_code == _int(record[22])\
+                        and ex_seat.version == _int(record[23])\
+                        and ex_seat.seat_id == seat_id
+
+                    return not status
+            logger.info('AUGUS VENUE: filtering modify records')
+            length = len(records)
+            records = filter(_is_modified, records)
+            logger.info('AUGUS VENUE: filtered by modify records: {} -> {}'.format(length, len(records)))
+
+            logger.info('AUGUS VENUE: create name ex_seat dict')
+            name__ex_seat = dict([((ex_seat.floor, ex_seat.column, ex_seat.num, ex_seat.area_code, ex_seat.info_code), ex_seat)
+                                  for ex_seat in ex_venue.augus_seats])
+            _name = lambda _record: (_str(_record[12]), _str(_record[13]), _str(_record[14]), int(_record[20]), int(_record[21]))
+
+            # とりあえずtargetとなるseatのlinkは削除しておく
+            logger.info('AUGUS VENUE: creating seat id list')
+            seat_ids = [int(record[0]) for record in records]
+
+            logger.info('AUGUS VENUE: deleting all link')
+            for ex_seat in ex_venue.augus_seats:
+                if ex_seat.seat_id in seat_ids:
+                    ex_seat.seat_id = None
+                    updates.add(ex_seat)
+            logger.info('AUGUS VENUE: saving augus seats by delete link: record count={}'.format(len(records)))
+            for ex_seat in updates:
+                logger.info('AUGUS VENUE: save AugusSeat.id={}'.format(ex_seat.id))
+                ex_seat.save()
+
+
+            updates = set()
+            logger.info('AUGUS VENUE: filtering')
+            try:
+                records = [record for record in records if record[6] and (record[12], record[13], record[14]) != (u'', u'', u'')]
+            except IndexError:
+                raise ValueError(repr(record))
+
+            if count == 1:# 通常処理
+                logger.info('AUGUS VENUE: creating augus seat target dict')
+                seat_id__seat = dict([(seat.id, seat) for seat in venue.seats if seat.id in seat_ids])
+
+                logger.info('AUGUS VENUE: update augus seats: length={}'.format(len(records)))
+                for record in records:
+                    if int(record[6]) != ex_venue.code or int(record[23]) != ex_venue.version:
+                        raise HTTPBadRequest(body=json.dumps({
+                                    'message':u'会場コード、会場バージョンが異なっています: {}'.format(record),
+                                    }))
+
+                    name = _name(record) #(_str(record[12]), _str(record[13]), _str(record[14]), int(record[20]), int(record[21]))
+                    seat = seat_id__seat[int(record[0])]
+                    ex_seat = name__ex_seat.get(name, None)
+                    if not ex_seat:
+                        ex_seat = AugusSeat()
+                        ex_seat.augus_venue_id = ex_venue.id
+
+                    # update external seat
+                    ex_seat.area_name = _str(record[8])
+                    ex_seat.info_name = _str(record[9])
+                    ex_seat.doorway_name = _str(record[10])
+                    ex_seat.priority = _int(record[11])
+                    ex_seat.floor = _str(record[12])
+                    ex_seat.column = _str(record[13])
+                    ex_seat.num = _str(record[14])
+                    ex_seat.block = _int(record[15])
+                    ex_seat.coordy = _int(record[16])
+                    ex_seat.coordx = _int(record[17])
+                    ex_seat.coordy_whole = _int(record[18])
+                    ex_seat.coordx_whole = _int(record[19])
+                    ex_seat.area_code = _int(record[20])
+                    ex_seat.info_code = _int(record[21])
+                    ex_seat.doorway_code = _int(record[22])
+                    ex_seat.version = _int(record[23])
+                    # link
+                    ex_seat.seat_id = seat.id
+                    updates.add(ex_seat)
+            else:
+                raise HTTPBadRequest(body=json.dumps({
+                    'message':u'複数の会場コードは受け付けられません: {}'.format(repr(external_venue_code_name_version_list)),
+                }))
+
+            logger.info('AUGUS VENUE: saving augus seats')
+            for ex_seat in updates:
+                ex_seat.save()
+            logger.info('AUGUS VENUE: finished update augus seats')
+            url = self.request.route_path('augus.augus_venue.show',
+                                          augus_venue_code=ex_venue.code,
+                                          augus_venue_version=ex_venue.version,
+                                          )
+            self.request.session.flash(u'オーガス用会場データを更新しました')
+            return HTTPFound(url)
+
 
     @view_config(route_name='augus.augus_venue.complete', request_method='GET')
     def complete(self):

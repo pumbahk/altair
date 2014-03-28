@@ -31,27 +31,11 @@ def sync_data(request, statuses, shop_name):
     """
     api = get_multicheckout_3d_api(request, shop_name)
     for st in statuses:
+        if not (st.Status is None or is_cancelable(request, st)):
+            continue
         order_no = st.OrderNo
         logger.debug("sync for %s" % order_no)
-        inquiry = api.checkout_inquiry(order_no)
-
-        if inquiry.CmnErrorCd == '001407':  # 取引詳細操作不可
-            m.MultiCheckoutOrderStatus.set_status(
-                inquiry.OrderNo,
-                inquiry.Storecd, u"-10",
-                u"by cancel auth batch")
-        elif (inquiry.CmnErrorCd == '000000'
-              and inquiry.Status
-              and inquiry.Status != st.Status):
-            m.MultiCheckoutOrderStatus.set_status(
-                inquiry.OrderNo,
-                inquiry.Storecd, inquiry.Status,
-                u"by cancel auth batch")
-        else:
-            logger.info('inquiry order=%s CmnErrorCd=%s' % (
-                order_no,
-                inquiry.CmnErrorCd,
-            ))
+        inquiry = api.checkout_inquiry(order_no, u'cancel auth batch')
         m._session.commit()
 
 def get_cancel_filter(request, name):

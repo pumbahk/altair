@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 ## todo rename. 
-from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import(
+    SEJ_DELIVERY_PLUGIN_ID, 
+    QR_DELIVERY_PLUGIN_ID
+)
 
 """
 Order.attributesなどの更新
@@ -68,9 +71,12 @@ class ApplicableTicketsProducer(object):
             return self.include_delivery_id_ticket_iter(delivery_plugin_ids, format_id=format_id)
         else:
             return self.exclude_delivery_id_ticket_iter(SEJ_DELIVERY_PLUGIN_ID, format_id=format_id)
-            
-    
-    qr_only_tickets = will_issued_by_own_tickets # 今は同じ
+
+    def all(self, format_id=None):
+        for ticket in self.tickets:
+            if format_id and format_id != ticket.ticket_format_id:
+                continue
+            yield ticket
 
     def any_exist(self, itr):
         for _ in itr:

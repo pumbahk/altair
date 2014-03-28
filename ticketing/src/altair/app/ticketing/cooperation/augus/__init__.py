@@ -12,7 +12,7 @@ ROUTE_URL_RESOURCE = {
     'augus.test': ('/test', None),
     'augus.venue.index': ('/venues/{venue_id}', VenueResource),
     'augus.venue.download': ('/venues/{venue_id}/download', VenueResource),
-    'augus.venue.upload': ('/venues/{venue_id}/upload', VenueResource),
+    'augus.venue.upload': ('/venues/{venue_id}/upload', None),
     'augus.augus_venue.index': ('/augus_venues/{augus_venue_code}',
                                 AugusVenueListResource),
     'augus.augus_venue.show': ('/augus_venues/{augus_venue_code}/version/{augus_venue_version}',
@@ -33,7 +33,6 @@ ROUTE_URL_RESOURCE = {
     'augus.performance.save': ('/events/{event_id}/performances/save', PerformanceResource),
 
     # stock type
-    'augus.stock_type.index': ('/events/{event_id}/stock_types', SeatTypeResource),
     'augus.stock_type.show': ('/events/{event_id}/stock_types/show', SeatTypeResource),
     'augus.stock_type.edit': ('/events/{event_id}/stock_types/edit', SeatTypeResource),
     'augus.stock_type.save': ('/events/{event_id}/stock_types/save', SeatTypeResource),

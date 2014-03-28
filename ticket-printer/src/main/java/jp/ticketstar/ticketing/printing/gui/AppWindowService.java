@@ -7,6 +7,7 @@ import java.net.URI;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.concurrent.Future;
 
 import javax.swing.JFileChooser;
 
@@ -17,6 +18,7 @@ import jp.ticketstar.ticketing.printing.BasicAppService;
 import jp.ticketstar.ticketing.printing.Page;
 import jp.ticketstar.ticketing.printing.TicketPrintable;
 import jp.ticketstar.ticketing.svg.ExtendedSVG12BridgeContext;
+import jp.ticketstar.ticketing.svg.ExtendedSVG12OMDocument;
 import jp.ticketstar.ticketing.svg.OurDocumentLoader;
 
 public class AppWindowService extends BasicAppService {
@@ -28,14 +30,16 @@ public class AppWindowService extends BasicAppService {
 		}
 	}
 
-	public synchronized void loadDocument(URI uri) {
+	public synchronized Future<ExtendedSVG12OMDocument> loadDocument(URI uri) {
 		if (this.documentLoader != null)
-			return;
+			throw new IllegalStateException("document is being loaded");
 		final OurDocumentLoader loader = new OurDocumentLoader(this);
 		final SVGDocumentLoader documentLoader = new SVGDocumentLoader(uri.toString(), loader);
 		this.documentLoader = documentLoader;
-		documentLoader.addSVGDocumentLoaderListener(new LoaderListener(new ExtendedSVG12BridgeContext(this, loader)));
+		final LoaderListener<ExtendedSVG12OMDocument> listener = new LoaderListener<ExtendedSVG12OMDocument>(new ExtendedSVG12BridgeContext(this, loader));
+		documentLoader.addSVGDocumentLoaderListener(listener);
 		documentLoader.start();
+		return listener;
 	}
 
 	protected TicketPrintable createTicketPrintable(PrinterJob job) {
@@ -64,7 +68,7 @@ public class AppWindowService extends BasicAppService {
 					}
 				});
 			}
-		});
+		}, null);
 	}
 
 	public AppWindowService(AppModel model) {

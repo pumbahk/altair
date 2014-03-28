@@ -16,7 +16,7 @@ from altair.app.ticketing.response import refresh_response
 from pyramid.response import Response
 ## admin権限を持っている人以外見れない想定。
 
-@view_defaults(permission="administrator", decorator=with_bootstrap, route_name="memberships")
+@view_defaults(permission="member_editor", decorator=with_bootstrap, route_name="memberships")
 class MembershipView(BaseView):
     @view_config(match_param="action=index", renderer="altair.app.ticketing:templates/memberships/index.html")
     def index(self):
@@ -96,7 +96,7 @@ class MembershipView(BaseView):
         return refresh_response(self.request, {"redirect_to": self.request.route_url("memberships", action="index", membership_id="*")})
 
 
-@view_defaults(decorator=with_bootstrap, route_name="membergroups", permission="administrator")
+@view_defaults(decorator=with_bootstrap, route_name="membergroups", permission="member_editor")
 class MemberGroupView(BaseView):
     @view_config(match_param="action=show", renderer="altair.app.ticketing:templates/memberships/groups/show.html")
     def show(self):
@@ -181,7 +181,7 @@ class MemberGroupView(BaseView):
         dummy_url = self.request.route_path("memberships", action="show", membership_id=membership_id) ## this is dummy
         return refresh_response(self.request, {"redirect_to": self.request.POST.get("redirect_to") or dummy_url})
 
-@view_config(route_name="membergrups.api.sales_segment_groups.candidates", permission="administrator", 
+@view_config(route_name="membergrups.api.sales_segment_groups.candidates", permission="member_editor",
              request_method="GET", xhr=True, renderer="json")
 def candidates_sales_segment_group(context, request):
     qs = cmodels.SalesSegmentGroup.query
@@ -191,7 +191,7 @@ def candidates_sales_segment_group(context, request):
     sales_segment_groups = [{"id": s.id, "name": s.name} for s in qs]
     return {"status": "success", "sales_segment_groups": sales_segment_groups}
 
-@view_defaults(decorator=with_bootstrap, route_name="membergroups.sales_segment_groups", permission="administrator")
+@view_defaults(decorator=with_bootstrap, route_name="membergroups.sales_segment_groups", permission="member_editor")
 class SalesSegmentView(BaseView):
     @view_config(match_param="action=edit", renderer="altair.app.ticketing:templates/memberships/salessegments/edit.html", 
                  request_method="GET")

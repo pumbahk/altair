@@ -69,7 +69,7 @@ cart_seat_table = sa.Table("CartedProductItem_Seat", Base.metadata,
 )
 
 @implementer(IOrderLike)
-class Cart(Base):
+class Cart(Base, c_models.CartMixin):
     __tablename__ = 'Cart'
 
     query = DBSession.query_property()

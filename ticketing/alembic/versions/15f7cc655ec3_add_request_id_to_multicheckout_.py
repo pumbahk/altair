@@ -23,5 +23,5 @@ def upgrade():
     op.create_foreign_key('multicheckout_response_card_ibfk_1', 'multicheckout_response_card', 'multicheckout_request_card', ['request_id'], ['id'])
 
 def downgrade():
-    op.drop_constraint('multicheckout_response_card_ibfk_1', 'multicheckout_response_card')
+    op.drop_constraint('multicheckout_response_card_ibfk_1', 'multicheckout_response_card', type='foreignkey')
     op.drop_column('multicheckout_response_card', 'request_id')

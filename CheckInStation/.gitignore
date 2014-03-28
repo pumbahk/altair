@@ -1,0 +1,8 @@
+*.exe
+*.mdb
+*.swp
+*~
+QR/QR/bin/Debug
+QR/QR/bin/Release
+QR/QR/obj
+QR/*.userprefs

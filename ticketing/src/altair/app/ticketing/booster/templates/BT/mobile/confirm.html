@@ -9,7 +9,7 @@ pm = request.context.load_user_profile()
 <%mobile:form_header>新規／継続</%mobile:form_header>
 <div>${u'継続' if pm.get('cont') == 'yes' else u'新規'}</div>
 % if pm.get('cont') == 'yes' and pm.get('old_id_number'):
-<%mobile:form_header>2012-13会員番号</%mobile:form_header>
+<%mobile:form_header>2013-14会員番号</%mobile:form_header>
 <div>${pm.get('old_id_number')}</div>
 % endif:
 <%mobile:form_header>会員種別</%mobile:form_header>
@@ -41,6 +41,8 @@ pm = request.context.load_user_profile()
 <div>${pm['fax']}</div>
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 <div>${pm['email_1']}</div>
+<%mobile:form_header>${layout.team_name}からのメールマガジンの配信</%mobile:form_header>
+<div>${u'希望する' if pm['extra']['mail_permission'] else u'希望しない'}</div>
 <%mobile:form_header>会員特典受取方法</%mobile:form_header>
 <div>${pm['product_delivery_method_name']}</div>
 <hr />

@@ -12,7 +12,6 @@ config = context.config
 # target_metadata = mymodel.Base.metadata
 from altair.app.ticketing import models
 
-import altair.app.ticketing.bookmark.models
 import altair.app.ticketing.cart.models
 import altair.app.ticketing.payments.plugins.models
 import altair.app.ticketing.checkout.models
@@ -28,7 +27,7 @@ import altair.app.ticketing.sej.notification.models
 import altair.app.ticketing.users.models
 import altair.app.ticketing.lots.models
 import altair.app.ticketing.lots_admin.models
-
+import altair.app.ticketing.checkinstation.models
 target_metadata = models.Base.metadata
 # target_metadata = None
 

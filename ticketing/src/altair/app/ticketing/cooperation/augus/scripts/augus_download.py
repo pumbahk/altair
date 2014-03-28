@@ -8,7 +8,10 @@ import urlparse
 from altair.app.ticketing.core.models import OrganizationSetting
 from altair.augus.transporters import FTPTransporter
 from altair.augus.parsers import AugusParser
-from pyramid.paster import bootstrap
+from pyramid.paster import (
+    bootstrap,
+    setup_logging,
+    )
 from .. import multilock
 logger = logging.getLogger(__name__)
 
@@ -43,6 +46,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('conf', nargs='?', default=None)
     args = parser.parse_args()
+    setup_logging(args.conf)
     env = bootstrap(args.conf)
     settings = env['registry'].settings
 

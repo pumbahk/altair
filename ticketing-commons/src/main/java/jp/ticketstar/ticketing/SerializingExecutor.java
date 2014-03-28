@@ -36,8 +36,9 @@ public class SerializingExecutor implements Executor {
 					logger.finer(LoggingUtils.formatException(e));
 					worker = null;
 				}
-				synchronized (queue) {
-					Thread.currentThread().notifyAll();
+                final Thread currentThread = Thread.currentThread();
+				synchronized (currentThread) {
+					currentThread.notifyAll();
 				}
 			}
 		});
