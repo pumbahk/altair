@@ -51,6 +51,9 @@ namespace QR.presentation.gui.page
         public PageQRCodeInput()
         {
             InitializeComponent();
+            //disable IME!!!!!!!!!!!!
+            InputMethod.Current.ImeState = InputMethodState.Off;
+
             this.DataContext = this.CreateDataContext();
             logger.Info("!initialize page: {0}, context: {1}, event: {2}, case: ".WithMachineName(), this, this.DataContext, (this.DataContext as PageQRCodeInputDataContext).Event, (this.DataContext as PageQRCodeInputDataContext).Case);
         }
