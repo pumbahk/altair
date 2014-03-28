@@ -73,9 +73,13 @@ namespace QR.presentation.gui.page
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
         {
-            var ctx = this.DataContext as InputDataContext;
+            var ctx = this.DataContext as PageQRCodeInputDataContext;
+            logger.Info("PRessed!!".WithMachineName());
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
+                ctx.QRCode = this.QRCodeInput.Text;
+                //QR‚Ìsubmit‚ÉŽ¸”s‚µ‚½Žž‚Ì‚±‚Æ‚ðŒ©‰z‚µ‚Ä‹ó‚É‚µ‚Ä‚¨‚­            
+                this.QRCodeInput.Text= "";
                 var case_ = await ctx.SubmitAsync();
                 ctx.TreatErrorMessage();              
                 if (ctx.Event.Status == InternalEventStaus.success)
@@ -103,7 +107,6 @@ namespace QR.presentation.gui.page
             if (e.Key == Key.Return)
             {
                 this.Dispatcher.InvokeAsync(() => {
-                    (this.DataContext as PageQRCodeInputDataContext).QRCode = this.QRCodeInput.Text;
                     this.OnSubmitWithBoundContext(this, new RoutedEventArgs());
                 });
             }
