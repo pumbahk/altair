@@ -150,23 +150,22 @@ dependency_modules = [
 # 
 
 class entry_lotTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.session = _setup_db(modules=dependency_modules)
-
-
-    @classmethod
-    def tearDownClass(self):
-        _teardown_db()
-
     def setUp(self):
         self.config = testing.setUp()
-        self.session.remove()
+        self.session = _setup_db(modules=dependency_modules)
+        from altair.app.ticketing.core.models import Host, Organization
+        organization = Organization(name='test', short_name='test')
+        host = Host(organization=organization, host_name='example.com:80')
+        self.session.add(organization)
+        self.session.add(host)
+        self.session.flush()
+        self.organization = organization
 
     def tearDown(self):
-        testing.tearDown()
         import transaction
         transaction.abort()
+        _teardown_db()
+        testing.tearDown()
 
     def _callFUT(self, *args, **kwargs):
         from .. import api
@@ -177,23 +176,24 @@ class entry_lotTests(unittest.TestCase):
         from datetime import datetime
         from altair.app.ticketing.core.models import ShippingAddress
         from altair.app.ticketing.core.models import PaymentMethod
-        from altair.app.ticketing.core.models import Organization
-        from altair.app.ticketing.users.models import MemberGroup
+        from altair.app.ticketing.users.models import Membership, MemberGroup
         from ..testing import _add_lot
 
-        request = testing.DummyRequest()
-        login(self.config, {"membergroup": "test"})
+        request = testing.DummyRequest(host='example.com:80')
+        login(self.config, {"membership": "test", "membergroup": "test"})
         
         event = testing.DummyModel(id=1111)
         sales_segment = testing.DummyModel(id=12345)
         lot = _add_lot(self.session, event.id, sales_segment.id, 5, 3)
-        lot.event.organization = Organization(code="test", short_name="test")
+        lot.event.organization = self.organization
         lot_id = lot.id
         payment_delivery_method_pairs = lot.sales_segment.payment_delivery_method_pairs
+        membership = Membership(name="test", organization=self.organization)
         performances = lot.performances
         shipping_address = ShippingAddress()
         self.session.add(shipping_address)
-        self.session.add(MemberGroup(name='test'))
+        self.session.add(membership)
+        self.session.add(MemberGroup(name='test', membership=membership))
         products = _create_products(self.session, [
             {'name': u'商品 A', 'price': 100},
             {'name': u'商品 B', 'price': 100},

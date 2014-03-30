@@ -24,25 +24,35 @@ class SalesSegmentTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def test_query_orders_by_user(self):
-        from altair.app.ticketing.core.models import Order
+        from altair.app.ticketing.core.models import Order, PaymentDeliveryMethodPair
         from altair.app.ticketing.cart.models import Cart
         from altair.app.ticketing.users.models import User
         from datetime import datetime
 
-        target = self._makeOne()
+        pdmp = PaymentDeliveryMethodPair(
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            discount=0,
+            special_fee=0
+            )
+        target = self._makeOne(
+            payment_delivery_method_pairs=[pdmp]
+            )
 
         user = User()
         other = User()
         orders = []
         for i in range(2):
             cart = Cart(
-                user=user,
                 sales_segment=target,
-                total_amount=0,
-                system_fee=0, transaction_fee=0, delivery_fee=0)
+                payment_delivery_pair=pdmp
+                )
             order = Order(user=user, cart=cart,
                           total_amount=0,
                           system_fee=0, transaction_fee=0, delivery_fee=0,
+                          sales_segment=target,
+                          payment_delivery_pair=pdmp,
                           issuing_start_at=datetime(1970, 1, 1),
                           issuing_end_at=datetime(1970, 1, 1),
                           payment_start_at=datetime(1970, 1, 1),
@@ -57,6 +67,7 @@ class SalesSegmentTests(unittest.TestCase):
                 user=other, cart=cart,
                 total_amount=0,
                 system_fee=0, transaction_fee=0, delivery_fee=0,
+                sales_segment=target,
                 issuing_start_at=datetime(1970, 1, 1),
                 issuing_end_at=datetime(1970, 1, 1),
                 payment_start_at=datetime(1970, 1, 1),
@@ -71,6 +82,7 @@ class SalesSegmentTests(unittest.TestCase):
                 user=user, cart=cart, canceled_at=datetime.now(),
                 total_amount=0,
                 system_fee=0, transaction_fee=0, delivery_fee=0,
+                sales_segment=target,
                 issuing_start_at=datetime(1970, 1, 1),
                 issuing_end_at=datetime(1970, 1, 1),
                 payment_start_at=datetime(1970, 1, 1),
@@ -106,6 +118,7 @@ class SalesSegmentTests(unittest.TestCase):
                 shipping_address=shipping_address,
                 total_amount=0,
                 system_fee=0, transaction_fee=0, delivery_fee=0,
+                sales_segment=target,
                 issuing_start_at=datetime(1970, 1, 1),
                 issuing_end_at=datetime(1970, 1, 1),
                 payment_due_at=datetime(1970, 1, 1)
@@ -121,11 +134,13 @@ class SalesSegmentTests(unittest.TestCase):
                 shipping_address=shipping_address,
                 total_amount=0,
                 system_fee=0, transaction_fee=0, delivery_fee=0,
+                sales_segment=target,
                 issuing_start_at=datetime(1970, 1, 1),
                 issuing_end_at=datetime(1970, 1, 1),
                 payment_due_at=datetime(1970, 1, 1)
                 )
             self.session.add(order)
+            self.session.add(shipping_address)
             orders.append(order)
 
         cancels = []
@@ -137,10 +152,12 @@ class SalesSegmentTests(unittest.TestCase):
                 shipping_address=shipping_address,
                 total_amount=0,
                 system_fee=0, transaction_fee=0, delivery_fee=0,
+                sales_segment=target,
                 issuing_start_at=datetime(1970, 1, 1),
                 issuing_end_at=datetime(1970, 1, 1),
                 payment_due_at=datetime(1970, 1, 1)
                 )
+            self.session.add(order)
             cancels.append(order)
 
         others = []
@@ -152,6 +169,7 @@ class SalesSegmentTests(unittest.TestCase):
                 shipping_address=shipping_address,
                 total_amount=0,
                 system_fee=0, transaction_fee=0, delivery_fee=0,
+                sales_segment=target,
                 issuing_start_at=datetime(1970, 1, 1),
                 issuing_end_at=datetime(1970, 1, 1),
                 payment_due_at=datetime(1970, 1, 1)
@@ -159,12 +177,11 @@ class SalesSegmentTests(unittest.TestCase):
             self.session.add(order)
             others.append(order)
 
-
         self.session.add(target)
         self.session.flush()
 
         result = target.query_orders_by_mailaddresses([mail_addr]).all()
-        self.assertEqual(result, orders+cancels)
+        self.assertEqual(result, orders + cancels)
 
         result = target.query_orders_by_mailaddresses([mail_addr_other]).all()
         self.assertEqual(result, others)

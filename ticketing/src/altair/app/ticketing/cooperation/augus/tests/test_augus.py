@@ -3,12 +3,6 @@ from unittest import TestCase
 from mock import Mock
 import csv
 from StringIO import StringIO
-from altair.app.ticketing.core.models import (
-    Seat,
-    AugusVenue,
-    AugusSeat,
-    CooperationTypeEnum,
-    )
 from ..csveditor import (
     _sjis,
     AugusTable,
@@ -24,6 +18,12 @@ from ..utils import (
 
 class SamplePairsFactory(object):
     def create(self):
+        from altair.app.ticketing.core.models import (
+            Seat,
+            AugusVenue,
+            AugusSeat,
+            Venue,
+            )
         venue_id = 1
         seats = [Seat() for ii in range(0xff)]
         augus_venue = AugusVenue()
@@ -89,7 +89,7 @@ class SamplePairsFactory(object):
             augus_seats.append(augus_seat)
             
         pairs = SeatAugusSeatPairs()
-        pairs.get_seats = Mock(return_value=seats)
+        pairs._venue = Venue(seats=seats)
         pairs.get_augus_seats = Mock(return_value=augus_seats)
         return pairs
 
@@ -213,6 +213,7 @@ class AugusTableTest(TestCase):
 
 class AugusVenueImporterTest(TestCase):
     def test_import_(self):
+        from altair.app.ticketing.core.models import CooperationTypeEnum
         factory = SamplePairsFactory()
         pairs = factory.create()
         io = StringIO()        
@@ -231,25 +232,32 @@ class AugusVenueImporterTest(TestCase):
 
 class _FactoryTestBase(object):
     factory_class = None # need override
-    type_class = () # need override
+
+    def _getTargets(self):
+        # need override
+        pass
 
     def _test_create(self):
-        for typ, class_ in self.type_class:
+        for typ, class_ in self._getTargets():
             ins = self.factory_class.create(typ)
             self.assertIsInstance(ins, class_)
 
 class CSVEditorFactoryTest(TestCase, _FactoryTestBase):
     factory_class = CSVEditorFactory
-    type_class = ((CooperationTypeEnum.augus.v[0], AugusCSVEditor),
-                  )
+
+    def _getTargets(self):
+        from altair.app.ticketing.core.models import CooperationTypeEnum
+        return ((CooperationTypeEnum.augus.v[0], AugusCSVEditor),)
 
     def test_create(self):
         self._test_create()
 
 class ImporterFactoryTest(TestCase, _FactoryTestBase):
     factory_class = ImporterFactory
-    type_class = ((CooperationTypeEnum.augus.v[0], AugusVenueImporter),
-                  )
+
+    def _getTargets(self):
+        from altair.app.ticketing.core.models import CooperationTypeEnum
+        return ((CooperationTypeEnum.augus.v[0], AugusVenueImporter),)
 
     def test_create(self):
         self._test_create()

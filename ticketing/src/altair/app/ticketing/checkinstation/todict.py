@@ -3,6 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 from altair.viewhelpers.datetime_ import DefaultDateTimeFormatter, DateTimeHelper #xxx:
 from .signer import Signer
+from altair.app.ticketing.utils import todate
 
 datetime_module = DateTimeHelper(DefaultDateTimeFormatter())
 japanese_datetime = datetime_module.datetime
@@ -84,10 +85,10 @@ class TokenStatusDictBuilder(object):
         performance = order.performance
         pdmp = order.payment_delivery_method_pair
         if pdmp and pdmp.issuing_start_at:
-            return today >= min(pdmp.issuing_start_at, (performance.start_on or performance.open_on).date())
+            return todate(today) >= todate(min(pdmp.issuing_start_at, (performance.start_on or performance.open_on)))
         else:
             logger.info("check printable date: issuing start at is not set. using performance.open_on (order id=%s)", order.id)
-            return today >= (performance.start_on or performance.open_on).date()
+            return todate(today) >= todate(performance.start_on or performance.open_on)
 
     def _is_supported_order(self, order):
         delivery_method = order.payment_delivery_method_pair.delivery_method

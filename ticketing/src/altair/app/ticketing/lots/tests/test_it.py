@@ -206,35 +206,36 @@ class EntryLotViewTests(unittest.TestCase):
         return MultiDict(kwargs)
 
 class ConfirmLotEntryViewTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.config = testing.setUp(settings=testing_settings)
-        cls.config.include('pyramid_layout')
-        cls.config.include('altair.app.ticketing.lots')
-        cls.session = _setup_db(modules=dependency_modules, echo=False)
-
     def _add_datas(self, product_data):
-        from ...users.models import MemberGroup
+        from ...core.models import Organization, Host
+        from ...users.models import Membership, MemberGroup
         from ..testing import _add_lots, login
 
-        membergroup = MemberGroup(name='test-group')
+        organization = Organization(name='test', short_name='test')
+        host = Host(organization=organization, host_name='example.com:80')
+        membership = Membership(name='test-membership', organization=organization)
+        membergroup = MemberGroup(name='test-group', membership=membership)
+        self.session.add(organization)
+        self.session.add(host)
+        self.session.add(membership)
         self.session.add(membergroup)
-        login(self.config, {'membergroup': 'test-group'})
+        login(self.config, {'membership': 'test-membership', 'membergroup': 'test-group'})
         
         lot, products = _add_lots(self.session, product_data, [membergroup])
         return lot, products
 
-    @classmethod
-    def tearDownClass(cls):
-        testing.tearDown()
-        _teardown_db()
-
     def setUp(self):
-        self.session.remove()
+        self.config = testing.setUp(settings=testing_settings)
+        self.config.include('pyramid_layout')
+        self.config.include('altair.app.ticketing.lots')
+        self.session = _setup_db(modules=dependency_modules, echo=False)
 
     def tearDown(self):
         import transaction
+        self.session.remove()
         transaction.abort()
+        testing.tearDown()
+        _teardown_db()
 
     def _getTarget(self):
         from .. import views
@@ -256,6 +257,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         performances = lot.performances
         
         request = DummyRequest(
+            host='example.com:80',
             session={'lots.entry': 
                 {
                     'shipping_address': 
@@ -319,6 +321,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
     def test_post_back(self):
         self.config.add_route('lots.entry.index', '/back/to/form')
         request = DummyRequest(
+            host='example.com:80',
             session={'lots.entry': {'token': 'test-token'}},
             params={'back': 'Back', 
                     'token': 'test-token'},
@@ -333,7 +336,8 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
     def test_post_without_token(self):
         self.config.add_route('lots.entry.index', '/back/to/form')
         request = DummyRequest(
-        )
+            host='example.com:80',
+            )
         request.session['lots.entry'] = {}
         context = testing.DummyResource()
 
@@ -363,6 +367,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
 
         event_id = lot.event_id
         request = DummyRequest(
+            host='example.com:80',
             session={
                 'lots.entry.time': datetime.now(),
                 'lots.entry': 
