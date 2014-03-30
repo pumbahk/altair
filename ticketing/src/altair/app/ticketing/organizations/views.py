@@ -11,11 +11,10 @@ from pyramid.url import route_path
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
-from altair.app.ticketing.core.models import Organization, OrganizationSetting, Host, Event, Account, MailTypeChoices
+from altair.app.ticketing.core.models import Organization, OrganizationSetting, Host, Event, Account, MailTypeChoices, SejTenant
 from altair.app.ticketing.operators.models import Operator, OperatorRole, OperatorAuth
 from altair.app.ticketing.users.models import User
 from altair.app.ticketing.master.models import BankAccount
-from altair.app.ticketing.sej.models import SejTenant
 from altair.app.ticketing.mails.forms import MailInfoTemplate
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.mails.api import get_mail_utility

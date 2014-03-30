@@ -55,10 +55,10 @@ from altair.app.ticketing.models import (
 )
 from standardenum import StandardEnum
 from altair.app.ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
-from altair.app.ticketing.sej.api import get_sej_order
 from altair.app.ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode, todate, todatetime
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.sej import api as sej_api
+from altair.app.ticketing.sej.interfaces import ISejTenant
 from altair.app.ticketing.venues.interfaces import ITentativeVenueSite
 from .utils import ApplicableTicketsProducer
 
@@ -2644,6 +2644,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def sej_order(self):
+        from altair.app.ticketing.sej.api import get_sej_order
         return get_sej_order(self.order_no)
 
     @property
@@ -4141,6 +4142,21 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Setti
         setting = cls.clone(template)
         setting.save() # XXX
         return setting
+
+
+@implementer(ISejTenant)
+class SejTenant(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+    __tablename__           = 'SejTenant'
+    id                      = Column(Identifier, primary_key=True)
+    shop_name               = Column(String(12))
+    shop_id                 = Column(String(12))
+    contact_01              = Column(String(128))
+    contact_02              = Column(String(255))
+    api_key                 = Column(String(255), nullable=True)
+    inticket_api_url        = Column(String(255), nullable=True)
+
+    organization_id         = Column(Identifier)
+
 
 # move to altair.app.ticketing.orders.models
 class ImportStatusEnum(StandardEnum):

@@ -1885,7 +1885,9 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
             'altair.app.ticketing.cart.models'
             ])
         self.request = testing.DummyRequest()
-        testing.setUp(request=self.request, settings={ 'sej.api_key': 'XXXXX', 'sej.inticket_api_url': 'http://example.com/' })
+        self.config = testing.setUp(request=self.request, settings={ 'sej.api_key': 'XXXXX', 'sej.inticket_api_url': 'http://example.com/' })
+        self.config.include('altair.app.ticketing.sej')
+        self.config.include('altair.app.ticketing.sej.userside_impl')
         CoreTestMixin.setUp(self)
         self._setup_fixture()
         self.performance.start_on = datetime(2012, 4, 1, 0, 0, 0)
@@ -1927,7 +1929,8 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
 
     def _setup_fixture(self):
         from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment
-        from altair.app.ticketing.sej.models import SejPaymentType, SejTenant
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from altair.app.ticketing.core.models import SejTenant
         self.session.add(SejTenant(organization_id=1L))
         self.stock_types = self._create_stock_types(1)
         self.stock_types[0].quantity_only = False

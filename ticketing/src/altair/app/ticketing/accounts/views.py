@@ -12,7 +12,6 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Account, Event
-from altair.app.ticketing.sej.models import SejTenant
 from .forms import AccountForm
 from altair.app.ticketing.organizations.forms import OrganizationForm
 
@@ -54,7 +53,6 @@ class Accounts(BaseView):
             'account':account,
             'owner_events':Event.get_owner_event(account),
             'client_events':Event.get_client_event(account),
-            'sej_tenants':SejTenant.filter_by(organization_id=account.user.organization.id).all()
         }
 
     @view_config(route_name='accounts.new', request_method='GET', renderer='altair.app.ticketing:templates/accounts/_form.html', xhr=True)
