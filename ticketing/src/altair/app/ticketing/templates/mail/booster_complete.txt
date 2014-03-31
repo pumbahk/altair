@@ -40,9 +40,9 @@ ${get("pdate").label}: ${get("pdate").body}(予定)
 ${get("venue").label}: ${get("venue").body}
 %endif
 
-%if get("member_type").status:
-■${get("member_type").label}
-${get("member_type").body}
+%if get("cont").status:
+■${get("cont").label}
+${get("cont").body}
 %endif
 
 %if get("for_seat").status:

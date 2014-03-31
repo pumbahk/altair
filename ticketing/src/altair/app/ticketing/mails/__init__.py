@@ -25,7 +25,7 @@ def install_mail_utility(config):
                                   ".complete", PurchaseCompleteMail, "altair.app.ticketing:templates/mail/complete.txt")
     from altair.app.ticketing.mails.booster_complete import BoosterPurchaseCompleteMail
     config.add_order_mail_utility(MailTypeEnum.BoosterPurchaseCompleteMail,
-                                  ".complete", PurchaseCompleteMail, "altair.app.ticketing:templates/mail/booster_complete.txt")
+                                  ".complete", BoosterPurchaseCompleteMail, "altair.app.ticketing:templates/mail/booster_complete.txt")
     from altair.app.ticketing.mails.order_cancel import CancelMail
     config.add_order_mail_utility(MailTypeEnum.PurchaseCancelMail, 
                                   ".order_cancel", CancelMail, "altair.app.ticketing:templates/mail/order_cancel.txt")

@@ -20,10 +20,26 @@ SubjectInfo = namedtuple("SubjectInfo", "name label getval")
 class BoosterOrderCompleteInfoDefault(OrderInfoDefault):
     template_body = SubjectInfoWithValue(name="template_body",  label=u"テンプレート", value="", getval=(lambda order : ""))
 
-    def get_member_type(order):
-        return u"\n".join(u"テスト")
+    def get_cont(order):
+        cont = ""
+        old_id_number = ""
+        for product in order.ordered_products:
+            for item in product.ordered_product_items:
+                if "cont" in item._attributes:
+                    if item._attributes['cont'].value == "yes":
+                        cont = u"継続会員様"
+                    else:
+                        cont = u"新規会員様"
+                if "old_id_number" in item._attributes:
+                    if item._attributes['old_id_number'].value:
+                        old_id_number = u"昨年度会員番号" + item._attributes['old_id_number'].value
 
-    member_type = SubjectInfo(name=u"member_type", label=u"新規／継続", getval=get_member_type)
+        ret = cont
+        if old_id_number:
+            ret = cont + u"\n(" + old_id_number + ")"
+        return ret
+
+    cont = SubjectInfo(name=u"cont", label=u"新規／継続", getval=get_cont)
 
     @classmethod
     def validate(cls, form, request, mutil):
@@ -54,11 +70,7 @@ class BoosterOrderCompleteInfoDefault(OrderInfoDefault):
 class BoosterSubjectInfoRenderer(SubjectInfoRenderer):
 
     def get(self, k):
-
-        if k == 'member_type':
-            return self._get(k)
-        else:
-            return super(BoosterSubjectInfoRenderer, self).get(k)
+        return super(BoosterSubjectInfoRenderer, self).get(k)
 
 def get_mailtype_description():
     return u"購入完了メール"
