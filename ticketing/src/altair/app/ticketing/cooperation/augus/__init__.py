@@ -23,6 +23,8 @@ ROUTE_URL_RESOURCE = {
                                  AugusVenueResource),
     'augus.augus_venue.complete': ('/augus_venues/{augus_venue_code}/version/{augus_venue_version}/complete',
                                  AugusVenueResource),
+    'augus.augus_venue.complete_download': ('/augus_venues/{augus_venue_code}/version/{augus_venue_version}/complete_download',
+                                            AugusVenueResource),
 
     # event
     'augus.event.show': ('/events/{event_id}', PerformanceResource),
