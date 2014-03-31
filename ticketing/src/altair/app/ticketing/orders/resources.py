@@ -147,7 +147,7 @@ class SingleOrderResource(TicketingAdminResource):
         for ticket_format in self.available_ticket_formats:
             if self.order.payment_delivery_method_pair.delivery_method in ticket_format.delivery_methods:
               return ticket_format
-        return self.available_ticket_formats[0]
+        return self.available_ticket_formats[0] if self.available_ticket_formats else None
 
 class MultipleOrdersResource(TicketingAdminResource):
     @property
@@ -202,7 +202,8 @@ class OrderResource(SingleOrderResource):
             .filter(ProductItem.id==OrderedProductItem.product_item_id)\
             .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
             .filter(OrderedProduct.order_id == self.order.id)\
-            .distinct(TicketFormat.id)
+            .distinct(TicketFormat.id) \
+            .all()
 
 
 class OrderPrintByTokenActionProvider(object):
@@ -267,7 +268,8 @@ class SingleOrderEnqueueingResource(OrderResource):
             .filter(ProductItem.id==OrderedProductItem.product_item_id)\
             .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
             .filter(OrderedProduct.order_id == self.order_id)\
-            .distinct(TicketFormat.id)
+            .distinct(TicketFormat.id) \
+            .all()
 
 
 class OrdersEnqueueingResource(CheckedOrderResource):
@@ -285,7 +287,8 @@ class OrdersEnqueueingResource(CheckedOrderResource):
             .filter(ProductItem.id==OrderedProductItem.product_item_id)\
             .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
             .filter(OrderedProduct.order_id.in_(self.order_ids))\
-            .distinct(TicketFormat.id)
+            .distinct(TicketFormat.id) \
+            .all()
 
 
 class OrderedProductItemPreviewResource(SingleOrderResource):
@@ -320,7 +323,8 @@ class OrderedProductItemPreviewResource(SingleOrderResource):
                     Ticket.ticket_format_id==TicketFormat.id, 
                     TicketFormat_DeliveryMethod.delivery_method_id==delivery_method_id, 
                     TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id)\
-            .distinct(TicketFormat.id)
+            .distinct(TicketFormat.id) \
+            .all()
 
 class CoverPreviewResource(OrderResource):
     def __init__(self, request):
