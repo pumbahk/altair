@@ -1,9 +1,9 @@
 SET @organization_id=28;
 
-INSERT INTO `Event` VALUES (NULL,'RDJ1212','下限・上限数テスト','下限・上限数テスト',35,@organization_id,'2013-12-11 11:04:52','2013-12-11 11:04:52',NULL,NULL);
+INSERT INTO `Event` VALUES (NULL,'RT01212','下限・上限数テスト','下限・上限数テスト',35,@organization_id,'2013-12-11 11:04:52','2013-12-11 11:04:52',NULL,NULL);
 SET @event_id=LAST_INSERT_ID();
 
-INSERT INTO `Performance` VALUES (NULL,'下限・上限数テスト (1)','RDJ12121231Z',NULL,'2014-12-31 00:00:00',NULL,@event_id,'2013-12-11 11:41:44','2013-12-12 02:17:11',NULL,1,NULL,NULL,1,NULL,NULL,NULL);
+INSERT INTO `Performance` VALUES (NULL,'下限・上限数テスト (1)','RT012121231Z',NULL,'2014-12-31 00:00:00',NULL,@event_id,'2013-12-11 11:41:44','2013-12-12 02:17:11',NULL,1,NULL,NULL,1,NULL,NULL,NULL);
 SET @performance_id=LAST_INSERT_ID();
 
 INSERT INTO `SalesSegmentGroup` VALUES (NULL,'一般発売 (1)','normal','2013-11-01 00:00:00','2014-11-01 00:00:00',100,1,@event_id,'2013-12-11 11:39:42','2013-12-11 12:29:29',NULL,1,0.00,0.00,0.00,0.00,35,0,1,'',@organization_id,NULL,NULL,NULL,NULL,NULL);
