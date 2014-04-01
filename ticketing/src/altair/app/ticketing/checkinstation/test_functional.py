@@ -496,6 +496,24 @@ class CheckinStationAPITests(BaseTests):
             self.assertTrue(TicketPrintHistory.query.count() > prev)
             self.assertEquals(result, {'now': '2000-01-01 00:00:00'})
 
+    @mock.patch("altair.app.ticketing.checkinstation.views.get_now")
+    def test_refresh_order(self, m):
+        m.return_value = datetime(2000, 1, 1)
+        def _getTarget():
+            from .refresh.views import refresh_order_with_signed
+            return refresh_order_with_signed
+
+        qrsigned = qrsigned_from_token(self.token)
+        result = do_view(
+            _getTarget(),
+            request=DummyRequest(json_body={"qrsigned": qrsigned}))
+
+        self.assertEqual(result["order_no"], self.order.order_no)
+
+        from altair.app.ticketing.core.models import OrderedProductItemToken
+        for token in OrderedProductItemToken.query.all():
+            self.assertNotEqual(token.refreshed_at, None)
+
 
 # class CheckinStationEndpointAPIWithSeat(BaseTests):
 #     TOKEN_ID = 19999
