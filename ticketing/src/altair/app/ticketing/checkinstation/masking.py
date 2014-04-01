@@ -6,7 +6,7 @@ from altair.app.ticketing.core.models import OrderedProductItemToken
 from .models import CheckinTokenReservation
 
 class TokenReservationFilter(object):
-    expire_interval = timedelta(seconds=5*60) #期限のdefault
+    expire_interval = timedelta(seconds=30) #期限のdefault
     def __init__(self, request, identity, token_list):
         self.request = request
         self.identity = identity
