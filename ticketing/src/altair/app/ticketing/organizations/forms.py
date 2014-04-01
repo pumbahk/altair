@@ -48,7 +48,7 @@ class OrganizationForm(OurForm):
         coerce=int,
     )
     contact_email = OurTextField(
-        label = u'問い合わせメールアドレス',
+        label = u'問い合わせメールアドレス (TSから見た)',
         validators=[
             Required(),
             Email(),
@@ -263,6 +263,9 @@ class OrganizationSettingForm(OurForm):
         )
     bcc_recipient = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.bcc_recipient)['label']
+        )
+    default_mail_sender = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.default_mail_sender)['label']
         )
     entrust_separate_seats = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.entrust_separate_seats)['label']

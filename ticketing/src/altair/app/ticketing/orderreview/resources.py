@@ -16,7 +16,6 @@ from altair.app.ticketing.payments.plugins import (
     SEJ_PAYMENT_PLUGIN_ID, 
     SEJ_DELIVERY_PLUGIN_ID,
     )
-from ..core import api as c_api
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +71,7 @@ class OrderReviewResource(object):
         return order, sej_order
 
     def get_membership(self):
-        org = c_api.get_organization(self.request)
+        org = core_api.get_organization(self.request)
         membership = Membership.query.filter(Membership.organization_id==org.id).first()
         return membership
 

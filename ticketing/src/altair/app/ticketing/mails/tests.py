@@ -160,6 +160,49 @@ class CreateMailFromFakeOrderTests(unittest.TestCase):
         mutil.build_message(request, subject).body
 
 
+class GetDefaultContactReferenceTest(unittest.TestCase):
+    def _getTarget(self):
+        from .api import get_default_contact_reference
+        return get_default_contact_reference
+
+    def _callFUT(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def setUp(self):
+        self.request = testing.DummyRequest()
+        self.config = testing.setUp(request=self.request)
+        self.config.include('altair.mobile')
+
+    def test_http(self):
+        organization = testing.DummyModel(
+            setting=testing.DummyModel(
+                contact_pc_url='http://example.com/pc',
+                contact_mobile_url='http://example.com/mobile',
+                default_mail_sender='sender@example.com'
+                )
+            )
+
+        result = self._callFUT(self.request, organization, 'pc@example.com')
+        self.assertEqual('http://example.com/pc', result)
+
+        result = self._callFUT(self.request, organization, 'mobile@docomo.ne.jp')
+        self.assertEqual('http://example.com/mobile', result)
+
+    def test_mail(self):
+        organization = testing.DummyModel(
+            setting=testing.DummyModel(
+                contact_pc_url='mailto:pc@example.com',
+                contact_mobile_url='mailto:mobile@example.com',
+                default_mail_sender='sender@example.com'
+                )
+            )
+
+        result = self._callFUT(self.request, organization, 'pc@example.com')
+        self.assertEqual('<pc@example.com>', result)
+
+        result = self._callFUT(self.request, organization, 'mobile@docomo.ne.jp')
+        self.assertEqual('<mobile@example.com>', result)
+
 if __name__ == "__main__":
     # setUpModule()
     unittest.main()
