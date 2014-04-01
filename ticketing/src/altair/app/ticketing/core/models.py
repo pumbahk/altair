@@ -3611,8 +3611,9 @@ class MailTypeEnum(StandardEnum):
     LotsElectedMail = 12
     LotsRejectedMail = 13
     PointGrantingFailureMail = 21
+    BoosterPurchaseCompleteMail = 31
 
-MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール", u"抽選申し込み完了メール", u"抽選当選通知メール", u"抽選落選通知メール", u"ポイント付与失敗通知メール")
+MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール", u"抽選申し込み完了メール", u"抽選当選通知メール", u"抽選落選通知メール", u"ポイント付与失敗通知メール", u"購入完了メール")
 assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
 MailTypeChoices = [(str(e) , label) for e, label in zip([enum.v for enum in sorted(iter(MailTypeEnum), key=lambda e: e.v)], MailTypeLabels)]
 MailTypeEnum.dict = dict(MailTypeChoices)
@@ -4175,13 +4176,11 @@ class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 return e.v[1]
         return u''
 
-# move to altair.app.ticketing.orion.cooperation.augus.models
 class CooperationTypeEnum(StandardEnum):
     augus = (1, u'オーガス')
     #gettie = (2, u'Gettie')
 
 
-# move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusVenue'
 
@@ -4192,8 +4191,10 @@ class AugusVenue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                               _a_label=(u'会場バージョン'))
     venue_id = Column(Identifier, ForeignKey('Venue.id'), nullable=False)
     venue = relationship('Venue')
+    reserved_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'会場連携通知予約日時'))
+    notified_at = AnnotatedColumn(TIMESTAMP(), nullable=True, _a_label=(u'会場連携通知日時'))
 
-# move to altair.app.ticketing.orion.cooperation.augus.models
+
 class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusSeat'
     __table_args__= (
@@ -4238,7 +4239,6 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                           self.num
                                       ]))
 
-# move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusPerformance'
     id = Column(Identifier, primary_key=True)
@@ -4272,7 +4272,6 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         except NoResultFound as err:
             return None
 
-# move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusTicket'
     id = Column(Identifier, primary_key=True)
@@ -4321,7 +4320,6 @@ class AugusStockDetail(Base, BaseModel):
     distributed_at = Column(DateTime, nullable=True)
 
 
-# move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusStockInfo'
     id = Column(Identifier, primary_key=True)
@@ -4380,7 +4378,6 @@ class AugusPutbackType:
     ROUTE = u'R' # 途中
     FINAL = u'F' # 最終
 
-# move to altair.app.ticketing.orion.cooperation.augus.models
 class AugusPutback(Base, BaseModel): #, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusPutback'
     id = Column(Identifier, primary_key=True)
@@ -4395,7 +4392,7 @@ class AugusPutback(Base, BaseModel): #, WithTimestamp, LogicallyDeleted):
     def __len__(self):
         return len(self.augus_stock_details)
 
-# move to altair.app.ticketing.orion.models
+
 class AugusSeatStatus(object):
     RESERVE = 0
     SOLD = 1
@@ -4420,7 +4417,7 @@ class AugusSeatStatus(object):
         else:
             return cls.OTHER
 
-# move to altair.app.ticketing.orion.models
+
 class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrionPerformance'
 

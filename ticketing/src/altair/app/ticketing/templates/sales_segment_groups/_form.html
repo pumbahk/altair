@@ -11,7 +11,7 @@
   ${ch.form_item(form.end_at)}
   ${ch.form_item(form.end_day_prior_to_performance)}
   ${ch.form_item(form.end_time)}
-  ${ch.form_item(form.account_id)}
+  ${ch.form_item(form.account_id, style='width:710px')}
   ${ch.form_item(form.margin_ratio)}
   ${ch.form_item(form.refund_ratio)}
   ${ch.form_item(form.printing_fee)}
@@ -36,7 +36,11 @@
     </span>
   </div>
   <p>※セブン-イレブン発券では発券日を指定した場合「前払い後日発券」になります。</p>
+
+  <script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
   <script type="text/javascript">
+    $("#account_id").chosen();
     (function(form) {
       form.find("input[type='checkbox']").change(function() {
         if ($(this).attr('checked')) {
