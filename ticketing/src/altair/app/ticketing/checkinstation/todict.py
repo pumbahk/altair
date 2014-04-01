@@ -124,6 +124,7 @@ def ticket_data_collection_dict_from_tokens(tokens, mask_predicate=None):
         D = {
             "refreshed_at": unicode(token.refreshed_at) if token.refreshed_at else None, 
             "printed_at": unicode(token.printed_at) if token.is_printed() else None, 
+            "locked_at": "", 
             "ordered_product_item_token_id": unicode(token.id), 
             "seat": {
                 "id": unicode(seat.id) if seat else None,
@@ -134,6 +135,7 @@ def ticket_data_collection_dict_from_tokens(tokens, mask_predicate=None):
             }}
         if mask_predicate and mask_predicate.is_masked(token.id):
             D["printed_at"] = u"(他端末で発券中)"
+            D["locked_at"] = japanese_datetime(mask_predicate.get_masked_expired_at_string(token.id))
         collection.append(D)
     return {"collection": collection}
 
