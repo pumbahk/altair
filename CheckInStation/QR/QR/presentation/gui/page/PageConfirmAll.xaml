@@ -125,8 +125,7 @@
                                                 <ControlTemplate TargetType="{x:Type ListBoxItem}">
                                                     <ContentPresenter
                             							Content="{TemplateBinding Content}"
-                            							ContentTemplate="{TemplateBinding ContentTemplate}"
-                                />
+                            							ContentTemplate="{TemplateBinding ContentTemplate}"/>
                                                 </ControlTemplate>
                                             </Setter.Value>
                                         </Setter>
