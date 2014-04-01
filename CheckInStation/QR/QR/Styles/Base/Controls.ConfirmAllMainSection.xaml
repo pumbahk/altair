@@ -72,6 +72,10 @@
                         <Setter Property="Background" Value="{StaticResource StatusBoxDisabled}"/>
                         <Setter Property="BorderBrush" Value="{StaticResource StatusBoxDisabled}"/>
                     </DataTrigger>
+                    <DataTrigger Binding="{Binding IsLocked,Mode=OneTime, Converter={StaticResource NotEmptyStringConverter}}" Value="True">
+                        <Setter Property="Background" Value="{StaticResource StatusBoxLocked}"/>
+                        <Setter Property="BorderBrush" Value="{StaticResource StatusBoxLocked}"/>
+                    </DataTrigger>
                 </Style.Triggers>
                 <Setter Property="Background" Value="{StaticResource StatusBoxSelected}"/>
                 <Setter Property="BorderBrush" Value="{StaticResource StatusBoxSelected}"/>
@@ -83,6 +87,9 @@
                     </DataTrigger>
                     <DataTrigger Binding="{Binding IsSelected, Mode=OneTime}" Value="False">
                         <Setter Property="Text" Value="発券済み"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsLocked,Mode=OneTime, Converter={StaticResource NotEmptyStringConverter}}" Value="True">
+                        <Setter Property="Text" Value="他発券中"/>
                     </DataTrigger>
                 </Style.Triggers>
                 <Setter Property="VerticalAlignment" Value="Center"/>

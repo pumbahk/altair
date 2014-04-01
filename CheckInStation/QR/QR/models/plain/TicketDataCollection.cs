@@ -14,6 +14,8 @@ namespace QR
         [DataMember]
         internal string printed_at;
         [DataMember]
+        internal string locked_at;
+        [DataMember]
         internal string refreshed_at;
         [DataMember]
         internal _SeatData seat;
@@ -32,6 +34,7 @@ namespace QR
             this.ordered_product_item_token_id = json.ordered_product_item_token_id;
             this.printed_at = json.printed_at;
             this.refreshed_at = json.refreshed_at;
+            this.locked_at = json.locked_at;
             this.seat = new _SeatData (json.seat);
             this.product = new _ProductData(json.product);
             this.is_selected = (this.printed_at == null ? true : false);
