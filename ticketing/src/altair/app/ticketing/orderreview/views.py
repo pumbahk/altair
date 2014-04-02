@@ -368,9 +368,15 @@ def order_review_qr_image(context, request):
             logger.error(e.message, exc_info=1)
             ## この例外は違う...
             raise HTTPNotFound()
-        
-        qr = build_qr_by_orion(request, ticket, response['serial'])
-        return qrdata_as_image_response(qr)
+        if response['result'] == u"OK" and response.has_key('serial'):
+            qr = build_qr_by_orion(request, ticket, response['serial'])
+            return qrdata_as_image_response(qr)
+
+        ## エラーメッセージ
+        if response.has_key('message'):
+            raise Exception(response['message'])
+        raise Exception()
+
     else:
         if ticket == None or ticket.sign != sign:
             raise HTTPNotFound()
@@ -404,8 +410,14 @@ def order_review_qr_print(context, request):
             logger.error(e.message, exc_info=1)
             ## この例外は違う...
             raise HTTPNotFound()
+
+        if response['result'] == u"OK" and response.has_key('serial'):
+            qr = build_qr_by_orion(request, ticket, response['serial'])
+        else:
+            if response.has_key('message'):
+                raise Exception(response['message'])
+            raise Exception()
         
-        qr = build_qr_by_orion(request, ticket, response['serial'])
         return dict(
             sign = qr.sign,
             order = ticket.order,
