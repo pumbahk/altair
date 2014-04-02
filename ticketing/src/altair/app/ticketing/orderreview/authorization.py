@@ -19,7 +19,7 @@ class InvalidMemberGroupException(Exception):
 class MypageAuthorizationPolicy(object):
 
     def permits(self, context, principals, permission):
-        return "rakuten_auth" in principals
+        return "auth_type:rakuten" in principals
 
     def principals_allowed_by_permission(self, context, permission):
         raise NotImplementedError

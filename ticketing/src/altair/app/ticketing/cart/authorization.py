@@ -32,7 +32,7 @@ class MembershipAuthorizationPolicy(object):
 
         if permission == "view":
             # 楽天認証
-            return "rakuten_auth" in principals
+            return "auth_type:rakuten" in principals
 
         if permission == "buy":
             logger.debug('authorize for buy %s' % (principals,))
