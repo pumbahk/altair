@@ -355,6 +355,10 @@ class AugusVenueView(_AugusBaseView):
                 raise ValueError(repr(record))
 
             if count == 1:# 通常処理
+                if ex_venue.name != external_venue_code_name_version_list[0][1]:
+                    ex_venue.name = external_venue_code_name_version_list[0][1]
+                ex_venue.reserved_at = None
+
                 logger.info('AUGUS VENUE: creating augus seat target dict')
                 seat_id__seat = dict([(seat.id, seat) for seat in venue.seats if seat.id in seat_ids])
 
@@ -392,6 +396,10 @@ class AugusVenueView(_AugusBaseView):
                     # link
                     ex_seat.seat_id = seat.id
                     updates.add(ex_seat)
+            elif count == 0:
+                raise HTTPBadRequest(body=json.dumps({
+                    'message':u'レコードがありません',
+                }))
             else:
                 raise HTTPBadRequest(body=json.dumps({
                     'message':u'複数の会場コードは受け付けられません: {}'.format(repr(external_venue_code_name_version_list)),
@@ -400,6 +408,7 @@ class AugusVenueView(_AugusBaseView):
             logger.info('AUGUS VENUE: saving augus seats')
             for ex_seat in updates:
                 ex_seat.save()
+            ex_venue.save()
             logger.info('AUGUS VENUE: finished update augus seats')
             url = self.request.route_path('augus.augus_venue.show',
                                           augus_venue_code=ex_venue.code,
