@@ -100,7 +100,11 @@ class qr:
                 if 96*96 <= i < 96*96+256:
                     buf.append(pack('B', i - 96*96))
                 else:
-                    buf.append(pack('!H', (i/96+160)*256 + i%96+160).decode("eucjp"))
+                    try:
+                        c = pack('!H', (i/96+160)*256 + i%96+160).decode("eucjp")
+                    except UnicodeDecodeError, e:
+                        c = u"〓"
+                    buf.append(c)
                 s = s[3:]
         return "".join(buf)
     
