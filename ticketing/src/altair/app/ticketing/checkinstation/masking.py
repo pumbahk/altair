@@ -50,7 +50,14 @@ class TokenMaskPredicate(object):
 
     @reify
     def masked_token_dict(self):
-        return {unicode(r.token_id):1 for r in self.masked_reservations}
+        return {unicode(r.token_id):r for r in self.masked_reservations}
 
     def is_masked(self, token_id):
         return unicode(token_id) in self.masked_token_dict
+
+    def get_masked_expired_at_string(self, token_id):
+        try:
+            r = self.masked_token_dict[unicode(token_id)]
+            return r.expire_at
+        except KeyError:
+            return ""

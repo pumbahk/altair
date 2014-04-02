@@ -27,6 +27,8 @@ def includeme(config):
     config.add_endpoint_route("qr.update.printed_at", "/qr/printed/update")
     config.add_endpoint_route("orderno.verified_data", "/orderno/verified_data")
 
+    config.include(".refresh")
+
     ## extra url
     config.add_endpoint_extra("image_from_svg", "http://localhost:8000") ##impl xxx
     config.add_tween(".tweens.client_certified_tween")
