@@ -3,6 +3,7 @@ import logging
 import sqlahelper
 import json
 from pyramid.view import view_config
+from pyramid.response import Response
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
 from altair.app.ticketing.qr.image import qrdata_as_image_response
@@ -364,13 +365,19 @@ def order_review_qr_image(context, request):
             res_text = api.send_to_orion(request, context, None, ticket.item_token)
             print "response = %s" % res_text
             response = json.loads(res_text)
+            if response['result'] == u"OK" and response.has_key('serial'):
+                qr = build_qr_by_orion(request, ticket, response['serial'])
+                return qrdata_as_image_response(qr)
+
+            ## エラーメッセージ
+            if response.has_key('message'):
+                r = Response(status=500, content_type="text/html; charset=UTF-8")
+                r.text = response['message']
+                return r
         except Exception, e:
             logger.error(e.message, exc_info=1)
-            ## この例外は違う...
-            raise HTTPNotFound()
-        
-        qr = build_qr_by_orion(request, ticket, response['serial'])
-        return qrdata_as_image_response(qr)
+            raise e
+
     else:
         if ticket == None or ticket.sign != sign:
             raise HTTPNotFound()
@@ -404,8 +411,21 @@ def order_review_qr_print(context, request):
             logger.error(e.message, exc_info=1)
             ## この例外は違う...
             raise HTTPNotFound()
+
+        if response['result'] == u"OK" and response.has_key('serial'):
+            qr = build_qr_by_orion(request, ticket, response['serial'])
+        else:
+            if response.has_key('message'):
+                #return dict(
+                #    event = ticket.order.performance.event,
+                #    performance = ticket.order.performance,
+                #    message = response['message']
+                #)
+                r = Response(status=500, content_type="text/html; charset=UTF-8")
+                r.text = response['message']
+                return r
+            raise Exception()
         
-        qr = build_qr_by_orion(request, ticket, response['serial'])
         return dict(
             sign = qr.sign,
             order = ticket.order,
