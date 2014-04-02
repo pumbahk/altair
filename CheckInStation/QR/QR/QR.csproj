@@ -153,6 +153,7 @@
     <Compile Include="models\IModelValidation.cs" />
     <Compile Include="models\ModelValidation.cs" />
     <Compile Include="models\plain\LoginUser.cs" />
+    <Compile Include="models\TicketRefreshedAtUpdater.cs" />
     <Compile Include="presentation\gui\BindingErrorDialogAction.cs" />
     <Compile Include="presentation\gui\CandidateCreator.cs" />
     <Compile Include="presentation\gui\command\AppCloseCommand.cs" />
@@ -187,6 +188,9 @@
     </Compile>
     <Compile Include="presentation\gui\page\PageHomeMenu.xaml.cs">
       <DependentUpon>PageHomeMenu.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageQRRefresh.xaml.cs">
+      <DependentUpon>PageQRRefresh.xaml</DependentUpon>
     </Compile>
     <Compile Include="presentation\gui\ProgressSingletonAction.cs" />
     <Compile Include="presentation\gui\PageNavigator.cs" />
@@ -449,6 +453,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="presentation\gui\page\PageFailure.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageQRRefresh.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
