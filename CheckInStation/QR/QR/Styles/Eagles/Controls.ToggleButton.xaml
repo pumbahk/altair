@@ -11,7 +11,12 @@
         <GradientStop Color="#ffdddd" Offset="0" />
         <GradientStop Color="#ffbbbb" Offset="1" />
     </LinearGradientBrush>
-    
+
+    <LinearGradientBrush x:Key="StatusBoxLocked" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Color="#ed8e00" Offset="0" />
+        <GradientStop Color="#e9a031" Offset="1" />
+    </LinearGradientBrush>
+
     <SolidColorBrush x:Key="StatusBoxDisabled" Color="#cccccc"/>
 
 

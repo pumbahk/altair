@@ -30,6 +30,7 @@
             "ordered_product_item_token_id": "-3", 
             "printed_at": "2012年12月12日",
             "refreshed_at": null,
+            "locked_at": "2012/11/12",
             "product": {
                 "name": "ダミー席"
             },
@@ -42,6 +43,7 @@
             "ordered_product_item_token_id": "-4", 
             "printed_at": "2012年12月12日",
             "refreshed_at": null,
+            "locked_at": "2012/11/12",
             "product": {
                 "name": "ダミー席"
             },
