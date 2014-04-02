@@ -4,6 +4,10 @@ import os
 import datetime
 import argparse
 import transaction
+from sqlalchemy import (
+    and_,
+    or_,
+    )
 from pyramid.paster import (
     bootstrap,
     setup_logging,
@@ -31,9 +35,14 @@ def export_venue_sync_response_all(settings):
 
     mkdir_p(ko_staging)
 
-    augus_venues = AugusVenue.query.filter(AugusVenue.reserved_at!=None)\
-                                   .filter(AugusVenue.notified_at==None)\
-                                   .all()
+    augus_venues = AugusVenue\
+        .query\
+        .filter(AugusVenue.reserved_at!=None)\
+        .filter(or_(AugusVenue.notified_at==None,
+                    and_(AugusVenue.notified_at!=None,
+                         AugusVenue.reserved_at>AugusVenue.notified_at)))\
+        .all()
+
 
     now = datetime.datetime.now()
     for augus_venue in augus_venues:
