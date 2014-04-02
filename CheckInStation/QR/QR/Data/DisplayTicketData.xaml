@@ -23,7 +23,9 @@
             <l:DisplayTicketData>
                 <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt/>
-                <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
+                <l:DisplayTicketData.LockedAt>2014/3/3 20:20:00</l:DisplayTicketData.LockedAt>
+            </l:DisplayTicketData>
+            <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
                 <l:DisplayTicketData.SeatName>内野指定席1塁A/大人席</l:DisplayTicketData.SeatName>
                 <l:DisplayTicketData.ProductName>R2 B 1列 51番</l:DisplayTicketData.ProductName>
@@ -31,6 +33,7 @@
             <l:DisplayTicketData>
                 <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt/>
+                <l:DisplayTicketData.LockedAt/>
                 <l:DisplayTicketData.IsSelected>false</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
                 <l:DisplayTicketData.SeatName>A席(2)</l:DisplayTicketData.SeatName>
@@ -39,6 +42,7 @@
             <l:DisplayTicketData>
                 <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt/>
+                <l:DisplayTicketData.LockedAt/>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
                 <l:DisplayTicketData.SeatName>A席(3)</l:DisplayTicketData.SeatName>
@@ -47,6 +51,7 @@
             <l:DisplayTicketData>
                 <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.LockedAt/>
                 <l:DisplayTicketData.IsSelected>false</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
                 <l:DisplayTicketData.SeatName>A席(4)</l:DisplayTicketData.SeatName>
@@ -55,6 +60,7 @@
             <l:DisplayTicketData>
                 <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.LockedAt/>
                 <l:DisplayTicketData.IsSelected>false</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
                 <l:DisplayTicketData.SeatName>A席(5)</l:DisplayTicketData.SeatName>
@@ -63,6 +69,7 @@
             <l:DisplayTicketData>
                 <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.LockedAt/>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
                 <l:DisplayTicketData.SeatName>A席(6)</l:DisplayTicketData.SeatName>
@@ -71,6 +78,7 @@
             <l:DisplayTicketData>
                 <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.LockedAt/>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
                 <l:DisplayTicketData.SeatName>A席(7)</l:DisplayTicketData.SeatName>
@@ -79,6 +87,7 @@
             <l:DisplayTicketData>
                 <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.LockedAt/>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
                 <l:DisplayTicketData.SeatName>A席(8)</l:DisplayTicketData.SeatName>
@@ -87,6 +96,7 @@
             <l:DisplayTicketData>
                 <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.LockedAt/>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
                 <l:DisplayTicketData.SeatName>A席(9)</l:DisplayTicketData.SeatName>
@@ -95,6 +105,7 @@
             <l:DisplayTicketData>
                 <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.LockedAt/>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
                 <l:DisplayTicketData.SeatName>A席(10)</l:DisplayTicketData.SeatName>
@@ -103,6 +114,7 @@
             <l:DisplayTicketData>
                 <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.LockedAt/>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
                 <l:DisplayTicketData.SeatName>A席(11)</l:DisplayTicketData.SeatName>
@@ -111,6 +123,7 @@
             <l:DisplayTicketData>
                 <l:DisplayTicketData.Today>2014 3/3</l:DisplayTicketData.Today>
                 <l:DisplayTicketData.PrintedAt>2014年2月２日</l:DisplayTicketData.PrintedAt>
+                <l:DisplayTicketData.LockedAt/>
                 <l:DisplayTicketData.IsSelected>true</l:DisplayTicketData.IsSelected>
                 <l:DisplayTicketData.TokenId>1</l:DisplayTicketData.TokenId>
                 <l:DisplayTicketData.SeatName>A席(12)</l:DisplayTicketData.SeatName>

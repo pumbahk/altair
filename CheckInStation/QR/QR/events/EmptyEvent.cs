@@ -7,7 +7,7 @@ namespace QR
     {
         public override string GetMessageFormat ()
         {
-            return "empty: message: {0}";
+            return "{0}";
         }
 
         public EmptyEvent () : base ()

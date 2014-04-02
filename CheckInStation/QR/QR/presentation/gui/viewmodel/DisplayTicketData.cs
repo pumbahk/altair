@@ -24,6 +24,7 @@ namespace QR.presentation.gui.viewmodel
             this.ProductName = tdata.product.name;
             this.SeatName = tdata.seat.name;
             this.PrintedAt = tdata.printed_at; //null?
+            this.LockedAt = tdata.locked_at; //null?
             this.TokenId = tdata.ordered_product_item_token_id;
         }
 
@@ -38,6 +39,7 @@ namespace QR.presentation.gui.viewmodel
         }
         public string TokenId { get; set; }
         public string PrintedAt { get; set; }
+        public string LockedAt { get; set; }
     }
 
     public class DisplayTicketDataCollection : ObservableCollection<DisplayTicketData>

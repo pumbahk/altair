@@ -135,5 +135,10 @@ namespace QR.presentation.gui.page
         {
             this.QRCodeInput.Focus();
         }
+
+        private void OnGotoQRRefreshMode(object sender, RoutedEventArgs e)
+        {
+            this.NavigationService.Navigate(new PageQRRefresh());
+        }
     }
 }

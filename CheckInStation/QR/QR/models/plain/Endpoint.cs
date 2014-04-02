@@ -26,6 +26,8 @@ namespace QR
         [DataMember]
         internal string UpdatePrintedAt;
         [DataMember]
+        internal string UpdateRefreshedAt;
+        [DataMember]
         internal string VerifyOrderData;
 
         [DataMember]
@@ -46,6 +48,7 @@ namespace QR
             this.VerifyOrderData = EndPoint.asURL (json.orderno_verified_data);
             this.ImageFromSvg = EndPoint.asURL (json.image_from_svg);
             this.UpdatePrintedAt = EndPoint.asURL (json.qr_update_printed_at);
+            this.UpdateRefreshedAt = EndPoint.asURL(json.refresh_order);
             this.DataCollectionFetchData = EndPoint.asURL (json.qr_ticketdata_collection);
         }
 
