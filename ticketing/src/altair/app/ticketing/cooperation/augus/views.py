@@ -356,7 +356,12 @@ class AugusVenueView(_AugusBaseView):
 
             if count == 1:# 通常処理
                 if ex_venue.name != external_venue_code_name_version_list[0][1]:
-                    ex_venue.name = external_venue_code_name_version_list[0][1]
+                    try:
+                        ex_venue.name = _str(external_venue_code_name_version_list[0][1])
+                    except UnicodeDecodeError as err:
+                        raise HTTPBadRequest(body=json.dumps({
+                            'message':u'会場名に使用できない文字が入っています: {}'.format(repr(external_venue_code_name_version_list[0][1])),
+                        }))
                 ex_venue.reserved_at = None
 
                 logger.info('AUGUS VENUE: creating augus seat target dict')
