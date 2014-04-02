@@ -101,7 +101,7 @@ class qr:
                     buf.append(pack('B', i - 96*96))
                 else:
                     try:
-                        c = pack('!H', (i/96+160)*256 + i%96+160).decode("eucjp"))
+                        c = pack('!H', (i/96+160)*256 + i%96+160).decode("eucjp")
                     except UnicodeDecodeError, e:
                         c = u"〓"
                     buf.append(c)
