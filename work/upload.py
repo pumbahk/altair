@@ -76,10 +76,10 @@ def strip_physical_directory_path(x):
 def execute(app):
     for k, vs in app.mv_events:
         used = {}
-        k = strip_physical_directory_path(k)
+        striped_k = strip_physical_directory_path(k)
         for v, app_changed in vs:
             v = strip_physical_directory_path(v)
-            if k == v:
+            if striped_k == v:
                 sys.stderr.write("skip:{}".format(k))
                 sys.stderr.write("\n")
                 continue
