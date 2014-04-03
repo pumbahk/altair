@@ -35,7 +35,7 @@ ALIAS_MAP = {
     "NH": ["happinets"], 
     "RK": ["kings"], 
     "lakestarts": [], 
-    "oxtv": ["ox"], 
+    "oxtv": ["oxtv"], 
     "ticketstar": [], 
     "vissel": []
 }
