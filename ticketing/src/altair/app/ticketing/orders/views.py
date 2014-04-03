@@ -113,6 +113,7 @@ from altair.app.ticketing.tickets.preview.transform import SVGTransformer
 from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketCover
 from altair.app.ticketing.core.modelmanage import OrderAttributeManager
+from altair.app.ticketing.core.helpers import build_sales_segment_list_for_inner_sales
 
 # XXX
 INNER_DELIVERY_PLUGIN_IDS = [
@@ -1213,7 +1214,7 @@ class OrderDetailView(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        sales_segments = performance.sales_segments
+        sales_segments = build_sales_segment_list_for_inner_sales(performance.sales_segments, request=self.request)
         sales_segment_id = int(self.request.params.get('sales_segment_id') or 0)
         if sales_segment_id:
             sales_segments = [ss for ss in sales_segments if ss.id == sales_segment_id]
