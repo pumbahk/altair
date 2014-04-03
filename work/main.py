@@ -40,12 +40,6 @@ ALIAS_MAP = {
     "vissel": []
 }
 
-COMMON_IMG_PREFIX_LIST = [
-    # "btn_", 
-    "bg_", "title_","header_", "side_", "icon_",
-    "amex_logo", "visa", "jcb", "kc_logo", "master",  #mobile cresit cards
-    "familymart", 
-    "border1", "border2", "loading"]
 class Dump(object):
     def __init__(self, stdout=sys.stdout, stderr=sys.stderr):
         self.stdout = stdout
@@ -117,13 +111,7 @@ class DecisionMaker(object):
         ## device削除
         filepath = filepath.replace("/{}".format(device), "").replace("{}_".format(device), "")
 
-        ## 共通ファイルは各orgごとにしない
         basename = os.path.basename(filepath)
-        for pat in COMMON_IMG_PREFIX_LIST:
-            if pat in basename:
-                return filepath.replace("/static/", "/static/base/")
-        if "ie6" in filepath:
-            return filepath.replace("/static/", "/static/base/")
 
         for rep in ["common", "music", "settlement"]:
             filepath = filepath.replace("images/{}".format(rep), "images")
