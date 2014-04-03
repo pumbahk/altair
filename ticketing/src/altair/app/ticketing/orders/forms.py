@@ -9,6 +9,7 @@ from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, T
                      RadioField, FieldList, FormField, DecimalField, IntegerField, FileField)
 from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
 from wtforms.widgets import CheckboxInput, HiddenInput
+from sqlalchemy.sql import exists
 
 from altair.formhelpers import (
     Translations,
@@ -16,8 +17,10 @@ from altair.formhelpers import (
     CheckboxMultipleSelect, BugFreeSelectField, BugFreeSelectMultipleField,
     Required, after1900, NFKC, Zenkaku, Katakana,
     strip_spaces, ignore_space_hyphen, OurForm)
-from altair.app.ticketing.core.models import (Organization, PaymentMethod, DeliveryMethod, SalesSegmentGroup, PaymentDeliveryMethodPair,
-                                   SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
+from altair.app.ticketing.core.models import (
+    Organization, PaymentMethod, DeliveryMethod, SalesSegmentGroup, PaymentDeliveryMethodPair,
+    Stock, StockHolder, SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum
+    )
 from altair.app.ticketing.cart.schemas import ClientForm
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.core import helpers as core_helpers
@@ -468,10 +471,14 @@ class OrderReserveForm(Form):
                 self.sales_segment_id.default = self.sales_segment_id.choices[0][0]
 
             self.products.choices = []
-            if 'stocks' in kwargs and kwargs['stocks']:
+            query = Product.query.filter(Product.performance_id==performance.id)
+            if 'stock_holder_id' in kwargs and kwargs['stock_holder_id']:
+                query = query.join(Product.items, ProductItem.stock).filter(Stock.stock_holder_id==kwargs['stock_holder_id'])
+                self.products.choices += [(p.id, p) for p in query.all()]
+            elif 'stocks' in kwargs and kwargs['stocks']:
+                query = query.join(ProductItem).filter(ProductItem.stock_id.in_(kwargs['stocks']))
                 query = query.filter(Product.sales_segment_id==self.sales_segment_id.default)
-                for p in query.all():
-                    self.products.choices += [(p.id, p)]
+                self.products.choices += [(p.id, p) for p in query.all()]
 
             self.payment_delivery_method_pair_id.choices = []
             self.payment_delivery_method_pair_id.sej_plugin_id = []
@@ -488,6 +495,16 @@ class OrderReserveForm(Form):
                 if pdmp.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID or \
                    pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
                     self.payment_delivery_method_pair_id.sej_plugin_id.append(int(pdmp.id))
+
+            query = StockHolder.query.join(StockHolder.stocks, Stock.product_items, ProductItem.product)
+            query = query.filter(ProductItem.performance_id==performance.id)
+            query = query.filter(Product.seat_stock_type_id.in_([p.seat_stock_type_id for id, p in self.products.choices]))
+            stock_holders = query.with_entities(StockHolder.id, StockHolder.name).all()
+            self.stock_holder_id.choices = stock_holders
+            if 'stock_holder_id' in kwargs and kwargs['stock_holder_id']:
+                self.stock_holder_id.data = kwargs['stock_holder_id']
+            elif len(self.stock_holder_id.choices) > 0:
+                self.stock_holder_id.data = self.stock_holder_id.choices[0][0]
 
             self.sales_counter_payment_method_id.choices = [(0, '')]
             for pm in PaymentMethod.filter_by_organization_id(performance.event.organization_id):
@@ -532,6 +549,12 @@ class OrderReserveForm(Form):
     payment_delivery_method_pair_id = SelectField(
         label=u'決済・引取方法',
         validators=[Required(u'決済・引取方法を選択してください')],
+        choices=[],
+        coerce=lambda x : int(x) if x else u'',
+    )
+    stock_holder_id = SelectField(
+        label=u'配券先',
+        validators=[Required()],
         choices=[],
         coerce=lambda x : int(x) if x else u'',
     )

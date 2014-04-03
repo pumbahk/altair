@@ -1517,9 +1517,10 @@ class OrdersReserveView(BaseView):
         post_data = MultiDict(self.request.json_body)
         post_data.update(self.get_inner_cart_session())
         performance_id = int(post_data.get('performance_id', 0))
+        stock_holder_id = int(post_data.get('stock_holder_id', 0))
         performance = Performance.get(performance_id, self.context.organization.id)
 
-        f = OrderReserveForm(post_data, performance_id=performance_id, stocks=post_data.get('stocks'), sales_segment_id=post_data.get('sales_segment_id'), request=self.request)
+        f = OrderReserveForm(post_data, performance_id=performance_id, stocks=post_data.get('stocks'), sales_segment_id=post_data.get('sales_segment_id'), stock_holder_id=stock_holder_id, request=self.request)
         selected_seats = Seat.query.filter(and_(
             Seat.l0_id.in_(post_data.get('seats')),
             Seat.venue_id==post_data.get('venue_id')
