@@ -325,6 +325,21 @@ function get_performance_id() {
         % endif
       </td>
     </tr>
+    <tr class="SalesSegment_sales_counter_selectable">
+      <th>
+        ${form.sales_counter_selectable.label}
+        ${form.use_default_sales_counter_selectable(_widget=LabelledCheckboxInput())}
+      </th>
+      <td>
+        ${form.sales_counter_selectable}
+        ${ch.validate_errors(form.sales_counter_selectable)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${u'対象' if form.context.sales_segment_group.setting.sales_counter_selectable else u'対象外'}
+        % endif
+      </td>
+    </tr>
     <tr class="SalesSegment_auth3d_notice">
       <th>
         ${form.auth3d_notice.label}
@@ -543,6 +558,12 @@ function get_performance_id() {
       if (data.reporting !== void(0))
         originalValue.text(data.reporting ? "対象": "×対象外");
     },
+    sales_counter_selectable: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data.sales_counter_selectable !== void(0))
+        originalValue.text(data.sales_counter_selectable ? "対象": "×対象外");
+    },
     auth3d_notice: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
@@ -580,6 +601,7 @@ function get_performance_id() {
         'max_quantity',
         'seat_choice',
         'display_seat_no',
+        'sales_counter_selectable',
         'public',
         'disp_orderreview',
         'reporting',
