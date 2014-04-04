@@ -39,11 +39,6 @@ def no_results_found(context, request):
     logger.warning(context)    
     return HTTPNotFound()
 
-@mobile_view_config(context=NoCartError)
-def no_cart_error(context, request):
-    logger.warning(context)
-    return HTTPNotFound()
-
 
 def back_to_step1(request):
     context = request.context

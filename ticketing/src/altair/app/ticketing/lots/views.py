@@ -97,13 +97,15 @@ def nogizaka_auth(context, request):
 @view_config(context=NoResultFound)
 def no_results_found(context, request):
     """ 改良が必要。ログに該当のクエリを出したい。 """
-    logger.warning(context)    
-    return HTTPNotFound()
-
-@view_config(context=NoCartError)
-def no_cart_error(context, request):
     logger.warning(context)
     return HTTPNotFound()
+
+@view_config(context=NoCartError, renderer=selectable_renderer("pc/%(membership)s/timeout.html"))
+@mobile_view_config(context=NoCartError, renderer=selectable_renderer("mobile/%(membership)s/timeout.html"))
+@smartphone_view_config(context=NoCartError, renderer=selectable_renderer("smartphone/%(membership)s/timeout.html"))
+def no_cart_error(context, request):
+    request.response.status = 404
+    return {}
 
 @view_defaults(route_name='lots.entry.index', renderer=selectable_renderer("pc/%(membership)s/index.html"), permission="lots")
 class EntryLotView(object):
