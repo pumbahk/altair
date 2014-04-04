@@ -43,7 +43,9 @@ def main(request):
     log_info("main", "hotwords get")
 
     genre_searcher = GenreSearcher(request)
-    form.genretree.data = genre_searcher.root.children
+    if genre_searcher.root:
+        form.genretree.data = genre_searcher.root.children
+
     log_info("main", "genretree get")
 
     log_info("main", "end")
