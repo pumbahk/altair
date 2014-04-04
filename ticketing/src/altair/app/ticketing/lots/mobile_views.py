@@ -11,7 +11,6 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, Performance, Product
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.views import back
-from altair.app.ticketing.payments.api import set_confirm_url
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.cart.exceptions import NoCartError
 
@@ -356,7 +355,6 @@ class EntryLotView(object):
         cart = LotSessionCart(entry, self.request, self.context.lot)
 
         payment = Payment(cart, self.request)
-        set_confirm_url(self.request, urls.entry_confirm(self.request))
 
         result = payment.call_prepare()
         if callable(result):

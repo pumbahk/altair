@@ -24,7 +24,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
         self._register_dummy_card_brand_detector()
-        self._register_cart_getter()
+        self._register_cart_interface()
         self.session = _setup_test_db()
 
     def tearDown(self):
@@ -42,10 +42,19 @@ class MultiCheckoutViewTests(unittest.TestCase):
         from altair.multicheckout.interfaces import ICardBrandDetecter
         self.config.registry.utilities.register([], ICardBrandDetecter, "", lambda card_number: "TEST")
 
-    def _register_cart_getter(self):
-        from altair.app.ticketing.payments.interfaces import IGetCart
-        self.config.registry.utilities.register([], IGetCart, "", 
-                                                lambda request: request._cart)
+    def _register_cart_interface(self):
+        from altair.app.ticketing.payments.interfaces import ICartInterface
+        class DummyCartInterface(object):
+            def __init__(self, outer):
+                self.outer = outer
+
+            def get_cart(self, request):
+                return request._cart
+
+            def get_success_url(self, request):
+                return 'http://example.com/payment_confirm'
+
+        self.config.registry.utilities.register([], ICartInterface, "", DummyCartInterface(self))
 
     @mock.patch('wtforms.ext.csrf.SecureForm.validate')
     @mock.patch('altair.multicheckout.impl.Checkout3D.secure3d_enrol')
@@ -163,7 +172,6 @@ class MultiCheckoutViewTests(unittest.TestCase):
             _cart=dummy_cart,
             session=DummySession(order=params)
             )
-        p_api.set_confirm_url(request, 'http://example.com/payment_confirm')
         target = self._makeOne(request)
 
         result = target.card_info_secure3d()
@@ -224,7 +232,6 @@ class MultiCheckoutViewTests(unittest.TestCase):
             _cart=dummy_cart,
             session=DummySession(order=params)
             )
-        p_api.set_confirm_url(request, 'http://example.com/payment_confirm')
         target = self._makeOne(request)
 
         from multicheckout import MultiCheckoutSettlementFailure
@@ -292,7 +299,6 @@ class MultiCheckoutViewTests(unittest.TestCase):
             _cart=dummy_cart,
             session=DummySession(order=session_order)
             )
-        p_api.set_confirm_url(request, 'http://example.com/payment_confirm')
         target = self._makeOne(request)
 
         result = target.card_info_secure3d_callback()
@@ -354,7 +360,6 @@ class MultiCheckoutViewTests(unittest.TestCase):
             _cart=dummy_cart,
             session=DummySession(order=session_order)
             )
-        p_api.set_confirm_url(request, 'http://example.com/payment_confirm')
 
         for error_code, return_code in [('000000', '4'), ('000001', '0')]:
             secure3d_auth.return_value = mc_models.Secure3DAuthResponse(
@@ -466,7 +471,6 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             _cart=dummy_cart,
             session=DummySession(order=session_order)
             )
-        p_api.set_confirm_url(request, 'http://example.com/payment_confirm')
 
         target = self._makeOne()
 

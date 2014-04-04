@@ -5,25 +5,25 @@ import transaction
 
 from pyramid.threadlocal import get_current_request
 from zope.interface import directlyProvides
-from .interfaces import IGetCart
+from .interfaces import ICartInterface
 from .exceptions import PaymentDeliveryMethodPairNotFound
 from .interfaces import IPaymentPreparerFactory, IPaymentPreparer, IPaymentDeliveryPlugin, IPaymentPlugin, IDeliveryPlugin
 
 logger = logging.getLogger(__name__)
 
-PAYMENT_SUCCESS_URL_KEY = '%s.success_url' % __name__
-OBSOLETED_SUCCESS_URL_KEY = 'payment_confirm_url'
-
-def set_confirm_url(request, url):
-    request.session[PAYMENT_SUCCESS_URL_KEY] = url
-    request.session[OBSOLETED_SUCCESS_URL_KEY] = url
-
-def get_confirm_url(request):
-    for k in [PAYMENT_SUCCESS_URL_KEY, OBSOLETED_SUCCESS_URL_KEY]:
-        retval = request.session.get(k)
-        if retval is not None:
-            return retval
-    return None
+# PAYMENT_SUCCESS_URL_KEY = '%s.success_url' % __name__
+# OBSOLETED_SUCCESS_URL_KEY = 'payment_confirm_url'
+# 
+# def set_confirm_url(request, url):
+#     request.session[PAYMENT_SUCCESS_URL_KEY] = url
+#     request.session[OBSOLETED_SUCCESS_URL_KEY] = url
+# 
+# def get_confirm_url(request, url):
+#     for k in [PAYMENT_SUCCESS_URL_KEY, OBSOLETED_SUCCESS_URL_KEY]:
+#         retval = request.session.get(k)
+#         if retval is not None:
+#             return retval
+#     return None
 
 def is_finished_payment(request, pdmp, order):
     if order is None:
@@ -40,8 +40,12 @@ def is_finished_delivery(request, pdmp, order):
     return plugin.finished(request, order)
 
 def get_cart(request):
-    getter = request.registry.getUtility(IGetCart)
-    return getter(request)
+    cart_if = request.registry.getUtility(ICartInterface)
+    return cart_if.get_cart(request)
+
+def get_confirm_url(request):
+    cart_if = request.registry.getUtility(ICartInterface)
+    return cart_if.get_success_url(request)
 
 def get_delivery_plugin(request, plugin_id):
     registry = request.registry
