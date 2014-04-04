@@ -8,22 +8,15 @@ from zope.interface import directlyProvides
 from .interfaces import ICartInterface
 from .exceptions import PaymentDeliveryMethodPairNotFound
 from .interfaces import IPaymentPreparerFactory, IPaymentPreparer, IPaymentDeliveryPlugin, IPaymentPlugin, IDeliveryPlugin
+from zope.deprecation import deprecation
 
 logger = logging.getLogger(__name__)
 
-# PAYMENT_SUCCESS_URL_KEY = '%s.success_url' % __name__
-# OBSOLETED_SUCCESS_URL_KEY = 'payment_confirm_url'
-# 
-# def set_confirm_url(request, url):
-#     request.session[PAYMENT_SUCCESS_URL_KEY] = url
-#     request.session[OBSOLETED_SUCCESS_URL_KEY] = url
-# 
-# def get_confirm_url(request, url):
-#     for k in [PAYMENT_SUCCESS_URL_KEY, OBSOLETED_SUCCESS_URL_KEY]:
-#         retval = request.session.get(k)
-#         if retval is not None:
-#             return retval
-#     return None
+OBSOLETED_SUCCESS_URL_KEY = 'payment_confirm_url'
+
+@deprecation.deprecate("this method should be removed after the code gets released")
+def set_confirm_url(request, url):
+    request.session[OBSOLETED_SUCCESS_URL_KEY] = url
 
 def is_finished_payment(request, pdmp, order):
     if order is None:
