@@ -42,11 +42,13 @@ from altair.app.ticketing.cart.exceptions import NoCartError, InvalidCartStatusE
 from ..exceptions import PaymentPluginException
 from altair.app.ticketing.views import mobile_request
 from altair.app.ticketing.fanstatic import with_jquery
-from altair.app.ticketing.payments.api import get_cart
+from altair.app.ticketing.payments.api import get_cart, get_confirm_url
 
 logger = logging.getLogger(__name__)
 
 from . import MULTICHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_ID
+
+confirm_url = get_confirm_url # XXX: backwards compatibility: must be removed later! yet any code should not rely on this reference
 
 class MultiCheckoutSettlementFailure(PaymentPluginException):
     def __init__(self, message, order_no, back_url, ignorable=False, error_code=None, return_code=None):
@@ -66,18 +68,15 @@ class MultiCheckoutSettlementFailure(PaymentPluginException):
 def back_url(request):
     return request.route_url("payment.secure3d")
 
-def confirm_url(request):
-    return request.session.get('payment_confirm_url')
-    #return request.route_url('payment.confirm')
-
 def complete_url(request):
-    return request.route_url('cart.secure3d_result')
+    return request.route_url('payment.secure3d_result')
+
 
 def includeme(config):
     # 決済系(マルチ決済)
     config.add_payment_plugin(MultiCheckoutPlugin(), PAYMENT_ID)
     config.add_route("payment.secure3d", 'payment/3d')
-    config.add_route("cart.secure3d_result", 'payment/3d/result')
+    config.add_route("payment.secure3d_result", 'payment/3d/result')
     config.add_route("payment.secure_code", 'payment/scode')
     config.scan(__name__)
 
@@ -460,7 +459,7 @@ class MultiCheckoutView(object):
 
         self.request.session['order'] = order
 
-        return HTTPFound(location=confirm_url(self.request))
+        return HTTPFound(location=get_confirm_url(self.request))
 
     def _secure3d(self, card_number, exp_year, exp_month):
         """ セキュア3D """
@@ -490,7 +489,7 @@ class MultiCheckoutView(object):
             return self._secure_code(order['order_no'], order['card_number'], order['exp_year'], order['exp_month'], order['secure_code'])
 
     @clear_exc
-    @view_config(route_name='cart.secure3d_result', request_method="POST", renderer=_selectable_renderer("%(membership)s/pc/confirm.html"))
+    @view_config(route_name='payment.secure3d_result', request_method="POST", renderer=_selectable_renderer("%(membership)s/pc/confirm.html"))
     def card_info_secure3d_callback(self):
         """ カード情報入力(3Dセキュア)コールバック
         3Dセキュア認証結果取得
@@ -576,4 +575,4 @@ class MultiCheckoutView(object):
         order['tran'] = tran
         self.request.session['order'] = order
 
-        return HTTPFound(location=confirm_url(self.request))
+        return HTTPFound(location=get_confirm_url(self.request))

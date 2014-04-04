@@ -11,6 +11,19 @@ from .interfaces import IPaymentPreparerFactory, IPaymentPreparer, IPaymentDeliv
 
 logger = logging.getLogger(__name__)
 
+PAYMENT_SUCCESS_URL_KEY = '%s.success_url' % __name__
+OBSOLETED_SUCCESS_URL_KEY = 'payment_confirm_url'
+
+def set_confirm_url(request, url):
+    request.session[PAYMENT_SUCCESS_URL_KEY] = url
+    request.session[OBSOLETED_SUCCESS_URL_KEY] = url
+
+def get_confirm_url(request):
+    for k in [PAYMENT_SUCCESS_URL_KEY, OBSOLETED_SUCCESS_URL_KEY]:
+        retval = request.session.get(k)
+        if retval is not None:
+            return retval
+    return None
 
 def is_finished_payment(request, pdmp, order):
     if order is None:
