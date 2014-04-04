@@ -9,9 +9,10 @@ from altairsite.mobile.forms import TopForm
 from altairsite.mobile.core.helper import log_info
 from altairsite.mobile.core.eventhelper import EventHelper
 from altaircms.datelib import get_now
+from altairsite.separation import selectable_renderer
 
 @mobile_site_view_config(route_name='home', request_type="altairsite.tweens.IMobileRequest"
-             , renderer='altairsite.mobile:templates/top/top.mako')
+             , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/top/top.mako'))
 def main(request):
 
     log_info("main", "start")

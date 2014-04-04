@@ -2,9 +2,10 @@
 from altairsite.config import mobile_site_view_config
 from altairsite.mobile.event.orderreview.forms import OrderReviewForm
 from altairsite.mobile.core.helper import log_info
+from altairsite.separation import selectable_renderer
 
 @mobile_site_view_config(route_name='order', request_type="altairsite.tweens.IMobileRequest"
-    , renderer='altairsite.mobile:templates/orderreview/orderreview.mako')
+    , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/orderreview/orderreview.mako'))
 def move_order(request):
     log_info("move_order", "start")
     form = OrderReviewForm()

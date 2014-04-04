@@ -7,9 +7,10 @@ from altairsite.config import mobile_site_view_config
 from altairsite.mobile.event.help.forms import HelpForm
 from altairsite.mobile.core.helper import log_info
 from altairsite.mobile.core.disphelper import DispHelper
+from altairsite.separation import selectable_renderer
 
 @mobile_site_view_config(route_name='help', request_type="altairsite.tweens.IMobileRequest"
-    , renderer='altairsite.mobile:templates/help/help.mako')
+    , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/help/help.mako'))
 def move_help(request):
 
     log_info("move_help", "start")
