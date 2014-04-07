@@ -55,11 +55,11 @@ def _build_order(*args, **kwargs):
         )
 
     ordered_from = Organization(name=kwargs.get("ordered_from__name", u"ordered-from-name"), 
-                                contact_email=kwargs.get("ordered_from__contact_email"),
                                 settings=[
                                     OrganizationSetting(
                                         name='default', 
-                                        bcc_recipient=kwargs.get("bcc_recipient")
+                                        bcc_recipient=kwargs.get("bcc_recipient"),
+                                        default_mail_sender=kwargs.get("ordered_from__setting__default_mail_sender")
                                         )
                                     ])
 
@@ -236,7 +236,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
         order = _build_order(
             shipping_address__email_1="purchase@user.ne.jp", 
             ordered_from__name = u"ordered-from-name",
-            ordered_from__contact_email="from@organization.ne.jp",
+            ordered_from__setting__default_mail_sender="from@organization.ne.jp",
             bcc_recipient="bcc@organization.ne.jp"
             )
         
@@ -281,7 +281,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
             order__delivery_fee=40.0, 
             order__total_amount=99999, ##
             ordered_from__name = u"ordered-from-name",
-            ordered_from__contact_email="from@organization.ne.jp",
+            ordered_from__setting__default_mail_sender="from@organization.ne.jp",
             bcc_recipient="bcc@organization.ne.jp", 
             performance__name = u"何かパフォーマンス名", 
             performance__start_on = datetime(2000, 1, 1), 

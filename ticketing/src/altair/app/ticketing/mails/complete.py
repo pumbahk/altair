@@ -15,7 +15,7 @@ import traceback
 import sys
 
 class OrderCompleteInfoDefault(OrderInfoDefault):
-    template_body = SubjectInfoWithValue(name="template_body",  label=u"テンプレート", value="", getval=(lambda order : ""))
+    template_body = SubjectInfoWithValue(name="template_body",  label=u"テンプレート", value="", getval=(lambda request, order : ""))
 
     @classmethod
     def validate(cls, form, request, mutil):
@@ -78,7 +78,7 @@ class PurchaseCompleteMail(object):
     def _body_tmpl_vars(self, request, order, traverser):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
-        info_renderder = SubjectInfoRenderer(order, traverser.data, default_impl=get_subject_info_default())
+        info_renderder = SubjectInfoRenderer(request, order, traverser.data, default_impl=get_subject_info_default())
         value = dict(h=ch, 
                      order=order,
                      get=info_renderder.get, 

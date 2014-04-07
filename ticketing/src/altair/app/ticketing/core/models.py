@@ -4021,6 +4021,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     point_rate = AnnotatedColumn(Float, nullable=True, _a_label=u"付与ポイントデフォルト値 (率)")
 
     bcc_recipient = AnnotatedColumn(Unicode(255), nullable=True, _a_label=u"BCC受信者")
+    default_mail_sender = AnnotatedColumn(Unicode(255), _a_label=u"デフォルトの送信元メールアドレス")
     entrust_separate_seats = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"バラ席のおまかせが有効", _a_label=u"おまかせ座席選択でバラ席を許可する")
     notify_point_granting_failure = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"ポイント付与失敗時のメール通知on/off", _a_label=u"ポイント付与失敗時のメール通知を有効にする")
 
