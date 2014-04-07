@@ -105,7 +105,7 @@ class PrintProgressBase(object):
     def qr(self):
         query = self.filtering.include_by_delivery_plugin(
             self.ordered_product_item_token_query, 
-            plugins.QR_DELIVERY_PLUGIN_ID
+            [ plugins.QR_DELIVERY_PLUGIN_ID, plugins.ORION_DELIVERY_PLUGIN_ID ]
         )
         total = query.count()
         printed = self.filtering.filter_by_printed_token(query).count()
@@ -125,7 +125,7 @@ class PrintProgressBase(object):
     def other(self):
         query = self.filtering.exclude_by_delivery_plugin(
             self.ordered_product_item_token_query, 
-            [plugins.SHIPPING_DELIVERY_PLUGIN_ID, plugins.QR_DELIVERY_PLUGIN_ID]
+            [plugins.SHIPPING_DELIVERY_PLUGIN_ID, plugins.ORION_DELIVERY_PLUGIN_ID,  plugins.QR_DELIVERY_PLUGIN_ID]
         )
         total = query.count()
         printed = self.filtering.filter_by_printed_token(query).count()
