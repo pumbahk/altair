@@ -246,6 +246,8 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.fc_auth')
     config.include('altair.app.ticketing.users')
     config.include('altair.app.ticketing.multicheckout')
+    config.include('altair.app.ticketing.sej')
+    config.include('altair.app.ticketing.sej.userside_impl')
     config.include('altair.app.ticketing.payments')
     config.include('altair.app.ticketing.payments.plugins')
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)

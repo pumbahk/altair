@@ -61,7 +61,6 @@ class Accounts(BaseView):
             'account':account,
             'owner_events':Event.get_owner_event(account),
             'client_events':Event.get_client_event(account),
-            'sej_tenants':SejTenant.filter_by(organization_id=account.user.organization.id).all()
         }
 
     @view_config(route_name='accounts.new', request_method='GET', renderer='altair.app.ticketing:templates/accounts/_form.html', xhr=True)

@@ -18,6 +18,15 @@ class SejTest(unittest.TestCase):
             'altair.app.ticketing.sej.models'
             ])
         self.server = None
+        from altair.app.ticketing.sej.models import ThinSejTenant
+        self.tenant = ThinSejTenant(
+            shop_id=u'30520',
+            shop_name=u'楽天チケット',
+            contact_01=u'contact',
+            contact_02=u'連絡先2',
+            inticket_api_url=u"http://127.0.0.1:38001",
+            api_key=u'E6PuZ7Vhe7nWraFW',   
+            )
 
     def tearDown(self):
         if self.server is not None:
@@ -33,7 +42,7 @@ class SejTest(unittest.TestCase):
         import webob.util
         webob.util.status_reasons[800] = 'OK'
 
-        target = self._makeServer(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38002, status=800)
+        target = self._makeServer(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38001, status=800)
 
         sej_order = SejOrder()
 
@@ -52,16 +61,16 @@ class SejTest(unittest.TestCase):
         DBSession.flush()
 
         request_cancel_order(
+            tenant=self.tenant,
             order_no=u'orderid00001',
             billing_number=u'00000001',
-            exchange_number ='12345678',
-            hostname=u"http://127.0.0.1:38002"
+            exchange_number ='12345678'
         )
 
         self.server.poll()
 
         self.assertEqual(self.server.request.method, 'POST')
-        self.assertEqual(self.server.request.url, 'http://127.0.0.1:38002/order/cancelorder.do')
+        self.assertEqual(self.server.request.url, 'http://127.0.0.1:38001/order/cancelorder.do')
 
         sej_order = SejOrder.query.filter_by(order_no=u'orderid00001', billing_number=u'00000001').one()
 
@@ -103,9 +112,6 @@ class SejTest(unittest.TestCase):
         target = self._makeServer(sej_dummy_response, host='127.0.0.1', port=38001, status=800)
 
         request_order(
-            shop_name       = u'楽天チケット',
-            contact_01      = u'contact',
-            contact_02      = u'連絡先2',
             order_no        = u"orderid00001",
             user_name       = u"お客様氏名",
             user_name_kana  = u'コイズミモリヨシ',
@@ -120,8 +126,7 @@ class SejTest(unittest.TestCase):
             payment_due_at = datetime.datetime(2012,7,30,7,00), #u'201207300700',
             regrant_number_due_at = datetime.datetime(2012,7,30,7,00), # u'201207300700',
 
-            hostname=u"http://127.0.0.1:38001",
-
+            tenant=self.tenant,
             tickets = [
                 dict(
                     ticket_type         = SejTicketType.TicketWithBarcode,
@@ -254,9 +259,6 @@ class SejTest(unittest.TestCase):
         target = self._makeServer(sej_dummy_response, host='127.0.0.1', port=38001, status=800)
 
         sejTicketOrder = request_order(
-             shop_name       = u'楽天チケット',
-             contact_01      = u'contact',
-             contact_02      = u'連絡先2',
              order_no        = u"orderid00001",
              user_name       = u"お客様氏名",
              user_name_kana  = u'コイズミモリヨシ',
@@ -270,9 +272,7 @@ class SejTest(unittest.TestCase):
              payment_type    = SejPaymentType.Paid,
              payment_due_at = datetime.datetime(2012,7,30,7,00), #u'201207300700',
              regrant_number_due_at = datetime.datetime(2012,7,30,7,00), # u'201207300700',
-
-             hostname=u"http://127.0.0.1:38001",
-
+             tenant=self.tenant,
              tickets = [
                  dict(
                      ticket_type         = SejTicketType.TicketWithBarcode,
@@ -381,7 +381,7 @@ class SejTest(unittest.TestCase):
         from altair.app.ticketing.sej.payment import request_cancel_order
         webob.util.status_reasons[800] = 'OK'
 
-        target = self._makeServer(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38002, status=800)
+        target = self._makeServer(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38001, status=800)
 
         sej_order = SejOrder()
 
@@ -399,17 +399,17 @@ class SejTest(unittest.TestCase):
         DBSession.flush()
 
         request_cancel_order(
+            tenant=self.tenant,
             order_no=u'orderid00001',
             billing_number=u'00000001',
-            exchange_number=u'00001111',
-            hostname=u"http://127.0.0.1:38002"
+            exchange_number=u'00001111'
         )
 
         self.server.poll()
 
         self.assertEqual(self.server.request.body, 'X_shop_id=30520&xcode=cf0fe9fc34300dd1f946e6c9c33fc020&X_hikikae_no=00001111&X_haraikomi_no=00000001&X_shop_order_id=orderid00001')
         self.assertEqual(self.server.request.method, 'POST')
-        self.assertEqual(self.server.request.url, 'http://127.0.0.1:38002/order/cancelorder.do')
+        self.assertEqual(self.server.request.url, 'http://127.0.0.1:38001/order/cancelorder.do')
 
         sej_order = SejOrder.query.filter_by(order_no=u'orderid00001', billing_number=u'00000001').one()
         assert sej_order.cancel_at is not None
@@ -421,7 +421,7 @@ class SejTest(unittest.TestCase):
         from altair.app.ticketing.sej.payment import request_update_order
         webob.util.status_reasons[800] = 'OK'
 
-        target = self._makeServer(lambda environ: '<SENBDATA>X_haraikomi_no=00000001&X_hikikae_no=00001111&X_ticket_cnt=01&X_ticket_hon_cnt=01&X_url_info=https://www.r1test.com/order/hi.do&X_shop_order_id=orderid00001&iraihyo_id_00=11111111&X_barcode_no_01=00002000</SENBDATA><SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38002, status=800)
+        target = self._makeServer(lambda environ: '<SENBDATA>X_haraikomi_no=00000001&X_hikikae_no=00001111&X_ticket_cnt=01&X_ticket_hon_cnt=01&X_url_info=https://www.r1test.com/order/hi.do&X_shop_order_id=orderid00001&iraihyo_id_00=11111111&X_barcode_no_01=00002000</SENBDATA><SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38001, status=800)
 
         sej_order = SejOrder(
             payment_type='%d' % SejPaymentType.CashOnDelivery.v,
@@ -460,16 +460,16 @@ class SejTest(unittest.TestCase):
         DBSession.flush()
 
         request_update_order(
+            tenant=self.tenant,
             new_order=sej_order, 
-            update_reason=SejOrderUpdateReason.Change,
-            hostname=u"http://127.0.0.1:38002"
+            update_reason=SejOrderUpdateReason.Change
         )
 
         self.server.poll()
 
         self.assertEqual(self.server.request.body, 'X_hakken_daikin=001000&X_ticket_cnt=01&X_ticket_hon_cnt=01&xcode=37ec9c530172b72093ff15ee60880854&X_hikikae_no=00001111&X_shop_order_id=orderid00001&X_shop_id=30520&X_goukei_kingaku=015000&X_saifuban_hakken_lmt=201207300700&X_ticket_kbn_01=1&X_upd_riyu=01&ticket_text_01=%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22Shift_JIS%22%20%3F%3E%3CTICKET%3E%3C/TICKET%3E&X_ticket_kounyu_daikin=001000&X_haraikomi_no=00000001&X_ticket_daikin=013000&X_kouen_date_01=201208301900&kougyo_mei_01=%83C%83x%83%93%83g&X_ticket_template_01=TTTS0001&kouen_mei_01=%83p%83t%83H%81%5B%83%7D%83%93%83X')
         self.assertEqual(self.server.request.method, 'POST')
-        self.assertEqual(self.server.request.url, 'http://127.0.0.1:38002/order/updateorder.do')
+        self.assertEqual(self.server.request.url, 'http://127.0.0.1:38001/order/updateorder.do')
         self.assertEqual(ticket.barcode_number, '00002000')
 
     def test_create_ticket_template(self):

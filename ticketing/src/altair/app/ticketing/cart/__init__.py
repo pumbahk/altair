@@ -303,6 +303,8 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.fc_auth')
     config.include('altair.app.ticketing.checkout')
     config.include('altair.app.ticketing.multicheckout')
+    config.include('altair.app.ticketing.sej')
+    config.include('altair.app.ticketing.sej.userside_impl')
     config.include('altair.mobile')
     config.include('altair.app.ticketing.venues.setup_components')
     config.include('altair.app.ticketing.payments')

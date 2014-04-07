@@ -96,6 +96,8 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.authentication')
         config.include('altair.app.ticketing.multicheckout')
         config.include('altair.app.ticketing.checkout')
+        config.include('altair.app.ticketing.sej')
+        config.include('altair.app.ticketing.sej.userside_impl')
         config.include('altair.app.ticketing.operators' , route_prefix='/operators')
         config.include('altair.app.ticketing.login' , route_prefix='/login')
         config.include('altair.app.ticketing.organizations' , route_prefix='/organizations')

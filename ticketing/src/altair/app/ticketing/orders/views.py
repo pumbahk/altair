@@ -1967,7 +1967,7 @@ class OrdersEditAPIView(BaseView):
         return self._get_order_dicts(modiry_order)
 
 
-from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket, SejTenant
+from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket
 from altair.app.ticketing.sej.ticket import SejTicketDataXml
 from altair.app.ticketing.sej.payment import request_update_order, request_cancel_order
 from altair.app.ticketing.sej.models import code_from_ticket_type, code_from_update_reason, code_from_payment_type
@@ -2022,12 +2022,11 @@ class SejOrderInfoView(object):
 
     def __init__(self, request):
         settings = get_current_registry().settings
-        tenant = SejTenant.filter_by(organization_id=request.context.organization.id).first()
-        self.sej_hostname = (tenant and tenant.inticket_api_url) or settings.get('sej.inticket_api_url')
-        self.shop_id = (tenant and tenant.shop_id) or settings.get('sej.shop_id')
-        self.secret_key = (tenant and tenant.api_key) or settings.get('sej.api_key')
-
         self.request = request
+
+    @reify
+    def tenant(self):
+        return userside_api.lookup_sej_tenant(self.request.context.organization.id)
 
     @view_config(route_name='orders.sej.order.request', request_method="GET", renderer='altair.app.ticketing:templates/sej/request.html')
     def order_request_get(self):
@@ -2105,9 +2104,7 @@ class SejOrderInfoView(object):
                         billing_number  = order.billing_number,
                         exchange_number = order.exchange_number,
                     ),
-                    shop_id=self.shop_id,
-                    secret_key=self.secret_key,
-                    hostname=self.sej_hostname
+                    tenant=self.tenant
                 )
                 self.request.session.flash(u'オーダー情報を送信しました。')
             except SejServerError, e:
