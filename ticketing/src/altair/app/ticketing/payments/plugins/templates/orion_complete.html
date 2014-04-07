@@ -2,10 +2,21 @@
     <h4>${order.payment_delivery_pair.delivery_method.name}</h4>
 
     <p>
+      % if order.performance.orion:
+      % if order.performance.orion.qr_enabled:
       <a target="_blank" href="/orderreview">購入履歴確認画面</a>より、
       QRコードを印刷、あるいは、PC/携帯にメール送信の上、公演当日チケット窓口でご提示ください。
       ご購入されたチケットをお渡しいたします。<br />
       <font color="red">※対応スマートフォンをお持ちの方は、専用アプリ【イベント・ゲート】にQRコードを保存できます(要無料ダウンロード＆無料会員登録)。詳細は購入完了メールをご確認ください。</font>
+      % else:
+      <a target="_blank" href="/orderreview">購入確認ページ</a>にログインいだき、
+      【イベント・ゲート】にチケットを送信＆保存してください。 <br />
+      詳細は購入完了メールをご確認ください。 <br />
+      公演当日は、【イベント・ゲート】アプリ上でチケットを表示いただき、専用ゲートの係員にご提示ください。係員が画面を確認の上、認証コードを入力いたします。 <br />
+      % endif
+      % else:
+      本公演は「イベント・ゲート」に対応していない可能性があります。
+      % endif
     </p>
 
 </div>
