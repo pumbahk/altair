@@ -20,7 +20,7 @@ import helpers as h
 from ..users.api import get_user
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.qr.utils import build_qr_by_history_id
-from altair.app.ticketing.qr.utils import build_qr_by_token_id, build_qr_by_orion
+from altair.app.ticketing.qr.utils import build_qr_by_token_id, build_qr_by_orion, get_matched_token_from_token_id
 from altair.auth import who_api as get_who_api
 from altair.app.ticketing.fc_auth.api import do_authenticate
 from .api import safe_get_contact_url, is_mypage_organization, is_rakuten_auth_organization
@@ -339,6 +339,8 @@ def order_review_qr_html(context, request):
         gate = ticket.seat.attributes.get("gate", None)
     
     return dict(
+        token = ticket.item_token.id, # dummy
+        serial = ticket_id,           # dummy
         sign = sign,
         order = ticket.order,
         ticket = ticket,
@@ -348,6 +350,30 @@ def order_review_qr_html(context, request):
         gate = gate
     )
 
+
+@view_config(route_name='order_review.orion_draw', xhr=False)
+def order_review_orion_image(context, request):
+    token = int(request.matchdict.get('token', 0))
+    serial = request.matchdict.get('serial', 0)
+    sign = request.matchdict.get('sign', 0)
+
+    data = OrderedProductItemToken.filter_by(id = token).first()
+    if data is None:
+        return HTTPNotFound()
+    
+    ticket = type('FakeTicketPrintHistory', (), {
+        'id': serial,
+        'performance': data.item.ordered_product.order.performance,
+        'ordered_product_item': data.item,
+        'order': data.item.ordered_product.order,
+        'seat': data.seat,
+    })
+    qr = build_qr_by_orion(request, ticket, serial)
+    
+    if sign == qr.sign:
+        return qrdata_as_image_response(qr)
+    else:
+        return HTTPNotFound()
 
 @view_config(route_name='order_review.qrdraw', xhr=False)
 def order_review_qr_image(context, request):
@@ -359,6 +385,7 @@ def order_review_qr_image(context, request):
         raise HTTPNotFound()
 
     if ticket.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID:
+        # this block is not used, to be deleted.
         # orion
         print "mode orion image"
         try:
@@ -386,25 +413,24 @@ def order_review_qr_image(context, request):
 @mobile_view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 @view_config(route_name='order_review.qr_print', request_method='POST', renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def order_review_qr_print(context, request):
-    ticket = build_qr_by_token_id(request, request.params['order_no'], request.params['token'])
-    ## historical reason. ticket variable is one of TicketPrintHistory object.
+    token = get_matched_token_from_token_id(request.params['order_no'], request.params['token'])
 
     issued_setter = IssuedAtBubblingSetter(datetime.now())
-    issued_setter.issued_token(ticket.item_token)
+    issued_setter.issued_token(token)
     issued_setter.start_bubbling()
-        
-    if ticket.seat is None:
+
+    if token.seat is None:
         gate = None
     else:
-        gate = ticket.seat.attributes.get("gate", None)
+        gate = token.seat.attributes.get("gate", None)
 
-    if ticket.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID:
+    if token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID:
         # orion
         print "mode orion"
         try:
-            if ticket.order.order_no != request.params['order_no']:
+            if token.item.ordered_product.order.order_no != request.params['order_no']:
                 raise Exception(u"Wrong order number or token: (%s, %s)" % (request.params['order_no'], request.params['token']))
-            res_text = api.send_to_orion(request, context, None, ticket.item_token)
+            res_text = api.send_to_orion(request, context, None, token)
             print "response = %s" % res_text
             response = json.loads(res_text)
         except Exception, e:
@@ -413,6 +439,13 @@ def order_review_qr_print(context, request):
             raise HTTPNotFound()
 
         if response['result'] == u"OK" and response.has_key('serial'):
+            ticket = type('FakeTicketPrintHistory', (), {
+                'id': response['serial'],
+                'performance': token.item.ordered_product.order.performance,
+                'ordered_product_item': token.item,
+                'order': token.item.ordered_product.order,
+                'seat': token.seat,
+            })
             qr = build_qr_by_orion(request, ticket, response['serial'])
         else:
             if response.has_key('message'):
@@ -427,18 +460,24 @@ def order_review_qr_print(context, request):
             raise Exception()
         
         return dict(
+            _overwrite_generate_qrimage_route_name = 'order_review.orion_draw',
+            token = token.id,
+            serial = response['serial'],
             sign = qr.sign,
-            order = ticket.order,
+            order = token.item.ordered_product.order,
             ticket = ticket,
-            performance = ticket.order.performance,
-            event = ticket.order.performance.event,
-            product = ticket.ordered_product_item.ordered_product.product,
+            performance = token.item.ordered_product.order.performance,
+            event = token.item.ordered_product.order.performance.event,
+            product = token.item.ordered_product.product,
             gate = gate
         )
-    elif ticket.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.QR_DELIVERY_PLUGIN_ID:
+    elif token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.QR_DELIVERY_PLUGIN_ID:
         # altair
+        ticket = build_qr_by_token_id(request, request.params['order_no'], request.params['token'])
         
         return dict(
+            token = token.id,    # dummy
+            serial = ticket.id,  # dummy
             sign = ticket.qr[0:8],
             order = ticket.order,
             ticket = ticket,
