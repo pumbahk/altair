@@ -12,6 +12,7 @@ altair.rakuten_auth.return_to = ${altair:rakuten_auth.return_to}
 altair.rakuten_auth.error_to = ${altair:rakuten_auth.error_to}
 altair.rakuten_auth.verify_url = ${altair:rakuten_auth.verify_url}
 altair.rakuten_auth.extra_verify_url = ${altair:rakuten_auth.extra_verify_url}
+altair.rakuten_auth.session = ${altair:httpsession_persistence_backend_type}
 altair.rakuten_auth.session.type = ${altair:beaker_backend_type}
 
 ; altair:site-data
@@ -25,6 +26,7 @@ cache.type = ${altair:beaker_backend_type}
 orion.create_url = http://orion-test.eventgate.jp/ticket_api/create
 
 ; altair.httpsession
+altair.httpsession.persistence = ${altair:httpsession_persistence_backend_type}
 altair.httpsession.persistence.type = ${altair:beaker_backend_type}
 
 [app:www-check]

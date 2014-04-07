@@ -5,7 +5,9 @@ from pyramid.interfaces import ISession
 from pyramid.compat import text_
 from pyramid.config import ConfigurationError
 from pyramid.path import DottedNameResolver
+from pyramid.settings import asbool
 from ..api import HTTPSession, BasicHTTPSessionManager, CookieSessionBinder
+from ..factory import BackendFactoryFactory
 from .interfaces import ISessionHTTPBackendFactory, ISessionPersistenceBackendFactory
 
 __all__ = [
@@ -114,6 +116,15 @@ def register_utilities(config, prefix='altair.httpsession'):
     if prefix[-1] != '.':
         prefix += '.'
 
+    coercers = BackendFactoryFactory.default_coercers.copy()
+    coercers.update({
+        'bool': asbool,
+        'class': config.maybe_dotted,
+        'instance': config.maybe_dotted,
+        'callable': config.maybe_dotted,
+        })
+    backend_factory_factory = BackendFactoryFactory(coercers=coercers)
+
     settings = {}
     http_backend_settings = {}
     persistence_backend_settings = {}
@@ -138,12 +149,12 @@ def register_utilities(config, prefix='altair.httpsession'):
         raise ConfigurationError('Could not find persistence backend factory (%s)' % persistence_value)
 
     config.registry.registerUtility(
-        lambda request: http_backend_factory(request, **http_backend_settings),
+        backend_factory_factory(http_backend_factory, http_backend_settings),
         ISessionHTTPBackendFactory
         )
 
     config.registry.registerUtility(
-        lambda request: persistence_backend_factory(request, **persistence_backend_settings),
+        backend_factory_factory(persistence_backend_factory, persistence_backend_settings),
         ISessionPersistenceBackendFactory
         )
 

@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from ..exceptions import NoSuchSession, SessionAlreadyExists, SessionExpired
 from ..api import get_now_from_request
-from ..utils import asbool
+from ..factory import parameters
 import datetime
 import time
 
@@ -99,14 +99,19 @@ class BeakerHTTPSessionBackend(object):
         return data.get('_accessed_time', None)
 
 
-def factory(request, type='memory', timeout=None, backend_always_assumes_timeout_to_be_relative=None, **kwargs):
+@parameters(
+    type='str?',
+    timeout='float?',
+    backend_always_assumes_timeout_to_be_relative='bool?',
+    )
+def factory(request, type=None, timeout=None, backend_always_assumes_timeout_to_be_relative=None, **kwargs):
     from beaker.cache import clsmap
     now = time.mktime(get_now_from_request(request).timetuple())
+    if type is None:
+        type = 'memory'
     namespace_manager_factory = clsmap[type]
     if timeout is not None:
         timeout = float(timeout)
-    if backend_always_assumes_timeout_to_be_relative is not None:
-        backend_always_assumes_timeout_to_be_relative = asbool(backend_always_assumes_timeout_to_be_relative)
     return BeakerHTTPSessionBackend(
         now=now,
         namespace_manager_factory=namespace_manager_factory,
