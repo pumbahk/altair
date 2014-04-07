@@ -114,12 +114,14 @@
                   未発行
               % endif
 	    % endif
+	    % if ticket.performance.orion.qr_enabled:
               <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
                   <input type="hidden" name="order_no" value="${order.order_no}" />
                   <input type="hidden" name="tel" value="${tel}" />
                   <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
                   <input type="submit" value="QRコードを表示する" />
               </form>
+	    % endif
               <form method="post" target="_blank" action="${request.route_path('order_review.orion_send')}">
                   <input type="hidden" name="order_no" value="${order.order_no}" />
                   <input type="hidden" name="tel" value="${tel}" />
