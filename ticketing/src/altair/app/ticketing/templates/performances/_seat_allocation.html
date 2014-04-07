@@ -548,6 +548,7 @@ function buildTransferModal(id) {
 
 
 function transferStocks() {
+  var errors = [];
   var modal = $('#modal-transfer');
   var body = modal.find('.modal-body');
   var venue = venueEditorRoot.venueeditor('model');
@@ -558,6 +559,12 @@ function transferStocks() {
     var from_stock = venue.perStockHolderStockMap[from_stock_holder][i];
     var to_stock = null;
 
+    var assignable = from_stock.get('assignable');
+    if(!assignable){
+        errors.push(from_stock);
+        continue;
+    }
+
     var stock_type = from_stock.get('stockType');
     for (var j in venue.perStockTypeStockMap[stock_type.get('id')]) {
       to_stock = venue.perStockTypeStockMap[stock_type.get('id')][j];
@@ -566,7 +573,10 @@ function transferStocks() {
       }
     }
 
-    if (!to_stock || to_stock.id == from_stock.id) continue;
+    if (!to_stock || to_stock.id == from_stock.id){
+        errors.push(from_stock);
+        continue;
+    }
     if (stock_type.get('isSeat') && !stock_type.get('quantityOnly')) {
       if (venue.perStockSeatSet[from_stock.id]) {
         venue.perStockSeatSet[from_stock.id].each(function(seat){
@@ -580,6 +590,8 @@ function transferStocks() {
     }
   }
   modal.hide();
+  buildCannotStockActionModal(errors, '枠移動ができなかった在庫がありました');
+  setTimeout(update_tables, 1000);
 }
 
 function buildTransferStocksSelectedModal() {
@@ -613,6 +625,34 @@ function buildCannotSeatActionModal(seats, message){
         var row = $('<tr>'+
                     '<td>'+seat.get('id')+'</td>' +
                     '<td>'+seat.get('name')+'</td>' +
+                    '</tr>');
+        table.append(row);
+    });
+
+    msg.text(message);
+    body.empty();
+    body.append(table);
+    modal.show();
+}
+
+
+function buildCannotStockActionModal(stocks, message){
+    if (stocks.length == 0){
+        return; // no error
+    }
+    var modal = $('#modal-cannot-stock-action');
+    var msg = modal.find('#cannot-stock-action-message');
+    var body = modal.find('.modal-body');
+
+    var table = $('<table><tr>'+
+                  '<th>枠</th>'+
+                  '<th>席種</th>'+
+                  '</tr></table>');
+
+    $.each(stocks, function(index, stock){
+        var row = $('<tr>'+
+                    '<td>'+stock.get('stockHolder').get('name')+'</td>' +
+                    '<td>'+stock.get('stockType').get('name')+'</td>' +
                     '</tr>');
         table.append(row);
     });
@@ -1123,6 +1163,26 @@ $(function() {
   </div>
   <div class="modal-footer">
     <a href="javascript:void(0);" onclick="$('#modal-cannot-seat-convert').hide();" class="btn secondary">閉じる</a>
+  </div>
+  </form>
+</div>
+
+
+<div id="modal-cannot-stock-action" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3 id="cannot-stock-action-message">在庫の操作に失敗しました</h3>
+  </div>
+  <div class="modal-body">
+    <table >
+    <tr>
+    <th>座種</th>
+    <th>枠</th>
+    </tr>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-cannot-stock-action').hide();" class="btn secondary">閉じる</a>
   </div>
   </form>
 </div>
