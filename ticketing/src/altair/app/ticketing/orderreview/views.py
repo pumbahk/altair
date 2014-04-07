@@ -406,7 +406,7 @@ def order_review_qr_print(context, request):
             logger.info("response = %s" % res_text)
             response = json.loads(res_text)
         except Exception, e:
-            logger.error(e.message, exc_info=1)
+            logger.exception(res_text)
             ## この例外は違う...
             raise HTTPNotFound()
 
