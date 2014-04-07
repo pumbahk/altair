@@ -10,7 +10,6 @@ from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql import functions as safunc
 from sqlalchemy.orm import aliased
 from pyramid.interfaces import IRequest
-from pyramid.threadlocal import get_current_request
 from pyramid.httpexceptions import HTTPBadRequest
 
 from altair.app.ticketing.models import DBSession, asc_or_desc
@@ -46,7 +45,7 @@ from altair.app.ticketing.sej.models import (
     SejOrder,
     )
 from altair.app.ticketing.payments.payment import Payment
-from altair.app.ticketing.payments.api import get_delivery_plugin, refresh_order
+from altair.app.ticketing.payments.api import get_delivery_plugin, lookup_plugin
 from altair.app.ticketing.payments import plugins as payments_plugins
 from .models import OrderSummary
 
@@ -563,8 +562,7 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
         return query
 
 
-def create_inner_order(cart, note):
-    request = get_current_request()
+def create_inner_order(request, cart, note):
     payment_plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
 
     if payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
@@ -594,8 +592,29 @@ def create_inner_order(cart, note):
     order.note = note
     return order
 
-def save_order_modification(order, modify_data):
-    request = get_current_request()
+def refresh_order(request, session, order):
+    session.add(order)
+    logger.info('Trying to refresh order %s (id=%d, payment_delivery_pair={ payment_method=%s, delivery_method=%s })...'
+                        % (order.order_no, order.id, order.payment_delivery_pair.payment_method.name, order.payment_delivery_pair.delivery_method.name))
+    os = order.organization.setting
+    request.altair_checkout3d_override_shop_name = os.multicheckout_shop_name
+    payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order.payment_delivery_pair)
+    if payment_delivery_plugin is not None:
+        logger.info('payment_delivery_plugin.refresh')
+        payment_delivery_plugin.refresh(request, order)
+        transaction.commit()
+    else:
+        logger.info('payment_plugin.refresh')
+        payment_plugin.refresh(request, order)
+        transaction.commit()
+        session.add(order)
+        logger.info('delivery_plugin.refresh')
+        delivery_plugin.refresh(request, order)
+        transaction.commit()
+    session.add(order)
+    logger.info('Finished refreshing order %s (id=%d)' % (order.order_no, order.id))
+
+def save_order_modification(request, order, modify_data):
     reserving = cart_api.get_reserving(request)
     stocker = cart_api.get_stocker(request)
 
@@ -746,7 +765,7 @@ def save_order_modification(order, modify_data):
     if order.total_amount > modify_order.total_amount or \
        payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID or \
        delivery_plugin_id == payments_plugins.SEJ_DELIVERY_PLUGIN_ID:
-        refresh_order(DBSession, modify_order)
+        refresh_order(request, DBSession, modify_order)
 
     return modify_order
 

@@ -10,7 +10,7 @@ from sqlalchemy.sql.expression import desc
 from paste.deploy import loadapp
 from pyramid.paster import bootstrap, setup_logging
 
-from altair.app.ticketing.payments.api import refresh_order
+from altair.app.ticketing.orders.api import refresh_order
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ def main(argv=sys.argv):
 
         for order in orders:
             print order
-            refresh_order(session, order)
+            refresh_order(request, session, order)
 
     except Exception as e:
         raise

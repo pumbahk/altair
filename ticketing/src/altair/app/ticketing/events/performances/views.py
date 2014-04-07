@@ -169,7 +169,7 @@ class PerformanceShowView(BaseView):
                 import_type=f.import_type.data,
                 allocation_mode=f.allocation_mode.data
             )
-            importer.validate()
+            importer.validate(self.request)
             self.request.session['ticketing.order.importer'] = importer
             return HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id))
 

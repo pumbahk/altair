@@ -45,7 +45,7 @@ def message(msg, auxiliary=False):
 
 def do_renew_issuing_start_at(request, session, file_, format, encoding):
     from altair.app.ticketing.core.models import Order
-    from altair.app.ticketing.payments.api import refresh_order
+    from altair.app.ticketing.orders.api import refresh_order
     now = datetime.now()
     f = open(file_)
     r = csv.reader(f, dialect=format)
@@ -73,7 +73,7 @@ def do_renew_issuing_start_at(request, session, file_, format, encoding):
             message('creating a branch for Order %s to update issuing_start_at' % order_no)
             new_order = Order.clone(order, deep=True)
             new_order.issuing_start_at = new_issuing_start_at
-            refresh_order(session, new_order)
+            refresh_order(request, session, new_order)
             message('done processing Order %s' % order_no)
             transaction.commit()
         except:

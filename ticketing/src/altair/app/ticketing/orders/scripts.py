@@ -228,7 +228,7 @@ def import_orders():
             task = DBSession.merge(task)
             logging.info('order_import_task(%s) importing..' % task.id)
             importer = OrderImporter.load_task(task)
-            importer.execute()
+            importer.execute(request)
             transaction.commit()
         except Exception, e:
             transaction.abort()

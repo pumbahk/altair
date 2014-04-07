@@ -12,7 +12,6 @@ from collections import OrderedDict
 from StringIO import StringIO
 
 from zope.interface import implementer
-from pyramid.threadlocal import get_current_request
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
@@ -622,8 +621,7 @@ class OrderImporter(object):
                 raise e
         return seats
 
-    def execute(self):
-        request = get_current_request()
+    def execute(self, request):
         stocker = cart_api.get_stocker(request)
         reserving = cart_api.get_reserving(request)
 
@@ -697,7 +695,7 @@ class OrderImporter(object):
 
             # create Order
             try:
-                order = create_inner_order(temp_cart, note)
+                order = create_inner_order(request, temp_cart, note)
             except Exception, e:
                 logger.error('create inner order error (%s): %s' % (org_order_no, e.message), exc_info=sys.exc_info())
                 transaction.abort()
