@@ -11,7 +11,7 @@ def setup_cart(config):
     config.include('altair.app.ticketing.cart.setup_components')
 
     config.add_subscriber('.subscribers.on_order_completed', 'altair.app.ticketing.cart.events.OrderCompleted')
-    config.set_cart_getter('altair.app.ticketing.cart.api.get_cart_safe')
+    config.include('altair.app.ticketing.cart.setup_cart_interface')
     config.commit()
 
 def setup_excviews(config):

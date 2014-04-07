@@ -16,6 +16,7 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
 from altair.app.ticketing.users import api as user_api
 from altair.app.ticketing.utils import toutc
+from altair.app.ticketing.payments.api import set_confirm_url
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
@@ -96,13 +97,15 @@ def nogizaka_auth(context, request):
 @view_config(context=NoResultFound)
 def no_results_found(context, request):
     """ 改良が必要。ログに該当のクエリを出したい。 """
-    logger.warning(context)    
-    return HTTPNotFound()
-
-@view_config(context=NoCartError)
-def no_cart_error(context, request):
     logger.warning(context)
     return HTTPNotFound()
+
+@view_config(context=NoCartError, renderer=selectable_renderer("pc/%(membership)s/timeout.html"))
+@mobile_view_config(context=NoCartError, renderer=selectable_renderer("mobile/%(membership)s/timeout.html"))
+@smartphone_view_config(context=NoCartError, renderer=selectable_renderer("smartphone/%(membership)s/timeout.html"))
+def no_cart_error(context, request):
+    request.response.status = 404
+    return {}
 
 @view_defaults(route_name='lots.entry.index', renderer=selectable_renderer("pc/%(membership)s/index.html"), permission="lots")
 class EntryLotView(object):
@@ -312,7 +315,7 @@ class EntryLotView(object):
         cart = LotSessionCart(entry, self.request, self.context.lot)
 
         payment = Payment(cart, self.request)
-        self.request.session['payment_confirm_url'] = urls.entry_confirm(self.request)
+        set_confirm_url(self.request, urls.entry_confirm(self.request))
 
         result = payment.call_prepare()
         if callable(result):

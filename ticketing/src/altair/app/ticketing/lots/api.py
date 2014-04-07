@@ -35,6 +35,7 @@ from datetime import datetime, date
 from collections import OrderedDict
 from uuid import uuid4
 from sqlalchemy import sql
+from sqlalchemy.orm.exc import NoResultFound
 #from pyramid.interfaces import IRequest
 from webob.multidict import MultiDict
 from altair.app.ticketing.core import api as c_api
@@ -60,6 +61,7 @@ from altair.app.ticketing.users.models import (
 from altair.app.ticketing.cart.models import (
     Cart,
 )
+from altair.app.ticketing.cart.exceptions import NoCartError
 
 from .models import (
     Lot,
@@ -126,8 +128,14 @@ def get_requested_lot(request):
 
 
 def get_entry_cart(request):
-    entry = request.session['lots.entry']
-    cart = LotSessionCart(entry, request, Lot.query.filter(Lot.id==entry['lot_id']).one())
+    entry = request.session.get('lots.entry')
+    if entry is None:
+        raise NoCartError('Cart is not associated to the request (lots)')
+    try:
+        lot = Lot.query.filter(Lot.id==entry['lot_id']).one()
+    except NoResultFound:
+        raise NoCartError("Cart is associated with a non-existent lot!")
+    cart = LotSessionCart(entry, request, lot)
     return cart
 
 def build_lot_entry_wish(wish_order, wish_rec):

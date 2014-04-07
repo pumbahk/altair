@@ -11,6 +11,7 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, Performance, Product
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.views import back
+from altair.app.ticketing.payments.api import set_confirm_url
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.cart.exceptions import NoCartError
 
@@ -36,11 +37,6 @@ logger = logging.getLogger(__name__)
 def no_results_found(context, request):
     """ 改良が必要。ログに該当のクエリを出したい。 """
     logger.warning(context)    
-    return HTTPNotFound()
-
-@mobile_view_config(context=NoCartError)
-def no_cart_error(context, request):
-    logger.warning(context)
     return HTTPNotFound()
 
 
@@ -355,7 +351,7 @@ class EntryLotView(object):
         cart = LotSessionCart(entry, self.request, self.context.lot)
 
         payment = Payment(cart, self.request)
-        self.request.session['payment_confirm_url'] = urls.entry_confirm(self.request)
+        set_confirm_url(self.request, urls.entry_confirm(self.request))
 
         result = payment.call_prepare()
         if callable(result):

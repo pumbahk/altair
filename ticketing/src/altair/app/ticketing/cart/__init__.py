@@ -252,6 +252,20 @@ def import_mail_module(config):
     config.include('altair.app.ticketing.mails')
     config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
 
+
+class CartInterface(object):
+    def get_cart(self, request):
+        from .api import get_cart_safe
+        return get_cart_safe(request)
+
+    def get_success_url(self, request):
+        return request.route_url('payment.confirm')
+
+
+def setup_cart_interface(config):
+    config.set_cart_interface(CartInterface())
+
+
 STATIC_URL_PREFIX = '/static/'
 STATIC_ASSET_SPEC = 'altair.app.ticketing.cart:static/'
 FC_AUTH_URL_PREFIX = '/fc_auth/static/'
@@ -312,11 +326,11 @@ def main(global_config, **local_config):
     config.add_subscriber('altair.app.ticketing.payments.events.cancel_on_delivery_error',
                           'altair.app.ticketing.payments.events.DeliveryErrorEvent')
 
-    config.set_cart_getter('.api.get_cart_safe')
     config.include('.errors')
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
     config.add_tween('altair.app.ticketing.cart.tweens.response_time_tween_factory', over=MAIN)
     config.add_tween('altair.app.ticketing.cart.tweens.PaymentPluginErrorConverterTween', under=EXCVIEW)
+    config.include(setup_cart_interface)
     config.include(setup_mq)
     config.include(setup_renderers)
     config.scan()

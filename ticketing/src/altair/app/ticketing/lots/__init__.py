@@ -51,6 +51,8 @@ selectable_renderer = SelectableRendererSetup(
 
 def includeme(config):
     config.include('altair.app.ticketing.mails')
+    config.include('altair.app.ticketing.payments')
+    config.include('altair.app.ticketing.payments.plugins')
     config.include(setup_cart)
     config.include(setup_mailtraverser)
     config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
@@ -58,8 +60,6 @@ def includeme(config):
     #config.add_renderer('json'  , 'altair.app.ticketing.renderers.json_renderer_factory')
     config.include('altair.app.ticketing.renderers')
     selectable_renderer.register_to(config)
-    config.include('altair.app.ticketing.payments')
-    config.include('altair.app.ticketing.payments.plugins')
     config.include(setup_renderers)
 
     # static_viewにfactoryを適用したくないので、add_routeで個別指定する
@@ -102,17 +102,28 @@ def includeme(config):
     config.scan(".smartphone_views")
     config.scan(".layouts")
 
-# TODO: carts.includemeに移動
-def setup_cart(config):
 
+class CartInterface(object):
+    def get_cart(self, request):
+        from .api import get_entry_cart
+        return get_entry_cart(request)
+
+    def get_success_url(self, request):
+        from .urls import entry_confirm
+        cart = self.get_cart(request)
+        request.matchdict['lot_id'] = cart.lot.id
+        request.matchdict['event_id'] = cart.sales_segment.event.id
+        return entry_confirm(request)
+
+
+def setup_cart(config):
     from altair.app.ticketing.cart.interfaces import IStocker, IReserving, ICartFactory
     from altair.app.ticketing.cart.stocker import Stocker
     reg = config.registry
     reg.adapters.register([IRequest], IStocker, "", Stocker)
 
-    from altair.app.ticketing.payments.interfaces import IGetCart
-    cart_getter = config.maybe_dotted(".api.get_entry_cart")
-    reg.registerUtility(cart_getter, IGetCart)
+    config.set_cart_interface(CartInterface()) 
+
 
 def setup_renderers(config):
     import os
