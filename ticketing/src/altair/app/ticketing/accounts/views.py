@@ -11,7 +11,7 @@ from pyramid.url import route_path
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.core.models import Account, Event
+from altair.app.ticketing.core.models import Account, Event, SejTenant
 from .forms import AccountForm
 from altair.app.ticketing.organizations.forms import OrganizationForm
 

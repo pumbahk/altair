@@ -76,7 +76,7 @@ def main(argv=sys.argv):
 
     try:
         validate_sej_tenant(tenant)
-    except AssertionError as e
+    except AssertionError as e:
         print >>sys.stderr, str(e)
         return 1
 
