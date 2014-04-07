@@ -12,7 +12,7 @@ ${form.sales_segment_group_id}
 % if form.context.performance:
 <input type="hidden" id="${form.performance_id.name}" name="${form.performance_id.name}" value="${form.context.performance.id}" />
 % elif form.context.sales_segment and form.context.sales_segment.lots:
-抽選 
+抽選
 %for lot in form.context.sales_segment.lots:
 ${lot.name}
 <input type="hidden" id="${form.lot_id.name}" name="${form.lot_id.name}" value="${lot.id}" />
@@ -78,12 +78,12 @@ $('[rel=popover]').popover({html:true});
       <td>
         % if form.context.sales_segment_group:
           % if form.context.sales_segment_group.start_at:
-            ${vh.datetime(form.context.sales_segment_group.start_at)}
+            ${vh.datetime(form.context.sales_segment_group.start_at, with_weekday=True)}
           % else:
             % if form.context.performance:
-              ${vh.datetime(form.context.sales_segment_group.start_for_performance(form.context.performance))}
+              ${vh.datetime(form.context.sales_segment_group.start_for_performance(form.context.performance), with_weekday=True)}
               <p class="label label-info">
-                公演日 (${vh.date(form.context.performance.start_on)}) の
+                公演日 (${vh.date(form.context.performance.start_on, with_weekday=True)}) の
                 ${form.context.sales_segment_group.start_day_prior_to_performance}日前
               </p>
             % endif
@@ -103,12 +103,12 @@ $('[rel=popover]').popover({html:true});
       <td>
         % if form.context.sales_segment_group:
           % if form.context.sales_segment_group.end_at:
-            ${vh.datetime(form.context.sales_segment_group.end_at)}
+            ${vh.datetime(form.context.sales_segment_group.end_at, with_weekday=True)}
           % else:
             % if form.context.performance:
-              ${vh.datetime(form.context.sales_segment_group.end_for_performance(form.context.performance))}
+              ${vh.datetime(form.context.sales_segment_group.end_for_performance(form.context.performance), with_weekday=True)}
               <p class="label label-info">
-                公演日 (${vh.date(form.context.performance.end_on)}) の
+                公演日 (${vh.date(form.context.performance.end_on, with_weekday=True)}) の
                 ${form.context.sales_segment_group.end_day_prior_to_performance}日前
               </p>
             % endif

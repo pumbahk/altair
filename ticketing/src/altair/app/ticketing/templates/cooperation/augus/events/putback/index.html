@@ -22,9 +22,9 @@
         返券-${putback.augus_putback_code}
       </a>
     </td>
-    <td>${putback.reserved_at}</td>
-    <td>${putback.notified_at}</td>
-    <td>${putback.finished_at}</td>
+    <td>${vh.datetime(putback.reserved_at, with_weekday=True)}</td>
+    <td>${vh.datetime(putback.notified_at, with_weekday=True)}</td>
+    <td>${vh.datetime(putback.finished_at, with_weekday=True)}</td>
   </tr>
   %endfor
 </table>

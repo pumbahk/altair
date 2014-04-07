@@ -35,7 +35,7 @@
             </tr>
             <tr>
               <th>楽天あんしん支払いサービス 売上日時</th>
-              <td>${vh.datetime(checkout.sales_at)}</td>
+              <td>${vh.datetime(checkout.sales_at, with_weekday=True)}</td>
             </tr>
             % endif
             % if sej_order:
