@@ -34,6 +34,7 @@ class SalesSegmentGroupForm(OurForm):
         fix_boolean(formdata, 'display_seat_no')
         fix_boolean(formdata, 'public')
         fix_boolean(formdata, 'reporting')
+        fix_boolean(formdata, 'sales_counter_selectable')
         context = kwargs.pop('context', None)
         super(SalesSegmentGroupForm, self).__init__(formdata, obj, prefix, **kwargs)
         self.context = context
@@ -176,6 +177,10 @@ class SalesSegmentGroupForm(OurForm):
     )
     reporting = OurBooleanField(
         label=u'レポート対象',
+        hide_on_new=True
+    )
+    sales_counter_selectable = OurBooleanField(
+        label=label_text_for(SalesSegmentGroupSetting.sales_counter_selectable),
         hide_on_new=True
     )
     account_id = OurSelectField(

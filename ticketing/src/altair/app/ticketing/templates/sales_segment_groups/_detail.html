@@ -91,6 +91,12 @@
     </td>
   </tr>
   <tr>
+    <th>${HH.label_text_for(SalesSegmentGroupSetting.sales_counter_selectable)}</th>
+    <td id="sales_counter_selectable" value="${sales_segment_group.setting.sales_counter_selectable}">
+      ${u'対象' if sales_segment_group.setting.sales_counter_selectable else u'対象外'}
+    </td>
+  </tr>
+  <tr>
     <th>${HH.label_text_for(SalesSegmentGroup.auth3d_notice)}</th>
     <td>${sales_segment_group.auth3d_notice or u'(なし)'}</td>
   </tr>

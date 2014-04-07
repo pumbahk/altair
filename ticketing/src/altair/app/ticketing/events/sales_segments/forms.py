@@ -104,6 +104,16 @@ class SalesSegmentForm(OurForm):
         default=True,
         widget=CheckboxInput()
     )
+    sales_counter_selectable = OurBooleanField(
+        label=label_text_for(SalesSegmentSetting.sales_counter_selectable),
+        default=True,
+        widget=CheckboxInput()
+    )
+    use_default_sales_counter_selectable = OurBooleanField(
+        label=u'グループの値を利用',
+        default=True,
+        widget=CheckboxInput()
+    )
 
     payment_delivery_method_pairs = PHPCompatibleSelectMultipleField(
         label=u'決済・引取方法',

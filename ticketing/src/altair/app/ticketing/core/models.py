@@ -4073,6 +4073,7 @@ class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted,
     disp_orderreview = AnnotatedColumn(Boolean, default=True,
                                   _a_label=_(u'一般チケットの購入履歴表示／非表示'))
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
+    sales_counter_selectable = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'窓口業務で閲覧可能'))
 
     @classmethod
     def create_from_template(cls, template, **kwargs):
@@ -4091,11 +4092,13 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     disp_orderreview = AnnotatedColumn(Boolean, default=True,
                                   _a_label=_(u'一般チケットの購入履歴表示／非表示'))
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
+    sales_counter_selectable = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'窓口業務で閲覧可能'))
 
     use_default_order_limit = Column(Boolean)
     use_default_max_quantity_per_user = Column(Boolean)
     use_default_disp_orderreview = Column(Boolean)
     use_default_display_seat_no = Column(Boolean)
+    use_default_sales_counter_selectable = Column(Boolean)
 
     @property
     def super(self):
