@@ -53,7 +53,6 @@ def send_to_orion(request, context, recipient, data):
     api_url = settings.get('orion.create_url')
     if api_url is None:
         raise Exception("orion.api_uri is None")
-    print "target url is %s" % api_url
     
     order = data.item.ordered_product.order
     product = data.item.ordered_product.product

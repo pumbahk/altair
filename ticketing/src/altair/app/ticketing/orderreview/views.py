@@ -360,10 +360,9 @@ def order_review_qr_image(context, request):
 
     if ticket.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID:
         # orion
-        print "mode orion image"
         try:
             res_text = api.send_to_orion(request, context, None, ticket.item_token)
-            print "response = %s" % res_text
+            logger.info("response = %s" % res_text)
             response = json.loads(res_text)
             if response['result'] == u"OK" and response.has_key('serial'):
                 qr = build_qr_by_orion(request, ticket, response['serial'])
@@ -400,12 +399,11 @@ def order_review_qr_print(context, request):
 
     if ticket.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID:
         # orion
-        print "mode orion"
         try:
             if ticket.order.order_no != request.params['order_no']:
                 raise Exception(u"Wrong order number or token: (%s, %s)" % (request.params['order_no'], request.params['token']))
             res_text = api.send_to_orion(request, context, None, ticket.item_token)
-            print "response = %s" % res_text
+            logger.info("response = %s" % res_text)
             response = json.loads(res_text)
         except Exception, e:
             logger.error(e.message, exc_info=1)
@@ -520,7 +518,7 @@ def order_review_send_to_orion(context, request):
         if data.item.ordered_product.order.order_no != request.params['order_no']:
             raise Exception(u"Wrong order number or token: (%s, %s)" % (request.params['order_no'], request.params['token']))
         res_text = api.send_to_orion(request, context, mail, data)
-        print "response = %s" % res_text
+        logger.info("response = %s" % res_text)
     except Exception, e:
         logger.error(e.message, exc_info=1)
         ## この例外は違う...
