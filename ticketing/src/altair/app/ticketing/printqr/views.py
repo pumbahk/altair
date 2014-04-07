@@ -26,10 +26,12 @@ from datetime import datetime
 from altair.app.ticketing.qr.utils import get_matched_token_query_from_order_no
 from altair.app.ticketing.qr.utils import get_or_create_matched_history_from_token
 from altair.app.ticketing.qr.utils import make_data_for_qr
+from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.orderreview.api import send_to_orion
+from altair.app.ticketing.qr.utils import build_qr_by_orion
 
 import urllib
 import urllib2
-import json
 import traceback
 
 def _accepted_object(request, obj):
@@ -77,7 +79,30 @@ def orderno_show_qrsigned_after_validated(context, request, form):
     order_no = order.order_no
 
     tokens = get_matched_token_query_from_order_no(order_no)
-    histories = (get_or_create_matched_history_from_token(order_no, tk) for tk in tokens)
+
+    if (order.performance.orion is not None
+        and order.performance.orion.qr_enabled
+        and order.payment_delivery_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID):
+        histories = []
+        for token in tokens:
+            json_string = send_to_orion(request, context, None, token)
+            logger.info("response = %s" % json_string)
+            response = json.loads(json_string)
+            qr = None
+            if response['result'] == u"OK" and response.has_key('serial'):
+                fake_history = type('FakeTicketPrintHistory', (), {
+                    'id': response['serial'],
+                    'performance': order.performance,
+                    'order': order,
+                    'ordered_product_item': token.item,
+                    'item_token': token,
+                    'seat': token.seat,
+                })
+                qr = build_qr_by_orion(request, fake_history, response['serial'])
+            histories.append(qr)
+    else:
+        histories = (get_or_create_matched_history_from_token(order_no, tk) for tk in tokens)
+
     builder = get_qrdata_builder(request)
 
     signed_history_doubles = sorted([(_signed_string_from_history(builder, history), history) for history in histories], key=lambda xs : xs[1].id)
