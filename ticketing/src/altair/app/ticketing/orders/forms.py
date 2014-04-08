@@ -1031,7 +1031,7 @@ class SejRefundOrderForm(Form):
         label=u'その他払戻金額',
         validators=[Optional()],
     )
-            
+
 class SendingMailForm(Form):
     # subject = TextField(
     #     label=u"メールタイトル",
@@ -1056,8 +1056,8 @@ class SendingMailForm(Form):
 
 class TicketFormatSelectionForm(OurForm):
     ticket_format_id = BugFreeSelectField(
-        label=u"チケット様式", 
-        choices=[], 
+        label=u"チケット様式",
+        choices=[],
         coerce=long,
         validators=[Optional()],
     )
@@ -1075,9 +1075,9 @@ class TicketFormatSelectionForm(OurForm):
 
 class CheckedOrderTicketChoiceForm(Form):
     ticket_format_id = SelectField(
-        label=u"チケット様式", 
-        coerce=int, 
-        choices=[], 
+        label=u"チケット様式",
+        coerce=int,
+        choices=[],
     )
 
     def __init__(self, *args, **kwargs):
@@ -1121,7 +1121,7 @@ class CartSearchForm(SearchFormBase):
         ]
     )
 
-def OrderMemoEditFormFactory(N, memo_field_name_fmt="memo_on_order{}", 
+def OrderMemoEditFormFactory(N, memo_field_name_fmt="memo_on_order{}",
                                    memo_field_label_fmt=u"補助文言{}(最大20文字)"):
     attrs = {}
     for i in range(1, N+1):
