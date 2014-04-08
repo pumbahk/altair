@@ -302,13 +302,6 @@ class OrderIndexView(OrderBaseView):
 
         form_search = OrderSearchForm(params, organization_id=organization_id)
 
-        if request.params.get('action') == 'checked':
-            
-            checked_orders = [o.lstrip('o:') 
-                              for o in request.session.get('orders', []) 
-                              if o.startswith('o:')]
-            query.target_order_ids = checked_orders
-
         orders = None
         total = None
         page = int(request.params.get('page', 0))
