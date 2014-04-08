@@ -346,7 +346,7 @@ class EntryLotView(object):
                               int(cform['month'].data),
                               int(cform['day'].data)),
             memo=cform['memo'].data)
-        entry = self.request.session['lots.entry']
+        entry = api.get_lot_entry_dict(self.request)
         self.request.session['lots.entry.time'] = datetime.now()
         cart = LotSessionCart(entry, self.request, self.context.lot)
 
