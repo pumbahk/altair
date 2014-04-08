@@ -306,7 +306,7 @@ class EntryLotView(object):
             birthday=birthday,
             memo=cform['memo'].data)
 
-        entry = self.request.session.get('lots.entry')
+        entry = api.get_lot_entry_dict(self.request)
         if entry is None:
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
@@ -335,7 +335,7 @@ class ConfirmLotEntryView(object):
     @smartphone_view_config(request_method="GET", renderer=selectable_renderer("smartphone/%(membership)s/confirm.html"))
     def get(self):
         # セッションから表示
-        entry = self.request.session.get('lots.entry')
+        entry = api.get_lot_entry_dict(self.request)
         if entry is None:
             return self.back_to_form()
         if not entry.get('token'):
@@ -395,7 +395,7 @@ class ConfirmLotEntryView(object):
             return self.back_to_form()
 
 
-        entry = self.request.session.get('lots.entry')
+        entry = api.get_lot_entry_dict(self.request)
         if entry is None:
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
@@ -433,7 +433,7 @@ class ConfirmLotEntryView(object):
             memo=entry['memo']
             )
         self.request.session['lots.entry_no'] = entry.entry_no
-
+        api.clear_lot_entry(self.request)
 
         try:
             api.notify_entry_lot(self.request, entry)
@@ -458,7 +458,7 @@ class CompletionLotEntryView(object):
         """ 完了画面 """
         if 'lots.entry_no' not in self.request.session:
             return HTTPFound(location=self.request.route_url('lots.entry.index', **self.request.matchdict))
-        entry_no = self.request.session.pop('lots.entry_no')
+        entry_no = self.request.session.get('lots.entry_no')
         entry = DBSession.query(LotEntry).filter(LotEntry.entry_no==entry_no).one()
         if entry is None:
             self.request.session.flash(u"セッションに問題が発生しました。")
@@ -474,8 +474,10 @@ class CompletionLotEntryView(object):
         if magazine_ids:
             user = user_api.get_or_create_user(self.context.authenticated_user())
             multi_subscribe(user, entry.shipping_address.emails, magazine_ids)
-            self.request.session['lots.magazine_ids'] = None
-            self.request.session.persist() # XXX: 完全に念のため
+            try:
+                del self.request.session['lots.magazine_ids']
+            except:
+                pass
 
         return dict(
             event=self.context.event,

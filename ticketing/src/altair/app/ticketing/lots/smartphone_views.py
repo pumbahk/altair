@@ -348,7 +348,7 @@ class EntryLotView(object):
             birthday=birthday,
             memo=cform['memo'].data)
 
-        entry = self.request.session.get('lots.entry')
+        entry = api.get_lot_entry_dict(self.request)
         if entry is None:
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
