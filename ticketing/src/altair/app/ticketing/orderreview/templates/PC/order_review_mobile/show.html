@@ -104,6 +104,10 @@ ${shipping.address_2}
 </form>
 % elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 3:
 <div>窓口受取</div>
+<div>
+※ご購入後、お申込み完了画面に表示される、【受付番号】をお控えの上、必ず当日お持ちください。<br/>
+※チケットはご観覧日の当日、ご予約いただいた公演時間の開演20分前までに会場チケット窓口にてお受け取り下さい。
+</div>
 % elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 4:
     <% from altair.app.ticketing.core.api import get_organization %>
     % if not get_organization(request).id == 24:
@@ -119,7 +123,6 @@ ${h.render_delivery_finished_viewlet(request, order)}
 &#xe737;注意事項<br />
 <font size="-2">
 %if order.payment_delivery_pair.delivery_method.delivery_plugin.id == 1:
-
 %endif
 %if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
 ・セブン-イレブン決済の際には払込票番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。<br />
