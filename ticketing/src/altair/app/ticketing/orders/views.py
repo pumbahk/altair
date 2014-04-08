@@ -855,7 +855,6 @@ class OrderDetailView(BaseView):
         forms = self.context.get_dependents_forms()
         form_shipping_address = forms.get_shipping_address_form()
         form_order = forms.get_order_form()
-        form_order_reserve = forms.get_order_reserve_form()
         form_refund = forms.get_order_refund_form()
         form_each_print = forms.get_each_print_form(default_ticket_format_id)
 
@@ -870,7 +869,6 @@ class OrderDetailView(BaseView):
             'mail_magazines':mail_magazines,
             'form_shipping_address':form_shipping_address,
             'form_order':form_order,
-            'form_order_reserve':form_order_reserve,
             'form_refund':form_refund,
             'form_each_print': form_each_print,
             'form_order_edit_attribute': forms.get_order_edit_attribute(), 
@@ -1463,7 +1461,6 @@ class OrdersReserveView(BaseView):
         logger.debug('order reserve post_data=%s' % post_data)
 
         performance_id = int(post_data.get('performance_id', 0))
-        sales_segment_id = int(post_data.get('sales_segment_id', 0))
         performance = Performance.get(performance_id, self.context.organization.id)
         if performance is None:
             raise HTTPBadRequest(body=json.dumps({
@@ -1479,19 +1476,21 @@ class OrdersReserveView(BaseView):
         # 古い確保座席がセッションに残っていたら削除
         self.clear_inner_cart_session()
 
-        stocks = post_data.get('stocks')
-        form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks, sales_segment_id=sales_segment_id, request=self.request)
+        form_reserve = OrderReserveForm(post_data, performance_id=performance_id, request=self.request)
         form_reserve.sales_segment_id.validators = [Optional()]
+        form_reserve.stock_holder_id.validators = [Optional()]
         form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
         form_reserve.validate()
 
         # 選択されたSeatがあるならステータスをKeepにして確保する
-        seats = []
-        if post_data.get('seats'):
+        stocks = post_data.get('stocks')
+        seats = post_data.get('seats')
+        reserved_seats = []
+        if seats:
             try:
                 reserving = api.get_reserving(self.request)
                 stock_status = [(stock, 0) for stock in StockStatus.filter(StockStatus.stock_id.in_(stocks))]
-                seats = reserving.reserve_selected_seats(stock_status, performance_id, post_data.get('seats'), reserve_status=SeatStatusEnum.Keep)
+                reserved_seats = reserving.reserve_selected_seats(stock_status, performance_id, seats, reserve_status=SeatStatusEnum.Keep)
             except InvalidSeatSelectionException:
                 logger.info("seat selection is invalid.")
                 raise HTTPBadRequest(body=json.dumps({'message':u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。'}))
@@ -1502,11 +1501,11 @@ class OrdersReserveView(BaseView):
         # セッションに保存
         self.request.session['altair.app.ticketing.inner_cart'] = {
             'venue_id':performance.venue.id,
-            'stocks':post_data.get('stocks'),
-            'seats':post_data.get('seats'),
+            'stocks':stocks,
+            'seats':seats,
         }
         return {
-            'seats':seats,
+            'seats':reserved_seats,
             'form':form_reserve,
             'form_order_edit_attribute': OrderMemoEditFormFactory(3)(), 
             'performance':performance,
@@ -1517,10 +1516,9 @@ class OrdersReserveView(BaseView):
         post_data = MultiDict(self.request.json_body)
         post_data.update(self.get_inner_cart_session())
         performance_id = int(post_data.get('performance_id', 0))
-        stock_holder_id = int(post_data.get('stock_holder_id', 0))
         performance = Performance.get(performance_id, self.context.organization.id)
 
-        f = OrderReserveForm(post_data, performance_id=performance_id, stocks=post_data.get('stocks'), sales_segment_id=post_data.get('sales_segment_id'), stock_holder_id=stock_holder_id, request=self.request)
+        f = OrderReserveForm(post_data, performance_id=performance_id, request=self.request)
         selected_seats = Seat.query.filter(and_(
             Seat.l0_id.in_(post_data.get('seats')),
             Seat.venue_id==post_data.get('venue_id')
@@ -1555,8 +1553,7 @@ class OrdersReserveView(BaseView):
             logger.debug('order reserve confirm post_data=%s' % post_data)
 
             # validation
-            f = OrderReserveForm(performance_id=performance_id, stocks=post_data.get('stocks'), sales_segment_id=post_data.get('sales_segment_id'), request=self.request)
-            f.process(post_data)
+            f = OrderReserveForm(post_data, performance_id=performance_id)
             if not f.validate():
                 raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(), []))
 
