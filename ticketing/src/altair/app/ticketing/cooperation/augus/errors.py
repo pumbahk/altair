@@ -34,3 +34,6 @@ class AugusIntegrityError(AugusError):
 
 class IllegalDataError(AugusError):
     pass
+
+class DuplicateFileNameError(AugusError):
+    pass

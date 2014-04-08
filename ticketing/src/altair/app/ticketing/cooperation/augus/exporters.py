@@ -39,8 +39,10 @@ from altair.augus.protocols import (
 from altair.augus.exporters import AugusExporter
 from .errors import (
     AugusDataExportError,
+    DuplicateFileNameError,
     )
 
+RETRY = 100
 
 class AugusDistributionExporter(object):
     def create_response(self, request, status):
@@ -133,7 +135,15 @@ class AugusPutbackExporter(object):
                 continue
             response.customer_id = customer_id
             response.start_on = response[0].start_on
-            resfile_path = os.path.join(path, response.name)
+            resfile_path = ''
+            for ii in range(RETRY):
+                response.created_at = time.localtime()
+                resfile_path = os.path.join(path, response.name)
+                if not os.path.exists(resfile_path):
+                    break
+                time.sleep(1)
+            else:
+                raise DuplicateFileNameError(resfile_path)
             AugusExporter.export(response, resfile_path)
         return responses
 
