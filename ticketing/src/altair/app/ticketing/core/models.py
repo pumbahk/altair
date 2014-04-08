@@ -2002,6 +2002,24 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         stock_holder.save()
         return {template.id:stock_holder.id}
 
+    def num_seats(self, performance_id=None, sale_only=False):
+        # 同一Performanceの同一StockHolderにおけるStock.quantityの合計
+        query = Stock.filter_by(stock_holder_id=self.id).with_entities(func.sum(Stock.quantity))
+        if performance_id:
+            query = query.filter_by(performance_id=performance_id)
+            if sale_only:
+                query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
+        return query.scalar()
+
+    def rest_num_seats(self, performance_id=None, sale_only=False):
+        # 同一Performanceの同一StockHolderにおけるStockStatus.quantityの合計
+        query = Stock.filter(Stock.stock_holder_id==self.id).join(Stock.stock_status).with_entities(func.sum(StockStatus.quantity))
+        if performance_id:
+            query = query.filter(Stock.performance_id==performance_id)
+            if sale_only:
+                query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
+        return query.scalar()
+
 # stock based on quantity
 class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Stock"

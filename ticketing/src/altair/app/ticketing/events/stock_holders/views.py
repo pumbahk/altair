@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import json
 import logging
 
 import webhelpers.paginate as paginate
@@ -90,7 +90,7 @@ class StockHolders(BaseView):
                 'text_color':f.data.get('text_color'),
             }
             stock_holder.style = style
-            stock_holder.is_putback_target = f.data.get('is_putback_target')            
+            stock_holder.is_putback_target = f.data.get('is_putback_target')
             stock_holder.save()
 
             self.request.session.flash(u'枠を保存しました')
@@ -116,3 +116,16 @@ class StockHolders(BaseView):
             raise HTTPFound(location=location)
 
         return HTTPFound(location=location)
+
+    @view_config(route_name='stock_holders.count', request_method='GET', renderer='json')
+    def count(self):
+        """
+        """
+        stock_holder_id = int(self.request.matchdict.get('stock_holder_id', 0))
+        stock_holder = StockHolder.get(stock_holder_id)
+        if stock_holder is None:
+            return HTTPNotFound('stock_holder id %d is not found' % stock_holder_id)
+        res = {'total': int(stock_holder.num_seats()),
+               'rest': int(stock_holder.rest_num_seats()),
+               }
+        return res
