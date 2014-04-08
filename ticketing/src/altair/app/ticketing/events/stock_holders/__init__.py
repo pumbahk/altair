@@ -5,3 +5,4 @@ def includeme(config):
     config.add_route('stock_holders.new', '/new/{event_id}')
     config.add_route('stock_holders.edit', '/edit/{stock_holder_id}')
     config.add_route('stock_holders.delete', '/delete/{stock_holder_id}')
+    config.add_route('stock_holders.count', '/count/{stock_holder_id}')
