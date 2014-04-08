@@ -57,7 +57,7 @@ class GetContactURLTest(TestCase):
         """
         get_organization.return_value \
             = organization = cls._create_organization()
-        get_organization_setting.return_value = setting = cls._create_setting()
+        organization.setting = get_organization_setting.return_value = setting = cls._create_setting()
         is_mobile_request.return_value = True
         request = cls._create_request(organization)
         return request, organization, setting
