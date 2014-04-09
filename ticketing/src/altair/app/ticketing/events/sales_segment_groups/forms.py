@@ -181,7 +181,11 @@ class SalesSegmentGroupForm(OurForm):
     )
     sales_counter_selectable = OurBooleanField(
         label=label_text_for(SalesSegmentGroupSetting.sales_counter_selectable),
-        hide_on_new=True
+        hide_on_new=True,
+        help=u'''
+          窓口業務でこの販売区分を選択可能にします。<br />
+          例外として「公演管理編集」権限があるオペレーターは常に選択可能です。
+        '''
     )
     account_id = OurSelectField(
         label=u'配券元',
