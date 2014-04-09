@@ -5,8 +5,6 @@
 import json
 from pyramid.config import Configurator
 from pyramid.interfaces import IRequest, IDict
-from pyramid_beaker import session_factory_from_settings
-from pyramid_beaker import set_cache_regions_from_settings
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.tweens import EXCVIEW
 from pyramid.tweens import INGRESS
@@ -17,6 +15,7 @@ from altair.app.ticketing.wsgi import direct_static_serving_filter_factory
 
 import sqlalchemy as sa
 import sqlahelper
+
 
 class WhoDecider(object):
     def __init__(self, request):
@@ -225,15 +224,15 @@ def main(global_config, **local_config):
     engine = sa.engine_from_config(settings, poolclass=NullPool, isolation_level='READ COMMITTED')
 
     sqlahelper.add_engine(engine)
-    session_factory = session_factory_from_settings(settings)
-    set_cache_regions_from_settings(settings) 
 
-    config = Configurator(settings=settings,
-                          session_factory=session_factory)
+    config = Configurator(settings=settings)
+
     config.include(".")
     config.include(".sendmail")
+    config.include('altair.app.ticketing.setup_beaker_cache')
 
     ### includes altair.*
+    config.include('altair.httpsession.pyramid')
     config.include('altair.auth')
     config.include('altair.browserid')
     config.include('altair.sqlahelper')

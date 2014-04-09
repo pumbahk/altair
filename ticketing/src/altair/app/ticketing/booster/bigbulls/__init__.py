@@ -1,5 +1,4 @@
 from pyramid.config import Configurator
-from pyramid_beaker import session_factory_from_settings
 import json
 from pyramid.interfaces import IDict
 from sqlalchemy import engine_from_config
@@ -60,8 +59,7 @@ def main(global_config, **local_config):
     engine = engine_from_config(settings, poolclass=NullPool)
     sqlahelper.add_engine(engine)
 
-    my_session_factory = session_factory_from_settings(settings)
-    config = Configurator(settings=settings, session_factory=my_session_factory)
+    config = Configurator(settings=settings)
 
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
