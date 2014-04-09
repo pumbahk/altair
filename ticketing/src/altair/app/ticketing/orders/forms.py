@@ -443,11 +443,8 @@ class SalesSegmentGroupSearchForm(Form):
 class OrderReserveForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
-
-        if 'request' in kwargs:
-            self.request = kwargs['request']
-
+        super(OrderReserveForm, self).__init__(formdata, obj, prefix, **kwargs)
+        request = kwargs.pop('request', None)
         if 'performance_id' in kwargs:
             performance = Performance.get(kwargs['performance_id'])
             self.performance_id.data = performance.id
@@ -462,7 +459,7 @@ class OrderReserveForm(Form):
             self.sales_segment_id.choices = [
                 (sales_segment.id, u'%s %s' % (sales_segment.name, DateTimeHelper(create_date_time_formatter(get_current_request())).term(sales_segment.start_at, sales_segment.end_at)))
                 for sales_segment in \
-                    core_helpers.build_sales_segment_list_for_inner_sales(sales_segments, request=self.request)
+                    core_helpers.build_sales_segment_list_for_inner_sales(sales_segments, request=request)
                 ]
 
             if 'sales_segment_id' in kwargs and kwargs['sales_segment_id']:

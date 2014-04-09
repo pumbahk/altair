@@ -1190,7 +1190,7 @@ class OrderDetailView(BaseView):
                 'message':u'不正なデータです',
             }))
 
-        f = OrderReserveForm(MultiDict(self.request.json_body))
+        f = OrderReserveForm(MultiDict(self.request.json_body), request=self.request)
         if not f.note.validate(f):
             raise HTTPBadRequest(body=json.dumps({
                 'message':f.note.errors,
@@ -1480,7 +1480,7 @@ class OrdersReserveView(BaseView):
         self.clear_inner_cart_session()
 
         stocks = post_data.get('stocks')
-        form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks, sales_segment_id=sales_segment_id)
+        form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks, sales_segment_id=sales_segment_id, request=self.request)
         form_reserve.sales_segment_id.validators = [Optional()]
         form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
         form_reserve.validate()
@@ -1519,7 +1519,7 @@ class OrdersReserveView(BaseView):
         performance_id = int(post_data.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.organization.id)
 
-        f = OrderReserveForm(post_data, performance_id=performance_id, stocks=post_data.get('stocks'), sales_segment_id=post_data.get('sales_segment_id'))
+        f = OrderReserveForm(post_data, performance_id=performance_id, stocks=post_data.get('stocks'), sales_segment_id=post_data.get('sales_segment_id'), request=self.request)
         selected_seats = Seat.query.filter(and_(
             Seat.l0_id.in_(post_data.get('seats')),
             Seat.venue_id==post_data.get('venue_id')
