@@ -341,12 +341,12 @@ class ThinSejTenant(object):
         return self._inticket_api_url
 
     def __init__(self, original=None, shop_name=None, shop_id=None, contact_01=None, contact_02=None, api_key=None, inticket_api_url=None):
-        self._shop_name = shop_name or (original and original.shop_name)
-        self._shop_id = shop_id or (original and original.shop_id)
-        self._contact_01 = contact_01 or (original and original.contact_01)
-        self._contact_02 = contact_02 or (original and original.contact_02)
-        self._api_key = api_key or (original and original.api_key)
-        self._inticket_api_url = inticket_api_url or (original and original.inticket_api_url)
+        self._shop_name = shop_name if shop_name is not None else (original and original.shop_name)
+        self._shop_id = shop_id if shop_id is not None else (original and original.shop_id)
+        self._contact_01 = contact_01 if contact_01 is not None else (original and original.contact_01)
+        self._contact_02 = contact_02 if contact_02 is not None else (original and original.contact_02)
+        self._api_key = api_key if api_key is not None else (original and original.api_key)
+        self._inticket_api_url = inticket_api_url if inticket_api_url is not None else (original and original.inticket_api_url)
 
 
 from .notification.models import *
