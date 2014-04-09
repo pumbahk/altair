@@ -15,33 +15,28 @@
   }
 </style>
 
-
-
-<div class="row-fluid">
-
 <script type="text/javascript">
-
 function load_stock_holder_count(){
-    var stock_holder_count_tags = $('.stock-holder-count');
-    $('.stock-holder-count').each(function (ii, tag) {
-        $.ajax({
-            type: 'GET',
-            url: tag.getAttribute('href'),
-            dataType: 'json',
-            success: function (result){
-                total = result['total'];
-                rest = result['rest'];
-                tag.innerText = rest + '席/ ' + total + '席';
-            },
-            error: function (result){
-                tag.innerText = "在庫数の取得に失敗しました";
-            },
-        });
+  var stock_holder_count_tags = $('.stock-holder-count');
+  $('.stock-holder-count').each(function (ii, tag) {
+    $.ajax({
+      type: 'GET',
+      url: tag.getAttribute('href'),
+      dataType: 'json',
+      success: function (result){
+        total = result['total'];
+        rest = result['rest'];
+        tag.innerText = rest + '席/ ' + total + '席';
+      },
+      error: function (result){
+        tag.innerText = "在庫数の取得に失敗しました";
+      },
     });
+  });
 }
 </script>
 
-
+<div class="row-fluid">
   <div class="span6">
     <table class="table table-striped table-bordered table-condensed" style="margin-bottom: 10px;">
       <thead>
@@ -72,7 +67,7 @@ function load_stock_holder_count(){
         <td><a href="javascript:edit_stock_holder('${stock_holder.id}');"><span id="name">${stock_holder.name}</span></a></td>
         <td><a href="${request.route_path('accounts.show', account_id=stock_holder.account_id)}"><span id="account_id" value="${stock_holder.account_id}">${stock_holder.account.name}</span></a></td>
         <td>
-          <div class="stock-holder-count" href="${request.route_path('stock_holders.count', stock_holder_id=stock_holder.id)}"</div>
+          <div class="stock-holder-count" href="${request.route_path('stock_holders.count', stock_holder_id=stock_holder.id)}"></div>
         </td>
         <td>
           %if stock_holder.is_putback_target:
