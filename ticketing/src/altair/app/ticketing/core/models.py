@@ -2090,7 +2090,10 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for performance in performances:
             for stock_type in stock_types:
                 # StockHolderのないStockType毎のStockを生成
-                if not [stock for stock in performance.stocks if stock.stock_type_id == stock_type.id]:
+                if Stock.query.filter(
+                    Stock.performance_id == performance.id,
+                    Stock.stock_type_id == stock_type.id) \
+                    .with_entities(Stock.id).first() is None:
                     stock = Stock(
                         performance_id=performance.id,
                         stock_type_id=stock_type.id,
@@ -2101,9 +2104,11 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
                 # Performance × StockType × StockHolder分のStockを生成
                 for stock_holder in stock_holders:
-                    def stock_filter(stock):
-                        return (stock.stock_type_id == stock_type.id and stock.stock_holder_id == stock_holder.id)
-                    if not filter(stock_filter, performance.stocks):
+                    if Stock.query.filter(
+                        Stock.performance_id == performance.id,
+                        Stock.stock_type_id == stock_type.id, 
+                        Stock.stock_holder_id == stock_holder.id) \
+                        .with_entities(Stock.id).first() is None:
                         stock = Stock(
                             performance_id=performance.id,
                             stock_type_id=stock_type.id,
