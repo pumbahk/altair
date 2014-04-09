@@ -125,7 +125,11 @@ class StockHolders(BaseView):
         stock_holder = StockHolder.get(stock_holder_id)
         if stock_holder is None:
             return HTTPNotFound('stock_holder id %d is not found' % stock_holder_id)
-        res = {'total': int(stock_holder.num_seats()),
-               'rest': int(stock_holder.rest_num_seats()),
+
+        def _int_or_bar(value):
+            return '-' if value is None else int(value)
+
+        res = {'total': _int_or_bar(stock_holder.num_seats()),
+               'rest': _int_or_bar(stock_holder.rest_num_seats()),
                }
         return res
