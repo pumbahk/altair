@@ -80,6 +80,6 @@ def get_default_contact_url(request, organization, carrier):
     else:
         contact_url = organization.setting.contact_mobile_url
     # XXX: デフォルトが default_mail_sender なのは良くないけど一応仕様ということに
-    if contact_url is None:
+    if contact_url is None and organization.setting.default_mail_sender is not None:
         contact_url = u'mailto:%s' % organization.setting.default_mail_sender
     return contact_url

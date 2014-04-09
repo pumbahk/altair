@@ -39,7 +39,10 @@ def get_contact_url(request, fail_exc=ValueError):
     organization = get_organization(request)
     if organization is None:
         raise fail_exc("organization is not found")
-    return get_default_contact_url(request, organization, request.mobile_ua.carrier)
+    retval = get_default_contact_url(request, organization, request.mobile_ua.carrier)
+    if retval is None:
+        raise fail_exc("no contact url")
+    return retval
 
 def safe_get_contact_url(request, default=""):
     try:
