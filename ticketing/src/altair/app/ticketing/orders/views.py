@@ -48,8 +48,8 @@ from altair.app.ticketing.core.models import (
     Seat,
     SeatStatus,
     SeatStatusEnum,
-    ChannelEnum, 
-    MailTypeEnum, 
+    ChannelEnum,
+    MailTypeEnum,
     OrderedProductItemToken
     )
 from altair.app.ticketing.mails.api import get_mail_utility
@@ -70,7 +70,7 @@ from altair.app.ticketing.orders.forms import (
     ClientOptionalForm,
     SalesSegmentGroupSearchForm,
     TicketFormatSelectionForm,
-    CartSearchForm, 
+    CartSearchForm,
     )
 from altair.app.ticketing.orders.forms import OrderMemoEditFormFactory
 from altair.app.ticketing.views import BaseView
@@ -101,7 +101,7 @@ from .api import (
     QueryBuilderError,
     create_inner_order,
     save_order_modification,
-    get_ordered_product_metadata_provider_registry, 
+    get_ordered_product_metadata_provider_registry,
     get_order_metadata_provider_registry
 )
 from .utils import NumberIssuer
@@ -282,7 +282,7 @@ class OrderBaseView(BaseView):
 @view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/index.html', permission='sales_counter')
 class OrderIndexView(OrderBaseView):
     SHOW_TOTAL_KEY = 'orders.index.show_total'
-  
+
     @property
     def show_total_flag(self):
         return self.request.session.get(self.SHOW_TOTAL_KEY, False)
@@ -380,7 +380,7 @@ class OrderDownloadView(BaseView):
                 if query.count() > 5000:
                     self.request.session.flash(u'対象件数が多すぎます。(予約期間を1日にするか、公演を指定すれば制限はありません)')
                     raise HTTPFound(location=route_path('orders.index', self.request))
-    
+
         # XXX: JOINしたら逆に遅くなった
         #query = query.options(
         #    joinedload('ordered_products'),
@@ -595,7 +595,7 @@ class OrderDownloadView(BaseView):
         results = list(query)
 
         # from .download import MailPermissionCache
-        # mail_perms = set([m['email'] for m in 
+        # mail_perms = set([m['email'] for m in
         #                   MailPermissionCache(slave_session,
         #                                       organization_id,
         #                                       condition=form_search)])
@@ -860,7 +860,7 @@ class OrderDetailView(BaseView):
         form_each_print = forms.get_each_print_form(default_ticket_format_id)
 
         return {
-            'is_current_order': order.deleted_at is None, 
+            'is_current_order': order.deleted_at is None,
             'order':order,
             'ordered_product_attributes': ordered_product_attributes,
             'order_attributes': order_attributes,
@@ -873,7 +873,7 @@ class OrderDetailView(BaseView):
             'form_order_reserve':form_order_reserve,
             'form_refund':form_refund,
             'form_each_print': form_each_print,
-            'form_order_edit_attribute': forms.get_order_edit_attribute(), 
+            'form_order_edit_attribute': forms.get_order_edit_attribute(),
             "objects_for_describe_product_item": joined_objects_for_product_item(),
             'build_candidate_id': build_candidate_id,
         }
@@ -968,7 +968,7 @@ class OrderDetailView(BaseView):
         order = Order.get(order_id, self.context.organization.id)
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
-            
+
         if order.undelivered():
             self.request.session.flash(u'受注(%s)を未配送にしました' % order.order_no)
         else:
@@ -1170,7 +1170,7 @@ class OrderDetailView(BaseView):
         f = OrderMemoEditFormFactory(3)(MultiDict(self.request.json_body))
         if not f.validate():
             raise HTTPBadRequest(body=json.dumps({
-                'message':f.get_error_messages(), 
+                'message':f.get_error_messages(),
             }))
         marker = object()
         #logger.debug(self.request.json_body)
@@ -1180,7 +1180,7 @@ class OrderDetailView(BaseView):
                 order.attributes[k] = v
         order.save()
         return {}
-        
+
     @view_config(route_name='orders.note', request_method='POST', renderer='json', permission='sales_counter')
     def note(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
@@ -1385,7 +1385,7 @@ class OrderDetailView(BaseView):
         ords = self.request.session.get("orders", [])
         ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
         qs = Order.query.filter(Order.organization_id==self.context.organization.id)\
-                        .filter(Order.id.in_(ords))        
+                        .filter(Order.id.in_(ords))
         exist_order_ids = set()
         fail_nos = []
         for order in qs:
@@ -1399,7 +1399,7 @@ class OrderDetailView(BaseView):
         lost_order_ids = request_ids - exist_order_ids
 
         if fail_nos:
-            nos_str = ', '.join(fail_nos)            
+            nos_str = ', '.join(fail_nos)
             self.request.session.flash(u'配送済に変更できない注文が含まれていました。')
             self.request.session.flash(u'({0})'.format(nos_str))
 
@@ -1407,7 +1407,7 @@ class OrderDetailView(BaseView):
             ids_str = ', '.join(map(repr, lost_order_ids))
             self.request.session.flash(u'存在しない注文が含まれていました。')
             self.request.session.flash(u'({0})'.format(ids_str))
-            
+
         return HTTPFound(location=self.request.route_path('orders.index'))
 
     @view_config(route_name='orders.fraud.clear', permission='sales_editor')
@@ -1508,7 +1508,7 @@ class OrdersReserveView(BaseView):
         return {
             'seats':seats,
             'form':form_reserve,
-            'form_order_edit_attribute': OrderMemoEditFormFactory(3)(), 
+            'form_order_edit_attribute': OrderMemoEditFormFactory(3)(),
             'performance':performance,
         }
 
@@ -1528,7 +1528,7 @@ class OrdersReserveView(BaseView):
         return {
             'seats':selected_seats,
             'form':f,
-            'form_order_edit_attribute': OrderMemoEditFormFactory(3)(post_data), 
+            'form_order_edit_attribute': OrderMemoEditFormFactory(3)(post_data),
             'performance':performance,
         }
 
@@ -2417,5 +2417,3 @@ class CartView(BaseView):
                 })
 
         return { 'cart': cart, 'multicheckout_records': multicheckout_records }
-
-
