@@ -174,13 +174,14 @@ def get_seats(request):
 
     if u'stock_types' in necessary_params:
         query = DBSession.query(StockType).filter_by(event=venue.performance.event).order_by(StockType.display_order)
-        query = query.join(Stock, and_(Stock.performance_id==venue.performance_id, Stock.stock_type_id==StockType.id))
-        query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
-        query = query.join(Product).join(SalesSegment).distinct()
-        if sales_segment_id:
-            query = query.filter(SalesSegment.id==sales_segment_id)
-        if not permit_operator:
-            query = query.join(SalesSegmentSetting).filter(SalesSegmentSetting.sales_counter_selectable==True)
+        if sale_only:
+            query = query.join(Stock, and_(Stock.performance_id==venue.performance_id, Stock.stock_type_id==StockType.id))
+            query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
+            query = query.join(Product).join(SalesSegment).distinct()
+            if sales_segment_id:
+                query = query.filter(SalesSegment.id==sales_segment_id)
+            if not permit_operator:
+                query = query.join(SalesSegmentSetting).filter(SalesSegmentSetting.sales_counter_selectable==True)
         if loaded_at:
             query = query.filter(StockType.updated_at>loaded_at)
         retval[u'stock_types'] = [
@@ -195,13 +196,14 @@ def get_seats(request):
 
     if u'stock_holders' in necessary_params:
         query = DBSession.query(StockHolder).filter_by(event=venue.performance.event).options(undefer(StockHolder.style))
-        query = query.join(Stock, and_(Stock.performance_id==venue.performance_id, Stock.stock_holder_id==StockHolder.id))
-        query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
-        query = query.join(Product).join(SalesSegment).distinct()
-        if sales_segment_id:
-            query = query.filter(SalesSegment.id==sales_segment_id)
-        if not permit_operator:
-            query = query.join(SalesSegmentSetting).filter(SalesSegmentSetting.sales_counter_selectable==True)
+        if sale_only:
+            query = query.join(Stock, and_(Stock.performance_id==venue.performance_id, Stock.stock_holder_id==StockHolder.id))
+            query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
+            query = query.join(Product).join(SalesSegment).distinct()
+            if sales_segment_id:
+                query = query.filter(SalesSegment.id==sales_segment_id)
+            if not permit_operator:
+                query = query.join(SalesSegmentSetting).filter(SalesSegmentSetting.sales_counter_selectable==True)
         if loaded_at:
             query = query.filter(StockHolder.updated_at>loaded_at)
         retval[u'stock_holders'] = [
