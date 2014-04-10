@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS" />
-<title>楽天チケット-<%block name="title" /></title>
+<title>ポップサーカス-<%block name="title" /></title>
 </head>
 <body>
 <div align="center" style="text-align:center">
