@@ -58,6 +58,7 @@ from altair.app.ticketing.users.models import User, UserCredential, MemberGroup,
 from altair.app.ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode, todate, todatetime
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.sej import api as sej_api
+from altair.app.ticketing.sej import userside_api
 from altair.app.ticketing.sej.interfaces import ISejTenant
 from altair.app.ticketing.venues.interfaces import ITentativeVenueSite
 from .utils import ApplicableTicketsProducer
@@ -2737,6 +2738,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if not ppid:
             return False
 
+        tenant = userside_api.lookup_sej_tenant(request, self.organization_id)
+
         # インナー予約の場合はAPI決済していないのでスキップ
         # ただしコンビニ決済はインナー予約でもAPIで通知しているので処理する
         if self.is_inner_channel and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
@@ -2822,13 +2825,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             # 未入金ならコンビニ決済のキャンセル通知
             if self.payment_status == 'unpaid':
-                result = sej_api.cancel_sej_order(sej_order, self.organization_id, now)
+                result = sej_api.cancel_sej_order(sej_order, tenant, now)
                 if not result:
                     return False
 
             # 入金済み、払戻予約ならコンビニ決済の払戻通知
             elif self.payment_status in ['paid', 'refunding']:
-                result = sej_api.refund_sej_order(sej_order, self.organization_id, self, now)
+                result = sej_api.refund_sej_order(sej_order, tenant, self, now)
                 if not result:
                     return False
 
@@ -2845,7 +2848,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             sej_order = self.sej_order
             # SejAPIでエラーのケースではSejOrderはつくられないのでスキップ
             if sej_order:
-                result = sej_api.cancel_sej_order(sej_order, self.organization_id)
+                result = sej_api.cancel_sej_order(sej_order, tenant, now)
                 if not result:
                     logger.info('SejOrder (order_no=%s) cancel error' % self.order_no)
                     return False
