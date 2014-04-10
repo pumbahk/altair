@@ -1084,6 +1084,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 # 関連テーブルのticket_bundle_idを書き換える
                 for old_id, new_id in convert_map['ticket_bundle'].iteritems():
                     ProductItem.query.filter(and_(ProductItem.ticket_bundle_id==old_id, ProductItem.performance_id==performance.id)).update({'ticket_bundle_id':new_id})
+            # コピーされた販売区分グループの持つ販売区分のmembergroupに propagate する必要がある (refs #7784)
+            for sales_segment_group_id in convert_map['sales_segment_group'].values():
+                sales_segment_group = SalesSegmentGroup.query.filter_by(id=sales_segment_group_id).one()
+                sales_segment_group.sync_member_group_to_children()
         else:
             """
             Eventの作成時は以下のモデルを自動生成する
