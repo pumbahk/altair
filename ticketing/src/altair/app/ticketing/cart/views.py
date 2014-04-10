@@ -25,6 +25,7 @@ from altair.app.ticketing.core import api as c_api
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 from altair.app.ticketing.views import mobile_request
 from altair.app.ticketing.fanstatic import with_jquery, with_jquery_tools
+from altair.app.ticketing.payments.api import set_confirm_url
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
 from altair.app.ticketing.users.models import UserPointAccountTypeEnum
@@ -860,7 +861,7 @@ class PaymentView(object):
             email_1=cart.shipping_address.email_1,
         )
 
-        self.request.session['payment_confirm_url'] = self.request.route_url('payment.confirm')
+        set_confirm_url(self.request, self.request.route_url('payment.confirm'))
 
         if is_point_input_organization(context=self.context, request=self.request):
             if user:

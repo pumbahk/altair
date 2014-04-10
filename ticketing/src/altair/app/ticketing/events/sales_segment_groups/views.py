@@ -31,6 +31,8 @@ logger = logging.getLogger(__name__)
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegmentGroups(BaseView):
 
+    exclude_attributes = {'order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no', 'sales_counter_selectable'}
+
     @view_config(route_name='sales_segment_groups.index', renderer='altair.app.ticketing:templates/sales_segment_groups/index.html')
     def index(self):
         sort_column = self.request.GET.get('sort', 'id')
@@ -94,7 +96,7 @@ class SalesSegmentGroups(BaseView):
                         )
                     ),
                 f.data,
-                excludes={'order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no'}
+                excludes=self.exclude_attributes
                 )
             sales_segment_group.save()
             accessor = SalesSegmentAccessor()
@@ -113,7 +115,7 @@ class SalesSegmentGroups(BaseView):
     def edit_xhr(self):
         sales_segment_group = self.context.sales_segment_group
         form = SalesSegmentGroupForm(obj=sales_segment_group, context=self.context)
-        for k in ['order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no']:
+        for k in self.exclude_attributes:
             getattr(form, k).data = getattr(sales_segment_group.setting, k)
         return {
             'form': form,
@@ -133,11 +135,12 @@ class SalesSegmentGroups(BaseView):
             f.id.data = id_map[self.context.sales_segment_group.id]
             # XXX: なぜこれを取り直す必要が? create_from_template がそのまま実体を返せば済む話では?
             new_sales_segment_group = SalesSegmentGroup.query.filter_by(id=f.id.data).one()
-            new_sales_segment_group = merge_session_with_post(new_sales_segment_group, f.data, excludes={'order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no'})
+            new_sales_segment_group = merge_session_with_post(new_sales_segment_group, f.data, excludes=self.exclude_attributes)
             new_sales_segment_group.setting.order_limit = f.order_limit.data
             new_sales_segment_group.setting.max_quantity_per_user = f.max_quantity_per_user.data
             new_sales_segment_group.setting.disp_orderreview = f.disp_orderreview.data
             new_sales_segment_group.setting.display_seat_no = f.display_seat_no.data
+            new_sales_segment_group.setting.sales_counter_selectable = f.sales_counter_selectable.data
             new_sales_segment_group.save()
 
             accessor = SalesSegmentAccessor()
@@ -162,13 +165,14 @@ class SalesSegmentGroups(BaseView):
             new_sales_segment_group.sync_member_group_to_children()
             
         else:
-            sales_segment_group = merge_session_with_post(sales_segment_group, f.data, excludes={'order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no'})
+            sales_segment_group = merge_session_with_post(sales_segment_group, f.data, excludes=self.exclude_attributes)
             if sales_segment_group.setting is None:
                 sales_segment_group.setting = SalesSegmentGroupSetting()
             sales_segment_group.setting.order_limit = f.order_limit.data
             sales_segment_group.setting.max_quantity_per_user = f.max_quantity_per_user.data
             sales_segment_group.setting.disp_orderreview = f.disp_orderreview.data
             sales_segment_group.setting.display_seat_no = f.display_seat_no.data
+            sales_segment_group.setting.sales_counter_selectable = f.sales_counter_selectable.data
             sales_segment_group.save()
 
             sales_segment_group.sync_member_group_to_children()

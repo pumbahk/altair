@@ -39,6 +39,8 @@ class SalesSegmentEditorTests(unittest.TestCase):
                 testing.DummyModel(name="use_default_public", data=None),
                 testing.DummyModel(name="reporting", data=None),
                 testing.DummyModel(name="use_default_reporting", data=None),
+                testing.DummyModel(name="sales_counter_selectable", data=None),
+                testing.DummyModel(name="use_default_sales_counter_selectable", data=None),
                 testing.DummyModel(name="payment_delivery_method_pairs", data=[]),
                 testing.DummyModel(name="use_default_payment_delivery_method_pairs", data=None),
                 testing.DummyModel(name="max_quantity", data=None),
@@ -101,6 +103,8 @@ class SalesSegmentEditorTests(unittest.TestCase):
                 testing.DummyModel(name="use_default_public", data=None),
                 testing.DummyModel(name="reporting", data=None),
                 testing.DummyModel(name="use_default_reporting", data=None),
+                testing.DummyModel(name="sales_counter_selectable", data=None),
+                testing.DummyModel(name="use_default_sales_counter_selectable", data=None),
                 testing.DummyModel(name="payment_delivery_method_pairs", data=[]),
                 testing.DummyModel(name="use_default_payment_delivery_method_pairs", data=None),
                 testing.DummyModel(name="max_quantity", data=None),
@@ -187,6 +191,7 @@ class SalesSegmentAccessorTest(unittest.TestCase):
                 max_quantity_per_user=40,
                 disp_orderreview=True,
                 display_seat_no=False,
+                sales_counter_selectable=False,
                 )
             )
 
@@ -222,10 +227,12 @@ class SalesSegmentAccessorTest(unittest.TestCase):
                 max_quantity_per_user=43,
                 disp_orderreview=False,
                 display_seat_no=True,
+                sales_counter_selectable=True,
                 use_default_order_limit=True,
                 use_default_max_quantity_per_user=True,
                 use_default_disp_orderreview=True,
                 use_default_display_seat_no=True,
+                use_default_sales_counter_selectable=True,
                 )
             )
 
@@ -249,6 +256,7 @@ class SalesSegmentAccessorTest(unittest.TestCase):
         self.assertEqual(ss.setting.max_quantity_per_user, 40)
         self.assertEqual(ss.setting.disp_orderreview, True)
         self.assertFalse(ss.setting.display_seat_no)
+        self.assertFalse(ss.setting.sales_counter_selectable)
 
     def test_update_sales_segment_use_owns(self):
         from datetime import datetime, time
@@ -276,6 +284,7 @@ class SalesSegmentAccessorTest(unittest.TestCase):
                 max_quantity_per_user=43,
                 disp_orderreview=False,
                 display_seat_no=False,
+                sales_counter_selectable=False,
                 )
             )
 
@@ -315,10 +324,12 @@ class SalesSegmentAccessorTest(unittest.TestCase):
                 max_quantity_per_user=43,
                 disp_orderreview=True,
                 display_seat_no=True,
+                sales_counter_selectable=True,
                 use_default_order_limit=False,
                 use_default_max_quantity_per_user=False,
                 use_default_disp_orderreview=False,
                 use_default_display_seat_no=False,
+                use_default_sales_counter_selectable=False,
                 )
             )
 
@@ -343,3 +354,4 @@ class SalesSegmentAccessorTest(unittest.TestCase):
         self.assertEqual(ss.setting.max_quantity_per_user, 43)
         self.assertEqual(ss.setting.disp_orderreview, True)
         self.assertTrue(ss.setting.display_seat_no)
+        self.assertTrue(ss.setting.sales_counter_selectable)

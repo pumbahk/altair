@@ -16,6 +16,7 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
 from altair.app.ticketing.users import api as user_api
 from altair.app.ticketing.utils import toutc
+from altair.app.ticketing.payments.api import set_confirm_url
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
@@ -96,13 +97,15 @@ def nogizaka_auth(context, request):
 @view_config(context=NoResultFound)
 def no_results_found(context, request):
     """ 改良が必要。ログに該当のクエリを出したい。 """
-    logger.warning(context)    
-    return HTTPNotFound()
-
-@view_config(context=NoCartError)
-def no_cart_error(context, request):
     logger.warning(context)
     return HTTPNotFound()
+
+@view_config(context=NoCartError, renderer=selectable_renderer("pc/%(membership)s/timeout.html"))
+@mobile_view_config(context=NoCartError, renderer=selectable_renderer("mobile/%(membership)s/timeout.html"))
+@smartphone_view_config(context=NoCartError, renderer=selectable_renderer("smartphone/%(membership)s/timeout.html"))
+def no_cart_error(context, request):
+    request.response.status = 404
+    return {}
 
 @view_defaults(route_name='lots.entry.index', renderer=selectable_renderer("pc/%(membership)s/index.html"), permission="lots")
 class EntryLotView(object):
@@ -303,7 +306,7 @@ class EntryLotView(object):
             birthday=birthday,
             memo=cform['memo'].data)
 
-        entry = self.request.session.get('lots.entry')
+        entry = api.get_lot_entry_dict(self.request)
         if entry is None:
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
@@ -312,7 +315,7 @@ class EntryLotView(object):
         cart = LotSessionCart(entry, self.request, self.context.lot)
 
         payment = Payment(cart, self.request)
-        self.request.session['payment_confirm_url'] = urls.entry_confirm(self.request)
+        set_confirm_url(self.request, urls.entry_confirm(self.request))
 
         result = payment.call_prepare()
         if callable(result):
@@ -332,7 +335,7 @@ class ConfirmLotEntryView(object):
     @smartphone_view_config(request_method="GET", renderer=selectable_renderer("smartphone/%(membership)s/confirm.html"))
     def get(self):
         # セッションから表示
-        entry = self.request.session.get('lots.entry')
+        entry = api.get_lot_entry_dict(self.request)
         if entry is None:
             return self.back_to_form()
         if not entry.get('token'):
@@ -392,7 +395,7 @@ class ConfirmLotEntryView(object):
             return self.back_to_form()
 
 
-        entry = self.request.session.get('lots.entry')
+        entry = api.get_lot_entry_dict(self.request)
         if entry is None:
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
@@ -430,7 +433,7 @@ class ConfirmLotEntryView(object):
             memo=entry['memo']
             )
         self.request.session['lots.entry_no'] = entry.entry_no
-
+        api.clear_lot_entry(self.request)
 
         try:
             api.notify_entry_lot(self.request, entry)
@@ -455,7 +458,7 @@ class CompletionLotEntryView(object):
         """ 完了画面 """
         if 'lots.entry_no' not in self.request.session:
             return HTTPFound(location=self.request.route_url('lots.entry.index', **self.request.matchdict))
-        entry_no = self.request.session.pop('lots.entry_no')
+        entry_no = self.request.session.get('lots.entry_no')
         entry = DBSession.query(LotEntry).filter(LotEntry.entry_no==entry_no).one()
         if entry is None:
             self.request.session.flash(u"セッションに問題が発生しました。")
@@ -471,8 +474,10 @@ class CompletionLotEntryView(object):
         if magazine_ids:
             user = user_api.get_or_create_user(self.context.authenticated_user())
             multi_subscribe(user, entry.shipping_address.emails, magazine_ids)
-            self.request.session['lots.magazine_ids'] = None
-            self.request.session.persist() # XXX: 完全に念のため
+            try:
+                del self.request.session['lots.magazine_ids']
+            except:
+                pass
 
         return dict(
             event=self.context.event,

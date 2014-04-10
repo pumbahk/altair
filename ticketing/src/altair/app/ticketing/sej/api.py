@@ -12,16 +12,18 @@ from sqlalchemy.orm.exc import NoResultFound
 import sqlahelper
 
 from .utils import JavaHashMap
-from .models import SejNotification, SejOrder, SejTicket, SejTenant, SejRefundEvent, SejRefundTicket, SejNotificationType
+from .models import SejNotification, SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, SejNotificationType, ThinSejTenant
 
 from .helpers import create_hash_from_x_start_params
+from .interfaces import ISejTenant
 from altair.app.ticketing.sej.exceptions import SejServerError
 from altair.app.ticketing.sej.payment import request_cancel_order
 from pyramid.threadlocal import get_current_registry
+from pyramid.interfaces import IRequest
 
 DBSession = sqlahelper.get_session()
 
-def cancel_sej_order(sej_order, organization_id, now=None):
+def cancel_sej_order(sej_order, tenant, now=None):
     if not sej_order:
         logger.error(u'sej_order is None')
         return False
@@ -29,15 +31,8 @@ def cancel_sej_order(sej_order, organization_id, now=None):
         logger.error(u'SejOrder(order_no=%s) is already canceled' % sej_order.order_no if sej_order else None)
         return False
 
-    settings = get_current_registry().settings
-    tenant = SejTenant.filter_by(organization_id=organization_id).first()
-
-    inticket_api_url = (tenant and tenant.inticket_api_url) or settings.get('sej.inticket_api_url')
-    shop_id = (tenant and tenant.shop_id) or settings.get('sej.shop_id')
-    api_key = (tenant and tenant.api_key) or settings.get('sej.api_key')
-
-    if sej_order.shop_id != shop_id:
-        logger.error(u'SejOrder(order_no=%s).shop_id (%s) != SejTenant.shop_id (%s)' % (sej_order.order_no, sej_order.shop_id, shop_id))
+    if sej_order.shop_id != tenant.shop_id:
+        logger.error(u'SejOrder(order_no=%s).shop_id (%s) != SejTenant.shop_id (%s)' % (sej_order.order_no, sej_order.shop_id, tenant.shop_id))
         return False
 
     try:
@@ -45,9 +40,7 @@ def cancel_sej_order(sej_order, organization_id, now=None):
             order_no=sej_order.order_no,
             billing_number=sej_order.billing_number,
             exchange_number=sej_order.exchange_number,
-            shop_id=shop_id,
-            secret_key=api_key,
-            hostname=inticket_api_url,
+            tenant=tenant,
 			now=now
         )
         return True
@@ -93,7 +86,7 @@ def get_ticket_price(order, product_item_id):
                 return opi.price
     return 0
 
-def refund_sej_order(sej_order, organization_id, order, now):
+def refund_sej_order(sej_order, tenant, order, now):
     if not sej_order:
         logger.error(u'sej_order is None')
         return False
@@ -106,14 +99,11 @@ def refund_sej_order(sej_order, organization_id, order, now):
         logger.error(u'No tickets associated with SejOrder(order_no=%s)' % sej_order.order_no)
         return False
 
-    settings = get_current_registry().settings
-    tenant = SejTenant.filter_by(organization_id=organization_id).first()
-    shop_id = (tenant and tenant.shop_id) or settings.get('sej.shop_id')
     performance = order.performance
 
     # create SejRefundEvent
     re = SejRefundEvent.filter(and_(
-        SejRefundEvent.shop_id==shop_id,
+        SejRefundEvent.shop_id==tenant.shop_id,
         SejRefundEvent.event_code_01==performance.code
     )).first()
     if not re:
@@ -121,7 +111,7 @@ def refund_sej_order(sej_order, organization_id, order, now):
         DBSession.add(re)
 
     re.available = 1
-    re.shop_id = shop_id
+    re.shop_id = tenant.shop_id
     re.event_code_01 = performance.code
     re.title = performance.name
     re.event_at = performance.start_on.strftime('%Y%m%d')
@@ -176,3 +166,31 @@ def get_sej_orders(order_no, fetch_canceled=False, session=None):
     if not fetch_canceled:
         q = q.filter_by(cancel_at=None)
     return q.all()
+
+
+def get_default_sej_tenant(request_or_registry):
+    if IRequest.providedBy(request_or_registry):
+        registry = request_or_registry.registry
+    else:
+        registry = request_or_registry
+    return registry.getUtility(ISejTenant)
+
+
+def merge_sej_tenant(src, override_by):
+    return ThinSejTenant(
+        src,
+        shop_name=override_by.shop_name,
+        shop_id=override_by.shop_id,
+        contact_01=override_by.contact_01,
+        contact_02=override_by.contact_02,
+        api_key=override_by.api_key,
+        inticket_api_url=override_by.inticket_api_url
+        )
+
+def validate_sej_tenant(sej_tenant):
+    if not sej_tenant.shop_id:
+        raise AssertionError('shop_id is empty')
+    if not sej_tenant.api_key:
+        raise AssertionError('api_key is empty')
+    if not sej_tenant.inticket_api_url:
+        raise AssertionError('inticket_api_url is empty')

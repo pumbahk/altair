@@ -103,11 +103,13 @@ span.editable {
     </%def>
     <%def name="venue_editor_side_extra()">
       <ul class="nav nav-tabs">
-	<li class="active"><a href="#venue-editor-main-side-tab1" data-toggle="tab">配席</a></li>
+	<li class="active"><a href="#venue-editor-main-side-tab0" data-toggle="tab">配席(枠)</a></li>
+	<li><a href="#venue-editor-main-side-tab1" data-toggle="tab">配席(席種)</a></li>
 	<li><a href="#venue-editor-main-side-tab2" data-toggle="tab">選択座席<span class="selection-count badge"></span></a></li>
       </ul>
       <div class="tab-content" style="overflow: visible;">
-	<div class="tab-pane active" id="venue-editor-main-side-tab1"></div>
+	<div class="tab-pane active" id="venue-editor-main-side-tab0"></div>
+	<div class="tab-pane" id="venue-editor-main-side-tab1"></div>
 	<div class="tab-pane" id="venue-editor-main-side-tab2"></div>
       </div>
     </%def>
@@ -153,6 +155,8 @@ function gradientStyle(name, colors) {
   buf.push(');');
   return buf.join(' ');
 }
+
+
 
 function buildColorButton(model, attr) {
   var button = $('<button></button>');
@@ -372,6 +376,78 @@ function buildStockRow(stock) {
   return tr;
 }
 
+
+function buildStockRowForStockType(stock) {
+  var tr = $('<tr></tr>');
+  var legend = $('<td class="stock-legend"></td>');
+  var name = $('<td class="stock-name"></td>');
+  var stockType = stock.get('stockType');
+  var stockHolder = stock.get('stockHolder');
+  var style = stockHolder.get('style');
+  if (stockType.id != "") {
+    legend.text(style['text']);
+    bind(makeEditable(name, stock), stockHolder, 'name');
+  } else {
+    name.text(stockHolder.get('name'));
+  }
+  var quantity = $('<td class="stock-quantity"></td>');
+  if (stockType.get('isSeat') && !stockType.get('quantityOnly')) {
+    makeAssignable(quantity, stock);
+  } else {
+    bind(makeEditable(quantity, stock), stock, 'assigned');
+  }
+  var lock = $('<td class="stock-lock"></td>');
+  makeLockHandler(lock, stock);
+  tr.append(legend);
+  tr.append(name);
+  tr.append(quantity);
+  tr.append(lock);
+  return tr;
+}
+
+function buildStockTypeHolderTables(venue) {
+  var retval = $('<div></div>');
+  venue.stockTypes.each(function (stockType) {
+    var keyedStocks = stockType.keyedStocks();
+    var swatch = buildColorButton(stockType, 'style').addClass('swatch');
+    var head = $('<h5 class="ui-header" style="float: left;"></h5>').text(' ' + stockType.get('name'));
+    var rest = $('<span class="rest label"></span>');
+    function refresh() {
+      rest.text('残席: ' + stockType.get('available') + '席');
+    }
+    stockType.on('change:available', refresh);
+    refresh();
+    stockType.recalculateQuantity();
+    var div = $('<div></div>').css('display', 'none');
+    var table = $('<table class="table table-bordered"></table>');
+    var tbody = $('<tbody></tbody>').appendTo(table);
+
+    venue.stockHolders.each(function (stockHolder) {
+      var stock = keyedStocks && keyedStocks[stockHolder.id];
+      if (!stock)
+        return;
+      var row = buildStockRowForStockType(stock);
+      tbody.append(row);
+    });
+
+    head.click(function () {
+      if (div.css('display') == 'block')
+        div.css('display', 'none');
+      else
+        div.css('display', 'block');
+    });
+    head.prepend(swatch);
+    table.appendTo(div);
+
+    retval.append(head);
+    retval.append(rest);
+    retval.append('<div style="clear: both;"></div>');
+    retval.append(div);
+  });
+  return retval;
+}
+
+
 function buildStockHolderTypeTables(venue) {
   var retval = $('<div></div>');
   venue.stockHolders.each(function (stockHolder) {
@@ -414,6 +490,7 @@ function buildStockHolderTypeTables(venue) {
   });
   return retval;
 }
+
 
 function buildSeatDetailRow(seat) {
   var tr = $('<tr></tr>');
@@ -471,6 +548,7 @@ function buildTransferModal(id) {
 
 
 function transferStocks() {
+  var errors = [];
   var modal = $('#modal-transfer');
   var body = modal.find('.modal-body');
   var venue = venueEditorRoot.venueeditor('model');
@@ -481,6 +559,12 @@ function transferStocks() {
     var from_stock = venue.perStockHolderStockMap[from_stock_holder][i];
     var to_stock = null;
 
+    var assignable = from_stock.get('assignable');
+    if(!assignable){
+        errors.push(from_stock);
+        continue;
+    }
+
     var stock_type = from_stock.get('stockType');
     for (var j in venue.perStockTypeStockMap[stock_type.get('id')]) {
       to_stock = venue.perStockTypeStockMap[stock_type.get('id')][j];
@@ -489,7 +573,10 @@ function transferStocks() {
       }
     }
 
-    if (!to_stock || to_stock.id == from_stock.id) continue;
+    if (!to_stock || to_stock.id == from_stock.id){
+        errors.push(from_stock);
+        continue;
+    }
     if (stock_type.get('isSeat') && !stock_type.get('quantityOnly')) {
       if (venue.perStockSeatSet[from_stock.id]) {
         venue.perStockSeatSet[from_stock.id].each(function(seat){
@@ -503,6 +590,8 @@ function transferStocks() {
     }
   }
   modal.hide();
+  buildCannotStockActionModal(errors, '枠移動ができなかった在庫がありました');
+  setTimeout(update_tables, 1000);
 }
 
 function buildTransferStocksSelectedModal() {
@@ -536,6 +625,34 @@ function buildCannotSeatActionModal(seats, message){
         var row = $('<tr>'+
                     '<td>'+seat.get('id')+'</td>' +
                     '<td>'+seat.get('name')+'</td>' +
+                    '</tr>');
+        table.append(row);
+    });
+
+    msg.text(message);
+    body.empty();
+    body.append(table);
+    modal.show();
+}
+
+
+function buildCannotStockActionModal(stocks, message){
+    if (stocks.length == 0){
+        return; // no error
+    }
+    var modal = $('#modal-cannot-stock-action');
+    var msg = modal.find('#cannot-stock-action-message');
+    var body = modal.find('.modal-body');
+
+    var table = $('<table><tr>'+
+                  '<th>枠</th>'+
+                  '<th>席種</th>'+
+                  '</tr></table>');
+
+    $.each(stocks, function(index, stock){
+        var row = $('<tr>'+
+                    '<td>'+stock.get('stockHolder').get('name')+'</td>' +
+                    '<td>'+stock.get('stockType').get('name')+'</td>' +
                     '</tr>');
         table.append(row);
     });
@@ -672,7 +789,7 @@ function csv_seat_allocation() {
 
 function update_tables(){
     var selection = venueEditorRoot.venueeditor('selection');
-    update_selection_table(false, selection);// dummy
+    update_selection_table(selection);
     /*$('span.selection-count').text(selection.length);*/
 }
 
@@ -733,17 +850,20 @@ function select_seats_by_csv(){
 }
 
 
+var tab0 = venueEditorSide.find("#venue-editor-main-side-tab0");
 var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
 var tab2 = venueEditorSide.find("#venue-editor-main-side-tab2");
 
 callbacks.load = callbacks.refresh = function (viewer) {
+  tab0.empty();
+  tab0.append(buildStockHolderTypeTables(viewer.venue));
   tab1.empty();
-  tab1.append(buildStockHolderTypeTables(viewer.venue));
+  tab1.append(buildStockTypeHolderTables(viewer.venue));
   tab2.empty();
   tab2.append(buildSeatDetailTable(venueEditorRoot.venueeditor('selection')));
 };
 
-function update_selection_table(viewer, selection) {
+function update_selection_table(selection) {
   if (selection.length)
     $(".assignable").addClass("enabled");
   else
@@ -770,7 +890,10 @@ function update_selection_table(viewer, selection) {
   $('span.selection-count').text(selection_set.length);
 };
 
-callbacks.select = update_selection_table;
+
+callbacks.select = function (viewer, selection) {
+    update_selection_table(selection);
+}
 
 
 /* application */
@@ -974,8 +1097,7 @@ $(function() {
     CSVのスタイル
     <div>
     <select class="selectpicker" name="format">
-      <!--<option value="altair" >Altair</option>-->
-      <option value="" ></option>
+      <option value="altair" selected="true">Altair</option>
       <option value="gettii" >Gettii</option>
     </select>
 
@@ -986,7 +1108,7 @@ $(function() {
 
   <div class="modal-footer">
     <a href="javascript:void(0);" onclick="$('#modal-csv-seat-allocation').modal('hide');" class="btn secondary">閉じる</a>
-    <a href="javascript:void(0);" onclick="select_seats_by_csv();" class="btn secondary">選択</a>    
+    <a href="javascript:void(0);" onclick="select_seats_by_csv();" class="btn secondary">選択</a>
   </div>
   </form>
 </div>
@@ -1041,6 +1163,26 @@ $(function() {
   </div>
   <div class="modal-footer">
     <a href="javascript:void(0);" onclick="$('#modal-cannot-seat-convert').hide();" class="btn secondary">閉じる</a>
+  </div>
+  </form>
+</div>
+
+
+<div id="modal-cannot-stock-action" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3 id="cannot-stock-action-message">在庫の操作に失敗しました</h3>
+  </div>
+  <div class="modal-body">
+    <table >
+    <tr>
+    <th>座種</th>
+    <th>枠</th>
+    </tr>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-cannot-stock-action').hide();" class="btn secondary">閉じる</a>
   </div>
   </form>
 </div>

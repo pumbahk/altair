@@ -5,14 +5,18 @@ from datetime import datetime, date, time
 class DefaultDateTimeFormatter(object):
     WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
 
-    def _get_date_format(self, flavor):
-        if flavor.get('without_year'):
+    @property
+    def now(self):
+        return datetime.now()
+
+    def _get_date_format(self, flavor, d):
+        if flavor.get('without_year') or (flavor.get('omit_year_if_this_year') and date(d.year + 1, d.month, 1) > self.now.date()):
             format = u"%-m月%-d日"
         else:
             format = u"%Y年%-m月%-d日"
         return format
 
-    def _get_time_format(self, flavor):
+    def _get_time_format(self, flavor, t):
         if flavor.get('without_minute'):
             format = u'%-H時'
         elif flavor.get('without_second'):
@@ -22,21 +26,21 @@ class DefaultDateTimeFormatter(object):
         return format
 
     def format_datetime(self, dt, **flavor):
-        base = dt.strftime(self._get_date_format(flavor).encode("utf-8")).decode("utf-8")
+        base = dt.strftime(self._get_date_format(flavor, dt).encode("utf-8")).decode("utf-8")
         if flavor.get('with_weekday'):
             base += u'(%s)' % self.WEEK[dt.weekday()]
-        base += u' ' + dt.strftime(self._get_time_format(flavor).encode("utf-8")).decode("utf-8")
+        base += u' ' + dt.strftime(self._get_time_format(flavor, dt).encode("utf-8")).decode("utf-8")
         return base
 
     def format_date(self, d, **flavor):
-        format = self._get_date_format(flavor)
+        format = self._get_date_format(flavor, d)
         base = d.strftime(format.encode("utf-8")).decode("utf-8")
         if flavor.get('with_weekday'):
             base += u'(%s)' % self.WEEK[d.weekday()]
         return base
 
     def format_time(self, t, **flavor):
-        format = self._get_time_format(flavor)
+        format = self._get_time_format(flavor, t)
         return t.strftime(format.encode("utf-8")).decode("utf-8")
 
 class DateTimeHelper(object):
@@ -73,7 +77,8 @@ class DateTimeHelper(object):
     term_datetime = term
 
     def date(self, d, **flavor):
-        return self.formatter.format_date(d, **flavor) if d else u'-'
+        omit_year_if_this_year = flavor.pop('omit_year_if_this_year', True)
+        return self.formatter.format_date(d, omit_year_if_this_year=omit_year_if_this_year, **flavor) if d else u'-'
 
     def time(self, t, **flavor):
         without_second = flavor.pop('without_second', True)
@@ -81,7 +86,8 @@ class DateTimeHelper(object):
 
     def datetime(self, dt, **flavor):
         without_second = flavor.pop('without_second', True)
-        return self.formatter.format_datetime(dt, without_second=without_second, **flavor) if dt else u'-'
+        omit_year_if_this_year = flavor.pop('omit_year_if_this_year', True)
+        return self.formatter.format_datetime(dt, without_second=without_second, omit_year_if_this_year=omit_year_if_this_year, **flavor) if dt else u'-'
 
 def create_date_time_formatter(request):
     return DefaultDateTimeFormatter()

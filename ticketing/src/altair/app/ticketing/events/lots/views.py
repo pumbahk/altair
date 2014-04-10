@@ -728,9 +728,11 @@ class LotEntries(BaseView):
         tmpl = get_renderer("/lots/search.html")
         auth = MultiCheckoutOrderStatus.by_order_no(wish.lot_entry.entry_no)
         sej =  DBSession.query(SejOrder).filter(SejOrder.order_no==wish.lot_entry.entry_no).first()
+    
+        from altair.viewhelpers import Namespace as Namespace_vh
 
         html = tmpl.implementation().get_def('lot_wish_row').render(
-            self.request, w=w, auth=auth, sej=sej, view=self)
+            self.request, vh=Namespace_vh(self.request), w=w, auth=auth, sej=sej, view=self)
         return html
 
     def wish_tr_class(self, wish):

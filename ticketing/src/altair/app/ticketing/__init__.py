@@ -11,7 +11,6 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid_beaker import session_factory_from_settings
 from pyramid.tweens import EXCVIEW
 from pyramid.interfaces import IDict
-from pyramid_beaker import set_cache_regions_from_settings
 
 import sqlahelper
 
@@ -45,6 +44,10 @@ def register_globals(event):
         vh=Namespace_vh(event['request'])
         )
 
+def setup_beaker_cache(config):
+    from pyramid_beaker import set_cache_regions_from_settings
+    set_cache_regions_from_settings(config.registry.settings)
+
 def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
     """
@@ -61,23 +64,22 @@ def main(global_config, **local_config):
 
         engine = engine_from_config(settings, poolclass=NullPool, isolation_level='READ COMMITTED')
         sqlahelper.add_engine(engine)
-
-        session_factory = session_factory_from_settings(settings)
-        set_cache_regions_from_settings(settings) 
         
         config = Configurator(settings=settings,
-                              root_factory=newRootFactory(TicketingAdminResource),
-                              session_factory=session_factory)
+                              root_factory=newRootFactory(TicketingAdminResource)
+                              )
     
         config.add_static_view('static', 'altair.app.ticketing:static', cache_max_age=3600)
  
         config.add_view('pyramid.view.append_slash_notfound_view',
                         context='pyramid.httpexceptions.HTTPNotFound')
-    
+   
+        config.include(setup_beaker_cache)
         config.include("pyramid_fanstatic")
     
         config.add_route("index", "/")
-    
+   
+        config.include('altair.httpsession.pyramid')
         config.include('altair.browserid')
         config.include('altair.exclog')
         config.include('altair.mobile')
@@ -96,6 +98,8 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.authentication')
         config.include('altair.app.ticketing.multicheckout')
         config.include('altair.app.ticketing.checkout')
+        config.include('altair.app.ticketing.sej')
+        config.include('altair.app.ticketing.sej.userside_impl')
         config.include('altair.app.ticketing.operators' , route_prefix='/operators')
         config.include('altair.app.ticketing.login' , route_prefix='/login')
         config.include('altair.app.ticketing.organizations' , route_prefix='/organizations')

@@ -24,7 +24,7 @@ def includeme(config):
     config.include('altair.app.ticketing.payments.plugins')
     config.add_subscriber('altair.app.ticketing.payments.events.cancel_on_delivery_error',
                           'altair.app.ticketing.payments.events.DeliveryErrorEvent')
-    config.set_cart_getter('.api.get_cart_safe')
+    config.include('.setup_cart_interface')
 
     config.include('.setup_mq')
     config.scan('.workers')

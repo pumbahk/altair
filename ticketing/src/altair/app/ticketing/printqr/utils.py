@@ -11,6 +11,7 @@ from altair.app.ticketing.core.models import OrderedProductItem
 from altair.app.ticketing.core.models import OrderedProduct
 
 from altair.app.ticketing.payments.plugins.qr import DELIVERY_PLUGIN_ID as QR_DELIVERY_ID
+from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 
@@ -152,10 +153,12 @@ def _query_filtered_by_delivery_plugin(query, delivery_plugin_id):
         .join(c_models.DeliveryMethod)\
         .filter(c_models.DeliveryMethod.delivery_plugin_id==delivery_plugin_id)
 
-def _query_removed_by_delivery_plugin(query, delivery_plugin_id):
-    return query.join(c_models.PaymentDeliveryMethodPair)\
-        .join(c_models.DeliveryMethod)\
-        .filter(c_models.DeliveryMethod.delivery_plugin_id!=delivery_plugin_id)
+def _query_removed_by_delivery_plugins(query, delivery_plugin_ids):
+    q = query.join(c_models.PaymentDeliveryMethodPair)\
+        .join(c_models.DeliveryMethod)
+    for delivery_plugin_id in delivery_plugin_ids:
+        q = q.filter(c_models.DeliveryMethod.delivery_plugin_id!=delivery_plugin_id)
+    return q
 
 ## 余事象取れば計算で求められるけれど。実際にDBアクセスした方が良いのかな。
 def total_result_data_from_performance_id(event_id, performance_id):
@@ -163,23 +166,24 @@ def total_result_data_from_performance_id(event_id, performance_id):
 
     total = _as_total_quantity(opi_query)
     total_qr = _as_total_quantity(_query_filtered_by_delivery_plugin(opi_query, QR_DELIVERY_ID))
+    total_orion = _as_total_quantity(_query_filtered_by_delivery_plugin(opi_query, ORION_DELIVERY_PLUGIN_ID))
 
     token_query = _query_filtered_by_performance(OrderedProductItemToken.query.join(OrderedProductItem), event_id, performance_id)
     total_qr_printed = token_query.filter(OrderedProductItemToken.printed_at != None).count()
 
-    total_other_printed = _as_total_quantity(_query_removed_by_delivery_plugin(opi_query, QR_DELIVERY_ID).filter(OrderedProductItem.printed_at != None))
+    total_other_printed = _as_total_quantity(_query_removed_by_delivery_plugins(opi_query, [ QR_DELIVERY_ID, ORION_DELIVERY_PLUGIN_ID ]).filter(OrderedProductItem.printed_at != None))
 
     return {
         "total": total, 
 
-        "total_qr": total_qr, 
-        "total_other": total - total_qr, 
+        "total_qr": total_qr + total_orion, 
+        "total_other": total - total_qr - total_orion, 
 
         "qr_printed": total_qr_printed, 
-        "qr_unprinted": total_qr - total_qr_printed, 
+        "qr_unprinted": total_qr + total_orion - total_qr_printed, 
 
         "other_printed": total_other_printed, 
-        "other_unprinted": total - total_qr - total_other_printed, 
+        "other_unprinted": total - total_qr - total_orion - total_other_printed, 
         }
     
 

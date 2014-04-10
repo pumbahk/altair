@@ -101,6 +101,7 @@ requires = [
     'altair.keybreak',
     'altair.svg',
     'altair.models',
+    'altair.httpsession',
     ]
 
 tests_require = [

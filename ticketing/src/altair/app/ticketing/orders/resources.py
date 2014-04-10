@@ -118,7 +118,7 @@ class OrderShowFormProvider(object):
 
     def get_order_reserve_form(self):
         order = self.order        
-        return  OrderReserveForm(performance_id=order.performance_id)
+        return OrderReserveForm(performance_id=order.performance_id, request=self.context.request)
 
     def get_order_refund_form(self):
         order = self.order        

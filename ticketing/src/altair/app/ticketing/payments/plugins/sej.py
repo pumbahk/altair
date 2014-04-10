@@ -29,10 +29,11 @@ from altair.app.ticketing.utils import clear_exc
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 
+from altair.app.ticketing.sej import userside_api
 from altair.app.ticketing.sej.api import get_sej_order
 from altair.app.ticketing.sej.exceptions import SejErrorBase
 from altair.app.ticketing.sej.ticket import SejTicketDataXml
-from altair.app.ticketing.sej.models import SejOrder, SejTenant, SejPaymentType, SejTicketType, SejOrderUpdateReason
+from altair.app.ticketing.sej.models import SejOrder, SejPaymentType, SejTicketType, SejOrderUpdateReason
 from altair.app.ticketing.sej.payment import request_order, request_update_order, build_sej_tickets_from_dicts
 from altair.app.ticketing.sej.utils import han2zen
 
@@ -57,6 +58,8 @@ class SejPluginFailure(PaymentPluginException):
     pass
 
 def includeme(config):
+    config.include('altair.app.ticketing.sej')
+    config.include('altair.app.ticketing.sej.userside_impl')
     # 決済系(マルチ決済)
     settings = config.registry.settings
     config.add_payment_plugin(SejPaymentPlugin(), PAYMENT_PLUGIN_ID)
@@ -135,7 +138,7 @@ def get_tickets_from_cart(cart, now):
                     tickets.append(ticket)
     return tickets
 
-def refresh_order(order, update_reason, api_key, api_url):
+def refresh_order(tenant, order, update_reason):
     sej_order = get_sej_order(order.order_no)
     if sej_order is None:
         raise Exception('no corresponding SejOrder found for order %s' % order.order_no)
@@ -154,10 +157,9 @@ def refresh_order(order, update_reason, api_key, api_url):
 
     try:
         request_update_order(
-            new_sej_order,
-            update_reason,
-            secret_key=api_key,
-            hostname=api_url
+            tenant=tenant,
+            new_order=new_sej_order,
+            update_reason=update_reason
             )
     except SejErrorBase:
         raise SejPluginFailure('refresh_order', order_no=order.order_no, back_url=None)
@@ -233,20 +235,10 @@ class SejPaymentPlugin(object):
         cart.finish()
 
         current_date = datetime.now()
-
-        settings = request.registry.settings
-        tenant = SejTenant.filter_by(organization_id = cart.performance.event.organization.id).first()
-        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
-        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
-
+        tenant = userside_api.lookup_sej_tenant(request, cart.organization_id)
         try:
             request_order(
-                shop_name=tenant.shop_name,
-                shop_id=tenant.shop_id,
-                contact_01=tenant.contact_01,
-                contact_02=tenant.contact_02,
-                secret_key=api_key,
-                hostname=api_url,
+                tenant=tenant,
                 **build_sej_args(SejPaymentType.PrepaymentOnly, cart, current_date)
                 )
         except SejErrorBase:
@@ -268,15 +260,11 @@ class SejPaymentPlugin(object):
             raise Exception('order %s is already paid' % order.order_no)
 
         settings = request.registry.settings
-        tenant = SejTenant.filter_by(organization_id = order.performance.event.organization.id).first()
-        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
-        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
-
+        tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
-            order,
-            SejOrderUpdateReason.Change,
-            api_key=api_key,
-            api_url=api_url
+            tenant=tenant,
+            order=order,
+            update_reason=SejOrderUpdateReason.Change
             )
  
 @implementer(IDeliveryPlugin)
@@ -293,22 +281,12 @@ class SejDeliveryPlugin(object):
 
         shipping_address = cart.shipping_address
         current_date = datetime.now()
-
-        settings = request.registry.settings
-        tenant = SejTenant.filter_by(organization_id = cart.performance.event.organization.id).first()
-        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
-        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
-
+        tenant = userside_api.lookup_sej_tenant(request, cart.organization_id)
         try:
             tickets = get_tickets_from_cart(cart, current_date)
             request_order(
-                shop_name=tenant.shop_name,
-                shop_id=tenant.shop_id,
-                contact_01=tenant.contact_01,
-                contact_02=tenant.contact_02,
+                tenant=tenant,
                 tickets=tickets,
-                secret_key=api_key,
-                hostname=api_url,
                 **build_sej_args(SejPaymentType.Paid, cart, current_date)
                 )
         except SejErrorBase:
@@ -326,16 +304,11 @@ class SejDeliveryPlugin(object):
         if order.delivered_at is not None:
             raise Exception('order %s is already delivered' % order.order_no)
 
-        settings = request.registry.settings
-        tenant = SejTenant.filter_by(organization_id = order.performance.event.organization.id).first()
-        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
-        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
-
+        tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
-            order,
-            SejOrderUpdateReason.Change,
-            api_key=api_key,
-            api_url=api_url
+            tenant=tenant,
+            order=order,
+            update_reason=SejOrderUpdateReason.Change
             )
 
 @implementer(IDeliveryPlugin)
@@ -350,22 +323,14 @@ class SejPaymentDeliveryPlugin(object):
         order = c_models.Order.create_from_cart(cart)
         cart.finish()
 
-        settings = request.registry.settings
-        tenant = SejTenant.filter_by(organization_id = order.performance.event.organization.id).first()
-        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
-        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
         current_date = datetime.now()
+        tenant = userside_api.lookup_sej_tenant(request, cart.organization_id)
 
         try:
             tickets = get_tickets(order)
             request_order(
-                shop_name=tenant.shop_name,
-                shop_id=tenant.shop_id,
-                contact_01=tenant.contact_01,
-                contact_02=tenant.contact_02,
                 tickets=tickets,
-                secret_key=api_key,
-                hostname=api_url,
+                tenant=tenant,
                 **build_sej_args(SejPaymentType.CashOnDelivery, cart, current_date)
                 )
         except SejErrorBase:
@@ -384,17 +349,11 @@ class SejPaymentDeliveryPlugin(object):
     def refresh(self, request, order):
         if order.paid_at is not None or order.delivered_at is not None:
             raise Exception('order %s is already paid / delivered' % order.order_no)
-
-        settings = request.registry.settings
-        tenant = SejTenant.filter_by(organization_id = order.performance.event.organization.id).first()
-        api_key = (tenant and tenant.api_key) or settings['sej.api_key']
-        api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
-
+        tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
-            order,
-            SejOrderUpdateReason.Change,
-            api_key=api_key,
-            api_url=api_url
+            tenant=tenant,
+            order=order,
+            update_reason=SejOrderUpdateReason.Change
             )
 
 

@@ -104,6 +104,20 @@ class SalesSegmentForm(OurForm):
         default=True,
         widget=CheckboxInput()
     )
+    sales_counter_selectable = OurBooleanField(
+        label=label_text_for(SalesSegmentSetting.sales_counter_selectable),
+        default=True,
+        widget=CheckboxInput(),
+        help=u'''
+          窓口業務でこの販売区分を選択可能にします。<br />
+          例外として「公演管理編集」権限があるオペレーターは常に選択可能です。
+        '''
+    )
+    use_default_sales_counter_selectable = OurBooleanField(
+        label=u'グループの値を利用',
+        default=True,
+        widget=CheckboxInput()
+    )
 
     payment_delivery_method_pairs = PHPCompatibleSelectMultipleField(
         label=u'決済・引取方法',

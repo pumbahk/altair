@@ -58,9 +58,22 @@ class CooperationView(BaseView):
                                   .filter(Venue.performance_id==None)\
                                   .one()
         if fmt_ == 'altair':
+            success = {}
+            fail = {}
+            import csv
             seats = dict([(seat.l0_id, seat.l0_id) for seat in parent_venue.seats])
-            return {'success': seats,
-                    'fail': {},
+            reader = csv.reader(self.request.POST['csvfile'].file)
+            reader.next()
+            for record in reader:
+                l0_id = record[1].strip().decode('cp932')
+                name = record[3].strip().decode('cp932')
+                seat = seats.get(l0_id, None)
+                if seat:
+                    success[name] = l0_id
+                else:
+                    fail[name] = l0_id
+            return {'success': success,
+                    'fail': fail,
                     }
         elif fmt_ == 'gettii':
             import datetime

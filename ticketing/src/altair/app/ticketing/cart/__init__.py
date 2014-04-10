@@ -8,8 +8,6 @@ from pyramid.config import Configurator
 #from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.interfaces import IDict
 from pyramid.tweens import INGRESS, MAIN, EXCVIEW
-from pyramid_beaker import session_factory_from_settings
-from pyramid_beaker import set_cache_regions_from_settings
 from pyramid.exceptions import ConfigurationError
 
 from sqlalchemy import engine_from_config
@@ -252,6 +250,20 @@ def import_mail_module(config):
     config.include('altair.app.ticketing.mails')
     config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
 
+
+class CartInterface(object):
+    def get_cart(self, request):
+        from .api import get_cart_safe
+        return get_cart_safe(request)
+
+    def get_success_url(self, request):
+        return request.route_url('payment.confirm')
+
+
+def setup_cart_interface(config):
+    config.set_cart_interface(CartInterface())
+
+
 STATIC_URL_PREFIX = '/static/'
 STATIC_ASSET_SPEC = 'altair.app.ticketing.cart:static/'
 FC_AUTH_URL_PREFIX = '/fc_auth/static/'
@@ -263,13 +275,13 @@ def main(global_config, **local_config):
 
     from sqlalchemy.pool import NullPool
     engine = engine_from_config(settings, poolclass=NullPool, isolation_level='READ COMMITTED')
-    session_factory = session_factory_from_settings(settings)
-    set_cache_regions_from_settings(settings) 
     sqlahelper.add_engine(engine)
 
-    config = Configurator(settings=settings,
-                          root_factory='.resources.PerformanceOrientedTicketingCartResource',
-                          session_factory=session_factory)
+    config = Configurator(
+        settings=settings,
+        root_factory='.resources.PerformanceOrientedTicketingCartResource'
+        )
+    config.include('altair.app.ticketing.setup_beaker_cache')
     config.registry['sa.engine'] = engine
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'altair.app.ticketing.renderers.json_renderer_factory')
@@ -283,6 +295,7 @@ def main(global_config, **local_config):
     config.add_static_view(STATIC_URL_PREFIX, STATIC_ASSET_SPEC, cache_max_age=3600)
 
     ### includes altair.*
+    config.include('altair.httpsession.pyramid')
     config.include('altair.exclog')
     config.include('altair.browserid')
     config.include('altair.sqlahelper')
@@ -303,6 +316,8 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.fc_auth')
     config.include('altair.app.ticketing.checkout')
     config.include('altair.app.ticketing.multicheckout')
+    config.include('altair.app.ticketing.sej')
+    config.include('altair.app.ticketing.sej.userside_impl')
     config.include('altair.mobile')
     config.include('altair.app.ticketing.venues.setup_components')
     config.include('altair.app.ticketing.payments')
@@ -310,11 +325,11 @@ def main(global_config, **local_config):
     config.add_subscriber('altair.app.ticketing.payments.events.cancel_on_delivery_error',
                           'altair.app.ticketing.payments.events.DeliveryErrorEvent')
 
-    config.set_cart_getter('.api.get_cart_safe')
     config.include('.errors')
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
     config.add_tween('altair.app.ticketing.cart.tweens.response_time_tween_factory', over=MAIN)
     config.add_tween('altair.app.ticketing.cart.tweens.PaymentPluginErrorConverterTween', under=EXCVIEW)
+    config.include(setup_cart_interface)
     config.include(setup_mq)
     config.include(setup_renderers)
     config.scan()
