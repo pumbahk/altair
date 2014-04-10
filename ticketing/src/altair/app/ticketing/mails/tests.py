@@ -129,7 +129,7 @@ class CreateMailFromFakeOrderTests(unittest.TestCase):
         from altair.app.ticketing.mails.api import get_mail_utility
 
         org = Organization()
-        org.settings.append(OrganizationSetting(name="default"))
+        org.settings.append(OrganizationSetting(name="default", contact_pc_url='pc@example.com', contact_mobile_url='mobile@exmaple.com'))
         org.extra_mail_info=None
         request = testing.DummyRequest()
         order = FakeOrderFactory(object())(request, { "organization": org })

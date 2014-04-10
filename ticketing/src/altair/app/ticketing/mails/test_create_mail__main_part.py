@@ -41,7 +41,7 @@ def setup_operator(auth_id=AUTH_ID, organization_id=ORGANIZATION_ID):
                                     short_name=":Organization:short_name", 
                                     code=":Organization:code", 
                                     id=organization_id)
-        OrganizationSetting(organization=organization, name="default")
+        OrganizationSetting(organization=organization, name="default", contact_pc_url=u'mailto:pc@example.com', contact_mobile_url=u'mailto:mobile@example.com')
         operator = Operator(organization_id=organization_id, organization=organization)
         OperatorAuth(operator=operator, login_id=auth_id)
     return operator
