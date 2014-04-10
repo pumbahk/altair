@@ -1,6 +1,6 @@
 [app:mypage]
 use = config:%(here)s/../../baseconf/common.ini#mypage
-pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_beaker pyramid_mailer altair_gaq altair.findable_label
+pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair_gaq altair.findable_label
 pyramid_who.config = %(here)s/mypage_who.ini
 
 ; altair:site-data
@@ -15,6 +15,9 @@ altair.rakuten_auth.extra_verify_url = ${altair:rakuten_auth.extra_verify_url}
 ; Beaker
 session.type = ${altair:beaker_backend_type}
 cache.type = ${altair:beaker_backend_type}
+
+; altair.httpsession
+altair.httpsession.persistence.type = ${altair:beaker_backend_type}
 
 [app:www-check]
 use = egg:Paste#static

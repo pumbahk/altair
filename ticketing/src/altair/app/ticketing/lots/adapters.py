@@ -66,8 +66,7 @@ class LotSessionCart(object):
         self.memo = entry_dict['memo']
         self.request = request
         self.lot = lot
-        logger.debug("{deli}\nLotSessionCart entry_no={0.entry_no}\n{deli}".format(self,
-                                                                                deli="*" * 80))
+        logger.debug("LotSessionCart(entry_no={0.entry_no})".format(self))
 
     @property
     def sales_segment(self):

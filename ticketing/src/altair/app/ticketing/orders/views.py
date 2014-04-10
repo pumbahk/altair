@@ -113,6 +113,7 @@ from altair.app.ticketing.tickets.preview.transform import SVGTransformer
 from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketCover
 from altair.app.ticketing.core.modelmanage import OrderAttributeManager
+from altair.app.ticketing.core.helpers import build_sales_segment_list_for_inner_sales
 
 # XXX
 INNER_DELIVERY_PLUGIN_IDS = [
@@ -300,13 +301,6 @@ class OrderIndexView(OrderBaseView):
         params["order_no"] = " ".join(request.params.getall("order_no"))
 
         form_search = OrderSearchForm(params, organization_id=organization_id)
-
-        if request.params.get('action') == 'checked':
-            
-            checked_orders = [o.lstrip('o:') 
-                              for o in request.session.get('orders', []) 
-                              if o.startswith('o:')]
-            query.target_order_ids = checked_orders
 
         orders = None
         total = None
@@ -1196,7 +1190,7 @@ class OrderDetailView(BaseView):
                 'message':u'不正なデータです',
             }))
 
-        f = OrderReserveForm(MultiDict(self.request.json_body))
+        f = OrderReserveForm(MultiDict(self.request.json_body), request=self.request)
         if not f.note.validate(f):
             raise HTTPBadRequest(body=json.dumps({
                 'message':f.note.errors,
@@ -1213,7 +1207,7 @@ class OrderDetailView(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        sales_segments = performance.sales_segments
+        sales_segments = build_sales_segment_list_for_inner_sales(performance.sales_segments, request=self.request)
         sales_segment_id = int(self.request.params.get('sales_segment_id') or 0)
         if sales_segment_id:
             sales_segments = [ss for ss in sales_segments if ss.id == sales_segment_id]
@@ -1486,7 +1480,7 @@ class OrdersReserveView(BaseView):
         self.clear_inner_cart_session()
 
         stocks = post_data.get('stocks')
-        form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks, sales_segment_id=sales_segment_id)
+        form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks, sales_segment_id=sales_segment_id, request=self.request)
         form_reserve.sales_segment_id.validators = [Optional()]
         form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
         form_reserve.validate()
@@ -1525,7 +1519,7 @@ class OrdersReserveView(BaseView):
         performance_id = int(post_data.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.organization.id)
 
-        f = OrderReserveForm(post_data, performance_id=performance_id, stocks=post_data.get('stocks'), sales_segment_id=post_data.get('sales_segment_id'))
+        f = OrderReserveForm(post_data, performance_id=performance_id, stocks=post_data.get('stocks'), sales_segment_id=post_data.get('sales_segment_id'), request=self.request)
         selected_seats = Seat.query.filter(and_(
             Seat.l0_id.in_(post_data.get('seats')),
             Seat.venue_id==post_data.get('venue_id')
@@ -1966,7 +1960,7 @@ class OrdersEditAPIView(BaseView):
         return self._get_order_dicts(modiry_order)
 
 
-from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket, SejTenant
+from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket
 from altair.app.ticketing.sej.ticket import SejTicketDataXml
 from altair.app.ticketing.sej.payment import request_update_order, request_cancel_order
 from altair.app.ticketing.sej.models import code_from_ticket_type, code_from_update_reason, code_from_payment_type
@@ -2021,12 +2015,11 @@ class SejOrderInfoView(object):
 
     def __init__(self, request):
         settings = get_current_registry().settings
-        tenant = SejTenant.filter_by(organization_id=request.context.organization.id).first()
-        self.sej_hostname = (tenant and tenant.inticket_api_url) or settings.get('sej.inticket_api_url')
-        self.shop_id = (tenant and tenant.shop_id) or settings.get('sej.shop_id')
-        self.secret_key = (tenant and tenant.api_key) or settings.get('sej.api_key')
-
         self.request = request
+
+    @reify
+    def tenant(self):
+        return userside_api.lookup_sej_tenant(self.request.context.organization.id)
 
     @view_config(route_name='orders.sej.order.request', request_method="GET", renderer='altair.app.ticketing:templates/sej/request.html')
     def order_request_get(self):
@@ -2104,9 +2097,7 @@ class SejOrderInfoView(object):
                         billing_number  = order.billing_number,
                         exchange_number = order.exchange_number,
                     ),
-                    shop_id=self.shop_id,
-                    secret_key=self.secret_key,
-                    hostname=self.sej_hostname
+                    tenant=self.tenant
                 )
                 self.request.session.flash(u'オーダー情報を送信しました。')
             except SejServerError, e:

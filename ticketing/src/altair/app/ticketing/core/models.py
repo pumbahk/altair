@@ -55,10 +55,10 @@ from altair.app.ticketing.models import (
 )
 from standardenum import StandardEnum
 from altair.app.ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
-from altair.app.ticketing.sej.api import get_sej_order
 from altair.app.ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode, todate, todatetime
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.sej import api as sej_api
+from altair.app.ticketing.sej.interfaces import ISejTenant
 from altair.app.ticketing.venues.interfaces import ITentativeVenueSite
 from .utils import ApplicableTicketsProducer
 
@@ -2002,6 +2002,24 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         stock_holder.save()
         return {template.id:stock_holder.id}
 
+    def num_seats(self, performance_id=None, sale_only=False):
+        # 同一Performanceの同一StockHolderにおけるStock.quantityの合計
+        query = Stock.filter_by(stock_holder_id=self.id).with_entities(func.sum(Stock.quantity))
+        if performance_id:
+            query = query.filter_by(performance_id=performance_id)
+            if sale_only:
+                query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
+        return query.scalar()
+
+    def rest_num_seats(self, performance_id=None, sale_only=False):
+        # 同一Performanceの同一StockHolderにおけるStockStatus.quantityの合計
+        query = Stock.filter(Stock.stock_holder_id==self.id).join(Stock.stock_status).with_entities(func.sum(StockStatus.quantity))
+        if performance_id:
+            query = query.filter(Stock.performance_id==performance_id)
+            if sale_only:
+                query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
+        return query.scalar()
+
 # stock based on quantity
 class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Stock"
@@ -2090,7 +2108,10 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for performance in performances:
             for stock_type in stock_types:
                 # StockHolderのないStockType毎のStockを生成
-                if not [stock for stock in performance.stocks if stock.stock_type_id == stock_type.id]:
+                if Stock.query.filter(
+                    Stock.performance_id == performance.id,
+                    Stock.stock_type_id == stock_type.id) \
+                    .with_entities(Stock.id).first() is None:
                     stock = Stock(
                         performance_id=performance.id,
                         stock_type_id=stock_type.id,
@@ -2101,9 +2122,11 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
                 # Performance × StockType × StockHolder分のStockを生成
                 for stock_holder in stock_holders:
-                    def stock_filter(stock):
-                        return (stock.stock_type_id == stock_type.id and stock.stock_holder_id == stock_holder.id)
-                    if not filter(stock_filter, performance.stocks):
+                    if Stock.query.filter(
+                        Stock.performance_id == performance.id,
+                        Stock.stock_type_id == stock_type.id, 
+                        Stock.stock_holder_id == stock_holder.id) \
+                        .with_entities(Stock.id).first() is None:
                         stock = Stock(
                             performance_id=performance.id,
                             stock_type_id=stock_type.id,
@@ -2644,6 +2667,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def sej_order(self):
+        from altair.app.ticketing.sej.api import get_sej_order
         return get_sej_order(self.order_no)
 
     @property
@@ -3613,7 +3637,7 @@ class MailTypeEnum(StandardEnum):
     PointGrantingFailureMail = 21
     BoosterPurchaseCompleteMail = 31
 
-MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール", u"抽選申し込み完了メール", u"抽選当選通知メール", u"抽選落選通知メール", u"ポイント付与失敗通知メール", u"購入完了メール")
+MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール", u"抽選申し込み完了メール", u"抽選当選通知メール", u"抽選落選通知メール", u"ポイント付与失敗通知メール", u"ブースター購入完了メール")
 assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
 MailTypeChoices = [(str(e) , label) for e, label in zip([enum.v for enum in sorted(iter(MailTypeEnum), key=lambda e: e.v)], MailTypeLabels)]
 MailTypeEnum.dict = dict(MailTypeChoices)
@@ -4020,6 +4044,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     point_rate = AnnotatedColumn(Float, nullable=True, _a_label=u"付与ポイントデフォルト値 (率)")
 
     bcc_recipient = AnnotatedColumn(Unicode(255), nullable=True, _a_label=u"BCC受信者")
+    default_mail_sender = AnnotatedColumn(Unicode(255), _a_label=u"デフォルトの送信元メールアドレス")
     entrust_separate_seats = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"バラ席のおまかせが有効", _a_label=u"おまかせ座席選択でバラ席を許可する")
     notify_point_granting_failure = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"ポイント付与失敗時のメール通知on/off", _a_label=u"ポイント付与失敗時のメール通知を有効にする")
 
@@ -4073,6 +4098,7 @@ class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted,
     disp_orderreview = AnnotatedColumn(Boolean, default=True,
                                   _a_label=_(u'一般チケットの購入履歴表示／非表示'))
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
+    sales_counter_selectable = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'窓口業務で閲覧可能'))
 
     @classmethod
     def create_from_template(cls, template, **kwargs):
@@ -4091,11 +4117,13 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     disp_orderreview = AnnotatedColumn(Boolean, default=True,
                                   _a_label=_(u'一般チケットの購入履歴表示／非表示'))
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
+    sales_counter_selectable = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'窓口業務で閲覧可能'))
 
     use_default_order_limit = Column(Boolean)
     use_default_max_quantity_per_user = Column(Boolean)
     use_default_disp_orderreview = Column(Boolean)
     use_default_display_seat_no = Column(Boolean)
+    use_default_sales_counter_selectable = Column(Boolean)
 
     @property
     def super(self):
@@ -4142,6 +4170,21 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Setti
         setting = cls.clone(template)
         setting.save() # XXX
         return setting
+
+
+@implementer(ISejTenant)
+class SejTenant(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+    __tablename__           = 'SejTenant'
+    id                      = Column(Identifier, primary_key=True)
+    shop_name               = Column(String(12))
+    shop_id                 = Column(String(12))
+    contact_01              = Column(String(128))
+    contact_02              = Column(String(255))
+    api_key                 = Column(String(255), nullable=True)
+    inticket_api_url        = Column(String(255), nullable=True)
+
+    organization_id         = Column(Identifier)
+
 
 # move to altair.app.ticketing.orders.models
 class ImportStatusEnum(StandardEnum):

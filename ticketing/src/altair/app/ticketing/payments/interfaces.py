@@ -11,9 +11,13 @@ from altair.app.ticketing.core.interfaces import (
     IShippingAddress
     )
 
-class IGetCart(Interface):
-    def __call__(request):
+class ICartInterface(Interface):
+    def get_cart(request):
         """ get IPaymentCart impl from request """
+
+    def get_success_url(request):
+        """ get success url """
+
 
 class IPaymentCart(IOrderLike):
     performance           = Attribute(u"")

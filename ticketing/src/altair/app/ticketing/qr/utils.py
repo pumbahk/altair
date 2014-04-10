@@ -83,7 +83,7 @@ def make_data_for_qr(ticket):
     ticket.order = ticket.ordered_product_item.ordered_product.order
     ticket.item_token = ticket.item_token
 
-    params = dict(serial=("%d" % ticket.id),
+    params = dict(serial=str(ticket.id),
                   performance=ticket.performance.code,
                   order=ticket.order.order_no,
                   date=ticket.performance.start_on.strftime("%Y%m%d"),

@@ -87,6 +87,10 @@
       <td>${organization_setting.bcc_recipient or u'-'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.default_mail_sender)}</th>
+      <td>${organization_setting.default_mail_sender or u'-'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.entrust_separate_seats)}</th>
       <td>${u'バラ席を許可する' if organization_setting.entrust_separate_seats else u'バラ席を許可しない'}</td>
     </tr>

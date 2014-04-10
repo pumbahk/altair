@@ -8,8 +8,6 @@ cache.type = ${altair:beaker_backend_type}
 ; altair.httpsession
 altair.httpsession.persistence.type = ${altair:beaker_backend_type}
 
-; augus
-mail.augus.recipient = dev@ticketstar.jp
 
 [loggers]
 keys = root, ticketing

@@ -34,6 +34,7 @@ class SalesSegmentGroupForm(OurForm):
         fix_boolean(formdata, 'display_seat_no')
         fix_boolean(formdata, 'public')
         fix_boolean(formdata, 'reporting')
+        fix_boolean(formdata, 'sales_counter_selectable')
         context = kwargs.pop('context', None)
         super(SalesSegmentGroupForm, self).__init__(formdata, obj, prefix, **kwargs)
         self.context = context
@@ -177,6 +178,14 @@ class SalesSegmentGroupForm(OurForm):
     reporting = OurBooleanField(
         label=u'レポート対象',
         hide_on_new=True
+    )
+    sales_counter_selectable = OurBooleanField(
+        label=label_text_for(SalesSegmentGroupSetting.sales_counter_selectable),
+        hide_on_new=True,
+        help=u'''
+          窓口業務でこの販売区分を選択可能にします。<br />
+          例外として「公演管理編集」権限があるオペレーターは常に選択可能です。
+        '''
     )
     account_id = OurSelectField(
         label=u'配券元',

@@ -51,18 +51,3 @@ class ISmartphoneRequest(Interface):
 class IMobileRequestMaker(Interface):
     def __call__(request):
         pass
-
-class ISessionObjectImplCompanion(Interface):
-    session = Attribute('''''')
-
-    def get_cookie_key_from_session():
-        pass
-
-    def get_session_restorer():
-        pass
-
-    def renew_session(request):
-        pass
-
-    def invalidate():
-        pass

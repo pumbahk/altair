@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import unittest
 from collections import defaultdict
+from altair.app.ticketing.testing import DummyRequest
 
 DummyInfodata = lambda : defaultdict(str)
 
@@ -9,10 +10,15 @@ class InfoRendererTests(unittest.TestCase):
         from altair.app.ticketing.mails.forms import SubjectInfoRenderer
         return SubjectInfoRenderer(*args, **kwargs)
 
+
+    def setUp(self):
+        self.request = DummyRequest()
+
     def _getDummyDefault(self, default_value):
         from altair.app.ticketing.mails.forms import SubjectInfo
         class DummyDefaultGet(object):
-            def getval(o):
+            def getval(request, o):
+                self.assertEqual(request, self.request)
                 return default_value
             field_x = SubjectInfo(name="field_x", label=u"フィールドx", getval=getval)
         return DummyDefaultGet()
@@ -22,7 +28,7 @@ class InfoRendererTests(unittest.TestCase):
             pass
         data = DummyInfodata()
         data["field_x"] = {"use": True,  "kana": u"フィールドx", "value": u"<set-value>"}
-        target = self._makeOne(Obj(), data, self._getDummyDefault("<default-field-x-value>"))
+        target = self._makeOne(self.request, Obj(), data, self._getDummyDefault("<default-field-x-value>"))
         result = target.get("field_x")
         self.assertEqual(result.status, True)
         self.assertEqual(result.label, u"フィールドx")
@@ -34,7 +40,7 @@ class InfoRendererTests(unittest.TestCase):
         data = DummyInfodata()
         data["field_x"] = {"use": True,  "kana": u"フィールドx"}
 
-        target = self._makeOne(Obj(), data, self._getDummyDefault("<default-field-x-value>"))
+        target = self._makeOne(self.request, Obj(), data, self._getDummyDefault("<default-field-x-value>"))
         result = target.get("field_x")
         self.assertEqual(result.status, True)
         self.assertEqual(result.label, u"フィールドx")
@@ -45,7 +51,7 @@ class InfoRendererTests(unittest.TestCase):
             pass
         data = DummyInfodata()
         data["field_x"] = {"use": False,  "kana": u"フィールドx"}
-        target = self._makeOne(Obj(), data, self._getDummyDefault("<default-field-x-value>"))
+        target = self._makeOne(self.request, Obj(), data, self._getDummyDefault("<default-field-x-value>"))
         result = target.get("field_x")
         self.assertEqual(result.status, False)
         self.assertEqual(result.label, u"")
@@ -56,7 +62,7 @@ class InfoRendererTests(unittest.TestCase):
             pass
         data = DummyInfodata()
         data["field_x"] = {"use": False,  "kana": u"フィールドx", "value": u"<set-value>"}
-        target = self._makeOne(Obj(), data, self._getDummyDefault("<default-field-x-value>"))
+        target = self._makeOne(self.request, Obj(), data, self._getDummyDefault("<default-field-x-value>"))
         result = target.get("field_x")
         self.assertEqual(result.status, False)
         self.assertEqual(result.label, u"")
@@ -66,7 +72,7 @@ class InfoRendererTests(unittest.TestCase):
         class Obj(object):
             pass
         data = DummyInfodata()
-        target = self._makeOne(Obj(), data, self._getDummyDefault("<default-field-x-value>"))
+        target = self._makeOne(self.request, Obj(), data, self._getDummyDefault("<default-field-x-value>"))
         result = target.get("field_x")
         self.assertEqual(result.status, True)
         self.assertEqual(result.label, u"フィールドx")
@@ -76,7 +82,7 @@ class InfoRendererTests(unittest.TestCase):
         class Obj(object):
             pass
         data = None
-        target = self._makeOne(Obj(), data, self._getDummyDefault("<default-field-x-value>"))
+        target = self._makeOne(self.request, Obj(), data, self._getDummyDefault("<default-field-x-value>"))
         result = target.get("field_x")
         self.assertEqual(result.status, True)
         self.assertEqual(result.label, u"フィールドx")

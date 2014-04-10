@@ -49,12 +49,16 @@ class send_accepted_mailTests(unittest.TestCase, MailTestMixin):
                 name=u"抽選テスト",
                 event=core_models.Event(
                     title=u"抽選テストイベント",
-                    organization=core_models.Organization(short_name='testing', 
-                                              contact_email="testing@sender.example.com", 
-                                                          name=u"テスト組織",
-                                                          settings=[
-                                                              core_models.OrganizationSetting(name="default"),
-                                                          ]),
+                    organization=core_models.Organization(
+                        short_name='testing', 
+                        name=u"テスト組織",
+                        settings=[
+                            core_models.OrganizationSetting(
+                                name="default",
+                                default_mail_sender="testing@sender.example.com"
+                                ),
+                            ]
+                        ),
                 ),
                 lotting_announce_datetime=datetime.now(),
                 sales_segment=core_models.SalesSegment(),

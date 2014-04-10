@@ -3,10 +3,9 @@ import logging
 from pyramid.view import render_view_to_response
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
-from altair.app.ticketing.core.api import get_organization, get_organization_setting, is_mobile_request
+from altair.app.ticketing.core.api import get_organization, get_organization_setting, is_mobile_request, get_default_contact_url
 from altair.app.ticketing.mails.api import get_appropriate_message_part
 from pyramid.threadlocal import get_current_registry
-from altair.app.ticketing.core import api as c_api
 from altair.app.ticketing.qr.utils import get_matched_token_from_token_id
 import urllib
 import urllib2
@@ -40,15 +39,10 @@ def get_contact_url(request, fail_exc=ValueError):
     organization = get_organization(request)
     if organization is None:
         raise fail_exc("organization is not found")
-    setting = get_organization_setting(request, organization)
-    if is_mobile_request(request):
-        if setting.contact_mobile_url is None:
-            raise fail_exc("contact url is not found. (organization_id = %s)" % (organization.id))
-        return setting.contact_mobile_url
-    else:
-        if setting.contact_pc_url is None:
-            raise fail_exc("contact url is not found. (organization_id = %s)" % (organization.id))
-        return setting.contact_pc_url
+    retval = get_default_contact_url(request, organization, request.mobile_ua.carrier)
+    if retval is None:
+        raise fail_exc("no contact url")
+    return retval
 
 def safe_get_contact_url(request, default=""):
     try:
@@ -62,7 +56,6 @@ def send_to_orion(request, context, recipient, data):
     api_url = settings.get('orion.create_url')
     if api_url is None:
         raise Exception("orion.api_uri is None")
-    print "target url is %s" % api_url
     
     order = data.item.ordered_product.order
     product = data.item.ordered_product.product
@@ -122,7 +115,7 @@ def send_to_orion(request, context, recipient, data):
         raise Exception("server returned unexpected status: %d (payload) %r" % (stream.code, stream.read()))
 
 def is_mypage_organization(context, request):
-    organization = c_api.get_organization(request)
+    organization = get_organization(request)
     mypage_orgs = [15, 24]
     for org in mypage_orgs:
         if organization.id == org:
@@ -130,7 +123,7 @@ def is_mypage_organization(context, request):
     return False
 
 def is_rakuten_auth_organization(context, request):
-    organization = c_api.get_organization(request)
+    organization = get_organization(request)
     rakuten_auth_orgs = [15]
     for org in rakuten_auth_orgs:
         if organization.id == org:

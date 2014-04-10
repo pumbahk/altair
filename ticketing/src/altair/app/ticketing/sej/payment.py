@@ -34,7 +34,6 @@ import sqlahelper
 
 DBSession = sqlahelper.get_session()
 
-sej_hostname = u'https://pay.r1test.com/'
 logger = logging.getLogger(__name__)
 
 
@@ -258,9 +257,7 @@ def build_sej_tickets_from_dicts(sej_order, tickets, barcode_number_getter):
         ]
 
 def request_order(
-        shop_name,
-        contact_01,
-        contact_02,
+        tenant,
         order_no,
         user_name,
         user_name_kana,
@@ -277,9 +274,6 @@ def request_order(
         ticketing_due_at = None,
         regrant_number_due_at = None,
         tickets = [],
-        shop_id = u'30520',
-        secret_key = u'E6PuZ7Vhe7nWraFW',
-        hostname = sej_hostname
         ):
     """済要求 https://inticket.sej.co.jp/order/order.do"""
 
@@ -289,7 +283,7 @@ def request_order(
     if int(payment_type) == int(SejPaymentType.Paid):
         payment_due_at = None
 
-    payment = SejPayment(url = hostname + '/order/order.do', secret_key = secret_key)
+    payment = SejPayment(url = tenant.inticket_api_url + '/order/order.do', secret_key=tenant.api_key)
     params = create_sej_request_data(
         order_no=order_no,
         total_price=total_price,
@@ -302,15 +296,15 @@ def request_order(
         ticketing_due_at=ticketing_due_at,
         regrant_number_due_at=regrant_number_due_at,
         tickets=tickets,
-        shop_id=shop_id,
+        shop_id=tenant.shop_id,
     )
 
-    params['shop_namek']        = shop_name
+    params['shop_namek']        = tenant.shop_name
     # 連絡先1
 
-    params['X_renraku_saki']    = contact_01
+    params['X_renraku_saki']    = tenant.contact_01
     # 連絡先2
-    params['renraku_saki']      = contact_02
+    params['renraku_saki']      = tenant.contact_02
     # お客様氏名
     params['user_namek']        = user_name
     # お客様氏名カナ
@@ -347,10 +341,10 @@ def request_order(
             )
 
     sej_order = SejOrder(
-        shop_id                   = shop_id,
-        shop_name                 = shop_name,
-        contact_01                = contact_01,
-        contact_02                = contact_02,
+        shop_id                   = tenant.shop_id,
+        shop_name                 = tenant.shop_name,
+        contact_01                = tenant.contact_01,
+        contact_02                = tenant.contact_02,
         user_name                 = user_name,
         user_name_kana            = user_name_kana,
         tel                       = tel,
@@ -388,20 +382,17 @@ def request_order(
     return sej_order
 
 def request_cancel_order(
+        tenant,
         order_no,
         billing_number,
         exchange_number,
-        shop_id = u'30520',
-        secret_key = u'E6PuZ7Vhe7nWraFW',
-        hostname = sej_hostname,
-        now=None
-    ):
+        now=None):
     '''
     注文キャンセル https://inticket.sej.co.jp/order/cancelorder.do
     '''
-    payment = SejPayment(url = hostname + u'/order/cancelorder.do', secret_key = secret_key)
+    payment = SejPayment(url = tenant.inticket_api_url + u'/order/cancelorder.do', secret_key=tenant.api_key)
     params = JavaHashMap()
-    params['X_shop_id']         = shop_id
+    params['X_shop_id']         = tenant.shop_id
     params['X_shop_order_id']   = order_no
     if billing_number:
         params['X_haraikomi_no']    = billing_number
@@ -436,12 +427,9 @@ def request_cancel_order(
     return sej_order
 
 def request_update_order(
+        tenant,
         new_order,
-        update_reason,
-        shop_id = u'30520',
-        secret_key = u'E6PuZ7Vhe7nWraFW',
-        hostname = sej_hostname
-):
+        update_reason):
     """
     注文情報更新 https://inticket.sej.co.jp/order/updateorder.do
     """
@@ -460,7 +448,7 @@ def request_update_order(
                 ), \
            '%d == %d and %d < 20' % (len(ticket_dict), new_order.total_ticket_count, new_order.total_ticket_count)
 
-    payment = SejPayment(url = hostname + u'/order/updateorder.do', secret_key = secret_key)
+    payment = SejPayment(url = tenant.inticket_api_url + u'/order/updateorder.do', secret_key = tenant.api_key)
     params = create_sej_request_data(
         order_no=new_order.order_no,
         total_price=new_order.total_price,
@@ -539,19 +527,17 @@ def request_update_order(
 def request_fileget(
         notification_type,
         date,
-        shop_id = u'30520',
-        secret_key = u'E6PuZ7Vhe7nWraFW',
-        hostname = sej_hostname):
+        tenant):
     """ファイル取得先 https://inticket.sej.co.jp/order/getfile.do
     """
 
     params = JavaHashMap()
 
-    params['X_shop_id'] = shop_id
+    params['X_shop_id'] = tenant.shop_id
     params['X_data_type'] = "%02d" % notification_type
     params['X_date'] = date.strftime('%Y%m%d')
 
-    payment = SejPayment(url = hostname + u'/order/getfile.do', secret_key = secret_key)
+    payment = SejPayment(url = tenant.inticket_api_url + u'/order/getfile.do', secret_key = tenant.api_key)
     body = payment.request_file(params, True)
 
     return decompress(body)

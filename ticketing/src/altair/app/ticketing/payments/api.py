@@ -5,12 +5,18 @@ import transaction
 
 from pyramid.threadlocal import get_current_request
 from zope.interface import directlyProvides
-from .interfaces import IGetCart
+from .interfaces import ICartInterface
 from .exceptions import PaymentDeliveryMethodPairNotFound
 from .interfaces import IPaymentPreparerFactory, IPaymentPreparer, IPaymentDeliveryPlugin, IPaymentPlugin, IDeliveryPlugin
+from zope.deprecation import deprecation
 
 logger = logging.getLogger(__name__)
 
+OBSOLETED_SUCCESS_URL_KEY = 'payment_confirm_url'
+
+@deprecation.deprecate("this method should be removed after the code gets released")
+def set_confirm_url(request, url):
+    request.session[OBSOLETED_SUCCESS_URL_KEY] = url
 
 def is_finished_payment(request, pdmp, order):
     if order is None:
@@ -27,8 +33,12 @@ def is_finished_delivery(request, pdmp, order):
     return plugin.finished(request, order)
 
 def get_cart(request):
-    getter = request.registry.getUtility(IGetCart)
-    return getter(request)
+    cart_if = request.registry.getUtility(ICartInterface)
+    return cart_if.get_cart(request)
+
+def get_confirm_url(request):
+    cart_if = request.registry.getUtility(ICartInterface)
+    return cart_if.get_success_url(request)
 
 def get_delivery_plugin(request, plugin_id):
     registry = request.registry

@@ -21,13 +21,17 @@ class PointGrantingFailureInfoDefault(SubjectInfoDefaultBase, OrderInfoDefaultMi
             u'ポイント口座番号に誤りがあるため',
         }
 
-    def get_contact(order):
+    def get_contact(request, order):
+        # XXX: 本来は recipient の情報を含んだ context を SubjectInfoRenderer
+        # のコンストラクタが受け取って、それをここまで引き回すべきである
+        recipient = order.shipping_address.emails[0]
+        contact_ref = get_default_contact_reference(request, order.ordered_from, recipient)
         return u"""\
 %s
-商品、決済・発送に関するお問い合わせ %s""" % (order.ordered_from.name, order.ordered_from.contact_email)
+商品、決済・発送に関するお問い合わせ %s""" % (order.ordered_from.name, contact_ref)
     contact = SubjectInfo(name=u"contact", label=u"お問い合わせ", getval=get_contact)
 
-    def failure_reason_default(point_grant_history_entry):
+    def failure_reason_default(request, point_grant_history_entry):
         reason = PointGrantingFailureInfoDefault.failure_reasons.get(point_grant_history_entry.grant_status)
         if reason is None:
             # 実際には事前にバリデーションしているのでここに飛んでくることはない
@@ -45,8 +49,9 @@ def get_mailtype_description():
     return u"ポイント付与失敗"
 
 class PointGrantHistoryEntryInfoRenderer(SubjectInfoRenderer):
-    def __init__(self, point_grant_history_entry, data, default_impl):
+    def __init__(self, request, point_grant_history_entry, data, default_impl):
         super(PointGrantHistoryEntryInfoRenderer, self).__init__(
+            request,
             point_grant_history_entry.order,
             data,
             default_impl)
@@ -124,7 +129,7 @@ class PointGrantingFailureMail(object):
     def _body_tmpl_vars(self, request, point_grant_history_entry, traverser):
         order = point_grant_history_entry.order
         sa = order.shipping_address 
-        info_renderder = PointGrantHistoryEntryInfoRenderer(point_grant_history_entry, traverser.data, default_impl=PointGrantingFailureInfoDefault)
+        info_renderder = PointGrantHistoryEntryInfoRenderer(request, point_grant_history_entry, traverser.data, default_impl=PointGrantingFailureInfoDefault)
         title = order.performance.event.title
         pair = order.payment_delivery_pair
         value = dict(h=ch, 

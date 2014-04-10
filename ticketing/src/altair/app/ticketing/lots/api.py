@@ -35,6 +35,7 @@ from datetime import datetime, date
 from collections import OrderedDict
 from uuid import uuid4
 from sqlalchemy import sql
+from sqlalchemy.orm.exc import NoResultFound
 #from pyramid.interfaces import IRequest
 from webob.multidict import MultiDict
 from altair.app.ticketing.core import api as c_api
@@ -60,6 +61,7 @@ from altair.app.ticketing.users.models import (
 from altair.app.ticketing.cart.models import (
     Cart,
 )
+from altair.app.ticketing.cart.exceptions import NoCartError
 
 from .models import (
     Lot,
@@ -79,6 +81,8 @@ from .events import LotEntriedEvent
 from .interfaces import IElecting
 from .adapters import LotSessionCart
 from . import schemas
+    
+LOT_ENTRY_DICT_KEY = 'lots.entry'
 
 def get_event(request):
     event_id = request.matchdict['event_id']
@@ -124,10 +128,18 @@ def get_requested_lot(request):
     lot_id = request.matchdict.get('lot_id')
     return Lot.query.filter(Lot.id==lot_id).one()
 
+def get_lot_entry_dict(request):
+    return request.session.get(LOT_ENTRY_DICT_KEY)
 
 def get_entry_cart(request):
-    entry = request.session['lots.entry']
-    cart = LotSessionCart(entry, request, Lot.query.filter(Lot.id==entry['lot_id']).one())
+    entry = get_lot_entry_dict(request)
+    if entry is None:
+        raise NoCartError('Cart is not associated to the request (lots)')
+    try:
+        lot = Lot.query.filter(Lot.id==entry['lot_id']).one()
+    except NoResultFound:
+        raise NoCartError("Cart is associated with a non-existent lot!")
+    cart = LotSessionCart(entry, request, lot)
     return cart
 
 def build_lot_entry_wish(wish_order, wish_rec):
@@ -353,7 +365,7 @@ def reject_lot_entries(request, lot_id):
     elector = request.registry.queryMultiAdapter([lot, request], IElecting, "")
     return elector.reject_lot_entries()
     
-
+# review用 XXX: Resourceに移動
 def entry_session(request, lot_entry=None):
     if lot_entry is not None:
         request.session['lots.entry_id'] = lot_entry.id
@@ -436,7 +448,7 @@ def get_entry_user(request):
     return user
 
 def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, shipping_address_dict, gender, birthday, memo):
-    request.session['lots.entry'] = dict(
+    request.session[LOT_ENTRY_DICT_KEY] = dict(
         lot_id=request.context.lot.id,
         entry_no=entry_no,
         token=uuid4().hex,
@@ -453,6 +465,13 @@ def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, sh
         payment_delivery_method_pair_id=payment_delivery_method_pair_id,
         email_1=shipping_address_dict["email_1"],
         )
+
+def clear_lot_entry(request):
+    try:
+        if request.session:
+            del request.session[LOT_ENTRY_DICT_KEY]
+    except KeyError:
+        pass
 
 class Options(object):
     OPTIONS_KEY = 'altair.lots.options'

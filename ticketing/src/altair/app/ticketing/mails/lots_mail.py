@@ -20,7 +20,7 @@ def get_subject_info_default():
     return LotsInfoDefault()
 
 class LotsInfoDefault(SubjectInfoDefault):
-    def get_announce_date(lot_entry):
+    def get_announce_date(request, lot_entry):
         d = lot_entry.lot.lotting_announce_datetime
         if d:
             return announce_time_label(lot_entry.lot)
@@ -32,19 +32,19 @@ class LotsInfoDefault(SubjectInfoDefault):
 抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
 """
 
-    first_sentence = SubjectInfoWithValue(name="first_sentence", label=u"はじめの文章", value="", getval=(lambda _: LotsInfoDefault.first_sentence_default))
-    event_name = SubjectInfo(name="event_name", label=u"イベント名", getval=lambda lot_entry: lot_entry.lot.event.title)
-    lot_name = SubjectInfo(name="lot_name", label=u"受付名称", getval=lambda lot_entry: lot_entry.lot.name)
+    first_sentence = SubjectInfoWithValue(name="first_sentence", label=u"はじめの文章", value="", getval=(lambda request, _: LotsInfoDefault.first_sentence_default))
+    event_name = SubjectInfo(name="event_name", label=u"イベント名", getval=lambda request, lot_entry: lot_entry.lot.event.title)
+    lot_name = SubjectInfo(name="lot_name", label=u"受付名称", getval=lambda request, lot_entry: lot_entry.lot.name)
     announce_date = SubjectInfo(name="announce_date", label=u"抽選結果発表日時", getval=get_announce_date)
-    review_url = SubjectInfo(name="review_url", label=u"抽選結果確認ページ", getval=lambda _ : "https://rt.tstar.jp/lots/review")
+    review_url = SubjectInfo(name="review_url", label=u"抽選結果確認ページ", getval=lambda request, _ : "https://rt.tstar.jp/lots/review")
 
-    system_fee = SubjectInfo(name=u"system_fee", label=u"システム利用料", getval=lambda _: "") #xxx:
-    special_fee = SubjectInfo(name=u"special_fee", label=u"特別手数料", getval=lambda _: "") #xxx:
-    special_fee_name = SubjectInfo(name=u"special_fee_name", label=u"特別手数料名", getval=lambda _: "") #xxx:
-    transaction_fee = SubjectInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda _: "") #xxx:
-    delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda _: "") #xxx:
-    total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda _: "") #xxx:
-    entry_no = SubjectInfo(name="entry_no", label=u"受付番号", getval=lambda subject : subject.entry_no)
+    system_fee = SubjectInfo(name=u"system_fee", label=u"システム利用料", getval=lambda request, _: "") #xxx:
+    special_fee = SubjectInfo(name=u"special_fee", label=u"特別手数料", getval=lambda request, _: "") #xxx:
+    special_fee_name = SubjectInfo(name=u"special_fee_name", label=u"特別手数料名", getval=lambda request, _: "") #xxx:
+    transaction_fee = SubjectInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda request, _: "") #xxx:
+    delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda request, _: "") #xxx:
+    total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda request, _: "") #xxx:
+    entry_no = SubjectInfo(name="entry_no", label=u"受付番号", getval=lambda request, subject: subject.entry_no)
 
 @implementer(ILotEntryInfoMail)
 class LotsMail(object):
@@ -81,10 +81,10 @@ class LotsMail(object):
         mail_body = self.build_mail_body(request, subject, traverser)
         return self.build_message_from_mail_body(request, subject, traverser, mail_body)
 
-    def _body_tmpl_vars(self, (lot_entry, elected_wish), traverser):
+    def _body_tmpl_vars(self, request, (lot_entry, elected_wish), traverser):
         shipping_address = lot_entry.shipping_address 
         pair = lot_entry.payment_delivery_method_pair
-        info_renderder = SubjectInfoRenderer(lot_entry, traverser.data, default_impl=get_subject_info_default())
+        info_renderder = SubjectInfoRenderer(request, lot_entry, traverser.data, default_impl=get_subject_info_default())
         value = dict(h=ch, 
                      fee_type=ch.fee_type, 
                      plugins=plugins, 
@@ -103,7 +103,7 @@ class LotsMail(object):
         return value
 
     def build_mail_body(self, request, subject, traverser):
-        value = self._body_tmpl_vars(subject, traverser)
+        value = self._body_tmpl_vars(request, subject, traverser)
         retval = render(self.mail_template, value, request=request)
         assert isinstance(retval, text_type)
         return retval

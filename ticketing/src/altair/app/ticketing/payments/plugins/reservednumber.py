@@ -2,6 +2,7 @@
 import hashlib
 import random
 import string
+from markupsafe import Markup
 from pyramid.view import view_config
 from pyramid.response import Response
 from zope.interface import implementer
@@ -53,12 +54,15 @@ def reserved_number_viewlet(context, request):
     order = context.order
     logger.debug(u"order_no = %s" % order.order_no)
     reserved_number = m.ReservedNumber.query.filter_by(order_no=order.order_no).one()
-    return dict(reserved_number=reserved_number)
+    delivery_method = order.payment_delivery_pair.delivery_method
+    return dict(reserved_number=reserved_number, delivery_name=delivery_method.name, description=Markup(delivery_method.description))
 
 @view_config(context=ICartDelivery, name="delivery-%d" % PLUGIN_ID, renderer=_overridable_delivery("reserved_number_confirm.html"))
 def reserved_number_confirm_viewlet(context, request):
     logger.debug(u"窓口")
-    return dict()
+    cart = context.cart
+    delivery_method = cart.payment_delivery_pair.delivery_method
+    return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description))
 
 @view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment("reserved_number_payment_completion.html"))
 def reserved_number_payment_viewlet(context, request):
@@ -66,12 +70,15 @@ def reserved_number_payment_viewlet(context, request):
     order = context.order
     logger.debug(u"order_no = %s" % order.order_no)
     reserved_number = m.PaymentReservedNumber.query.filter_by(order_no=order.order_no).first()
-    return dict(reserved_number=reserved_number)
+    payment_method = order.payment_delivery_pair.payment_method
+    return dict(reserved_number=reserved_number, payment_name=payment_method.name, description=Markup(payment_method.description))
 
 @view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment("reserved_number_payment_confirm.html"))
 def reserved_number_payment_confirm_viewlet(context, request):
     logger.debug(u"窓口")
-    return dict()
+    cart = context.cart
+    payment_method = cart.payment_delivery_pair.payment_method
+    return dict(payment_name=payment_method.name, description=Markup(payment_method.description))
 
 
 @implementer(IDeliveryPlugin)
