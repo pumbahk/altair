@@ -6,7 +6,7 @@
 </head>
 <body>
 <div align="center" style="text-align:center">
-<img src="${request.mobile_static_url('altaircms:static/PC/mobile/logo.jpg')}" /><br />
+<img src="${request.mobile_static_url('altaircms:static/PC/mobile/logo.gif')}" /><br />
 <div style="background-image:url(${request.mobile_static_url('altaircms:static/PC/mobile/bg_bar.gif')});background-color:#cc0000;" bgcolor="#cc0000"><font color="white">${self.title()}</font></div>
 </div>
 ${self.body()}
