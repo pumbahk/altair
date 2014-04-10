@@ -1553,7 +1553,7 @@ class OrdersReserveView(BaseView):
             logger.debug('order reserve confirm post_data=%s' % post_data)
 
             # validation
-            f = OrderReserveForm(post_data, performance_id=performance_id)
+            f = OrderReserveForm(post_data, performance_id=performance_id, request=self.request)
             if not f.validate():
                 raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(), []))
 

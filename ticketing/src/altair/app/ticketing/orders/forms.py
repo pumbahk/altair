@@ -3,7 +3,6 @@
 import logging
 
 from pyramid.security import has_permission, ACLAllowed
-from pyramid.threadlocal import get_current_request
 from paste.util.multidict import MultiDict
 from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, BooleanField,
@@ -451,6 +450,7 @@ class OrderReserveForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         super(OrderReserveForm, self).__init__(formdata, obj, prefix, **kwargs)
         self.request = kwargs.pop('request', None)
+
         if 'performance_id' in kwargs:
             performance = Performance.get(kwargs['performance_id'])
             self.performance_id.data = performance.id
@@ -486,10 +486,10 @@ class OrderReserveForm(Form):
             # products
             self.products.choices = []
             query = Product.query.filter(Product.performance_id==performance.id).join(Product.items)
+            if stocks:
+                query = query.filter(ProductItem.stock_id.in_(stocks))
             if stock_holder_id:
                 query = query.join(ProductItem.stock).filter(Stock.stock_holder_id==stock_holder_id)
-            else:
-                query = query.filter(ProductItem.stock_id.in_(stocks))
             if sales_segment_id:
                 query = query.filter(Product.sales_segment_id==sales_segment_id)
             self.products.choices += [(p.id, p) for p in query.distinct()]
