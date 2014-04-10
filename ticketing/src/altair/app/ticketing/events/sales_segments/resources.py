@@ -213,6 +213,16 @@ class SalesSegmentAccessor(object):
             setting=True,
             has_use_default=True,
             use_default_default=True
+            ),
+        "disp_agreement": dict(
+            setting=True,
+            has_use_default=True,
+            use_default_default=True
+            ),
+        "agreement_body": dict(
+            setting=True,
+            has_use_default=True,
+            use_default_default=True
             )
         }
 

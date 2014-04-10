@@ -85,6 +85,12 @@
     </td>
   </tr>
   <tr>
+    <th>${HH.label_text_for(SalesSegmentGroupSetting.disp_agreement)}</th>
+    <td id="disp_agreement">
+        ${u'表示' if sales_segment_group.setting and sales_segment_group.setting.disp_agreement else u'非表示'}
+    </td>
+  </tr>
+  <tr>
     <th>${HH.label_text_for(SalesSegmentGroup.reporting)}</th>
     <td id="reporting" value="${sales_segment_group.reporting}">
       ${u'対象' if sales_segment_group.reporting else u'×対象外'}

@@ -21,11 +21,11 @@ Identifier = sa.BigInteger
 def upgrade():
     op.add_column(u'SalesSegmentGroupSetting', sa.Column(u'disp_agreement', sa.Boolean, default=False, server_default='0'))
     op.add_column(u'SalesSegmentSetting', sa.Column(u'disp_agreement', sa.Boolean, default=False, server_default='0'))
-    op.add_column(u'SalesSegmentSetting', sa.Column(u'use_default_disp_agreement', sa.Boolean(), nullable=False,default=True, server_default=text('1')))
+    op.add_column(u'SalesSegmentSetting', sa.Column(u'use_default_disp_agreement', sa.Boolean(), nullable=True,default=True, server_default=text('1')))
 
     op.add_column(u'SalesSegmentGroupSetting', sa.Column(u'agreement_body', sa.UnicodeText()))
     op.add_column(u'SalesSegmentSetting', sa.Column(u'agreement_body', sa.UnicodeText()))
-    op.add_column(u'SalesSegmentSetting', sa.Column(u'use_default_agreement_body', sa.Boolean(), nullable=False,default=True, server_default=text('1')))
+    op.add_column(u'SalesSegmentSetting', sa.Column(u'use_default_agreement_body', sa.Boolean(), nullable=True,default=True, server_default=text('1')))
 
 def downgrade():
     op.drop_column(u'SalesSegmentGroupSetting', u'disp_agreement')

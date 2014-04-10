@@ -91,10 +91,12 @@ class SalesSegmentGroups(BaseView):
                         order_limit=f.order_limit.data,
                         max_quantity_per_user=f.max_quantity_per_user.data,
                         disp_orderreview=True,
+                        disp_agreement=f.disp_agreement.data,
+                        agreement_body=f.agreement_body.data,
                         )
                     ),
                 f.data,
-                excludes={'order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no'}
+                excludes={'order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no', 'disp_agreement', 'agreement_body'}
                 )
             sales_segment_group.save()
             accessor = SalesSegmentAccessor()
@@ -113,7 +115,7 @@ class SalesSegmentGroups(BaseView):
     def edit_xhr(self):
         sales_segment_group = self.context.sales_segment_group
         form = SalesSegmentGroupForm(obj=sales_segment_group, context=self.context)
-        for k in ['order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no']:
+        for k in ['order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no', 'disp_agreement', 'agreement_body']:
             getattr(form, k).data = getattr(sales_segment_group.setting, k)
         return {
             'form': form,
@@ -133,10 +135,12 @@ class SalesSegmentGroups(BaseView):
             f.id.data = id_map[self.context.sales_segment_group.id]
             # XXX: なぜこれを取り直す必要が? create_from_template がそのまま実体を返せば済む話では?
             new_sales_segment_group = SalesSegmentGroup.query.filter_by(id=f.id.data).one()
-            new_sales_segment_group = merge_session_with_post(new_sales_segment_group, f.data, excludes={'order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no'})
+            new_sales_segment_group = merge_session_with_post(new_sales_segment_group, f.data, excludes={'order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no', 'disp_agreement', 'agreement_body'})
             new_sales_segment_group.setting.order_limit = f.order_limit.data
             new_sales_segment_group.setting.max_quantity_per_user = f.max_quantity_per_user.data
             new_sales_segment_group.setting.disp_orderreview = f.disp_orderreview.data
+            new_sales_segment_group.setting.disp_agreement = f.disp_agreement.data
+            new_sales_segment_group.setting.agreement_body = f.agreement_body.data
             new_sales_segment_group.setting.display_seat_no = f.display_seat_no.data
             new_sales_segment_group.save()
 
@@ -168,6 +172,8 @@ class SalesSegmentGroups(BaseView):
             sales_segment_group.setting.order_limit = f.order_limit.data
             sales_segment_group.setting.max_quantity_per_user = f.max_quantity_per_user.data
             sales_segment_group.setting.disp_orderreview = f.disp_orderreview.data
+            sales_segment_group.setting.disp_agreement = f.disp_agreement.data
+            sales_segment_group.setting.agreement_body = f.agreement_body.data
             sales_segment_group.setting.display_seat_no = f.display_seat_no.data
             sales_segment_group.save()
 
