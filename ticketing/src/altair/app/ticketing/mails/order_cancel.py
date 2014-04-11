@@ -37,7 +37,7 @@ class OrderCancelInfoDefault(OrderInfoDefault):
     def get_contact(request, order):
         # XXX: 本来は recipient の情報を含んだ context を SubjectInfoRenderer
         # のコンストラクタが受け取って、それをここまで引き回すべきである
-        recipient = order.shipping_address.emails[0]
+        recipient = order.shipping_address.emails[0] if order.shipping_address else None
         contact_ref = get_default_contact_reference(request, order.ordered_from, recipient)
         return u"""\
 %s
