@@ -9,8 +9,6 @@ endpoints_json = json.dumps(endpoints, ensure_ascii=False)
 callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _ in range(0, 10))
 %>
 <style>
-<%include file="seat_allocation.css" />
-
 #venue-editor .venue-editor-main .venue-editor-main-root {
   width: 100%;
 }
@@ -145,8 +143,9 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     </%def>
 
     <%def name="post()">
+<%include file="_seat_allocation_function.html" args="performance=performance" />
+
 <script type="text/javascript">
-  <%include file="seat_allocation.js" args="performance=performance" />
 
   % if HH.has_permission('event_editor'):
   $('.venue-editor-main-side-toggle').click(function() {
@@ -967,5 +966,3 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     Now loading...
   </div>
 </div>
-
-<%include file="seat_allocation_modal.html" />

@@ -1,5 +1,90 @@
 <%page args="performance" />
 
+<style type="text/css">
+.assignable {
+  text-decoration: none;
+  color: #000;
+  border-radius: 4px 4px;
+  border: 1px dashed #444;
+  margin: 0 0;
+  padding: 2px 2px;
+}
+
+.assignable:hover {
+  text-decoration: none;
+  color: #000;
+}
+
+.assignable.enabled {
+  border: 1px solid #ccc;
+  background-image: -moz-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -ms-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), to(#e6e6e6));
+  background-image: -webkit-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -o-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: linear-gradient(top, #ffffff, #e6e6e6);
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
+  font-weight: bold;
+}
+
+.assignable.enabled:hover {
+  background: #888;
+  color: #fff;
+  text-decoration: none;
+}
+
+.assignable.enabled:active {
+  box-shadow: inset 1px 1px 3px #ccc;
+}
+
+span.editable {
+  margin: 0 0;
+}
+
+.swatch {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  border: 1px solid #cdcdcd;
+  background-color: #FFFFFF;
+  text-align: center;
+}
+
+.transfer {
+  float: right;
+  margin: 8px 8px 8px 5px;
+}
+
+.rest {
+  float: right;
+  margin: 8px 0px 8px 0px;
+}
+
+#venue-editor .venue-editor-main .venue-editor-main-root {
+  width: 65%;
+}
+
+#venue-editor .venue-editor-main .venue-editor-main-side {
+  width: 35%;
+}
+
+#venue-viewer-guide {
+  position: absolute;
+  width: 400px;
+  height: 300px;
+  left: 35%;
+  top: 50%;
+  margin-left: -200px;
+  margin-top: -150px;
+  text-align: center;
+}
+</style>
+
+<script type="text/javascript">
 function deepClone(o) {
   if (o !== null && typeof o == 'object' && o.constructor == Object) {
     var retval = {};
@@ -745,3 +830,195 @@ function update_selection_table(selection) {
   }
   $('span.selection-count').text(selection_set.length);
 };
+</script>
+
+<div id="modal-transfer" class="modal hide">
+  <div class="modal-header">
+    <a href="javascript:void(0);" onclick="$('#modal-transfer').hide();" class="close btn-close">&times;</a>
+    <h3>枠移動</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>選択した枠の座席をまとめて他の枠へ移動します。</p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-transfer').hide();" class="btn secondary btn-close">閉じる</a>
+    <a href="javascript:transferStocks();" class="btn danger">まとめて移動する</a>
+  </div>
+</div>
+
+<div id="modal-transfer-selected" class="modal hide">
+  <div class="modal-header">
+    <a href="javascript:void(0);" onclick="$('#modal-transfer').hide();" class="close btn-close">&times;</a>
+    <h3>選択した座席を枠移動</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>選択した座席を枠移動します。</p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-transfer-selected').hide();" class="btn secondary btn-close">閉じる</a>
+    <a href="javascript:transferStocksSelected();" class="btn danger">移動</a>
+  </div>
+</div>
+
+<div id="modal-report" class="modal hide">
+  <div class="modal-header">
+    <a href="javascript:void(0);" class="close btn-close">&times;</a>
+    <h3>確認</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>配券明細をダウンロードします。よろしいですか？</p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-report').modal('hide');" class="btn secondary btn-close">キャンセル</a>
+    <a href="" onclick="$('#modal-report').modal('hide');" class="btn danger modal-report-submit">ダウンロード</a>
+  </div>
+</div>
+
+<div id="modal-download_seats" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>確認</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>すべての座席情報(CSV)をダウンロードします。よろしいですか？<br>
+      <div class="alert alert-error">
+      この機能は時間がかかるケースがあります。<br>
+      席種／配券作業の確認を行いたい場合のみ利用してください。
+      </div>
+    </p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-download_seats').modal('hide');" class="btn secondary">キャンセル</a>
+    <a href="${request.route_path('seats.download', venue_id=performance.venue.id)}" onclick="$('#modal-download_seats').modal('hide');" class="btn danger">ダウンロード</a>
+  </div>
+</div>
+
+<div id="modal-result" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>保存</h3>
+  </div>
+
+  <div class="modal-body">
+    <p id="message"></p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-result').modal('hide');" class="btn secondary">閉じる</a>
+  </div>
+</div>
+
+<div id="modal-csv-seat-allocation" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>CSV座席選択</h3>
+  </div>
+  <form id="csv-seat-allocation-form" method="POST" enctype="multipart/form-data"
+        action="${request.route_path('cooperation.get_seat_l0_ids', performance_id=performance.id)}">
+  <div class="modal-body">
+    <p id="message">
+      CSVを使って座席を選択します。
+    </p>
+
+    CSVファイル
+    <div><input type="file" name="csvfile"></div>
+
+    CSVのスタイル
+    <div>
+    <select class="selectpicker" name="format">
+      <option value="altair" selected="true">Altair</option>
+      <option value="gettii" >Gettii</option>
+    </select>
+
+    <p>(会場図が完全に読み込まれた状態でない場合、正しく座席選択できないことがあります)
+    </p>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-csv-seat-allocation').modal('hide');" class="btn secondary">閉じる</a>
+    <a href="javascript:void(0);" onclick="select_seats_by_csv();" class="btn secondary">選択</a>
+  </div>
+  </form>
+</div>
+
+<div id="modal-cannot-seat-action" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3 id="cannot-seat-action-message">座席の移動ができませんでした</h3>
+  </div>
+  <div class="modal-body">
+    <table >
+    <tr>
+    <th>id</th>
+    <th>l0_id</th>
+    <th>座席名</th>
+    <th>座種</th>
+    <th>枠</th>
+    </tr>
+    %for ii in range(100):
+    <tr>
+    <td>テスト</td>
+    </tr>
+    %endfor
+    </table>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-cannot-seat-action').hide();" class="btn secondary">閉じる</a>
+  </div>
+  </form>
+</div>
+
+<div id="modal-cannot-seat-convert" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3 id="cannot-seat-action-message">座席の移動ができませんでした</h3>
+  </div>
+  <div class="modal-body">
+    <table >
+    <tr>
+    <th>id</th>
+    <th>l0_id</th>
+    <th>座席名</th>
+    <th>座種</th>
+    <th>枠</th>
+    </tr>
+    %for ii in range(100):
+    <tr>
+    <td>テスト</td>
+    </tr>
+    %endfor
+    </table>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-cannot-seat-convert').hide();" class="btn secondary">閉じる</a>
+  </div>
+  </form>
+</div>
+
+<div id="modal-cannot-stock-action" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3 id="cannot-stock-action-message">在庫の操作に失敗しました</h3>
+  </div>
+  <div class="modal-body">
+    <table >
+    <tr>
+    <th>座種</th>
+    <th>枠</th>
+    </tr>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-cannot-stock-action').hide();" class="btn secondary">閉じる</a>
+  </div>
+  </form>
+</div>

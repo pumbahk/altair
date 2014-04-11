@@ -3,8 +3,6 @@
 <%namespace file="/common/helpers.html" name="ch" />
 
 <style type="text/css">
-<%include file="./seat_allocation.css" />
-
 #venue-editor .venue-editor-main .venue-editor-main-root {
   width: 65%;
 }
@@ -49,10 +47,10 @@
       </div>
     </%def>
     <%def name="post()">
+<%include file="_seat_allocation_function.html" args="performance=performance" />
+
 <script type="text/javascript">
 $(".collapse").collapse();
-
-<%include file="./seat_allocation.js" args="performance=performance" />
 
 var tab0 = venueEditorSide.find("#venue-editor-main-side-tab0");
 var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
@@ -169,5 +167,3 @@ $(function() {
     <i class="icon-download icon-white"></i> すべての座席をCSV出力
   </a>
 </div>
-
-<%include file="seat_allocation_modal.html" />
