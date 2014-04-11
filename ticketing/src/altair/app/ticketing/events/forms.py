@@ -6,9 +6,9 @@ from wtforms.validators import Regexp, Length, Optional, ValidationError
 
 from altair.formhelpers import Translations, Required, JISX0208, after1900
 from altair.formhelpers.form import OurForm
-from altair.formhelpers.fields import OurTextField, OurIntegerField, OurBooleanField, DateField, DateTimeField
+from altair.formhelpers.fields import OurTextField, OurIntegerField, OurBooleanField, DateField, DateTimeField, OurSelectField
 from altair.formhelpers.widgets import OurTextInput, OurDateWidget
-from altair.formhelpers.filters import replace_ambiguous, zero_as_none
+from altair.formhelpers.filters import replace_ambiguous, zero_as_none, blank_as_none
 from altair.app.ticketing.helpers import label_text_for
 from altair.app.ticketing.core.models import Event, EventSetting, Account
 
@@ -171,7 +171,44 @@ class EventForm(Form):
         label=label_text_for(Event.display_order),
         default=1,
         hide_on_new=True,
-        )
+    )
+    performance_selector = OurSelectField(
+        label=label_text_for(EventSetting.performance_selector),
+        filters=[
+            replace_ambiguous,
+        ],
+        choices=[
+            (u'', u'未設定'),
+            (u'matchup', u'公演名でグルーピング'),
+            (u'date', u'日付でグルーピング'),
+        ],
+    )
+
+    def get_performance_selector(self):
+        return blank_as_none(self.performance_selector.data)
+
+    performance_selector_label1_override = TextField(
+        label=label_text_for(EventSetting.performance_selector_label1_override),
+        filters=[
+            replace_ambiguous,
+            blank_as_none,
+        ],
+        validators=[
+            JISX0208,
+            Length(max=100, message=u'100文字以内で入力してください'),
+        ]
+    )
+    performance_selector_label2_override = TextField(
+        label=label_text_for(EventSetting.performance_selector_label2_override),
+        filters=[
+            replace_ambiguous,
+            blank_as_none,
+        ],
+        validators=[
+            JISX0208,
+            Length(max=100, message=u'100文字以内で入力してください'),
+        ]
+    )
 
     def validate_code(form, field):
         if field.data:

@@ -140,10 +140,17 @@ class Events(BaseView):
                     organization_id=self.context.user.organization_id,
                     setting=EventSetting(
                         order_limit=f.order_limit.data,
-                        max_quantity_per_user=f.max_quantity_per_user.data
+                        max_quantity_per_user=f.max_quantity_per_user.data,
+                        performance_selector=f.get_performance_selector(),
+                        performance_selector_label1_override=f.performance_selector_label1_override.data,
+                        performance_selector_label2_override=f.performance_selector_label2_override.data,
                         )
                     ),
-                f.data
+                f.data,
+                excludes={'performance_selector',
+                          'performance_selector_label1_override',
+                          'performance_selector_label2_override',
+                          },
                 )
             event.save()
 
@@ -171,6 +178,9 @@ class Events(BaseView):
         f = EventForm(organization_id=self.context.organization.id, obj=event)
         f.order_limit.data = event.setting and event.setting.order_limit
         f.max_quantity_per_user.data = event.setting and event.setting.max_quantity_per_user
+        f.performance_selector.data = (event.setting.performance_selector or '') if event.setting else ''
+        f.performance_selector_label1_override.data = event.setting.performance_selector_label1_override if event.setting else ''
+        f.performance_selector_label2_override.data = event.setting.performance_selector_label2_override if event.setting else ''
 
         if self.request.matched_route.name == 'events.copy':
             f.original_id.data = f.id.data
@@ -203,17 +213,32 @@ class Events(BaseView):
                         organization_id=self.context.organization.id,
                         setting=EventSetting(
                             order_limit=f.order_limit.data,
-                            max_quantity_per_user=f.max_quantity_per_user.data
-                            )
+                            max_quantity_per_user=f.max_quantity_per_user.data,
+                            performance_selector=f.get_performance_selector(),
+                            performance_selector_label1_override=f.performance_selector_label1_override.data,
+                            performance_selector_label2_override=f.performance_selector_label2_override.data,
+                            ),
                         ),
-                    f.data
+                    f.data,
+                    excludes={'performance_selector',
+                              'performance_selector_label1_override',
+                              'performance_selector_label2_override',
+                              },
                     )
             else:
-                event = merge_session_with_post(event, f.data)
+                event = merge_session_with_post(event, f.data,
+                    excludes={'performance_selector',
+                              'performance_selector_label1_override',
+                              'performance_selector_label2_override',
+                              },
+                )
                 if event.setting is None:
                     event.setting = EventSetting()
                 event.setting.order_limit = f.order_limit.data
                 event.setting.max_quantity_per_user = f.max_quantity_per_user.data
+                event.setting.performance_selector=f.get_performance_selector(),
+                event.setting.performance_selector_label1_override=f.performance_selector_label1_override.data,
+                event.setting.performance_selector_label2_override=f.performance_selector_label2_override.data,
             event.save()
 
             self.request.session.flash(u'イベントを保存しました')
