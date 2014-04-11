@@ -339,6 +339,9 @@ def get_default_contact_reference(request, organization, recipient):
         # デフォルトは non-mobile とする
         carrier = carriers.NonMobile
     contact_url = get_default_contact_url(request, organization, carrier)
+    # 問い合わせ先が全く指定されていない場合は空文字を返す、でよいだろう
+    if contact_url is None:
+        return u''
     # mailto: で始まる場合は unquote して <%s> に変更する
     # mailto:a@example.com?body=xxx のようになっている場合は query を取り除く
     if contact_url.startswith(u'mailto:'):
