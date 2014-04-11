@@ -2125,7 +2125,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 for stock_holder in stock_holders:
                     if Stock.query.filter(
                         Stock.performance_id == performance.id,
-                        Stock.stock_type_id == stock_type.id, 
+                        Stock.stock_type_id == stock_type.id,
                         Stock.stock_holder_id == stock_holder.id) \
                         .with_entities(Stock.id).first() is None:
                         stock = Stock(

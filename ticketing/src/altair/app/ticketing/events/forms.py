@@ -137,7 +137,7 @@ class EventForm(Form):
             ],
         validators=[
             Required(),
-            JISX0208, 
+            JISX0208,
             Length(max=200, message=u'200文字以内で入力してください'),
         ]
     )
@@ -148,7 +148,7 @@ class EventForm(Form):
             ],
         validators=[
             Required(),
-            JISX0208, 
+            JISX0208,
             Length(max=100, message=u'100文字以内で入力してください'),
         ]
     )
