@@ -20,7 +20,7 @@ SubjectInfo = namedtuple("SubjectInfo", "name label getval")
 class BoosterOrderCompleteInfoDefault(OrderInfoDefault):
     template_body = SubjectInfoWithValue(name="template_body",  label=u"テンプレート", value="", getval=(lambda order : ""))
 
-    def get_cont(order):
+    def get_cont(request, order):
         cont = ""
         old_id_number = ""
         for product in order.ordered_products:
@@ -107,7 +107,7 @@ class BoosterPurchaseCompleteMail(object):
     def _body_tmpl_vars(self, request, order, traverser):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
-        info_renderder = BoosterSubjectInfoRenderer(order, traverser.data, default_impl=get_subject_info_default())
+        info_renderder = BoosterSubjectInfoRenderer(request, order, traverser.data, default_impl=get_subject_info_default())
         value = dict(h=ch, 
                      order=order,
                      get=info_renderder.get, 
