@@ -27,7 +27,7 @@ from altair.pyramid_boto.s3.assets import IS3KeyProvider
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.core.models import (
-    Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SalesSegment, SalesSegmentSetting,
+    Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SeatStatusEnum, SalesSegment, SalesSegmentSetting,
     SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType,
     ProductItem, Product, Performance, Event, SeatIndexType, SeatIndex
 )
@@ -102,6 +102,7 @@ def get_seats(request):
     sales_segment_id = request.params.get(u'sales_segment_id', None)
     loaded_at = request.params.get(u'loaded_at', None)
     sale_only = (u'sale_only' in filter_params)
+    vacant_only = (u'vacant_only' in filter_params)
     if loaded_at:
         loaded_at = datetime.fromtimestamp(float(loaded_at))
     permit_operator = isinstance(has_permission('event_editor', request.context, request), ACLAllowed)
@@ -118,6 +119,8 @@ def get_seats(request):
         seats_data = {}
         query = DBSession.query(Seat).join(SeatStatus).filter(Seat.venue==venue)
         query = query.with_entities(Seat.l0_id, Seat.name, Seat.seat_no, Seat.stock_id, SeatStatus.status)
+        if vacant_only:
+            query = query.filter(SeatStatus.status==SeatStatusEnum.Vacant.v)
         # 差分取得のときは販売可能かどうかに関わらず取得する
         if loaded_at:
             query = query.filter(or_(Seat.updated_at>loaded_at, SeatStatus.updated_at>loaded_at))
