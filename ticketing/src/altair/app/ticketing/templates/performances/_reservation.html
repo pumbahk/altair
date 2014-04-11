@@ -131,12 +131,14 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         <a name="save" href="javascript:saveStocks();" class="btn btn-primary">保存</a>
       </div>
       <ul class="nav nav-tabs">
-        <li class="active"><a href="#venue-editor-main-side-tab1" data-toggle="tab">配席(席種)</a></li>
-        <li><a href="#venue-editor-main-side-tab2" data-toggle="tab">選択座席<span class="selection-count badge"></span></a></li>
+        <li class="active"><a href="#venue-editor-main-side-tab1" data-toggle="tab">配席(枠)</a></li>
+        <li><a href="#venue-editor-main-side-tab2" data-toggle="tab">配席(席種)</a></li>
+        <li><a href="#venue-editor-main-side-tab3" data-toggle="tab">選択座席<span class="selection-count badge"></span></a></li>
       </ul>
       <div class="tab-content" style="overflow: visible;">
         <div class="tab-pane active" id="venue-editor-main-side-tab1"></div>
         <div class="tab-pane" id="venue-editor-main-side-tab2"></div>
+        <div class="tab-pane" id="venue-editor-main-side-tab3"></div>
       </div>
     </div>
     % endif
@@ -698,15 +700,18 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
   % if HH.has_permission('event_editor'):
   var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
   var tab2 = venueEditorSide.find("#venue-editor-main-side-tab2");
+  var tab3 = venueEditorSide.find("#venue-editor-main-side-tab3");
   % endif
 
   callbacks.load = callbacks.refresh = function (viewer) {
     tab0.empty();
-    tab1.empty();
     % if HH.has_permission('event_editor'):
-    tab1.append(buildStockTypeHolderTables(viewer.venue));
+    tab1.empty();
+    tab1.append(buildStockHolderTypeTables(viewer.venue));
     tab2.empty();
-    tab2.append(buildSeatDetailTable(venueEditorRoot.venueeditor('selection')));
+    tab2.append(buildStockTypeHolderTables(viewer.venue));
+    tab3.empty();
+    tab3.append(buildSeatDetailTable(venueEditorRoot.venueeditor('selection')));
     % endif
   };
 
