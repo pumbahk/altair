@@ -1,0 +1,81 @@
+.assignable {
+  text-decoration: none;
+  color: #000;
+  border-radius: 4px 4px;
+  border: 1px dashed #444;
+  margin: 0 0;
+  padding: 2px 2px;
+}
+
+.assignable:hover {
+  text-decoration: none;
+  color: #000;
+}
+
+.assignable.enabled {
+  border: 1px solid #ccc;
+  background-image: -moz-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -ms-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ffffff), to(#e6e6e6));
+  background-image: -webkit-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -o-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: linear-gradient(top, #ffffff, #e6e6e6);
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
+  font-weight: bold;
+}
+
+.assignable.enabled:hover {
+  background: #888;
+  color: #fff;
+  text-decoration: none;
+}
+
+.assignable.enabled:active {
+  box-shadow: inset 1px 1px 3px #ccc;
+}
+
+span.editable {
+  margin: 0 0;
+}
+
+.swatch {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  border: 1px solid #cdcdcd;
+  background-color: #FFFFFF;
+  text-align: center;
+}
+
+.transfer {
+  float: right;
+  margin: 8px 8px 8px 5px;
+}
+
+.rest {
+  float: right;
+  margin: 8px 0px 8px 0px;
+}
+
+#venue-editor .venue-editor-main .venue-editor-main-root {
+  width: 65%;
+}
+
+#venue-editor .venue-editor-main .venue-editor-main-side {
+  width: 35%;
+}
+
+#venue-viewer-guide {
+  position: absolute;
+  width: 400px;
+  height: 300px;
+  left: 35%;
+  top: 50%;
+  margin-left: -200px;
+  margin-top: -150px;
+  text-align: center;
+}
