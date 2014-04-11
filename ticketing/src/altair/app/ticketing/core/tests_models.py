@@ -599,11 +599,14 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
         self.config = testing.setUp(settings={
             'altair.sej.template_file': ''
             })
+        from altair.app.ticketing.sej.models import ThinSejTenant
+        from altair.app.ticketing.sej.userside_interfaces import ISejTenantLookup
         self.config.include('altair.app.ticketing.renderers')
         self.config.include('altair.app.ticketing.payments')
         self.config.include('altair.app.ticketing.payments.plugins')
         self.session = _setup_db(['altair.app.ticketing.core.models'])
         from .models import SalesSegmentGroup, OrganizationSetting
+        self.config.registry.registerUtility(lambda request, organization_id: ThinSejTenant(), ISejTenantLookup) # 強引に上書きしている
         CoreTestMixin.setUp(self)
         self.stock_types = self._create_stock_types(1)
         self.stocks = self._create_stocks(self.stock_types)
