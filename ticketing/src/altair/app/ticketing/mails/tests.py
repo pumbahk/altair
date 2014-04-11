@@ -203,6 +203,21 @@ class GetDefaultContactReferenceTest(unittest.TestCase):
         result = self._callFUT(self.request, organization, 'mobile@docomo.ne.jp')
         self.assertEqual('<mobile@example.com>', result)
 
+    def test_nothing(self):
+        organization = testing.DummyModel(
+            setting=testing.DummyModel(
+                contact_pc_url=None,
+                contact_mobile_url=None,
+                default_mail_sender=None
+                )
+            )
+
+        result = self._callFUT(self.request, organization, 'pc@example.com')
+        self.assertEqual('', result)
+
+        result = self._callFUT(self.request, organization, 'mobile@docomo.ne.jp')
+        self.assertEqual('', result)
+
 if __name__ == "__main__":
     # setUpModule()
     unittest.main()
