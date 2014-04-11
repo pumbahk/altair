@@ -96,6 +96,17 @@ class MatchUpPerformanceSelector(_PerformanceSelector):
         self.context = request.context
         self.sales_segments = self.context.available_sales_segments
 
+        context = request.context
+        if ICartContext.providedBy(context):
+            event_setting = context.event.setting
+            if event_setting is not None:
+                label1 = event_setting.performance_selector_label1_override
+                label2 = event_setting.performance_selector_label2_override
+                if label1 is not None:
+                    self.label = label1
+                if label2 is not None:
+                    self.second_label = label2
+
     def select_value(self, sales_segment):
         """キーになる値"""
         return sales_segment.performance.name
@@ -117,7 +128,7 @@ class MatchUpPerformanceSelector2(MatchUpPerformanceSelector):
         context = request.context
         if ICartContext.providedBy(context):
             event_setting = context.event.setting
-            if event_setting is not None: 
+            if event_setting is not None:
                 label1 = event_setting.performance_selector_label1_override
                 label2 = event_setting.performance_selector_label2_override
                 if label1 is not None:
