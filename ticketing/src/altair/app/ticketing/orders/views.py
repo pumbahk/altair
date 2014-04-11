@@ -886,12 +886,8 @@ class OrderDetailView(BaseView):
             return HTTPNotFound('order id %d is not found' % order_id)
 
         if order.cancel(self.request):
-            msg = u'受注({})をキャンセルしました'.format(order.order_no)
-            if order.shipping_address:
-                notify_order_canceled(self.request, order)
-            else:
-                msg += u'(購入者情報がなかったためメール通知できませんでした)'
-            self.request.session.flash(msg)
+            notify_order_canceled(self.request, order)
+            self.request.session.flash(u'受注(%s)をキャンセルしました' % order.order_no)
             return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
         else:
             self.request.session.flash(u'受注(%s)をキャンセルできません' % order.order_no)
