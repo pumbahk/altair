@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import unittest
 import mock
 from altair.app.ticketing.testing import _setup_db, _teardown_db
