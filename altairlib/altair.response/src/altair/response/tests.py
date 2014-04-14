@@ -4,6 +4,7 @@ import tempfile
 import os
 import os.path
 import zipfile
+import shutil
 
 class ZipCreateTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
@@ -16,8 +17,8 @@ class ZipCreateTests(unittest.TestCase):
         with open(os.path.join(source_dir, "b.txt"), "w") as wf:
             wf.write(u"おはよう".encode("utf-8"))
 
-        os.makedirs(os.pathos.path.join(source_dir, "sub"))
-        with open(os.path.join(source_dir, "sub", "nested.txt")) as wf:
+        os.makedirs(os.path.join(source_dir, "sub"))
+        with open(os.path.join(source_dir, "sub", "nested.txt"), "w") as wf:
             wf.write("nested\n")
             wf.write("nested\n")
             wf.write("nested\n")
@@ -32,5 +33,15 @@ class ZipCreateTests(unittest.TestCase):
 
         self.assertTrue(os.path.exists(zip_path))
         self.assertTrue(zipfile.is_zipfile(zip_path))
-        print(zip_path) #xxx:
+
+        ## 中身の確認
+        with zipfile.ZipFile(zip_path) as z:
+            ilist = z.infolist()
+            self.assertEqual(len(ilist), 3)
+
+            for i in ilist:
+                self.assertTrue(i.filename.endswith(("a.txt", "b.txt", "sub/nested.txt")))
+
+	shutil.rmtree(source_dir)
+        os.remove(zip_path)
 
