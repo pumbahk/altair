@@ -521,7 +521,7 @@ class PerformanceOrientedTicketingCartResource(TicketingCartResourceBase):
 
     @property
     def event(self):
-        return self.performance.event
+        return self.performance.event if self.performance else None
 
     @reify
     def sales_segments(self):
@@ -547,7 +547,7 @@ class SalesSegmentOrientedTicketingCartResource(TicketingCartResourceBase):
 
     @property
     def event(self):
-        return self.performance.event
+        return self.performance.event if self.performance else None
 
     @reify
     def sales_segments(self):
