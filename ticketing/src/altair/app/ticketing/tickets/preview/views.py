@@ -4,6 +4,7 @@ from decimal import Decimal
 import sqlalchemy.orm as orm
 import json
 import base64
+import os.path
 from StringIO import StringIO
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -33,7 +34,12 @@ from .fillvalues import template_collect_vars
 from .fillvalues import template_fillvalues
 from .fetchsvg import fetch_svg_from_postdata
 from ..cleaner.api import get_validated_svg_cleaner
-from altair.response import FileLikeResponse
+from altair.response import (
+    FileLikeResponse, 
+    ZipFileResponse, 
+    ZipFileCreateRecursiveWalk
+)
+
 # todo: refactoring
 from ..utils import build_dict_from_product_item
 from altair.svg.geometry import parse_transform
@@ -42,6 +48,7 @@ from . import TicketPreviewAPIException
 from . import TicketPreviewTransformException
 from . import TicketPreviewFillValuesException
 from ..cleaner.api import TicketCleanerValidationError
+import tempfile
 
 ## todo move it
 def decimal_converter(target, converter=float):
@@ -552,3 +559,53 @@ class PreviewWithDefaultParameterDialogView(object):
         except Exception, e:
             logger.exception(e)
             raise
+
+@view_config(route_name="tickets.preview.downalod.list.zip")
+def download_list_of_preview_image(context, request):
+    performance_id = request.matchdict["performance_id"]
+    sales_segment_id = request.matchdict["sales_segment_id"]
+
+    ## assertion
+    p = c_models.Performance.query.filter_by(id=performance_id).one()
+    if unicode(p.event.organization_id) != unicode(context.organization.id):
+        logger.warn("unmatched organization %s != %s", p.event.organization, context.organization.id)
+        raise HTTPFound("unmatched organization")
+
+
+    q = (c_models.ProductItem.query
+         .filter(c_models.Product.id==c_models.ProductItem.product_id)
+         .filter(c_models.Product.sales_segment_id==sales_segment_id)
+         .filter(c_models.Product.performance_id==performance_id)
+         .filter(c_models.ProductItem.performance_id==performance_id)
+         .all())
+
+    ## svgデータ取得
+    svg_string_list = []
+    for product_item in q:
+        ticket_q = (c_models.Ticket.query
+                    .filter(c_models.TicketBundle.id==product_item.ticket_bundle_id, 
+                            c_models.Ticket_TicketBundle.ticket_bundle_id==product_item.ticket_bundle_id, 
+                            c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id, 
+                            c_models.Ticket.organization_id==context.organization.id)
+                    .all())
+        for ticket in ticket_q:
+            if any(dm.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for dm in ticket.ticket_format.delivery_methods):
+                continue
+        svg_string_list.append(template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item)))
+
+    try:
+        preview = SVGPreviewCommunication.get_instance(request)
+        ## 画像取得
+        source_dir = tempfile.mkdtemp()
+        for i, svg_string in enumerate(svg_string_list):
+            imgdata_base64 = preview.communicate(request, svg_string)
+            fname = os.path.join(source_dir, "preview{0}.png")
+            with open(fname, "wb") as wf:
+                wf.write(base64.b64decode(imgdata_base64))
+
+        ## zipfile作成
+        zip_name = "preview_image_salessegment{0}.zip".format(sales_segment_id)
+        walk = ZipFileCreateRecursiveWalk(tempfile.mktemp(zip_name), source_dir)
+        return ZipFileResponse(walk, filename=zip_name)
+    except jsonrpc.ProtocolError, e:
+        raise HTTPBadRequest(str(e))

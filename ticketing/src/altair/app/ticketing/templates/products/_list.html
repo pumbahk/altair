@@ -400,6 +400,10 @@ elif sales_segment:
         })($('script:last').closest('form'));
         </script>
       </form>
+    ## download zip file. todo 二度押し防止
+    %if sales_segment and performance:
+      <a href="${request.route_path("tickets.preview.download.list.zip", performance_id=performance.id, sales_segment_id=sales_segment.id)}">券面のpreview結果をまとめてdownload</a>
+    %endif
     </div>
     % endfor
     <script type="text/javascript">
