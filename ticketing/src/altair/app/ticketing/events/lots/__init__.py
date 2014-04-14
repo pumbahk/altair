@@ -4,14 +4,17 @@ from pyramid.interfaces import IRequest
 from altair.app.ticketing import newRootFactory
 
 def includeme(config):
+    lot_collection_resource_factory = newRootFactory(config.maybe_dotted('.resources.LotCollectionResource'))
     lot_resource_factory = newRootFactory(config.maybe_dotted('.resources.LotResource'))
+    lot_product_resource_factory = newRootFactory(config.maybe_dotted('.resources.LotProductResource'))
+    lot_entry_resource_factory = newRootFactory(config.maybe_dotted('.resources.LotEntryResource'))
 
     
     # 抽選内容管理
     config.add_route('lots.index', '/{event_id}',
-                     factory=lot_resource_factory)
+                     factory=lot_collection_resource_factory)
     config.add_route('lots.new', '/new/{event_id}',
-                     factory=lot_resource_factory)
+                     factory=lot_collection_resource_factory)
     config.add_route('lots.show', '/show/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.edit', '/edit/{lot_id}',
@@ -21,13 +24,13 @@ def includeme(config):
     config.add_route('lots.product_new', '/product_new/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.product_edit', '/products_edit/{product_id}',
-                     factory=lot_resource_factory)
+                     factory=lot_product_resource_factory)
 
     # 抽選申し込み管理
     config.add_route('lots.entries.search', 'entries/search/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.show', 'entries/search/{lot_id}/entry/{entry_no}',
-                     factory=lot_resource_factory)
+                     factory=lot_entry_resource_factory)
     config.add_route('lots.entries.export.html', 'entries/export/{lot_id}.html',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.export', 'entries/export/{lot_id}',

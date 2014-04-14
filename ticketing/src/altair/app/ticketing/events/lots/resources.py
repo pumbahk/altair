@@ -1,61 +1,85 @@
 # -*- coding:utf-8 -*-
 
 from pyramid.decorator import reify
+from pyramid.httpexceptions import HTTPNotFound
 from altair.app.ticketing.core.models import Event, Product
-from altair.app.ticketing.lots.models import Lot
+from altair.app.ticketing.lots.models import Lot, LotEntry
 from altair.app.ticketing.carturl.api import get_lots_cart_url_builder
 
 from altair.app.ticketing.resources import TicketingAdminResource
 
-class LotResource(TicketingAdminResource):
-    @reify
-    def product(self):
-        product_id = None
+class LotResourceBase(TicketingAdminResource):
+    @property
+    def event(self):
+        raise NotImplementedError
+
+class LotCollectionResource(LotResourceBase):
+    def __init__(self, request):
+        super(LotCollectionResource, self).__init__(request)
         try:
-            product_id = long(self.request.matchdict.get('product_id'))
+            self.event_id = long(self.request.matchdict.get('event_id'))
         except (TypeError, ValueError):
-            pass
-        if not product_id:
-            return None
-
-        return Product.query.filter(Product.id==product_id).first()
-
-    @reify
-    def lot(self):
-        product = self.product
-        if product is not None:
-            return Lot.query.filter(Lot.has_product(product)).first()
-        lot_id = None
-        try:
-            lot_id = long(self.request.matchdict.get('lot_id'))
-        except (TypeError, ValueError):
-            pass
-        if not lot_id:
-            return None
-
-        return Lot.query.filter(Lot.id==lot_id).first()
+            raise HTTPNotFound
 
     @reify
     def event(self):
-        event_id = None
+        return Event.query.filter(Event.id == self.event_id, Event.organization_id==self.organization.id).one()
+
+class AbstractLotResource(LotResourceBase):
+    @property
+    def lot(self):
+        raise NotImplementedError
+
+    @reify
+    def event(self):
+        return self.lot.event
+
+class LotResource(AbstractLotResource):
+    def __init__(self, request):
+        super(LotResource, self).__init__(request)
         try:
-            event_id = long(self.request.matchdict.get('event_id'))
+            self.lot_id = long(self.request.matchdict.get('lot_id'))
         except (TypeError, ValueError):
-            pass
-        lot = self.lot
-        if event_id is not None:
-            if lot is not None and lot.event_id == event_id:
-                event = lot.event
-            else:
-                event = Event.query.filter(Event.id == event_id).first()
-        else:
-            if lot is not None:
-                event = lot.event
-            else:
-                event = None
-        return event
+            raise HTTPNotFound
+
+    @reify
+    def lot(self):
+        return Lot.query.join(Event).filter(Lot.id==self.lot_id, Event.organization_id==self.organization.id).one()
 
     @reify
     def lots_cart_url(self):
         cart_url = get_lots_cart_url_builder(self.request).build(self.request, self.event, self.lot)
         return cart_url
+
+class LotEntryResource(AbstractLotResource):
+    def __init__(self, request):
+        super(LotEntryResource, self).__init__(request)
+        try:
+            self.entry_no = self.request.matchdict.get('entry_no')
+        except (TypeError, ValueError):
+            raise HTTPNotFound
+
+    @reify
+    def entry(self):
+        return LotEntry.query.join(LotEntry.lot).join(Lot.event).filter(LotEntry.entry_no==self.entry_no, Event.organization_id==self.organization.id).one()
+
+    @reify
+    def lot(self):
+        return self.entry.lot
+
+
+class LotProductResource(AbstractLotResource):
+    def __init__(self, request):
+        super(LotProductResource, self).__init__(request)
+        try:
+            self.product_id = long(self.request.matchdict.get('product_id'))
+        except (TypeError, ValueError):
+            raise HTTPNotFound
+
+    @reify
+    def lot(self):
+        return Lot.query.filter(Lot.has_product(self.product)).one()
+
+    @reify
+    def product(self):
+        return Product.query.filter(Product.id==self.product_id).one()

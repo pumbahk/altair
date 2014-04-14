@@ -418,7 +418,7 @@ class LotEntries(BaseView):
         slave_session = get_db_session(self.request, name="slave")
 
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
         #entries = lots_api.get_lot_entries_iter(lot.id)
         entries = CSVExporter(slave_session, lot.id)
@@ -526,7 +526,7 @@ class LotEntries(BaseView):
 
         # とりあえずすべて
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
         form = SearchEntryForm(formdata=self.request.params)
         form.wish_order.choices = [("", "")] + [(str(i), i + 1) for i in range(lot.limit_wishes)]
@@ -601,7 +601,7 @@ class LotEntries(BaseView):
     def import_accepted_entries(self):
 
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
         f = self.request.params['entries'].file
@@ -653,7 +653,7 @@ class LotEntries(BaseView):
                  xhr=True)
     def elect_entries_form(self):
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
         electing = Electing(lot, self.request)
         closer = LotCloser(lot, self.request)
@@ -669,7 +669,7 @@ class LotEntries(BaseView):
                  permission='event_viewer')
     def close_entries(self):
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
         closer = LotCloser(lot, self.request)
         closer.close()
@@ -686,7 +686,7 @@ class LotEntries(BaseView):
         """ 当選確定処理
         """
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
         lots_api.elect_lot_entries(self.request, lot.id)
@@ -705,7 +705,7 @@ class LotEntries(BaseView):
         """
         self.check_organization(self.context.event)
 
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
         lots_api.reject_lot_entries(self.request, lot.id)
@@ -745,7 +745,7 @@ class LotEntries(BaseView):
                  renderer="json")
     def reject_remains(self):
         """ 一括落選予定処理"""
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
         entries = lot.rejectable_entries
         rejecting_count = lots_api.submit_reject_entries(lot_id, entries)
@@ -767,7 +767,7 @@ class LotEntries(BaseView):
     def elect_all(self):
         """ 一括当選予定処理 """
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
         if self.request.content_type.startswith('application/json'):
@@ -860,8 +860,7 @@ class LotEntries(BaseView):
         """ 申し込み番号指定での当選予定処理
         """
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = self.context.lot
 
         entry_no = self.request.params['entry_no']
         wish_order = self.request.params['wish_order']
@@ -897,8 +896,7 @@ class LotEntries(BaseView):
         """ 申し込み番号指定での落選予定処理
         """
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = self.context.lot
 
         entry_no = self.request.params['entry_no']
         lot_entry = lot.get_lot_entry(entry_no)
@@ -930,8 +928,7 @@ class LotEntries(BaseView):
 
 
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = self.context.lot
         # TODO: form
 
         entry_no = self.request.params['entry_no']
@@ -964,8 +961,7 @@ class LotEntries(BaseView):
         """ 申し込み番号指定での当選予定キャンセル処理
         """
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = self.context.lot
 
         entry_no = self.request.params['entry_no']
         wish_order = self.request.params['wish_order']
@@ -994,8 +990,7 @@ class LotEntries(BaseView):
         """ 申し込み番号指定での当選予定処理
         """
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = self.context.lot
 
         entry_no = self.request.params['entry_no']
 
@@ -1013,10 +1008,8 @@ class LotEntries(BaseView):
     def entry_show(self):
         self.check_organization(self.context.event)
         slave_session = get_db_session(self.request, name="slave")
-        lot_id = self.request.matchdict["lot_id"]
-        lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
-
-        entry_no = self.request.matchdict['entry_no']
+        entry_no = self.context.entry_no
+        lot = slave_session.query(Lot).join(LotEntry.lot).filter(LotEntry.entry_no==entry_no).one()
         lot_entry = lot.get_lot_entry(entry_no)
         shipping_address = lot_entry.shipping_address
         mail_form = SendingMailForm(recipient=shipping_address.email_1, 
