@@ -27,8 +27,8 @@ def upgrade():
     op.create_foreign_key('secure3d_req_auth_response_ibfk_1', 'secure3d_req_auth_response', 'secure3d_req_auth_request', ['request_id'], ['id'])
 
 def downgrade():
-    op.drop_constraint('secure3d_req_enrol_response_ibfk_1', 'secure3d_req_enrol_response')
-    op.drop_constraint('secure3d_req_auth_response_ibfk_1', 'secure3d_req_auth_response')
+    op.drop_constraint('secure3d_req_enrol_response_ibfk_1', 'secure3d_req_enrol_response', type_='foreignkey')
+    op.drop_constraint('secure3d_req_auth_response_ibfk_1', 'secure3d_req_auth_response', type_='foreignkey')
     op.drop_column('secure3d_req_auth_response', 'request_id')
     op.drop_column('secure3d_req_auth_response', 'OrderNo')
     op.drop_column('secure3d_req_enrol_response', 'request_id')
