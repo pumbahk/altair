@@ -2709,12 +2709,17 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def is_inner_channel(self):
         return self.channel in self.inner_channels()
 
-    def can_change_status(self, status):
-        # 決済ステータスはインナー予約のみ変更可能
+    def payment_status_changable(self, status):
         if status == 'paid':
-            return (self.status == 'ordered' and self.payment_status == 'unpaid' and self.is_inner_channel)
+            if self.payment_status == 'paid':
+                return True
+            # 入金済への決済ステータスは窓口支払のみ変更可能
+            return (self.status == 'ordered' and self.payment_status == 'unpaid' and self.payment_delivery_pair.payment_method.payment_plugin_id == plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID)
         elif status == 'unpaid':
-            return (self.status == 'ordered' and self.payment_status == 'paid' and self.is_inner_channel)
+            if self.payment_status == 'unpaid':
+                return True
+            # 未入金への決済ステータスは、窓口支払もしくはインナー予約のみ変更可能
+            return (self.status == 'ordered' and self.payment_status == 'paid' and (self.payment_delivery_pair.payment_method.payment_plugin_id ==  plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID or self.is_inner_channel))
         else:
             return False
 
@@ -2966,15 +2971,20 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for product in self.items:
             product.release()
 
-    def change_status(self, status):
-        if self.can_change_status(status):
-            if status == 'paid':
-                self.mark_paid()
-            if status == 'unpaid':
-                self.paid_at = None
-            self.save()
-            return True
+    def change_payment_status(self, status):
+        if self.payment_status_changable(status):
+            if self.payment_status != status:
+                if status == 'paid':
+                    self.mark_paid()
+                if status == 'unpaid':
+                    self.paid_at = None
+                self.save()
+                return True
         return False
+
+    @deprecation.deprecate(u"change_payment_statusを使ってほしい")
+    def change_status(self, status):
+        return self.change_payment_status(status)
 
     def delivered(self):
         if self.can_deliver():
