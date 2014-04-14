@@ -131,7 +131,7 @@ def includeme(config):
     config.add_route('cart.info', 'performances/{performance_id}/sales_segment/{sales_segment_id}/info')
     config.add_route('cart.seats', 'performances/{performance_id}/sales_segment/{sales_segment_id}/seats')
     config.add_route('cart.seat_adjacencies', 'performances/{performance_id}/venues/{venue_id}/seat_adjacencies/{length_or_range}')
-    config.add_route('cart.venue_drawing', 'performancess/{performance_id}/venues/{venue_id}/drawing/{part}')
+    config.add_route('cart.venue_drawing', 'performances/{performance_id}/venues/{venue_id}/drawing/{part}')
     config.add_route('cart.products', 'events/{event_id}/sales_segment/{sales_segment_id}/seat_types/{seat_type_id}/products', factory='.resources.EventOrientedTicketingCartResource')
 
     config.add_route('cart.products2', 'performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types/{seat_type_id}/products')
