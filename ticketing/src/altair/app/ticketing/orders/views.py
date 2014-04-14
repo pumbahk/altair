@@ -943,7 +943,7 @@ class OrderDetailView(BaseView):
             return HTTPNotFound('order id %d is not found' % order_id)
 
         status = self.request.matchdict.get('status', 0)
-        if order.change_status(status):
+        if order.change_payment_status(status):
             self.request.session.flash(u'受注(%s)のステータスを変更しました' % order.order_no)
         else:
             self.request.session.flash(u'受注(%s)のステータスを変更できません' % order.order_no)
