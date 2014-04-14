@@ -31,6 +31,8 @@ def includeme(config):
                      factory=lot_resource_factory)
     config.add_route('lots.entries.show', 'entries/search/{lot_id}/entry/{entry_no}',
                      factory=lot_entry_resource_factory)
+    config.add_route('lots.entries.shipping_address.edit', 'entries/search/{lot_id}/entry/{entry_no}/shipping_address/edit',
+                     factory=lot_entry_resource_factory)
     config.add_route('lots.entries.export.html', 'entries/export/{lot_id}.html',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.export', 'entries/export/{lot_id}',

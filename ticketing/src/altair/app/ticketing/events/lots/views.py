@@ -7,7 +7,7 @@ from sqlalchemy import orm
 from pyramid.decorator import reify
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
-from pyramid.renderers import get_renderer
+from pyramid.renderers import get_renderer, render_to_response
 from pyramid_mailer import get_mailer
 from . import helpers as h
 import webhelpers.paginate as paginate
@@ -25,6 +25,7 @@ from altair.app.ticketing.core.models import (
     StockHolder,
     Stock,
     )
+from altair.app.ticketing.orders.forms import ClientOptionalForm
 from altair.app.ticketing.lots.models import (
     Lot,
     LotEntry,
@@ -1026,6 +1027,33 @@ class LotEntries(BaseView):
                 "shipping_address": shipping_address, 
                 "mail_form": mail_form}
 
+    @view_config(route_name='lots.entries.shipping_address.edit', request_method='GET', renderer='altair.app.ticketing:templates/orders/_form_shipping_address.html')
+    def edit_shipping_address_get(self):
+        return dict(form=ClientOptionalForm(obj=self.context.entry.shipping_address), action=self.request.current_route_path())
+
+    @view_config(route_name='lots.entries.shipping_address.edit', request_method='POST', renderer='altair.app.ticketing:templates/orders/_form_shipping_address.html')
+    def edit_shipping_address_post(self):
+        f = ClientOptionalForm(self.request.POST)
+        if f.validate():
+            entry = self.context.entry
+            shipping_address = entry.shipping_address
+            shipping_address.email_1 = f.email_1.data
+            shipping_address.email_2 = f.email_2.data
+            shipping_address.first_name = f.first_name.data
+            shipping_address.last_name = f.last_name.data
+            shipping_address.first_name_kana = f.first_name_kana.data
+            shipping_address.last_name_kana = f.last_name_kana.data
+            shipping_address.zip = f.zip.data
+            shipping_address.prefecture = f.prefecture.data
+            shipping_address.city = f.city.data
+            shipping_address.address_1 = f.address_1.data
+            shipping_address.address_2 = f.address_2.data
+            shipping_address.tel_1 = f.tel_1.data
+            shipping_address.fax = f.fax.data
+            shipping_address.save()
+            self.request.session.flash(u'配送情報を保存しました')
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+        return dict(form=f, action=self.request.current_route_path())
 
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")

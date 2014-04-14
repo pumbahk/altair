@@ -975,7 +975,7 @@ class OrderDetailView(BaseView):
             self.request.session.flash(u'受注(%s)を未配送済みにできません' % order.order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
-    @view_config(route_name='orders.edit.shipping_address', request_method='POST', renderer='altair.app.ticketing:templates/orders/_form_shipping_address.html')
+    @view_config(route_name='orders.edit.shipping_address', request_method='POST', renderer='altair.app.ticketing:templates/orders/_modal_shipping_address.html')
     def edit_shipping_address_post(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.organization.id)
