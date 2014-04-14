@@ -560,7 +560,7 @@ class PreviewWithDefaultParameterDialogView(object):
             logger.exception(e)
             raise
 
-@view_config(route_name="tickets.preview.downalod.list.zip")
+@view_config(route_name="tickets.preview.download.list.zip")
 def download_list_of_preview_image(context, request):
     performance_id = request.matchdict["performance_id"]
     sales_segment_id = request.matchdict["sales_segment_id"]
@@ -591,7 +591,11 @@ def download_list_of_preview_image(context, request):
         for ticket in ticket_q:
             if any(dm.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for dm in ticket.ticket_format.delivery_methods):
                 continue
-        svg_string_list.append(template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item)))
+        svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
+        transformer = SVGTransformer(svg)
+        transformer.data["ticket_format"] = ticket.ticket_format
+        svg = transformer.transform()
+        svg_string_list.append(svg)
 
     try:
         preview = SVGPreviewCommunication.get_instance(request)
@@ -599,7 +603,8 @@ def download_list_of_preview_image(context, request):
         source_dir = tempfile.mkdtemp()
         for i, svg_string in enumerate(svg_string_list):
             imgdata_base64 = preview.communicate(request, svg_string)
-            fname = os.path.join(source_dir, "preview{0}.png")
+            fname = os.path.join(source_dir, "preview{0}.png".format(i))
+            logger.info("writing ... %s", fname)
             with open(fname, "wb") as wf:
                 wf.write(base64.b64decode(imgdata_base64))
 
