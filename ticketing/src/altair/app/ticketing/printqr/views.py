@@ -88,7 +88,6 @@ def orderno_show_qrsigned_after_validated(context, request, form):
             json_string = send_to_orion(request, context, None, token)
             logger.info("response = %s" % json_string)
             response = json.loads(json_string)
-            qr = None
             if response['result'] == u"OK" and response.has_key('serial'):
                 fake_history = type('FakeTicketPrintHistory', (), {
                     'id': response['serial'],
@@ -99,7 +98,7 @@ def orderno_show_qrsigned_after_validated(context, request, form):
                     'seat': token.seat,
                 })
                 qr = build_qr_by_orion(request, fake_history, response['serial'])
-            histories.append(qr)
+                histories.append(qr)
     else:
         histories = (get_or_create_matched_history_from_token(order_no, tk) for tk in tokens)
 
