@@ -101,8 +101,8 @@ def get_seats(request):
     filter_params = set() if _filter_params is None else set(_filter_params.split(u'|'))
     sales_segment_id = request.params.get(u'sales_segment_id', None)
     loaded_at = request.params.get(u'loaded_at', None)
+    load_all_seat = request.params.get(u'load_all_seat', None)
     sale_only = (u'sale_only' in filter_params)
-    vacant_only = (u'vacant_only' in filter_params)
     if loaded_at:
         loaded_at = datetime.fromtimestamp(float(loaded_at))
     permit_operator = isinstance(has_permission('event_editor', request.context, request), ACLAllowed)
@@ -119,12 +119,12 @@ def get_seats(request):
         seats_data = {}
         query = DBSession.query(Seat).join(SeatStatus).filter(Seat.venue==venue)
         query = query.with_entities(Seat.l0_id, Seat.name, Seat.seat_no, Seat.stock_id, SeatStatus.status)
-        if vacant_only:
-            query = query.filter(SeatStatus.status==SeatStatusEnum.Vacant.v)
         # 差分取得のときは販売可能かどうかに関わらず取得する
         if loaded_at:
             query = query.filter(or_(Seat.updated_at>loaded_at, SeatStatus.updated_at>loaded_at))
         elif sale_only:
+            if not load_all_seat:
+                query = query.filter(SeatStatus.status==SeatStatusEnum.Vacant.v)
             query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id))
             query = query.join(Product).join(SalesSegment).distinct()
             if sales_segment_id:
