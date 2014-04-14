@@ -27,16 +27,13 @@
 <font color="#f39700">■</font>会員販売・その他特別販売
 </div>
 <form action="${request.url}" method="post">
+<input type="hidden" name="password" value="lakes" />
 <div>
   ID(半角英数)<br/>
   <input type="text" name="username" size="22" maxlength="8" value="${username}">
 %if message:
-<font color="red">IDかパスワードが一致しません</font>
+<br/><font color="red">IDが一致しません</font>
 %endif
-</div>
-<div>
-  パスワード(半角英数)<br/>
-  <input type="password" name="password" size="22" maxlength="8" value="">
 </div>
 <input type="submit" value="ログイン" />
 </form>
