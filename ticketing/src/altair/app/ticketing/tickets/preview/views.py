@@ -591,23 +591,26 @@ def download_list_of_preview_image(context, request):
         for ticket in ticket_q:
             if any(dm.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for dm in ticket.ticket_format.delivery_methods):
                 continue
-        svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
-        transformer = SVGTransformer(svg)
-        transformer.data["ticket_format"] = ticket.ticket_format
-        svg = transformer.transform()
-        svg_string_list.append(svg)
-
+            svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
+            transformer = SVGTransformer(svg)
+            transformer.data["ticket_format"] = ticket.ticket_format
+            svg = transformer.transform()
+            svg_string_list.append((svg, product_item, ticket))
+    
     try:
         preview = SVGPreviewCommunication.get_instance(request)
         ## 画像取得
         source_dir = tempfile.mkdtemp()
-        for i, svg_string in enumerate(svg_string_list):
-            imgdata_base64 = preview.communicate(request, svg_string)
-            fname = os.path.join(source_dir, "preview{0}.png".format(i))
-            logger.info("writing ... %s", fname)
-            with open(fname, "wb") as wf:
-                wf.write(base64.b64decode(imgdata_base64))
+        with open(os.path.join(source_dir, "memo.txt"), "w") as wf0:
+            for i, (svg_string, product_item, ticket) in enumerate(svg_string_list):
+                wf0.write(u"* preview{0}.png -- 商品:{1}\n".format(i, product_item.name).encode("utf-8"))
 
+                imgdata_base64 = preview.communicate(request, svg_string)
+                fname = os.path.join(source_dir, "preview{0}.png".format(i))
+                logger.info("writing ... %s", fname)
+                with open(fname, "wb") as wf:
+                    wf.write(base64.b64decode(imgdata_base64))
+    
         ## zipfile作成
         zip_name = "preview_image_salessegment{0}.zip".format(sales_segment_id)
         walk = ZipFileCreateRecursiveWalk(tempfile.mktemp(zip_name), source_dir)
