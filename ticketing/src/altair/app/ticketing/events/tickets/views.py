@@ -9,7 +9,6 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import ProductItem, Performance
 from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute, TicketPrintQueueEntry
 from altair.app.ticketing.views import BaseView
-from altair.app.ticketing.tickets.response import FileLikeResponse
 from . import forms
 
 from altair.app.ticketing.tickets.utils import build_dict_from_product_item

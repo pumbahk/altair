@@ -8,7 +8,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.view import view_config, view_defaults
 
 from altair.app.ticketing.models import merge_session_with_post
-from altair.app.ticketing.tickets.response import FileLikeResponse ##
+from altair.response import FileLikeResponse ##
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.users.models import Member, User, UserCredential, MemberGroup, Membership
 from . import forms
