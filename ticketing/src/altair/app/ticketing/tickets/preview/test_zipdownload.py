@@ -19,11 +19,12 @@ class ZipDownloadTests(unittest.TestCase):
         tmpdir = tempfile.mkdtemp()
         with open(os.path.join(tmpdir, "sample.txt"), "w") as wf:
             wf.write("sample")
-        walk = target.crate_zip_file_creator("sample.zip", tmpdir)
+        zippath = tempfile.mktemp("sample.zip")
+        walk = target.create_zip_file_creator(zippath, tmpdir)
         walk()
 
-        self.assertTrue(os.path.exists(os.path.join(tmpdir, "sample.zip")))
-        self.assertTrue(zipfile.iszipfile(os.path.join(tmpdir, "sample.zip")))
+        self.assertTrue(os.path.exists(zippath))
+        self.assertTrue(zipfile.iszipfile(zippath))
 
     def test_zip_create__with_monkey_patched(self):
         import altair.app.ticketing.sej.zip_file
@@ -36,8 +37,9 @@ class ZipDownloadTests(unittest.TestCase):
         tmpdir = tempfile.mkdtemp()
         with open(os.path.join(tmpdir, "sample.txt"), "w") as wf:
             wf.write("sample")
-        walk = target.crate_zip_file_creator("sample.zip", tmpdir)
+        zippath = tempfile.mktemp("sample.zip")
+        walk = target.create_zip_file_creator(zippath, tmpdir)
         walk()
 
-        self.assertTrue(os.path.exists(os.path.join(tmpdir, "sample.zip")))
-        self.assertTrue(zipfile.iszipfile(os.path.join(tmpdir, "sample.zip")))
+        self.assertTrue(os.path.exists(zippath))
+        self.assertTrue(zipfile.iszipfile(zippath))

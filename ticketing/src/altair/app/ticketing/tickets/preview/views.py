@@ -587,12 +587,12 @@ class DownloadListOfPreviewImage(object):
 
         ## zipfile作成
         zip_name = "preview_image_salessegment{0}.zip".format(sales_segment_id)
-        walk = self.create_zip_file_creator(zip_name)
+        walk = self.create_zip_file_creator(tempfile.mktemp(zip_name))
         return ZipFileResponse(walk, filename=zip_name)
 
 
-    def create_zip_file_creator(self, name, source_dir):
-        walk = ZipFileCreateRecursiveWalk(tempfile.mktemp(name), source_dir)
+    def create_zip_file_creator(self, zip_path, source_dir):
+        walk = ZipFileCreateRecursiveWalk(zip_path, source_dir)
         expected_format = "<4s4B4HL2L5H2L"
         if expected_format == zipfile.structCentralDir:
             return walk
