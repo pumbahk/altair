@@ -640,7 +640,7 @@ class DownloadListOfPreviewImage(object):
                                 c_models.Ticket.organization_id==organization.id)
                         .all())
             for ticket in ticket_q:
-                if not any(unicode(dm.delivery_plugin_id) == delivery_method_id for dm in ticket.ticket_format.delivery_methods):
+                if not any(unicode(dm.id) == delivery_method_id for dm in ticket.ticket_format.delivery_methods):
                     continue
                 svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
                 transformer = SVGTransformer(svg)
