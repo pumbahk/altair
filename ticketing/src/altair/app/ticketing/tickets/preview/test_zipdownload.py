@@ -24,7 +24,7 @@ class ZipDownloadTests(unittest.TestCase):
         walk()
 
         self.assertTrue(os.path.exists(zippath))
-        self.assertTrue(zipfile.iszipfile(zippath))
+        self.assertTrue(zipfile.is_zipfile(zippath))
 
     def test_zip_create__with_monkey_patched(self):
         import altair.app.ticketing.sej.zip_file
@@ -42,4 +42,4 @@ class ZipDownloadTests(unittest.TestCase):
         walk()
 
         self.assertTrue(os.path.exists(zippath))
-        self.assertTrue(zipfile.iszipfile(zippath))
+        self.assertTrue(zipfile.is_zipfile(zippath))
