@@ -83,7 +83,7 @@ class LotResource(object):
             (Allow, "auth_type:%s" % self.lot.auth_type, 'lots'),
         ]
 
-    def check_entry_limit(self, user, email):
+    def check_entry_limit(self, user, email, wishes):
         query = LotEntry.query.filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None)
         if user:
             query = query.filter(LotEntry.user_id==user.id)
@@ -99,7 +99,8 @@ class LotResource(object):
                 logger.info('entry_limit exceeded')
                 raise OverEntryLimitException(entry_limit=entry_limit)
         # 公演単位での申込上限チェック
-        for performance in self.lot.performances:
+        for wish_data in wishes:
+            performance = Performance.get(wish_data.get('performance_id'), self.organization.id)
             entry_limit = performance.setting.entry_limit
             if entry_limit > 0:
                 query_performance = query.join(LotEntryWish).filter(LotEntryWish.performance_id==performance.id)

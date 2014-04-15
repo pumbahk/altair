@@ -328,11 +328,12 @@ class EntryLotView(object):
             self.request.session.flash(u"入力内容を確認してください")
             return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
 
+        wishes=api.get_options(self.request, lot.id)
         user = user_api.get_user(self.context.authenticated_user())
         email = self.request.params.get('email_1')
         # 申込回数チェック
         try:
-            self.context.check_entry_limit(user, email)
+            self.context.check_entry_limit(user, email, wishes)
         except OverEntryLimitPerPerformanceException as e:
             self.request.session.flash(u"公演「{0}」への申込は{1}回までとなっております。".format(e.performance_name, e.entry_limit))
             return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
@@ -345,7 +346,7 @@ class EntryLotView(object):
         api.new_lot_entry(
             self.request,
             entry_no=entry_no,
-            wishes=api.get_options(self.request, lot.id),
+            wishes=wishes,
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             shipping_address_dict=shipping_address_dict,
             gender=cform['sex'].data,
