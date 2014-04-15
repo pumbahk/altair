@@ -252,10 +252,11 @@ class EntryLotView(object):
         wishes = h.convert_wishes(self.request.params, lot.limit_wishes)
 
         validated = True
+        user = user_api.get_user(self.context.authenticated_user())
         email = self.request.params.get('email_1')
         # 申込回数チェック
         try:
-            self.context.check_entry_limit(email)
+            self.context.check_entry_limit(user, email)
         except OverEntryLimitPerPerformanceException as e:
             self.request.session.flash(u"公演「{0}」への申込は{1}回までとなっております。".format(e.performance_name, e.entry_limit))
             validated = False

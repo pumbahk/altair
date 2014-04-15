@@ -10,10 +10,11 @@ from wtforms.validators import ValidationError
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, Performance, Product
 from altair.app.ticketing.cart import api as cart_api
+from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.cart.views import back
 from altair.app.ticketing.payments.api import set_confirm_url
 from altair.app.ticketing.payments.payment import Payment
-from altair.app.ticketing.cart.exceptions import NoCartError
+from altair.app.ticketing.users import api as user_api
 
 from . import api
 from . import helpers as h
@@ -327,10 +328,11 @@ class EntryLotView(object):
             self.request.session.flash(u"入力内容を確認してください")
             return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
 
+        user = user_api.get_user(self.context.authenticated_user())
         email = self.request.params.get('email_1')
         # 申込回数チェック
         try:
-            self.context.check_entry_limit(email)
+            self.context.check_entry_limit(user, email)
         except OverEntryLimitPerPerformanceException as e:
             self.request.session.flash(u"公演「{0}」への申込は{1}回までとなっております。".format(e.performance_name, e.entry_limit))
             return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)

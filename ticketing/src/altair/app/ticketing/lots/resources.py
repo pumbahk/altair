@@ -83,11 +83,13 @@ class LotResource(object):
             (Allow, "auth_type:%s" % self.lot.auth_type, 'lots'),
         ]
 
-    def check_entry_limit(self, email):
+    def check_entry_limit(self, user, email):
         query = LotEntry.query.filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None)
-        query = query.filter(LotEntry.shipping_address_id==ShippingAddress.id)\
-                     .filter(or_(ShippingAddress.email_1==email,
-                                     ShippingAddress.email_2==email))
+        if user:
+            query = query.filter(LotEntry.user_id==user.id)
+        elif email:
+            query = query.join(Shipping_address)\
+                         .filter(or_(ShippingAddress.email_1==email, ShippingAddress.email_2==email))
         # 抽選単位での申込上限チェック
         entry_limit = self.lot.entry_limit
         if entry_limit > 0:
