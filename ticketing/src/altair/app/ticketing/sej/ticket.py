@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 
+from __future__ import absolute_import
+
 import codecs
 import csv
 import re
@@ -13,7 +15,8 @@ from sqlalchemy.sql.expression import and_, or_
 
 from altair.app.ticketing.models import DBSession
 from .models import SejTicketTemplateFile, SejRefundTicket, SejRefundEvent
-from .zip_file import EnhZipFile, ZipInfo
+from .zip_file import EnhZipFile
+from zipfile import ZipInfo
 
 MAX_TICKET_DATA_LENGTH = 5000
 
