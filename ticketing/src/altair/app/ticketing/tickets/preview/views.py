@@ -560,60 +560,79 @@ class PreviewWithDefaultParameterDialogView(object):
             logger.exception(e)
             raise
 
-@view_config(route_name="tickets.preview.download.list.zip")
-def download_list_of_preview_image(context, request):
-    performance_id = request.matchdict["performance_id"]
-    sales_segment_id = request.matchdict["sales_segment_id"]
+class DownloadListOfPreviewImage(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
 
-    ## assertion
-    p = c_models.Performance.query.filter_by(id=performance_id).one()
-    if unicode(p.event.organization_id) != unicode(context.organization.id):
-        logger.warn("unmatched organization %s != %s", p.event.organization, context.organization.id)
-        raise HTTPFound("unmatched organization")
+    @view_config(route_name="tickets.preview.download.list.zip")
+    def __call__(self):
+        performance_id = self.request.matchdict["performance_id"]
+        sales_segment_id = self.request.matchdict["sales_segment_id"]
+
+        self.assertion(performance_id, self.context.organization)
+
+        q = self.model_query(performance_id, sales_segment_id)
+
+        ## ProductItem list -> svg list
+        svg_string_list = self.fetch_data_list(q, self.context.organization)
+
+        source_dir = tempfile.mkdtemp()
+        try:
+            ## preview serverと通信して取得した画像を保存
+            self.store_image(svg_string_list, source_dir)
+        except jsonrpc.ProtocolError, e:
+            raise HTTPBadRequest(str(e))
+
+        ## zipfile作成
+        zip_name = "preview_image_salessegment{0}.zip".format(sales_segment_id)
+        walk = ZipFileCreateRecursiveWalk(tempfile.mktemp(zip_name), source_dir)
+        return ZipFileResponse(walk, filename=zip_name)
 
 
-    q = (c_models.ProductItem.query
+    def assertion(self, performance_id, organization):
+        p = c_models.Performance.query.filter_by(id=performance_id).one()
+        if unicode(p.event.organization_id) != unicode(organization.id):
+            logger.warn("unmatched organization %s != %s", p.event.organization, organization.id)
+            raise HTTPFound("unmatched organization")
+
+
+    def model_query(self, performance_id, sales_segment_id):
+        return (c_models.ProductItem.query
          .filter(c_models.Product.id==c_models.ProductItem.product_id)
          .filter(c_models.Product.sales_segment_id==sales_segment_id)
          .filter(c_models.Product.performance_id==performance_id)
          .filter(c_models.ProductItem.performance_id==performance_id)
          .all())
 
-    ## svgデータ取得
-    svg_string_list = []
-    for product_item in q:
-        ticket_q = (c_models.Ticket.query
-                    .filter(c_models.TicketBundle.id==product_item.ticket_bundle_id, 
-                            c_models.Ticket_TicketBundle.ticket_bundle_id==product_item.ticket_bundle_id, 
-                            c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id, 
-                            c_models.Ticket.organization_id==context.organization.id)
-                    .all())
-        for ticket in ticket_q:
-            if any(dm.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for dm in ticket.ticket_format.delivery_methods):
-                continue
-            svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
-            transformer = SVGTransformer(svg)
-            transformer.data["ticket_format"] = ticket.ticket_format
-            svg = transformer.transform()
-            svg_string_list.append((svg, product_item, ticket))
-    
-    try:
-        preview = SVGPreviewCommunication.get_instance(request)
+    def fetch_data_list(self, q, organization):
+        svg_string_list = []
+        for product_item in q:
+            ticket_q = (c_models.Ticket.query
+                        .filter(c_models.TicketBundle.id==product_item.ticket_bundle_id, 
+                                c_models.Ticket_TicketBundle.ticket_bundle_id==product_item.ticket_bundle_id, 
+                                c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id, 
+                                c_models.Ticket.organization_id==organization.id)
+                        .all())
+            for ticket in ticket_q:
+                if any(dm.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for dm in ticket.ticket_format.delivery_methods):
+                    continue
+                svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
+                transformer = SVGTransformer(svg)
+                transformer.data["ticket_format"] = ticket.ticket_format
+                svg = transformer.transform()
+                svg_string_list.append((svg, product_item, ticket))
+        return svg_string_list
+
+    def store_image_from_svg_list(self, svg_string_list, source_dir):
+        preview = SVGPreviewCommunication.get_instance(self.request)
         ## 画像取得
-        source_dir = tempfile.mkdtemp()
         with open(os.path.join(source_dir, "memo.txt"), "w") as wf0:
             for i, (svg_string, product_item, ticket) in enumerate(svg_string_list):
                 wf0.write(u"* preview{0}.png -- 商品:{1}\n".format(i, product_item.name).encode("utf-8"))
 
-                imgdata_base64 = preview.communicate(request, svg_string)
+                imgdata_base64 = preview.communicate(self.request, svg_string)
                 fname = os.path.join(source_dir, "preview{0}.png".format(i))
                 logger.info("writing ... %s", fname)
                 with open(fname, "wb") as wf:
                     wf.write(base64.b64decode(imgdata_base64))
-    
-        ## zipfile作成
-        zip_name = "preview_image_salessegment{0}.zip".format(sales_segment_id)
-        walk = ZipFileCreateRecursiveWalk(tempfile.mktemp(zip_name), source_dir)
-        return ZipFileResponse(walk, filename=zip_name)
-    except jsonrpc.ProtocolError, e:
-        raise HTTPBadRequest(str(e))
