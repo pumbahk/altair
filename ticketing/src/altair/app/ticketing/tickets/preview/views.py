@@ -570,13 +570,18 @@ class DownloadListOfPreviewImage(object):
     def __call__(self):
         performance_id = self.request.matchdict["performance_id"]
         sales_segment_id = self.request.matchdict["sales_segment_id"]
+        try:
+            delivery_method_id = self.request.params["delivery_method_id"]
+        except KeyError:
+            logger.warn("delivery method not found")
+            raise HTTPNotFound("delivery_method not found")
 
         self.assertion(performance_id, self.context.organization)
 
         q = self.model_query(performance_id, sales_segment_id)
 
         ## ProductItem list -> svg list
-        svg_string_list = self.fetch_data_list(q, self.context.organization)
+        svg_string_list = self.fetch_data_list(q, self.context.organization, unicode(delivery_method_id))
 
         source_dir = tempfile.mkdtemp()
         try:
@@ -625,7 +630,7 @@ class DownloadListOfPreviewImage(object):
          .filter(c_models.ProductItem.performance_id==performance_id)
          .all())
 
-    def fetch_data_list(self, q, organization):
+    def fetch_data_list(self, q, organization, delivery_method_id):
         svg_string_list = []
         for product_item in q:
             ticket_q = (c_models.Ticket.query
@@ -635,7 +640,7 @@ class DownloadListOfPreviewImage(object):
                                 c_models.Ticket.organization_id==organization.id)
                         .all())
             for ticket in ticket_q:
-                if any(dm.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for dm in ticket.ticket_format.delivery_methods):
+                if not any(unicode(dm.delivery_plugin_id) == delivery_method_id for dm in ticket.ticket_format.delivery_methods):
                     continue
                 svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
                 transformer = SVGTransformer(svg)

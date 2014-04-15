@@ -36,7 +36,7 @@ from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentAccessor,
 )
-
+from .forms import DeliveryMethodSelectForm
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/performances/show.html')
 class PerformanceShowView(BaseView):
@@ -62,7 +62,11 @@ class PerformanceShowView(BaseView):
             )
 
     def _tab_product(self):
-        return dict()
+        ## まとめてdownloadするために必要
+        delivery_method_select_form_dict = {unicode(s.id): DeliveryMethodSelectForm(obj=s) for s in self.performance.sales_segments}
+        return dict(
+            delivery_method_select_form_dict=delivery_method_select_form_dict
+        )
 
     def _tab_order(self):
         slave_session = get_db_session(self.request, name="slave")
