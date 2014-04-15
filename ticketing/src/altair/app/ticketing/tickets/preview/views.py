@@ -587,7 +587,7 @@ class DownloadListOfPreviewImage(object):
 
         ## zipfile作成
         zip_name = "preview_image_salessegment{0}.zip".format(sales_segment_id)
-        walk = self.create_zip_file_creator(tempfile.mktemp(zip_name))
+        walk = self.create_zip_file_creator(tempfile.mktemp(zip_name), source_dir)
         return ZipFileResponse(walk, filename=zip_name)
 
 
@@ -603,7 +603,7 @@ class DownloadListOfPreviewImage(object):
                 try:
                     logger.warn("zipfile.structCentralDir is not {0}. overwrite it".format(expected_format))
                     zipfile.structCentralDir = expected_format
-                    walk()
+                    return walk()
                 finally:
                     logger.info("zipfile.structCentralDir setting is revived.({0})".format(original_format))
                     zipfile.structCentralDir = original_format
@@ -644,7 +644,7 @@ class DownloadListOfPreviewImage(object):
                 svg_string_list.append((svg, product_item, ticket))
         return svg_string_list
 
-    def store_image_from_svg_list(self, svg_string_list, source_dir):
+    def store_image(self, svg_string_list, source_dir):
         preview = SVGPreviewCommunication.get_instance(self.request)
         ## 画像取得
         with open(os.path.join(source_dir, "memo.txt"), "w") as wf0:
