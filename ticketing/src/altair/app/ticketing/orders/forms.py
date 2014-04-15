@@ -9,15 +9,20 @@ from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, T
                      RadioField, FieldList, FormField, DecimalField, IntegerField, FileField)
 from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
 from wtforms.widgets import CheckboxInput, HiddenInput
+from sqlalchemy import and_
+from sqlalchemy.sql import exists
 
+from altair.viewhelpers.datetime_ import create_date_time_formatter, DateTimeHelper
 from altair.formhelpers import (
     Translations,
     DateTimeField, DateField, Max, OurDateWidget, OurDateTimeWidget,
     CheckboxMultipleSelect, BugFreeSelectField, BugFreeSelectMultipleField,
     Required, after1900, NFKC, Zenkaku, Katakana,
     strip_spaces, ignore_space_hyphen, OurForm)
-from altair.app.ticketing.core.models import (Organization, PaymentMethod, DeliveryMethod, SalesSegmentGroup, PaymentDeliveryMethodPair,
-                                   SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
+from altair.app.ticketing.core.models import (
+    Organization, PaymentMethod, DeliveryMethod, SalesSegmentGroup, PaymentDeliveryMethodPair,
+    Stock, StockType, StockHolder, SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum
+    )
 from altair.app.ticketing.cart.schemas import ClientForm
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.core import helpers as core_helpers
@@ -449,33 +454,50 @@ class OrderReserveForm(Form):
         if 'performance_id' in kwargs:
             performance = Performance.get(kwargs['performance_id'])
             self.performance_id.data = performance.id
+            stocks = formdata['stocks'] if 'stocks' in formdata else []
+            sales_segment_id = formdata['sales_segment_id'] if 'sales_segment_id' in formdata else []
+            stock_holder_id = formdata['stock_holder_id'] if 'stock_holder_id' in formdata else []
 
-            query = Product.query.filter(Product.performance_id==performance.id)
-            if 'stocks' in kwargs and kwargs['stocks']:
-                query = query.join(ProductItem).filter(ProductItem.stock_id.in_(kwargs['stocks']))
+            # stock_holder_id
+            stock_types = StockType.query.join(Stock).filter(Stock.id.in_(stocks)).with_entities(StockType.id).all()
+            stock_types = [stock_type[0] for stock_type in stock_types]
+            query = StockHolder.query.join(StockHolder.stocks)
+            query = query.filter(Stock.performance_id==performance.id)
+            query = query.filter(Stock.stock_type_id.in_(stock_types))
+            query = query.filter(exists().where(and_(ProductItem.stock_id==Stock.id, ProductItem.deleted_at==None)))
+            self.stock_holder_id.choices = query.with_entities(StockHolder.id, StockHolder.name).distinct().all()
+            if not stock_holder_id and stocks:
+                stock_holder_id = Stock.query.filter_by(id=stocks[0]).with_entities(Stock.stock_holder_id).scalar()
+                self.stock_holder_id.default = stock_holder_id
 
-            sales_segments = set(product.sales_segment for product in query.distinct())
-            from altair.viewhelpers.datetime_ import create_date_time_formatter, DateTimeHelper
+            # sales_segment_id
+            query = SalesSegment.query.join(SalesSegment.products, Product.items)
+            query = query.filter(ProductItem.performance_id==performance.id)
+            query = query.filter(ProductItem.stock_id.in_(stocks))
+            sales_segments = query.distinct()
             self.sales_segment_id.choices = [
                 (sales_segment.id, u'%s %s' % (sales_segment.name, DateTimeHelper(create_date_time_formatter(self.request)).term(sales_segment.start_at, sales_segment.end_at)))
                 for sales_segment in \
                     core_helpers.build_sales_segment_list_for_inner_sales(sales_segments, request=self.request)
                 ]
+            if not sales_segment_id and len(self.sales_segment_id.choices) > 0:
+                sales_segment_id = self.sales_segment_id.choices[0][0]
 
-            if 'sales_segment_id' in kwargs and kwargs['sales_segment_id']:
-                self.sales_segment_id.default = kwargs['sales_segment_id']
-            elif len(self.sales_segment_id.choices) > 0:
-                self.sales_segment_id.default = self.sales_segment_id.choices[0][0]
-
+            # products
             self.products.choices = []
-            if 'stocks' in kwargs and kwargs['stocks']:
-                query = query.filter(Product.sales_segment_id==self.sales_segment_id.default)
-                for p in query.all():
-                    self.products.choices += [(p.id, p)]
+            query = Product.query.filter(Product.performance_id==performance.id).join(Product.items)
+            if stocks:
+                query = query.filter(ProductItem.stock_id.in_(stocks))
+            if stock_holder_id:
+                query = query.join(ProductItem.stock).filter(Stock.stock_holder_id==stock_holder_id)
+            if sales_segment_id:
+                query = query.filter(Product.sales_segment_id==sales_segment_id)
+            self.products.choices += [(p.id, p) for p in query.distinct()]
 
+            # pdmp
             self.payment_delivery_method_pair_id.choices = []
             self.payment_delivery_method_pair_id.sej_plugin_id = []
-            sales_segment = SalesSegment.get(self.sales_segment_id.default)
+            sales_segment = SalesSegment.get(sales_segment_id)
             pdmps = sorted(
                 sales_segment.payment_delivery_method_pairs,
                 key=lambda x: (x.payment_method.payment_plugin_id == plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID),
@@ -492,6 +514,8 @@ class OrderReserveForm(Form):
             self.sales_counter_payment_method_id.choices = [(0, '')]
             for pm in PaymentMethod.filter_by_organization_id(performance.event.organization_id):
                 self.sales_counter_payment_method_id.choices.append((pm.id, pm.name))
+
+            self.process(formdata, obj, **kwargs)
 
     def _get_translations(self):
         return Translations()
@@ -532,6 +556,12 @@ class OrderReserveForm(Form):
     payment_delivery_method_pair_id = SelectField(
         label=u'決済・引取方法',
         validators=[Required(u'決済・引取方法を選択してください')],
+        choices=[],
+        coerce=lambda x : int(x) if x else u'',
+    )
+    stock_holder_id = SelectField(
+        label=u'配券先',
+        validators=[Required()],
         choices=[],
         coerce=lambda x : int(x) if x else u'',
     )

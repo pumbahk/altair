@@ -24,11 +24,13 @@
       var pm_id = ${form.get_defalut_sales_counter_payment_method()};
       if (pm_id) $('#sales_counter_payment_method_id').val(pm_id);
     }
+
     % if seats:
     if ($('[id^=product_quantity]').length == 1) {
       $('[id^=product_quantity]:first').val(${len(seats)});
     }
     % endif
+
     $('#payment_delivery_method_pair_id').change(function(){
       var shipping_address = $('.shipping-address');
       if ($.inArray(parseInt($(this).val()), ${form.payment_delivery_method_pair_id.sej_plugin_id}) == -1) {
@@ -37,6 +39,32 @@
         shipping_address.css('display', 'block');
       }
     }).change();
+
+    var reload_form = function(){
+      var modal = $('#modal-reserve');
+      var sales_segment_id = modal.find("select[name='sales_segment_id']");
+      var stock_holder_id = modal.find("select[name='stock_holder_id']");
+      modal.find('.modal-body .alert').remove();
+      var params = {performance_id: ${performance.id}, sales_segment_id: sales_segment_id.val(), stock_holder_id: stock_holder_id.val()};
+      $.ajax({
+        type: 'post',
+        url: '${request.route_path('orders.reserve.form.reload')}',
+        data: JSON.stringify(params),
+        dataType: 'html',
+        success: function(data) {
+          $('#modal-reserve').modal('hide');
+          $('#reserve-form').html(data);
+          $('#modal-reserve').modal({'backdrop':'static', 'keyboard':false});
+          $('#modal-reserve').modal('show');
+        },
+        error: function(xhr, text) {
+          $('#modal-reserve').find('.modal-body').prepend('<div class="alert alert-error"><ul>エラーが発生しました</ul></div>');
+        }
+      });
+    };
+    $("#modal-reserve select[name='sales_segment_id']").change(reload_form);
+    $("#modal-reserve select[name='stock_holder_id']").change(reload_form);
+
     $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-header')});
     $('#modal-reserve').disableOnSubmit();
 
@@ -159,31 +187,6 @@
         </tr>
       </table>
       % endif
-
-      <script type="text/javascript">
-        $(function(){
-          $("#modal-reserve select[name='sales_segment_id']").change(function(){
-            var modal = $('#modal-reserve');
-            modal.find('.modal-body .alert').remove();
-            var params = {performance_id: ${performance.id}, sales_segment_id: $(this).val()};
-            $.ajax({
-              type: 'post',
-              url: '${request.route_path('orders.reserve.form.reload')}',
-              data: JSON.stringify(params),
-              dataType: 'html',
-              success: function(data) {
-                $('#modal-reserve').modal('hide');
-                $('#reserve-form').html(data);
-                $('#modal-reserve').modal({'backdrop':'static', 'keyboard':false});
-                $('#modal-reserve').modal('show');
-              },
-              error: function(xhr, text) {
-                $('#modal-reserve').find('.modal-body').prepend('<div class="alert alert-error"><ul>エラーが発生しました</ul></div>');
-              }
-            });
-          });
-        });
-      </script>
       ${ch.form_item(form.sales_segment_id, class_='span10')}
       ${ch.form_item(form.payment_delivery_method_pair_id, class_='span10')}
       <div class="shipping-address">
@@ -208,7 +211,7 @@
         </div>
         ${ch.form_item(form.tel_1)}
       </div>
-
+      ${ch.form_item(form.stock_holder_id, class_='span10')}
       ${ch.form_item(form.sales_counter_payment_method_id, class_='span10')}
       <div class="control-group">
         <div class="controls">
