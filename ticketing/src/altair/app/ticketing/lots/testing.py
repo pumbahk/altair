@@ -29,7 +29,7 @@ class DummyStockerFactory(object):
 
 def _add_lots(session, product_data, membergroups):
 
-    from altair.app.ticketing.core.models import Organization, Event, SalesSegment, Performance, Venue, Site
+    from altair.app.ticketing.core.models import Organization, Event, SalesSegment, Performance, PerformanceSetting, Venue, Site
     
     #event = Event(id=1111)
     organization = Organization(code="test", short_name="test")
@@ -38,6 +38,8 @@ def _add_lots(session, product_data, membergroups):
                   organization=organization)
     performance = Performance(event=event, id=123, venue=venue, start_on=datetime(2013, 1, 1, 0, 0, 0))
     session.add(performance)
+    performance_setting = PerformanceSetting(performance=performance, entry_limit=1)
+    session.add(performance_setting)
     sales_segment = SalesSegment(id=12345)
     lot = _add_lot(session, event.id, sales_segment.id, 5, 3, membergroups=membergroups,
                    venue=venue)
@@ -69,7 +71,7 @@ def _create_products(session, values):
 def _add_lot(session, event_id, sales_segment_group_id, num_performances, num_stok_types, membergroups=[], num_products=3, venue=None):
     from . import models as m
     from altair.app.ticketing.core.models import (
-        Event, Performance, SalesSegment, StockType,
+        Event, Performance, PerformanceSetting, SalesSegment, StockType,
         PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair,
         Product,
     )
@@ -98,6 +100,8 @@ def _add_lot(session, event_id, sales_segment_group_id, num_performances, num_st
                         venue=venue)
         session.add(p)
         performances.append(p)
+        setting = PerformanceSetting(performance=p, entry_limit=1)
+        session.add(setting)
 
         for j in range(num_products):
             seat_stock_type = StockType()

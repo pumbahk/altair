@@ -174,7 +174,8 @@ class EntryLotViewTests(unittest.TestCase):
             params=data,
         )
         context = testing.DummyResource(event=lot.event, lot=lot,
-                                        organization=lot.event.organization)
+                                        organization=lot.event.organization,
+                                        check_entry_limit=lambda email: True)
         request.context = context
         target = self._makeOne(context, request)
         result = target.post()
