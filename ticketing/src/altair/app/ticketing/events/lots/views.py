@@ -7,7 +7,7 @@ from sqlalchemy import orm
 from pyramid.decorator import reify
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
-from pyramid.renderers import get_renderer
+from pyramid.renderers import get_renderer, render_to_response
 from pyramid_mailer import get_mailer
 from . import helpers as h
 import webhelpers.paginate as paginate
@@ -25,6 +25,7 @@ from altair.app.ticketing.core.models import (
     StockHolder,
     Stock,
     )
+from altair.app.ticketing.orders.forms import ClientOptionalForm
 from altair.app.ticketing.lots.models import (
     Lot,
     LotEntry,
@@ -418,7 +419,7 @@ class LotEntries(BaseView):
         slave_session = get_db_session(self.request, name="slave")
 
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
         #entries = lots_api.get_lot_entries_iter(lot.id)
         entries = CSVExporter(slave_session, lot.id)
@@ -526,7 +527,7 @@ class LotEntries(BaseView):
 
         # とりあえずすべて
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
         form = SearchEntryForm(formdata=self.request.params)
         form.wish_order.choices = [("", "")] + [(str(i), i + 1) for i in range(lot.limit_wishes)]
@@ -601,7 +602,7 @@ class LotEntries(BaseView):
     def import_accepted_entries(self):
 
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
         f = self.request.params['entries'].file
@@ -653,7 +654,7 @@ class LotEntries(BaseView):
                  xhr=True)
     def elect_entries_form(self):
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
         electing = Electing(lot, self.request)
         closer = LotCloser(lot, self.request)
@@ -669,7 +670,7 @@ class LotEntries(BaseView):
                  permission='event_viewer')
     def close_entries(self):
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
         closer = LotCloser(lot, self.request)
         closer.close()
@@ -686,7 +687,7 @@ class LotEntries(BaseView):
         """ 当選確定処理
         """
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
         lots_api.elect_lot_entries(self.request, lot.id)
@@ -705,7 +706,7 @@ class LotEntries(BaseView):
         """
         self.check_organization(self.context.event)
 
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
         lots_api.reject_lot_entries(self.request, lot.id)
@@ -745,7 +746,7 @@ class LotEntries(BaseView):
                  renderer="json")
     def reject_remains(self):
         """ 一括落選予定処理"""
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
         entries = lot.rejectable_entries
         rejecting_count = lots_api.submit_reject_entries(lot_id, entries)
@@ -767,7 +768,7 @@ class LotEntries(BaseView):
     def elect_all(self):
         """ 一括当選予定処理 """
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
+        lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
         if self.request.content_type.startswith('application/json'):
@@ -860,8 +861,7 @@ class LotEntries(BaseView):
         """ 申し込み番号指定での当選予定処理
         """
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = self.context.lot
 
         entry_no = self.request.params['entry_no']
         wish_order = self.request.params['wish_order']
@@ -897,8 +897,7 @@ class LotEntries(BaseView):
         """ 申し込み番号指定での落選予定処理
         """
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = self.context.lot
 
         entry_no = self.request.params['entry_no']
         lot_entry = lot.get_lot_entry(entry_no)
@@ -930,8 +929,7 @@ class LotEntries(BaseView):
 
 
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = self.context.lot
         # TODO: form
 
         entry_no = self.request.params['entry_no']
@@ -964,8 +962,7 @@ class LotEntries(BaseView):
         """ 申し込み番号指定での当選予定キャンセル処理
         """
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = self.context.lot
 
         entry_no = self.request.params['entry_no']
         wish_order = self.request.params['wish_order']
@@ -994,8 +991,7 @@ class LotEntries(BaseView):
         """ 申し込み番号指定での当選予定処理
         """
         self.check_organization(self.context.event)
-        lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = self.context.lot
 
         entry_no = self.request.params['entry_no']
 
@@ -1013,10 +1009,8 @@ class LotEntries(BaseView):
     def entry_show(self):
         self.check_organization(self.context.event)
         slave_session = get_db_session(self.request, name="slave")
-        lot_id = self.request.matchdict["lot_id"]
-        lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
-
-        entry_no = self.request.matchdict['entry_no']
+        entry_no = self.context.entry_no
+        lot = slave_session.query(Lot).join(LotEntry.lot).filter(LotEntry.entry_no==entry_no).one()
         lot_entry = lot.get_lot_entry(entry_no)
         shipping_address = lot_entry.shipping_address
         mail_form = SendingMailForm(recipient=shipping_address.email_1, 
@@ -1033,6 +1027,33 @@ class LotEntries(BaseView):
                 "shipping_address": shipping_address, 
                 "mail_form": mail_form}
 
+    @view_config(route_name='lots.entries.shipping_address.edit', request_method='GET', renderer='altair.app.ticketing:templates/orders/_form_shipping_address.html')
+    def edit_shipping_address_get(self):
+        return dict(form=ClientOptionalForm(obj=self.context.entry.shipping_address), action=self.request.current_route_path())
+
+    @view_config(route_name='lots.entries.shipping_address.edit', request_method='POST', renderer='altair.app.ticketing:templates/orders/_form_shipping_address.html')
+    def edit_shipping_address_post(self):
+        f = ClientOptionalForm(self.request.POST)
+        if f.validate():
+            entry = self.context.entry
+            shipping_address = entry.shipping_address
+            shipping_address.email_1 = f.email_1.data
+            shipping_address.email_2 = f.email_2.data
+            shipping_address.first_name = f.first_name.data
+            shipping_address.last_name = f.last_name.data
+            shipping_address.first_name_kana = f.first_name_kana.data
+            shipping_address.last_name_kana = f.last_name_kana.data
+            shipping_address.zip = f.zip.data
+            shipping_address.prefecture = f.prefecture.data
+            shipping_address.city = f.city.data
+            shipping_address.address_1 = f.address_1.data
+            shipping_address.address_2 = f.address_2.data
+            shipping_address.tel_1 = f.tel_1.data
+            shipping_address.fax = f.fax.data
+            shipping_address.save()
+            self.request.session.flash(u'配送情報を保存しました')
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+        return dict(form=f, action=self.request.current_route_path())
 
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
