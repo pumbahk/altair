@@ -19,7 +19,7 @@ from . import api
 from . import helpers as h
 from . import schemas
 from . import selectable_renderer
-from .exceptions import NotElectedException
+from .exceptions import NotElectedException, OverEntryLimitException, OverEntryLimitPerPerformanceException
 from .models import (
     LotEntry,
     LotEntryWish,
@@ -329,8 +329,13 @@ class EntryLotView(object):
 
         email = self.request.params.get('email_1')
         # 申込回数チェック
-        if not lot.check_entry_limit(email):
-            self.request.session.flash(u"抽選への申込は{0}回までとなっております。".format(lot.entry_limit))
+        try:
+            self.context.check_entry_limit(email)
+        except OverEntryLimitPerPerformanceException as e:
+            self.request.session.flash(u"公演「{0}」への申込は{1}回までとなっております。".format(e.performance_name, e.entry_limit))
+            return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
+        except OverEntryLimitException as e:
+            self.request.session.flash(u"抽選への申込は{0}回までとなっております。".format(e.entry_limit))
             return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
 
         entry_no = api.generate_entry_no(self.request, self.context.organization)

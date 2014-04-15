@@ -8,10 +8,12 @@ from pyramid.security import (
 )
 from pyramid.traversal import DefaultRootFactory
 from pyramid.decorator import reify
-from altair.app.ticketing.core.models import Event, Performance, Organization
+from sqlalchemy.sql import or_
+
+from altair.app.ticketing.core.models import Event, Performance, Organization, ShippingAddress
 from altair.app.ticketing.core import api as core_api
-from .exceptions import OutTermException
-from .models import Lot
+from .exceptions import OutTermException, OverEntryLimitException, OverEntryLimitPerPerformanceException
+from .models import Lot, LotEntry, LotEntryWish
 
 
 logger = logging.getLogger(__name__)
@@ -81,6 +83,29 @@ class LotResource(object):
             (Allow, "auth_type:%s" % self.lot.auth_type, 'lots'),
         ]
 
+    def check_entry_limit(self, email):
+        query = LotEntry.query.filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None)
+        query = query.filter(LotEntry.shipping_address_id==ShippingAddress.id)\
+                     .filter(or_(ShippingAddress.email_1==email,
+                                     ShippingAddress.email_2==email))
+        # 抽選単位での申込上限チェック
+        entry_limit = self.lot.entry_limit
+        if entry_limit > 0:
+            entry_count = query.count()
+            logger.info('Lot(id=%d): entry_limit=%r, entries=%d' % (self.lot.id, entry_limit, entry_count))
+            if entry_count >= entry_limit:
+                logger.info('entry_limit exceeded')
+                raise OverEntryLimitException(entry_limit=entry_limit)
+        # 公演単位での申込上限チェック
+        for performance in self.lot.performances:
+            entry_limit = performance.setting.entry_limit
+            if entry_limit > 0:
+                query_performance = query.join(LotEntryWish).filter(LotEntryWish.performance_id==performance.id)
+                entry_count = query_performance.count()
+                logger.info('Performance(id=%d): entry_limit=%r, entries=%d' % (performance.id, entry_limit, entry_count))
+                if entry_count >= entry_limit:
+                    logger.info('entry_limit exceeded')
+                    raise OverEntryLimitPerPerformanceException(performance_name=performance.name, entry_limit=entry_limit)
 
 class LotOptionSelectionResource(LotResource):
     def __init__(self, request):
