@@ -2125,7 +2125,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 for stock_holder in stock_holders:
                     if Stock.query.filter(
                         Stock.performance_id == performance.id,
-                        Stock.stock_type_id == stock_type.id, 
+                        Stock.stock_type_id == stock_type.id,
                         Stock.stock_holder_id == stock_holder.id) \
                         .with_entities(Stock.id).first() is None:
                         stock = Stock(
@@ -4079,9 +4079,9 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixi
     id = Column(Identifier, primary_key=True)
     event_id = Column(Identifier, ForeignKey('Event.id'))
 
-    performance_selector = Column(Unicode(255), doc=u"カートでの公演絞り込み方法")
-    performance_selector_label1_override = Column(Unicode(255), nullable=True)
-    performance_selector_label2_override = Column(Unicode(255), nullable=True)
+    performance_selector = AnnotatedColumn(Unicode(255), doc=u"カートでの公演絞り込み方法", _a_label=u'カートでの公演絞り込み方法', _a_visible_column=True)
+    performance_selector_label1_override = AnnotatedColumn(Unicode(255), nullable=True, _a_label=u'絞り込みラベル1', _a_visible_column=True)
+    performance_selector_label2_override = AnnotatedColumn(Unicode(255), nullable=True, _a_label=u'絞り込みラベル2', _a_visible_column=True)
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'), _a_visible_column=True)
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
 
