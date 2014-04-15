@@ -39,7 +39,7 @@
 <p>CDに封入されていた用紙記載の「IDナンバー」6桁を入力してください。</p>
 
 <div class="serialBox">
-<form action="${request.path}" method="post">
+<form action="${request.current_route_path()}" method="post">
 <input type="hidden" name="password" value="rakuten"/>
 <input type="text" name="username" size="6" class="serialno"><br>
 <input type="submit" value="申込に進む"  class="serialbtn">
