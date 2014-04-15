@@ -218,6 +218,12 @@ CUSTOMER_ID = 1000001
 @view_defaults(route_name='augus.augus_venue', decorator=with_bootstrap, permission='event_editor')
 class AugusVenueView(_AugusBaseView):
 
+    @view_config(route_name='augus.augus_venue.list', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/augus/augus_venues/list.html')
+    def list_(self):
+        augus_venues = AugusVenue.query.all()
+        return dict(augus_venues=augus_venues)
+
     @view_config(route_name='augus.augus_venue.index', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/augus_venues/index.html')
     def index(self):
