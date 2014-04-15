@@ -114,7 +114,7 @@ class FCAuthPlugin(object):
         logger.debug('authentication is required')
         request = get_current_request(environ)
         session = request.session.setdefault(SESSION_KEY, {})
-        session['return_url'] = wsgiref.util.request_uri(environ)
+        session['return_url'] = request.current_route_path(_query=request.GET)
         request.session.save()
         request = get_current_request(environ)
         return HTTPFound(location=login_url(request))

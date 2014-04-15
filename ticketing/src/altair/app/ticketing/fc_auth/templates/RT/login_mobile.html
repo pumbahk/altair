@@ -6,7 +6,7 @@
 </head>
 <body>
 <h1>楽天チケット</h1>
-<form action="${request.url}" method="post">
+<form action="${request.current_route_path()}" method="post">
   <div>
     <label for="form-field-username">ユーザ名</label>
     <input type="text" class="text" name="username" id="form-field-username" />
