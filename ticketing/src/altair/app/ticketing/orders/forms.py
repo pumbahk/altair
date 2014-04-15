@@ -214,20 +214,23 @@ class SearchFormBase(Form):
         choices=[],
         validators=[Optional()],
     )
-    start_on_from = DateField(
+    start_on_from = DateTimeField(
         label=u'公演日',
         validators=[Optional(), after1900],
         format='%Y-%m-%d',
         widget=OurDateWidget()
     )
-    start_on_to = DateField(
+    start_on_to = DateTimeField(
         label=u'公演日',
         validators=[Optional(), after1900],
         format='%Y-%m-%d',
         missing_value_defaults=dict(
             year=u'',
             month=Max,
-            day=Max
+            day=Max,
+            hour=Max,
+            minute=Max,
+            second=Max,
             ),
         widget=OurDateWidget()
     )
@@ -1058,7 +1061,7 @@ class SejRefundOrderForm(Form):
         label=u'その他払戻金額',
         validators=[Optional()],
     )
-            
+
 class SendingMailForm(Form):
     # subject = TextField(
     #     label=u"メールタイトル",
@@ -1083,8 +1086,8 @@ class SendingMailForm(Form):
 
 class TicketFormatSelectionForm(OurForm):
     ticket_format_id = BugFreeSelectField(
-        label=u"チケット様式", 
-        choices=[], 
+        label=u"チケット様式",
+        choices=[],
         coerce=long,
         validators=[Optional()],
     )
@@ -1102,9 +1105,9 @@ class TicketFormatSelectionForm(OurForm):
 
 class CheckedOrderTicketChoiceForm(Form):
     ticket_format_id = SelectField(
-        label=u"チケット様式", 
-        coerce=int, 
-        choices=[], 
+        label=u"チケット様式",
+        coerce=int,
+        choices=[],
     )
 
     def __init__(self, *args, **kwargs):
@@ -1148,7 +1151,7 @@ class CartSearchForm(SearchFormBase):
         ]
     )
 
-def OrderMemoEditFormFactory(N, memo_field_name_fmt="memo_on_order{}", 
+def OrderMemoEditFormFactory(N, memo_field_name_fmt="memo_on_order{}",
                                    memo_field_label_fmt=u"補助文言{}(最大20文字)"):
     attrs = {}
     for i in range(1, N+1):
