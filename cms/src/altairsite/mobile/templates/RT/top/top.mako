@@ -6,7 +6,7 @@
 <div align="center">楽天チケットへようこそ</div>
 <div>
 ├<a href="https://member.id.rakuten.co.jp/rms/mid/vc?__event=regist&c2=313131784">楽天会員登録 (無料)</a><br />
-├<a href="/order">購入履歴確認</a><br />
+├<a href="https://rt.tstar.jp/orderreview">購入履歴確認</a><br />
 └<a href="/information">中止・変更情報</a><br />
 </div>
 <br />
