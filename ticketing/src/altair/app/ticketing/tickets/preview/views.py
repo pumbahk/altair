@@ -592,7 +592,7 @@ class DownloadListOfPreviewImage(object):
 
 
     def create_zip_file_creator(self, zip_path, source_dir):
-        walk = ZipFileCreateRecursiveWalk(zip_path, source_dir)
+        walk = ZipFileCreateRecursiveWalk(zip_path, source_dir, flatten=True)
         expected_format = "<4s4B4HL2L5H2L"
         if expected_format == zipfile.structCentralDir:
             return walk

@@ -45,3 +45,26 @@ class ZipCreateTests(unittest.TestCase):
 	shutil.rmtree(source_dir)
         os.remove(zip_path)
 
+
+    def test_it_flatten(self):
+        source_dir = tempfile.mkdtemp()
+        writename = tempfile.mktemp(".zip")
+
+        self._create_files(source_dir)
+
+        zip_path = self._callFUT(writename, source_dir, flatten=True)
+
+        self.assertTrue(os.path.exists(zip_path))
+        self.assertTrue(zipfile.is_zipfile(zip_path))
+
+        ## 中身の確認
+        with zipfile.ZipFile(zip_path) as z:
+            ilist = z.infolist()
+            self.assertEqual(len(ilist), 3)
+
+            for i in ilist:
+                self.assertTrue(i.filename.endswith(("a.txt", "b.txt", "nested.txt")))
+
+	shutil.rmtree(source_dir)
+        os.remove(zip_path)
+

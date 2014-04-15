@@ -62,35 +62,70 @@ class ZipFileResponse(Response):
         if cache_max_age is not None:
             self.cache_expires = cache_max_age
 
+def get_absolute_path(name, curdir):
+    if os.path.isabs(name):
+        return name
+    else:
+        return os.path.join(curdir, name)
+
 class ZipFileCreateFromList(object):
-    def __init__(self, writename, files, curdir=None):
+    def __init__(self, writename, files, curdir=None, flatten=False):
         self.writename = writename
         self.files = files
-        self.curdir = curdir or os.path.curdir
+        self.curdir = curdir or os.getcwd()
+        self.flatten = flatten
+
+    def write_files_flatten(self, myzip, files):
+        cwd = os.path.abspath(os.getcwd())
+        try:
+            for f in self.files:
+                abspath = get_absolute_path(f, self.curdir)
+                os.chdir(os.path.dirname(abspath))
+                myzip.write(os.path.basename(abspath))
+        finally:
+            os.chdir(cwd)
+
+    def write_files(self, myzip, files):
+        for f in self.files:
+            abspath = get_absolute_path(f, self.curdir)
+            myzip.write(abspath)
 
     def __call__(self):
-        if os.path.isabs(self.writename):
-            path = self.writename
-        else:
-            path = os.path.join(self.curdir, self.writename)
+        path = get_absolute_path(self.writename, self.curdir)
         with zipfile.ZipFile(path, "w") as myzip:
-            for f in self.files:
-                myzip.write(os.path.join(self.curdir, f))
+            if self.flatten:
+                self.write_files_flatten(myzip, self.files)
+            else:
+                self.write_files(myzip, self.files)
         return path
 
 class ZipFileCreateRecursiveWalk(object):
-    def __init__(self, writename, rootdir, curdir=None):
+    def __init__(self, writename, rootdir, curdir=None, flatten=False):
         self.writename = writename
         self.rootdir = rootdir
         self.curdir = curdir or rootdir
+        self.flatten = flatten
 
-    def __call__(self):
-        if os.path.isabs(self.writename):
-            path = self.writename
-        else:
-            path = os.path.join(self.curdir, self.writename)
-        with zipfile.ZipFile(path, "w") as myzip:
+    def write_files_flatten(self, myzip):
+        cwd = os.path.abspath(os.getcwd())
+        try:
             for root, d, files in os.walk(self.rootdir):
                 for f in files:
-                    myzip.write(os.path.join(root, f))
+                    os.chdir(root)
+                    myzip.write(f)
+        finally:
+            os.chdir(cwd)
+
+    def write_files(self, myzip):
+        for root, d, files in os.walk(self.rootdir):
+            for f in files:
+                myzip.write(os.path.join(root, f))
+
+    def __call__(self):
+        path = get_absolute_path(self.writename, self.curdir)
+        with zipfile.ZipFile(path, "w") as myzip:
+            if self.flatten:
+                self.write_files_flatten(myzip)
+            else:
+                self.write_files(myzip)
         return path
