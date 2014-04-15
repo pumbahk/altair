@@ -12,13 +12,14 @@ from altairsite.mobile.core.helper import log_info, Markup
 from altairsite.mobile.core.disphelper import DispHelper
 from altairsite.mobile.core.eventhelper import EventHelper
 from altairsite.exceptions import UsersiteException
+from altairsite.separation import selectable_renderer
 
 
 class ValidationFailure(UsersiteException):
     pass
 
 @mobile_site_view_config(route_name='eventdetail', request_type="altairsite.tweens.IMobileRequest"
-    , renderer='altairsite.mobile:templates/eventdetail/eventdetail.mako')
+    , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/eventdetail/eventdetail.mako'))
 def move_eventdetail(request):
 
     log_info("move_eventdetail", "start")
@@ -53,6 +54,6 @@ def move_eventdetail(request):
     }
 
 @mobile_site_view_config(route_name='eventdetail', context=ValidationFailure
-    , request_type="altairsite.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')
+    , request_type="altairsite.tweens.IMobileRequest", renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/common/error.mako'))
 def failed_validation(request):
     return {}

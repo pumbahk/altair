@@ -9,15 +9,16 @@ from altairsite.mobile.core.helper import log_info
 from altairsite.mobile.core.eventhelper import EventHelper
 from altairsite.exceptions import UsersiteException
 from altaircms.page.models import MobileTag
+from altairsite.separation import selectable_renderer
 from .forms import MobileTagSearchForm
 
 class ValidationFailure(UsersiteException):
     pass
 
 @mobile_site_view_config(route_name='search', request_type="altairsite.tweens.IMobileRequest"
-    , renderer='altairsite.mobile:templates/searchresult/search.mako')
+    , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/searchresult/search.mako'))
 @mobile_site_view_config(route_name='genresearch', request_type="altairsite.tweens.IMobileRequest"
-    , renderer='altairsite.mobile:templates/searchresult/genresearch.mako')
+    , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/searchresult/genresearch.mako'))
 def search(request):
 
     log_info("search", "start")
@@ -65,7 +66,7 @@ def search(request):
     return {'form':form}
 
 @mobile_site_view_config(route_name='mobile_tag_search', request_type="altairsite.tweens.IMobileRequest"
-    , renderer='altairsite.mobile:templates/searchresult/mobile_tag_search_result.mako')
+    , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/searchresult/mobile_tag_search_result.mako'))
 def mobile_tag_search(request):
 
     log_info("mobile_tag_search", "start")
@@ -90,6 +91,6 @@ def mobile_tag_search(request):
 
 @mobile_site_view_config(route_name='mobile_tag_search', context=ValidationFailure
     , request_type="altairsite.tweens.IMobileRequest"
-    , renderer='altairsite.mobile:templates/common/error.mako')
+    , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/common/error.mako'))
 def failed_validation(request):
     return {}

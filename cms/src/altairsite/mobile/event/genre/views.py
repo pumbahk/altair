@@ -13,12 +13,13 @@ from altairsite.mobile.core.helper import exist_value
 from altairsite.mobile.core.helper import log_info
 from altairsite.mobile.core.eventhelper import EventHelper
 from altairsite.exceptions import UsersiteException
+from altairsite.separation import selectable_renderer
 
 class ValidationFailure(UsersiteException):
     pass
 
 @mobile_site_view_config(route_name='genre', request_type="altairsite.tweens.IMobileRequest"
-    , renderer='altairsite.mobile:templates/genre/genre.mako')
+    , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/genre/genre.mako'))
 def move_genre(request):
 
     log_info("move_genre", "start")
@@ -77,7 +78,7 @@ def move_genre(request):
     }
 
 @mobile_site_view_config(route_name='genre', context=ValidationFailure
-    , request_type="altairsite.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')
+    , request_type="altairsite.tweens.IMobileRequest", renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/common/error.mako'))
 def failed_validation(request):
     return {}
 

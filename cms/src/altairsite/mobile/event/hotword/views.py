@@ -10,12 +10,13 @@ from altairsite.mobile.core.helper import exist_value
 from altairsite.mobile.core.helper import get_week_map, get_event_paging
 from altairsite.mobile.core.helper import log_info
 from altairsite.exceptions import UsersiteException
+from altairsite.separation import selectable_renderer
 
 class ValidationFailure(UsersiteException):
     pass
 
 @mobile_site_view_config(route_name='hotword', request_type="altairsite.tweens.IMobileRequest"
-    , renderer='altairsite.mobile:templates/searchresult/hotword_result.mako')
+    , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/searchresult/hotword_result.mako'))
 def move_hotword(request):
 
     log_info("move_hotword", "start")
@@ -58,6 +59,6 @@ def move_hotword(request):
     return {'form':form}
 
 @mobile_site_view_config(route_name='hotword', context=ValidationFailure
-    , request_type="altairsite.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')
+    , request_type="altairsite.tweens.IMobileRequest", renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/common/error.mako'))
 def failed_validation(request):
     return {}

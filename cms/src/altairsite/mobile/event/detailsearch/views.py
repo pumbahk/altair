@@ -4,10 +4,11 @@ from altairsite.config import mobile_site_view_config
 from altairsite.mobile.event.detailsearch.forms import DetailSearchForm
 from altairsite.mobile.core.helper import get_event_paging, get_week_map, log_info
 from altairsite.mobile.core.searcher import create_event_searcher
+from altairsite.separation import selectable_renderer
 from datetime import date
 
 @mobile_site_view_config(route_name='detailsearchinit', request_type="altairsite.tweens.IMobileRequest"
-    , renderer='altairsite.mobile:templates/detailsearch/detailsearch.mako')
+    , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/detailsearch/detailsearch.mako'))
 def move_detailsearch(request):
 
     log_info("move_detailsearch", "start")
@@ -19,7 +20,7 @@ def move_detailsearch(request):
     return {'form':form}
 
 @mobile_site_view_config(route_name='detailsearch', request_type="altairsite.tweens.IMobileRequest"
-    , renderer='altairsite.mobile:templates/searchresult/detailsearch.mako')
+    , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/searchresult/detailsearch.mako'))
 def move_detailsearch_post(request):
 
     log_info("move_detailsearch_post", "start")
