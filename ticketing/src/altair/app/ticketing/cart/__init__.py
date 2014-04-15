@@ -131,7 +131,7 @@ def includeme(config):
     config.add_route('cart.info', 'performances/{performance_id}/sales_segment/{sales_segment_id}/info')
     config.add_route('cart.seats', 'performances/{performance_id}/sales_segment/{sales_segment_id}/seats')
     config.add_route('cart.seat_adjacencies', 'performances/{performance_id}/venues/{venue_id}/seat_adjacencies/{length_or_range}')
-    config.add_route('cart.venue_drawing', 'performancess/{performance_id}/venues/{venue_id}/drawing/{part}')
+    config.add_route('cart.venue_drawing', 'performances/{performance_id}/venues/{venue_id}/drawing/{part}')
     config.add_route('cart.products', 'events/{event_id}/sales_segment/{sales_segment_id}/seat_types/{seat_type_id}/products', factory='.resources.EventOrientedTicketingCartResource')
 
     config.add_route('cart.products2', 'performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types/{seat_type_id}/products')
@@ -289,8 +289,8 @@ def main(global_config, **local_config):
     config.include("altair.cdnpath")
     from altair.cdnpath import S3StaticPathFactory
     config.add_cdn_static_path(S3StaticPathFactory(
-            settings["s3.bucket_name"], 
-            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
+            settings["s3.bucket_name"],
+            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")),
             mapping={FC_AUTH_STATIC_ASSET_SPEC: FC_AUTH_URL_PREFIX}))
     config.add_static_view(STATIC_URL_PREFIX, STATIC_ASSET_SPEC, cache_max_age=3600)
 
@@ -335,9 +335,9 @@ def main(global_config, **local_config):
     config.scan()
 
     ## cmsとの通信
-    bind_communication_api(config, 
-                            "..api.impl.CMSCommunicationApi", 
-                            config.registry.settings["altair.cms.api_url"], 
+    bind_communication_api(config,
+                            "..api.impl.CMSCommunicationApi",
+                            config.registry.settings["altair.cms.api_url"],
                             config.registry.settings["altair.cms.api_key"]
                             )
 
@@ -345,7 +345,7 @@ def main(global_config, **local_config):
     config.include('altair.pyramid_assets')
     config.include('altair.pyramid_boto')
     config.include('altair.pyramid_boto.s3.assets')
-    
+
     ### preview
     config.include(".preview")
     app = config.make_wsgi_app()
