@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from decimal import Decimal
+import zipfile
 import sqlalchemy.orm as orm
 import json
 import base64
@@ -586,8 +587,27 @@ class DownloadListOfPreviewImage(object):
 
         ## zipfile作成
         zip_name = "preview_image_salessegment{0}.zip".format(sales_segment_id)
-        walk = ZipFileCreateRecursiveWalk(tempfile.mktemp(zip_name), source_dir)
+        walk = self.create_zip_file_creator(zip_name)
         return ZipFileResponse(walk, filename=zip_name)
+
+
+    def create_zip_file_creator(self, name, source_dir):
+        walk = ZipFileCreateRecursiveWalk(tempfile.mktemp(name), source_dir)
+        expected_format = "<4s4B4HL2L5H2L"
+        if expected_format == zipfile.structCentralDir:
+            return walk
+        else:
+            ## xxx: workaround for supporting ticketing.sej.zip_file's monkey patching
+            def execute():
+                original_format = zipfile.structCentralDir
+                try:
+                    logger.warn("zipfile.structCentralDir is not {0}. overwrite it".format(expected_format))
+                    zipfile.structCentralDir = expected_format
+                    walk()
+                finally:
+                    logger.info("zipfile.structCentralDir setting is revived.({0})".format(original_format))
+                    zipfile.structCentralDir = original_format
+            return execute
 
 
     def assertion(self, performance_id, organization):
