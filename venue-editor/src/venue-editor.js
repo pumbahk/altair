@@ -526,17 +526,17 @@
     var self = this;
     var seats;
     var target_seats;
+    var target_seats_keys = [];
     if (metadata) {
       seats = this.seats;
       target_seats = metadata.seats;
+      target_seats_keys = _.intersect(Object.keys(this.shapes), Object.keys(target_seats))
     } else {
       seats = {};
       target_seats = this.shapes;
-    }
-
-    var target_seats_keys = [];
-    for (var ts in target_seats) {
-      if (target_seats.hasOwnProperty(ts)) target_seats_keys.push(ts);
+      for (var ts in target_seats) {
+        if (target_seats.hasOwnProperty(ts)) target_seats_keys.push(ts);
+      }
     }
     var total_count = target_seats_keys.length;
     var count = 0;
