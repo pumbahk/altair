@@ -399,7 +399,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       var form = modal.find('form');
       form.attr('action', 'javascript:loadAllSeat();');
       form.find('input[type=submit]').val('全ての座席を表示');
-      var message = '予約済み/予約確保中の座席を含め、全ての座席を表示します。<br>この処理は時間がかかる場合があります。よろしいですか？';
+      var message = '予約済み/予約中の座席を含め、全ての購入可能な座席を表示します。<br>この処理は時間がかかる場合があります。よろしいですか？';
       modal.find('.message').html('<p>' + message + '</p>');
       modal.modal('toggle');
     } else if (uiFilter == 'vacant') {
