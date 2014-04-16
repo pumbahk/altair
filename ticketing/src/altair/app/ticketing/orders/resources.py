@@ -35,6 +35,7 @@ from altair.app.ticketing.mailmags.models import(
     )
 from .forms import (
     OrderForm,
+    OrderReserveForm,
     OrderRefundForm,
     OrderMemoEditFormFactory,
     ClientOptionalForm,
@@ -114,6 +115,10 @@ class OrderShowFormProvider(object):
     def get_order_form(self):
         order = self.order        
         return OrderForm(record_to_multidict(order))
+
+    def get_order_reserve_form(self):
+        order = self.order        
+        return OrderReserveForm(performance_id=order.performance_id, request=self.context.request)
 
     def get_order_refund_form(self):
         order = self.order        
