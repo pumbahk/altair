@@ -314,4 +314,5 @@ class Multicheckout3DAPI(object):
         return self.request.params['MD']
 
 
-
+def remove_default_session():
+    m._session.remove()

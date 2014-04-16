@@ -4,8 +4,6 @@ from pyramid.interfaces import IRequest
 from zope.interface import alsoProvides
 
 def _setup_db(modules=[], echo=False):
-    #from .logicaldeleting import install
-    #install()
     resolver = DottedNameResolver()
     from sqlalchemy import create_engine
     engine = create_engine("sqlite:///")

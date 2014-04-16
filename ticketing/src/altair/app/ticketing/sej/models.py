@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from altair.app.ticketing.models import BaseModel, LogicallyDeleted, WithTimestamp, MutationDict, JSONEncodedDict, Identifier
+from altair.models import LogicallyDeleted, WithTimestamp, Identifier
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Date, ForeignKey, Enum, DECIMAL, Binary, UniqueConstraint
-from sqlalchemy.orm import relationship, join, column_property, mapper, backref
+from sqlalchemy.orm import relationship, join, column_property, mapper, backref, scoped_session, sessionmaker
 from sqlalchemy.orm.session import object_session
 from sqlalchemy.sql.expression import asc
 from zope.interface import implementer
@@ -11,8 +11,10 @@ from datetime import datetime
 from altair.app.ticketing.utils import StandardEnum
 from .interfaces import ISejTenant
 
-session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
+
+# 内部トランザクション用
+_session = scoped_session(sessionmaker())
 
 class SejPaymentType(StandardEnum):
     # 01:代引き
@@ -53,7 +55,7 @@ class SejOrderUpdateReason(StandardEnum):
 code_from_update_reason = dict((enum_.v, enum_) for enum_ in SejOrderUpdateReason)
 
 
-class SejTicketTemplateFile(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+class SejTicketTemplateFile(Base, WithTimestamp, LogicallyDeleted):
     __tablename__           = 'SejTicketTemplateFile'
     id                      = Column(Identifier, primary_key=True)
     status                  = Column(Enum('1', '2', '3', '4'))
@@ -66,7 +68,7 @@ class SejTicketTemplateFile(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     sent_at                 = Column(DateTime)
 
 
-class SejRefundEvent(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+class SejRefundEvent(Base, WithTimestamp, LogicallyDeleted):
     __tablename__           = 'SejRefundEvent'
     id                      = Column(Identifier, primary_key=True)
     available = Column(Integer)
@@ -92,7 +94,7 @@ class SejRefundEvent(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     sent_at = Column(DateTime, nullable=True)
 
 
-class SejRefundTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+class SejRefundTicket(Base, WithTimestamp, LogicallyDeleted):
     __tablename__               = 'SejRefundTicket'
     id                          = Column(Identifier, primary_key=True)
     refund_event_id             = Column(Identifier, ForeignKey("SejRefundEvent.id"), nullable=True)
@@ -107,7 +109,7 @@ class SejRefundTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     sent_at = Column(DateTime, nullable=True)
 
 
-class SejFile(BaseModel, WithTimestamp, LogicallyDeleted, Base):
+class SejFile(Base, WithTimestamp, LogicallyDeleted):
     __tablename__           = 'SejFile'
     id                      = Column(Identifier, primary_key=True)
     notification_type       = Column(Enum('91', '51', '61', '92', '94', '95', '96'))
@@ -116,7 +118,7 @@ class SejFile(BaseModel, WithTimestamp, LogicallyDeleted, Base):
     file_url                = Column(String(255))
 
 
-class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+class SejOrder(Base, WithTimestamp, LogicallyDeleted):
     __tablename__           = 'SejOrder'
     __table_args__= (
         UniqueConstraint('order_no', 'branch_no'),
@@ -267,10 +269,10 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
             )
 
     @classmethod
-    def branches(cls, order_no):
-        return cls.query.filter_by(order_no=order_no).order_by(asc(cls.branch_no)).all()
+    def branches(cls, order_no, session=_session):
+        return session.query(cls).filter_by(order_no=order_no).order_by(asc(cls.branch_no)).all()
 
-class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+class SejTicket(Base, WithTimestamp, LogicallyDeleted):
     __tablename__           = 'SejTicket'
 
     id                      = Column(Identifier, primary_key=True)

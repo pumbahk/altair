@@ -111,6 +111,8 @@ class Testget_auth_orders(unittest.TestCase):
             ])
 
     def tearDown(self):
+        from altair.multicheckout.api import remove_default_session
+        remove_default_session()
         _teardown_db()
 
     def _callFUT(self, *args, **kwargs):
@@ -293,6 +295,8 @@ class Testrun(unittest.TestCase):
         self.config = testing.setUp()
 
     def tearDown(self):
+        from altair.multicheckout.api import remove_default_session
+        remove_default_session()
         testing.tearDown()
 
     def _callFUT(self, *args, **kwargs):

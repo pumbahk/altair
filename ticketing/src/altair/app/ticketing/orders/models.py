@@ -27,9 +27,7 @@ from altair.app.ticketing.users.models import (
     Membership,
     UserCredential,
 )
-from altair.app.ticketing.sej.models import (
-    SejOrder,
-)
+from altair.app.ticketing.sej.api import get_sej_order
 from altair.app.ticketing.models import (
     Base,
 )
@@ -386,7 +384,7 @@ class OrderSummary(Base):
 
     @property
     def sej_order(self):
-        return SejOrder.query.filter_by(order_no=self.order_no).order_by(desc(SejOrder.branch_no)).first()
+        return get_sej_order(order_no)
 
     def _shipping_address(self):
         if self.shipping_address_id is None:

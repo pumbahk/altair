@@ -1910,6 +1910,12 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
         self.performance.start_on = datetime(2012, 4, 1, 0, 0, 0)
         self.session.flush()
 
+    def tearDown(self):
+        testing.tearDown()
+        self.session.remove()
+        from altair.app.ticketing.sej.api import remove_default_session
+        remove_default_session()
+        _teardown_db()
 
     @property
     def _payment_plugin_id(self):
@@ -1995,11 +2001,6 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
 
             carts[payment_type] = cart
         return carts
-
-    def tearDown(self):
-        testing.tearDown()
-        self.session.remove()
-        _teardown_db()
 
     def _create_sej_order(self, order, payment_type):
         from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejTicketType, SejPaymentType

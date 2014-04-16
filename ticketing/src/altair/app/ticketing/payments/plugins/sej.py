@@ -26,15 +26,13 @@ from altair.app.ticketing.mails.interfaces import (
 )
 
 from altair.app.ticketing.utils import clear_exc
-from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 
 from altair.app.ticketing.sej import userside_api
-from altair.app.ticketing.sej.api import get_sej_order, create_sej_order, build_sej_tickets_from_dicts
 from altair.app.ticketing.sej.exceptions import SejErrorBase
 from altair.app.ticketing.sej.ticket import SejTicketDataXml
 from altair.app.ticketing.sej.models import SejOrder, SejPaymentType, SejTicketType, SejOrderUpdateReason
-from altair.app.ticketing.sej.payment import request_order, request_update_order
+from altair.app.ticketing.sej.api import do_sej_order, refresh_sej_order, build_sej_tickets_from_dicts, create_sej_order, get_sej_order
 from altair.app.ticketing.sej.utils import han2zen
 
 from altair.app.ticketing.tickets.convert import convert_svg
@@ -153,10 +151,8 @@ def refresh_order(request, tenant, order, update_reason):
         setattr(new_sej_order, k, v)
     new_sej_order.total_ticket_count = new_sej_order.ticket_count = len(new_sej_order.tickets)
 
-    DBSession.add(new_sej_order)
-
     try:
-        request_update_order(
+        refresh_sej_order(
             request,
             tenant=tenant,
             sej_order=new_sej_order,
@@ -242,7 +238,7 @@ class SejPaymentPlugin(object):
                 request,
                 **build_sej_args(SejPaymentType.PrepaymentOnly, cart, current_date)
                 )
-            request_order(
+            do_sej_order(
                 request,
                 tenant=tenant,
                 sej_order=sej_order
@@ -296,7 +292,7 @@ class SejDeliveryPlugin(object):
                 tickets=tickets,
                 **build_sej_args(SejPaymentType.Paid, cart, current_date)
                 )
-            request_order(
+            do_sej_order(
                 request,
                 tenant=tenant,
                 sej_order=sej_order
@@ -346,7 +342,7 @@ class SejPaymentDeliveryPlugin(object):
                 tickets=tickets,
                 **build_sej_args(SejPaymentType.CashOnDelivery, cart, current_date)
                 )
-            request_order(
+            do_sej_order(
                 request,
                 tenant=tenant,
                 sej_order=sej_order

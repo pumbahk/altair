@@ -5,9 +5,10 @@
 """
 import transaction
 import logging
-from altair import multicheckout
+from altair.multicheckout import multicheckout_session
 from altair.mq.decorators import task_config
 from altair.sqlahelper import named_transaction
+from altair.app.ticketing.sej import sej_session
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,8 @@ class WorkerResource(object):
         return self.message.params.get('cart_id')
 
 @task_config(root_factory=WorkerResource, consumer="cart", queue="cart")
-@multicheckout.multicheckout_session
+@multicheckout_session
+@sej_session
 def cart_release(context, message):
     from .models import Cart
     from altair.app.ticketing.models import DBSession

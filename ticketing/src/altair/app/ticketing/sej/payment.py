@@ -26,9 +26,6 @@ from .models import (
 from .exceptions import SejServerError, SejError
 from .interfaces import ISejPaymentAPICommunicatorFactory
 from .payload import build_sej_datetime_without_second, build_sej_date
-import sqlahelper
-
-DBSession = sqlahelper.get_session()
 
 logger = logging.getLogger(__name__)
 
@@ -275,8 +272,7 @@ def request_order(request_or_registry, tenant, sej_order):
             continue
         ticket.barcode_number = barcode_number
 
-    DBSession.add(sej_order)
-    DBSession.flush()
+    return sej_order
 
 def request_cancel_order(request_or_registry, tenant, sej_order, now=None):
     '''

@@ -73,7 +73,7 @@ class TestCreateRefundZipFile(unittest.TestCase):
     def test_no_refund_event(self):
         from datetime import datetime
         from ..zip_file import EnhZipFile
-        self._callFUT(now=datetime(2014, 1, 1, 0, 0, 0), work_dir=self.work_dir)
+        self._callFUT(self.session, now=datetime(2014, 1, 1, 0, 0, 0), work_dir=self.work_dir)
         refund_event_file_name = '20140101_TPBKOEN.dat'
         refund_ticket_file_name = '20140101_TPBTICKET.dat'
         self.assertTrue(os.path.exists(os.path.join(self.work_dir, 'archive.txt')))
@@ -86,7 +86,7 @@ class TestCreateRefundZipFile(unittest.TestCase):
         from datetime import datetime
         from ..zip_file import EnhZipFile
         self._setup_fixtures(sent_at=datetime(2014, 1, 1, 0, 0, 0), prefix='TT', num_events=3, num_tickets=5)
-        self._callFUT(now=datetime(2014, 1, 1, 0, 0, 0), work_dir=self.work_dir)
+        self._callFUT(self.session, now=datetime(2014, 1, 1, 0, 0, 0), work_dir=self.work_dir)
         refund_event_file_name = '20140101_TPBKOEN.dat'
         refund_ticket_file_name = '20140101_TPBTICKET.dat'
         self.assertTrue(os.path.exists(os.path.join(self.work_dir, 'archive.txt')))
@@ -120,7 +120,7 @@ class TestCreateRefundZipFile(unittest.TestCase):
         self._setup_fixtures(sent_at=datetime(2014, 1, 1, 6, 0, 0), prefix='TB', num_events=7, num_tickets=3)
         self._setup_fixtures(sent_at=datetime(2014, 1, 2, 0, 0, 0), prefix='TC', num_events=11, num_tickets=7)
         self._setup_fixtures(sent_at=datetime(2014, 1, 2, 6, 0, 0), prefix='TD', num_events=13, num_tickets=11)
-        self._callFUT(now=datetime(2014, 1, 1, 6, 0, 0), work_dir=self.work_dir)
+        self._callFUT(self.session, now=datetime(2014, 1, 1, 6, 0, 0), work_dir=self.work_dir)
         refund_event_file_name = '20140102_TPBKOEN.dat'
         refund_ticket_file_name = '20140102_TPBTICKET.dat'
         self.assertTrue(os.path.exists(os.path.join(self.work_dir, 'archive.txt')))

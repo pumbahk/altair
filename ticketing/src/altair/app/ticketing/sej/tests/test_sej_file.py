@@ -5,7 +5,6 @@ import os
 
 from pyramid import testing
 
-from ..ticket import SejTicketDataXml
 from ..utils import JavaHashMap
 
 class SejTestFile(unittest.TestCase):
