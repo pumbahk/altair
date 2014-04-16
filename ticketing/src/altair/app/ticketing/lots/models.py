@@ -224,22 +224,6 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def is_finished(self):
         return self.status == int(LotStatusEnum.Elected)
 
-    def check_entry_limit(self, email):
-        if self.entry_limit <= 0:
-            return True
-
-        return LotEntry.query.filter(
-            LotEntry.lot_id==self.id
-        ).filter(
-            LotEntry.shipping_address_id==c_models.ShippingAddress.id
-        ).filter(
-            LotEntry.canceled_at==None
-        ).filter(
-            sql.or_(c_models.ShippingAddress.email_1==email,
-                    c_models.ShippingAddress.email_2==email)
-        ).count() < self.entry_limit
-
-
     ## gaaaaa! this name must be `elect_wishes`!
     def electing_wishes(self, entry_wishes):
         """ 当選予定申込希望 """
@@ -403,8 +387,8 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'LotEntry'
 
     id = sa.Column(Identifier, primary_key=True)
-
     entry_no = sa.Column(sa.Unicode(20), unique=True, doc=u"抽選申し込み番号")
+    channel = sa.Column(sa.Integer, nullable=True)
 
     # 抽選
     lot_id = sa.Column(Identifier, sa.ForeignKey('Lot.id'))

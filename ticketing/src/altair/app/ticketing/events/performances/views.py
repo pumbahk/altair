@@ -348,6 +348,7 @@ class Performances(BaseView):
                 Performance(
                     setting=PerformanceSetting(
                         order_limit=f.order_limit.data,
+                        entry_limit=f.entry_limit.data,
                         max_quantity_per_user=f.max_quantity_per_user.data
                         ),
                     event_id=self.context.event.id
@@ -385,6 +386,7 @@ class Performances(BaseView):
             venue_id=performance.venue.id
             )
         f.order_limit.data = performance.setting and performance.setting.order_limit
+        f.entry_limit.data = performance.setting and performance.setting.entry_limit
         f.max_quantity_per_user.data = performance.setting and performance.setting.max_quantity_per_user
         if is_copy:
             f.original_id.data = f.id.data
@@ -421,6 +423,7 @@ class Performances(BaseView):
                 if performance.setting is None:
                     performance.setting = PerformanceSetting()
                 performance.setting.order_limit = f.order_limit.data
+                performance.setting.entry_limit = f.entry_limit.data
                 performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
             else:
                 try:
@@ -444,6 +447,7 @@ class Performances(BaseView):
                 if performance.setting is None:
                     performance.setting = PerformanceSetting()
                 performance.setting.order_limit = f.order_limit.data
+                performance.setting.entry_limit = f.entry_limit.data
                 performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
 
             performance.save()

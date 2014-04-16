@@ -8,12 +8,12 @@ from .forms import OrderInfoDefault, SubjectInfo, SubjectInfoWithValue
 from altair.app.ticketing.cart import helpers as ch ##
 from .interfaces import IPurchaseInfoMail
 from zope.interface import implementer
-from .api import create_or_update_mailinfo,  create_fake_order, get_mail_setting_default, get_appropriate_message_part
+from .api import create_or_update_mailinfo,  create_fake_order, get_mail_setting_default, get_appropriate_message_part, get_default_contact_reference
 
 logger = logging.getLogger(__name__)
 
 class OrderCancelInfoDefault(OrderInfoDefault):
-    def get_shipping_address_info(order):
+    def get_shipping_address_info(request, order):
         sa = order.shipping_address
         if sa is None:
             return u"inner"
@@ -30,14 +30,19 @@ class OrderCancelInfoDefault(OrderInfoDefault):
 {prefecture} {city}
 {address_1} {address_2}""".format(**params)
 
-    ordered_from = SubjectInfo(name=u"ordered_from", label=u"販売会社", getval=lambda order: order.ordered_from.name)
-    payment_method = SubjectInfo(name=u"payment_method", label=u"支払方法",  getval=lambda order: order.payment_delivery_pair.payment_method.name)
-    delivery_method = SubjectInfo(name=u"delivery_method", label=u"引取方法",  getval=lambda order: order.payment_delivery_pair.delivery_method.name)
+    ordered_from = SubjectInfo(name=u"ordered_from", label=u"販売会社", getval=lambda request, order: order.ordered_from.name)
+    payment_method = SubjectInfo(name=u"payment_method", label=u"支払方法",  getval=lambda request, order: order.payment_delivery_pair.payment_method.name)
+    delivery_method = SubjectInfo(name=u"delivery_method", label=u"引取方法",  getval=lambda request, order: order.payment_delivery_pair.delivery_method.name)
     address = SubjectInfo(name="address", label=u"送付先", getval=get_shipping_address_info)
-    def get_contact(order):
+    def get_contact(request, order):
+        # XXX: 本来は recipient の情報を含んだ context を SubjectInfoRenderer
+        # のコンストラクタが受け取って、それをここまで引き回すべきである
+        emails = order.shipping_address.emails if order.shipping_address else None
+        recipient = emails[0] if len(emails) > 0 else None
+        contact_ref = get_default_contact_reference(request, order.ordered_from, recipient)
         return u"""\
 %s
-商品、決済・発送に関するお問い合わせ %s""" % (order.ordered_from.name, order.ordered_from.contact_email)
+商品、決済・発送に関するお問い合わせ %s""" % (order.ordered_from.name, contact_ref)
     contact = SubjectInfo(name=u"contact", label=u"お問い合わせ", getval=get_contact)
 
     cancel_reason_default=u"""\
@@ -46,7 +51,7 @@ class OrderCancelInfoDefault(OrderInfoDefault):
 """
     ## getvalが文字列の場合は、input formになり文言を変更できる
     cancel_reason = SubjectInfoWithValue(name="cancel_reason", label=u"キャンセル理由", 
-                                       getval=lambda order: OrderCancelInfoDefault.cancel_reason_default, value=cancel_reason_default)
+                                       getval=lambda request, order: OrderCancelInfoDefault.cancel_reason_default, value=cancel_reason_default)
     
 def get_subject_info_default():
     return OrderCancelInfoDefault()
@@ -64,7 +69,7 @@ class CancelMail(object):
                 u'ご注文キャンセルについて 【{organization}】'.format(organization=organization.name))
 
     def get_mail_sender(self, request, organization, traverser):
-        return (traverser.data["sender"] or organization.contact_email)
+        return (traverser.data["sender"] or organization.setting.default_mail_sender)
 
     def validate(self, order):
         if not order.shipping_address or not order.shipping_address.email_1:
@@ -95,7 +100,7 @@ class CancelMail(object):
     def _body_tmpl_vars(self, request, order, traverser):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
-        info_renderder = SubjectInfoRenderer(order, traverser.data, default_impl=OrderCancelInfoDefault)
+        info_renderder = SubjectInfoRenderer(request, order, traverser.data, default_impl=OrderCancelInfoDefault)
         title=order.performance.event.title
         value = dict(h=ch, 
                      order=order,

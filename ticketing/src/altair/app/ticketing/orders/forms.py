@@ -209,20 +209,23 @@ class SearchFormBase(Form):
         choices=[],
         validators=[Optional()],
     )
-    start_on_from = DateField(
+    start_on_from = DateTimeField(
         label=u'公演日',
         validators=[Optional(), after1900],
         format='%Y-%m-%d',
         widget=OurDateWidget()
     )
-    start_on_to = DateField(
+    start_on_to = DateTimeField(
         label=u'公演日',
         validators=[Optional(), after1900],
         format='%Y-%m-%d',
         missing_value_defaults=dict(
             year=u'',
             month=Max,
-            day=Max
+            day=Max,
+            hour=Max,
+            minute=Max,
+            second=Max,
             ),
         widget=OurDateWidget()
     )
@@ -443,10 +446,8 @@ class SalesSegmentGroupSearchForm(Form):
 class OrderReserveForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
-
-        if 'request' in kwargs:
-            self.request = kwargs['request']
+        super(OrderReserveForm, self).__init__(formdata, obj, prefix, **kwargs)
+        self.request = kwargs.pop('request', None)
 
         if 'performance_id' in kwargs:
             performance = Performance.get(kwargs['performance_id'])
@@ -457,12 +458,11 @@ class OrderReserveForm(Form):
                 query = query.join(ProductItem).filter(ProductItem.stock_id.in_(kwargs['stocks']))
 
             sales_segments = set(product.sales_segment for product in query.distinct())
-            from pyramid.threadlocal import get_current_request
             from altair.viewhelpers.datetime_ import create_date_time_formatter, DateTimeHelper
             self.sales_segment_id.choices = [
-                (sales_segment.id, u'%s %s' % (sales_segment.name, DateTimeHelper(create_date_time_formatter(get_current_request())).term(sales_segment.start_at, sales_segment.end_at)))
+                (sales_segment.id, u'%s %s' % (sales_segment.name, DateTimeHelper(create_date_time_formatter(self.request)).term(sales_segment.start_at, sales_segment.end_at)))
                 for sales_segment in \
-                    core_helpers.build_sales_segment_list_for_inner_sales(sales_segments)
+                    core_helpers.build_sales_segment_list_for_inner_sales(sales_segments, request=self.request)
                 ]
 
             if 'sales_segment_id' in kwargs and kwargs['sales_segment_id']:
@@ -1031,7 +1031,7 @@ class SejRefundOrderForm(Form):
         label=u'その他払戻金額',
         validators=[Optional()],
     )
-            
+
 class SendingMailForm(Form):
     # subject = TextField(
     #     label=u"メールタイトル",
@@ -1056,8 +1056,8 @@ class SendingMailForm(Form):
 
 class TicketFormatSelectionForm(OurForm):
     ticket_format_id = BugFreeSelectField(
-        label=u"チケット様式", 
-        choices=[], 
+        label=u"チケット様式",
+        choices=[],
         coerce=long,
         validators=[Optional()],
     )
@@ -1075,9 +1075,9 @@ class TicketFormatSelectionForm(OurForm):
 
 class CheckedOrderTicketChoiceForm(Form):
     ticket_format_id = SelectField(
-        label=u"チケット様式", 
-        coerce=int, 
-        choices=[], 
+        label=u"チケット様式",
+        coerce=int,
+        choices=[],
     )
 
     def __init__(self, *args, **kwargs):
@@ -1121,7 +1121,7 @@ class CartSearchForm(SearchFormBase):
         ]
     )
 
-def OrderMemoEditFormFactory(N, memo_field_name_fmt="memo_on_order{}", 
+def OrderMemoEditFormFactory(N, memo_field_name_fmt="memo_on_order{}",
                                    memo_field_label_fmt=u"補助文言{}(最大20文字)"):
     attrs = {}
     for i in range(1, N+1):

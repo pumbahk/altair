@@ -114,6 +114,9 @@ ${shipping.address_2}
 % elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 4:
 <div>QRコード</div>
 ${h.render_delivery_finished_viewlet(request, order)}
+% else:
+<div>${order.payment_delivery_pair.delivery_method.name}</div>
+${h.render_delivery_finished_viewlet(request, order)}
 %endif
 % endif
 <div>

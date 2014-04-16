@@ -44,12 +44,17 @@ class SejTestFile(unittest.TestCase):
             webob.util.status_reasons[800] = 'OK'
 
             from ..payment import request_fileget
-            from ..models import SejNotificationType
+            from ..models import SejNotificationType, ThinSejTenant
             from ..file import SejInstantPaymentFileParser
+            tenant = ThinSejTenant(
+                shop_id=u'30520',
+                inticket_api_url=u"http://127.0.0.1:18090",
+                api_key=u'E6PuZ7Vhe7nWraFW',   
+                )
             file = request_fileget(
+                tenant=tenant,
                 date=datetime.datetime(2011,9,12),
-                notification_type=SejNotificationType.InstantPaymentInfo,
-                hostname=u"http://127.0.0.1:18090")
+                notification_type=SejNotificationType.InstantPaymentInfo)
             dummy_server.poll()
             self.assertEqual(dummy_server.request.body, "X_shop_id=30520&xcode=71493542957ed71cc35e0f8810e018a9&X_data_type=91&X_date=20110912")
             self.assertEqual(dummy_server.request.method, "POST")

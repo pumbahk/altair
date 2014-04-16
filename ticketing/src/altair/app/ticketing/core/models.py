@@ -55,10 +55,11 @@ from altair.app.ticketing.models import (
 )
 from standardenum import StandardEnum
 from altair.app.ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
-from altair.app.ticketing.sej.api import get_sej_order
 from altair.app.ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode, todate, todatetime
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.sej import api as sej_api
+from altair.app.ticketing.sej import userside_api
+from altair.app.ticketing.sej.interfaces import ISejTenant
 from altair.app.ticketing.venues.interfaces import ITentativeVenueSite
 from .utils import ApplicableTicketsProducer
 
@@ -1083,6 +1084,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 # 関連テーブルのticket_bundle_idを書き換える
                 for old_id, new_id in convert_map['ticket_bundle'].iteritems():
                     ProductItem.query.filter(and_(ProductItem.ticket_bundle_id==old_id, ProductItem.performance_id==performance.id)).update({'ticket_bundle_id':new_id})
+            # コピーされた販売区分グループの持つ販売区分のmembergroupに propagate する必要がある (refs #7784)
+            for sales_segment_group_id in convert_map['sales_segment_group'].values():
+                sales_segment_group = SalesSegmentGroup.query.filter_by(id=sales_segment_group_id).one()
+                sales_segment_group.sync_member_group_to_children()
         else:
             """
             Eventの作成時は以下のモデルを自動生成する
@@ -2002,6 +2007,24 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         stock_holder.save()
         return {template.id:stock_holder.id}
 
+    def num_seats(self, performance_id=None, sale_only=False):
+        # 同一Performanceの同一StockHolderにおけるStock.quantityの合計
+        query = Stock.filter_by(stock_holder_id=self.id).with_entities(func.sum(Stock.quantity))
+        if performance_id:
+            query = query.filter_by(performance_id=performance_id)
+            if sale_only:
+                query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
+        return query.scalar()
+
+    def rest_num_seats(self, performance_id=None, sale_only=False):
+        # 同一Performanceの同一StockHolderにおけるStockStatus.quantityの合計
+        query = Stock.filter(Stock.stock_holder_id==self.id).join(Stock.stock_status).with_entities(func.sum(StockStatus.quantity))
+        if performance_id:
+            query = query.filter(Stock.performance_id==performance_id)
+            if sale_only:
+                query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
+        return query.scalar()
+
 # stock based on quantity
 class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Stock"
@@ -2090,7 +2113,10 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for performance in performances:
             for stock_type in stock_types:
                 # StockHolderのないStockType毎のStockを生成
-                if not [stock for stock in performance.stocks if stock.stock_type_id == stock_type.id]:
+                if Stock.query.filter(
+                    Stock.performance_id == performance.id,
+                    Stock.stock_type_id == stock_type.id) \
+                    .with_entities(Stock.id).first() is None:
                     stock = Stock(
                         performance_id=performance.id,
                         stock_type_id=stock_type.id,
@@ -2101,9 +2127,11 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
                 # Performance × StockType × StockHolder分のStockを生成
                 for stock_holder in stock_holders:
-                    def stock_filter(stock):
-                        return (stock.stock_type_id == stock_type.id and stock.stock_holder_id == stock_holder.id)
-                    if not filter(stock_filter, performance.stocks):
+                    if Stock.query.filter(
+                        Stock.performance_id == performance.id,
+                        Stock.stock_type_id == stock_type.id,
+                        Stock.stock_holder_id == stock_holder.id) \
+                        .with_entities(Stock.id).first() is None:
                         stock = Stock(
                             performance_id=performance.id,
                             stock_type_id=stock_type.id,
@@ -2644,6 +2672,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def sej_order(self):
+        from altair.app.ticketing.sej.api import get_sej_order
         return get_sej_order(self.order_no)
 
     @property
@@ -2684,12 +2713,17 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def is_inner_channel(self):
         return self.channel in self.inner_channels()
 
-    def can_change_status(self, status):
-        # 決済ステータスはインナー予約のみ変更可能
+    def payment_status_changable(self, status):
         if status == 'paid':
-            return (self.status == 'ordered' and self.payment_status == 'unpaid' and self.is_inner_channel)
+            if self.payment_status == 'paid':
+                return True
+            # 入金済への決済ステータスは窓口支払のみ変更可能
+            return (self.status == 'ordered' and self.payment_status == 'unpaid' and self.payment_delivery_pair.payment_method.payment_plugin_id == plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID)
         elif status == 'unpaid':
-            return (self.status == 'ordered' and self.payment_status == 'paid' and self.is_inner_channel)
+            if self.payment_status == 'unpaid':
+                return True
+            # 未入金への決済ステータスは、窓口支払もしくはインナー予約のみ変更可能
+            return (self.status == 'ordered' and self.payment_status == 'paid' and (self.payment_delivery_pair.payment_method.payment_plugin_id ==  plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID or self.is_inner_channel))
         else:
             return False
 
@@ -2735,6 +2769,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             ppid = self.payment_delivery_pair.payment_method.payment_plugin_id
         if not ppid:
             return False
+
+        tenant = userside_api.lookup_sej_tenant(request, self.organization_id)
 
         # インナー予約の場合はAPI決済していないのでスキップ
         # ただしコンビニ決済はインナー予約でもAPIで通知しているので処理する
@@ -2821,13 +2857,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             # 未入金ならコンビニ決済のキャンセル通知
             if self.payment_status == 'unpaid':
-                result = sej_api.cancel_sej_order(sej_order, self.organization_id, now)
+                result = sej_api.cancel_sej_order(sej_order, tenant, now)
                 if not result:
                     return False
 
             # 入金済み、払戻予約ならコンビニ決済の払戻通知
             elif self.payment_status in ['paid', 'refunding']:
-                result = sej_api.refund_sej_order(sej_order, self.organization_id, self, now)
+                result = sej_api.refund_sej_order(sej_order, tenant, self, now)
                 if not result:
                     return False
 
@@ -2844,7 +2880,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             sej_order = self.sej_order
             # SejAPIでエラーのケースではSejOrderはつくられないのでスキップ
             if sej_order:
-                result = sej_api.cancel_sej_order(sej_order, self.organization_id)
+                result = sej_api.cancel_sej_order(sej_order, tenant, now)
                 if not result:
                     logger.info('SejOrder (order_no=%s) cancel error' % self.order_no)
                     return False
@@ -2939,15 +2975,20 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for product in self.items:
             product.release()
 
-    def change_status(self, status):
-        if self.can_change_status(status):
-            if status == 'paid':
-                self.mark_paid()
-            if status == 'unpaid':
-                self.paid_at = None
-            self.save()
-            return True
+    def change_payment_status(self, status):
+        if self.payment_status_changable(status):
+            if self.payment_status != status:
+                if status == 'paid':
+                    self.mark_paid()
+                if status == 'unpaid':
+                    self.paid_at = None
+                self.save()
+                return True
         return False
+
+    @deprecation.deprecate(u"change_payment_statusを使ってほしい")
+    def change_status(self, status):
+        return self.change_payment_status(status)
 
     def delivered(self):
         if self.can_deliver():
@@ -3613,7 +3654,7 @@ class MailTypeEnum(StandardEnum):
     PointGrantingFailureMail = 21
     BoosterPurchaseCompleteMail = 31
 
-MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール", u"抽選申し込み完了メール", u"抽選当選通知メール", u"抽選落選通知メール", u"ポイント付与失敗通知メール", u"購入完了メール")
+MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール", u"抽選申し込み完了メール", u"抽選当選通知メール", u"抽選落選通知メール", u"ポイント付与失敗通知メール", u"ブースター購入完了メール")
 assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
 MailTypeChoices = [(str(e) , label) for e, label in zip([enum.v for enum in sorted(iter(MailTypeEnum), key=lambda e: e.v)], MailTypeLabels)]
 MailTypeEnum.dict = dict(MailTypeChoices)
@@ -4020,6 +4061,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     point_rate = AnnotatedColumn(Float, nullable=True, _a_label=u"付与ポイントデフォルト値 (率)")
 
     bcc_recipient = AnnotatedColumn(Unicode(255), nullable=True, _a_label=u"BCC受信者")
+    default_mail_sender = AnnotatedColumn(Unicode(255), _a_label=u"デフォルトの送信元メールアドレス")
     entrust_separate_seats = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"バラ席のおまかせが有効", _a_label=u"おまかせ座席選択でバラ席を許可する")
     notify_point_granting_failure = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"ポイント付与失敗時のメール通知on/off", _a_label=u"ポイント付与失敗時のメール通知を有効にする")
 
@@ -4041,9 +4083,9 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixi
     id = Column(Identifier, primary_key=True)
     event_id = Column(Identifier, ForeignKey('Event.id'))
 
-    performance_selector = Column(Unicode(255), doc=u"カートでの公演絞り込み方法")
-    performance_selector_label1_override = Column(Unicode(255), nullable=True)
-    performance_selector_label2_override = Column(Unicode(255), nullable=True)
+    performance_selector = AnnotatedColumn(Unicode(255), doc=u"カートでの公演絞り込み方法", _a_label=u'カートでの公演絞り込み方法', _a_visible_column=True)
+    performance_selector_label1_override = AnnotatedColumn(Unicode(255), nullable=True, _a_label=u'絞り込みラベル1', _a_visible_column=True)
+    performance_selector_label2_override = AnnotatedColumn(Unicode(255), nullable=True, _a_label=u'絞り込みラベル2', _a_visible_column=True)
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'), _a_visible_column=True)
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
 
@@ -4075,6 +4117,7 @@ class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted,
     disp_agreement = AnnotatedColumn(Boolean, default=True, _a_label=_(u'規約の表示／非表示'))
     agreement_body = AnnotatedColumn(UnicodeText, _a_label=_(u"規約内容"), default=u"")
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
+    sales_counter_selectable = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'窓口業務で閲覧可能'))
 
     @classmethod
     def create_from_template(cls, template, **kwargs):
@@ -4095,6 +4138,7 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     disp_agreement = AnnotatedColumn(Boolean, default=True, _a_label=_(u'規約の表示／非表示'))
     agreement_body = AnnotatedColumn(UnicodeText, _a_label=_(u"規約内容"), default=u"")
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
+    sales_counter_selectable = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'窓口業務で閲覧可能'))
 
     use_default_order_limit = Column(Boolean)
     use_default_max_quantity_per_user = Column(Boolean)
@@ -4102,6 +4146,7 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     use_default_display_seat_no = Column(Boolean)
     use_default_disp_agreement = Column(Boolean)
     use_default_agreement_body = Column(Boolean)
+    use_default_sales_counter_selectable = Column(Boolean)
 
     @property
     def super(self):
@@ -4130,6 +4175,7 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Setti
     id = Column(Identifier, primary_key=True)
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'), _a_visible_column=True)
+    entry_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'申込回数制限'), _a_visible_column=True)
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
 
     @property
@@ -4148,6 +4194,21 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Setti
         setting = cls.clone(template)
         setting.save() # XXX
         return setting
+
+
+@implementer(ISejTenant)
+class SejTenant(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
+    __tablename__           = 'SejTenant'
+    id                      = Column(Identifier, primary_key=True)
+    shop_name               = Column(String(12))
+    shop_id                 = Column(String(12))
+    contact_01              = Column(String(128))
+    contact_02              = Column(String(255))
+    api_key                 = Column(String(255), nullable=True)
+    inticket_api_url        = Column(String(255), nullable=True)
+
+    organization_id         = Column(Identifier)
+
 
 # move to altair.app.ticketing.orders.models
 class ImportStatusEnum(StandardEnum):

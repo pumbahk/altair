@@ -202,10 +202,10 @@ if 'mailinfo' in sort:
   if not order.shipping_address:
     sort.remove('mailinfo')
 if 'paid' in sort:
-  if not order.can_change_status('paid'):
+  if not (order.payment_status != 'paid' and order.payment_status_changable('paid')):
     sort.remove('paid')
 if 'unpaid' in sort:
-  if not order.can_change_status('unpaid'):
+  if not (order.payment_status != 'unpaid' and order.payment_status_changable('unpaid')):
     sort.remove('unpaid')
 if 'cancel' in sort:
   if not order.can_cancel():

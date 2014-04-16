@@ -14,6 +14,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.response import Response
 from pyramid.url import route_path
 from pyramid.settings import asbool
+from pyramid.security import has_permission, ACLAllowed
 from sqlalchemy import and_, distinct
 from sqlalchemy.sql import exists, join, func, or_, not_
 from sqlalchemy.sql.expression import asc, desc
@@ -25,7 +26,11 @@ from altair.pyramid_boto.s3.assets import IS3KeyProvider
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
-from altair.app.ticketing.core.models import Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SalesSegment, SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType, ProductItem, Product, Performance, Event, SeatIndexType, SeatIndex
+from altair.app.ticketing.core.models import (
+    Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SeatStatusEnum, SalesSegment, SalesSegmentSetting,
+    SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType,
+    ProductItem, Product, Performance, Event, SeatIndexType, SeatIndex
+)
 from altair.app.ticketing.venues.forms import SiteForm
 from altair.app.ticketing.venues.export import SeatCSV
 from altair.app.ticketing.venues.api import get_venue_site_adapter
@@ -96,9 +101,11 @@ def get_seats(request):
     filter_params = set() if _filter_params is None else set(_filter_params.split(u'|'))
     sales_segment_id = request.params.get(u'sales_segment_id', None)
     loaded_at = request.params.get(u'loaded_at', None)
+    load_all_seat = request.params.get(u'load_all_seat', None)
     sale_only = (u'sale_only' in filter_params)
     if loaded_at:
         loaded_at = datetime.fromtimestamp(float(loaded_at))
+    permit_operator = isinstance(has_permission('event_editor', request.context, request), ACLAllowed)
 
     retval = {}
 
@@ -116,11 +123,14 @@ def get_seats(request):
         if loaded_at:
             query = query.filter(or_(Seat.updated_at>loaded_at, SeatStatus.updated_at>loaded_at))
         elif sale_only:
+            if not load_all_seat:
+                query = query.filter(SeatStatus.status==SeatStatusEnum.Vacant.v)
+            query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id))
+            query = query.join(Product).join(SalesSegment).distinct()
             if sales_segment_id:
-                query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id))
-                query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
-            else:
-                query = query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
+                query = query.filter(SalesSegment.id==sales_segment_id)
+            if not permit_operator:
+                query = query.join(SalesSegmentSetting).filter(SalesSegmentSetting.sales_counter_selectable==True)
         for l0_id, name, seat_no, stock_id, status in query:
             seats_data[l0_id] = {
                 'id': l0_id,
@@ -143,8 +153,11 @@ def get_seats(request):
         if loaded_at:
             query = query.join(StockStatus).filter(StockStatus.updated_at>loaded_at)
         elif sale_only:
+            query = query.join(Product).join(SalesSegment)
             if sales_segment_id:
-                query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id)
+                query = query.filter(SalesSegment.id==sales_segment_id)
+            if not permit_operator:
+                query = query.join(SalesSegmentSetting).filter(SalesSegmentSetting.sales_counter_selectable==True)
             query = query.having(func.count(ProductItem.id)>0)
         query = query.group_by(Stock.id)
         for (stock, count) in query:
@@ -164,10 +177,14 @@ def get_seats(request):
 
     if u'stock_types' in necessary_params:
         query = DBSession.query(StockType).filter_by(event=venue.performance.event).order_by(StockType.display_order)
-        if sales_segment_id:
+        if sale_only:
             query = query.join(Stock, and_(Stock.performance_id==venue.performance_id, Stock.stock_type_id==StockType.id))
             query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
-            query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
+            query = query.join(Product).join(SalesSegment).distinct()
+            if sales_segment_id:
+                query = query.filter(SalesSegment.id==sales_segment_id)
+            if not permit_operator:
+                query = query.join(SalesSegmentSetting).filter(SalesSegmentSetting.sales_counter_selectable==True)
         if loaded_at:
             query = query.filter(StockType.updated_at>loaded_at)
         retval[u'stock_types'] = [
@@ -182,10 +199,14 @@ def get_seats(request):
 
     if u'stock_holders' in necessary_params:
         query = DBSession.query(StockHolder).filter_by(event=venue.performance.event).options(undefer(StockHolder.style))
-        if sales_segment_id:
+        if sale_only:
             query = query.join(Stock, and_(Stock.performance_id==venue.performance_id, Stock.stock_holder_id==StockHolder.id))
             query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
-            query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
+            query = query.join(Product).join(SalesSegment).distinct()
+            if sales_segment_id:
+                query = query.filter(SalesSegment.id==sales_segment_id)
+            if not permit_operator:
+                query = query.join(SalesSegmentSetting).filter(SalesSegmentSetting.sales_counter_selectable==True)
         if loaded_at:
             query = query.filter(StockHolder.updated_at>loaded_at)
         retval[u'stock_holders'] = [

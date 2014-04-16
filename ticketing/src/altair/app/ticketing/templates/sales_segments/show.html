@@ -75,6 +75,10 @@ function get_selected_sales_segment_id() {
       <td>${u'対象' if sales_segment.reporting else u'×対象外'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(SalesSegmentSetting.sales_counter_selectable)}</th>
+      <td>${u'対象' if sales_segment.setting.sales_counter_selectable else u'対象外'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(SalesSegment.auth3d_notice)}</th>
       <td>${sales_segment.auth3d_notice or u'(なし)'}</td>
     </tr>

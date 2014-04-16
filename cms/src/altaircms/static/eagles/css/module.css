@@ -1,0 +1,358 @@
+﻿
+ul.schedule-tab-index {
+  text-align: center;
+}
+
+ul.schedule-tab-index li {
+	font-size: 18px;
+	display: inline-block;
+	margin: 0 1px;
+}
+ul.schedule-tab-index li a {
+  color: #000;
+  text-decoration: none;
+  border-top: 1px solid #999;
+  border-left: 1px solid #999;
+  border-right: 1px solid #999;
+  padding: 5px 20px;
+    border-top-left-radius: 8px; 
+    -webkit-border-top-left-radius: 8px;
+    -moz-border-top-left-radius: 8px;
+    border-top-right-radius: 8px; 
+    -webkit-border-top-right-radius: 8px;
+    -moz-border-top-right-radius: 8px;  
+}
+ul.schedule-tab-index li a:hover {
+	background: #ce7580;
+	color: #FFF;
+	font-weight: bold;
+}
+ul.schedule-tab-index li.on {
+	color: #FFF;
+	font-weight: bold;
+  background: #bb3b4b;
+}
+ul.schedule-tab-index li.on a {
+	color: #FFF;
+	font-weight: bold;
+  background: #bb3b4b;
+}
+
+
+
+.schedule-tab-contents { background: #bb3b4b; padding: 5px; margin: 0 0 10px 0; }
+
+.schedule-tab-contents table {
+	clear: both;
+	borde-top: 1px solid #bb3b4b !important;
+	border-left: 1px solid #bb3b4b !important;
+}
+.schedule-tab-contents table th,
+.schedule-tab-contents table td {
+	clear: both;
+	border-bottom: 1px solid #bb3b4b !important;
+	border-right: 1px solid #bb3b4b !important;
+	padding: 3px !important;
+}
+.schedule-tab-contents table col.col01 { width: 17%; }
+.schedule-tab-contents table col.col02 { width: 10%; }
+.schedule-tab-contents table col.col03 { width: 13%; }
+.schedule-tab-contents table col.col04 { width: 15%; }
+.schedule-tab-contents table col.col05 { width: 15%; }
+.schedule-tab-contents table col.col06 { width: 10%; }
+.schedule-tab-contents table col.col07 { width: 10%; }
+.schedule-tab-contents table col.col08 { width: 10%; }
+
+.schedule-tab-contents th {
+  background: #870011;
+  font-size: 12px;
+}
+.schedule-tab-contents td.day-sat {
+  background: #dadaed;
+  color: #474a99;
+}
+.schedule-tab-contents td.day-sun {
+  background: #f9d9dc;
+  color: #d70419;
+}
+
+.schedleTicketBtn01,
+.schedleTicketBtn02,
+.schedleTicketBtn03{
+	border-radius:6px;
+	text-indent:0;
+	display:inline-block;
+	font-family:Arial;
+	font-size:12px;
+	font-weight:bold;
+	font-style:normal;
+	line-height:25px;
+	width:55px;
+	height: 40px;
+	text-decoration:none;
+	text-align:center;
+	line-height: 40px;
+}
+.schedleTicketBtn04,
+.schedleTicketBtn05,
+.schedleTicketBtn06{
+	border-radius:6px;
+	text-indent:0;
+	display:inline-block;
+	font-family:Arial;
+	font-size:14px;
+	font-weight:bold;
+	font-style:normal;
+	height:20px;
+	line-height:25px;
+	width:105px;
+	height: 24px;
+	text-decoration:none;
+	text-align:center;
+	margin: 1px;
+}
+.schedleTicketBtn01 {
+	-moz-box-shadow:inset 0px 1px 0px 0px #f9eca0;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #f9eca0;
+	box-shadow:inset 0px 1px 0px 0px #f9eca0;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ffd876), color-stop(1, #febb46) );
+	background:-moz-linear-gradient( center top, #ffd876 5%, #febb46 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffd876', endColorstr='#febb46');
+	background-color:#febb46;
+	border:1px solid #f5b144;
+	color: #630;
+	text-shadow:1px 1px 0px #FFCC99;
+}
+.schedleTicketBtn02 {
+	-moz-box-shadow:inset 0px 1px 0px 0px #e2f2c5;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #e2f2c5;
+	box-shadow:inset 0px 1px 0px 0px #e2f2c5;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #cae284), color-stop(1, #a5cd5b) );
+	background:-moz-linear-gradient( center top, #cae284 5%, #a5cd5b 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#cae284', endColorstr='#a5cd5b');
+	background-color:#a5cd5b;
+	border:1px solid #83a44d;
+	color: #360;
+	text-shadow:1px 1px 0px #e2f2c5;
+}
+.schedleTicketBtn03 {
+	-moz-box-shadow:inset 0px 1px 0px 0px #cbedf9;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #cbedf9;
+	box-shadow:inset 0px 1px 0px 0px #cbedf9;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #93dced), color-stop(1, #61bfe5) );
+	background:-moz-linear-gradient( center top, #93dced 5%, #61bfe5 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#93dced', endColorstr='#61bfe5');
+	background-color:#61bfe5;
+	border:1px solid #4997bb;
+	color: #036;
+	text-shadow:1px 1px 0px #cbedf9;
+}
+.schedleTicketBtn04 {
+	-moz-box-shadow:inset 0px 1px 0px 0px #CABCCE;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #CABCCE;
+	box-shadow:inset 0px 1px 0px 0px #CABCCE;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #CABCCE), color-stop(1, #9D86A3) );
+	background:-moz-linear-gradient( center top, #CABCCE 5%, #9D86A3 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#CABCCE', endColorstr='#9D86A3');
+	background-color:#61bfe5;
+	border:1px solid #805989;
+	color: #5E3668;
+	text-shadow:1px 1px 0px #CABCCE;
+}
+.schedleTicketBtn05 {
+	-moz-box-shadow:inset 0px 1px 0px 0px #DC143C;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #DC143C;
+	/*box-shadow:inset 0px 1px 0px 0px #CABCCE;*/
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #DC143C), color-stop(1, #8B0000) );
+	background:-moz-linear-gradient( center top, #DC143C 5%, #8B0000 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#DC143C', endColorstr='#9D86A3');
+	background-color:#8B0000;
+	border:1px solid #8B0000;
+	color: #FFFFFF;
+	text-shadow:1px 1px 0px #DC143C;
+}
+.schedleTicketBtn06 {
+	-moz-box-shadow:inset 0px 1px 0px 0px #808080;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #808080;
+	box-shadow:inset 0px 1px 0px 0px #808080;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #808080), color-stop(1, #C0C0C0) );
+	background:-moz-linear-gradient( center top, #808080 5%, #C0C0C0 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#808080', endColorstr='#9D86A3');
+	background-color:#C0C0C0;
+	border:1px solid #C0C0C0;
+	color: #FFFFFF;
+	/*text-shadow:1px 1px 0px #C0C0C0;*/
+}
+.schedleTicketBtn01:hover {
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #f2ab1e), color-stop(1, #ffcc00) );
+	background:-moz-linear-gradient( center top, #f2ab1e 5%, #ffcc00 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#f2ab1e', endColorstr='#ffcc00');
+	background-color:#f2ab1e;
+	color: #630;
+}
+.schedleTicketBtn02:hover {
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #a5cd5b), color-stop(1, #cae284) );
+	background:-moz-linear-gradient( center top, #a5cd5b 5%, #cae284 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#a5cd5b', endColorstr='#cae284');
+	background-color:#44adc6;
+	color:#360;
+}
+.schedleTicketBtn03:hover {
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #61bfe5), color-stop(1, #93dced) );
+	background:-moz-linear-gradient( center top, #61bfe5 5%, #93dced 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#61bfe5', endColorstr='#93dced');
+	background-color:#f2ab1e;
+	color:#036;
+}
+.schedleTicketBtn04:hover {
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #9D86A3), color-stop(1, #CABCCE) );
+	background:-moz-linear-gradient( center top, #9D86A3 5%, #CABCCE 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#9D86A3', endColorstr='#CABCCE');
+	background-color:#f2ab1e;
+	color:#5E3668;
+}
+.schedleTicketBtn05:hover {
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #8B0000), color-stop(1, #DC143C) );
+	background:-moz-linear-gradient( center top, #8B0000 5%, #DC143C 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#8B0000', endColorstr='#DC143C');
+	background-color:#f2ab1e;
+	color:#FFD700;
+}
+.schedleTicketBtn06:hover 
+	{
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #C0C0C0), color-stop(1, #808080) );
+	background:-moz-linear-gradient( center top, #C0C0C0 5%, #808080 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#C0C0C0', endColorstr='#808080');
+	background-color:#f2ab1e;
+	color:#FFFFFF;
+	}
+.schedleTicketBtn01:active,
+.schedleTicketBtn02:active,
+.schedleTicketBtn03:active,
+.schedleTicketBtn04:active,
+.schedleTicketBtn05:active,
+.schedleTicketBtn06:active{
+	position:relative;
+	top:1px;
+}
+img.ring
+	{
+	width: 60px;
+	height: 60px;
+	}
+	
+img.fanuni
+	{
+	width: 60px;
+	height: 60px;
+	}
+	
+img.undameshi
+	{
+	width: 100px;
+	height: 50px;
+	}	
+
+img.undameshi2
+	{
+	width: 200px;
+	height: 100px;
+	}	
+
+
+img.shima
+	{
+	width: 200px;
+	height: 250px;
+	}	
+
+img.bobble
+	{
+	width: 200px;
+	height: 180px;
+	}
+	
+img.kouryu
+	{
+	width: 250px;
+	height: 125px;
+	}
+
+img.ballticket
+	{
+	width: 247px;
+	height: 146px;
+	}
+
+img.ballticket2
+	{
+	width: 100px;
+	height: 60px;
+	}
+
+img.myhero
+	{
+	width: 100px;
+	}
+
+/* btn ----- */
+.kikakubtn {
+	font-size:18px;
+	font-family:Arial Black;
+	font-weight:bold;
+	-moz-border-radius:8px;
+	-webkit-border-radius:8px;
+	border-radius:42px;
+	border:5px solid #FFFFFF;
+	padding:3px 3px;
+	text-decoration:none;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(73%, #FF4000), color-stop(32%, #D90000) );	
+	background:-moz-linear-gradient( center top, #FF4000 73%, #D90000 5% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#FF4000', endColorstr='#D90000');
+	background-color:#fe1a00;
+	color:#ffffff;
+	display:inline-block;
+	text-shadow:0px 0px 0px #b23e35;
+ 	-webkit-box-shadow:inset 0px -50px 0px 0px #D90000;
+ 	-moz-box-shadow:inset 0px -50px 0px 0px #D90000;
+ 	box-shadow:inset 0px -50px 0px 0px #D90000;
+ 	width: 260px;
+ 	height: 60px;	
+}
+
+.kikakubtn:hover {
+	background:-moz-linear-gradient( center top, #730e05 73%, #fe1a00 32% );
+	background:-ms-linear-gradient( top, #730e05 73%, #fe1a00 32% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#730e05', endColorstr='#fe1a00');
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(73%, #730e05), color-stop(32%, #fe1a00) );
+	background-color:#730e05;
+}
+.kikakubtn:active {
+	position:relative;
+	top:1px;
+}
+
+.ticketIndex {
+	width:860px;
+	margin: 0 auto;
+	padding-bottom: 20px;
+}
+
+.ticketIndex h3 {
+	background: #F90;
+	font-weigfht: bold;
+	font-size: 18px;
+	border: none;
+	color: #630;
+}
+
+.ticketIndex ul li {
+	float: left;
+	width: 280px;
+	text-align: center;
+	margin: 0 3px 5px 3px;
+}
+.ticketIndex ul li p {
+	line-height: 100%;
+	margin-bottom: 8px;
+}

@@ -161,6 +161,11 @@ class SalesSegmentAccessor(object):
             has_use_default=True,
             use_default_default=True
             ),
+        "sales_counter_selectable": dict(
+            setting=True,
+            has_use_default=True,
+            use_default_default=True
+            ),
         "payment_delivery_method_pairs": dict(
             has_use_default=True,
             use_default_default=True

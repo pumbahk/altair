@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import unittest
 import mock
 from altair.app.ticketing.testing import _setup_db, _teardown_db
@@ -599,11 +600,14 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
         self.config = testing.setUp(settings={
             'altair.sej.template_file': ''
             })
+        from altair.app.ticketing.sej.models import ThinSejTenant
+        from altair.app.ticketing.sej.userside_interfaces import ISejTenantLookup
         self.config.include('altair.app.ticketing.renderers')
         self.config.include('altair.app.ticketing.payments')
         self.config.include('altair.app.ticketing.payments.plugins')
         self.session = _setup_db(['altair.app.ticketing.core.models'])
         from .models import SalesSegmentGroup, OrganizationSetting
+        self.config.registry.registerUtility(lambda request, organization_id: ThinSejTenant(), ISejTenantLookup) # 強引に上書きしている
         CoreTestMixin.setUp(self)
         self.stock_types = self._create_stock_types(1)
         self.stocks = self._create_stocks(self.stock_types)
@@ -729,3 +733,266 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
                     self.assertTrue(self.sej_refund_sej_order.called)
                 self.assertTrue(target.is_canceled(), description)
 
+    def test_payment_status_changable_unpaid_non_inner(self):
+        from datetime import datetime
+        for payment_plugin_id in self.payment_plugins.values():
+            if payment_plugin_id != self.payment_plugins['reserve_number']:
+                for delivery_plugin_id in self.delivery_plugins.values():
+                    target = self._makeOne(
+                        organization_id=self.organization.id,
+                        payment_delivery_pair=self._create_payment_delivery_method_pair(payment_plugin_id, delivery_plugin_id),
+                        total_amount=0,
+                        system_fee=0,
+                        transaction_fee=0,
+                        delivery_fee=0,
+                        paid_at=None
+                        )
+                    self.assertFalse(target.payment_status_changable('paid'))
+                    self.assertTrue(target.payment_status_changable('unpaid'))
+
+        for delivery_plugin_id in self.delivery_plugins.values():
+            target = self._makeOne(
+                organization_id=self.organization.id,
+                payment_delivery_pair=self._create_payment_delivery_method_pair(self.payment_plugins['reserve_number'], delivery_plugin_id),
+                total_amount=0,
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0,
+                paid_at=None
+                )
+            self.assertTrue(target.payment_status_changable('paid'))
+            self.assertTrue(target.payment_status_changable('unpaid'))
+
+    def test_payment_status_changable_unpaid_inner(self):
+        from datetime import datetime
+        for payment_plugin_id in self.payment_plugins.values():
+            if payment_plugin_id != self.payment_plugins['reserve_number']:
+                for delivery_plugin_id in self.delivery_plugins.values():
+                    target = self._makeOne(
+                        channel=3,
+                        organization_id=self.organization.id,
+                        payment_delivery_pair=self._create_payment_delivery_method_pair(payment_plugin_id, delivery_plugin_id),
+                        total_amount=0,
+                        system_fee=0,
+                        transaction_fee=0,
+                        delivery_fee=0,
+                        paid_at=None
+                        )
+                    self.assertFalse(target.payment_status_changable('paid'))
+                    self.assertTrue(target.payment_status_changable('unpaid'))
+
+        for delivery_plugin_id in self.delivery_plugins.values():
+            target = self._makeOne(
+                channel=3,
+                organization_id=self.organization.id,
+                payment_delivery_pair=self._create_payment_delivery_method_pair(self.payment_plugins['reserve_number'], delivery_plugin_id),
+                total_amount=0,
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0,
+                paid_at=None
+                )
+            self.assertTrue(target.payment_status_changable('paid'))
+            self.assertTrue(target.payment_status_changable('unpaid'))
+
+    def test_payment_status_changable_paid_non_inner(self):
+        from datetime import datetime
+        for payment_plugin_id in self.payment_plugins.values():
+            if payment_plugin_id != self.payment_plugins['reserve_number']:
+                for delivery_plugin_id in self.delivery_plugins.values():
+                    target = self._makeOne(
+                        organization_id=self.organization.id,
+                        payment_delivery_pair=self._create_payment_delivery_method_pair(payment_plugin_id, delivery_plugin_id),
+                        total_amount=0,
+                        system_fee=0,
+                        transaction_fee=0,
+                        delivery_fee=0,
+                        paid_at=datetime(2014, 1, 1, 0, 0, 0)
+                        )
+                    self.assertTrue(target.payment_status_changable('paid'))
+                    self.assertFalse(target.payment_status_changable('unpaid'))
+
+        for delivery_plugin_id in self.delivery_plugins.values():
+            target = self._makeOne(
+                organization_id=self.organization.id,
+                payment_delivery_pair=self._create_payment_delivery_method_pair(self.payment_plugins['reserve_number'], delivery_plugin_id),
+                total_amount=0,
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0,
+                paid_at=datetime(2014, 1, 1, 0, 0, 0)
+                )
+            self.assertTrue(target.payment_status_changable('paid'))
+            self.assertTrue(target.payment_status_changable('unpaid'))
+
+    def test_payment_status_changable_paid_inner(self):
+        from datetime import datetime
+        for payment_plugin_id in self.payment_plugins.values():
+            if payment_plugin_id != self.payment_plugins['reserve_number']:
+                for delivery_plugin_id in self.delivery_plugins.values():
+                    target = self._makeOne(
+                        channel=3,
+                        organization_id=self.organization.id,
+                        payment_delivery_pair=self._create_payment_delivery_method_pair(payment_plugin_id, delivery_plugin_id),
+                        total_amount=0,
+                        system_fee=0,
+                        transaction_fee=0,
+                        delivery_fee=0,
+                        paid_at=datetime(2014, 1, 1, 0, 0, 0)
+                        )
+                    self.assertTrue(target.payment_status_changable('paid'))
+                    self.assertTrue(target.payment_status_changable('unpaid'))
+
+        for delivery_plugin_id in self.delivery_plugins.values():
+            target = self._makeOne(
+                channel=3,
+                organization_id=self.organization.id,
+                payment_delivery_pair=self._create_payment_delivery_method_pair(self.payment_plugins['reserve_number'], delivery_plugin_id),
+                total_amount=0,
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0,
+                paid_at=datetime(2014, 1, 1, 0, 0, 0)
+                )
+            self.assertTrue(target.payment_status_changable('paid'))
+            self.assertTrue(target.payment_status_changable('unpaid'))
+
+    def test_change_payment_status_unpaid_non_inner(self):
+        from datetime import datetime
+        for payment_plugin_id in self.payment_plugins.values():
+            if payment_plugin_id != self.payment_plugins['reserve_number']:
+                for delivery_plugin_id in self.delivery_plugins.values():
+                    target = self._makeOne(
+                        organization_id=self.organization.id,
+                        payment_delivery_pair=self._create_payment_delivery_method_pair(payment_plugin_id, delivery_plugin_id),
+                        total_amount=0,
+                        system_fee=0,
+                        transaction_fee=0,
+                        delivery_fee=0,
+                        paid_at=None
+                        )
+                    self.assertEqual(target.payment_status, 'unpaid')
+                    self.assertFalse(target.change_payment_status('unpaid'))
+                    self.assertFalse(target.change_payment_status('paid'))
+                    self.assertEqual(target.payment_status, 'unpaid')
+
+        for delivery_plugin_id in self.delivery_plugins.values():
+            target = self._makeOne(
+                organization_id=self.organization.id,
+                payment_delivery_pair=self._create_payment_delivery_method_pair(self.payment_plugins['reserve_number'], delivery_plugin_id),
+                total_amount=0,
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0,
+                paid_at=None
+                )
+            self.assertEqual(target.payment_status, 'unpaid')
+            self.assertFalse(target.change_payment_status('unpaid'))
+            self.assertTrue(target.change_payment_status('paid'))
+            self.assertEqual(target.payment_status, 'paid')
+
+    def test_change_payment_status_unpaid_inner(self):
+        from datetime import datetime
+        for payment_plugin_id in self.payment_plugins.values():
+            if payment_plugin_id != self.payment_plugins['reserve_number']:
+                for delivery_plugin_id in self.delivery_plugins.values():
+                    target = self._makeOne(
+                        channel=3,
+                        organization_id=self.organization.id,
+                        payment_delivery_pair=self._create_payment_delivery_method_pair(payment_plugin_id, delivery_plugin_id),
+                        total_amount=0,
+                        system_fee=0,
+                        transaction_fee=0,
+                        delivery_fee=0,
+                        paid_at=None
+                        )
+                    self.assertEqual(target.payment_status, 'unpaid')
+                    self.assertFalse(target.change_payment_status('paid'))
+                    self.assertFalse(target.change_payment_status('paid'))
+                    self.assertEqual(target.payment_status, 'unpaid')
+
+        for delivery_plugin_id in self.delivery_plugins.values():
+            target = self._makeOne(
+                channel=3,
+                organization_id=self.organization.id,
+                payment_delivery_pair=self._create_payment_delivery_method_pair(self.payment_plugins['reserve_number'], delivery_plugin_id),
+                total_amount=0,
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0,
+                paid_at=None
+                )
+            self.assertEqual(target.payment_status, 'unpaid')
+            self.assertFalse(target.change_payment_status('unpaid'))
+            self.assertTrue(target.change_payment_status('paid'))
+            self.assertEqual(target.payment_status, 'paid')
+
+    def test_change_payment_status_paid_non_inner(self):
+        from datetime import datetime
+        for payment_plugin_id in self.payment_plugins.values():
+            if payment_plugin_id != self.payment_plugins['reserve_number']:
+                for delivery_plugin_id in self.delivery_plugins.values():
+                    target = self._makeOne(
+                        organization_id=self.organization.id,
+                        payment_delivery_pair=self._create_payment_delivery_method_pair(payment_plugin_id, delivery_plugin_id),
+                        total_amount=0,
+                        system_fee=0,
+                        transaction_fee=0,
+                        delivery_fee=0,
+                        paid_at=datetime(2014, 1, 1, 0, 0, 0)
+                        )
+                    self.assertEqual(target.payment_status, 'paid')
+                    self.assertFalse(target.change_payment_status('paid'))
+                    self.assertFalse(target.change_payment_status('unpaid'))
+                    self.assertEqual(target.payment_status, 'paid')
+
+        for delivery_plugin_id in self.delivery_plugins.values():
+            target = self._makeOne(
+                organization_id=self.organization.id,
+                payment_delivery_pair=self._create_payment_delivery_method_pair(self.payment_plugins['reserve_number'], delivery_plugin_id),
+                total_amount=0,
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0,
+                paid_at=datetime(2014, 1, 1, 0, 0, 0)
+                )
+            self.assertEqual(target.payment_status, 'paid')
+            self.assertFalse(target.change_payment_status('paid'))
+            self.assertTrue(target.change_payment_status('unpaid'))
+            self.assertEqual(target.payment_status, 'unpaid')
+
+    def test_change_payment_status_paid_inner(self):
+        from datetime import datetime
+        for payment_plugin_id in self.payment_plugins.values():
+            if payment_plugin_id != self.payment_plugins['reserve_number']:
+                for delivery_plugin_id in self.delivery_plugins.values():
+                    target = self._makeOne(
+                        channel=3,
+                        organization_id=self.organization.id,
+                        payment_delivery_pair=self._create_payment_delivery_method_pair(payment_plugin_id, delivery_plugin_id),
+                        total_amount=0,
+                        system_fee=0,
+                        transaction_fee=0,
+                        delivery_fee=0,
+                        paid_at=datetime(2014, 1, 1, 0, 0, 0)
+                        )
+                    self.assertEqual(target.payment_status, 'paid')
+                    self.assertFalse(target.change_payment_status('paid'))
+                    self.assertTrue(target.change_payment_status('unpaid'))
+                    self.assertEqual(target.payment_status, 'unpaid')
+
+        for delivery_plugin_id in self.delivery_plugins.values():
+            target = self._makeOne(
+                channel=3,
+                organization_id=self.organization.id,
+                payment_delivery_pair=self._create_payment_delivery_method_pair(self.payment_plugins['reserve_number'], delivery_plugin_id),
+                total_amount=0,
+                system_fee=0,
+                transaction_fee=0,
+                delivery_fee=0,
+                paid_at=datetime(2014, 1, 1, 0, 0, 0)
+                )
+            self.assertEqual(target.payment_status, 'paid')
+            self.assertFalse(target.change_payment_status('paid'))
+            self.assertTrue(target.change_payment_status('unpaid'))
+            self.assertEqual(target.payment_status, 'unpaid')

@@ -10,3 +10,15 @@ class OutTermException(Exception):
         self.lot_name = lot_name
         self.from_ = from_
         self.to_ = to_
+
+
+class OverEntryLimitException(Exception):
+    def __init__(self, entry_limit, *args, **kwargs):
+        super(OverEntryLimitException, self).__init__(*args, **kwargs)
+        self.entry_limit = entry_limit
+
+
+class OverEntryLimitPerPerformanceException(OverEntryLimitException):
+    def __init__(self, performance_name, entry_limit, *args, **kwargs):
+        super(OverEntryLimitPerPerformanceException, self).__init__(entry_limit, *args, **kwargs)
+        self.performance_name = performance_name

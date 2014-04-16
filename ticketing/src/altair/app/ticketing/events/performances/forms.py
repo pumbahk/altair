@@ -132,6 +132,13 @@ class PerformanceForm(OurForm):
         filters=[zero_as_none],
         validators=[Optional()]
     )
+    entry_limit = OurIntegerField(
+        label=label_text_for(PerformanceSetting.entry_limit),
+        default=None,
+        filters=[zero_as_none],
+        validators=[Optional()],
+        help=u'この公演に抽選申込できる上限数'
+    )
     max_quantity_per_user = OurIntegerField(
         label=label_text_for(PerformanceSetting.max_quantity_per_user),
         default=None,

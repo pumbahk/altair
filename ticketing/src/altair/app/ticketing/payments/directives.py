@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 from .interfaces import IOrderDelivery, IOrderPayment
-from .interfaces import IGetCart
+from .interfaces import ICartInterface
 from .interfaces import IPaymentDeliveryPlugin
 from .interfaces import IPaymentPlugin, IDeliveryPlugin
 from .interfaces import IPaymentViewRendererLookup
@@ -27,10 +27,11 @@ def add_delivery_plugin(config, plugin, plugin_id):
     config.registry.utilities.register([], IDeliveryPlugin, "delivery-%s" % plugin_id, plugin)
 
 
-def set_cart_getter(config, getter):
-    getter = config.maybe_dotted(getter)
+def set_cart_interface(config, cart_if):
+    cart_if = config.maybe_dotted(cart_if)
     reg = config.registry
-    reg.registerUtility(getter, IGetCart)
+    reg.registerUtility(cart_if, ICartInterface)
+
 
 def add_payment_view_renderer_lookup(config, impl, type):
     config.registry.utilities.register([], IPaymentViewRendererLookup, type, impl)

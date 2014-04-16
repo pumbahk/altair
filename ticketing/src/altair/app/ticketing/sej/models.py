@@ -5,9 +5,11 @@ from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Dat
 from sqlalchemy.orm import relationship, join, column_property, mapper, backref
 from sqlalchemy.orm.session import object_session
 from sqlalchemy.sql.expression import asc
+from zope.interface import implementer
 import sqlahelper
 from datetime import datetime
 from altair.app.ticketing.utils import StandardEnum
+from .interfaces import ISejTenant
 
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
@@ -49,19 +51,6 @@ class SejOrderUpdateReason(StandardEnum):
     Stop = 2
 
 code_from_update_reason = dict((enum_.v, enum_) for enum_ in SejOrderUpdateReason)
-
-
-class SejTenant(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
-    __tablename__           = 'SejTenant'
-    id                      = Column(Identifier, primary_key=True)
-    shop_name               = Column(String(12))
-    shop_id                 = Column(String(12))
-    contact_01              = Column(String(128))
-    contact_02              = Column(String(255))
-    api_key                 = Column(String(255), nullable=True)
-    inticket_api_url        = Column(String(255), nullable=True)
-
-    organization_id         = Column(Identifier) # あえてRelationしません
 
 
 class SejTicketTemplateFile(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
@@ -314,5 +303,50 @@ class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
             )
         values.update(kwargs)
         return self.__class__(**values)
+
+
+@implementer(ISejTenant)
+class ThinSejTenant(object):
+    __slots__ = (
+        '_shop_name',
+        '_shop_id',
+        '_contact_01',
+        '_contact_02',
+        '_api_key',
+        '_inticket_api_url',
+        )
+
+    @property
+    def shop_name(self):
+        return self._shop_name
+
+    @property
+    def shop_id(self):
+        return self._shop_id
+
+    @property
+    def contact_01(self):
+        return self._contact_01
+
+    @property
+    def contact_02(self):
+        return self._contact_02
+
+    @property
+    def api_key(self):
+        return self._api_key
+
+    @property
+    def inticket_api_url(self):
+        return self._inticket_api_url
+
+    def __init__(self, original=None, shop_name=None, shop_id=None, contact_01=None, contact_02=None, api_key=None, inticket_api_url=None):
+        self._shop_name = shop_name if shop_name is not None else (original and original.shop_name)
+        self._shop_id = shop_id if shop_id is not None else (original and original.shop_id)
+        self._contact_01 = contact_01 if contact_01 is not None else (original and original.contact_01)
+        self._contact_02 = contact_02 if contact_02 is not None else (original and original.contact_02)
+        self._api_key = api_key if api_key is not None else (original and original.api_key)
+        self._inticket_api_url = inticket_api_url if inticket_api_url is not None else (original and original.inticket_api_url)
+
 
 from .notification.models import *

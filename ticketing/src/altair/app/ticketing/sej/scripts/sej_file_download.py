@@ -4,6 +4,7 @@
 # 通知ファイルをダウンロードする
 #
 
+import os
 import sys
 import sqlahelper
 from sqlalchemy.orm.exc import NoResultFound
@@ -14,10 +15,12 @@ from os.path import abspath, dirname
 from pyramid.paster import bootstrap
 from ..payment import request_fileget
 from ..models import (
-    SejTenant,
     SejNotificationType,
+    ThinSejTenant,
     code_from_notification_type
     )
+from ..api import validate_sej_tenant
+from ...core.models import SejTenant
 from ..exceptions import SejServerError
 
 from dateutil.parser import parse as parsedate
@@ -26,9 +29,8 @@ from paste.deploy import loadapp
 
 import logging
 
-log = logging.getLogger(__file__)
 
-import os
+log = logging.getLogger(__file__)
 
 DBSession = sqlahelper.get_session()
 
@@ -59,29 +61,30 @@ def main(argv=sys.argv):
     session = sqlahelper.get_session()
     session.configure(autocommit=True, extension=[])
 
-    shop_id = registry.settings.get('altair.sej.shop_id') or registry.settings.get('sej.shop_id')
-    api_key = registry.settings.get('altair.sej.api_key') or registry.settings.get('sej.api_key')
-    api_url = registry.settings.get('altair.sej.inticket_api_url') or registry.settings.get('sej.inticket_api_url')
     if args.organization:
-        tenant = SejTenant.query.filter_by(organization_id=args.organization).one()
-        if tenant.shop_id: shop_id = tenant.shop_id
-        if tenant.api_key: api_key = tenant.api_key
-        if tenant.inticket_api_url: api_url = tenant.inticket_api_url
-    if args.shop_id: shop_id = args.shop_id
-    if args.apikey: api_key = args.apikey
-    if args.endpoint: api_url = args.endpoint
+        from altair.app.ticketing.sej import userside_api
+        tenant = userside_api.lookup_sej_tenant(request, args.organization)
+    else:
+        tenant = get_default_sej_tenant()
 
-    if not (shop_id and api_key and api_url):
-        print >>sys.stderr, "could not determine either shop_id, api_key or api_url"
+    tenant = ThinSejTenant(
+        original=tenant,
+        shop_id=args.shop_id,
+        api_key=args.apikey,
+        inticket_api_url=args.endpoint
+        )
+
+    try:
+        validate_sej_tenant(tenant)
+    except AssertionError as e:
+        print >>sys.stderr, str(e)
         return 1
 
     for date in args.date:
         body = request_fileget(
             args.type,
             parsedate(date),
-            shop_id=shop_id,
-            secret_key=api_key,
-            hostname=api_url,
+            tenant=tenant
             )
         sys.stdout.write(body)
         sys.stdout.flush()

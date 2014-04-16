@@ -72,4 +72,14 @@ def delete_event(event):
     if event.sales_start_on and event.sales_start_on < datetime.now():
         raise Exception(u'既に販売開始日時を経過している為、削除できません')
     event.delete()
-   
+
+def get_default_contact_url(request, organization, carrier):
+    contact_url = None
+    if carrier.is_nonmobile:
+        contact_url = organization.setting.contact_pc_url
+    else:
+        contact_url = organization.setting.contact_mobile_url
+    # XXX: デフォルトが default_mail_sender なのは良くないけど一応仕様ということに
+    if contact_url is None and organization.setting.default_mail_sender is not None:
+        contact_url = u'mailto:%s' % organization.setting.default_mail_sender
+    return contact_url

@@ -39,31 +39,31 @@ class SubjectInfoDefaultBase(object):
 
 class SubjectInfoDefaultMixin(object):
     ## subject = order or lots_entry
-    def get_name_kana(subject):
+    def get_name_kana(request, subject):
         sa = subject.shipping_address
         if sa is None:
             return u""
         return u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana)
 
     name_kana = SubjectInfo(name="name_kana", label=u"お名前カナ", getval=get_name_kana)
-    tel = SubjectInfo(name="tel", label=u"電話番号", getval=lambda subject : subject.shipping_address.tel_1 or "" if subject.shipping_address else u"")
-    mail = SubjectInfo(name="mail", label=u"メールアドレス", getval=lambda subject : subject.shipping_address.email_1 if subject.shipping_address else u"")
-    order_datetime = SubjectInfo(name="order_datetime", label=u"受付日", getval=lambda order: ch.mail_date(order.created_at))
-    bcc = SubjectInfoWithValue(name="bcc", label=u"bcc", getval=lambda order: None, value=None)
+    tel = SubjectInfo(name="tel", label=u"電話番号", getval=lambda request, subject : subject.shipping_address.tel_1 or "" if subject.shipping_address else u"")
+    mail = SubjectInfo(name="mail", label=u"メールアドレス", getval=lambda request, subject : subject.shipping_address.email_1 if subject.shipping_address else u"")
+    order_datetime = SubjectInfo(name="order_datetime", label=u"受付日", getval=lambda request, order: ch.mail_date(order.created_at))
+    bcc = SubjectInfoWithValue(name="bcc", label=u"bcc", getval=lambda request, order: None, value=None)
     
 class OrderInfoDefaultMixin(object):
     """ 
     以下の情報のデフォルトの値。ラベル名が変えられ、表示するかしないか選択できる。
     #注文情報 受付番号、受付日時、公演タイトル、商品名、座席番号、商品代金、サービス利用料・手数料、合計金額
     """
-    def get_event_title(order):
+    def get_event_title(request, order):
         performance = order.performance
         return u"{0} {1}".format(performance.event.title, performance.name)
 
-    def get_performance_date(order):
+    def get_performance_date(request, order):
         return ch.japanese_datetime(order.performance.start_on)
 
-    def get_seat_no(order):
+    def get_seat_no(request, order):
         seat_no = []
         for p in order.items:
             # XXX: seat_stock_type を使っているのは券種のときに直すとしても、
@@ -81,25 +81,25 @@ class OrderInfoDefaultMixin(object):
                 
         return u"\n".join(seat_no)
 
-    def get_product_description(order):
+    def get_product_description(request, order):
         return u"\n".join((u"{0} {1} x{2}".format(op.product.name,
                                                     ch.format_currency(op.product.price),
                                                     op.quantity)
                            for op in order.items))
 
 
-    order_no = SubjectInfo(name="order_no", label=u"受付番号", getval=lambda subject : subject.order_no)
+    order_no = SubjectInfo(name="order_no", label=u"受付番号", getval=lambda request, subject : subject.order_no)
     event_name = SubjectInfo(name=u"event_name", label=u"公演タイトル", getval=get_event_title)
     pdate = SubjectInfo(name=u"pdate", label=u"公演日時", getval=get_performance_date)
-    venue = SubjectInfo(name=u"venue", label=u"会場", getval=lambda order: order.performance.venue.name)
+    venue = SubjectInfo(name=u"venue", label=u"会場", getval=lambda request, order: order.performance.venue.name)
     for_product =SubjectInfo(name=u"for_product", label=u"商品代金", getval=get_product_description)
     for_seat = SubjectInfo(name=u"for_seat", label=u"ご購入いただいた座席", getval=get_seat_no)
-    system_fee = SubjectInfo(name=u"system_fee", label=u"システム利用料", getval=lambda order: ch.format_currency(order.system_fee))
-    special_fee = SubjectInfo(name=u'special_fee', label=u'特別手数料', getval=lambda order: ch.format_currency(order.special_fee))
-    special_fee_name = SubjectInfo(name=u'special_fee_name', label=u'特別手数料名', getval=lambda order: order.special_fee_name)        
-    transaction_fee = SubjectInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda order: ch.format_currency(order.transaction_fee))
-    delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda order: ch.format_currency(order.delivery_fee))
-    total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda order: ch.format_currency(order.total_amount))
+    system_fee = SubjectInfo(name=u"system_fee", label=u"システム利用料", getval=lambda request, order: ch.format_currency(order.system_fee))
+    special_fee = SubjectInfo(name=u'special_fee', label=u'特別手数料', getval=lambda request, order: ch.format_currency(order.special_fee))
+    special_fee_name = SubjectInfo(name=u'special_fee_name', label=u'特別手数料名', getval=lambda request, order: order.special_fee_name)        
+    transaction_fee = SubjectInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda request, order: ch.format_currency(order.transaction_fee))
+    delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda request, order: ch.format_currency(order.delivery_fee))
+    total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda request, order: ch.format_currency(order.total_amount))
 
 class SubjectInfoDefault(SubjectInfoDefaultBase, SubjectInfoDefaultMixin):
     pass
@@ -108,7 +108,8 @@ class OrderInfoDefault(SubjectInfoDefaultBase, SubjectInfoDefaultMixin, OrderInf
     pass
 
 class SubjectInfoRenderer(object):
-    def __init__(self, order, data, default_impl=SubjectInfoDefault):
+    def __init__(self, request, order, data, default_impl=SubjectInfoDefault):
+        self.request = request
         self.order = order
         self.data = data
         self.default = default_impl
@@ -119,12 +120,12 @@ class SubjectInfoRenderer(object):
             if not val:
                 default_val = getattr(self.default, k, None)
                 if default_val:
-                    setattr(self, k, RenderVal(label=default_val.label, status=True, body=default_val.getval(self.order)))
+                    setattr(self, k, RenderVal(label=default_val.label, status=True, body=default_val.getval(self.request, self.order)))
                 else:
                     setattr(self, k, RenderVal(label="", status=False, body=u""))                    
             elif val["use"]:
                 setattr(self, k, RenderVal(label=val["kana"], status=True, 
-                                           body=val.get("value") or getattr(self.default, k).getval(self.order)))
+                                           body=val.get("value") or getattr(self.default, k).getval(self.request, self.order)))
             else:
                 setattr(self, k, RenderVal(label="", status=False, body=getattr(val, "body", u"")))
         return getattr(self, k)

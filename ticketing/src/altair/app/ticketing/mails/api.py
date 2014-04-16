@@ -5,6 +5,7 @@ import logging
 import cgi
 import re
 import unicodedata
+from urlparse import urlparse
 from datetime import datetime
 
 from zope.interface import implementer, directlyProvides
@@ -16,6 +17,7 @@ from altair.mobile.api import detect_from_email_address
 from altair.mobile import carriers
 
 from altair.app.ticketing.core.models import ExtraMailInfo
+from altair.app.ticketing.core.api import get_default_contact_url
 
 from .interfaces import (
     IMailUtility, 
@@ -66,7 +68,7 @@ class MailSettingDefaultGetter(object):
         return bcc_recipients
 
     def get_sender(self, request, traverser, organization):
-        return (traverser.data["sender"] or organization.contact_email)
+        return (traverser.data["sender"] or organization.setting.default_mail_sender)
 
 class ExtraMailInfoAccessor(object):
     def __init__(self, mtype, default):
@@ -329,3 +331,22 @@ def get_appropriate_message_part_factory(request, primary_recipient, kind='plain
 
 def get_appropriate_message_part(request, primary_recipient, mail_body, kind='plain'):
     return get_appropriate_message_part_factory(request, primary_recipient, kind)(request, mail_body)
+
+def get_default_contact_reference(request, organization, recipient):
+    try:
+        carrier = detect_from_email_address(request.registry, recipient)
+    except ValueError:
+        # デフォルトは non-mobile とする
+        carrier = carriers.NonMobile
+    contact_url = get_default_contact_url(request, organization, carrier)
+    # 問い合わせ先が全く指定されていない場合は空文字を返す、でよいだろう
+    if contact_url is None:
+        return u''
+    # mailto: で始まる場合は unquote して <%s> に変更する
+    # mailto:a@example.com?body=xxx のようになっている場合は query を取り除く
+    if contact_url.startswith(u'mailto:'):
+        parsed_url = urlparse(contact_url)
+        return u'<%s>' % parsed_url.path
+    else:
+        # その他の場合は URL そのまま
+        return contact_url

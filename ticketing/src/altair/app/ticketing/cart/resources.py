@@ -14,7 +14,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
 from altair.sqlahelper import get_db_session
 from .interfaces import ICartPayment, ICartDelivery
-from altair.app.ticketing.payments.interfaces import IOrderPayment, IOrderDelivery 
+from altair.app.ticketing.payments.interfaces import IOrderPayment, IOrderDelivery
 from altair.app.ticketing.users import api as user_api
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.core import models as c_models
@@ -142,7 +142,7 @@ class TicketingCartResourceBase(object):
     ## なぜ２つ?
     def available_payment_delivery_method_pairs(self, sales_segment):
         return sales_segment.available_payment_delivery_method_pairs(self.now) #xxx?
-    ## 
+    ##
 
     def get_payment_delivery_method_pair(self, start_on=None):
         sales_segment = self.sales_segment
@@ -200,7 +200,7 @@ class TicketingCartResourceBase(object):
         # となっていて、(キーはパフォーマンスのid)
         # 各パフォーマンスで非guest用の販売区分があればそれを優先し
         # guest用の販売区分しかなければそれを使うということをする
-        # 
+        #
         # itertools.chain([[非guest用販売区分, ...], [guest用販売区分, ...], [guest用販売区分...]])
         #
         # ということ。
@@ -311,7 +311,7 @@ class TicketingCartResourceBase(object):
                     if order_count is None:
                         order_count = 0
                     if total_quantity is None:
-                        total_quantity = 0 
+                        total_quantity = 0
                     logger.info(
                         "%r(id=%d): order_limit=%r, max_quantity_per_user=%r, orders=%d, total_quantity=%d" % (
                             container.__class__,
@@ -367,14 +367,17 @@ class TicketingCartResourceBase(object):
             return True
 
         """ 指定イベントがログイン画面を必要とするか """
-        # 終了分もあわせて、このeventからひもづく sales_segment -> membergroupに1つでもguestがあれば True 
+        # 終了分もあわせて、このeventからひもづく sales_segment -> membergroupに1つでもguestがあれば True
         q = u_models.MemberGroup.query.filter(
             u_models.MemberGroup.is_guest==False
         ).filter(
             u_models.MemberGroup.id == u_models.MemberGroup_SalesSegment.c.membergroup_id
         ).filter(
             c_models.SalesSegment.id == u_models.MemberGroup_SalesSegment.c.sales_segment_id
+        ).filter(
+            c_models.SalesSegment.public == True
         )
+
         while True:
             # まずは販売区分を見る
             sales_segment = None
@@ -521,7 +524,7 @@ class PerformanceOrientedTicketingCartResource(TicketingCartResourceBase):
 
     @property
     def event(self):
-        return self.performance.event
+        return self.performance.event if self.performance else None
 
     @reify
     def sales_segments(self):
@@ -547,7 +550,7 @@ class SalesSegmentOrientedTicketingCartResource(TicketingCartResourceBase):
 
     @property
     def event(self):
-        return self.performance.event
+        return self.performance.event if self.performance else None
 
     @reify
     def sales_segments(self):

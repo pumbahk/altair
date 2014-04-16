@@ -21,6 +21,7 @@ def main(global_config, **local_config):
 
     my_session_factory = session_factory_from_settings(settings)
     config = Configurator(settings=settings, session_factory=my_session_factory)
+    config.include('altair.app.ticketing.setup_beaker_cache')
     config.set_root_factory('.resources.OrderReviewResource')
     #config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     #config.add_renderer('.txt' , txt_renderer_factory)
@@ -90,6 +91,7 @@ def import_view(config):
 
     ## orion
     config.add_route('order_review.orion_send', '/qr/eg_send')
+    config.add_route('order_review.orion_draw', '/qr/eg_print/{token}/{serial}/{sign}')
 
     ## mypage
     config.add_route('mypage.show', '/mypage')

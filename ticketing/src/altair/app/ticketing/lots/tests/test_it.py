@@ -174,7 +174,8 @@ class EntryLotViewTests(unittest.TestCase):
             params=data,
         )
         context = testing.DummyResource(event=lot.event, lot=lot,
-                                        organization=lot.event.organization)
+                                        organization=lot.event.organization,
+                                        check_entry_limit=lambda email: True)
         request.context = context
         target = self._makeOne(context, request)
         result = target.post()
@@ -366,6 +367,25 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         add_payment_plugin(self.config, DummyPreparer(None), plugin_id)
 
         event_id = lot.event_id
+        shipping_address_dict = {
+            'address_1': u'代々木１丁目',
+            'address_2': u'森京ビル',
+            'city': u'渋谷区',
+            'country': u'日本国',
+            'email_1': u'test@example.com',
+            'email_1_confirm': u'test@example.com',
+            'email_2': u'test@example.com',
+            'email_2_confirm': u'test@example.com',
+            'fax': u'01234567899',
+            'first_name': u'あ',
+            'first_name_kana': u'イ',
+            'last_name': u'う',
+            'last_name_kana': u'エ',
+            'prefecture': u'東京都',
+            'tel_1': u'01234567899',
+            'tel_2': None,
+            'zip': u'1234567'
+            }
         request = DummyRequest(
             host='example.com:80',
             session={
@@ -373,24 +393,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                 'lots.entry': 
                 {
                     'entry_no': 'testing-entry-no',
-                    'shipping_address': 
-                        {'address_1': u'代々木１丁目',
-                         'address_2': u'森京ビル',
-                         'city': u'渋谷区',
-                         'country': u'日本国',
-                         'email_1': u'test@example.com',
-                         'email_1_confirm': u'test@example.com',
-                         'email_2': u'test@example.com',
-                         'email_2_confirm': u'test@example.com',
-                         'fax': u'01234567899',
-                         'first_name': u'あ',
-                         'first_name_kana': u'イ',
-                         'last_name': u'う',
-                         'last_name_kana': u'エ',
-                         'prefecture': u'東京都',
-                         'tel_1': u'01234567899',
-                         'tel_2': None,
-                         'zip': u'1234567'}, #shipping_address
+                    'shipping_address': shipping_address_dict,
                     'wishes': [{"performance_id": "123", 
                                 "wished_products": [
                                     {"wish_order": 1, "product_id": products[0].id, "quantity": 10}, 
@@ -422,12 +425,14 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
 
         result = target.post()
 
-        self._assertLotEntry(lot, request.session['lots.entry']['shipping_address'])
+        entry_no = request.session['lots.entry_no']
+        self._assertLotEntry(lot, entry_no, shipping_address_dict)
 
-    def _assertLotEntry(self, lot, shipping_address):
+    def _assertLotEntry(self, lot, entry_no, shipping_address_dict):
         self.assertEqual(len(lot.entries), 1)
         lot_entry = lot.entries[0]
-        self._assert_shipping_address(lot_entry.shipping_address, shipping_address)
+        self.assertEqual(lot_entry.entry_no, entry_no)
+        self._assert_shipping_address(lot_entry.shipping_address, shipping_address_dict)
 
     def _assert_shipping_address(self, actual, expected):
         from .. import helpers
