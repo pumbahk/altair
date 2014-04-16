@@ -309,8 +309,10 @@ $(function() {
     var next =  options.next;
     var modal = $('#modal-confirm');
     var form = modal.find('form');
-    form.find('input[type="submit"]').attr('value', proceedButtonMessage).click(function () { modal.modal('hide'); next(); return false; });
+    var submit = form.find('input[type="submit"]');
+    submit.attr('value', proceedButtonMessage).click(function () { modal.modal('hide'); next(); return false; });
     modal.find('.message').empty().append($('<p></p>').text(message));
+    modal.on('hide', function () { submit.unbind('click'); });
     modal.modal('toggle');
   }
 

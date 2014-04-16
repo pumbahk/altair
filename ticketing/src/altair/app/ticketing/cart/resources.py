@@ -374,7 +374,10 @@ class TicketingCartResourceBase(object):
             u_models.MemberGroup.id == u_models.MemberGroup_SalesSegment.c.membergroup_id
         ).filter(
             c_models.SalesSegment.id == u_models.MemberGroup_SalesSegment.c.sales_segment_id
+        ).filter(
+            c_models.SalesSegment.public == True
         )
+
         while True:
             # まずは販売区分を見る
             sales_segment = None
