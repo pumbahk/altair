@@ -387,8 +387,8 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'LotEntry'
 
     id = sa.Column(Identifier, primary_key=True)
-
     entry_no = sa.Column(sa.Unicode(20), unique=True, doc=u"抽選申し込み番号")
+    channel = sa.Column(sa.Integer, nullable=True)
 
     # 抽選
     lot_id = sa.Column(Identifier, sa.ForeignKey('Lot.id'))

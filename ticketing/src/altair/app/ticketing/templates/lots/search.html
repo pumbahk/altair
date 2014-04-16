@@ -5,6 +5,7 @@
 
 <%
 from altair.app.ticketing.cart.helpers import format_currency
+from ticketing.core.api import get_channel
 %>
 
 
@@ -65,7 +66,7 @@ ${vh.datetime(w.created_at, with_weekday=True, without_second=True, omit_year_if
 <td nowrap="">${w.shipping_address.tel_2}</td>
 <td nowrap="">${w.shipping_address.email_1}</td>
 <td nowrap="">${w.shipping_address.email_2}</td>
-
+<td nowrap="">${get_channel(w.channel).k}</td>
 </%def>
 
 
@@ -235,6 +236,7 @@ ${ch.pager(wishes)}
 <th>電話番号2</th>
 <th>メールアドレス1</th>
 <th>メールアドレス2</th>
+<th>販売チャネル</th>
 </tr>
 </thead>
 <tbody>

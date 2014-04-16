@@ -73,6 +73,7 @@ def lot_wish_cart(wish):
                 payment_delivery_pair=wish.lot_entry.payment_delivery_method_pair,
                 _order_no=wish.lot_entry.entry_no,
                 sales_segment=wish.lot_entry.lot.sales_segment,
+                channel=wish.lot_entry.lot.channel,
                 products=[
                     CartedProduct(product=p.product,
                                   organization_id=organization_id,
