@@ -979,21 +979,6 @@
             aux.manager.showAllSeat();
             return;
 
-          case 'loadAllSeat':
-            // Load metadata
-            $.ajax({
-              url: aux.dataSource.metadata + '&load_all_seat=true',
-              dataType: 'json',
-              success: function(data) {
-                aux.loaded_at = Math.ceil((new Date).getTime() / 1000);
-                aux.manager.refresh({'metadata':data});
-              },
-              error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
-            });
-            aux.callbacks.loading && aux.callbacks.loading(aux.manager);
-            aux.manager.unselectAll();
-            return;
-
           case 'refresh':
             // Load metadata
             $.ajax({

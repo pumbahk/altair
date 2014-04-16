@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['LQ798W9DJ8XLV6M1'] = (function (exports) { (function () { 
+__LIBS__['xXCCPBHE7RT7UGK9'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['JRNN5FE09VMBT75_'] = (function (exports) { (function () { 
+__LIBS__['wIX8R8PHSQ7D9RKI'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -99,7 +99,7 @@ exports.DEFAULT = {
   SEAT_RENDER_UNITS: 1000
 };
  })(); return exports; })({});
-__LIBS__['cV8MWU_JJ8LZ5B8X'] = (function (exports) { (function () { 
+__LIBS__['VA8O0RZYNNZAMAV9'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -276,7 +276,7 @@ timer.prototype.lap = function(msg) {
   return lap;
 };
  })(); return exports; })({});
-__LIBS__['k_VQF9TO7S2BS7ZS'] = (function (exports) { (function () { 
+__LIBS__['rIWX39LZ5HXHFESI'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -325,12 +325,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['iK2R2YRIQRHU6M6W'] = (function (exports) { (function () { 
+__LIBS__['EVUZQBA0KLJPDYNJ'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['cV8MWU_JJ8LZ5B8X'];
-var CONF = __LIBS__['JRNN5FE09VMBT75_'];
-var IdentifiableSet = __LIBS__['k_VQF9TO7S2BS7ZS'].IdentifiableSet;
+var util = __LIBS__['VA8O0RZYNNZAMAV9'];
+var CONF = __LIBS__['wIX8R8PHSQ7D9RKI'];
+var IdentifiableSet = __LIBS__['rIWX39LZ5HXHFESI'].IdentifiableSet;
 
 var use_altair_collection = true;
 
@@ -1028,12 +1028,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['j3LJAT2BN3RBZEGV'] = (function (exports) { (function () { 
+__LIBS__['L3_J980O0LAVGE_F'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['cV8MWU_JJ8LZ5B8X'];
-var CONF = __LIBS__['JRNN5FE09VMBT75_'];
-var models = __LIBS__['iK2R2YRIQRHU6M6W'];
+var util = __LIBS__['VA8O0RZYNNZAMAV9'];
+var CONF = __LIBS__['wIX8R8PHSQ7D9RKI'];
+var models = __LIBS__['EVUZQBA0KLJPDYNJ'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -1216,13 +1216,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['JRNN5FE09VMBT75_'];
-  var models = __LIBS__['iK2R2YRIQRHU6M6W'];
-  var util = __LIBS__['cV8MWU_JJ8LZ5B8X'];
-  var viewobjects = __LIBS__['j3LJAT2BN3RBZEGV'];
-  var IdentifiableSet = __LIBS__['k_VQF9TO7S2BS7ZS'].IdentifiableSet;
+  var CONF = __LIBS__['wIX8R8PHSQ7D9RKI'];
+  var models = __LIBS__['EVUZQBA0KLJPDYNJ'];
+  var util = __LIBS__['VA8O0RZYNNZAMAV9'];
+  var viewobjects = __LIBS__['L3_J980O0LAVGE_F'];
+  var IdentifiableSet = __LIBS__['rIWX39LZ5HXHFESI'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['LQ798W9DJ8XLV6M1'];
+    I18n.translations = __LIBS__['xXCCPBHE7RT7UGK9'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -2193,21 +2193,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
           case 'showAllSeat':
             aux.manager.showAllSeat();
-            return;
-
-          case 'loadAllSeat':
-            // Load metadata
-            $.ajax({
-              url: aux.dataSource.metadata + '&load_all_seat=true',
-              dataType: 'json',
-              success: function(data) {
-                aux.loaded_at = Math.ceil((new Date).getTime() / 1000);
-                aux.manager.refresh({'metadata':data});
-              },
-              error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
-            });
-            aux.callbacks.loading && aux.callbacks.loading(aux.manager);
-            aux.manager.unselectAll();
             return;
 
           case 'refresh':
