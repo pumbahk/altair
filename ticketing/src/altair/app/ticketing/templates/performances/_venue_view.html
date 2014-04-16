@@ -356,7 +356,9 @@ venueEditor.find(".action-clearSelection").click(function () {
 });
 venueEditor.find(".action-refresh").click(function () {
   $("label[for='toolbar-action-refresh']").removeClass("ui-state-active");
-  venueEditorRoot.venueeditor("refresh");
+  if (venueEditorRoot.venueeditor('model')) {
+    venueEditorRoot.venueeditor("refresh");
+  }
 });
 venueEditor.find(".action-select1").click(function () {
   venueEditorRoot.venueeditor("uimode", "select1");

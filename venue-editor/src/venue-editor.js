@@ -526,17 +526,17 @@
     var self = this;
     var seats;
     var target_seats;
+    var target_seats_keys = [];
     if (metadata) {
       seats = this.seats;
       target_seats = metadata.seats;
+      target_seats_keys = _.intersect(Object.keys(this.shapes), Object.keys(target_seats))
     } else {
       seats = {};
       target_seats = this.shapes;
-    }
-
-    var target_seats_keys = [];
-    for (var ts in target_seats) {
-      if (target_seats.hasOwnProperty(ts)) target_seats_keys.push(ts);
+      for (var ts in target_seats) {
+        if (target_seats.hasOwnProperty(ts)) target_seats_keys.push(ts);
+      }
     }
     var total_count = target_seats_keys.length;
     var count = 0;
@@ -977,21 +977,6 @@
 
           case 'showAllSeat':
             aux.manager.showAllSeat();
-            return;
-
-          case 'loadAllSeat':
-            // Load metadata
-            $.ajax({
-              url: aux.dataSource.metadata + '&load_all_seat=true',
-              dataType: 'json',
-              success: function(data) {
-                aux.loaded_at = Math.ceil((new Date).getTime() / 1000);
-                aux.manager.refresh({'metadata':data});
-              },
-              error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
-            });
-            aux.callbacks.loading && aux.callbacks.loading(aux.manager);
-            aux.manager.unselectAll();
             return;
 
           case 'refresh':
