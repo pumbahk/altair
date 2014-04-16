@@ -203,6 +203,7 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
     {product_id, quantity} の希望順リスト
     :param user: ゲストの場合は None
     """
+    channel = core_api.get_channel(request=request)
     entry = build_lot_entry(
         lot=lot,
         wishes=wishes,
@@ -213,7 +214,7 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
         gender=gender,
         birthday=birthday,
         memo=memo,
-        channel=core_api.get_channel(request=request)
+        channel=channel.v
         )
     if hasattr(request, "browserid"):
         entry.browserid = getattr(request, "browserid")

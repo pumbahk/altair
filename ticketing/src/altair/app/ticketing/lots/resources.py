@@ -88,8 +88,10 @@ class LotResource(object):
         if user:
             query = query.filter(LotEntry.user_id==user.id)
         elif email:
-            query = query.join(Shipping_address)\
+            query = query.join(ShippingAddress)\
                          .filter(or_(ShippingAddress.email_1==email, ShippingAddress.email_2==email))
+        else:
+            return
         # 抽選単位での申込上限チェック
         entry_limit = self.lot.entry_limit
         if entry_limit > 0:
