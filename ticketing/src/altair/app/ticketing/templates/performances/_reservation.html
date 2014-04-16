@@ -423,6 +423,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     uiFilter = 'all';
     setMetadata();
     venueEditorRoot.venueeditor('load');
+    $('#venue-viewer-guide').remove();
     $('#show-vacant-btn').val('空席のみ表示');
     $('form[name="modal-confirm-form"]').find('input').removeAttr('disabled');
   }
