@@ -1904,6 +1904,8 @@ class OrdersEditAPIView(BaseView):
         order = Order.get(order_id, self.context.organization.id)
         if order is None:
             raise HTTPNotFound('order id %s is not found' % order_id)
+        if order.is_canceled():
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'既にキャンセルされています')))
         return self._get_order_dicts(order)
 
     @view_config(route_name='orders.api.edit_confirm', request_method='POST', renderer='json')
