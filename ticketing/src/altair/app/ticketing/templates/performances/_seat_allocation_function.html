@@ -298,6 +298,10 @@ var makeEditable = (function () {
   }
 })();
 
+function remaining_seats_count(stock){
+    return parseInt(stock.get('available'));
+}
+
 function buildStockRow(stock) {
   var tr = $('<tr></tr>');
   var legend = $('<td class="stock-legend"></td>');
@@ -309,6 +313,8 @@ function buildStockRow(stock) {
   } else {
     name.text(stockType.get('name'));
   }
+  var rest_label = $('<span class="rest label"></span>');
+  rest_label.text("残席:" + remaining_seats_count(stock) + "席");
   var quantity = $('<td class="stock-quantity"></td>');
   if (stockType.get('isSeat') && !stockType.get('quantityOnly')) {
     makeAssignable(quantity, stock);
@@ -319,6 +325,7 @@ function buildStockRow(stock) {
   makeLockHandler(lock, stock);
   tr.append(legend);
   tr.append(name);
+  tr.append(rest_label);
   tr.append(quantity);
   tr.append(lock);
   return tr;
