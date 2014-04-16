@@ -117,10 +117,10 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         </form>
       </div>
       <ul class="nav nav-tabs">
-        <li class="active"><a href="#venue-editor-main-side-tab0" data-toggle="tab">予約情報</a></li>
+        <li class="active"><a href="#venue-editor-main-side-tab3" data-toggle="tab">予約情報</a></li>
       </ul>
       <div class="tab-content" style="overflow: visible;">
-        <div class="tab-pane active" id="venue-editor-main-side-tab0"></div>
+        <div class="tab-pane active" id="venue-editor-main-side-tab3"></div>
       </div>
     </div>
     % if HH.has_permission('event_editor'):
@@ -129,14 +129,14 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         <a name="save" href="javascript:saveStocks();" class="btn btn-primary">保存</a>
       </div>
       <ul class="nav nav-tabs">
-        <li class="active"><a href="#venue-editor-main-side-tab1" data-toggle="tab">配席(枠)</a></li>
-        <li><a href="#venue-editor-main-side-tab2" data-toggle="tab">配席(席種)</a></li>
-        <li><a href="#venue-editor-main-side-tab3" data-toggle="tab">選択座席<span class="selection-count badge"></span></a></li>
+        <li class="active"><a href="#venue-editor-main-side-tab0" data-toggle="tab">配席(枠)</a></li>
+        <li><a href="#venue-editor-main-side-tab1" data-toggle="tab">配席(席種)</a></li>
+        <li><a href="#venue-editor-main-side-tab2" data-toggle="tab">選択座席<span class="selection-count badge"></span></a></li>
       </ul>
       <div class="tab-content" style="overflow: visible;">
-        <div class="tab-pane active" id="venue-editor-main-side-tab1"></div>
+        <div class="tab-pane active" id="venue-editor-main-side-tab0"></div>
+        <div class="tab-pane" id="venue-editor-main-side-tab1"></div>
         <div class="tab-pane" id="venue-editor-main-side-tab2"></div>
-        <div class="tab-pane" id="venue-editor-main-side-tab3"></div>
       </div>
     </div>
     % endif
@@ -146,8 +146,14 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 <%include file="_seat_allocation_function.html" args="performance=performance" />
 
 <script type="text/javascript">
-
   % if HH.has_permission('event_editor'):
+  $('.venue-editor-main-side-toggle').mousedown(function() {
+    var tab = $(this).data('toggle');
+    if (tab == 'seat_allocation' && uiFilter != 'all') {
+      showAlert('配席機能を利用するには、全ての座席を表示する必要があります。');
+      return false;
+    }
+  });
   $('.venue-editor-main-side-toggle').click(function() {
     var tab = $(this).data('toggle');
     var self_tab = $('.venue-editor-main-side-tab[data-tab=' + tab + ']');
@@ -391,7 +397,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       data: params,
       dataType: 'html',
       success: function(data) {
-        tab0.empty().append(data);
+        tab3.empty().append(data);
         venueEditorSide.animate({scrollTop: 0});
       },
       error: function(xhr, text) {
@@ -400,8 +406,8 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         var alert = $('<div />').addClass('alert alert-error');
         alert.append($('<a class="close" data-dismiss="alert">&times;</a>'));
         alert.append($('<h4 class="alert-heading"/>').text(messages));
-        tab0.find('.alert').remove();
-        tab0.prepend(alert);
+        tab3.find('.alert').remove();
+        tab3.prepend(alert);
       }
     });
   }
@@ -695,22 +701,22 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     });
   }
 
-  var tab0 = venueEditorSide.find("#venue-editor-main-side-tab0");
+  var tab3 = venueEditorSide.find("#venue-editor-main-side-tab3");
   % if HH.has_permission('event_editor'):
+  var tab0 = venueEditorSide.find("#venue-editor-main-side-tab0");
   var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
   var tab2 = venueEditorSide.find("#venue-editor-main-side-tab2");
-  var tab3 = venueEditorSide.find("#venue-editor-main-side-tab3");
   % endif
 
   callbacks.load = callbacks.refresh = function (viewer) {
-    tab0.empty();
-    % if HH.has_permission('event_editor'):
-    tab1.empty();
-    tab1.append(buildStockHolderTypeTables(viewer.venue));
-    tab2.empty();
-    tab2.append(buildStockTypeHolderTables(viewer.venue));
     tab3.empty();
-    tab3.append(buildSeatDetailTable(venueEditorRoot.venueeditor('selection')));
+    % if HH.has_permission('event_editor'):
+    tab0.empty();
+    tab0.append(buildStockHolderTypeTables(viewer.venue));
+    tab1.empty();
+    tab1.append(buildStockTypeHolderTables(viewer.venue));
+    tab2.empty();
+    tab2.append(buildSeatDetailTable(venueEditorRoot.venueeditor('selection')));
     % endif
   };
 

@@ -949,6 +949,7 @@
               }
             });
             aux.callbacks.loading && aux.callbacks.loading(aux.manager);
+            aux.manager.unselectAll();
             break;
 
           case 'remove':
