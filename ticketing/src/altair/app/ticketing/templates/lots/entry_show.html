@@ -3,6 +3,7 @@
 <%namespace file="_entries_tabs.html" name="tabs" />
 <%
 from altair.app.ticketing.lots.helpers import format_currency
+from altair.app.ticketing.core.api import get_channel
 %>
 <%block name="fulltitle">
 Altair Backend -- ${lot.event.title}[${lot.name}]
@@ -40,6 +41,10 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
             <tr>
               <th class="span2">申込日</th>
               <td class="span3">${"{0:%Y-%m-%d %H:%M}".format(lot_entry.created_at)}</td>
+            </tr>
+            <tr>
+              <th class="span2">販売チャネル</th>
+              <td class="span3">${get_channel(lot_entry.channel).k if lot_entry.channel else u''}</td>
             </tr>
           </table>
 	  申込内容
