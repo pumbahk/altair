@@ -10,7 +10,7 @@ from poster.streaminghttp import register_openers
 from jsonrpclib import jsonrpc
 from StringIO import StringIO
 
-from ..response import FileLikeResponse
+from altair.response import FileLikeResponse
 from altair.app.ticketing.api.impl import BaseCommunicationApi
 from altair.app.ticketing.payments.api import get_delivery_plugin
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID

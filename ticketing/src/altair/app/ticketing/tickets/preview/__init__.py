@@ -19,6 +19,8 @@ def include_views(config):
     config.add_route("tickets.preview.api", "/api/preview/{action}")
     config.add_route("tickets.preview.combobox.api", "/api/preview/combobox/{model}")
     config.add_route("tickets.preview.loadsvg.api", "/api/preview/loadsvg/{model}")
+
+    config.add_route("tickets.preview.download.list.zip", "/preview/download/list/performance/{performance_id}/sales_segment/{sales_segment_id}")
     config.scan(".views")
 
 def include_utilities(config):
