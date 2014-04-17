@@ -15,6 +15,14 @@ class LotResourceTests(unittest.TestCase):
         host = Host(host_name='example.com:80', organization=self.organization)
         self.session.add(host)
 
+        from altair.sqlahelper import register_sessionmaker_with_engine
+        self.config = testing.setUp()
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
+
     def tearDown(self):
         _teardown_db()
 
