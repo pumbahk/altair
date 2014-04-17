@@ -90,7 +90,7 @@ def send_to_orion(request, context, recipient, data):
             if k not in obj['seat']:
                 obj['seat'][k] = v
     else:
-        obj['seat'] = dict(name = product.seat_stock_type.name)
+        obj['seat'] = dict(name = product.seat_stock_type.name, type = product.seat_stock_type.name)
     obj['coupons'] = list()
     obj['coupons'].append(dict(name = seat.name if seat is not None else product.name,
                                qr = (orion.qr_enabled==1),

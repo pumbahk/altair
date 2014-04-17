@@ -90,6 +90,10 @@ order.OrderFormPresenter.prototype = {
             self.showForm();
           }
         });
+      },
+      error: function(model, res) {
+        var response = JSON.parse(res.responseText);
+        self.showMessage(response.message, 'alert-error');
       }
     });
   },

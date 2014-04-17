@@ -1,6 +1,7 @@
 <%page args="performance, form_search" />
 <%namespace file="./_venue_view.html" name="vv" />
 <%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" name="m" />
 
 <script type="text/javascript" src="${request.static_url('altair.app.ticketing:static/js/ticketing.order.js')}"></script>
 <%
@@ -9,16 +10,6 @@ endpoints_json = json.dumps(endpoints, ensure_ascii=False)
 callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _ in range(0, 10))
 %>
 <style>
-.swatch {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  margin: -6px 2px;
-  -webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  border-radius: 3px;
-}
-
 #venue-editor .venue-editor-main .venue-editor-main-root {
   width: 100%;
 }
@@ -30,6 +21,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 .modal-backdrop.fade.in {
   opacity: 0.1;
 }
+
 #screen {
   position: fixed;
   left: 0px;
@@ -70,7 +62,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 }
 </style>
 
-<%include file="./_detail_table.html" args="expanded=false" />
+<%include file="_detail_table.html" args="expanded=false" />
 <div>
   <div class="pull-left">
     <form class="form-horizontal" id="sales_segment-form" style="margin:0 0 5px 5px;"></form>
@@ -101,16 +93,22 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 <div class="row-fluid">
   <%vv:venueeditor data_source="${data_source}">
     <%def name="toolbar_extra()">
-    <input id="show-vacant-btn" type="button" class="btn btn-info" style="margin-left: 15px;" value="空席のみ表示" />
+    <input id="show-vacant-btn" type="button" class="btn btn-info" style="margin-left: 15px;" value="全ての座席を表示" />
     <script type="text/javascript">
-      $('#show-vacant-btn').click(function() {showVacantSeatMode();});
+      $('#show-vacant-btn').click(function() {changeSeatDisplayMode();});
     </script>
     <div style="float:right">
-      <div class="btn venue-editor-main-side-toggle">予約情報</div>
+      <span class="btn-group">
+        % if HH.has_permission('event_editor'):
+        <div class="btn venue-editor-main-side-toggle" data-toggle="seat_allocation">配席</div>
+        % endif
+        <div class="btn venue-editor-main-side-toggle" data-toggle="order">予約情報</div>
+      </span>
       <button class="btn btn-primary action-openOrderForm">座席指定予約</button>
     </div>
     </%def>
     <%def name="venue_editor_side_extra()">
+    <div class="venue-editor-main-side-tab" data-tab="order">
       <div style="float:right">
         <form class="form-horizontal search-order-form" style="margin: 0;" action="javascript:void(0);">
           ${form_search.order_no(minlength=12, placeholder=u'予約番号')}
@@ -120,22 +118,66 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         </form>
       </div>
       <ul class="nav nav-tabs">
-	<li class="active"><a href="#venue-editor-main-side-tab1" data-toggle="tab">予約情報</a></li>
+        <li class="active"><a href="#venue-editor-main-side-tab3" data-toggle="tab">予約情報</a></li>
       </ul>
       <div class="tab-content" style="overflow: visible;">
-	<div class="tab-pane active" id="venue-editor-main-side-tab1"></div>
+        <div class="tab-pane active" id="venue-editor-main-side-tab3"></div>
       </div>
+    </div>
+    % if HH.has_permission('event_editor'):
+    <div class="venue-editor-main-side-tab hide" data-tab="seat_allocation">
+      <div style="float:right">
+        <a name="save" href="javascript:saveStocks();" class="btn btn-primary">保存</a>
+      </div>
+      <ul class="nav nav-tabs">
+        <li class="active"><a href="#venue-editor-main-side-tab0" data-toggle="tab">配席(枠)</a></li>
+        <li><a href="#venue-editor-main-side-tab1" data-toggle="tab">配席(席種)</a></li>
+        <li><a href="#venue-editor-main-side-tab2" data-toggle="tab">選択座席<span class="selection-count badge"></span></a></li>
+      </ul>
+      <div class="tab-content" style="overflow: visible;">
+        <div class="tab-pane active" id="venue-editor-main-side-tab0"></div>
+        <div class="tab-pane" id="venue-editor-main-side-tab1"></div>
+        <div class="tab-pane" id="venue-editor-main-side-tab2"></div>
+      </div>
+    </div>
+    % endif
     </%def>
 
     <%def name="post()">
+<%include file="_seat_allocation_function.html" args="performance=performance" />
+
 <script type="text/javascript">
+  % if HH.has_permission('event_editor'):
+  $('.venue-editor-main-side-toggle').mousedown(function() {
+    var tab = $(this).data('toggle');
+    if (tab == 'seat_allocation' && uiFilter != 'all') {
+      showAlert('配席機能を利用するには、全ての座席を表示する必要があります。');
+      return false;
+    }
+  });
+  $('.venue-editor-main-side-toggle').click(function() {
+    var tab = $(this).data('toggle');
+    var self_tab = $('.venue-editor-main-side-tab[data-tab=' + tab + ']');
+    var other_tab = $('.venue-editor-main-side-tab[data-tab!=' + tab + ']');
+    if ($(this).hasClass('active')) {
+      self_tab.removeClass('hide');
+      other_tab.addClass('hide');
+    } else {
+      self_tab.addClass('hide');
+      other_tab.removeClass('hide');
+    }
+    var other = $('.venue-editor-main-side-toggle[data-toggle!=' + tab + ']');
+    other.removeClass('active');
+  });
+  % endif
+
   var callbackName = ${json.dumps(callback_name)|n};
   var appletCodeBase = ${json.dumps(request.application_url)|n};
   var appletArchive = ${json.dumps(request.static_url('altair.app.ticketing:static/printing-0.0.1-jar-with-dependencies.jar'))|n};
   var appletEndpoints = ${json.dumps(endpoints_json)|n};
   var cookie = ${json.dumps(request.headers.get('cookie'))|n};
   var uiMode = 'normal';  // normal, salesCounter
-  var uiFilter = '';  // vacant
+  var uiFilter = 'vacant';  // vacant, all
 
   // todo rewrite: 
   var Pager = function Pager(el, current){
@@ -167,6 +209,13 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     }
     this.current = target;
   };
+
+  function setMetadata(params) {
+    var metadata = "${data_source.get('metadata')|n}";
+    metadata += '&sales_segment_id=' + $('#sales_segment-form').find('select[name="sales_segment_id"]').val()
+    if (uiFilter == 'all') metadata += '&load_all_seat=true';
+    venueEditorRoot.data('venueeditor').dataSource.metadata = metadata;
+  }
 
   function showAlert(message) {
     var dialog = $('<div class="modal hide"></div>');
@@ -332,17 +381,6 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     });
   }
 
-  var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
-
-  callbacks.load = function (viewer) {
-    tab1.empty();
-  };
-
-  callbacks.click = function (seat) {
-    if (!$('.venue-editor-main-side-toggle').hasClass('active')) return;
-    showOrder(seat);
-  };
-
   function onReservationComplete(result) {
     if (window.ticketPrinterService)
       printOrder(result.order_id); // _printer.html
@@ -367,7 +405,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       data: params,
       dataType: 'html',
       success: function(data) {
-        tab1.empty().append(data);
+        tab3.empty().append(data);
         venueEditorSide.animate({scrollTop: 0});
       },
       error: function(xhr, text) {
@@ -376,8 +414,8 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         var alert = $('<div />').addClass('alert alert-error');
         alert.append($('<a class="close" data-dismiss="alert">&times;</a>'));
         alert.append($('<h4 class="alert-heading"/>').text(messages));
-        tab1.find('.alert').remove();
-        tab1.prepend(alert);
+        tab3.find('.alert').remove();
+        tab3.prepend(alert);
       }
     });
   }
@@ -392,16 +430,32 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     $('#sales-counter-toolbar').css('display', 'block');
   }
 
-  function showVacantSeatMode() {
+  function changeSeatDisplayMode() {
     if (uiFilter == 'vacant') {
-      uiFilter = '';
-      venueEditorRoot.venueeditor('showAllSeat');
-      $('#show-vacant-btn').val('空席のみ表示');
+      var modal = $('#modal-confirm');
+      var form = modal.find('form');
+      form.attr('action', 'javascript:loadAllSeat();');
+      form.find('input[type=submit]').val('全ての座席を表示');
+      var message = '予約済み/予約中の座席を含め、全ての購入可能な座席を表示します。<br>この処理は時間がかかる場合があります。よろしいですか？';
+      modal.find('.message').html('<p>' + message + '</p>');
+      modal.modal('toggle');
     } else {
       uiFilter = 'vacant';
+      setMetadata();
       venueEditorRoot.venueeditor('showVacantSeat');
       $('#show-vacant-btn').val('全ての座席を表示');
     }
+  }
+
+  function loadAllSeat() {
+    var modal = $('#modal-confirm');
+    modal.modal('toggle');
+    uiFilter = 'all';
+    setMetadata();
+    venueEditorRoot.venueeditor('load');
+    $('#venue-viewer-guide').remove();
+    $('#show-vacant-btn').val('空席のみ表示');
+    $('form[name="modal-confirm-form"]').find('input').removeAttr('disabled');
   }
 
   window[callbackName] = function (applet) {
@@ -671,6 +725,34 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     });
   }
 
+  var tab3 = venueEditorSide.find("#venue-editor-main-side-tab3");
+  % if HH.has_permission('event_editor'):
+  var tab0 = venueEditorSide.find("#venue-editor-main-side-tab0");
+  var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
+  var tab2 = venueEditorSide.find("#venue-editor-main-side-tab2");
+  % endif
+
+  callbacks.load = callbacks.refresh = function (viewer) {
+    tab3.empty();
+    % if HH.has_permission('event_editor'):
+    tab0.empty();
+    tab0.append(buildStockHolderTypeTables(viewer.venue));
+    tab1.empty();
+    tab1.append(buildStockTypeHolderTables(viewer.venue));
+    tab2.empty();
+    tab2.append(buildSeatDetailTable(venueEditorRoot.venueeditor('selection')));
+    % endif
+  };
+
+  callbacks.select = function (viewer, selection) {
+    update_selection_table(selection);
+  }
+
+  callbacks.click = function (seat) {
+    var el = $('.venue-editor-main-side-toggle[data-toggle="order"]');
+    if (!el.hasClass('active')) return;
+    if (el.data('toggle') == 'order') showOrder(seat);
+  };
 
   /* application */
   var reservation = {};
@@ -809,8 +891,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       'change select[name="sales_segment_id"]': 'onChange'
     },
     onChange: function(e) {
-      var metadata = "${data_source.get('metadata')|n}"
-      venueEditorRoot.data('venueeditor').dataSource.metadata = metadata + '&sales_segment_id=' + $(e.target).val();
+      setMetadata();
       if (venueEditorRoot.venueeditor('model')) {
         venueEditorRoot.venueeditor('load');
         this.presenter.removeGuide();
@@ -914,3 +995,5 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     Now loading...
   </div>
 </div>
+
+${m.confirm_modal()}

@@ -28,10 +28,12 @@
           <td>1希望の申込で${sales_segment.max_quantity}枚まで</td>
         </tr>
         %endif
+        %if lot.entry_limit:
         <tr>
           <th scope="row">申込回数制限</th>
-          <td>${u"{0} 回".format(lot.entry_limit) if lot.entry_limit else u"無制限"}</td>
+          <td>${u"{0} 回".format(lot.entry_limit)}</td>
         </tr>
+        %endif
         <tr>
           <th scope="row">受付希望数</th>
           <td>一度の申込で第${lot.limit_wishes}希望まで</td>

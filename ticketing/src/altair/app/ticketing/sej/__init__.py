@@ -3,6 +3,7 @@
 from pyramid.config import Configurator
 
 from sqlalchemy import engine_from_config
+from altair.sqla import session_scope
 import sqlahelper
 
 import logging
@@ -20,11 +21,22 @@ def includeme(config):
         inticket_api_url=registry.settings.get('altair.sej.inticket_api_url') or registry.settings.get('sej.inticket_api_url')
         )
     config.registry.registerUtility(default_sej_tenant, ISejTenant)
+    config.include(configure_session)
+    config.include('.communicator')
+    config.add_tween('.tweens.sej_dbsession_tween_factory')
 
+def configure_session(config):
+    from .models import _session
+    from sqlahelper import get_engine
+    _session.configure(bind=get_engine())
 
 def setup_routes(config):
     config.add_route('sej.callback'                 , '/callback/')
     config.add_route('sej.callback.form'            , '/callback/form')
+
+def sej_session(func):
+    from .models import _session
+    return session_scope('sej', _session)(func)
 
 def main(global_config, **local_config):
     settings = dict(global_config)
@@ -38,10 +50,9 @@ def main(global_config, **local_config):
     config.set_root_factory('.resources.TicketingApiResource')
     config.registry['sa.engine'] = engine
 
+    config.include('.')
     config.add_tween('.tweens.encoding_converter_tween_factory')
     config.include(setup_routes, "/altair/sej/")
-    config.scan()
+    config.scan('.views')
 
     return config.make_wsgi_app()
-
-

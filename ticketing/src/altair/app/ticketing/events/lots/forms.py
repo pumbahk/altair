@@ -41,7 +41,7 @@ class LotForm(Form):
     )
 
     entry_limit = IntegerField(
-        label=u'申し込み上限',
+        label=u'申込上限',
         validators=[
             Required(),
         ],

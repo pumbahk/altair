@@ -36,7 +36,7 @@ from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentAccessor,
 )
-
+from .forms import DeliveryMethodSelectForm
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/performances/show.html')
 class PerformanceShowView(BaseView):
@@ -62,7 +62,11 @@ class PerformanceShowView(BaseView):
             )
 
     def _tab_product(self):
-        return dict()
+        ## まとめてdownloadするために必要
+        delivery_method_select_form_dict = {unicode(s.id): DeliveryMethodSelectForm(obj=s) for s in self.performance.sales_segments}
+        return dict(
+            delivery_method_select_form_dict=delivery_method_select_form_dict
+        )
 
     def _tab_order(self):
         slave_session = get_db_session(self.request, name="slave")
@@ -348,6 +352,7 @@ class Performances(BaseView):
                 Performance(
                     setting=PerformanceSetting(
                         order_limit=f.order_limit.data,
+                        entry_limit=f.entry_limit.data,
                         max_quantity_per_user=f.max_quantity_per_user.data
                         ),
                     event_id=self.context.event.id
@@ -385,6 +390,7 @@ class Performances(BaseView):
             venue_id=performance.venue.id
             )
         f.order_limit.data = performance.setting and performance.setting.order_limit
+        f.entry_limit.data = performance.setting and performance.setting.entry_limit
         f.max_quantity_per_user.data = performance.setting and performance.setting.max_quantity_per_user
         if is_copy:
             f.original_id.data = f.id.data
@@ -421,6 +427,7 @@ class Performances(BaseView):
                 if performance.setting is None:
                     performance.setting = PerformanceSetting()
                 performance.setting.order_limit = f.order_limit.data
+                performance.setting.entry_limit = f.entry_limit.data
                 performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
             else:
                 try:
@@ -444,6 +451,7 @@ class Performances(BaseView):
                 if performance.setting is None:
                     performance.setting = PerformanceSetting()
                 performance.setting.order_limit = f.order_limit.data
+                performance.setting.entry_limit = f.entry_limit.data
                 performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
 
             performance.save()

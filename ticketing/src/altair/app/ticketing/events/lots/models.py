@@ -59,6 +59,7 @@ class LotWishSummary(Base):
     __mapper_args__ = dict(
         include_properties=[
             LotEntry.__table__.c.organization_id,
+            LotEntry.__table__.c.channel,
             LotEntryWish.__table__.c.id,
             LotEntryWish.__table__.c.created_at,
             LotEntry.__table__.c.entry_no,
@@ -96,7 +97,6 @@ class LotWishSummary(Base):
             MultiCheckoutOrderStatus.__table__.c.Status,
             SejOrder.__table__.c.billing_number,
             SejOrder.__table__.c.exchange_number,
-
         ],
         primary_key=[
             LotEntryWish.__table__.c.id
@@ -108,6 +108,7 @@ class LotWishSummary(Base):
     created_at = LotEntryWish.__table__.c.created_at
     organization_id = LotEntry.__table__.c.organization_id
     organization = orm.relationship('Organization', primaryjoin=(organization_id==Organization.id))
+    channel = LotEntry.__table__.c.channel
     entry_no = LotEntry.__table__.c.entry_no
     wish_order = LotEntryWish.__table__.c.wish_order
     performance_name = Performance.__table__.c.name
@@ -380,6 +381,8 @@ SELECT
         ELSE '申込'
     END AS `状態`,
     LotEntry.entry_no AS `申し込み番号`,
+    LotEntry.channel AS `販売チャネル`,
+    LotEntry.browserid AS `ブラウザID`,
     LotEntryWish.wish_order + 1 AS `希望順序`,
     LotEntryWish.created_at AS `申し込み日`,
     -- NULL,
@@ -477,6 +480,8 @@ WHERE Lot.id = %s
     csv_columns = (
         u'状態',
         u'申し込み番号',
+        u'販売チャネル',
+        u'ブラウザID',
         u'希望順序',
         u'申し込み日',
         u'席種',
@@ -510,7 +515,7 @@ WHERE Lot.id = %s
         u'名',
         u'姓(カナ)',
         u'名(カナ)',
-        U'ニックネーム',
+        u'ニックネーム',
         u'プロフィールに設定されている性別',
         u'プロフィールに設定されている誕生日',
     )

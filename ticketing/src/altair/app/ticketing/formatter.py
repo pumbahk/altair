@@ -40,3 +40,6 @@ class Japanese_Japan_Formatter(object):
 
     def format_currency(self, dec):
         return u'{0:0,.0f}円'.format(dec)
+
+def includeme(config):
+    config.registry.registerUtility(Japanese_Japan_Formatter(), ITicketingFormatter, 'ja_JP')

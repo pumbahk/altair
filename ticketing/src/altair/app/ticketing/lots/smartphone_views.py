@@ -26,7 +26,7 @@ from . import api
 from . import helpers as h
 from . import schemas
 from . import selectable_renderer
-from .exceptions import NotElectedException
+from .exceptions import NotElectedException, OverEntryLimitException, OverEntryLimitPerPerformanceException
 from .views import nogizaka_auth, is_nogizaka
 from .models import (
     LotEntry,
@@ -135,7 +135,7 @@ class EntryLotView(object):
 
     @view_config(route_name='lots.entry.index', renderer=selectable_renderer("smartphone/%(membership)s/index.html"), request_method="POST", custom_predicates=(is_nogizaka, ))
     def nogizaka_auth(self):
-        KEYWORD = 'thYsXctE2q8UbnZKCqs7QZjBdcgpVq3a'
+        KEYWORD = '1dFG23e74Ab13S3f85a1c0b7Z0ebBd07'
         keyword = self.request.POST.get('keyword', None)
         if keyword or self.request.session.get('lots.passed.keyword') != KEYWORD:
             if keyword != KEYWORD:
@@ -275,10 +275,16 @@ class EntryLotView(object):
         wishes = h.convert_sp_wishes(self.request.params, lot.limit_wishes)
 
         validated = True
+        user = user_api.get_user(self.context.authenticated_user())
         email = self.request.params.get('email_1')
         # 申込回数チェック
-        if not lot.check_entry_limit(email):
-            self.request.session.flash(u"抽選への申込は{0}回までとなっております。".format(lot.entry_limit))
+        try:
+            self.context.check_entry_limit(wishes, user=user, email=email)
+        except OverEntryLimitPerPerformanceException as e:
+            self.request.session.flash(u"公演「{0}」への申込は{1}回までとなっております。".format(e.performance_name, e.entry_limit))
+            validated = False
+        except OverEntryLimitException as e:
+            self.request.session.flash(u"抽選への申込は{0}回までとなっております。".format(e.entry_limit))
             validated = False
 
         # 決済・引取方法選択

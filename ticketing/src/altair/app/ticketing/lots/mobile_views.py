@@ -10,16 +10,17 @@ from wtforms.validators import ValidationError
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, Performance, Product
 from altair.app.ticketing.cart import api as cart_api
+from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.cart.views import back
 from altair.app.ticketing.payments.api import set_confirm_url
 from altair.app.ticketing.payments.payment import Payment
-from altair.app.ticketing.cart.exceptions import NoCartError
+from altair.app.ticketing.users import api as user_api
 
 from . import api
 from . import helpers as h
 from . import schemas
 from . import selectable_renderer
-from .exceptions import NotElectedException
+from .exceptions import NotElectedException, OverEntryLimitException, OverEntryLimitPerPerformanceException
 from .models import (
     LotEntry,
     LotEntryWish,
@@ -85,7 +86,7 @@ class EntryLotView(object):
 
     @view_config(route_name='lots.entry.index', renderer=selectable_renderer("mobile/%(membership)s/index.html"), request_method="POST", custom_predicates=(is_nogizaka, ))
     def nogizaka_auth(self):
-        KEYWORD = 'thYsXctE2q8UbnZKCqs7QZjBdcgpVq3a'
+        KEYWORD = '1dFG23e74Ab13S3f85a1c0b7Z0ebBd07'
         keyword = self.request.POST.get('keyword', None)
         if keyword or self.request.session.get('lots.passed.keyword') != KEYWORD:
             if keyword != KEYWORD:
@@ -327,10 +328,17 @@ class EntryLotView(object):
             self.request.session.flash(u"入力内容を確認してください")
             return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
 
+        wishes=api.get_options(self.request, lot.id)
+        user = user_api.get_user(self.context.authenticated_user())
         email = self.request.params.get('email_1')
         # 申込回数チェック
-        if not lot.check_entry_limit(email):
-            self.request.session.flash(u"抽選への申込は{0}回までとなっております。".format(lot.entry_limit))
+        try:
+            self.context.check_entry_limit(wishes, user=user, email=email)
+        except OverEntryLimitPerPerformanceException as e:
+            self.request.session.flash(u"公演「{0}」への申込は{1}回までとなっております。".format(e.performance_name, e.entry_limit))
+            return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
+        except OverEntryLimitException as e:
+            self.request.session.flash(u"抽選への申込は{0}回までとなっております。".format(e.entry_limit))
             return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
 
         entry_no = api.generate_entry_no(self.request, self.context.organization)
@@ -338,7 +346,7 @@ class EntryLotView(object):
         api.new_lot_entry(
             self.request,
             entry_no=entry_no,
-            wishes=api.get_options(self.request, lot.id),
+            wishes=wishes,
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             shipping_address_dict=shipping_address_dict,
             gender=cform['sex'].data,

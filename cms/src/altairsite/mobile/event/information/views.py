@@ -7,11 +7,12 @@ from altairsite.config import mobile_site_view_config
 from altairsite.mobile.event.information.forms import InformationForm
 from altairsite.mobile.core.helper import log_info, Markup
 from altairsite.mobile.core.disphelper import DispHelper
+from altairsite.separation import selectable_renderer
 
 @mobile_site_view_config(route_name='information', request_type="altairsite.tweens.IMobileRequest"
-    , renderer='altairsite.mobile:templates/information/information.mako')
+    , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/information/information.mako'))
 @mobile_site_view_config(route_name='infodetail', request_type="altairsite.tweens.IMobileRequest"
-    , renderer='altairsite.mobile:templates/information/infodetail.mako')
+    , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/information/infodetail.mako'))
 def move_information(request):
 
     log_info("move_information", "start")

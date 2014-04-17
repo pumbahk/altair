@@ -27,7 +27,7 @@ from altair.pyramid_boto.s3.assets import IS3KeyProvider
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.core.models import (
-    Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SalesSegment, SalesSegmentSetting,
+    Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SeatStatusEnum, SalesSegment, SalesSegmentSetting,
     SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType,
     ProductItem, Product, Performance, Event, SeatIndexType, SeatIndex
 )
@@ -101,6 +101,7 @@ def get_seats(request):
     filter_params = set() if _filter_params is None else set(_filter_params.split(u'|'))
     sales_segment_id = request.params.get(u'sales_segment_id', None)
     loaded_at = request.params.get(u'loaded_at', None)
+    load_all_seat = request.params.get(u'load_all_seat', None)
     sale_only = (u'sale_only' in filter_params)
     if loaded_at:
         loaded_at = datetime.fromtimestamp(float(loaded_at))
@@ -122,6 +123,8 @@ def get_seats(request):
         if loaded_at:
             query = query.filter(or_(Seat.updated_at>loaded_at, SeatStatus.updated_at>loaded_at))
         elif sale_only:
+            if not load_all_seat:
+                query = query.filter(SeatStatus.status==SeatStatusEnum.Vacant.v)
             query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id))
             query = query.join(Product).join(SalesSegment).distinct()
             if sales_segment_id:

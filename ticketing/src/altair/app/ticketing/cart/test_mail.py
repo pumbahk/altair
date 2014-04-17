@@ -11,18 +11,6 @@ from datetime import datetime
 from altair.app.ticketing.cart import helpers as h
 from altair.app.ticketing.mails.testing import MailTestMixin
 
-def setUpModule():
-    from altair.app.ticketing.testing import _setup_db
-    _setup_db(modules=[
-            "altair.app.ticketing.models",
-            "altair.app.ticketing.core.models",
-            "altair.app.ticketing.cart.models",
-            ])
-
-def tearDownModule():
-    from altair.app.ticketing.testing import _teardown_db
-    _teardown_db()
-
 def _build_order(*args, **kwargs):
     from altair.app.ticketing.core.models import (
         Order,
@@ -116,16 +104,46 @@ def _build_order(*args, **kwargs):
     order.items.append(ordererd_product1)
     return order
 
-def _build_sej(*args, **kwargs):
-    from altair.app.ticketing.sej.models import SejOrder
-    sej_order = SejOrder(**kwargs)
-    import sqlahelper
-    sqlahelper.get_session().add(sej_order)
+def _build_sej(request, order_no=None, user_name=u'name', user_name_kana=u'name_kana', tel='0300000000', zip_code='0000000', email='test@example.com', total_price=0, ticket_price=0, commission_fee=0, payment_type='1', ticketing_fee=0, payment_due_at=None, ticketing_start_at=None, ticketing_due_at=None, regrant_number_due_at=None):
+    from altair.app.ticketing.sej.api import create_sej_order
+    sej_order = create_sej_order(
+        request,
+        order_no=order_no,
+        user_name=user_name,
+        user_name_kana=user_name_kana,
+        tel=tel,
+        zip_code=zip_code,
+        email=email,
+        total_price=total_price,
+        ticket_price=ticket_price,
+        commission_fee=commission_fee,
+        payment_type=payment_type,
+        ticketing_fee=ticketing_fee,
+        payment_due_at=payment_due_at,
+        ticketing_start_at=ticketing_start_at,
+        ticketing_due_at=ticketing_due_at,
+        regrant_number_due_at=regrant_number_due_at
+        )
+    sej_order.shop_id = '00000'
+    sej_order.shop_name = 'shop_name'
+    sej_order.contact_01 = 'contact_01'
+    sej_order.contact_02 = 'contact_02'
     return sej_order
 
 class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
     def setUp(self):
-        self.config = testing.setUp(settings={"altair.sej.template_file": "xxx"})
+        from altair.app.ticketing.testing import _setup_db
+        self.session = _setup_db(modules=[
+                "altair.app.ticketing.models",
+                "altair.app.ticketing.core.models",
+                "altair.app.ticketing.cart.models",
+                ])
+
+        self.config = testing.setUp(settings={
+            "altair.sej.template_file": "xxx",
+            "altair.multicheckout.endpoint.base_url": "http://example.com/",
+            "altair.multicheckout.endpoint.timeout": "0",
+            })
         #self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
         self.config.include('altair.app.ticketing.renderers')
         self.config.include('altair.app.ticketing.cart.import_mail_module')
@@ -133,6 +151,8 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
         ## TBA
         self.config.add_route("qr.make", "__________")
 
+        self.config.include('altair.app.ticketing.sej')
+        self.config.include('altair.multicheckout')
         self.config.include('altair.app.ticketing.payments')
         self.config.include('altair.app.ticketing.payments.plugins')
         self.config.add_subscriber('altair.app.ticketing.cart.subscribers.add_helpers', 'pyramid.events.BeforeRender')
@@ -140,10 +160,16 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
         self.registerDummyMailer()
 
     def tearDown(self):
-        self._get_mailer().outbox = []
+        from altair.app.ticketing.testing import _teardown_db
+        from altair.multicheckout import api as multicheckout_api
+        from altair.app.ticketing.sej import api as sej_api
         import transaction
+        self._get_mailer().outbox = []
         transaction.abort()
         testing.tearDown()
+        multicheckout_api.remove_default_session()
+        sej_api.remove_default_session()
+        _teardown_db()
 
     def _get_mailer(self):
         from pyramid_mailer import get_mailer
@@ -385,11 +411,15 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
 
         order = _build_order()
 
-        sej_order = _build_sej(order_no=101010,
-                              exchange_number="707070", 
-                              ticketing_start_at=datetime(3000, 1, 1), 
-                              ticketing_due_at=datetime(4000, 1, 1), 
-                              )
+        sej_order = _build_sej(
+            request,
+            order_no='101010',
+            ticketing_start_at=datetime(3000, 1, 1), 
+            ticketing_due_at=datetime(4000, 1, 1), 
+            )
+        sej_order.exchange_number = "707070"
+        self.session.add(sej_order)
+        self.session.flush()
         order.order_no = sej_order.order_no
         
         payment_method = PaymentMethod(payment_plugin_id=1, name=u"クレジットカード決済")
@@ -472,12 +502,17 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
         order = _build_order()
         
         ## extra info
-        sej_order = _build_sej(order_no=101010,
-                              billing_number="909090", 
-                              payment_due_at=datetime(2000, 1, 1), 
-                              exchange_number="707070", 
-                              ticketing_start_at=datetime(3000, 1, 1), 
-                              ticketing_due_at=datetime(4000, 1, 1))
+        sej_order = _build_sej(
+            request,
+            order_no='101010',
+            payment_due_at=datetime(2000, 1, 1), 
+            ticketing_start_at=datetime(3000, 1, 1), 
+            ticketing_due_at=datetime(4000, 1, 1)
+            )
+        sej_order.billing_number="909090"
+        sej_order.exchange_number="707070"
+        self.session.add(sej_order)
+        self.session.flush()
         order.order_no = sej_order.order_no
         
         payment_method = PaymentMethod(payment_plugin_id=3, name=u"セブン支払い")

@@ -60,6 +60,7 @@ from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.sej import userside_api
 from altair.app.ticketing.sej.interfaces import ISejTenant
+from altair.app.ticketing.sej.exceptions import SejError
 from altair.app.ticketing.venues.interfaces import ITentativeVenueSite
 from .utils import ApplicableTicketsProducer
 
@@ -1084,6 +1085,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 # 関連テーブルのticket_bundle_idを書き換える
                 for old_id, new_id in convert_map['ticket_bundle'].iteritems():
                     ProductItem.query.filter(and_(ProductItem.ticket_bundle_id==old_id, ProductItem.performance_id==performance.id)).update({'ticket_bundle_id':new_id})
+            # コピーされた販売区分グループの持つ販売区分のmembergroupに propagate する必要がある (refs #7784)
+            for sales_segment_group_id in convert_map['sales_segment_group'].values():
+                sales_segment_group = SalesSegmentGroup.query.filter_by(id=sales_segment_group_id).one()
+                sales_segment_group.sync_member_group_to_children()
         else:
             """
             Eventの作成時は以下のモデルを自動生成する
@@ -2125,7 +2130,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 for stock_holder in stock_holders:
                     if Stock.query.filter(
                         Stock.performance_id == performance.id,
-                        Stock.stock_type_id == stock_type.id, 
+                        Stock.stock_type_id == stock_type.id,
                         Stock.stock_holder_id == stock_holder.id) \
                         .with_entities(Stock.id).first() is None:
                         stock = Stock(
@@ -2853,14 +2858,48 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
             # 未入金ならコンビニ決済のキャンセル通知
             if self.payment_status == 'unpaid':
-                result = sej_api.cancel_sej_order(sej_order, tenant, now)
-                if not result:
+                try:
+                    sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, now=now)
+                except SejError:
+                    logger.exception(u'cancel could not be processed')
                     return False
 
             # 入金済み、払戻予約ならコンビニ決済の払戻通知
             elif self.payment_status in ['paid', 'refunding']:
-                result = sej_api.refund_sej_order(sej_order, tenant, self, now)
-                if not result:
+                from altair.app.ticketing.orders.api import (
+                    get_refund_per_order_fee,
+                    get_refund_per_ticket_fee,
+                    get_refund_ticket_price,
+                    )
+                try:
+                    sej_api.refund_sej_order(
+                        request,
+                        tenant=tenant,
+                        sej_order=sej_order,
+                        performance_name=self.performance.name,
+                        performance_code=self.performance.code,
+                        performance_start_on=self.performance.start_on,
+                        per_order_fee=get_refund_per_order_fee(
+                            self.prev.refund,
+                            self.prev
+                            ),
+                        per_ticket_fee=get_refund_per_ticket_fee(
+                            self.prev.refund,
+                            self.prev
+                            ),
+                        refund_start_at=self.refund.start_at,
+                        refund_end_at=self.refund.end_at,
+                        ticket_expire_at=self.refund.end_at + timedelta(days=+7),
+                        ticket_price_getter=lambda sej_ticket: \
+                            get_refund_ticket_price(
+                                self.prev.refund,
+                                self.prev,
+                                sej_ticket.product_item_id
+                                ),
+                        now=now
+                        )
+                except SejError:
+                    logger.exception(u'refund could not be processed')
                     return False
 
         # 窓口支払
@@ -2876,9 +2915,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             sej_order = self.sej_order
             # SejAPIでエラーのケースではSejOrderはつくられないのでスキップ
             if sej_order:
-                result = sej_api.cancel_sej_order(sej_order, tenant, now)
-                if not result:
-                    logger.info('SejOrder (order_no=%s) cancel error' % self.order_no)
+                try:
+                    sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, now=now)
+                except SejError:
+                    logger.exception('SejOrder (order_no=%s) cancel error' % self.order_no)
                     return False
             else:
                 logger.info('skip cancel delivery method. SejOrder not found (order_no=%s)' % self.order_no)
@@ -2962,8 +3002,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         try:
             return order.cancel(request, self.refund.payment_method)
-        except Exception, e:
-            logger.error(u'払戻処理でエラーが発生しました (%s)' % e.message)
+        except Exception:
+            logger.exception(u'払戻処理でエラーが発生しました')
         return False
 
     def release(self):
@@ -4079,9 +4119,9 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixi
     id = Column(Identifier, primary_key=True)
     event_id = Column(Identifier, ForeignKey('Event.id'))
 
-    performance_selector = Column(Unicode(255), doc=u"カートでの公演絞り込み方法")
-    performance_selector_label1_override = Column(Unicode(255), nullable=True)
-    performance_selector_label2_override = Column(Unicode(255), nullable=True)
+    performance_selector = AnnotatedColumn(Unicode(255), doc=u"カートでの公演絞り込み方法", _a_label=u'カートでの公演絞り込み方法', _a_visible_column=True)
+    performance_selector_label1_override = AnnotatedColumn(Unicode(255), nullable=True, _a_label=u'絞り込みラベル1', _a_visible_column=True)
+    performance_selector_label2_override = AnnotatedColumn(Unicode(255), nullable=True, _a_label=u'絞り込みラベル2', _a_visible_column=True)
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'), _a_visible_column=True)
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
 
@@ -4165,6 +4205,7 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Setti
     id = Column(Identifier, primary_key=True)
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'), _a_visible_column=True)
+    entry_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'申込回数制限'), _a_visible_column=True)
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
 
     @property

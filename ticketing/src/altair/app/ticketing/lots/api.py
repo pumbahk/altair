@@ -154,7 +154,7 @@ def build_lot_entry_wish(wish_order, wish_rec):
             wish.products.append(product)
     return wish
 
-def build_lot_entry(lot, wishes, payment_delivery_method_pair, membergroup=None, shipping_address=None, user=None, gender=None, birthday=None, memo=None):
+def build_lot_entry(lot, wishes, payment_delivery_method_pair, membergroup=None, shipping_address=None, user=None, gender=None, birthday=None, memo=None, channel=None):
     entry = LotEntry(
         lot=lot,
         user=user,
@@ -164,7 +164,9 @@ def build_lot_entry(lot, wishes, payment_delivery_method_pair, membergroup=None,
         payment_delivery_method_pair=payment_delivery_method_pair,
         gender=gender,
         birthday=birthday,
-        memo=memo)
+        memo=memo,
+        channel=channel
+        )
     for i, wish_rec in enumerate(wishes):
         wish = build_lot_entry_wish(i, wish_rec)
         wish.organization_id = lot.organization_id
@@ -201,7 +203,7 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
     {product_id, quantity} の希望順リスト
     :param user: ゲストの場合は None
     """
-
+    channel = core_api.get_channel(request=request)
     entry = build_lot_entry(
         lot=lot,
         wishes=wishes,
@@ -212,6 +214,7 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
         gender=gender,
         birthday=birthday,
         memo=memo,
+        channel=channel.v
         )
     if hasattr(request, "browserid"):
         entry.browserid = getattr(request, "browserid")

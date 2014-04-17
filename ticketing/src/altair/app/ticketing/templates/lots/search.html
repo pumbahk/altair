@@ -9,6 +9,7 @@ from altair.app.ticketing.cart.helpers import format_currency
 
 
 <%def name="lot_wish_row(request, w)">
+<% from altair.app.ticketing.core.api import get_channel %>
 <td nowrap="">
 %if (w.canceled_at or w.is_electing() or w.is_rejecting() or w.rejected_at or w.elected_at or w.is_other_electing()):
 <strong>${w.status}</strong>
@@ -63,9 +64,9 @@ ${vh.datetime(w.created_at, with_weekday=True, without_second=True, omit_year_if
 <td nowrap="">${w.shipping_address.address_2}</td>
 <td nowrap="">${w.shipping_address.tel_1}</td>
 <td nowrap="">${w.shipping_address.tel_2}</td>
-<td nowrap="">${w.shipping_address.email_1}</td>
-<td nowrap="">${w.shipping_address.email_2}</td>
-
+<td nowrap="">${w.shipping_address.email_1 or u''}</td>
+<td nowrap="">${w.shipping_address.email_2 or u''}</td>
+<td nowrap="">${get_channel(w.channel).k if w.channel else u''}</td>
 </%def>
 
 
@@ -235,6 +236,7 @@ ${ch.pager(wishes)}
 <th>電話番号2</th>
 <th>メールアドレス1</th>
 <th>メールアドレス2</th>
+<th>販売チャネル</th>
 </tr>
 </thead>
 <tbody>

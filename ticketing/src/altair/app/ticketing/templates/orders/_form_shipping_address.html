@@ -1,33 +1,18 @@
-<%page args="form" />
+<%page args="form, action='#'" />
 <%namespace file="/common/helpers.html" name="ch" />
-
-<div id="modal-edit-shipping_address" class="modal hide">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>配送先編集</h3>
-  </div>
-
-  <div class="modal-body">
-    <form action="javascript:save_shipping_address();" method="POST">
-      <fieldset>
-        ${ch.form_item(form.last_name, maxlength=255)}
-        ${ch.form_item(form.first_name, maxlength=255)}
-        ${ch.form_item(form.last_name_kana, maxlength=255)}
-        ${ch.form_item(form.first_name_kana, maxlength=255)}
-        ${ch.form_item(form.zip, maxlength=7)}
-        ${ch.form_item(form.prefecture, maxlength=255)}
-        ${ch.form_item(form.city, maxlength=255)}
-        ${ch.form_item(form.address_1, maxlength=255)}
-        ${ch.form_item(form.address_2, maxlength=255)}
-        ${ch.form_item(form.tel_1, maxlength=12)}
-        ${ch.form_item(form.email_1, label=u'メールアドレス1')}
-        ${ch.form_item(form.email_2, label=u'メールアドレス2')}
-      </fieldset>
-    </form>
-  </div>
-
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-    <a href="javascript:void(0);" onclick="$('#modal-edit-shipping_address').find('form').submit();" class="btn">保存</a>
-  </div>
-</div>
+<form action="${action}" method="POST">
+  <fieldset>
+    ${ch.form_item(form.last_name, maxlength=255)}
+    ${ch.form_item(form.first_name, maxlength=255)}
+    ${ch.form_item(form.last_name_kana, maxlength=255)}
+    ${ch.form_item(form.first_name_kana, maxlength=255)}
+    ${ch.form_item(form.zip, maxlength=7)}
+    ${ch.form_item(form.prefecture, maxlength=255)}
+    ${ch.form_item(form.city, maxlength=255)}
+    ${ch.form_item(form.address_1, maxlength=255)}
+    ${ch.form_item(form.address_2, maxlength=255)}
+    ${ch.form_item(form.tel_1, maxlength=12)}
+    ${ch.form_item(form.email_1, label=u'メールアドレス1')}
+    ${ch.form_item(form.email_2, label=u'メールアドレス2')}
+  </fieldset>
+</form>

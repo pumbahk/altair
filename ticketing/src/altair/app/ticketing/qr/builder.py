@@ -189,13 +189,14 @@ class DataExtractorFromSigned(object):
         return self.qr.parse(self.body)
         
     def extract(self):
-        data = self._extract()
-        r_signed = self.qr.sign(self.qr.make(data))
-        if not self._validate(r_signed):
+        r_signed = self.qr.sign(self.body)
+        r_sign = r_signed[:8]
+        if not self._validate(r_sign):
             raise InvalidSignedString("not %s == %s" % (self.signed, r_signed))
+        data = self._extract()
         return data
 
-    def _validate(self, r_signed):
+    def _validate(self, r_sign):
         """ QRコードに入ったsigned stringとそこから生成されたデータを元に改めて作成したsigneヘッダが等しいか調べる
         """
-        return self.signed == r_signed
+        return self.sign_header == r_sign

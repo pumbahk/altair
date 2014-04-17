@@ -104,3 +104,6 @@ def halfwidth(unistr):
 
 def zero_as_none(data):
     return None if not data else data
+
+def blank_as_none(data):
+    return None if data == '' else data

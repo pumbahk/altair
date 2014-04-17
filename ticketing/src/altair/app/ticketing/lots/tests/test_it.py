@@ -174,14 +174,16 @@ class EntryLotViewTests(unittest.TestCase):
             params=data,
         )
         context = testing.DummyResource(event=lot.event, lot=lot,
-                                        organization=lot.event.organization)
+                                        organization=lot.event.organization,
+                                        check_entry_limit=lambda wishes, user, email: True,
+                                        authenticated_user=lambda:{'is_guest':True})
         request.context = context
         target = self._makeOne(context, request)
         result = target.post()
         for s in request.session.pop_flash():
             print s
 
-        self.assertEqual(result.location, "http://example.com/lots/events/2/entry/1/confirm")
+        self.assertEqual(result.location, "http://example.com/lots/events/1111/entry/1/confirm")
         self.assertIsNotNone(request.session['lots.entry']['token'])
         self.assertEqual(len(request.session['lots.entry']['token']), 32)
         self.assertEqual(request.session['lots.entry']['shipping_address'],  

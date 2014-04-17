@@ -11,8 +11,8 @@ class LotResourceTests(unittest.TestCase):
             'altair.app.ticketing.lots.models',
             ])
         from altair.app.ticketing.core.models import Host, Organization
-        organization = Organization(short_name='testing')
-        host = Host(host_name='example.com:80', organization=organization)
+        self.organization = Organization(short_name='testing')
+        host = Host(host_name='example.com:80', organization=self.organization)
         self.session.add(host)
 
     def tearDown(self):
@@ -25,6 +25,26 @@ class LotResourceTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
+    def _entry(self, email=None, lot=None, entry_no=None,
+               elected_at=None, canceled_at=None, rejected_at=None, performance=None):
+        from altair.app.ticketing.core.models import ShippingAddress
+        from altair.app.ticketing.lots.models import LotEntry, LotEntryWish
+        wishes = []
+        if performance is not None:
+            wish = LotEntryWish(wish_order=1,
+                                entry_wish_no=1,
+                                performance=performance,
+                                elected_at=elected_at,
+                                canceled_at=canceled_at,
+                                rejected_at=rejected_at)
+            wishes.append(wish)
+        return LotEntry(lot=lot,
+                        entry_no=entry_no,
+                        elected_at=elected_at,
+                        canceled_at=canceled_at,
+                        rejected_at=rejected_at,
+                        shipping_address=ShippingAddress(email_1=email),
+                        wishes=wishes)
 
     def test_it(self):
         request = DummyRequest()
@@ -46,7 +66,6 @@ class LotResourceTests(unittest.TestCase):
         request = DummyRequest(
             matchdict={'lot_id': str(lot.id),
                        'event_id': str(lot.event.id)},
-            
         )
         target = self._makeOne(request)
 
@@ -57,8 +76,151 @@ class LotResourceTests(unittest.TestCase):
         request = DummyRequest(
             matchdict={'lot_id': str(lot.id),
                        'event_id': str(lot.event.id)},
-            
         )
         target = self._makeOne(request)
 
         self.assertEqual(target.event, lot.event)        
+
+    def test_check_entry_limit_no_check(self):
+        lot, products = _add_lots(self.session, [], [])
+        request = DummyRequest(
+            matchdict={'lot_id': str(lot.id),
+                       'event_id': str(lot.event.id)},
+        )
+        lot.entry_limit = 0
+        email = 'test@example.com'
+        entry = self._entry(email)
+        lot.entries.append(entry)
+        self.session.add(lot)
+        self.session.flush()
+
+        target = self._makeOne(request)
+        result = target.check_entry_limit([], email=email)
+
+        self.assertIsNone(result)
+
+    def test_check_entry_limit_ng(self):
+        from ..exceptions import OverEntryLimitException
+        lot, products = _add_lots(self.session, [], [])
+        request = DummyRequest(
+            matchdict={'lot_id': str(lot.id),
+                       'event_id': str(lot.event.id)},
+        )
+        lot.entry_limit = 1
+        email = 'test@example.com'
+        entry = self._entry(email)
+        lot.entries.append(entry)
+        self.session.add(lot)
+        self.session.flush()
+
+        target = self._makeOne(request)
+
+        with self.assertRaises(OverEntryLimitException):
+            target.check_entry_limit([], email=email)
+
+    def test_check_entry_limit_ok(self):
+        lot, products = _add_lots(self.session, [], [])
+        request = DummyRequest(
+            matchdict={'lot_id': str(lot.id),
+                       'event_id': str(lot.event.id)},
+        )
+        lot.entry_limit = 1
+        email = 'test@example.com'
+        self.session.add(lot)
+        self.session.flush()
+
+        target = self._makeOne(request)
+        result = target.check_entry_limit([], email=email)
+
+        self.assertIsNone(result)
+
+    def test_check_entry_limit_many_ok(self):
+        lot, products = _add_lots(self.session, [], [])
+        request = DummyRequest(
+            matchdict={'lot_id': str(lot.id),
+                       'event_id': str(lot.event.id)},
+        )
+        lot.entry_limit = 5
+        email = 'test@example.com'
+        entry = self._entry(email)
+        for i in range(4):
+            lot.entries.append(entry)
+            self.session.add(lot)
+        self.session.flush()
+
+        target = self._makeOne(request)
+        result = target.check_entry_limit([], email=email)
+
+        self.assertIsNone(result)
+
+    def test_check_entry_limit_many_ng(self):
+        from ..exceptions import OverEntryLimitException
+        lot, products = _add_lots(self.session, [], [])
+        request = DummyRequest(
+            matchdict={'lot_id': str(lot.id),
+                       'event_id': str(lot.event.id)},
+        )
+        lot.entry_limit = 5
+        email = 'test@example.com'
+        for i in range(5):
+            entry = self._entry(email)
+            lot.entries.append(entry)
+        self.session.add(lot)
+        self.session.flush()
+
+        target = self._makeOne(request)
+
+        with self.assertRaises(OverEntryLimitException):
+            target.check_entry_limit([], email=email)
+
+    def test_check_entry_limit_performance_ok(self):
+        from ..exceptions import OverEntryLimitException
+        product_data = [{'name': u'Product-A', 'price': 100}]
+        lot, products = _add_lots(self.session, product_data, [])
+        request = DummyRequest(
+            matchdict={'lot_id': str(lot.id),
+                       'event_id': str(lot.event.id)},
+        )
+        lot.entry_limit = 0
+        performance = lot.performances[0]
+        performance.setting.entry_limit = 5
+        performance.event.organization = self.organization
+        email = 'test@example.com'
+        wishes = []
+        for i in range(4):
+            entry = self._entry(email=email, performance=performance)
+            lot.entries.append(entry)
+            wishes.append(dict(performance_id=performance.id))
+        self.session.add(lot)
+        self.session.flush()
+
+        target = self._makeOne(request)
+        result = target.check_entry_limit(wishes, email=email)
+
+        self.assertIsNone(result)
+
+    def test_check_entry_limit_performance_ng(self):
+        from ..exceptions import OverEntryLimitPerPerformanceException
+        product_data = [{'name': u'Product-A', 'price': 100}]
+        lot, products = _add_lots(self.session, product_data, [])
+        request = DummyRequest(
+            matchdict={'lot_id': str(lot.id),
+                       'event_id': str(lot.event.id)},
+        )
+        lot.entry_limit = 0
+        performance = lot.performances[0]
+        performance.setting.entry_limit = 5
+        performance.event.organization = self.organization
+        email = 'test@example.com'
+        wishes = []
+        for i in range(5):
+            entry = self._entry(email=email, performance=performance)
+            lot.entries.append(entry)
+            wishes.append(dict(performance_id=performance.id))
+        self.session.add(lot)
+        self.session.flush()
+
+        target = self._makeOne(request)
+
+        with self.assertRaises(OverEntryLimitPerPerformanceException):
+            target.check_entry_limit(wishes, email=email)
