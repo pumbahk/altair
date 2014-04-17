@@ -312,7 +312,7 @@ class AlignChoiceField(SelectField):
         if align == "left":
             return u""
         elif align == "center":
-            return u'display: -webkit-box; display: -moz-box; display: -o-box; display: box; margin: 0px auto;'
+            return u'display: block; margin: 0px auto;'
         elif align == "right":
             return u"display: -webkit-box; display: -moz-box; display: -o-box; display: box; box-align: end;'"
         else:
@@ -334,7 +334,7 @@ $(function(){
 $(function(){
   var ua = navigator.userAgent.toLowerCase();
   if(ua.indexOf("firefox") <= -1 && ua.indexOf("msie") <= -1){
-    $('img[data-align="center"]:not(.align-done)').attr("style", "display: -webkit-box; display: -moz-box; display: -o-box; display: box; margin: 0px auto;").addClass("align-done");
+    $('img[data-align="center"]:not(.align-done)').attr("style", "display: block; margin: 0px auto;").addClass("align-done");
   } else {
     var align_image = function align_image($e, d, retry){
       var wrapper = $e;
