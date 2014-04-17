@@ -43,7 +43,8 @@ class LotEntriesTests(unittest.TestCase):
         from altair.app.ticketing.lots.models import Lot
         self.config.add_route('lots.entries.index', '/lots/entries/index')
         request = _dummy_request()
-        lot = Lot(event=request.context.event)
+        lot = Lot(id=1, event=request.context.event)
+        request.context.lot_id = 1
 
         wish1 = _wish(lot=lot, entry_no=u'RT0000003109', wish_order=1)
         wish2 = _wish(lot=lot, entry_no=u'RT000000310A', wish_order=1)
