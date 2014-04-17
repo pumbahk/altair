@@ -384,7 +384,7 @@ class OrderSummary(Base):
 
     @property
     def sej_order(self):
-        return get_sej_order(order_no)
+        return get_sej_order(self.order_no)
 
     def _shipping_address(self):
         if self.shipping_address_id is None:
