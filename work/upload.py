@@ -74,20 +74,20 @@ def strip_physical_directory_path(x):
     return rx.sub(lambda m : m.group(1)+"/static", x)
 
 def execute(app):
-    for k, vs in app.mv_events:
+    for src, vs in app.mv_events:
         used = {}
-        striped_k = strip_physical_directory_path(k)
-        for v, app_changed in vs:
-            v = strip_physical_directory_path(v)
-            if striped_k == v:
-                sys.stderr.write("skip:{}".format(k))
+        striped_src = strip_physical_directory_path(src)
+        for dst, app_changed in vs:
+            s3dst = strip_physical_directory_path(dst)
+            if striped_src == dst:
+                sys.stderr.write("skip:{}".format(striped_src))
                 sys.stderr.write("\n")
                 continue
-            if not k in used and not app_changed:
-                print "s3cmd -P put {k} s3://{app.s3prefix}{v}".format(k=k, v=v, app=app)
-                used[k] = v
+            if not src in used and not app_changed:
+                print "s3cmd -P put {k} s3://{app.s3prefix}{v}".format(k=dst, v=s3dst, app=app)
+                used[src] = dst
             else:
-                print "s3cmd -P put {k} s3://{app.s3prefix}{v}".format(k=k, v=v, app=app)
+                print "s3cmd -P put {k} s3://{app.s3prefix}{v}".format(k=dst, v=s3dst, app=app)
 
 
 if __name__ == "__main__":

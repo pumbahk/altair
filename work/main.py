@@ -55,9 +55,20 @@ class JSONWrapper(object):
     def write(self, x):
         self.out.write(json.dumps(x, ensure_ascii=False, indent=2))
 
+class CSSChange(object):
+    def __init__(self, css_suffix):
+        self.css_suffix = css_suffix
+        self.replace_re = re.compile("\.css$")
+        self.css_ext = "{}.css".format(self.css_suffix)
+
+    def name_change(self, data):
+        name = data["dst_file"]
+        data["dst_file"] = self.replace_re.sub(self.css_ext, name)
+
+
 app_rx = re.compile(r'([^/:\.]+?)[/:\.](?:templates|static)[/:\.]')
 class DecisionMaker(object):
-    def __init__(self, filename, org_name, used_css, classifier=classify, dump=None, strict=True, modules=None):
+    def __init__(self, filename, org_name, used_css, classifier=classify, dump=None, strict=True, modules=None, css_suffix=""):
         self.filename = filename
         self.org_name = org_name
         self.classifier = classifier
@@ -66,7 +77,10 @@ class DecisionMaker(object):
         self.modules = modules
         self.used_css = used_css
         self._app_name = None
-        
+
+        ## todo: move
+        self.css_change = CSSChange(css_suffix)
+
     @property
     def app_name(self):
         if self._app_name:
@@ -171,7 +185,9 @@ class DecisionMaker(object):
         if k in self.used_css:
             return
         self.used_css[k] = 1
-                
+
+        self.css_change.name_change(cssdata) #rename foo.cs => foo.{suffix}.css
+        self.dump.stdout.write(cssdata)
         src_dir = os.path.dirname(cssdata["src_file"])
 
         with open(cssdata["src_file"]) as rf:
@@ -193,8 +209,10 @@ class DecisionMaker(object):
                 }
                 if file_type == "css":
                     self.with_css(data)
-                self.dump.stdout.write(data)
-                        
+                else:
+                    self.dump.stdout.write(data)
+
+
     def decision(self, inp):
         for line in inp:
             m = static_rx.search(line)
@@ -203,9 +221,10 @@ class DecisionMaker(object):
                     assetspec = m.group(1)
                     path = ast.literal_eval(assetspec)
                     data = self.info(path)
-                    self.dump.stdout.write(data)
                     if path.endswith(".css"):
                         self.with_css(data)
+                    else:
+                        self.dump.stdout.write(data)
                 except Exception as e:
                     #see: e.g.altair/app/ticketing/cart/templates/BT/pc/_widgets.html
                     fmt = m.group(1)
@@ -222,7 +241,9 @@ class DecisionMaker(object):
                         self.dump.stderr.write(data)
 
 if __name__ == "__main__":
-    cwd = sys.argv[1]
+    css_suffix = sys.argv[1]
+    cwd = sys.argv[2]
+
     dump = Dump(IOLikeList(), JSONWrapper(sys.stderr))
     used_css = {}
     for root, ds, fs in os.walk(cwd, topdown=False):
@@ -231,7 +252,7 @@ if __name__ == "__main__":
                 path = os.path.join(root, f)
                 m = template_org_rx.search(root)
                 modules = {"altair.app.ticketing": "ticketing/src/altair/app/ticketing"}
-                dm = DecisionMaker(path, m.group(1), used_css, dump=dump, modules=modules)
+                dm = DecisionMaker(path, m.group(1), used_css, dump=dump, modules=modules, css_suffix=css_suffix)
                 with open(path) as rf:
                     dm.decision(rf)
 
