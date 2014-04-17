@@ -25,8 +25,10 @@
 <dt>制限枚数</dt>
 <dd>1希望の申込で${sales_segment.max_quantity}枚まで</dd>
 % endif
+% if lot.entry_limit:
 <dt>申込回数制限</dt>
-<dd>${u"{0} 回".format(lot.entry_limit) if lot.entry_limit else u"無制限"}</dd>
+<dd>${u"{0} 回".format(lot.entry_limit)}</dd>
+% endif
 <dt>受付希望数</dt>
 <dd>一度の申込で第${lot.limit_wishes}希望まで</dd>
 % if lot.description:
