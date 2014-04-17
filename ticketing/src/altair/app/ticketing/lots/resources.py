@@ -10,6 +10,7 @@ from pyramid.traversal import DefaultRootFactory
 from pyramid.decorator import reify
 from sqlalchemy.sql import or_
 
+from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import Event, Performance, Organization, ShippingAddress
 from altair.app.ticketing.core import api as core_api
 from .exceptions import OutTermException, OverEntryLimitException, OverEntryLimitPerPerformanceException
@@ -84,7 +85,8 @@ class LotResource(object):
         ]
 
     def check_entry_limit(self, wishes, user=None, email=None):
-        query = LotEntry.query.filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None)
+        slave_session = get_db_session(self.request, name="slave")
+        query = slave_session.query(LotEntry).filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None)
         if user:
             query = query.filter(LotEntry.user_id==user.id)
         elif email:
