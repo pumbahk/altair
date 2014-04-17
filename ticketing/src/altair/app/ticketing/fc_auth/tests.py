@@ -94,8 +94,9 @@ class FCAuthPluginTests(unittest.TestCase):
 
 class TestIt(unittest.TestCase):
     def setUp(self):
-        self.request = testing.DummyRequest()
+        self.request = testing.DummyRequest(matched_route=testing.DummyModel(name='dummy'))
         self.config = testing.setUp(request=self.request)
+        self.config.add_route('dummy', '/dummy')
         self.session = _setup_db(modules=[
                 'altair.app.ticketing.core.models',
                 #'altair.app.ticketing.tickets.models',
@@ -184,8 +185,7 @@ class TestIt(unittest.TestCase):
         environ = self._makeEnv()
         api = factory(environ)
         environ['repoze.who.plugins'] = api.name_registry
-        from pyramid.threadlocal import get_current_request
-        request = get_current_request()
+        request = self.request
         request.organization = testing.DummyModel(id=None)
         environ[REQUEST_KEY] = request
 
@@ -206,8 +206,7 @@ class TestIt(unittest.TestCase):
         self._addCredential(membership, membergroup, username, password,
                             "fc")
 
-        from pyramid.threadlocal import get_current_request
-        request = get_current_request()
+        request = self.request
         request.context = testing.DummyResource()
         request.context.memberships = [testing.DummyModel()]
         request.session = DummySession()
@@ -223,7 +222,7 @@ class TestIt(unittest.TestCase):
         result = api.challenge()
 
         self.assertEqual(result.location, 'http://example.com/membership/fc/login')
-        self.assertEqual(session[SESSION_KEY]['return_url'], 'http://127.0.0.1/')
+        self.assertEqual(session[SESSION_KEY]['return_url'], '/dummy?')
 
 
 class guest_authenticateTests(unittest.TestCase):
