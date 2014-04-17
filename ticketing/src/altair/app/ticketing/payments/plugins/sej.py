@@ -30,7 +30,6 @@ from altair.app.ticketing.core import models as c_models
 
 from altair.app.ticketing.sej import userside_api
 from altair.app.ticketing.sej.exceptions import SejErrorBase
-from altair.app.ticketing.sej.ticket import SejTicketDataXml
 from altair.app.ticketing.sej.models import SejOrder, SejPaymentType, SejTicketType, SejOrderUpdateReason
 from altair.app.ticketing.sej.api import do_sej_order, refresh_sej_order, build_sej_tickets_from_dicts, create_sej_order, get_sej_order
 from altair.app.ticketing.sej.utils import han2zen
@@ -96,7 +95,7 @@ def get_sej_ticket_data(product_item, svg):
         performance_name    = re.sub('[ \-\.,;\'\"]', '', han2zen(performance.name)[:20]),
         ticket_template_id  = u'TTTS000001',
         performance_datetime= performance.start_on,
-        xml = SejTicketDataXml(svg),
+        xml=svg,
         product_item_id = product_item.id
     )
 
