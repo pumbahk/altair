@@ -81,7 +81,7 @@ class SalesReportForm(OurForm):
     )
     recipient = TextField(
         label=u'送信先',
-        validators=[Required()],
+        validators=[Required(), Regexp(r'^[\x20-\x7E]+$', message=u'不正な文字が含まれています')],
     )
     subject = TextField(
         label=u'件名',
