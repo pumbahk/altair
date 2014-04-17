@@ -83,7 +83,7 @@ class LotResource(object):
             (Allow, "auth_type:%s" % self.lot.auth_type, 'lots'),
         ]
 
-    def check_entry_limit(self, user, email, wishes):
+    def check_entry_limit(self, wishes, user=None, email=None):
         query = LotEntry.query.filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None)
         if user:
             query = query.filter(LotEntry.user_id==user.id)
