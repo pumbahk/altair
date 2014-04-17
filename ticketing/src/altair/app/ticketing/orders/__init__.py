@@ -52,19 +52,6 @@ def includeme(config):
 
     config.add_subscriber('.mail.on_order_canceled'     , '.events.OrderCanceled')
 
-    config.add_route('orders.sej'                       , '/sej')
-    config.add_route('orders.sej.event.refund'          , '/sej/event/refund')
-    config.add_route('orders.sej.event.refund.add'      , '/sej/event/refund/add')
-    config.add_route('orders.sej.event.refund.detail'   , '/sej/event/refund/{event_id}')
-
-    config.add_route('orders.sej.order.request'         , '/sej/order/request')
-    config.add_route('orders.sej.order.info'            , '/sej/order/{order_no}/')
-    config.add_route('orders.sej.order.cancel'          , '/sej/order/{order_no}/cancel')
-    config.add_route('orders.sej.order.ticket.data'     , '/sej/order/{order_no}/ticket/{ticket_id}/data')
-    config.add_route('orders.sej.order.ticket.refund'   , '/sej/order/refund/{ticket_id}/ticket')
-
-    config.add_route('orders.sej.ticket_template'       , '/sej/ticket_template')
-
     config.add_route("orders.mailinfo"                  , "/orders/{order_id}/mailinfo/{action}")
     config.add_route("cart.search",                       "/carts/")
     config.add_route("cart.show",                       "/carts/{order_no}")

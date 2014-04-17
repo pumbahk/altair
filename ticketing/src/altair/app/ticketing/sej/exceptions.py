@@ -14,7 +14,12 @@ class SejError(SejErrorBase):
         self.error_msg = message
 
     def __str__(self):
-        return u"X_shop_order_id=%s&Error_Type=%d&Error_Msg=%s&Error_Field=%s" % (self.order_no, self.error_type, self.error_msg, self.error_field)
+        return u"X_shop_order_id=%s&Error_Type=%s&Error_Msg=%s&Error_Field=%s" % (
+            self.order_no,
+            (str(self.error_type) if self.error_type is not None else u''),
+            (self.error_msg if self.error_msg is not None else u''),
+            (self.error_field if self.error_field is not None else u'')
+            )
 
 class SejRequestError(SejErrorBase):
     pass

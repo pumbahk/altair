@@ -3,7 +3,8 @@ import unittest
 import datetime
 import os
 
-from ..ticket import SejTicketDataXml
+from pyramid import testing
+
 from ..utils import JavaHashMap
 
 class SejTestFile(unittest.TestCase):
@@ -16,9 +17,11 @@ class SejTestFile(unittest.TestCase):
         sqlahelper.add_engine(engine)
         Base = sqlahelper.get_base()
         Base.metadata.create_all()
+        self.config = testing.setUp()
+        self.config.include('altair.app.ticketing.sej.communicator')
 
     def tearDown(self):
-        pass
+        testing.tearDown()
 
     def _openTestDataFile(self, file_):
         return open(os.path.join(os.path.dirname(__file__), 'data', 'files', file_), 'r')
@@ -52,9 +55,11 @@ class SejTestFile(unittest.TestCase):
                 api_key=u'E6PuZ7Vhe7nWraFW',   
                 )
             file = request_fileget(
+                self.config.registry,
                 tenant=tenant,
                 date=datetime.datetime(2011,9,12),
-                notification_type=SejNotificationType.InstantPaymentInfo)
+                notification_type=SejNotificationType.InstantPaymentInfo
+                )
             dummy_server.poll()
             self.assertEqual(dummy_server.request.body, "X_shop_id=30520&xcode=71493542957ed71cc35e0f8810e018a9&X_data_type=91&X_date=20110912")
             self.assertEqual(dummy_server.request.method, "POST")

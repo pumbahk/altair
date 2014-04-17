@@ -7,11 +7,9 @@ import os
 from datetime import date, time, datetime, timedelta
 from lxml import etree
 import zipfile
-import transaction
 
 from sqlalchemy.sql.expression import and_, or_
 
-from altair.app.ticketing.models import DBSession
 from .models import SejTicketTemplateFile, SejRefundTicket, SejRefundEvent
 from .zip_file import EnhZipFile, ZipInfo
 
@@ -35,12 +33,10 @@ class SejTicketDataXml(object):
             r"\1encoding='Shift_JIS' ?>", etree.tostring(x, encoding='UTF-8', xml_declaration=True))
         return xml.decode("utf-8")
 
-def package_ticket_template_to_zip(template_id,
-                                   shop_id = u'30520',
-                                   now=None):
+def package_ticket_template_to_zip(session, template_id, shop_id = u'30520', now=None):
     if now is None:
         now = datetime.now()
-    sej_tickets = SejTicketTemplateFile.query.filter_by(deleted_at = None).all()
+    sej_tickets = session.query(SejTicketTemplateFile).filter_by(deleted_at = None).all()
 
     archive_txt_buffer = list()
     csv_text_buffer = list()
@@ -103,10 +99,9 @@ def package_ticket_template_to_zip(template_id,
     zf.close()
 
     # TODO SEND
-    DBSession.flush()
     return zip_file_name
 
-def create_refund_zip_file(now=None, work_dir='/tmp'):
+def create_refund_zip_file(session, now=None, work_dir='/tmp'):
     if now is None:
         now = datetime.now()
     hour = now.hour
@@ -135,7 +130,7 @@ def create_refund_zip_file(now=None, work_dir='/tmp'):
     refund_ticket_file_path = os.path.join(work_dir, refund_ticket_file_name)
     refund_ticket_tsv = open(refund_ticket_file_path, 'w')
     tsv_writer = csv.writer(refund_ticket_tsv, delimiter='\t', quoting=csv.QUOTE_NONE, lineterminator='\r\n')
-    query = SejRefundTicket.query.filter(or_(
+    query = session.query(SejRefundTicket).filter(or_(
         SejRefundTicket.sent_at==None,
         and_(target_from<=SejRefundTicket.sent_at, SejRefundTicket.sent_at<target_to)
         ))
@@ -162,7 +157,7 @@ def create_refund_zip_file(now=None, work_dir='/tmp'):
     refund_event_file_path = os.path.join(work_dir, refund_event_file_name)
     refund_event_tsv = open(refund_event_file_path, 'w')
     tsv_writer = csv.writer(refund_event_tsv, delimiter='\t', quoting=csv.QUOTE_NONE, lineterminator='\r\n')
-    query = SejRefundEvent.query
+    query = session.query(SejRefundEvent)
     if len(refund_event_ids) > 0:
         query = query.filter(or_(SejRefundEvent.id.in_(refund_event_ids), target_date<=SejRefundEvent.end_at))
     else:
@@ -195,7 +190,6 @@ def create_refund_zip_file(now=None, work_dir='/tmp'):
     refund_event_tsv.close()
 
     if not sej_refund_events:
-        transaction.abort()
         return None
 
     # create zip file
@@ -205,9 +199,6 @@ def create_refund_zip_file(now=None, work_dir='/tmp'):
     zf.append_file(refund_event_file_path, refund_event_file_name)
     zf.append_file(refund_ticket_file_path, refund_ticket_file_name)
     zf.close()
-
-    DBSession.flush()
-    transaction.commit()
 
     return zip_file_path
 

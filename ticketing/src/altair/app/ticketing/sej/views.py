@@ -2,7 +2,9 @@ from pyramid.view import view_config, view_defaults
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPClientError
 
-from .helpers import make_sej_response
+from .payload import make_sej_response
+
+from . import sej_session
 
 from .notification.receiver import (
     SejNotificationReceiver,
@@ -24,24 +26,26 @@ class SejHTTPErrorResponse(HTTPClientError):
 
 def makeReceiver(request):
     settings = request.registry.settings
-    api_key = settings['sej.api_key']
+    api_key = settings.get('altair.sej.api_key') or settings['sej.api_key']
     return SejNotificationReceiver(api_key)
 
 class SejCallback(object):
     def __init__(self, request):
         self.context = request.context
         self.request = request
-        from altair.app.ticketing.models import DBSession
-        self.session = DBSession
+        from .models import _session
+        self.session = _session
 
+    @sej_session
     @view_config(route_name='sej.callback')
     def callback(self):
         logger.info('[callback] %s' % self.request.body)
 
         try:
             receiver = makeReceiver(self.request)
-            sej_notification, retry_data = receiver(self.request.POST)
+            sej_notification, retry_data = receiver(self.request.POST, self.session)
             self.session.add(sej_notification)
+            self.session.commit()
         except SejNotificationSignatureMismatch as e:
             return SejHTTPErrorResponse(
                 400, 'Bad Request', dict(status='400', Error_Type='00', Error_Msg='Bad Value', Error_Field='xcode'))

@@ -8,165 +8,131 @@ from sqlalchemy import update
 from sqlalchemy import and_
 from sqlalchemy.sql.expression import asc, desc
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.session import make_transient
 
 import sqlahelper
 
 from .utils import JavaHashMap
 from .models import SejNotification, SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, SejNotificationType, ThinSejTenant
-
+from .models import _session
 from .helpers import create_hash_from_x_start_params
 from .interfaces import ISejTenant
-from altair.app.ticketing.sej.exceptions import SejServerError
-from altair.app.ticketing.sej.payment import request_cancel_order
+from .exceptions import SejServerError, SejError
+from .payment import request_cancel_order, request_order, request_update_order
 from pyramid.threadlocal import get_current_registry
 from pyramid.interfaces import IRequest
 
-DBSession = sqlahelper.get_session()
+def do_sej_order(request, tenant, sej_order, now=None, session=None):
+    if session is None:
+        session = _session
+    try:
+        return request_order(request, tenant, sej_order)
+    finally:
+        session.merge(sej_order)
+        session.commit()
 
-def cancel_sej_order(sej_order, tenant, now=None):
-    if not sej_order:
-        logger.error(u'sej_order is None')
-        return False
-    if sej_order.cancel_at:
-        logger.error(u'SejOrder(order_no=%s) is already canceled' % sej_order.order_no if sej_order else None)
-        return False
+def refresh_sej_order(request, tenant, sej_order, update_reason, now=None, session=None):
+    if session is None:
+        session = _session
+    try:
+        return request_update_order(request, tenant, sej_order, update_reason)
+    finally:
+        session.merge(sej_order)
+        session.commit()
 
+def cancel_sej_order(request, tenant, sej_order, now=None, session=None):
+    if session is None:
+        session = _session
+    if sej_order.cancel_at is not None:
+        raise SejError(u'already canceled', sej_order.order_no)
     if sej_order.shop_id != tenant.shop_id:
-        logger.error(u'SejOrder(order_no=%s).shop_id (%s) != SejTenant.shop_id (%s)' % (sej_order.order_no, sej_order.shop_id, tenant.shop_id))
-        return False
-
+        raise SejError(u'SejOrder.shop_id (%s) != SejTenant.shop_id (%s)' % (sej_order.shop_id, tenant.shop_id), sej_order.order_no)
     try:
         request_cancel_order(
-            order_no=sej_order.order_no,
-            billing_number=sej_order.billing_number,
-            exchange_number=sej_order.exchange_number,
+            request,
             tenant=tenant,
+            sej_order=sej_order,
 			now=now
         )
-        return True
-    except SejServerError as e:
-        import sys
-        logger.error(u'Could not cancel SejOrder (%s)' % e, exc_info=sys.exc_info())
-        return False
+    finally:
+        session.merge(sej_order)
+        session.commit()
 
-def get_per_order_fee(order):
-    pdmp = order.payment_delivery_pair
-    fee = 0
-    if order.refund.include_system_fee:
-        fee += order.system_fee
-    if order.refund.include_special_fee:
-        fee += order.special_fee
-    if order.refund.include_transaction_fee:
-        fee += pdmp.transaction_fee_per_order
-    if order.refund.include_delivery_fee:
-        fee += pdmp.delivery_fee_per_order
-    if order.refund.include_item:
-        # チケットに紐づかない商品明細分の合計金額
-        for op in order.items:
-            for opi in op.ordered_product_items:
-                if not opi.product_item.ticket_bundle_id:
-                    fee += opi.price * opi.quantity
-    return fee
-
-def get_per_ticket_fee(order):
-    pdmp = order.payment_delivery_pair
-    fee = 0
-    if order.refund.include_transaction_fee:
-        fee += pdmp.transaction_fee_per_ticket
-    if order.refund.include_delivery_fee:
-        fee += pdmp.delivery_fee_per_ticket
-    return fee
-
-def get_ticket_price(order, product_item_id):
-    if not order.refund.include_item:
-        return 0
-    for op in order.items:
-        for opi in op.ordered_product_items:
-            if opi.product_item_id == product_item_id:
-                return opi.price
-    return 0
-
-def refund_sej_order(sej_order, tenant, order, now):
-    if not sej_order:
-        logger.error(u'sej_order is None')
-        return False
+def refund_sej_order(request, tenant, sej_order, performance_name, performance_code, performance_start_on, per_order_fee, per_ticket_fee, ticket_price_getter, refund_start_at, refund_end_at, ticket_expire_at, now, session=None):
+    if session is None:
+        session = _session
     if sej_order.cancel_at:
-        logger.error(u'SejOrder(order_no=%s) is already canceled' % sej_order.order_no if sej_order else None)
-        return False
+        raise SejError(u'already canceled', sej_order.order_no)
 
-    sej_tickets = SejTicket.query.filter_by(order_no=sej_order.order_no).order_by(SejTicket.ticket_idx).all()
+    sej_tickets = sorted(sej_order.tickets, key=lambda x: x.ticket_idx)
     if not sej_tickets:
-        logger.error(u'No tickets associated with SejOrder(order_no=%s)' % sej_order.order_no)
-        return False
+        raise SejError(u'No tickets associated', sej_order.order_no)
 
-    performance = order.performance
-
-    # create SejRefundEvent
-    re = SejRefundEvent.filter(and_(
-        SejRefundEvent.shop_id==tenant.shop_id,
-        SejRefundEvent.event_code_01==performance.code
-    )).first()
-    if not re:
-        re = SejRefundEvent()
-        DBSession.add(re)
-
-    re.available = 1
-    re.shop_id = tenant.shop_id
-    re.event_code_01 = performance.code
-    re.title = performance.name
-    re.event_at = performance.start_on.strftime('%Y%m%d')
-    re.start_at = order.refund.start_at.strftime('%Y%m%d')
-    re.end_at = order.refund.end_at.strftime('%Y%m%d')
-    re.event_expire_at = order.refund.end_at.strftime('%Y%m%d')
-    ticket_expire_at = order.refund.end_at + timedelta(days=+7)
-    re.ticket_expire_at = ticket_expire_at.strftime('%Y%m%d')
-    re.refund_enabled = 1
-    re.need_stub = 1
-    DBSession.merge(re)
-
-    # create SejRefundTicket
-    per_order_fee = get_per_order_fee(order.prev)
-    for i, sej_ticket in enumerate(sej_tickets):
-        rt = SejRefundTicket.filter(and_(
-            SejRefundTicket.order_no==sej_order.order_no,
-            SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
+    try:
+        # create SejRefundEvent
+        re = session.query(SejRefundEvent).filter(and_(
+            SejRefundEvent.shop_id==tenant.shop_id,
+            SejRefundEvent.event_code_01==performance_code
         )).first()
-        if not rt:
-            rt = SejRefundTicket()
-            DBSession.add(rt)
+        if not re:
+            re = SejRefundEvent()
 
-        rt.available = 1
-        rt.refund_event_id = re.id
-        rt.event_code_01 = performance.code
-        rt.order_no = sej_order.order_no
-        rt.ticket_barcode_number = sej_ticket.barcode_number
-        rt.refund_ticket_amount = get_ticket_price(order.prev, sej_ticket.product_item_id)
-        rt.refund_other_amount = get_per_ticket_fee(order.prev)
-        # 手数料などの払戻があったら1件目に含める
-        if per_order_fee > 0 and i == 0:
-            rt.refund_other_amount += per_order_fee
+        re.available = 1
+        re.shop_id = tenant.shop_id
+        re.event_code_01 = performance_code
+        re.title = performance_name
+        re.event_at = performance_start_on
+        re.start_at = refund_start_at
+        re.end_at = refund_end_at
+        re.event_expire_at = refund_end_at
+        re.ticket_expire_at = ticket_expire_at
+        re.refund_enabled = 1
+        re.need_stub = 1
+        session.merge(re)
 
-        DBSession.merge(rt)
+        # create SejRefundTicket
+        for i, sej_ticket in enumerate(sej_tickets):
+            rt = session.query(SejRefundTicket).filter(and_(
+                SejRefundTicket.order_no==sej_order.order_no,
+                SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
+            )).first()
+            if not rt:
+                rt = SejRefundTicket()
+                session.add(rt)
 
-    return True
+            rt.available = 1
+            rt.refund_event_id = re.id
+            rt.event_code_01 = performance_code
+            rt.order_no = sej_order.order_no
+            rt.ticket_barcode_number = sej_ticket.barcode_number
+            rt.refund_ticket_amount = ticket_price_getter(sej_ticket)
+            rt.refund_other_amount = per_ticket_fee
+            # 手数料などの払戻があったら1件目に含める
+            if per_order_fee > 0 and i == 0:
+                rt.refund_other_amount += per_order_fee
+
+            session.merge(rt)
+    finally:
+        session.commit()
+
 
 def get_sej_order(order_no, session=None):
     if session is None:
-        session = DBSession
-    return session.query(SejOrder) \
+        session = _session 
+    retval = session.query(SejOrder) \
         .filter_by(order_no=order_no) \
         .order_by(desc(SejOrder.branch_no)) \
         .first()
+    return retval
 
 def get_sej_orders(order_no, fetch_canceled=False, session=None):
     if session is None:
-        session = DBSession
+        session = _session
     q = session.query(SejOrder)
     q = q.filter_by(order_no=order_no)
     if not fetch_canceled:
         q = q.filter_by(cancel_at=None)
     return q.all()
-
 
 def get_default_sej_tenant(request_or_registry):
     if IRequest.providedBy(request_or_registry):
@@ -194,3 +160,61 @@ def validate_sej_tenant(sej_tenant):
         raise AssertionError('api_key is empty')
     if not sej_tenant.inticket_api_url:
         raise AssertionError('inticket_api_url is empty')
+
+def build_sej_tickets_from_dicts(order_no, tickets, barcode_number_getter):
+    return [
+        SejTicket(
+            order_no             = order_no,
+            ticket_idx           = (i + 1),
+            ticket_type          = '%d' % ticket.get('ticket_type').v,
+            event_name           = ticket.get('event_name'),
+            performance_name     = ticket.get('performance_name'),
+            performance_datetime = ticket.get('performance_datetime'),
+            ticket_template_id   = ticket.get('ticket_template_id'),
+            ticket_data_xml      = ticket.get('xml').xml,
+            product_item_id      = ticket.get('product_item_id'),
+            barcode_number       = barcode_number_getter(i + 1)
+            )
+        for i, ticket in enumerate(tickets)
+        ]
+
+def create_sej_order(
+        request_or_registry,
+        order_no,
+        user_name,
+        user_name_kana,
+        tel,
+        zip_code,
+        email,
+        total_price,
+        ticket_price,
+        commission_fee,
+        payment_type,
+        ticketing_fee=0,
+        payment_due_at=None,
+        ticketing_start_at=None,
+        ticketing_due_at=None,
+        regrant_number_due_at=None,
+        tickets=[]):
+    sej_order = SejOrder(
+        order_no=order_no,
+        user_name=user_name,
+        user_name_kana=user_name_kana,
+        tel=tel,
+        zip_code=zip_code,
+        email=email,
+        total_price=total_price,
+        ticket_price=ticket_price,
+        commission_fee=commission_fee,
+        payment_type='%d' % int(payment_type),
+        ticketing_fee=ticketing_fee,
+        payment_due_at=payment_due_at,
+        ticketing_start_at=ticketing_start_at,
+        ticketing_due_at=ticketing_due_at,
+        regrant_number_due_at=regrant_number_due_at,
+        tickets=build_sej_tickets_from_dicts(order_no, tickets, lambda _: None)
+        )
+    return sej_order
+
+def remove_default_session():
+    _session.remove()
