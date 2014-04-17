@@ -14,9 +14,13 @@ class SejApiTest(unittest.TestCase):
             'altair.app.ticketing.core.models',
             'altair.app.ticketing.sej.models'
             ])
+        self.config = testing.setUp()
+        self.config.include('altair.app.ticketing.sej')
 
     def tearDown(self):
         testing.tearDown()
+        from ..api import remove_default_session
+        remove_default_session()
         _teardown_db()
 
     def last_notification(self):
@@ -64,7 +68,7 @@ class SejApiTest(unittest.TestCase):
             }
         self._append_signature(params)
         request = testing.DummyRequest(post=params)
-        testing.setUp(request=request, settings={'sej.api_key': self.api_key})
+        testing.setUp(request=request, settings={'altair.sej.api_key': self.api_key})
         target = self._makeOne(request)
         resp = self._parseResponse(target.callback())
         assert resp['status'] == '800'
@@ -88,7 +92,7 @@ class SejApiTest(unittest.TestCase):
 
         testing.tearDown()
         request = testing.DummyRequest(post=params)
-        testing.setUp(request=request, settings={'sej.api_key': self.api_key})
+        testing.setUp(request=request, settings={'altair.sej.api_key': self.api_key})
         target = self._makeOne(request)
         resp = self._parseResponse(target.callback())
 
@@ -127,8 +131,6 @@ class SejApiTest(unittest.TestCase):
         sejOrder.exchange_number       = u'22222222'
         sejOrder.order_at              = datetime.now()
 
-        self.session.add(sejOrder)
-
         params = {
             u'X_shori_id': u'000000036380',
             u'X_shop_id': u'30520',
@@ -151,13 +153,13 @@ class SejApiTest(unittest.TestCase):
         self._append_signature(params)
 
         request = testing.DummyRequest(post=params)
-        testing.setUp(request=request, settings={'sej.api_key': self.api_key})
+        testing.setUp(request=request, settings={'altair.sej.api_key': self.api_key})
         target = self._makeOne(request)
         response = target.callback().body
 
         assert response == '<SENBDATA>status=800&</SENBDATA><SENBDATA>DATA=END</SENBDATA>'
         from altair.app.ticketing.sej.models import SejNotification
-        n = SejNotification.query.filter_by(order_no=u'120607191915', billing_number=u'2329873576572').one()
+        n = self.session.query(SejNotification).filter_by(order_no=u'120607191915', billing_number=u'2329873576572').one()
 
         assert n.process_number        == '000000036380'
         assert int(n.payment_type)     == SejPaymentType.CashOnDelivery.v
@@ -195,7 +197,7 @@ class SejApiTest(unittest.TestCase):
         self._append_signature(params)
 
         request = testing.DummyRequest(post=params)
-        testing.setUp(request=request, settings={'sej.api_key': self.api_key})
+        testing.setUp(request=request, settings={'altair.sej.api_key': self.api_key})
         target = self._makeOne(request)
         resp = self._parseResponse(target.callback())
 
@@ -234,13 +236,13 @@ class SejApiTest(unittest.TestCase):
         self._append_signature(params)
 
         request = testing.DummyRequest(post=params)
-        testing.setUp(request=request, settings={'sej.api_key': self.api_key})
+        testing.setUp(request=request, settings={'altair.sej.api_key': self.api_key})
         target = self._makeOne(request)
         response = target.callback().body
 
         assert response == '<SENBDATA>status=800&</SENBDATA><SENBDATA>DATA=END</SENBDATA>'
         from altair.app.ticketing.sej.models import SejNotification
-        n = SejNotification.query.filter_by(order_no=u'000000000600', billing_number=u'2343068205221').one()
+        n = self.session.query(SejNotification).filter_by(order_no=u'000000000600', billing_number=u'2343068205221').one()
 
         assert n.process_number == u'000000036605'
         assert int(n.payment_type )         == SejPaymentType.CashOnDelivery.v
@@ -276,13 +278,13 @@ class SejApiTest(unittest.TestCase):
         self._append_signature(params)
 
         request = testing.DummyRequest(post=params)
-        testing.setUp(request=request, settings={'sej.api_key': self.api_key})
+        testing.setUp(request=request, settings={'altair.sej.api_key': self.api_key})
         target = self._makeOne(request)
         response = target.callback().body
 
         assert response == '<SENBDATA>status=800&</SENBDATA><SENBDATA>DATA=END</SENBDATA>'
         from altair.app.ticketing.sej.models import SejNotification
-        n = SejNotification.query.filter_by(order_no=u'000000000605', billing_number=u'2374045665660').one()
+        n = self.session.query(SejNotification).filter_by(order_no=u'000000000605', billing_number=u'2374045665660').one()
 
         assert n.process_number         == u'000000036665'
         assert n.shop_id                == u'30520'

@@ -749,3 +749,40 @@ def save_order_modification(order, modify_data):
         refresh_order(DBSession, modify_order)
 
     return modify_order
+
+def get_refund_per_order_fee(refund, order):
+    pdmp = order.payment_delivery_pair
+    fee = 0
+    if refund.include_system_fee:
+        fee += order.system_fee
+    if refund.include_special_fee:
+        fee += order.special_fee
+    if refund.include_transaction_fee:
+        fee += pdmp.transaction_fee_per_order
+    if refund.include_delivery_fee:
+        fee += pdmp.delivery_fee_per_order
+    if refund.include_item:
+        # チケットに紐づかない商品明細分の合計金額
+        for op in order.items:
+            for opi in op.elements:
+                if opi.product_item.ticket_bundle_id:
+                    fee += opi.price * opi.quantity
+    return fee
+
+def get_refund_per_ticket_fee(refund, order):
+    pdmp = order.payment_delivery_pair
+    fee = 0
+    if refund.include_transaction_fee:
+        fee += pdmp.transaction_fee_per_ticket
+    if refund.include_delivery_fee:
+        fee += pdmp.delivery_fee_per_ticket
+    return fee
+
+def get_refund_ticket_price(refund, order, product_item_id):
+    if not refund.include_item:
+        return 0
+    for op in order.items:
+        for opi in op.elements:
+            if opi.product_item_id == product_item_id:
+                return opi.price
+    return 0

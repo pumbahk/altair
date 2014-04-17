@@ -4,6 +4,7 @@ from decimal import Decimal
 import sqlalchemy.orm as orm
 import json
 import base64
+import os.path
 from StringIO import StringIO
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -33,7 +34,12 @@ from .fillvalues import template_collect_vars
 from .fillvalues import template_fillvalues
 from .fetchsvg import fetch_svg_from_postdata
 from ..cleaner.api import get_validated_svg_cleaner
-from ..response import FileLikeResponse
+from altair.response import (
+    FileLikeResponse, 
+    ZipFileResponse, 
+    ZipFileCreateRecursiveWalk
+)
+
 # todo: refactoring
 from ..utils import build_dict_from_product_item
 from altair.svg.geometry import parse_transform
@@ -42,6 +48,7 @@ from . import TicketPreviewAPIException
 from . import TicketPreviewTransformException
 from . import TicketPreviewFillValuesException
 from ..cleaner.api import TicketCleanerValidationError
+import tempfile
 
 ## todo move it
 def decimal_converter(target, converter=float):
@@ -552,3 +559,89 @@ class PreviewWithDefaultParameterDialogView(object):
         except Exception, e:
             logger.exception(e)
             raise
+
+class DownloadListOfPreviewImage(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name="tickets.preview.download.list.zip")
+    def __call__(self):
+        performance_id = self.request.matchdict["performance_id"]
+        sales_segment_id = self.request.matchdict["sales_segment_id"]
+        try:
+            delivery_method_id = self.request.params["delivery_method_id"]
+        except KeyError:
+            logger.warn("delivery method not found")
+            raise HTTPNotFound("delivery_method not found")
+
+        self.assertion(performance_id, self.context.organization)
+
+        q = self.model_query(performance_id, sales_segment_id)
+
+        ## ProductItem list -> svg list
+        svg_string_list = self.fetch_data_list(q, self.context.organization, unicode(delivery_method_id))
+
+        source_dir = tempfile.mkdtemp()
+        try:
+            ## preview serverと通信して取得した画像を保存
+            self.store_image(svg_string_list, source_dir)
+        except jsonrpc.ProtocolError, e:
+            raise HTTPBadRequest(str(e))
+
+        ## zipfile作成
+        zip_name = "preview_image_salessegment{0}.zip".format(sales_segment_id)
+        walk = self.create_zip_file_creator(tempfile.mktemp(zip_name), source_dir)
+        return ZipFileResponse(walk, filename=zip_name)
+
+
+    def create_zip_file_creator(self, zip_path, source_dir):
+        walk = ZipFileCreateRecursiveWalk(zip_path, source_dir, flatten=True)
+        return walk
+
+    def assertion(self, performance_id, organization):
+        p = c_models.Performance.query.filter_by(id=performance_id).one()
+        if unicode(p.event.organization_id) != unicode(organization.id):
+            logger.warn("unmatched organization %s != %s", p.event.organization, organization.id)
+            raise HTTPFound("unmatched organization")
+
+
+    def model_query(self, performance_id, sales_segment_id):
+        return (c_models.ProductItem.query
+         .filter(c_models.Product.id==c_models.ProductItem.product_id)
+         .filter(c_models.Product.sales_segment_id==sales_segment_id)
+         .filter(c_models.Product.performance_id==performance_id)
+         .filter(c_models.ProductItem.performance_id==performance_id)
+         .all())
+
+    def fetch_data_list(self, q, organization, delivery_method_id):
+        svg_string_list = []
+        for product_item in q:
+            ticket_q = (c_models.Ticket.query
+                        .filter(c_models.TicketBundle.id==product_item.ticket_bundle_id, 
+                                c_models.Ticket_TicketBundle.ticket_bundle_id==product_item.ticket_bundle_id, 
+                                c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id, 
+                                c_models.Ticket.organization_id==organization.id)
+                        .all())
+            for ticket in ticket_q:
+                if not any(unicode(dm.id) == delivery_method_id for dm in ticket.ticket_format.delivery_methods):
+                    continue
+                svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
+                transformer = SVGTransformer(svg)
+                transformer.data["ticket_format"] = ticket.ticket_format
+                svg = transformer.transform()
+                svg_string_list.append((svg, product_item, ticket))
+        return svg_string_list
+
+    def store_image(self, svg_string_list, source_dir):
+        preview = SVGPreviewCommunication.get_instance(self.request)
+        ## 画像取得
+        with open(os.path.join(source_dir, "memo.txt"), "w") as wf0:
+            for i, (svg_string, product_item, ticket) in enumerate(svg_string_list):
+                wf0.write(u"* preview{0}.png -- 商品:{1}\n".format(i, product_item.name).encode("utf-8"))
+
+                imgdata_base64 = preview.communicate(self.request, svg_string)
+                fname = os.path.join(source_dir, "preview{0}.png".format(i))
+                logger.info("writing ... %s", fname)
+                with open(fname, "wb") as wf:
+                    wf.write(base64.b64decode(imgdata_base64))

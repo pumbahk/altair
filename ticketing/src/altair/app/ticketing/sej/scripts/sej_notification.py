@@ -4,6 +4,7 @@ import optparse
 import sys
 import logging
 from datetime import datetime
+import sqlahelper
 from pyramid.paster import bootstrap, setup_logging
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ def main(argv=sys.argv):
     from ..notification.processor import SejNotificationProcessor, SejNotificationProcessorError
     now = datetime.now()
     processor = SejNotificationProcessor(request, now)
-    for sej_order, order, notification in fetch_notifications():
+    for sej_order, order, notification in fetch_notifications(session=sqlahelper.get_session()):
         logger.info("Processing notification: process_number=%s, order_no=%s, exchange_number=%s, billing_number=%s" % (
             notification.process_number,
             sej_order.order_no,

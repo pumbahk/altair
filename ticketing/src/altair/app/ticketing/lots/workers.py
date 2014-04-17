@@ -11,7 +11,7 @@ from altair.sqlahelper import named_transaction
 from altair.app.ticketing.cart.models import Cart, CartedProduct, CartedProductItem
 from altair.app.ticketing.cart.stocker import Stocker
 from pyramid.interfaces import IRequest
-from altair import multicheckout
+from altair.multicheckout import multicheckout_session
 from altair.app.ticketing.cart.interfaces import (
     IStocker, IReserving, ICartFactory,
 )
@@ -26,6 +26,7 @@ from altair.app.ticketing.payments.api import (
     is_finished_payment,
     is_finished_delivery,
 )
+from altair.app.ticketing.sej import sej_session
 
 logger = logging.getLogger(__name__)
 
@@ -130,7 +131,8 @@ def dummy_task(context, message):
 @task_config(root_factory=WorkerResource,
              consumer="lots",
              queue="lots")
-@multicheckout.multicheckout_session
+@multicheckout_session
+@sej_session
 def elect_lots_task(context, message):
     DBSession.remove()
     try:

@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 from dateutil.parser import parse as parsedate
-from ..helpers import create_hash_from_x_start_params
+from ..payload import create_hash_from_x_start_params
 from ..utils import JavaHashMap
 from .models import SejNotificationType, SejNotification
 
@@ -85,7 +85,7 @@ class SejNotificationReceiver(object):
         SejNotificationType.TicketingExpire.v   : populate_expire,
         }
 
-    def __call__(self, params):
+    def __call__(self, params, session):
         hash_map = JavaHashMap()
         for k, v in params.items():
             hash_map[k] = v
@@ -108,7 +108,7 @@ class SejNotificationReceiver(object):
             raise SejNotificationSignatureMismatch(params)
 
         retry_data = False
-        n = SejNotification.query.filter_by(process_number=process_number).first()
+        n = session.query(SejNotification).filter_by(process_number=process_number).first()
         if not n:
             n = SejNotification(notification_type=str(notification_type))
         else:

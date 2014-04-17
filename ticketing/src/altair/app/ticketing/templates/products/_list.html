@@ -400,6 +400,17 @@ elif sales_segment:
         })($('script:last').closest('form'));
         </script>
       </form>
+    ## download zip file. todo 二度押し防止
+    %if sales_segment and performance:
+      <% select_form = delivery_method_select_form_dict.get(unicode(sales_segment.id))%>
+      %if select_form:
+      <h4>券面のpreview結果をまとめてdownload</h4>
+      <form method="GET" action="${request.route_path("tickets.preview.download.list.zip", performance_id=performance.id, sales_segment_id=sales_segment.id)}">
+      ${select_form.delivery_method_id()}
+      <input type="submit" class="btn btn-inverse" value="download"/>
+      </form>
+      %endif
+    %endif
     </div>
     % endfor
     <script type="text/javascript">

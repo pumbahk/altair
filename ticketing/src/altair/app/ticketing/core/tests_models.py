@@ -649,7 +649,8 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
     def _makeOne(self, *args, **kwargs):
         from altair.app.ticketing.payments import plugins as p
         from altair.app.ticketing.cart.models import Cart
-        from .models import OrderedProduct, OrderedProductItem
+        from .models import Performance, OrderedProduct, OrderedProductItem
+        from datetime import datetime
         retval = self._getTarget()(*args, **kwargs)
         retval.order_no = self._next_order_no()
         retval.items = [
@@ -659,12 +660,20 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
                 elements=[OrderedProductItem(price=1, product_item=self.product.items[0])]
                 )
             ]
+        performance = Performance(
+            name='performance',
+            code='code',
+            start_on=datetime(2014, 1, 1)
+            )
+        self.session.add(performance)
         cart = Cart(
+            performance=performance,
             payment_delivery_pair=retval.payment_delivery_pair,
             _order_no=retval.order_no
             )
         self.session.add(cart)
         retval.cart = cart
+        retval.performance = performance
         if retval.payment_delivery_pair.payment_method.payment_plugin_id == p.CHECKOUT_PAYMENT_PLUGIN_ID:
             from altair.app.ticketing.checkout.models import Checkout
             self.session.flush()
@@ -728,10 +737,24 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
                     delivery_fee=0,
                     paid_at=datetime(2014, 1, 1)
                     )
+                if payment_plugin_id == p.SEJ_PAYMENT_PLUGIN_ID:
+                    from .models import Refund
+                    refund = Refund(
+                        start_at=datetime(2014, 1, 1),
+                        end_at=datetime(2014, 2, 1)
+                        )
+                    self.session.add(refund)
+                    target.refund = refund
+                    target = self._getTarget().clone(target)
+                    target.refund = refund
+                    self.session.add(target)
+                    self.session.flush()
                 target.cancel(request)
                 if payment_plugin_id == p.SEJ_PAYMENT_PLUGIN_ID:
                     self.assertTrue(self.sej_refund_sej_order.called)
-                self.assertTrue(target.is_canceled(), description)
+                    self.assertEqual(target.payment_status, 'refunded', description)
+                else:
+                    self.assertTrue(target.is_canceled(), description)
 
     def test_payment_status_changable_unpaid_non_inner(self):
         from datetime import datetime

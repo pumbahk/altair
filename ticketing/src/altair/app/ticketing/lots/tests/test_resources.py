@@ -11,8 +11,8 @@ class LotResourceTests(unittest.TestCase):
             'altair.app.ticketing.lots.models',
             ])
         from altair.app.ticketing.core.models import Host, Organization
-        organization = Organization(short_name='testing')
-        host = Host(host_name='example.com:80', organization=organization)
+        self.organization = Organization(short_name='testing')
+        host = Host(host_name='example.com:80', organization=self.organization)
         self.session.add(host)
 
     def tearDown(self):
@@ -95,7 +95,7 @@ class LotResourceTests(unittest.TestCase):
         self.session.flush()
 
         target = self._makeOne(request)
-        result = target.check_entry_limit(email)
+        result = target.check_entry_limit([], email=email)
 
         self.assertIsNone(result)
 
@@ -116,7 +116,7 @@ class LotResourceTests(unittest.TestCase):
         target = self._makeOne(request)
 
         with self.assertRaises(OverEntryLimitException):
-            target.check_entry_limit(email)
+            target.check_entry_limit([], email=email)
 
     def test_check_entry_limit_ok(self):
         lot, products = _add_lots(self.session, [], [])
@@ -130,7 +130,7 @@ class LotResourceTests(unittest.TestCase):
         self.session.flush()
 
         target = self._makeOne(request)
-        result = target.check_entry_limit(email)
+        result = target.check_entry_limit([], email=email)
 
         self.assertIsNone(result)
 
@@ -149,7 +149,7 @@ class LotResourceTests(unittest.TestCase):
         self.session.flush()
 
         target = self._makeOne(request)
-        result = target.check_entry_limit(email)
+        result = target.check_entry_limit([], email=email)
 
         self.assertIsNone(result)
 
@@ -171,7 +171,7 @@ class LotResourceTests(unittest.TestCase):
         target = self._makeOne(request)
 
         with self.assertRaises(OverEntryLimitException):
-            target.check_entry_limit(email)
+            target.check_entry_limit([], email=email)
 
     def test_check_entry_limit_performance_ok(self):
         from ..exceptions import OverEntryLimitException
@@ -184,15 +184,18 @@ class LotResourceTests(unittest.TestCase):
         lot.entry_limit = 0
         performance = lot.performances[0]
         performance.setting.entry_limit = 5
+        performance.event.organization = self.organization
         email = 'test@example.com'
+        wishes = []
         for i in range(4):
             entry = self._entry(email=email, performance=performance)
             lot.entries.append(entry)
+            wishes.append(dict(performance_id=performance.id))
         self.session.add(lot)
         self.session.flush()
 
         target = self._makeOne(request)
-        result = target.check_entry_limit(email)
+        result = target.check_entry_limit(wishes, email=email)
 
         self.assertIsNone(result)
 
@@ -207,14 +210,17 @@ class LotResourceTests(unittest.TestCase):
         lot.entry_limit = 0
         performance = lot.performances[0]
         performance.setting.entry_limit = 5
+        performance.event.organization = self.organization
         email = 'test@example.com'
+        wishes = []
         for i in range(5):
             entry = self._entry(email=email, performance=performance)
             lot.entries.append(entry)
+            wishes.append(dict(performance_id=performance.id))
         self.session.add(lot)
         self.session.flush()
 
         target = self._makeOne(request)
 
         with self.assertRaises(OverEntryLimitPerPerformanceException):
-            target.check_entry_limit(email)
+            target.check_entry_limit(wishes, email=email)

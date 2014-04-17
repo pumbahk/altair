@@ -1,3 +1,6 @@
+import itertools
+import functools
+import logging
 from sqlalchemy.orm.instrumentation import instance_state
 from sqlalchemy.orm.interfaces import MapperProperty, StrategizedProperty
 from sqlalchemy.orm.strategies import LazyLoader
@@ -7,7 +10,6 @@ from sqlalchemy.orm.properties import RelationshipProperty
 from sqlalchemy.orm.collections import collection_adapter
 from sqlalchemy.orm.util import class_mapper
 from sqlalchemy.orm.session import _state_session
-import itertools
 
 try:
     from sqlalchemy.orm.util import object_state as instance_state
@@ -18,6 +20,8 @@ try:
     from sqlalchemy.orm.session import _sessions as _all_sessions
 except ImportError:
     _all_sessions = None
+
+logger = logging.getLogger(__name__)
 
 __all__ = [
     'association_proxy_many',
@@ -117,3 +121,25 @@ def session_partaken_by(obj):
 
 def new_comparator(property, mapper):
     return property.comparator_factory(property, mapper)
+
+class DBSessionContext(object):
+    def __init__(self, session, name=None):
+        self.session = session
+        self.name = name
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.name:
+            logger.debug('remove {0} dbsession'.format(self.name))
+        self.session.remove()
+
+def session_scope(name, session):
+    def _(func):
+        @functools.wraps(func)
+        def wrap(*args, **kwargs):
+            with DBSessionContext(session, name=name):
+                return func(*args, **kwargs)
+        return wrap
+    return _

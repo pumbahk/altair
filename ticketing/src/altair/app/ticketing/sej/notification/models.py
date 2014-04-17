@@ -3,7 +3,7 @@ import sqlahelper
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Date, ForeignKey, Enum, DECIMAL, Binary, UniqueConstraint
 from standardenum import StandardEnum
 
-from altair.app.ticketing.models import BaseModel, LogicallyDeleted, WithTimestamp, MutationDict, JSONEncodedDict, relationship, Identifier
+from altair.models import LogicallyDeleted, WithTimestamp, MutationDict, JSONEncodedDict, Identifier
 
 __all__ = [
     'SejNotificationType',
@@ -46,7 +46,7 @@ class SejNotificationType(StandardEnum):
 
 code_from_notification_type = dict((enum_.v, enum_) for enum_ in SejNotificationType)
 
-class SejNotification(BaseModel, WithTimestamp, LogicallyDeleted, Base):
+class SejNotification(Base, WithTimestamp, LogicallyDeleted):
     __tablename__           = 'SejNotification'
 
     id                      = Column(Identifier, primary_key=True)

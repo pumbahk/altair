@@ -6,38 +6,21 @@
 import logging
 import functools
 import warnings
+from zope.interface import implementer
+from pyramid.config import ConfigurationError
+from altair.sqla import DBSessionContext, session_scope
 from .interfaces import (
     ICardBrandDetecter,
     IMulticheckoutSettingFactory,
     IMulticheckoutSettingListFactory,
     IMulticheckoutImplFactory,
 )
-from zope.interface import implementer
-from pyramid.config import ConfigurationError
 
 logger = logging.getLogger(__name__)
 
-class DBSessionContext(object):
-    def __init__(self, session, name=None):
-        self.session = session
-        self.name = name
-
-    def __enter__(self):
-        pass
-
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.name:
-            logger.debug('remove {0} dbsession'.format(self.name))
-        self.session.remove()
-
 def multicheckout_session(func):
     from .models import _session
-    @functools.wraps(func)
-    def wrap(*args, **kwargs):
-        with DBSessionContext(_session, name="multicheckout"):
-            return func(*args, **kwargs)
-    return wrap
+    return session_scope('multicheckout', _session)(func)
 
 def multicheckout_dbsession_tween(handler, registry):
     def tween(request):

@@ -11,6 +11,7 @@ from sqlalchemy.sql import expression as sql_expr
 from datetime import datetime
 from lxml import etree
 from altair.app.ticketing.fanstatic import with_bootstrap
+from altair.response import FileLikeResponse
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 
@@ -24,7 +25,6 @@ from ..core.models import OrderedProductItemToken, OrderedProductItem, OrderedPr
 from . import forms
 from . import helpers
 from .utils import SvgPageSetBuilder, FallbackSvgPageSetBuilder, build_dict_from_ordered_product_item_token, _default_builder
-from .response import FileLikeResponse
 from .convert import to_opcodes
 from .cleaner import cleanup_svg
 from .cleaner.normalize import normalize as normalize_svg

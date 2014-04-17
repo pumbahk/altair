@@ -1,3 +1,6 @@
+from altair.sqla import DBSessionContext
+from sqlahelper import get_engine
+
 def encoding_converter_tween_factory(handler, registry):
     def encoding_converter_tween(request):
         registry = getattr(request, 'registry', None)
@@ -9,3 +12,11 @@ def encoding_converter_tween_factory(handler, registry):
             request.context = context
         return handler(request)
     return encoding_converter_tween
+
+def sej_dbsession_tween_factory(handler, registry):
+    def tween(request):
+        from .models import _session
+        _session.configure(bind=get_engine())
+        with DBSessionContext(_session, name='sej'):
+            return handler(request)
+    return tween

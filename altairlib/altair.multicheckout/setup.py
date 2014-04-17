@@ -18,6 +18,7 @@ requires = [
     "setuptools>0.7",
     "sqlalchemy",
     "standardenum",
+    "altair.sqla",
     "altair.models",
 ]
 

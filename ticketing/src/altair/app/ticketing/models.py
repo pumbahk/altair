@@ -5,11 +5,9 @@ from decimal import Decimal
 import json
 
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, Index, func
-from sqlalchemy.types import TypeEngine, TypeDecorator, VARCHAR, BigInteger, Integer, String, TIMESTAMP
 from sqlalchemy.orm import column_property, scoped_session, deferred, relationship as _relationship
 from sqlalchemy.orm.attributes import manager_of_class, QueryableAttribute
 from sqlalchemy.orm.properties import ColumnProperty, RelationshipProperty
-from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.sql.expression import text, desc, asc
 from sqlalchemy.sql import functions as sqlf, and_
@@ -20,7 +18,7 @@ from altair.sqla import get_relationship_query
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
-from altair.models import Identifier, WithTimestamp, LogicallyDeleted
+from altair.models import Identifier, WithTimestamp, LogicallyDeleted, JSONEncodedDict, MutationDict
 
 def record_to_appstruct(obj):
     manager = manager_of_class(type(obj))
@@ -212,53 +210,6 @@ class BaseModel(object):
             self.deleted_at = datetime.now()
         DBSession.merge(self)
         DBSession.flush()
-
-class JSONEncodedDict(TypeDecorator):
-    "Represents an immutable structure as a json-encoded string."
-
-    impl = VARCHAR
-
-    def process_bind_param(self, value, dialect):
-        if value is not None:
-            value = json.dumps(value)
-        return value
-
-    def process_result_value(self, value, dialect):
-        if value is not None:
-            value = json.loads(value)
-        return value
-
-class MutationDict(Mutable, dict):
-    @classmethod
-    def coerce(cls, key, value):
-        "Convert plain dictionaries to MutationDict."
-
-        if isinstance(value, basestring):
-            return MutationDict(json.loads(value))   
-        elif not isinstance(value, MutationDict):
-            if isinstance(value, dict):
-                return MutationDict(value)
-
-            # this call will raise ValueError
-            return Mutable.coerce(key, value)
-        else:
-            return value
-
-    def __setitem__(self, key, value):
-        "Detect dictionary set events and emit change events."
-
-        dict.__setitem__(self, key, value)
-        self.changed()
-
-    def __delitem__(self, key):
-        "Detect dictionary del events and emit change events."
-
-        dict.__delitem__(self, key)
-        self.changed()
-    
-    def update(self, *args, **kwargs):
-        dict.update(self, *args, **kwargs)
-        self.changed()
 
 class CustomizedRelationshipProperty(RelationshipProperty):
     def _determine_joins(self):

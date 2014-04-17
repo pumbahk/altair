@@ -1,45 +1,12 @@
 # -*- coding:utf-8 -*-
 
+from __future__ import absolute_import
+
 import os
 import time
 import threading
-from zipfile import *
 import zlib, struct
-
-
-monkeypatched = False
-
-def do_monkeypatching():
-    global monkeypatched
-    if monkeypatched:
-        return
-
-    import zipfile
-    zipfile.structCentralDir = "<4s4B4Hl2L5H2L"
-
-    class BugFreeZipExtFile(zipfile.ZipExtFile):
-        def _update_crc(self, newdata, eof):
-            # Update the CRC using the given data.
-            if self._expected_crc is None:
-                # No need to compute the CRC if we don't have a reference value
-                return
-            self._running_crc = zlib.crc32(newdata, self._running_crc) & 0xffffffff
-            # Check the CRC if we're at the end of the file
-            if eof and self._running_crc != (self._expected_crc & 0xffffffff):
-                raise BadZipfile("Bad CRC-32 for file %r" % self.name)
-
-        def close(self):
-            try:
-                if self._close_fileobj:
-                    self._fileobj.close()
-            finally:
-                super(ZipExtFile, self).close()
-
-
-    zipfile.ZipExtFile = BugFreeZipExtFile
-    monkeypatched = True
-
-do_monkeypatching()
+import zipfile
 
 class ZipEntryWriter(threading.Thread):
     def __init__(self, zf, zinfo, fileobj):
@@ -66,7 +33,7 @@ class ZipEntryWriter(threading.Thread):
         file_size = 0
         CRC = 0
 
-        if zinfo.compress_type == ZIP_DEFLATED:
+        if zinfo.compress_type == zipfile.ZIP_DEFLATED:
             cmpr = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -15)
         else:
             cmpr = None
@@ -77,7 +44,7 @@ class ZipEntryWriter(threading.Thread):
                 break
 
             file_size = file_size + len(buf)
-            CRC = zlib.crc32(buf, CRC)
+            CRC = zlib.crc32(buf, CRC) & 0xffffffff
             if cmpr:
                 buf = cmpr.compress(buf)
                 compress_size = compress_size + len(buf)
@@ -96,12 +63,12 @@ class ZipEntryWriter(threading.Thread):
         zinfo.file_size = file_size
         position = zf.fp.tell()
         zf.fp.seek(zinfo.header_offset + 14, 0)
-        zf.fp.write(struct.pack("<lLL", zinfo.CRC, zinfo.compress_size, zinfo.file_size))
+        zf.fp.write(struct.pack("<LLL", zinfo.CRC, zinfo.compress_size, zinfo.file_size))
         zf.fp.seek(position, 0)
         zf.filelist.append(zinfo)
         zf.NameToInfo[zinfo.filename] = zinfo
 
-class EnhZipFile(ZipFile, object):
+class EnhZipFile(zipfile.ZipFile, object):
 
     def _current_writer(self):
         return hasattr(self, 'cur_writer') and self.cur_writer or None
@@ -165,7 +132,7 @@ class EnhZipFile(ZipFile, object):
         cur_writer.join(timeout)
 
     def append_file(self, file, filename):
-        zi = ZipInfo(filename, time.localtime()[:6])
+        zi = zipfile.ZipInfo(filename, time.localtime()[:6])
         zi.external_attr = 0666 << 16L
         w = self.start_entry(zi)
         data_file = open(file, 'r')
