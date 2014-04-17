@@ -525,3 +525,14 @@ class ProductItemForm(OurForm):
                         status = False
         return status
 
+class DeliveryMethodSelectForm(Form):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(DeliveryMethodSelectForm, self).__init__(formdata, obj, prefix, **kwargs)
+        self.delivery_method_id.choices = list(set([(pdmp.delivery_method_id, pdmp.delivery_method.name) for pdmp in obj.payment_delivery_method_pairs if pdmp.delivery_method.delivery_plugin_id != SEJ_DELIVERY_PLUGIN_ID]))
+
+    delivery_method_id = OurSelectField(
+        label=u'配送方法',
+        validators=[Required(u'選択してください')],
+        choices=[],
+        coerce=int,
+    )

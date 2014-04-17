@@ -1,0 +1,40 @@
+<%!
+import uuid
+import json
+import datetime
+
+MESSAGE = u"データ取得中です。少々お待ちください。"
+%>
+
+<%def name="subview(url, data)">
+<%
+subview_hash = uuid.uuid4().hex
+%>
+  <div id="${subview_hash}">
+${MESSAGE}
+  </div>
+
+  <script>
+  $(function(){
+    $("#${subview_hash}").load("${url}", ${json.dumps(data)|n});
+  });
+  </script>
+</%def>
+
+<%def name="react_subview(target, url, data)">
+<%
+subview_hash = uuid.uuid4().hex
+%>
+  <div id="${subview_hash}">
+${MESSAGE}
+  </div>
+
+  <script>
+  $(function(){
+    $("#${target}").click(function(){
+      $("#${subview_hash}").load("${url}", ${json.dumps(data)|n});
+      return true;
+    });
+  });
+  </script>
+</%def>
