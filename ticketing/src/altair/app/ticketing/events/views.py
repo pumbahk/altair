@@ -40,7 +40,7 @@ from ..api.impl import CMSCommunicationApi
 from .api import get_cms_data
 from .forms import EventForm, EventSearchForm
 from .helpers import EventHelper
-from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder
+from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder, get_agreement_cart_url_builder
 logger = logging.getLogger()
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
@@ -109,11 +109,13 @@ class Events(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
         cart_url = get_cart_url_builder(self.request).build(self.request, event)
+        agreement_url = get_agreement_cart_url_builder(self.request).build(self.request, event)
         return {
             'event':event,
             'seat_stock_types':slave_session.query(StockType).filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).order_by(StockType.display_order).all(),
             'non_seat_stock_types':slave_session.query(StockType).filter_by(event_id=event_id, type=StockTypeEnum.Other.v).order_by(StockType.display_order).all(),
             'cart_url': cart_url,
+            'agreement_url': agreement_url,
             "cart_now_cart_url": get_cart_now_url_builder(self.request).build(self.request, cart_url, event.id),
             'form':EventForm(),
             'form_performance':PerformanceForm(),
