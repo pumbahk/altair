@@ -15,7 +15,6 @@ import sqlahelper
 from .utils import JavaHashMap
 from .models import SejNotification, SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, SejNotificationType, ThinSejTenant
 from .models import _session
-from .helpers import create_hash_from_x_start_params
 from .interfaces import ISejTenant
 from .exceptions import SejServerError, SejError, SejErrorBase
 from .payment import request_cancel_order, request_order, request_update_order
@@ -194,7 +193,7 @@ def build_sej_tickets_from_dicts(order_no, tickets, barcode_number_getter):
             performance_name     = ticket.get('performance_name'),
             performance_datetime = ticket.get('performance_datetime'),
             ticket_template_id   = ticket.get('ticket_template_id'),
-            ticket_data_xml      = ticket.get('xml').xml,
+            ticket_data_xml      = ticket.get('xml'),
             product_item_id      = ticket.get('product_item_id'),
             barcode_number       = barcode_number_getter(i + 1)
             )

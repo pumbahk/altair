@@ -26,6 +26,7 @@ from .models import (
 from .exceptions import SejServerError, SejError
 from .interfaces import ISejPaymentAPICommunicatorFactory
 from .payload import build_sej_datetime_without_second, build_sej_date
+from .ticket import SejTicketDataXml
 
 logger = logging.getLogger(__name__)
 
@@ -148,7 +149,7 @@ def create_sej_request_data(
             params['kouen_mei_%02d' % idx]          = ticket['performance_name']
             params['X_kouen_date_%02d' % idx]       = build_sej_datetime_without_second(ticket['performance_datetime'])
             params['X_ticket_template_%02d' % idx]  = ticket['ticket_template_id']
-            params['ticket_text_%02d' % idx]        = ticket['xml']
+            params['ticket_text_%02d' % idx]        = unicode(SejTicketDataXml(ticket['xml']))
             idx+=1
 
     # お客様氏名

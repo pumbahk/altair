@@ -71,17 +71,17 @@ def create_and_send_refund_file(settings, session=None):
 
     nwts_proxy_url = settings.get('altair.sej.nwts.proxy_url')
     if nwts_proxy_url is None:
-        logger.warning("altair.sej.nwts.proxy_url is not given. using deprecated sej.nwts.proxy_url instead")
+        logging.warning("altair.sej.nwts.proxy_url is not given. using deprecated sej.nwts.proxy_url instead")
         nwts_proxy_url = settings['sej.nwts.proxy_url']
 
     nwts_auth_user = settings.get('altair.sej.nwts.auth_user')
     if nwts_auth_user is None:
-        logger.warning("altair.sej.nwts.auth_user is not given. using deprecated sej.nwts.auth_user instead")
+        logging.warning("altair.sej.nwts.auth_user is not given. using deprecated sej.nwts.auth_user instead")
         nwts_auth_user = settings['sej.nwts.auth_user']
 
     nwts_auth_pass = settings.get('altair.sej.nwts.auth_password')
     if nwts_auth_pass is None:
-        logger.warning("altair.sej.nwts.auth_password is not given. using deprecated sej.nwts.auth_pass instead")
+        logging.warning("altair.sej.nwts.auth_password is not given. using deprecated sej.nwts.auth_pass instead")
         nwts_auth_pass = settings['sej.nwts.auth_pass']
 
     # 払戻対象データをファイルに書き出して圧縮
