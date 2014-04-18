@@ -12,7 +12,6 @@
 %if redirect_to:
     location.href = "${redirect_to}";
 %else:
-    debugger;
     if(!!location.hash && !!location.search){
       $("body").trigger(":refresh:");
     } else {
