@@ -15,7 +15,6 @@ import sqlahelper
 from .utils import JavaHashMap
 from .models import SejNotification, SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, SejNotificationType, ThinSejTenant
 from .models import _session
-from .helpers import create_hash_from_x_start_params
 from .interfaces import ISejTenant
 from .exceptions import SejServerError, SejError, SejErrorBase
 from .payment import request_cancel_order, request_order, request_update_order
