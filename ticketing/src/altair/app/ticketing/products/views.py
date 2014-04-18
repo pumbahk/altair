@@ -607,6 +607,7 @@ class ProductItems(BaseView):
 def subview_older(context, request):
     sales_segment_id = request.matchdict["sales_segment_id"]
     sales_segment = SalesSegment.query.filter_by(id=sales_segment_id).first()
+
     if sales_segment is None:
         raise HTTPNotFound()
     ## todo: order
@@ -632,10 +633,15 @@ def subview_newer(context, request):
         raise HTTPNotFound()
 
     event = sales_segment.event
-    performance_ids = [p.id for p in sales_segment.sales_segment_group.event.performances], 
+    try:
+        performance_id = request.params["performance_id"]
+        stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id==performance_id).distinct().all()
+    except KeyError:
+        performance_ids = [p.id for p in sales_segment.sales_segment_group.event.performances]
+        stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
     return dict(event=event, 
          stock_types = event.stock_types, 
          ticket_bundles = event.ticket_bundles, 
          sales_segment = sales_segment, 
-         stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all(), 
+         stock_holders = stock_holders
     )

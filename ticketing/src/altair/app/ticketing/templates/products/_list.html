@@ -1,13 +1,9 @@
 <%page args="products=None, performance=None, sales_segment=None, limit=None" />
-<%namespace file="/common/helpers.html" name="ch" />
-<%namespace file="/product_items/_action_button.html" name="b" />
 <%namespace file="altair.viewhelpers:subview.html" name="sb"/>
 
 <% from altair.app.ticketing.core.models import Product %>
 % if performance or sales_segment:
 <%
-from altair.app.ticketing.core.models import StockHolder, Stock
-
 ## sales_segments
 if performance is not None:
     sales_segments = sorted(performance.sales_segments, key=lambda x:(x.order, x.name))
@@ -15,6 +11,7 @@ elif sales_segment:
     sales_segments = [sales_segment]
 %>
 
+## 新旧の登録フォームの使い分け用のjs
 <script type="text/javascript">
   $(function() {
     $('#use-grid-editor').change(function() {
@@ -40,7 +37,21 @@ elif sales_segment:
 </script>
 <div id="use-grid-editor" class="label label-warning pull-right" style="width: 200px; margin-bottom: 5px; text-align: center;"></div>
 
-## 新商品登録フォーム
+## action button用のjs
+<script type="text/javascript">
+    function get_active_tab() {
+      return $('.js-product-list').find('.tab-pane.active');
+    }
+    get_selected_product_id = function get_selected_product_id() {
+      return get_active_tab().find('form input[name="product_id"]:checked').val();
+    };
+    get_selected_sales_segment_id = function get_selected_sales_segment_id() {
+      return get_active_tab().attr('data-id');
+    };
+</script>
+
+
+## 表形式のUI用のjs
 <script type="text/javascript">
   (function($) {
     $.fn.setRetainChanges = function(cells) {
@@ -139,7 +150,65 @@ elif sales_segment:
   }
 </script>
 
-<div class="tabbable tabs-top grid-editor">
+## 券面preview用のjs
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/spin.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/altair/spinner.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/modal/api.js")}"></script>
+<script type="text/javascript">
+  $(function(){
+    var config = {
+      modalView: false,
+      modelname: "ProductItem",
+      candidates: []
+    };
+
+    $("#use-grid-editor").on("collectPreviewCandidates", function(ev){
+      config.candidates = [];
+      $(".js-product-list .tab-pane.active .preview-link").each(function(_,e){
+        var $e = $(e);
+        config.candidates.push({pk: $e.attr("data-pk"), name: $e.attr("data-name")});
+　    });
+    });
+    // preview component
+    $(".js-product-list").on("click", "a.preview-link", function(){
+
+      var $el = $(this);
+      var pk = $el.attr("data-pk");
+
+      if(!!config.modalView){
+        config.modalView.onClick();
+        apps["loadsvg"].update("商品選択:", config.candidates);
+        apps["loadsvg"].model.changeHolder({pk: pk, name: config.modelname})
+        return false;
+      }
+% if performance:
+      var qstring = "event_id="+"${performance.event_id}"+"&performance_id="+"${performance.id}"; //ugly
+% else:
+      var qstring = "sales_segment_id="+"${sales_segment.id}"; //ugly
+% endif
+      config.modalView = new modal.api.AjaxModalView({
+        el: $el,
+        href: "${request.route_path('tickets.preview.dialog', model="ProductItem")}"+"?"+qstring, 
+        modalArea: $("#preview_ticket_modal"), 
+        option: {backdrop: false, stretch: true}, 
+        header: "チケット券面のpreview",
+        callback: function(modalview){
+         // append select
+          apps["loadsvg"] = new preview.SVGFromModelView({el: modalview.$modalArea, model: apps["preview"].models["params"], modelname: config.modelname});
+          apps["loadsvg"].render("商品選択:", config.candidates);
+          apps["loadsvg"].model.changeHolder({pk: pk, name: config.modelname})
+        }
+      });
+      config.modalView.onClick();
+      return false;
+    });
+  });
+</script>
+<div id="preview_ticket_modal"></div>
+
+
+## 新商品登録フォーム
+<div class="tabbable tabs-top grid-editor js-product-list">
   <ul class="nav nav-tabs">
     % for i, sales_segment in enumerate(sales_segments):
     <li class="${'active' if i == 0 else ''}"><a  id="product_editor${sales_segment.id}" href="#sales-segment-tab-${sales_segment.id}" data-toggle="tab">${sales_segment.name}</a></li>
@@ -148,46 +217,43 @@ elif sales_segment:
 
   <div class="tab-content">
     <p>※このアイコン<i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p>
-    % for i, sales_segment in enumerate(sales_segments):
-    <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-tab-${sales_segment.id}">
-      <%sb:react_subview
-         target="product_editor${unicode(sales_segment.id)}"
-         url="${request.route_path('products.sub.newer.show', sales_segment_id=sales_segment.id)}"
-         data="${dict(i=i)}"
-      />
-    </div>
-    % endfor
+    %for i, sales_segment in enumerate(sales_segments):
+      <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-tab-${sales_segment.id}" data-id="${sales_segment.id}">
+        <%sb:react_subview
+           target="product_editor${unicode(sales_segment.id)}"
+           url="${request.route_path('products.sub.newer.show', sales_segment_id=sales_segment.id)}"
+           data="${dict(i=i)}"
+           autoload="${i == 0}"
+           continuation="$('#use-grid-editor').trigger('collectPreviewCandidates', []);"
+        />
+      </div>
+    %endfor
   </div>
 </div>
 % endif
 
 ## 旧商品登録フォーム
-<div class="tabbable tabs-top product-table">
+<div class="tabbable tabs-top product-table js-product-list">
   <ul class="nav nav-tabs">
-  % for i, sales_segment in enumerate(sales_segments):
+  %for i, sales_segment in enumerate(sales_segments):
     <li class="${'active' if i == 0 else ''}"><a id="product_table${sales_segment.id}" href="#sales-segment-${sales_segment.id}" data-toggle="tab">${sales_segment.name}</a></li>
-    % endfor
+  %endfor
   </ul>
   <div class="tab-content" id="tabbable-tab-content">
     <p>※このアイコン<i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p>
-    % for i, sales_segment in enumerate(sales_segments):
-    <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-${sales_segment.id}">
-      <%sb:react_subview
-         target="product_table${unicode(sales_segment.id)}"
-         url="${request.route_path('products.sub.older.show',sales_segment_id=sales_segment.id)}"
-         data="${dict(i=i)}"
-      />
-    </div>
-    % endfor
+    %for i, sales_segment in enumerate(sales_segments):
+      <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-${sales_segment.id}" data-id="${sales_segment.id}">
+        <%sb:react_subview
+           target="product_table${unicode(sales_segment.id)}"
+           url="${request.route_path('products.sub.older.show',sales_segment_id=sales_segment.id)}"
+           data="${dict(i=i)}"
+           autoload="${i == 0}"
+           continuation="$('#use-grid-editor').trigger('collectPreviewCandidates', []);"
+        />
+      </div>
+    %endfor
   </div>
 </div>
-## パフォーマンス指定あり
-  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/spin.js")}"></script>
-  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/altair/spinner.js")}"></script>
-  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/modal/api.js")}"></script>
-  <script type="text/javascript"></script>
-
-  <div id="preview_ticket_modal"></div>
 
 ## アラートダイアログ
 <div id="modal-alert" class="modal hide">

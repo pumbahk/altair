@@ -6,7 +6,7 @@ import datetime
 MESSAGE = u"データ取得中です。少々お待ちください。"
 %>
 
-<%def name="subview(url, data)">
+<%def name="subview(url, data, continuation='')">
 <%
 subview_hash = uuid.uuid4().hex
 %>
@@ -16,12 +16,22 @@ ${MESSAGE}
 
   <script>
   $(function(){
-    $("#${subview_hash}").load("${url}", ${json.dumps(data)|n});
+    var data = ${json.dumps(data)|n};
+    $("#${subview_hash}")
+      .attr("data-state", "loading")
+      .load("${url}",
+            data, 
+            function(){
+              $("#${subview_hash}").attr("data-state", "loaded");
+%if continuation:
+              ${continuation|n}
+%endif
+            });
   });
   </script>
 </%def>
 
-<%def name="react_subview(target, url, data)">
+<%def name="react_subview(target, url, data, autoload=False, continuation='')">
 <%
 subview_hash = uuid.uuid4().hex
 %>
@@ -31,10 +41,23 @@ ${MESSAGE}
 
   <script>
   $(function(){
+    var data = ${json.dumps(data)|n};
     $("#${target}").click(function(){
-      $("#${subview_hash}").load("${url}", ${json.dumps(data)|n});
+      $("#${subview_hash}")
+        .attr("data-state", "loading")
+        .load("${url}",
+              data, 
+              function(){
+                $("#${subview_hash}").attr("data-state", "loaded");
+%if continuation:
+                ${continuation|n}
+%endif
+              });
       return true;
     });
+%if autoload:
+      $("#${target}").trigger("click");
+%endif
   });
   </script>
 </%def>
