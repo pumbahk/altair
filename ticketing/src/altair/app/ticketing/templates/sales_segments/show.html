@@ -97,6 +97,8 @@ function get_selected_sales_segment_id() {
 <%include file="/point_grant_settings/_list.html" args="point_grant_settings=sales_segment.point_grant_settings, organization_setting=sales_segment.sales_segment_group.event.organization.setting" />
 <script type="text/javascript">
 var get_selected_point_grant_setting_ids;
+var add_point_grant_setting, remove_point_grant_settings;
+
 (function (form) {
   get_selected_point_grant_setting_ids = function get_selected_point_grant_setting_ids() {
     var retval = [];
@@ -104,6 +106,16 @@ var get_selected_point_grant_setting_ids;
       retval.push(n.value);
     });
     return retval;
+  };
+  add_point_grant_setting = function add_point_grant_setting() {
+    load_modal_form($('#modal-point-grant-setting-chooser'), '${request.route_path('sales_segments.point_grant_settings.add', sales_segment_id='__sales_segment_id__')}'.replace('__sales_segment_id__', get_selected_sales_segment_id()), null, null);
+  };
+  remove_point_grant_settings = function remove_point_grant_settings() {
+    form.attr({
+      action: '${request.route_path('sales_segments.point_grant_settings.remove', sales_segment_id='__sales_segment_id__', _query=dict(return_to=request.path))}'.replace('__sales_segment_id__', get_selected_sales_segment_id()),
+      method: 'post'
+    });
+    form.submit();
   };
 })($('script:last').closest('form'));
 </script>
