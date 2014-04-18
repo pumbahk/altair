@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="2.5" jmeter="2.10 r1533061">
+  <hashTree>
+    <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+      <stringProp name="filename"></stringProp>
+      <stringProp name="parameters"></stringProp>
+      <boolProp name="resetInterpreter">false</boolProp>
+      <stringProp name="script">Thread.sleep(1500);</stringProp>
+    </BeanShellPreProcessor>
+    <hashTree/>
+  </hashTree>
+</jmeterTestPlan>
