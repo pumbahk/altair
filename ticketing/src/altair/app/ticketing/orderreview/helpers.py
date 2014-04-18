@@ -3,7 +3,7 @@
 from markupsafe import Markup
 from pyramid.threadlocal import get_current_request
 from altair.app.ticketing.cart.helpers import *
-from altair.app.ticketing.core.models import OrderCancelReasonEnum
+from altair.app.ticketing.orders.models import OrderCancelReasonEnum
 from ..cart.helpers import japanese_date, japanese_datetime
 
 __all__ = ["error", "order_desc", "is_include_t_shirts", "sex_value"]

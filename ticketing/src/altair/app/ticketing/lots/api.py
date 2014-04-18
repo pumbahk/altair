@@ -240,12 +240,8 @@ def get_entry(request, entry_no, tel_no):
 
 
 def generate_entry_no(request, organization):
-    """ 引き替え用の抽選申し込み番号生成
-    TODO:  altair.app.ticketing.core.api.get_next_order_no を使う
-    """
-    base_id = core_api.get_next_order_no()
-    organization_code = organization.code
-    return organization_code + sensible_alnum_encode(base_id).zfill(10)
+    """ 引き替え用の抽選申し込み番号生成"""
+    return core_api.get_next_order_no(request, organization)
 
 
 def get_lot_entries_iter(lot_id, condition=None):
@@ -399,7 +395,7 @@ def entry_session(request, lot_entry=None):
 #     wish = elected.lot_entry_wish
 #     performance_id = wish.performance_id
 #     payment_delivery_method_pair = lot_entry.payment_delivery_method_pair
-#     cart = Cart.create(lot_entries=[lot_entry],
+#     cart = Cart.create(request, lot_entries=[lot_entry],
 #         system_fee=payment_delivery_method_pair.system_fee,
 #         payment_delivery_pair=payment_delivery_method_pair,
 #         shipping_address=lot_entry.shipping_address,

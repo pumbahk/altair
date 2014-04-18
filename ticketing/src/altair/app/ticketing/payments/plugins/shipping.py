@@ -34,10 +34,16 @@ def deliver_completion_viewlet(context, request):
     return dict(shipping_address=order.shipping_address, order=order)
 
 class ShippingDeliveryPlugin(object):
+    def validate_order(self, request, order_like):
+        """ なにかしたほうが良い?""" 
+
     def prepare(self, request, cart):
         """ 前処理なし """
 
     def finish(self, request, cart):
+        """ 確定処理なし """
+
+    def finish2(self, request, order_like):
         """ 確定処理なし """
 
     def finished(self, request, order):

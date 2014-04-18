@@ -31,14 +31,13 @@ from altair.app.ticketing.core.models import (
     PaymentDeliveryMethodPair,
     PaymentMethod,
     DeliveryMethod,
-    Order,
     ShippingAddress,
-)
-from altair.app.ticketing.core.models import (
     ReportFrequencyEnum,
     Organization,
-    #ReportPeriodEnum,
 )
+from altair.app.ticketing.orders.models import (
+    Order,
+    )
 from altair.app.ticketing.lots.models import (
     Lot,
     LotEntry,

@@ -82,10 +82,17 @@ def delivery_notice_viewlet(context, request):
     return Response(text=u"＜QRでのお受取りの方＞\n{0}".format(context.mail_data("notice")))
 
 class QRTicketDeliveryPlugin(object):
+    def validate_order(self, request, order_like):
+        """ なにかしたほうが良い?""" 
+
     def prepare(self, request, cart):
         """ 前処理 """
 
     def finish(self, request, cart):
+        """ 確定時処理 """
+        pass
+
+    def finish2(self, request, order_like):
         """ 確定時処理 """
         pass
 
@@ -99,5 +106,5 @@ class QRTicketDeliveryPlugin(object):
         return result
 
     def refresh(self, request, order):
-        # 座席番号などが変わっている可能性があるので、何かすべきような...
+        # XXX: 座席番号などが変わっている可能性があるので、何かすべきような...
         pass

@@ -1,7 +1,6 @@
 # encoding: utf-8
 import logging
 import itertools
-import operator
 import json
 import re
 import sys
@@ -24,6 +23,7 @@ from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, 
 from sqlalchemy.orm import join, backref, column_property, joinedload, deferred, relationship, aliased
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.session import object_session
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null, alias, or_
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -64,6 +64,7 @@ from altair.app.ticketing.sej.interfaces import ISejTenant
 from altair.app.ticketing.sej.exceptions import SejError
 from altair.app.ticketing.venues.interfaces import ITentativeVenueSite
 from .utils import ApplicableTicketsProducer
+from . import api
 
 logger = logging.getLogger(__name__)
 
@@ -717,6 +718,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def query_orders_by_user(self, user, filter_canceled=False, query=None):
         """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.orders.models import Order
         if query is None:
             query = DBSession.query(Order)
         qs = query \
@@ -729,6 +731,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False, query=None):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.orders.models import Order
         if query is None:
             query = DBSession.query(Order)
         qs = query \
@@ -1155,6 +1158,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def query_orders_by_user(self, user, filter_canceled=False, query=None):
         """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.orders.models import Order
         if query is None:
             query = DBSession.query(Order)
         qs = query \
@@ -1167,6 +1171,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False, query=None):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.orders.models import Order
         if query is None:
             query = DBSession.query(Order)
         qs = query \
@@ -2060,6 +2065,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def count_vacant_quantity(self):
         if self.stock_type and self.stock_type.quantity_only:
+            from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
             from altair.app.ticketing.cart.models import CartedProduct, CartedProductItem
             # 販売済みの座席数
             reserved_quantity = Stock.filter(Stock.id==self.id).join(Stock.product_items)\
@@ -2468,11 +2474,6 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return {"organization_id": self.id, "organization_source": "oauth"}
 
 
-orders_seat_table = Table("orders_seat", Base.metadata,
-    Column("seat_id", Identifier, ForeignKey("Seat.id")),
-    Column("OrderedProductItem_id", Identifier, ForeignKey("OrderedProductItem.id")),
-)
-
 class ShippingAddressMixin(object):
     @property
     def emails(self):
@@ -2544,803 +2545,9 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted, Shipping
             ],
             else_=null())
 
-class OrderCancelReasonEnum(StandardEnum):
-    User = (1, u'お客様都合')
-    Promoter = (2, u'主催者都合')
-    CallOff = (3, u'中止')
-
-@implementer(IOrderLike)
-class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = 'Order'
-    __table_args__= (
-        UniqueConstraint('order_no', 'branch_no', name="ix_Order_order_no_branch_no"),
-        )
-    __clone_excluded__ = ['cart', 'ordered_from', 'payment_delivery_pair', 'performance', 'user', '_attributes', 'refund', 'operator', 'lot_entries', 'lot_wishes', 'point_grant_history_entries', 'sales_segment']
-
-    id = Column(Identifier, primary_key=True)
-    user_id = Column(Identifier, ForeignKey("User.id"))
-    user = relationship('User')
-    shipping_address_id = Column(Identifier, ForeignKey("ShippingAddress.id"))
-    shipping_address = relationship('ShippingAddress', backref='order')
-    organization_id = Column(Identifier, ForeignKey("Organization.id"))
-    ordered_from = relationship('Organization', backref='orders')
-    operator_id = Column(Identifier, ForeignKey("Operator.id"))
-    operator = relationship('Operator', uselist=False)
-    channel = Column(Integer, nullable=True)
-
-    total_amount = Column(Numeric(precision=16, scale=2), nullable=False)
-    system_fee = Column(Numeric(precision=16, scale=2), nullable=False)
-
-    special_fee_name = Column(String(255), nullable=False, default="")
-    special_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0)
-
-    transaction_fee = Column(Numeric(precision=16, scale=2), nullable=False)
-    delivery_fee = Column(Numeric(precision=16, scale=2), nullable=False)
-
-    multicheckout_approval_no = Column(Unicode(255), doc=u"マルチ決済受領番号")
-
-    payment_delivery_method_pair_id = Column(Identifier, ForeignKey("PaymentDeliveryMethodPair.id"))
-    payment_delivery_pair = relationship("PaymentDeliveryMethodPair", backref='orders')
-
-    @property
-    def payment_delivery_method_pair(self):
-        return self.payment_delivery_pair
-
-    paid_at = Column(DateTime, nullable=True, default=None)
-    delivered_at = Column(DateTime, nullable=True, default=None)
-    canceled_at = Column(DateTime, nullable=True, default=None)
-    refund_id = Column(Identifier, ForeignKey('Refund.id'))
-    refunded_at = Column(DateTime, nullable=True, default=None)
-
-    order_no = Column(String(255))
-    branch_no = Column(Integer, nullable=False, default=1, server_default='1')
-    note = Column(UnicodeText, nullable=True, default=None)
-
-    issued = Column(Boolean, nullable=False, default=False)
-    issued_at = Column(DateTime, nullable=True, default=None, doc=u"印刷可能な情報伝達済み")
-    printed_at = Column(DateTime, nullable=True, default=None, doc=u"実発券済み")
-
-    performance_id = Column(Identifier, ForeignKey('Performance.id'))
-    performance = relationship('Performance', backref="orders")
-
-    _attributes = relationship("OrderAttribute", backref='order', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
-    attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderAttribute(name=k, value=v))
-
-    card_brand = Column(Unicode(20))
-    card_ahead_com_code = Column(Unicode(20), doc=u"仕向け先企業コード")
-    card_ahead_com_name = Column(Unicode(20), doc=u"仕向け先企業名")
-
-    fraud_suspect = Column(Boolean, nullable=True, default=None)
-    browserid = Column(String(40))
-
-    sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
-    sales_segment = relationship('SalesSegment', backref='orders')
-
-    issuing_start_at = Column(DateTime, nullable=True)
-    issuing_end_at   = Column(DateTime, nullable=True)
-    payment_start_at = Column(DateTime, nullable=True)
-    payment_due_at   = Column(DateTime, nullable=True)
-
-    @property
-    def organization(self):
-        return self.ordered_from
-
-    @property
-    def ordered_products(self):
-        return self.items
-
-    @ordered_products.setter
-    def ordered_products(self, value):
-        self.items = value
-
-    ordered_products = deprecation.deprecated(ordered_products, 'use items property instead')
-
-    def is_canceled(self):
-        return bool(self.canceled_at)
-
-    def is_issued(self):
-        """
-        チケット券面が発行済みかどうかを返す。
-        Order, OrderedProductItem, OrderedProductItemTokenという階層中にprinted_atが存在。
-        """
-        if self.issued_at:
-            return True
-
-        qs = OrderedProductItem.query.filter_by(deleted_at=None)\
-            .filter(OrderedProduct.order_id==self.id)\
-            .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
-            .filter(OrderedProductItem.issued_at==None)
-        return qs.first() is None
-
-    def is_printed(self):
-        """
-        チケット券面が印刷済みかどうかを返す。(順序としてはissued -> printed)
-
-        Order, OrderedProductItem, OrderedProductItemTokenという階層中にprinted_atが存在。
-        各下位オブジェクトが全てprintedであれば、printed = True
-        """
-        if self.printed_at:
-            return True
-
-        qs = OrderedProductItem.query.filter_by(deleted_at=None)\
-            .filter(OrderedProduct.order_id==self.id)\
-            .filter(OrderedProductItem.ordered_product_id==OrderedProduct.id)\
-            .filter(OrderedProductItem.printed_at==None)
-        return qs.first() is None
-
-    @classmethod
-    def __declare_last__(cls):
-        cls.queued = column_property(
-                exists(select('*') \
-                    .select_from(TicketPrintQueueEntry.__table__ \
-                        .join(OrderedProductItem.__table__) \
-                        .join(OrderedProduct.__table__)) \
-                    .where(OrderedProduct.order_id==cls.id) \
-                    .where(TicketPrintQueueEntry.processed_at==None)),
-                deferred=True)
-
-    @classmethod
-    def inner_channels(cls):
-        return [ChannelEnum.INNER.v, ChannelEnum.IMPORT.v]
-
-    @property
-    def payment_plugin_id(self):
-        return self.payment_delivery_pair.payment_method.payment_plugin_id
-
-    @property
-    def delivery_plugin_id(self):
-        return self.payment_delivery_pair.delivery_method.delivery_plugin_id
-
-    @property
-    def sej_order(self):
-        from altair.app.ticketing.sej.api import get_sej_order
-        return get_sej_order(self.order_no)
-
-    @property
-    def status(self):
-        if self.canceled_at:
-            return 'canceled'
-        elif self.delivered_at:
-            return 'delivered'
-        else:
-            return 'ordered'
-
-    @property
-    def payment_status(self):
-        if self.refund_id and not self.refunded_at:
-            return 'refunding'
-        elif self.refunded_at:
-            return 'refunded'
-        elif self.paid_at:
-            return 'paid'
-        else:
-            return 'unpaid'
-
-    @property
-    def cancel_reason(self):
-        return self.refund.cancel_reason if self.refund else None
-
-    @property
-    def prev(self):
-        return DBSession.query(Order, include_deleted=True).filter_by(order_no=self.order_no).filter_by(branch_no=self.branch_no-1).one()
-
-    @property
-    def checkout(self):
-        from altair.app.ticketing.cart.models import Cart
-        from altair.app.ticketing.checkout.models import Checkout
-        return Cart.query.filter(Cart._order_no==self.order_no).join(Checkout).with_entities(Checkout).first()
-
-    @property
-    def is_inner_channel(self):
-        return self.channel in self.inner_channels()
-
-    def payment_status_changable(self, status):
-        if status == 'paid':
-            if self.payment_status == 'paid':
-                return True
-            # 入金済への決済ステータスは窓口支払のみ変更可能
-            return (self.status == 'ordered' and self.payment_status == 'unpaid' and self.payment_delivery_pair.payment_method.payment_plugin_id == plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID)
-        elif status == 'unpaid':
-            if self.payment_status == 'unpaid':
-                return True
-            # 未入金への決済ステータスは、窓口支払もしくはインナー予約のみ変更可能
-            return (self.status == 'ordered' and self.payment_status == 'paid' and (self.payment_delivery_pair.payment_method.payment_plugin_id ==  plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID or self.is_inner_channel))
-        else:
-            return False
-
-    def can_cancel(self):
-        # 受付済のみキャンセル可能、払戻時はキャンセル不可
-        if self.status == 'ordered' and self.payment_status in ('unpaid', 'paid'):
-            # コンビニ決済は未入金のみキャンセル可能
-            payment_plugin_id = self.payment_delivery_pair.payment_method.payment_plugin_id
-            if payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID and self.payment_status != 'unpaid':
-                return False
-            # コンビニ引取は未発券のみキャンセル可能
-            delivery_plugin_id = self.payment_delivery_pair.delivery_method.delivery_plugin_id
-            if delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID and self.is_issued():
-                return False
-            return True
-        return False
-
-    def can_refund(self):
-        # 入金済または払戻予約のみ払戻可能
-        return (self.status in ['ordered', 'delivered'] and self.payment_status in ['paid', 'refunding'])
-
-    def can_deliver(self):
-        # 受付済のみ配送済に変更可能
-        # インナー予約は常に、それ以外は入金済のみ変更可能
-        return self.status == 'ordered' and (self.is_inner_channel or self.payment_status == 'paid')
-
-    def can_delete(self):
-        # キャンセルのみ論理削除可能
-        return self.status == 'canceled'
-
-    def cancel(self, request, payment_method=None, now=None):
-        now = now or datetime.now()
-        if not self.can_refund() and not self.can_cancel():
-            logger.info('order (%s) cannot cancel status (%s, %s)' % (self.id, self.status, self.payment_status))
-            return False
-
-        '''
-        決済方法ごとに払戻処理
-        '''
-        if payment_method:
-            ppid = payment_method.payment_plugin_id
-        else:
-            ppid = self.payment_delivery_pair.payment_method.payment_plugin_id
-        if not ppid:
-            return False
-
-        tenant = userside_api.lookup_sej_tenant(request, self.organization_id)
-
-        # インナー予約の場合はAPI決済していないのでスキップ
-        # ただしコンビニ決済はインナー予約でもAPIで通知しているので処理する
-        if self.is_inner_channel and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
-            logger.info(u'インナー予約のキャンセルなので決済払戻処理をスキップ %s' % self.order_no)
-
-        # クレジットカード決済
-        elif ppid == plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID:
-            # 入金済みなら決済をキャンセル
-            if self.payment_status in ['paid', 'refunding']:
-                # 売り上げキャンセル
-                from altair.multicheckout.api import get_multicheckout_3d_api
-                organization = Organization.get(self.organization_id)
-                multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
-
-                order_no = self.order_no
-                if request.registry.settings.get('multicheckout.testing', False):
-                    order_no = self.order_no + "00"
-
-                # キャンセルAPIでなく売上一部取消APIを使う
-                # - 払戻期限を越えてもキャンセルできる為
-                # - 売上一部取消で減額したあと、キャンセルAPIをつかうことはできない為
-                # - ただし、売上一部取消APIを有効にする以前に予約があったものはキャンセルAPIをつかう
-                if self.payment_status in ['refunding']:
-                    logger.info(u'売上一部取消APIで払戻 %s' % self.order_no)
-                    prev = self.prev
-                    total_amount = prev.refund.item(prev) + prev.refund.fee(prev)
-                    multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(order_no, total_amount, 0)
-                else:
-                    sales_part_cancel_enabled_from = '2012-12-03 08:00'
-                    if self.created_at < datetime.strptime(sales_part_cancel_enabled_from, "%Y-%m-%d %H:%M"):
-                        logger.info(u'キャンセルAPIでキャンセル %s' % self.order_no)
-                        multi_checkout_result = multicheckout_api.checkout_sales_cancel(order_no)
-                    else:
-                        logger.info(u'売上一部取消APIで全額取消 %s' % self.order_no)
-                        multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(order_no, self.total_amount, 0)
-
-                error_code = ''
-                if multi_checkout_result.CmnErrorCd and multi_checkout_result.CmnErrorCd != '000000':
-                    error_code = multi_checkout_result.CmnErrorCd
-                elif multi_checkout_result.CardErrorCd and multi_checkout_result.CardErrorCd != '000000':
-                    error_code = multi_checkout_result.CardErrorCd
-
-                if error_code:
-                    logger.error(u'クレジットカード決済のキャンセルに失敗しました。 %s' % error_code)
-                    return False
-
-                self.multi_checkout_approval_no = multi_checkout_result.ApprovalNo
-
-        # 楽天あんしん支払いサービス
-        elif ppid == plugins.CHECKOUT_PAYMENT_PLUGIN_ID:
-            # 入金済みなら決済をキャンセル
-            if self.payment_status in ['paid', 'refunding']:
-                from altair.app.ticketing.checkout import api as checkout_api
-                from altair.app.ticketing.core import api as core_api
-                service = checkout_api.get_checkout_service(request, self.ordered_from, core_api.get_channel(self.channel))
-                checkout = self.checkout
-                if self.payment_status == 'refunding':
-                    # 払戻(合計100円以上なら注文金額変更API、0円なら注文キャンセルAPIを使う)
-                    if self.total_amount >= 100:
-                        result = service.request_change_order([checkout.orderControlId])
-                        # オーソリ済みになるので売上バッチの処理対象になるようにsales_atをクリア
-                        checkout.sales_at = None
-                        checkout.save()
-                    elif self.total_amount == 0:
-                        result = service.request_cancel_order([checkout.orderControlId])
-                    else:
-                        logger.error(u'0円以上100円未満の注文は払戻できません (order_no=%s)' % self.order_no)
-                        return False
-                    if 'statusCode' in result and result['statusCode'] != '0':
-                        logger.error(u'あんしん決済を払戻できませんでした %s' % result)
-                        return False
-                else:
-                    # 売り上げキャンセル
-                    logger.debug(u'売り上げキャンセル')
-                    result = service.request_cancel_order([checkout.orderControlId])
-                    if 'statusCode' in result and result['statusCode'] != '0':
-                        logger.error(u'あんしん決済をキャンセルできませんでした %s' % result)
-                        return False
-
-        # コンビニ決済 (セブン-イレブン)
-        elif ppid == plugins.SEJ_PAYMENT_PLUGIN_ID:
-            sej_order = self.sej_order
-
-            # 未入金ならコンビニ決済のキャンセル通知
-            if self.payment_status == 'unpaid':
-                try:
-                    sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, now=now)
-                except SejError:
-                    logger.exception(u'cancel could not be processed')
-                    return False
-
-            # 入金済み、払戻予約ならコンビニ決済の払戻通知
-            elif self.payment_status in ['paid', 'refunding']:
-                from altair.app.ticketing.orders.api import (
-                    get_refund_per_order_fee,
-                    get_refund_per_ticket_fee,
-                    get_refund_ticket_price,
-                    )
-                try:
-                    sej_api.refund_sej_order(
-                        request,
-                        tenant=tenant,
-                        sej_order=sej_order,
-                        performance_name=self.performance.name,
-                        performance_code=self.performance.code,
-                        performance_start_on=self.performance.start_on,
-                        per_order_fee=get_refund_per_order_fee(
-                            self.prev.refund,
-                            self.prev
-                            ),
-                        per_ticket_fee=get_refund_per_ticket_fee(
-                            self.prev.refund,
-                            self.prev
-                            ),
-                        refund_start_at=self.refund.start_at,
-                        refund_end_at=self.refund.end_at,
-                        ticket_expire_at=self.refund.end_at + timedelta(days=+7),
-                        ticket_price_getter=lambda sej_ticket: \
-                            get_refund_ticket_price(
-                                self.prev.refund,
-                                self.prev,
-                                sej_ticket.product_item_id
-                                ),
-                        now=now
-                        )
-                except SejError:
-                    logger.exception(u'refund could not be processed')
-                    return False
-
-        # 窓口支払
-        elif ppid == plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID:
-            pass
-
-        '''
-        配送方法ごとに取消処理
-        '''
-        # コンビニ受取
-        dpid = self.payment_delivery_pair.delivery_method.delivery_plugin_id
-        if dpid == plugins.SEJ_DELIVERY_PLUGIN_ID and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
-            sej_order = self.sej_order
-            # SejAPIでエラーのケースではSejOrderはつくられないのでスキップ
-            if sej_order:
-                try:
-                    sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, now=now)
-                except SejError:
-                    logger.exception('SejOrder (order_no=%s) cancel error' % self.order_no)
-                    return False
-            else:
-                logger.info('skip cancel delivery method. SejOrder not found (order_no=%s)' % self.order_no)
-
-        # 在庫を戻す
-        logger.info('try release stock (order_no=%s)' % self.order_no)
-        self.release()
-        if self.payment_status != 'refunding':
-            self.mark_canceled()
-        if self.payment_status in ['paid', 'refunding']:
-            self.mark_refunded()
-
-        self.save()
-        logger.info('success order cancel (order_no=%s)' % self.order_no)
-
-        return True
-
-    def mark_canceled(self, now=None):
-        self.canceled_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
-
-    def mark_refunded(self, now=None):
-        self.refunded_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
-
-    def mark_delivered(self, now=None):
-        self.delivered_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
-
-    def mark_paid(self, now=None):
-        self.paid_at = now or datetime.now()
-
-    def mark_issued_or_printed(self, issued=False, printed=False, now=None):
-        if not issued and not printed:
-            raise ValueError('either issued or printed must be True')
-
-        if printed:
-            if not (issued or self.issued):
-                raise Exception('trying to mark an order as printed that has not been issued')
-
-        now = now or datetime.now()
-        delivery_plugin_id = self.payment_delivery_pair.delivery_method.delivery_plugin_id
-
-        for ordered_product in self.items:
-            for item in ordered_product.ordered_product_items:
-                reissueable = item.product_item.ticket_bundle.reissueable(delivery_plugin_id)
-                if issued:
-                    if self.issued:
-                        if not reissueable:
-                            logger.warning("Trying to reissue a ticket for Order (id=%d) that contains OrderedProductItem (id=%d) associated with a ticket which is not marked reissueable" % (self.id, item.id))
-                    item.issued = True
-                    item.issued_at = now
-                    for token in item.tokens:
-                        token.issued_at = now
-                if printed:
-                    item.printed_at = now
-                    for token in item.tokens:
-                        token.printed_at = now
-        if issued:
-            self.issued = True
-            self.issued_at = now
-        if printed:
-            self.printed_at = now
-
-    @staticmethod
-    def reserve_refund(kwargs):
-        refund = Refund(**kwargs)
-        refund.save()
-
-    def call_refund(self, request):
-        # 払戻対象の金額をクリア
-        order = Order.clone(self, deep=True)
-        if self.refund.include_system_fee:
-            order.system_fee = 0
-        if self.refund.include_special_fee:
-            order.special_fee = 0
-        if self.refund.include_transaction_fee:
-            order.transaction_fee = 0
-        if self.refund.include_delivery_fee:
-            order.delivery_fee = 0
-        if self.refund.include_item:
-            for ordered_product in order.items:
-                ordered_product.price = 0
-                for ordered_product_item in ordered_product.ordered_product_items:
-                    ordered_product_item.price = 0
-        fee = order.special_fee + order.system_fee + order.transaction_fee + order.delivery_fee
-        order.total_amount = sum(o.price * o.quantity for o in order.items) + fee
-
-        try:
-            return order.cancel(request, self.refund.payment_method)
-        except Exception:
-            logger.exception(u'払戻処理でエラーが発生しました')
-        return False
-
-    def release(self):
-        # 在庫を解放する
-        for product in self.items:
-            product.release()
-
-    def change_payment_status(self, status):
-        if self.payment_status_changable(status):
-            if self.payment_status != status:
-                if status == 'paid':
-                    self.mark_paid()
-                if status == 'unpaid':
-                    self.paid_at = None
-                self.save()
-                return True
-        return False
-
-    @deprecation.deprecate(u"change_payment_statusを使ってほしい")
-    def change_status(self, status):
-        return self.change_payment_status(status)
-
-    def delivered(self):
-        if self.can_deliver():
-            self.mark_delivered()
-            self.save()
-            return True
-        else:
-            return False
-
-    def undelivered(self):
-        self.delivered_at = None
-        self.save()
-        return True
-
-    def delete(self, force=False):
-        if not self.can_delete() and not force:
-            logger.info('order (%s) cannot delete status (%s)' % (self.id, self.status))
-            raise Exception(u'キャンセル以外は非表示にできません')
-
-        # delete OrderedProduct
-        for ordered_product in self.items:
-            ordered_product.delete()
-
-        # delete ShippingAddress
-        if self.shipping_address:
-            self.shipping_address.delete()
-
-        super(Order, self).delete()
-
-    @classmethod
-    def clone(cls, origin, **kwargs):
-        new_order = super(Order, cls).clone(origin, **kwargs)
-        new_order.branch_no = origin.branch_no + 1
-        new_order.attributes = origin.attributes
-        new_order.created_at = origin.created_at
-        for op, nop in itertools.izip(origin.items, new_order.items):
-            for opi, nopi in itertools.izip(op.ordered_product_items, nop.ordered_product_items):
-                nopi.seats = opi.seats
-                nopi.attributes = opi.attributes
-
-        new_order.add()
-        origin.delete(force=True)
-        return Order.get(new_order.id, new_order.organization_id)
-
-    @staticmethod
-    def get(id, organization_id, include_deleted=False):
-        query = DBSession.query(Order, include_deleted=include_deleted).filter_by(id=id, organization_id=organization_id)
-        return query.first()
-
-    @classmethod
-    def create_from_cart(cls, cart):
-        order = cls(
-            order_no=cart.order_no,
-            total_amount=cart.total_amount,
-            shipping_address=cart.shipping_address,
-            payment_delivery_pair=cart.payment_delivery_pair,
-            system_fee=cart.system_fee,
-            special_fee_name=cart.special_fee_name,
-            special_fee=cart.special_fee,
-            transaction_fee=cart.transaction_fee,
-            delivery_fee=cart.delivery_fee,
-            performance=cart.performance,
-            sales_segment=cart.sales_segment,
-            organization_id=cart.sales_segment.sales_segment_group.event.organization_id,
-            channel=cart.channel,
-            operator=cart.operator,
-            user=cart.shipping_address and cart.shipping_address.user,
-            issuing_start_at=cart.issuing_start_at,
-            issuing_end_at=cart.issuing_end_at,
-            payment_start_at=cart.payment_start_at,
-            payment_due_at=cart.payment_due_at
-            )
-
-        for product in cart.items:
-            # この ordered_product はコンストラクタに order を指定しているので
-            # 勝手に order.ordered_products に追加されるから、append は不要
-            ordered_product = OrderedProduct(
-                order=order, product=product.product, price=product.product.price, quantity=product.quantity)
-            for element in product.elements:
-                ordered_product_item = OrderedProductItem(
-                    ordered_product=ordered_product,
-                    product_item=element.product_item,
-                    price=element.product_item.price,
-                    quantity=element.product_item.quantity * product.quantity,
-                    seats=element.seats
-                    )
-                for i, seat in ordered_product_item.iterate_serial_and_seat():
-                    token = OrderedProductItemToken(
-                        serial = i,
-                        seat = seat,
-                        valid=True #valid=Falseの時は何時だろう？
-                        )
-                    ordered_product_item.tokens.append(token)
-        DBSession.flush() # これとっちゃだめ
-        return order
-
-    @staticmethod
-    def filter_by_performance_id(id):
-        performance = Performance.get(id)
-        if not performance:
-            return None
-
-        return Order.filter_by(organization_id=performance.event.organization_id)\
-            .join(Order.items)\
-            .join(OrderedProduct.elements)\
-            .join(OrderedProductItem.product_item)\
-            .filter(ProductItem.performance_id==id)\
-            .distinct()
-
 def no_filter(value):
     return value
 
-class OrderAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__   = "OrderAttribute"
-    order_id  = Column(Identifier, ForeignKey('Order.id'), primary_key=True, nullable=False)
-    name = Column(String(255), primary_key=True, nullable=False)
-    value = Column(String(1023))
-
-class OrderedProductAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__   = "OrderedProductAttribute"
-    ordered_product_item_id  = Column(Identifier, ForeignKey('OrderedProductItem.id'), primary_key=True, nullable=False)
-    name = Column(String(255), primary_key=True, nullable=False)
-    value = Column(String(1023))
-
-@implementer(IOrderedProductLike)
-class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = 'OrderedProduct'
-    __clone_excluded__ = ['order_id', 'product']
-
-    id = Column(Identifier, primary_key=True)
-    order_id = Column(Identifier, ForeignKey("Order.id"))
-    order = relationship('Order', backref='items')
-    product_id = Column(Identifier, ForeignKey("Product.id"))
-    product = relationship('Product', backref='ordered_products')
-    price = Column(Numeric(precision=16, scale=2), nullable=False)
-    quantity = Column(Integer)
-
-    @property
-    def ordered_product_items(self):
-        return self.elements
-
-    @ordered_product_items.setter
-    def ordered_product_items(self, value):
-        self.elements = value
-
-    ordered_product_items = deprecation.deprecated(ordered_product_items, 'use elements property instead')
-
-    @property
-    def seats(self):
-        return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.ordered_product_items),
-            key=operator.itemgetter('l0_id'))
-
-    @property
-    def seat_quantity(self):
-        quantity = 0
-        for element in self.elements:
-            if element.product_item.stock_type.is_seat:
-                quantity += element.quantity
-        return quantity
-
-    def release(self):
-        # 在庫を解放する
-        for element in self.elements:
-            element.release()
-
-    def delete(self):
-        # delete OrderedProductItem
-        for element in self.elements:
-            element.delete()
-
-        super(OrderedProduct, self).delete()
-
-@implementer(IOrderedProductItemLike)
-class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = 'OrderedProductItem'
-    __clone_excluded__ = ['ordered_product_id', 'product_item', 'seats', '_attributes']
-
-    id = Column(Identifier, primary_key=True)
-    ordered_product_id = Column(Identifier, ForeignKey("OrderedProduct.id"))
-    ordered_product = relationship('OrderedProduct', backref='elements')
-    product_item_id = Column(Identifier, ForeignKey("ProductItem.id"))
-    product_item = relationship('ProductItem', backref='ordered_product_items')
-    issued_at = Column(DateTime, nullable=True, default=None)
-    printed_at = Column(DateTime, nullable=True, default=None)
-    seats = relationship("Seat", secondary=orders_seat_table, backref='ordered_product_items')
-    price = Column(Numeric(precision=16, scale=2), nullable=False)
-
-    _attributes = relationship("OrderedProductAttribute", backref='ordered_product_item', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
-    attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderedProductAttribute(name=k, value=v))
-
-    # 実際の購入数
-    quantity = Column(Integer, nullable=False, default=1, server_default='1')
-
-    @property
-    def seat_statuses_for_update(self):
-        if len(self.seats) > 0:
-            return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).with_lockmode('update').all()
-        return []
-
-    @property
-    def name(self):
-        if not self.seats:
-            return u""
-        return u', '.join([(seat.name) for seat in self.seats if seat.name])
-
-    @property
-    def seat_statuses(self):
-        """ 確保済の座席ステータス
-        """
-        return DBSession.query(SeatStatus).filter(SeatStatus.seat_id.in_([s.id for s in self.seats])).all()
-
-    def release(self):
-        # 座席開放
-        cancellable_status = [
-            int(SeatStatusEnum.Ordered),
-            int(SeatStatusEnum.Reserved),
-        ]
-        for seat_status in self.seat_statuses_for_update:
-            logger.info('trying to release seat (id=%d)' % seat_status.seat_id)
-            if seat_status.status not in cancellable_status:
-                logger.info('not releasing OrderedProductItem (id=%d, seat_id=%d, status=%d) for safety' % (self.id, seat_status.seat_id, seat_status.status))
-                raise InvalidStockStateError("This order is associated with a seat (id=%d, status=%d) that is not marked ordered" % (seat_status.seat_id, seat_status.status))
-            else:
-                logger.info('setting status of seat (id=%d, status=%d) to Vacant (%d)' % (seat_status.seat_id, seat_status.status, int(SeatStatusEnum.Vacant)))
-                seat_status.status = int(SeatStatusEnum.Vacant)
-
-        # 在庫数を戻す
-        if self.product_item.stock.stock_type.quantity_only:
-            release_quantity = self.quantity
-        else:
-            release_quantity = len(self.seats)
-        stock_status = StockStatus.filter_by(stock_id=self.product_item.stock_id).with_lockmode('update').one()
-        logger.info('restoring the quantity of stock (id=%s, quantity=%d) by +%d' % (stock_status.stock_id, stock_status.quantity, release_quantity))
-        stock_status.quantity += release_quantity
-        stock_status.save()
-        logger.info('done for OrderedProductItem (id=%d)' % self.id)
-
-    @property
-    def seatdicts(self):
-        return ({'name': s.name, 'l0_id': s.l0_id}
-                for s in self.seats)
-
-    def is_issued(self):
-        return self.issued_at or self.tokens == [] or all(token.issued_at for token in self.tokens)
-
-    def is_printed(self):
-        return self.printed_at or self.tokens == [] or self.exact_printed()
-
-    def exact_printed(self):
-        for token in self.tokens:
-            if not token.is_printed():
-                return False
-        return True
-
-    @property
-    def issued_at_status(self):
-        total = len(self.tokens)
-        issued_count = len([i for i in self.tokens if i.issued_at])
-        return dict(issued=issued_count, total=total)
-
-    @property
-    def printed_at_status(self):
-        total = len(self.tokens)
-        printed_count = len([i for i in self.tokens if i.is_printed()])
-        return dict(printed=printed_count, total=total)
-
-    def iterate_serial_and_seat(self):
-        if self.seats:
-            for i, s in enumerate(self.seats):
-                yield i, s
-        else:
-            for i in xrange(self.quantity):
-                yield i, None
-
-class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
-    __tablename__ = "OrderedProductItemToken"
-    __clone_excluded__ = ['seat']
-
-    id = Column(Identifier, primary_key=True)
-    ordered_product_item_id = Column(Identifier, ForeignKey("OrderedProductItem.id", ondelete="CASCADE"), nullable=False)
-    item = relationship("OrderedProductItem", backref="tokens")
-    seat_id = Column(Identifier, ForeignKey("Seat.id", ondelete='CASCADE'), nullable=True)
-    seat = relationship("Seat", backref="tokens")
-    serial = Column(Integer, nullable=False)
-    key = Column(Unicode(255), nullable=True)    #今は使っていない。https://dev.ticketstar.jp/redmine/altair/issues/499#note-15
-    valid = Column(Boolean, nullable=False, default=False)
-    issued_at = Column(DateTime, nullable=True, default=None)
-    printed_at = Column(DateTime, nullable=True, default=None)
-    refreshed_at = Column(DateTime, nullable=True, default=None)
-
-    def is_printed(self):
-        return self.printed_at and (self.refreshed_at is None or self.printed_at > self.refreshed_at)
 
 class Ticket_TicketBundle(Base, BaseModel, LogicallyDeleted):
     __tablename__ = 'Ticket_TicketBundle'
@@ -3418,7 +2625,8 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @hybrid_property
     def always_reissueable(self):
-        return (self.flags & self.FLAG_ALWAYS_REISSUEABLE) != 0
+        flags = self.flags or 0
+        return (flags & self.FLAG_ALWAYS_REISSUEABLE) != 0
 
     @always_reissueable.expression
     def priced(self):
@@ -3426,14 +2634,16 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @always_reissueable.setter
     def set_reissueable(self, value):
+        flags = self.flags or 0
         if value:
-            self.flags |= self.FLAG_ALWAYS_REISSUEABLE
+            self.flags = flags | self.FLAG_ALWAYS_REISSUEABLE
         else:
-            self.flags &= ~self.FLAG_ALWAYS_REISSUEABLE
+            self.flags = flags & ~self.FLAG_ALWAYS_REISSUEABLE
 
     @hybrid_property
     def priced(self):
-        return (self.flags & self.FLAG_PRICED) != 0
+        flags = self.flags or 0
+        return (flags & self.FLAG_PRICED) != 0
 
     @priced.expression
     def priced(self):
@@ -3441,10 +2651,11 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @priced.setter
     def set_priced(self, value):
+        flags = self.flags or 0
         if value:
-            self.flags |= self.FLAG_PRICED
+            self.flags = flags | self.FLAG_PRICED
         else:
-            self.flags &= ~self.FLAG_PRICED
+            self.flags = flags & ~self.FLAG_PRICED
 
 for event_kind in ['before_insert', 'before_update']:
     event.listen(Ticket, event_kind, lambda mapper, conn, target: target.before_insert_or_update())
@@ -3466,7 +2677,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
     operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
     operator = relationship('Operator', uselist=False)
     ordered_product_item_id = Column(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
-    ordered_product_item = relationship('OrderedProductItem')
+    ordered_product_item = declared_attr(lambda self: relationship('OrderedProductItem'))
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
     seat = relationship('Seat')
     ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
@@ -3496,6 +2707,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
 
     @classmethod
     def query(cls, operator, ticket_format_id, order_id=None, queue_ids=None, include_masked=False, include_unmasked=True):
+        from altair.app.ticketing.orders.models import OrderedProduct, OrderedProductItem
         q = DBSession.query(TicketPrintQueueEntry) \
             .filter_by(processed_at=None, operator=operator) \
             .join(TicketPrintQueueEntry.ticket) \
@@ -3527,6 +2739,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
 
     @classmethod
     def dequeue(self, ids, now=None):
+        from altair.app.ticketing.orders.models import OrderedProduct, OrderedProductItem
         logger.info("TicketPrintQueueEntry dequeue ids: {0}".format(ids))
         now = now or datetime.now() # SAFE TO USE datetime.now() HERE
         entries = DBSession.query(TicketPrintQueueEntry) \
@@ -3657,13 +2870,13 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     operator_id = Column(Identifier, ForeignKey('Operator.id'), nullable=True)
     operator = relationship('Operator', uselist=False)
     ordered_product_item_id = Column(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
-    ordered_product_item = relationship('OrderedProductItem', backref='print_histories')
+    ordered_product_item = declared_attr(lambda self: relationship('OrderedProductItem', backref='print_histories'))
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
     seat = relationship('Seat', backref='print_histories')
     item_token_id = Column(Identifier, ForeignKey('OrderedProductItemToken.id'), nullable=True)
-    item_token = relationship('OrderedProductItemToken')
+    item_token = declared_attr(lambda self:relationship('OrderedProductItemToken'))
     order_id = Column(Identifier, ForeignKey('Order.id'), nullable=True)
-    order = relationship('Order')
+    # order = declared_attr(lambda self: relationship('Order'))
     ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=True)
     ticket = relationship('Ticket')
 
@@ -3907,6 +3120,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     def query_orders_by_user(self, user, filter_canceled=False, query=None):
         """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.orders.models import Order
         if query is None:
             query = DBSession.query(Order)
         qs = query.filter(
@@ -3920,6 +3134,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False, query=None):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.orders.models import Order
         if query is None:
             query = DBSession.query(Order)
         qs = query.filter(
@@ -4053,8 +3268,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             product.delete()
         super(type(self), self).delete()
 
-    def get_amount(self, pdmp, product_quantities):
-        return pdmp.per_order_fee + self.get_products_amount(pdmp, product_quantities)
+    def get_amount(self, pdmp, product_price_quantity_triplets):
+        return pdmp.per_order_fee + self.get_products_amount(pdmp, product_price_quantity_triplets)
 
     def get_transaction_fee(self, pdmp, product_quantities):
         return pdmp.transaction_fee_per_order + sum([
@@ -4080,12 +3295,12 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
              pdmp.special_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
             for product, quantity in product_quantities])
 
-    def get_products_amount(self, pdmp, product_quantities):
+    def get_products_amount(self, pdmp, product_price_quantity_triplets):
         return sum([
-            (product.price + \
+            (price + \
              pdmp.per_product_fee + \
              pdmp.per_ticket_fee * product.num_priced_tickets(pdmp)) * quantity
-            for product, quantity in product_quantities])
+            for product, price, quantity in product_price_quantity_triplets])
 
     def applicable(self, user=None, now=None, type='available'):
         return build_sales_segment_query(sales_segment_id=self.id, user=user, now=now, type=type).count() > 0
@@ -4278,39 +3493,6 @@ class SejTenant(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
 
     organization_id         = Column(Identifier)
 
-
-# move to altair.app.ticketing.orders.models
-class ImportStatusEnum(StandardEnum):
-    Waiting = (1, u'インポート待ち')
-    Importing = (2, u'インポート中')
-    Imported = (3, u'インポート完了')
-
-
-# move to altair.app.ticketing.orders.models
-class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = 'OrderImportTask'
-
-    id = Column(Identifier, primary_key=True)
-    organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=False)
-    performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
-    operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=False)
-    import_type = Column(Integer, nullable=False)
-    allocation_mode = Column(Integer, default=1, nullable=False) # XXX: 1 = AllocationModeEnum.AlwaysAllocateNew
-    status = Column(Integer, nullable=False)
-    count = Column(Integer, nullable=False)
-    data = Column(UnicodeText(8388608))
-    errors = Column(MutationDict.as_mutable(JSONEncodedDict(65536)), nullable=True)
-
-    organization = relationship('Organization')
-    performance = relationship('Performance')
-    operator = relationship('Operator')
-
-    @classmethod
-    def status_label(cls, status):
-        for e in ImportStatusEnum:
-            if e.v[0] == status:
-                return e.v[1]
-        return u''
 
 class CooperationTypeEnum(StandardEnum):
     augus = (1, u'オーガス')

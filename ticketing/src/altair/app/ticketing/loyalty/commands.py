@@ -43,7 +43,7 @@ def decode_point_grant_history_entry_id(s):
 def do_import_point_grant_results(registry, organization, file, now, type, force, encoding):
     from .models import PointGrantHistoryEntry
     from altair.app.ticketing.models import DBSession
-    from altair.app.ticketing.core.models import Order
+    from altair.app.ticketing.orders.models import Order
     from altair.app.ticketing.users.models import User, UserPointAccount, UserPointAccountTypeEnum
 
     logger.info("start importing point granting results for Organization(id=%ld) from %s" % (organization.id, file))
@@ -200,7 +200,7 @@ def do_import_point_grant_data(registry, organization, type, submitted_on, file,
     from .models import PointGrantHistoryEntry
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.users.models import UserPointAccount, UserPointAccountTypeEnum
-    from altair.app.ticketing.core.models import Order
+    from altair.app.ticketing.orders.models import Order
 
     logger.info("start processing %s" % file)
     errors = 0
@@ -404,7 +404,8 @@ def import_point_grant_data():
 
 def do_make_point_grant_data(registry, organization, start_date, end_date, submitted_on):
     from altair.app.ticketing.models import DBSession
-    from altair.app.ticketing.core.models import Order, Performance, Event, Organization, OrganizationSetting
+    from altair.app.ticketing.core.models import Performance, Event, Organization, OrganizationSetting
+    from altair.app.ticketing.orders.models import Order
     from altair.app.ticketing.users.models import UserPointAccount
     from .models import PointGrantHistoryEntry
     from .api import calculate_point_for_order
@@ -575,7 +576,8 @@ def make_point_grant_data():
 def do_export_point_grant_data(registry, organization, type, reason_code, shop_name, submitted_on, include_granted_data, encoding):
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.users.models import UserPointAccount
-    from altair.app.ticketing.core.models import Order, Organization
+    from altair.app.ticketing.core.models import Organization
+    from altair.app.ticketing.orders.models import Order
     from .models import PointGrantHistoryEntry
 
     logger.info("start exporting point granting data scheduled for submission on %s, for Organization(id=%ld)" % (submitted_on, organization.id))

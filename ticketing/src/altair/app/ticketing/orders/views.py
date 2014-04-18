@@ -7,7 +7,7 @@ import csv
 import itertools
 from datetime import datetime
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest, HTTPInternalServerError
 from pyramid.response import Response
 from pyramid.renderers import render_to_response
 from pyramid.decorator import reify
@@ -25,15 +25,11 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.tickets.api import get_svg_builder
 from altair.app.ticketing.models import DBSession, merge_session_with_post, record_to_multidict, asc_or_desc
 from altair.app.ticketing.core.models import (
-    Order,
     Performance,
     PaymentDeliveryMethodPair,
     ShippingAddress,
     Product,
     ProductItem,
-    OrderedProduct,
-    OrderedProductItem,
-    OrderedProductAttribute,
     Ticket,
     TicketBundle,
     TicketFormat,
@@ -50,7 +46,13 @@ from altair.app.ticketing.core.models import (
     SeatStatusEnum,
     ChannelEnum,
     MailTypeEnum,
-    OrderedProductItemToken
+    )
+from altair.app.ticketing.orders.models import (
+    Order,
+    OrderedProduct,
+    OrderedProductItem,
+    OrderedProductItemToken,
+    OrderedProductAttribute,
     )
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
@@ -468,6 +470,7 @@ class OrderDownloadView(BaseView):
                 "paid_at",
                 "delivered_at",
                 "canceled_at",
+                "created_from_lot_entry",
                 "total_amount",
                 "transaction_fee",
                 "delivery_fee",
@@ -524,6 +527,7 @@ class OrderDownloadView(BaseView):
                 "paid_at",  # 支払日時
                 "delivered_at",  # 配送日時
                 "canceled_at",  # キャンセル日時
+                "created_from_lot_entry",  # 抽選
                 "total_amount",  # 合計金額
                 "transaction_fee",  # 決済手数料
                 "delivery_fee",  # 配送手数料
@@ -1649,7 +1653,13 @@ class OrdersReserveView(BaseView):
             # create order
             cart = api.get_cart_safe(self.request)
             note = post_data.get('note')
-            order = create_inner_order(cart, note)
+            try:
+                order = create_inner_order(self.request, cart, note)
+            except Exception as e:
+                logger.exception('call payment/delivery plugin error')
+                raise HTTPInternalServerError(body=json.dumps({
+                    u'message': u'決済・配送プラグインでエラーが発生しました (%s)' % e
+                    }))
 
             # 窓口での決済方法
             attr = 'sales_counter_payment_method_id'
@@ -1925,7 +1935,7 @@ class OrdersEditAPIView(BaseView):
                 sales_segment_id = op_data.get('sales_segment_id')
                 sales_segment = SalesSegment.query.filter_by(id=sales_segment_id).first()
             product = Product.query.filter_by(id=op_data.get('product_id')).first()
-            products.append((product, op_data.get('quantity')))
+            products.append((product, product.price, op_data.get('quantity')))
 
         try:
             order_data['transaction_fee'] = int(sales_segment.get_transaction_fee(order.payment_delivery_pair, products))
@@ -1946,13 +1956,10 @@ class OrdersEditAPIView(BaseView):
         order = Order.get(order_id, self.context.organization.id)
 
         try:
-            modiry_order = save_order_modification(order, order_data)
-        except InvalidSeatSelectionException:
-            logger.info("seat selection is invalid.")
-            raise HTTPBadRequest(body=json.dumps(dict(message=u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。')))
-        except NotEnoughStockException as e:
-            logger.info("not enough stock quantity :%s" % e)
-            raise HTTPBadRequest(body=json.dumps(dict(message=u'在庫がありません')))
+            modiry_order, warnings = save_order_modification(order, order_data)
+        except OrderCreationException as e:
+            logger.exception(u'save error (%s)' % unicode(e))
+            raise HTTPBadRequest(body=json.dumps(dict(message=unicode(e))))
         except Exception as e:
             logger.exception('save error (%s)' % e.message)
             raise HTTPBadRequest(body=json.dumps(dict(message=u'システムエラーが発生しました。')))

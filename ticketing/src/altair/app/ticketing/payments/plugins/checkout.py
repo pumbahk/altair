@@ -24,8 +24,9 @@ from altair.app.ticketing.cart import api as a
 from altair.app.ticketing.cart.models import Cart, CartedProduct
 from altair.app.ticketing.core.api import get_channel
 from altair.app.ticketing.cart.exceptions import NoCartError
-from altair.app.ticketing.core.models import Product, PaymentDeliveryMethodPair, Order
+from altair.app.ticketing.core.models import Product, PaymentDeliveryMethodPair
 from altair.app.ticketing.core.models import MailTypeEnum
+from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.cart.events import notify_order_completed
 from altair.app.ticketing.cart.interfaces import ICartPayment
 from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
@@ -71,6 +72,9 @@ class CheckoutSettlementFailure(PaymentPluginException):
 
 @implementer(IPaymentPlugin)
 class CheckoutPlugin(object):
+    def validate_order(self, request, order_like):
+        """ なにかしたほうが良い?""" 
+
     def prepare(self, request, cart):
         """ ここでは何もしない """
 
@@ -95,6 +99,14 @@ class CheckoutPlugin(object):
         order.paid_at = datetime.now()
         cart.finish()
         return order
+
+    def finish2(self, request, order_like):
+        # XXX ここで判定するのよくない。なぜなら、決済プラグインは Order の詳細を知っているべきではないから
+        # (is_inner_channel は IOrderLike インターフェイスにない、IOrderLike インターフェイスは Cart も実装するものなので)
+        if getattr(order_like, 'is_inner_channel', False):
+            logger.info('order %s is inner order' % order_like.order_no)
+            return
+        raise NotImplementedError()
 
     @clear_exc
     def sales(self, request, order):
@@ -123,9 +135,11 @@ class CheckoutPlugin(object):
         checkout = order.checkout
         return bool(checkout.sales_at)
 
-    def refresh(self, request, order):
-        if order.is_inner_channel:
-            logger.info('order %s is inner order' % order.order_no)
+    def refresh(self, request, order_like):
+        # XXX ここで判定するのよくない。なぜなら、決済プラグインは Order の詳細を知っているべきではないから
+        # (is_inner_channel は IOrderLike インターフェイスにない、IOrderLike インターフェイスは Cart も実装するものなので)
+        if getattr(order_like, 'is_inner_channel', False):
+            logger.info('order %s is inner order' % order_like.order_no)
             return
 
         raise NotImplementedError()

@@ -10,7 +10,6 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from sqlalchemy.sql.expression import desc
 
-
 from altair.app.ticketing.cart.interfaces import ICartPayment, ICartDelivery
 from altair.app.ticketing.mails.interfaces import (
     ICompleteMailPayment, 
@@ -27,7 +26,7 @@ from altair.app.ticketing.mails.interfaces import (
 
 from altair.app.ticketing.utils import clear_exc
 from altair.app.ticketing.core import models as c_models
-
+from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.sej import userside_api
 from altair.app.ticketing.sej.exceptions import SejErrorBase
 from altair.app.ticketing.sej.models import SejOrder, SejPaymentType, SejTicketType, SejOrderUpdateReason
@@ -45,7 +44,7 @@ from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.cart import helpers as cart_helper
 
 from ..interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IOrderDelivery
-from ..exceptions import PaymentPluginException
+from ..exceptions import PaymentPluginException, OrderLikeValidationFailure
 from . import SEJ_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import SEJ_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
 
@@ -60,7 +59,7 @@ def includeme(config):
     # 決済系(マルチ決済)
     settings = config.registry.settings
     config.add_payment_plugin(SejPaymentPlugin(), PAYMENT_PLUGIN_ID)
-    config.add_delivery_plugin(SejDeliveryPlugin(template=settings["altair.sej.template_file"]), DELIVERY_PLUGIN_ID)
+    config.add_delivery_plugin(SejDeliveryPlugin(), DELIVERY_PLUGIN_ID)
     config.add_payment_delivery_plugin(SejPaymentDeliveryPlugin(), PAYMENT_PLUGIN_ID, DELIVERY_PLUGIN_ID)
     config.scan(__name__)
 
@@ -202,8 +201,8 @@ def build_sej_args(payment_type, order_like, now):
     return dict(
         payment_type        = payment_type,
         order_no            = order_like.order_no,
-        user_name           = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
-        user_name_kana      = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
+        user_name           = build_user_name(shipping_address),
+        user_name_kana      = build_user_name_kana(shipping_address),
         tel                 = tel1 if tel1 else tel2,
         zip_code            = shipping_address.zip.replace('-', '') if shipping_address.zip else '',
         email               = shipping_address.email_1 or shipping_address.email_2 or '',
@@ -217,8 +216,53 @@ def build_sej_args(payment_type, order_like, now):
         regrant_number_due_at = regrant_number_due_at
         )
 
+def build_user_name(shipping_address):
+    return u'%s%s' % (shipping_address.last_name, shipping_address.first_name)
+
+def build_user_name_kana(shipping_address):
+    return u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana)
+
+def validate_order_like(current_date, order_like):
+    if order_like.shipping_address is None:
+        raise OrderLikeValidationFailure(u'shipping address does not exist', 'shipping_address')
+    tel = order_like.shipping_address.tel_1 or order_like.shipping_address.tel_2
+    if not tel:
+        raise OrderLikeValidationFailure(u'no phone number specified', 'shipping_address.tel_1')
+    elif len(tel) > 12 or re.match(ur'[^0-9]', tel):
+        raise OrderLikeValidationFailure(u'invalid phone number', 'shipping_address.tel_1')
+    if not order_like.shipping_address.last_name:
+        raise OrderLikeValidationFailure(u'no last name specified', 'shipping_address.last_name')
+    if not order_like.shipping_address.first_name:
+        raise OrderLikeValidationFailure(u'no first name specified', 'shipping_address.first_name')
+    user_name = build_user_name(order_like.shipping_address)
+    if len(user_name.encode('CP932')) > 40:
+        raise OrderLikeValidationFailure(u'user name too long', 'shipping_address.last_name')
+    if not order_like.shipping_address.last_name_kana:
+        raise OrderLikeValidationFailure(u'no last name (kana) specified', 'shipping_address.last_name_kana')
+    if not order_like.shipping_address.first_name_kana:
+        raise OrderLikeValidationFailure(u'no first name (kana) specified', 'shipping_address.first_name_kana')
+    user_name_kana = build_user_name_kana(order_like.shipping_address)
+    if len(user_name_kana.encode('CP932')) > 40:
+        raise OrderLikeValidationFailure(u'user name kana too long', 'shipping_address.last_name_kana')
+    if not order_like.shipping_address.zip:
+        raise OrderLikeValidationFailure(u'no zipcode specified', 'shipping_address.zip')
+    elif not re.match(ur'^[0-9]{7}', order_like.shipping_address.zip.replace(u'-', u'')):
+        raise OrderLikeValidationFailure(u'invalid zipcode specified', 'shipping_address.zip')
+    email = order_like.shipping_address.email_1 or order_like.shipping_address.email_2
+    if not email:
+        raise OrderLikeValidationFailure(u'no email address specified', 'shipping_address.email_1')
+    elif len(email) > 64:
+        raise OrderLikeValidationFailure(u'invalid email address', 'shipping_address.email_1')
+    if get_payment_due_at(current_date, order_like) < current_date:
+        raise OrderLikeValidationFailure(u'payment_due_at < now', 'order.payment_due_at')
+    ticketing_due_at = get_ticketing_due_at(current_date, order_like)
+    if ticketing_due_at is not None and ticketing_due_at < current_date:
+        raise OrderLikeValidationFailure(u'issuing_end_at < now', 'order.issuing_end_at')
+
 @implementer(IPaymentPlugin)
 class SejPaymentPlugin(object):
+    def validate_order(self, request, order_like):
+        validate_order_like(datetime.now(), order_like)
 
     def prepare(self, request, cart):
         """  """
@@ -227,15 +271,19 @@ class SejPaymentPlugin(object):
     def finish(self, request, cart):
         """ 売り上げ確定 """
         logger.debug('Sej Payment')
-        order = c_models.Order.create_from_cart(cart)
+        order = order_models.Order.create_from_cart(cart)
         cart.finish()
+        self.finish2(request, order)
+        return order
 
+    @clear_exc
+    def finish2(self, request, order_like):
         current_date = datetime.now()
-        tenant = userside_api.lookup_sej_tenant(request, cart.organization_id)
+        tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         try:
             sej_order = create_sej_order(   
                 request,
-                **build_sej_args(SejPaymentType.PrepaymentOnly, cart, current_date)
+                **build_sej_args(SejPaymentType.PrepaymentOnly, order_like, current_date)
                 )
             do_sej_order(
                 request,
@@ -243,9 +291,7 @@ class SejPaymentPlugin(object):
                 sej_order=sej_order
                 )
         except SejErrorBase:
-            raise SejPluginFailure('payment plugin', order_no=order.order_no, back_url=None)
-
-        return order
+            raise SejPluginFailure('payment plugin', order_no=order_like.order_no, back_url=None)
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """
@@ -271,8 +317,8 @@ class SejPaymentPlugin(object):
  
 @implementer(IDeliveryPlugin)
 class SejDeliveryPlugin(object):
-    def __init__(self, template=None):
-        self.template = template
+    def validate_order(self, request, order_like):
+        validate_order_like(datetime.now(), order_like)
 
     def prepare(self, request, cart):
         """  """
@@ -280,16 +326,23 @@ class SejDeliveryPlugin(object):
     @clear_exc
     def finish(self, request, cart):
         logger.debug('Sej Delivery')
+        self.finish2(request, cart)
 
-        shipping_address = cart.shipping_address
+    @clear_exc
+    def finish2(self, request, order_like):
+        from altair.app.ticketing.cart.models import Cart
+        shipping_address = order_like.shipping_address
         current_date = datetime.now()
-        tenant = userside_api.lookup_sej_tenant(request, cart.organization_id)
+        tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         try:
-            tickets = get_tickets_from_cart(cart, current_date)
+            if isinstance(order_like, Cart):
+                tickets = get_tickets_from_cart(order_like, current_date)
+            else:
+                tickets = get_tickets(order_like)
             sej_order = create_sej_order(
                 request,
                 tickets=tickets,
-                **build_sej_args(SejPaymentType.Paid, cart, current_date)
+                **build_sej_args(SejPaymentType.Paid, order_like, current_date)
                 )
             do_sej_order(
                 request,
@@ -297,7 +350,7 @@ class SejDeliveryPlugin(object):
                 sej_order=sej_order
                 )
         except SejErrorBase:
-            raise SejPluginFailure('delivery plugin', order_no=cart.order_no, back_url=None)
+            raise SejPluginFailure('delivery plugin', order_no=order_like.order_no, back_url=None)
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """
@@ -321,6 +374,9 @@ class SejDeliveryPlugin(object):
 
 @implementer(IDeliveryPlugin)
 class SejPaymentDeliveryPlugin(object):
+    def validate_order(self, request, order_like):
+        validate_order_like(datetime.now(), order_like)
+
     def prepare(self, request, cart):
         """  """
 
@@ -328,18 +384,22 @@ class SejPaymentDeliveryPlugin(object):
     def finish(self, request, cart):
         """  """
         logger.debug('Sej Payment and Delivery')
-        order = c_models.Order.create_from_cart(cart)
+        order = order_models.Order.create_from_cart(cart)
         cart.finish()
+        self.finish2(request, order)
+        return order
 
+    @clear_exc
+    def finish2(self, request, order_like):
         current_date = datetime.now()
-        tenant = userside_api.lookup_sej_tenant(request, cart.organization_id)
+        tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
 
         try:
-            tickets = get_tickets(order)
+            tickets = get_tickets(order_like)
             sej_order = create_sej_order(
                 request,
                 tickets=tickets,
-                **build_sej_args(SejPaymentType.CashOnDelivery, cart, current_date)
+                **build_sej_args(SejPaymentType.CashOnDelivery, order_like, current_date)
                 )
             do_sej_order(
                 request,
@@ -347,9 +407,7 @@ class SejPaymentDeliveryPlugin(object):
                 sej_order=sej_order
                 )
         except SejErrorBase:
-            raise SejPluginFailure('payment/delivery plugin', order_no=order.order_no, back_url=None)
-
-        return order
+            raise SejPluginFailure('payment/delivery plugin', order_no=order_like.order_no, back_url=None)
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """

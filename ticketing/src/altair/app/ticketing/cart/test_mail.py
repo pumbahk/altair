@@ -12,10 +12,12 @@ from altair.app.ticketing.cart import helpers as h
 from altair.app.ticketing.mails.testing import MailTestMixin
 
 def _build_order(*args, **kwargs):
-    from altair.app.ticketing.core.models import (
+    from altair.app.ticketing.orders.models import (
         Order,
         OrderedProduct,
         OrderedProductItem,
+        )
+    from altair.app.ticketing.core.models import (
         Seat,
         Product,
         SalesSegment,
@@ -134,8 +136,9 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
     def setUp(self):
         from altair.app.ticketing.testing import _setup_db
         self.session = _setup_db(modules=[
-                "altair.app.ticketing.models",
+                "altair.app.ticketing.lots.models",
                 "altair.app.ticketing.core.models",
+                "altair.app.ticketing.orders.models",
                 "altair.app.ticketing.cart.models",
                 ])
 

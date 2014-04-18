@@ -1,29 +1,36 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import re
 import csv
 import logging
 import transaction
 import json
+import six
+from decimal import Decimal
 from dateutil.parser import parse as parsedate
 from datetime import datetime
 from standardenum import StandardEnum
 from collections import OrderedDict
 from StringIO import StringIO
 
+from pyramid.decorator import reify
 from zope.interface import implementer
+from sqlalchemy.sql import expression as sql_expr
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
-
+from altair.app.ticketing.payments.api import lookup_plugin
 from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core.models import (
     Operator,
     Organization,
+    Event,
     Performance,
     ChannelEnum,
     PaymentDeliveryMethodPair,
+    SalesSegment_PaymentDeliveryMethodPair,
     PaymentMethod,
     DeliveryMethod,
     SalesSegmentGroup,
@@ -32,160 +39,54 @@ from altair.app.ticketing.core.models import (
     ProductItem,
     ShippingAddress,
     SeatStatusEnum,
+    StockTypeEnum,
     Seat,
     SeatStatus,
     Venue,
-    OrderImportTask,
-    ImportStatusEnum,
     CartMixin,
-)
-from altair.app.ticketing.orders.api import create_inner_order
-from altair.app.ticketing.orders.export import japanese_columns
+    )
+from altair.app.ticketing.lots.models import (
+    Lot,
+    LotEntry,
+    )
+from altair.app.ticketing.orders.models import (
+    Order,
+    OrderedProduct,
+    OrderedProductItem,
+    OrderedProductItemToken,
+    )
 from altair.app.ticketing.payments import plugins as payments_plugins
+from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
 from altair.app.ticketing.payments.plugins.sej import get_ticketing_start_at
 from altair.app.ticketing.payments.interfaces import IPaymentCart
 from altair.app.ticketing.core.interfaces import (
     IOrderedProductLike,
     IOrderedProductItemLike,
     IShippingAddress,
-)
+    )
 from altair.app.ticketing.users.models import UserCredential, Membership
 from altair.app.ticketing.utils import sensible_alnum_encode
+from .models import OrderImportTask, ImportStatusEnum, ImportTypeEnum, AllocationModeEnum, ProtoOrder
+from .api import create_or_update_orders_from_proto_orders, get_order_by_order_no, get_relevant_object, label_for_object
+from .export import japanese_columns
+from .exceptions import MassOrderCreationError
 
 logger = logging.getLogger(__name__)
 
 
-class TemporaryModel(object):
-    def __init__(self, **kwargs):
-        for k, v in kwargs.iteritems():
-            setattr(self, k, v)
-
-
-@implementer(IPaymentCart)
-class TemporaryCart(TemporaryModel, CartMixin):
-    def __init__(self, **kwargs):
-        self.order = None
-        self.order_no = None
-        self.total_amount = 0
-        self.system_fee = 0
-        self.special_fee = 0
-        self.special_fee_name = u''
-        self.delivery_fee = 0
-        self.transaction_fee = 0
-        self.shipping_address = None
-        self.channel = None
-        self.name = None
-        self.has_different_amount = False
-        self.different_amount = 0
-        super(type(self), self).__init__(**kwargs)
-
-    @property
-    def performance(self):
-        return Performance.query.filter_by(id=self.performance_id).one()
-
-    @property
-    def sales_segment(self):
-        return SalesSegment.query.filter_by(id=self.sales_segment_id).one()
-
-    @property
-    def payment_delivery_pair(self):
-        return PaymentDeliveryMethodPair.query.filter_by(id=self.payment_delivery_method_pair_id).one()
-
-    @property
-    def operator(self):
-        return Operator.query.filter_by(id=self.operator_id).one()
-
-    @property
-    def items(self):
-        return self._carted_product.values()
-
-    @property
-    def calculated_total_amount(self):
-        return (self.transaction_fee + self.delivery_fee + self.system_fee + self.special_fee
-                + sum([p.price * p.quantity for p in self.items]))
-
-    def finish(self):
-        pass
-
-
-@implementer(IOrderedProductLike)
-class TemporaryCartedProduct(TemporaryModel):
-    def __init__(self, **kwargs):
-        self.price = 0
-        self.quantity = 0
-        super(type(self), self).__init__(**kwargs)
-
-    @property
-    def product(self):
-        return Product.query.filter_by(id=self.product_id).one()
-
-    @property
-    def elements(self):
-        return self._carted_product_item.values()
-
-    @property
-    def cart(self):
-        return self._parent
-
-
-@implementer(IOrderedProductItemLike)
-class TemporaryCartedProductItem(TemporaryModel):
-    def __init__(self, **kwargs):
-        self.price = 0
-        self.quantity = 0
-        self.seats = []
-        self.original_seats = []
-        super(type(self), self).__init__(**kwargs)
-
-    @property
-    def product_item(self):
-        return ProductItem.query.filter_by(id=self.product_item_id).one()
-
-    @property
-    def carted_product(self):
-        return self._parent
-
-
-@implementer(IShippingAddress)
-class TemporaryShippingAddress(TemporaryModel):
-
-    def __init__(self, **kwargs):
-        self.user_id         = None
-        self.tel_1           = None
-        self.tel_2           = None
-        self.first_name      = None
-        self.last_name       = None
-        self.first_name_kana = None
-        self.last_name_kana  = None
-        self.zip             = None
-        self.email_1         = None
-        self.email_2         = None
-        super(type(self), self).__init__(**kwargs)
-
-    @property
-    def email(self):
-        return self.email_1 or self.email_2
-
-
-def price_to_number(string):
-    if string is not None:
-        string = string.replace(',', '')
-    return int(string)
-
-
 class ImportCSVReader(object):
-
     def __init__(self, file, encoding='cp932'):
         self.reader = csv.DictReader(file)
         self.encoding = encoding
         columns = dict((v, k) for k, v in japanese_columns.iteritems())
         header = []
-        try:
-            for field in self.reader.fieldnames:
-                field = unicode(field.decode(self.encoding))
-                header.append(columns.get(field))
-        except Exception, e:
-            logger.info('invalid file: %s' % e.message)
+        for field in self.reader.fieldnames:
+            field = unicode(field.decode(self.encoding))
+            column_id = columns.get(field)
+            if column_id is None:
+                # 該当するカラムがない場合には、ヘッダに出現した内容をそのままキーとする
+                column_id = field
+            header.append(column_id)
         self.reader.fieldnames = header
 
     def __iter__(self):
@@ -195,336 +96,344 @@ class ImportCSVReader(object):
             yield row
 
     @property
+    def line_num(self):
+        return self.reader.line_num
+
+    @property
     def fieldnames(self):
         return self.reader.fieldnames
 
 
-class ImportTypeEnum(StandardEnum):
-    Create = 1
-    Update = 2
+class ImporterErrorBase(Exception):
+    def __init__(self, ref, message, *args):
+        super(ImporterErrorBase, self).__init__(ref, message, *args)
 
-class AllocationModeEnum(StandardEnum):
-    AlwaysAllocateNew = 1
-    NoAutoAllocation = 2
+    def __str__(self):
+        return self.__unicode__()
 
-import_type_labels = {
-    1: u'新規登録',
-    2: u'同じ予約番号を更新',
-    }
+    def __unicode__(self):
+        return u'%s: %s' % (self.ref, self.message)
 
-allocation_mode_labels = {
-    1: u'座席番号を無視し常に自動配席する',
-    2: u'座席番号に該当する座席を配席する',
-    }
+    @property
+    def ref(self):
+        return self.args[0]
 
-def get_import_type_label(import_type):
-    return import_type_labels.get(int(import_type), None)
+    @property
+    def message(self):
+        return self.args[1]
 
-def get_allocation_mode_label(allocation_mode):
-    return allocation_mode_labels.get(int(allocation_mode), None)
 
-class OrderImporter(object):
-    def __init__(self, operator, organization, performance_id, order_csv, import_type, allocation_mode=AllocationModeEnum.AlwaysAllocateNew, **kwargs):
-        self.operator_id = operator.id
-        self.organization_id = organization.id
-        self.performance_id = performance_id
-        self.import_type = int(import_type)
-        self.allocation_mode = int(allocation_mode)
-        self.status = ImportStatusEnum.Waiting.v[0]
-        file_data = order_csv.read()
-        self.file_data = unicode(file_data.decode('cp932'))
+class ImportCSVParserError(ImporterErrorBase):
+    def __init__(self, ref, message, line_num):
+        super(ImportCSVParserError, self).__init__(ref, message, line_num)
+
+    def __str__(self):
+        return self.__unicode__()
+
+    def __unicode__(self):
+        if self.line_num:
+            return u'%s (行 %d)' % (super(ImportCSVParserError, self).__unicode__(), self.line_num)
+        else:
+            return super(ImportCSVParserError, self).__unicode__()
+
+    @property
+    def line_num(self):
+        return self.args[2]
+
+
+class ImporterValidationError(ImporterErrorBase):
+    pass
+
+
+class DummyCart(CartMixin):
+    def __init__(self, proto_order):
+        self.proto_order = proto_order
+        self.product_quantity_pair = [(p.product, p.quantity) for p in self.proto_order.items]
+
+    @property
+    def created_at(self):
+        return self.proto_order.new_order_created_at
+
+    @reify
+    def total_amount(self):
+        return core_api.calculate_total_amount(self.proto_order)
+
+    @reify
+    def payment_delivery_pair(self):
+        return self.proto_order.payment_delivery_pair
+
+    @reify
+    def sales_segment(self):
+        return self.proto_order.sales_segment
+
+    @reify
+    def system_fee(self):
+        return self.sales_segment.get_system_fee(self.payment_delivery_pair, self.product_quantity_pair)
+
+    @reify
+    def special_fee(self):
+        return self.sales_segment.get_special_fee(self.payment_delivery_pair, self.product_quantity_pair)
+
+    @reify
+    def transaction_fee(self):
+        return self.sales_segment.get_transaction_fee(self.payment_delivery_pair, self.product_quantity_pair)
+
+    @reify
+    def delivery_fee(self):
+        return self.sales_segment.get_delivery_fee(self.payment_delivery_pair, self.product_quantity_pair)
+
+
+class ImportCSVParserContext(object):
+    def __init__(self, request, session, exc_factory, order_import_task, organization, performance, event, default_payment_method, default_delivery_method):
+        self.request = request
+        self.session = session
+        self.exc_factory = exc_factory
+        self.order_import_task = order_import_task
+        self.organization = organization
+        self.event = event
+        self.performance = performance
+        self.event = event or (performance and performance.event)
+        self.default_payment_method = default_payment_method
+        self.default_delivery_method = default_delivery_method
+
+        self.orders_will_be_created = bool(order_import_task.import_type & ImportTypeEnum.Create.v)
+        self.orders_will_be_updated = bool(order_import_task.import_type & ImportTypeEnum.Update.v)
+        self.always_issue_order_no = bool(order_import_task.import_type & ImportTypeEnum.AlwaysIssueOrderNo.v)
 
         # csvファイルから読み込んだ予約 {order_no:cart}
         self.carts = OrderedDict()
-        # csvファイルから読み込めなかった予約 / インポートできなかった予約 {order_no:cart}
-        self.errors = OrderedDict()
+        # csvファイルから読み込めなかった予約 / インポートできなかった予約 {order_no:[error, error...]}
+        self.ordered_product_for_order_and_product = {}
+        self.ordered_product_item_for_ordered_product_and_product_item = {}
+        self.serial_for_element = {}
+        self.performances = {}
+        self.events = {}
+        self.venues = {}
+        self.payment_methods = {}
+        self.delivery_methods = {}
 
-        self.task_id = None
-        self.created_at = None
-        self.updated_at = None
-        if 'task_id' in kwargs:
-            self.task_id = kwargs.get('task_id')
-        if 'created_at' in kwargs:
-            self.created_at = kwargs.get('created_at')
-        if 'updated_at' in kwargs:
-            self.updated_at = kwargs.get('updated_at')
-        if 'status' in kwargs:
-            self.status = kwargs.get('status')
-        if 'errors' in kwargs:
-            errors = kwargs.get('errors')
-            if errors:
-                self.errors = OrderedDict(errors)
-
-        file = StringIO()
-        file.write(file_data)
-        file.seek(0)
-        self.parse_import_file(file)
-
-    @property
-    def task(self):
-        if self.task_id:
-            return OrderImportTask.query.filter_by(id=self.task_id).one()
+    def parse_int(self, string, message):
+        if string is not None:
+            string = string.strip()
+        if string:
+            string = string.replace(',', '')
+            try:
+                return int(string)
+            except Exception as e:
+                logger.debug(u'invalid integer string: %r' % e)
+                raise self.exc_factory(u'%s: %s' % (message, string))
         return None
 
-    @property
-    def operator(self):
-        return Operator.query.filter_by(id=self.operator_id).one()
-
-    @property
-    def imported(self):
-        return self.status == ImportStatusEnum.Imported.v[0]
-
-    @property
-    def valid_carts(self):
-        errors = self.errors.keys()
-        return OrderedDict([(order_no, cart) for order_no, cart in self.carts.items() if order_no not in errors])
-
-    @property
-    def import_type_label(self):
-        return get_import_type_label(self.import_type) or u''
-
-    def parse_import_file(self, file):
-        reader = ImportCSVReader(file)
-        for row in reader:
+    def parse_decimal(self, string, message):
+        if string is not None:
+            string = string.strip()
+        if string:
+            string = string.replace(',', '')
             try:
-                order_no = row.get(u'order.order_no')
-                if order_no in self.errors.keys():
-                    continue
-
-                # create TemporaryCart
-                cart = self.carts.get(order_no)
-                if cart is None:
-                    # User
-                    user = self.get_user(row)
-
-                    # SalesSegment, PaymentDeliveryMethodPair
-                    sales_segment = self.get_sales_segment(row)
-                    pdmp = self.get_pdmp(row, sales_segment)
-
-                    # TemporaryCart: dict(order_no=temp_cart)
-                    cart = self.create_temporary_cart(row, sales_segment, pdmp, user)
-
-                # create TemporaryCartedProduct: dict(product_id=temp_carted_product)
-                product = self.get_product(row, cart.sales_segment)
-                cp = cart._carted_product.get(product.id)
-                if cp is None:
-                    cp = self.create_temporary_carted_product(row, cart, product)
-                    cart._carted_product[product.id] = cp
-
-                # create TemporaryOrderedProductItem: dict(product_item_id=temp_carted_product_item)
-                product_item = self.get_product_item(row, product)
-                cpi = cp._carted_product_item.get(product_item.id)
-                if cpi is None:
-                    cpi = self.create_temporary_carted_product_item(row, cp, product_item)
-                    cp._carted_product_item[product_item.id] = cpi
-                else:
-                    cpi.quantity += int(row.get(u'ordered_product_item.quantity'))
-
-                # Seat: dict(seat_id=seat)
-                seat = self.get_seat(row, product_item)
-                cpi.original_seats.append(seat)
-            except (NoResultFound, MultipleResultsFound), e:
-                self.errors[order_no] = u'予約番号: %s  %s' % (order_no, e.message)
-                continue
-
-            self.carts[order_no] = cart
-        return
-
-    def validate(self):
-        from altair.app.ticketing.models import DBSession
-        session = DBSession
-        sum_quantity = dict()
-        order_no_list = self.carts.keys()
-        for order_no in order_no_list:
-            cart = self.carts.get(order_no)
-
-            # 合計金額
-            if cart.total_amount != cart.calculated_total_amount:
-                self.errors[order_no] = u'予約番号: %s  %s' % (order_no, u'合計金額が正しくありません')
-            for cp in cart.items:
-                if (cp.price * cp.quantity) != sum([cpi.price * cpi.quantity for cpi in cp.elements]):
-                    self.errors[order_no] = u'予約番号: %s  %s' % (order_no, u'商品単価または商品個数が正しくありません')
-
-            # 在庫数
-            # - ここでは在庫総数のチェックのみ
-            # - 実際に配席しないと連席判定も含めた在庫の過不足は分からない為
-            try:
-                for cp in cart.items:
-                    for cpi in cp.elements:
-                        product_item = cpi.product_item
-                        stock = product_item.stock
-                        if stock.id not in sum_quantity:
-                            sum_quantity[stock.id] = 0
-
-                        sum_quantity[stock.id] += cpi.quantity
-                        if stock.stock_status.quantity < sum_quantity[stock.id]:
-                            logger.info('cannot allocate quantity rest=%s (stock_id=%s, quantity=%s)' %
-                                        (stock.stock_status.quantity, stock.id, cpi.quantity))
-                            error_reason = u'配席可能な座席がありません  商品明細: %s  個数: %s  (stock_id: %s)' %\
-                                           (product_item.name, cpi.quantity, stock.id)
-                            raise Exception(error_reason)
-                        if self.allocation_mode == AllocationModeEnum.NoAutoAllocation.v:
-                            if not stock.stock_type.quantity_only:
-                                # セッションからdetachしているかもしれないので
-                                for seat in cpi.original_seats:
-                                    session.add(seat)
-                                if not all(cpi.original_seats):
-                                    raise Exception(u'座席番号が一致しないもしくは指定されていないデータがありますが、自動配席が無効になっています')
-                                if len(cpi.original_seats) != cpi.quantity:
-                                    raise Exception(u'商品明細数と座席数が一致しません')
-                                for seat in cpi.original_seats:
-                                    if seat.status != SeatStatusEnum.Vacant.v:
-                                        raise Exception(u'座席「%s」(id=%ld, l0_id=%s) は配席済みです' % (seat.name, seat.id, seat.l0_id))
+                return Decimal(string)
             except Exception as e:
-                self.errors[order_no] = u'予約番号: %s  %s' % (order_no, e.message)
-        return
+                logger.debug(u'invalid decimal string: %r' % e)
+                raise self.exc_factory(u'%s: %s' % (message, string))
+        return None
 
-    def get_sales_segment(self, row):
-        ssg_name = row.get(u'ordered_product.product.sales_segment.sales_segment_group.name')
-        try:
-            sales_segment = SalesSegment.query.join(SalesSegmentGroup).filter(
-                SalesSegment.performance_id == self.performance_id,
-                SalesSegmentGroup.name == ssg_name,
-            ).one()
-        except NoResultFound, e:
-            e.message = u'販売区分がありません  販売区分グループ名: %s' % ssg_name
-            raise e
-        except MultipleResultsFound, e:
-            e.message = u'候補の販売区分が複数あります  販売区分グループ名: %s' % ssg_name
-            raise e
-        return sales_segment
+    def parse_date(self, string, message):
+        if string is not None:
+            string = string.strip()
+        if string:
+            try:
+                return parsedate(string)
+            except Exception as e:
+                logger.debug(u'invalid date/time string: %r' % e)
+                raise self.exc_factory(u'%s: %s' % (message, string))
+        return None
 
-    def get_pdmp(self, row, sales_segment):
-        payment_method_name = row.get(u'payment_method.name')
-        delivery_method_name = row.get(u'delivery_method.name')
-        try:
-            pdmp = PaymentDeliveryMethodPair.query.filter(
-                PaymentDeliveryMethodPair.sales_segment_group_id == sales_segment.sales_segment_group_id
-            ).join(PaymentMethod).filter(
-                PaymentMethod.name == payment_method_name
-            ).join(DeliveryMethod).filter(
-                DeliveryMethod.name == delivery_method_name
-            ).one()
-        except NoResultFound, e:
-            e.message = u'決済引取方法がありません  決済方法: %s  引取方法: %s' % (payment_method_name, delivery_method_name)
-            raise e
-        except MultipleResultsFound, e:
-            e.message = u'候補の決済引取方法が複数あります  決済方法: %s  引取方法: %s' % (payment_method_name, delivery_method_name)
-            raise e
-        return pdmp
+    def get_proto_order(self, row, order_no_or_key, performance, sales_segment, pdmp):
+        # create TemporaryCart
+        cart = self.carts.get(order_no_or_key)
+        if cart is None:
+            user = self.get_user(row)
+            note = re.split(ur'\r\n|\r|\n', row.get(u'order.note', u'').strip())
+            # SalesSegment, PaymentDeliveryMethodPair
+            original_order = None
+            if order_no_or_key:
+                obj = get_relevant_object(self.request, order_no_or_key, self.session, include_deleted=True)
+                logger.info('relevant_object=%s' % obj)
+            if self.always_issue_order_no and self.orders_will_be_created:
+                if isinstance(obj, Order):
+                    if self.orders_will_be_updated:
+                        if obj.is_canceled() or obj.deleted_at is not None:
+                            raise self.exc_factory(u'元の注文 %s はキャンセル済みです' % obj.order_no)
+                        order_no = order_no_or_key
+                        original_order = obj
+                    else:
+                        order_no = core_api.get_next_order_no(self.request, self.organization)
+                        logger.info('always_issue_order_no is specified; new_order_no=%s' % order_no)
+                        note.append(u'元の予約番号: %s' % order_no_or_key)
+                elif obj is not None:
+                    order_no = core_api.get_next_order_no(self.request, self.organization)
+                    logger.info('always_issue_order_no is specified; new_order_no=%s' % order_no)
+                    if isinstance(obj, LotEntry):
+                        note.append(u'元の抽選の予約番号: %s' % order_no_or_key)
+                    else: 
+                        logger.info(u'%s is used by %s' % (order_no_or_key, label_for_object(obj)))
+            else:
+                if obj is not None:
+                    order_no = order_no_or_key
+                    if isinstance(obj, LotEntry):
+                        if obj.is_canceled or obj.deleted_at is not None:
+                            raise self.exc_factory(u'抽選 %s はキャンセル済みです' % obj.entry_no)
+                        note.append(u'抽選より同じ予約番号で生成')
+                    else:
+                        if self.orders_will_be_updated:
+                            if isinstance(obj, Order):
+                                if obj.is_canceled() or obj.deleted_at is not None:
+                                    raise self.exc_factory(u'元の注文 %s はキャンセル済みです' % obj.order_no)
+                                original_order = obj
+                            else:
+                                raise self.exc_factory(u'更新対象が注文ではありません (%sです)' % label_for_object(obj))
+                        else:
+                            if obj.deleted_at is not None:
+                                raise self.exc_factory(u'この予約番号は予約されています')
+                            else:
+                                raise self.exc_factory(u'すでに同じ予約番号の予約またはカートが存在します')
+                else:
+                    if self.orders_will_be_created:
+                        order_no = core_api.get_next_order_no(self.request, self.organization)
+                    elif self.orders_will_be_updated:
+                        raise self.exc_factory(u'更新対象の注文が存在しません')
+            if original_order is not None:
+                if original_order.issued_at is not None or \
+                   original_order.printed_at is not None:
+                    raise self.exc_factory(u'更新対象の注文はすでに発券済みです')
+                if original_order.payment_delivery_pair.payment_method.payment_plugin_id != pdmp.payment_method.payment_plugin_id:
+                    raise self.exc_factory(u'更新対象の注文の決済方法と新しい注文の決済方法が異なっています')
+                if original_order.payment_delivery_pair.delivery_method.delivery_plugin_id != pdmp.delivery_method.delivery_plugin_id:
+                    raise self.exc_factory(u'更新対象の注文の引取方法と新しい注文の引取方法が異なっています')
 
-    def get_user(self, row):
-        auth_identifier = row.get(u'user_credential.auth_identifier')
-        membership_name = row.get(u'membership.name')
-        if not auth_identifier or not membership_name:
-            return None
+            new_order_created_at = None
+            new_order_paid_at = None
+            issuing_start_at = None
+            issuing_end_at = None
+            payment_start_at = None
+            payment_due_at = None
 
-        try:
-            credential = UserCredential.query.join(Membership).filter(
-                UserCredential.auth_identifier == auth_identifier,
-                Membership.name==membership_name
-            ).one()
-        except NoResultFound, e:
-            e.message = u'ユーザーが見つかりません'
-            raise e
-        return credential.user
+            new_order_created_at_str = row.get(u'order.created_at')
+            new_order_created_at = self.parse_date(new_order_created_at_str, u'注文生成日時が不正です')
 
-    def get_product(self, row, sales_segment):
-        product_name = row.get(u'ordered_product.product.name')
-        try:
-            product = Product.query.filter(
-                Product.sales_segment_id == sales_segment.id,
-                Product.name == product_name
-            ).one()
-        except NoResultFound, e:
-            e.message = u'商品がありません  商品: %s' % product_name
-            raise e
-        except MultipleResultsFound, e:
-            e.message = u'候補の商品が複数あります  商品: %s' % product_name
-            raise e
-        return product
+            new_order_paid_at_str = row.get(u'order.paid_at')
+            new_order_paid_at = self.parse_date(new_order_paid_at_str, u'支払日時が不正です')
 
-    def get_product_item(self, row, product):
-        product_item_name = row.get(u'ordered_product_item.product_item.name')
-        try:
-            product = ProductItem.query.filter(
-                ProductItem.product_id == product.id,
-                ProductItem.name == product_item_name
-            ).one()
-        except NoResultFound, e:
-            e.message = u'商品明細がありません  商品明細: %s' % product_item_name
-            raise e
-        except MultipleResultsFound, e:
-            e.message = u'候補の商品明細が複数あります  商品明細: %s' % product_item_name
-            raise e
-        return product
+            issuing_start_at_str = row.get(u'order.issuing_start_at')
+            issuing_start_at = self.parse_date(issuing_start_at_str, u'発券開始日時が不正です')
 
-    def get_seat(self, row, product_item):
-        seat_name = row.get(u'seat.name')
-        if not seat_name:
-            return None
+            issuing_end_at_str = row.get(u'order.issuing_end_at')
+            issuing_end_at = self.parse_date(issuing_end_at_str, u'発券終了日時が不正です')
 
-        try:
-            venue = Venue.query.filter_by(performance_id=self.performance_id).one()
-            seat = Seat.query.options(joinedload(Seat.status_)).filter(
-                Seat.venue_id == venue.id,
-                Seat.stock_id == product_item.stock_id,
-                Seat.name == seat_name
-            ).one()
-        except NoResultFound, e:
-            e.message = u'座席がありません  座席: %s' % seat_name
-            raise e
-        except MultipleResultsFound, e:
-            e.message = u'候補の座席が複数あります  座席: %s' % seat_name
-            raise e
-        return seat
+            payment_start_at_str = row.get(u'order.paymenet_start_at')
+            payment_start_at = self.parse_date(payment_start_at_str, u'支払開始日時が不正です')
 
-    def create_temporary_cart(self, row, sales_segment, pdmp, user):
-        cart = TemporaryCart(
-            order_no            = row.get(u'order.order_no'),
-            total_amount        = price_to_number(row.get(u'order.total_amount')),
-            system_fee          = price_to_number(row.get(u'order.system_fee')),
-            special_fee         = price_to_number(row.get(u'order.special_fee')),
-            special_fee_name    = row.get(u'order.special_fee_name'),
-            transaction_fee     = price_to_number(row.get(u'order.transaction_fee')),
-            delivery_fee        = price_to_number(row.get(u'order.delivery_fee')),
-            note                = row.get(u'order.note'),
-            performance_id      = self.performance_id,
-            organization_id     = self.organization_id,
-            operator_id         = self.operator_id,
-            sales_segment_id    = sales_segment.id,
-            payment_delivery_method_pair_id = pdmp.id,
-            user_id             = user.id if user else None,
-            branch_no           = 1,
-            channel             = ChannelEnum.IMPORT.v,
-            _shipping_address   = self.create_temporary_shipping_address(row, user),
-            _carted_product     = dict(),
-            paid_at             = parsedate(row.get(u'order.paid_at')),
-            created_at          = parsedate(row.get(u'order.created_at')),
-        )
+            payment_due_at_str = row.get(u'order.payment_due_at')
+            payment_due_at_str = self.parse_date(payment_due_at_str, u'支払期限が不正です')
+
+            if original_order is not None:
+                if new_order_created_at is None:
+                    logger.info(u'[%s] new_order_created_at is not specified; using that of the original order' % original_order.order_no)
+                    new_order_created_at = original_order.created_at
+                if new_order_paid_at is None: 
+                    logger.info(u'[%s] new_order_paid_at is not specified; using that of the original order' % original_order.order_no)
+                    new_order_paid_at = original_order.paid_at
+                if issuing_start_at is None:
+                    logger.info(u'[%s] issuing_start_at is not specified; using that of the original order' % original_order.order_no)
+                    issuing_start_at = original_order.issuing_start_at
+                if issuing_end_at is None:
+                    logger.info(u'[%s] issuing_end_at is not specified; using that of the original order' % original_order.order_no)
+                    issuing_end_at = original_order.issuing_end_at
+                if payment_start_at is None:
+                    logger.info(u'[%s] payment_start_at is not specified; using that of the original order' % original_order.order_no)
+                    payment_start_at = original_order.payment_start_at
+                if payment_due_at is None:
+                    logger.info(u'[%s] payment_due_at is not specified; using that of the original order' % original_order.order_no)
+                    payment_due_at = original_order.payment_due_at
+
+            # TemporaryCart: dict(order_no=temp_cart)
+            cart = self.carts[order_no_or_key] = ProtoOrder(
+                ref                   = order_no_or_key,
+                order_no              = order_no,
+                total_amount          = self.parse_decimal(row.get(u'order.total_amount'), u'合計金額が不正です'),
+                system_fee            = self.parse_decimal(row.get(u'order.system_fee'), u'システム利用料が不正です'),
+                special_fee           = self.parse_decimal(row.get(u'order.special_fee'), u'特別手数料が不正です'),
+                special_fee_name      = row.get(u'order.special_fee_name'),
+                transaction_fee       = self.parse_decimal(row.get(u'order.transaction_fee'), u'決済手数料が不正です'),
+                delivery_fee          = self.parse_decimal(row.get(u'order.delivery_fee'), u'配送手数料が不正です'),
+                note                  = u'\n'.join(note),
+                performance           = performance,
+                organization          = self.organization,
+                operator              = self.order_import_task.operator,
+                sales_segment         = sales_segment,
+                payment_delivery_pair = pdmp,
+                user                  = user,
+                shipping_address      = self.create_shipping_address(row, user),
+                new_order_paid_at     = new_order_paid_at,
+                new_order_created_at  = new_order_created_at,
+                original_order        = original_order,
+                issuing_start_at      = issuing_start_at,
+                issuing_end_at        = issuing_end_at,
+                payment_start_at      = payment_start_at,
+                payment_due_at        = payment_due_at
+                )
         return cart
 
-    def create_temporary_carted_product(self, row, parent, product):
-        carted_product = TemporaryCartedProduct(
-            price                 = price_to_number(row.get(u'ordered_product.price')),
-            quantity              = int(row.get(u'ordered_product.quantity')),
-            product_id            = product.id,
-            _carted_product_item  = dict(),
-            _parent               = parent,
-        )
-        return carted_product
+    def get_ordered_product(self, row, order_no_or_key, proto_order, product):
+        ordered_product_for_product = self.ordered_product_for_order_and_product.get(order_no_or_key)
+        if ordered_product_for_product is None:
+            ordered_product_for_product = self.ordered_product_for_order_and_product[order_no_or_key] = {}
+        ordered_product = ordered_product_for_product.get(product.id)
+        price = self.parse_decimal(row.get(u'ordered_product.price'), u'商品単価が不正です')
+        if price is None:
+            price = product.price
+        quantity = self.parse_int(row.get(u'ordered_product.quantity'), u'商品個数が不正です')
+        if ordered_product is None:
+            ordered_product = ordered_product_for_product[product.id] = OrderedProduct(
+                proto_order           = proto_order,
+                price                 = price,
+                quantity              = quantity,
+                product               = product
+                )
+        else:
+            if price != ordered_product.price:
+                raise self.exc_factory(u'同じ商品で価格が一致していない行があります (%s != %s)' % (price, ordered_product.price))
+            if quantity != ordered_product.quantity:
+                raise self.exc_factory(u'同じ商品で個数が一致していない行があります (%s != %s)' % (quantity, ordered_product.quantity))
+        return ordered_product
 
-    def create_temporary_carted_product_item(self, row, parent, product_item):
-        carted_product_item = TemporaryCartedProductItem(
-            price           = price_to_number(row.get(u'ordered_product_item.price')),
-            quantity        = int(row.get(u'ordered_product_item.quantity')),
-            product_item_id = product_item.id,
-            _parent         = parent,
-        )
-        return carted_product_item
+    def get_ordered_product_item(self, row, ordered_product, product_item):
+        ordered_product_item_for_product_item = self.ordered_product_item_for_ordered_product_and_product_item.get(ordered_product)
+        if ordered_product_item_for_product_item is None:
+            ordered_product_item_for_product_item = self.ordered_product_item_for_ordered_product_and_product_item[ordered_product] = {}
+        ordered_product_item = ordered_product_item_for_product_item.get(product_item.id) 
+        price = self.parse_decimal(row.get(u'ordered_product_item.price'), u'商品明細単価が不正です')
+        element_quantity_for_row = self.parse_int(row.get(u'ordered_product_item.quantity'), u'商品明細個数が不正です')
+        if ordered_product_item is None:
+            if price is None:
+                price = product_item.price
+            ordered_product_item = ordered_product_item_for_product_item[product_item.id] = OrderedProductItem(
+                ordered_product = ordered_product,
+                price           = price,
+                quantity        = element_quantity_for_row,
+                product_item    = product_item
+                )
+        else:
+            if price != ordered_product_item.price:
+                raise self.exc_factory(u'同じ商品明細で価格が一致していない行があります (%s != %s)' % (price, ordered_product_item.price))
+            ordered_product_item.quantity += element_quantity_for_row
+        return ordered_product_item, element_quantity_for_row
 
-    def create_temporary_shipping_address(self, row, user):
-        shipping_address    = TemporaryShippingAddress(
+    def get_serial(self, element):
+        next_serial = self.serial_for_element[element] = self.serial_for_element.get(element, -1) + 1
+        return next_serial
+
+    def create_shipping_address(self, row, user):
+        shipping_address    = ShippingAddress(
             user_id         = user.id if user else None,
             first_name      = row.get(u'shipping_address.first_name'),
             last_name       = row.get(u'shipping_address.last_name'),
@@ -542,221 +451,569 @@ class OrderImporter(object):
             email_1         = row.get(u'shipping_address.email_1'),
             email_2         = row.get(u'shipping_address.email_2'),
             sex             = row.get(u'user_profile.sex'),
-        )
+            )
         return shipping_address
 
-    def get_seat_count(self, carts):
-        count = 0
-        for cart in carts.values():
-            for cp in cart.items:
-                count += sum([cpi.quantity for cpi in cp.elements])
-        return count
+    def get_event(self, row):
+        event_title = row.get(u'event_title')
+        if event_title is not None:
+            event_title = event_title.strip()
+        if not event_title:
+            return self.event
+        retval = self.events.get(event_title)
+        if retval is not None:
+            return retval
+        q = self.session.query(Event) \
+            .filter(Event.organization == self.organization) \
+            .filter(Event.title == event_title)
+        try:
+            self.events[event_title] = retval = q.one()
+        except NoResultFound:
+            raise self.exc_factory(u'イベントがありません  イベント名: %s' % (event_title,))
+        except MultipleResultsFound:
+            raise self.exc_factory(u'複数の候補があります  イベント名: %s' % (event_title,))
+        return retval
 
-    def get_seat_per_product(self, carts):
-        seat_per_product = OrderedDict()
-        for cart in carts.values():
-            for cp in cart.items:
-                p = cp.product
-                if p not in seat_per_product:
-                    seat_per_product[p] = 0
-                seat_per_product[p] += sum([int(cpi.quantity) for cpi in cp.elements])
-        return seat_per_product
+    def get_performance(self, row, event):
+        performance_name = row.get(u'performance.name')
+        if performance_name is not None:
+            performance_name = performance_name.strip()
+        performance_code = row.get(u'performance.code')
+        if performance_code is not None:
+            performance_code = performance_code.strip()
+        if not performance_name and not performance_code:
+            return self.performance
 
-    def get_order_per_pdmp(self, carts):
-        order_per_pdmp = OrderedDict()
-        for cart in carts.values():
-            pdmp = cart.payment_delivery_pair
-            if pdmp not in order_per_pdmp:
-                order_per_pdmp[pdmp] = dict(count=0)
-                if pdmp.delivery_method.delivery_plugin_id == payments_plugins.SEJ_DELIVERY_PLUGIN_ID:
-                    now = datetime.now()
-                    ticketing_start_at = get_ticketing_start_at(now, cart)
-                    order_per_pdmp[pdmp].update(dict(remark=u'発券開始日時 : %s' % ticketing_start_at.strftime('%Y-%m-%d %H:%M')))
-            order_per_pdmp[pdmp]['count'] += 1
-        return order_per_pdmp
+        key = u'%s:%s' % (performance_name, performance_code)
+        retval = self.performances.get(key)
+        if retval is not None:
+            return retval
+        q = self.session.query(Performance) \
+            .join(Performance.event) \
+            .filter(Event.organization == self.organization)
+        if event is not None:
+            q = q.filter(Performance.event == event)
+        if performance_name:
+            q = q.filter(Performance.name == performance_name)
+        if performance_code:
+            q = q.filter(Performance.code == performance_code)
+        try:
+            self.performances[key] = retval = q.one()
+        except NoResultFound:
+            raise self.exc_factory(u'公演がありません  公演名: %s, 公演コード: %s' % (performance_name, performance_code))
+        except MultipleResultsFound:
+            raise self.exc_factory(u'複数の候補があります  公演名: %s, 公演コード: %s' % (performance_name, performance_code))
+        return retval
 
-    def stats(self):
-        stats = dict()
-        carts = self.valid_carts
-        errors = self.errors
+    def get_sales_segment(self, row, performance):
+        ssg_name = row.get(u'ordered_product.product.sales_segment.sales_segment_group.name')
+        lot_name = row.get(u'order.created_from_lot_entry.lot.name', u'').strip()
 
-        # インポート方法
-        stats['import_type'] = get_import_type_label(self.import_type)
-        # 配席モード
-        stats['allocation_mode'] = get_allocation_mode_label(self.allocation_mode)
-        # インポートする予約数
-        stats['order_count'] = len(carts)
-        # インポートする席数
-        stats['seat_count'] = self.get_seat_count(carts)
-        # 商品別の席数
-        stats['seat_per_product'] = self.get_seat_per_product(carts)
-        # 決済方法/引取方法ごとの予約数、コンビニ引取があるなら発券開始日時
-        stats['order_per_pdmp'] = self.get_order_per_pdmp(carts)
-        # インポートできない予約数
-        stats['error_order_count'] = len(errors)
-        # インポートできない理由
-        stats['error_orders'] = errors
+        q = self.session.query(SalesSegment).join(SalesSegmentGroup).join(Event) \
+            .filter(SalesSegmentGroup.name == ssg_name) \
+            .filter(Event.organization == self.organization)
+        if lot_name:
+            q = q.join(
+                Lot,
+                sql_expr.and_(
+                    Lot.sales_segment_id == SalesSegment.id,
+                    Lot.deleted_at == None
+                    )
+                ) \
+                .filter(Lot.name == lot_name)
+        else:
+            if performance is not None:
+                q = q.filter(SalesSegment.performance == performance)
 
-        # OrderImportTaskからの情報
-        stats['task_id'] = self.task_id
-        stats['created_at'] = self.created_at
-        stats['updated_at'] = self.updated_at
+        if self.event is not None:
+            q = q.filter(SalesSegmentGroup.event == self.event)
+        try:
+            sales_segment = q.one()
+        except NoResultFound:
+            raise self.exc_factory(u'販売区分がありません  販売区分グループ名: %s' % ssg_name)
+        except MultipleResultsFound:
+            raise self.exc_factory(u'候補の販売区分が複数あります  販売区分グループ名: %s' % ssg_name)
+        return sales_segment
 
-        stats['operator_name'] = self.operator.name
-        stats['status'] = OrderImportTask.status_label(self.status)
+    def get_payment_method(self, row):
+        name = row.get(u'payment_method.name', u'').strip()
+        if name:
+            payment_method = self.payment_methods.get(name)
+            if payment_method is None:
+                try:
+                    payment_method = self.payment_methods[name] =self.session.query(PaymentMethod) \
+                        .filter(PaymentMethod.organization_id == self.organization.id) \
+                        .filter(PaymentMethod.name == name) \
+                        .one()
+                except NoResultFound:
+                    raise self.exc_factory(u'決済方法「%s」は存在しません' % name)
+            return payment_method
+        else:
+            return self.default_payment_method
 
-        return stats
+    def get_delivery_method(self, row):
+        name = row.get(u'delivery_method.name', u'').strip()
+        if name:
+            delivery_method = self.delivery_methods.get(name)
+            if delivery_method is None:
+                try:
+                    delivery_method = self.delivery_methods[name] =self.session.query(DeliveryMethod) \
+                        .filter(DeliveryMethod.organization_id == self.organization.id) \
+                        .filter(DeliveryMethod.name == name) \
+                        .one()
+                except NoResultFound:
+                    raise self.exc_factory(u'引取方法「%s」は存在しません' % name)
+            return delivery_method
+        else:
+            return self.default_delivery_method
 
-    def allocate_seats(self, reserving, product_item, quantity):
-        stock = product_item.stock
-        logger.info('product_item_id = %sm stock_id = %s, quantity = %s' % (product_item.id, stock.id, quantity))
 
-        seats = []
-        if not product_item.stock_type.quantity_only:
+    def get_pdmp(self, row, sales_segment):
+        payment_method = self.get_payment_method(row)
+        delivery_method = self.get_delivery_method(row)
+        try:
+            pdmp = self.session.query(PaymentDeliveryMethodPair) \
+                .join(SalesSegment_PaymentDeliveryMethodPair) \
+                .filter(SalesSegment_PaymentDeliveryMethodPair.c.sales_segment_id == sales_segment.id) \
+                .filter(PaymentDeliveryMethodPair.payment_method == payment_method) \
+                .filter(PaymentDeliveryMethodPair.delivery_method == delivery_method) \
+                .one()
+        except NoResultFound:
+            raise self.exc_factory(u'販売区分「%s」(id=%ld) に決済引取方法がありません  決済方法: %s  引取方法: %s' % (sales_segment.sales_segment_group.name, sales_segment.id, payment_method.name, delivery_method.name))
+        except MultipleResultsFound:
+            raise self.exc_factory(u'候補の決済引取方法が複数あります  決済方法: %s  引取方法: %s' % (payment_method.name, delivery_method.name))
+        return pdmp
+
+    def get_user(self, row):
+        auth_identifier = row.get(u'user_credential.auth_identifier')
+        membership_name = row.get(u'membership.name')
+        if not auth_identifier or not membership_name:
+            return None
+
+        try:
+            credential = self.session.query(UserCredential) \
+                .join(Membership) \
+                .filter(
+                    UserCredential.auth_identifier == auth_identifier,
+                    Membership.name==membership_name
+                    ) \
+                .one()
+        except NoResultFound:
+            raise self.exc_factory(u'ユーザが見つかりません (membership_name=%s, auth_identifier=%s)' % (membership_name, auth_identifier))
+        return credential.user
+
+    def get_product(self, row, sales_segment):
+        product_name = row.get(u'ordered_product.product.name')
+        try:
+            product = self.session.query(Product) \
+                .filter(
+                    Product.sales_segment_id == sales_segment.id,
+                    Product.name == product_name
+                    ) \
+                .one()
+        except NoResultFound:
+            raise self.exc_factory(u'商品がありません  商品: %s' % product_name)
+        except MultipleResultsFound:
+            raise self.exc_factory(u'候補の商品が複数あります  商品: %s' % product_name)
+        return product
+
+    def get_product_item(self, row, product):
+        product_item_name = row.get(u'ordered_product_item.product_item.name')
+        try:
+            product = self.session.query(ProductItem) \
+                .filter(
+                    ProductItem.product_id == product.id,
+                    ProductItem.name == product_item_name
+                    ) \
+                .one()
+        except NoResultFound:
+            raise self.exc_factory(u'商品明細がありません  商品明細: %s' % product_item_name)
+        except MultipleResultsFound, e:
+            raise self.exc_factory(u'候補の商品明細が複数あります  商品明細: %s' % product_item_name)
+        return product
+
+    def get_venue(self, performance_id):
+        venue = self.venues.get(performance_id)
+        if venue is None:
+            venue = self.venues[performance_id] = self.session.query(Venue).filter_by(performance_id=performance_id).one()
+        return venue
+
+    def get_seat(self, seat_name, product_item):
+        venue = self.get_venue(product_item.stock.performance_id)
+        seats = self.session.query(Seat) \
+            .options(joinedload(Seat.status_)) \
+            .filter(
+                Seat.venue_id == venue.id,
+                Seat.name == seat_name
+                ) \
+            .all()
+        if len(seats) == 0:
+            raise self.exc_factory(u'座席がありません  座席: %s' % seat_name)
+        elif len(seats) == 1:
+            if seats[0].stock_id != product_item.stock_id:
+                if seats[0].stock.stock_type is None:
+                    raise self.exc_factory(u'座席「%s」は未配席です。「%s」として配席してください' % (seat_name, product_item.stock.stock_type.name))
+                else:
+                    raise self.exc_factory(u'座席「%s」の席種「%s」は商品明細に紐づいている席種「%s」であるべきです' % (seat_name, seats[0].stock.stock_type.name, product_item.stock.stock_type.name))
+            return seats[0]
+        elif len(seats) > 1:
+            seats = [seat for seat in seats if seat.stock_id == product_item.stock_id]
+            if len(seats) > 1:
+                raise self.exc_factory(u'候補の座席が複数あります  座席: %s' % seat_name)
+            else:
+                return seats[0]
+        assert False # never get here
+
+
+class ImportCSVParser(object):
+    def __init__(self, request, session, order_import_task, organization, performance=None, event=None, default_payment_method=None, default_delivery_method=None):
+        self.request = request
+        self.session = session
+        self.order_import_task = order_import_task
+        self.organization = organization
+        self.event = event
+        self.performance = performance
+        self.event = event or (performance and performance.event)
+        self.default_payment_method = default_payment_method
+        self.default_delivery_method = default_delivery_method
+
+    def create_context(self, exc_factory):
+        return ImportCSVParserContext(
+            self.request, self.session, exc_factory,
+            order_import_task=self.order_import_task,
+            organization=self.organization,
+            performance=self.performance,
+            event=self.event,
+            default_payment_method=self.default_payment_method,
+            default_delivery_method=self.default_delivery_method
+            )
+
+    def __call__(self, reader):
+        order_no_or_key = None
+        def exc(message):
+            raise ImportCSVParserError(order_no_or_key, message, getattr(reader, 'line_num', None))
+        context = self.create_context(exc)
+        errors = {}
+        for row in reader:
+            order_no_or_key = row.get(u'order.order_no')
+            if order_no_or_key is None:
+                raise ImportCSVParserError('-', u'「予約番号」の列が存在しません', getattr(reader, 'line_num', None))
+            order_no_or_key = order_no_or_key.strip()
+            if order_no_or_key in errors:
+                continue
             try:
-                seats = reserving.reserve_seats(stock.id, int(quantity), reserve_status=SeatStatusEnum.Ordered)
-            except NotEnoughAdjacencyException, e:
-                logger.info('cannot allocate seat (stock_id=%s, quantity=%s) %s' % (stock.id, quantity, e))
-                e.message = u'配席可能な座席がありません  商品明細: %s  個数: %s  (stock_id: %s)' % (product_item.name, quantity, stock.id)
-                raise e
-        return seats
+                event = context.get_event(row)
+                performance = context.get_performance(row, event)
+                if self.performance is not None and performance != self.performance:
+                    raise exc(u'インポート対象の公演「%s」とCSVで指定された公演「%s」が異なっています' % (self.performance.name, performance.name))
+                sales_segment = context.get_sales_segment(row, performance)
+                pdmp = context.get_pdmp(row, sales_segment)
+                cart = context.get_proto_order(row, order_no_or_key, performance, sales_segment, pdmp)
+                product = context.get_product(row, cart.sales_segment)
+                item = context.get_ordered_product(row, order_no_or_key, cart, product)
+                product_item = context.get_product_item(row, product)
+                element, element_quantity_for_row = context.get_ordered_product_item(row, item, product_item)
+                seat_name = row.get(u'seat.name')
+                if seat_name is not None:
+                    seat_name = seat_name.strip()
+                seat = None
+                if not product_item.stock.stock_type.quantity_only:
+                    if (cart.original_order is not None or
+                        self.order_import_task.allocation_mode == AllocationModeEnum.NoAutoAllocation.v):
+                        if product_item.quantity != 1:
+                            raise exc(u'席種「%s」は数受けではなく、自動配席が有効になっていませんが、商品明細の数量が1ではありません' % product_item.stock_type.name)
+                        if not seat_name:
+                            raise exc(u'席種「%s」は数受けではありませんが、座席番号が指定されていません' % product_item.stock.stock_type.name)
+                        seat = context.get_seat(seat_name, product_item)
+                        if seat in element.seats:
+                            raise exc(u'すでに同じ座席番号の座席が追加されています (%s)' % seat)
+                        element.seats.append(seat)
+                else:
+                    if seat_name:
+                        raise exc(u'席種「%s」は数受けですが、座席番号が指定されています' % product_item.stock.stock_type.name)
+                for i in range(element_quantity_for_row):
+                    serial = context.get_serial(element)
+                    if serial > product_item.quantity * item.quantity:
+                        raise exc(u'商品「%s」の商品明細「%s」の数量 %d × 商品個数 %d を超える数のデータが存在します' % (product.name, product_item.name, product_item.quantity, item.quantity))
+                    element.tokens.append(
+                        OrderedProductItemToken(
+                            serial=serial,
+                            valid=True,
+                            seat=seat
+                            )
+                        )
+            except ImportCSVParserError as e:
+                logger.info(u'%s' % e)
+                context.carts.pop(order_no_or_key, None)
+                errors[order_no_or_key] = e
+                continue
+        return context.carts, errors
 
-    def execute(self, request):
-        stocker = cart_api.get_stocker(request)
-        reserving = cart_api.get_reserving(request)
 
-        # ステータス更新
-        self.status = ImportStatusEnum.Importing.v[0]
-        self.update_task()
-        transaction.commit()
+class OrderImporter(object):
+    def __init__(self, request, import_type, allocation_mode=AllocationModeEnum.AlwaysAllocateNew.v, entrust_separate_seats=False, session=None, now=None):
+        self.request = request
+        self.import_type = int(import_type)
+        self.allocation_mode = int(allocation_mode)
+        self.entrust_separate_seats = entrust_separate_seats
+        self.session = session
+        if now is None:
+            now = datetime.now()
+        self.now = now
 
-        self.validate()
-        from altair.app.ticketing.models import DBSession
-        session = DBSession
+    def pass2(self, carts, order_import_task):
+        """ImportCSVParserによってできたProtoOrder-OrderedProduct-OrderedProductItemのツリーを検証したりする"""
+        sum_quantity = dict()
+        ref = None
+        cart = None
+        carts_to_be_imported = []
+        errors = {}
+        no_update = order_import_task.import_type & (ImportTypeEnum.Create.v | ImportTypeEnum.Update.v) == ImportTypeEnum.Create.v
 
-        # インポート実行
-        order_no_list = self.carts.keys()
-        for org_order_no in order_no_list:
-            logger.info('order_no (%s) importing..' % org_order_no)
-            temp_cart = self.carts.get(org_order_no)
+        def add_error(message):
+            logger.info('%s: %s' % (ref, message))
+            errors_for_order = errors.get(ref)
+            if errors_for_order is None:
+                errors_for_order = errors[ref] = []
+            errors_for_order.append(ImporterValidationError(ref, message))
 
-            # 配席/在庫更新
-            try:
-                for temp_cp in temp_cart.items:
-                    for temp_cpi in temp_cp.elements:
-                        product_item = temp_cpi.product_item
-                        stock = temp_cpi.product_item.stock
+        for ref, cart in carts.items():
+            if cart.new_order_created_at is None:
+                cart.new_order_created_at = self.now
+            dummy_cart = DummyCart(cart)
+            # 合計金額
+            if cart.total_amount is None:
+                # 合計金額が指定されていない場合は新たに計算してその値をセットする
+                cart.total_amount = dummy_cart.total_amount
+            else:
+                if cart.total_amount != dummy_cart.total_amount:
+                    add_error(u'合計金額が正しくありません (%s であるべきですが %s となっています)' % (dummy_cart.total_amount, cart.total_amount))
 
+            # 手数料
+            # 合計が指定されていない場合は新たに計算してその値をセットする
+            # システム手数料
+            if cart.system_fee is None:
+                cart.system_fee = dummy_cart.system_fee
+            else:
+                if cart.system_fee != dummy_cart.system_fee:
+                    add_error(u'システム手数料が正しくありません (%s であるべきですが %s となっています)' % (dummy_cart.system_fee, cart.system_fee))
+
+            # 特別手数料
+            if cart.special_fee is None:
+                cart.special_fee = dummy_cart.special_fee
+            else:
+                if cart.special_fee != dummy_cart.special_fee:
+                    add_error(u'特別手数料が正しくありません (%s であるべきですが %s となっています)' % (dummy_cart.special_fee, cart.special_fee))
+
+            # 決済手数料
+            if cart.transaction_fee is None:
+                cart.transaction_fee = dummy_cart.transaction_fee
+            else:
+                if cart.transaction_fee != dummy_cart.transaction_fee:
+                    add_error(u'決済手数料が正しくありません (%s であるべきですが %s となっています)' % (dummy_cart.transaction_fee, cart.transaction_fee))
+
+            # 配送手数料
+            if cart.delivery_fee is None:
+                cart.delivery_fee = dummy_cart.delivery_fee
+            else:
+                if cart.delivery_fee != dummy_cart.delivery_fee:
+                    add_error(u'配送手数料が正しくありません (%s であるべきですが %s となっています)' % (dummy_cart.delivery_fee, cart.delivery_fee))
+
+            # 発券開始日時 / 発券終了日時 / 支払開始日時 / 支払終了日時
+            if cart.issuing_start_at is None:
+                cart.issuing_start_at = dummy_cart.issuing_start_at
+                logger.info(u'issuing_start_at=%s' % (cart.issuing_start_at.strftime("%Y-%m-%d %H:%M:%S") if cart.issuing_start_at else u'-'))
+            if cart.issuing_end_at is None:
+                cart.issuing_end_at = dummy_cart.issuing_end_at
+                logger.info(u'issuing_end_at=%s' % (cart.issuing_end_at.strftime("%Y-%m-%d %H:%M:%S") if cart.issuing_end_at else u'-'))
+            if cart.payment_start_at is None:
+                cart.payment_start_at = dummy_cart.payment_start_at
+                logger.info(u'payment_start_at=%s' % (cart.payment_start_at.strftime("%Y-%m-%d %H:%M:%S") if cart.payment_start_at else u'-'))
+            if cart.payment_due_at is None:
+                cart.payment_due_at = dummy_cart.payment_due_at
+                logger.info(u'payment_due_at=%s' % (cart.payment_due_at.strftime("%Y-%m-%d %H:%M:%S") if cart.payment_due_at else u'-'))
+
+            # 商品明細の価格や個数の検証
+            for cp in cart.items:
+                if (cp.price * cp.quantity) != sum([cpi.price * cpi.quantity for cpi in cp.elements]):
+                    add_error(u'商品「%s」の商品単価または商品個数が正しくありません' % cp.product.name)
+
+            for cp in cart.items:
+                product_item_to_element_map = {}
+                for cpi in cp.elements:
+                    product_item = cpi.product_item
+                    stock = product_item.stock
+                    prev_element = product_item_to_element_map.get(product_item.id)
+                    if prev_element is not None:
+                        add_error(
+                            u'商品「%s」の同じ商品明細「%s」(id=%s) に紐づく要素が複数存在しています' % (
+                                product_item.product.name,
+                                product_item.name,
+                                product_item.id
+                                )
+                            )
+                    product_item_to_element_map[product_item.id] = cpi
+                    if no_update:
                         # 在庫数
-                        quantity = temp_cpi.quantity
-                        stock_requires = [(stock.id, quantity)]
-                        stockstatuses = stocker.take_stock_by_stock_id(stock_requires)
+                        # - ここでは在庫総数のチェックのみ
+                        # - 実際に配席しないと連席判定も含めた在庫の過不足は分からない為
+                        # - 予約の更新の場合は在庫引当の検証を行わない
+                        quantity_for_stock = sum_quantity.setdefault(stock.id, 0)
+                        quantity_for_stock += cpi.quantity
+                        if stock.stock_status.quantity < quantity_for_stock:
+                            logger.info('cannot allocate quantity rest=%s (stock_id=%s, quantity=%s)' %
+                                        (stock.stock_status.quantity, stock.id, cpi.quantity))
+                            add_error(u'配席可能な座席がありません  商品明細: %s  個数: %s  (stock_id: %s)' %\
+                                           (product_item.name, cpi.quantity, stock.id))
+                        else:
+                            sum_quantity[stock.id] = quantity_for_stock
 
-                        # 配席
+                    # 座席状態のチェック
+                    if (cart.original_order is not None or
+                        self.allocation_mode == AllocationModeEnum.NoAutoAllocation.v):
                         if not stock.stock_type.quantity_only:
-                            if self.allocation_mode == AllocationModeEnum.NoAutoAllocation.v:
-                                assert len(temp_cpi.original_seats) == temp_cpi.quantity, 'len(cpi.original_seats) (%d) != cpi.quantity (%d)' % (len(temp_cpi.original_seats), temp_cpi.quantity)
-                                for seat in temp_cpi.original_seats:
-                                    session.add(seat)
-                                reserving.reserve_selected_seats(stockstatuses, performance_id=temp_cart.performance_id, selected_seat_l0_ids=[seat.l0_id for seat in temp_cpi.original_seats], reserve_status=SeatStatusEnum.Ordered)
-                                temp_cpi.seats += temp_cpi.original_seats
-                            elif self.allocation_mode == AllocationModeEnum.AlwaysAllocateNew.v:
-                                seats = self.allocate_seats(reserving, product_item, temp_cpi.quantity)
-                                temp_cpi.seats += seats
-                            else:
-                                raise AssertionError('never get here')
-            except Exception as e:
-                logger.error('take stock error (%s): %r' % (org_order_no, e))
-                transaction.abort()
-                self.errors[org_order_no] = u'予約番号: %s  %s' % (org_order_no, u'座席を確保できませんでした')
-                continue
+                            if not all(cpi.seats):
+                                add_error(u'座席番号が一致しないもしくは指定されていないデータがありますが、自動配席が無効になっています')
+                            if len(cpi.seats) != cpi.quantity:
+                                add_error(u'商品明細数と座席数が一致しません (%d 個であるべきですが %d 個しかありません)' % (expected_quantity, cpi.quantity))
+                            for seat in cpi.seats:
+                                if seat.status == SeatStatusEnum.Ordered.v:
+                                    order = self.session.query(Order) \
+                                        .join(Order.items) \
+                                        .join(OrderedProduct.elements) \
+                                        .join(OrderedProductItem.seats) \
+                                        .filter(Seat.id == seat.id) \
+                                        .filter(Order.canceled_at == None) \
+                                        .one()
+                                    if order != cart.original_order:
+                                        if order is not None:
+                                            add_error(u'座席「%s」(id=%ld, l0_id=%s) は予約 %s に配席済みです' % (seat.name, seat.id, seat.l0_id, order.order_no))
+                                        else:
+                                            add_error(u'座席「%s」(id=%ld, l0_id=%s) は配席済みです' % (seat.name, seat.id, seat.l0_id))
+                                elif seat.status in (SeatStatusEnum.InCart.v, SeatStatusEnum.Keep.v):
+                                    add_error(u'座席「%s」(id=%ld, l0_id=%s) はカートに入っています' % (seat.name, seat.id, seat.l0_id))
+                                elif seat.status != SeatStatusEnum.Vacant.v:
+                                    add_error(u'座席「%s」(id=%ld, l0_id=%s) は選択できません' % (seat.name, seat.id, seat.l0_id))
 
-            # create ShippingAddress
-            attr = temp_cart._shipping_address.__dict__
-            shipping_address = ShippingAddress(**attr)
-            shipping_address.save()
-            temp_cart.shipping_address = shipping_address
+                for product_item in cp.product.items:
+                    cpi = product_item_to_element_map.get(product_item.id)
+                    if cpi is None:
+                        add_error(
+                            u'商品「%s」の商品明細「%s」 (id=%s) に対応する要素が存在しません」' % (
+                                product_item.product.name,
+                                product_item.name,
+                                product_item.id
+                                )
+                            )
 
-            # order_noを採番
-            if self.import_type == ImportTypeEnum.Create.v:
-                organization = Organization.query.filter_by(id=self.organization_id).one()
-                base_id = core_api.get_next_order_no()
-                order_no = organization.code + sensible_alnum_encode(base_id).zfill(10)
-                temp_cart.order_no = order_no
+            for plugin in lookup_plugin(self.request, cart.payment_delivery_pair):
+                if plugin is None:
+                    continue
+                try:
+                    plugin.validate_order(self.request, cart)
+                except OrderLikeValidationFailure as e:
+                    add_error(u'「%s」の入力値が不正です (%s)' % (japanese_columns[e.path], e.message))
 
-            # 備考欄に追記
-            note = u''
-            if self.import_type == ImportTypeEnum.Create.v:
-                note = u'元の予約番号: %s  ' % org_order_no
-            imported_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            note += u'インポート日時: %s' % imported_at
-            if temp_cart.note:
-                note += u'\n' + temp_cart.note
+            # エラーがなければインポート対象に
+            if ref not in errors:
+                cart.order_import_task = order_import_task
+                carts_to_be_imported.append(cart)
+        return carts_to_be_imported, errors
 
-            # create Order
-            try:
-                order = create_inner_order(request, temp_cart, note)
-            except Exception, e:
-                logger.error('create inner order error (%s): %s' % (org_order_no, e.message), exc_info=sys.exc_info())
-                transaction.abort()
-                self.errors[org_order_no] = u'予約番号: %s  %s' % (org_order_no, e.message)
-                continue
-
-            if temp_cart.created_at:
-                # 予約日時があれば維持
-                order.created_at = temp_cart.created_at
-            if temp_cart.paid_at:
-                # 決済日時はコンビニ決済でないなら維持
-                payment_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
-                if payment_plugin_id != payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
-                    order.paid_at = temp_cart.paid_at
-
-            order.save()
-            transaction.commit()
-            logger.info('order_no (%s) import success' % org_order_no)
-
-        # ステータス更新
-        self.status = ImportStatusEnum.Imported.v[0]
-        self.update_task()
-        transaction.commit()
-
-        return
-
-    def add_task(self):
+    def __call__(self, reader, operator, organization, performance=None, event=None):
         task = OrderImportTask(
-            organization_id=self.organization_id,
-            performance_id=self.performance_id,
-            operator_id=self.operator_id,
+            operator=operator,
+            status=ImportStatusEnum.ConfirmNeeded.v,
+            performance=performance,
+            organization=organization,
             import_type=self.import_type,
             allocation_mode=self.allocation_mode,
-            count=len(self.valid_carts),
-            status=self.status,
-            data=self.file_data,
-            errors=json.dumps(self.errors)
-        )
-        task.save()
+            entrust_separate_seats=self.entrust_separate_seats,
+            data=u'{}',
+            errors=u'{}',
+            count=0
+            )
+        parser = ImportCSVParser(self.request, self.session, task, organization, performance=performance, event=event)
+        carts, parser_errors = parser(reader) # この時点での carts はエラーが出たものも含め全部
+        carts, validation_errors = self.pass2(carts, task) # ここで carts はインポート可能なものに絞られる
 
-    def update_task(self):
-        task = self.task
-        task.status = self.status
-        task.errors = json.dumps(self.errors)
-        task.save()
+        # パーサーのエラーとバリデーションエラーを合体
+        combined_errors = dict((ref, [error]) for ref, error in six.iteritems(parser_errors))
+        for ref, errors in six.iteritems(validation_errors):
+            errors_for_order = combined_errors.get(ref)
+            if errors_for_order is None:
+                errors_for_order = combined_errors[ref] = []
+            errors_for_order.extend(errors)
 
-    @staticmethod
-    def load_task(task):
-        file = StringIO()
-        file.write(task.data.encode('cp932'))
-        file.seek(0)
-        return OrderImporter(
-            task.operator,
-            task.organization,
-            task.performance_id,
-            file,
-            task.import_type,
-            task.allocation_mode,
-            task_id=task.id,
-            created_at=task.created_at,
-            updated_at=task.updated_at,
-            status=task.status,
-            errors=task.errors
-        )
+        task.count = len(carts)
+        return task, combined_errors
+
+
+def initiate_import_task(request, task, session_for_task):
+    from altair.app.ticketing.models import DBSession
+    logging.info('starting order_import_task (%s)...' % task.id)
+    errors_dict = None
+    try:
+        task_ = DBSession.query(OrderImportTask).filter_by(id=task.id).one()
+        errors = run_import_task(request, task_)
+        if errors is None:
+            transaction.commit()
+        else:
+            transaction.abort()
+            errors_dict = dict(
+                (ref, (errors_for_order[0].order_no, [error.message for error in errors_for_order]))
+                for ref, errors_for_order in six.iteritems(errors)
+                )
+        logging.info('order_import_task (%s) ended with %s errors' % (task.id, (unicode(len(errors_dict)) if errors_dict else u'no')))
+        task.status = ImportStatusEnum.Imported.v
+    except Exception as e:
+        logging.exception('order_import_task(%s) aborted: %s' % (task.id, e))
+        task.status = ImportStatusEnum.Aborted.v
+    finally:
+        if errors_dict:
+            task.errors = json.dumps(errors_dict)
+            for ref, (order_no, errors_for_order) in six.iteritems(errors_dict):
+                try:
+                    proto_order = session_for_task.query(ProtoOrder).filter_by(order_import_task=task, ref=ref).one()
+                    attributes = proto_order.attributes
+                    if attributes is None:
+                        attributes = proto_order.attributes = {}
+                    attributes.setdefault('errors', []).extend(errors_for_order)
+                    session_for_task.add(proto_order)
+                except:
+                    logger.exception(ref)
+        else:
+            task.errors = None
+        session_for_task.commit()
+
+def run_import_task(request, task):
+    from altair.app.ticketing.models import DBSession
+    reserving = cart_api.get_reserving(request)
+    stocker = cart_api.get_stocker(request)
+
+    def add_note(proto_order, order):
+        note = re.split(ur'\r\n|\r|\n', order.note)
+        # これは実時間でよいような
+        imported_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        note.append(u'CSVファイル内の予約番号 (グループキー): %s' % proto_order.ref)
+        note.append(u'インポート日時: %s' % imported_at)
+        order.note = u'\n'.join(note)
+        # 決済日時はコンビニ決済でないなら維持 (これは同じ処理を他でやっているはずなので必要ないかも)
+        payment_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
+        if payment_plugin_id != payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
+            order.paid_at = proto_order.new_order_paid_at
+
+    try:
+        create_or_update_orders_from_proto_orders(
+            request,
+            reserving=reserving,
+            stocker=stocker,
+            proto_orders=task.proto_orders,
+            import_type=task.import_type,
+            allocation_mode=task.allocation_mode,
+            entrust_separate_seats=task.entrust_separate_seats,
+            order_modifier=add_note
+            )
+    except MassOrderCreationError as e:
+        return e.errors
+    return None

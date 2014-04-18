@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 __all__ = [
     'association_proxy_many',
     'AssociationProxyMany',
+    'HybridRelation',
     'get_relationship_clause',
     'property_for',
     'get_strategy',
@@ -109,6 +110,17 @@ class AssociationProxyMany(object):
         target = getattr(obj, self.target_name)
         return self.collection_type(itertools.chain(*[getattr(t, self.attr_name)
                                                       for t in target]))
+
+class HybridRelation(object):
+    def __init__(self, instance_property, relationship):
+        self.instance_property = instance_property
+        self.relationship = relationship
+
+    def __get__(self, obj, type=None):
+        if obj:
+            return self.instance_property(obj)
+        else:
+            return self.relationship
 
 def session_partaken_by(obj):
     state = instance_state(obj) 

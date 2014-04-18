@@ -7,12 +7,14 @@ from collections import (
     defaultdict, 
     Counter
     )
-from altair.app.ticketing.core.models import orders_seat_table
 from altair.app.ticketing.core.models import (
-    OrderedProductItem,
     Ticket, 
     Seat,
-    OrderedProductItemToken
+    )
+from altair.app.ticketing.orders.models import (
+    orders_seat_table,
+    OrderedProductItem,
+    OrderedProductItemToken,
     )
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from .utils import (

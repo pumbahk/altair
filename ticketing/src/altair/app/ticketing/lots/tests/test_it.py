@@ -41,7 +41,7 @@ class keep_authTests(unittest.TestCase):
         result = multicheckout_api.checkout_sales(order_no)
 
         self.assertEqual(result.OrderNo, order_no)
-        mock_save_api_response.assert_called_with(result)
+        mock_save_api_response.assert_called_with(result, None)
 
 
 class EntryLotViewTests(unittest.TestCase):

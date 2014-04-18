@@ -6,8 +6,13 @@ from itertools import groupby
 from string import ascii_letters
 
 from altair.app.ticketing.models import DBSession
-from altair.app.ticketing.core.models import SeatStatusEnum, VenueArea,\
-    OrderedProductItem, OrderedProduct, ProductItem, Stock, Order
+from altair.app.ticketing.core.models import (
+    SeatStatusEnum,
+    VenueArea,
+    ProductItem,
+    Stock,
+    )
+from altair.app.ticketing.orders.models import Order, OrderedProductItem, OrderedProduct
 
 import logging
 

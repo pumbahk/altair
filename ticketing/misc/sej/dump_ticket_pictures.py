@@ -9,9 +9,13 @@ def main(env, args):
     from altair.app.ticketing.tickets.preview.api import SEJPreviewCommunication
     from altair.app.ticketing.core.models import (
         Performance, Event, ProductItem,
-        Order, OrderedProduct, OrderedProductItem,
         TicketBundle, Ticket, TicketFormat, DeliveryMethod,
         Stock
+        )
+    from altair.app.ticketing.orders.models import (
+        Order,
+        OrderedProduct,
+        OrderedProductItem,
         )
     from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
     from altair.app.ticketing.payments.plugins.sej import get_tickets

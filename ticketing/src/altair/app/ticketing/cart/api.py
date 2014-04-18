@@ -19,6 +19,7 @@ from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.mobile.api import detect_from_ip_address
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
+from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.interfaces import ITemporaryStore
 from altair.mq import get_publisher
 from altair.sqlahelper import get_db_session
@@ -198,15 +199,21 @@ def get_salessegment(request, event_id, salessegment_id, selected_date):
         return None
 
 
-def get_stocker(request):
+def get_stocker(request, session=None):
+    if session is None:
+        from altair.app.ticketing.models import DBSession
+        session = DBSession
     reg = request.registry
     stocker_cls = reg.adapters.lookup([IRequest], IStocker, "")
-    return stocker_cls(request)
+    return stocker_cls(request, session)
 
-def get_reserving(request):
+def get_reserving(request, session=None):
+    if session is None:
+        from altair.app.ticketing.models import DBSession
+        session = DBSession
     reg = request.registry
     stocker_cls = reg.adapters.lookup([IRequest], IReserving, "")
-    return stocker_cls(request)
+    return stocker_cls(request, session)
 
 def get_cart_factory(request):
     reg = request.registry
@@ -346,7 +353,7 @@ def get_order_for_read_by_order_no(request, order_no):
     if order is not None:
         return order
     order = get_db_session(request, name="slave") \
-        .query(c_models.Order) \
+        .query(order_models.Order) \
         .filter_by(order_no=order_no) \
         .first()
     orders[order_no] = order

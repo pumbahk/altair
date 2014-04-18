@@ -9,14 +9,22 @@ import argparse
 
 from pyramid.paster import bootstrap, setup_logging   
 from pyramid.renderers import render_to_response
-from sqlalchemy import and_
-from sqlalchemy.sql.expression import not_, or_
+from sqlalchemy import orm
+from sqlalchemy.sql.expression import and_, not_, or_
 from sqlalchemy.sql import func
 import sqlahelper
 
-from altair.app.ticketing.core.models import DBSession, SeatStatus, SeatStatusEnum, Order, OrderedProduct, OrderedProductItem
+from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.core.models import SeatStatus, SeatStatusEnum
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, ShippingAddress, Mailer
-from altair.app.ticketing.core.models import Organization, OrderImportTask, ImportStatusEnum
+from altair.app.ticketing.core.models import Organization
+from altair.app.ticketing.orders.models import (
+    Order,
+    OrderedProduct,
+    OrderedProductItem,
+    OrderImportTask,
+    ImportStatusEnum,
+    )
 from altair.app.ticketing.orders.importer import OrderImporter
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.sej.refund import create_and_send_refund_file
@@ -218,20 +226,18 @@ def import_orders():
         return
 
     logging.info('start import_orders batch')
+    session_for_task = orm.session.Session(bind=sqlahelper.get_engine())
+    tasks = session_for_task.query(OrderImportTask).filter(
+        OrderImportTask.status == ImportStatusEnum.Waiting.v,
+        OrderImportTask.deleted_at == None
+    ).order_by(OrderImportTask.id).with_lockmode('update').all()
+    for task in tasks:
+        task.status = ImportStatusEnum.Importing.v
+    session_for_task.commit()
 
-    tasks = OrderImportTask.query.filter(
-        OrderImportTask.status == ImportStatusEnum.Waiting.v[0]
-    ).order_by(OrderImportTask.id).all()
+    from .importer import initiate_import_task
 
     for task in tasks:
-        try:
-            task = DBSession.merge(task)
-            logging.info('order_import_task(%s) importing..' % task.id)
-            importer = OrderImporter.load_task(task)
-            importer.execute(request)
-            transaction.commit()
-        except Exception, e:
-            transaction.abort()
-            logging.error('orders import error: %s' % e, exc_info=sys.exc_info())
+        initiate_import_task(request, task, session_for_task)
 
     logging.info('end import_orders batch')

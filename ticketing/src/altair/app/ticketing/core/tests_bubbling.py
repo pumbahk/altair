@@ -6,7 +6,7 @@ from datetime import datetime
 def setUpModule():
     from altair.app.ticketing.testing import _setup_db
     _setup_db(modules=[
-            "altair.app.ticketing.models",
+            "altair.app.ticketing.orders.models",
             "altair.app.ticketing.core.models",
             "altair.app.ticketing.cart.models",
             ])
@@ -28,7 +28,7 @@ class IssuedPrintedSetterTests(unittest.TestCase):
         return self._getTarget()(*args,**kwargs)
 
     def test_order_non_printed(self):
-        from altair.app.ticketing.core.models import Order
+        from altair.app.ticketing.orders.models import Order
         import sqlahelper
         order = Order(
             id=1,
@@ -55,7 +55,7 @@ class IssuedPrintedSetterTests(unittest.TestCase):
         self.assertEquals(order.issued, True)
 
     def test_order_printed(self):
-        from altair.app.ticketing.core.models import Order
+        from altair.app.ticketing.orders.models import Order
         import sqlahelper
         order = Order(
             id=1,
@@ -84,7 +84,7 @@ class IssuedPrintedSetterTests(unittest.TestCase):
         self.assertEquals(order.issued, True)
 
     def test_bubling_from_item(self):
-        from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem
+        from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
         import sqlahelper
         order = Order(
             id=1,
@@ -120,7 +120,7 @@ class IssuedPrintedSetterTests(unittest.TestCase):
         self.assertEquals(OrderedProductItem.query.filter_by(printed_at=datetime(2000, 1, 1), issued_at=datetime(2000, 1, 1)).count(), 3)
 
     def test_bubling_from_token(self):
-        from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
+        from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
         import sqlahelper
         order = Order(
             id=1,

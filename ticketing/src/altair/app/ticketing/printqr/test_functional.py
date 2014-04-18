@@ -18,8 +18,9 @@ def tearDownModule():
     tearDownSwappedDB()
 
 def setup_ordered_product_token(ordered_product_item):
-    from altair.app.ticketing.core.models import OrderedProductItemToken
-    for i, seat in ordered_product_item.iterate_serial_and_seat():
+    from altair.app.ticketing.core import api as core_api
+    from altair.app.ticketing.orders.models import OrderedProductItemToken
+    for i, seat in core_api.iterate_serial_and_seat(ordered_product_item):
         token = OrderedProductItemToken(
             item = ordered_product_item, 
             serial = i, 
@@ -189,9 +190,11 @@ def setup_shipping_address(mail_address="my@test.mail.com"):
 
 def setup_ordered_product_item(quantity, quantity_only, organization, order_no="Order:order_no", product_item=None):
     """copied. from altair/ticketing/src/altair/app/ticketing/printqr/test_functional.py"""
-    from altair.app.ticketing.core.models import OrderedProductItem
-    from altair.app.ticketing.core.models import OrderedProduct
-    from altair.app.ticketing.core.models import Order
+    from altair.app.ticketing.orders.models import (
+        OrderedProductItem,
+        OrderedProduct,
+        Order,
+        )
 
     product_item = product_item or setup_product_item(quantity, quantity_only, organization) #xxx:
     payment_delivery_method_pair = product_item.product.sales_segment.payment_delivery_method_pairs[0] #xxx:

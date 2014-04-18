@@ -23,7 +23,7 @@
         <td>${task.id}</td>
         <td>${task.operator.name}</td>
         <td>${task.count}</td>
-        <td>${task.status_label(task.status)}</td>
+        <td>${oh.get_order_import_task_status_label(task.status)}</td>
         <td>${task.created_at}</td>
         <td>${task.updated_at}</td>
         <td>
@@ -50,6 +50,8 @@
 </div>
 
 <form class="form-horizontal" enctype="multipart/form-data" action="${request.route_path('performances.import_orders.index', performance_id=performance.id)}" method="POST">
+  ${ch.form_item(form.import_type)}
+  ${ch.form_item(form.always_issue_order_no)}
   ${ch.form_item(form.allocation_mode)}
   ${ch.form_item(form.order_csv)}
   <div class="form-actions">

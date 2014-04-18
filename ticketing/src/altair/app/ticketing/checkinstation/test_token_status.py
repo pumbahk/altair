@@ -11,11 +11,13 @@ class TokenStatusTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def _getOrder(self):
-        from altair.app.ticketing.core.models import Order, Performance
+        from altair.app.ticketing.core.models import Performance
+        from altair.app.ticketing.orders.models import Order
         return Order(performance=Performance())
 
     def _getHistory(self):
-        from altair.app.ticketing.core.models import TicketPrintHistory, OrderedProductItemToken
+        from altair.app.ticketing.core.models import TicketPrintHistory
+        from altair.app.ticketing.orders.models import OrderedProductItemToken
         return TicketPrintHistory(item_token=OrderedProductItemToken())
 
     def test_printed_status__fresh_order__unprinted(self):

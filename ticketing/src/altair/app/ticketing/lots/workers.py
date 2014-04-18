@@ -16,7 +16,7 @@ from altair.app.ticketing.cart.interfaces import (
     IStocker, IReserving, ICartFactory,
 )
 from altair.app.ticketing.models import DBSession
-from altair.app.ticketing.core.models import Order
+from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.cart.reserving import Reserving
 from altair.app.ticketing.cart.carting import CartFactory
 from .events import LotElectedEvent
@@ -197,15 +197,16 @@ def _elect_lots_task(context, message, lot, work, history):
         transaction.abort()
         work = LotElectWork.query.filter(LotElectWork.id==work_id).first()
         history.error = work.error = str(e).decode('utf-8')
-        logger.error(work.error)
+        logger.exception(work.error)
         transaction.commit()
 
 
 
 def elect_lot_wish(request, wish, order=None):
+    from altair.app.ticketing.models import DBSession
     cart = lot_wish_cart(wish)
     payment = Payment(cart, request)
-    stocker = Stocker(request)
+    stocker = Stocker(request, DBSession)
 
     try:
         # 在庫処理

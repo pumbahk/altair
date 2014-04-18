@@ -30,6 +30,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from sqlalchemy import sql
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import object_session
 from zope.deprecation import deprecate, deprecated
@@ -42,7 +43,8 @@ from altair.app.ticketing.utils import sensible_alnum_encode
 from altair.app.ticketing.models import Identifier
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
-from altair.app.ticketing.core.interfaces import IOrderLike, IOrderedProductLike, IOrderedProductItemLike
+from altair.app.ticketing.core.interfaces import IOrderedProductLike, IOrderedProductItemLike
+from altair.app.ticketing.payments.interfaces import IPaymentCart
 from . import logger
 from .exceptions import NoCartError, CartCreationException, InvalidCartStatusError
 
@@ -68,7 +70,7 @@ cart_seat_table = sa.Table("CartedProductItem_Seat", Base.metadata,
     sa.Column("carted_product_item_id", Identifier, sa.ForeignKey("CartedProductItem.id")),
 )
 
-@implementer(IOrderLike)
+@implementer(IPaymentCart)
 class Cart(Base, c_models.CartMixin):
     __tablename__ = 'Cart'
 
@@ -92,7 +94,7 @@ class Cart(Base, c_models.CartMixin):
 
     _order_no = AnnotatedColumn("order_no", sa.String(255), _a_label=_(u'注文番号'))
     order_id = sa.Column(Identifier, sa.ForeignKey("Order.id"))
-    order = orm.relationship('Order', backref=orm.backref('cart', uselist=False))
+    order = declared_attr(lambda self: orm.relationship('Order', backref=orm.backref('cart', uselist=False)))
     operator_id = sa.Column(Identifier, sa.ForeignKey("Operator.id"))
     operator = orm.relationship('Operator', backref='orders')
     channel = sa.Column(sa.Integer, nullable=True)
@@ -129,7 +131,7 @@ class Cart(Base, c_models.CartMixin):
         return str(self.performance.id)
 
     @classmethod 
-    def create(cls, **kwargs):
+    def create(cls, request, **kwargs):
         performance_id = kwargs.pop('performance_id', None)
         if performance_id is None:
             performance = kwargs.pop('performance', None)
@@ -140,8 +142,7 @@ class Cart(Base, c_models.CartMixin):
             performance = c_models.Performance.query.filter_by(id=performance_id).one()
         organization = performance.event.organization
         logger.debug("organization.id = %d" % organization.id)
-        base_id = c_api.get_next_order_no()
-        order_no = organization.code + sensible_alnum_encode(base_id).zfill(10)
+        order_no = c_api.get_next_order_no(request, organization)
 
         if 'organization' not in kwargs and 'organization_id' not in kwargs:
             kwargs['organization_id'] = performance.event.organization_id
@@ -199,13 +200,13 @@ class Cart(Base, c_models.CartMixin):
 
     @property
     def total_amount(self):
-        if not self.sales_segment:
-            return None
-        if self.payment_delivery_pair is None:
+        try:
+            return c_api.calculate_total_amount(self)
+        except Exception as e:
+            logger.exception('?')
+            raise
             raise InvalidCartStatusError(self.id)
-        return self.sales_segment.get_amount(
-            self.payment_delivery_pair,
-            [(p.product, p.quantity) for p in self.items])
+
 
     @property
     def delivery_fee(self):
@@ -346,6 +347,10 @@ class CartedProduct(Base):
         return self.product.price * self.quantity
 
     @property
+    def price(self):
+        return self.product.price
+
+    @property
     def seats(self):
         return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.elements), 
             key=operator.itemgetter('l0_id'))
@@ -446,6 +451,10 @@ class CartedProductItem(Base):
     def seatdicts(self):
         return ({'name': s.name, 'l0_id': s.l0_id}
                 for s in self.seats)
+
+    @property
+    def price(self):
+        return self.product_item.price
 
     @deprecate("deprecated method")
     def pop_seats(self, seats):

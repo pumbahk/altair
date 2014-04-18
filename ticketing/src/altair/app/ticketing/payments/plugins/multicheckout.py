@@ -20,6 +20,7 @@ from altair.multicheckout.models import (
 )
 from altair.app.ticketing.utils import clear_exc
 from altair.app.ticketing.core import models as c_models
+from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from altair.app.ticketing.cart.interfaces import ICartPayment
 from altair.app.ticketing.mails.interfaces import ICompleteMailPayment, IOrderCancelMailPayment
@@ -146,6 +147,9 @@ def get_order_no(request, order_like):
 
 @implementer(IPaymentPlugin)
 class MultiCheckoutPlugin(object):
+    def validate_order(self, request, order_like):
+        """ なにかしたほうが良い?""" 
+
     def prepare(self, request, cart):
         """ 3Dセキュア認証 """
         notice = cart.sales_segment.auth3d_notice
@@ -170,7 +174,6 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def finish(self, request, cart):
         """ 売り上げ確定(3D認証) """
-        multicheckout_api = get_multicheckout_3d_api(request)
         order = request.session['order']
         order_no = order['order_no']
         card_brand = None
@@ -178,20 +181,52 @@ class MultiCheckoutPlugin(object):
         if card_number:
             card_brand = detect_card_brand(request, card_number)
 
+        checkout_sales_result = self._finish2_inner(request, cart)
+
+        order_models.Order.query.session.add(cart)
+        order = order_models.Order.create_from_cart(cart)
+        order.card_brand = card_brand
+        order.card_ahead_com_code = checkout_sales_result.AheadComCd
+        order.card_ahead_com_name = get_card_ahead_com_name(request, order.card_ahead_com_code)
+        order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
+        order.paid_at = datetime.now()
+        cart.finish()
+
+        return order
+
+    @clear_exc
+    def finish2(self, request, order_like):
+        # finish2 では OrderLike から organization を取得する
+        organization = order_like.sales_segment.sales_segment_group.organization
+        self._finish2_inner(request, order_like, override_name=organization.setting.multicheckout_shop_name)
+
+    def _finish2_inner(self, request, order_like, override_name=None):
+        multicheckout_api = get_multicheckout_3d_api(request, override_name)
+        mc_order_no = get_order_no(request, order_like)
+        authorized_amount = multicheckout_api.get_authorized_amount(mc_order_no)
+        amount_to_cancel = 0
+        if authorized_amount is None:
+            # 互換性のため (いずれ消す)
+            if getattr(order_like, 'has_different_amount', False):
+                amount_to_cancel = order_like.different_amount
+        else:
+            # order_like.total_amount は Decimal だ...
+            amount_to_cancel = authorized_amount - int(order_like.total_amount)
+
+        logger.info('finish2: amount_to_cancel=%d' % amount_to_cancel)
+
+        assert amount_to_cancel >= 0
+
         try:
-            if not cart.has_different_amount:
-                checkout_sales_result = multicheckout_api.checkout_sales(
-                    get_order_no(request, cart),
-                )
+            if amount_to_cancel == 0:
+                checkout_sales_result = multicheckout_api.checkout_sales(mc_order_no)
             else:
                 ## 金額変更での売上確定
-                checkout_sales_result = multicheckout_api.checkout_sales_different_amount(
-                    get_order_no(request, cart), cart.different_amount,
-                )
+                checkout_sales_result = multicheckout_api.checkout_sales_different_amount(mc_order_no, amount_to_cancel)
             if checkout_sales_result.CmnErrorCd != '000000':
                 raise MultiCheckoutSettlementFailure(
                     message='finish_secure: generic failure',
-                    order_no=order_no,
+                    order_no=order_like.order_no,
                     back_url=back_url(request),
                     error_code=checkout_sales_result.CmnErrorCd
                     )
@@ -205,31 +240,16 @@ class MultiCheckoutPlugin(object):
                 logger.exception('multicheckout plugin')
                 e = MultiCheckoutSettlementFailure(
                     message='uncaught exception',
-                    order_no=order_no,
+                    order_no=order_like.order_no,
                     back_url=back_url(request))
-            # checkout_auth_cancel が失敗する可能性があるので、try-finally必要
-            try:
-                if cart.has_different_amount:
-                    ## 抽選特有の事情により、キャンセルは管理画面から行う
-                    pass
-                else:
-                    multicheckout_api.checkout_auth_cancel(get_order_no(request, cart))
-            finally:
-                transaction.commit()
+            if amount_to_cancel != 0:
+                ## 抽選特有の事情により、キャンセルは管理画面から行う
+                pass
+            else:
+                multicheckout_api.checkout_auth_cancel(mc_order_no)
             raise e
 
-        ahead_com_code = checkout_sales_result.AheadComCd
-
-        c_models.Order.query.session.add(cart)
-        order = c_models.Order.create_from_cart(cart)
-        order.card_brand = card_brand
-        order.card_ahead_com_code = ahead_com_code
-        order.card_ahead_com_name = get_card_ahead_com_name(request, ahead_com_code)
-        order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
-        order.paid_at = datetime.now()
-        cart.finish()
-
-        return order
+        return checkout_sales_result
 
     def finished(self, request, order):
         """ 売上確定済か判定 """

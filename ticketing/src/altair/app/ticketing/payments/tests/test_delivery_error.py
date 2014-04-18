@@ -2,6 +2,7 @@ import mock
 import unittest
 from pyramid import testing
 from altair.app.ticketing.testing import DummyRequest
+from zope.interface import directlyProvides
 
 class DummyPaymentPlugin(object):
     def __init__(self, dummy_order):
@@ -65,6 +66,7 @@ class TestDeliveryError(unittest.TestCase):
 
     def test_delivery_error(self):
         from altair.app.ticketing.payments.payment import Payment
+        from altair.app.ticketing.payments.interfaces import IPaymentCart
         dummy_session = mock.Mock()
         cart = testing.DummyModel(
             performance=testing.DummyModel(
@@ -80,6 +82,7 @@ class TestDeliveryError(unittest.TestCase):
                     )
                 )
             )
+        directlyProvides(cart, IPaymentCart)
         request = DummyRequest()
         payment = Payment(cart, request, session=dummy_session)
         raised_exception = None

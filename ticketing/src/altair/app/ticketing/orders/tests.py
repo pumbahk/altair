@@ -21,6 +21,9 @@ class OrderTests(unittest.TestCase):
     def tearDownClass(cls):
         _teardown_db()
 
+    def setUp(self):
+        self.request = testing.DummyRequest() 
+
     def tearDown(self):
         import transaction
         transaction.abort()
@@ -38,6 +41,7 @@ class OrderTests(unittest.TestCase):
         from ..core import models as core_models
 
         cart = c_models.Cart.create(
+            self.request,
             products=[
                 c_models.CartedProduct(
                     items=[

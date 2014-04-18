@@ -28,4 +28,5 @@ def setup(env):
     for sym in ['DBSession', 'Base', 'Identifier']:
         env[sym] = getattr(altair.app.ticketing.models, sym)
     import_syms(altair.app.ticketing.core.models, lambda o, x: nonspecial(o, x) and declarative_only(o, x))
+    import_syms(altair.app.ticketing.orders.models, lambda o, x: nonspecial(o, x) and declarative_only(o, x))
     import_syms(altair.app.ticketing.cart.models, lambda o, x: nonspecial(o, x) and declarative_only(o, x))

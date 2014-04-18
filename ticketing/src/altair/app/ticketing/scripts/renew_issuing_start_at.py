@@ -44,7 +44,7 @@ def message(msg, auxiliary=False):
     print >>sys.stderr, (pad + msg).encode(charset)
 
 def do_renew_issuing_start_at(request, session, file_, format, encoding):
-    from altair.app.ticketing.core.models import Order
+    from altair.app.ticketing.orders.models import Order
     from altair.app.ticketing.orders.api import refresh_order
     now = datetime.now()
     f = open(file_)

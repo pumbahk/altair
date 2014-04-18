@@ -5,23 +5,23 @@ from sqlalchemy import sql
 from webhelpers.containers import correlate_objects
 from altair.app.ticketing.models import (
     DBSession,
-)
+    )
 from altair.app.ticketing.core.models import (
-    Order,
     Performance,
-    #Stock,
     StockType,
     Product,
-    #ProductItem,
     PaymentDeliveryMethodPair,
-)
+    )
+from altair.app.ticketing.orders.models import (
+    Order,
+    )
 from .models import (
     LotEntry,
     LotEntryWish,
     LotElectWork,
     LotElectedEntry,
     LotEntryProduct,
-)
+    )
 from zope.interface import implementer
 from altair.app.ticketing.payments.interfaces import IPaymentCart
 
@@ -88,10 +88,19 @@ class LotSessionCart(object):
         def _p(product_id):
             return Product.query.filter(Product.id==product_id).one()
 
-        return max([self.sales_segment.get_amount(self.payment_delivery_pair,
-                                                  [(_p(wp['product_id']), wp['quantity'])
-                                                   for wp in wish['wished_products']])
-                    for wish in self.wishes])
+        return max(
+            self.sales_segment.get_amount(
+                self.payment_delivery_pair,
+                [
+                    (product, product.price, quantity)
+                    for product, quantity in (
+                        (_p(wp['product_id']), wp['quantity'])
+                        for wp in wish['wished_products']
+                        )
+                    ]
+                )
+            for wish in self.wishes
+            )
 
     @property
     def name(self):

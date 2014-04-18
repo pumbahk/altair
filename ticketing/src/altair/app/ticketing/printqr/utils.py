@@ -4,15 +4,18 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
 from altair.app.ticketing.models import DBSession
-from altair.app.ticketing.core.models import Order
 from altair.app.ticketing.core.models import TicketPrintHistory
-from altair.app.ticketing.core.models import OrderedProductItemToken
-from altair.app.ticketing.core.models import OrderedProductItem
-from altair.app.ticketing.core.models import OrderedProduct
+from altair.app.ticketing.orders.models import (
+    Order,
+    OrderedProductItemToken,
+    OrderedProductItem,
+    OrderedProduct,
+    )
 
 from altair.app.ticketing.payments.plugins.qr import DELIVERY_PLUGIN_ID as QR_DELIVERY_ID
 from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.core import models as c_models
+from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 
 
@@ -142,11 +145,11 @@ def _as_total_quantity(opi_query):
     return int(opi_query.with_entities(sa.func.sum(OrderedProductItem.quantity)).first()[0] or 0)
 
 def _query_filtered_by_performance(query, event_id, performance_id):
-    return query.join(c_models.OrderedProduct)\
-        .join(c_models.Order)\
-        .filter(c_models.Order.performance_id==performance_id)\
-        .filter(c_models.Order.canceled_at==None)\
-        .filter(c_models.Order.deleted_at==None)
+    return query.join(order_models.OrderedProduct)\
+        .join(order_models.Order)\
+        .filter(order_models.Order.performance_id==performance_id)\
+        .filter(order_models.Order.canceled_at==None)\
+        .filter(order_models.Order.deleted_at==None)
 
 def _query_filtered_by_delivery_plugin(query, delivery_plugin_id):
     return query.join(c_models.PaymentDeliveryMethodPair)\

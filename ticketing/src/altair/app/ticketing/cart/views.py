@@ -22,6 +22,7 @@ from altair.pyramid_boto.s3.assets import IS3KeyProvider
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
+from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 from altair.app.ticketing.views import mobile_request
 from altair.app.ticketing.fanstatic import with_jquery, with_jquery_tools
@@ -1219,7 +1220,7 @@ class CompleteView(object):
             # モバイルの場合はHTTPリダイレクトの際のSet-Cookieに対応していないと
             # 思われるので、直接ページをレンダリングする
             # transaction をコミットしたので、再度読み直し
-            order = c_models.Order.query.filter_by(id=order_id).one()
+            order = order_models.Order.query.filter_by(id=order_id).one()
             return dict(order=order)
         else:
             # PC/スマートフォンでは、HTTPリダイレクト時にクッキーをセット

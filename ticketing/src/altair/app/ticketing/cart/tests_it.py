@@ -8,8 +8,8 @@ from ..testing import _setup_db as _setup_db_, _teardown_db
 def _setup_db(echo=False):
     return _setup_db_(
         modules=[
+            'altair.app.ticketing.orders.models',
             'altair.app.ticketing.core.models',
-            #'altair.app.ticketing.orders.models',
             'altair.app.ticketing.cart.models',
             ],
         echo=echo

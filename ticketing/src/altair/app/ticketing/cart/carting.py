@@ -18,7 +18,8 @@ class CartFactory(object):
         # Cart
         # ここでシステム利用料を確定させるのはおかしいので、後の処理で上書きする
         channel = get_channel(request=request)
-        cart = Cart.create(performance_id=performance_id, channel=channel.v,
+        cart = Cart.create(self.request,
+                           performance_id=performance_id, channel=channel.v,
                            browserid=getattr(request, 'browserid', None))
         for ordered_product, quantity in ordered_products:
             logger.debug("carted product for product_id=%s" % (ordered_product.id))

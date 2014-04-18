@@ -10,6 +10,7 @@ class LotEntriesTests(unittest.TestCase):
         self.config = testing.setUp()
         self.session = _setup_db(
             [
+                "altair.app.ticketing.orders.models",
                 "altair.app.ticketing.core.models",
                 "altair.app.ticketing.lots.models",
             ]
