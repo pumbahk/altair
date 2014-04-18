@@ -79,11 +79,22 @@
     </div>
   </form>
 
-## download zip file. todo 二度押し防止
+## download zip file
 %if download_form and sales_segment and performance:
   <h4>券面のpreview結果をまとめてdownload</h4>
   <form method="GET" action="${request.route_path("tickets.preview.download.list.zip", performance_id=performance.id, sales_segment_id=sales_segment.id)}">
   ${download_form.delivery_method_id()}
   <input type="submit" class="btn btn-inverse" value="download"/>
+  <script type="text/javascript">
+   (function($form){
+	 $form.submit(function(form_submission) {
+       if ($(form_submission.target).attr('data-submitted')) {
+         form_submission.preventDefault();
+       } else {
+         $(form_submission.target).attr('data-submitted', true);
+       }
+     });
+    })($("script:last").closest("form"))
+  </script>
   </form>
 %endif
