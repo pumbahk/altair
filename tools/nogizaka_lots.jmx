@@ -1,0 +1,1758 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="2.5" jmeter="2.10 r1533061">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="乃木坂抽選負荷検証" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="ユーザー定義変数" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="スレッドグループ" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="ループコントローラ" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">10</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">0.5</stringProp>
+        <longProp name="ThreadGroup.start_time">1397786393000</longProp>
+        <longProp name="ThreadGroup.end_time">1397786393000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/events/1652/entry/979" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/events/1652/entry/979</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/static/js/jquery.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/static/js/jquery.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/c_static/js/ajaxzip3-https.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/c_static/js/ajaxzip3-https.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/c_static/js/disable_on_submit.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/c_static/js/disable_on_submit.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/static/js/underscore-min.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/static/js/underscore-min.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/events/1652/entry/979" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+          <stringProp name="HTTPSampler.path">/lots/events/1652/entry/979</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/c_static/js/disable_on_submit.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/c_static/js/disable_on_submit.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/static/js/underscore-min.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/static/js/underscore-min.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/c_static/js/ajaxzip3-https.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/c_static/js/ajaxzip3-https.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/static/js/jquery.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/static/js/jquery.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/events/1652/entry/979" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="performanceName-0" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.name">performanceName-0</stringProp>
+                <stringProp name="Argument.value">[{&apos;start_on&apos;: &apos;2014-05-30T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-05-30T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8416L, &apos;label&apos;: u&apos;2014\u5e745\u670830\u65e5(\u91d1)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-05-31T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-05-31T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8417L, &apos;label&apos;: u&apos;2014\u5e745\u670831\u65e5(\u571f)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-05-31T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-05-31T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8418L, &apos;label&apos;: u&apos;2014\u5e745\u670831\u65e5(\u571f)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-01T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-01T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8419L, &apos;label&apos;: u&apos;2014\u5e746\u670801\u65e5(\u65e5)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-01T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-01T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8420L, &apos;label&apos;: u&apos;2014\u5e746\u670801\u65e5(\u65e5)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-03T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-03T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8421L, &apos;label&apos;: u&apos;2014\u5e746\u670803\u65e5(\u706b)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-04T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-04T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8437L, &apos;label&apos;: u&apos;2014\u5e746\u670804\u65e5(\u6c34)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-05T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-05T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8422L, &apos;label&apos;: u&apos;2014\u5e746\u670805\u65e5(\u6728)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-06T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-06T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8423L, &apos;label&apos;: u&apos;2014\u5e746\u670806\u65e5(\u91d1)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-07T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-07T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8424L, &apos;label&apos;: u&apos;2014\u5e746\u670807\u65e5(\u571f)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-07T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-07T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8425L, &apos;label&apos;: u&apos;2014\u5e746\u670807\u65e5(\u571f)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-08T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-08T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8426L, &apos;label&apos;: u&apos;2014\u5e746\u670808\u65e5(\u65e5)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-08T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-08T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8427L, &apos;label&apos;: u&apos;2014\u5e746\u670808\u65e5(\u65e5)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-09T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-09T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8428L, &apos;label&apos;: u&apos;2014\u5e746\u670809\u65e5(\u6708)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-10T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-10T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8429L, &apos;label&apos;: u&apos;2014\u5e746\u670810\u65e5(\u706b)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-11T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-11T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8430L, &apos;label&apos;: u&apos;2014\u5e746\u670811\u65e5(\u6c34)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-12T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-12T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8431L, &apos;label&apos;: u&apos;2014\u5e746\u670812\u65e5(\u6728)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-13T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-13T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8432L, &apos;label&apos;: u&apos;2014\u5e746\u670813\u65e5(\u91d1)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-14T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-14T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8433L, &apos;label&apos;: u&apos;2014\u5e746\u670814\u65e5(\u571f)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-14T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-14T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8434L, &apos;label&apos;: u&apos;2014\u5e746\u670814\u65e5(\u571f)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-15T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-15T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8435L, &apos;label&apos;: u&apos;2014\u5e746\u670815\u65e5(\u65e5)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-15T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-15T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8436L, &apos;label&apos;: u&apos;2014\u5e746\u670815\u65e5(\u65e5)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}]</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="performanceDate-0" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">performanceDate-0</stringProp>
+                <stringProp name="Argument.value">8416</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="stockType-0" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">stockType-0</stringProp>
+                <stringProp name="Argument.value">7333</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="product-id-0-0" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">product-id-0-0</stringProp>
+                <stringProp name="Argument.value">271243</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="product-quantity-0-0" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">product-quantity-0-0</stringProp>
+                <stringProp name="Argument.value">3</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="performanceName-1" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.name">performanceName-1</stringProp>
+                <stringProp name="Argument.value">[{&apos;start_on&apos;: &apos;2014-05-30T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-05-30T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8416L, &apos;label&apos;: u&apos;2014\u5e745\u670830\u65e5(\u91d1)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-05-31T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-05-31T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8417L, &apos;label&apos;: u&apos;2014\u5e745\u670831\u65e5(\u571f)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-05-31T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-05-31T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8418L, &apos;label&apos;: u&apos;2014\u5e745\u670831\u65e5(\u571f)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-01T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-01T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8419L, &apos;label&apos;: u&apos;2014\u5e746\u670801\u65e5(\u65e5)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-01T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-01T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8420L, &apos;label&apos;: u&apos;2014\u5e746\u670801\u65e5(\u65e5)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-03T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-03T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8421L, &apos;label&apos;: u&apos;2014\u5e746\u670803\u65e5(\u706b)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-04T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-04T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8437L, &apos;label&apos;: u&apos;2014\u5e746\u670804\u65e5(\u6c34)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-05T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-05T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8422L, &apos;label&apos;: u&apos;2014\u5e746\u670805\u65e5(\u6728)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-06T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-06T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8423L, &apos;label&apos;: u&apos;2014\u5e746\u670806\u65e5(\u91d1)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-07T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-07T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8424L, &apos;label&apos;: u&apos;2014\u5e746\u670807\u65e5(\u571f)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-07T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-07T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8425L, &apos;label&apos;: u&apos;2014\u5e746\u670807\u65e5(\u571f)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-08T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-08T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8426L, &apos;label&apos;: u&apos;2014\u5e746\u670808\u65e5(\u65e5)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-08T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-08T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8427L, &apos;label&apos;: u&apos;2014\u5e746\u670808\u65e5(\u65e5)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-09T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-09T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8428L, &apos;label&apos;: u&apos;2014\u5e746\u670809\u65e5(\u6708)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-10T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-10T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8429L, &apos;label&apos;: u&apos;2014\u5e746\u670810\u65e5(\u706b)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-11T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-11T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8430L, &apos;label&apos;: u&apos;2014\u5e746\u670811\u65e5(\u6c34)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-12T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-12T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8431L, &apos;label&apos;: u&apos;2014\u5e746\u670812\u65e5(\u6728)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-13T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-13T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8432L, &apos;label&apos;: u&apos;2014\u5e746\u670813\u65e5(\u91d1)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-14T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-14T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8433L, &apos;label&apos;: u&apos;2014\u5e746\u670814\u65e5(\u571f)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-14T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-14T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8434L, &apos;label&apos;: u&apos;2014\u5e746\u670814\u65e5(\u571f)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-15T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-15T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8435L, &apos;label&apos;: u&apos;2014\u5e746\u670815\u65e5(\u65e5)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-15T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-15T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8436L, &apos;label&apos;: u&apos;2014\u5e746\u670815\u65e5(\u65e5)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}]</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="performanceDate-1" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">performanceDate-1</stringProp>
+                <stringProp name="Argument.value">8416</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="stockType-1" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">stockType-1</stringProp>
+                <stringProp name="Argument.value">7333</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="product-id-1-0" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">product-id-1-0</stringProp>
+                <stringProp name="Argument.value">271243</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="product-quantity-1-0" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">product-quantity-1-0</stringProp>
+                <stringProp name="Argument.value"></stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="performanceName-2" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.name">performanceName-2</stringProp>
+                <stringProp name="Argument.value">[{&apos;start_on&apos;: &apos;2014-05-30T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-05-30T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8416L, &apos;label&apos;: u&apos;2014\u5e745\u670830\u65e5(\u91d1)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-05-31T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-05-31T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8417L, &apos;label&apos;: u&apos;2014\u5e745\u670831\u65e5(\u571f)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-05-31T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-05-31T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8418L, &apos;label&apos;: u&apos;2014\u5e745\u670831\u65e5(\u571f)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-01T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-01T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8419L, &apos;label&apos;: u&apos;2014\u5e746\u670801\u65e5(\u65e5)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-01T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-01T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8420L, &apos;label&apos;: u&apos;2014\u5e746\u670801\u65e5(\u65e5)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-03T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-03T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8421L, &apos;label&apos;: u&apos;2014\u5e746\u670803\u65e5(\u706b)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-04T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-04T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8437L, &apos;label&apos;: u&apos;2014\u5e746\u670804\u65e5(\u6c34)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-05T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-05T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8422L, &apos;label&apos;: u&apos;2014\u5e746\u670805\u65e5(\u6728)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-06T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-06T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8423L, &apos;label&apos;: u&apos;2014\u5e746\u670806\u65e5(\u91d1)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-07T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-07T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8424L, &apos;label&apos;: u&apos;2014\u5e746\u670807\u65e5(\u571f)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-07T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-07T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8425L, &apos;label&apos;: u&apos;2014\u5e746\u670807\u65e5(\u571f)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-08T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-08T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8426L, &apos;label&apos;: u&apos;2014\u5e746\u670808\u65e5(\u65e5)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-08T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-08T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8427L, &apos;label&apos;: u&apos;2014\u5e746\u670808\u65e5(\u65e5)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-09T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-09T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8428L, &apos;label&apos;: u&apos;2014\u5e746\u670809\u65e5(\u6708)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-10T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-10T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8429L, &apos;label&apos;: u&apos;2014\u5e746\u670810\u65e5(\u706b)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-11T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-11T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8430L, &apos;label&apos;: u&apos;2014\u5e746\u670811\u65e5(\u6c34)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-12T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-12T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8431L, &apos;label&apos;: u&apos;2014\u5e746\u670812\u65e5(\u6728)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-13T09:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-13T08:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8432L, &apos;label&apos;: u&apos;2014\u5e746\u670813\u65e5(\u91d1)18\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-14T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-14T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8433L, &apos;label&apos;: u&apos;2014\u5e746\u670814\u65e5(\u571f)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-14T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-14T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8434L, &apos;label&apos;: u&apos;2014\u5e746\u670814\u65e5(\u571f)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-15T03:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-15T02:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8435L, &apos;label&apos;: u&apos;2014\u5e746\u670815\u65e5(\u65e5)12\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}, {&apos;start_on&apos;: &apos;2014-06-15T08:00:00+00:00&apos;, &apos;name&apos;: u&apos;QATEST&apos;, &apos;open_on&apos;: &apos;2014-06-15T07:00:00+00:00&apos;, &apos;venue&apos;: u&apos;\u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;, &apos;id&apos;: 8436L, &apos;label&apos;: u&apos;2014\u5e746\u670815\u65e5(\u65e5)17\u664200\u5206 \u8d64\u5742ACT\u30b7\u30a2\u30bf\u30fc&apos;}]</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="performanceDate-2" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">performanceDate-2</stringProp>
+                <stringProp name="Argument.value">8416</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="stockType-2" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">stockType-2</stringProp>
+                <stringProp name="Argument.value">7333</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="product-id-2-0" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">product-id-2-0</stringProp>
+                <stringProp name="Argument.value">271243</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="product-quantity-2-0" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">product-quantity-2-0</stringProp>
+                <stringProp name="Argument.value"></stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="payment_delivery_method_pair_id" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">payment_delivery_method_pair_id</stringProp>
+                <stringProp name="Argument.value">12423</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="last_name" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.name">last_name</stringProp>
+                <stringProp name="Argument.value">テスト</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="first_name" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.name">first_name</stringProp>
+                <stringProp name="Argument.value">テスト</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="last_name_kana" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.name">last_name_kana</stringProp>
+                <stringProp name="Argument.value">テスト</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="first_name_kana" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.name">first_name_kana</stringProp>
+                <stringProp name="Argument.value">テスト</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="email_1" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.name">email_1</stringProp>
+                <stringProp name="Argument.value">takeshi.shimada@ticketstar.jp</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="email_1_confirm" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.name">email_1_confirm</stringProp>
+                <stringProp name="Argument.value">takeshi.shimada@ticketstar.jp</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="tel_1" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">tel_1</stringProp>
+                <stringProp name="Argument.value">07011112222</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="tel_2" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">tel_2</stringProp>
+                <stringProp name="Argument.value">07011112222</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="zip" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">zip</stringProp>
+                <stringProp name="Argument.value">1000003</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="prefecture" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.name">prefecture</stringProp>
+                <stringProp name="Argument.value">東京都</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="city" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.name">city</stringProp>
+                <stringProp name="Argument.value">千代田区</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="address_1" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.name">address_1</stringProp>
+                <stringProp name="Argument.value">一ツ橋</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="address_2" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.name">address_2</stringProp>
+                <stringProp name="Argument.value">五反田HSビル9F</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="year" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">year</stringProp>
+                <stringProp name="Argument.value">1990</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="month" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">month</stringProp>
+                <stringProp name="Argument.value">1</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="day" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">day</stringProp>
+                <stringProp name="Argument.value">1</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="sex" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">sex</stringProp>
+                <stringProp name="Argument.value">2</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="memo" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">memo</stringProp>
+                <stringProp name="Argument.value">test</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+          <stringProp name="HTTPSampler.path">/lots/events/1652/entry/979</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="TestPlan.comments">Detected the start of a redirect chain</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Content-Type" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8</stringProp>
+              </elementProp>
+              <elementProp name="Origin" elementType="Header">
+                <stringProp name="Header.name">Origin</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="正規表現抽出" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+            <stringProp name="RegexExtractor.refname">LOTS_TOKEN</stringProp>
+            <stringProp name="RegexExtractor.regex">&lt;input type=&quot;hidden&quot; name=&quot;token&quot; value=&quot;(.*)&quot; /&gt;</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.default">???</stringProp>
+            <stringProp name="RegexExtractor.match_number">(default)</stringProp>
+          </RegexExtractor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/events/1652/entry/979/confirm" enabled="false">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/events/1652/entry/979/confirm</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="TestPlan.comments">Detected a redirect from the previous sample</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/c_static/js/disable_on_submit.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/c_static/js/disable_on_submit.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979/confirm</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/static/js/jquery.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/static/js/jquery.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979/confirm</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/c_static/js/ajaxzip3-https.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/c_static/js/ajaxzip3-https.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979/confirm</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/static/js/underscore-min.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/static/js/underscore-min.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979/confirm</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/events/1652/entry/979/confirm" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="token" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.name">token</stringProp>
+                <stringProp name="Argument.value">${LOTS_TOKEN}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+          <stringProp name="HTTPSampler.path">/lots/events/1652/entry/979/confirm</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="TestPlan.comments">Detected the start of a redirect chain</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Content-Type" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8</stringProp>
+              </elementProp>
+              <elementProp name="Origin" elementType="Header">
+                <stringProp name="Header.name">Origin</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979/confirm</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/events/1652/entry/979/completion" enabled="false">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/events/1652/entry/979/completion</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="TestPlan.comments">Detected a redirect from the previous sample</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979/confirm</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/static/js/underscore-min.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/static/js/underscore-min.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979/completion</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/static/js/jquery.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/static/js/jquery.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979/completion</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/c_static/js/disable_on_submit.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/c_static/js/disable_on_submit.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979/completion</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/c_static/js/ajaxzip3-https.js" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/c_static/js/ajaxzip3-https.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Cache-Control" elementType="Header">
+                <stringProp name="Header.name">Cache-Control</stringProp>
+                <stringProp name="Header.value">max-age=0</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979/completion</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/events/1652/entry/979" enabled="false">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+          <stringProp name="HTTPSampler.path">/lots/events/1652/entry/979</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/c_static/js/ajaxzip3-https.js" enabled="false">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/c_static/js/ajaxzip3-https.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/static/js/jquery.js" enabled="false">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/static/js/jquery.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/c_static/js/disable_on_submit.js" enabled="false">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/c_static/js/disable_on_submit.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="/lots/static/js/underscore-min.js" enabled="false">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/static/js/underscore-min.js</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP ヘッダマネージャ" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="Accept-Language" elementType="Header">
+                <stringProp name="Header.name">Accept-Language</stringProp>
+                <stringProp name="Header.value">ja,en-US;q=0.8,en;q=0.6</stringProp>
+              </elementProp>
+              <elementProp name="Accept" elementType="Header">
+                <stringProp name="Header.name">Accept</stringProp>
+                <stringProp name="Header.value">*/*</stringProp>
+              </elementProp>
+              <elementProp name="User-Agent" elementType="Header">
+                <stringProp name="Header.name">User-Agent</stringProp>
+                <stringProp name="Header.value">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36</stringProp>
+              </elementProp>
+              <elementProp name="Accept-Encoding" elementType="Header">
+                <stringProp name="Header.name">Accept-Encoding</stringProp>
+                <stringProp name="Header.value">gzip,deflate,sdch</stringProp>
+              </elementProp>
+              <elementProp name="Referer" elementType="Header">
+                <stringProp name="Header.name">Referer</stringProp>
+                <stringProp name="Header.value">https://qa.tstar.jp/lots/events/1652/entry/979</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP クッキーマネージャ" enabled="true">
+          <collectionProp name="CookieManager.cookies"/>
+          <boolProp name="CookieManager.clearEachIteration">false</boolProp>
+        </CookieManager>
+        <hashTree/>
+        <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP リクエスト初期値設定" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="ユーザー定義変数" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">qa.tstar.jp</stringProp>
+          <stringProp name="HTTPSampler.port">443</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/lots/events/1652/entry/979</stringProp>
+          <stringProp name="HTTPSampler.concurrentPool">4</stringProp>
+        </ConfigTestElement>
+        <hashTree/>
+        <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="結果を表で表示" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="結果をツリーで表示" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="統計レポート" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="GraphVisualizer" testclass="ResultCollector" testname="グラフ表示" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="ユーザー定義変数" enabled="true">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="SLEEP_TIME" elementType="Argument">
+              <stringProp name="Argument.name">SLEEP_TIME</stringProp>
+              <stringProp name="Argument.value">10000</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </Arguments>
+        <hashTree/>
+        <BeanShellTimer guiclass="TestBeanGUI" testclass="BeanShellTimer" testname="BeanShell Timer" enabled="true">
+          <boolProp name="resetInterpreter">false</boolProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="script">Thread.sleep(1000);
+
+</stringProp>
+        </BeanShellTimer>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
