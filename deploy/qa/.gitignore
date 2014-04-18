@@ -1,0 +1,8 @@
+bin/*
+*.pid
+develop-eggs
+eggs
+parts
+log
+tmp
+var
