@@ -222,11 +222,33 @@ else:
   is_autoload = lambda s,i: i == 0
 %>
 
+<script type="text/javascript">
+$(function(){
+  ## data-toggle="tab"はlocation hashを変更しないので
+  $('.nav-tabs a').click(function (e) {
+    $(this).tab('show');
+    var scrollmem = $('body').scrollTop();
+    window.location.hash = this.hash;
+    $('html,body').scrollTop(scrollmem);
+  });
+
+  ## 更新後も現在開いているタブと同じタブを開く
+  $("body").on(":refresh:", function(e){
+    if(!!location.hash && !!location.search){
+      var m  = /sales-segment-(?:tab-)?([0-9]+)/.exec(location.hash);
+      if(!!m){
+        location.href = location.protocol+"//"+location.host+location.pathname+"?sales_segment_id="+m[1];
+      }
+    }
+  });
+});
+</script>
+
 ## 新商品登録フォーム
 <div class="tabbable tabs-top grid-editor js-product-list">
   <ul class="nav nav-tabs">
     % for i, sales_segment in enumerate(sales_segments):
-    <li class="${'active' if i == 0 else ''}"><a  id="product_editor${sales_segment.id}" href="#sales-segment-tab-${sales_segment.id}" data-toggle="tab">${sales_segment.name}</a></li>
+    <li class="${'active' if i == 0 else ''}"><a  id="product_editor${sales_segment.id}" href="#sales-segment-tab-${sales_segment.id}">${sales_segment.name}</a></li>
     % endfor
   </ul>
 
@@ -251,7 +273,7 @@ else:
 <div class="tabbable tabs-top product-table js-product-list">
   <ul class="nav nav-tabs">
   %for i, sales_segment in enumerate(sales_segments):
-    <li class="${'active' if i == 0 else ''}"><a id="product_table${sales_segment.id}" href="#sales-segment-${sales_segment.id}" data-toggle="tab">${sales_segment.name}</a></li>
+    <li class="${'active' if i == 0 else ''}"><a id="product_table${sales_segment.id}" href="#sales-segment-${sales_segment.id}">${sales_segment.name}</a></li>
   %endfor
   </ul>
   <div class="tab-content" id="tabbable-tab-content">
@@ -283,3 +305,4 @@ else:
     <a href="javascript:void(0);" onclick="$('#modal-alert').modal('hide');" class="btn secondary">閉じる</a>
   </div>
 </div>
+
