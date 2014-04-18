@@ -155,9 +155,11 @@ class IndexView(IndexViewMixin):
         self.prepare()
 
     @view_config(decorator=with_jquery_tools, route_name='cart.agreement', request_method="GET",
-                  renderer=selectable_renderer("%(membership)s/pc/agreement.html"), xhr=False, permission="buy")
+                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"), xhr=False, permission="buy")
     @view_config(decorator=with_jquery_tools, route_name='cart.agreement',request_type="altair.mobile.interfaces.ISmartphoneRequest", request_method="GET",
                  custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement',request_type="altair.mobile.interfaces.IMobileRequest",
+                 request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/agreement.html"), xhr=False, permission="buy")
     def agreement(self):
         # 会場
         try:
@@ -200,9 +202,11 @@ class IndexView(IndexViewMixin):
             event_id=event_id, performance=performance_id)
 
     @view_config(decorator=with_jquery_tools, route_name='cart.agreement', request_method="POST",
-                  renderer=selectable_renderer("%(membership)s/pc/agreement.html"), xhr=False, permission="buy")
+                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"), xhr=False, permission="buy")
     @view_config(decorator=with_jquery_tools, route_name='cart.agreement',request_type="altair.mobile.interfaces.ISmartphoneRequest", request_method="POST",
                  custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement',request_type="altair.mobile.interfaces.IMobileRequest",
+                 request_method="POST", renderer=selectable_renderer("%(membership)s/mobile/agreement.html"), xhr=False, permission="buy")
     def agreement_post(self):
 
         try:
