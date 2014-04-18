@@ -10,8 +10,18 @@ from altair.formhelpers import (
     OurDateTimeField, Translations, Required, RequiredOnUpdate,
     OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField,
     OurTimeField, zero_as_none, after1900)
-from altair.app.ticketing.core.models import Operator, ReportSetting
+from altair.app.ticketing.core.models import Operator, ReportSetting, SalesSegment, Performance, Event
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum, ReportTypeEnum
+
+DETAIL_REPORT_SALES_SEGMENTS_LIMIT = 60
+
+
+def validate_report_type(event_id, report_type):
+    # 販売区分数が多いイベントは詳細レポートでの設定は不可
+    if event_id and report_type == ReportTypeEnum.Detail.v[0]:
+        count = SalesSegment.query.join(Performance).join(Event).filter(Event.id==event_id).count()
+        if count > DETAIL_REPORT_SALES_SEGMENTS_LIMIT:
+            raise ValidationError(u'レポート対象が多すぎます。レポート内容で"合計"を選択してください。')
 
 
 class SalesReportForm(OurForm):
@@ -99,6 +109,10 @@ class SalesReportForm(OurForm):
         validators=[Optional()],
         default=ReportTypeEnum.Detail.v[0],
     )
+
+    def validate_report_type(form, field):
+        if field.data:
+            validate_report_type(form.event_id.data, int(field.data))
 
     def is_detail_report(self):
         if not self.report_type.data:
@@ -240,6 +254,10 @@ class ReportSettingForm(OurForm):
         if field.data:
             if field.data == ReportFrequencyEnum.Weekly.v[0] and not form.day_of_week.data:
                 raise ValidationError(u'週次の場合は曜日を必ず選択してください')
+
+    def validate_report_type(form, field):
+        if field.data:
+            validate_report_type(form.event_id.data, int(field.data))
 
     def process(self, formdata=None, obj=None, **kwargs):
         super(type(self), self).process(formdata, obj, **kwargs)

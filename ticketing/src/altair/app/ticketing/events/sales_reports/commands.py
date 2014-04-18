@@ -70,23 +70,30 @@ def main(argv=sys.argv):
         params = dict(
             event_id=report_setting.event_id,
             performance_id=report_setting.performance_id,
-            report_type=report_setting.report_type
+            report_type=report_setting.report_type,
+            recipient=report_setting.recipient,
+            subject=u'dummy',
+            need_total=need_total
         )
         if limited_from:
             params.update(dict(limited_from=limited_from))
         if limited_to:
             params.update(dict(limited_to=limited_to))
         form = SalesReportForm(MultiDict(params))
-        form.need_total.data = need_total
+        if not form.validate():
+            logger.warn('validation error: {0}'.format(form.errors))
+            continue
 
         if performance:
             end_on = performance.end_on or performance.start_on
             if end_on < now:
+                logger.info('end_on({0}) < now'.format(end_on))
                 continue
 
             if form not in reports:
                 reporter = PerformanceReporter(request, form, performance)
                 if not reporter.reporters:
+                    logger.info('continue(no report)')
                     continue
                 render_param = dict(performance_reporter=reporter)
                 reports[form] = render_to_response('altair.app.ticketing:templates/sales_reports/performance_mail.html', render_param)

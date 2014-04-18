@@ -9,8 +9,10 @@ from webob.multidict import MultiDict
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.renderers import render_to_response
+from pyramid.response import Response
 from pyramid.url import route_path
 from sqlalchemy.sql import func
+from wtforms.validators import Optional
 
 from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.views import BaseView
@@ -124,47 +126,50 @@ class SalesReports(BaseView):
         performance_id = long(self.request.params.get('performance_id') or 0)
 
         form = SalesReportForm(self.request.params)
-        if performance_id:
-            performance = Performance.get(performance_id, organization_id=self.context.user.organization_id)
-            if performance is None:
-                raise HTTPNotFound('performance id %d is not found' % performance_id)
+        form.subject.validators = [Optional()]
+        if form.validate():
+            if performance_id:
+                performance = Performance.get(performance_id, organization_id=self.context.user.organization_id)
+                if performance is None:
+                    raise HTTPNotFound('performance id %d is not found' % performance_id)
 
-            render_param = dict(performance_reporter=PerformanceReporter(self.request, form, performance))
-            return render_to_response('altair.app.ticketing:templates/sales_reports/performance_mail.html', render_param, request=self.request)
-        elif event_id:
-            event = Event.get(event_id, organization_id=self.context.user.organization_id)
-            if event is None:
-                raise HTTPNotFound('event id %d is not found' % event_id)
+                render_param = dict(performance_reporter=PerformanceReporter(self.request, form, performance))
+                return render_to_response('altair.app.ticketing:templates/sales_reports/performance_mail.html', render_param, request=self.request)
+            elif event_id:
+                event = Event.get(event_id, organization_id=self.context.user.organization_id)
+                if event is None:
+                    raise HTTPNotFound('event id %d is not found' % event_id)
 
-            render_param = dict(event_reporter=EventReporter(self.request, form, event))
-            return render_to_response('altair.app.ticketing:templates/sales_reports/event_mail.html', render_param, request=self.request)
+                render_param = dict(event_reporter=EventReporter(self.request, form, event))
+                return render_to_response('altair.app.ticketing:templates/sales_reports/event_mail.html', render_param, request=self.request)
+            else:
+                raise HTTPNotFound('event and performance id is not found')
         else:
-            raise HTTPNotFound('event and performance id is not found')
+            return Response()
 
     @view_config(route_name='sales_reports.send_mail', renderer='altair.app.ticketing:templates/sales_reports/preview.html')
     def send_mail(self):
         event_id = long(self.request.params.get('event_id') or 0)
         performance_id = long(self.request.params.get('performance_id') or 0)
 
-        if performance_id:
-            performance = Performance.get(performance_id, organization_id=self.context.user.organization_id)
-            if performance is None:
-                raise HTTPNotFound('performance id %d is not found' % performance_id)
-        elif event_id:
-            event = Event.get(event_id, organization_id=self.context.user.organization_id)
-            if event is None:
-                raise HTTPNotFound('event id %d is not found' % event_id)
-        else:
-            raise HTTPNotFound('event and performance id is not found')
-
         form = SalesReportForm(self.request.params)
         if form.validate():
             if performance_id:
+                performance = Performance.get(performance_id, organization_id=self.context.user.organization_id)
+                if performance is None:
+                    raise HTTPNotFound('performance id %d is not found' % performance_id)
+
                 render_param = dict(performance_reporter=PerformanceReporter(self.request, form, performance))
                 html = render_to_response('altair.app.ticketing:templates/sales_reports/performance_mail.html', render_param, request=self.request)
             elif event_id:
+                event = Event.get(event_id, organization_id=self.context.user.organization_id)
+                if event is None:
+                    raise HTTPNotFound('event id %d is not found' % event_id)
+
                 render_param = dict(event_reporter=EventReporter(self.request, form, event))
                 html = render_to_response('altair.app.ticketing:templates/sales_reports/event_mail.html', render_param, request=self.request)
+            else:
+                raise HTTPNotFound('event and performance id is not found')
 
             settings = self.request.registry.settings
             recipient = form.recipient.data
