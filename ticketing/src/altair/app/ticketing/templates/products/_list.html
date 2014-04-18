@@ -18,10 +18,16 @@ elif sales_segment:
       if ($.cookie('grid-editor')) {
         $('.product-table').hide();
         $('.grid-editor').show();
+        if(!!location.hash){
+         $(location.hash.replace(/#sales-segment-(?:tab-)?/, '#product_editor')).click();
+        }
         $(this).text('旧商品登録フォームを使う');
       } else {
         $('.product-table').show();
         $('.grid-editor').hide();
+        if(!!location.hash){
+         $(location.hash.replace(/#sales-segment-(?:tab-)?/, '#product_table')).click();
+        }
         $(this).text('新商品登録フォームを使う');
       }
     }).change();
@@ -207,6 +213,15 @@ elif sales_segment:
 <div id="preview_ticket_modal"></div>
 
 
+##xxx: デフォルトでactiveになるtabを決める
+<%
+request_sales_segment_id = request.GET.get("sales_segment_id")
+if request_sales_segment_id:
+  is_autoload = lambda s,i: unicode(s.id) == request_sales_segment_id
+else:
+  is_autoload = lambda s,i: i == 0
+%>
+
 ## 新商品登録フォーム
 <div class="tabbable tabs-top grid-editor js-product-list">
   <ul class="nav nav-tabs">
@@ -223,7 +238,7 @@ elif sales_segment:
            target="product_editor${unicode(sales_segment.id)}"
            url="${request.route_path('products.sub.newer.show', sales_segment_id=sales_segment.id)}"
            data="${dict(i=i)}"
-           autoload="${i == 0}"
+           autoload="${is_autoload(sales_segment, i)}"
            continuation="$('#use-grid-editor').trigger('collectPreviewCandidates', []);"
         />
       </div>
@@ -247,7 +262,7 @@ elif sales_segment:
            target="product_table${unicode(sales_segment.id)}"
            url="${request.route_path('products.sub.older.show',sales_segment_id=sales_segment.id)}"
            data="${dict(i=i)}"
-           autoload="${i == 0}"
+           autoload="${is_autoload(sales_segment, i)}"
            continuation="$('#use-grid-editor').trigger('collectPreviewCandidates', []);"
         />
       </div>
