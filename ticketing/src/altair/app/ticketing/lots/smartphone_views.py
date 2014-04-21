@@ -70,6 +70,67 @@ def get_nogizaka_lot_ids(request):
     except:
         return []
 
+@view_defaults(route_name='lots.entry.agreement', renderer=selectable_renderer("smartphone/%(membership)s/agreement.html"),
+            request_type='altair.mobile.interfaces.ISmartphoneRequest', custom_predicates=(is_smartphone_organization), permission="lots")
+class AgreementLotView(object):
+
+    def __init__(self, context, request):
+        self.request = request
+        self.context = context
+
+    @view_config(request_method="GET", custom_predicates=(nogizaka_auth,))
+    def get(self):
+
+        event = self.context.event
+        lot = self.context.lot
+
+        if not lot:
+            logger.debug('lot not found')
+            raise HTTPNotFound()
+
+        performances = lot.performances
+        if not performances:
+            logger.debug('lot performances not found')
+            raise HTTPNotFound()
+
+        performance_id = self.request.params.get('performance')
+        sales_segment = lot.sales_segment
+
+        return dict(agreement_body=Markup(sales_segment.setting.agreement_body),
+            event_id=event.id, performance=performance_id, lot=lot)
+
+
+    @view_config(request_method="POST", custom_predicates=(nogizaka_auth,))
+    def post(self):
+
+        try:
+            event_id = long(self.request.params.get('event_id'))
+        except:
+            event_id = None
+
+        try:
+            performance_id = long(self.request.params.get('performance'))
+        except (ValueError, TypeError):
+            performance_id = None
+
+        try:
+            lot_id = long(self.request.params.get('lot_id'))
+        except:
+            lot_id = None
+
+        extra = {}
+        if performance_id is not None:
+            extra['_query'] = { 'performance': performance_id }
+
+        agree = self.request.params.get('agree')
+
+        if agree is None:
+            self.request.session.flash(u"全ての規約に同意しないと購入できません。")
+            return HTTPFound(event_id and self.request.route_url('lots.entry.agreement', event_id=event_id, lot_id=lot_id, **extra))
+
+        return HTTPFound(event_id and self.request.route_url('lots.entry.index', event_id=event_id, lot_id=lot_id, **extra))
+
+
 @view_defaults(request_type='altair.mobile.interfaces.ISmartphoneRequest',
                permission="lots", custom_predicates=(is_smartphone_organization))
 class EntryLotView(object):
