@@ -123,6 +123,7 @@ def setup_mq(config):
 def includeme(config):
     # 規約
     config.add_route('cart.agreement', 'events/agreement/{event_id}', factory='.resources.compat_ticketing_cart_resource_factory')
+    config.add_route('cart.agreement2', 'performances/agreement/{performance_id}', factory='.resources.PerformanceOrientedTicketingCartResource')
 
     # 購入系
     config.add_route('cart.index', 'events/{event_id}', factory='.resources.compat_ticketing_cart_resource_factory')

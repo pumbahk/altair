@@ -232,6 +232,45 @@ class IndexView(IndexViewMixin):
 
         return HTTPFound(event_id and self.request.route_url('cart.index', event_id=event_id, **extra))
 
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2',
+                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2',request_type="altair.mobile.interfaces.ISmartphoneRequest", request_method="GET",
+                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2',request_type="altair.mobile.interfaces.IMobileRequest",
+                 request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/agreement.html"), xhr=False, permission="buy")
+    def agreement2(self):
+        sales_segments = self.context.available_sales_segments
+        selected_sales_segment = sales_segments[0]
+        performance_id = self.request.matchdict.get('performance_id')
+
+        return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body),
+            performance=performance_id)
+
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2', request_method="POST",
+                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2',request_type="altair.mobile.interfaces.ISmartphoneRequest", request_method="POST",
+                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2',request_type="altair.mobile.interfaces.IMobileRequest",
+                 request_method="POST", renderer=selectable_renderer("%(membership)s/mobile/agreement.html"), xhr=False, permission="buy")
+    def agreement2_post(self):
+
+        try:
+            performance_id = long(self.request.params.get('performance'))
+        except (ValueError, TypeError):
+            performance_id = None
+
+        extra = {}
+        if performance_id is not None:
+            extra['_query'] = { 'performance': performance_id }
+
+        agree = self.request.params.get('agree')
+
+        if agree is None:
+            self.request.session.flash(u"全ての規約に同意しないと購入できません。")
+            return HTTPFound(performance_id and self.request.route_url('cart.agreement2', performance_id=performance_id, **extra))
+
+        return HTTPFound(performance_id and self.request.route_url('cart.index2', performance_id=performance_id, **extra))
+
     @view_config(decorator=with_jquery_tools, route_name='cart.index',
                   renderer=selectable_renderer("%(membership)s/pc/index.html"), xhr=False, permission="buy")
     @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
