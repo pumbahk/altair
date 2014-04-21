@@ -234,7 +234,7 @@ $(function(){
 
   ## 更新後も現在開いているタブと同じタブを開く
   $("body").on(":refresh:", function(e){
-    if(!!location.hash && !!location.search){
+    if(!!location.hash){
       var m  = /sales-segment-(?:tab-)?([0-9]+)/.exec(location.hash);
       if(!!m){
         location.href = location.protocol+"//"+location.host+location.pathname+"?sales_segment_id="+m[1];

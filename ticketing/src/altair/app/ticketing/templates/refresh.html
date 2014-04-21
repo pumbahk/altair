@@ -12,7 +12,7 @@
 %if redirect_to:
     location.href = "${redirect_to}";
 %else:
-    if(!!location.hash && !!location.search){
+    if(!!location.hash){
       $("body").trigger(":refresh:");
     } else {
       location.reload(true);
