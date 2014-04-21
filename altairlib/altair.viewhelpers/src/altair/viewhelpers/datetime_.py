@@ -10,7 +10,7 @@ class DefaultDateTimeFormatter(object):
         return datetime.now()
 
     def _get_date_format(self, flavor, d):
-        if flavor.get('without_year') or (flavor.get('omit_year_if_this_year') and date(d.year + 1, d.month, 1) > self.now.date()):
+        if flavor.get('without_year') or (flavor.get('omit_year_if_this_year') and d.year == self.now.year):
             format = u"%-m月%-d日"
         else:
             format = u"%Y年%-m月%-d日"
@@ -54,7 +54,7 @@ class DateTimeHelper(object):
 
     def term(self, beg, end, none_label=u'指定なし', formatter=None, **flavor):
         """ dateオブジェクトを受け取り期間を表す文字列を返す
-        e.g. 2012年3月3日(土)〜7月12日(木) 
+        e.g. 2012年3月3日(土)〜7月12日(木)
         """
         with_weekday = flavor.pop('with_weekday', True)
         if formatter is None:
