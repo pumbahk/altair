@@ -88,10 +88,12 @@ namespace QR.presentation.gui.page
     public partial class PageConfirmAll : Page//, IDataContextHasCase
     {
         private Logger logger = LogManager.GetCurrentClassLogger();
+        private bool loadingLock;
 
         public PageConfirmAll()
         {
             InitializeComponent();
+            this.loadingLock = false;
             this.DataContext = this.CreateDataContext();
         }
 
@@ -171,10 +173,16 @@ namespace QR.presentation.gui.page
             if(!s){
                 this.OnSubmitWithBoundContext(sender, e); //xxx:
             }
+            this.loadingLock = true;
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
         {
+            if (!this.loadingLock)
+            {
+                logger.Warn("too early.");
+                return;
+            }
             var ctx = this.DataContext as InputDataContext;
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
@@ -192,6 +200,11 @@ namespace QR.presentation.gui.page
 
         private async void OnBackwardWithBoundContext(object sender, RoutedEventArgs e)
         {
+            if (!this.loadingLock)
+            {
+                logger.Warn("too early.");
+                return;
+            }
             var ctx = this.DataContext as InputDataContext;
             await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
             {
