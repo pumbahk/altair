@@ -11,20 +11,21 @@
 %endif
 ${h.get_nickname(request)} 
 
+<style>
+    .error{
+        color: red;
+    }
+</style>
 <form id="form1" name="form1" method="post" action="${request.url}">
   % if event_id:
     <input type="hidden" name="event_id" value=${event_id} />
   % endif
   <input type="hidden" name="performance" value=${performance} />
 
-  <div class="settlementBox">
-    <div class="settlementBoxInner">
-      ${agreement_body}
-    </div>
-  </div>
+  ${agreement_body}
 
   <input type="checkbox" name="agree" value="agree" id="agree">
-  <label for="agree">全ての規約に同意する。</label><br>
+  <label for="agree">上記の注意事項を確認、同意し、公演に申し込みます。</label><br>
 
   <input type="submit" value="同意する"/>
 </form>

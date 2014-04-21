@@ -16,11 +16,7 @@ ${h.get_nickname(request)}
   <input type="hidden" name="lot_id" value=${lot.id} />
   <input type="hidden" name="performance" value=${performance} />
 
-  <div class="settlementBox">
-    <div class="settlementBoxInner">
-      ${agreement_body}
-    </div>
-  </div>
+  ${agreement_body}
 
   <input type="checkbox" name="agree" value="agree" id="agree">
   <label for="agree">全ての規約に同意する。</label><br>

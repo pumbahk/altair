@@ -227,7 +227,7 @@ class IndexView(IndexViewMixin):
         agree = self.request.params.get('agree')
 
         if agree is None:
-            self.request.session.flash(u"全ての規約に同意しないと購入できません。")
+            self.request.session.flash(u"注意事項を確認、同意し、公演に申し込んでください。")
             return HTTPFound(event_id and self.request.route_url('cart.agreement', event_id=event_id, **extra))
 
         return HTTPFound(event_id and self.request.route_url('cart.index', event_id=event_id, **extra))
