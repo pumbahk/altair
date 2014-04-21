@@ -413,6 +413,7 @@ SELECT
     ShippingAddress.email_2 AS `メールアドレス2`,
     LotEntry.gender AS `性別`,
     LotEntry.birthday AS `誕生日`,
+    LotEntry.memo AS `メモ`,
     UserProfile.last_name AS `姓`,
     UserProfile.first_name AS `名`,
     UserProfile.last_name_kana AS `姓(カナ)`,
@@ -511,6 +512,7 @@ WHERE Lot.id = %s
         u'メールアドレス2',
         u'性別',
         u'誕生日',
+        u'メモ',
         u'姓',
         u'名',
         u'姓(カナ)',
@@ -529,7 +531,7 @@ WHERE Lot.id = %s
         try:
             for row in cur.fetchall():
                 yield OrderedDict([
-                    (c, row[c])
+                    (c, row[c] if row[c] is not None else u'')
                     for c in self.csv_columns]
                 )
         finally:
