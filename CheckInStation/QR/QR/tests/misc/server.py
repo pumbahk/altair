@@ -9,15 +9,21 @@ import time
 class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     unstable = False	
     def parse_request(self):
+        """
         print("----------------------------------------")
         print(self.raw_requestline)
+        """
         result = SimpleHTTPServer.SimpleHTTPRequestHandler.parse_request(self)
+        """
         print(self.headers)
         print("----------------------------------------")
+        """
         return result
 
     def do_GET(self):
         logging.info(self.headers)
+        import time
+        time.sleep(2)
 	if self.unstable:
 	    import random
 	    N = random.random()
@@ -40,7 +46,7 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         # for item in form.list:
         #     logging.error(item)
 	self.do_GET()
-        print("body:")
+        #print("body:")
         print(self.rfile.read())
 
 import sys

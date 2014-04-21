@@ -7,7 +7,8 @@
         "qr_svgsource_all": "http://localhost:8000/svgall.json",
         "qr_update_printed_at": "http://localhost:8000/update.printed_at.json",
         "orderno_verified_data": "http://localhost:8000/verified.order.json",
-	"image_from_svg": "http://localhost:8000/image.png"
+        "refresh_order": "http://localhost:8000/verified.order.json",
+	      "image_from_svg": "http://localhost:8000/image.png"
     },
     "ad_images": [
         "http://localhost:8000/clutch.gif"
