@@ -250,6 +250,7 @@ class EntryLotView(object):
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id')
         wishes = h.convert_wishes(self.request.params, lot.limit_wishes)
+        logger.debug('wishes={0}'.format(wishes))
 
         validated = True
         user = user_api.get_user(self.context.authenticated_user())
@@ -356,6 +357,7 @@ class ConfirmLotEntryView(object):
         DBSession.add(self.context.organization)
         magazines_to_subscribe = get_magazines_to_subscribe(self.context.organization, [entry['shipping_address']['email_1']])
 
+        logger.debug('wishes={0}'.format(entry['wishes']))
         wishes = api.build_temporary_wishes(entry['wishes'],
                                             payment_delivery_method_pair=payment_delivery_method_pair,
                                             sales_segment=lot.sales_segment)
@@ -412,6 +414,7 @@ class ConfirmLotEntryView(object):
         user = user_api.get_or_create_user(self.context.authenticated_user())
         shipping_address.user = user
         wishes = entry['wishes']
+        logger.debug('wishes={0}'.format(wishes))
 
         lot = self.context.lot
 
