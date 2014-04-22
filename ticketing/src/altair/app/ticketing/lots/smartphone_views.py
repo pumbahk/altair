@@ -228,15 +228,17 @@ class EntryLotView(object):
 
         # 商品チェック
         if not wishes:
-            wishes = h.convert_sp_wishes(self.request.params, lot.limit_wishes)
-            if not wishes:
-                self.request.session.flash(u"申し込み内容に入力不備があります")
-                validated = False
+            self.request.session.flash(u"申し込み内容に入力不備があります")
+            validated = False
         elif not h.check_duplicated_products(wishes):
             self.request.session.flash(u"同一商品が複数回希望されています。")
             validated = False
         elif not h.check_quantities(wishes, lot.max_quantity):
             self.request.session.flash(u"各希望ごとの合計枚数は最大{0}枚までにしてください".format(lot.max_quantity))
+            validated = False
+        elif not h.check_valid_products(wishes):
+            logger.debug('Product.performance_id mismatch')
+            self.request.session.flash(u"選択された券種が見つかりません。もう一度はじめから選択してください。")
             validated = False
 
         if not validated:

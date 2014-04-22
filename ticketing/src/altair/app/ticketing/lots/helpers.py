@@ -172,6 +172,16 @@ def check_duplicated_products(wishes):
             products.add(product_id)
     return True
 
+def check_valid_products(wishes):
+    """ 各商品が選択された公演の商品か確認 """
+    for wish in wishes:
+        performance_id = wish['performance_id']
+        for p in wish['wished_products']:
+            product_id = p['product_id']
+            query = Product.query.filter(Product.id==product_id, Product.performance_id==performance_id)
+            if query.count() == 0:
+                return False
+    return True
 
 def decorate_options_mobile(options):
     options = [
