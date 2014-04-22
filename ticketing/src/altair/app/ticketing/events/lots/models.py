@@ -381,8 +381,6 @@ SELECT
         ELSE '申込'
     END AS `状態`,
     LotEntry.entry_no AS `申し込み番号`,
-    LotEntry.channel AS `販売チャネル`,
-    LotEntry.browserid AS `ブラウザID`,
     LotEntryWish.wish_order + 1 AS `希望順序`,
     LotEntryWish.created_at AS `申し込み日`,
     -- NULL,
@@ -420,6 +418,8 @@ SELECT
     UserProfile.nick_name AS `ニックネーム`,
     UserProfile.sex AS `プロフィールに設定されている性別`,
     UserProfile.birthday AS `プロフィールに設定されている誕生日`,
+    LotEntry.channel AS `販売チャネル`,
+    LotEntry.browserid AS `ブラウザID`,
     NULL
 FROM LotEntryWish
      JOIN LotEntry
@@ -480,8 +480,6 @@ WHERE Lot.id = %s
     csv_columns = (
         u'状態',
         u'申し込み番号',
-        u'販売チャネル',
-        u'ブラウザID',
         u'希望順序',
         u'申し込み日',
         u'席種',
@@ -518,6 +516,8 @@ WHERE Lot.id = %s
         u'ニックネーム',
         u'プロフィールに設定されている性別',
         u'プロフィールに設定されている誕生日',
+        u'販売チャネル',
+        u'ブラウザID',
     )
 
     def __init__(self, session, lot_id):
