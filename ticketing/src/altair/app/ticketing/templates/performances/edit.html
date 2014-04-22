@@ -2,16 +2,30 @@
 <%namespace file="/common/helpers.html" name="ch" />
 
 <script type="text/javascript">
+  function createCode() {
+    if ($('#id').val() || $('#code').val().length == 12) return;
+    var month = $('input[name="start_on.month"]').val();
+    var day = $('input[name="start_on.day"]').val();
+    if (month && day) {
+        $('#code').val("${event.code}" + ("0" + month).slice(-2) + ("0" + day).slice(-2) + 'Z');
+        $('#code').parent().find('.counter').text($('#code').attr('maxlength') - $('#code').val().length);
+    }
+  }
+
   $(function() {
+    $('#code').val("${event.code}");
+    $('input[name^="start_on"]').val("");
+
     $('[rel=popover]').popover({html:true});
     $('form').disableOnSubmit();
+
+    $('.datetimewidget-container').find('.icon-calendar').parent().datepicker()
+      .on('changeDate', function () {
+        createCode();
+      });
+
     $('input[name^="start_on"]').change(function(){
-      if ($('#id').val() || $('#code').val().length == 12) return;
-      var month = $('input[name="start_on.month"]').val();
-      var day = $('input[name="start_on.day"]').val();
-      if (month && day) {
-        $('#code').val("${event.code}" + ("0" + month).slice(-2) + ("0" + day).slice(-2) + 'Z');
-      }
+        createCode();
     });
   });
 </script>
