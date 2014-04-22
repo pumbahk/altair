@@ -132,6 +132,13 @@ class AgreementLotView(object):
         performance_id = self.request.params.get('performance')
         sales_segment = lot.sales_segment
 
+        if not sales_segment.setting.disp_agreement:
+            extra = {}
+            if performance_id is not None:
+                extra['_query'] = { 'performance': performance_id }
+
+            return HTTPFound(event and self.request.route_url('lots.entry.index', event_id=event.id, lot_id=lot.id, **extra))
+
         return dict(agreement_body=Markup(sales_segment.setting.agreement_body),
             event_id=event.id, performance=performance_id, lot=lot)
 
