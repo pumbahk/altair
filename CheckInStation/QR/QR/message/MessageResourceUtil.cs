@@ -34,6 +34,11 @@ namespace QR.message
             return resource.SettingValue ("message.default.error.format.0");
         }
 
+        public static string GetGuessTimeoutErrorMessage (this IResource resource)
+        {
+            return resource.SettingValue("message.guess.timeout.error.format.0");
+        }
+
         public static string GetCaseDescriptionMessage(this IResource resource, ICase case_)
         {
             {

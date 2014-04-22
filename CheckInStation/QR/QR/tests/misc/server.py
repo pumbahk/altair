@@ -33,6 +33,8 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
     def copyfile(self, source, outputfile):
+        #if "update." in source.name:
+        #    time.sleep(10)
         return shutil.copyfileobj(source, outputfile)
 
     def do_POST(self):
