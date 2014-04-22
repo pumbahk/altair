@@ -11,9 +11,7 @@ from sqlalchemy.orm import (
     joinedload,
 )
 from pyramid.view import view_config, view_defaults
-from altair.app.ticketing.models import (
-    DBSession,
-)
+from altair.sqlahelper import get_db_session
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
     SalesSegment,
@@ -189,7 +187,8 @@ class SearchLotsEntryView(object):
                 condition = sql.and_(condition,
                                      LotEntrySearch.lot_id==form.lot.data)
 
-            q = DBSession.query(LotEntrySearch).filter(
+            slave_session = get_db_session(self.request, name="slave")
+            q = slave_session.query(LotEntrySearch).filter(
                 LotEntrySearch.organization_id==organization_id,
                 ).filter(
                 condition
