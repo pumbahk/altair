@@ -4,7 +4,7 @@ from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPNotFound
 from altair.app.ticketing.core.models import Event, Product
 from altair.app.ticketing.lots.models import Lot, LotEntry
-from altair.app.ticketing.carturl.api import get_lots_cart_url_builder
+from altair.app.ticketing.carturl.api import get_lots_cart_url_builder, get_agreement_lots_cart_url_builder
 
 from altair.app.ticketing.resources import TicketingAdminResource
 
@@ -48,6 +48,11 @@ class LotResource(AbstractLotResource):
 
     @reify
     def lots_cart_url(self):
+        cart_url = get_agreement_lots_cart_url_builder(self.request).build(self.request, self.event, self.lot)
+        return cart_url
+
+    @reify
+    def agreement_lots_cart_url(self):
         cart_url = get_lots_cart_url_builder(self.request).build(self.request, self.event, self.lot)
         return cart_url
 

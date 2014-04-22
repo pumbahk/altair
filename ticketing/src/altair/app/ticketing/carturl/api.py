@@ -12,3 +12,6 @@ def get_lots_cart_url_builder(request, name=BUILDERS.lots_cart):
 
 def get_agreement_cart_url_builder(request, name=BUILDERS.agreement_cart):
     return request.registry.getUtility(IURLBuilder, name=name)
+
+def get_agreement_lots_cart_url_builder(request, name=BUILDERS.agreement_lots_cart):
+    return request.registry.getUtility(IURLBuilder, name=name)
