@@ -71,3 +71,17 @@ class SearchLotEntryForm(Form):
         ],
         choices=[],
     )
+
+    def validate(self):
+        status = super(SearchLotEntryForm, self).validate()
+        if status:
+            if not self.entry_no.data and \
+               not self.tel.data and \
+               not self.name.data and \
+               not self.email.data and \
+               not self.entried_from.data and \
+               not self.entried_to.data and \
+               not self.lot.data:
+                self.entry_no.errors.append(u'条件を1つ以上指定してください')
+                status = False
+        return status
