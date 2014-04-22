@@ -2,6 +2,8 @@
 
 from datetime import datetime, date, time
 
+HARF_YEAR = 365 / 2 # harf a year
+
 class DefaultDateTimeFormatter(object):
     WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
 
@@ -9,8 +11,15 @@ class DefaultDateTimeFormatter(object):
     def now(self):
         return datetime.now()
 
+    def _is_near(self, d):
+        u"""現在時刻から前後半年の間にdが入っている場合Trueを返す"""
+        now = self.now
+        delta = now - d
+        delta = abs(delta)
+        return delta.days < HARF_YEAR
+
     def _get_date_format(self, flavor, d):
-        if flavor.get('without_year') or (flavor.get('omit_year_if_this_year') and d.year == self.now.year):
+        if flavor.get('without_year') or (flavor.get('omit_year_if_this_year') and self._is_near(d)):
             format = u"%-m月%-d日"
         else:
             format = u"%Y年%-m月%-d日"
