@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import logging
 from datetime import datetime, timedelta
 from webhelpers import paginate
 from sqlalchemy import (
@@ -33,6 +34,9 @@ from .forms import (
     SearchLotEntryForm,
 )
 from altair.app.ticketing.lots import helpers as h
+
+logger = logging.getLogger(__name__)
+
 
 @view_defaults(route_name='altair.app.ticketing.lots_admin.index',
                decorator=with_bootstrap, permission='event_editor')
@@ -152,8 +156,8 @@ class SearchLotsEntryView(object):
 
         organization_id = self.context.organization.id
         form = self.create_form()
-        condition = (LotEntrySearch.id != None)
-        if form.validate():
+        if self.request.params and form.validate():
+            condition = (LotEntrySearch.id != None)
             if form.entry_no.data:
                 condition = sql.and_(condition, LotEntrySearch.entry_no==form.entry_no.data)
             if form.tel.data:
@@ -185,22 +189,24 @@ class SearchLotsEntryView(object):
                 condition = sql.and_(condition,
                                      LotEntrySearch.lot_id==form.lot.data)
 
-        q = DBSession.query(LotEntrySearch).filter(
-            LotEntrySearch.organization_id==organization_id,
-            ).filter(
-            condition
-            )
-        entries = q.all()
-        count = q.count()
-        page_url = paginate.PageURL_WebOb(self.request)
+            q = DBSession.query(LotEntrySearch).filter(
+                LotEntrySearch.organization_id==organization_id,
+                ).filter(
+                condition
+                )
+            entries = q.all()
+            count = q.count()
+            page_url = paginate.PageURL_WebOb(self.request)
 
-        page = paginate.Page(entries,
-                             page=self.request.GET.get('page', '1'),
-                             item_count=count,
-                             items_per_page=100,
-                             url=page_url)
+            page = paginate.Page(entries,
+                                 page=self.request.GET.get('page', '1'),
+                                 item_count=count,
+                                 items_per_page=100,
+                                 url=page_url)
+        else:
+            count = 0
+            page = []
         return dict(organization_id=organization_id,
-                    #entries=entries,
                     entries=page,
                     form=form,
                     count=count)
