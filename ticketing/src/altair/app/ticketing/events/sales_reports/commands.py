@@ -31,11 +31,12 @@ def main(argv=sys.argv):
 
     logger.info('start send_sales_report batch')
 
-    now = datetime.now().replace(minute=0, second=0)
+    now = datetime.now().replace(second=0)
     settings = registry.settings
 
+    report_time = '{0:0>2}{1:0>2}'.format(now.hour, now.minute)[0:3] + '0'
     query = ReportSetting.query.filter(and_(
-        ReportSetting.time==now.hour,
+        ReportSetting.time==report_time,
         or_(ReportSetting.start_on==None, ReportSetting.start_on<now),
         or_(ReportSetting.end_on==None, ReportSetting.end_on>now),
         or_(ReportSetting.day_of_week==None, ReportSetting.day_of_week==now.isoweekday())

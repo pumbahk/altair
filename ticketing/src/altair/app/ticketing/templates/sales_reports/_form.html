@@ -10,7 +10,14 @@
   ${ch.form_item(form.day_of_week)}
   </div>
   ${ch.form_item(form.period)}
-  ${ch.form_item(form.time)}
+  <div class="control-group">
+    <label class="required control-label">${form.report_hour.label.text}</label>
+    <div class="controls">
+      ${form.report_hour(style="width:60px;")} 時 ${form.report_minute(style="width:60px;")} 分
+      ${ch.validate_errors(form.report_hour)}
+      ${ch.validate_errors(form.report_minute)}
+    </div>
+  </div>
   ${ch.form_item(form.report_type)}
   ${ch.form_item(form.start_on)}
   ${ch.form_item(form.end_on)}

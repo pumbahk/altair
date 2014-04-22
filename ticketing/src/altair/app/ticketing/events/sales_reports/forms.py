@@ -118,6 +118,13 @@ class ReportSettingForm(OurForm):
             operators = Operator.query.filter_by(organization_id=context.user.organization_id).all()
             self.operator_id.choices = [('', '')] + [(o.id, o.name) for o in operators]
 
+        if self.report_hour.data and self.report_minute.data:
+            self.time.data = self.format_report_time()
+
+        if obj:
+            self.report_hour.data = int(obj.time[0:2])
+            self.report_minute.data = int(obj.time[2:4])
+
     def _get_translations(self):
         return Translations()
 
@@ -171,19 +178,28 @@ class ReportSettingForm(OurForm):
         ],
         coerce=lambda v: None if not v else int(v)
     )
-    time = SelectField(
-        label=u'送信時間',
+    report_hour = SelectField(
+        label=u'送信時刻',
         validators=[Required()],
-        choices=[(h, u'%d時' % h) for h in range(0, 24)],
+        choices=[(h, u'%d' % h) for h in range(0, 24)],
         coerce=lambda v: None if not v else int(v)
     )
+    report_minute = SelectField(
+        label=u'',
+        validators=[Required()],
+        choices=[(h, u'%d' % h) for h in [0, 10, 20, 30, 40, 50]],
+        coerce=lambda v: None if not v else int(v)
+    )
+    time = HiddenField(
+        validators=[Optional()],
+    )
     start_on = OurDateTimeField(
-        label=u'開始日時',
+        label=u'送信開始日時',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
     end_on = OurDateTimeField(
-        label=u'終了日時',
+        label=u'送信終了日時',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
@@ -200,11 +216,14 @@ class ReportSettingForm(OurForm):
         coerce=int
     )
 
+    def format_report_time(self):
+        return '{0:0>2}{1:0>2}'.format(self.report_hour.data, self.report_minute.data)
+
     def validate_operator_id(form, field):
         if field.data:
             query = ReportSetting.query.filter(
                 ReportSetting.frequency==form.frequency.data,
-                ReportSetting.time==form.time.data,
+                ReportSetting.time==form.format_report_time(),
                 ReportSetting.operator_id==field.data
             )
             if form.id.data:
@@ -222,7 +241,7 @@ class ReportSettingForm(OurForm):
         if field.data:
             query = ReportSetting.query.filter(
                 ReportSetting.frequency==form.frequency.data,
-                ReportSetting.time==form.time.data,
+                ReportSetting.time==form.format_report_time(),
                 ReportSetting.email==form.email.data
             )
             if form.id.data:
