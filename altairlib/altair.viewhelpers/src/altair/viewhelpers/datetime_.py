@@ -86,7 +86,7 @@ class DateTimeHelper(object):
     term_datetime = term
 
     def date(self, d, **flavor):
-        omit_year_if_this_year = flavor.pop('omit_year_if_this_year', True)
+        omit_year_if_this_year = flavor.pop('omit_year_if_this_year', False)
         return self.formatter.format_date(d, omit_year_if_this_year=omit_year_if_this_year, **flavor) if d else u'-'
 
     def time(self, t, **flavor):
@@ -95,7 +95,7 @@ class DateTimeHelper(object):
 
     def datetime(self, dt, **flavor):
         without_second = flavor.pop('without_second', True)
-        omit_year_if_this_year = flavor.pop('omit_year_if_this_year', True)
+        omit_year_if_this_year = flavor.pop('omit_year_if_this_year', False)
         return self.formatter.format_datetime(dt, without_second=without_second, omit_year_if_this_year=omit_year_if_this_year, **flavor) if dt else u'-'
 
 def create_date_time_formatter(request):
