@@ -81,7 +81,7 @@ from .events import LotEntriedEvent
 from .interfaces import IElecting
 from .adapters import LotSessionCart
 from . import schemas
-    
+
 LOT_ENTRY_DICT_KEY = 'lots.entry'
 
 def get_event(request):
@@ -196,7 +196,7 @@ def build_temporary_wishes(wishes,
                 wish.products.append(product)
         results.append(wish)
     return results
-    
+
 def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo):
     """
     wishes
@@ -232,7 +232,7 @@ def get_entry(request, entry_no, tel_no):
     return LotEntry.query.filter(
         LotEntry.entry_no==entry_no,
     ).filter(
-        sql.or_(ShippingAddress.tel_1==tel_no, 
+        sql.or_(ShippingAddress.tel_1==tel_no,
             ShippingAddress.tel_2==tel_no)
     ).filter(
         ShippingAddress.id==LotEntry.shipping_address_id
@@ -347,7 +347,7 @@ def submit_lot_entries(lot_id, entries):
 
 def submit_reject_entries(lot_id, entries):
     """
-    当選リストの取り込み
+    落選リストの取り込み
     entries : (entry_no, wish_order)のリスト
     """
     lot = Lot.query.filter(Lot.id==lot_id).one()
@@ -367,7 +367,7 @@ def reject_lot_entries(request, lot_id):
 
     elector = request.registry.queryMultiAdapter([lot, request], IElecting, "")
     return elector.reject_lot_entries()
-    
+
 # review用 XXX: Resourceに移動
 def entry_session(request, lot_entry=None):
     if lot_entry is not None:
@@ -376,12 +376,12 @@ def entry_session(request, lot_entry=None):
         entry_id = request.session.get('lots.entry_id')
         if entry_id is None:
             return None
-        
+
         lot_entry = DBSession.query(LotEntry).filter(LotEntry.id==entry_id).first()
         if lot_entry is not None:
             request.session['lots.entry_id'] = lot_entry.id
     return lot_entry
-    
+
 # def create_cart(request, lot_entry):
 #     """
 #     """
@@ -391,9 +391,9 @@ def entry_session(request, lot_entry=None):
 #     wish = elected.lot_entry_wish
 #     performance_id = wish.performance_id
 #     payment_delivery_method_pair = lot_entry.payment_delivery_method_pair
-#     cart = Cart.create(lot_entries=[lot_entry], 
+#     cart = Cart.create(lot_entries=[lot_entry],
 #         system_fee=payment_delivery_method_pair.system_fee,
-#         payment_delivery_pair=payment_delivery_method_pair, 
+#         payment_delivery_pair=payment_delivery_method_pair,
 #         shipping_address=lot_entry.shipping_address,
 #         performance=wish.performance,
 #         sales_segment=lot_entry.lot.sales_segment)
@@ -404,7 +404,7 @@ def entry_session(request, lot_entry=None):
 #     taked_stocks = stocker.take_stock(performance_id, wished_products)
 
 #     # TODO: 取得した在庫内容チェック
-    
+
 #     # 当選した希望の商品追加
 #     cart.add_products(wished_products)
 #     return cart
