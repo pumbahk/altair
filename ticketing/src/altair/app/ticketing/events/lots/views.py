@@ -67,6 +67,18 @@ from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 logger = logging.getLogger(__name__)
 
 
+def _filter_stock_type_without_quantity_only(stock_types):
+    u"""数受けではないStockTypeを抽選では使わないためのfilter
+
+    refs #5584
+    数受けの商品に対して抽選を行ってしまうとSejErrorが発生する事が判明している。
+    そのため数受けの商品に対して抽選を行えないようにする為のWA的対処。
+
+    数受け抽選が可能になったタイミングでこのfilterは取り払わなければならない。
+    """
+    return filter(lambda stock_type: not stock_type.quantity_only, stock_types)
+
+
 class BaseView(_BaseView):
     @reify
     def user(self):
@@ -334,7 +346,7 @@ class Lots(BaseView):
         lot = self.context.lot
         event = self.context.event
 
-        stock_types = event.stock_types
+        stock_types =  _filter_stock_type_without_quantity_only(event.stock_types)
         stock_type_choices = [
             (s.id, s.name)
             for s in stock_types
@@ -362,7 +374,7 @@ class Lots(BaseView):
         lot = self.context.lot
         event = self.context.event
 
-        stock_types = event.stock_types
+        stock_types =  _filter_stock_type_without_quantity_only(event.stock_types)
         stock_type_choices = [
             (s.id, s.name)
             for s in stock_types
