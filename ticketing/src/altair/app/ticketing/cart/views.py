@@ -198,6 +198,13 @@ class IndexView(IndexViewMixin):
         if event_id:
             event_id = long(event_id)
 
+        if not selected_sales_segment.setting.disp_agreement:
+            extra = {}
+            if performance_id is not None:
+                extra['_query'] = { 'performance': performance_id }
+
+            return HTTPFound(event_id and self.request.route_url('cart.index', event_id=event_id, **extra))
+
         return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body),
             event_id=event_id, performance=performance_id)
 
@@ -242,6 +249,14 @@ class IndexView(IndexViewMixin):
         sales_segments = self.context.available_sales_segments
         selected_sales_segment = sales_segments[0]
         performance_id = self.request.matchdict.get('performance_id')
+
+
+        if not selected_sales_segment.setting.disp_agreement:
+            extra = {}
+            if performance_id is not None:
+                extra['_query'] = { 'performance': performance_id }
+
+            return HTTPFound(performance_id and self.request.route_url('cart.index2', performance_id=performance_id, **extra))
 
         return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body),
             performance=performance_id)
