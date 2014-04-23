@@ -60,6 +60,7 @@ from . import api
 from .models import LotWishSummary, LotEntryReportSetting
 from .models import CSVExporter
 from .reporting import LotEntryReporter
+from .exceptions import CSVFileParserError
 
 from altair.app.ticketing.payments import helpers as payment_helpers
 from altair.app.ticketing.carturl.api import get_lots_cart_url_builder
@@ -608,17 +609,19 @@ class LotEntries(BaseView):
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
         f = self.request.params['entries'].file
-        elect_wishes, reject_entries = self._parse_import_file(f)
+        try:
+            elect_wishes, reject_entries = self._parse_import_file(f)
+        except CSVFileParserError as e:
+            self.request.session.flash(u"ファイルフォーマットが正しくありません ({0})".format(e.entry_no))
+            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
         if not (elect_wishes or reject_entries):
             self.request.session.flash(u"当選予定/落選予定データがありませんでした")
             return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+        self.request.session.flash(u"{0}件の当選予定データ、{1}件の落選予定データを取り込みました".format(len(elect_wishes), len(reject_entries)))
 
-        self.request.session.flash(u"{0}件の当選予定データを取り込みました".format(len(elect_wishes)))
-        self.request.session.flash(u"{0}件の落選予定データを取り込みました".format(len(reject_entries)))
         electing_count = lots_api.submit_lot_entries(lot.id, elect_wishes)
         rejecting_count = lots_api.submit_reject_entries(lot_id, reject_entries)
-        self.request.session.flash(u"新たに{0}件が当選予定となりました".format(electing_count))
-        self.request.session.flash(u"新たに{0}件が落選予定となりました".format(rejecting_count))
+        self.request.session.flash(u"新たに{0}件が当選予定、{1}件が落選予定となりました".format(electing_count, rejecting_count))
 
         return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
 
@@ -634,15 +637,14 @@ class LotEntries(BaseView):
             status = row[u'状態']
             entry_no = row[u'申し込み番号']
             wish_order = row[u'希望順序']
-            logger.info('status=%s, entry_no=%s, wish_order=%s' % (status, entry_no, wish_order))
             if not (status and entry_no and wish_order):
                 logger.info('parser error status=%s, entry_no=%s, wish_order=%s' % (status, entry_no, wish_order))
-                raise Exception
+                raise CSVFileParserError(entry_no=entry_no)
             try:
                 wish_order = int(wish_order) - 1
             except ValueError:
                 logger.info('wish order is not number ({0})'.format(entry_no))
-                raise Exception
+                raise CSVFileParserError(entry_no=entry_no)
 
             if status == u'当選予定':
                 elect_wishes.append((entry_no, wish_order))
