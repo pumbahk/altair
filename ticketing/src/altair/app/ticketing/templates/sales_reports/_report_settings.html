@@ -58,7 +58,7 @@
     <th>メールアドレス</th>
     <th>メール通知頻度</th>
     <th>送信曜日</th>
-    <th>送信時間</th>
+    <th>送信時刻</th>
     <th>送信期間</th>
     <th>対象</th>
     <th>レポート対象期間</th>
@@ -76,7 +76,7 @@
     <td>${email}</td>
     <td>${''.join([enum.v[1] for enum in ReportFrequencyEnum if enum.v[0] == rs.frequency])}</td>
     <td>${''.join([dow[1] for dow in form_report_setting.day_of_week.choices if rs.day_of_week == dow[0]])}</td>
-    <td>${u'%s時' % rs.time if rs.time else ''}</td>
+    <td>${"{0:0>2}:{1:0>2}".format(rs.time[0:2], rs.time[2:4])}</td>
     <td>
       ${vh.term(rs.start_on, rs.end_on, without_minute=True)}
     </td>

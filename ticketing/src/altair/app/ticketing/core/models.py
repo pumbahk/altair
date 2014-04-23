@@ -770,6 +770,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class ReportFrequencyEnum(StandardEnum):
     Daily = (1, u'毎日')
     Weekly = (2, u'毎週')
+    Onetime = (3, u'1回のみ')
 
 class ReportPeriodEnum(StandardEnum):
     Normal = (1, u'指定期間 (前日分/前週分)')
