@@ -226,5 +226,8 @@ class RealLayoutFile(object):
         abspath = self._abspath()
         if not os.path.exists(abspath):
             logger.info("*layout* layout does not exists. download it. (file:{})".format(abspath))
+            dirpath = os.path.dirname(abspath)
+            if not os.path.exists(dirpath):
+                os.makedirs(dirpath)
             self.download(self.request, self.layout, abspath)
         return abspath
