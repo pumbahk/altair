@@ -86,8 +86,14 @@ def main(argv=sys.argv):
 
             if form not in reports:
                 reporter = PerformanceReporter(request, form, performance)
-                if not reporter.reporters:
-                    continue
+                if form.is_detail_report():
+                    if not reporter.reporters:
+                        logger.info('continue(no report)')
+                        continue
+                else:
+                    if not reporter.total.reports:
+                        logger.info('continue(no report)')
+                        continue
                 render_param = dict(performance_reporter=reporter)
                 reports[form] = render_to_response('altair.app.ticketing:templates/sales_reports/performance_mail.html', render_param)
             subject = u'%s (開催日:%s)' % (performance.name, performance.start_on.strftime('%Y-%m-%d %H:%M'))

@@ -30,9 +30,9 @@
   <tr style="background-color:#ddd;">
     <th colspan="6"></th>
     % if need_total:
-    <th colspan="4">累計</th>
+    <th colspan="3">累計</th>
     % endif
-    <th colspan="4">${vh.term(form.limited_from.data, form.limited_to.data)}</th>
+    <th colspan="3">${vh.term(form.limited_from.data, form.limited_to.data)}</th>
   </tr>
   % endif
   <tr style="background-color:#ddd;">
@@ -43,15 +43,13 @@
     <th style="width: 4%;">配席数</th>
     <th style="width: 4%;">残数</th>
   % if need_total:
-    <th style="width: 4%;">受付数</th>
-    <th style="width: 4%;">未入金</th>
-    <th style="width: 4%;">入金済</th>
+    <th style="width: 4%;">販売数</th>
+    <th style="width: 4%;">予約中</th>
     <th style="width: 8%;">小計</th>
   % endif
   % if form.limited_from.data or form.limited_to.data:
-    <th style="width: 4%;">受付数</th>
-    <th style="width: 4%;">未入金</th>
-    <th style="width: 4%;">入金済</th>
+    <th style="width: 4%;">販売数</th>
+    <th style="width: 4%;">予約中</th>
     <th style="width: 8%;">小計</th>
   % endif
   </tr>
@@ -90,13 +88,11 @@
       % if need_total:
       <td style="padding: 5px; text-align: right;">${vh.number(report.total_paid_quantity + report.total_unpaid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.number(report.total_unpaid_quantity) or ''}</td>
-      <td style="padding: 5px; text-align: right;">${vh.number(report.total_paid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.price((report.total_paid_quantity + report.total_unpaid_quantity) / report.sales_unit * report.product_price)}</td>
       % endif
       % if form.limited_from.data or form.limited_to.data:
       <td style="padding: 5px; text-align: right;">${vh.number(report.paid_quantity + report.unpaid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.number(report.unpaid_quantity) or ''}</td>
-      <td style="padding: 5px; text-align: right;">${vh.number(report.paid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.price((report.paid_quantity + report.unpaid_quantity) / report.sales_unit * report.product_price)}</td>
       % endif
     </tr>
@@ -110,13 +106,11 @@
   % if need_total:
     <td style="padding: 5px; text-align: right;">${vh.number(total.total_paid_quantity + total.total_unpaid_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${vh.number(total.total_unpaid_quantity) or ''}</td>
-    <td style="padding: 5px; text-align: right;">${vh.number(total.total_paid_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${vh.price(total.total_sum_amount) or ''}</td>
   % endif
   % if form.limited_from.data or form.limited_to.data:
     <td style="padding: 5px; text-align: right;">${vh.number(total.paid_quantity + total.unpaid_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${vh.number(total.unpaid_quantity) or ''}</td>
-    <td style="padding: 5px; text-align: right;">${vh.number(total.paid_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${vh.price(total.sum_amount) or ''}</td>
   % endif
   </tr>
