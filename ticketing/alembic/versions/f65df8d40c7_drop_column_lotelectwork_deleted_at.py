@@ -1,14 +1,14 @@
 """drop column LotElectWork.deleted_at
 
 Revision ID: f65df8d40c7
-Revises: 2e1379ff8b2c
+Revises: 238a2e05de30
 Create Date: 2014-04-23 14:47:09.009674
 
 """
 
 # revision identifiers, used by Alembic.
 revision = 'f65df8d40c7'
-down_revision = '2e1379ff8b2c'
+down_revision = '238a2e05de30'
 
 from alembic import op
 import sqlalchemy as sa
