@@ -343,7 +343,7 @@ def submit_lot_entries(lot_id, entries):
     entries : (entry_no, wish_order)のリスト
     """
     lot = Lot.query.filter(Lot.id==lot_id).one()
-    return lot.electing_wishes(entries)
+    return lot.elect_wishes(entries)
 
 def submit_reject_entries(lot_id, entries):
     """
@@ -351,7 +351,7 @@ def submit_reject_entries(lot_id, entries):
     entries : (entry_no, wish_order)のリスト
     """
     lot = Lot.query.filter(Lot.id==lot_id).one()
-    return lot.rejecting_entries(entries)
+    return lot.reject_entries(entries)
 
 
 def elect_lot_entries(request, lot_id):

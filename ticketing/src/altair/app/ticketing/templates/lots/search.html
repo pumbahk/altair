@@ -13,12 +13,12 @@ from altair.app.ticketing.cart.helpers import format_currency
 <td nowrap="">
 %if (w.canceled_at or w.is_electing() or w.is_rejecting() or w.rejected_at or w.elected_at or w.is_other_electing()):
 <strong>${w.status}</strong>
-%if w.ordered_mail_sent_at:
+  %if w.ordered_mail_sent_at:
 <br>メール送信済
-%endif
-%if w.lot_elect_work_error:
+  %endif
+  %if w.lot_elect_work_error:
 <br><a href="#" data-toggle="tooltip" title="${w.lot_elect_work_error}">当選処理エラー</a>
-%endif
+  %endif
 %endif
 %if not (w.closed_at or w.is_other_electing()):
 <div class="btn-group">
