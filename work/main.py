@@ -64,8 +64,9 @@ class CSSChange(object):
     def name_change(self, data):
         name = data["dst_file"]
         data["dst_file"] = self.replace_re.sub(self.css_ext, name)
-        name = data["dst"]
-        data["dst"] = self.replace_re.sub(self.css_ext, name)
+        if "dst" in data:
+            name = data["dst"]
+            data["dst"] = self.replace_re.sub(self.css_ext, name)
 
 
 app_rx = re.compile(r'([^/:\.]+?)[/:\.](?:templates|static)[/:\.]')
