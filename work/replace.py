@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import json
 import os.path
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 import sys
 sys.path.append(os.path.dirname(__file__))
 from utils import abspath_from_rel
@@ -25,7 +25,7 @@ class App(object):
         self.sed_events = EventQueue()
         self.css_events = EventQueue()
         self.mv_events = EventQueue()
-        self.dst_from_src = {}
+        self.dst_from_src = defaultdict(list)
 
     def parse(self, xs):
         for D in xs:
@@ -35,7 +35,7 @@ class App(object):
                     self.css_events.add(D["src_file"], D["dst_file"])
             if "src" in D and "dst" in D:
                 self.sed_events.add(D["html"], (D["src"], D["dst"]))
-            self.dst_from_src[D["src_file"]] = D["dst_file"]
+            self.dst_from_src[D["src_file"]].append(D["dst_file"])
         return self
 
 def escape_for_sed(x):
@@ -49,16 +49,25 @@ class CSSReplacer(object):
         self.src_css_dir = os.path.dirname(self.src_css)
         self.dst_css_dir = os.path.dirname(self.dst_css)
 
-    def new_relative_url(self, src_img_rel):
+    def new_relative_url(self, src_img_rel, dst_base):
         try:
             src_img = abspath_from_rel(src_img_rel, self.src_css_dir)
-            dst_img = self.dst_from_src[src_img]
+
+            ## xxx:
+            dst_candidates = self.dst_from_src[src_img]
+            max_len = 0
+            dst_img = object() #boo
+            for c in dst_candidates:
+                matched_len = len(os.path.commonprefix([c, dst_base]))
+                if max_len < matched_len:
+                    dst_img = c
+                    max_len = matched_len
             return os.path.relpath(dst_img, self.dst_css_dir)
-        except KeyError:
+        except (AttributeError):
             sys.stderr.write("sorry. not found. src={0} rel={1}\n".format(src_img, src_img_rel))
             return None
 
-    def replaced_iter(self, target):
+    def replaced_iter(self, target, dst_base):
         used = {}
         with open(target) as rf:
             for img_rel in css_url_iterator(rf):
@@ -67,7 +76,7 @@ class CSSReplacer(object):
                 if img_rel in used:
                     continue
                 used[img_rel] = 1
-                new_relative_url = self.new_relative_url(img_rel)
+                new_relative_url = self.new_relative_url(img_rel, dst_base)
                 if new_relative_url:
                     yield img_rel, new_relative_url
 
@@ -102,7 +111,7 @@ def css_execute(app):
             used[dst] = 1
             try:
                 replacer = CSSReplacer(src, dst, app.dst_from_src)
-                for pat, rep in replacer.replaced_iter(src):
+                for pat, rep in replacer.replaced_iter(src, dst):
                     if pat != rep:
                         print 'sed -i "s/{pat}/{rep}/g;" {dst}'.format(dst=dst, pat=escape_for_sed(pat), rep=escape_for_sed(rep))
             except IOError:
