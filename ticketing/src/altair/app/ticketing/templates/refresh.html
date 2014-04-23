@@ -1,9 +1,22 @@
+<%doc>
+* 成功後、現在開いているページと同じurlをreloadしたい
+  何も指定しない
+* 成功後、現在開いているページのurlとは異なる特定のurlにリダイレクトしたい
+  redirect_toを渡す
+* 成功後、現在開いているページのurlをlocation.hash,location.search元に別のurlを作成したい
+  利用するページ側で":refresh:" eventを登録しておく。
+	$("body").on(":refresh:", function(e){....});
+</%doc>
 <script type="text/javascript">
   $(function() {
 %if redirect_to:
     location.href = "${redirect_to}";
 %else:
-    location.reload(true);
+    if(!!location.hash){
+      $("body").trigger(":refresh:");
+    } else {
+      location.reload(true);
+    }
 %endif
   });
 </script>

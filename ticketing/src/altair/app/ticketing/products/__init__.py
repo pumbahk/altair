@@ -10,7 +10,9 @@ def includeme(config):
     config.add_route('product_items.new', '/items/new/{product_id}')
     config.add_route('product_items.edit', '/items/edit/{product_item_id}')
     config.add_route('product_items.delete', '/items/delete/{product_item_id}')
+
+    config.add_route("products.sub.newer.show", "/sub/show/newer/{sales_segment_id}")
+    config.add_route("products.sub.older.show", "/sub/show/older/{sales_segment_id}")
+
     config.scan(".views")
-
-
     config.add_route('product.new', '/product/new')

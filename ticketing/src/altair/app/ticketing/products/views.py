@@ -3,7 +3,7 @@
 import json
 import logging
 import webhelpers.paginate as paginate
-
+import sqlalchemy.orm as orm
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.renderers import render_to_response
@@ -13,9 +13,10 @@ from paste.util.multidict import MultiDict
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
-from altair.app.ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment, SalesSegmentGroup, Organization
+from altair.app.ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment, SalesSegmentGroup, Organization, StockHolder
 from altair.app.ticketing.products.forms import ProductForm, ProductItemForm, ProductAndProductItemForm
 from altair.app.ticketing.loyalty.models import PointGrantSetting
+from .forms import DeliveryMethodSelectForm
 
 logger = logging.getLogger(__name__)
 
@@ -601,3 +602,46 @@ class ProductItems(BaseView):
             raise HTTPFound(location=location)
 
         return HTTPFound(location=location)
+
+@view_config(route_name="products.sub.older.show", renderer="altair.app.ticketing:templates/products/_sub_older_show.html")
+def subview_older(context, request):
+    sales_segment_id = request.matchdict["sales_segment_id"]
+    sales_segment = SalesSegment.query.filter_by(id=sales_segment_id).first()
+
+    if sales_segment is None:
+        raise HTTPNotFound()
+    ## todo: order
+    ## todo: joined load
+    products = (Product.query
+                .filter_by(sales_segment_id=sales_segment_id)
+                .options(orm.joinedload(Product.items))
+                .order_by(Product.display_order)
+                .all())
+
+    return {
+        "sales_segment": sales_segment, 
+        "products": products, 
+        "performance": sales_segment.performance, 
+        "download_form": DeliveryMethodSelectForm(obj=sales_segment)
+    }
+
+@view_config(route_name="products.sub.newer.show", renderer="altair.app.ticketing:templates/products/_sub_newer_show.html")
+def subview_newer(context, request):
+    sales_segment_id = request.matchdict["sales_segment_id"]
+    sales_segment = SalesSegment.query.filter_by(id=sales_segment_id).first()
+    if sales_segment is None:
+        raise HTTPNotFound()
+
+    event = sales_segment.event
+    try:
+        performance_id = request.params["performance_id"]
+        stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id==performance_id).distinct().all()
+    except KeyError:
+        performance_ids = [p.id for p in sales_segment.sales_segment_group.event.performances]
+        stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
+    return dict(event=event, 
+         stock_types = event.stock_types, 
+         ticket_bundles = event.ticket_bundles, 
+         sales_segment = sales_segment, 
+         stock_holders = stock_holders
+    )
