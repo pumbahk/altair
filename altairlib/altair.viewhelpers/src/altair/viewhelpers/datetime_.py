@@ -2,6 +2,8 @@
 
 from datetime import datetime, date, time
 
+HARF_YEAR = 365 / 2 # harf a year
+
 class DefaultDateTimeFormatter(object):
     WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
 
@@ -9,8 +11,15 @@ class DefaultDateTimeFormatter(object):
     def now(self):
         return datetime.now()
 
+    def _is_near(self, d):
+        u"""現在時刻から前後半年の間にdが入っている場合Trueを返す"""
+        now = self.now
+        delta = now - d
+        delta = abs(delta)
+        return delta.days < HARF_YEAR
+
     def _get_date_format(self, flavor, d):
-        if flavor.get('without_year') or (flavor.get('omit_year_if_this_year') and date(d.year + 1, d.month, 1) > self.now.date()):
+        if flavor.get('without_year') or (flavor.get('omit_year_if_this_year') and self._is_near(d)):
             format = u"%-m月%-d日"
         else:
             format = u"%Y年%-m月%-d日"
@@ -54,7 +63,7 @@ class DateTimeHelper(object):
 
     def term(self, beg, end, none_label=u'指定なし', formatter=None, **flavor):
         """ dateオブジェクトを受け取り期間を表す文字列を返す
-        e.g. 2012年3月3日(土)〜7月12日(木) 
+        e.g. 2012年3月3日(土)〜7月12日(木)
         """
         with_weekday = flavor.pop('with_weekday', True)
         if formatter is None:
@@ -77,7 +86,7 @@ class DateTimeHelper(object):
     term_datetime = term
 
     def date(self, d, **flavor):
-        omit_year_if_this_year = flavor.pop('omit_year_if_this_year', True)
+        omit_year_if_this_year = flavor.pop('omit_year_if_this_year', False)
         return self.formatter.format_date(d, omit_year_if_this_year=omit_year_if_this_year, **flavor) if d else u'-'
 
     def time(self, t, **flavor):
@@ -86,7 +95,7 @@ class DateTimeHelper(object):
 
     def datetime(self, dt, **flavor):
         without_second = flavor.pop('without_second', True)
-        omit_year_if_this_year = flavor.pop('omit_year_if_this_year', True)
+        omit_year_if_this_year = flavor.pop('omit_year_if_this_year', False)
         return self.formatter.format_datetime(dt, without_second=without_second, omit_year_if_this_year=omit_year_if_this_year, **flavor) if dt else u'-'
 
 def create_date_time_formatter(request):
