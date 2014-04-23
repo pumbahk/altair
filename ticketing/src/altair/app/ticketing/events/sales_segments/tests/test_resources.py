@@ -65,6 +65,10 @@ class SalesSegmentEditorTests(unittest.TestCase):
                 testing.DummyModel(name="use_default_max_quantity_per_user", data=None),
                 testing.DummyModel(name="disp_orderreview", data=None),
                 testing.DummyModel(name="use_default_disp_orderreview", data=None),
+                testing.DummyModel(name="disp_agreement", data=None),
+                testing.DummyModel(name="use_default_disp_agreement", data=None),
+                testing.DummyModel(name="agreement_body", data=None),
+                testing.DummyModel(name="use_default_agreement_body", data=None),
             ],
         )
 
@@ -129,6 +133,10 @@ class SalesSegmentEditorTests(unittest.TestCase):
                 testing.DummyModel(name="use_default_max_quantity_per_user", data=None),
                 testing.DummyModel(name="disp_orderreview", data=None),
                 testing.DummyModel(name="use_default_disp_orderreview", data=None),
+                testing.DummyModel(name="disp_agreement", data=None),
+                testing.DummyModel(name="use_default_disp_agreement", data=None),
+                testing.DummyModel(name="agreement_body", data=None),
+                testing.DummyModel(name="use_default_agreement_body", data=None),
             ],
         )
 
@@ -190,6 +198,8 @@ class SalesSegmentAccessorTest(unittest.TestCase):
                 order_limit=20, 
                 max_quantity_per_user=40,
                 disp_orderreview=True,
+                disp_agreement=True,
+                agreement_body=u"body",
                 display_seat_no=False,
                 sales_counter_selectable=False,
                 )
@@ -232,6 +242,8 @@ class SalesSegmentAccessorTest(unittest.TestCase):
                 use_default_max_quantity_per_user=True,
                 use_default_disp_orderreview=True,
                 use_default_display_seat_no=True,
+                use_default_disp_agreement=True,
+                use_default_agreement_body=True,
                 use_default_sales_counter_selectable=True,
                 )
             )
@@ -255,6 +267,8 @@ class SalesSegmentAccessorTest(unittest.TestCase):
         self.assertEqual(ss.setting.order_limit, 20)
         self.assertEqual(ss.setting.max_quantity_per_user, 40)
         self.assertEqual(ss.setting.disp_orderreview, True)
+        self.assertEqual(ss.setting.disp_agreement, True)
+        self.assertEqual(ss.setting.agreement_body, u"body")
         self.assertFalse(ss.setting.display_seat_no)
         self.assertFalse(ss.setting.sales_counter_selectable)
 
@@ -283,6 +297,8 @@ class SalesSegmentAccessorTest(unittest.TestCase):
                 order_limit=120,
                 max_quantity_per_user=43,
                 disp_orderreview=False,
+                disp_agreement=True,
+                agreement_body=u"body",
                 display_seat_no=False,
                 sales_counter_selectable=False,
                 )
@@ -305,7 +321,9 @@ class SalesSegmentAccessorTest(unittest.TestCase):
             use_default_registration_fee=False,
             use_default_auth3d_notice=False, 
             use_default_max_product_quatity=False,           
-            use_default_disp_orderreview=False,           
+            use_default_disp_orderreview=False,
+            use_default_disp_agreement=False,
+            use_default_agreement_body=False,
             seat_choice=True,
             public=False,
             reporting=True,
@@ -323,11 +341,15 @@ class SalesSegmentAccessorTest(unittest.TestCase):
                 order_limit=120,
                 max_quantity_per_user=43,
                 disp_orderreview=True,
+                disp_agreement=False,
+                agreement_body=u"",
                 display_seat_no=True,
                 sales_counter_selectable=True,
                 use_default_order_limit=False,
                 use_default_max_quantity_per_user=False,
                 use_default_disp_orderreview=False,
+                use_default_disp_agreement=False,
+                use_default_agreement_body=False,
                 use_default_display_seat_no=False,
                 use_default_sales_counter_selectable=False,
                 )
@@ -353,5 +375,7 @@ class SalesSegmentAccessorTest(unittest.TestCase):
         self.assertEqual(ss.setting.order_limit, 120)
         self.assertEqual(ss.setting.max_quantity_per_user, 43)
         self.assertEqual(ss.setting.disp_orderreview, True)
+        self.assertEqual(ss.setting.disp_agreement, False)
+        self.assertEqual(ss.setting.agreement_body, u"")
         self.assertTrue(ss.setting.display_seat_no)
         self.assertTrue(ss.setting.sales_counter_selectable)
