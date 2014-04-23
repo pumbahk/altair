@@ -50,9 +50,13 @@ class CSSReplacer(object):
         self.dst_css_dir = os.path.dirname(self.dst_css)
 
     def new_relative_url(self, src_img_rel):
-        src_img = abspath_from_rel(src_img_rel, self.src_css_dir)
-        dst_img = self.dst_from_src[src_img]
-        return os.path.relpath(dst_img, self.dst_css_dir)
+        try:
+            src_img = abspath_from_rel(src_img_rel, self.src_css_dir)
+            dst_img = self.dst_from_src[src_img]
+            return os.path.relpath(dst_img, self.dst_css_dir)
+        except KeyError:
+            sys.stderr.write("sorry. not found. src={0} rel={1}\n".format(src_img, src_img_rel))
+            return None
 
     def replaced_iter(self, target):
         used = {}
@@ -63,8 +67,10 @@ class CSSReplacer(object):
                 if img_rel in used:
                     continue
                 used[img_rel] = 1
-                yield img_rel, self.new_relative_url(img_rel)
-        
+                new_relative_url = self.new_relative_url(img_rel)
+                if new_relative_url:
+                    yield img_rel, new_relative_url
+
 def execute(app):
     for html, vs in app.sed_events:
         for (src, dst) in vs:
