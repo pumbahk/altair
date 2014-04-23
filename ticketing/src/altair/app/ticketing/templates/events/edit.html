@@ -14,6 +14,11 @@
         code_buf.push(char);
       }
     });
+    $('#title').change(function(){
+      if (!$('#abbreviated_title').val()) {
+        $('#abbreviated_title').val($('#title').val());
+      }
+    });
     $('#title').focusout(function(){
       if ($('#code').val().length > 2 || !code_buf) return;
       $('#code').val("${request.context.user.organization.code}" + code_buf.join(''));
