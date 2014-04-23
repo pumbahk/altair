@@ -316,6 +316,8 @@ class EntryLotView(object):
 
         options[option_index_zb] = option_data
         wishes = options
+        logger.debug('option_data={0}'.format(option_data))
+
         # 商品チェック
         validated = True
         if not wishes:
@@ -397,8 +399,10 @@ class EntryLotView(object):
             return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
 
         wishes=api.get_options(self.request, lot.id)
+        logger.debug('wishes={0}'.format(wishes))
         user = user_api.get_user(self.context.authenticated_user())
         email = self.request.params.get('email_1')
+
         # 申込回数チェック
         try:
             self.context.check_entry_limit(wishes, user=user, email=email)
