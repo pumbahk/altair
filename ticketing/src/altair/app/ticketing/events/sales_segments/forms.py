@@ -89,7 +89,25 @@ class SalesSegmentForm(OurForm):
         default=True,
         widget=CheckboxInput()
     )
+    disp_agreement = OurBooleanField(
+        label=u'規約の表示/非表示',
+        hide_on_new=True
+    )
+    agreement_body = TextAreaField(
+        label=u'規約内容',
+        validators=[Optional()],
+    )
     use_default_disp_orderreview = OurBooleanField(
+        label=u'グループの値を利用',
+        default=True,
+        widget=CheckboxInput()
+    )
+    use_default_disp_agreement = OurBooleanField(
+        label=u'グループの値を利用',
+        default=True,
+        widget=CheckboxInput()
+    )
+    use_default_agreement_body = OurBooleanField(
         label=u'グループの値を利用',
         default=True,
         widget=CheckboxInput()

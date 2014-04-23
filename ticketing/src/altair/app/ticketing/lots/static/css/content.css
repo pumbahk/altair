@@ -2285,3 +2285,9 @@
     font-weight: bold;
 }
 
+.error {
+  margin: 0;
+  color: red;
+  font-weight: bold;
+  font-size: 12px;
+}

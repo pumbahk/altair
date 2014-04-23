@@ -69,6 +69,7 @@ def includeme(config):
         config.add_route(*args, **kwargs)
 
     # 申し込みフェーズ
+    add_route('lots.entry.agreement', 'events/agreement/{event_id}/entry/{lot_id}')
     add_route('lots.entry.index', 'events/{event_id}/entry/{lot_id}')
     add_route('lots.entry.step1', 'events/{event_id}/entry/{lot_id}/options/{option_index}/step1', factory='.resources.LotOptionSelectionResource')
     add_route('lots.entry.step2', 'events/{event_id}/entry/{lot_id}/options/{option_index}/step2', factory='.resources.LotOptionSelectionResource')

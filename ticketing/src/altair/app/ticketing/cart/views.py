@@ -154,6 +154,138 @@ class IndexView(IndexViewMixin):
         self.context = request.context
         self.prepare()
 
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement', request_method="GET",
+                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement',request_type="altair.mobile.interfaces.ISmartphoneRequest", request_method="GET",
+                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement',request_type="altair.mobile.interfaces.IMobileRequest",
+                 request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/agreement.html"), xhr=False, permission="buy")
+    def agreement(self):
+        # 会場
+        try:
+            performance_id = long(self.request.params.get('pid') or self.request.params.get('performance'))
+        except (ValueError, TypeError):
+            performance_id = None
+
+        sales_segments = self.context.available_sales_segments
+
+        selected_sales_segment = None
+        preferred_performance = None
+        if not performance_id:
+            # GETパラメータ指定がなければ、選択肢の1つ目を採用
+            selected_sales_segment = sales_segments[0]
+        else:
+            # パフォーマンスIDから販売区分の解決を試みる
+            # performance_id で指定される Performance は
+            # available_sales_segments に関連するものでなければならない
+
+            # 数が少ないのでリニアサーチ
+            for sales_segment in sales_segments:
+                if sales_segment.performance.id == performance_id:
+                    # 複数個の SalesSegment が該当する可能性があるが
+                    # 最初の 1 つを採用することにする。実用上問題ない。
+                    selected_sales_segment = sales_segment
+                    break
+            else:
+                # 該当する物がないので、デフォルト (選択肢の1つ目)
+                selected_sales_segment = sales_segments[0]
+                preferred_performance = c_models.Performance.query.filter_by(id=performance_id, public=True).first()
+                if preferred_performance is not None:
+                    if preferred_performance.event_id != self.context.event.id:
+                        preferred_performance = None
+
+        event_id = self.request.matchdict.get('event_id')
+        if event_id:
+            event_id = long(event_id)
+
+        if not selected_sales_segment.setting.disp_agreement:
+            extra = {}
+            if performance_id is not None:
+                extra['_query'] = { 'performance': performance_id }
+
+            return HTTPFound(event_id and self.request.route_url('cart.index', event_id=event_id, **extra))
+
+        return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body),
+            event_id=event_id, performance=performance_id)
+
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement', request_method="POST",
+                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement',request_type="altair.mobile.interfaces.ISmartphoneRequest", request_method="POST",
+                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement',request_type="altair.mobile.interfaces.IMobileRequest",
+                 request_method="POST", renderer=selectable_renderer("%(membership)s/mobile/agreement.html"), xhr=False, permission="buy")
+    def agreement_post(self):
+
+        try:
+            event_id = long(self.request.params.get('event_id'))
+        except:
+            event_id = None
+
+        try:
+            performance_id = long(self.request.params.get('performance'))
+        except (ValueError, TypeError):
+            performance_id = None
+
+
+        extra = {}
+        if performance_id is not None:
+            extra['_query'] = { 'performance': performance_id }
+
+        agree = self.request.params.get('agree')
+
+        if agree is None:
+            self.request.session.flash(u"注意事項を確認、同意し、公演に申し込んでください。")
+            return HTTPFound(event_id and self.request.route_url('cart.agreement', event_id=event_id, **extra))
+
+        return HTTPFound(event_id and self.request.route_url('cart.index', event_id=event_id, **extra))
+
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2',
+                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2',request_type="altair.mobile.interfaces.ISmartphoneRequest", request_method="GET",
+                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2',request_type="altair.mobile.interfaces.IMobileRequest",
+                 request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/agreement.html"), xhr=False, permission="buy")
+    def agreement2(self):
+        sales_segments = self.context.available_sales_segments
+        selected_sales_segment = sales_segments[0]
+        performance_id = self.request.matchdict.get('performance_id')
+
+
+        if not selected_sales_segment.setting.disp_agreement:
+            extra = {}
+            if performance_id is not None:
+                extra['_query'] = { 'performance': performance_id }
+
+            return HTTPFound(performance_id and self.request.route_url('cart.index2', performance_id=performance_id, **extra))
+
+        return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body),
+            performance=performance_id)
+
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2', request_method="POST",
+                 renderer=selectable_renderer("%(membership)s/pc/agreement.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2',request_type="altair.mobile.interfaces.ISmartphoneRequest", request_method="POST",
+                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/agreement.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.agreement2',request_type="altair.mobile.interfaces.IMobileRequest",
+                 request_method="POST", renderer=selectable_renderer("%(membership)s/mobile/agreement.html"), xhr=False, permission="buy")
+    def agreement2_post(self):
+
+        try:
+            performance_id = long(self.request.params.get('performance'))
+        except (ValueError, TypeError):
+            performance_id = None
+
+        extra = {}
+        if performance_id is not None:
+            extra['_query'] = { 'performance': performance_id }
+
+        agree = self.request.params.get('agree')
+
+        if agree is None:
+            self.request.session.flash(u"全ての規約に同意しないと購入できません。")
+            return HTTPFound(performance_id and self.request.route_url('cart.agreement2', performance_id=performance_id, **extra))
+
+        return HTTPFound(performance_id and self.request.route_url('cart.index2', performance_id=performance_id, **extra))
+
     @view_config(decorator=with_jquery_tools, route_name='cart.index',
                   renderer=selectable_renderer("%(membership)s/pc/index.html"), xhr=False, permission="buy")
     @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest", 

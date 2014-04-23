@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegmentGroups(BaseView):
 
-    exclude_attributes = {'order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no', 'sales_counter_selectable'}
+    exclude_attributes = {'order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no', 'disp_agreement', 'agreement_body', 'sales_counter_selectable'}
 
     @view_config(route_name='sales_segment_groups.index', renderer='altair.app.ticketing:templates/sales_segment_groups/index.html')
     def index(self):
@@ -93,6 +93,8 @@ class SalesSegmentGroups(BaseView):
                         order_limit=f.order_limit.data,
                         max_quantity_per_user=f.max_quantity_per_user.data,
                         disp_orderreview=True,
+                        disp_agreement=f.disp_agreement.data,
+                        agreement_body=f.agreement_body.data,
                         )
                     ),
                 f.data,
@@ -139,6 +141,8 @@ class SalesSegmentGroups(BaseView):
             new_sales_segment_group.setting.order_limit = f.order_limit.data
             new_sales_segment_group.setting.max_quantity_per_user = f.max_quantity_per_user.data
             new_sales_segment_group.setting.disp_orderreview = f.disp_orderreview.data
+            new_sales_segment_group.setting.disp_agreement = f.disp_agreement.data
+            new_sales_segment_group.setting.agreement_body = f.agreement_body.data
             new_sales_segment_group.setting.display_seat_no = f.display_seat_no.data
             new_sales_segment_group.setting.sales_counter_selectable = f.sales_counter_selectable.data
             new_sales_segment_group.save()
@@ -171,6 +175,8 @@ class SalesSegmentGroups(BaseView):
             sales_segment_group.setting.order_limit = f.order_limit.data
             sales_segment_group.setting.max_quantity_per_user = f.max_quantity_per_user.data
             sales_segment_group.setting.disp_orderreview = f.disp_orderreview.data
+            sales_segment_group.setting.disp_agreement = f.disp_agreement.data
+            sales_segment_group.setting.agreement_body = f.agreement_body.data
             sales_segment_group.setting.display_seat_no = f.display_seat_no.data
             sales_segment_group.setting.sales_counter_selectable = f.sales_counter_selectable.data
             sales_segment_group.save()

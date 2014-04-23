@@ -121,6 +121,10 @@ def setup_mq(config):
     config.add_publisher_consumer('cart', 'altair.ticketing.cart.mq')
 
 def includeme(config):
+    # 規約
+    config.add_route('cart.agreement', 'events/agreement/{event_id}', factory='.resources.compat_ticketing_cart_resource_factory')
+    config.add_route('cart.agreement2', 'performances/agreement/{performance_id}', factory='.resources.PerformanceOrientedTicketingCartResource')
+
     # 購入系
     config.add_route('cart.index', 'events/{event_id}', factory='.resources.compat_ticketing_cart_resource_factory')
     config.add_route('cart.index.sales', 'events/{event_id}/sales/{sales_segment_group_id}', factory='.resources.compat_ticketing_cart_resource_factory')

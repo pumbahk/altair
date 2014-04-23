@@ -311,6 +311,36 @@ $('[rel=popover]').popover({html:true});
         % endif
       </td>
     </tr>
+    <tr class="SalesSegment_disp_agreement">
+      <th>
+        ${form.disp_agreement.label}
+        ${form.use_default_disp_agreement(_widget=LabelledCheckboxInput())}
+      </th>
+      <td>
+        ${form.disp_agreement}
+        ${ch.validate_errors(form.disp_agreement)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${u"表示" if form.context.sales_segment_group.setting.disp_agreement else u"非表示"}
+        % endif
+      </td>
+    </tr>
+    <tr class="SalesSegment_agreement_body">
+      <th>
+        ${form.agreement_body.label}
+        ${form.use_default_agreement_body(_widget=LabelledCheckboxInput())}
+      </th>
+      <td>
+        ${form.agreement_body}
+        ${ch.validate_errors(form.agreement_body)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${form.context.sales_segment_group.setting.agreement_body if form.context.sales_segment_group.setting.agreement_body else u""}
+        % endif
+      </td>
+    </tr>
     <tr class="SalesSegment_reporting">
       <th>
         ${form.reporting.label}

@@ -298,6 +298,7 @@ class Lots(BaseView):
         return dict(
             lot=lot,
             lots_cart_url=self.context.lots_cart_url,
+            agreement_lots_cart_url=self.context.agreement_lots_cart_url,
             product_grid=product_grid,
             h=h,
             )

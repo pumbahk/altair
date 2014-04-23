@@ -131,10 +131,12 @@ class SalesSegments(BaseView):
         sales_segment_group_id = f.sales_segment_group_id.data
         sales_segment_group = SalesSegmentGroup.query.filter_by(id=sales_segment_group_id).one()
         sales_segment = sales_segment_group.new_sales_segment()
-        sales_segment = merge_session_with_post(sales_segment, f.data, excludes={'order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no', 'sales_counter_selectable'})
+        sales_segment = merge_session_with_post(sales_segment, f.data, excludes={'order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no', 'disp_agreement', 'agreement_body', 'sales_counter_selectable'})
         sales_segment.setting.order_limit = f.order_limit.data
         sales_segment.setting.max_quantity_per_user = f.max_quantity_per_user.data
         sales_segment.setting.disp_orderreview = f.disp_orderreview.data
+        sales_segment.setting.disp_agreement = f.disp_agreement.data
+        sales_segment.setting.agreement_body = f.agreement_body.data
         sales_segment.setting.display_seat_no = f.display_seat_no.data
         sales_segment.setting.sales_counter_selectable = f.sales_counter_selectable.data
         assert sales_segment.event == sales_segment_group.event
@@ -250,7 +252,7 @@ class EditSalesSegment(BaseView):
     def get(self):
         sales_segment = self.context.sales_segment
         form = SalesSegmentForm(obj=sales_segment, formdata=self.request.GET, context=self.context)
-        for k in ['order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no', 'sales_counter_selectable']:
+        for k in ['order_limit', 'max_quantity_per_user', 'disp_orderreview', 'display_seat_no', 'disp_agreement', 'agreement_body', 'sales_counter_selectable']:
             dk = 'use_default_%s' % k
             getattr(form, k).data = getattr(sales_segment.setting, k)
             getattr(form, dk).data = getattr(sales_segment.setting, dk)

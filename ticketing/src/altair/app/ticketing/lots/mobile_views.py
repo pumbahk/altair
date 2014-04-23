@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime
 import logging
+from markupsafe import Markup
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
@@ -48,6 +49,73 @@ def back_to_step1(request):
 def back_to_step3(request):
     context = request.context
     return HTTPFound(request.route_path('lots.entry.step3', event_id=context.event.id, lot_id=context.lot.id))
+
+@view_defaults(route_name='lots.entry.agreement', renderer=selectable_renderer("mobile/%(membership)s/agreement.html"),
+            request_type='altair.mobile.interfaces.IMobileRequest', permission="lots")
+class AgreementLotView(object):
+
+    def __init__(self, context, request):
+        self.request = request
+        self.context = context
+
+    @view_config(request_method="GET", custom_predicates=(nogizaka_auth,))
+    def get(self):
+
+        event = self.context.event
+        lot = self.context.lot
+
+        if not lot:
+            logger.debug('lot not found')
+            raise HTTPNotFound()
+
+        performances = lot.performances
+        if not performances:
+            logger.debug('lot performances not found')
+            raise HTTPNotFound()
+
+        performance_id = self.request.params.get('performance')
+        sales_segment = lot.sales_segment
+
+        if not sales_segment.setting.disp_agreement:
+            extra = {}
+            if performance_id is not None:
+                extra['_query'] = { 'performance': performance_id }
+
+            return HTTPFound(event and self.request.route_url('lots.entry.index', event_id=event.id, lot_id=lot.id, **extra))
+
+        return dict(agreement_body=Markup(sales_segment.setting.agreement_body),
+            event_id=event.id, performance=performance_id, lot=lot)
+
+
+    @view_config(request_method="POST", custom_predicates=(nogizaka_auth,))
+    def post(self):
+
+        try:
+            event_id = long(self.request.params.get('event_id'))
+        except:
+            event_id = None
+
+        try:
+            performance_id = long(self.request.params.get('performance'))
+        except (ValueError, TypeError):
+            performance_id = None
+
+        try:
+            lot_id = long(self.request.params.get('lot_id'))
+        except:
+            lot_id = None
+
+        extra = {}
+        if performance_id is not None:
+            extra['_query'] = { 'performance': performance_id }
+
+        agree = self.request.params.get('agree')
+
+        if agree is None:
+            self.request.session.flash(u"注意事項を確認、同意し、公演に申し込んでください。")
+            return HTTPFound(event_id and self.request.route_url('lots.entry.agreement', event_id=event_id, lot_id=lot_id, **extra))
+
+        return HTTPFound(event_id and self.request.route_url('lots.entry.index', event_id=event_id, lot_id=lot_id, **extra))
 
 @view_defaults(request_type='altair.mobile.interfaces.IMobileRequest',
                permission="lots")

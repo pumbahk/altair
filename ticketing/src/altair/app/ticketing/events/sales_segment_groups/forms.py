@@ -175,6 +175,13 @@ class SalesSegmentGroupForm(OurForm):
         label=u'一般チケットの購入履歴の表示/非表示',
         hide_on_new=True
     )
+    disp_agreement = OurBooleanField(
+        label=u'規約の表示/非表示',
+    )
+    agreement_body = TextAreaField(
+        label=u'規約内容',
+        validators=[Optional()],
+    )
     reporting = OurBooleanField(
         label=u'レポート対象',
         hide_on_new=True

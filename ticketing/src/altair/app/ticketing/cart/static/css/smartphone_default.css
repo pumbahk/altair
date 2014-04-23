@@ -1010,3 +1010,74 @@ input[type="submit"] {
 	font-weight: bold;
 	content: "購読中";
 }
+
+
+.settlementBox {
+	margin-bottom: 20px;
+	background: url(../img/settlement/bg_box_bottom.gif) no-repeat left bottom #f7f7f0;
+}
+
+.settlementBoxInner {
+	overflow: hidden;
+	padding-bottom: 10px;
+	background: url(../img/settlement/bg_box_top.gif) no-repeat 0 0;
+}
+
+.settlementBoxInner dl {
+	margin-left:10px;
+}
+
+.settlementBoxInner dl dt.cartPayment {
+	font-size:140%;
+	font-weight:bold;
+	border-left:2px #ccc solid;
+	padding:3px 0 0 10px;
+	height:30px;
+	margin:8px 0 10px 0;
+}
+
+.settlementBoxInner p{
+	margin:0 0 10px 20px;
+}
+
+.settlementBox2 {
+	margin: 0 10px 20px;
+	background: url(../img/settlement/bg_box_bottom_02.gif) no-repeat left bottom;
+}
+
+.settlementBoxInner2 {
+	height: 1%;
+	overflow: hidden;
+	padding: 0 8px 10px 12px;
+	background: url(../img/settlement/bg_box_top_02.gif) no-repeat 0 0;
+}
+
+.settlementBox h2 {
+	position: static !important;
+	padding: 8px 0 10px 12px;
+	margin-bottom: 5px;
+}
+
+.settlementBox2 h2 {
+	position: static !important;
+	padding: 8px 0 10px;
+	margin-bottom: 5px;
+}
+
+.settlementBox2 h2#hallName {
+	display: block;
+	margin: 8px 0 20px 0;
+	padding: 4px 0 4px 5px;
+	border-left: 2px solid #666666;
+	font-size: 116.7%;
+}
+
+#settlementOperation .settlementBoxInner2 {
+}
+
+.error {
+  margin: 0;
+  color: red;
+  font-weight: bold;
+  font-size: 12px;
+}
