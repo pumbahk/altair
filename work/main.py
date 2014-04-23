@@ -123,7 +123,7 @@ class DecisionMaker(object):
         filepath = filepath.replace("static/89ers/", "static/") # for  "dst_file": "ticketing/src/altair/app/ticketing/fc_auth/static/NH/pc/89ers/style.css"
 
         ## device削除
-        filepath = filepath.replace("/{}".format(device), "").replace("{}_".format(device), "")
+        filepath = filepath.replace("{}_".format(device), "").replace("/{}".format(device), "")
 
         basename = os.path.basename(filepath)
 

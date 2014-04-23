@@ -3,18 +3,24 @@
 
 import re
 
+IMPORT_URL_RX = re.compile(r'@import *url\((.+?)\)')
 IMPORT_RX = re.compile(r'@import *(.+?);')
 URL_RX = re.compile(r'url\((.+?)\)')
 
 def css_url_iterator(io):
     """more looser than cssutils.replaceUrls"""
     for line in io:
-        m = URL_RX.search(line)
+        m = IMPORT_URL_RX.search(line)
         if m:
             yield m.group(1).strip("'").strip('"')
-        m = IMPORT_RX.search(line)
-        if m:
-            yield m.group(1).strip("'").strip('"')
+        else:
+            m = URL_RX.search(line)
+            if m:
+                yield m.group(1).strip("'").strip('"')
+            else:
+                m = IMPORT_RX.search(line)
+                if m:
+                    yield m.group(1).strip("'").strip('"')
 
 def abspath_from_rel(rel, cwd):
     if rel.startswith("/"):
