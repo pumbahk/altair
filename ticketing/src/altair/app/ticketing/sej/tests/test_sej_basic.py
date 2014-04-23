@@ -76,7 +76,6 @@ class SejTest(unittest.TestCase):
     def test_request_order_cash_on_delivery(self):
         '''2-1.決済要求 代引き'''
         from altair.app.ticketing.sej.api import create_sej_order
-        from altair.app.ticketing.sej.ticket import SejTicketDataXml
         from altair.app.ticketing.sej.models import SejOrder, SejTicket
         from altair.app.ticketing.sej.payment import SejPaymentType, SejTicketType, request_order
         from altair.app.ticketing.sej.payload import build_sej_datetime_without_second
@@ -131,8 +130,7 @@ class SejTest(unittest.TestCase):
                     performance_name    = u'パフォーマンス名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
-                    xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="UTF-8" ?>
-                    <TICKET>
+                    xml = '''<TICKET>
                       <TEST1>test&#x20;test</TEST1>
                       <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
                       <TEST3>&#x3000;</TEST3>
@@ -142,7 +140,7 @@ class SejTest(unittest.TestCase):
                       <FIXTAG04></FIXTAG04>
                       <FIXTAG05></FIXTAG05>
                       <FIXTAG06></FIXTAG06>
-                    </TICKET>''')
+                    </TICKET>'''
                 ),
 
                 dict(
@@ -151,8 +149,7 @@ class SejTest(unittest.TestCase):
                     performance_name    = u'パフォーマンス名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
-                    xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="UTF-8" ?>
-                    <TICKET>
+                    xml = '''<TICKET>
                       <TEST1>test&#x20;test</TEST1>
                       <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
                       <TEST3>&#x3000;</TEST3>
@@ -162,7 +159,7 @@ class SejTest(unittest.TestCase):
                       <FIXTAG04></FIXTAG04>
                       <FIXTAG05></FIXTAG05>
                       <FIXTAG06></FIXTAG06>
-                    </TICKET>''')
+                    </TICKET>'''
                 ),
 
                 dict(
@@ -171,8 +168,7 @@ class SejTest(unittest.TestCase):
                     performance_name    = u'パフォーマンス名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
-                    xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="Shift_JIS" ?>
-                    <TICKET>
+                    xml = u'''<TICKET>
                       <TEST1>test&#x20;test</TEST1>
                       <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
                       <TEST3>&#x3000;</TEST3>
@@ -182,7 +178,7 @@ class SejTest(unittest.TestCase):
                       <FIXTAG04></FIXTAG04>
                       <FIXTAG05></FIXTAG05>
                       <FIXTAG06></FIXTAG06>
-                    </TICKET>''')
+                    </TICKET>'''
                     )
                 ]
             )
@@ -241,7 +237,6 @@ class SejTest(unittest.TestCase):
     def test_request_order_prepayment(self):
         '''2-1.決済要求 支払い済み'''
         from altair.app.ticketing.sej.api import create_sej_order
-        from altair.app.ticketing.sej.ticket import SejTicketDataXml
         from altair.app.ticketing.sej.models import SejOrder, SejTicket
         from altair.app.ticketing.sej.payment import SejPaymentType, SejTicketType, request_order
 
@@ -296,7 +291,7 @@ class SejTest(unittest.TestCase):
                     performance_name    = u'パフォーマンス名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
-                    xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="UTF-8" ?>
+                    xml = u'''<?xml version="1.0" encoding="UTF-8" ?>
                     <TICKET>
                       <TEST1>test&#x20;test</TEST1>
                       <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
@@ -307,7 +302,7 @@ class SejTest(unittest.TestCase):
                       <FIXTAG04></FIXTAG04>
                       <FIXTAG05></FIXTAG05>
                       <FIXTAG06></FIXTAG06>
-                    </TICKET>''')
+                    </TICKET>'''
                 ),
                 dict(
                     ticket_type         = SejTicketType.TicketWithBarcode,
@@ -315,7 +310,7 @@ class SejTest(unittest.TestCase):
                     performance_name    = u'パフォーマンス名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
-                    xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="UTF-8" ?>
+                    xml = u'''<?xml version="1.0" encoding="UTF-8" ?>
                     <TICKET>
                       <TEST1>test&#x20;test</TEST1>
                       <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
@@ -326,7 +321,7 @@ class SejTest(unittest.TestCase):
                       <FIXTAG04></FIXTAG04>
                       <FIXTAG05></FIXTAG05>
                       <FIXTAG06></FIXTAG06>
-                    </TICKET>''')
+                    </TICKET>'''
                 ),
                 dict(
                     ticket_type         = SejTicketType.ExtraTicketWithBarcode,
@@ -334,8 +329,7 @@ class SejTest(unittest.TestCase):
                     performance_name    = u'パフォーマンス名',
                     ticket_template_id  = u'TTTS000001',
                     performance_datetime= datetime.datetime(2012,8,31,18,00),
-                    xml = SejTicketDataXml(u'''<?xml version="1.0" encoding="Shift_JIS" ?>
-                    <TICKET>
+                    xml = u'''<TICKET>
                       <TEST1>test&#x20;test</TEST1>
                       <TEST2><![CDATA[TEST [] >M>J TEST@&nbsp;]]></TEST2>
                       <TEST3>&#x3000;</TEST3>
@@ -345,7 +339,7 @@ class SejTest(unittest.TestCase):
                       <FIXTAG04></FIXTAG04>
                       <FIXTAG05></FIXTAG05>
                       <FIXTAG06></FIXTAG06>
-                    </TICKET>''')
+                    </TICKET>'''
                     )
                 ]
             )
@@ -461,7 +455,7 @@ class SejTest(unittest.TestCase):
             performance_name=u'パフォーマンス',
             performance_datetime=datetime.datetime(2012,8,30,19,00),
             ticket_template_id='TTTS0001',
-            ticket_data_xml=u'<?xml version="1.0" encoding="Shift_JIS" ?><TICKET></TICKET>',
+            ticket_data_xml=u'<TICKET><FIXTAG01>HEY</FIXTAG01></TICKET>',
             product_item_id=12345
             )
 
@@ -486,7 +480,7 @@ class SejTest(unittest.TestCase):
         self.assertEqual(result['X_saifuban_hakken_lmt'], ['201207300700'])
         self.assertEqual(result['X_ticket_kbn_01'], ['1'])
         self.assertEqual(result['X_upd_riyu'], ['01'])
-        self.assertEqual(result['ticket_text_01'], ['<?xml version="1.0" encoding="Shift_JIS" ?><TICKET></TICKET>'])
+        self.assertEqual(result['ticket_text_01'], ["<?xml version='1.0' encoding='Shift_JIS' ?>\n<TICKET><FIXTAG01>HEY</FIXTAG01></TICKET>"])
         self.assertEqual(result['X_ticket_kounyu_daikin'], ['001000'])
         self.assertEqual(result['X_haraikomi_no'], ['00000001'])
         self.assertEqual(result['X_ticket_daikin'], ['013000'])
