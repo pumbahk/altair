@@ -365,17 +365,17 @@ class OrderImporter(object):
                                            (product_item.name, cpi.quantity, stock.id)
                             raise Exception(error_reason)
                         if self.allocation_mode == AllocationModeEnum.NoAutoAllocation.v:
-                            # セッションからdetachしているかもしれないので
-                            for seat in cpi.original_seats:
-                                session.add(seat)
-
-                            if not all(cpi.original_seats):
-                                raise Exception(u'座席番号が一致しないもしくは指定されていないデータがありますが、自動配席が無効になっています')
-                            if len(cpi.original_seats) != cpi.quantity:
-                                raise Exception(u'商品明細数と座席数が一致しません')
-                            for seat in cpi.original_seats:
-                                if seat.status != SeatStatusEnum.Vacant.v:
-                                    raise Exception(u'座席「%s」(id=%ld, l0_id=%s) は配席済みです' % (seat.name, seat.id, seat.l0_id))
+                            if not stock.stock_type.quantity_only:
+                                # セッションからdetachしているかもしれないので
+                                for seat in cpi.original_seats:
+                                    session.add(seat)
+                                if not all(cpi.original_seats):
+                                    raise Exception(u'座席番号が一致しないもしくは指定されていないデータがありますが、自動配席が無効になっています')
+                                if len(cpi.original_seats) != cpi.quantity:
+                                    raise Exception(u'商品明細数と座席数が一致しません')
+                                for seat in cpi.original_seats:
+                                    if seat.status != SeatStatusEnum.Vacant.v:
+                                        raise Exception(u'座席「%s」(id=%ld, l0_id=%s) は配席済みです' % (seat.name, seat.id, seat.l0_id))
             except Exception as e:
                 self.errors[order_no] = u'予約番号: %s  %s' % (order_no, e.message)
         return
