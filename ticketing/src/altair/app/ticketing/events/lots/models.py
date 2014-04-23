@@ -469,7 +469,6 @@ FROM LotEntryWish
      ON LotElectWork.lot_id = Lot.id
      AND LotElectWork.lot_entry_no = LotEntry.entry_no
      AND LotElectWork.wish_order = LotEntryWish.wish_order
-     AND LotElectWork.deleted_at IS NULL
      LEFT JOIN LotRejectWork
      ON LotRejectWork.lot_id = Lot.id
      AND LotRejectWork.lot_entry_no = LotEntry.entry_no
