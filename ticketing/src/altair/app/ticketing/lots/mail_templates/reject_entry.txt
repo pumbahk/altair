@@ -27,7 +27,7 @@ ${h.japanese_date(lot_entry.created_at)}
 お問い合わせ
 ---------------
 ■お問い合わせ
-  メール：support@ticket.rakuten.co.jp
+  問合せフォーム：http://ticket.rakuten.co.jp/inquiry
 　
 ■メールマガジン(楽天チケットニュース)の配信をご希望される方はこちら
 　 http://emagazine.rakuten.co.jp/#17

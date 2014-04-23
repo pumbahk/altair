@@ -9,7 +9,7 @@
   <div align="center">ただいまメンテナンス中です</div>
   <?php include '../#common/maintenance_message_rt.php'; ?>
   <hr />
-  <a href="mailto:support@ticket.rakuten.co.jp">お問い合わせ</a> / <a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a> / <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
+  <a href="http://ticket.rakuten.co.jp/inquiry">お問い合わせ</a> / <a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a> / <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
   <div>
     Copyright (C) 2010-2013 TicketStar, Inc. All Rights Reserved. 
   </div>

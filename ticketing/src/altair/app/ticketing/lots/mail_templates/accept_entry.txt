@@ -77,7 +77,7 @@ ${wish.special_fee_name}：${h.format_currency(wish.special_fee)}円（税込）
 お問い合わせ
 ---------------
 ■お問い合わせ
-  メール：support@ticket.rakuten.co.jp
+  問合せフォーム：http://ticket.rakuten.co.jp/inquiry
 　
 ■メールマガジン(楽天チケットニュース)の配信をご希望される方はこちら
 　 http://emagazine.rakuten.co.jp/#17
