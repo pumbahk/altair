@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 def main(argv=sys.argv):
     from altair.app.ticketing.core.models import ReportSetting,\
         ReportFrequencyEnum, ReportPeriodEnum, Organization, Event
-    from altair.app.ticketing.events.sales_reports.forms import SalesReportForm
+    from altair.app.ticketing.events.sales_reports.forms import SalesReportForm, ReportSettingForm
     from altair.app.ticketing.events.sales_reports.reports import sendmail
 
     parser = argparse.ArgumentParser()
@@ -34,7 +34,8 @@ def main(argv=sys.argv):
     now = datetime.now().replace(second=0)
     settings = registry.settings
 
-    report_time = '{0:0>2}{1:0>2}'.format(now.hour, now.minute)[0:3] + '0'
+    report_settting_form = ReportSettingForm()
+    report_time = report_settting_form.format_report_time(now.hour, now.minute)
     query = ReportSetting.query.filter(and_(
         ReportSetting.time==report_time,
         or_(ReportSetting.start_on==None, ReportSetting.start_on<now),

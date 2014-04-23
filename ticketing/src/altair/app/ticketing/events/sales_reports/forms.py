@@ -216,8 +216,16 @@ class ReportSettingForm(OurForm):
         coerce=int
     )
 
-    def format_report_time(self):
-        return '{0:0>2}{1:0>2}'.format(self.report_hour.data, self.report_minute.data)
+    def format_report_time(self, hour=None, minute=None):
+        report_time = ''
+        if hour is None:
+            hour = self.report_hour.data
+        if minute is None:
+            minute = self.report_minute.data
+        if hour and minute:
+            report_time = '{0:0>2}{1:0>2}'.format(hour, minute)
+            report_time = report_time[0:3] + '0'
+        return report_time
 
     def validate_operator_id(form, field):
         if field.data:
@@ -259,6 +267,15 @@ class ReportSettingForm(OurForm):
         if field.data:
             if field.data == ReportFrequencyEnum.Weekly.v[0] and not form.day_of_week.data:
                 raise ValidationError(u'週次の場合は曜日を必ず選択してください')
+            if field.data == ReportFrequencyEnum.Onetime.v[0] and (not form.start_on.data or not form.end_on.data):
+                raise ValidationError(u'1回のみの場合は必ず送信開始日時/送信終了日時を指定してください')
+            if field.data != ReportFrequencyEnum.Onetime.v[0] and form.report_minute.data == 0:
+                raise ValidationError(u'0分に送信できるのは送信頻度で1回のみを指定した場合のみです')
+
+    def validate_start_on(form, field):
+        if field.data:
+            if field.data > form.end_on.data:
+                raise ValidationError(u'送信開始日時は送信終了日時よりも前に設定してください')
 
     def process(self, formdata=None, obj=None, **kwargs):
         super(type(self), self).process(formdata, obj, **kwargs)
