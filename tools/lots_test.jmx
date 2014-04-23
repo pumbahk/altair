@@ -15,10 +15,10 @@
         <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="ループコントローラ" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
-          <stringProp name="LoopController.loops">1</stringProp>
+          <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">10</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">20</stringProp>
         <longProp name="ThreadGroup.start_time">1397620011000</longProp>
         <longProp name="ThreadGroup.end_time">1397620011000</longProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
@@ -26,18 +26,94 @@
         <stringProp name="ThreadGroup.delay"></stringProp>
       </ThreadGroup>
       <hashTree>
-        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="ユーザー定義変数" enabled="true">
+        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="抽選情報" enabled="true">
           <collectionProp name="Arguments.arguments">
             <elementProp name="EVENT_ID" elementType="Argument">
               <stringProp name="Argument.name">EVENT_ID</stringProp>
-              <stringProp name="Argument.value">1741</stringProp>
+              <stringProp name="Argument.value">1744</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
-            <elementProp name="LOT_ENTRY_ID" elementType="Argument">
-              <stringProp name="Argument.name">LOT_ENTRY_ID</stringProp>
-              <stringProp name="Argument.value">990</stringProp>
+            <elementProp name="LOT_ID" elementType="Argument">
+              <stringProp name="Argument.name">LOT_ID</stringProp>
+              <stringProp name="Argument.value">993</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
+            <elementProp name="LOT_TOKEN" elementType="Argument">
+              <stringProp name="Argument.name">LOT_TOKEN</stringProp>
+              <stringProp name="Argument.value">NO_TOKEN</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="PDMP_ID" elementType="Argument">
+              <stringProp name="Argument.name">PDMP_ID</stringProp>
+              <stringProp name="Argument.value">12198</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="QUANTITY" elementType="Argument">
+              <stringProp name="Argument.name">QUANTITY</stringProp>
+              <stringProp name="Argument.value">5</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="STOCK_TYPE_ID" elementType="Argument">
+              <stringProp name="Argument.name">STOCK_TYPE_ID</stringProp>
+              <stringProp name="Argument.value">7721</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="PERFORMANCE_ID" elementType="Argument">
+              <stringProp name="Argument.name">PERFORMANCE_ID</stringProp>
+              <stringProp name="Argument.value">8737</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="PRODUCT_ID" elementType="Argument">
+              <stringProp name="Argument.name">PRODUCT_ID</stringProp>
+              <stringProp name="Argument.value">272049</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="LOT_NAME" elementType="Argument">
+              <stringProp name="Argument.name">LOT_NAME</stringProp>
+              <stringProp name="Argument.value">TEST</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="LOT_VENUE" elementType="Argument">
+              <stringProp name="Argument.name">LOT_VENUE</stringProp>
+              <stringProp name="Argument.value">NO_VENUE</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="LOT_LABEL" elementType="Argument">
+              <stringProp name="Argument.name">LOT_LABEL</stringProp>
+              <stringProp name="Argument.value">NO_LABEL</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </Arguments>
+        <hashTree/>
+        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="購入者情報" enabled="true">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="NAME" elementType="Argument">
+              <stringProp name="Argument.name">NAME</stringProp>
+              <stringProp name="Argument.value">テスト</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="EMAIL" elementType="Argument">
+              <stringProp name="Argument.name">EMAIL</stringProp>
+              <stringProp name="Argument.value">takeshi.shimada@ticketstar.jp</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="TEL" elementType="Argument">
+              <stringProp name="Argument.name">TEL</stringProp>
+              <stringProp name="Argument.value">07011112222</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="START_ON" elementType="Argument">
+              <stringProp name="Argument.name">START_ON</stringProp>
+              <stringProp name="Argument.value">2014-07-19T15:00:00+00:00</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+          <stringProp name="TestPlan.comments">https://rt.stg2.rt.ticketstar.jp/lots/events/1741/entry/990</stringProp>
+        </Arguments>
+        <hashTree/>
+        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="サーバ情報" enabled="true">
+          <collectionProp name="Arguments.arguments">
             <elementProp name="HOST" elementType="Argument">
               <stringProp name="Argument.name">HOST</stringProp>
               <stringProp name="Argument.value">rt.stg2.rt.ticketstar.jp</stringProp>
@@ -51,11 +127,6 @@
             <elementProp name="PROTOCOL" elementType="Argument">
               <stringProp name="Argument.name">PROTOCOL</stringProp>
               <stringProp name="Argument.value">https</stringProp>
-              <stringProp name="Argument.metadata">=</stringProp>
-            </elementProp>
-            <elementProp name="LOTS_TOKEN" elementType="Argument">
-              <stringProp name="Argument.name">LOTS_TOKEN</stringProp>
-              <stringProp name="Argument.value">NO_TOKEN</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
           </collectionProp>
@@ -97,7 +168,7 @@
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
           <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/lots/events/${EVENT_ID}/entry/${LOT_ENTRY_ID}</stringProp>
+          <stringProp name="HTTPSampler.path">/lots/events/${EVENT_ID}/entry/${LOT_ID}</stringProp>
           <stringProp name="HTTPSampler.concurrentPool">4</stringProp>
         </ConfigTestElement>
         <hashTree/>
@@ -135,10 +206,10 @@
         <hashTree/>
         <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="token取得" enabled="true">
           <stringProp name="RegexExtractor.useHeaders">false</stringProp>
-          <stringProp name="RegexExtractor.refname">LOTS_TOKEN</stringProp>
+          <stringProp name="RegexExtractor.refname">LOT_TOKEN</stringProp>
           <stringProp name="RegexExtractor.regex">&lt;input type=&quot;hidden&quot; name=&quot;token&quot; value=&quot;(.*)&quot; /&gt;</stringProp>
           <stringProp name="RegexExtractor.template">$1$</stringProp>
-          <stringProp name="RegexExtractor.default">${LOTS_TOKEN}</stringProp>
+          <stringProp name="RegexExtractor.default">${LOT_TOKEN}</stringProp>
           <stringProp name="RegexExtractor.match_number">(default)</stringProp>
           <stringProp name="Sample.scope">all</stringProp>
         </RegexExtractor>
@@ -477,406 +548,91 @@
               <elementProp name="performanceName-0" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
                 <stringProp name="Argument.name">performanceName-0</stringProp>
-                <stringProp name="Argument.value">[{&apos;start_on&apos;: &apos;2014-07-19T15:00:00+00:00&apos;, &apos;name&apos;: u&apos;TEST&apos;, &apos;open_on&apos;: None, &apos;venue&apos;: u&apos;109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;, &apos;id&apos;: 8733L, &apos;label&apos;: u&apos;2014\u5e747\u670820\u65e5(\u65e5)0\u664200\u5206 109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;}]</stringProp>
+                <stringProp name="Argument.value">[{&apos;start_on&apos;: &apos;${START_ON}&apos;, &apos;name&apos;: u&apos;${LOT_NAME}&apos;, &apos;open_on&apos;: None, &apos;venue&apos;: u&apos;${LOT_VENUE}&apos;, &apos;id&apos;: ${LOT_ID}L, &apos;label&apos;: u&apos;${LOT_LABEL}&apos;}]</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
               <elementProp name="performanceDate-0" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.name">performanceDate-0</stringProp>
-                <stringProp name="Argument.value">8733</stringProp>
+                <stringProp name="Argument.value">${PERFORMANCE_ID}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
               <elementProp name="stockType-0" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.name">stockType-0</stringProp>
-                <stringProp name="Argument.value">7717</stringProp>
+                <stringProp name="Argument.value">${STOCK_TYPE_ID}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
               <elementProp name="product-id-0-0" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.name">product-id-0-0</stringProp>
-                <stringProp name="Argument.value">272039</stringProp>
+                <stringProp name="Argument.value">${PRODUCT_ID}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
               <elementProp name="product-quantity-0-0" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.name">product-quantity-0-0</stringProp>
-                <stringProp name="Argument.value">1</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceName-1" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.name">performanceName-1</stringProp>
-                <stringProp name="Argument.value">[{&apos;start_on&apos;: &apos;2014-07-19T15:00:00+00:00&apos;, &apos;name&apos;: u&apos;TEST&apos;, &apos;open_on&apos;: None, &apos;venue&apos;: u&apos;109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;, &apos;id&apos;: 8733L, &apos;label&apos;: u&apos;2014\u5e747\u670820\u65e5(\u65e5)0\u664200\u5206 109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;}]</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceDate-1" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">performanceDate-1</stringProp>
-                <stringProp name="Argument.value">8733</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="stockType-1" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">stockType-1</stringProp>
-                <stringProp name="Argument.value">7717</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-id-1-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-id-1-0</stringProp>
-                <stringProp name="Argument.value">272039</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-quantity-1-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-quantity-1-0</stringProp>
-                <stringProp name="Argument.value"></stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceName-2" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.name">performanceName-2</stringProp>
-                <stringProp name="Argument.value">[{&apos;start_on&apos;: &apos;2014-07-19T15:00:00+00:00&apos;, &apos;name&apos;: u&apos;TEST&apos;, &apos;open_on&apos;: None, &apos;venue&apos;: u&apos;109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;, &apos;id&apos;: 8733L, &apos;label&apos;: u&apos;2014\u5e747\u670820\u65e5(\u65e5)0\u664200\u5206 109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;}]</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceDate-2" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">performanceDate-2</stringProp>
-                <stringProp name="Argument.value">8733</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="stockType-2" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">stockType-2</stringProp>
-                <stringProp name="Argument.value">7717</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-id-2-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-id-2-0</stringProp>
-                <stringProp name="Argument.value">272039</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-quantity-2-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-quantity-2-0</stringProp>
-                <stringProp name="Argument.value"></stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceName-3" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.name">performanceName-3</stringProp>
-                <stringProp name="Argument.value">[{&apos;start_on&apos;: &apos;2014-07-19T15:00:00+00:00&apos;, &apos;name&apos;: u&apos;TEST&apos;, &apos;open_on&apos;: None, &apos;venue&apos;: u&apos;109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;, &apos;id&apos;: 8733L, &apos;label&apos;: u&apos;2014\u5e747\u670820\u65e5(\u65e5)0\u664200\u5206 109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;}]</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceDate-3" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">performanceDate-3</stringProp>
-                <stringProp name="Argument.value">8733</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="stockType-3" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">stockType-3</stringProp>
-                <stringProp name="Argument.value">7717</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-id-3-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-id-3-0</stringProp>
-                <stringProp name="Argument.value">272039</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-quantity-3-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-quantity-3-0</stringProp>
-                <stringProp name="Argument.value"></stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceName-4" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.name">performanceName-4</stringProp>
-                <stringProp name="Argument.value">[{&apos;start_on&apos;: &apos;2014-07-19T15:00:00+00:00&apos;, &apos;name&apos;: u&apos;TEST&apos;, &apos;open_on&apos;: None, &apos;venue&apos;: u&apos;109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;, &apos;id&apos;: 8733L, &apos;label&apos;: u&apos;2014\u5e747\u670820\u65e5(\u65e5)0\u664200\u5206 109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;}]</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceDate-4" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">performanceDate-4</stringProp>
-                <stringProp name="Argument.value">8733</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="stockType-4" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">stockType-4</stringProp>
-                <stringProp name="Argument.value">7717</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-id-4-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-id-4-0</stringProp>
-                <stringProp name="Argument.value">272039</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-quantity-4-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-quantity-4-0</stringProp>
-                <stringProp name="Argument.value"></stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceName-5" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.name">performanceName-5</stringProp>
-                <stringProp name="Argument.value">[{&apos;start_on&apos;: &apos;2014-07-19T15:00:00+00:00&apos;, &apos;name&apos;: u&apos;TEST&apos;, &apos;open_on&apos;: None, &apos;venue&apos;: u&apos;109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;, &apos;id&apos;: 8733L, &apos;label&apos;: u&apos;2014\u5e747\u670820\u65e5(\u65e5)0\u664200\u5206 109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;}]</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceDate-5" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">performanceDate-5</stringProp>
-                <stringProp name="Argument.value">8733</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="stockType-5" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">stockType-5</stringProp>
-                <stringProp name="Argument.value">7717</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-id-5-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-id-5-0</stringProp>
-                <stringProp name="Argument.value">272039</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-quantity-5-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-quantity-5-0</stringProp>
-                <stringProp name="Argument.value"></stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceName-6" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.name">performanceName-6</stringProp>
-                <stringProp name="Argument.value">[{&apos;start_on&apos;: &apos;2014-07-19T15:00:00+00:00&apos;, &apos;name&apos;: u&apos;TEST&apos;, &apos;open_on&apos;: None, &apos;venue&apos;: u&apos;109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;, &apos;id&apos;: 8733L, &apos;label&apos;: u&apos;2014\u5e747\u670820\u65e5(\u65e5)0\u664200\u5206 109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;}]</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceDate-6" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">performanceDate-6</stringProp>
-                <stringProp name="Argument.value">8733</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="stockType-6" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">stockType-6</stringProp>
-                <stringProp name="Argument.value">7717</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-id-6-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-id-6-0</stringProp>
-                <stringProp name="Argument.value">272039</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-quantity-6-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-quantity-6-0</stringProp>
-                <stringProp name="Argument.value"></stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceName-7" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.name">performanceName-7</stringProp>
-                <stringProp name="Argument.value">[{&apos;start_on&apos;: &apos;2014-07-19T15:00:00+00:00&apos;, &apos;name&apos;: u&apos;TEST&apos;, &apos;open_on&apos;: None, &apos;venue&apos;: u&apos;109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;, &apos;id&apos;: 8733L, &apos;label&apos;: u&apos;2014\u5e747\u670820\u65e5(\u65e5)0\u664200\u5206 109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;}]</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceDate-7" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">performanceDate-7</stringProp>
-                <stringProp name="Argument.value">8733</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="stockType-7" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">stockType-7</stringProp>
-                <stringProp name="Argument.value">7717</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-id-7-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-id-7-0</stringProp>
-                <stringProp name="Argument.value">272039</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-quantity-7-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-quantity-7-0</stringProp>
-                <stringProp name="Argument.value"></stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceName-8" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.name">performanceName-8</stringProp>
-                <stringProp name="Argument.value">[{&apos;start_on&apos;: &apos;2014-07-19T15:00:00+00:00&apos;, &apos;name&apos;: u&apos;TEST&apos;, &apos;open_on&apos;: None, &apos;venue&apos;: u&apos;109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;, &apos;id&apos;: 8733L, &apos;label&apos;: u&apos;2014\u5e747\u670820\u65e5(\u65e5)0\u664200\u5206 109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;}]</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceDate-8" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">performanceDate-8</stringProp>
-                <stringProp name="Argument.value">8733</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="stockType-8" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">stockType-8</stringProp>
-                <stringProp name="Argument.value">7717</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-id-8-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-id-8-0</stringProp>
-                <stringProp name="Argument.value">272039</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-quantity-8-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-quantity-8-0</stringProp>
-                <stringProp name="Argument.value"></stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceName-9" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.name">performanceName-9</stringProp>
-                <stringProp name="Argument.value">[{&apos;start_on&apos;: &apos;2014-07-19T15:00:00+00:00&apos;, &apos;name&apos;: u&apos;TEST&apos;, &apos;open_on&apos;: None, &apos;venue&apos;: u&apos;109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;, &apos;id&apos;: 8733L, &apos;label&apos;: u&apos;2014\u5e747\u670820\u65e5(\u65e5)0\u664200\u5206 109\u30b7\u30cd\u30de\u30ba \u6728\u5834&apos;}]</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="performanceDate-9" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">performanceDate-9</stringProp>
-                <stringProp name="Argument.value">8733</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="stockType-9" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">stockType-9</stringProp>
-                <stringProp name="Argument.value">7717</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-id-9-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-id-9-0</stringProp>
-                <stringProp name="Argument.value">272039</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-              </elementProp>
-              <elementProp name="product-quantity-9-0" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.name">product-quantity-9-0</stringProp>
-                <stringProp name="Argument.value"></stringProp>
+                <stringProp name="Argument.value">${QUANTITY}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
               <elementProp name="payment_delivery_method_pair_id" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.name">payment_delivery_method_pair_id</stringProp>
-                <stringProp name="Argument.value">12194</stringProp>
+                <stringProp name="Argument.value">${PDMP_ID}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
               <elementProp name="last_name" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
                 <stringProp name="Argument.name">last_name</stringProp>
-                <stringProp name="Argument.value">テスト</stringProp>
+                <stringProp name="Argument.value">${NAME}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
               <elementProp name="first_name" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
                 <stringProp name="Argument.name">first_name</stringProp>
-                <stringProp name="Argument.value">テスト</stringProp>
+                <stringProp name="Argument.value">${NAME}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
               <elementProp name="last_name_kana" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
                 <stringProp name="Argument.name">last_name_kana</stringProp>
-                <stringProp name="Argument.value">テスト</stringProp>
+                <stringProp name="Argument.value">${NAME}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
               <elementProp name="first_name_kana" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
                 <stringProp name="Argument.name">first_name_kana</stringProp>
-                <stringProp name="Argument.value">テスト</stringProp>
+                <stringProp name="Argument.value">${NAME}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
               <elementProp name="email_1" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
                 <stringProp name="Argument.name">email_1</stringProp>
-                <stringProp name="Argument.value">takeshi.shimada@ticketstar.jp</stringProp>
+                <stringProp name="Argument.value">${EMAIL}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
               <elementProp name="email_1_confirm" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
                 <stringProp name="Argument.name">email_1_confirm</stringProp>
-                <stringProp name="Argument.value">takeshi.shimada@ticketstar.jp</stringProp>
+                <stringProp name="Argument.value">${EMAIL}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
               <elementProp name="tel_1" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.name">tel_1</stringProp>
-                <stringProp name="Argument.value">07011112222</stringProp>
+                <stringProp name="Argument.value">${TEL}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
@@ -1280,7 +1036,7 @@
               <elementProp name="token" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
                 <stringProp name="Argument.name">token</stringProp>
-                <stringProp name="Argument.value">${LOTS_TOKEN}</stringProp>
+                <stringProp name="Argument.value">${LOT_TOKEN}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
@@ -1292,7 +1048,7 @@
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
           <stringProp name="HTTPSampler.protocol"></stringProp>
           <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
-          <stringProp name="HTTPSampler.path">/lots/events/${EVENT_ID}/entry/${LOT_ENTRY_ID}/confirm</stringProp>
+          <stringProp name="HTTPSampler.path">/lots/events/${EVENT_ID}/entry/${LOT_ID}/confirm</stringProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
