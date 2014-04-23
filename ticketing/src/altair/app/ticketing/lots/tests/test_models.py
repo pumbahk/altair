@@ -67,12 +67,12 @@ class LotTests(unittest.TestCase):
                          ['testing-rejected',
                           'testing-canceled'])
 
-    def test_electing_wishes_empty(self):
+    def test_elect_wishes_empty(self):
         target = self._makeOne(entry_limit=5)
-        result = target.electing_wishes([])
+        result = target.elect_wishes([])
         self.assertEqual(result, 0)
 
-    def test_electing_wishes_one(self):
+    def test_elect_wishes_one(self):
         from ..models import LotElectWork
         target = self._makeOne(entry_limit=5)
         self._wish(lot=target,
@@ -80,7 +80,7 @@ class LotTests(unittest.TestCase):
                    entry_no="testing",
                    wish_order=2)
         self.session.add(target)
-        result = target.electing_wishes([
+        result = target.elect_wishes([
             ('testing', 2),
         ])
         self.assertEqual(result, 1)
@@ -91,7 +91,7 @@ class LotTests(unittest.TestCase):
             LotElectWork.entry_wish_no=='testing-2',
         ).count(), 1)
 
-    def test_electing_wishes_dup(self):
+    def test_elect_wishes_dup(self):
         from ..models import LotElectWork
         target = self._makeOne(entry_limit=5)
         self._wish(lot=target,
@@ -107,7 +107,7 @@ class LotTests(unittest.TestCase):
             ),
         )
 
-        result = target.electing_wishes([
+        result = target.elect_wishes([
             ('testing', 2),
         ])
         self.assertEqual(result, 0)

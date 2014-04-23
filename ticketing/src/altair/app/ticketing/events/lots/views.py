@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import csv
 import logging
 from datetime import datetime
 from sqlalchemy import sql
@@ -59,6 +60,7 @@ from . import api
 from .models import LotWishSummary, LotEntryReportSetting
 from .models import CSVExporter
 from .reporting import LotEntryReporter
+from .exceptions import CSVFileParserError
 
 from altair.app.ticketing.payments import helpers as payment_helpers
 from altair.app.ticketing.carturl.api import get_lots_cart_url_builder
@@ -607,42 +609,48 @@ class LotEntries(BaseView):
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
         f = self.request.params['entries'].file
-        entries = self._parse_import_file(f)
-        if not entries:
-            self.request.session.flash(u"当選データがありませんでした")
+        try:
+            elect_wishes, reject_entries = self._parse_import_file(f)
+        except CSVFileParserError as e:
+            self.request.session.flash(u"ファイルフォーマットが正しくありません ({0})".format(e.entry_no))
             return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+        if not (elect_wishes or reject_entries):
+            self.request.session.flash(u"当選予定/落選予定データがありませんでした")
+            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+        self.request.session.flash(u"{0}件の当選予定データ、{1}件の落選予定データを取り込みました".format(len(elect_wishes), len(reject_entries)))
 
-        self.request.session.flash(u"{0}件の当選データを取り込みました".format(len(entries)))
-        electing_count = lots_api.submit_lot_entries(lot.id, entries)
-        rejecting_count = lots_api.submit_reject_entries(lot_id, lot.rejectable_entries)
-        self.request.session.flash(u"新たに{0}件が当選予定となりました".format(electing_count))
-        self.request.session.flash(u"新たに{0}件が落選予定となりました".format(rejecting_count))
+        electing_count = lots_api.submit_lot_entries(lot.id, elect_wishes)
+        rejecting_count = lots_api.submit_reject_entries(lot_id, reject_entries)
+        self.request.session.flash(u"新たに{0}件が当選予定、{1}件が落選予定となりました".format(electing_count, rejecting_count))
 
         return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
 
-    def _parse_import_file(self, f):
-        header = 1
-        entries = []
-        for line in f:
-            if header:
-                header = 0
-                continue
-            if not line:
-                continue
-            if line.startswith('#'):
-                continue
+    def _parse_import_file(self, file, encoding='cp932'):
+        elect_wishes = []
+        reject_entries = []
+        reader = csv.DictReader(file)
+        for row in reader:
+            keys = [unicode(k.decode(encoding)) for k in row.keys()]
+            values = [unicode(v.decode(encoding)) for v in row.values()]
+            row = dict(zip(keys, values))
 
-            parts = line.split(",")
-            if len(parts) < 3:
-                raise Exception, parts
-            entry_no = parts[1]
+            status = row[u'状態']
+            entry_no = row[u'申し込み番号']
+            wish_order = row[u'希望順序']
+            if not (status and entry_no and wish_order):
+                logger.info('parser error status=%s, entry_no=%s, wish_order=%s' % (status, entry_no, wish_order))
+                raise CSVFileParserError(entry_no=entry_no)
             try:
-                wish_order = int(parts[2]) - 1
+                wish_order = int(wish_order) - 1
             except ValueError:
-                continue
+                logger.info('wish order is not number ({0})'.format(entry_no))
+                raise CSVFileParserError(entry_no=entry_no)
 
-            entries.append((entry_no, wish_order))
-        return entries
+            if status == u'当選予定':
+                elect_wishes.append((entry_no, wish_order))
+            elif status == u'落選予定':
+                reject_entries.append((entry_no))
+        return elect_wishes, reject_entries
 
     @view_config(route_name='lots.entries.elect',
                  renderer="lots/electing.html",
@@ -750,7 +758,8 @@ class LotEntries(BaseView):
         lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
         entries = lot.rejectable_entries
-        rejecting_count = lots_api.submit_reject_entries(lot_id, entries)
+        entry_no_list = [entry.entry_no for entry in entries]
+        rejecting_count = lots_api.submit_reject_entries(lot_id, entry_no_list)
 
         def _wish_generator():
             for e in entries:
@@ -909,9 +918,7 @@ class LotEntries(BaseView):
             return dict(result="NG",
                         message=u"すでに、落選予定となっています。一度、他希望の当選予定をキャンセルの上、再度、ステータス変更をしてください")
 
-        entries = [lot_entry]
-
-        affected = lots_api.submit_reject_entries(lot.id, entries)
+        affected = lots_api.submit_reject_entries(lot.id, [entry_no])
 
         lot.start_lotting()
         return dict(result="OK",
