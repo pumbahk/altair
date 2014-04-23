@@ -25,11 +25,13 @@ namespace QR
             }
             catch
             {
-                if (i > retryMax) {
+                if (i > retryMax)
+                {
                     throw;
                 }
                 logger.Warn("request failure. retry(i={0}), url={1}, Delay={2}".WithMachineName(), i, uri, HttpWrapper.RetryDelay);
             }
+
 
             if (i <= retryMax) {
                 await Task.Delay(HttpWrapper.RetryDelay);

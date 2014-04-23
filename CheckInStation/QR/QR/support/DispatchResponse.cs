@@ -51,7 +51,7 @@ namespace QR.support
            catch (TaskCanceledException e)
             {
                 logger.ErrorException("task cancel".WithMachineName(), e);
-                return new Failure<string, T>(Resource.GetDefaultErrorMessage()  );
+                return new Failure<string, T>(Resource.GetGuessTimeoutErrorMessage());
             }
             catch (TransparentMessageException e)
             {
@@ -84,6 +84,11 @@ namespace QR.support
             {
                 logger.ErrorException("xml:".WithMachineName(), e);
                 return new Failure<string, T>(e.ToString());
+            }
+            catch (TaskCanceledException e)
+            {
+                logger.ErrorException("task cancel".WithMachineName(), e);
+                return new Failure<string, T>(Resource.GetGuessTimeoutErrorMessage());
             }
             catch (TransparentMessageException e)
             {

@@ -5,27 +5,37 @@ import SocketServer
 import logging
 import cgi
 import time
+import shutil
 
 class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     unstable = False	
     def parse_request(self):
+        """
         print("----------------------------------------")
         print(self.raw_requestline)
+        """
         result = SimpleHTTPServer.SimpleHTTPRequestHandler.parse_request(self)
+        """
         print(self.headers)
         print("----------------------------------------")
+        """
         return result
 
     def do_GET(self):
         logging.info(self.headers)
-	if self.unstable:
-	    import random
-	    N = random.random()
-	    print(N)
-	    if N > 0.5:
-	        print("error")
-	        return
+        if self.unstable:
+      	    import random
+      	    N = random.random()
+            print(N)
+            if N > 0.5:
+	             print("error")
+	             return
         SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+
+    def copyfile(self, source, outputfile):
+        #if "update." in source.name:
+        #    time.sleep(10)
+        return shutil.copyfileobj(source, outputfile)
 
     def do_POST(self):
         logging.info(self.headers)
@@ -39,8 +49,8 @@ class ServerHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         #              })
         # for item in form.list:
         #     logging.error(item)
-	self.do_GET()
-        print("body:")
+        self.do_GET()
+        #print("body:")
         print(self.rfile.read())
 
 import sys
