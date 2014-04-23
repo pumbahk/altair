@@ -46,30 +46,34 @@ ${entries.pager()}
 %endif
 </%def>
 
-<div>
-<h2>検索条件</h2>
+${ch.alert_message(form)}
+
+<h3>検索条件設定</h3>
 <div>
   <form action="${request.url}" method="get">
     <fieldset>
-      <legend>購入者情報</legend>
       <table>
-	<tbody>
+        <tbody>
+          <tr>
+            <th><label for="lot">${form.lot.label.text}</label></th>
+            <td>${form.lot()}</td>
+          </tr>
           <tr>
             <th><label for="entry_no">${form.entry_no.label.text}</label></th>
             <td>${form.entry_no(maxlength=12)}</td>
-	  </tr>
+          </tr>
           <tr>
             <th><label for="tel">${form.tel.label.text}</label></th>
             <td>${form.tel(maxlength=255)}</td>
-	  </tr>
+          </tr>
           <tr>
             <th><label for="name">${form.name.label.text}</label></th>
             <td>${form.name(maxlength=255)}</td>
-	  </tr>
+          </tr>
           <tr>
             <th><label for="email">${form.email.label.text}</label></th>
             <td>${form.email(maxlength=255)}</td>
-	  </tr>
+          </tr>
           <tr>
             <th><label>${form.entried_from.label.text}</label></th>
             <td>
@@ -77,26 +81,18 @@ ${entries.pager()}
               ${form.entried_to()}
             </td>
           </tr>
-	</tbody>
-      </table>
-      <legend>イベント抽選情報</legend>
-      <table>
-	<tbody>
-          <tr>
-            <th><label for="lot">${form.lot.label.text}</label></th>
-            <td>${form.lot()}</td>
-	  </tr>
-	</tbody>
+        </tbody>
       </table>
     </fieldset>
-    <div>
-      <button type="submit" name="search">検索</button>
+    <div style="margin-top: 20px;">
+      <button type="submit" name="search" class="btn">
+        <i class="icon-search"></i> 検索
+      </button>
     </div>
   </form>
 </div>
 
-<div>
-<h2>検索結果</h2>
+<div style="margin-top: 20px;">
 ${count}件
 ${self.lot_entries_table(entries)}
 </div>

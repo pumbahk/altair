@@ -342,6 +342,10 @@ class EntryLotView(object):
         elif not h.check_quantities(wishes, lot.max_quantity):
             self.request.session.flash(u"各希望ごとの合計枚数は最大{0}枚までにしてください".format(lot.max_quantity))
             validated = False
+        elif not h.check_valid_products(wishes):
+            logger.debug('Product.performance_id mismatch')
+            self.request.session.flash(u"選択された券種が見つかりません。もう一度はじめから選択してください。")
+            validated = False
 
         # 決済・引取方法選択
         if payment_delivery_method_pair_id not in [str(m.id) for m in payment_delivery_pairs]:

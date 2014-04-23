@@ -627,6 +627,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         default_stock.quantity = Seat.query.filter(Seat.stock_id==default_stock.id).count()
         default_stock.save()
 
+        # 相対日付の再計算
+        for sales_segment in self.sales_segments:
+            sales_segment.start_at = sales_segment.sales_segment_group.start_for_performance(sales_segment.performance)
+            sales_segment.end_at = sales_segment.sales_segment_group.end_for_performance(sales_segment.performance)
+
     def delete(self):
 
         if self.public:

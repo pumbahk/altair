@@ -209,3 +209,76 @@ class check_duplicated_productsTests(unittest.TestCase):
             {"wished_products": [{"product_id": "p1"}]}
         ])
         self.assertFalse(result)
+
+class check_valid_productsTests(unittest.TestCase):
+    def setUp(self):
+        self.session = _setup_db(modules=[
+            'altair.app.ticketing.core.models',
+            'altair.app.ticketing.lots.models',
+            ])
+
+    def _callFUT(self, *args, **kwargs):
+        from .. import helpers
+        return helpers.check_valid_products(*args, **kwargs)
+
+    def _create_products(self, values):
+        from .. import testing
+        return testing._create_products(self.session, values)
+
+    def test_empty(self):
+        result = self._callFUT([])
+        self.assertTrue(result)
+
+    def test_one_empty_wishes(self):
+        result = self._callFUT([
+            {"performance_id": u'1', "wished_products": []}
+        ])
+        self.assertTrue(result)
+
+    def test_one_wishes(self):
+        product_data = [
+            {'id': 100, 'performance_id': 1, 'name': u'Product1', 'price': 50}
+        ]
+        self._create_products(product_data)
+        result = self._callFUT([
+            {"performance_id": u'1', "wished_products": [{'wish_order': 0, 'product_id': u'100', 'quantity': 1}]}
+        ])
+        self.assertTrue(result)
+
+    def test_many_wishes(self):
+        product_data = [
+            {'id': 100, 'performance_id': 1, 'name': u'Product1', 'price': 50},
+            {'id': 101, 'performance_id': 1, 'name': u'Product2', 'price': 51},
+            {'id': 102, 'performance_id': 2, 'name': u'Product3', 'price': 52}
+        ]
+        self._create_products(product_data)
+        result = self._callFUT([
+            {"performance_id": u'1', "wished_products": [{'wish_order': 0, 'product_id': u'100', 'quantity': 1}]},
+            {"performance_id": u'1', "wished_products": [{'wish_order': 1, 'product_id': u'101', 'quantity': 2}]},
+            {"performance_id": u'2', "wished_products": [{'wish_order': 2, 'product_id': u'102', 'quantity': 3}]}
+        ])
+        self.assertTrue(result)
+
+    def test_one_wishes_invalid_product(self):
+        product_data = [
+            {'id': 100, 'performance_id': 1, 'name': u'Product1', 'price': 50}
+        ]
+        self._create_products(product_data)
+        result = self._callFUT([
+            {"performance_id": u'2', "wished_products": [{'wish_order': 0, 'product_id': u'100', 'quantity': 1}]}
+        ])
+        self.assertFalse(result)
+
+    def test_many_wishes_invalid_products(self):
+        product_data = [
+            {'id': 100, 'performance_id': 1, 'name': u'Product1', 'price': 50},
+            {'id': 101, 'performance_id': 1, 'name': u'Product2', 'price': 51},
+            {'id': 102, 'performance_id': 2, 'name': u'Product3', 'price': 52}
+        ]
+        self._create_products(product_data)
+        result = self._callFUT([
+            {"performance_id": u'2', "wished_products": [{'wish_order': 0, 'product_id': u'100', 'quantity': 1}]},
+            {"performance_id": u'1', "wished_products": [{'wish_order': 1, 'product_id': u'101', 'quantity': 2}]},
+            {"performance_id": u'2', "wished_products": [{'wish_order': 2, 'product_id': u'102', 'quantity': 3}]}
+        ])
+        self.assertFalse(result)

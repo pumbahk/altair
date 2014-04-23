@@ -32,7 +32,7 @@ class LotEntrySearch(Base):
             LotEntry.__table__.c.entry_no,
             Lot.__table__.c.id.label('lot_id'),
             Lot.__table__.c.name.label('lot_name'),
-            Event.__table__.c.organization_id,
+            LotEntry.__table__.c.organization_id,
             Event.__table__.c.title,
             Event.__table__.c.id.label('event_id'),
             ShippingAddress.__table__.c.id.label('shipping_address_id'),
@@ -59,7 +59,7 @@ class LotEntrySearch(Base):
     entry_no = LotEntry.__table__.c.entry_no
     lot_id = Lot.__table__.c.id
     lot_name = Lot.__table__.c.name
-    organization_id = Event.__table__.c.organization_id
+    organization_id = LotEntry.__table__.c.organization_id
     event_id = Event.__table__.c.id
     event_title = Event.__table__.c.title
     shipping_address_id = ShippingAddress.__table__.c.id
