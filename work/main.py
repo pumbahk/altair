@@ -68,7 +68,6 @@ class CSSChange(object):
             name = data["dst"]
             data["dst"] = self.replace_re.sub(self.css_ext, name)
 
-
 app_rx = re.compile(r'([^/:\.]+?)[/:\.](?:templates|static)[/:\.]')
 class DecisionMaker(object):
     def __init__(self, filename, org_name, used_css, classifier=classify, dump=None, strict=True, modules=None, css_suffix=""):
@@ -186,6 +185,9 @@ class DecisionMaker(object):
     def with_css(self, cssdata):
         k = cssdata["dst_file"]
         if k in self.used_css:
+            if "html" in cssdata:
+                self.css_change.name_change(cssdata) #rename foo.cs => foo.{suffix}.css
+                self.dump.stdout.write(cssdata)
             return
         self.used_css[k] = 1
 
@@ -228,7 +230,7 @@ class DecisionMaker(object):
                         self.with_css(data)
                     else:
                         self.dump.stdout.write(data)
-                except Exception as e:
+                except (ValueError, SyntaxError, IOError) as e:
                     #see: e.g.altair/app/ticketing/cart/templates/BT/pc/_widgets.html
                     fmt = m.group(1)
                     if "% step" in fmt:
