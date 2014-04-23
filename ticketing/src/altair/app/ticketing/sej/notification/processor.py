@@ -111,10 +111,10 @@ class SejNotificationProcessor(object):
             processed_at = notification.processed_at
             )
         self.session.add(branch)
-        for sej_ticket in SejTicket.query.filter_by(order_no=sej_order.order_no):
+        for sej_ticket in self.session.query(SejTicket).filter_by(order_no=sej_order.order_no):
             barcode_number = notification.barcode_numbers.get(str(sej_ticket.ticket_idx), sej_ticket.barcode_number)
             self.session.add(sej_ticket.new_branch(order=branch, barcode_number=barcode_number))
-                
+
         notification.reflected_at = self.now
 
     actions = {
@@ -145,4 +145,3 @@ class SejNotificationProcessor(object):
             raise SejNotificationProcessorError('unsupported notification type: %s' % notification.notification_type)
         else:
             action(self, sej_order, order, notification)
-
