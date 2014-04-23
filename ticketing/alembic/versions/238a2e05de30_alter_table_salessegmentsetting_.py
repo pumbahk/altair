@@ -1,14 +1,14 @@
 """alter table SalesSegmentSetting, SalesSegmentGroupSetting add column disp_agreement, agreement_body
 
 Revision ID: 238a2e05de30
-Revises: 461b4010631c
+Revises: 2e1379ff8b2c
 Create Date: 2014-04-08 16:54:02.773119
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '238a2e05de30'
-down_revision = '49bb9c608cc2'
+down_revision = '2e1379ff8b2c'
 
 from alembic import op
 import sqlalchemy as sa
