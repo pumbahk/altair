@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPBadRequest
 from altair.now import get_now
+from altair.app.ticketing.qr.builder import InvalidSignedString
 
 @view_config(route_name="refresh.token", permission="sales_counter", renderer="json")
 def refresh_token(context, request):
@@ -27,6 +28,9 @@ def refresh_order_with_signed(context, request):
         except TypeError:
             logger.warn("*qr ticketdata: history not found: json=%s", request.json_body)
             raise HTTPBadRequest(u"E@:データが見つかりません。不正なQRコードの可能性があります!")
+        except InvalidSignedString as e:
+            logger.error(repr(e))
+            raise HTTPBadRequest(u"E@:データが読み取れませんでした。QRコードの読み取りに失敗した可能性があります!")
 
         now = get_now(request)
         order.printed_at = None

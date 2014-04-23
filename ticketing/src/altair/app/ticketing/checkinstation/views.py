@@ -7,6 +7,7 @@ from altair.now import get_now
 from pyramid.httpexceptions import HTTPBadRequest
 from webob.multidict import MultiDict
 from .signer import with_secret_token
+from altair.app.ticketing.qr.builder import InvalidSignedString
 from datetime import datetime
 import re
 
@@ -97,6 +98,9 @@ def ticket_data_from_signed_string(context, request):
         except TypeError:
             logger.warn("*qr ticketdata: history not found: json=%s", request.json_body)
             raise HTTPBadRequest(u"E@:データが見つかりません。不正なQRコードの可能性があります!")
+        except InvalidSignedString as e:
+            logger.error(repr(e))
+            raise HTTPBadRequest(u"E@:データが読み取れませんでした。QRコードの読み取りに失敗した可能性があります!")
 
         data = ticket_data_dict_from_history(history)
         ## 付加情報追加
