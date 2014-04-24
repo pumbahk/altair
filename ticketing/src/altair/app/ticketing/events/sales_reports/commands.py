@@ -73,13 +73,13 @@ def main(argv=sys.argv):
             report_type=report_setting.report_type,
             recipient=report_setting.recipient,
             subject=u'dummy',
-            need_total=need_total
         )
         if limited_from:
             params.update(dict(limited_from=limited_from))
         if limited_to:
             params.update(dict(limited_to=limited_to))
         form = SalesReportForm(MultiDict(params))
+        form.need_total.data = need_total
         if not form.validate():
             logger.warn('validation error: {0}'.format(form.errors))
             continue
