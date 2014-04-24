@@ -118,12 +118,10 @@ class ReportSettingForm(OurForm):
             operators = Operator.query.filter_by(organization_id=context.user.organization_id).all()
             self.operator_id.choices = [('', '')] + [(o.id, o.name) for o in operators]
 
-        if self.report_hour.data and self.report_minute.data:
-            self.time.data = self.format_report_time()
-
         if obj:
-            self.report_hour.data = int(obj.time[0:2])
-            self.report_minute.data = int(obj.time[2:4])
+            self.report_hour.data = int(obj.time[0:2] or 0)
+            self.report_minute.data = int(obj.time[2:4] or 0)
+        self.time.data = self.format_report_time()
 
     def _get_translations(self):
         return Translations()
@@ -222,9 +220,8 @@ class ReportSettingForm(OurForm):
             hour = self.report_hour.data
         if minute is None:
             minute = self.report_minute.data
-        if hour and minute:
-            report_time = '{0:0>2}{1:0>2}'.format(hour, minute)
-            report_time = report_time[0:3] + '0'
+        report_time = '{0:0>2}{1:0>2}'.format(hour, minute)
+        report_time = report_time[0:3] + '0'
         return report_time
 
     def validate_operator_id(form, field):
@@ -273,7 +270,7 @@ class ReportSettingForm(OurForm):
                 raise ValidationError(u'0分に送信できるのは送信頻度で1回のみを指定した場合のみです')
 
     def validate_start_on(form, field):
-        if field.data:
+        if field.data and form.end_on.data:
             if field.data > form.end_on.data:
                 raise ValidationError(u'送信開始日時は送信終了日時よりも前に設定してください')
 
