@@ -32,6 +32,7 @@ setup(name='altair.response',
       package_dir = {'': 'src'},
       namespace_packages=['altair'],
       include_package_data=True,
+      test_suite='altair.response.tests',
       zip_safe=False,
       install_requires=[
           'setuptools',
