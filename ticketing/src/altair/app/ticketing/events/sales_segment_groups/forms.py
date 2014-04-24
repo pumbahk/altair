@@ -3,7 +3,7 @@
 import logging
 from wtforms import Form
 from wtforms import TextField, TextAreaField, SelectField, HiddenField, IntegerField, BooleanField, SelectMultipleField
-from wtforms.validators import Regexp, Length, Optional, ValidationError
+from wtforms.validators import Regexp, Length, Optional, ValidationError, NumberRange
 from wtforms.widgets import CheckboxInput
 
 from altair.formhelpers import (
@@ -27,6 +27,8 @@ def append_error(field, error):
     if not hasattr(field.errors, 'append'):
         field.errors = list(field.errors)
     field.errors.append(error)
+
+UPPER_LIMIT_OF_MAX_QUANTITY = 99 # 購入数が大きすぎるとcartやlotでプルダウンが表示出来なくなる事があるため上限数を制限する
 
 class SalesSegmentGroupForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
@@ -144,7 +146,9 @@ class SalesSegmentGroupForm(OurForm):
     max_quantity = OurIntegerField(
         label=label_text_for(SalesSegmentGroup.max_quantity),
         default=10,
-        validators=[RequiredOnUpdate()],
+        validators=[RequiredOnUpdate(),
+                    NumberRange(min=0, max=UPPER_LIMIT_OF_MAX_QUANTITY, message=u'範囲外です'),
+                    ],
         hide_on_new=True
     )
     max_quantity_per_user = OurIntegerField(
