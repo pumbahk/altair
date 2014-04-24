@@ -634,16 +634,18 @@ class LotEntries(BaseView):
             values = [unicode(v.decode(encoding)) for v in row.values()]
             row = dict(zip(keys, values))
 
-            status = row[u'状態']
-            entry_no = row[u'申し込み番号']
-            wish_order = row[u'希望順序']
-            if not (status and entry_no and wish_order):
-                logger.info('parser error status=%s, entry_no=%s, wish_order=%s' % (status, entry_no, wish_order))
-                raise CSVFileParserError(entry_no=entry_no)
+            status = None
+            entry_no = None
+            wish_order = None
             try:
+                status = row[u'状態'] 
+                entry_no = row[u'申し込み番号']
+                wish_order = row[u'希望順序']
+                if not (status and entry_no and wish_order):
+                    raise Exception
                 wish_order = int(wish_order) - 1
-            except ValueError:
-                logger.info('wish order is not number ({0})'.format(entry_no))
+            except:
+                logger.info('parser error status=%s, entry_no=%s, wish_order=%s' % (status, entry_no, wish_order))
                 raise CSVFileParserError(entry_no=entry_no)
 
             if status == u'当選予定':
