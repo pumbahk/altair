@@ -765,7 +765,7 @@ def get_refund_per_order_fee(refund, order):
         # チケットに紐づかない商品明細分の合計金額
         for op in order.items:
             for opi in op.elements:
-                if opi.product_item.ticket_bundle_id:
+                if not opi.product_item.ticket_bundle_id:
                     fee += opi.price * opi.quantity
     return fee
 
