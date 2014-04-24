@@ -127,6 +127,7 @@ class SalesReports(BaseView):
 
         form = SalesReportForm(self.request.params)
         form.subject.validators = [Optional()]
+        form.recipient.validators = [Optional()]
         if form.validate():
             if performance_id:
                 performance = Performance.get(performance_id, organization_id=self.context.user.organization_id)
@@ -145,6 +146,7 @@ class SalesReports(BaseView):
             else:
                 raise HTTPNotFound('event and performance id is not found')
         else:
+            logger.debug('mail_body validation error:{0}'.format(form.errors))
             return Response()
 
     @view_config(route_name='sales_reports.send_mail', renderer='altair.app.ticketing:templates/sales_reports/preview.html')
