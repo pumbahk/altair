@@ -40,6 +40,7 @@ setup(name='altair.httpsession',
       install_requires=[
           'setuptools',
           'pytz',
+          'redis',
           # -*- Extra requirements: -*-
       ],
       entry_points="""
