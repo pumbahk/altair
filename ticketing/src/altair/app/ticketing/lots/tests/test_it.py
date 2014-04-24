@@ -138,8 +138,8 @@ class EntryLotViewTests(unittest.TestCase):
         performances = lot.performances
 
         wishes = {
-            "performanceDate-1": str(performances[0].id),
-            "performanceDate-2": str(performances[1].id),
+            "performanceDate-1": str(products[0].performance_id),
+            "performanceDate-2": str(products[1].performance_id),
             "product-id-1-1" : str(products[0].id),
             "product-quantity-1-1" : "10",
             "product-id-1-2" : str(products[1].id),

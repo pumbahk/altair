@@ -75,11 +75,12 @@ class LotTests(unittest.TestCase):
     def test_elect_wishes_one(self):
         from ..models import LotElectWork
         target = self._makeOne(entry_limit=5)
+        self.session.add(target)
+        self.session.flush()
         self._wish(lot=target,
                    email="testing@example.com",
                    entry_no="testing",
                    wish_order=2)
-        self.session.add(target)
         result = target.elect_wishes([
             ('testing', 2),
         ])
