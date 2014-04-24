@@ -245,6 +245,12 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if wish.is_electing():
                 logger.debug("already marked as elected {entry_no}".format(entry_no=entry_no))
                 continue
+            # すでに他の希望が当選予定
+            if LotElectWork.query.filter_by(lot_id=self.id, lot_entry_no=entry_no).count():
+                for w in entry.wishes:
+                    for elect_work in w.works:
+                        DBSession.delete(elect_work)
+                        DBSession.flush()
             # すでに落選予定
             if wish.is_rejecting():
                 logger.debug("already marked as rejected {entry_no}".format(entry_no=entry_no))
@@ -275,7 +281,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 logger.debug("already marked as rejected {entry_no}".format(entry_no=entry_no))
                 continue
             # すでに当選予定
-            if entry.is_electing():
+            if LotElectWork.query.filter_by(lot_id=self.id, lot_entry_no=entry_no).count():
                 logger.debug("already marked as elected {entry_no}".format(entry_no=entry_no))
                 for wish in entry.wishes:
                     for elect_work in wish.works:

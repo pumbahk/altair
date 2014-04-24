@@ -649,7 +649,16 @@ class LotEntries(BaseView):
             if status == u'当選予定':
                 elect_wishes.append((entry_no, wish_order))
             elif status == u'落選予定':
-                reject_entries.append((entry_no))
+                reject_entries.append(entry_no)
+        """
+        落選予定のentry_noに当選予定のentry_noがあったら削る
+          - 当選予定はentry_no + wish_order
+          - 落選予定はentry_no
+          の単位で処理するのでこのようになる
+        """
+        for entry_no, wish_order in elect_wishes:
+            if entry_no in reject_entries:
+                 reject_entries.remove(entry_no)
         return elect_wishes, reject_entries
 
     @view_config(route_name='lots.entries.elect',
