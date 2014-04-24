@@ -6,9 +6,10 @@ import argparse
 
 from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.sql.expression import and_, not_, or_
-
+from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import Order
 from altair.app.ticketing.sej.models import SejTicket
+from altair.sqlahelper import get_db_session
 
 def update_product_item_id():
     ''' SejTicket.product_item_idをセットする
@@ -47,7 +48,7 @@ def update_product_item_id():
         try:
             order_no = order.order_no
 
-            sej_ticket_query = SejTicket.query.filter(SejTicket.product_item_id==None)\
+            sej_ticket_query = DBSession.query(SejTicket).filter(SejTicket.product_item_id==None)\
                 .filter(SejTicket.order_no==order_no)\
                 .order_by(SejTicket.ticket_idx)
             sej_tickets = sej_ticket_query.all()
