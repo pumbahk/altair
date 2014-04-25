@@ -10,6 +10,7 @@ from utils import abspath_from_rel
 from utils import css_url_iterator
 
 static_rx = re.compile(r"request\.static_url\((.+?)\)")
+layout_rx = re.compile(r"layout\.static_url\((.+?)\)")
 template_org_rx = re.compile(r"/templates/([^/]+)")
 
 class UnKnownFileType(Exception):
@@ -219,6 +220,7 @@ class DecisionMaker(object):
 
 
     def decision(self, inp):
+        filename = inp.name
         for line in inp:
             m = static_rx.search(line)
             if m:
@@ -244,6 +246,32 @@ class DecisionMaker(object):
                     else:
                         data = self.error(e, line, assetspec)
                         self.dump.stderr.write(data)
+
+            ## for booster
+            m = layout_rx.search(line)
+            if m:
+                try:
+                    booster_organizations = {"89ers": "89ers", "BT":"bambitious", "bigbulls":"bigbulls"}
+                    assetspec_prefix_list = []
+                    for k, v in booster_organizations.items():
+                        if k in filename:
+                            assetspec_prefix_list.append("altair.app.ticketing.booster.{}:".format(v))
+                            break
+                    if not assetspec_prefix_list:
+                        ## sys.stderr.write("** {0} ({1})\n".format(m.group(1), filename))
+                        assetspec_prefix_list = ["altair.app.ticketing.booster.{}:".format(v) 
+                                                 for v in booster_organizations.values()]
+                    for assetspec_prefix in assetspec_prefix_list:
+                        path = assetspec_prefix + ast.literal_eval(m.group(1))
+                        data = self.info(path)
+                        if path.endswith(".css"):
+                            self.with_css(data)
+                        else:
+                            self.dump.stdout.write(data)
+                except (ValueError, SyntaxError, IOError) as e:
+                    data = self.error(e, line ,path)
+                    self.dump.stderr.write(data)
+
 
 if __name__ == "__main__":
     css_suffix = sys.argv[1]
