@@ -11,6 +11,10 @@ altair.rakuten_auth.return_to = ${altair:rakuten_auth.return_to}
 altair.rakuten_auth.error_to = ${altair:rakuten_auth.error_to}
 altair.rakuten_auth.verify_url = ${altair:rakuten_auth.verify_url}
 altair.rakuten_auth.extra_verify_url = ${altair:rakuten_auth.extra_verify_url}
+altair.rakuten_auth.session = ${altair:httpsession_persistence_backend_type}
+altair.rakuten_auth.session.type = ${altair:beaker_backend_type}
+altair.rakuten_auth.session.data_dir = %(here)s/tmp/beaker/data
+altair.rakuten_auth.session.lock_dir = %(here)s/tmp/beaker/lock
 
 ; Beaker
 session.type = ${altair:beaker_backend_type}
