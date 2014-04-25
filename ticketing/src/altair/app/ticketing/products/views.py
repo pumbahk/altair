@@ -614,7 +614,6 @@ def subview_older(context, request):
     ## todo: joined load
     products = (Product.query
                 .filter_by(sales_segment_id=sales_segment_id)
-                .options(orm.joinedload(Product.items))
                 .order_by(Product.display_order)
                 .all())
 
