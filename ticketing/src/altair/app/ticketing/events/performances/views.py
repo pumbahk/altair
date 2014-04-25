@@ -370,7 +370,7 @@ class Performances(BaseView):
         }
 
     @view_config(route_name='performances.edit', request_method='GET', renderer='altair.app.ticketing:templates/performances/edit.html')
-    @view_config(route_name='performances.copy', request_method='GET', renderer='altair.app.ticketing:templates/performances/copy.html')
+    @view_config(route_name='performances.copy', request_method='GET', renderer='altair.app.ticketing:templates/performances/edit.html')
     def edit_get(self):
         performance = self.context.performance
         if self.request.matched_route.name == 'performances.edit':
@@ -393,13 +393,14 @@ class Performances(BaseView):
 
         return {
             'form':f,
+            'is_copy':is_copy,
             'event':performance.event,
             'route_name': route_name,
             'route_path': self.request.path,
         }
 
     @view_config(route_name='performances.edit', request_method='POST', renderer='altair.app.ticketing:templates/performances/edit.html')
-    @view_config(route_name='performances.copy', request_method='POST', renderer='altair.app.ticketing:templates/performances/copy.html')
+    @view_config(route_name='performances.copy', request_method='POST', renderer='altair.app.ticketing:templates/performances/edit.html')
     def edit_post(self):
         performance = self.context.performance
         if self.request.matched_route.name == 'performances.edit':
@@ -455,6 +456,7 @@ class Performances(BaseView):
         else:
             return {
                 'form':f,
+                'is_copy':is_copy,
                 'event':performance.event,
                 'route_name': route_name,
                 'route_path': self.request.path,

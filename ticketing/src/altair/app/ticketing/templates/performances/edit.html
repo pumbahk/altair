@@ -2,6 +2,7 @@
 <%namespace file="/common/helpers.html" name="ch" />
 
 <script type="text/javascript">
+  var is_copy = ${'true' if is_copy else 'false'};
   function createCode() {
     if ($('#id').val() || $('#code').val().length == 12) return;
     var month = $('input[name="start_on.month"]').val();
@@ -13,6 +14,11 @@
   }
 
   $(function() {
+    if (is_copy) {
+      $('#code').val("${event.code}");
+      $('input[name^="start_on"]').val("");
+    }
+
     $('[rel=popover]').popover({html:true});
     $('form').disableOnSubmit();
 
