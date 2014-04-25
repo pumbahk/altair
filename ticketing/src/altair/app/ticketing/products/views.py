@@ -307,7 +307,7 @@ class Products(BaseView):
 
         location = route_path('products.index', self.request, performance_id=product.sales_segment.performance_id)
         if performance_id:
-            location = self.request.route_path('performances.show', performance_id=performance_id) + '/product'
+            location = self.request.route_path('performances.show_tab', performance_id=performance_id, tab='product')
 
         try:
             product.delete()
@@ -593,7 +593,7 @@ class ProductItems(BaseView):
         product_item_id = int(self.request.matchdict.get('product_item_id', 0))
         product_item = ProductItem.query.filter_by(id=product_item_id).filter(Organization.id==self.context.user.organization_id).one()
 
-        location = route_path('performances.show', self.request, performance_id=product_item.performance_id, _anchor='product')
+        location = self.request.route_path('performances.show_tab', performance_id=product_item.performance_id, tab='product')
         try:
             product_item.delete()
             self.request.session.flash(u'商品から在庫の割当を外しました')
