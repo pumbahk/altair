@@ -13,6 +13,9 @@
   }
 
   $(function() {
+    $('#code').val("${event.code}");
+    $('input[name^="start_on"]').val("");
+
     $('[rel=popover]').popover({html:true});
     $('form').disableOnSubmit();
 
