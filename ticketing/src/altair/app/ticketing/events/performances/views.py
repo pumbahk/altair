@@ -456,7 +456,7 @@ class Performances(BaseView):
         else:
             return {
                 'form':f,
-                'is_copy':is_copy,
+                'is_copy':False,
                 'event':performance.event,
                 'route_name': route_name,
                 'route_path': self.request.path,
