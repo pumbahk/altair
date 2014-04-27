@@ -166,7 +166,6 @@ def build_sej_args(payment_type, order_like, now):
     tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
     ticketing_start_at = get_ticketing_start_at(now, order_like)
     ticketing_due_at = get_ticketing_due_at(now, order_like)
-    performance = order_like.performance
     if int(payment_type) == int(SejPaymentType.Paid):
         total_price         = 0
         ticket_price        = 0
@@ -194,6 +193,7 @@ def build_sej_args(payment_type, order_like, now):
         raise SejPluginFailure('unknown payment type %s' % payment_type, order_link.order_no, None)
 
     regrant_number_due_at = None
+    performance = order_like.sales_segment.performance
     if performance and (performance.start_on or performance.end_on):
         regrant_number_due_at = (performance.end_on or performance.start_on) + timedelta(days=1)
     regrant_number_due_at = regrant_number_due_at or now + timedelta(days=365)
@@ -394,12 +394,21 @@ class SejPaymentDeliveryPlugin(object):
         current_date = datetime.now()
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
 
+        if order_like.payment_start_at is not None and \
+           order_like.payment_start_at != order_like.issuing_start_at:
+            # 前払後日発券
+            if order_like.payment_start_at > datetime.now():
+                raise SejPluginFailure(u'order_like.payment_start_at cannot be a future date', order_no=order_like.order_no, back_url=None)
+            payment_type = SejPaymentType.Prepayment
+        else:
+            # 代引
+            payment_type = SejPaymentType.CashOnDelivery
         try:
             tickets = get_tickets(order_like)
             sej_order = create_sej_order(
                 request,
                 tickets=tickets,
-                **build_sej_args(SejPaymentType.CashOnDelivery, order_like, current_date)
+                **build_sej_args(payment_type, order_like, current_date)
                 )
             do_sej_order(
                 request,

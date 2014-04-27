@@ -17,6 +17,7 @@ class IOrderedProductItemLike(Interface):
     seats                 = Attribute(u"")
 
 class IPurchase(Interface):
+    organization_id       = Attribute('')
     order_no              = Attribute('')
     browserid             = Attribute('')
     sales_segment         = Attribute('')

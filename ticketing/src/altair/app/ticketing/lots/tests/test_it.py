@@ -7,8 +7,10 @@ from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
 from ..testing import DummyAuthenticatedResource
 
 dependency_modules = [
+    'altair.app.ticketing.orders.models',
     'altair.app.ticketing.core.models',
     'altair.app.ticketing.users.models',
+    'altair.app.ticketing.mailmags.models',
     'altair.app.ticketing.cart.models',
     'altair.app.ticketing.lots.models',
 ]
@@ -23,9 +25,15 @@ testing_settings = {
 class keep_authTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.session = _setup_db(modules=dependency_modules, echo=False)
         cls.config = testing.setUp(settings=testing_settings)
         cls.config.include('pyramid_layout')
         cls.config.include('altair.app.ticketing.lots')
+
+    @classmethod
+    def tearDownClass(cls):
+        testing.tearDown()
+        _teardown_db()
 
     @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.save_api_response')
     @mock.patch('altair.multicheckout.api.get_multicheckout_impl')
@@ -47,11 +55,11 @@ class keep_authTests(unittest.TestCase):
 class EntryLotViewTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.session = _setup_db(modules=dependency_modules, echo=False)
         cls.config = testing.setUp(settings=testing_settings)
         cls.config.include('pyramid_layout')
         cls.config.include('altair.app.ticketing.lots')
         cls.config.include('altair.pyramid_tz')
-        cls.session = _setup_db(modules=dependency_modules, echo=False)
 
 
     @classmethod
@@ -227,10 +235,10 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         return lot, products
 
     def setUp(self):
+        self.session = _setup_db(modules=dependency_modules, echo=False)
         self.config = testing.setUp(settings=testing_settings)
         self.config.include('pyramid_layout')
         self.config.include('altair.app.ticketing.lots')
-        self.session = _setup_db(modules=dependency_modules, echo=False)
 
     def tearDown(self):
         import transaction
@@ -421,6 +429,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         context = DummyAuthenticatedResource(user=None)
         context.lot = lot
         context.event = lot.event
+        request.context = context
 
         target = self._makeOne(context, request)
 
@@ -444,10 +453,10 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
 class LotReviewViewTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.session = _setup_db(modules=dependency_modules, echo=False)
         cls.config = testing.setUp(settings=testing_settings)
         cls.config.include('pyramid_layout')
         cls.config.include('altair.app.ticketing.lots')
-        cls.session = _setup_db(modules=dependency_modules, echo=False)
 
 
     @classmethod

@@ -113,6 +113,19 @@ class Payment(object):
                     raise
         return order
 
+    def call_payment2(self, order):
+        payment_delivery_plugin, payment_plugin, delivery_plugin = self._get_plugins(self.cart.payment_delivery_pair)
+        if payment_delivery_plugin is not None:
+            payment_delivery_plugin.finish2(self.request, order)
+        else:
+            payment_plugin.finish2(self.request, order)
+            try:
+                delivery_plugin.finish2(self.request, self.cart)
+            except Exception as e:
+                self.request.registry.notify(DeliveryErrorEvent(e, self.request, order))
+                raise
+        return order
+
     def call_delivery(self, order):
         payment_delivery_plugin, payment_plugin, delivery_plugin = self._get_plugins(self.cart.payment_delivery_pair)
         if delivery_plugin is not None:

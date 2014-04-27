@@ -3779,7 +3779,7 @@ class CartMixin(object):
     @property
     def payment_start_at(self):
         # 暫定
-        return self.issuing_start_at
+        return min(self.created_at, self.issuing_start_at)
 
     @property
     def payment_due_at(self):

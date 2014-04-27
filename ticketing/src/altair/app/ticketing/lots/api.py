@@ -75,12 +75,16 @@ from .models import (
     TemporaryLotEntryProduct,
 )
 from altair.app.ticketing.users import api as user_api
+from altair.app.ticketing.payments.api import set_confirm_url
+from altair.app.ticketing.payments.payment import Payment
+from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID
 
 from . import sendmail
 from .events import LotEntriedEvent
 from .interfaces import IElecting
 from .adapters import LotSessionCart
 from . import schemas
+from . import urls
 
 LOT_ENTRY_DICT_KEY = 'lots.entry'
 
@@ -197,12 +201,28 @@ def build_temporary_wishes(wishes,
         results.append(wish)
     return results
 
+
+def prepare1_for_payment(request, entry_dict):
+    cart = LotSessionCart(entry_dict, request, request.context.lot)
+
+    payment = Payment(cart, request)
+    set_confirm_url(request, urls.entry_confirm(request))
+
+    # マルチ決済のみオーソリのためにカード番号入力画面に遷移する
+    return payment.call_prepare()
+
+def prepare2_for_payment(request, entry_dict):
+    # とりあえず何もしないでおく
+    # 将来的に何かしたくなったらやる
+    pass
+
 def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo):
     """
     wishes
     {product_id, quantity} の希望順リスト
     :param user: ゲストの場合は None
     """
+
     channel = core_api.get_channel(request=request)
     entry = build_lot_entry(
         lot=lot,
