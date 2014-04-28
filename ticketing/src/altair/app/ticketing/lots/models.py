@@ -293,6 +293,36 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             affected += 1
         return affected
 
+    def reset_entries(self, entries):
+        """ 申込に戻す """
+        affected = 0
+        for entry_no in entries:
+            entry = LotEntry.query.filter(LotEntry.lot_id==self.id, LotEntry.entry_no==entry_no).first()
+            if entry is None:
+                logger.debug("not found {entry_no}".format(entry_no=entry_no))
+                continue
+            # すでに当落確定 or キャンセル済み
+            if entry.is_elected or entry.is_rejected or entry.is_canceled:
+                logger.debug("already elected, rejected or canceled {entry_no}".format(entry_no=entry_no))
+                continue
+            # すでに当選予定
+            if LotElectWork.query.filter_by(lot_id=self.id, lot_entry_no=entry_no).count():
+                logger.debug("already marked as elected {entry_no}".format(entry_no=entry_no))
+                for wish in entry.wishes:
+                    for elect_work in wish.works:
+                        DBSession.delete(elect_work)
+                        DBSession.flush()
+            # すでに落選予定
+            if entry.is_rejecting():
+                logger.debug("already marked as rejected {entry_no}".format(entry_no=entry_no))
+                for wish in entry.wishes:
+                    for reject_work in wish.reject_works:
+                        DBSession.delete(reject_work)
+                        DBSession.flush()
+
+            affected += 1
+        return affected
+
     def cancel_electing(self, wish):
         LotElectWork.query.filter(
             LotElectWork.lot_id==self.id

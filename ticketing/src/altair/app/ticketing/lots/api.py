@@ -348,10 +348,18 @@ def submit_lot_entries(lot_id, entries):
 def submit_reject_entries(lot_id, entries):
     """
     落選リストの取り込み
-    entries : (entry_no, wish_order)のリスト
+    entries : entry_noのリスト
     """
     lot = Lot.query.filter(Lot.id==lot_id).one()
     return lot.reject_entries(entries)
+
+def submit_reset_entries(lot_id, entries):
+    """
+    申込リストの取り込み
+    entries : entry_noのリスト
+    """
+    lot = Lot.query.filter(Lot.id==lot_id).one()
+    return lot.reset_entries(entries)
 
 
 def elect_lot_entries(request, lot_id):

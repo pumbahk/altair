@@ -610,24 +610,28 @@ class LotEntries(BaseView):
 
         f = self.request.params['entries'].file
         try:
-            elect_wishes, reject_entries = self._parse_import_file(f)
+            elect_wishes, reject_entries, reset_entries = self._parse_import_file(f)
         except CSVFileParserError as e:
             self.request.session.flash(u"ファイルフォーマットが正しくありません ({0})".format(e.entry_no))
             return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
-        if not (elect_wishes or reject_entries):
-            self.request.session.flash(u"当選予定/落選予定データがありませんでした")
+        if not (elect_wishes or reject_entries or reset_entries):
+            self.request.session.flash(u"データがありませんでした")
             return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
-        self.request.session.flash(u"{0}件の当選予定データ、{1}件の落選予定データを取り込みました".format(len(elect_wishes), len(reject_entries)))
+        message = u"{0}件の当選予定、{1}件の落選予定、{2}件の申込を取り込みました"
+        self.request.session.flash(message.format(len(elect_wishes), len(reject_entries), len(reset_entries)))
 
         electing_count = lots_api.submit_lot_entries(lot.id, elect_wishes)
         rejecting_count = lots_api.submit_reject_entries(lot_id, reject_entries)
-        self.request.session.flash(u"新たに{0}件が当選予定、{1}件が落選予定となりました".format(electing_count, rejecting_count))
+        reset_count = lots_api.submit_reset_entries(lot_id, reset_entries)
+        result_message = u"新たに{0}件が当選予定、{1}件が落選予定となり、{2}件が申込に戻されました"
+        self.request.session.flash(result_message.format(electing_count, rejecting_count, reset_count))
 
         return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
 
     def _parse_import_file(self, file, encoding='cp932'):
         elect_wishes = []
         reject_entries = []
+        reset_entries = []
         reader = csv.DictReader(file)
         for row in reader:
             keys = [unicode(k.decode(encoding)) for k in row.keys()]
@@ -652,16 +656,20 @@ class LotEntries(BaseView):
                 elect_wishes.append((entry_no, wish_order))
             elif status == u'落選予定':
                 reject_entries.append(entry_no)
+            elif status == u'申込':
+                reset_entries.append(entry_no)
         """
-        落選予定のentry_noに当選予定のentry_noがあったら削る
+        落選予定/申込のentry_noに当選予定のentry_noがあったら削る
           - 当選予定はentry_no + wish_order
-          - 落選予定はentry_no
+          - 落選予定/申込はentry_no
           の単位で処理するのでこのようになる
         """
         for entry_no, wish_order in elect_wishes:
             if entry_no in reject_entries:
                  reject_entries.remove(entry_no)
-        return elect_wishes, reject_entries
+            if entry_no in reset_entries:
+                 reset_entries.remove(entry_no)
+        return elect_wishes, reject_entries, reset_entries
 
     @view_config(route_name='lots.entries.elect',
                  renderer="lots/electing.html",
