@@ -218,8 +218,8 @@ class DecisionMaker(object):
                     self.dump.stdout.write(data)
 
 
+
     def decision(self, inp):
-        filename = inp.name
         for line in inp:
             m = static_rx.search(line)
             if m:
@@ -241,7 +241,24 @@ class DecisionMaker(object):
                             self.dump.stdout.write(data)
                         data = self.info(fmt, virtual=True)
                         self.dump.stdout.write(data)
-
+                    elif "get_order_status_image" in fmt:
+                        prefix = ast.literal_eval(fmt.split("+")[0].strip(" "))
+                        for fname in ["icon_cancel.gif", "icon_hassou.gif", "icon_uketsuke.gif"]:
+                            path = "{}/{}".format(prefix, fname)
+                            data = self.info(path)
+                            self.dump.stdout.write(data)
+                    elif "get_payment_status_image" in fmt:
+                        prefix = ast.literal_eval(fmt.split("+")[0].strip(" "))
+                        for fname in ["icon_haraimodoshizumi_b.gif","icon_haraimodoshizumi.gif","icon_payment.gif","icon_minyukin.gif"]:
+                            path = "{}/{}".format(prefix, fname)
+                            data = self.info(path)
+                            self.dump.stdout.write(data)
+                    elif "get_entry_status_image" in fmt:
+                        prefix = ast.literal_eval(fmt.split("+")[0].strip(" "))
+                        for fname in ["icon_cancel.gif","icon_tousen.gif","icon_rakusen.gif","icon_kekkachusenmachi.gif"]:
+                            path = "{}/{}".format(prefix, fname)
+                            data = self.info(path)
+                            self.dump.stdout.write(data)
                     else:
                         data = self.error(e, line, assetspec)
                         self.dump.stderr.write(data)
