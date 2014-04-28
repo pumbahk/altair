@@ -101,11 +101,11 @@
       <td rowspan="${count}" class="numeric">${vh.number(record.stock_quantity) or ''}</td>
       <td rowspan="${count}" class="numeric">${vh.number(record.vacant_quantity) or ''}</td>
         % endif
-      <td class="numeric">${vh.number(record.total_paid_quantity + record.total_unpaid_quantity) or ''}</td>
+      <td class="numeric">${vh.number(record.total_paid_quantity) or ''}</td>
       <td class="numeric">${vh.number(record.total_unpaid_quantity) or ''}</td>
       <td class="price">${vh.price((record.total_paid_quantity + record.total_unpaid_quantity) / record.sales_unit * record.product_price)}</td>
         % if form.limited_from.data or form.limited_to.data:
-      <td class="numeric">${vh.number(record.paid_quantity + record.unpaid_quantity) or ''}</td>
+      <td class="numeric">${vh.number(record.paid_quantity) or ''}</td>
       <td class="numeric">${vh.number(record.unpaid_quantity) or ''}</td>
       <td class="price">${vh.price((record.paid_quantity + record.unpaid_quantity) / record.sales_unit * record.product_price)}</td>
         % endif
@@ -117,11 +117,11 @@
       <td colspan="4">合計</td>
       <td class="numeric">${vh.number(total.stock_quantity) or ''}</td>
       <td class="numeric">${vh.number(total.vacant_quantity) or ''}</td>
-      <td class="numeric">${vh.number(total.total_paid_quantity + total.total_unpaid_quantity) or ''}</td>
+      <td class="numeric">${vh.number(total.total_paid_quantity) or ''}</td>
       <td class="numeric">${vh.number(total.total_unpaid_quantity) or ''}</td>
       <td class="price">${vh.price(total.total_sum_amount) or ''}</td>
     % if form.limited_from.data or form.limited_to.data:
-      <td class="numeric">${vh.number(total.paid_quantity + total.unpaid_quantity) or ''}</td>
+      <td class="numeric">${vh.number(total.paid_quantity) or ''}</td>
       <td class="numeric">${vh.number(total.unpaid_quantity) or ''}</td>
       <td class="price">${vh.price(total.sum_amount) or ''}</td>
     % endif
