@@ -50,18 +50,6 @@ from altair.app.ticketing.cart.models import (
 )
 
 
-# 抽選 - 公演
-Lot_Performance = sa.Table('Lots_Performance', Base.metadata,
-    sa.Column('lot_id', Identifier, sa.ForeignKey('Lot.id')),
-    sa.Column('performance_id', Identifier, sa.ForeignKey('Performance.id')),
-)
-
-# 抽選 - 席種
-Lot_StockType = sa.Table('Lots_StockType', Base.metadata,
-    sa.Column('lot_id', Identifier, sa.ForeignKey('Lot.id')),
-    sa.Column('stock_type_id', Identifier, sa.ForeignKey('StockType.id')),
-)
-
 class LotSelectionEnum(StandardEnum):
     NoCare = 0
     ExclusivePerformance = 1
@@ -99,13 +87,6 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     event_id = sa.Column(Identifier, sa.ForeignKey('Event.id'))
     event = orm.relationship('Event', backref='lots')
-
-    # performances = orm.relationship('Performance',
-    #     secondary=Lot_Performance)
-
-    # TODO: 席種が必要か確認（商品から辿れるはず）
-    stock_types = orm.relationship('StockType',
-        secondary=Lot_StockType)
 
     selection_type = sa.Column(sa.Integer) # LotSelectionEnum
 

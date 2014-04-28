@@ -237,8 +237,6 @@ class EntryLotView(object):
 
         performance_map = make_performance_map(self.request, performances)
 
-        stocks = lot.stock_types
-
         performance_id = self.request.params.get('performance')
         selected_performance = None
         if performance_id:
@@ -246,7 +244,6 @@ class EntryLotView(object):
                 if str(p.id) == performance_id:
                     selected_performance = p
                     break
-
 
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
@@ -279,7 +276,7 @@ class EntryLotView(object):
             stock_types=stock_types, 
             selected_performance=selected_performance,
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
-            lot=lot, performances=performances, performance_map=performance_map, stocks=stocks)
+            lot=lot, performances=performances, performance_map=performance_map)
 
     @view_config(request_method="POST", custom_predicates=(is_nogizaka, ))
     def nogizaka_auth(self):
