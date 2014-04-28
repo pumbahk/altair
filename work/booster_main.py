@@ -71,7 +71,9 @@ class CSSChange(object):
             name = data["dst"]
             data["dst"] = self.replace_re.sub(self.css_ext, name)
 
-app_rx = re.compile(r'([^/:\.]+?)[/:\.](?:templates|static)[/:\.]')
+app_static_rx = re.compile(r'([^/:\.]+?)[/:\.]static[/:\.]')
+app_template_rx = re.compile(r'/templates/([^/]+)/')
+booster_organizations = {"89ers": "89ers", "BT":"bambitious", "bigbulls":"bigbulls"}
 class DecisionMaker(object):
     def __init__(self, filename, org_name, used_css, classifier=classify, dump=None, strict=True, modules=None, css_suffix=""):
         self.filename = filename
@@ -88,22 +90,20 @@ class DecisionMaker(object):
 
     @property
     def app_name(self):
-        if self._app_name:
-            return self._app_name
-        self._app_name = self.detect_app_name(self.filename)
+        if self._app_name is None:
+            self._app_name = self.detect_app_name(self.filename)
         return self._app_name
 
     def detect_app_name(self, appname):
-        m = app_rx.search(appname)
+        m = app_static_rx.search(appname)
         if not m:
-            raise ValueError(appname)
-        guessed = m.group(1)
-        print(appname)
-        print(guessed)
-        if "booster.booster" in guessed:
-            guessed = guessed.replace(".booster", "@")
+            m = app_template_rx.search(appname)
+            if not m:
+                raise ValueError(appname)
+        guessed = booster_organizations.get(m.group(1), m.group(1))
+        #print("$", {"app_name":appname, "rx":m.group(0), "guessed":guessed})
         return guessed
- 
+
     def normalize_src(self, prefix, filepath):
         return filepath
 
@@ -161,20 +161,33 @@ class DecisionMaker(object):
             prefix = prefix.replace(k, v)
         return prefix.replace(".", "/")
     
-    def normalize_appname(self, target, pat):
-        return target.replace(pat, self.app_name, 1)
+    def normalize_appname(self, target, pat, virtual_org):
+        #print({"target":target, "pat":pat, "app_name":self.app_name})
+        if self.app_name == "base" and virtual_org:
+            rep = virtual_org
+        else:
+            rep = self.app_name
+        return target.replace(pat, rep, 1)
 
-    def info(self, spec, virtual=False):
+    def info(self, spec, virtual_org=None, virtual=False):
         current_app_name = self.detect_app_name(spec)
         file_type, (prefix, filepath) = self.classifier(spec, strict=self.strict)
+
+        if virtual_org:
+            org = virtual_org
+            prefix = prefix.replace(self.org_name, org)
+        else:
+            org = self.org_name
+
         dst = self.normalize_dst(file_type, prefix, filepath)
         data = {"src_file": os.path.join(self.module_real_path(prefix), self.normalize_src(prefix, filepath)), 
                 "html": self.filename, 
                 "src": spec, 
-                "dst": self.normalize_appname(u"{}:{}".format(prefix, dst), current_app_name), 
-                "org_name": self.org_name, 
+                "dst": self.normalize_appname(u"{}:{}".format(prefix, dst), current_app_name, virtual_org), 
+                "org_name": org, 
+                "app_org": self.org_name, 
                 "file_type": file_type, 
-                "dst_file": self.normalize_appname(os.path.join(self.module_real_path(prefix), dst), current_app_name), 
+                "dst_file": self.normalize_appname(os.path.join(self.module_real_path(prefix), dst), current_app_name, virtual_org), 
                 "app_changed": current_app_name != self.app_name, 
                 "virtual": virtual
         }
@@ -189,7 +202,7 @@ class DecisionMaker(object):
         }
         self.dump.stderr.write(data)
 
-    def with_css(self, cssdata):
+    def with_css(self, cssdata, virtual_org=None):
         k = cssdata["dst_file"]
         if k in self.used_css:
             if "html" in cssdata:
@@ -212,15 +225,18 @@ class DecisionMaker(object):
                     file_type = "images"
                 src_file = abspath_from_rel(url, src_dir)
                 current_app_name = self.detect_app_name(src_file)
+                if current_app_name == "base" and virtual_org: 
+                    current_app_name = virtual_org
                 data = {
                     "file_type": file_type, 
                     "src_file": src_file, 
-                    "dst_file": self.normalize_appname(self.normalize_dst(file_type, "", src_file), current_app_name), 
+                    "app_org": self.org_name, 
+                    "dst_file": self.normalize_appname(self.normalize_dst(file_type, "", src_file), current_app_name, virtual_org), 
                     "app_changed": current_app_name != self.app_name, 
                     "virtual": False
                 }
                 if file_type == "css":
-                    self.with_css(data)
+                    self.with_css(data, virtual_org)
                 else:
                     self.dump.stdout.write(data)
 
@@ -231,21 +247,21 @@ class DecisionMaker(object):
             m = layout_rx.search(line)
             if m:
                 try:
-                    booster_organizations = {"89ers": "89ers", "BT":"bambitious", "bigbulls":"bigbulls"}
-                    assetspec_prefix_list = []
+                    ## [(asset_spec_prefix,  virtual_org_name)...]
+                    virtual_org_list = []
                     for k, v in booster_organizations.items():
                         if k in filename:
-                            assetspec_prefix_list.append("altair.app.ticketing.booster.{}:".format(v))
-                            break
-                    if not assetspec_prefix_list:
+                            virtual_org_list.append(v)
+                            break #xxx:
+                    if not virtual_org_list:
                         ## sys.stderr.write("** {0} ({1})\n".format(m.group(1), filename))
-                        assetspec_prefix_list = ["altair.app.ticketing.booster.{}:".format(v) 
-                                                 for v in booster_organizations.values()]
-                    for assetspec_prefix in assetspec_prefix_list:
+                        virtual_org_list = booster_organizations.values()
+                    for virtual_org in virtual_org_list:
+                        assetspec_prefix = "altair.app.ticketing.booster.{}:".format(self.org_name)
                         path = assetspec_prefix + ast.literal_eval(m.group(1))
-                        data = self.info(path)
+                        data = self.info(path, virtual_org)
                         if path.endswith(".css"):
-                            self.with_css(data)
+                            self.with_css(data, virtual_org)
                         else:
                             self.dump.stdout.write(data)
                 except (ValueError, SyntaxError, IOError) as e:
