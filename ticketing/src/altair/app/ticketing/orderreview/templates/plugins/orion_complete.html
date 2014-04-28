@@ -3,6 +3,7 @@
 
 %if not paid:
 
+% if tickets[0].performance.orion:
 % if tickets[0].performance.orion.qr_enabled:
 
 公演当日会場専用窓口でのお受け取りです。 <br />
@@ -49,10 +50,15 @@
 
 % endif
 
+% else:
+本公演は「イベント・ゲート」に対応していない可能性があります
+% endif
+
     <p class="red">携帯電話へ送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
 
 % else:
 
+% if tickets[0].performance.orion:
 % if tickets[0].performance.orion.qr_enabled:
 
 公演当日会場専用窓口でのお受け取りです。 <br />
@@ -97,6 +103,10 @@
 
 % endif
 
+% else:
+本公演は「イベント・ゲート」に対応していない可能性があります
+% endif
+
     <p class="red">携帯電話へ送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
 
     % for (idx, ticket) in zip(range(0, len(tickets)), tickets):
@@ -114,7 +124,7 @@
                   未発行
               % endif
 	    % endif
-	    % if ticket.performance.orion.qr_enabled:
+	    % if ticket.performance.orion and ticket.performance.orion.qr_enabled:
               <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
                   <input type="hidden" name="order_no" value="${order.order_no}" />
                   <input type="hidden" name="tel" value="${tel}" />
