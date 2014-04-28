@@ -724,7 +724,6 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
         # IntegrityError などになってしまう
         assert prev_order.order_no == proto_order.order_no
         assert prev_order.ordered_from == proto_order.organization
-        assert prev_order.sales_segment == proto_order.sales_segment
 
     def build_element(stock_status_pairs, orig_element):
         assert orig_element.quantity == len(orig_element.tokens), u'orig_element.id=%ld' % orig_element.id
