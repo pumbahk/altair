@@ -126,7 +126,7 @@ class SalesSegmentTests(unittest.TestCase):
                 )
             self.session.add(order)
             orders.append(order)
-        
+
         for i in range(2):
             shipping_address = ShippingAddress(email_2=mail_addr)
             cart = Cart(sales_segment=target)
@@ -280,7 +280,7 @@ class PerformanceTests(unittest.TestCase):
                 system_fee=0, transaction_fee=0, delivery_fee=0)
             self.session.add(order)
             orders.append(order)
-        
+
         for i in range(2):
             shipping_address = ShippingAddress(email_2=mail_addr)
             order = Order(
@@ -350,6 +350,20 @@ class EventTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
+    def test_sorted_performances(self):
+        import random
+        from altair.app.ticketing.core.models import Performance
+        display_orders = range(-5, 5)
+
+        performances = [Performance(name=str(ii), display_order=ii) for ii in display_orders]
+        random.shuffle(performances)
+
+        event = self._makeOne()
+        event.performances = performances
+        display_orders_result = [performance.display_order for performance in event.sorted_performances()]
+        self.assertEqual(display_orders, display_orders_result)
+
+
     def test_query_orders_by_user(self):
         from altair.app.ticketing.core.models import Order, SalesSegment
         from altair.app.ticketing.cart.models import Cart
@@ -417,7 +431,7 @@ class EventTests(unittest.TestCase):
                 system_fee=0, transaction_fee=0, delivery_fee=0)
             self.session.add(order)
             orders.append(order)
-        
+
         for i in range(2):
             shipping_address = ShippingAddress(email_2=mail_addr)
             order = Order(
@@ -546,7 +560,7 @@ class SalesSegmentGroupTests(unittest.TestCase):
             start_day_prior_to_performance=10,
             start_time=time(11, 00)
         )
-        
+
 
         result = target.start_for_performance(performance)
 
@@ -563,7 +577,7 @@ class SalesSegmentGroupTests(unittest.TestCase):
             end_day_prior_to_performance=10,
             end_time=time(11, 00)
         )
-        
+
 
         result = target.end_for_performance(performance)
 
@@ -571,7 +585,7 @@ class SalesSegmentGroupTests(unittest.TestCase):
 
 
 class OrderTests(unittest.TestCase, CoreTestMixin):
-    @property 
+    @property
     def payment_plugins(self):
         from altair.app.ticketing.payments import plugins as p
         return {
