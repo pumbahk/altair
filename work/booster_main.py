@@ -261,7 +261,12 @@ class DecisionMaker(object):
     with_organization_package_rx = re.compile(r"booster([\./][^\./:]+)")
     def dump_data(self, data):
         if "static/base" in data["dst_file"]:
-            raise ConflictOrganization(data)
+            if not "org_name" in data:
+                raise ConflictOrganization(data)
+            data["dst_file"] = data["dst_file"].replace("static/base", "static/{}".format(data["org_name"]))
+            if "dst" in data:
+                data["dst"] = data["dst"].replace("static/base", "static/{}".format(data["org_name"]))
+            sys.stderr.write(json.dumps(data, indent=2, ensure_ascii=False))
         data["dst_file"] = self.with_organization_package_rx.sub("booster", data["dst_file"])
         data["dst_file"] = data["dst_file"].replace("BT", "bambitious")
         if "dst" in data:
@@ -296,7 +301,7 @@ class DecisionMaker(object):
                         except ValueError as e:
                             data = self.error(e, line ,path)
                             self.dump.stderr.write(data)
-                        except ConflictOrganization:
+                        except ConflictOrganization as e:
                             pass
                 except (SyntaxError, IOError) as e:
                     data = self.error(e, line ,path)
