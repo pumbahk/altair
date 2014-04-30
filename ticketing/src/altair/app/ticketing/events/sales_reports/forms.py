@@ -31,7 +31,8 @@ class SalesReportForm(OurForm):
         for name, field in iteritems(self._fields):
             if name in kwargs:
                 field.data = kwargs[name]
-        self.need_total.data = True
+        if formdata and not 'need_total' in formdata:
+            self.need_total.data = True
 
     def _get_translations(self):
         return Translations()
