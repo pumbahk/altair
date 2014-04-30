@@ -39,7 +39,7 @@ class Layout(object):
         return self.request.route_url('order_review.form')
 
     def static_url(self, name, *args, **kwargs):
-        return self.request.static_url("altair.app.ticketing.booster.bambitious:"+name, *args, **kwargs)
-    
+        return self.request.static_url("altair.app.ticketing.booster:static/bambitious/"+name, *args, **kwargs)
+
     def relative_path(self, name):
         return "altair.app.ticketing.booster.bambitious:"+name

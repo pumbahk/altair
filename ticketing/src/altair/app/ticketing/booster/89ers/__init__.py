@@ -70,13 +70,4 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.mails')
     config.add_subscriber('..sendmail.on_order_completed', 'altair.app.ticketing.cart.events.OrderCompleted')
 
-    STATIC_URL_PREFIX = '/static/89ers'
-    STATIC_ASSET_SPEC = 'altair.app.ticketing.booster.89ers:static/'
-    config.include("altair.cdnpath")
-    from altair.cdnpath import S3StaticPathFactory
-    config.add_cdn_static_path(S3StaticPathFactory(
-        settings["s3.bucket_name"], 
-        exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
-        prefix="89ers"))
-    config.add_static_view(STATIC_URL_PREFIX, STATIC_ASSET_SPEC, cache_max_age=3600)
     return config.make_wsgi_app()
