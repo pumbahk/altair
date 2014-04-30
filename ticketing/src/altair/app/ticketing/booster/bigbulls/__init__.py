@@ -77,4 +77,16 @@ def main(global_config, **local_config):
     config.add_subscriber('..subscribers.add_helpers', 'pyramid.events.BeforeRender')
     config.include('altair.app.ticketing.mails')
     config.add_subscriber('..sendmail.on_order_completed', 'altair.app.ticketing.cart.events.OrderCompleted')
+
+    STATIC_URL_PREFIX = '/static/'
+    STATIC_ASSET_SPEC = 'altair.app.ticketing.cart:static/'
+    FC_AUTH_URL_PREFIX = '/fc_auth/static/'
+    FC_AUTH_STATIC_ASSET_SPEC = "altair.app.ticketing.fc_auth:static/"
+    config.include("altair.cdnpath")
+    from altair.cdnpath import S3StaticPathFactory
+    config.add_cdn_static_path(S3StaticPathFactory(
+            settings["s3.bucket_name"], 
+            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
+            mapping={FC_AUTH_STATIC_ASSET_SPEC: FC_AUTH_URL_PREFIX}))
+    config.add_static_view(STATIC_URL_PREFIX, STATIC_ASSET_SPEC, cache_max_age=3600)
     return config.make_wsgi_app()
