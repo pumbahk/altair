@@ -51,7 +51,7 @@ def export_for_sold_seats(event, stock_holder, report_type, performanceids=None)
     """指定したEvent,StockHolderの販売済座席のレポートをExporterで返す
     """
     if performanceids is None: # default is all pattern
-        performanceids = [perf.id for perf in event.performances]
+        performanceids = [perf.id for perf in event.sorted_performances()]
 
     assetresolver = AssetResolver()
     template_path = assetresolver.resolve(
@@ -61,9 +61,9 @@ def export_for_sold_seats(event, stock_holder, report_type, performanceids=None)
 
     report_title = get_report_title(report_type)
     today = date.today()
-    
-    is_target = lambda perf: perf.id in performanceids 
-    for i, performance in enumerate(filter(is_target, event.performances)):
+
+    is_target = lambda perf: perf.id in performanceids
+    for i, performance in enumerate(filter(is_target, event.sorted_performances())):
         sheet_num = i + 1
         dt = formatter.format_datetime_for_sheet_name(performance.start_on)
         sheet_name = u"%s_%d" % (dt, sheet_num)
@@ -83,7 +83,7 @@ def export_for_stock_holder(event, stock_holder, report_type, performanceids=Non
     """
 
     if performanceids is None: # default is all pattern
-        performanceids = [perf.id for perf in event.performances]
+        performanceids = [perf.id for perf in event.sorted_performances()]
 
     assetresolver = AssetResolver()
     template_path = assetresolver.resolve(
@@ -95,8 +95,8 @@ def export_for_stock_holder(event, stock_holder, report_type, performanceids=Non
     report_title = get_report_title(report_type)
     today = date.today()
 
-    is_target = lambda perf: perf.id in performanceids 
-    for i, performance in enumerate(filter(is_target, event.performances)):
+    is_target = lambda perf: perf.id in performanceids
+    for i, performance in enumerate(filter(is_target, event.sorted_performances())):
         sheet_num = i + 1
         dt = formatter.format_datetime_for_sheet_name(performance.start_on)
         sheet_name = u"%s_%d" % (dt, sheet_num)

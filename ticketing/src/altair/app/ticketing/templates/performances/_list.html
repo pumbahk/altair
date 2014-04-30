@@ -41,7 +41,7 @@
         </tr>
       </thead>
       <tbody>
-      % for i, performance in enumerate(performances):
+      % for i, performance in enumerate(sorted(performances, key=lambda p: (p.display_order, p.id))):
         <% if limit and i >= limit: break %>
         <tr>
           % if not display_only:
@@ -68,7 +68,7 @@
                 <span class="label">終了</span>
               %endif
 					  </a>
-					</td>			
+					</td>
           <td>
             ${performance.venue.name if performance.venue else u'(なし)'}
 			% if performance.venue.sub_name != None:

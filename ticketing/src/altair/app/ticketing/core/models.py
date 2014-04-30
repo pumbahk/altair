@@ -1242,6 +1242,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return organization_setting.performance_selector
         return DEFAULT_PERFORMANCE_SELECTOR
 
+    def selected_performances(self):
+        return sorted(self.performances, key=lambda p: (p.display_order, p.id))
+
+
 class SalesSegmentKindEnum(StandardEnum):
     normal          = u'一般発売'
     same_day        = u'当日券'

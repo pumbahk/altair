@@ -654,7 +654,7 @@ class EventReporter(object):
         self.reporters = {}
 
         # 公演別のレポート
-        for performance in event.performances:
+        for performance in event.sorted_performances():
             end_on = performance.end_on or performance.start_on
             if self.form.limited_from.data and end_on < self.form.limited_from.data:
                 continue
