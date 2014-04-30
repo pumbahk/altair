@@ -33,7 +33,7 @@ class Reports(BaseView):
             'form_stock':ReportStockForm(),
             'form_stock_holder':ReportByStockHolderForm(event_id=event_id),
             'event':event,
-            'performances': event.performances,
+            'performances': event.sorted_performances(),
         }
 
     @view_config(route_name='reports.sales', request_method='POST')
@@ -81,7 +81,7 @@ class Reports(BaseView):
                 'form_stock':f,
                 'form_stock_holder':ReportByStockHolderForm(event_id=event_id),
                 'event':event,
-                'performances': event.performances,
+                'performances': event.sorted_performances(),
             }
 
         # CSVファイル生成
@@ -113,7 +113,7 @@ class Reports(BaseView):
         event = Event.get(event_id)
         if event is None:
             raise HTTPNotFound('event id %d is not found' % event_id)
-        
+
         # StockHolder
         stock_holder_id = int(self.request.params.get('stock_holder_id', 0))
         stock_holder = StockHolder.get(stock_holder_id)
@@ -126,16 +126,16 @@ class Reports(BaseView):
                 'form_stock':ReportStockForm(),
                 'form_stock_holder':f,
                 'event':event,
-                'performances': event.performances,
+                'performances': event.sorted_performances(),
             }
 
         # CSVファイル生成
         try:
             performanceids = map(int, self.request.POST.getall('performance_id'))
         except (ValueError, TypeError) as err:
-            raise HTTPNotFound('Performace id is illegal: {0}'.format(err.message))            
+            raise HTTPNotFound('Performace id is illegal: {0}'.format(err.message))
         exporter = reporting.export_for_stock_holder(event, stock_holder, f.report_type.data, performanceids=performanceids)
-        
+
         # 出力ファイル名
         filename = "%(report_type)s_%(code)s_%(datetime)s.xls" % dict(
             report_type=f.report_type.data,
