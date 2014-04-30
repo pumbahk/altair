@@ -118,6 +118,133 @@ class LotTests(unittest.TestCase):
             LotElectWork.wish_order==2,
         ).count(), 1)
 
+    def test_reject_entries_empty(self):
+        target = self._makeOne(entry_limit=5)
+        result = target.reject_entries([])
+        self.assertEqual(result, 0)
+
+    def test_reject_entries_one(self):
+        from ..models import LotRejectWork
+        target = self._makeOne(entry_limit=5)
+        self.session.add(target)
+        self.session.flush()
+        self._wish(lot=target,
+                   email="testing@example.com",
+                   entry_no="testing",
+                   wish_order=2)
+        result = target.reject_entries(['testing'])
+        self.assertEqual(result, 1)
+        self.assertEqual(self.session.query(LotRejectWork).filter(
+            LotRejectWork.lot_id==target.id,
+            LotRejectWork.lot_entry_no=='testing',
+        ).count(), 1)
+
+    def test_reject_entries_dup(self):
+        from ..models import LotRejectWork
+        target = self._makeOne(entry_limit=5)
+        self._wish(lot=target,
+                   email="testing@example.com",
+                   entry_no="testing",
+                   wish_order=2)
+        self.session.add(
+            LotRejectWork(
+                lot_id=target.id,
+                lot_entry_no='testing',
+            ),
+        )
+
+        result = target.reject_entries(['testing'])
+        self.assertEqual(result, 0)
+        self.assertEqual(self.session.query(LotRejectWork).filter(
+            LotRejectWork.lot_id==target.id,
+            LotRejectWork.lot_entry_no=='testing',
+        ).count(), 1)
+
+    def test_reset_entries_empty(self):
+        target = self._makeOne(entry_limit=5)
+        result = target.reset_entries([])
+        self.assertEqual(result, 0)
+
+    def test_reset_entries_rejected(self):
+        from ..models import LotElectWork, LotRejectWork
+        target = self._makeOne(entry_limit=5)
+        self.session.add(target)
+        self.session.flush()
+        self._wish(lot=target,
+                   email="testing@example.com",
+                   entry_no="testing",
+                   wish_order=2)
+        self.session.add(
+            LotRejectWork(
+                lot_id=target.id,
+                lot_entry_no='testing',
+            ),
+        )
+        result = target.reset_entries(['testing'])
+        self.assertEqual(result, 1)
+        self.assertEqual(self.session.query(LotElectWork).filter(
+            LotElectWork.lot_id==target.id,
+            LotElectWork.lot_entry_no=='testing',
+        ).count(), 0)
+        self.assertEqual(self.session.query(LotRejectWork).filter(
+            LotRejectWork.lot_id==target.id,
+            LotRejectWork.lot_entry_no=='testing',
+        ).count(), 0)
+
+    def test_reset_entries_elected(self):
+        from ..models import LotElectWork, LotRejectWork
+        target = self._makeOne(entry_limit=5)
+        self.session.add(target)
+        self.session.flush()
+        self._wish(lot=target,
+                   email="testing@example.com",
+                   entry_no="testing",
+                   wish_order=2)
+        self.session.add(
+            LotElectWork(
+                lot_id=target.id,
+                lot_entry_no='testing',
+                wish_order=2,
+            ),
+        )
+        result = target.reset_entries(['testing'])
+        self.assertEqual(result, 1)
+        self.assertEqual(self.session.query(LotElectWork).filter(
+            LotElectWork.lot_id==target.id,
+            LotElectWork.lot_entry_no=='testing',
+        ).count(), 0)
+        self.assertEqual(self.session.query(LotRejectWork).filter(
+            LotRejectWork.lot_id==target.id,
+            LotRejectWork.lot_entry_no=='testing',
+        ).count(), 0)
+
+    def test_reset_entries_already_reset(self):
+        from ..models import LotElectWork, LotRejectWork
+        target = self._makeOne(entry_limit=5)
+        self._wish(lot=target,
+                   email="testing@example.com",
+                   entry_no="testing",
+                   wish_order=2)
+
+        result = target.reset_entries(['testing'])
+    def test_reset_entries_already_reset(self):
+        from ..models import LotElectWork, LotRejectWork
+        target = self._makeOne(entry_limit=5)
+        self._wish(lot=target,
+                   email="testing@example.com",
+                   entry_no="testing",
+                   wish_order=2)
+
+        result = target.reset_entries(['testing'])
+        self.assertEqual(result, 0)
+        self.assertEqual(self.session.query(LotElectWork).filter(
+            LotElectWork.lot_id==target.id,
+            LotElectWork.lot_entry_no=='testing',
+        ).count(), 0)
+        self.assertEqual(self.session.query(LotRejectWork).filter(
+            LotRejectWork.lot_id==target.id,
+            LotRejectWork.lot_entry_no=='testing',
+        ).count(), 0)
 
     def test_rejectable_entries(self):
         target = self._makeOne(entry_limit=5)
