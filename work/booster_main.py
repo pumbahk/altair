@@ -18,6 +18,9 @@ template_org_rx = re.compile(r"/templates/([^/]+)")
 class UnKnownFileType(Exception):
     pass
 
+class ConflictOrganization(Exception):
+    pass
+
 def classify(s, strict=True):
     if "static/js" in s or s.endswith(".js"):
         return ("js", s.split(":", 1))
@@ -74,8 +77,9 @@ class CSSChange(object):
 app_static_rx = re.compile(r'([^/:\.]+?)[/:\.]static[/:\.]')
 app_template_rx = re.compile(r'/templates/([^/]+)/')
 booster_organizations = {"89ers": "89ers", "BT":"bambitious", "bigbulls":"bigbulls"}
+
 class DecisionMaker(object):
-    def __init__(self, filename, org_name, used_css, classifier=classify, dump=None, strict=True, modules=None, css_suffix=""):
+    def __init__(self, filename, org_name, used_css, classifier=classify, dump=None, strict=True, modules=None, css_suffix="", toplevel=False):
         self.filename = filename
         self.org_name = org_name
         self.classifier = classifier
@@ -84,6 +88,7 @@ class DecisionMaker(object):
         self.modules = modules
         self.used_css = used_css
         self._app_name = None
+        self.toplevel = toplevel
 
         ## todo: move
         self.css_change = CSSChange(css_suffix)
@@ -99,7 +104,8 @@ class DecisionMaker(object):
         if not m:
             m = app_template_rx.search(appname)
             if not m:
-                raise ValueError(appname)
+                return "base"
+                #raise ValueError(appname)
         guessed = booster_organizations.get(m.group(1), m.group(1))
         #print("$", {"app_name":appname, "rx":m.group(0), "guessed":guessed})
         return guessed
@@ -170,16 +176,27 @@ class DecisionMaker(object):
         return target.replace(pat, rep, 1)
 
     def info(self, spec, virtual_org=None, virtual=False):
-        current_app_name = self.detect_app_name(spec)
-        file_type, (prefix, filepath) = self.classifier(spec, strict=self.strict)
 
         if virtual_org:
             org = virtual_org
-            prefix = prefix.replace(self.org_name, org)
         else:
             org = self.org_name
 
+        ##xxx convert templates/BT -> static/bambitious:
+        if self.org_name in spec and not org in spec:
+            # sys.stderr.write("@@ {} {}\n".format(self.org_name, org))
+            if self.org_name != "base" and booster_organizations[self.org_name] != org:
+                raise ConflictOrganization("@@ ({}, {}) {}\n".format(self.org_name, org, spec))
+            spec = spec.replace(self.org_name, org)
+
+        current_app_name = self.detect_app_name(spec)
+        file_type, (prefix, filepath) = self.classifier(spec, strict=self.strict)
+        if virtual_org:
+            prefix = prefix.replace(self.org_name, org)
+
+
         dst = self.normalize_dst(file_type, prefix, filepath)
+
         data = {"src_file": os.path.join(self.module_real_path(prefix), self.normalize_src(prefix, filepath)), 
                 "html": self.filename, 
                 "src": spec, 
@@ -212,7 +229,7 @@ class DecisionMaker(object):
         self.used_css[k] = 1
 
         self.css_change.name_change(cssdata) #rename foo.cs => foo.{suffix}.css
-        self.dump.stdout.write(cssdata)
+        self.dump_data(cssdata)
         src_dir = os.path.dirname(cssdata["src_file"])
 
         with open(cssdata["src_file"]) as rf:
@@ -238,8 +255,19 @@ class DecisionMaker(object):
                 if file_type == "css":
                     self.with_css(data, virtual_org)
                 else:
-                    self.dump.stdout.write(data)
+                    self.dump_data(data)
 
+
+    with_organization_package_rx = re.compile(r"booster([\./][^\./:]+)")
+    def dump_data(self, data):
+        if "static/base" in data["dst_file"]:
+            raise ConflictOrganization(data)
+        data["dst_file"] = self.with_organization_package_rx.sub("booster", data["dst_file"])
+        data["dst_file"] = data["dst_file"].replace("BT", "bambitious")
+        if "dst" in data:
+            data["dst"] = self.with_organization_package_rx.sub("booster", data["dst"])
+            data["dst"] = data["dst"].replace("BT", "bambitious")
+        self.dump.stdout.write(data)
 
     def decision(self, inp):
         filename = inp.name
@@ -257,14 +285,20 @@ class DecisionMaker(object):
                         ## sys.stderr.write("** {0} ({1})\n".format(m.group(1), filename))
                         virtual_org_list = booster_organizations.values()
                     for virtual_org in virtual_org_list:
-                        assetspec_prefix = "altair.app.ticketing.booster.{}:".format(self.org_name)
-                        path = assetspec_prefix + ast.literal_eval(m.group(1))
-                        data = self.info(path, virtual_org)
-                        if path.endswith(".css"):
-                            self.with_css(data, virtual_org)
-                        else:
-                            self.dump.stdout.write(data)
-                except (ValueError, SyntaxError, IOError) as e:
+                        try:
+                            assetspec_prefix = "altair.app.ticketing.booster.{}:".format(self.org_name)
+                            path = assetspec_prefix + ast.literal_eval(m.group(1))
+                            data = self.info(path, virtual_org)
+                            if path.endswith(".css"):
+                                self.with_css(data, virtual_org)
+                            else:
+                                self.dump_data(data)
+                        except ValueError as e:
+                            data = self.error(e, line ,path)
+                            self.dump.stderr.write(data)
+                        except ConflictOrganization:
+                            pass
+                except (SyntaxError, IOError) as e:
                     data = self.error(e, line ,path)
                     self.dump.stderr.write(data)
 
@@ -277,13 +311,21 @@ if __name__ == "__main__":
     used_css = {}
     for root, ds, fs in os.walk(cwd, topdown=False):
         for f in fs:
-            if "/templates/" in root:
+            if "/templates" in root:
                 path = os.path.join(root, f)
                 m = template_org_rx.search(root)
                 modules = {"altair.app.ticketing": "ticketing/src/altair/app/ticketing"}
-                dm = DecisionMaker(path, m.group(1), used_css, dump=dump, modules=modules, css_suffix=css_suffix)
-                with open(path) as rf:
-                    dm.decision(rf)
+                if m:
+                    dm = DecisionMaker(path, m.group(1), used_css, dump=dump, modules=modules, css_suffix=css_suffix)
+
+                    with open(path) as rf:
+                        dm.decision(rf)
+                else:
+                    for appname in booster_organizations.keys():
+                        dm = DecisionMaker(path, appname, used_css, dump=dump, modules=modules, css_suffix=css_suffix, toplevel=True)
+
+                        with open(path) as rf:
+                            dm.decision(rf)
 
     sys.stdout.write("[\n")
     sys.stdout.write((',').join(dump.stdout))
