@@ -19,7 +19,7 @@ from altair.app.ticketing.views import BaseView as _BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
     DBSession,
-    Product, 
+    Product,
     Performance,
     PaymentDeliveryMethodPair,
     ShippingAddress,
@@ -67,6 +67,18 @@ from altair.app.ticketing.carturl.api import get_lots_cart_url_builder
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 
 logger = logging.getLogger(__name__)
+
+
+def _filter_stock_type_without_no_quantity_only(stock_types):
+    u"""数受けではないStockTypeを抽選では使わないためのfilter
+
+    refs #5584
+    数受けではない商品に対して抽選を行ってしまうとSejErrorが発生する事が判明している。
+    そのため数受けでない商品に対して抽選を行えないようにする為のWA的対処。
+
+    数受けでない抽選が可能になったタイミングでこのfilterは取り払わなければならない。
+    """
+    return filter(lambda stock_type: stock_type.quantity_only, stock_types)
 
 
 class BaseView(_BaseView):
@@ -138,7 +150,7 @@ class Lots(BaseView):
             manage_sales_segment_group_link=manage_sales_segment_group_link,
             )
 
-    @view_config(route_name='lots.show', renderer='altair.app.ticketing:templates/lots/show.html', 
+    @view_config(route_name='lots.show', renderer='altair.app.ticketing:templates/lots/show.html',
                  permission='event_viewer')
     def show(self):
         self.check_organization(self.context.event)
@@ -190,47 +202,47 @@ class Lots(BaseView):
             "colModel" : [
                 {"hidden": True,
                  "jsonmap": "product.id",
-                 "name": "product_id", 
+                 "name": "product_id",
                  "editable": False},
-                {"label": u"商品名", 
+                {"label": u"商品名",
                  "jsonmap": "product.name",
-                 "name": "product_name", 
-                 "editable": False, 
-                 "width": 150}, 
-                {"label": u"価格", 
+                 "name": "product_name",
+                 "editable": False,
+                 "width": 150},
+                {"label": u"価格",
                  "jsonmap": "product.price",
-                 "name" : "product_price", 
-                 "editable": False, 
-                 "width": 60}, 
-                {"label": u"表示順", 
+                 "name" : "product_price",
+                 "editable": False,
+                 "width": 60},
+                {"label": u"表示順",
                  "jsonmap": "product.order",
-                 "name" :"product_order", 
-                 "editable": False, 
-                 "width": 40, 
-                 "align" :'right'}, 
-                {"label": u"一般公開", 
+                 "name" :"product_order",
+                 "editable": False,
+                 "width": 40,
+                 "align" :'right'},
+                {"label": u"一般公開",
                  "jsonmap": "product.public",
-                 "name" :'product_public', 
-                 "index" :'tax', 
-                 "width": 60, 
+                 "name" :'product_public',
+                 "index" :'tax',
+                 "width": 60,
                  "edittype": "checkbox",
                  "formatter": "checkbox",
-                 "align":'right'}, 
-                {"label": u"席種", 
+                 "align":'right'},
+                {"label": u"席種",
                  "jsonmap": "stock_type.id",
-                 "name" :'stock_type_id', 
-                 "index" :'stock_type_id', 
-                 "width": 150, 
+                 "name" :'stock_type_id',
+                 "index" :'stock_type_id',
+                 "width": 150,
                  "align":'right',
                  "formatter": "select",
                  "edittype": "select",
                  "editoptions": stock_type_options,
-                 "editable": True}, 
-                {"label": u"配券先", 
+                 "editable": True},
+                {"label": u"配券先",
                  "jsonmap": "stock_holder.id",
-                 "name" :'stock_holder_id', 
-                 "index" :'stock_holder_id', 
-                 "width":100, 
+                 "name" :'stock_holder_id',
+                 "index" :'stock_holder_id',
+                 "width":100,
                  "editable": True,
                  "formatter": 'select',
                  "edittype": 'select',
@@ -242,53 +254,53 @@ class Lots(BaseView):
                  "editable": False},
                 {"label": u"商品明細名",
                  "jsonmap": "product_item.name",
-                 "name" :'product_item_name', 
-                 "index" :'product_item_name', 
-                 "width":150, 
+                 "name" :'product_item_name',
+                 "index" :'product_item_name',
+                 "width":150,
                  "editable": True,
                  "sortable":False},
-                {"label": u"単価", 
+                {"label": u"単価",
                  "jsonmap": "product_item.price",
-                 "name" :'product_item_price', 
-                 "index" :'product_item_price', 
-                 "width":60, 
+                 "name" :'product_item_price',
+                 "index" :'product_item_price',
+                 "width":60,
                  "editable": True,
                  "sortable":False},
-                {"label": u"販売単位", 
+                {"label": u"販売単位",
                  "jsonmap": "product_item.quantity",
-                 "name" :'product_item_quantity', 
-                 "index" :'product_item_quantity', 
-                 "width": 60, 
+                 "name" :'product_item_quantity',
+                 "index" :'product_item_quantity',
+                 "width": 60,
                  "editable": True,
                  "sortable":False},
-                {"label": u"券面", 
+                {"label": u"券面",
                  "jsonmap": "ticket_bundle.id",
-                 "name" :'ticket_bundle_id', 
-                 "index" :'ticket_bundle_id', 
-                 "width": 80, 
+                 "name" :'ticket_bundle_id',
+                 "index" :'ticket_bundle_id',
+                 "width": 80,
                  "formatter": 'select',
                  "edittype": 'select',
                  "editoptions": ticket_bundle_options,
                  "editable": True,
                  "sortable":False},
-                {"label": u"席数", 
+                {"label": u"席数",
                  "jsonmap": "stock.quantity",
-                 "name" :'stock_quantity', 
-                 "index" :'stock_quantity', 
+                 "name" :'stock_quantity',
+                 "index" :'stock_quantity',
                  "editable": True,
-                 "width": 60, 
+                 "width": 60,
                  "sortable":False},
-                {"label": u"残席数", 
+                {"label": u"残席数",
                  "jsonmap": "stock_status.quantity",
-                 "name" :'stock_status_quantity', 
-                 "index" :'stock_status_quantity', 
-                 "width": 60, 
+                 "name" :'stock_status_quantity',
+                 "index" :'stock_status_quantity',
+                 "width": 60,
                  "editable": False,
                  "sortable":False},
-                {"label": u" ", 
-                 "name" :'note', 
-                 "index" :'note', 
-                 "width": 80, 
+                {"label": u" ",
+                 "name" :'note',
+                 "index" :'note',
+                 "width": 80,
                  "editable": True,
                  "sortable":False},
                 {"hidden": True,
@@ -337,7 +349,7 @@ class Lots(BaseView):
         lot = self.context.lot
         event = self.context.event
 
-        stock_types = event.stock_types
+        stock_types =  _filter_stock_type_without_no_quantity_only(event.stock_types)
         stock_type_choices = [
             (s.id, s.name)
             for s in stock_types
@@ -365,7 +377,7 @@ class Lots(BaseView):
         lot = self.context.lot
         event = self.context.event
 
-        stock_types = event.stock_types
+        stock_types =  _filter_stock_type_without_no_quantity_only(event.stock_types)
         stock_type_choices = [
             (s.id, s.name)
             for s in stock_types
@@ -409,9 +421,9 @@ class LotEntries(BaseView):
             )
 
 
-    @view_config(route_name='lots.entries.export', 
+    @view_config(route_name='lots.entries.export',
                  renderer='csv', permission='event_viewer')
-    @view_config(route_name='lots.entries.export.html', 
+    @view_config(route_name='lots.entries.export.html',
                  renderer='altair.app.ticketing:templates/lots/export.html', permission='event_viewer')
     def export_entries(self):
         """ 申し込み内容エクスポート
@@ -462,11 +474,11 @@ class LotEntries(BaseView):
         if form.entry_no.data:
             condition = sql.and_(condition, LotEntry.entry_no==form.entry_no.data)
         if form.tel.data:
-            condition = sql.and_(condition, 
+            condition = sql.and_(condition,
                                  sql.or_(ShippingAddress.tel_1==form.tel.data,
                                          ShippingAddress.tel_2==form.tel.data))
         if form.name.data:
-            condition = sql.and_(condition, 
+            condition = sql.and_(condition,
                                  sql.or_(s_a.full_name==form.name.data,
                                          s_a.last_name==form.name.data,
                                          s_a.first_name==form.name.data,
@@ -474,15 +486,15 @@ class LotEntries(BaseView):
                                          s_a.last_name_kana==form.name.data,
                                          s_a.first_name_kana==form.name.data,))
         if form.email.data:
-            condition = sql.and_(condition, 
+            condition = sql.and_(condition,
                                  sql.or_(s_a.email_1==form.email.data,
                                          s_a.email_2==form.email.data))
 
         if form.entried_from.data:
-            condition = sql.and_(condition, 
+            condition = sql.and_(condition,
                                  LotEntry.created_at>=form.entried_from.data)
         if form.entried_to.data:
-            condition = sql.and_(condition, 
+            condition = sql.and_(condition,
                                  LotEntry.created_at<=form.entried_to.data)
         include_canceled = form.include_canceled.data
 
@@ -493,18 +505,18 @@ class LotEntries(BaseView):
             wish_condition = (LotEntry.id == None) ## means False
 
             if form.electing.data:
-                wish_condition = sql.or_(wish_condition, 
+                wish_condition = sql.or_(wish_condition,
                                          sql.and_(LotEntryWish.entry_wish_no==LotElectWork.entry_wish_no,
                                                   LotEntryWish.elected_at==None))
             if form.rejecting.data:
-                wish_condition = sql.or_(wish_condition, 
+                wish_condition = sql.or_(wish_condition,
                                          sql.and_(LotEntry.entry_no==LotRejectWork.lot_entry_no,
                                                   LotEntryWish.rejected_at==None))
             if form.elected.data:
-                wish_condition = sql.or_(wish_condition, 
+                wish_condition = sql.or_(wish_condition,
                                          LotEntryWish.elected_at!=None)
             if form.rejected.data:
-                wish_condition = sql.or_(wish_condition, 
+                wish_condition = sql.or_(wish_condition,
                                          LotEntryWish.rejected_at!=None)
 
             condition = sql.and_(condition, wish_condition)
@@ -515,7 +527,7 @@ class LotEntries(BaseView):
             enable_elect_all = True
 
         if not include_canceled:
-            condition = sql.and_(condition, 
+            condition = sql.and_(condition,
                                  LotEntry.canceled_at == None)
         return condition, enable_elect_all
 
@@ -598,8 +610,8 @@ class LotEntries(BaseView):
                     rejecting_remains_url=rejecting_remains_url,
         )
 
-        
-    @view_config(route_name='lots.entries.import', 
+
+    @view_config(route_name='lots.entries.import',
                  renderer="string",
                  permission='event_viewer')
     def import_accepted_entries(self):
@@ -699,7 +711,7 @@ class LotEntries(BaseView):
 
         return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
 
-    @view_config(route_name='lots.entries.elect', 
+    @view_config(route_name='lots.entries.elect',
                  renderer="string",
                  request_method="POST",
                  permission='event_viewer')
@@ -734,7 +746,7 @@ class LotEntries(BaseView):
         self.request.session.flash(u"落選確定処理を行いました")
 
         lot.start_electing()
-        return HTTPFound(location=self.request.route_url('lots.entries.index', 
+        return HTTPFound(location=self.request.route_url('lots.entries.index',
                                                          lot_id=lot.id))
 
 
@@ -749,7 +761,7 @@ class LotEntries(BaseView):
         tmpl = get_renderer("/lots/search.html")
         auth = MultiCheckoutOrderStatus.by_order_no(wish.lot_entry.entry_no)
         sej =  DBSession.query(SejOrder).filter(SejOrder.order_no==wish.lot_entry.entry_no).first()
-    
+
         from altair.viewhelpers import Namespace as Namespace_vh
 
         html = tmpl.implementation().get_def('lot_wish_row').render(
@@ -782,7 +794,7 @@ class LotEntries(BaseView):
                           for w in _wish_generator()])
 
 
-    @view_config(route_name="lots.entries.elect_all", 
+    @view_config(route_name="lots.entries.elect_all",
                  request_method="POST",
                  permission='event_viewer',
                  renderer="json")
@@ -874,7 +886,7 @@ class LotEntries(BaseView):
                 refresh=self.request.route_path('lots.entries.search', lot_id=lot.id, _query=self.request.params)
                 )
 
-    @view_config(route_name='lots.entries.elect_entry_no', 
+    @view_config(route_name='lots.entries.elect_entry_no',
                  request_method="POST",
                  permission='event_viewer',
                  renderer="json")
@@ -910,7 +922,7 @@ class LotEntries(BaseView):
                           for w in wish.lot_entry.wishes])
 
 
-    @view_config(route_name='lots.entries.reject_entry_no', 
+    @view_config(route_name='lots.entries.reject_entry_no',
                  request_method="POST",
                  permission='event_viewer',
                  renderer="json")
@@ -938,7 +950,7 @@ class LotEntries(BaseView):
                           for w in lot_entry.wishes])
 
 
-    @view_config(route_name='lots.entries.cancel', 
+    @view_config(route_name='lots.entries.cancel',
                  renderer="json",
                  request_method="POST",
                  permission='event_viewer')
@@ -1032,7 +1044,7 @@ class LotEntries(BaseView):
         lot = slave_session.query(Lot).join(LotEntry.lot).filter(LotEntry.entry_no==entry_no).one()
         lot_entry = lot.get_lot_entry(entry_no)
         shipping_address = lot_entry.shipping_address
-        mail_form = SendingMailForm(recipient=shipping_address.email_1, 
+        mail_form = SendingMailForm(recipient=shipping_address.email_1,
                                     bcc="")
         summaries = slave_session.query(LotWishSummary).filter(LotWishSummary.entry_no==entry_no).order_by(LotWishSummary.wish_order).all()
         wishes = sorted(lot_entry.wishes, key=lambda w: w.wish_order)
@@ -1040,10 +1052,10 @@ class LotEntries(BaseView):
         for w, ww in wishes:
             assert w.wish_order == ww.wish_order
 
-        return {"lot": lot, 
+        return {"lot": lot,
                 "wishes": wishes,
-                "lot_entry": lot_entry, 
-                "shipping_address": shipping_address, 
+                "lot_entry": lot_entry,
+                "shipping_address": shipping_address,
                 "mail_form": mail_form}
 
     @view_config(route_name='lots.entries.shipping_address.edit', request_method='GET', renderer='altair.app.ticketing:templates/orders/_form_shipping_address.html')
