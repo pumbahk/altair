@@ -113,7 +113,6 @@ from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketCover
 from altair.app.ticketing.core.modelmanage import OrderAttributeManager
 from altair.app.ticketing.core.helpers import build_sales_segment_list_for_inner_sales
-from altair.metadata.api import with_provided_values_iterator
 
 # XXX
 INNER_DELIVERY_PLUGIN_IDS = [
@@ -833,27 +832,6 @@ class OrderDetailView(BaseView):
             raise HTTPNotFound('order no %s is not found' % order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
-    @view_config(route_name='orders.show.subview.products', renderer="altair.app.ticketing:templates/orders/_show_product_table.html")
-    def show__subview_products(self):
-        order = self.context.order
-        if order is None:
-            raise HTTPNotFound('order id %d is not found' % self.context.order_id)
-
-        dependents = self.context.get_dependents_models()
-        default_ticket_format_id = self.context.default_ticket_format.id if self.context.default_ticket_format is not None else None
-
-        joined_objects_for_product_item = dependents.describe_objects_for_product_item_provider(ticket_format_id=default_ticket_format_id)
-        forms = self.context.get_dependents_forms()
-        form_each_print = forms.get_each_print_form(default_ticket_format_id)
-
-        return {
-            'order':order,
-            'form': form_each_print,
-            'build_candidate_id': build_candidate_id,
-            "objects_for_describe_product_item": joined_objects_for_product_item(),
-        }
-
-
     @view_config(route_name='orders.show', renderer='altair.app.ticketing:templates/orders/show.html')
     def show(self):
         order = self.context.order
@@ -863,13 +841,11 @@ class OrderDetailView(BaseView):
         dependents = self.context.get_dependents_models()
         order_history = dependents.histories
         mail_magazines = dependents.mail_magazines
-        item_attributes_pair = [pair 
-                                for op in order.items
-                                for opi in op.elements
-                                for pair in opi.attributes.items()]
-        ordered_product_attributes = with_provided_values_iterator(
-            get_ordered_product_metadata_provider_registry(self.request), 
-            item_attributes_pair
+        default_ticket_format_id = self.context.default_ticket_format.id if self.context.default_ticket_format is not None else None
+
+        joined_objects_for_product_item = dependents.describe_objects_for_product_item_provider(ticket_format_id=default_ticket_format_id)
+        ordered_product_attributes = joined_objects_for_product_item.get_product_item_attributes(
+            get_ordered_product_metadata_provider_registry(self.request)
         )
         order_attributes = dependents.get_order_attributes(
             get_order_metadata_provider_registry(self.request)
@@ -880,6 +856,7 @@ class OrderDetailView(BaseView):
         form_order = forms.get_order_form()
         form_order_reserve = forms.get_order_reserve_form()
         form_refund = forms.get_order_refund_form()
+        form_each_print = forms.get_each_print_form(default_ticket_format_id)
 
         return {
             'is_current_order': order.deleted_at is None,
@@ -894,7 +871,9 @@ class OrderDetailView(BaseView):
             'form_order':form_order,
             'form_order_reserve':form_order_reserve,
             'form_refund':form_refund,
+            'form_each_print': form_each_print,
             'form_order_edit_attribute': forms.get_order_edit_attribute(),
+            "objects_for_describe_product_item": joined_objects_for_product_item(),
             'build_candidate_id': build_candidate_id,
         }
 
