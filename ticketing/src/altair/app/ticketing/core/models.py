@@ -53,6 +53,8 @@ from altair.app.ticketing.models import (
     WithTimestamp, BaseModel,
     is_any_of
 )
+from altair.app.ticketing.core.errors import CannotDeleteError
+
 from standardenum import StandardEnum
 from altair.app.ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
 from altair.app.ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode, todate, todatetime
@@ -4024,7 +4026,10 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         sales_segment.save()
         return {template.id:sales_segment.id}
 
-    def delete(self):
+    def can_delete(self):
+        return bool(self.products)
+
+    def delete(self, force=False):
         # delete Product
         for product in self.products:
             product.delete()
