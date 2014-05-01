@@ -18,7 +18,7 @@ from altair.multicheckout.interfaces import ICancelFilter
 logger = logging.getLogger(__name__)
 
 
-def sync_data(request, statuses, shop_name):
+def sync_data(request, statuses, shop_name, api=None):
     """
     前処理（データ訂正）
     
@@ -29,7 +29,8 @@ def sync_data(request, statuses, shop_name):
         売り上げ確定済のものは売り上げ確定済フラグをたてる
         訂正した場合、対応するAPIレスポンスのデータ取得が必要か？
     """
-    api = get_multicheckout_3d_api(request, shop_name)
+    if api is None:
+        api = get_multicheckout_3d_api(request, shop_name)
     for st in statuses:
         if not (st.Status is None or is_cancelable(request, st)):
             continue
@@ -63,16 +64,17 @@ def get_auth_orders(request, shop_id):
                 )
         ).filter(
             m.MultiCheckoutOrderStatus.past(timedelta(hours=1))
-        )
+        ).order_by(m.MultiCheckoutOrderStatus.KeepAuthFor, m.MultiCheckoutOrderStatus.id)
     return q.all()
 
-def cancel_auth(request, statuses, shop_name):
+def cancel_auth(request, statuses, shop_name, api=None):
     """
     本処理
     
         キャンセル条件にしたがってオーソリ依頼データを取得
     """
-    api = get_multicheckout_3d_api(request, shop_name)
+    if api is None:
+        api = get_multicheckout_3d_api(request, shop_name)
     for st in statuses:
         if not is_cancelable(request, st):
             continue
@@ -151,13 +153,12 @@ def process_shop(request, shop_id, shop_name):
     if not statuses:
         return 
 
-    logger.info("starting sync_data %s" % shop_name)
-    sync_data(request, statuses, shop_name)
-    logger.info("finished sync_data %s" % shop_name)
-
-    logger.info("starting cancel_auth %s" % shop_name)
-    cancel_auth(request, statuses, shop_name)
-    logger.info("finished cancel_auth %s" % shop_name)
+    logger.info("starting sync_data and cancel_auth %s" % shop_name)
+    api = get_multicheckout_3d_api(request, shop_name)
+    for status in statuses:
+        sync_data(request, [status], shop_name, api)
+        cancel_auth(request, [status], shop_name, api)
+    logger.info("finished sync_data and cancel_auth %s" % shop_name)
 
 if __name__ == '__main__':
     main()
