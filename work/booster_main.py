@@ -268,10 +268,10 @@ class DecisionMaker(object):
                 data["dst"] = data["dst"].replace("static/base", "static/{}".format(data["org_name"]))
             sys.stderr.write(json.dumps(data, indent=2, ensure_ascii=False))
         data["dst_file"] = self.with_organization_package_rx.sub("booster", data["dst_file"])
-        data["dst_file"] = data["dst_file"].replace("BT", "bambitious")
+        data["dst_file"] = data["dst_file"].replace("bambitious", "BT")
         if "dst" in data:
             data["dst"] = self.with_organization_package_rx.sub("booster", data["dst"])
-            data["dst"] = data["dst"].replace("BT", "bambitious")
+            data["dst"] = data["dst"].replace("bambitious", "BT")
         self.dump.stdout.write(data)
 
     def decision(self, inp):
