@@ -10,17 +10,17 @@ from altairsite.mobile.core.eventhelper import EventHelper
 from altairsite.exceptions import UsersiteException
 from altaircms.page.models import MobileTag
 from altairsite.separation import selectable_renderer
-from altairsite.separation import enable_search_function
 from .forms import MobileTagSearchForm
 
 class ValidationFailure(UsersiteException):
     pass
 
-@mobile_site_view_config(custom_predicates=(enable_search_function, ), route_name='search', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='search', request_type="altairsite.tweens.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/searchresult/search.mako'))
-@mobile_site_view_config(custom_predicates=(enable_search_function, ), route_name='genresearch', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='genresearch', request_type="altairsite.tweens.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/searchresult/genresearch.mako'))
 def search(request):
+
     log_info("search", "start")
     form = SearchForm(request.GET)
     form.num.data = 0
@@ -65,7 +65,7 @@ def search(request):
     log_info("search", "end")
     return {'form':form}
 
-@mobile_site_view_config(custom_predicates=(enable_search_function, ), route_name='mobile_tag_search', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='mobile_tag_search', request_type="altairsite.tweens.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/searchresult/mobile_tag_search_result.mako'))
 def mobile_tag_search(request):
 
