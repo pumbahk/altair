@@ -3313,7 +3313,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def printed_at_status(self):
         total = len(self.tokens)
-        printed_count = len([i for i in self.tokens if i.printed_at])
+        printed_count = len([i for i in self.tokens if i.is_printed()])
         return dict(printed=printed_count, total=total)
 
     def iterate_serial_and_seat(self):
