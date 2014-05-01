@@ -67,7 +67,7 @@ class SejNotificationRequestParamBuilder(object):
             'X_shori_id':           n.process_number,
             'X_shop_id':            n.shop_id,
             'X_shop_order_id':      n.order_no,
-            'X_shori_kbn':          '%02d' % n.payment_type,
+            'X_shori_kbn':          '%02d' % int(n.payment_type),
             'X_lmt_time':           build_sej_datetime(n.ticketing_due_at),
             'X_haraikomi_no':       n.billing_number or '',
             'X_hikikae_no':         n.exchange_number or '',

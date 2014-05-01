@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+
+def setup_subscribers(config):
+    config.add_subscriber('.mail.on_order_canceled'     , '.events.OrderCanceled')
+
 def includeme(config):
     config.add_route('orders.index'                     , '/')
     config.add_route('orders.toggle_show_total'         , '/toggle_show_total')
@@ -50,7 +54,7 @@ def includeme(config):
     config.add_route('orders.print.queue.each'               , '/print/queue/each/{order_id}', factory=".resources.OrderPrintEachResource")
     config.add_route('orders.print.queue.dialog'        , '/api/print/queue/{order_id}', factory=".resources.SingleOrderEnqueueingResource")
 
-    config.add_subscriber('.mail.on_order_canceled'     , '.events.OrderCanceled')
+    config.include(setup_subscribers)
 
     config.add_route("orders.mailinfo"                  , "/orders/{order_id}/mailinfo/{action}")
     config.add_route("cart.search",                       "/carts/")
