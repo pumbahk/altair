@@ -1073,3 +1073,15 @@ div.domain div.container div.text span.bold {
 .bgffffff{
 	background-color: #ffffff;
 }
+
+.scheduleIcon {
+	padding: 10px 10px 5px 10px;
+	background: #EFEFEF;
+	font-size: 11px;
+	border: 4px double #CCC;
+}
+.scheduleIcon img {
+	vertical-align:middle;
+	margin: 0 5px 10px 0;
+	width: 24px;
+}
