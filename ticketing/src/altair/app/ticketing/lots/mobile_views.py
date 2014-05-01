@@ -386,6 +386,8 @@ class EntryLotView(object):
 
         validated = True
         pdmp_messages = None
+        wishes=api.get_options(self.request, lot.id)
+        logger.debug('wishes={0}'.format(wishes))
 
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         if payment_delivery_method_pair_id not in [m.id for m in payment_delivery_pairs]:
@@ -393,13 +395,14 @@ class EntryLotView(object):
             validated = False
         if not cform.validate():
             validated = False
+        if not wishes:
+            self.request.session.flash(u"申し込み内容に入力不備があります")
+            validated = False
 
         if not validated:
             self.request.session.flash(u"入力内容を確認してください")
             return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
 
-        wishes=api.get_options(self.request, lot.id)
-        logger.debug('wishes={0}'.format(wishes))
         user = user_api.get_user(self.context.authenticated_user())
         email = self.request.params.get('email_1')
 
