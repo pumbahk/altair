@@ -153,12 +153,11 @@ def _elect_lots_task(context, message, lot, work, history):
     """ 当選確定処理 """
 
     work_id = work.id
-    logger.info("start electing lot_id = {lot_id}".format(lot_id=lot.id))
+    logger.info("start electing task: lot_id={lot_id}, work_id={work_id}".format(lot_id=lot.id, work_id=work_id))
     if lot is None:
         logger.warning("lot is not found: lot_id = {0}".format(context.lot_id))
         return
 
-    logger.info('start electing task: lot_id = {0}'.format(lot.id))
     request = context.request
     ## XXX: ワーカーがシングルスレッドなので使えるが...
     request.session['order'] = {'order_no': work.lot_entry_no}
