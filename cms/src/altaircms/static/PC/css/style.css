@@ -1,0 +1,557 @@
+@charset "UTF-8";
+/* ----------------- Reset all styles ----------------- */
+*{
+	margin:0;
+	padding:0;
+	border:0;
+}
+
+/* ----------------- Website background and general text colour ----------------- */
+body{
+	background-image:url(../images/backgroundtexture.png);
+	background-color:#f9f9f9;
+	color:#535353;
+	font-family:'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+	font-size:90%;
+}
+
+h1{
+	background: #9c1a5c; /* Old browsers */
+	background: -moz-linear-gradient(top, #9c1a5c 0%, #8c1752 50%, #7c1449 51%, #6d1240 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#9c1a5c), color-stop(50%,#8c1752), color-stop(51%,#7c1449), color-stop(100%,#6d1240)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #9c1a5c 0%,#8c1752 50%,#7c1449 51%,#6d1240 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #9c1a5c 0%,#8c1752 50%,#7c1449 51%,#6d1240 100%); /* Opera11.10+ */
+	background: -ms-linear-gradient(top, #9c1a5c 0%,#8c1752 50%,#7c1449 51%,#6d1240 100%); /* IE10+ */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#9c1a5c', endColorstr='#6d1240',GradientType=0 ); /* IE6-9 */
+	background: linear-gradient(top, #9c1a5c 0%,#8c1752 50%,#7c1449 51%,#6d1240 100%); /* W3C */
+	margin:0 0 10px 0;
+	padding:6px;
+	color:#FFF;
+	-webkit-border-radius:2px;
+	-moz-border-radius:2px;
+	border-radius:2px;
+	text-shadow:1px 1px 2px #333;
+	-webkit-box-shadow:inset 0 0 50px rgba(0,0,0, 0.1);
+}
+
+
+	
+h2{
+	border:solid 1px #ddd;
+    padding: 5px;
+	border-radius:2px;
+    background: #fff;
+    -moz-border-radius: 2px; /* FF */
+    background: -moz-linear-gradient(top,  #fff,  #eee); /* FF */
+    -webkit-border-radius: 2px;/* Webkit */
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));/* Webkit */
+    -pie-background:linear-gradient(top,  #fff,  #eee); /* ie */
+    border-left:5px #9c1a5c solid;padding-left:10px;
+   	margin:0 0 5px 0;
+}
+
+h3{
+	margin:0 0 15px;
+	color:#535353;
+	font-weight:700;
+	font-size:15px;
+	line-height:1;
+	border-left:3px solid #9c1a5c;
+	border-bottom:1px solid #9c1a5c;
+	background:#FFF;
+	padding:4px 0 2px 10px;
+}
+
+h4{
+margin:0 0 5px;
+font-size:13px;
+color:#535353;
+padding:2px 15px;
+border-bottom:1px solid #9c1a5c;
+}
+
+h5{
+font-size:12px;
+color:#535353;
+padding:2px 15px;
+margin:0 0 15px;
+border-bottom: 1px #ccc solid;
+}
+
+h6{
+font-size:12px;
+color:#535353;
+padding:2px 15px;
+margin:0 0 15px;
+}
+
+p{
+	font-family:'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+	font-size:14px;
+}
+
+
+
+.wrapper{
+	margin:0 auto;
+	width:80%;
+	height:auto;
+}
+
+#top{
+	height:40px;
+}
+
+#logo{
+	margin-top:3%;
+}
+
+#logo img{
+	height:50px;
+	float:left;
+}
+
+nav{
+	float:center;
+	width:400px;
+	display:block;
+	height:40px;
+}
+
+nav ul li{
+	display:block;
+	width:20%;
+	float:left;
+	text-align:center;	
+}
+
+nav ul li a{
+	font-family:'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+	width:95%;
+	text-decoration:none;
+	font-weight:400;
+	line-height:300%;
+	display:block;
+	color:#535353;
+}
+
+
+
+nav ul li p{
+	font-family:'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+	width:90%;
+	text-decoration:none;
+	font-weight:400;
+	line-height:250%;
+	display:block;
+	color:#7db9e8;
+}
+
+	
+#slideshow{
+	width:100%;
+}
+
+
+.center{
+	margin:0 auto;
+	text-align:center;
+}
+
+.article{
+padding:2% 0;
+width:95%;
+margin:0 auto;
+
+}
+
+.article img{
+ 	margin:1%;
+	display:block;
+	width:80%;
+	-webkit-box-shadow: 4px 4px 4px #c3c3c3;
+    -moz-box-shadow: 4px 4px 4px #c3c3c3;
+    box-shadow: 4px 4px 4px #c3c3c3;
+}
+
+
+.navbar {
+	font-family:'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+	width:100%;
+	font-weight: 500;
+	font-size: 14px;
+	background-color: #ffffff;
+	background:#f8f8f8;
+	position:fixed;
+	z-index: 50;
+}
+
+.navbar-default .navbar-nav > .active > a, .navbar-default .navbar-nav > .active > a:hover, .navbar-default .navbar-nav > .active > a:focus {
+	color: #ffffff;
+	background-color: #74cfae;
+	width:100%;
+
+}
+
+.navbar-default img {
+margin:10px 0 0 20px;
+}
+
+
+
+/* - - - - - - - - - - - - - - -  Slider START  - - - - - - - - - - - - - - - */
+
+.clearfix {
+	float: none;
+	clear: both;
+}
+/* - - - - - - - - - - - - - - -  Slider END  - - - - - - - - - - - - - - - */
+
+.left{
+	width:48%;
+	float:left;
+	margin-bottom:2%;
+}
+
+.left h3{
+	font-family:'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+	font-size:180%;
+	font-weight:normal;
+	text-align:center;
+	color:#7db9e8;
+	margin-bottom:5%;
+	text-shadow: 0 1px 1px #dadada;
+}
+
+.left p{
+	font-family:'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+	font-size:100%;
+	line-height:140%;
+}
+
+	
+.right{
+	width:48%;
+	float:right;
+	margin-bottom:2%;
+}
+
+.right h3{
+	font-family:'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+	font-size:180%;
+	font-weight:normal;
+	text-align:center;
+	color:#7db9e8;
+	margin-bottom:5%;
+	text-shadow: 0 1px 1px #dadada;
+}
+
+.right p{
+	font-family:'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+	font-size:100%;
+	line-height:140%;
+}
+
+
+/* ----------------------- WORK LINKS START ------------------------- */
+
+#image{
+	width:800px;
+	margin:3% auto 3% auto;
+}
+
+	.image-style{
+		list-style-type: none;
+		margin: 0px;
+		padding: 0px;
+		
+	}
+
+	.image-style li{
+		float: left;
+		padding: 0px;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.image-style img{
+		padding: 0px;
+		float: left;
+		z-index: 4;
+		width:180px;
+		margin:10px;
+	}
+
+#event_wrapper{
+	width:100%;
+	margin:0 auto;
+}
+
+.event{
+	border-radius:14px;
+	width:50%;
+	padding:20px;
+	margin:0 auto;
+	float:left;
+}
+
+
+.event img{
+	display:block;
+	width:100%;
+
+}
+
+
+/* ----------------------- WORK LINKS END ------------------------- */
+#footer{
+	width:80%;
+	margin:0 auto;
+}
+
+#footer nav{
+	margin:0 auto;
+	width:100%;
+	display:block;
+	height:20px;
+	padding:5px 0;
+}
+
+#footer nav ul li{
+	margin:5px auto;
+	display:block;
+	float:left;
+	text-align:center;
+	font-size:10px;
+}
+
+#footer nav ul li a{
+	font-family:'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+	width:100%;
+	text-decoration:none;
+	font-weight:400;
+	line-height:100%;
+	display:block;
+	color:#535353;
+}
+
+#footer nav ul li a:hover{
+	color:#9c1a5c;/*ここもなおす、フッターのhoverリンク色*/
+}
+
+
+
+
+/* ---------------------- RESPONSIVE STUFF - ONLY TOUCH IF YOUR'E CONFIDENT WITH CSS ---------------------- */
+@media only screen and (max-width: 1279px) {
+.wrapper{
+	width:90%;
+}
+#image{
+	width:800px;
+	margin:3% auto 3% auto;
+}
+}
+
+@media only screen and (max-width: 1105px) {
+#image{
+	width:800px;
+	margin:3% auto 3% auto;
+}
+}
+
+@media only screen and (max-width: 999px) {
+#image{
+	width:600px;	
+	margin:3% auto 3% auto;
+}
+
+
+	.image-style img{
+		padding: 0px;
+		float: left;
+		z-index: 4;
+		width:130px;
+		margin:10px;
+	}
+
+
+#event_wrapper{
+	width:100%;
+	margin:0 auto;
+}
+
+.event{
+	width:50%;
+	padding:10px;
+	margin:0 auto;
+	float:left;
+}
+
+
+.event img{
+	display:block;
+	width:100%;
+
+}
+}
+
+@media only screen and (max-width: 835px) {
+	
+#image{
+	width:600px;
+	margin:3% auto 3% auto;	
+}
+.image-style img{
+		padding: 0px;
+		float: left;
+		z-index: 4;
+		width:130px;
+		margin:10px;
+}
+
+#event_wrapper{
+	width:100%;
+	margin:0 auto;
+}
+
+.event{
+	width:50%;
+	padding:10px;
+	margin:0 auto;
+	float:left;
+}
+
+
+.event img{
+	display:block;
+	width:100%;
+
+}
+h1{
+	font-size:110%;
+	background: #9c1a5c; /* Old browsers */
+	background: -moz-linear-gradient(top, #9c1a5c 0%, #8c1752 50%, #7c1449 51%, #6d1240 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#9c1a5c), color-stop(50%,#8c1752), color-stop(51%,#7c1449), color-stop(100%,#6d1240)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #9c1a5c 0%,#8c1752 50%,#7c1449 51%,#6d1240 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #9c1a5c 0%,#8c1752 50%,#7c1449 51%,#6d1240 100%); /* Opera11.10+ */
+	background: -ms-linear-gradient(top, #9c1a5c 0%,#8c1752 50%,#7c1449 51%,#6d1240 100%); /* IE10+ */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#9c1a5c', endColorstr='#6d1240',GradientType=0 ); /* IE6-9 */
+	background: linear-gradient(top, #9c1a5c 0%,#8c1752 50%,#7c1449 51%,#6d1240 100%); /* W3C */
+	margin:0 0 10px 0;
+	padding:12px 10px;
+	color:#FFF;
+	-webkit-border-radius:2px;
+	-moz-border-radius:2px;
+	border-radius:2px;
+	text-shadow:1px 1px 2px #333;
+	-webkit-box-shadow:inset 0 0 50px rgba(0,0,0, 0.1);
+}
+	
+
+h2{
+	font-size:110%;
+	border:solid 1px #ddd;
+    padding: 5px;
+	border-radius:2px;
+    background: #eee;
+    -moz-border-radius: 2px; /* FF */
+    background: -moz-linear-gradient(top,  #fff,  #eee); /* FF */
+    -webkit-border-radius:2px;/* Webkit */
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));/* Webkit */
+    -pie-background:linear-gradient(top,  #fff,  #eee); /* ie */
+	border-left:5px #8c1752	 solid;padding-left:10px;
+	margin:0 0 5px 0;
+}
+
+h3{
+	margin:5px 0 15px;
+	color:#535353;
+	font-weight:700;
+	font-size:15px;
+	line-height:1;
+	border-left:3px solid #8c1752;
+	border-bottom:1px solid #8c1752;
+	background:#FFF;
+	padding:4px 0 2px 10px;
+}
+}
+
+
+@media only screen and (max-width: 720px) {
+	
+#image{
+	width:500px;
+	margin:1% auto 1% auto;	
+}
+
+	.image-style img{
+		padding: 0px;
+		float: left;
+		z-index: 4;
+		width:100px;
+		margin:5px;
+}
+
+	
+#logo{
+	margin-top:3%;
+	text-align:center;
+}
+
+#logo img{
+	display:block;
+	height:50px;
+	float:center;
+	margin:0 auto;
+}
+	
+nav{
+	width:100%;
+}
+	
+header h1{
+	font-size:100%;
+	margin-bottom:5%;
+}
+	
+header h2{
+	font-size:60%;
+}
+	
+.left{
+	width:100%;
+}
+
+.right{
+	width:100%;
+}
+	
+
+
+#event_wrapper{
+	width:100%;
+	margin:0 auto;
+}
+
+.event{
+	width:50%;
+	padding:10px;
+	margin:0 auto;
+	float:left;
+}
+
+
+.event img{
+	display:block;
+	width:100%;
+}
+}
+
+
+
+.center_image img {
+	display: block;
+	margin: auto;
+	width:100%;
+}

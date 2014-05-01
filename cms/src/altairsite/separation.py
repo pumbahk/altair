@@ -58,6 +58,9 @@ tstar_mobile_or_not_renderer = SelectableRendererSetup(
     renderer_name = "tstar_mobile_or_not_renderer"
 )
 
+def enable_search_function(info, request):
+    use_full_usersite = request.organization.use_full_usersite if request.organization else False
+    return bool(use_full_usersite and request.organization.short_name == 'RT')
 
 ## todo: もっと細かく用途制限
 def enable_full_usersite_function(info, request):
