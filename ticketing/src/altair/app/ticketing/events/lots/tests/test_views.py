@@ -36,9 +36,9 @@ class LotEntriesTests(unittest.TestCase):
         result = target._parse_import_file(f)
 
         self.assertEqual(result, (
-                        [('RT0000003109', 0), ('RT000000310A', 0)],
-                        ['RT000000310B', 'RT000000310C', 'RT000000310D']
-                        ))
+                        [(u'RT0000003109', 0), (u'RT000000310A', 0)],
+                        [u'RT000000310B', u'RT000000310C', u'RT000000310D'],
+                        []))
 
     def test_parse_import_file_parse_error(self):
         from altair.app.ticketing.events.lots.exceptions import CSVFileParserError
@@ -91,8 +91,8 @@ class LotEntriesTests(unittest.TestCase):
 
         self.assertEqual(result.location, 'http://example.com/lots/entries/index')
         self.assertEqual(request.session.pop_flash(),
-                         [u"2件の当選予定データ、3件の落選予定データを取り込みました",
-                          u"新たに2件が当選予定、3件が落選予定となりました",
+                         [u"2件の当選予定、3件の落選予定、0件の申込を取り込みました",
+                          u"新たに2件が当選予定、3件が落選予定となり、0件が申込に戻されました",
                          ])
 
         from altair.app.ticketing.lots.models import (
@@ -149,8 +149,8 @@ class LotEntriesTests(unittest.TestCase):
 
         self.assertEqual(result.location, 'http://example.com/lots/entries/index')
         self.assertEqual(request.session.pop_flash(),
-                         [u"2件の当選予定データ、1件の落選予定データを取り込みました",
-                          u"新たに0件が当選予定、0件が落選予定となりました",
+                         [u"2件の当選予定、1件の落選予定、1件の申込を取り込みました",
+                          u"新たに0件が当選予定、0件が落選予定となり、0件が申込に戻されました",
                          ])
 
         from altair.app.ticketing.lots.models import (
@@ -161,10 +161,12 @@ class LotEntriesTests(unittest.TestCase):
         self.assertEqual(self.session.query(LotElectWork).filter_by(lot_entry_no='RT0000000003').count(), 0)
         self.assertEqual(self.session.query(LotElectWork).filter_by(lot_entry_no='RT0000000004').count(), 0)
         self.assertEqual(self.session.query(LotElectWork).filter_by(lot_entry_no='RT0000000005').count(), 0)
+        self.assertEqual(self.session.query(LotElectWork).filter_by(lot_entry_no='RT0000000006').count(), 0)
 
         self.assertEqual(self.session.query(LotRejectWork).filter_by(lot_entry_no='RT0000000003').count(), 0)
         self.assertEqual(self.session.query(LotRejectWork).filter_by(lot_entry_no='RT0000000004').count(), 0)
         self.assertEqual(self.session.query(LotRejectWork).filter_by(lot_entry_no='RT0000000005').count(), 0)
+        self.assertEqual(self.session.query(LotRejectWork).filter_by(lot_entry_no='RT0000000006').count(), 0)
 
 
 data1 = u"""\
@@ -181,6 +183,7 @@ data2 = u"""\
 当選予定,u'RT0000000003,1
 落選予定,u'RT0000000004,1
 当選予定,u'RT0000000005,1
+申込,u'RT0000000006,1
 """.encode('Shift_JIS')
 
 error_data1 = u"""\

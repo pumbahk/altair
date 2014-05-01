@@ -39,7 +39,7 @@ def _add_lots(session, product_data, membergroups):
     performance = Performance(event_id=event_id, id=123, venue=venue, start_on=datetime(2013, 1, 1, 0, 0, 0), setting=setting)
     session.add(performance)
     sales_segment = SalesSegment(id=12345)
-    lot = _add_lot(session, event_id, sales_segment.id, 5, 3, membergroups=membergroups, venue=venue)
+    lot = _add_lot(session, event_id, sales_segment.id, 5, membergroups=membergroups, venue=venue)
     lot.event.organization = organization
     lot.limit_wishes = 3
     products = _create_products(session, product_data)
@@ -65,7 +65,7 @@ def _create_products(session, values):
     session.flush()
     return products
 
-def _add_lot(session, event_id, sales_segment_group_id, num_performances, num_stok_types, membergroups=[], num_products=3, venue=None):
+def _add_lot(session, event_id, sales_segment_group_id, num_performances, membergroups=[], num_products=3, venue=None):
     from . import models as m
     from altair.app.ticketing.core.models import (
         Event, Performance, PerformanceSetting, SalesSegment, StockType,
@@ -108,15 +108,7 @@ def _add_lot(session, event_id, sales_segment_group_id, num_performances, num_st
                               seat_stock_type=seat_stock_type)
             products.append(product)
 
-    # stock_types
-    stock_types = []
-    for i in range(num_stok_types):
-        s = StockType(name=u"席 {0}".format(i))
-        session.add(s)
-        stock_types.append(s)
-
-    lot = m.Lot(event=event, sales_segment=sales_segment, 
-                stock_types=stock_types)
+    lot = m.Lot(event=event, sales_segment=sales_segment)
 
     session.add(lot)
     session.flush()
