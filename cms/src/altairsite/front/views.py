@@ -42,11 +42,23 @@ def rendering_page(context, request):
     # logger.debug("req2:"+request.path)
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
-    control = context.pc_access_control()
 
-    static_response = _render_static_page(request, control, url, dt)
-    if static_response:
-        return static_response
+    control = context.pc_access_control()
+    try:
+        static_page = control.fetch_static_page_from_params(url, dt)
+        if not os.path.splitext(url)[1]:
+            suffix = "index.html"
+            if not url.endswith("/"):
+                suffix = "/" + suffix
+            static_page = control.fetch_static_page_from_params(url + suffix, dt)
+
+        if static_page:
+            if static_page.interceptive:
+                if os.path.splitext(url)[1]:
+                    return as_static_page_response(request, static_page, url)
+                return as_static_page_response(request, static_page, url + suffix)
+    except StaticPageNotFound:
+        logger.info(u'no corresponding static page found for url=%s; falls back to standard page discovery' % url)
 
     ## hmmm..
     if url.endswith("/index.html"):
@@ -76,16 +88,12 @@ def mobile_rendering_page__rakuten(context, request):
     url = request.matchdict["page_name"]
     params = dict(request.params)
     dt = context.get_preview_date()
-    control = context.pc_access_control()
-
-    static_response = _render_static_page(request, control, url, dt)
-    if static_response:
-        return static_response
 
     path = get_mobile_route_path(request=request, pcurl=url)
     if path:
         return HTTPFound(path)
 
+    control = context.pc_access_control()
     page = control.fetch_page_from_params(url, dt)
 
     if check_pc_page(url):
@@ -108,16 +116,12 @@ def smartphone_rendering_page(context, request):
     url = request.matchdict["page_name"]
     params = dict(request.params)
     dt = context.get_preview_date()
-    control = context.pc_access_control()
-
-    static_response = _render_static_page(request, control, url, dt)
-    if static_response:
-        return static_response
 
     path = get_smartphone_route_path(request=request, pcurl=url)
     if path:
         return HTTPFound(path)
 
+    control = context.pc_access_control()
     page = control.fetch_page_from_params(url, dt)
 
     if check_pc_page(url):
@@ -135,24 +139,6 @@ def smartphone_rendering_page(context, request):
         return HTTPFound(request.route_path("smartphone.genre", genre_id=page.pageset.genre_id))
     else:
         return smartphone_dispatch_view(context, request)
-
-def _render_static_page(request, control, url, dt):
-    try:
-        static_page = control.fetch_static_page_from_params(url, dt)
-        if not os.path.splitext(url)[1]:
-            suffix = "index.html"
-            if not url.endswith("/"):
-                suffix = "/" + suffix
-            static_page = control.fetch_static_page_from_params(url + suffix, dt)
-
-        if static_page:
-            if static_page.interceptive:
-                if os.path.splitext(url)[1]:
-                    return as_static_page_response(request, static_page, url)
-                return as_static_page_response(request, static_page, url + suffix)
-    except StaticPageNotFound:
-        logger.info(u'no corresponding static page found for url=%s; falls back to standard page discovery' % url)
-
 
 def get_mobile_route_path(request, pcurl):
     urls = dict({
