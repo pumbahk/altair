@@ -87,6 +87,9 @@ def execute(app):
                 sys.stderr.write("skip:{}".format(src))
                 sys.stderr.write("\n")
                 continue
+
+            if dst.endswith(("icon_cancel.gif", "icon_haraimodoshizumi.gif")):
+                print 'sed -i "s/{src}/{dst}/g;" {html}'.format(html=html, src=escape_for_sed(os.path.dirname(src)), dst=escape_for_sed(os.path.dirname(dst)))
             print 'sed -i "s/{src}/{dst}/g;" {html}'.format(html=html, src=escape_for_sed(src), dst=escape_for_sed(dst))
     print "git commit -a -m 'template edit'"
     for k, vs in app.mv_events:

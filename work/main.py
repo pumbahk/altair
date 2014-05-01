@@ -244,19 +244,19 @@ class DecisionMaker(object):
                     elif "get_order_status_image" in fmt:
                         prefix = ast.literal_eval(fmt.split("+")[0].strip(" "))
                         for fname in ["icon_cancel.gif", "icon_hassou.gif", "icon_uketsuke.gif"]:
-                            path = "{}/{}".format(prefix, fname)
+                            path = "{}{}".format(prefix, fname)
                             data = self.info(path)
                             self.dump.stdout.write(data)
                     elif "get_payment_status_image" in fmt:
                         prefix = ast.literal_eval(fmt.split("+")[0].strip(" "))
                         for fname in ["icon_haraimodoshizumi_b.gif","icon_haraimodoshizumi.gif","icon_payment.gif","icon_minyukin.gif"]:
-                            path = "{}/{}".format(prefix, fname)
+                            path = "{}{}".format(prefix, fname)
                             data = self.info(path)
                             self.dump.stdout.write(data)
                     elif "get_entry_status_image" in fmt:
                         prefix = ast.literal_eval(fmt.split("+")[0].strip(" "))
                         for fname in ["icon_cancel.gif","icon_tousen.gif","icon_rakusen.gif","icon_kekkachusenmachi.gif"]:
-                            path = "{}/{}".format(prefix, fname)
+                            path = "{}{}".format(prefix, fname)
                             data = self.info(path)
                             self.dump.stdout.write(data)
                     else:
