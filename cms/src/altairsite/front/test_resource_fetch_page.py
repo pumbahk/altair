@@ -117,7 +117,6 @@ class StaticPageQueryNotFoundTests(TestBase):
         self.assertTrue(self.control.static_pageset_query.called)
         self.assertEquals(result, None)
 
-    ## mobile request only, raise 404 immediately(this is not good. but...)
     def test_mobile_notfound(self):
         from pyramid.httpexceptions import HTTPNotFound
 
@@ -125,10 +124,9 @@ class StaticPageQueryNotFoundTests(TestBase):
         request = make_mobile_request(self._makeRequest(organization))
 
         target = self._makeOne(request)
-
-        with self.assertRaises(HTTPNotFound):
-            target.fetch_static_page_from_params(url="<url>", dt=S.dt)
-            self.assertTrue(self.control.static_pageset_query.called)
+        result = target.fetch_static_page_from_params(url="<url>", dt=S.dt)
+        self.assertTrue(self.control.static_pageset_query.called)
+        self.assertEquals(result, None)
 
 
 class StaticPageQueryFoundTests(TestBase):
