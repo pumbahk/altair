@@ -91,7 +91,7 @@
       </ul>
    </td>
     <td>
-      %if ordered_product_item.printed_at:
+      %if ordered_product_item.exact_printed():
         ${ordered_product_item.printed_at}
         <span alt="${ordered_product_item.printed_at}" class="label label-warning">済</span>
         %for operator_name in list(set([ph.operator.name for ph in ordered_product_item.print_histories if ph.operator])):
