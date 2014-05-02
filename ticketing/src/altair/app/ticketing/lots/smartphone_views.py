@@ -213,7 +213,7 @@ class EntryLotView(object):
         raise HTTPNotFound()
 
     @view_config(route_name='lots.entry.sp_step1', renderer=selectable_renderer("smartphone/%(membership)s/step1.html"), custom_predicates=())
-    def step1(self, form=None):
+    def step1(self):
         """
         抽選第N希望まで選択
         """
@@ -273,10 +273,11 @@ class EntryLotView(object):
 
 
     @view_config(route_name='lots.entry.sp_step2', renderer=selectable_renderer("smartphone/%(membership)s/step2.html"), custom_predicates=())
-    def step2(self, form=None):
+    def step2(self):
         """
         購入情報入力
         """
+        form = self._create_form()
         event = self.context.event
         lot = self.context.lot
 
@@ -313,8 +314,6 @@ class EntryLotView(object):
             return HTTPFound(self.request.route_path(
                 'lots.entry.sp_step1', event_id=event.id, lot_id=lot.id))
 
-        form = schemas.ClientForm(formdata=self.request.params)
-
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
 
@@ -323,7 +322,7 @@ class EntryLotView(object):
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'))
 
     @view_config(route_name='lots.entry.sp_step3', renderer=selectable_renderer("smartphone/%(membership)s/step3.html"), custom_predicates=())
-    def step3(self, form=None):
+    def step3(self):
         """
         申し込み確認
         """
