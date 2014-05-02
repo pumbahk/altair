@@ -97,40 +97,39 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 
 ${tabs.tabs(request)}
 
-<div class="well">
+<div>
   <form id="search" class="form-horizontal" method="get" action="${request.current_route_path()}">
     <fieldset>
-      <legend>検索条件</legend>
       <table>
-	      <tbody>
+        <tbody>
           <tr>
             <th><label for="entry_no">${form.entry_no.label.text}</label></th>
             <td>
               ${form.entry_no(maxlength=12)}
               ${ch.validate_errors(form.entry_no)}
             </td>
-	        </tr>
+          </tr>
           <tr>
             <th><label for="tel">${form.tel.label.text}</label></th>
             <td>
               ${form.tel(maxlength=255)}
               ${ch.validate_errors(form.tel)}
             </td>
-	        </tr>
+          </tr>
           <tr>
             <th><label for="name">${form.name.label.text}</label></th>
             <td>
               ${form.name(maxlength=255)}
               ${ch.validate_errors(form.name)}
             </td>
-	        </tr>
+          </tr>
           <tr>
             <th><label for="email">${form.email.label.text}</label></th>
             <td>
               ${form.email(maxlength=255)}
               ${ch.validate_errors(form.email)}
             </td>
-	        </tr>
+          </tr>
           <tr>
             <th><label>${form.entried_from.label.text}</label></th>
             <td>
@@ -144,7 +143,7 @@ ${tabs.tabs(request)}
             <td>
               ${form.include_canceled()}
             </td>
-	        </tr>
+          </tr>
           <tr>
             <th>
               <label for="electing">${form.electing.label.text}</label>

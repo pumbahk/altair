@@ -35,50 +35,50 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 
 ${tabs.tabs(request)}
 
-<div>
 <%include file="electing_statuses.html"/>
-<h3>当落確定処理</h3>
-%if lot.is_finished():
-この抽選は終了済みです。
-%else:
-<p>
-<ul>
-%for blocker in electing.blockers:
-<li>${blocker}</li>
-%endfor
-</ul>
-</p>
-<form method="POST" action="${request.route_url('lots.entries.elect', lot_id=lot.id)}">
-    <button ${"disabled" if electing.blockers else ""} class="btn btn-primary btn-large">当選確定処理を実行する</button>
-</form>
-<form method="POST" action="${request.route_url('lots.entries.reject', lot_id=lot.id)}">
-    <button ${"disabled" if electing.blockers else ""} class="btn btn-large btn-danger">落選確定処理を実行する</button>
-</form>
-%if closer.can_close():
-<form method="POST" action="${request.route_url('lots.entries.close', lot_id=lot.id)}">
-    <button class="btn btn-large btn-danger">オーソリ開放処理を実行する</button>
-</form>
-%else:
-    <span class="btn btn-large btn-inverse">オーソリ開放処理を実行する<br>当落の確定していない申込があります。</span>
 
-%endif
-%endif
+<div>
+  <h3>当落確定</h3>
+  %if lot.is_finished():
+  この抽選は終了しました
+  %else:
+  <p>
+    <ul>
+    %for blocker in electing.blockers:
+      <li>${blocker}</li>
+    %endfor
+    </ul>
+  </p>
+  <form method="POST" action="${request.route_url('lots.entries.elect', lot_id=lot.id)}">
+    <button ${"disabled" if electing.blockers else ""} class="btn btn-primary btn-large">当選確定する</button>
+  </form>
+  <form method="POST" action="${request.route_url('lots.entries.reject', lot_id=lot.id)}">
+    <button ${"disabled" if electing.blockers else ""} class="btn btn-large btn-danger">落選確定する</button>
+  </form>
+    %if closer.can_close():
+  <form method="POST" action="${request.route_url('lots.entries.close', lot_id=lot.id)}">
+    <button class="btn btn-large btn-danger">オーソリ開放する</button>
+  </form>
+    %else:
+  <div class="btn btn-large btn-inverse">オーソリ開放する</div>
+  ※当落の確定していない申込があります
+    %endif
+  %endif
 </div>
 
+<hr>
+
 <div>
-<h3>ファイル</h3>
-<fieldset>
-<legend>抽選申込情報のエクスポート</legend>
-<a href="${request.route_url('lots.entries.export', lot_id=lot.id)}" class="btn">エクスポート</a>
-</fieldset>
-
-<form enctype="multipart/form-data" method="POST" action="${request.route_url('lots.entries.import', lot_id=lot.id)}">
+  <h3>ファイル</h3>
   <fieldset>
-    <legend>当選予定情報のインポート</legend>
-
-    <input type="file" name="entries"/><br/>
-    <button type="submit" class="btn">当選データインポート</button>
+    <legend>抽選申込情報のエクスポート</legend>
+    <a href="${request.route_url('lots.entries.export', lot_id=lot.id)}" class="btn">エクスポート</a>
   </fieldset>
-</form>
-
+  <form enctype="multipart/form-data" method="POST" action="${request.route_url('lots.entries.import', lot_id=lot.id)}">
+    <fieldset>
+      <legend>当選予定情報のインポート</legend>
+      <input type="file" name="entries"/><br/>
+      <button type="submit" class="btn">当選データインポート</button>
+    </fieldset>
+  </form>
 </div>
