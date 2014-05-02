@@ -98,7 +98,11 @@ AppSetting = namedtuple("AppSetting", "hostname subdomains")
 def setup_app_setting(config):
     args = config.settings["args"]
     hostname = config.settings.get("hostname", args.hostname)
-    subdomains = config.settings.get("subdomains", SUBDOMAINS)
+    subdomains = config.settings.get("subdomains")
+    if subdomains is None:
+        subdomains = SUBDOMAINS
+    else:
+        subdomains = [x.strip() for x in subdomains.split("\n")]
     config.settings["app"] = AppSetting(hostname=hostname, subdomains=subdomains)
 
 def setup_network_setting(config):
@@ -133,6 +137,9 @@ class MiniConfigurator(object):
 
     def run_app(self):
         network = self.settings["network"]
+        appsetting = self.settings["app"]
+        sys.stderr.write("Forwarding: {}\n".format(appsetting.hostname))
+        sys.stderr.write("SubDomains: {}\n".format(", ".join(appsetting.subdomains)))
         sys.stderr.write("Listening on %s:%d\n" % (network.addr, network.port))
 
         proxy_factory = proxy_factory_from_config(self)
@@ -161,6 +168,7 @@ def main():
 
     args = parser.parse_args()
     settings = {"args": args}
+
     if args.configfile:
         parser = ConfigParser.SafeConfigParser()
         assert parser.read(args.configfile)
