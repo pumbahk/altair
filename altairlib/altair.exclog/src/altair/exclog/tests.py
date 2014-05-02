@@ -57,7 +57,7 @@ class ExcLogTweenTests(unittest.TestCase):
 
         self.assertEqual(result.handler, handler)
         self.assertEqual(result.registry, registry)
-        self.assertTrue(result.message_builder.extra_info)
+        self.assertTrue(result.message_builder.include_env_dump)
         self.assertEqual(result.ignored, 
                          (WSGIHTTPException,))
 
@@ -135,7 +135,7 @@ class ExcLogTweenTests(unittest.TestCase):
         handler.side_effect = DummyException()
 
         tween = self._makeOne(handler, registry)
-        tween.message_builder.extra_info = False
+        tween.message_builder.include_env_dump = False
         result = tween(request)
 
         self.assertEqual(result.status_int, 500)
@@ -158,7 +158,7 @@ class ExcLogTweenTests(unittest.TestCase):
 
         tween = self._makeOne(handler, registry)
         renderer.show_traceback = True
-        tween.message_builder.extra_info = False
+        tween.message_builder.include_env_dump = False
         result = tween(request)
 
         self.assertEqual(result.status_int, 500)
@@ -176,14 +176,14 @@ class convert_settingsTests(unittest.TestCase):
 
 
     def test_it(self):
-        settings = {"altair.exclog.extra_info": "",
+        settings = {"altair.exclog.include_env_dump": "",
                     "altair.exclog.ignored": "Exception ValueError",
                     "altair.exclog.show_traceback": "true",
         }
 
         self._callFUT(settings)
 
-        self.assertFalse(settings['altair.exclog.extra_info'])
+        self.assertFalse(settings['altair.exclog.include_env_dump'])
         self.assertEqual(settings['altair.exclog.ignored'],
                          (Exception, ValueError,))
         self.assertTrue(settings['altair.exclog.show_traceback'])
