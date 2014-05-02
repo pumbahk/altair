@@ -314,6 +314,7 @@ class Performances(BaseView):
 
         query = slave_session.query(Performance).filter(
             Performance.event_id==self.context.event.id)
+        query = query.order_by(Performance.display_order)
         query = query.order_by(sort + ' ' + direction)
 
         performances = paginate.Page(
@@ -510,7 +511,7 @@ def mailinfo_index_view(context, request):
     return HTTPFound(request.route_url("performances.mailinfo.edit", performance_id=context.performance.id, mailtype=MailTypeChoices[0][0]))
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor",
-               route_name="performances.mailinfo.edit", 
+               route_name="performances.mailinfo.edit",
                renderer="altair.app.ticketing:templates/performances/mailinfo/new.html")
 class MailInfoNewView(BaseView):
     @view_config(request_method="GET")

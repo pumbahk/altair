@@ -41,7 +41,7 @@
         </tr>
       </thead>
       <tbody>
-      % for i, performance in enumerate(sorted(performances, key=lambda p: (p.display_order, p.id))):
+      % for i, performance in enumerate(performances):
         <% if limit and i >= limit: break %>
         <tr>
           % if not display_only:
