@@ -1,21 +1,22 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="_entries_tabs.html" name="tabs" />
-<%
-from altair.app.ticketing.cart.helpers import format_currency
-%>
+
 <%block name="style">
 <link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
 </%block>
+
 <%block name="fulltitle">
 Altair Backend -- ${lot.event.title}[${lot.name}]
 </%block>
+
 <%block name="javascript">
 </%block>
+
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'イベント', lot.event.title, u'抽選', lot.name, u'申し込み状況'],
+      names=[u'イベント', lot.event.title, u'抽選', lot.name, u'当選/落選'],
       urls=[
         request.route_path('events.index'),
         request.route_path('events.show', event_id=lot.event.id),
@@ -24,15 +25,17 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
       ]
   )}
 </%block>
+
 <div class="page-header">
   <h1>
     ${lot.event.title}<br />
     <small>${lot.name}</small>
   </h1>
 </div>
-${tabs.tabs(request)}
-<div>
 
+${tabs.tabs(request)}
+
+<div>
 <%include file="electing_statuses.html"/>
 <h3>当落確定処理</h3>
 %if lot.is_finished():

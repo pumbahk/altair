@@ -2,23 +2,26 @@
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="_entries_tabs.html" name="tabs" />
 <%
-from altair.app.ticketing.formatter import Japanese_Japan_Formatter
-from altair.app.ticketing.cart.helpers import format_currency
-from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum 
-formatter = Japanese_Japan_Formatter()
+  from altair.app.ticketing.formatter import Japanese_Japan_Formatter
+  from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum 
+  formatter = Japanese_Japan_Formatter()
 %>
+
 <%block name="style">
 <link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
 </%block>
+
 <%block name="fulltitle">
 Altair Backend -- ${lot.event.title}[${lot.name}]
 </%block>
+
 <%block name="javascript">
 </%block>
+
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'イベント', lot.event.title, u'抽選', lot.name, u'申し込み状況'],
+      names=[u'イベント', lot.event.title, u'抽選', lot.name, u'申込状況'],
       urls=[
         request.route_path('events.index'),
         request.route_path('events.show', event_id=lot.event.id),
@@ -27,53 +30,58 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
       ]
   )}
 </%block>
+
 <div class="page-header">
   <h1>
     ${lot.event.title}<br />
     <small>${lot.name}</small>
   </h1>
 </div>
+
 ${tabs.tabs(request)}
 
-<h2>レポートメール送信設定</h2>
+<h3>レポートメール送信設定</h3>
 
+%if report_settings:
+<table class="table table-striped table-bordered table-condensed">
+  <tbody>
+    <tr>
+      <th>名前</th>
+      <th>メールアドレス</th>
+      <th>メール通知頻度</th>
+      <th>送信曜日</th>
+      <th>送信時間</th>
+      <th>送信期間</th>
+      <th>対象</th>
+      <th>レポート対象期間</th>
+      <th></th>
+    </tr>
+    %for rs in report_settings:
+    <tr>
+      <td>${rs.name or ''}</td>
+      <td>${rs.email}</td>
+      <td>${''.join([enum.v[1] for enum in ReportFrequencyEnum if enum.v[0] == rs.frequency])}</td>
+      <td><%doc>${''.join([dow[1] for dow in form_report_mail.day_of_week.choices if rs.day_of_week == dow[0]])}</%doc>${formatter.format_weekday(rs.day_of_week - 1) if rs.day_of_week else ''}</td>
+      <td>${u'%s時' % rs.time if rs.time else ''}</td>
+      <td>${vh.term(rs.start_on, rs.end_on, without_minute=True)}</td>
+      <td>${u'抽選' if rs.lot_id else u'イベント'}</td>
+      <td>${''.join([enum.v[1] for enum in ReportPeriodEnum if enum.v[0] == rs.period])}</td>
+      <td>
+        <form class="pull-left" action="${request.route_url('lot.entries.delete_report_setting', setting_id=rs.id, **request.matchdict)}" method="post" onsubmit="return confirm('削除してよろしいですか？')">
+          <button type="submit" class="btn">削除</button>
+        </form>
+        <form class="pull-left" action="${request.route_url('lot.entries.send_report_setting', setting_id=rs.id, **request.matchdict)}" method="post" onsubmit="return confirm('レポートメールを送信します。よろしいですか？')">
+          <button type="submit" class="btn">送信</button>
+        </form>
+      </td>
+    </tr>
+    %endfor
+  </tbody>
+</table>
+%endif
 <a href="${request.route_url('lot.entries.new_report_setting', **request.matchdict)}" class="btn">新規</a>
 
-<table class="table">
-  <tr>
-    <th>名前</th>
-    <th>メールアドレス</th>
-    <th>メール通知頻度</th>
-    <th>送信曜日</th>
-    <th>送信時間</th>
-    <th>送信期間</th>
-    <th>対象</th>
-    <th>レポート対象期間</th>
-    <th></th>
-  </tr>
-%for rs in report_settings:
-  <tr>
-    <td>${rs.name or ''}</td>
-    <td>${rs.email}</td>
-    <td>${''.join([enum.v[1] for enum in ReportFrequencyEnum if enum.v[0] == rs.frequency])}</td>
-    <td><%doc>${''.join([dow[1] for dow in form_report_mail.day_of_week.choices if rs.day_of_week == dow[0]])}</%doc>${formatter.format_weekday(rs.day_of_week - 1) if rs.day_of_week else ''}</td>
-    <td>${u'%s時' % rs.time if rs.time else ''}</td>
-    <td>
-      ${vh.term(rs.start_on, rs.end_on, without_minute=True)}
-    </td>
-    <td>${u'抽選' if rs.lot_id else u'イベント'}</td>
-    <td>${''.join([enum.v[1] for enum in ReportPeriodEnum if enum.v[0] == rs.period])}</td>
-    <td>
-      <form action="${request.route_url('lot.entries.delete_report_setting', setting_id=rs.id, **request.matchdict)}" method="post" onsubmit="return confirm('削除してよろしいですか？')">
-	<button type="submit" class="btn">削除</button>
-      </form>
-      <form action="${request.route_url('lot.entries.send_report_setting', setting_id=rs.id, **request.matchdict)}" method="post" onsubmit="return confirm('レポートメールを送信します。よろしいですか？')">
-	<button type="submit" class="btn">送信</button>
-      </form>
-    </td>
-  </tr>
-%endfor
+<hr>
 
-</table>
-<h2>申込状況</h2>
+<h3>申込状況</h3>
 <%include file="entries_statuses.html"/>
