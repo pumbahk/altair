@@ -91,16 +91,6 @@ def cancel_auth(request, statuses, shop_name, api=None):
 
         m._session.commit()
 
-def lock(lock_name, timeout):
-    """ 多重起動防止ロック
-    """
-    conn = sqlahelper.get_engine().connect()
-    status = conn.scalar("select get_lock(%s,%s)", (lock_name, timeout))
-    if status != 1:
-        return False
-
-    return True
-
 def main():
     """
     TODO: オプション指定
@@ -120,7 +110,9 @@ def main():
     # 多重起動防止
     LOCK_NAME = 'cancelauth'
     LOCK_TIMEOUT = 10
-    if lock(LOCK_NAME, LOCK_TIMEOUT):
+    conn = sqlahelper.get_engine().connect()
+    status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
+    if status == 1:
         run(request)
         return
     else:
