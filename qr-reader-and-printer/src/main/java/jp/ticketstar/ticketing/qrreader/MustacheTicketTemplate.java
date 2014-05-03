@@ -13,7 +13,7 @@ import com.github.mustachejava.Mustache;
 public class MustacheTicketTemplate extends AbstractTicketTemplate {
 	final Mustache mustache;
 	
-	public MustacheTicketTemplate(int id, String name, TicketFormat ticketFormat, Mustache mustache) {
+	public MustacheTicketTemplate(String id, String name, TicketFormat ticketFormat, Mustache mustache) {
 		super(id, name, ticketFormat);
 		this.mustache = mustache;
 	}

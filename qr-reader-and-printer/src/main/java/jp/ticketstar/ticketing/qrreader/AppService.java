@@ -7,6 +7,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 
 import javax.print.PrintService;
@@ -39,11 +40,13 @@ public class AppService {
 
 	protected TicketPrintable createTicketPrintable(PrinterJob job, final List<Ticket> tickets) {
 		final List<GraphicsNode> svgs = new ArrayList<GraphicsNode>();
-		final TicketTemplate template = model.getTicketTemplate();
 		final GVTBuilder builder = new GVTBuilder();
 		try {
 			for (Ticket ticket: tickets) {
-				final SVGDocument doc = template.buildSVGDocument(ticket);
+                final TicketTemplate ticketTemplate = model.findTicketTemplateById(ticket.getTicketTemplateId());
+                if (ticketTemplate == null)
+                    throw new ApplicationException(String.format("ticket template (id=%s) does not exist", ticket.getTicketTemplateId()));
+				final SVGDocument doc = ticketTemplate.buildSVGDocument(ticket);
 				final BridgeContext ctx = bridgeContextFactory.createBridgeContext((SVGOMDocument)doc);
 				svgs.add(builder.build(ctx, doc));
 			}
@@ -89,18 +92,10 @@ public class AppService {
 		model.getTickets().remove(ticket);
 	}
 
-	public List<TicketTemplate> getTicketTemplates() {
-		return Collections.unmodifiableList(model.getTicketTemplates());
+	public Collection<TicketTemplate> getTicketTemplates() {
+		return Collections.unmodifiableCollection(model.getTicketTemplates());
 	}
 
-	public TicketTemplate getTicketTemplate() {
-		return model.getTicketTemplate();
-	}
-
-	public void setTicketTemplate(TicketTemplate template) {
-		model.setTicketTemplate(template);
-	}
-	
 	public List<PrintService> getPrintServices() {
 		return Collections.unmodifiableList(model.getPrintServices());
 	}

@@ -4,7 +4,7 @@
 
   <groupId>jp.ticketstar.ticketing</groupId>
   <artifactId>qrreader</artifactId>
-  <version>0.0.0</version>
+  <version>0.0.1</version>
   <packaging>jar</packaging>
 
   <name>qrreader</name>
@@ -17,12 +17,29 @@
   <build>
     <plugins>
       <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin> 
+      <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.3</version>
         <configuration>
-           <descriptorRefs>
-              <descriptorRef>jar-with-dependencies</descriptorRef>
-           </descriptorRefs>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <archive>
+            <index>true</index>
+            <manifest>
+              <addClasspath>true</addClasspath>
+            </manifest>
+            <manifestEntries>
+              <permissions>all-permissions</permissions>
+              <applicationName>ticket-printer</applicationName>
+            </manifestEntries>
+          </archive>
         </configuration>
         <executions>
           <execution>
@@ -35,59 +52,53 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>appassembler-maven-plugin</artifactId>
-        <version>1.0</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId> 
+        <version>2.4</version>
         <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-          <repositoryLayout>flat</repositoryLayout>
-          <repositoryName>lib</repositoryName>
-          <configurationDirectory>config</configurationDirectory>
-          <generateRepository>true</generateRepository>
-          <installArtifacts>false</installArtifacts>
-          <extraJvmArguments>-Xmx512m</extraJvmArguments>
-          <programs>
-            <program>
+          <archive>
+            <index>true</index>
+            <manifest>
+              <addClasspath>true</addClasspath>
               <mainClass>jp.ticketstar.ticketing.qrreader.App</mainClass>
-              <name>ticketprinter</name>
-            </program>
-          </programs>
+            </manifest>
+            <manifestEntries>
+              <permissions>all-permissions</permissions>
+              <applicationName>ticket-printer</applicationName>
+            </manifestEntries>
+          </archive>
         </configuration>
-        <executions>
-          <execution>
-          <id>make-assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>assemble</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
-	    <groupId>org.apache.maven.plugins</groupId>
-	    <artifactId>maven-jar-plugin</artifactId> 
-	    <version>2.4</version>
-	    <configuration>
-         <descriptors>
-           <descriptor>src/main/assembly/descriptor-bin.xml</descriptor>
-         </descriptors>
-	      <archive>
-	        <index>true</index>
-	      	<manifest>
-	      	  <addClasspath>true</addClasspath>
-	      	  <mainClass>jp.ticketstar.ticketing.qrreader.App</mainClass>
-	     	</manifest>
-	  	  </archive>
-	    </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jarsigner-plugin</artifactId> 
         <executions>
           <execution>
+            <id>sign</id>
             <goals>
               <goal>sign</goal>
             </goals>
-            <phase>package</phase>
             <configuration>
+              <archiveDirectory>${project.build.directory}</archiveDirectory>
+              <includes>
+                <include>*.jar</include>
+              </includes>
+              <keystore>src/main/keystore/signing-jar.keystore</keystore>
+              <alias>applet</alias>
+              <storepass>applet</storepass>
+              <keypass>applet</keypass>
+            </configuration>
+          </execution>
+          <execution>
+            <id>verify</id>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <archiveDirectory>${project.build.directory}</archiveDirectory>
+              <includes>
+                <include>*.jar</include>
+              </includes>
               <keystore>src/main/keystore/signing-jar.keystore</keystore>
               <alias>applet</alias>
               <storepass>applet</storepass>
@@ -95,7 +106,7 @@
             </configuration>
           </execution>
         </executions>
-	  </plugin>
+      </plugin>
     </plugins>
   </build>
 
