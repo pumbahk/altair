@@ -7,7 +7,7 @@ from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, TextAreaField
 from wtforms.widgets import CheckboxInput
 from wtforms.validators import Regexp, Length, Optional, ValidationError
-from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
+from wtforms.validators import Optional, AnyOf, Length, Email, Regexp, NumberRange
 
 from altair.formhelpers import (
     DateTimeField, Translations, Required, DateField, Max, OurDateWidget,
@@ -19,6 +19,7 @@ from altair.formhelpers import (
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
+from altair.app.ticketing.events.sales_segment_groups.forms import UPPER_LIMIT_OF_MAX_QUANTITY
 from altair.app.ticketing.lots.models import Lot
 
 from .models import LotEntryReportSetting
@@ -130,6 +131,7 @@ class LotForm(Form):
         label=u'購入上限',
         validators=[
             Required(),
+            NumberRange(min=0, max=UPPER_LIMIT_OF_MAX_QUANTITY, message=u'範囲外です'),
         ],
     )
     seat_choice = BooleanField(
