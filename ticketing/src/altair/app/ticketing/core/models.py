@@ -2987,8 +2987,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             logger.warning("Trying to reissue a ticket for Order (id=%d) that contains OrderedProductItem (id=%d) associated with a ticket which is not marked reissueable" % (self.id, item.id))
                     item.issued = True
                     item.issued_at = now
+                    for token in item.tokens:
+                        token.issued_at = now
                 if printed:
                     item.printed_at = now
+                    for token in item.tokens:
+                        token.printed_at = now
         if issued:
             self.issued = True
             self.issued_at = now
