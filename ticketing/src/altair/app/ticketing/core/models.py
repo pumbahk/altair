@@ -3296,7 +3296,13 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.issued_at or self.tokens == [] or all(token.issued_at for token in self.tokens)
 
     def is_printed(self):
-        return self.printed_at or self.tokens == [] or all(token.printed_at for token in self.tokens)
+        return self.printed_at or self.tokens == [] or self.exact_printed()
+
+    def exact_printed(self):
+        for token in self.tokens:
+            if not token.is_printed():
+                return False
+        return True
 
     @property
     def issued_at_status(self):
@@ -3307,7 +3313,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def printed_at_status(self):
         total = len(self.tokens)
-        printed_count = len([i for i in self.tokens if i.printed_at])
+        printed_count = len([i for i in self.tokens if i.is_printed()])
         return dict(printed=printed_count, total=total)
 
     def iterate_serial_and_seat(self):
