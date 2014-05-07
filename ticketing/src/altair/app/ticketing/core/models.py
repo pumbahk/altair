@@ -53,7 +53,6 @@ from altair.app.ticketing.models import (
     WithTimestamp, BaseModel,
     is_any_of
 )
-from altair.app.ticketing.core.errors import CannotDeleteError
 
 from standardenum import StandardEnum
 from altair.app.ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
