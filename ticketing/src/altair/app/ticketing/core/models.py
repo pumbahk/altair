@@ -643,12 +643,21 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if len(self.product_items) > 0:
             raise Exception(u'商品詳細がある為、削除できません')
 
-        allocation = Stock.filter(Stock.performance_id==self.id) \
-            .filter(Stock.stock_holder_id != None) \
-            .with_entities(func.sum(Stock.quantity)).scalar()
+        allocation = Stock.query.filter(
+            Stock.performance_id==self.id,
+            Stock.stock_holder_id!=None
+            ).with_entities(func.sum(Stock.quantity)).scalar()
 
         if allocation > 0:
             raise Exception(u'配席されている為、削除できません')
+
+        lot_products = Product.query.join(Product.sales_segment).filter(
+            Product.performance_id==self.id,
+            SalesSegment.performance_id==None
+            ).count()
+
+        if lot_products > 0:
+            raise Exception(u'抽選商品がある為、削除できません')
 
         # delete PerformanceSetting
         if self.setting:
