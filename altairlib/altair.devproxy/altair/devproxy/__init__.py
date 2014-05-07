@@ -147,12 +147,12 @@ class MyProxy(proxy.Proxy):
         ]
 
     rewrite_patterns = [
-        (r'http://backend.stg2.rt.ticketstar.jp(/qrreader(?:/.*)?)', r'http://localhost:8030\1'),
-        (r'http://backend.stg2.rt.ticketstar.jp(/.*)?', r'http://localhost:8021\1'),
-        (r'http://cms.stg2.rt.ticketstar.jp(/.*)?', r'http://localhost:8001\1'),
-        (r'http://89ers.stg2.rt.ticketstar.jp(/booster(?:/.*)?)', r'http://localhost:9081\1'),
-        (r'http://bambitious.stg2.rt.ticketstar.jp(/booster(?:/.*)?)', r'http://localhost:9082\1'),
-        (r'http://bigbulls.stg2.rt.ticketstar.jp(/booster(?:/.*)?)', r'http://localhost:9083\1'),
+        (r'http://backend.stg2.rt.ticketstar.jp(/qrreader(?:/.*)?)', r'http://192.168.56.101:8030\1'),
+        (r'http://backend.stg2.rt.ticketstar.jp(/.*)?', r'http://192.168.56.101:8021\1'),
+        (r'http://cms.stg2.rt.ticketstar.jp(/.*)?', r'http://192.168.56.101:8001\1'),
+        (r'http://89ers.stg2.rt.ticketstar.jp(/booster(?:/.*)?)', r'http://192.168.56.101:9081\1'),
+        (r'http://bambitious.stg2.rt.ticketstar.jp(/booster(?:/.*)?)', r'http://192.168.56.101:9082\1'),
+        (r'http://bigbulls.stg2.rt.ticketstar.jp(/booster(?:/.*)?)', r'http://192.168.56.101:9083\1'),
         ]
 
     def __init__(self, *args, **kwargs):
@@ -161,12 +161,12 @@ class MyProxy(proxy.Proxy):
         self.rewrite_patterns = list(self.rewrite_patterns)
         for subdomain in SUBDOMAINS:
             self.rewrite_patterns.extend([
-                (r'http://%s.stg2.rt.ticketstar.jp(/orderreview(?:/.*)?)' % subdomain, r'http://localhost:9061\1'),
-                (r'http://%s.stg2.rt.ticketstar.jp(/lots(?:/.*)?)' % subdomain, r'http://localhost:9121\1'),
-                (r'http://%s.stg2.rt.ticketstar.jp(/cart(?:/.*)?)' % subdomain, r'http://localhost:9021\1'),
-                (r'http://%s.stg2.rt.ticketstar.jp(/whattime(?:/.*)?)' % subdomain, r'http://localhost:9071\1'),
-                (r'http://%s.stg2.rt.ticketstar.jp(/maintenance(?:/.*)?)' % subdomain, r'http://localhost:8000\1'),
-                (r'http://%s.stg2.rt.ticketstar.jp(/.*)?' % subdomain, r'http://localhost:9001\1'),
+                (r'http://%s.stg2.rt.ticketstar.jp(/orderreview(?:/.*)?)' % subdomain, r'http://192.168.56.101:9061\1'),
+                (r'http://%s.stg2.rt.ticketstar.jp(/lots(?:/.*)?)' % subdomain, r'http://192.168.56.101:9121\1'),
+                (r'http://%s.stg2.rt.ticketstar.jp(/cart(?:/.*)?)' % subdomain, r'http://192.168.56.101:9021\1'),
+                (r'http://%s.stg2.rt.ticketstar.jp(/whattime(?:/.*)?)' % subdomain, r'http://192.168.56.101:9071\1'),
+                (r'http://%s.stg2.rt.ticketstar.jp(/maintenance(?:/.*)?)' % subdomain, r'http://192.168.56.101:8000\1'),
+                (r'http://%s.stg2.rt.ticketstar.jp(/.*)?' % subdomain, r'http://192.168.56.101:9001\1'),
                 ])
 
 class ProxyFactory(http.HTTPFactory):

@@ -68,6 +68,7 @@ def _dummy_performance():
     class performance:
         name = "Hey"
         start_on = datetime.now()
+        end_on = datetime.now()
         id = 1111
         class event:
             title = "event"
@@ -84,6 +85,7 @@ def _dummy_order():
     order.transaction_fee = 100
     order.system_fee = 200
     order.delivery_fee = 300
+    order.special_fee = 0
     order.total_amount = 500
     order.payment_delivery_pair.payment_method.payment_plugin_id = 1
     order.payment_delivery_pair.delivery_method.delivery_plugin_id = 1
@@ -97,6 +99,7 @@ def _dummy_cart():
     cart.transaction_fee = 100
     cart.system_fee = 200
     cart.delivery_fee = 300
+    cart.special_fee = 0
     cart.total_amount = 500
     cart.payment_delivery_pair.payment_method.payment_plugin_id = 1
     cart.payment_delivery_pair.delivery_method.delivery_plugin_id = 1
