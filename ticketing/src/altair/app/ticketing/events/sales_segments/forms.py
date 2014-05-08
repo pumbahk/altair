@@ -2,7 +2,7 @@
 
 from wtforms import Form
 from wtforms import TextField, TextAreaField, SelectField, HiddenField, IntegerField, BooleanField, SelectMultipleField
-from wtforms.validators import Regexp, Length, Optional, ValidationError
+from wtforms.validators import Regexp, Length, Optional, ValidationError, NumberRange
 from wtforms.widgets import CheckboxInput
 from sqlalchemy.sql import or_, and_, select
 
@@ -30,6 +30,7 @@ from altair.app.ticketing.core.models import (
     Account,
     )
 from altair.app.ticketing.loyalty.models import PointGrantSetting, SalesSegment_PointGrantSetting
+from altair.app.ticketing.events.sales_segment_groups.forms import UPPER_LIMIT_OF_MAX_QUANTITY
 
 from .resources import ISalesSegmentAdminResource
 from zope.interface import providedBy
@@ -183,7 +184,9 @@ class SalesSegmentForm(OurForm):
         label=label_text_for(SalesSegment.max_quantity),
         default=10,
         validators=[SwitchOptional('use_default_max_quantity'),
-                    Required()],
+                    Required(),
+                    NumberRange(min=0, max=UPPER_LIMIT_OF_MAX_QUANTITY, message=u'範囲外です'),
+                    ],
         hide_on_new=True
     )
     use_default_max_quantity = OurBooleanField(
@@ -430,5 +433,3 @@ class PointGrantSettingAssociationForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', context=None, **kwargs):
         super(PointGrantSettingAssociationForm, self).__init__(formdata, obj, prefix, **kwargs)
         self.context = context
-
-

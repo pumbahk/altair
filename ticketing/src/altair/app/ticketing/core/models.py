@@ -53,6 +53,7 @@ from altair.app.ticketing.models import (
     WithTimestamp, BaseModel,
     is_any_of
 )
+
 from standardenum import StandardEnum
 from altair.app.ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
 from altair.app.ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode, todate, todatetime
@@ -643,12 +644,21 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if len(self.product_items) > 0:
             raise Exception(u'商品詳細がある為、削除できません')
 
-        allocation = Stock.filter(Stock.performance_id==self.id) \
-            .filter(Stock.stock_holder_id != None) \
-            .with_entities(func.sum(Stock.quantity)).scalar()
+        allocation = Stock.query.filter(
+            Stock.performance_id==self.id,
+            Stock.stock_holder_id!=None
+            ).with_entities(func.sum(Stock.quantity)).scalar()
 
         if allocation > 0:
             raise Exception(u'配席されている為、削除できません')
+
+        lot_products = Product.query.join(Product.sales_segment).filter(
+            Product.performance_id==self.id,
+            SalesSegment.performance_id==None
+            ).count()
+
+        if lot_products > 0:
+            raise Exception(u'抽選商品がある為、削除できません')
 
         # delete PerformanceSetting
         if self.setting:
@@ -2978,8 +2988,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             logger.warning("Trying to reissue a ticket for Order (id=%d) that contains OrderedProductItem (id=%d) associated with a ticket which is not marked reissueable" % (self.id, item.id))
                     item.issued = True
                     item.issued_at = now
+                    for token in item.tokens:
+                        token.issued_at = now
                 if printed:
                     item.printed_at = now
+                    for token in item.tokens:
+                        token.printed_at = now
         if issued:
             self.issued = True
             self.issued_at = now
@@ -3281,7 +3295,13 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.issued_at or self.tokens == [] or all(token.issued_at for token in self.tokens)
 
     def is_printed(self):
-        return self.printed_at or self.tokens == [] or all(token.printed_at for token in self.tokens)
+        return self.printed_at or self.tokens == [] or self.exact_printed()
+
+    def exact_printed(self):
+        for token in self.tokens:
+            if not token.is_printed():
+                return False
+        return True
 
     @property
     def issued_at_status(self):
@@ -3292,7 +3312,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def printed_at_status(self):
         total = len(self.tokens)
-        printed_count = len([i for i in self.tokens if i.printed_at])
+        printed_count = len([i for i in self.tokens if i.is_printed()])
         return dict(printed=printed_count, total=total)
 
     def iterate_serial_and_seat(self):
@@ -4024,7 +4044,10 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         sales_segment.save()
         return {template.id:sales_segment.id}
 
-    def delete(self):
+    def can_delete(self):
+        return bool(self.products)
+
+    def delete(self, force=False):
         # delete Product
         for product in self.products:
             product.delete()
