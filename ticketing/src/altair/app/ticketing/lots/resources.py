@@ -10,6 +10,7 @@ from pyramid.traversal import DefaultRootFactory
 from pyramid.decorator import reify
 from sqlalchemy.sql import or_
 
+from altair.now import get_now
 from altair.app.ticketing.core.models import Event, Performance, Organization, ShippingAddress
 from altair.app.ticketing.core import api as core_api
 from .exceptions import OutTermException, OverEntryLimitException, OverEntryLimitPerPerformanceException
@@ -27,7 +28,7 @@ def lot_resource_factory(request):
         raise HTTPNotFound
 
     if context.lot:
-        if not context.lot.available_on(datetime.now()):
+        if not context.lot.available_on(get_now(request)):
             raise OutTermException(lot_name=context.lot.name,
                                    from_=context.lot.start_at,
                                    to_=context.lot.end_at)
