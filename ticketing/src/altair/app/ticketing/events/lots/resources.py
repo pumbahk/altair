@@ -52,12 +52,12 @@ class LotResource(AbstractLotResource):
 
     @reify
     def lots_cart_url(self):
-        cart_url = get_agreement_lots_cart_url_builder(self.request).build(self.request, self.event, self.lot)
+        cart_url = get_lots_cart_url_builder(self.request).build(self.request, self.event, self.lot)
         return cart_url
 
     @reify
     def agreement_lots_cart_url(self):
-        cart_url = get_lots_cart_url_builder(self.request).build(self.request, self.event, self.lot)
+        cart_url = get_agreement_lots_cart_url_builder(self.request).build(self.request, self.event, self.lot)
         return cart_url
 
     @reify
