@@ -539,7 +539,7 @@ def create_client_form(context):
     if user is not None:
         user_profile = user.user_profile
 
-    retval = schemas.ClientForm()
+    retval = schemas.ClientFormFactory(context.request)()
 
     # XXX:ゆるふわなデフォルト値
     sex = SexEnum.Female.v

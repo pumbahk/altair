@@ -376,7 +376,7 @@ class EntryLotView(object):
             raise HTTPNotFound()
 
         sales_segment = lot.sales_segment
-        cform = schemas.ClientForm(self.request.params)
+        cform = schemas.ClientFormFactory(self.request)(self.request.params)
 
         payment_delivery_method_pair_id = None
         try:
