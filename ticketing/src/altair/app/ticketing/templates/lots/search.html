@@ -7,39 +7,39 @@
 <% from altair.app.ticketing.core.api import get_channel %>
 <td nowrap="">
 %if (w.canceled_at or w.is_electing() or w.is_rejecting() or w.rejected_at or w.elected_at or w.is_other_electing()):
-<strong>${w.status}</strong>
+  <strong>${w.status}</strong>
   %if w.ordered_mail_sent_at:
-<br>メール送信済
+  <br>メール送信済
   %endif
   %if w.lot_elect_work_error:
-<br><a href="#" data-toggle="tooltip" title="${w.lot_elect_work_error}">当選処理エラー</a>
+  <br><a href="#" data-toggle="tooltip" title="${w.lot_elect_work_error}">当選処理エラー</a>
   %endif
 %endif
 %if not (w.closed_at or w.is_other_electing()):
-<div class="btn-group">
+  <div class="btn-group">
   %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.is_electing() and not w.elected_at:
-  <button class="btn btn-small entry-elect-btn btn-primary" data-entry-no="${w.entry_no}" data-wish-order="${w.wish_order}">当選</button>
+    <button class="btn btn-small entry-elect-btn btn-primary" data-entry-no="${w.entry_no}" data-wish-order="${w.wish_order}">当選</button>
   %endif
   %if w.is_electing() and not w.elected_at and not w.rejected_at:
-  <button class="btn btn-small cancel-electing-btn" data-entry-no="${w.entry_no}" data-wish-order="${w.wish_order}">元に戻す</button>
+    <button class="btn btn-small cancel-electing-btn" data-entry-no="${w.entry_no}" data-wish-order="${w.wish_order}">元に戻す</button>
   %endif
 
   %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.is_electing() and not w.elected_at:
-  <button class="btn btn-small entry-reject-btn btn-info" data-entry-no="${w.entry_no}">落選</button>
+    <button class="btn btn-small entry-reject-btn btn-info" data-entry-no="${w.entry_no}">落選</button>
   %endif
   %if w.is_rejecting() and not w.rejected_at and not w.rejected_at and not w.is_electing():
-  <button class="btn btn-small cancel-reject-btn" data-entry-no="${w.entry_no}">元に戻す</button>
+    <button class="btn btn-small cancel-reject-btn" data-entry-no="${w.entry_no}">元に戻す</button>
   %endif
 
   %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.is_electing() and not w.elected_at:
-  <button class="btn btn-small entry-cancel-btn btn-danger" data-entry-no="${w.entry_no}">キャンセル</button>
+    <button class="btn btn-small entry-cancel-btn btn-danger" data-entry-no="${w.entry_no}">キャンセル</button>
   %endif
-</div>
+  </div>
 %endif
 </td>
 <td nowrap="">
-<a href="${request.route_path("lots.entries.show", lot_id=w.lot_id, entry_no=w.entry_no)}">${w.entry_no}</a><br />
-${vh.datetime(w.created_at, with_weekday=True, without_second=True, omit_year_if_this_year=True)}
+  <a href="${request.route_path("lots.entries.show", lot_id=w.lot_id, entry_no=w.entry_no)}">${w.entry_no}</a><br />
+  ${vh.datetime(w.created_at, with_weekday=True, without_second=True, omit_year_if_this_year=True)}
 </td>
 <td nowrap="">${w.wish_order + 1}</td>
 <td nowrap="">${w.payment_method_name}<br>${view.payment_status(w)}</td>
@@ -67,6 +67,17 @@ ${vh.datetime(w.created_at, with_weekday=True, without_second=True, omit_year_if
 <%block name="style">
 <link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
+<style type="text/css">
+  #search .packed-checkboxes .checkbox-set {
+    width: 80em;
+  }
+  #search .packed-checkboxes .checkbox-set .checkbox-set-item {
+    width: 8em;
+  }
+  #search .packed-checkboxes th {
+    font-weight: normal;
+  }
+</style>
 </%block>
 
 <%block name="fulltitle">
@@ -98,7 +109,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 ${tabs.tabs(request)}
 
 <div>
-  <form id="search" class="form-horizontal" method="get" action="${request.current_route_path()}">
+  <form id="search" method="get" action="${request.current_route_path()}">
     <fieldset>
       <table>
         <tbody>
@@ -108,15 +119,11 @@ ${tabs.tabs(request)}
               ${form.entry_no(maxlength=12)}
               ${ch.validate_errors(form.entry_no)}
             </td>
-          </tr>
-          <tr>
             <th><label for="tel">${form.tel.label.text}</label></th>
             <td>
               ${form.tel(maxlength=255)}
               ${ch.validate_errors(form.tel)}
             </td>
-          </tr>
-          <tr>
             <th><label for="name">${form.name.label.text}</label></th>
             <td>
               ${form.name(maxlength=255)}
@@ -129,129 +136,123 @@ ${tabs.tabs(request)}
               ${form.email(maxlength=255)}
               ${ch.validate_errors(form.email)}
             </td>
-          </tr>
-          <tr>
             <th><label>${form.entried_from.label.text}</label></th>
-            <td>
+            <td colspan="3">
               ${form.entried_from()} 〜 ${form.entried_to()}
               ${ch.validate_errors(form.entried_from)}
               ${ch.validate_errors(form.entried_to)}
             </td>
           </tr>
           <tr>
-            <th><label for="include_canceled">${form.include_canceled.label.text}</label></th>
-            <td>
-              ${form.include_canceled()}
-            </td>
-          </tr>
-          <tr>
-            <th>
-              <label for="electing">${form.electing.label.text}</label>
-            </th>
-            <td>
-              ${form.electing()}
-            </td>
-          </tr>
-          <tr>
-            <th>
-              <label for="electing">${form.elected.label.text}</label>
-            </th>
-            <td>
-              ${form.elected()}
-            </td>
-          </tr>
-          <tr>
-            <th>
-              <label for="electing">${form.rejecting.label.text}</label>
-            </th>
-            <td>
-              ${form.rejecting()}
-            </td>
-          </tr>
-          <tr>
-            <th>
-              <label for="electing">${form.rejected.label.text}</label>
-            </th>
-            <td>
-              ${form.rejected()}
-            </td>
-          </tr>
-          <tr>
             <th><label for="wish_order">${form.wish_order.label.text}</label></th>
-            <td>
+            <td colspan="5">
               ${form.wish_order()}
               ${ch.validate_errors(form.wish_order)}
             </td>
           </tr>
         </tbody>
       </table>
-      <button type="submit" name="do_search" class="btn">検索</button>
+      <table class="packed-checkboxes">
+        <tbody>
+          <tr>
+            <th>ステータス</th>
+            <td>
+              <div class="checkbox-set" id="status">
+                <label class="checkbox-set-item" for="include_canceled">${form.include_canceled.label.text}
+                  ${form.include_canceled()}
+                </label>
+                <label class="checkbox-set-item" for="electing">${form.electing.label.text}
+                  ${form.electing()}
+                </label>
+                <label class="checkbox-set-item" for="elected">${form.elected.label.text}
+                  ${form.elected()}
+                </label>
+                <label class="checkbox-set-item" for="rejecting">${form.rejecting.label.text}
+                  ${form.rejecting()}
+                </label>
+                <label class="checkbox-set-item" for="rejected">${form.rejected.label.text}
+                  ${form.rejected()}
+                </label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </fieldset>
+    <div style="margin-top: 20px;">
+      <button type="submit" name="do_search" class="btn">
+        <i class="icon-search"></i> 検索
+      </button>
+    </div>
   </form>
 </div>
+
 <!-- 一括操作 -->
 %if wishes:
 <div class="well">
-  %if enable_elect_all:
-  <button id="all-elect-button" type="button" class="btn" style="height:3em">
+  <button id="all-elect-button" type="button" class="btn btn-large btn-primary" ${"disabled" if not enable_elect_all else ""}
+          data-toggle="popover" data-placement="bottom" data-content="希望順位を絞り込んだ場合のみ利用可能" data-original-title="">
     一括で当選予定にする
   </button>
-  %else:
-  <span class="btn btn-inverse"  style="height:3em">
-    一括で当選予定にする<br>(希望順位を絞り込んだ場合のみ利用可能)
-  </span>
+  %if not enable_elect_all:
+  <script>
+  $(function() {
+    $('#all-elect-button').popover('show');
+  })
+  </script>
   %endif
-  <button id="remains-reject-button" type="button" class="btn" style="height:3em">
+  <button id="remains-reject-button" type="button" class="btn btn-large btn-info">
     残りの申込を落選予定にする
   </button>
 </div>
 %endif
 
-<div>
+<div style="margin-top: 30px;">
 %if wishes:
-${ch.pager(wishes)}
-<table border="1" class="table" id="wish-search-results">
-<thead>
-<tr>
-<th>状態</th>
-<th>申込番号 / 申込日</th>
-<th>希望</th>
-<th>決済方法</th>
-<th>引取方法</th>
-<th>公演コード / 公演日</th>
-<th>会場</th>
-<th>席種</th>
-<th>商品</th>
-<th>枚数</th>
-<th>配送先姓</th>
-<th>配送先名</th>
-<th>配送先姓(カナ)</th>
-<th>配送先名(カナ)</th>
-<th>都道府県</th>
-<th>市区町村</th>
-<th>住所1</th>
-<th>住所2</th>
-<th>電話番号1</th>
-<th>電話番号2</th>
-<th>メールアドレス1</th>
-<th>メールアドレス2</th>
-<th>販売チャネル</th>
-</tr>
-</thead>
-<tbody>
-%for w in wishes:
-<tr class="${'lot-wish-' + str(w.entry_no) + '-' + str(w.wish_order)} wish-row"
-    data-entry-no="${str(w.entry_no)}"
-    data-wish-order="${w.wish_order}"
-    data-wish-id="${w.id}">
-${self.lot_wish_row(request, w)}
-</tr>
-%endfor
-</tbody>
-</table>
-${ch.pager(wishes)}
+  ${ch.pager(wishes)}
+  <table border="1" class="table" id="wish-search-results">
+    <thead>
+      <tr>
+      <th>状態</th>
+      <th>申込番号 / 申込日</th>
+      <th>希望</th>
+      <th>決済方法</th>
+      <th>引取方法</th>
+      <th>公演コード / 公演日</th>
+      <th>会場</th>
+      <th>席種</th>
+      <th>商品</th>
+      <th>枚数</th>
+      <th>配送先姓</th>
+      <th>配送先名</th>
+      <th>配送先姓(カナ)</th>
+      <th>配送先名(カナ)</th>
+      <th>都道府県</th>
+      <th>市区町村</th>
+      <th>住所1</th>
+      <th>住所2</th>
+      <th>電話番号1</th>
+      <th>電話番号2</th>
+      <th>メールアドレス1</th>
+      <th>メールアドレス2</th>
+      <th>販売チャネル</th>
+      </tr>
+    </thead>
+    <tbody>
+    %for w in wishes:
+      <tr class="${'lot-wish-' + str(w.entry_no) + '-' + str(w.wish_order)} wish-row"
+          data-entry-no="${str(w.entry_no)}"
+          data-wish-order="${w.wish_order}"
+          data-wish-id="${w.id}">
+      ${self.lot_wish_row(request, w)}
+      </tr>
+    %endfor
+    </tbody>
+  </table>
+  ${ch.pager(wishes)}
 %endif
 </div>
+
 <script>
 var cancelUrl = "${cancel_url}";
 var cancelElectingUrl = "${cancel_electing_url}";

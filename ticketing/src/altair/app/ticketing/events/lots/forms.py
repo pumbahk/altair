@@ -319,7 +319,7 @@ class SearchEntryForm(Form):
     ステータス
     """
     entry_no = TextField(
-        label=u'予約番号',
+        label=u'申込番号',
         validators=[
             Optional(),
             Length(max=255, message=u'255文字以内で入力してください'),
@@ -373,7 +373,7 @@ class SearchEntryForm(Form):
     )
 
     include_canceled = BooleanField(
-        label=u"キャンセルした申込を含める",
+        label=u"キャンセル",
         validators=[
             Required(),
         ],
