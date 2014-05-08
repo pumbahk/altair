@@ -335,6 +335,10 @@ def is_point_input_organization(context, request):
     organization = c_api.get_organization(request)
     return organization.id == 24
 
+def is_fc_auth_organization(context, request):
+    organization = c_api.get_organization(request)
+    return bool(organization.settings[0].auth_type == "fc_auth")
+
 def get_temporary_store(request):
     return request.registry.queryUtility(ITemporaryStore)
 

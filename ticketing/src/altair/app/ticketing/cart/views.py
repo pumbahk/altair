@@ -45,7 +45,7 @@ from altair.app.ticketing.temp_store import TemporaryStoreError
 from . import api
 from . import helpers as h
 from . import schemas
-from .api import set_rendered_event, is_mobile, is_smartphone, is_smartphone_organization, is_point_input_organization
+from .api import set_rendered_event, is_mobile, is_smartphone, is_smartphone_organization, is_point_input_organization, is_fc_auth_organization
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -995,9 +995,11 @@ class PaymentView(object):
 
         set_confirm_url(self.request, self.request.route_url('payment.confirm'))
 
-        if is_point_input_organization(context=self.context, request=self.request):
+        if is_fc_auth_organization(context=self.context, request=self.request):
             if user:
                 get_or_create_user_profile(user, shipping_address_params)
+
+        if is_point_input_organization(context=self.context, request=self.request):
             return HTTPFound(self.request.route_path('cart.point'))
 
         payment = Payment(cart, self.request)
