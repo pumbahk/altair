@@ -46,7 +46,7 @@ def form_view(context, request):
     organization = get_organization(request)
     candidates_url_dict = CandidatesURLDictBuilder(request).build(request.GET.get("event_id"), request.GET.get("backend_event_id"))
     return {"form": form, "now": now, "now_found": has_session_key(request), "organization": organization, 
-            "description_itr": description_iterate(request), "candidates_url_dict": candidates_url_dict}
+            "description_itr": description_iterate(request, HTTPBadRequest), "candidates_url_dict": candidates_url_dict}
 
 def _treat_dict(request, d2):
     D = request.GET.copy()
@@ -68,7 +68,7 @@ def now_set_view(context, request):
         organization = get_organization(request)
         candidates_url_dict = CandidatesURLDictBuilder(request).build(request.GET.get("event_id"), request.GET.get("backend_event_id"))
         return {"form": form, "now": now, "has_key": has_session_key(request), "organization": organization, 
-                "description_itr": description_iterate(request), "candidates_url_dict": candidates_url_dict}
+                "description_itr": description_iterate(request, HTTPBadRequest), "candidates_url_dict": candidates_url_dict}
  
     set_now(request, form.data["now"])
     request.session.flash(u"現在時刻が「{now}」に設定されました".format(now=form.data["now"]))

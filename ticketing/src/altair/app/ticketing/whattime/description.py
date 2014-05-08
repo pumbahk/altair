@@ -10,7 +10,7 @@ from altair.preview.data import (
     )
 
 ## iter
-def description_iterate(request):
+def description_iterate(request, excclass=Exception):
     try:
         data = load_preview_permission(request)
         if AccesskeyPermissionData.is_this(data):
@@ -19,10 +19,11 @@ def description_iterate(request):
             return operator_data_iterate(request, data)
         else:
             logger.warn("invalid preview permission type={}".format(data["type"]))
-            return []
+            raise excclass("invalid preview permission type={}".format(data["type"]))
     except (PermissionDataNotFound, KeyError):
         logger.warn("request.session does not have preview permission")
-        return []
+        raise excclass("request.session does not have preview permission")
+
 
 
 def accesskey_data_iterate(request, data):
