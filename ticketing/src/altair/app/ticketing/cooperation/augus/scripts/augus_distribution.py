@@ -20,6 +20,7 @@ from altair.augus.protocols import (
     DistributionSyncResponse,
     )
 from altair.augus.parsers import AugusParser
+from altair import multilock
 from pyramid.paster import (
     bootstrap,
     setup_logging,
@@ -31,7 +32,6 @@ from ..errors import (
     IllegalImportDataError,
     AugusDataImportError,
     )
-from .. import multilock
 
 logger = logging.getLogger(__name__)
 

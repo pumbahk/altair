@@ -14,9 +14,10 @@ from altair.app.ticketing.core.models import (
     )
 from altair.augus.protocols import TicketSyncRequest
 from altair.augus.parsers import AugusParser
+from altair import multilock
 from ..exporters import AugusPutbackExporter
 from ..errors import AugusDataImportError
-from .. import multilock
+
 
 
 def mkdir_p(path):
