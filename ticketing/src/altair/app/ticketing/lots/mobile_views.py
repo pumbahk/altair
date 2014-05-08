@@ -404,11 +404,10 @@ class EntryLotView(object):
             return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
 
         user = user_api.get_user(self.context.authenticated_user())
-        email = self.request.params.get('email_1')
 
         # 申込回数チェック
         try:
-            self.context.check_entry_limit(wishes, user=user, email=email)
+            self.context.check_entry_limit(wishes, user=user, email=cform.email_1.data)
         except OverEntryLimitPerPerformanceException as e:
             self.request.session.flash(u"公演「{0}」への申込は{1}回までとなっております。".format(e.performance_name, e.entry_limit))
             return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)

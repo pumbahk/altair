@@ -27,7 +27,7 @@ class WhoDecider(object):
         #return self.request.organization.setting.auth_type
         #return get_organization(self.request).setting.auth_type
 
-        if hasattr(self.request.context, "lot"):
+        if hasattr(self.request, "context") and hasattr(self.request.context, "lot"):
             return self.request.context.lot.auth_type
 
 def register_globals(event):

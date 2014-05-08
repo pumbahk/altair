@@ -18,6 +18,7 @@ from pyramid.response import Response
 from altair.app.ticketing.qr import qr
 from altair.app.ticketing.cart import helpers as cart_helper
 from altair.app.ticketing.core import models as c_models
+from altair.app.ticketing.core.interfaces import IOrderLike
 from collections import namedtuple
 
 from . import QR_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
@@ -91,9 +92,10 @@ class QRTicketDeliveryPlugin(object):
     def finished(self, request, order):
         """ tokenが存在すること """
         result = True
-        for op in order.ordered_products:
-            for opi in op.ordered_product_items:
-                result = result and opi.tokens
+        if isinstance(order, IOrderLike):
+            for op in order.items:
+                for opi in op.elements:
+                    result = result and opi.tokens
         return result
 
     def refresh(self, request, order):

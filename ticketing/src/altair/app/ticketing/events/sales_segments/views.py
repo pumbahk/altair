@@ -158,6 +158,10 @@ class SalesSegments(BaseView):
         if performance_id:
             location = route_path('performances.show', self.request, performance_id=long(performance_id))
 
+        if self.context.sales_segment.can_delete():
+            self.request.session.flash(u'商品のある販売区分は削除できません')
+            raise HTTPFound(location=location)
+
         try:
             self.context.sales_segment.delete()
             self.request.session.flash(u'販売区分を削除しました')
@@ -227,7 +231,7 @@ class SalesSegments(BaseView):
             'registration_fee': stringize(sales_segment_group.registration_fee),
             'auth3d_notice': sales_segment_group.auth3d_notice,
             'payment_delivery_method_pairs': [
-                (pdmp.id, pdmp.payment_method.name + " - " + pdmp.delivery_method.name) 
+                (pdmp.id, pdmp.payment_method.name + " - " + pdmp.delivery_method.name)
                 for pdmp in sales_segment_group.payment_delivery_method_pairs
                 ],
             'account_id': sales_segment_group.account_id,

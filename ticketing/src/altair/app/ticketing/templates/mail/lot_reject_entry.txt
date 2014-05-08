@@ -40,7 +40,16 @@ ${get("order_datetime").body}
 %if get("announce_date").status:
 ■${get("announce_date").label}: ${get("announce_date").body}
 %endif
+%for wish in lot_entry.wishes:
 
+【第${wish.wish_order+1}希望】
+公演日：${h.performance_date(wish.performance)}
+会場：${wish.performance.venue.name}
+申込内容
+  %for product in wish.products:
+${product.product.name} ${h.format_currency(product.product.price)} x ${product.quantity}枚
+  %endfor
+%endfor
 ${notice}
 
 ${footer}
