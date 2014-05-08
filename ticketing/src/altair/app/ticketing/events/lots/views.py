@@ -173,9 +173,9 @@ class Lots(BaseView):
                         raise HTTPFound(location=self.request.route_url("lots.show", lot_id=lot.id))
 
         slave_session = get_db_session(self.request, name="slave")
-
         performance_ids = [p.id for p in lot.performances]
         stock_holders = slave_session.query(StockHolder).join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
+        report_settings = slave_session.query(LotEntryReportSetting).filter(LotEntryReportSetting.lot_id==lot.id).all()
 
         stock_types = lot.event.stock_types
         ticket_bundles = lot.event.ticket_bundles
@@ -313,6 +313,7 @@ class Lots(BaseView):
             lot=lot,
             lots_cart_url=self.context.lots_cart_url,
             agreement_lots_cart_url=self.context.agreement_lots_cart_url,
+            report_settings=report_settings,
             product_grid=product_grid,
             h=h,
             )
@@ -407,9 +408,6 @@ class LotEntries(BaseView):
         self.check_organization(self.context.event)
         lot = self.context.lot
         lot_status = api.get_lot_entry_status(lot, self.request)
-        report_settings = LotEntryReportSetting.query.filter(
-            LotEntryReportSetting.lot_id==lot.id
-        ).all()
 
         return dict(
             lot=lot,
@@ -417,7 +415,6 @@ class LotEntries(BaseView):
             #  公演、希望順ごとの数
             sub_counts = lot_status.sub_counts,
             lot_status=lot_status,
-            report_settings=report_settings,
             )
 
 
@@ -625,10 +622,10 @@ class LotEntries(BaseView):
             elect_wishes, reject_entries, reset_entries = self._parse_import_file(f)
         except CSVFileParserError as e:
             self.request.session.flash(u"ファイルフォーマットが正しくありません ({0})".format(e.entry_no))
-            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+            return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
         if not (elect_wishes or reject_entries or reset_entries):
             self.request.session.flash(u"データがありませんでした")
-            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+            return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
         message = u"{0}件の当選予定、{1}件の落選予定、{2}件の申込を取り込みました"
         self.request.session.flash(message.format(len(elect_wishes), len(reject_entries), len(reset_entries)))
 
@@ -638,7 +635,7 @@ class LotEntries(BaseView):
         result_message = u"新たに{0}件が当選予定、{1}件が落選予定となり、{2}件が申込に戻されました"
         self.request.session.flash(result_message.format(electing_count, rejecting_count, reset_count))
 
-        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+        return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
     def _parse_import_file(self, file, encoding='cp932'):
         elect_wishes = []
@@ -717,7 +714,7 @@ class LotEntries(BaseView):
         self.request.session.flash(u"オーソリ開放可能にしました。")
         lot.finish_lotting()
 
-        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+        return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.elect',
                  renderer="string",
@@ -735,7 +732,7 @@ class LotEntries(BaseView):
         self.request.session.flash(u"当選確定処理を行いました")
         lot.start_electing()
 
-        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+        return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.reject',
                  renderer="string",
@@ -754,7 +751,7 @@ class LotEntries(BaseView):
         self.request.session.flash(u"落選確定処理を行いました")
 
         lot.start_electing()
-        return HTTPFound(location=self.request.route_url('lots.entries.index',
+        return HTTPFound(location=self.request.route_url('lots.entries.elect',
                                                          lot_id=lot.id))
 
 
@@ -1103,7 +1100,7 @@ class LotReport(object):
 
     @property
     def index_url(self):
-        return self.request.route_url("lots.entries.index",
+        return self.request.route_url("lots.show",
                                       **self.request.matchdict)
 
     @view_config(route_name="lot.entries.new_report_setting",
