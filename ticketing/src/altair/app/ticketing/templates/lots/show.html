@@ -60,11 +60,17 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
         </tr>
         <tr>
           <th>抽選カートURL</th>
-          <td><a href="${agreement_lots_cart_url}">${agreement_lots_cart_url}</a></td>
+          <td>
+            <a href="${lots_cart_url}">${lots_cart_url}</a>
+            (<a href="${lots_cart_now_url}">時間指定して抽選カート購入</a>)
+          </td>
         </tr>
         <tr>
           <th>同意抽選カートURL</th>
-          <td><a href="${lots_cart_url}">${lots_cart_url}</a></td>
+          <td>
+            <a href="${agreement_lots_cart_url}">${agreement_lots_cart_url}</a>
+            (<a href="${agreement_lots_cart_now_url}">時間指定して同意抽選カート購入</a>)
+          </td>
         </tr>
        </tbody>
     </table>
