@@ -55,7 +55,7 @@ class LayoutModelLookupWrapperFactory(object):
 
     def __call__(self, lookup, layout):
         handler = LayoutModelLookupInterceptHandler(
-            self.prefix, self.directory_spec, layout.updated_at, self.loader)
+            self.prefix, self.directory_spec, layout.synced_at, self.loader)
         return LookupInterceptWrapper(lookup, handler)
 
 class CompositeLoader(object):

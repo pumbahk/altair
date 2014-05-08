@@ -3,7 +3,7 @@ def includeme(config):
     from altairsite.front.resolver import LayoutModelResolver
     from altairsite.front.resolver import ILayoutModelResolver
     layout_lookup = LayoutModelResolver(settings["altaircms.layout_directory"], 
-                                   checkskip=False)
+                                   checkskip=True)
     config.registry.registerUtility(layout_lookup, ILayoutModelResolver)
     config.include("altairsite.front.install_lookupwrapper")
 
