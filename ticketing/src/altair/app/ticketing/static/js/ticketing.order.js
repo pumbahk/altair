@@ -62,6 +62,7 @@ order.OrderFormPresenter.prototype = {
   showForm: function() {
     $('.btn-edit-order, .btn-save-order, #orderProduct').hide();
     $('.btn-confirm, .btn-close').show();
+    $('#toolbar-action-refresh').focus(); // orderProductFormを作り直すのでforcusを外に外す
 
     this.view.close();
     this.view = new this.viewType({
