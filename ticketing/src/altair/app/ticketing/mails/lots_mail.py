@@ -123,3 +123,10 @@ class LotsRejectedMail(LotsMail):
     def get_mail_subject(self, request, organization, traverser):
         return (traverser.data["subject"] or 
                 u'抽選予約結果のお知らせ 【{organization}】'.format(organization=organization.name))
+
+    def build_message_from_mail_body(self, request, subject, traverser, mail_body):
+        message = super(LotsRejectedMail, self).build_message_from_mail_body(request, subject, traverser, mail_body)
+        # 落選メールはbccしない
+        message.bcc = []
+        logger.info('send rejected mail ({recipients})'.format(recipients=message.recipients))
+        return message
