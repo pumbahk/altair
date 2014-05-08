@@ -630,8 +630,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # 相対日付の再計算
         for sales_segment in self.sales_segments:
-            sales_segment.start_at = sales_segment.sales_segment_group.start_for_performance(sales_segment.performance)
-            sales_segment.end_at = sales_segment.sales_segment_group.end_for_performance(sales_segment.performance)
+            if sales_segment.use_default_start_at:
+                sales_segment.start_at = sales_segment.sales_segment_group.start_for_performance(sales_segment.performance)
+            if sales_segment.use_default_end_at:
+                sales_segment.end_at = sales_segment.sales_segment_group.end_for_performance(sales_segment.performance)
 
     def delete(self):
 
