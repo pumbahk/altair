@@ -78,7 +78,7 @@ def route_path_with_params(request, url, _query=None, **kwargs):
                 del _query[k]
     return request.route_path(url, _query=_query, **kwargs)
 
-def _build_ticket_format_dicts(ticket_format_qs):
+def _build_selectitem_candidates_from_ticket_format_query(ticket_format_qs):
     sej_qs = ticket_format_qs.filter(
         c_models.TicketFormat.id==c_models.TicketFormat_DeliveryMethod.ticket_format_id,
         c_models.TicketFormat_DeliveryMethod.delivery_method_id==c_models.DeliveryMethod.id, 
@@ -89,12 +89,19 @@ def _build_ticket_format_dicts(ticket_format_qs):
         D[(t.id, "")] = {"name": t.name, "type": ""}
     for t in sej_qs:
         D[(t.id, "sej")] = {"name": t.name, "type": ":sej"}
-    return [dict(pk=k, **vs) for (k, _), vs in D.iteritems()]
+    return [dict(pk=k, **vs) 
+            for (k, _), vs in D.iteritems()]
 
-def _build_ticket_format_dict(ticket_format):
-    has_sej = any(dm.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for dm in ticket_format.delivery_methods)
-    ticket_format_type =  ":sej" if has_sej else ""
-    return {"pk": ticket_format.id, "name": ticket_format.name, "type": ticket_format_type}
+def _build_selectitem_candidates_from_ticket_format_unit(ticket_format):
+    D = {}
+    for dm in ticket_format.delivery_methods:
+        if int(dm.delivery_plugin_id) == int(SEJ_DELIVERY_PLUGIN_ID):
+            D[(ticket_format.id, "sej")] = ticket_format
+        else:
+            D[(ticket_format.id, "")] = ticket_format
+    return [{"pk": k, "name": t.name, "type": preview_type} 
+            for (k, preview_type), t in D.items()]
+
 
 @view_config(route_name="tickets.preview", request_method="GET", renderer="altair.app.ticketing:templates/tickets/preview.html", 
              decorator=with_bootstrap, permission="event_editor")
@@ -108,7 +115,7 @@ def preview_ticket(context, request):
         "combobox": request.route_path("tickets.preview.combobox")
         }
     ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=context.organization.id)
-    ticket_formats = _build_ticket_format_dicts(ticket_formats)
+    ticket_formats = _build_selectitem_candidates_from_ticket_format_query(ticket_formats)
     return {"apis": apis, "ticket_formats": ticket_formats}
 
 
@@ -452,7 +459,7 @@ class LoadSVGFromModelApiView(object):
             ticket_id = data["fillvalues_resource"]["model"]
             organization = self.context.organization
             ticket = c_models.Ticket.query.filter_by(id=ticket_id, organization_id=organization.id).first()
-            ticket_formats = [_build_ticket_format_dict(ticket.ticket_format)]
+            ticket_formats = _build_selectitem_candidates_from_ticket_format_unit(ticket.ticket_format)
             return {"status": True, "data": ticket.drawing, "ticket_formats": ticket_formats}
         except KeyError, e:
             logger.exception(e)
@@ -544,7 +551,7 @@ class PreviewWithDefaultParameterDialogView(object):
             apis["combobox"] =  self.request.route_path("tickets.preview.combobox", _query=combobox_params)
 
             ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
-            ticket_formats = _build_ticket_format_dicts(ticket_formats)
+            ticket_formats = _build_selectitem_candidates_from_ticket_format_query(ticket_formats)
             return {"apis": apis, "ticket_formats": ticket_formats}
         except Exception, e:
             logger.exception(e)
@@ -563,7 +570,7 @@ class PreviewWithDefaultParameterDialogView(object):
             if self.request.GET.get("ticket_id"):
                 ticket_formats = ticket_formats.filter(c_models.TicketFormat.id==c_models.Ticket.ticket_format_id,
                                                        c_models.Ticket.id==self.request.GET.get("ticket_id"))
-            ticket_formats = _build_ticket_format_dicts(ticket_formats)
+            ticket_formats = _build_selectitem_candidates_from_ticket_format_query(ticket_formats)
             return {"apis": apis, "ticket_formats": ticket_formats}
         except Exception, e:
             logger.exception(e)
