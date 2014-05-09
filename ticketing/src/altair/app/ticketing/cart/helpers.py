@@ -80,6 +80,11 @@ def create_time_only_label(start, end):
 def performance_date(performance):
     return create_date_label(performance.start_on, performance.end_on)
 
+def performance_datetime(performance):
+    """Return date and time of the performance.
+    """
+    return create_time_label(performance.start_on, performance.end_on)
+
 def performance_end_date(performance):
     s = performance.start_on
     return u'{s.month}月{s.day}日 {s.hour:02}:{s.minute:02}'.format(s=s) if s else u"-"
