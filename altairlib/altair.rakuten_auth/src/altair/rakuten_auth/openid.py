@@ -182,6 +182,12 @@ class RakutenOpenID(object):
             # ax_value_nickname = request_get['openid.ax.value.nickname'],
             )
 
+    def get_session_restorer(self, session):
+        return session.get(self.__class__.__name__ + '.session_restorer')
+
+    def set_session_restorer(self, session, restorer):
+        session[self.__class__.__name__ + '.session_restorer'] = restorer
+
     def get_return_url(self, session):
         return session.get(self.__class__.__name__ + '.return_url')
 
@@ -196,7 +202,14 @@ class RakutenOpenID(object):
 
     def on_challenge(self, request):
         session = self.new_session(request)
-        self.set_return_url(session, request.url)
+        return_url = request.url
+        if IMobileRequest.providedBy(request):
+            _session = request.session # Session gets created here!
+            if _session is not None:
+                session_restorer = request.environ.get(HybridHTTPBackend.ENV_SESSION_RESTORER_KEY)
+                self.set_session_restorer(session, session_restorer)
+                return_url = merge_session_restorer_to_url(return_url, request.environ.get(HybridHTTPBackend.ENV_QUERY_STRING_KEY_KEY), session_restorer)
+        impl.set_return_url(session, return_url)
         session.save()
         logger.debug('redirect from %s' % request.url)
         return HTTPFound(location=self.get_redirect_url(session))
