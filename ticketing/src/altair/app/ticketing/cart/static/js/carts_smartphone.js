@@ -86,6 +86,13 @@ cart.order_messages = {
     'too many carts': {
         title: '購入エラー',
         message: '誠に申し訳ございませんが、現在ご購入手続を進めることができない状況となっております。しばらく経ってから再度お試しください。'
+    },
+    'out_of_term': {
+        title: '販売期間終了',
+        message: function(order_form_presenter, data) {
+            var msg = '誠に申し訳ございませんが、現在選択いただいている条件での販売は終了いたしました。';
+            return cart.showErrorDialog(null, msg, 'btn-close');
+        }
     }
 };
 

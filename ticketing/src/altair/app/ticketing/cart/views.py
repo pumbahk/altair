@@ -719,6 +719,10 @@ class ReserveView(object):
         logger.debug('ordered_items %s' % ordered_items)
 
         sales_segment = self.context.sales_segment
+        if not sales_segment.in_term(self.context.now):
+            transaction.abort()
+            logger.debug("out of term")
+            return dict(result='NG', reason="out_of_term")
 
         try:
             assert_quantity_within_bounds(sales_segment, ordered_items)
