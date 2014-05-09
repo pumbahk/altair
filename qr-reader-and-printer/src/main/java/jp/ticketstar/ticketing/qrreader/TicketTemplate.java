@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.w3c.dom.svg.SVGDocument;
 
 public interface TicketTemplate {
-	public int getId();
+	public String getId();
 	
 	public String getName();
 	
