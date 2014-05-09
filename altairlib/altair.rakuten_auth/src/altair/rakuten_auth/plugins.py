@@ -10,7 +10,10 @@ from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator, IMet
 from repoze.who.plugins.auth_tkt import AuthTktCookiePlugin
 from altair.auth.api import get_current_request
 from altair.browserid import get_browserid
+from altair.mobile.session import HybridHTTPBackend, merge_session_restorer_to_url
+from altair.mobile.interfaces import IMobileRequest
 from beaker.cache import Cache, CacheManager, cache_regions
+from pyramid.request import Request
 from .api import get_rakuten_oauth, get_rakuten_id_api_factory
 from .interfaces import IRakutenOpenID
 
