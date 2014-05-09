@@ -106,7 +106,7 @@ def error_list(request, form, name):
     errors = form[name].errors
     if not errors:
         return ""
-    
+
     html = '<ul class="error-list">'
     html += "".join(['<li>%s</li>' % e for e in errors])
     html += '</ul>'
@@ -152,7 +152,6 @@ def products_filter_by_salessegment(products, sales_segment):
     return products
 
 def render_delivery_confirm_viewlet(request, cart):
-    logger.debug("*" * 80)
     plugin_id = cart.payment_delivery_pair.delivery_method.delivery_plugin_id
     logger.debug("plugin_id:%d" % plugin_id)
 
@@ -163,7 +162,6 @@ def render_delivery_confirm_viewlet(request, cart):
     return Markup(response.text)
 
 def render_payment_confirm_viewlet(request, cart):
-    logger.debug("*" * 80)
     plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
     logger.debug("plugin_id:%d" % plugin_id)
 
@@ -174,7 +172,6 @@ def render_payment_confirm_viewlet(request, cart):
     return Markup(response.text)
 
 def render_delivery_finished_viewlet(request, order):
-    logger.debug("*" * 80)
     plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
     logger.debug("plugin_id:%d" % plugin_id)
 
@@ -185,7 +182,6 @@ def render_delivery_finished_viewlet(request, order):
     return Markup(response.text)
 
 def render_payment_finished_viewlet(request, order):
-    logger.debug("*" * 80)
     plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
     logger.debug("plugin_id:%d" % plugin_id)
 
@@ -207,7 +203,7 @@ def product_name_with_unit(product_items):
 def get_availability_text(quantity):
     if quantity <= 0:
         return u'×'
-    elif quantity < 20: 
+    elif quantity < 20:
         return u'△'
     else:
         return u'◎'
