@@ -73,7 +73,8 @@ def includeme(config):
     """
     config.add_route('front', '{page_name:.*}', factory=".resources.PageRenderingResource")
     config.include(install_resolver)
-    install_lookupwrapper(config, name="intercept", sync_trigger_attribute_name="synced_at")
+    config.add_directive("set_lookup_wrapper", "altairsite.front.install_lookupwrapper")
+    config.set_lookup_wrapper(name="intercept", sync_trigger_attribute_name="synced_at")
     config.include(install_pagecache)
     config.include(install_page_key_generator)
     config.add_tween('altairsite.front.cache.cached_view_tween', under='altair.preview.tweens.preview_tween')
