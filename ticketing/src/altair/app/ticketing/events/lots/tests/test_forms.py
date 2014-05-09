@@ -3,7 +3,7 @@ from pyramid import testing
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
 
-class LotEntryReportMailFormTests(unittest.TestCase):
+class LotEntryReportSettingFormTests(unittest.TestCase):
 
     def setUp(self):
         self.session = _setup_db([
@@ -14,8 +14,8 @@ class LotEntryReportMailFormTests(unittest.TestCase):
         _teardown_db()
 
     def _getTarget(self):
-        from ..forms import LotEntryReportMailForm
-        return LotEntryReportMailForm
+        from ..forms import LotEntryReportSettingForm
+        return LotEntryReportSettingForm
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)

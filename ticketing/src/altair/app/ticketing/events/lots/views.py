@@ -15,6 +15,7 @@ import webhelpers.paginate as paginate
 
 from altair.sqlahelper import get_db_session
 
+from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.views import BaseView as _BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
@@ -53,7 +54,7 @@ from .forms import (
     LotForm,
     SearchEntryForm,
     SendingMailForm,
-    LotEntryReportMailForm,
+    LotEntryReportSettingForm,
 )
 
 from . import api
@@ -1100,49 +1101,50 @@ class LotReport(object):
 
     @property
     def index_url(self):
-        return self.request.route_url("lots.show",
-                                      **self.request.matchdict)
+        return self.request.route_url("lots.show", **self.request.matchdict)
 
-    @view_config(route_name="lot.entries.new_report_setting",
-                 renderer="lots/new_report_setting.html")
-    def new_setting(self):
-        form = LotEntryReportMailForm(formdata=self.request.POST)
+    @view_config(route_name="lot.entries.new_report_setting", renderer="lots/report_setting.html")
+    def new(self):
+        form = LotEntryReportSettingForm(formdata=self.request.POST, context=self.context)
         form.lot_id.data = self.context.lot.id
-
         if self.request.method == "POST":
             if form.validate():
                 new_setting = LotEntryReportSetting()
                 form.sync(new_setting)
                 DBSession.add(new_setting)
                 return HTTPFound(self.index_url)
-        return dict(form=form,
-                    event=self.context.event)
+        return dict(form=form, lot=self.context.lot)
 
+    @view_config(route_name="lot.entries.edit_report_setting", request_method="GET", renderer="lots/report_setting.html")
+    def edit(self):
+        return dict(
+            form=LotEntryReportSettingForm(obj=self.context.report_setting, context=self.context),
+            action=self.request.path,
+            lot=self.context.lot
+            )
 
-    @view_config(route_name="lot.entries.delete_report_setting",
-                 request_method="POST")
-    def delete_setting(self):
-        setting = LotEntryReportSetting.query.filter(
-            LotEntryReportSetting.id==self.request.matchdict['setting_id']
-        ).first()
-        if setting is None:
-            return HTTPNotFound()
-        setting.deleted_at = datetime.now()
+    @view_config(route_name="lot.entries.edit_report_setting", request_method="POST", renderer="lots/report_setting.html")
+    def edit_post(self):
+        f = LotEntryReportSettingForm(self.request.POST, context=self.context)
+        if not f.validate():
+            return dict(form=f, lot=self.context.lot)
+        report_setting = self.context.report_setting
+        report_setting = merge_session_with_post(report_setting, f.data)
+        report_setting.save()
+
+        self.request.session.flash(u'レポート送信設定を保存しました')
         return HTTPFound(self.index_url)
 
-    @view_config(route_name="lot.entries.send_report_setting",
-                 request_method="POST")
+    @view_config(route_name="lot.entries.delete_report_setting", request_method="POST")
+    def delete(self):
+        self.context.report_setting.deleted_at = datetime.now()
+        return HTTPFound(self.index_url)
+
+    @view_config(route_name="lot.entries.send_report_setting", request_method="POST")
     def send_report(self):
         """ 手動送信 """
-        setting = LotEntryReportSetting.query.filter(
-            LotEntryReportSetting.id==self.request.matchdict['setting_id']
-        ).first()
-        if setting is None:
-            return HTTPNotFound()
-
-
         mailer = get_mailer(self.request)
         sender = self.request.registry.settings['mail.message.sender']
-        reporter = LotEntryReporter(sender, mailer, setting)
+        reporter = LotEntryReporter(sender, mailer, self.context.report_setting)
         reporter.send()
         return HTTPFound(self.index_url)
