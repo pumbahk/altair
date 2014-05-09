@@ -700,7 +700,6 @@ var AppletView = Backbone.View.extend({
     this.datastore.bind("*qr.not.printed", this.createTicket, this);
 
     this.datastore.bind("change:printer_name", this.setPrinter, this);
-    this.datastore.bind("change:ticket_template_id", this.setTicketTemplate, this);
     this.datastore.bind("change:page_format_id", this.setPageFormat, this);
 
     this.datastore.bind("*qr.print.signal", this.sendPrintSignalIfNeed, this);
@@ -794,16 +793,6 @@ var AppletView = Backbone.View.extend({
       var printer = i.next();
       if(printer.getName() == printer_name){
         this.service.setPrintService(printer);
-      }
-    }
-  }, 
-  setTicketTemplate: function(){ //liner
-    var template_id = this.datastore.get("ticket_template_id");
-    var ticketTemplates = this.service.getTicketTemplates();
-    for(var i = ticketTemplates.iterator(); i.hasNext();){
-      var template = i.next();
-      if(template.getId() == template_id){
-        this.service.setTicketTemplate(template);
       }
     }
   }, 
