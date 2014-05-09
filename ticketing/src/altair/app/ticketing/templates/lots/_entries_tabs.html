@@ -5,7 +5,7 @@
     <a href="${request.route_url('lots.show', lot_id=lot.id)}">抽選設定</a>
   </%self:tab_item>
   <%self:tab_item request="${request}" route_name='lots.entries.index'>
-    <a href="${request.route_url('lots.entries.index', lot_id=lot.id)}">申込状況</a>
+    <a href="${request.route_url('lots.entries.index', lot_id=lot.id)}">レポート</a>
   </%self:tab_item>
   <%self:tab_item request="${request}" route_name='lots.entries.search'>
     <a href="${request.route_url('lots.entries.search', lot_id=lot.id)}">申込検索</a>

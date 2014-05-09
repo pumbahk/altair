@@ -153,8 +153,6 @@ class LotEntryStatus(object):
         ).count()
         return total_entries
 
-
-
     @property
     def electing_count(self):
         electing_count = LotElectWork.query.filter(

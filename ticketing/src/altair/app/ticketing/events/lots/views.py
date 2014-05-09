@@ -176,7 +176,6 @@ class Lots(BaseView):
         slave_session = get_db_session(self.request, name="slave")
         performance_ids = [p.id for p in lot.performances]
         stock_holders = slave_session.query(StockHolder).join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
-        report_settings = slave_session.query(LotEntryReportSetting).filter(LotEntryReportSetting.lot_id==lot.id).all()
 
         stock_types = lot.event.stock_types
         ticket_bundles = lot.event.ticket_bundles
@@ -314,7 +313,6 @@ class Lots(BaseView):
             lot=lot,
             lots_cart_url=self.context.lots_cart_url,
             agreement_lots_cart_url=self.context.agreement_lots_cart_url,
-            report_settings=report_settings,
             product_grid=product_grid,
             h=h,
             )
@@ -409,6 +407,9 @@ class LotEntries(BaseView):
         self.check_organization(self.context.event)
         lot = self.context.lot
         lot_status = api.get_lot_entry_status(lot, self.request)
+        report_settings = LotEntryReportSetting.query.filter(
+            LotEntryReportSetting.lot_id==lot.id
+        ).all()
 
         return dict(
             lot=lot,
@@ -416,6 +417,7 @@ class LotEntries(BaseView):
             #  公演、希望順ごとの数
             sub_counts = lot_status.sub_counts,
             lot_status=lot_status,
+            report_settings=report_settings,
             )
 
 
@@ -1101,7 +1103,7 @@ class LotReport(object):
 
     @property
     def index_url(self):
-        return self.request.route_url("lots.show", **self.request.matchdict)
+        return self.request.route_url("lots.entries.index", **self.request.matchdict)
 
     @view_config(route_name="lot.entries.new_report_setting", renderer="lots/report_setting.html")
     def new(self):
