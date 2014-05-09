@@ -10,7 +10,7 @@ ${caller.body()}
 </div>
 </%def>
 <%def name="header(markercolor='#cc0000')">
-<div><font color="${markercolor}">■</font>${caller.body()}</font></div>
+<div><font color="${markercolor}">■</font>${caller.body()}</div>
 </%def>
 <%def name="line(width=1,color='#cc0000')">
 <div
