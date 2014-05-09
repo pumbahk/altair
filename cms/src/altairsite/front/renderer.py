@@ -21,6 +21,7 @@ from altaircms.models import Performance
 from .. import pyramidlayout
 from ..pyramidlayout import get_subcategories_from_page #obsolete
 from .bsettings import BlockSettings
+from abc import ABCMeta, abstractmethod
 
 class IInterceptHandler(Interface):
     def need_refresh(last_modified_at):
@@ -47,12 +48,25 @@ class ILookupWrapperFactory(Interface):
         pass
 
 @implementer(ILookupWrapperFactory)
-class LayoutModelLookupWrapperFactory(object):
-    def __init__(self, directory_spec, loader, prefix): 
+class AbstractILookupWrapperFactory(object):
+    __metaclass__ = ABCMeta
+
+    def __init__(self, directory_spec, loader, prefix):
         self.directory_spec = directory_spec
         self.prefix = prefix.rstrip("/")
         self.loader = loader
 
+    @abstractmethod
+    def __call__(original_lookup, *args, **kwargs):
+        pass
+
+class CmsLayoutModelLookupWrapperFactory(AbstractILookupWrapperFactory):
+    def __call__(self, lookup, layout):
+        handler = LayoutModelLookupInterceptHandler(
+            self.prefix, self.directory_spec, layout.uploaded_at, self.loader)
+        return LookupInterceptWrapper(lookup, handler)
+
+class UsersiteLayoutModelLookupWrapperFactory(AbstractILookupWrapperFactory):
     def __call__(self, lookup, layout):
         handler = LayoutModelLookupInterceptHandler(
             self.prefix, self.directory_spec, layout.synced_at, self.loader)
