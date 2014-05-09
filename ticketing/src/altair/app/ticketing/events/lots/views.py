@@ -1119,7 +1119,6 @@ class LotReport(object):
     def edit(self):
         return dict(
             form=LotEntryReportSettingForm(obj=self.context.report_setting, context=self.context),
-            action=self.request.path,
             lot=self.context.lot
             )
 
