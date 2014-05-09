@@ -1,4 +1,5 @@
 # coding: utf-8
+from pyramid.exceptions import ConfigurationError
 
 def install_resolver(config):
     settings = config.registry.settings
@@ -8,13 +9,12 @@ def install_resolver(config):
                                    checkskip=True)
     config.registry.registerUtility(layout_lookup, ILayoutModelResolver)
 
-def install_lookupwrapper(config, name="intercept", usersite=True):
+def install_lookupwrapper(config, name="intercept", sync_trigger_attribute_name="synced_at"):
     from beaker.cache import cache_regions #xxx:
     from pyramid.mako_templating import IMakoLookup
     from altairsite.front.renderer import (
         ILookupWrapperFactory,
-        CmsLayoutModelLookupWrapperFactory,
-        UsersiteLayoutModelLookupWrapperFactory,
+        LayoutModelLookupWrapperFactory,
         S3Loader,
         FileCacheLoader,
         CompositeLoader
@@ -27,23 +27,16 @@ def install_lookupwrapper(config, name="intercept", usersite=True):
                                       access_key=settings["s3.access_key"],
                                       secret_key=settings["s3.secret_key"],))
 
-    factory = CmsLayoutModelLookupWrapperFactory(directory_spec=settings["altaircms.layout_directory"],
-                                              loader=loader,
-                                              prefix=settings["altaircms.layout_s3prefix"])
-    if usersite:
-        factory = UsersiteLayoutModelLookupWrapperFactory(directory_spec=settings["altaircms.layout_directory"],
-                                                  loader=loader,
-                                                  prefix=settings["altaircms.layout_s3prefix"])
+    from altaircms.layout.models import Layout
+    if not hasattr(Layout, sync_trigger_attribute_name):
+        raise ConfigurationError("Layout hasn't this attribute: {}".format(sync_trigger_attribute_name))
 
+    factory = LayoutModelLookupWrapperFactory(directory_spec=settings["altaircms.layout_directory"],
+                                              loader=loader,
+                                              prefix=settings["altaircms.layout_s3prefix"],
+                                              sync_trigger_attribute_name=sync_trigger_attribute_name)
 
     config.registry.adapters.register([IMakoLookup], ILookupWrapperFactory, name=name, value=factory)
-
-
-def install_usersite_lookupwrapper(config, name="intercept"):
-    install_lookupwrapper(config, name, True)
-
-def install_cms_lookupwrapper(config, name="intercept"):
-    install_lookupwrapper(config, name, False)
 
 def install_page_key_generator(config):
     from altair.mobile.interfaces import ISmartphoneRequest
@@ -80,7 +73,7 @@ def includeme(config):
     """
     config.add_route('front', '{page_name:.*}', factory=".resources.PageRenderingResource")
     config.include(install_resolver)
-    config.include(install_usersite_lookupwrapper)
+    install_lookupwrapper(config, name="intercept", sync_trigger_attribute_name="synced_at")
     config.include(install_pagecache)
     config.include(install_page_key_generator)
     config.add_tween('altairsite.front.cache.cached_view_tween', under='altair.preview.tweens.preview_tween')
