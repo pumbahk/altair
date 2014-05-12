@@ -1,28 +1,12 @@
 # -*- coding: utf-8 -*-
-import logging
 import webhelpers.paginate as paginate
 from altaircms.helpers.link import get_purchase_page_from_performance
 from altaircms.models import SalesSegmentGroup, SalesSegment, SalesSegmentKind
 from altaircms.event.models import Event
 from altaircms.models import Ticket
+from altairsite.smartphone.common.helper import SmartPhoneHelper
+from .eventhelper import log_debug, log_info, log_warn, log_exception, log_error
 from markupsafe import Markup
-
-logger = logging.getLogger(__file__)
-
-def log_debug(key, msg):
-    logger.debug("*" + key + "* : " + msg)
-
-def log_info(key, msg):
-    logger.info("*" + key + "* : " + msg)
-
-def log_warn(key, msg):
-    logger.warning("*" + key + "* : " + msg)
-
-def log_exception(key, msg):
-    logger.exception("*" + key + "* : " + msg)
-
-def log_error(key, msg):
-    logger.error("*" + key + "* : " + msg)
 
 # umm..
 def exist_value(value):
@@ -54,6 +38,7 @@ def get_event_paging(request, form, qs):
     if qs:
         events = qs.all()
         log_info("get_event_paging", "data exist")
+        sp_helper = SmartPhoneHelper()
 
         if events:
             form.num.data = len(events)
@@ -68,6 +53,14 @@ def get_event_paging(request, form, qs):
                 form.page_num.data = form.num.data / items_per_page
             else:
                 form.page_num.data = form.num.data / items_per_page + 1
+
+            deal_open = []
+            deal_close = []
+            for count, event in enumerate(form.events.data):
+                deal_open.append(sp_helper.disp_salessegment_start_on_date_week(event))
+                deal_close.append(sp_helper.disp_salessegment_end_on_date_week(event))
+            form.deal_open.data = deal_open
+            form.deal_close.data = deal_close
 
     log_info("get_event_paging", "end")
     return form
