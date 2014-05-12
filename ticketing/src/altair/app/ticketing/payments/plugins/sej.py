@@ -222,6 +222,18 @@ def build_user_name(shipping_address):
 def build_user_name_kana(shipping_address):
     return u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana)
 
+def determine_payment_type(current_date, order_like):
+    if order_like.payment_start_at is not None and \
+       order_like.payment_start_at != order_like.issuing_start_at:
+        # 前払後日発券
+        if order_like.payment_start_at > current_date:
+            raise SejPluginFailure(u'order_like.payment_start_at cannot be a future date', order_no=order_like.order_no, back_url=None)
+        payment_type = SejPaymentType.Prepayment
+    else:
+        # 代引
+        payment_type = SejPaymentType.CashOnDelivery
+    return payment_type
+
 def validate_order_like(current_date, order_like):
     if order_like.shipping_address is None:
         raise OrderLikeValidationFailure(u'shipping address does not exist', 'shipping_address')
@@ -253,11 +265,28 @@ def validate_order_like(current_date, order_like):
         raise OrderLikeValidationFailure(u'no email address specified', 'shipping_address.email_1')
     elif len(email) > 64:
         raise OrderLikeValidationFailure(u'invalid email address', 'shipping_address.email_1')
-    if get_payment_due_at(current_date, order_like) < current_date:
-        raise OrderLikeValidationFailure(u'payment_due_at < now', 'order.payment_due_at')
-    ticketing_due_at = get_ticketing_due_at(current_date, order_like)
-    if ticketing_due_at is not None and ticketing_due_at < current_date:
-        raise OrderLikeValidationFailure(u'issuing_end_at < now', 'order.issuing_end_at')
+
+    payment_type = None
+    if order_like.payment_delivery_pair.payment_method.payment_plugin_id == PAYMENT_PLUGIN_ID:
+        if order_like.payment_delivery_pair.delivery_method.delivery_plugin_id == DELIVERY_PLUGIN_ID:
+            try:
+                payment_type = determine_payment_type(current_date, order_like)
+            except SejPluginFailure as e:
+                raise OrderLikeValidationFailure(e.message, 'payment_start_at')
+        else:
+            payment_type = int(SejPaymentType.PrepaymentOnly)
+    else:
+        payment_type = int(SejPaymentType.Paid)
+
+    if payment_type is not None:
+        if int(payment_type) == int(SejPaymentType.CashOnDelivery):
+            if get_payment_due_at(current_date, order_like) < current_date:
+                raise OrderLikeValidationFailure(u'payment_due_at < now', 'order.payment_due_at')
+
+        if int(payment_type) != int(SejPaymentType.PrepaymentOnly):
+            ticketing_due_at = get_ticketing_due_at(current_date, order_like)
+            if ticketing_due_at is not None and ticketing_due_at < current_date:
+                raise OrderLikeValidationFailure(u'issuing_end_at < now', 'order.issuing_end_at')
 
 @implementer(IPaymentPlugin)
 class SejPaymentPlugin(object):
@@ -393,16 +422,7 @@ class SejPaymentDeliveryPlugin(object):
     def finish2(self, request, order_like):
         current_date = datetime.now()
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
-
-        if order_like.payment_start_at is not None and \
-           order_like.payment_start_at != order_like.issuing_start_at:
-            # 前払後日発券
-            if order_like.payment_start_at > datetime.now():
-                raise SejPluginFailure(u'order_like.payment_start_at cannot be a future date', order_no=order_like.order_no, back_url=None)
-            payment_type = SejPaymentType.Prepayment
-        else:
-            # 代引
-            payment_type = SejPaymentType.CashOnDelivery
+        payment_type = determine_payment_type(current_date, order_like)
         try:
             tickets = get_tickets(order_like)
             sej_order = create_sej_order(
