@@ -4,6 +4,11 @@ namespace QR.message
 {
     public static class MessageResourceUtil
     {
+        public static string GetRefreshPassword(this IResource resource)
+        {
+            return resource.SettingValue("refresh.password.format.0");
+        }
+
         public static string GetTaskCancelMessage (this IResource resource)
         {
             return resource.SettingValue ("message.task.cancel.format.0");

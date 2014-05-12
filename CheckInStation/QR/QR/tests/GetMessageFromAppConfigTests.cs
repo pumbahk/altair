@@ -7,6 +7,14 @@ namespace QR
     [TestFixture ()]
     public class TokenStatusMessageAppConfigTests
     {
+        [Test, Description("refresh password")]
+        public void TestRefreshPassword()
+        {
+            var resource = new Resource();
+            var result = resource.GetRefreshPassword();
+            Assert.AreNotEqual(default(string), result);
+        }
+
         [Test, Description ("token status printed")]
         public void TestTokenStatusMessagePrinted ()
         {
