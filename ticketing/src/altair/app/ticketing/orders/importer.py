@@ -884,7 +884,7 @@ class OrderImporter(object):
                                         .join(OrderedProductItem.seats) \
                                         .filter(Seat.id == seat.id) \
                                         .filter(Order.canceled_at == None) \
-                                        .one()
+                                        .first()
                                     if order != cart.original_order:
                                         if order is not None:
                                             add_error(u'座席「%s」(id=%ld, l0_id=%s) は予約 %s に配席済みです' % (seat.name, seat.id, seat.l0_id, order.order_no))
