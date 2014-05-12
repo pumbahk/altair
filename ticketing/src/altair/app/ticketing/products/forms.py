@@ -157,15 +157,6 @@ class ProductAndProductItemForm(OurForm):
         widget=CheckboxMultipleSelect(multiple=True)
         )
 
-    def validate_price(form, field):
-        if field.data and form.id.data:
-            sum_amount = ProductItem.query \
-                .filter(ProductItem.product_id == form.id.data) \
-                .with_entities(func.sum(ProductItem.price)) \
-                .scalar() or 0
-            if Decimal(field.data) < Decimal(sum_amount):
-                raise ValidationError(u'既に登録された商品合計金額以上で入力してください')
-
     def validate_seat_stock_type_id(form, field):
         if form.id.data:
             product = Product.get(form.id.data)
@@ -335,15 +326,6 @@ class ProductForm(OurForm):
         widget=CheckboxMultipleSelect(multiple=True)
         )
 
-    def validate_price(form, field):
-        if field.data and form.id.data:
-            sum_amount = ProductItem.query \
-                .filter(ProductItem.product_id == form.id.data) \
-                .with_entities(func.sum(ProductItem.price)) \
-                .scalar() or 0
-            if Decimal(field.data) < Decimal(sum_amount):
-                raise ValidationError(u'既に登録された商品合計金額以上で入力してください')
-
     def validate_seat_stock_type_id(form, field):
         if form.id.data:
             product = Product.get(form.id.data)
@@ -452,16 +434,6 @@ class ProductItemForm(OurForm):
         validators=[],
         coerce=lambda v: None if not v else int(v)
     )
-
-    def validate_product_item_price(form, field):
-        if field.data and form.product_item_quantity.data and form.product_id.data and form.product_item_id.data:
-            product = Product.get(form.product_id.data)
-            sum_amount = int(field.data) * int(form.product_item_quantity.data)
-            for item in product.items:
-                if item.id != int(form.product_item_id.data):
-                    sum_amount += item.quantity * item.price
-            if product.price < sum_amount:
-                raise ValidationError(u'単価×販売単位が商品合計金額以内になるように入力してください')
 
     def validate_ticket_bundle_id(form, field):
         # 引取方法にコンビニ発券が含まれていたら必須
