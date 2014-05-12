@@ -234,6 +234,9 @@ def determine_payment_type(current_date, order_like):
         payment_type = SejPaymentType.CashOnDelivery
     return payment_type
 
+# http://www.unicode.org/charts/PDF/U30A0.pdf
+katakana_regex = re.compile(ur'^[\u30a1-\u30f6\u30fb\u30fc\u30fd\u30feー]+$')
+
 def validate_order_like(current_date, order_like):
     if order_like.shipping_address is None:
         raise OrderLikeValidationFailure(u'shipping address does not exist', 'shipping_address')
@@ -251,8 +254,12 @@ def validate_order_like(current_date, order_like):
         raise OrderLikeValidationFailure(u'user name too long', 'shipping_address.last_name')
     if not order_like.shipping_address.last_name_kana:
         raise OrderLikeValidationFailure(u'no last name (kana) specified', 'shipping_address.last_name_kana')
+    if not re.match(katakana_regex, order_like.shipping_address.last_name_kana):
+        raise OrderLikeValidationFailure(u'last name (kana) contains non-katakana characters', 'shipping_address.last_name_kana')
     if not order_like.shipping_address.first_name_kana:
         raise OrderLikeValidationFailure(u'no first name (kana) specified', 'shipping_address.first_name_kana')
+    if not re.match(katakana_regex, order_like.shipping_address.first_name_kana):
+        raise OrderLikeValidationFailure(u'first name (kana) contains non-katakana characters', 'shipping_address.first_name_kana')
     user_name_kana = build_user_name_kana(order_like.shipping_address)
     if len(user_name_kana.encode('CP932')) > 40:
         raise OrderLikeValidationFailure(u'user name kana too long', 'shipping_address.last_name_kana')
