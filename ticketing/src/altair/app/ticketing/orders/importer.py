@@ -875,7 +875,7 @@ class OrderImporter(object):
                             if not all(cpi.seats):
                                 add_error(u'座席番号が一致しないもしくは指定されていないデータがありますが、自動配席が無効になっています')
                             if len(cpi.seats) != cpi.quantity:
-                                add_error(u'商品明細数と座席数が一致しません (%d 個であるべきですが %d 個しかありません)' % (expected_quantity, cpi.quantity))
+                                add_error(u'商品明細数と座席数が一致しません (%d 個であるべきですが %d 個しかありません)' % (len(cpi.seats), cpi.quantity))
                             for seat in cpi.seats:
                                 if seat.status == SeatStatusEnum.Ordered.v:
                                     order = self.session.query(Order) \
