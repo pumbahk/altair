@@ -288,7 +288,7 @@ class MultiCheckoutPlugin(object):
                 message='checkout_sales_part_cancel: generic failure',
                 order_no=order.order_no,
                 back_url=back_url(request),
-                error_code=part_cancel_res.CmnErrorCd
+                error_code=res.CmnErrorCd
                 )
 
         if res.Status not in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
