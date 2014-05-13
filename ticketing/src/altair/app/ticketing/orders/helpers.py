@@ -14,6 +14,7 @@ from altair.app.ticketing.orders.models import (
     )
 from sqlalchemy import sql
 from altair.app.ticketing.core import models as c_models
+from markupsafe import Markup
 
 def build_candidate_id(token, seat, ordered_product_item, ticket):
     #token.id@seat@ordered_product_item.id@ticket.id
@@ -126,4 +127,19 @@ def order_import_task_stats(task):
 
     return stats
 
-
+def error_level_to_html(request, error_level):
+    from .importer import (IMPORT_ERROR, IMPORT_WARNING)
+    label = u''
+    style = u''
+    if error_level > IMPORT_WARNING:
+        label = u'エラー'
+        style = u'label-important'
+    else:
+        label = u'警告'
+        style = u'label-warning'
+    return Markup(
+        u'<span class="label {style}">{label}</span>'.format(
+            style=style,
+            label=label
+            )
+        )

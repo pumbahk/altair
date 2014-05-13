@@ -27,7 +27,10 @@
       % if r > 0:
     <tr>
       % endif
-      <td>${error}</td>
+      <td>
+        ${oh.error_level_to_html(request, error['level'])}
+        ${error['message']}
+      </td>
     </tr>
     % endfor
   % endfor
