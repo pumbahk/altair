@@ -211,7 +211,7 @@ class EntryLotView(object):
         return performance_product_map
 
     def _create_form(self):
-        return api.create_client_form(self.context)
+        return api.create_client_form(self.context, self.request)
 
     @view_config(request_method="GET", custom_predicates=(nogizaka_auth,))
     def get(self, form=None):

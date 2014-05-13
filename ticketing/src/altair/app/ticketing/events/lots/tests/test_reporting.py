@@ -281,8 +281,9 @@ class send_lot_report_mailsTests(unittest.TestCase):
             lot=lot,
             frequency=ReportFrequencyEnum.Daily.v[0],
             period=ReportPeriodEnum.Normal.v[0],
-            time="10",
+            time="1030",
         )
+        self.session.add(report_setting)
         self.session.add(lot)
         self.session.flush()
 

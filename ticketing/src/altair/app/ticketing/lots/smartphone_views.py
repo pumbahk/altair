@@ -175,7 +175,7 @@ class EntryLotView(object):
         return performance_product_map
 
     def _create_form(self):
-        return api.create_client_form(self.context)
+        return api.create_client_form(self.context, self.request)
 
     @view_config(route_name='lots.entry.index', renderer=selectable_renderer("smartphone/%(membership)s/index.html"), custom_predicates=(nogizaka_auth, ))
     def index(self):

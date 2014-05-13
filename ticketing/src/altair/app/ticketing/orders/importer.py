@@ -710,19 +710,22 @@ class ImportCSVParserContext(object):
             raise self.exc_factory(u'ユーザが見つかりません (membership_name=%s, auth_identifier=%s)' % (membership_name, auth_identifier))
         return credential.user
 
-    def get_product(self, row, sales_segment):
+    def get_product(self, row, sales_segment, performance):
         product_name = row.get(u'ordered_product.product.name')
         try:
-            product = self.session.query(Product) \
+            q = self.session.query(Product) \
                 .filter(
                     Product.sales_segment_id == sales_segment.id,
                     Product.name == product_name
-                    ) \
-                .one()
+                    )
+            if performance is not None:
+                q = q.filter(Product.performance_id == performance.id)
+            product = q.one()
         except NoResultFound:
-            raise self.exc_factory(u'商品がありません  商品: %s' % product_name)
+            raise self.exc_factory(u'商品がありません  商品: %s 販売区分: %s' % (product_name, sales_segment.sales_segment_group.name))
         except MultipleResultsFound:
-            raise self.exc_factory(u'候補の商品が複数あります  商品: %s' % product_name)
+            logger.info(u'multiple product for the name %s found (sales_segment_id=%d)' % (product_name, sales_segment.id))
+            raise self.exc_factory(u'候補の商品が複数あります  商品: %s 販売区分: %s' % (product_name, sales_segment.sales_segment_group.name))
         return product
 
     def get_product_item(self, row, product):
@@ -817,7 +820,7 @@ class ImportCSVParser(object):
                 sales_segment = context.get_sales_segment(row, performance)
                 pdmp = context.get_pdmp(row, sales_segment)
                 cart = context.get_proto_order(row, order_no_or_key, performance, sales_segment, pdmp)
-                product = context.get_product(row, cart.sales_segment)
+                product = context.get_product(row, cart.sales_segment, performance)
                 item = context.get_ordered_product(row, order_no_or_key, cart, product)
                 product_item = context.get_product_item(row, product)
                 element, element_quantity_for_row = context.get_ordered_product_item(row, item, product_item)

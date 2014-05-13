@@ -359,7 +359,7 @@ class EntryLotView(object):
 
     @view_config(route_name='lots.entry.step4', renderer=selectable_renderer("mobile/%(membership)s/step4.html"))
     def step4(self):
-        cform = api.create_client_form(self.context)
+        cform = api.create_client_form(self.context, self.request)
         return self.step4_rendered_value(cform)
 
     @back(mobile=back_to_step3)
