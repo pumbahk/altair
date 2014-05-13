@@ -18,12 +18,13 @@ class CoreTestMixin(object):
             )
         from altair.app.ticketing.payments import plugins as _payment_plugins
         import re
-        self.organization = Organization(id=1, short_name=u'')
+        self.organization = Organization(id=1, short_name=u'', code=u'XX')
         self.event = Event(organization=self.organization, title=u'イベント')
         self.performance = Performance(
             event=self.event,
             venue=Venue(organization=self.organization, site=Site()),
-            name=u'パフォーマンス'
+            name=u'パフォーマンス',
+            code=u'ABCDEFGH'
             )
         payment_methods = {}
         delivery_methods = {}
@@ -61,22 +62,37 @@ class CoreTestMixin(object):
         return order_no
 
     def _create_stock_types(self, num):
-        from altair.app.ticketing.core.models import StockType
-        return [StockType(name=name) for name in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[0:num]]
+        from altair.app.ticketing.core.models import StockType, StockTypeEnum
+        return [
+            StockType(
+                name=name,
+                type=(StockTypeEnum.Seat.v if i % 3 < 2 else StockTypeEnum.Other.v),
+                quantity_only=(i % 3 > 0)
+                )
+            for i, name in enumerate('ABCDEFGHIJKLMNOPQRSTUVWXYZ'[0:num])
+            ]
 
-    def _create_stocks(self, stock_types):
+    def _create_stocks(self, stock_types, quantity=4):
         from altair.app.ticketing.core.models import Stock, StockStatus, StockHolder, Performance, Venue, Site
-        quantity = 4
         return [Stock(performance=self.performance, stock_type=stock_type, quantity=quantity, stock_holder=StockHolder(name='holder of %s' % stock_type.name), stock_status=StockStatus(quantity=quantity)) for stock_type in stock_types]
+
+    def _create_stocks_from_pairs(self, stock_type_quantity_pairs):
+        from altair.app.ticketing.core.models import Stock, StockStatus, StockHolder, Performance, Venue, Site
+        return [Stock(performance=self.performance, stock_type=stock_type, quantity=quantity, stock_holder=StockHolder(name='holder of %s' % stock_type.name), stock_status=StockStatus(quantity=quantity)) for stock_type, quantity in stock_type_quantity_pairs]
 
     def _create_seats(self, stocks):
         from altair.app.ticketing.core.models import Seat, SeatStatus, SeatStatusEnum
-        return [Seat(name=u"Seat %s-%d" % (stock.stock_type.name, i),
-                     l0_id="seat-%s-%d" % (stock.stock_type.name, i),
-                     stock=stock,
-                     venue=stock.performance and stock.performance.venue,
-                     status_=SeatStatus(status=SeatStatusEnum.Vacant.v)) \
-                for stock in stocks for i in range(stock.quantity)]
+        return [
+            Seat(
+                name=u"Seat %s-%d" % (stock.stock_type.name, i),
+                l0_id="seat-%s-%d" % (stock.stock_type.name, i),
+                stock=stock,
+                venue=stock.performance and stock.performance.venue,
+                status_=SeatStatus(status=SeatStatusEnum.Vacant.v)
+                )
+            for stock in stocks for i in range(stock.quantity)
+            if not stock.stock_type.quantity_only
+            ]
 
     def _create_ticket_format(self, name='ticket_format', delivery_methods=None):
         from altair.app.ticketing.core.models import TicketFormat
@@ -106,7 +122,7 @@ class CoreTestMixin(object):
                 ]
             )
  
-    def _create_products(self, stocks):
+    def _create_products(self, stocks, sales_segment=None):
         from altair.app.ticketing.core.models import Product, ProductItem
         price = Decimal(100.)
         return [
@@ -114,10 +130,17 @@ class CoreTestMixin(object):
                 name=stock.stock_type.name,
                 price=price,
                 performance=self.performance, 
-                items=[ProductItem(stock=stock, price=price,
-                                   performance=self.performance,
-                                   quantity=1,
-                                   ticket_bundle=self._create_ticket_bundle())]
+                sales_segment=sales_segment,
+                items=[
+                    ProductItem(
+                        name=u'product_item_of_%s' % stock.stock_type.name,
+                        stock=stock,
+                        price=price,
+                        performance=self.performance,
+                        quantity=1,
+                        ticket_bundle=self._create_ticket_bundle()
+                        )
+                    ]
                 )
             for stock in stocks
             ]
@@ -164,16 +187,24 @@ class CoreTestMixin(object):
             )
 
     def _pick_seats(self, stock, quantity):
+        # XXX: THIS IS THE DEFAULT IMPLEMENTATION. PLEASE OVERRIDE THIS.
         from altair.app.ticketing.core.models import Seat, SeatStatus, SeatStatusEnum
-        return [Seat(
-            name='seat',
-            l0_id='seat',
-            venue=stock.performance and stock.performance.venue,
-            status_=SeatStatus(status=SeatStatusEnum.InCart.v))
+        return [
+            Seat(
+                name='seat',
+                l0_id='seat',
+                venue=(stock.performance and stock.performance.venue),
+                status_=SeatStatus(status=SeatStatusEnum.Vacant.v)
+                )
+            for _ in range(quantity)
             ]
 
-    def _create_order(self, product_quantity_pairs, sales_segment=None, pdmp=None):
-        from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem, SeatStatusEnum, FeeTypeEnum, Ticket
+    def _create_order(self, product_quantity_pairs, sales_segment=None, pdmp=None, order_no=None):
+        from altair.app.ticketing.core.models import SeatStatusEnum, FeeTypeEnum, Ticket, StockTypeEnum
+        from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
+
+        if order_no is None:
+            order_no = self.new_order_no()
 
         def mark_ordered(seat):
             seat.status = SeatStatusEnum.Ordered.v
@@ -189,15 +220,33 @@ class CoreTestMixin(object):
             performance = product.performance
 
             for product_item in product.items:
-                seats = [ 
-                    mark_ordered(seat)
-                    for seat in self._pick_seats(product_item.stock, quantity * product_item.quantity)
-                    ]
+                product_item_quantity = quantity * product_item.quantity
+                if not product_item.stock.stock_type.quantity_only:
+                    seats = [ 
+                        mark_ordered(seat)
+                        for seat in self._pick_seats(product_item.stock, product_item_quantity)
+                        ]
+                    tokens = [
+                        OrderedProductItemToken(
+                            seat=seat,
+                            serial=(i + 1),
+                            valid=True
+                            )
+                        for i, seat in enumerate(seats)
+                        ]
+                else:
+                    seats = []
+                    tokens = [
+                        OrderedProductItemToken(serial=(i + 1), valid=True)
+                        for i in range(0, product_item_quantity)
+                        ]
+                    
                 ordered_product_item = OrderedProductItem(
                     product_item=product_item,
                     price=product_item.price,
                     seats=seats,
-                    quantity=len(seats)
+                    tokens=tokens,
+                    quantity=product_item_quantity
                     )
                 elements.append(ordered_product_item)
             ordered_product = OrderedProduct(
@@ -214,22 +263,26 @@ class CoreTestMixin(object):
                     )
                 for ordered_product in items
                 for ordered_product_item in ordered_product.elements)
-            system_fee = pdmp.system_fee if pdmp.system_fee_type == FeeTypeEnum.Once.v[0] else pdmp.system_fee * num_tickets
-            special_fee = pdmp.special_fee if pdmp.special_fee_type == FeeTypeEnum.Once.v[0] else pdmp.special_fee * num_tickets
+            system_fee = Decimal(pdmp.system_fee if pdmp.system_fee_type == FeeTypeEnum.Once.v[0] else pdmp.system_fee * num_tickets)
+            special_fee = Decimal(pdmp.special_fee if pdmp.special_fee_type == FeeTypeEnum.Once.v[0] else pdmp.special_fee * num_tickets)
         else:
             system_fee = Decimal()
             special_fee = Decimal()
-
+        transaction_fee = Decimal(pdmp and pdmp.transaction_fee or 0.)
+        delivery_fee = Decimal(pdmp and pdmp.delivery_fee or 0.)
+        special_fee = Decimal(special_fee)
+        total_amount = Decimal(sum(product.price * quantity for product, quantity in product_quantity_pairs)) + transaction_fee + delivery_fee + special_fee
         return Order(
+            order_no=order_no,
             organization_id=self.organization.id,
             shipping_address=self._create_shipping_address(),
-            total_amount=sum(product.price for product, _ in product_quantity_pairs),
+            total_amount=total_amount,
             payment_delivery_pair=pdmp,
             sales_segment=sales_segment,
-            system_fee=Decimal(system_fee),
-            transaction_fee=Decimal(pdmp and pdmp.transaction_fee or 0.),
-            delivery_fee=Decimal(pdmp and pdmp.delivery_fee or 0.),
-            special_fee=Decimal(special_fee),
+            system_fee=system_fee,
+            transaction_fee=transaction_fee,
+            delivery_fee=delivery_fee,
+            special_fee=special_fee,
             issuing_start_at=datetime(1970, 1, 1),
             issuing_end_at=datetime(1970, 1, 1),
             payment_start_at=datetime(1970, 1, 1),

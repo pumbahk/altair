@@ -7,6 +7,7 @@ from ..testing import _setup_db as _setup_db_, _teardown_db
 def _setup_db(echo=False):
     return _setup_db_(
         modules=[
+            'altair.app.ticketing.orders.models',
             'altair.app.ticketing.core.models',
             ],
         echo=echo
@@ -124,7 +125,7 @@ class ReservingTests(unittest.TestCase):
     def test_1seat(self):
         """ 単席確保 """
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, self.session)
 
         result = target.get_vacant_seats(self.stock_id, 1)
         self.assertEqual(result[0].name, 'A-2')
@@ -142,7 +143,7 @@ class ReservingTests(unittest.TestCase):
         self._reserve_all_seats()
 
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, self.session)
 
         self.assertRaises(NotEnoughAdjacencyException, target.get_vacant_seats, self.stock_id, 2)
 
@@ -150,7 +151,7 @@ class ReservingTests(unittest.TestCase):
         """ 2連席確保 """
         from altair.app.ticketing.core.models import SeatStatusEnum
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, self.session)
 
         result = target.get_vacant_seats(self.stock_id, 2)
 
@@ -163,7 +164,7 @@ class ReservingTests(unittest.TestCase):
         """ 3連席確保 """
         from altair.app.ticketing.core.models import SeatStatusEnum
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, self.session)
 
         result = target.get_vacant_seats(self.stock_id, 3)
         self.assertEqual(len(result), 3)
@@ -174,7 +175,7 @@ class ReservingTests(unittest.TestCase):
         """ 4連席確保 """
         from altair.app.ticketing.core.models import SeatStatusEnum
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, self.session)
 
         result = target.get_vacant_seats(self.stock_id, 4)
         self.assertEqual(len(result), 4)
@@ -184,7 +185,7 @@ class ReservingTests(unittest.TestCase):
     def test_reserve(self):
         import altair.app.ticketing.core.models as c_m
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, self.session)
         seats = c_m.Seat.query.filter(c_m.Seat.name.in_([u'B-1', u'C-1', u'E-1'])).all()
 
         result = target._reserve(seats, c_m.SeatStatusEnum.InCart)
@@ -196,7 +197,7 @@ class ReservingTests(unittest.TestCase):
     def test_reserve_seats(self):
         import altair.app.ticketing.core.models as c_m
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, self.session)
         result = target.reserve_seats(self.stock_id, 2)
 
         self.assertEqual(len(result), 2)
@@ -216,7 +217,7 @@ class ReservingTests(unittest.TestCase):
         """ 2連席連続確保 """
         import altair.app.ticketing.core.models as c_m
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, self.session)
         result = target.reserve_seats(self.stock_id, 2)
         self.assertEqual(result[0].name, 'B-1')
         self.assertEqual(result[1].name, 'B-2')
@@ -228,7 +229,7 @@ class ReservingTests(unittest.TestCase):
         """ 4 -> 3 -> 2 連席連続確保 """
         import altair.app.ticketing.core.models as c_m
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, self.session)
         result = target.reserve_seats(self.stock_id, 4)
         self.assertEqual(result[0].name, 'D-1')
         self.assertEqual(result[1].name, 'D-2')
@@ -247,7 +248,7 @@ class ReservingTests(unittest.TestCase):
         import altair.app.ticketing.core.models as c_m
         from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, self.session)
 
         for i in range(8):
             target.reserve_seats(self.stock_id, 2)
@@ -257,7 +258,7 @@ class ReservingTests(unittest.TestCase):
         import altair.app.ticketing.core.models as c_m
         from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, self.session)
 
         for i in range(3):
             target.reserve_seats(self.stock_id, 3)
@@ -304,7 +305,7 @@ class StockerTests(unittest.TestCase):
 
     def test_take_stock_by_stock_id(self):
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, self.session)
         stock = self._add_stock(10)
         result = target.take_stock_by_stock_id([(stock.id, 8)])
         self.assertEqual(result[0][0].quantity, 2)
@@ -313,14 +314,14 @@ class StockerTests(unittest.TestCase):
     def test_take_stock_by_stock_id_not_enough(self):
         from altair.app.ticketing.cart.stocker import NotEnoughStockException
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, self.session)
         stock = self._add_stock(10)
         self.assertRaises(NotEnoughStockException, target.take_stock_by_stock_id, [(stock.id, 100)])
 
     def test_take_stock_by_stock_id_invalid_product(self):
         from altair.app.ticketing.cart.stocker import InvalidProductSelectionException
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, self.session)
         stock = self._add_stock(10)
         product = stock.product_items[0].product
         other_performance_id = stock.performance_id + 1
@@ -333,7 +334,7 @@ class StockerTests(unittest.TestCase):
         performance = stock.product_items[0].performance
         
         request = testing.DummyRequest()
-        target = self._makeOne(request)
+        target = self._makeOne(request, self.session)
         result = target.take_stock(performance.id, [(product, 10)])
         self.assertEqual(result[0], (status, 10))
 
@@ -664,8 +665,9 @@ class order_productsTests(unittest.TestCase):
 
 class DummyStocker(object):
     """ dummy for IStocker"""
-    def __init__(self, request):
+    def __init__(self, request, session):
         self.request = request
+        self.session = session
 
     def take_stock(self, performance_id, product_requires):
         return [
@@ -741,8 +743,9 @@ class get_valid_sales_urlTests(unittest.TestCase):
 
 class DummyReserving(object):
     """ dummy for IReserving"""
-    def __init__(self, request):
+    def __init__(self, request, session):
         self.request = request
+        self.session = session
 
     def reserve_seats(self, stock_id, quantity, separate_seats=False):
         return [testing.DummyModel()] * quantity

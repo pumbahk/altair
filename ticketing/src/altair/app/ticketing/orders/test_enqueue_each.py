@@ -1,7 +1,7 @@
 import unittest
 import mock
 from functools import partial
-from pyramid.testing import DummyResource as O
+from pyramid.testing import DummyResource as O, DummyRequest
 
 class FakeMaterialCounter(object): 
     """token@seat@ordered_product_item.id@ticket.id"""
@@ -123,6 +123,7 @@ class EnqueueWithTokenTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def test_with_seat(self):
+        request = DummyRequest()
         candidate_id_list = [x.split("@") for x in ["token1@seat1@item1@ticket1", "token2@seat2@item1@ticket1"]]
         mcounter_impl = partial(FakeMaterialCounter, 
                                 ordered_product_items=[OPI(id="item1")], 
@@ -135,13 +136,14 @@ class EnqueueWithTokenTests(unittest.TestCase):
         D = target.mcounter
         operator = Operator()
         with mock.patch("altair.app.ticketing.orders.enqueue.enqueue_token", autospec=True) as m:
-            target.enqueue(operator)
-            m.assert_has_calls([mock.call(operator, D.tokens[1], D.tickets[0], 1, 2, 
+            target.enqueue(request, operator)
+            m.assert_has_calls([mock.call(request, operator, D.tokens[1], D.tickets[0], 1, 2, 
                                           **{"ordered_product_item":D.ordered_product_items[0], "order": order, "seat":D.seats[0], "issuer":"issuer"}), 
-                                mock.call(operator, D.tokens[0], D.tickets[0], 2, 2,
+                                mock.call(request, operator, D.tokens[0], D.tickets[0], 2, 2,
                                           **{"ordered_product_item":D.ordered_product_items[0], "order": order, "seat":D.seats[1], "issuer":"issuer"})])
 
     def test_without_seat(self):
+        request = DummyRequest()
         candidate_id_list = [["token1", None, "item1", "ticket1"]]
         mcounter_impl = partial(FakeMaterialCounter, 
                                 ordered_product_items=[OPI(id="item1")], 
@@ -154,8 +156,8 @@ class EnqueueWithTokenTests(unittest.TestCase):
         D = target.mcounter
         operator = Operator()
         with mock.patch("altair.app.ticketing.orders.enqueue.enqueue_token", autospec=True) as m:
-            target.enqueue(operator)
-            m.assert_has_calls([mock.call(operator, D.tokens[0], D.tickets[0], 1, 1, 
+            target.enqueue(request, operator)
+            m.assert_has_calls([mock.call(request, operator, D.tokens[0], D.tickets[0], 1, 1, 
                                                **{"ordered_product_item":D.ordered_product_items[0], "order": order, "seat":None, "issuer":"issuer"})])
 
 class EnqueueWithoutTokenTests(unittest.TestCase):
@@ -234,6 +236,7 @@ class EnqueueWithoutTokenTests(unittest.TestCase):
 
 
     def test_without_seat(self):
+        request = DummyRequest()
         candidate_id_list = [[None, None, "item1", "ticket1"], [None, None, "item1", "ticket1"], [None, None, "item1", "ticket2"]]
 
         tokens = [Token(id=1), Token(id=2)]
@@ -250,15 +253,16 @@ class EnqueueWithoutTokenTests(unittest.TestCase):
         
         operator = Operator()
         with mock.patch("altair.app.ticketing.orders.enqueue.enqueue_token", autospec=True) as m:
-            target._enqueue(operator, token_list_dict)
-            m.assert_has_calls([mock.call(operator, tokens[0], tickets_copy[0], 1, 2, 
+            target._enqueue(request, operator, token_list_dict)
+            m.assert_has_calls([mock.call(request, operator, tokens[0], tickets_copy[0], 1, 2, 
                                           **{"ordered_product_item":item, "order": order, "seat":None, "issuer":"issuer"}), 
-                                mock.call(operator, tokens[1], tickets_copy[0], 2, 2, 
+                                mock.call(request, operator, tokens[1], tickets_copy[0], 2, 2, 
                                           **{"ordered_product_item":item, "order": order, "seat":None, "issuer":"issuer"}), 
-                                mock.call(operator, tokens[0], tickets_copy[1], 3, 2,  #<- 3 is bug
+                                mock.call(request, operator, tokens[0], tickets_copy[1], 3, 2,  #<- 3 is bug
                                           **{"ordered_product_item":item, "order": order, "seat":None, "issuer":"issuer"})])
             
     def test_with_seat(self):
+        request = DummyRequest()
         candidate_id_list = [[None, "seat1", "item1", "ticket1"], [None, "seat2", "item1", "ticket1"], [None, "seat2", "item1", "ticket2"]]
 
         tokens = [Token(id=1), Token(id=2)]
@@ -277,12 +281,12 @@ class EnqueueWithoutTokenTests(unittest.TestCase):
         D = target.mcounter
         operator = Operator()
         with mock.patch("altair.app.ticketing.orders.enqueue.enqueue_token", autospec=True) as m:
-            target._enqueue(operator, token_list_dict)
-            m.assert_has_calls([mock.call(operator, tokens[0], D.tickets[0], 1, 2, 
+            target._enqueue(request, operator, token_list_dict)
+            m.assert_has_calls([mock.call(request, operator, tokens[0], D.tickets[0], 1, 2, 
                                           **{"ordered_product_item":item, "order": order, "seat":D.seats[0], "issuer":"issuer"}), 
-                                mock.call(operator, tokens[1], D.tickets[0], 2, 2, 
+                                mock.call(request, operator, tokens[1], D.tickets[0], 2, 2, 
                                           **{"ordered_product_item":item, "order": order, "seat":D.seats[1], "issuer":"issuer"}), 
-                                mock.call(operator, tokens[1], D.tickets[1], 3, 2,  #<- 3 is bug
+                                mock.call(request, operator, tokens[1], D.tickets[1], 3, 2,  #<- 3 is bug
                                           **{"ordered_product_item":item, "order": order, "seat":D.seats[1], "issuer":"issuer"})])
 
 

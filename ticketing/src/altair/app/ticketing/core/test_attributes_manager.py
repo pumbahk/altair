@@ -11,7 +11,7 @@ def gensym():
     return unicode(_i)
 
 def setup_order(gensym=gensym):
-    from altair.app.ticketing.core.models import Order
+    from altair.app.ticketing.orders.models import Order
     return Order(
         shipping_address_id=-1, #xxx:
         total_amount=600, 
@@ -38,7 +38,11 @@ def setup_order(gensym=gensym):
 class AttributesManagerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        testing._setup_db(["altair.app.ticketing.core.models"])
+        testing._setup_db([
+            "altair.app.ticketing.orders.models",
+            "altair.app.ticketing.lots.models",
+            "altair.app.ticketing.core.models",
+            ])
         import transaction
         transaction.abort()
 

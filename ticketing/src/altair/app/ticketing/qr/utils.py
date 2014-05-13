@@ -3,7 +3,13 @@ import logging
 logger = logging.getLogger(__name__)
 import sqlahelper
 from sqlalchemy.orm.exc import NoResultFound
-from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem, TicketPrintHistory, OrderedProductItemToken
+from altair.app.ticketing.core.models import TicketPrintHistory
+from altair.app.ticketing.orders.models import (
+    Order,
+    OrderedProduct,
+    OrderedProductItem,
+    OrderedProductItemToken,
+    )
 from pyramid.httpexceptions import HTTPNotFound
 
 from altair.app.ticketing.qr import get_qrdata_builder

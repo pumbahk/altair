@@ -235,6 +235,7 @@ class send_lot_report_mailsTests(unittest.TestCase):
 
     def setUp(self):
         self.session = _setup_db(modules=[
+            "altair.app.ticketing.orders.models",
             "altair.app.ticketing.core.models",
             "altair.app.ticketing.lots.models",
             "altair.app.ticketing.events.lots.models",

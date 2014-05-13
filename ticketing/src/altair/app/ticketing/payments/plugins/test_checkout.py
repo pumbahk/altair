@@ -29,6 +29,8 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
         from datetime import datetime
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
+            'altair.app.ticketing.orders.models',
+            'altair.app.ticketing.lots.models',
             'altair.app.ticketing.cart.models',
             'altair.app.ticketing.checkout.models',
             ])

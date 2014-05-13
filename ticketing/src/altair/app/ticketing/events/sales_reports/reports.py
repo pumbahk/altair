@@ -14,7 +14,8 @@ from datetime import date, timedelta
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import Account, Event, Mailer
 from altair.app.ticketing.core.models import StockType, StockHolder, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
-from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem, ReportTypeEnum
+from altair.app.ticketing.core.models import ReportTypeEnum
+from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
 from altair.app.ticketing.events.sales_reports.forms import SalesReportForm
 
 logger = logging.getLogger(__name__)

@@ -8,11 +8,13 @@ from altair.app.ticketing.core.models import (
     Performance, 
     PaymentDeliveryMethodPair,
     DeliveryMethod, 
+)
+from altair.app.ticketing.orders.models import (
     Order,
     OrderedProduct,
     OrderedProductItem,
     OrderedProductItemToken,
-)
+    )
 from altair.app.ticketing.payments import plugins
 
 from collections import namedtuple

@@ -11,7 +11,6 @@ from altair.app.ticketing.core.models import (
     Performance,
     Stock,
     StockHolder,
-    OrderedProductItem,
     AugusPerformance,
     AugusVenue,
     AugusTicket,
@@ -21,8 +20,11 @@ from altair.app.ticketing.core.models import (
     SeatStatusEnum,
     AugusSeatStatus,
     AugusPerformance,
-    orders_seat_table,
     AugusStockDetail,
+    )
+from altair.app.ticketing.orders.models import (
+    orders_seat_table,
+    OrderedProductItem,
     )
 from altair.augus.types import (
     DateType,

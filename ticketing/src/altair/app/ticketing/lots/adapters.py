@@ -2,26 +2,28 @@
 import logging
 from pyramid.decorator import reify
 from sqlalchemy import sql
+from datetime import datetime, timedelta
 from webhelpers.containers import correlate_objects
 from altair.app.ticketing.models import (
     DBSession,
-)
+    )
 from altair.app.ticketing.core.models import (
-    Order,
     Performance,
-    #Stock,
     StockType,
     Product,
-    #ProductItem,
     PaymentDeliveryMethodPair,
-)
+    )
+from altair.app.ticketing.core.interfaces import IShippingAddress
+from altair.app.ticketing.orders.models import (
+    Order,
+    )
 from .models import (
     LotEntry,
     LotEntryWish,
     LotElectWork,
     LotElectedEntry,
     LotEntryProduct,
-)
+    )
 from zope.interface import implementer
 from altair.app.ticketing.payments.interfaces import IPaymentCart
 
@@ -53,6 +55,54 @@ logger = logging.getLogger(__name__)
 #     def name(self):
 #         return "LOT" + str(self.entry.lot.id)
 
+@implementer(IShippingAddress)
+class LotSessionShippingAddress(object):
+    def __init__(self, dict):
+        self.dict = dict
+
+    @property
+    def user_id(self):
+        return self.dict['user_id']
+
+    @property
+    def tel_1(self):
+        return self.dict['tel_1']
+
+    @property
+    def tel_2(self):
+        return self.dict['tel_2']
+
+    @property
+    def first_name(self):
+        return self.dict['first_name']
+
+    @property
+    def last_name(self):
+        return self.dict['last_name']
+
+    @property
+    def first_name_kana(self):
+        return self.dict['first_name_kana']
+
+    @property
+    def last_name_kana(self):
+        return self.dict['last_name_kana']
+
+    @property
+    def zip(self):
+        return self.dict['zip']
+
+    @property
+    def email_1(self):
+        return self.dict['email_1']
+
+    @property
+    def email_2(self):
+        return self.dict['email_2']
+
+    @property
+    def email(self):
+        return self.email_1 or self.email_2
 
 @implementer(IPaymentCart)
 class LotSessionCart(object):
@@ -66,7 +116,13 @@ class LotSessionCart(object):
         self.memo = entry_dict['memo']
         self.request = request
         self.lot = lot
+        self._product_cache = {}
+        self.now = datetime.now()
         logger.debug("LotSessionCart(entry_no={0.entry_no})".format(self))
+
+    @property
+    def organization_id(self):
+        return self.lot.organization_id
 
     @property
     def sales_segment(self):
@@ -79,19 +135,103 @@ class LotSessionCart(object):
         ).first()
 
     @property
+    def shipping_address(self):
+        return LotSessionShippingAddress(self.shipping_address_dict)
+
+    @property
     def order_no(self):
         return self.entry_no
+
+    def _p(self, product_id):
+        product = self._product_cache.get(product_id)
+        if product is None:
+            product = self._product_cache[product_id] = Product.query.filter(Product.id==product_id).one()
+        return product
 
     @property
     def total_amount(self):
         # オーソリ時は申し込みの最大金額を使う
-        def _p(product_id):
-            return Product.query.filter(Product.id==product_id).one()
+        return max(
+            self.sales_segment.get_amount(
+                self.payment_delivery_pair,
+                [
+                    (product, product.price, quantity)
+                    for product, quantity in (
+                        (self._p(wp['product_id']), wp['quantity'])
+                        for wp in wish['wished_products']
+                        )
+                    ]
+                )
+            for wish in self.wishes
+            )
 
-        return max([self.sales_segment.get_amount(self.payment_delivery_pair,
-                                                  [(_p(wp['product_id']), wp['quantity'])
-                                                   for wp in wish['wished_products']])
-                    for wish in self.wishes])
+    @property
+    def delivery_fee(self):
+        # オーソリ時は申し込みの最大金額を使う
+        return max(
+            self.sales_segment.get_delivery_fee(
+                self.payment_delivery_pair,
+                [
+                    (product, quantity)
+                    for product, quantity in (
+                        (self._p(wp['product_id']), wp['quantity'])
+                        for wp in wish['wished_products']
+                        )
+                    ]
+                )
+            for wish in self.wishes
+            )
+
+    @property
+    def transaction_fee(self):
+        # オーソリ時は申し込みの最大金額を使う
+        return max(
+            self.sales_segment.get_transaction_fee(
+                self.payment_delivery_pair,
+                [
+                    (product, quantity)
+                    for product, quantity in (
+                        (self._p(wp['product_id']), wp['quantity'])
+                        for wp in wish['wished_products']
+                        )
+                    ]
+                )
+            for wish in self.wishes
+            )
+
+    @property
+    def system_fee(self):
+        # オーソリ時は申し込みの最大金額を使う
+        return max(
+            self.sales_segment.get_system_fee(
+                self.payment_delivery_pair,
+                [
+                    (product, quantity)
+                    for product, quantity in (
+                        (self._p(wp['product_id']), wp['quantity'])
+                        for wp in wish['wished_products']
+                        )
+                    ]
+                )
+            for wish in self.wishes
+            )
+
+    @property
+    def special_fee(self):
+        # オーソリ時は申し込みの最大金額を使う
+        return max(
+            self.sales_segment.get_special_fee(
+                self.payment_delivery_pair,
+                [
+                    (product, quantity)
+                    for product, quantity in (
+                        (self._p(wp['product_id']), wp['quantity'])
+                        for wp in wish['wished_products']
+                        )
+                    ]
+                )
+            for wish in self.wishes
+            )
 
     @property
     def name(self):
@@ -108,9 +248,23 @@ class LotSessionCart(object):
         return None
 
     @property
+    def payment_start_at(self):
+        return self.sales_segment.start_at
+
+    @property
     def payment_due_at(self):
-        # オーソリの際にしか使われないのでこれは None でよい
-        return None
+        payment_period_days = self.payment_delivery_pair.payment_period_days
+        if payment_period_days is not None and self.lot.lotting_announce_datetime is not None:
+            payment_due_at = self.lot.lotting_announce_datetime + timedelta(days=payment_period_days)
+            payment_due_at = payment_due_at.replace(hour=23, minute=59, second=59)
+        else:
+            payment_due_at = self.now.replace(hour=23, minute=59, second=59) + timedelta(days=365)
+        return payment_due_at
+
+    @property
+    def items(self):
+        # 決済時は商品も券面も決まっていないので、空のリストを返せばよいはず...
+        return []
 
 
 class LotEntryStatus(object):

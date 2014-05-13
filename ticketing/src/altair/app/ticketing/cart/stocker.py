@@ -43,8 +43,9 @@ class NotEnoughStockException(Exception):
             )).encode('utf-8')
 
 class Stocker(object):
-    def __init__(self, request=None):
-        self.request = request  # これ使ってないや...
+    def __init__(self, request, session):
+        self.request = request
+        self.session = session
 
     # TODO: 在庫オブジェクトの取得内容を確認。必要なproductの分がすべて取得できているか？
     def take_stock(self, performance_id, product_requires):
@@ -66,7 +67,7 @@ class Stocker(object):
         """
         stock_ids = [s[0] for s in stock_requires]
         require_quantities = dict(stock_requires)
-        statuses = StockStatus.query.filter(StockStatus.stock_id.in_(stock_ids)).with_lockmode('update').all()
+        statuses = self.session.query(StockStatus).filter(StockStatus.stock_id.in_(stock_ids)).with_lockmode('update').all()
         
         results = []
         # 在庫数を確認、確保
@@ -85,7 +86,7 @@ class Stocker(object):
         :return: iter of (product_item_id, quantity)
         """
         for product, quantity in ordered_products:
-            for product_item in DBSession.query(ProductItem).filter(
+            for product_item in self.session.query(ProductItem).filter(
                         ProductItem.product_id==product.id).filter(
                         ProductItem.performance_id==performance_id).all():
                 if product_item.deleted_at != None:

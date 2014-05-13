@@ -1,6 +1,7 @@
 from .interfaces import IPertistentProfile
 from .interfaces import IPertistentProfileFactory
-import altair.app.ticketing.core.models as c_models
+from altair.app.ticketing.core import models as c_models
+from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.models import DBSession
 from zope.interface import implementer
 
@@ -47,12 +48,12 @@ class PersistentProfileForOrder(object):
 
     def set_user_profile(self, order, user_profile):
         member_type = user_profile['member_type']
-        ordered_product_item = c_models.OrderedProductItem.query.filter(
-            c_models.OrderedProduct.order==order
+        ordered_product_item = order_models.OrderedProductItem.query.filter(
+            order_models.OrderedProduct.order==order
         ).filter(
-            c_models.OrderedProduct.product_id==member_type
+            order_models.OrderedProduct.product_id==member_type
         ).filter(
-            c_models.OrderedProductItem.ordered_product_id==c_models.OrderedProduct.id
+            order_models.OrderedProductItem.ordered_product_id==order_models.OrderedProduct.id
         ).first()
 
         user_profile = dict(user_profile)
@@ -88,7 +89,7 @@ class PersistentProfileForOrder(object):
             if value is not None:
                 # store the value
                 DBSession.add(
-                    c_models.OrderedProductAttribute(
+                    order_models.OrderedProductAttribute(
                         ordered_product_item=ordered_product_item,
                         name=attr_name,
                         value=value)

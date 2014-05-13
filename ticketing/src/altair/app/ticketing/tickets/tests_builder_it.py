@@ -517,7 +517,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         
 
     def test_build_order(self):
-        from altair.app.ticketing.core.models import Order
+        from altair.app.ticketing.orders.models import Order
         target = self._makeOne()
         data = {}
         model = Order(total_amount=600, 
@@ -572,7 +572,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
 
 
     def test_build_order_attribute(self):
-        from altair.app.ticketing.core.models import Order
+        from altair.app.ticketing.orders.models import Order
         target = self._makeOne()
         model = Order()
         model.attributes["memo_on_order1"] = u":memo_on_order1"
@@ -669,8 +669,10 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         self.assertEqual(result["orderedProductItem"], {})
 
     def test_build_ordered_product_item(self):
-        from altair.app.ticketing.core.models import OrderedProductItem
-        from altair.app.ticketing.core.models import OrderedProduct
+        from altair.app.ticketing.orders.models import (
+            OrderedProductItem,
+            OrderedProduct,
+            )
         target = self._makeOne()
         data = {}
         model = OrderedProductItem(price=14000, 
@@ -837,9 +839,11 @@ def setup_shipping_address(mail_address="my@test.mail.com"):
 
 def setup_ordered_product_item(quantity, quantity_only, organization, order_no="Order:order_no", product_item=None):
     """copied. from altair/ticketing/src/altair/app/ticketing/printqr/test_functional.py"""
-    from altair.app.ticketing.core.models import OrderedProductItem
-    from altair.app.ticketing.core.models import OrderedProduct
-    from altair.app.ticketing.core.models import Order
+    from altair.app.ticketing.orders.models import (
+        OrderedProductItem,
+        OrderedProduct,
+        Order,
+        )
 
     product_item = product_item or setup_product_item(quantity, quantity_only, organization) #xxx:
     payment_delivery_method_pair = product_item.product.sales_segment.payment_delivery_method_pairs[0] #xxx:
@@ -917,8 +921,9 @@ def get_carted_product_item__full_relation(quantity, quantity_only):
     return setup_carted_product_item(quantity, quantity_only, organization, product_item=product_item, order_no=":order_no")
 
 def setup_ordered_product_token_from_ordered_product_item(ordered_product_item):
-    from altair.app.ticketing.core.models import OrderedProductItemToken
-    for i, seat in ordered_product_item.iterate_serial_and_seat():
+    from altair.app.ticketing.orders.models import OrderedProductItemToken
+    from altair.app.ticketing.core import api as core_api
+    for i, seat in core_api.iterate_serial_and_seat(ordered_product_item):
         token = OrderedProductItemToken(
             item = ordered_product_item, 
             serial = i, 

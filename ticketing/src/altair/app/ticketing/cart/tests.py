@@ -9,7 +9,8 @@ import mock
 def _setup_db(echo=False):
     return _setup_db_(
         modules=[
-            'altair.app.ticketing.models',
+            'altair.app.ticketing.orders.models',
+            'altair.app.ticketing.core.models',
             'altair.app.ticketing.cart.models',
             'altair.app.ticketing.users.models',
             'altair.multicheckout.models',
@@ -52,6 +53,7 @@ class TestIt(unittest.TestCase):
 class CartTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db()
+        self.request = DummyRequest()
 
     def tearDown(self):
         _teardown_db()
@@ -71,7 +73,7 @@ class CartTests(unittest.TestCase):
         from . import models
         if created_at is None:
             created_at = datetime.now()
-        cart = models.Cart.create(cart_session_id=cart_session_id, created_at=created_at, performance=performance)
+        cart = models.Cart.create(self.request, cart_session_id=cart_session_id, created_at=created_at, performance=performance)
         self.session.add(cart)
         return cart
 
@@ -514,7 +516,6 @@ class TicketingCartResourceTestBase(object):
 
     def _add_orders_user(self, order_limit=None, max_quantity_per_user=None):
         from altair.app.ticketing.core.models import (
-            Order,
             SalesSegment,
             SalesSegmentSetting,
             Performance,
@@ -522,6 +523,7 @@ class TicketingCartResourceTestBase(object):
             Event,
             EventSetting,
             )
+        from altair.app.ticketing.orders.models import Order
         from altair.app.ticketing.cart.models import Cart
         from altair.app.ticketing.users.models import User
         from datetime import datetime
@@ -670,7 +672,6 @@ class TicketingCartResourceTestBase(object):
     def _add_orders_email(self, order_limit=None, max_quantity_per_user=None):
         from .models import Cart
         from altair.app.ticketing.core.models import (
-            Order,
             SalesSegment,
             SalesSegmentSetting,
             ShippingAddress,
@@ -678,6 +679,9 @@ class TicketingCartResourceTestBase(object):
             PerformanceSetting,
             Event,
             EventSetting,
+            )
+        from altair.app.ticketing.orders.models import (
+            Order,
             )
         from datetime import datetime
         performance = Performance(

@@ -18,6 +18,8 @@ def setUpModule():
     import transaction
     transaction.abort()
     import altair.app.ticketing.users.models
+    import altair.app.ticketing.orders.models
+    import altair.app.ticketing.lots.models
     import altair.app.ticketing.core.models
     import altair.app.ticketing.checkinstation.models
     setUpSwappedDB()
@@ -27,7 +29,7 @@ def tearDownModule():
 
 
 def setup_ordered_product_token(ordered_product_item):
-    from altair.app.ticketing.core.models import OrderedProductItemToken
+    from altair.app.ticketing.orders.models import OrderedProductItemToken
     for i, seat in ordered_product_item.iterate_serial_and_seat():
         token = OrderedProductItemToken(
             item = ordered_product_item, 
@@ -211,9 +213,11 @@ def setup_shipping_address(mail_address="my@test.mail.com"):
 
 def setup_ordered_product_item(quantity, quantity_only, organization, order_no="Order:order_no", product_item=None):
     """copied. from altair/ticketing/src/altair/app/ticketing/printqr/test_functional.py"""
-    from altair.app.ticketing.core.models import OrderedProductItem
-    from altair.app.ticketing.core.models import OrderedProduct
-    from altair.app.ticketing.core.models import Order
+    from altair.app.ticketing.orders.models import (
+        OrderedProductItem,
+        OrderedProduct,
+        Order,
+        )
 
     product_item = product_item or setup_product_item(quantity, quantity_only, organization) #xxx:
     payment_delivery_method_pair = product_item.product.sales_segment.payment_delivery_method_pairs[0] #xxx:
@@ -516,7 +520,7 @@ class CheckinStationAPITests(BaseTests):
 
         self.assertEqual(result["order_no"], self.order.order_no)
 
-        from altair.app.ticketing.core.models import OrderedProductItemToken
+        from altair.app.ticketing.orders.models import OrderedProductItemToken
         for token in OrderedProductItemToken.query.all():
             self.assertNotEqual(token.refreshed_at, None)
 

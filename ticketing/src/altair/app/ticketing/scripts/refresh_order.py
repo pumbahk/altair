@@ -6,11 +6,12 @@ import argparse
 import re
 
 import sqlahelper
+import transaction
 from sqlalchemy.sql.expression import desc
 from paste.deploy import loadapp
 from pyramid.paster import bootstrap, setup_logging
 
-from altair.app.ticketing.payments.api import refresh_order
+from altair.app.ticketing.orders.api import refresh_order
 
 logger = logging.getLogger(__name__)
 
@@ -34,18 +35,26 @@ def main(argv=sys.argv):
 
     session = sqlahelper.get_session()
 
-    from altair.app.ticketing.core.models import Order
+    from altair.app.ticketing.orders.models import Order
     try:
         orders = []
         for order_no in args.order_no:
             order = session.query(Order).filter_by(order_no=order_no).order_by(desc(Order.branch_no)).first()
             if order is None:
                 raise Exception('Order %s could not be found' % order_no)
-            orders.append(order)
+            if order.canceled_at is not None:
+                raise Exception('order %s has already been calceled' % order_no)
+            orders.append(order_no)
 
-        for order in orders:
-            print order
-            refresh_order(session, order)
+        for order_no in orders:
+            order = session.query(Order).filter_by(order_no=order_no).order_by(desc(Order.branch_no)).first()
+            try:
+                refresh_order(request, session, order)
+            except Exception as e:
+                message('failed to refresh order %s: %s' % (order_no, e))
+                logger.exception(u'failed to refresh order %s' % order_no)
+            finally:
+                transaction.commit()
 
     except Exception as e:
         raise

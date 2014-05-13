@@ -6,7 +6,9 @@ from dateutil import parser
 from pyramid.decorator import reify
 from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
-from altair.app.ticketing.core.models import DBSession, Order, SalesSegment, SalesSegmentSetting, ShippingAddress
+from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.orders.models import Order
+from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting, ShippingAddress
 from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.sej.api import get_sej_order

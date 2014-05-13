@@ -14,6 +14,7 @@ class SalesSegmentsTests(unittest.TestCase):
         self.config.include('altair.app.ticketing.renderers')
 
         self.session = _setup_db([
+            "altair.app.ticketing.orders.models",
             "altair.app.ticketing.core.models",
         ])
         import sqlalchemy
@@ -206,6 +207,7 @@ class EditSalesSegmentTests(unittest.TestCase):
         self.config.add_route('sales_segments.show', '/sales_segments/show/')
         self.config.add_route('sales_segments.edit', '/sales_segments/edit/')
         self.session = _setup_db([
+            "altair.app.ticketing.orders.models",
             "altair.app.ticketing.core.models",
         ])
 

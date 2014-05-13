@@ -16,16 +16,31 @@ from altair.formhelpers import (
     CheckboxMultipleSelect, BugFreeSelectField, BugFreeSelectMultipleField,
     Required, after1900, NFKC, Zenkaku, Katakana,
     strip_spaces, ignore_space_hyphen, OurForm)
-from altair.app.ticketing.core.models import (Organization, PaymentMethod, DeliveryMethod, SalesSegmentGroup, PaymentDeliveryMethodPair,
-                                   SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
+from altair.app.ticketing.core.models import (
+    Organization,
+    PaymentMethod,
+    DeliveryMethod,
+    SalesSegmentGroup,
+    PaymentDeliveryMethodPair,
+    SalesSegment,
+    Performance,
+    Product,
+    ProductItem,
+    Event
+    )
+from altair.app.ticketing.orders.models import (
+    OrderCancelReasonEnum,
+    )
 from altair.app.ticketing.cart.schemas import ClientForm
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.core import helpers as core_helpers
 from altair.app.ticketing.orders.importer import (
     ImportTypeEnum,
     ImportCSVReader,
-    get_import_type_label,
     AllocationModeEnum,
+    )
+from altair.app.ticketing.orders.helpers import (
+    get_import_type_label,
     get_allocation_mode_label,
     )
 from altair.app.ticketing.orders.export import OrderCSV
@@ -767,9 +782,12 @@ class OrderImportForm(Form):
     import_type = BugFreeSelectField(
         label=u'インポート方法',
         validators=[Required()],
-        choices=[(str(e.v), get_import_type_label(e.v)) for e in ImportTypeEnum],
+        choices=[(str(e.v), get_import_type_label(e.v, no_option_desc=True)) for e in [ImportTypeEnum.Create, ImportTypeEnum.Update, ImportTypeEnum.CreateOrUpdate]],
         default=ImportTypeEnum.Create.v,
         coerce=int,
+    )
+    always_issue_order_no = BooleanField(
+        label=u'常に新しい予約番号を発番'
     )
     allocation_mode = BugFreeSelectField(
         label=u'配席モード',
@@ -803,7 +821,7 @@ class OrderImportForm(Form):
 
         difference = set(import_header) - set(export_header)
         if len(difference) > 0 or len(import_header) == 0:
-            raise ValidationError(u'CSVファイルのフォーマットが正しくありません')
+            raise ValidationError(u'CSVファイルのフォーマットが正しくありません (不明なカラム: %s)' % u', '.join(unicode(s) for s in difference))
 
 
 class ClientOptionalForm(ClientForm):
