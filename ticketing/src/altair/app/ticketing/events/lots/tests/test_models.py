@@ -52,8 +52,8 @@ class LotEntryReportSettingTests(unittest.TestCase):
         """ 無条件 """
         from datetime import datetime
         target = self._getTarget()
-        self._add_setting(time="10")
-        result = target.query_in_term(datetime(2013, 1, 1, 10))
+        self._add_setting(time="1010")
+        result = target.query_in_term(datetime(2013, 1, 1, 10, 10))
 
         self.assertEqual(result.count(), 1)
 
@@ -61,9 +61,9 @@ class LotEntryReportSettingTests(unittest.TestCase):
         """ 指定開始日時後 """
         from datetime import datetime
         target = self._getTarget()
-        self._add_setting(time="10",
+        self._add_setting(time="1010",
                           start_on=datetime(2012, 12, 31))
-        result = target.query_in_term(datetime(2013, 1, 1, 10))
+        result = target.query_in_term(datetime(2013, 1, 1, 10, 10))
 
         self.assertEqual(result.count(), 1)
 
@@ -71,9 +71,9 @@ class LotEntryReportSettingTests(unittest.TestCase):
         """ 指定開始日時前 """
         from datetime import datetime
         target = self._getTarget()
-        self._add_setting(time="10",
+        self._add_setting(time="1010",
                           start_on=datetime(2013, 1, 2))
-        result = target.query_in_term(datetime(2013, 1, 1, 10))
+        result = target.query_in_term(datetime(2013, 1, 1, 10, 10))
 
         self.assertEqual(result.count(), 0)
 
@@ -81,9 +81,9 @@ class LotEntryReportSettingTests(unittest.TestCase):
         """ 指定終了日時前 """
         from datetime import datetime
         target = self._getTarget()
-        self._add_setting(time="10",
+        self._add_setting(time="1010",
                           end_on=datetime(2013, 1, 2))
-        result = target.query_in_term(datetime(2013, 1, 1, 10))
+        result = target.query_in_term(datetime(2013, 1, 1, 10, 10))
 
         self.assertEqual(result.count(), 1)
 
@@ -91,9 +91,9 @@ class LotEntryReportSettingTests(unittest.TestCase):
         """ 指定終了日時後 """
         from datetime import datetime
         target = self._getTarget()
-        self._add_setting(time="10",
+        self._add_setting(time="1010",
                           end_on=datetime(2012, 12, 31))
-        result = target.query_in_term(datetime(2013, 1, 1, 10))
+        result = target.query_in_term(datetime(2013, 1, 1, 10, 10))
 
         self.assertEqual(result.count(), 0)
 
@@ -101,9 +101,9 @@ class LotEntryReportSettingTests(unittest.TestCase):
         """ 指定曜日 """
         from datetime import datetime
         target = self._getTarget()
-        self._add_setting(time="10",
+        self._add_setting(time="1010",
                           day_of_week=datetime(2013, 1, 1).isoweekday())
-        result = target.query_in_term(datetime(2013, 1, 8, 10))
+        result = target.query_in_term(datetime(2013, 1, 8, 10, 10))
 
         self.assertEqual(result.count(), 1)
 
@@ -111,9 +111,9 @@ class LotEntryReportSettingTests(unittest.TestCase):
         """ 指定曜日以外 """
         from datetime import datetime
         target = self._getTarget()
-        self._add_setting(time="10",
+        self._add_setting(time="1010",
                           day_of_week=datetime(2013, 1, 7).isoweekday())
-        result = target.query_in_term(datetime(2013, 1, 8, 10))
+        result = target.query_in_term(datetime(2013, 1, 8, 10, 10))
 
         self.assertEqual(result.count(), 0)
 
@@ -121,11 +121,11 @@ class LotEntryReportSettingTests(unittest.TestCase):
         """ 指定期間内指定曜日 """
         from datetime import datetime
         target = self._getTarget()
-        self._add_setting(time="10",
+        self._add_setting(time="1010",
                           start_on=datetime(2012, 12, 31),
                           end_on=datetime(2013, 1, 9),
                           day_of_week=datetime(2013, 1, 1).isoweekday())
-        result = target.query_in_term(datetime(2013, 1, 8, 10))
+        result = target.query_in_term(datetime(2013, 1, 8, 10, 10))
 
         self.assertEqual(result.count(), 1)
 
