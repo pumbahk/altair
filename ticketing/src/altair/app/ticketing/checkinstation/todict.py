@@ -20,6 +20,7 @@ class TokenStatus:
     printed = "printed"
     canceled = "canceled"
     before_start = "before_start"
+    after_end = "after_end"
     not_supported = "not_supported"
     unknown = "unknown"
 
@@ -67,12 +68,17 @@ class TokenStatusDictBuilder(object):
     def printable_date_status_dict(self):
         if self.today is None:
             return {}
-        elif self._is_printable_date(self.order, self.today):
-            return {}
-        else:
+        elif not self._is_printable_date_before_start(self.order, self.today):
             order = self.order
             logger.info("*status order's performance is before start date. (order.id=%s, order.order_no=%s, performance.id=%s)", order.id, order.order_no, self.performance.id)
-            return {"status": TokenStatus.before_start}
+            return {}
+            # return {"status": TokenStatus.before_start}
+        elif not self._is_printable_date_after_end(self.order, self.today):
+            order = self.order
+            logger.info("*status order's performance is already end. (order.id=%s, order.order_no=%s, performance.id=%s)", order.id, order.order_no, self.performance.id)
+            return {"status": TokenStatus.unknown}
+        else:
+            return {}
 
     def _is_canceled(self, order):
         return order is None or order.is_canceled()
@@ -81,14 +87,22 @@ class TokenStatusDictBuilder(object):
         return ((token is None or not token.is_printed()) 
                 and (order and order.printed_at is None))
 
-    def _is_printable_date(self, order, today):
+    def _is_printable_date_before_start(self, order, today):
         performance = order.performance
         pdmp = order.payment_delivery_method_pair
         if pdmp and pdmp.issuing_start_at:
             return todate(today) >= todate(min(pdmp.issuing_start_at, (performance.start_on or performance.open_on)))
         else:
             logger.info("check printable date: issuing start at is not set. using performance.open_on (order id=%s)", order.id)
-            return todate(today) >= todate(performance.start_on or performance.open_on)
+            return todate(today) >= todate(performance.open_on or performance.start_on)
+
+    def _is_printable_date_after_end(self, order, today):
+        performance = order.performance
+        if performance.end_on:
+            return today <= performance.end_on
+        else:
+            return todate(today) <= todate(performance.start_on)
+
 
     def _is_supported_order(self, order):
         delivery_method = order.payment_delivery_method_pair.delivery_method

@@ -63,7 +63,7 @@ class TokenStatusTests(unittest.TestCase):
 
         order.performance.start_on = datetime(2013, 1, 6, 9)
         today = date(2013, 1, 1)
-        self.assertFalse(target._is_printable_date(order, today))
+        self.assertFalse(target._is_printable_date_before_start(order, today))
 
     def test_printable_date_status__same_date__start_on(self):
         order = self._getOrder()
@@ -72,7 +72,7 @@ class TokenStatusTests(unittest.TestCase):
 
         order.performance.start_on = datetime(2013, 1, 6, 9)
         today = date(2013, 1, 6)
-        self.assertTrue(target._is_printable_date(order, today))
+        self.assertTrue(target._is_printable_date_before_start(order, today))
 
     def test_printable_date_status__same_date__open_on(self):
         order = self._getOrder()
@@ -81,7 +81,7 @@ class TokenStatusTests(unittest.TestCase):
 
         order.performance.open_on = datetime(2013, 1, 6, 9)
         today = date(2013, 1, 6)
-        self.assertTrue(target._is_printable_date(order, today))
+        self.assertTrue(target._is_printable_date_before_start(order, today))
 
     def test_printable_date_status__pdmp_issuing_start_at(self):
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
@@ -92,7 +92,52 @@ class TokenStatusTests(unittest.TestCase):
         order.performance.open_on = datetime(2013, 1, 6, 9)
         order.payment_delivery_pair = PaymentDeliveryMethodPair(issuing_start_at=datetime(2012, 1, 1, 9))
         today = datetime(2013, 1, 1, 9)
-        self.assertTrue(target._is_printable_date(order, today))
+        self.assertTrue(target._is_printable_date_before_start(order, today))
+
+    def test_printable_date_status__after_performance_end(self):
+        from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
+        order = self._getOrder()
+        history = self._getHistory()
+        target = self._makeOne(order, history)
+
+        order.performance.end_on = datetime(2013, 1, 6, 9)
+        order.payment_delivery_pair = PaymentDeliveryMethodPair(issuing_start_at=datetime(2012, 1, 1, 9))
+        today = datetime(2013, 1, 6, 8)
+        self.assertTrue(target._is_printable_date_after_end(order, today))
+
+
+    def test_printable_date_status_failure__after_performance_end(self):
+        from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
+        order = self._getOrder()
+        history = self._getHistory()
+        target = self._makeOne(order, history)
+
+        order.performance.end_on = datetime(2013, 1, 6, 9)
+        order.payment_delivery_pair = PaymentDeliveryMethodPair(issuing_start_at=datetime(2012, 1, 1, 9))
+        today = datetime(2013, 1, 6, 10)
+        self.assertFalse(target._is_printable_date_after_end(order, today))
+
+    def test_printable_date_status__after_performance_end_is_null(self):
+        from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
+        order = self._getOrder()
+        history = self._getHistory()
+        target = self._makeOne(order, history)
+
+        order.performance.start_on = datetime(2013, 1, 6, 1)
+        order.payment_delivery_pair = PaymentDeliveryMethodPair(issuing_start_at=datetime(2012, 1, 1, 9))
+        today = datetime(2013, 1, 6, 10)
+        self.assertTrue(target._is_printable_date_after_end(order, today))
+
+    def test_printable_date_status_failure__after_performance_end_is_null(self):
+        from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
+        order = self._getOrder()
+        history = self._getHistory()
+        target = self._makeOne(order, history)
+
+        order.performance.start_on = datetime(2013, 1, 6, 1)
+        order.payment_delivery_pair = PaymentDeliveryMethodPair(issuing_start_at=datetime(2012, 1, 1, 9))
+        today = datetime(2013, 1, 7, 0)
+        self.assertFalse(target._is_printable_date_after_end(order, today))
 
     def test_supported_status__QRDelivery__supported(self):
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, DeliveryMethod

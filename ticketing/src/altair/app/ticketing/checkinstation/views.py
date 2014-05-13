@@ -108,7 +108,7 @@ def ticket_data_from_signed_string(context, request):
         ## 認証用の文字列追加
         data.update(verified_data_dict_from_secret(context.identity.secret))
         ## 印刷済み、キャンセル済みなどのステータス付加
-        data.update(TokenStatusDictBuilder(order, history).build())
+        data.update(TokenStatusDictBuilder(order, history, get_now(request)).build())
         return data
     except KeyError:
         logger.warn("*qr ticketdata: KeyError: json=%s", request.json_body)
@@ -133,7 +133,7 @@ def ticket_data_collection_from_order_no(context, request):
         raise HTTPBadRequest(u"E@:引数が足りません")
 
     order_no = request.json_body["order_no"]
-    now = datetime.now()
+    now = get_now(request)
 
     order = OrderData(request, context.operator).get_order_from_order_no(order_no)
     token_list = ItemTokenData(request, context.operator).get_item_token_list_from_order_no(order_no)
@@ -148,7 +148,7 @@ def ticket_data_collection_from_order_no(context, request):
     ## 認証用の文字列追加
     data.update(verified_data_dict_from_secret(context.identity.secret))
     ## 印刷済み、キャンセル済みなどのステータス付加
-    data.update(TokenStatusDictBuilder(order, None).build())
+    data.update(TokenStatusDictBuilder(order, None, now).build())
     return data
 
 
