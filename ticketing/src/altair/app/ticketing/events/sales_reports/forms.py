@@ -129,8 +129,8 @@ class ReportSettingForm(OurForm):
         context = kwargs.pop('context', None)
         self.context = context
 
-        if hasattr(context, 'user') and context.user.organization_id:
-            operators = Operator.query.filter_by(organization_id=context.user.organization_id).all()
+        if hasattr(context, 'organization') and context.organization.id:
+            operators = Operator.query.filter_by(organization_id=context.organization.id).all()
             self.operator_id.choices = [('', '')] + [(o.id, o.name) for o in operators]
 
         if obj:

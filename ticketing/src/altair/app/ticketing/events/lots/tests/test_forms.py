@@ -8,6 +8,8 @@ class LotEntryReportSettingFormTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
+            'altair.app.ticketing.lots.models',
+            'altair.app.ticketing.orders.models',
         ])
 
     def tearDown(self):
@@ -40,7 +42,10 @@ class LotEntryReportSettingFormTests(unittest.TestCase):
         obj = None
         organization = self._organization()
         operator = organization.operators[0]
-        target = self._makeOne(formdata, obj, organization_id=organization.id)
+        context = testing.DummyResource(
+            organization=testing.DummyModel(id=organization.id)
+            )
+        target = self._makeOne(formdata, obj, context=context)
 
         self.assertEqual(target.operator_id.choices,
                          [('', ''), (operator.id, operator.name)])
