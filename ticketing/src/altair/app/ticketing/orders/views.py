@@ -1131,9 +1131,9 @@ class OrderDetailView(BaseView):
         results = []
         names = []
         svg_builder = get_svg_builder(self.request)
+        preview_type = utils.guess_preview_type_from_order(self.context.order)
         for seat, dict_ in dicts:
             names.append(seat.name if seat else dict_["product"]["name"])
-            preview_type = utils.guess_preview_type_from_ticket_format(self.context.ticket_format)
 
             for ticket in tickets:
                 svg = svg_builder.build(ticket, dict_)

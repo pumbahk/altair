@@ -40,7 +40,11 @@ preview.SelectCandidatesViewModel = core.ViewModel.extend({
         var root = this.$el;
         root.empty();
         _(candidates).each(function(e){
-            root.append($("<option>").attr("value", e.pk).text(e.name+e.type))
+            if(!!e.type){
+                root.append($("<option>").attr("value", e.pk+":"+e.type).text(e.name+":"+e.type));
+            }else {
+                root.append($("<option>").attr("value", e.pk).text(e.name));
+            }
         });
     }, 
 });
