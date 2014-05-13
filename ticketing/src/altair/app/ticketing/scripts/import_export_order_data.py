@@ -305,6 +305,8 @@ def do_export(request, session, organization, event, performance, order_nos):
     if order_nos:
         q = q.filter(Order.order_no.in_(order_nos))
 
+    q = q.order_by(Order.order_no)
+
     encoder = MyJSONEncoder(ensure_ascii=False, indent=True)
     out = sys.stdout
     for chunk in encoder.iterencode(make_order_dict(order) for order in q):
