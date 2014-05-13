@@ -550,13 +550,13 @@ class Options(object):
 def get_options(request, lot_id):
     return Options(request, lot_id)
 
-def create_client_form(context):
+def create_client_form(context, request):
     user = user_api.get_or_create_user(context.authenticated_user())
     user_profile = None
     if user is not None:
         user_profile = user.user_profile
 
-    retval = schemas.ClientFormFactory(context.request)()
+    retval = schemas.ClientFormFactory(request)()
 
     # XXX:ゆるふわなデフォルト値
     sex = SexEnum.Female.v
