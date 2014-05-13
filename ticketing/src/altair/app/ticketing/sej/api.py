@@ -13,7 +13,7 @@ from sqlalchemy.orm.session import make_transient
 import sqlahelper
 
 from .utils import JavaHashMap
-from .models import SejNotification, SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, SejNotificationType, ThinSejTenant
+from .models import SejNotification, SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, SejNotificationType, ThinSejTenant, SejTicketTemplateFile
 from .models import _session
 from .interfaces import ISejTenant
 from .exceptions import SejServerError, SejError, SejErrorBase
@@ -240,3 +240,11 @@ def create_sej_order(
 
 def remove_default_session():
     _session.remove()
+
+def get_ticket_template_record(request, template_id, session=None):
+    if session is None:
+        session = _session
+    template_file_rec = session.query(SejTicketTemplateFile) \
+        .filter(SejTicketTemplateFile.template_id == template_id) \
+        .one()
+    return template_file_rec

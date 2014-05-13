@@ -12,6 +12,7 @@ from StringIO import StringIO
 
 from altair.response import FileLikeResponse
 from altair.app.ticketing.api.impl import BaseCommunicationApi
+from altair.app.ticketing.payments.interfaces import ISejDeliveryPlugin
 from altair.app.ticketing.payments.api import get_delivery_plugin
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing import urllib2ext
@@ -27,7 +28,7 @@ class SVGPreviewCommunication(BaseCommunicationApi):
     def __init__(self, post_url):
         self.post_url = post_url
 
-    def communicate(self, request, svg):
+    def communicate(self, request, svg, ticket_format):
         try:
             rpc_proxy = jsonrpc.ServerProxy(self.post_url, version="2.0")
             imgdata = rpc_proxy.renderSVG(svg,"image/png")
@@ -54,10 +55,12 @@ class SEJPreviewCommunication(BaseCommunicationApi):
     def _normalize(self, ptct):
         return ptct
 
-    def communicate(self, request, ptct):
+    def communicate(self, request, ptct, ticket_format):
         register_openers()
         delivery_plugin = get_delivery_plugin(request, SEJ_DELIVERY_PLUGIN_ID)
-        values = {'template': open(delivery_plugin.template, "rb"), 
+        assert ISejDeliveryPlugin.providedBy(delivery_plugin)
+        template_record = delivery_plugin.template_record_for_ticket_format(request, ticket_format)
+        values = {'template': template_record.ticket_html,
                   'ptct': _make_named_io("ptct.xml", self._normalize(ptct))}
         data, headers = multipart_encode(values)
         try:
