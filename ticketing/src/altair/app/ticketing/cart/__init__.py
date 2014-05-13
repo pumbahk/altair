@@ -169,8 +169,6 @@ def includeme(config):
     config.add_route('rakuten_auth.verify2', '/verify2')
     config.add_route('rakuten_auth.error', '/error')
     config.add_route('cart.logout', '/logout')
-    config.add_route('cart.confirm_test', 'test/confirm')
-    config.add_route('cart.complete_test', 'test/complete')
 
     setup_components(config)
 

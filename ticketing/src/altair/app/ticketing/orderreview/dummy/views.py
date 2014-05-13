@@ -71,6 +71,38 @@ def dummy_qr_draw(context, request):
     ticket = DummyModels.ticket(request)
     return qrdata_as_image_response(ticket)
 
+def get_dummy_order():
+    order = mock.Mock()
+    order.created_at = datetime.now()
+    order.performance.start_on = datetime.now()
+    order.items = []
+    order.transaction_fee = 1
+    order.delivery_fee = 2
+    order.system_fee = 3
+    order.special_fee = 4
+    order.total_amount = 5
+    order.payment_delivery_pair.payment_method.payment_plugin_id = 1
+    order.payment_delivery_pair.delivery_method.delivery_plugin_id = 1
+    return order
+
+@mobile_view_config(route_name='dummy.orderreview.show.guest', request_method="GET", decorator=overwrite_request_organization,
+                    renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile_guest/show.html"))
+@view_config(route_name='dummy.orderreview.show.guest', request_method="GET", decorator=overwrite_request_organization,
+             renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/show.html"))
+def dummy_show_guest(context, request):
+    order = get_dummy_order()
+    sej_order = mock.Mock()
+    return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
+
+@mobile_view_config(route_name='dummy.orderreview.show', request_method="GET", decorator=overwrite_request_organization,
+                    renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile/show.html"))
+@view_config(route_name='dummy.orderreview.show', request_method="GET", decorator=overwrite_request_organization,
+             renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/show.html"))
+def dummy_show(context, request):
+    order = get_dummy_order()
+    sej_order = mock.Mock()
+    return dict(order=order, sej_order=sej_order, shipping_address=order.shipping_address)
+
 @mobile_view_config(route_name='dummy.orderreview.qr', decorator=overwrite_request_organization, renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 @view_config(route_name='dummy.orderreview.qr', decorator=overwrite_request_organization, renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/qr.html"))
 def dummy_qr(context, request):
@@ -88,5 +120,3 @@ def dummy_qr(context, request):
         gate=gate,
         _overwrite_generate_qrimage_route_name="dummy.orderreview.qrdraw"
         )
-
-
