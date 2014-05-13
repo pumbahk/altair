@@ -134,18 +134,66 @@ def get_tickets_from_cart(cart, now):
                     tickets.append(ticket)
     return tickets
 
+SEJ_ORDER_ATTRS = [
+    'payment_type',
+    'order_no',
+    'user_name',
+    'user_name_kana',
+    'tel',
+    'zip_code',
+    'email',
+    'total_price',
+    'ticket_price',
+    'commission_fee',
+    'ticketing_fee',
+    'payment_due_at',
+    'ticketing_start_at',
+    'ticketing_due_at',
+    'regrant_number_due_at',
+    ]
+
+def is_same_sej_order(sej_order, sej_args, ticket_dicts):
+    if not all(getattr(sej_order, k) == sej_args[k] for k in SEJ_ORDER_ATTRS):
+        return False
+
+    tickets = sej_order.tickets
+    if len(ticket_dicts) != len(tickets):
+        return False 
+
+    for ticket, d in zip(sorted(tickets, key=lambda ticket: ticket.ticket_idx), ticket_dicts):
+        if int(ticket.ticket_type) != int(d['ticket_type']):
+            return False
+        if ticket.event_name != d['event_name']:
+            return False
+        if ticket.performance_name != d['performance_name']:
+            return False
+        if ticket.performance_datetime != d['performance_datetime']:
+            return False
+        if ticket.ticket_template_id != d['ticket_template_id']:
+            return False
+        if ticket.product_item_id != d['product_item_id']:
+            return False
+    return True
+
 def refresh_order(request, tenant, order, update_reason):
     sej_order = get_sej_order(order.order_no)
     if sej_order is None:
         raise Exception('no corresponding SejOrder found for order %s' % order.order_no)
 
+    sej_args = build_sej_args(sej_order.payment_type, order, order.created_at)
+    ticket_dicts = get_tickets(order)
+
+    if is_same_sej_order(sej_order, sej_args, ticket_dicts):
+        logger.info('the resulting order is the same as the old one; will do nothing')
+        return
+
     new_sej_order = sej_order.new_branch()
     new_sej_order.tickets = build_sej_tickets_from_dicts(
         sej_order.order_no,
-        get_tickets(order),
+        ticket_dicts,
         lambda idx: None
         )
-    for k, v in build_sej_args(sej_order.payment_type, order, order.created_at).items():
+    for k, v in sej_args.items():
         setattr(new_sej_order, k, v)
     new_sej_order.total_ticket_count = new_sej_order.ticket_count = len(new_sej_order.tickets)
 
