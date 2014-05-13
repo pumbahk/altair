@@ -138,3 +138,7 @@ class IPayment(Interface):
 class IPaymentViewRendererLookup(Interface):
     def __call__(path_or_renderer_name, info, for_, plugin_type, plugin_id, **kwargs):
         pass
+
+class ISejDeliveryPlugin(Interface):
+    def template_record_for_ticket_format(request, ticket_format):
+        pass

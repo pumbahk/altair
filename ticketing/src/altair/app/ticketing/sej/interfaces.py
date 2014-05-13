@@ -18,3 +18,13 @@ class ISejPaymentAPICommunicator(Interface):
 class ISejPaymentAPICommunicatorFactory(Interface):
     def __call__(tenant, path):
         pass
+
+class ISejTicketTemplateRecord(Interface):
+    status                  = Attribute('''''') 
+    template_id             = Attribute('''''') 
+    template_name           = Attribute('''''') 
+    ticket_html             = Attribute('''''') 
+    ticket_css              = Attribute('''''') 
+    publish_start_date      = Attribute('''''') 
+    publish_end_date        = Attribute('''''') 
+    sent_at                 = Attribute('''''') 

@@ -30,7 +30,7 @@ from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.sej import userside_api
 from altair.app.ticketing.sej.exceptions import SejErrorBase
 from altair.app.ticketing.sej.models import SejOrder, SejPaymentType, SejTicketType, SejOrderUpdateReason
-from altair.app.ticketing.sej.api import do_sej_order, refresh_sej_order, build_sej_tickets_from_dicts, create_sej_order, get_sej_order
+from altair.app.ticketing.sej.api import do_sej_order, refresh_sej_order, build_sej_tickets_from_dicts, create_sej_order, get_sej_order, get_ticket_template_record
 from altair.app.ticketing.sej.utils import han2zen
 
 from altair.app.ticketing.tickets.convert import convert_svg
@@ -43,7 +43,7 @@ from altair.app.ticketing.tickets.utils import (
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.cart import helpers as cart_helper
 
-from ..interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IOrderDelivery
+from ..interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IOrderDelivery, ISejDeliveryPlugin
 from ..exceptions import PaymentPluginException, OrderLikeValidationFailure
 from . import SEJ_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import SEJ_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
@@ -86,13 +86,14 @@ def get_ticketing_start_at(current_date, order_like):
 def get_ticketing_due_at(current_date, order_like):
     return order_like.issuing_end_at
 
-def get_sej_ticket_data(product_item, svg):
+def get_sej_ticket_data(product_item, svg, ticket_template_id=None):
+    assert ticket_template_id is not None
     performance = product_item.performance
     return dict(
         ticket_type         = SejTicketType.TicketWithBarcode,
         event_name          = re.sub('[ \-\.,;\'\"]', '', han2zen(performance.event.title)[:20]),
         performance_name    = re.sub('[ \-\.,;\'\"]', '', han2zen(performance.name)[:20]),
-        ticket_template_id  = u'TTTS000001',
+        ticket_template_id  = ticket_template_id,
         performance_datetime= performance.start_on,
         xml=svg,
         product_item_id = product_item.id
@@ -101,8 +102,16 @@ def get_sej_ticket_data(product_item, svg):
 def applicable_tickets_iter(bundle):
     return ApplicableTicketsProducer(bundle).sej_only_tickets()
 
+def get_ticket_template_id_from_ticket_format(ticket_format):
+    retval = None
+    aux = ticket_format.data.get('aux')
+    if aux is not None:
+        retval = aux.get('sej_ticket_template_id')
+    if retval is None:
+        retval = u'TTTS000001' # XXX: デフォルト
+    return retval
 
-def get_tickets(order):
+def get_tickets(order, ticket_template_id=None):
     tickets = []
     issuer = NumberIssuer()
     for ordered_product in order.items:
@@ -114,7 +123,8 @@ def get_tickets(order):
                     ticket_format = ticket.ticket_format
                     transform = transform_matrix_from_ticket_format(ticket_format)
                     svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
-                    ticket = get_sej_ticket_data(ordered_product_item.product_item, svg)
+                    ticket_template_id = get_ticket_template_id_from_ticket_format(ticket.ticket_format)
+                    ticket = get_sej_ticket_data(ordered_product_item.product_item, svg, ticket_template_id)
                     tickets.append(ticket)
     return tickets
 
@@ -130,7 +140,8 @@ def get_tickets_from_cart(cart, now):
                     ticket_format = ticket.ticket_format
                     transform = transform_matrix_from_ticket_format(ticket_format)
                     svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
-                    ticket = get_sej_ticket_data(carted_product_item.product_item, svg)
+                    ticket_template_id = get_ticket_template_id_from_ticket_format(ticket.ticket_format)
+                    ticket = get_sej_ticket_data(carted_product_item.product_item, svg, ticket_template_id)
                     tickets.append(ticket)
     return tickets
 
@@ -398,9 +409,17 @@ class SejPaymentPlugin(object):
             order=order,
             update_reason=SejOrderUpdateReason.Change
             )
- 
+
+
+@implementer(ISejDeliveryPlugin)
+class SejDeliveryPluginBase(object):
+    def template_record_for_ticket_format(self, request, ticket_format):
+        ticket_template_id = get_ticket_template_id_from_ticket_format(ticket_format)
+        return get_ticket_template_record(request, ticket_template_id)
+
+
 @implementer(IDeliveryPlugin)
-class SejDeliveryPlugin(object):
+class SejDeliveryPlugin(SejDeliveryPluginBase):
     def validate_order(self, request, order_like):
         validate_order_like(datetime.now(), order_like)
 
@@ -457,7 +476,7 @@ class SejDeliveryPlugin(object):
             )
 
 @implementer(IDeliveryPlugin)
-class SejPaymentDeliveryPlugin(object):
+class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
     def validate_order(self, request, order_like):
         validate_order_like(datetime.now(), order_like)
 
