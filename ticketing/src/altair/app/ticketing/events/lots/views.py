@@ -622,11 +622,14 @@ class LotEntries(BaseView):
         lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
+        if not hasattr(self.request.params["entries"], "file"):
+            self.request.session.flash(u"ファイルを指定してください")
+            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
         f = self.request.params['entries'].file
         try:
             elect_wishes, reject_entries, reset_entries = self._parse_import_file(f)
         except CSVFileParserError as e:
-            self.request.session.flash(u"ファイルフォーマットが正しくありません ({0})".format(e.entry_no))
+            self.request.session.flash(u"ファイルフォーマットが正しくありません ({})".format(e.entry_no))
             return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
         if not (elect_wishes or reject_entries or reset_entries):
             self.request.session.flash(u"データがありませんでした")
@@ -647,7 +650,7 @@ class LotEntries(BaseView):
         reject_entries = []
         reset_entries = []
         reader = csv.DictReader(file)
-        for row in reader:
+        for i, row in enumerate(reader):
             keys = [unicode(k.decode(encoding)) for k in row.keys()]
             values = [unicode(v.decode(encoding)) for v in row.values()]
             row = dict(zip(keys, values))
@@ -661,7 +664,10 @@ class LotEntries(BaseView):
                 wish_order = row[u'希望順序']
                 if not (status and entry_no and wish_order):
                     raise Exception
+                entry_no.encode("latin-1") #予約番号はasciiの範囲
                 wish_order = int(wish_order) - 1
+            except UnicodeEncodeError:
+                raise CSVFileParserError(entry_no=u"{i}行目の申込番号({entry_no})が不正です".format(i=i, entry_no=entry_no))
             except:
                 logger.info('parser error status=%s, entry_no=%s, wish_order=%s' % (status, entry_no, wish_order))
                 raise CSVFileParserError(entry_no=entry_no)
