@@ -185,7 +185,15 @@ class PerformanceShowView(BaseView):
             performance=self.performance
             )
         self.request.session[self.IMPORT_ERRORS_KEY] = dict(
-            (order_no, [(u'%s (%d行目)' % (error.message, error.line_num) if hasattr(error, 'line_num') else error.message) for error in errors_for_order])
+            (
+                order_no, [
+                    {
+                        'level': error.level,
+                        'message': (u'%s (%d行目)' % (error.message, error.line_num) if hasattr(error, 'line_num') else error.message)
+                        }
+                    for error in errors_for_order
+                    ]
+                )
             for order_no, errors_for_order in errors.items()
             )
         DBSession.add(order_import_task)
