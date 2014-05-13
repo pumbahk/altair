@@ -170,10 +170,10 @@ namespace QR.presentation.gui.page
             await ctx.PrepareAsync();
             ctx.Description = ctx.Case.Description;
             var s = await ctx.VerifyAsync();
+            this.loadingLock = true;
             if(!s){
                 this.OnSubmitWithBoundContext(sender, e); //xxx:
             }
-            this.loadingLock = true;
         }
 
         private async void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
