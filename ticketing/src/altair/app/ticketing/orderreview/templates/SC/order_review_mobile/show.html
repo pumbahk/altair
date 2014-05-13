@@ -6,6 +6,9 @@
 <%mobile:form_header>イベント名</%mobile:form_header>
 <div>
 ${order.performance.event.title} ${order.performance.name}<br />
+<%mobile:form_header>開演日時</%mobile:form_header>
+${h.japanese_date(order.performance.start_on)}
+${h.japanese_time(order.performance.start_on)}
 <%mobile:form_header>会場</%mobile:form_header>
 ${order.performance.venue.name}<br />
 <%mobile:form_header>購入内容</%mobile:form_header>

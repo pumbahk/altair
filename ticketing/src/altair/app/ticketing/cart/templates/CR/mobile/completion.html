@@ -17,7 +17,7 @@ ${order.order_no}
 </div>
 <%mobile:header>お買い物内容</%mobile:header>
 <div>
-${order.performance.event.title} ${order.performance.name} ${h.performance_date(order.performance)} ${order.performance.venue.name}
+${order.performance.event.title} ${order.performance.name} ${h.performance_datetime(order.performance)} ${order.performance.venue.name}
 </div>
 % for idx, product in enumerate(order.ordered_products):
 <%mobile:form_header>商品${idx + 1}</%mobile:form_header>
@@ -48,7 +48,7 @@ ${product.product.name} ${product.seat_quantity} 枚<br/>
 <div>
 ￥${h.format_number(order.special_fee)}
 </div>
-%endif 
+%endif
 <%mobile:form_header>合計金額</%mobile:form_header>
 <div>
 ￥${h.format_number(order.total_amount)}

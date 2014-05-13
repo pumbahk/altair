@@ -21,7 +21,6 @@ def as_delivery_viewlet(faildefault=None, message=None, get_pdmp=get_pdmp_order)
     def _as_delivery_viewlet(fn):
         @functools.wraps(fn)
         def viewlet(request, subject, *args):
-            logger.debug("*" * 80)
             plugin_id = get_pdmp(subject).delivery_method.delivery_plugin_id
             logger.debug("plugin_id:%s" % plugin_id)
 
@@ -39,7 +38,6 @@ def as_payment_viewlet(faildefault=None, message=None, get_pdmp=get_pdmp_order):
     def _as_payment_viewlet(fn):
         @functools.wraps(fn)
         def viewlet(request, subject, *args):
-            logger.debug("*" * 80)
             plugin_id = get_pdmp(subject).payment_method.payment_plugin_id
             logger.debug("plugin_id:%s" % plugin_id)
 
