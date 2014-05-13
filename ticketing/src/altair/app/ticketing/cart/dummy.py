@@ -103,6 +103,7 @@ def _dummy_cart():
     cart = mock.Mock()
     cart.performance = _dummy_performance()
     cart.items = []
+    cart.products = []
     cart.transaction_fee = 100
     cart.system_fee = 200
     cart.delivery_fee = 300
