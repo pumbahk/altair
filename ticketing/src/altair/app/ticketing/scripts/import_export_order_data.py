@@ -301,7 +301,7 @@ def do_export(request, session, organization, event, performance, order_nos):
     if event:
         q = q.join(Order.performance).filter(Performance.event_id == event.id)
     if performance:
-        q = q.filter(Order.performnace_id == performance.id)
+        q = q.filter(Order.performance_id == performance.id)
     if order_nos:
         q = q.filter(Order.order_no.in_(order_nos))
 
