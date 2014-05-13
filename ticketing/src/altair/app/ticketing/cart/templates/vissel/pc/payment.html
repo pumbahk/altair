@@ -165,13 +165,13 @@ ${self.widget.flow_widget(2)}
             </p>
             <ul>
               <li>
-                ${form['email_2'].label(style=u'width:10em')}
+                ${form['email_2'].label(style=u'width:11em')}
                 ${form['email_2'](style=u'width:20em')}
                 (例：mail@example.ne.jp)
                 ${h.error_list(request, form, 'email_2')}
               </li>
               <li>
-                ${form['email_2_confirm'].label(style=u'width:10em')}
+                ${form['email_2_confirm'].label(style=u'width:11em')}
                 ${form['email_2_confirm'](style=u'width:20em')}
                 (例：mail@example.ne.jp)
                 ${h.error_list(request, form, 'email_2_confirm')}
