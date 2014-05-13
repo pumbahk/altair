@@ -28,15 +28,17 @@
 
 <script type="text/javascript">
 $(function() {
-  setProductName();
+  var previous_name;
 
-  $('select[name="seat_stock_type_id"]').change(function(event){
-    setProductName();
-  });
-
-  function setProductName(){
-    var seat_name = $('select[name="seat_stock_type_id"] option:selected').text();
-    $(':text[name="name"]').val(seat_name);
-  }
+  $('select[name="seat_stock_type_id"]').one('focus', function () {
+    previous_name = $(this).find('option:selected').text();
+  }).change(function() {
+    var selected_name = $(this).find('option:selected').text();
+    var name_el = $('input[name="name"]');
+    if (!name_el.val() || name_el.val() == previous_name) {
+      name_el.val(selected_name);
+    }
+    previous_name = selected_name;
+  }).change();
 });
 </script>
