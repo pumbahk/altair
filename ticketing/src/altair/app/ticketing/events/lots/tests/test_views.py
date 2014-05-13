@@ -62,7 +62,7 @@ class LotEntriesTests(unittest.TestCase):
     def test_import_accepted_entries(self):
         from datetime import datetime
         from altair.app.ticketing.lots.models import Lot
-        self.config.add_route('lots.entries.index', '/lots/entries/index')
+        self.config.add_route('lots.entries.elect', '/lots/entries/elect/{lot_id}')
         request = _dummy_request()
         lot = Lot(id=1, event=request.context.event)
         request.context.lot_id = 1
@@ -90,7 +90,7 @@ class LotEntriesTests(unittest.TestCase):
         target = self._makeOne(request.context, request)
         result = target.import_accepted_entries()
 
-        self.assertEqual(result.location, 'http://example.com/lots/entries/index')
+        self.assertEqual(result.location, 'http://example.com/lots/entries/elect/{0}'.format(lot.id))
         self.assertEqual(request.session.pop_flash(),
                          [u"2件の当選予定、3件の落選予定、0件の申込を取り込みました",
                           u"新たに2件が当選予定、3件が落選予定となり、0件が申込に戻されました",
@@ -128,7 +128,7 @@ class LotEntriesTests(unittest.TestCase):
     def test_import_accepted_entries_not_update(self):
         from datetime import datetime
         from altair.app.ticketing.lots.models import Lot
-        self.config.add_route('lots.entries.index', '/lots/entries/index')
+        self.config.add_route('lots.entries.elect', '/lots/entries/elect/{lot_id}')
         request = _dummy_request()
         lot = Lot(id=1, event=request.context.event)
         request.context.lot_id = 1
@@ -148,7 +148,7 @@ class LotEntriesTests(unittest.TestCase):
         target = self._makeOne(request.context, request)
         result = target.import_accepted_entries()
 
-        self.assertEqual(result.location, 'http://example.com/lots/entries/index')
+        self.assertEqual(result.location, 'http://example.com/lots/entries/elect/{0}'.format(lot.id))
         self.assertEqual(request.session.pop_flash(),
                          [u"2件の当選予定、1件の落選予定、1件の申込を取り込みました",
                           u"新たに0件が当選予定、0件が落選予定となり、0件が申込に戻されました",
