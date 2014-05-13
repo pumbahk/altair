@@ -14,17 +14,24 @@ def includeme(config):
     config.add_route("dummy.cart.payment", "/dummy/payment")
     config.add_view(payment_view, route_name='dummy.cart.payment', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/pc/payment.html"))
     config.add_view(payment_view, route_name='dummy.cart.payment', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
+    config.add_view(payment_view, route_name='dummy.cart.payment', request_type='altair.mobile.interfaces.ISmartphoneRequest', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/smartphone/payment.html"))
+
 
     config.add_route("dummy.payment.confirm", "/dummy/confirm")
     config.add_view(confirm_view, route_name='dummy.payment.confirm', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/pc/confirm.html"))
     config.add_view(confirm_view, route_name='dummy.payment.confirm', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
+    config.add_view(confirm_view, route_name='dummy.payment.confirm', request_type='altair.mobile.interfaces.ISmartphoneRequest', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/smartphone/confirm.html"))
+
 
     config.add_route("dummy.payment.complete", "/dummy/complete")
     config.add_view(complete_view, route_name='dummy.payment.complete', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/pc/completion.html"))
     config.add_view(complete_view, route_name='dummy.payment.complete', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
+    config.add_view(complete_view, route_name='dummy.payment.complete', request_type='altair.mobile.interfaces.ISmartphoneRequest', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/smartphone/completion.html"))
 
     config.add_route("dummy.timeout", "/dummy/timeout")
     config.add_view(timeout_view, route_name="dummy.timeout", decorator=overwrite_validation, renderer=selectable_renderer("altair.app.ticketing.cart:templates/%(membership)s/pc/timeout.html"))
+
+
     config.add_route("dummy.notfound", "/dummy/notfound")
     config.add_view(notfound_view, route_name="dummy.notfound", decorator=overwrite_validation, renderer=selectable_renderer("altair.app.ticketing.cart:templates/%(membership)s/pc/errors/notfound.html"))
     config.add_view(notfound_view, route_name="dummy.notfound", request_type='altair.mobile.interfaces.IMobileRequest', decorator=overwrite_validation, renderer=selectable_renderer("altair.app.ticketing.cart:templates/%(membership)s/mobile/errors/notfound.html"))
