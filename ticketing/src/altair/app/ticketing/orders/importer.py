@@ -103,6 +103,8 @@ class ImportCSVReader(object):
     def fieldnames(self):
         return self.reader.fieldnames
 
+IMPORT_ERROR = 100
+IMPORT_WARNING = 50
 
 class ImporterErrorBase(Exception):
     def __init__(self, ref, message, *args):
@@ -122,10 +124,14 @@ class ImporterErrorBase(Exception):
     def message(self):
         return self.args[1]
 
+    @property
+    def level(self):
+        return self.args[2]
+
 
 class ImportCSVParserError(ImporterErrorBase):
-    def __init__(self, ref, message, line_num):
-        super(ImportCSVParserError, self).__init__(ref, message, line_num)
+    def __init__(self, ref, message, level, line_num):
+        super(ImportCSVParserError, self).__init__(ref, message, level, line_num)
 
     def __str__(self):
         return self.__unicode__()
@@ -138,7 +144,7 @@ class ImportCSVParserError(ImporterErrorBase):
 
     @property
     def line_num(self):
-        return self.args[2]
+        return self.args[3]
 
 
 class ImporterValidationError(ImporterErrorBase):
@@ -184,6 +190,73 @@ class DummyCart(CartMixin):
 
 
 class ImportCSVParserContext(object):
+    shipping_address_record_key_map = {
+        'first_name': {
+            'key': u'shipping_address.first_name',
+            'required': True,
+            },
+        'last_name': {
+            'key': u'shipping_address.last_name',
+            'required': True,
+            },
+        'first_name_kana': {
+            'key': u'shipping_address.first_name_kana',
+            'required': True,
+            },
+        'last_name_kana': {
+            'key': u'shipping_address.last_name_kana',
+            'required': True,
+            },
+        'zip': {
+            'key': u'shipping_address.zip',
+            'required': True,
+            },
+        'country': {
+            'key': u'shipping_address.country',
+            'required': True,
+            },
+        'prefecture': {
+            'key': u'shipping_address.prefecture',
+            'required': True,
+            },
+        'city': {
+            'key': u'shipping_address.city',
+            'required': True,
+            },
+        'address_1': {
+            'key': u'shipping_address.address_1',
+            'required': True,
+            },
+        'address_2': {
+            'key': u'shipping_address.address_2',
+            'required': True,
+            },
+        'tel_1': {
+            'key': u'shipping_address.tel_1',
+            'required': True,
+            },
+        'tel_2': {
+            'key': u'shipping_address.tel_2',
+            'required': False,
+            },
+        'fax': {
+            'key': u'shipping_address.fax',
+            'required': False,
+            },
+        'email_1': {
+            'key': u'shipping_address.email_1',
+            'required': True,
+            },
+        'email_2': {
+            'key': u'shipping_address.email_2',
+            'required': False,
+            },
+        'sex': {
+            'key': u'user_profile.sex',
+            'required': False,
+            },
+        }
+
     def __init__(self, request, session, exc_factory, order_import_task, organization, performance, event, default_payment_method, default_delivery_method):
         self.request = request
         self.session = session
@@ -259,16 +332,13 @@ class ImportCSVParserContext(object):
                 obj = get_relevant_object(self.request, order_no_or_key, self.session, include_deleted=True)
                 logger.info('relevant_object=%s' % obj)
             if self.always_issue_order_no and self.orders_will_be_created:
+                order_no = None
                 if isinstance(obj, Order):
                     if self.orders_will_be_updated:
                         if obj.is_canceled() or obj.deleted_at is not None:
                             raise self.exc_factory(u'元の注文 %s はキャンセル済みです' % obj.order_no)
                         order_no = order_no_or_key
                         original_order = obj
-                    else:
-                        order_no = core_api.get_next_order_no(self.request, self.organization)
-                        logger.info('always_issue_order_no is specified; new_order_no=%s' % order_no)
-                        note.append(u'元の予約番号: %s' % order_no_or_key)
                 elif obj is not None:
                     order_no = core_api.get_next_order_no(self.request, self.organization)
                     logger.info('always_issue_order_no is specified; new_order_no=%s' % order_no)
@@ -276,6 +346,11 @@ class ImportCSVParserContext(object):
                         note.append(u'元の抽選の予約番号: %s' % order_no_or_key)
                     else: 
                         logger.info(u'%s is used by %s' % (order_no_or_key, label_for_object(obj)))
+
+                # 予約番号の特定ができない場合は新規に発番する
+                if order_no is None:
+                    order_no = core_api.get_next_order_no(self.request, self.organization)
+                    logger.info('always_issue_order_no is specified; new_order_no=%s' % order_no)
             else:
                 if obj is not None:
                     order_no = order_no_or_key
@@ -335,6 +410,8 @@ class ImportCSVParserContext(object):
             payment_due_at_str = row.get(u'order.payment_due_at')
             payment_due_at_str = self.parse_date(payment_due_at_str, u'支払期限が不正です')
 
+            shipping_address = self.create_shipping_address(row, user)
+
             if original_order is not None:
                 if new_order_created_at is None:
                     logger.info(u'[%s] new_order_created_at is not specified; using that of the original order' % original_order.order_no)
@@ -354,6 +431,14 @@ class ImportCSVParserContext(object):
                 if payment_due_at is None:
                     logger.info(u'[%s] payment_due_at is not specified; using that of the original order' % original_order.order_no)
                     payment_due_at = original_order.payment_due_at
+                if shipping_address is None:
+                    logger.info(u'[%s] shipping_address is not specified; using that of the original order' % original_order.order_no)
+                    shipping_address = original_order.shipping_address
+
+            if shipping_address is None:
+                # インナー予約なので、指定されていないときは
+                # 空の配送先を作るので良い (作らない方が良い?)
+                shipping_address = ShippingAddress(user=user)
 
             # TemporaryCart: dict(order_no=temp_cart)
             cart = self.carts[order_no_or_key] = ProtoOrder(
@@ -372,7 +457,7 @@ class ImportCSVParserContext(object):
                 sales_segment         = sales_segment,
                 payment_delivery_pair = pdmp,
                 user                  = user,
-                shipping_address      = self.create_shipping_address(row, user),
+                shipping_address      = shipping_address,
                 new_order_paid_at     = new_order_paid_at,
                 new_order_created_at  = new_order_created_at,
                 original_order        = original_order,
@@ -433,24 +518,47 @@ class ImportCSVParserContext(object):
         return next_serial
 
     def create_shipping_address(self, row, user):
+        # すべてのレコードがないときは省略されたとみなす
+        unspecified = True
+        record = {}
+        for k1, desc in six.iteritems(self.shipping_address_record_key_map):
+            k2 = desc['key']
+            v = row.get(k2)
+            if v is not None:
+                v = v.strip()
+            else:
+                v = u''
+            if v:
+                unspecified = False
+            record[k1] = v
+        if unspecified:
+            return None
+
+        # バリデーション (もうちょっと頑張った方が良い)
+        for k1, desc in six.iteritems(self.shipping_address_record_key_map):
+            if desc['required'] and not record[k1]:
+                raise self.exc_factory(u'「%s」が指定されていません' % japanese_columns[k2])
+
+        record['zip'] = record['zip'].replace('-', '')
+
         shipping_address    = ShippingAddress(
             user_id         = user.id if user else None,
-            first_name      = row.get(u'shipping_address.first_name'),
-            last_name       = row.get(u'shipping_address.last_name'),
-            first_name_kana = row.get(u'shipping_address.first_name_kana'),
-            last_name_kana  = row.get(u'shipping_address.last_name_kana'),
-            zip             = row.get(u'shipping_address.zip').replace('-', ''),
-            country         = row.get(u'shipping_address.country'),
-            prefecture      = row.get(u'shipping_address.prefecture'),
-            city            = row.get(u'shipping_address.city'),
-            address_1       = row.get(u'shipping_address.address_1'),
-            address_2       = row.get(u'shipping_address.address_2'),
-            tel_1           = row.get(u'shipping_address.tel_1'),
-            tel_2           = row.get(u'shipping_address.tel_2'),
-            fax             = row.get(u'shipping_address.fax'),
-            email_1         = row.get(u'shipping_address.email_1'),
-            email_2         = row.get(u'shipping_address.email_2'),
-            sex             = row.get(u'user_profile.sex'),
+            first_name      = record['first_name'],
+            last_name       = record['last_name'],
+            first_name_kana = record['first_name_kana'],
+            last_name_kana  = record['last_name_kana'],
+            zip             = record['zip'],
+            country         = record['country'],
+            prefecture      = record['prefecture'],
+            city            = record['city'],
+            address_1       = record['address_1'],
+            address_2       = record['address_2'],
+            tel_1           = record['tel_1'],
+            tel_2           = record['tel_2'],
+            fax             = record['fax'],
+            email_1         = record['email_1'],
+            email_2         = record['email_2'],
+            sex             = record['sex'],
             )
         return shipping_address
 
@@ -691,13 +799,13 @@ class ImportCSVParser(object):
     def __call__(self, reader):
         order_no_or_key = None
         def exc(message):
-            raise ImportCSVParserError(order_no_or_key, message, getattr(reader, 'line_num', None))
+            return ImportCSVParserError(order_no_or_key, message, IMPORT_ERROR, getattr(reader, 'line_num', None))
         context = self.create_context(exc)
         errors = {}
         for row in reader:
             order_no_or_key = row.get(u'order.order_no')
             if order_no_or_key is None:
-                raise ImportCSVParserError('-', u'「予約番号」の列が存在しません', getattr(reader, 'line_num', None))
+                raise ImportCSVParserError('-', u'「予約番号」の列が存在しません', IMPORT_ERROR, getattr(reader, 'line_num', None))
             order_no_or_key = order_no_or_key.strip()
             if order_no_or_key in errors:
                 continue
@@ -718,8 +826,7 @@ class ImportCSVParser(object):
                     seat_name = seat_name.strip()
                 seat = None
                 if not product_item.stock.stock_type.quantity_only:
-                    if (cart.original_order is not None or
-                        self.order_import_task.allocation_mode == AllocationModeEnum.NoAutoAllocation.v):
+                    if self.order_import_task.allocation_mode == AllocationModeEnum.NoAutoAllocation.v:
                         if product_item.quantity != 1:
                             raise exc(u'席種「%s」は数受けではなく、自動配席が有効になっていませんが、商品明細の数量が1ではありません' % product_item.stock_type.name)
                         if not seat_name:
@@ -768,14 +875,17 @@ class OrderImporter(object):
         cart = None
         carts_to_be_imported = []
         errors = {}
+        refs_excluded = set()
         no_update = order_import_task.import_type & (ImportTypeEnum.Create.v | ImportTypeEnum.Update.v) == ImportTypeEnum.Create.v
 
-        def add_error(message):
+        def add_error(message, level=IMPORT_ERROR):
             logger.info('%s: %s' % (ref, message))
             errors_for_order = errors.get(ref)
             if errors_for_order is None:
                 errors_for_order = errors[ref] = []
-            errors_for_order.append(ImporterValidationError(ref, message))
+            errors_for_order.append(ImporterValidationError(ref, message, level))
+            if level > IMPORT_WARNING:
+                refs_excluded.add(ref)
 
         for ref, cart in carts.items():
             if cart.new_order_created_at is None:
@@ -869,31 +979,37 @@ class OrderImporter(object):
                             sum_quantity[stock.id] = quantity_for_stock
 
                     # 座席状態のチェック
-                    if (cart.original_order is not None or
-                        self.allocation_mode == AllocationModeEnum.NoAutoAllocation.v):
-                        if not stock.stock_type.quantity_only:
-                            if not all(cpi.seats):
-                                add_error(u'座席番号が一致しないもしくは指定されていないデータがありますが、自動配席が無効になっています')
-                            if len(cpi.seats) != cpi.quantity:
-                                add_error(u'商品明細数と座席数が一致しません (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity))
-                            for seat in cpi.seats:
-                                if seat.status == SeatStatusEnum.Ordered.v:
-                                    order = self.session.query(Order) \
-                                        .join(Order.items) \
-                                        .join(OrderedProduct.elements) \
-                                        .join(OrderedProductItem.seats) \
-                                        .filter(Seat.id == seat.id) \
-                                        .filter(Order.canceled_at == None) \
-                                        .first()
-                                    if order != cart.original_order:
-                                        if order is not None:
-                                            add_error(u'座席「%s」(id=%ld, l0_id=%s) は予約 %s に配席済みです' % (seat.name, seat.id, seat.l0_id, order.order_no))
-                                        else:
-                                            add_error(u'座席「%s」(id=%ld, l0_id=%s) は配席済みです' % (seat.name, seat.id, seat.l0_id))
-                                elif seat.status in (SeatStatusEnum.InCart.v, SeatStatusEnum.Keep.v):
-                                    add_error(u'座席「%s」(id=%ld, l0_id=%s) はカートに入っています' % (seat.name, seat.id, seat.l0_id))
-                                elif seat.status != SeatStatusEnum.Vacant.v:
-                                    add_error(u'座席「%s」(id=%ld, l0_id=%s) は選択できません' % (seat.name, seat.id, seat.l0_id))
+                    if not stock.stock_type.quantity_only:
+                        if len(cpi.seats) > cpi.quantity:
+                            add_error(u'商品明細数よりも座席数が多くなっています (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity))
+                        elif len(cpi.seats) < cpi.quantity:
+                            if self.allocation_mode == AllocationModeEnum.NoAutoAllocation.v:
+                                add_error(u'商品明細数と座席数が一致していません (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity))
+                            else:
+                                if len(cpi.seats) > 0:
+                                    add_error(u'自動配席が有効になっていて、かつ一部の座席が指定されています。指定のない座席は自動的に決定されます。 (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity), level=IMPORT_WARNING)
+                                else:
+                                    if cart.original_order is None:
+                                        add_error(u'予約情報の更新で自動配席が有効になっていて、座席指定がありません。指定のない座席は自動的に決定されます。 (予定配席数=%d)' % (cpi.quantity,), level=IMPORT_WARNING)
+
+                        for seat in cpi.seats:
+                            if seat.status == SeatStatusEnum.Ordered.v:
+                                order = self.session.query(Order) \
+                                    .join(Order.items) \
+                                    .join(OrderedProduct.elements) \
+                                    .join(OrderedProductItem.seats) \
+                                    .filter(Seat.id == seat.id) \
+                                    .filter(Order.canceled_at == None) \
+                                    .first()
+                                if order != cart.original_order:
+                                    if order is not None:
+                                        add_error(u'座席「%s」(id=%ld, l0_id=%s) は予約 %s に配席済みです' % (seat.name, seat.id, seat.l0_id, order.order_no))
+                                    else:
+                                        add_error(u'座席「%s」(id=%ld, l0_id=%s) は配席済みです' % (seat.name, seat.id, seat.l0_id))
+                            elif seat.status in (SeatStatusEnum.InCart.v, SeatStatusEnum.Keep.v):
+                                add_error(u'座席「%s」(id=%ld, l0_id=%s) はカートに入っています' % (seat.name, seat.id, seat.l0_id))
+                            elif seat.status != SeatStatusEnum.Vacant.v:
+                                add_error(u'座席「%s」(id=%ld, l0_id=%s) は選択できません' % (seat.name, seat.id, seat.l0_id))
 
                 for product_item in cp.product.items:
                     cpi = product_item_to_element_map.get(product_item.id)
@@ -915,7 +1031,7 @@ class OrderImporter(object):
                     add_error(u'「%s」の入力値が不正です (%s)' % (japanese_columns[e.path], e.message))
 
             # エラーがなければインポート対象に
-            if ref not in errors:
+            if ref not in refs_excluded:
                 cart.order_import_task = order_import_task
                 carts_to_be_imported.append(cart)
         return carts_to_be_imported, errors
@@ -995,7 +1111,8 @@ def run_import_task(request, task):
         note = re.split(ur'\r\n|\r|\n', order.note)
         # これは実時間でよいような
         imported_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        note.append(u'CSVファイル内の予約番号 (グループキー): %s' % proto_order.ref)
+        if proto_order.original_order is not None:
+            note.append(u'CSVファイル内の予約番号 (グループキー): %s' % proto_order.ref)
         note.append(u'インポート日時: %s' % imported_at)
         order.note = u'\n'.join(note)
         # 決済日時はコンビニ決済でないなら維持 (これは同じ処理を他でやっているはずなので必要ないかも)
