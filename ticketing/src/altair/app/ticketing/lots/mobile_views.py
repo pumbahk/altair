@@ -16,7 +16,7 @@ from altair.app.ticketing.cart.views import back
 from altair.app.ticketing.payments.api import set_confirm_url
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.users import api as user_api
-
+from altair.now import get_now
 from . import api
 from . import helpers as h
 from . import schemas
@@ -376,7 +376,7 @@ class EntryLotView(object):
             raise HTTPNotFound()
 
         sales_segment = lot.sales_segment
-        cform = schemas.ClientForm(self.request.params)
+        cform = schemas.ClientFormFactory(self.request)(self.request.params)
 
         payment_delivery_method_pair_id = None
         try:
@@ -429,7 +429,7 @@ class EntryLotView(object):
                               int(cform['day'].data)),
             memo=cform['memo'].data)
         entry = api.get_lot_entry_dict(self.request)
-        self.request.session['lots.entry.time'] = datetime.now()
+        self.request.session['lots.entry.time'] = get_now(self.request)
         cart = LotSessionCart(entry, self.request, self.context.lot)
 
         payment = Payment(cart, self.request)

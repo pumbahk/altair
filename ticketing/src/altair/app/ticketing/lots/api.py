@@ -38,6 +38,7 @@ from sqlalchemy import sql
 from sqlalchemy.orm.exc import NoResultFound
 #from pyramid.interfaces import IRequest
 from webob.multidict import MultiDict
+from altair.now import get_now
 from altair.app.ticketing.core import api as c_api
 import altair.app.ticketing.cart.api as cart_api
 from altair.app.ticketing.utils import sensible_alnum_encode
@@ -442,7 +443,7 @@ def send_elected_mails(request):
 
     for elected_entry in q:
         sendmail.send_elected_mail(request, elected_entry)
-        elected_entry.mail_sent_at = datetime.now()
+        elected_entry.mail_sent_at = get_now(request)
         transaction.commit()
 
 def send_rejected_mails(request):
@@ -450,7 +451,7 @@ def send_rejected_mails(request):
 
     for rejected_entry in q:
         sendmail.send_rejected_mail(request, rejected_entry)
-        rejected_entry.mail_sent_at = datetime.now()
+        rejected_entry.mail_sent_at = get_now(request)
         transaction.commit()
 
 def get_entry_user(request):
@@ -539,7 +540,7 @@ def create_client_form(context):
     if user is not None:
         user_profile = user.user_profile
 
-    retval = schemas.ClientForm()
+    retval = schemas.ClientFormFactory(context.request)()
 
     # XXX:ゆるふわなデフォルト値
     sex = SexEnum.Female.v

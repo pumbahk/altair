@@ -263,6 +263,9 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.payments.plugins')
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
 
+    ### whattime preview
+    config.include("altair.app.ticketing.cart.preview")
+
     config.include('altair.pyramid_assets')
     config.include('altair.pyramid_boto')
     config.include('altair.pyramid_tz')

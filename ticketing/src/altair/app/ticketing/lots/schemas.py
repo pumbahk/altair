@@ -12,6 +12,7 @@ from altair.app.ticketing.booster import fields as my_fields
 from altair.formhelpers import text_type_but_none_if_not_given, Zenkaku, Katakana, NFKC, lstrip, strip, strip_hyphen, strip_spaces, SejCompliantEmail, CP932, Translations
 from altair.formhelpers.form import OurForm 
 from altair.formhelpers.fields import OurRadioField
+from altair.now import get_now
 
 ymd_widget = my_widgets.Switcher(
     'select',
@@ -19,8 +20,8 @@ ymd_widget = my_widgets.Switcher(
     input=widgets.TextInput()
     )
 
-def get_year_choices():
-    current_year = datetime.now().year
+def get_year_choices(current_year=None):
+    current_year = current_year or datetime.now().year
     years =  [(str(year), year) for year in range(current_year-100, current_year)]
     return years
 
@@ -32,11 +33,23 @@ def get_year_days():
     days =  [(str(month), month) for month in range(1,32)]
     return days
 
+class ClientFormFactory(object):
+    def __init__(self, request, now=None):
+        self.request = request
+        self.now = now or get_now(request)
+
+    def __call__(self, *args, **kwargs):
+        now = self.now
+        if not "year" in kwargs:
+            kwargs["year"] = now.year - 25 #xxx:
+        form = ClientForm(*args, **kwargs)
+        form.year.choices = get_year_choices(current_year=now.year)
+        return form
 
 class ClientForm(_ClientForm):
     sex = OurRadioField(u'性別', choices=[(str(SexEnum.Male), u'男性'), (str(SexEnum.Female), u'女性')])
     tel_2 = fields.TextField(u'電話番号(携帯)')
-    year = my_fields.StringFieldWithChoice(u"年", filters=[strip_spaces], choices=get_year_choices(), default=str(datetime.now().year - 25), widget=ymd_widget)
+    year = my_fields.StringFieldWithChoice(u"年", filters=[strip_spaces], choices=[], widget=ymd_widget)
     month = my_fields.StringFieldWithChoice(u"月", filters=[strip_spaces, lstrip('0')], validators=[v.Required()], choices=get_year_months(), widget=ymd_widget)
     day = my_fields.StringFieldWithChoice(u"日", filters=[strip_spaces, lstrip('0')], validators=[v.Required()], choices=get_year_days(), widget=ymd_widget)
     memo = fields.TextAreaField(u"メモ")

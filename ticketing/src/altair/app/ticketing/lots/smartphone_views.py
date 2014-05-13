@@ -21,6 +21,7 @@ from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 from altair.app.ticketing.cart.api import is_smartphone, is_smartphone_organization
+from altair.now import get_now
 
 from . import api
 from . import helpers as h
@@ -338,7 +339,7 @@ class EntryLotView(object):
             raise HTTPNotFound()
 
 
-        cform = schemas.ClientForm(formdata=self.request.params)
+        cform = schemas.ClientFormFactory(self.request)(formdata=self.request.params)
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id')
@@ -429,7 +430,7 @@ class EntryLotView(object):
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
 
-        self.request.session['lots.entry.time'] = datetime.now()
+        self.request.session['lots.entry.time'] = get_now(self.request)
         cart = LotSessionCart(entry, self.request, self.context.lot)
 
         payment = Payment(cart, self.request)
