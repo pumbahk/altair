@@ -7,12 +7,14 @@ from collections import (
     defaultdict, 
     Counter
     )
-from altair.app.ticketing.core.models import orders_seat_table
 from altair.app.ticketing.core.models import (
-    OrderedProductItem,
     Ticket, 
     Seat,
-    OrderedProductItemToken
+    )
+from altair.app.ticketing.orders.models import (
+    orders_seat_table,
+    OrderedProductItem,
+    OrderedProductItemToken,
     )
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from .utils import (
@@ -83,7 +85,7 @@ class EachPrintWithToken(object):
         self.mcounter = mcounter_impl(ticket_format_id, candidate_id_list)
         self.issuer = issuer or NumberIssuer()
 
-    def enqueue(self, operator):
+    def enqueue(self, request, operator):
         mc = self.mcounter
         token_dict = {unicode(t.id):t for t in mc.tokens}
         seat_dict = {unicode(s.id):s for s in mc.seats}
@@ -100,7 +102,7 @@ class EachPrintWithToken(object):
             i = counter[k]
             j = mc.item_children_counter[k]
             ordered_product_item = item_dict[k]
-            enqueue_token(operator, token, ticket, i, j, 
+            enqueue_token(request, operator, token, ticket, i, j, 
                           ordered_product_item=ordered_product_item, order=self.order,
                           seat=seat_dict.get(seat_id), issuer=self.issuer)
             
@@ -142,11 +144,11 @@ class EachPrintWithoutToken(object):
                             using_tokens[(unicode(opi.id), unicode(None))].append(token)
         return using_tokens
 
-    def enqueue(self, operator):
+    def enqueue(self, request, operator):
         token_list_dict = self.generate_tokens()
-        return self._enqueue(operator, token_list_dict)
+        return self._enqueue(request, operator, token_list_dict)
 
-    def _enqueue(self, operator, token_list_dict):
+    def _enqueue(self, request, operator, token_list_dict):
         counter = Counter()
 
         mc = self.mcounter
@@ -168,7 +170,7 @@ class EachPrintWithoutToken(object):
             j = mc.item_children_counter[item_id]
 
             ordered_product_item = item_dict[item_id]
-            enqueue_token(operator, token, ticket, i, j, 
+            enqueue_token(request, operator, token, ticket, i, j, 
                           ordered_product_item=ordered_product_item, order=self.order,
                           seat=seat_dict.get(seat_id), issuer=self.issuer)
 

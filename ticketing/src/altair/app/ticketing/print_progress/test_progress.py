@@ -50,16 +50,18 @@ todo: 枝番の対応
 - event別
 ※"""
 from altair.app.ticketing.core.models import (
-    Order,
-    OrderedProduct,
-    OrderedProductItem,
-    OrderedProductItemToken,
     PaymentDeliveryMethodPair,
     PaymentMethod,
     DeliveryMethod, 
     Event, 
     Performance, 
 )
+from altair.app.ticketing.orders.models import (
+    Order,
+    OrderedProduct,
+    OrderedProductItem,
+    OrderedProductItemToken,
+    )
 from altair.app.ticketing.payments import plugins
 from datetime import datetime
 

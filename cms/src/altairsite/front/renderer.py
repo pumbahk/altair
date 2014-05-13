@@ -48,14 +48,15 @@ class ILookupWrapperFactory(Interface):
 
 @implementer(ILookupWrapperFactory)
 class LayoutModelLookupWrapperFactory(object):
-    def __init__(self, directory_spec, loader, prefix): 
+    def __init__(self, directory_spec, loader, prefix, sync_trigger_attribute_name):
         self.directory_spec = directory_spec
         self.prefix = prefix.rstrip("/")
         self.loader = loader
+        self.sync_trigger_attribute_name = sync_trigger_attribute_name
 
     def __call__(self, lookup, layout):
         handler = LayoutModelLookupInterceptHandler(
-            self.prefix, self.directory_spec, layout.updated_at, self.loader)
+            self.prefix, self.directory_spec, getattr(layout, self.sync_trigger_attribute_name), self.loader)
         return LookupInterceptWrapper(lookup, handler)
 
 class CompositeLoader(object):

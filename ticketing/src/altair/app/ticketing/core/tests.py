@@ -8,7 +8,10 @@ from altair.app.ticketing.testing import _setup_db, _teardown_db
 class ProductTests(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        self.session = _setup_db(modules=['altair.app.ticketing.core.models'])
+        self.session = _setup_db(modules=[
+            'altair.app.ticketing.orders.models',
+            'altair.app.ticketing.core.models',
+            ])
 
     @classmethod
     def tearDownClass(self):
@@ -55,7 +58,10 @@ class ProductTests(unittest.TestCase):
 class SeatTests(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        self.session = _setup_db(modules=['altair.app.ticketing.core.models'])
+        self.session = _setup_db(modules=[
+            'altair.app.ticketing.orders.models',
+            'altair.app.ticketing.core.models',
+            ])
 
     @classmethod
     def tearDownClass(self):

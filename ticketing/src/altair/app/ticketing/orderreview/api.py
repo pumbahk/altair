@@ -11,7 +11,12 @@ import urllib
 import urllib2
 import json
 
-from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
+from altair.app.ticketing.orders.models import (
+    Order,
+    OrderedProduct,
+    OrderedProductItem,
+    OrderedProductItemToken,
+    )
 
 logger = logging.getLogger(__name__)
 

@@ -22,6 +22,7 @@ from altair.pyramid_boto.s3.assets import IS3KeyProvider
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
+from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 from altair.app.ticketing.views import mobile_request
 from altair.app.ticketing.fanstatic import with_jquery, with_jquery_tools
@@ -45,7 +46,7 @@ from altair.app.ticketing.temp_store import TemporaryStoreError
 from . import api
 from . import helpers as h
 from . import schemas
-from .api import set_rendered_event, is_mobile, is_smartphone, is_smartphone_organization, is_point_input_organization
+from .api import set_rendered_event, is_mobile, is_smartphone, is_smartphone_organization, is_point_input_organization, is_fc_auth_organization
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -54,9 +55,9 @@ from .selectable_renderer import selectable_renderer
 from .view_support import IndexViewMixin, get_amount_without_pdmp, get_seat_type_dicts, assert_quantity_within_bounds
 from .exceptions import (
     NoSalesSegment,
-    NoCartError, 
+    NoCartError,
     NoPerformanceError,
-    InvalidCSRFTokenException, 
+    InvalidCSRFTokenException,
     CartCreationException,
     InvalidCartStatusError,
     PaymentMethodEmptyError,
@@ -117,7 +118,7 @@ def back_to_top(request):
                 event_id = DBSession.query(c_models.Performance).filter_by(id=performance_id).one().event_id
             except:
                 pass
- 
+
     extra = {}
     if performance_id is not None:
         extra['_query'] = { 'performance': performance_id }
@@ -288,7 +289,7 @@ class IndexView(IndexViewMixin):
 
     @view_config(decorator=with_jquery_tools, route_name='cart.index',
                   renderer=selectable_renderer("%(membership)s/pc/index.html"), xhr=False, permission="buy")
-    @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
+    @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest",
                  custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/index.html"), xhr=False, permission="buy")
     def event_based_landing_page(self):
         # 会場
@@ -327,7 +328,7 @@ class IndexView(IndexViewMixin):
                 preferred_performance = c_models.Performance.query.filter_by(id=performance_id, public=True).first()
                 if preferred_performance is not None:
                     if preferred_performance.event_id != self.context.event.id:
-                        preferred_performance = None 
+                        preferred_performance = None
 
         set_rendered_event(self.request, self.context.event)
 
@@ -358,7 +359,7 @@ class IndexView(IndexViewMixin):
     # パフォーマンスベースのランディング画面
     @view_config(decorator=with_jquery_tools, route_name='cart.index2',
                   renderer=selectable_renderer("%(membership)s/pc/index.html"), xhr=False, permission="buy")
-    @view_config(decorator=with_jquery_tools, route_name='cart.index2',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
+    @view_config(decorator=with_jquery_tools, route_name='cart.index2',request_type="altair.mobile.interfaces.ISmartphoneRequest",
                  custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/index.html"), xhr=False, permission="buy")
     def performance_based_landing_page(self):
         sales_segments = self.context.available_sales_segments
@@ -579,7 +580,7 @@ class IndexAjaxView(object):
             elif stock_type_id is not None:
                 seats_query = seats_query.filter(c_models.Stock.stock_type_id == stock_type_id)
                 seat_groups_queries = [
-                    seat_groups_query.filter(c_models.Stock.stock_type_id == stock_type_id) 
+                    seat_groups_query.filter(c_models.Stock.stock_type_id == stock_type_id)
                     for seat_groups_query in seat_groups_queries
                     ]
             seats = seats_query.all()
@@ -591,7 +592,7 @@ class IndexAjaxView(object):
                         'name': seat_group_name,
                         'seats': [],
                         }
-                seat_group['seats'].append(seat_l0_id) 
+                seat_group['seats'].append(seat_l0_id)
         else:
             seats = []
             seat_groups = {}
@@ -599,7 +600,7 @@ class IndexAjaxView(object):
         stock_map = dict([(s.id, s) for s in sales_stocks])
 
         self.request.add_response_callback(gzip_preferred)
-                
+
 
         return dict(
             seats=dict(
@@ -719,6 +720,10 @@ class ReserveView(object):
         logger.debug('ordered_items %s' % ordered_items)
 
         sales_segment = self.context.sales_segment
+        if not sales_segment.in_term(self.context.now):
+            transaction.abort()
+            logger.debug("out of term")
+            return dict(result='NG', reason="out_of_term")
 
         try:
             assert_quantity_within_bounds(sales_segment, ordered_items)
@@ -816,9 +821,9 @@ class ReserveView(object):
         DBSession.add(cart)
         DBSession.flush()
         api.set_cart(self.request, cart)
-        return dict(result='OK', 
+        return dict(result='OK',
                     payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
-                    cart=dict(products=[dict(name=p.product.name, 
+                    cart=dict(products=[dict(name=p.product.name,
                                              quantity=p.quantity,
                                              price=int(p.product.price),
                                              seats=p.seats if sales_segment.setting.display_seat_no else [],
@@ -874,7 +879,7 @@ class PaymentView(object):
         payment_delivery_methods = [pdmp
                                     for pdmp in self.context.available_payment_delivery_method_pairs(sales_segment)
                                     if pdmp.payment_method.public]
-        
+
         if 0 == len(payment_delivery_methods):
             raise PaymentMethodEmptyError.from_resource(self.context, self.request)
 
@@ -890,7 +895,7 @@ class PaymentView(object):
                 first_name=user_profile.first_name,
                 first_name_kana=user_profile.first_name_kana,
                 tel_1=user_profile.tel_1,
-                fax=getattr(user_profile, "fax", None), 
+                fax=getattr(user_profile, "fax", None),
                 zip=user_profile.zip,
                 prefecture=user_profile.prefecture,
                 city=user_profile.city,
@@ -968,14 +973,14 @@ class PaymentView(object):
         if not self._validate_extras(cart, payment_delivery_pair, shipping_address_params):
             start_on = cart.performance.start_on
             sales_segment = self.request.context.sales_segment
-            
+
             payment_delivery_methods = [pdmp
                                         for pdmp in self.context.available_payment_delivery_method_pairs(sales_segment)
                                         if pdmp.payment_method.public]
-        
+
             if 0 == len(payment_delivery_methods):
                 raise PaymentMethodEmptyError.from_resource(self.context, self.request)
-        
+
 
             return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
 
@@ -995,9 +1000,11 @@ class PaymentView(object):
 
         set_confirm_url(self.request, self.request.route_url('payment.confirm'))
 
-        if is_point_input_organization(context=self.context, request=self.request):
+        if is_fc_auth_organization(context=self.context, request=self.request):
             if user:
                 get_or_create_user_profile(user, shipping_address_params)
+
+        if is_point_input_organization(context=self.context, request=self.request):
             return HTTPFound(self.request.route_path('cart.point'))
 
         payment = Payment(cart, self.request)
@@ -1144,6 +1151,64 @@ class ConfirmView(object):
         )
 
 
+@view_config(route_name='cart.confirm_test', request_method='GET',
+             renderer=selectable_renderer('%(membership)s/pc/confirm.html'))
+@view_config(route_name='cart.confirm_test', request_method="GET",
+             request_type='altair.mobile.interfaces.IMobileRequest',
+             renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
+@view_config(route_name='cart.confirm_test', request_method="GET",
+             request_type="altair.mobile.interfaces.ISmartphoneRequest",
+             renderer=selectable_renderer("%(membership)s/smartphone/confirm.html"),
+             custom_predicates=(is_smartphone_organization, ))
+def confirm_test(context, request):
+    from altair.app.ticketing.cart.models import Cart
+    from altair.app.ticketing.core.models import (
+        Order,
+        ShippingAddress,
+        )
+    cart = Cart.query\
+               .join(Order)\
+               .join(ShippingAddress)\
+               .filter(Cart.order_id!=None)\
+               .order_by(Cart.id.desc())\
+               .first()
+    from mock import Mock
+    class Dummy(object):
+        def __getitem__(self, key):
+            return u'A'
+
+    res = {'cart': cart,
+           'mialmagazines_to_subscribe': Mock(),
+           'form': Mock(),
+           'delegator': Dummy(),
+           'accountno': Mock(),
+           }
+    return res
+
+
+@view_config(route_name='cart.complete_test', request_method='GET',
+             renderer=selectable_renderer('%(membership)s/pc/completion.html'))
+@view_config(route_name='cart.complete_test', request_method="GET",
+             request_type='altair.mobile.interfaces.IMobileRequest',
+             renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
+@view_config(route_name='cart.complete_test', request_method="GET",
+             request_type="altair.mobile.interfaces.ISmartphoneRequest",
+             renderer=selectable_renderer("%(membership)s/smartphone/completion.html"),
+             custom_predicates=(is_smartphone_organization, ))
+def complete_test(context, request):
+    from altair.app.ticketing.core.models import (
+        Order,
+        ShippingAddress,
+        )
+    order = Order.query\
+                 .join(ShippingAddress)\
+                 .order_by(Order.id.desc())\
+                 .first()
+    res = {'order': order,
+           }
+    return res
+
+
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class CompleteView(object):
     """ 決済完了画面"""
@@ -1219,7 +1284,7 @@ class CompleteView(object):
             # モバイルの場合はHTTPリダイレクトの際のSet-Cookieに対応していないと
             # 思われるので、直接ページをレンダリングする
             # transaction をコミットしたので、再度読み直し
-            order = c_models.Order.query.filter_by(id=order_id).one()
+            order = order_models.Order.query.filter_by(id=order_id).one()
             return dict(order=order)
         else:
             # PC/スマートフォンでは、HTTPリダイレクト時にクッキーをセット

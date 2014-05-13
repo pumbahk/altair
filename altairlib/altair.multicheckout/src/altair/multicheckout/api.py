@@ -89,16 +89,28 @@ class Multicheckout3DAPI(object):
     def create_secure3d_auth_response(self):
         return m.Secure3DAuthResponse()
 
-    def save_api_response(self, res, invoker=None):
+    def save_api_response(self, res, req, invoker=None):
         self.session.add(res)
-        if hasattr(res, 'OrderNo') and hasattr(res, 'Storecd'):
-            status = res.Status
-            if res.CmnErrorCd == '001407':  # 取引詳細操作不可
-                status = u"-10"
-            if invoker is None:
-                invoker = u"call by %s" % self.request.url
-            m.MultiCheckoutOrderStatus.set_status(res.OrderNo, res.Storecd, status, invoker)
-        self.session.commit()
+        try:
+            if hasattr(res, 'OrderNo') and hasattr(res, 'Storecd'):
+                status = res.Status
+                if res.CmnErrorCd == '001407':  # 取引詳細操作不可
+                    status = u"-10"
+                if invoker is None:
+                    invoker = u"call by %s" % self.request.url
+                amount = None
+                if hasattr(res, 'SalesAmount'):
+                    amount = res.SalesAmount
+                else:
+                    if hasattr(req, 'SalesAmount'):
+                        amount = req.SalesAmount
+                    elif hasattr(req, 'SalesAmountCancellation'):
+                        prev_status = m.MultiCheckoutOrderStatus.get_or_create(res.OrderNo, res.Storecd)
+                        if prev_status.SalesAmount is not None:
+                            amount = prev_status.SalesAmount - req.SalesAmountCancellation
+                m.MultiCheckoutOrderStatus.set_status(res.OrderNo, res.Storecd, status, amount, invoker)
+        finally:
+            self.session.commit()
 
     def secure3d_enrol(self, order_no, card_number, exp_year, exp_month, total_amount):
         """ セキュア3D認証要求 """
@@ -118,7 +130,7 @@ class Multicheckout3DAPI(object):
             self.session.commit()
         res.request = enrol
         events.Secure3DEnrolEvent.notify(self.request, order_no, res)
-        self.save_api_response(res)
+        self.save_api_response(res, enrol)
         return res
 
 
@@ -137,7 +149,7 @@ class Multicheckout3DAPI(object):
             self.session.commit()
         res.request = auth
         events.Secure3DAuthEvent.notify(self.request, order_no, res)
-        self.save_api_response(res)
+        self.save_api_response(res, auth)
         return res
 
 
@@ -177,7 +189,7 @@ class Multicheckout3DAPI(object):
             self.session.commit()
         res.request = params
         events.CheckoutAuthSecure3DEvent.notify(self.request, order_no, res)
-        self.save_api_response(res)
+        self.save_api_response(res, params)
         return res
 
 
@@ -187,7 +199,7 @@ class Multicheckout3DAPI(object):
         order_no = maybe_unicode(order_no)
         res = self.impl.request_card_sales(self, order_no)
         events.CheckoutSalesSecure3DEvent.notify(self.request, order_no, res)
-        self.save_api_response(res)
+        self.save_api_response(res, None)
         return res
 
 
@@ -197,7 +209,7 @@ class Multicheckout3DAPI(object):
         order_no = maybe_unicode(order_no)
         res = self.impl.request_card_cancel_auth(self, order_no)
         events.CheckoutAuthCancelEvent.notify(self.request, order_no, res)
-        self.save_api_response(res)
+        self.save_api_response(res, None)
         return res
 
 
@@ -232,7 +244,7 @@ class Multicheckout3DAPI(object):
         finally:
             self.session.commit()
         events.CheckoutSalesPartCancelEvent.notify(self.request, order_no, res)
-        self.save_api_response(res)
+        self.save_api_response(res, params)
         return res
 
 
@@ -242,9 +254,19 @@ class Multicheckout3DAPI(object):
         order_no = maybe_unicode(order_no)
         res = self.impl.request_card_cancel_sales(self, order_no)
         events.CheckoutSalesCancelEvent.notify(self.request, order_no, res)
-        self.save_api_response(res)
+        self.save_api_response(res, None)
         return res
 
+    def get_authorized_amount(self, order_no):
+        order_no = maybe_unicode(order_no)
+        status = m._session.query(m.MultiCheckoutOrderStatus) \
+            .filter(m.MultiCheckoutOrderStatus.OrderNo == order_no) \
+            .filter(m.MultiCheckoutOrderStatus.Storecd == self.impl.shop_code) \
+            .first()
+        if status is not None:
+            return status.SalesAmount
+        else:
+            return None
 
     def checkout_inquiry(self, order_no, invoker=None):
         """ 取引照会"""
@@ -252,7 +274,7 @@ class Multicheckout3DAPI(object):
         order_no = maybe_unicode(order_no)
         res = self.impl.request_card_inquiry(self, order_no)
         events.CheckoutInquiryEvent.notify(self.request, order_no, res)
-        self.save_api_response(res, invoker)
+        self.save_api_response(res, None, invoker=invoker)
         return res
 
 
@@ -289,7 +311,7 @@ class Multicheckout3DAPI(object):
             self.session.commit()
         res.request = params
         events.CheckoutAuthSecureCodeEvent.notify(self.request, order_no, res)
-        self.save_api_response(res)
+        self.save_api_response(res, params)
         return res
 
     def is_enable_secure3d(request, card_number):

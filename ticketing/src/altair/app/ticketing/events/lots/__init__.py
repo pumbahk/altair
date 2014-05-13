@@ -8,7 +8,7 @@ def includeme(config):
     lot_resource_factory = newRootFactory(config.maybe_dotted('.resources.LotResource'))
     lot_product_resource_factory = newRootFactory(config.maybe_dotted('.resources.LotProductResource'))
     lot_entry_resource_factory = newRootFactory(config.maybe_dotted('.resources.LotEntryResource'))
-
+    lot_report_setting_resource_factory = newRootFactory(config.maybe_dotted('.resources.LotEntryReportSettingResource'))
     
     # 抽選内容管理
     config.add_route('lots.index', '/{event_id}',
@@ -66,13 +66,15 @@ def includeme(config):
     config.add_route('lot.entries.new_report_setting',
                      'entries/{lot_id}/new_report',
                      factory=lot_resource_factory)
+    config.add_route('lot.entries.edit_report_setting',
+                     'entries/{lot_id}/edit_report/{setting_id}',
+                     factory=lot_report_setting_resource_factory)
     config.add_route('lot.entries.delete_report_setting',
                      'entries/{lot_id}/delete_report/{setting_id}',
-                     factory=lot_resource_factory)
+                     factory=lot_report_setting_resource_factory)
     config.add_route('lot.entries.send_report_setting',
                      'entries/{lot_id}/send_report/{setting_id}',
-                     factory=lot_resource_factory)
-
+                     factory=lot_report_setting_resource_factory)
 
     config.include(".mailinfo", route_prefix="/lots/mailinfo/")
     config.include("altair.mq")

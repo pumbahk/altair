@@ -6,7 +6,7 @@ from datetime import datetime
 def setUpModule():
     from altair.app.ticketing.testing import _setup_db
     _setup_db(modules=[
-            "altair.app.ticketing.models",
+            "altair.app.ticketing.orders.models",
             "altair.app.ticketing.core.models",
             "altair.app.ticketing.cart.models",
             ])

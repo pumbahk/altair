@@ -1,27 +1,25 @@
 # -*- coding:utf-8 -*-
 
-import json
 import re
+import json
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPNotFound
+from datetime import datetime
+import logging
+import urllib
+import urllib2
+import traceback
+
 from altair.app.ticketing.qr import get_qrdata_builder
 from altair.app.ticketing.qr.builder import InvalidSignedString
-import logging
-logger = logging.getLogger(__name__)
-
-from . import forms
-from . import helpers as h
-from . import utils
-from . import todict
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import Event
 from altair.app.ticketing.core.models import Performance
 from altair.app.ticketing.core.models import PageFormat
-from altair.app.ticketing.core.models import OrderedProductItemToken
 from altair.app.ticketing.core.models import Ticket
 from altair.app.ticketing.core.utils import PrintedAtBubblingSetter
-from datetime import datetime
+from altair.app.ticketing.orders.models import OrderedProductItemToken
 
 from altair.app.ticketing.qr.utils import get_matched_token_query_from_order_no
 from altair.app.ticketing.qr.utils import get_or_create_matched_history_from_token
@@ -30,9 +28,12 @@ from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.orderreview.api import send_to_orion
 from altair.app.ticketing.qr.utils import build_qr_by_orion
 
-import urllib
-import urllib2
-import traceback
+from . import forms
+from . import helpers as h
+from . import utils
+from . import todict
+
+logger = logging.getLogger(__name__)
 
 def _accepted_object(request, obj):
     if obj is None:

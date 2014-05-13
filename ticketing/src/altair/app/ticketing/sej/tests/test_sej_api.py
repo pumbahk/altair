@@ -12,6 +12,8 @@ class SejApiTest(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
+            'altair.app.ticketing.orders.models',
+            'altair.app.ticketing.lots.models',
             'altair.app.ticketing.sej.models'
             ])
         self.config = testing.setUp()

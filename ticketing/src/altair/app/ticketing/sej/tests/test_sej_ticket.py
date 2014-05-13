@@ -17,6 +17,8 @@ class TestCreateRefundZipFile(unittest.TestCase):
         self.work_dir = mkdtemp()
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
+            'altair.app.ticketing.orders.models',
+            'altair.app.ticketing.lots.models',
             'altair.app.ticketing.sej.models',
             ])
 

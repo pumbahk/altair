@@ -10,6 +10,7 @@ from altair.app.ticketing.core.testing import CoreTestMixin
 def _setup_db(echo=False):
     return _setup_db_(
         modules=[
+            'altair.app.ticketing.orders.models',
             'altair.app.ticketing.core.models',
             'altair.app.ticketing.cart.models',
             ],
@@ -22,7 +23,7 @@ class ReservingTest(unittest.TestCase, CoreTestMixin):
         return Reserving
 
     def _makeOne(self):
-        return self._getTarget()(self.request)
+        return self._getTarget()(self.request, self.session)
 
     def setUp(self):
         self.request = testing.DummyRequest()

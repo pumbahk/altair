@@ -1732,9 +1732,11 @@ class BuildSejArgsTest(unittest.TestCase):
                         issuing_end_at=cart.issuing_end_at,
                         payment_start_at=cart.payment_start_at,
                         payment_due_at=cart.payment_due_at,
-                        performance=testing.DummyModel(
-                            start_on=datetime(2013, 3, 1, 1, 2, 3),
-                            end_on=datetime(2013, 3, 1, 2, 3, 4)
+                        sales_segment=testing.DummyModel(
+                            performance=testing.DummyModel(
+                                start_on=datetime(2013, 3, 1, 1, 2, 3),
+                                end_on=datetime(2013, 3, 1, 2, 3, 4)
+                                )
                             )
                         )
                     )
@@ -1752,16 +1754,16 @@ class BuildSejArgsTest(unittest.TestCase):
             for k, v in expectation.items():
                 self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
         for i, (expectation, order) in enumerate(zip(self.expectations_paid, self.orders)):
-            order.performance.end_on = None
+            order.sales_segment.performance.end_on = None
             args = self._callFUT(SejPaymentType.Paid, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
                     self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
                 else:
-                    start_on = order.performance.start_on + timedelta(days=1)
+                    start_on = order.sales_segment.performance.start_on + timedelta(days=1)
                     self.assertEqual(start_on, args[k], '[%d].%s: %s != %s' % (i, k, start_on, args[k]))
         for i, (expectation, order) in enumerate(zip(self.expectations_paid, self.orders)):
-            order.performance.start_on = None
+            order.sales_segment.performance.start_on = None
             args = self._callFUT(SejPaymentType.Paid, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
@@ -1769,7 +1771,7 @@ class BuildSejArgsTest(unittest.TestCase):
                 else:
                     self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
         for i, (expectation, order) in enumerate(zip(self.expectations_paid, self.orders)):
-            order.performance = None
+            order.sales_segment.performance = None
             args = self._callFUT(SejPaymentType.Paid, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
@@ -1785,16 +1787,16 @@ class BuildSejArgsTest(unittest.TestCase):
             for k, v in expectation.items():
                 self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
         for i, (expectation, order) in enumerate(zip(self.expectations_prepayment, self.orders)):
-            order.performance.end_on = None
+            order.sales_segment.performance.end_on = None
             args = self._callFUT(SejPaymentType.Prepayment, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
                     self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
                 else:
-                    start_on = order.performance.start_on + timedelta(days=1)
+                    start_on = order.sales_segment.performance.start_on + timedelta(days=1)
                     self.assertEqual(start_on, args[k], '[%d].%s: %s != %s' % (i, k, start_on, args[k]))
         for i, (expectation, order) in enumerate(zip(self.expectations_prepayment, self.orders)):
-            order.performance.start_on = None
+            order.sales_segment.performance.start_on = None
             args = self._callFUT(SejPaymentType.Prepayment, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
@@ -1802,7 +1804,7 @@ class BuildSejArgsTest(unittest.TestCase):
                 else:
                     self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
         for i, (expectation, order) in enumerate(zip(self.expectations_prepayment, self.orders)):
-            order.performance = None
+            order.sales_segment.performance = None
             args = self._callFUT(SejPaymentType.Prepayment, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
@@ -1818,16 +1820,16 @@ class BuildSejArgsTest(unittest.TestCase):
             for k, v in expectation.items():
                 self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
         for i, (expectation, order) in enumerate(zip(self.expectations_prepayment_only, self.orders)):
-            order.performance.end_on = None
+            order.sales_segment.performance.end_on = None
             args = self._callFUT(SejPaymentType.PrepaymentOnly, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
                     self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
                 else:
-                    start_on = order.performance.start_on + timedelta(days=1)
+                    start_on = order.sales_segment.performance.start_on + timedelta(days=1)
                     self.assertEqual(start_on, args[k], '[%d].%s: %s != %s' % (i, k, start_on, args[k]))
         for i, (expectation, order) in enumerate(zip(self.expectations_prepayment_only, self.orders)):
-            order.performance.start_on = None
+            order.sales_segment.performance.start_on = None
             args = self._callFUT(SejPaymentType.PrepaymentOnly, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
@@ -1835,7 +1837,7 @@ class BuildSejArgsTest(unittest.TestCase):
                 else:
                     self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
         for i, (expectation, order) in enumerate(zip(self.expectations_prepayment_only, self.orders)):
-            order.performance = None
+            order.sales_segment.performance = None
             args = self._callFUT(SejPaymentType.PrepaymentOnly, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
@@ -1851,16 +1853,16 @@ class BuildSejArgsTest(unittest.TestCase):
             for k, v in expectation.items():
                 self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
         for i, (expectation, order) in enumerate(zip(self.expectations_cash_on_delivery, self.orders)):
-            order.performance.end_on = None
+            order.sales_segment.performance.end_on = None
             args = self._callFUT(SejPaymentType.CashOnDelivery, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
                     self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
                 else:
-                    start_on = order.performance.start_on + timedelta(days=1)
+                    start_on = order.sales_segment.performance.start_on + timedelta(days=1)
                     self.assertEqual(start_on, args[k], '[%d].%s: %s != %s' % (i, k, start_on, args[k]))
         for i, (expectation, order) in enumerate(zip(self.expectations_cash_on_delivery, self.orders)):
-            order.performance.start_on = None
+            order.sales_segment.performance.start_on = None
             args = self._callFUT(SejPaymentType.CashOnDelivery, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
@@ -1868,7 +1870,7 @@ class BuildSejArgsTest(unittest.TestCase):
                 else:
                     self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
         for i, (expectation, order) in enumerate(zip(self.expectations_cash_on_delivery, self.orders)):
-            order.performance = None
+            order.sales_segment.performance = None
             args = self._callFUT(SejPaymentType.CashOnDelivery, order, self.now)
             for k, v in expectation.items():
                 if k != 'regrant_number_due_at':
@@ -1882,8 +1884,10 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
         from altair.app.ticketing.sej.interfaces import ISejPaymentAPICommunicator, ISejPaymentAPICommunicatorFactory
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
+            'altair.app.ticketing.orders.models',
             'altair.app.ticketing.sej.models',
-            'altair.app.ticketing.cart.models'
+            'altair.app.ticketing.cart.models',
+            'altair.app.ticketing.lots.models',
             ])
         self.request = testing.DummyRequest()
         config = testing.setUp(request=self.request, settings={
@@ -1906,6 +1910,8 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
                 pass
         config.registry.registerUtility(DummySejPaymentAPICommunicator, ISejPaymentAPICommunicatorFactory)
         CoreTestMixin.setUp(self)
+        self.session.add(self.organization)
+        self.session.add(self.event)
         self._setup_fixture()
         self.performance.start_on = datetime(2012, 4, 1, 0, 0, 0)
         self.session.flush()
@@ -1942,13 +1948,17 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
 
     def _pick_seats(self, stock, quantity):
         from altair.app.ticketing.core.models import SeatStatusEnum
+        assert stock in self.stocks
+       
+        result = []
         for seat in self.seats:
             if seat.stock == stock and seat.status == SeatStatusEnum.Vacant.v:
-                if quantity == 0:
+                result.append(seat)
+                if len(result) == quantity:
                     break
-                quantity -= 1
-                seat.status = SeatStatusEnum.InCart.v
-                yield seat
+        else:
+            assert False, 'len(result) < quantity'
+        return result
 
     def _setup_fixture(self):
         from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment
@@ -2014,7 +2024,7 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
                 performance_name=order.sales_segment.performance.name,
                 performance_datetime=datetime(2012,8,30,19,00),
                 ticket_template_id='TTTS0001',
-                ticket_data_xml=u'<?xml version="1.0" encoding="Shift_JIS" ?><TICKET></TICKET>',
+                ticket_data_xml=u'<TICKET></TICKET>',
                 product_item_id=12345
                 )
             for ordered_product in order.items

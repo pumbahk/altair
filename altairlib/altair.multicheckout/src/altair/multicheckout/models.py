@@ -273,6 +273,7 @@ class MultiCheckoutOrderStatus(Base, WithTimestamp):
     Status = sa.Column(sa.Unicode(3), doc=u"決済ステータス")
     Summary = sa.Column(sa.UnicodeText, doc=u"機能追記メモ")
     KeepAuthFor = sa.Column(sa.Unicode(20), doc=u"オーソリキャンセル保持を必要とする機能名")
+    SalesAmount = sa.Column(sa.Integer, doc=u"売上金額")
 
     @classmethod
     def by_storecd(cls, storecd):
@@ -307,10 +308,12 @@ class MultiCheckoutOrderStatus(Base, WithTimestamp):
 
 
     @classmethod
-    def set_status(cls, order_no, storecd, status, summary):
+    def set_status(cls, order_no, storecd, status, amount, summary):
         s = cls.get_or_create(order_no, storecd)
         if s.Status != status:
             s.Status = status
+            if amount is not None:
+                s.SalesAmount = amount
             s.Summary = (s.Summary or u"") + "\n" + summary
 
     @classmethod

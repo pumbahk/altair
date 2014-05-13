@@ -82,6 +82,14 @@
                     >
                         <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
                     </Button>
+
+                    <!-- 再発券許可 -->
+                    <Button Click="OnGotoQRRefreshMode"
+                    Style="{StaticResource HeaderMenuButtonStyle}"
+                            Canvas.Top="17"
+                            RenderTransformOrigin="10.794,2.52"
+                            Canvas.Left="1060"
+                            Height="64" Width="240">再発券許可</Button>
                     <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
                                       MessageText="{Binding ErrorMessage}"

@@ -4,7 +4,8 @@ from pyramid.view import view_config
 
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.response import Response
-from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem, ProductItem, Performance, Seat, TicketPrintHistory
+from altair.app.ticketing.core.models import ProductItem, Performance, Seat, TicketPrintHistory
+from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
 from altair.app.ticketing.core import models as m
 from altair.rakuten_auth.api import authenticated_user, forget
 from altair.app.ticketing.cart import api

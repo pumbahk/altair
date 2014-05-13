@@ -17,11 +17,24 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 
 from ..utils import json_safe_coerce
 from ..views import BaseView
-from ..models import DBSession
-from ..core.models import DeliveryMethod
-from ..core.models import TicketFormat, PageFormat, Ticket, TicketCover
-from ..core.models import TicketPrintQueueEntry, TicketPrintHistory
-from ..core.models import OrderedProductItemToken, OrderedProductItem, OrderedProduct, Order, Seat, Product
+from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.core.models import (
+    DeliveryMethod,
+    TicketFormat,
+    PageFormat,
+    Ticket,
+    TicketCover,
+    TicketPrintQueueEntry,
+    TicketPrintHistory,
+    Seat,
+    Product,
+    )
+from altair.app.ticketing.orders.models import (
+    OrderedProductItemToken,
+    OrderedProductItem,
+    OrderedProduct,
+    Order,
+    )
 from . import forms
 from . import helpers
 from .utils import SvgPageSetBuilder, FallbackSvgPageSetBuilder, build_dict_from_ordered_product_item_token, _default_builder

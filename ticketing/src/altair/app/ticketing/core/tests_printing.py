@@ -6,6 +6,7 @@ class Fixture(object):
     @staticmethod
     def pdmp(delivery_plugin_id):
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, DeliveryMethod
+        import altair.app.ticketing.orders.models
         return PaymentDeliveryMethodPair(
             system_fee=0,
             transaction_fee=0,
@@ -18,7 +19,8 @@ class Fixture(object):
 
 class OrderMarkIssuedOrPrintingTests(unittest.TestCase):
     def _getTarget(self):
-        from altair.app.ticketing.core.models import Order
+        import altair.app.ticketing.core.models
+        from altair.app.ticketing.orders.models import Order
         return Order
 
     def _makeOne(self, *args, **kwargs):
@@ -44,11 +46,13 @@ class OrderMarkIssuedOrPrintingTests(unittest.TestCase):
     def test_it(self):
         from altair.app.ticketing.core.models import (
             ProductItem, 
-            OrderedProductItem,
-            OrderedProduct,
-            OrderedProductItemToken, 
             TicketBundle
         )
+        from altair.app.ticketing.orders.models import (
+            OrderedProductItem,
+            OrderedProduct,
+            OrderedProductItemToken,
+            )
         target = self._makeOne(
             issued_at=None, printed_at=None, 
             items=[OrderedProduct(

@@ -7,6 +7,14 @@ namespace QR
     [TestFixture ()]
     public class TokenStatusMessageAppConfigTests
     {
+        [Test, Description("refresh password")]
+        public void TestRefreshPassword()
+        {
+            var resource = new Resource();
+            var result = resource.GetRefreshPassword();
+            Assert.AreNotEqual(default(string), result);
+        }
+
         [Test, Description ("token status printed")]
         public void TestTokenStatusMessagePrinted ()
         {
@@ -23,12 +31,20 @@ namespace QR
             Assert.AreNotEqual (default(string), result);
         }
 
-        [Test, Description ("token status before_start")]
-        public void TestTokenStatusMessageBefore_Start ()
+        [Test, Description("token status before_start")]
+        public void TestTokenStatusMessageBefore_Start()
         {
-            var resource = new Resource ();
-            var result = resource.GetTokenStatusMessage (TokenStatus.before_start);
-            Assert.AreNotEqual (default(string), result);
+            var resource = new Resource();
+            var result = resource.GetTokenStatusMessage(TokenStatus.before_start);
+            Assert.AreNotEqual(default(string), result);
+        }
+
+        [Test, Description("token status after_end")]
+        public void TestTokenStatusMessageAfter_End()
+        {
+            var resource = new Resource();
+            var result = resource.GetTokenStatusMessage(TokenStatus.after_end);
+            Assert.AreNotEqual(default(string), result);
         }
 
         [Test, Description ("token status not_support")]

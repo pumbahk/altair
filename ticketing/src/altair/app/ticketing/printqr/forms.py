@@ -4,7 +4,8 @@ from wtforms.form import Form
 from wtforms import fields
 from wtforms import validators
 from altair.formhelpers import Translations
-from altair.app.ticketing.core.models import Order, Performance
+from altair.app.ticketing.core.models import Performance
+from altair.app.ticketing.orders.models import Order
 from . import helpers as h
 
             

@@ -93,14 +93,6 @@
                             Canvas.Left="1060"
                             Height="64" Width="240">受付番号で認証</Button>
 
-                    <!-- 再発券許可 -->
-                    <Button Click="OnGotoQRRefreshMode"
-                    Style="{StaticResource HeaderMenuButtonStyle}"
-                            Canvas.Top="17"
-                            RenderTransformOrigin="10.794,2.52"
-                            Canvas.Left="774"
-                            Height="64" Width="240">再発券許可</Button>
-
                     <!-- エラーダイアログ -->
                     <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
                                       MessageDialogComplete="ErrorDialog_MessageDialogComplete"

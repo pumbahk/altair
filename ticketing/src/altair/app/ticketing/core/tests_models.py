@@ -9,6 +9,7 @@ class SalesSegmentTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db(
             [
+                "altair.app.ticketing.orders.models",
                 "altair.app.ticketing.core.models",
                 "altair.app.ticketing.users.models",
                 "altair.app.ticketing.cart.models",
@@ -25,7 +26,8 @@ class SalesSegmentTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def test_query_orders_by_user(self):
-        from altair.app.ticketing.core.models import Order, PaymentDeliveryMethodPair
+        from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
+        from altair.app.ticketing.orders.models import Order
         from altair.app.ticketing.cart.models import Cart
         from altair.app.ticketing.users.models import User
         from datetime import datetime
@@ -101,7 +103,8 @@ class SalesSegmentTests(unittest.TestCase):
         self.assertEqual(result, orders)
 
     def test_query_orders_by_mailaddresses(self):
-        from altair.app.ticketing.core.models import Order, ShippingAddress
+        from altair.app.ticketing.core.models import ShippingAddress
+        from altair.app.ticketing.orders.models import Order
         from altair.app.ticketing.cart.models import Cart
         from datetime import datetime
 
@@ -198,6 +201,7 @@ class PerformanceTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db(
             [
+                "altair.app.ticketing.orders.models",
                 "altair.app.ticketing.core.models",
                 "altair.app.ticketing.users.models",
                 "altair.app.ticketing.cart.models",
@@ -214,7 +218,8 @@ class PerformanceTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def test_query_orders_by_user(self):
-        from altair.app.ticketing.core.models import Order, SalesSegment
+        from altair.app.ticketing.core.models import SalesSegment
+        from altair.app.ticketing.orders.models import Order
         from altair.app.ticketing.cart.models import Cart
         from altair.app.ticketing.users.models import User
         from datetime import datetime
@@ -261,7 +266,8 @@ class PerformanceTests(unittest.TestCase):
         self.assertEqual(result, orders)
 
     def test_query_orders_by_mailaddresses(self):
-        from altair.app.ticketing.core.models import Order, ShippingAddress, SalesSegment
+        from altair.app.ticketing.core.models import ShippingAddress, SalesSegment
+        from altair.app.ticketing.orders.models import Order
         from altair.app.ticketing.cart.models import Cart
         from datetime import datetime
 
@@ -335,6 +341,7 @@ class EventTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db(
             [
+                "altair.app.ticketing.orders.models",
                 "altair.app.ticketing.core.models",
                 "altair.app.ticketing.users.models",
                 "altair.app.ticketing.cart.models",
@@ -365,8 +372,9 @@ class EventTests(unittest.TestCase):
 
 
     def test_query_orders_by_user(self):
-        from altair.app.ticketing.core.models import Order, SalesSegment
+        from altair.app.ticketing.core.models import SalesSegment
         from altair.app.ticketing.cart.models import Cart
+        from altair.app.ticketing.orders.models import Order
         from altair.app.ticketing.users.models import User
         from datetime import datetime
 
@@ -412,7 +420,8 @@ class EventTests(unittest.TestCase):
         self.assertEqual(result, orders)
 
     def test_query_orders_by_mailaddresses(self):
-        from altair.app.ticketing.core.models import Order, ShippingAddress, SalesSegment
+        from altair.app.ticketing.core.models import ShippingAddress, SalesSegment
+        from altair.app.ticketing.orders.models import Order
         from altair.app.ticketing.cart.models import Cart
         from datetime import datetime
 
@@ -657,13 +666,14 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
         testing.tearDown()
 
     def _getTarget(self):
-        from .models import Order
+        from altair.app.ticketing.orders.models import Order
         return Order
 
     def _makeOne(self, *args, **kwargs):
         from altair.app.ticketing.payments import plugins as p
         from altair.app.ticketing.cart.models import Cart
-        from .models import Performance, OrderedProduct, OrderedProductItem
+        from altair.app.ticketing.orders.models import OrderedProduct, OrderedProductItem
+        from .models import Performance
         from datetime import datetime
         retval = self._getTarget()(*args, **kwargs)
         retval.order_no = self._next_order_no()

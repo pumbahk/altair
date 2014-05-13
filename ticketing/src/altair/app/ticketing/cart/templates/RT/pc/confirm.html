@@ -44,7 +44,7 @@
   <div class="confirmBox">
 	<div class="confirmBoxInner">
 	  <h2><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
-      <h3 id="name">${cart.performance.event.title} ${cart.performance.name} ${h.performance_date(cart.performance)}(予定) ${cart.performance.venue.name}</h3>
+      <h3 id="name">${cart.performance.event.title} ${cart.performance.name} ${h.performance_datetime(cart.performance)}(予定) ${cart.performance.venue.name}</h3>
 	  <table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
     % for product in cart.items:
 		<tr>
@@ -78,7 +78,7 @@
 		  <td>&nbsp;</td>
 		  <td class="align1">￥${h.format_number(cart.system_fee)}</td>
 		</tr>
-        
+
         %if cart.special_fee > 0:
 		<tr id="commission">
 		  <th scope="row">${cart.special_fee_name}</th>
@@ -87,7 +87,7 @@
 		  <td class="align1">￥${h.format_number(cart.special_fee)}</td>
 		</tr>
         %endif
-        
+
 		<tr id="total">
           <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/total.gif')}" alt="合計金額" width="67" height="16" /></th>
 		  <td>&nbsp;</td>
@@ -172,7 +172,7 @@
 		</div>
   </div>
   % endif
-  
+
   <table style="margin-left: auto; margin-right: auto;">
 		<tr>
 			<td style="width: 320px; text-align: center;">

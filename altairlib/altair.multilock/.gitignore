@@ -1,0 +1,5 @@
+build/
+temp/
+*.egg-info
+**/*.egg-info
+*~

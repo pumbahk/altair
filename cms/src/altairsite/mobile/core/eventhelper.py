@@ -1,7 +1,24 @@
 from altaircms.event.models import Event
 from altaircms.page.models import PageSet, PageTag2Page, PageTag
-from altairsite.mobile.core.helper import log_info
 from altaircms.page.models import MobileTag, MobileTag2Page
+
+import logging
+logger = logging.getLogger(__file__)
+
+def log_debug(key, msg):
+    logger.debug("*" + key + "* : " + msg)
+
+def log_info(key, msg):
+    logger.info("*" + key + "* : " + msg)
+
+def log_warn(key, msg):
+    logger.warning("*" + key + "* : " + msg)
+
+def log_exception(key, msg):
+    logger.exception("*" + key + "* : " + msg)
+
+def log_error(key, msg):
+    logger.error("*" + key + "* : " + msg)
 
 class EventHelper(object):
 

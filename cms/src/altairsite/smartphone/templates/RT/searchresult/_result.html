@@ -37,7 +37,7 @@ $(window).bind("load resize",function() {
                             % endif
                         </div>
                         <div class="panel-footer">
-                            <span class="label label-salessegment-normal">販売期間</span><b>${helper.disp_date_week(event.deal_open)}〜${helper.disp_date_week(event.deal_close)}</b>
+                            <span class="label label-salessegment-normal">販売期間</span><b>${helper.disp_salessegment_start_on_date_week(event)}〜${helper.disp_salessegment_end_on_date_week(event)}</b>
                         </div>
                     </td>
                 </tr>

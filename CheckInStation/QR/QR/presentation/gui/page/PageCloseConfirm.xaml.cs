@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using vkeyboard.control;
+using QR.message;
 
 namespace QR.presentation.gui.page
 {
@@ -22,11 +23,13 @@ namespace QR.presentation.gui.page
     /// </summary>
     public partial class PageCloseConfirm : Page
     {
+        private Func<string, bool> keyPadFinishCallBack;
         public PageCloseConfirm()
         {
             InitializeComponent();
             var name = AppUtil.GetCurrentResource().LoginUser.login_id;
             var description = String.Format("ログアウトします。「{0}」でログインした際のパスワードを入力してください", name);
+            this.keyPadFinishCallBack = this.KeyPadActionGotoShutDown;
             this.DataContext = new InputDataContext(this) {
                 Broker=AppUtil.GetCurrentBroker(),
                 Description=description
@@ -43,18 +46,38 @@ namespace QR.presentation.gui.page
             e.Handled = true;
             var ctx = this.DataContext as InputDataContext;
             var password = (sender as VirtualKeyboard).Text;
-            if(ctx.Case.Resource.LoginUser.password == password){
-                (ctx.AppCloseCommand as AppCloseCommand).Shutdown();
-            }
-            else
+            if (!this.keyPadFinishCallBack(password))
             {
                 ctx.ErrorMessage = "パスワードと一致しません";
                 this.ErrorDialog.Show();
             }
         }
 
+        private bool KeyPadActionGotoShutDown(string password)
+        {
+            var ctx = this.DataContext as InputDataContext;
+            if (ctx.Case.Resource.LoginUser.password != password)
+            {
+                return false;
+            }
+            (ctx.AppCloseCommand as AppCloseCommand).Shutdown();
+            return true;
+        }
+
+        private bool KeyPadActionGotoQRRefreshMode(string password)
+        {
+            var ctx = this.DataContext as InputDataContext;
+            if ((AppUtil.GetCurrentResource() as Resource).GetRefreshPassword() != password)
+            {
+                return false;
+            }
+            this.NavigationService.Navigate(new PageQRRefresh());
+            return true;
+        }
+
         private void OnForward(object sender, RoutedEventArgs e)
         {
+            this.keyPadFinishCallBack = this.KeyPadActionGotoShutDown;
             this.KeyPad.RaiseVirtualkeyboardFinishEvent();
         }
 
@@ -62,6 +85,12 @@ namespace QR.presentation.gui.page
         {
             var ctx = this.DataContext as InputDataContext;
             AppUtil.GetNavigator().NavigateToMatchedPage(ctx.Case, this);
+        }
+
+        private void OnGotoQRRefreshMode(object sender, RoutedEventArgs e)
+        {
+            this.keyPadFinishCallBack = this.KeyPadActionGotoQRRefreshMode;
+            this.KeyPad.RaiseVirtualkeyboardFinishEvent();
         }
     }
 }

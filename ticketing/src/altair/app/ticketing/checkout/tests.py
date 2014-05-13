@@ -128,7 +128,8 @@ class CheckoutTests(unittest.TestCase):
         _teardown_db()
 
     def create_order_test_data(self):
-        from altair.app.ticketing.core.models import Order, OrderedProduct, Product
+        from altair.app.ticketing.core.models import Product
+        from altair.app.ticketing.orders.models import Order, OrderedProduct
         product = Product(
             id=22,
             price=140,

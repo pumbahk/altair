@@ -56,7 +56,7 @@ class MulticheckoutSettingTest(unittest.TestCase):
             impl.return_value.request_card_sales.return_value = i
             service = self._callFUT(request)
             service.checkout_sales('XX0000000000')
-            save_api_response.assert_called_with(i)
+            save_api_response.assert_called_with(i, None)
             impl.called_with(
                 u'api-id-%d' % i,
                 u'auth-password-%d' % i,
@@ -74,7 +74,7 @@ class MulticheckoutSettingTest(unittest.TestCase):
             impl.return_value.request_card_sales.return_value = i
             service = self._callFUT(request, override_name=(u'shop-name-%d' % i))
             service.checkout_sales('XX0000000000')
-            save_api_response.assert_called_with(i)
+            save_api_response.assert_called_with(i, None)
             impl.called_with(
                 u'api-id-%d' % i,
                 u'auth-password-%d' % i,

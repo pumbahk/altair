@@ -6,6 +6,9 @@
 <%mobile:form_header>イベント名</%mobile:form_header>
 <div>
 ${order.performance.event.title} ${order.performance.name}<br />
+<%mobile:form_header>開演日時</%mobile:form_header>
+${h.japanese_date(order.performance.start_on)}
+${h.japanese_time(order.performance.start_on)}
 <%mobile:form_header>会場</%mobile:form_header>
 ${order.performance.venue.name}<br />
 <%mobile:form_header>購入内容</%mobile:form_header>
@@ -70,7 +73,7 @@ ${h.render_delivery_finished_viewlet(request, order)}
 <div>
 &#xe737;注意事項<br />
 <font size="-2">
-・お申込時に受付内容を記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:kings@tstar.jp">kings@tstar.jp</a> までご連絡ください。<br /> 
+・お申込時に受付内容を記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:kings@tstar.jp">kings@tstar.jp</a> までご連絡ください。<br />
 （お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）<br />
 ・入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。<br />
 </font>

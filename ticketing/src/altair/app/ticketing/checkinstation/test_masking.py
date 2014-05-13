@@ -22,7 +22,7 @@ class FixtureFactory(object):
         self.secret = "this is secret"
 
     def Token(self, id):
-        from altair.app.ticketing.core.models import OrderedProductItemToken
+        from altair.app.ticketing.orders.models import OrderedProductItemToken
         self.item_id += 1
         self.serial += "x"
         return OrderedProductItemToken(id=id, 

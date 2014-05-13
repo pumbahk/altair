@@ -16,6 +16,10 @@ class SearchForm(CommonForm):
     # --- 表示項目
     events = HiddenField(validators=[Optional()])
 
+    # --- 販売期間
+    deal_open = HiddenField(validators=[Optional()])
+    deal_close = HiddenField(validators=[Optional()])
+
 class MobileTagSearchForm(SearchForm):
 
     # --- 表示用

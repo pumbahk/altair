@@ -47,7 +47,7 @@ def includeme(config):
     config.add_route('orders.fraud.clear'               , '/fraud/clear/{order_id}')
 
     config.add_route("orders.cover.preview"             , "/cover/preview/{order_id}/cover/{ticket_format_id}", factory='.resources.CoverPreviewResource')
-    config.add_route("orders.ticket.placeholder"        , "/api/preview/order/{order_id}/placeholders")
+    config.add_route("orders.ticket.placeholder"        , "/api/preview/order/{order_id}/placeholders", factory=".resources.OrderResource")
     config.add_route("orders.item.preview"              , "/item/preview/{order_id}/item/{item_id}/ticket/{ticket_format_id}", factory=".resources.OrderedProductItemPreviewResource")
     config.add_route("orders.item.preview.getdata"      , "/api/item/{item_id}/ticket/{ticket_format_id}", factory=".resources.OrderedProductItemPreviewResource")
     config.add_route('orders.print.queue'               , '/print/queue/{order_id}', factory=".resources.SingleOrderEnqueueingResource")

@@ -107,7 +107,7 @@ class OrderAttributesDataTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def test_it(self):
-        from altair.app.ticketing.core.models import Order
+        from altair.app.ticketing.orders.models import Order
         from altair.app.ticketing.models import DBSession
 
         order_id = 9999

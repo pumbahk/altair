@@ -16,10 +16,6 @@ logger = logging.getLogger(__name__)
 from pyramid.threadlocal import get_current_request
 from altair.app.ticketing.tickets.api import get_svg_builder
 
-def _get_svg_builder():
-    request = get_current_request()
-    return get_svg_builder(request)
-
 def delivery_type_from_built_dict(dict_):
     try:
         if int(dict_["deliveryMethod"][u"plugin_id"]) == int(SEJ_DELIVERY_PLUGIN_ID):
@@ -45,7 +41,7 @@ def item_ticket_pairs(order, ticket_dict=None, ticket=None):
                 continue
             yield ordered_product_item, ticket
 
-def enqueue_cover(operator, order, ticket_format_id=None):
+def enqueue_cover(request, operator, order, ticket_format_id=None):
     cover = TicketCover.get_from_order(order, ticket_format_id)
     if cover is None:
         logger.info("cover is not found. order = {order.id} organization_id = {operator.organization_id}".format(order=order, operator=operator))
@@ -53,7 +49,7 @@ def enqueue_cover(operator, order, ticket_format_id=None):
     if not is_cover_print(order):
         return
     dict_ = build_cover_dict_from_order(order)
-    svg_builder = _get_svg_builder()
+    svg_builder = get_svg_builder(request)
     TicketPrintQueueEntry.enqueue(
         operator=operator, 
         ticket=cover.ticket, 
@@ -71,21 +67,21 @@ def is_cover_print(order):
                     cover_print = True
     return cover_print
 
-def enqueue_for_order(operator, order, ticket_format_id=None, delivery_plugin_ids=None):
-    svg_builder = _get_svg_builder()
+def enqueue_for_order(request, operator, order, ticket_format_id=None, delivery_plugin_ids=None):
+    svg_builder = get_svg_builder(request)
     for ordered_product in order.items:
         for ordered_product_item in ordered_product.ordered_product_items:
             enqueue_item(
-                operator, order, ordered_product_item,
+                request, operator, order, ordered_product_item,
                 ticket_format_id=ticket_format_id,
                 delivery_plugin_ids=delivery_plugin_ids,
                 svg_builder=svg_builder
                 )
 
-def enqueue_token(operator, token, ticket, i, j, ordered_product_item=None, order=None, seat=None, issuer=None):
+def enqueue_token(request, operator, token, ticket, i, j, ordered_product_item=None, order=None, seat=None, issuer=None):
     dict_ = build_dict_from_ordered_product_item_token(token, ticket_number_issuer=issuer)
     ordered_product_item = ordered_product_item or token.ordered_product_item
-    svg_builder = _get_svg_builder()
+    svg_builder = get_svg_builder(request)
     TicketPrintQueueEntry.enqueue(
         operator=operator, 
         ticket=ticket, 
@@ -99,10 +95,10 @@ def enqueue_token(operator, token, ticket, i, j, ordered_product_item=None, orde
         seat=seat
         )
    
-def enqueue_item(operator, order, ordered_product_item, ticket_format_id=None, delivery_plugin_ids=None, svg_builder=None):
+def enqueue_item(request, operator, order, ordered_product_item, ticket_format_id=None, delivery_plugin_ids=None, svg_builder=None):
     bundle = ordered_product_item.product_item.ticket_bundle
     dicts = comfortable_sorted_built_dicts(ordered_product_item)
-    svg_builder = svg_builder or _get_svg_builder()
+    svg_builder = svg_builder or get_svg_builder(request)
     for index, (seat, dict_) in enumerate(dicts):
         iter_factory = ApplicableTicketsProducer.from_bundle(bundle)
         # CXX: よくない仕様だけど互換性のため。ticket_format_id が None でないときはそちらのみを見る

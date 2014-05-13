@@ -23,11 +23,6 @@ from altair.app.ticketing.core.models import (
     SalesSegment,
     SalesSegmentGroup,
     Seat,
-    orders_seat_table,
-    Order,
-    OrderedProduct,
-    OrderedProductAttribute,
-    OrderedProductItem,
     PaymentDeliveryMethodPair,
     PaymentMethod,
     DeliveryMethod,
@@ -36,6 +31,13 @@ from altair.app.ticketing.core.models import (
     ProductItem,
     TicketPrintHistory,
 )
+from altair.app.ticketing.orders.models import (
+    orders_seat_table,
+    Order,
+    OrderedProduct,
+    OrderedProductAttribute,
+    OrderedProductItem,
+    )
 from altair.app.ticketing.users.models import (
     User,
     UserProfile,
@@ -51,6 +53,10 @@ from altair.app.ticketing.mailmags.models import (
     MailMagazine,
     MailSubscriptionStatus,
 )
+from altair.app.ticketing.lots.models import (
+    Lot,
+    LotEntry,
+    )
 from altair.app.ticketing.sej.models import SejOrder
 from altair.keybreak import (
     KeyBreakCounter,
@@ -84,6 +90,11 @@ japanese_columns = {
     u'card_brand': u'カードブランド',
     u'card_ahead_com_code': u'仕向け先企業コード',
     u'card_ahead_com_name': u'仕向け先企業名',
+    u'issuing_start_at': u'発券開始日時',
+    u'issuing_end_at': u'発券期限',
+    u'payment_start_at': u'支払開始日時',
+    u'payment_due_at': u'支払期限',
+    u'created_from_lot_entry_lot_name': u'抽選',
     u'billing_number': u'SEJ払込票番号',
     u'exchange_number': u'SEJ引換票番号',
     u'shipping_name': u'配送先名',
@@ -147,6 +158,8 @@ t_product_sales_segment = SalesSegment.__table__.alias()
 t_sales_segment_group = SalesSegmentGroup.__table__
 t_product_sales_segment_group = SalesSegmentGroup.__table__.alias()
 t_order = Order.__table__
+t_lot = Lot.__table__
+t_lot_entry = LotEntry.__table__
 t_pdmp = PaymentDeliveryMethodPair.__table__
 t_payment_method = PaymentMethod.__table__
 t_delivery_method = DeliveryMethod.__table__
@@ -238,6 +251,7 @@ summary_columns = [
     ).label('delivery_status_label'),
     t_order.c.order_no, #-- 予約番号
     t_order.c.created_at, #-- 予約日時
+    t_lot.c.name.label('created_from_lot_entry_lot_name'),
     t_order.c.total_amount, #-- 合計
     (t_shipping_address.c.last_name
      + text("' '")
@@ -269,6 +283,10 @@ detail_summary_columns = summary_columns + [
     # t_order.c.margin, #内手数料金額
     t_order.c.note, #メモ
     t_order.c.special_fee_name, #特別手数料名
+    t_order.c.issuing_start_at,
+    t_order.c.issuing_end_at,
+    t_order.c.payment_start_at,
+    t_order.c.payment_due_at,
     # SEJOrder
     select([t_sej_order.c.billing_number],
            whereclause=and_(
@@ -414,6 +432,13 @@ order_summary_joins = t_order.join(
     t_membership,
     and_(t_membership.c.id==t_user_credential.c.membership_id,
          t_membership.c.deleted_at==None),
+).outerjoin(
+    t_lot_entry,
+    and_(t_lot_entry.c.entry_no == t_order.c.order_no,
+         t_lot_entry.c.deleted_at == None)
+).outerjoin(
+    t_lot,
+    t_lot_entry.c.lot_id == t_lot.c.id
 )
 
 order_product_summary_joins = order_summary_joins.join(

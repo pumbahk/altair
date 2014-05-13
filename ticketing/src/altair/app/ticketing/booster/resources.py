@@ -1,15 +1,19 @@
+import logging
+from pyramid.decorator import reify
 import sqlalchemy as sa
 from webob.multidict import MultiDict
+
 from altair.app.ticketing.cart.resources import EventOrientedTicketingCartResource
-from altair.app.ticketing.core.models import DBSession, Order, Product
+from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.core.models import Product
+from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.users.models import User, UserCredential, Membership
 from altair.app.ticketing.sej.models import SejOrder
+from altair.app.ticketing.core.api import get_organization
+from altair.app.ticketing.sej import api as sej_api
 from .api import store_user_profile
 from .api import remove_user_profile
 from .api import load_user_profile
-from altair.app.ticketing.core.api import get_organization
-from pyramid.decorator import reify
-import logging
 
 from .api import get_booster_settings
 from altair.app.ticketing.cart.helpers import products_filter_by_salessegment
@@ -78,7 +82,7 @@ class BoosterCartResource(EventOrientedTicketingCartResource):
             if payment_method_plugin_id == 1:
                 pass
             elif payment_method_plugin_id == 3:
-                sej_order = DBSession.query(SejOrder).filter(SejOrder.order_no == order_no).first()
+                sej_order = sej_api.get_sej_order(order_no)
 
         return order, sej_order
 

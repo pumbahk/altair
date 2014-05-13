@@ -13,10 +13,8 @@ from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, Performa
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.cart.views import back
-from altair.app.ticketing.payments.api import set_confirm_url
-from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.users import api as user_api
-
+from altair.now import get_now
 from . import api
 from . import helpers as h
 from . import schemas
@@ -28,7 +26,6 @@ from .models import (
     LotElectedEntry,
 )
 from . import urls
-from .adapters import LotSessionCart
 from .views import is_nogizaka, nogizaka_auth
 
 logger = logging.getLogger(__name__)
@@ -376,7 +373,7 @@ class EntryLotView(object):
             raise HTTPNotFound()
 
         sales_segment = lot.sales_segment
-        cform = schemas.ClientForm(self.request.params)
+        cform = schemas.ClientFormFactory(self.request)(self.request.params)
 
         payment_delivery_method_pair_id = None
         try:
@@ -429,13 +426,9 @@ class EntryLotView(object):
                               int(cform['day'].data)),
             memo=cform['memo'].data)
         entry = api.get_lot_entry_dict(self.request)
-        self.request.session['lots.entry.time'] = datetime.now()
-        cart = LotSessionCart(entry, self.request, self.context.lot)
+        self.request.session['lots.entry.time'] = get_now(self.request)
 
-        payment = Payment(cart, self.request)
-        set_confirm_url(self.request, urls.entry_confirm(self.request))
-
-        result = payment.call_prepare()
+        result = api.prepare1_for_payment(self.request, entry)
         if callable(result):
             return result
 

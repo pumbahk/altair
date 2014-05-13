@@ -4,6 +4,11 @@ namespace QR.message
 {
     public static class MessageResourceUtil
     {
+        public static string GetRefreshPassword(this IResource resource)
+        {
+            return resource.SettingValue("refresh.password.format.0");
+        }
+
         public static string GetTaskCancelMessage (this IResource resource)
         {
             return resource.SettingValue ("message.task.cancel.format.0");
@@ -64,6 +69,8 @@ namespace QR.message
                 return resource.SettingValue ("message.token.status.canceled.format.0");
             case TokenStatus.before_start:
                 return resource.SettingValue ("message.token.status.before_start.format.0");
+            case TokenStatus.after_end:
+                return resource.SettingValue ("message.token.status.after_end.format.0");
             case TokenStatus.not_supported:
                 return resource.SettingValue ("message.token.status.not_supported.format.0");
             default:

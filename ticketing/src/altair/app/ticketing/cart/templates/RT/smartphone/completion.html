@@ -25,7 +25,7 @@
 </style>
 </%block>
 
-${h.get_nickname(request)} 
+${h.get_nickname(request)}
 購入を完了いたしました。<br/>
 下記の受付番号はとても大切な番号です。すぐにメモして保管してください。
 
@@ -49,7 +49,7 @@ ${h.get_nickname(request)}
       <div class="dispBoxInner">
         <div id="name">
             ${order.performance.event.title}<br/>
-            ${h.performance_date(order.performance)}(予定)<br/>
+            ${h.performance_datetime(order.performance)}(予定)<br/>
             ${order.performance.venue.name}
         </div>
 
@@ -87,7 +87,7 @@ ${h.get_nickname(request)}
             <td>&nbsp;</td>
             <td class="align1">￥${h.format_number(order.system_fee)}</td>
           </tr>
-          
+
           %if order.special_fee > 0:
           <tr id="commission">
             <th scope="row">${order.special_fee_name}</th>
@@ -96,7 +96,7 @@ ${h.get_nickname(request)}
             <td class="align1">￥${h.format_number(order.special_fee)}</td>
           </tr>
           %endif
-          
+
           <tr id="total">
             <th scope="row">合計金額</th>
             <td>&nbsp;</td>

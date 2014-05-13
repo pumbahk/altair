@@ -403,7 +403,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         self.config.registry.utilities.register([], ICardBrandDetecter, "", lambda card_number: "TEST")
 
     @mock.patch('transaction._transaction.Transaction.commit')
-    @mock.patch('altair.app.ticketing.core.models.Order.create_from_cart')
+    @mock.patch('altair.app.ticketing.orders.models.Order.create_from_cart')
     @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_cancel_auth')
     @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_sales')
     @mock.patch('altair.multicheckout.api.get_multicheckout_impl')

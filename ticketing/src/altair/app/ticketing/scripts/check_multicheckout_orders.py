@@ -25,6 +25,7 @@ from altair.multicheckout.api import get_multicheckout_3d_api, get_all_multichec
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
+from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.cart import models as cart_models
 
 logger = logging.getLogger(__name__)
@@ -62,8 +63,8 @@ def check(env, start, end):
     def get_shop_name_by_shop_id(shop_id):
         return settings[shop_id].shop_name
 
-    q = DBSession.query(mc_models.MultiCheckoutResponseCard, c_models.Order) \
-        .outerjoin(c_models.Order, mc_models.MultiCheckoutResponseCard.OrderNo == c_models.Order.order_no) \
+    q = DBSession.query(mc_models.MultiCheckoutResponseCard, order_models.Order) \
+        .outerjoin(order_models.Order, mc_models.MultiCheckoutResponseCard.OrderNo == order_models.Order.order_no) \
         .filter(mc_models.MultiCheckoutResponseCard.Status.in_(
                 [mc_models.MultiCheckoutStatusEnum.Settled.v,
                  mc_models.MultiCheckoutStatusEnum.Authorized.v]))

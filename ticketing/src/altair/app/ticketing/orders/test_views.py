@@ -10,9 +10,9 @@ class OrderDetailViewTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
-    @mock.patch.multiple("altair.app.ticketing.core.models.Order", get=mock.DEFAULT, save=mock.DEFAULT)
+    @mock.patch.multiple("altair.app.ticketing.orders.models.Order", get=mock.DEFAULT, save=mock.DEFAULT)
     def test__edit_memo_on_order(self, get, save):
-        from altair.app.ticketing.core.models import Order
+        from altair.app.ticketing.orders.models import Order
         order = Order(id=1)
         get.return_value = order
 

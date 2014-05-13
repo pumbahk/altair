@@ -3,7 +3,7 @@
 import sys
 import re
 import logging
-logger = logging.getLogger(__name__)
+from cStringIO import StringIO
 
 import webhelpers.paginate as paginate
 from pyramid.view import view_config, view_defaults
@@ -19,7 +19,7 @@ from altair.app.ticketing.models import merge_session_with_post, record_to_multi
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm, OrionPerformanceForm
-from altair.app.ticketing.core.models import Performance, PerformanceSetting, OrderImportTask, ImportStatusEnum, OrionPerformance
+from altair.app.ticketing.core.models import Performance, PerformanceSetting, OrionPerformance
 from altair.app.ticketing.core.api import get_organization
 from altair.app.ticketing.products.forms import ProductForm
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm, OrderImportForm
@@ -30,15 +30,20 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.core.models import MailTypeChoices
 from altair.app.ticketing.orders.api import OrderSummarySearchQueryBuilder, QueryBuilderError
-from altair.app.ticketing.orders.models import OrderSummary
-from altair.app.ticketing.orders.importer import OrderImporter
+from altair.app.ticketing.orders.models import OrderSummary, OrderImportTask, ImportStatusEnum, ImportTypeEnum
+from altair.app.ticketing.orders.importer import OrderImporter, ImportCSVReader
+from altair.app.ticketing.orders import helpers as order_helpers
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentAccessor,
 )
 
+logger = logging.getLogger(__name__)
+
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/performances/show.html')
 class PerformanceShowView(BaseView):
+    IMPORT_ERRORS_KEY = '%s.import_errors' % __name__
+
     def __init__(self, context, request):
         super(PerformanceShowView, self).__init__(context, request)
         self.performance = self.context.performance
@@ -145,13 +150,15 @@ class PerformanceShowView(BaseView):
 
         order_import_tasks = OrderImportTask.query.filter(
             OrderImportTask.organization_id==self.context.organization.id,
-            OrderImportTask.performance_id==self.performance.id
+            OrderImportTask.performance_id==self.performance.id,
+            OrderImportTask.status != ImportStatusEnum.ConfirmNeeded.v
         ).all()
 
         data = {
             'tab': 'import_orders',
             'performance': self.performance,
-            'form': OrderImportForm(),
+            'form': OrderImportForm(always_issue_order_no=True),
+            'oh': order_helpers,
             'order_import_tasks':order_import_tasks
         }
         data.update(self._extra_data())
@@ -160,57 +167,72 @@ class PerformanceShowView(BaseView):
     @view_config(route_name='performances.import_orders.index', request_method='POST')
     def import_orders_post(self):
         f = OrderImportForm(self.request.params)
-        if f.validate():
-            importer = OrderImporter(
-                operator=self.context.user,
-                organization=self.context.organization,
-                performance_id=self.performance.id,
-                order_csv=f.order_csv.data.file,
-                import_type=f.import_type.data,
-                allocation_mode=f.allocation_mode.data
+        if not f.validate():
+            for f, errors in f.errors.items():
+                for error in errors:
+                    self.request.session.flash(error)
+            return self.import_orders_get()
+        importer = OrderImporter(
+            self.request,
+            import_type=f.import_type.data | (ImportTypeEnum.AlwaysIssueOrderNo.v if f.always_issue_order_no.data else 0),
+            allocation_mode=f.allocation_mode.data,
+            session=DBSession
             )
-            importer.validate()
-            self.request.session['ticketing.order.importer'] = importer
-            return HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id))
-
-        order_import_tasks = OrderImportTask.query.filter(
-            OrderImportTask.organization_id==self.context.organization.id,
-            OrderImportTask.performance_id==self.performance.id
-        ).all()
-
-        data = {
-            'tab': 'import_orders',
-            'performance': self.performance,
-            'form': f,
-            'order_import_tasks':order_import_tasks
-        }
-        data.update(self._extra_data())
-        return data
+        order_import_task, errors = importer(
+            reader=ImportCSVReader(StringIO(f.order_csv.data.value)),
+            operator=self.context.user,
+            organization=self.context.organization,
+            performance=self.performance
+            )
+        self.request.session[self.IMPORT_ERRORS_KEY] = dict(
+            (order_no, [(u'%s (%d行目)' % (error.message, error.line_num) if hasattr(error, 'line_num') else error.message) for error in errors_for_order])
+            for order_no, errors_for_order in errors.items()
+            )
+        DBSession.add(order_import_task)
+        DBSession.flush()
+        return HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id, _query=dict(task_id=order_import_task.id)))
 
     @view_config(route_name='performances.import_orders.confirm', request_method='GET')
     def import_orders_confirm_get(self):
-        importer = self.request.session.get('ticketing.order.importer')
-        if importer is None:
+        task_id = None
+        try:
+            task_id = long(self.request.params.get('task_id'))
+        except (ValueError, TypeError):
+            pass
+        if task_id is None:
+            self.request.session.flash(u'不明なエラーです')
             return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
-
+        task = OrderImportTask.query.filter_by(id=task_id).one()
         data = {
             'tab': 'import_orders',
             'action': 'confirm',
             'performance': self.performance,
-            'stats': importer.stats(),
+            'oh': order_helpers,
+            'task': task,
+            'errors': self.request.session.get(self.IMPORT_ERRORS_KEY, {}),
+            'stats': order_helpers.order_import_task_stats(task),
         }
         data.update(self._extra_data())
         return data
 
     @view_config(route_name='performances.import_orders.confirm', request_method='POST')
     def import_orders_confirm_post(self):
-        importer = self.request.session.get('ticketing.order.importer')
-        if importer is None:
+        task_id = None
+        try:
+            task_id = long(self.request.params.get('task_id'))
+        except (ValueError, TypeError):
+            pass
+        if task_id is None:
+            self.request.session.flash(u'不明なエラーです')
             return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
-
-        importer.add_task()
-        self.request.session.flash(u'予約インポートを実行しました')
-        return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+        task = OrderImportTask.query.filter_by(id=task_id).one()
+        if task.count > 0:
+            task.status = ImportStatusEnum.Waiting.v
+            self.request.session.flash(u'予約インポートを実行しました')
+            return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+        else:
+            self.request.session.flash(u'インポート対象がありません')
+            return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
 
     @view_config(route_name='performances.import_orders.show')
     def import_orders_show(self):
@@ -221,13 +243,14 @@ class PerformanceShowView(BaseView):
         ).first()
         if task is None:
             return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
-
-        importer = OrderImporter.load_task(task)
         data = {
             'tab': 'import_orders',
             'action': 'show',
             'performance': self.performance,
-            'stats': importer.stats(),
+            'oh': order_helpers,
+            'task': task,
+            'errors': task.errors,
+            'stats': order_helpers.order_import_task_stats(task),
         }
         data.update(self._extra_data())
         return data
@@ -239,7 +262,7 @@ class PerformanceShowView(BaseView):
             OrderImportTask.id==task_id,
             OrderImportTask.organization_id==self.context.organization.id
         ).first()
-        if task and task.status == ImportStatusEnum.Importing.v[0]:
+        if task and task.status == ImportStatusEnum.Importing.v:
             self.request.session.flash(u'既にインポート中のため、削除できません')
         else:
             task.delete()

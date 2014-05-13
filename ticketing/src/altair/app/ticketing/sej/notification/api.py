@@ -19,7 +19,7 @@ def get_sej_order(session, notification):
     return q.order_by(desc(SejOrder.branch_no)).limit(1).first()
 
 def get_order(session, sej_order):
-    from altair.app.ticketing.core.models import Order
+    from altair.app.ticketing.orders.models import Order
     return session.query(Order).filter_by(order_no=sej_order.order_no).first()
 
 def fetch_notifications(session):
