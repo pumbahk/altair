@@ -20,9 +20,10 @@ from altair.app.ticketing.core.models import (
 from altair.augus.protocols import VenueSyncResponse
 from altair.augus.exporters import AugusExporter
 from altair.augus.types import Status
+from altair import multilock
 from ..exporters import AugusPutbackExporter
 from ..errors import AugusDataImportError
-from .. import multilock
+
 
 
 def mkdir_p(path):

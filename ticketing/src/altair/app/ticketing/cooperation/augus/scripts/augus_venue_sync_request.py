@@ -19,7 +19,7 @@ from altair.app.ticketing.core.models import (
     AugusPerformance,
     )
 from ..exporters import AugusAchievementExporter
-from .. import multilock
+from altair import multilock
 
 
 from email import Encoders

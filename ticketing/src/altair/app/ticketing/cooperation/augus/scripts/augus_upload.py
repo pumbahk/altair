@@ -12,7 +12,7 @@ from pyramid.paster import (
 from altair.app.ticketing.core.models import OrganizationSetting
 from altair.augus.transporters import FTPTransporter
 from altair.augus.parsers import AugusParser
-from .. import multilock
+from altair import multilock
 
 logger = logging.getLogger(__name__)
 
