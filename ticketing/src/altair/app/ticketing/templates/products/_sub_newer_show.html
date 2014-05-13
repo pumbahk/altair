@@ -22,6 +22,7 @@ elif sales_segment:
   <input type="button" id="sales-segment-${sales_segment.id}-save_button" value="保存" class="btn" />
   <input type="button" id="sales-segment-${sales_segment.id}-clear_button" value="取消" class="btn" />
 </div>
+<p class="pull-right"><i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p>
 
 <script type="text/javascript">
     <% options = ["%s:%s" % (st.id, st.name) for st in stock_types] %>
@@ -133,4 +134,3 @@ elif sales_segment:
       grid.clearRetainChanges();
     });
 </script>
-

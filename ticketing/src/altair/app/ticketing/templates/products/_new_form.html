@@ -1,6 +1,7 @@
 <%page args="form, action='#'" />
 <%namespace file="/common/helpers.html" name="ch" />
-<form action="${action}" method="POST">
+
+<form action="${action}" method="POST" class="form-horizontal">
   <fieldset>
 % if form.performance_id.data:
     ${ch.form_item(form.all_sales_segment)}
@@ -27,7 +28,6 @@
 
 <script type="text/javascript">
 $(function() {
-
   setProductName();
 
   $('select[name="seat_stock_type_id"]').change(function(event){
