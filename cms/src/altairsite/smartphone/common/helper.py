@@ -105,6 +105,50 @@ class SmartPhoneHelper(object):
                        + str(target_date.day).zfill(2)
         return disp_str
 
+    def public_salessegments(self, target_event):
+        times = []
+        for group in target_event.salessegment_groups:
+            if group.publicp:
+                for salessegment in group.salessegments:
+                    if salessegment.publicp:
+                        times.append(salessegment)
+        return times
+
+    def disp_salessegment_start_on_date_week(self, target_event):
+        times = self.public_salessegments(target_event)
+
+        disp_str = ""
+        if len(times) > 0:
+            start_on = ""
+            for time in times:
+                if not start_on:
+                    start_on = time.start_on
+
+                if start_on > time.start_on:
+                    start_on = time.start_on
+
+            disp_str = self.disp_date_week(start_on)
+
+        return disp_str
+
+    def disp_salessegment_end_on_date_week(self, target_event):
+        times = self.public_salessegments(target_event)
+
+        disp_str = ""
+        if len(times) > 0:
+            end_on = ""
+            for time in times:
+                if not end_on:
+                    end_on = time.end_on
+
+                if end_on < time.end_on:
+                    end_on = time.end_on
+
+            disp_str = self.disp_date_week(end_on)
+
+        return disp_str
+
+
     def disp_date_week(self, target_date):
         week = self.get_week_map()
         disp_str = str(target_date.year) + '/' + str(target_date.month).zfill(2) + '/' \

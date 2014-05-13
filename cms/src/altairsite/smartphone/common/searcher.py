@@ -198,6 +198,7 @@ class EventSearcher(object):
                 .join(SalesSegmentKind, SalesSegmentKind.id == SalesSegmentGroup.kind_id) \
                 .join(Page, Page.event_id == Event.id) \
                 .filter(Event.is_searchable == True) \
+                .filter(SalesSegmentKind.publicp == True) \
                 .filter(Page.published == True) \
                 .filter(Page.publish_begin < get_now(self.request)) \
                 .filter((Page.publish_end==None) | (Page.publish_end > get_now(self.request))) \

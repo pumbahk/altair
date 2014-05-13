@@ -10,4 +10,5 @@
 <%include file='_search_result_hotword.mako' args="events=form.events.data
                                                       ,word=form.word.data, num=form.num.data, page=form.page.data,id=form.id.data
                                                       ,page_num=form.page_num.data, path=form.path.data, week=form.week.data
-                                                      ,genre=form.genre.data, sub_genre=form.sub_genre.data, area=form.area.data"/>
+                                                      ,genre=form.genre.data, sub_genre=form.sub_genre.data, area=form.area.data
+                                                      ,deal_open=form.deal_open.data, deal_close=form.deal_close.data"/>
