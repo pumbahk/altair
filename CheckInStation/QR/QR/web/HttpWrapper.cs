@@ -5,13 +5,24 @@ using System.Threading;
 using System.IO;
 using NLog;
 using QR.support;
+using System.Net.Http.Formatting;
 
 namespace QR
 {
     public class HttpWrapper :IHttpWrapper
     {
         private static Logger logger = LogManager.GetCurrentClassLogger ();
-        
+
+        public static string GetApiRequestLoginFormat()
+        {
+            return "*api request: method={0}, url={1}".WithMachineName();
+        }
+        public static string GetApiRequestLoginFormat(string data)
+        {
+            var format = String.Format("{0}, data={1}", "*api request: method={0}, url={1}", data);
+            return format.WithMachineName();
+        }
+
         //todo: 
         public static int RetryMaxCount = 3;
         public static TimeSpan RetryDelay = TimeSpan.FromMilliseconds(300);
@@ -113,6 +124,7 @@ namespace QR
         {
             var client = this.GetClient ();
             var url = this.UrlBuilder.Build ();
+            logger.Info(GetApiRequestLoginFormat(), "GET", url); 
             return this.RetryAsyncCall<HttpResponseMessage>(() => client.GetAsync (url), url);
         }
 
@@ -120,6 +132,7 @@ namespace QR
         {
             var client = this.GetClient ();
             var url = this.UrlBuilder.Build ();
+            logger.Info(GetApiRequestLoginFormat(), "GET", url); 
             return this.RetryAsyncCall<HttpResponseMessage>(() => client.GetAsync (url, ct), url);
         }
 
@@ -127,6 +140,7 @@ namespace QR
         {
             var client = this.GetClient ();
             var url = this.UrlBuilder.Build ();
+            logger.Info(GetApiRequestLoginFormat(), "GET", url); 
             return this.RetryAsyncCall<Stream>(() => client.GetStreamAsync (url), url);
         }
 
@@ -134,6 +148,7 @@ namespace QR
         {
             var client = this.GetClient ();
             var url = this.UrlBuilder.Build ();
+            logger.Info(GetApiRequestLoginFormat(), "GET", url); 
             var result = await client.GetStringAsync (url);
             logger.Trace("* API Output:{0}".WithMachineName(), result);
             return result;
@@ -143,6 +158,7 @@ namespace QR
         {
             var client = this.GetClient ();
             var url = this.UrlBuilder.Build ();
+            logger.Info(GetApiRequestLoginFormat(), "DELETE", url); 
             return this.RetryAsyncCall<HttpResponseMessage>(() => client.DeleteAsync(url), url);
         }
 
@@ -150,6 +166,7 @@ namespace QR
         {
             var client = this.GetClient ();
             var url = this.UrlBuilder.Build ();
+            logger.Info(GetApiRequestLoginFormat(), "DELETE", url); 
             return this.RetryAsyncCall<HttpResponseMessage>(() => client.DeleteAsync (url, ct), url);
         }
 
@@ -157,6 +174,7 @@ namespace QR
         {
             var client = this.GetClient ();
             var url = this.UrlBuilder.Build ();
+            logger.Info(GetApiRequestLoginFormat(), "POST", url); 
             return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsync (url, content), url);
         }
 
@@ -164,6 +182,7 @@ namespace QR
         {
             var client = this.GetClient ();
             var url = this.UrlBuilder.Build ();
+            logger.Info(GetApiRequestLoginFormat(content.ToString()), "POST", url); 
             return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsync (url, content, ct), url);
         }
 
@@ -171,6 +190,7 @@ namespace QR
         {
             var client = this.GetClient ();
             var url = this.UrlBuilder.Build ();
+            logger.Info(GetApiRequestLoginFormat(content.ToString()), "PUT", url); 
             return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsync (url, content), url);
         }
 
@@ -178,20 +198,23 @@ namespace QR
         {
             var client = this.GetClient ();
             var url = this.UrlBuilder.Build ();
+            logger.Info(GetApiRequestLoginFormat(content.ToString()), "PUT", url); 
             return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsync (url, content, ct), url);
         }
 
         public Task<HttpResponseMessage> PostAsJsonAsync<T> (T value)
         {
             var client = this.GetClient ();
-            var url = this.UrlBuilder.Build ();
+            var url = this.UrlBuilder.Build();
+            logger.Info(GetApiRequestLoginFormat(value.ToString()), "POST", url); 
             return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsJsonAsync<T> (url, value), url);
         }
 
         public Task<HttpResponseMessage> PostAsJsonAsync<T> (T value, CancellationToken ct)
         {
             var client = this.GetClient ();
-            var url = this.UrlBuilder.Build ();
+            var url = this.UrlBuilder.Build();
+            logger.Info(GetApiRequestLoginFormat(value.ToString()), "POST", url); 
             return this.RetryAsyncCall<HttpResponseMessage>(() => client.PostAsJsonAsync<T> (url, value, ct), url);
         }
 
@@ -199,6 +222,7 @@ namespace QR
         {
             var client = this.GetClient ();
             var url = this.UrlBuilder.Build ();
+            logger.Info(GetApiRequestLoginFormat(value.ToString()), "PUT", url); 
             return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsJsonAsync<T> (url, value), url);
         }
 
@@ -206,6 +230,7 @@ namespace QR
         {
             var client = this.GetClient ();
             var url = this.UrlBuilder.Build ();
+            logger.Info(GetApiRequestLoginFormat(value.ToString()), "PUT", url); 
             return this.RetryAsyncCall<HttpResponseMessage>(() => client.PutAsJsonAsync<T> (url, value, ct), url);
         }
     }
