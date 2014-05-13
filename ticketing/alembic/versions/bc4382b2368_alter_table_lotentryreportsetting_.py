@@ -8,7 +8,7 @@ Create Date: 2014-05-09 10:50:37.591704
 
 # revision identifiers, used by Alembic.
 revision = 'bc4382b2368'
-down_revision = '520345d0d89f'
+down_revision = '28c0dcf079ec'
 
 from alembic import op
 import sqlalchemy as sa

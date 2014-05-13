@@ -32,11 +32,13 @@ public class AppAppletService extends AppService {
 	public Ticket createTicketFromJSObject(JSObject jsobj) {
 		try {
 			final String seatId = (String)jsobj.getMember("seat_id").toString();
+            final String ticketTemplateId = Long.toString(((Number)jsobj.getMember("ticket_template_id")).longValue());
+            System.err.println(ticketTemplateId);
 			final String orderedProductItemTokenId = (String)jsobj.getMember("ordered_product_item_token_id").toString();
 			final String orderedProductItemId = (String)jsobj.getMember("ordered_product_item_id").toString();
 			final String orderId = (String)jsobj.getMember("order_id").toString();
 			final Map<String, Object> data = LiveConnectUtils.jsObjectToMap((JSObject)jsobj.getMember("data"), true);
-			return new TicketImpl(seatId, orderedProductItemTokenId, orderedProductItemId, orderId, data);
+			return new TicketImpl(ticketTemplateId, seatId, orderedProductItemTokenId, orderedProductItemId, orderId, data);
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 			throw e;

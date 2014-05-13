@@ -207,7 +207,7 @@ public class FormatLoader {
 			final String name = ticketTemplateDatum.get("name").getAsString();
 			final Mustache mustache = mustacheFactory.compile(new StringReader(ticketTemplateDatum.get("drawing").getAsString()), name);
 			final MustacheTicketTemplate ticketTemplate = new MustacheTicketTemplate(
-					ticketTemplateDatum.get("id").getAsInt(),
+					ticketTemplateDatum.get("id").getAsString(),
 					name,
 					ticketFormat,
 					mustache);

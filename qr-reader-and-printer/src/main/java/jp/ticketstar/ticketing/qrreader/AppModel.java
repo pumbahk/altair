@@ -4,12 +4,11 @@ import java.beans.PropertyChangeListener;
 
 import javax.print.PrintService;
 
+import java.util.Collection;
 import jp.ticketstar.ticketing.swing.GenericComboBoxModel;
 import jp.ticketstar.ticketing.swing.GenericListModel;
 
 public interface AppModel {
-	public abstract void initialize();
-
 	public abstract void refresh();
 
 	public abstract void addPropertyChangeListener(PropertyChangeListener arg0);
@@ -44,9 +43,9 @@ public interface AppModel {
 	
 	public abstract GenericComboBoxModel<OurPageFormat> getPageFormats();
 
-	public abstract GenericListModel<TicketTemplate> getTicketTemplates();
-	
-	public abstract void setTicketTemplate(TicketTemplate ticketTemplate);
+	public abstract void setTicketTemplates(Collection<TicketTemplate> ticketTemplates);
 
-	public abstract TicketTemplate getTicketTemplate();
+	public abstract Collection<TicketTemplate> getTicketTemplates();
+
+    public abstract TicketTemplate findTicketTemplateById(String id);
 }

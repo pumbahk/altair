@@ -5,6 +5,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Map;
+import java.util.Collection;
 
 import javax.print.PrintService;
 import javax.swing.event.SwingPropertyChangeSupport;
@@ -21,16 +23,12 @@ public class AppAppletModel implements AppModel {
 	PrintService printService = null;
 	GenericComboBoxModel<PrintService> printServices;
 	GenericListModel<Ticket> tickets;
-	GenericListModel<TicketTemplate> ticketTemplates;
+	Map<String, TicketTemplate> ticketTemplates;
 	GenericComboBoxModel<OurPageFormat> pageFormats;
-	TicketTemplate ticketTemplate;
 	OurPageFormat pageFormat;
 
 	public AppAppletModel() {
-		initialize();
-	}
-
-	public void initialize() {
+        ticketTemplates = new java.util.HashMap<String, TicketTemplate>();
 		{
 			final GenericComboBoxModel<PrintService> printServices = new GenericComboBoxModel<PrintService>();
 			try {
@@ -54,11 +52,6 @@ public class AppAppletModel implements AppModel {
 	        final GenericComboBoxModel<OurPageFormat> prevPageFormats = this.pageFormats;
 	        this.pageFormats = pageFormats;
 			propertyChangeSupport.firePropertyChange("pageFormats", prevPageFormats, pageFormats);
-		}
-		{
-			final GenericListModel<TicketTemplate> prevTicketTemplates = this.ticketTemplates;
-			this.ticketTemplates = new GenericListModel<TicketTemplate>();
-			propertyChangeSupport.firePropertyChange("ticketTemplates", prevTicketTemplates, this.ticketTemplates);
 		}
 		{
 			final PrintService prevPrintService = this.printService;
@@ -160,21 +153,21 @@ public class AppAppletModel implements AppModel {
 	}
 
 	@Override
-	public GenericListModel<TicketTemplate> getTicketTemplates() {
-		return ticketTemplates;
-	}
-	
-	@Override
-	public TicketTemplate getTicketTemplate() {
-		return ticketTemplate;
+	public void setTicketTemplates(Collection<TicketTemplate> ticketTemplates) {
+        for (final TicketTemplate ticketTemplate: ticketTemplates) {
+            this.ticketTemplates.put(ticketTemplate.getId(), ticketTemplate);
+        }
 	}
 
 	@Override
-	public void setTicketTemplate(TicketTemplate ticketTemplate) {
-		final TicketTemplate prevValue = ticketTemplate;
-		this.ticketTemplate = ticketTemplate;
-		propertyChangeSupport.firePropertyChange("ticketTemplate", prevValue, ticketTemplate);
+	public Collection<TicketTemplate> getTicketTemplates() {
+		return ticketTemplates.values();
 	}
+
+    @Override
+    public TicketTemplate findTicketTemplateById(String id) {
+        return ticketTemplates.get(id);
+    }
 
 	@Override
 	public void setPageFormat(OurPageFormat pageFormat) {

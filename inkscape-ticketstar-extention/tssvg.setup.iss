@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=TSSVG extension for Inkscape
-AppVerName=TSSVG extension for Inkscape 0.1
+AppVerName=TSSVG extension for Inkscape 0.2
 DefaultDirName={code:InkscapeDir|share\extensions}
 OutputBaseFilename=tssvg.setup
 UsePreviousAppDir=no
@@ -49,11 +49,23 @@ begin
    *)
 end;
 
+function GetHKLM32(): Integer;
+begin
+   if IsWin64 then
+   begin
+      Result := HKLM32;
+   end
+   else
+   begin
+      Result := HKLM;
+   end
+end;
+
 function getInkscapeCommand(suffix :String): String;
 var
    path	: String;
 begin
-   if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Classes\Applications\Inkscape.exe\shell\edit\command', '', path) then
+   if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Classes\svgfile\shell\edit\command', '', path) then
    begin
       Result := path;
    end
@@ -63,11 +75,11 @@ begin
    end
 end;
 
-function InkscapeDir(suffix :String ): String;
+function InkscapeDir(suffix :String): String;
 var
   installedPath: String;
 begin
-   if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Inkscape', 'InstallLocation', installedPath) then
+   if RegQueryStringValue(GetHKLM32(), 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Inkscape', 'InstallLocation', installedPath) then
   begin
     Result := installedPath
     if(Length(suffix) > 0) then
