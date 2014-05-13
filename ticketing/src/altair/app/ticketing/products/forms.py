@@ -203,8 +203,6 @@ class ProductAndProductItemForm(OurForm):
         return validity
 
 
-
-
 class ProductForm(OurForm):
     @classmethod
     def from_model(cls, product):

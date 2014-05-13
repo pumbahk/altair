@@ -15,4 +15,3 @@ def includeme(config):
     config.add_route("products.sub.older.show", "/sub/show/older/{sales_segment_id}")
 
     config.scan(".views")
-    config.add_route('product.new', '/product/new')

@@ -21,7 +21,6 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm, OrionPerformanceForm
 from altair.app.ticketing.core.models import Performance, PerformanceSetting, OrionPerformance
 from altair.app.ticketing.core.api import get_organization
-from altair.app.ticketing.products.forms import ProductForm
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm, OrderImportForm
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 
