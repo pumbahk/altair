@@ -78,3 +78,35 @@ label.required:after {
 .fraud_suspect {
   background-color: #d9534f;
 }
+
+#search table {
+  border-collapse: separate;
+  width: 100%;
+  border-spacing: 4px;
+  margin-left: -4px;
+  margin-bottom: -4px;
+}
+
+#search table tbody td,
+#search table tbody th {
+  padding: 4px 4px;
+}
+
+#search table tbody th {
+  width: 7em;
+  text-align: left;
+  vertical-align: middle;
+  background-color: #eee;
+  border-radius: 4px;
+  text-align: nowrap;
+}
+
+#search .packed-checkboxes .checkbox-set {
+  overflow: hidden;
+  width: 40em;
+}
+
+#search .packed-checkboxes .checkbox-set .checkbox-set-item {
+  float: left;
+  width: 10em;
+}

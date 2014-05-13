@@ -15,6 +15,7 @@ import webhelpers.paginate as paginate
 
 from altair.sqlahelper import get_db_session
 
+from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.views import BaseView as _BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
@@ -53,7 +54,7 @@ from .forms import (
     LotForm,
     SearchEntryForm,
     SendingMailForm,
-    LotEntryReportMailForm,
+    LotEntryReportSettingForm,
 )
 
 from . import api
@@ -173,7 +174,6 @@ class Lots(BaseView):
                         raise HTTPFound(location=self.request.route_url("lots.show", lot_id=lot.id))
 
         slave_session = get_db_session(self.request, name="slave")
-
         performance_ids = [p.id for p in lot.performances]
         stock_holders = slave_session.query(StockHolder).join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
 
@@ -630,10 +630,11 @@ class LotEntries(BaseView):
             elect_wishes, reject_entries, reset_entries = self._parse_import_file(f)
         except CSVFileParserError as e:
             self.request.session.flash(u"ファイルフォーマットが正しくありません ({})".format(e.entry_no))
-            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+            return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
+
         if not (elect_wishes or reject_entries or reset_entries):
             self.request.session.flash(u"データがありませんでした")
-            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+            return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
         message = u"{0}件の当選予定、{1}件の落選予定、{2}件の申込を取り込みました"
         self.request.session.flash(message.format(len(elect_wishes), len(reject_entries), len(reset_entries)))
 
@@ -643,7 +644,7 @@ class LotEntries(BaseView):
         result_message = u"新たに{0}件が当選予定、{1}件が落選予定となり、{2}件が申込に戻されました"
         self.request.session.flash(result_message.format(electing_count, rejecting_count, reset_count))
 
-        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+        return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
     def _parse_import_file(self, file, encoding='cp932'):
         elect_wishes = []
@@ -725,7 +726,7 @@ class LotEntries(BaseView):
         self.request.session.flash(u"オーソリ開放可能にしました。")
         lot.finish_lotting()
 
-        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+        return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.elect',
                  renderer="string",
@@ -743,7 +744,7 @@ class LotEntries(BaseView):
         self.request.session.flash(u"当選確定処理を行いました")
         lot.start_electing()
 
-        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+        return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.reject',
                  renderer="string",
@@ -762,7 +763,7 @@ class LotEntries(BaseView):
         self.request.session.flash(u"落選確定処理を行いました")
 
         lot.start_electing()
-        return HTTPFound(location=self.request.route_url('lots.entries.index',
+        return HTTPFound(location=self.request.route_url('lots.entries.elect',
                                                          lot_id=lot.id))
 
 
@@ -1111,49 +1112,49 @@ class LotReport(object):
 
     @property
     def index_url(self):
-        return self.request.route_url("lots.entries.index",
-                                      **self.request.matchdict)
+        return self.request.route_url("lots.entries.index", **self.request.matchdict)
 
-    @view_config(route_name="lot.entries.new_report_setting",
-                 renderer="lots/new_report_setting.html")
-    def new_setting(self):
-        form = LotEntryReportMailForm(formdata=self.request.POST)
+    @view_config(route_name="lot.entries.new_report_setting", renderer="lots/report_setting.html")
+    def new(self):
+        form = LotEntryReportSettingForm(formdata=self.request.POST, context=self.context)
         form.lot_id.data = self.context.lot.id
-
         if self.request.method == "POST":
             if form.validate():
                 new_setting = LotEntryReportSetting()
                 form.sync(new_setting)
                 DBSession.add(new_setting)
                 return HTTPFound(self.index_url)
-        return dict(form=form,
-                    event=self.context.event)
+        return dict(form=form, lot=self.context.lot)
 
+    @view_config(route_name="lot.entries.edit_report_setting", request_method="GET", renderer="lots/report_setting.html")
+    def edit(self):
+        return dict(
+            form=LotEntryReportSettingForm(obj=self.context.report_setting, context=self.context),
+            lot=self.context.lot
+            )
 
-    @view_config(route_name="lot.entries.delete_report_setting",
-                 request_method="POST")
-    def delete_setting(self):
-        setting = LotEntryReportSetting.query.filter(
-            LotEntryReportSetting.id==self.request.matchdict['setting_id']
-        ).first()
-        if setting is None:
-            return HTTPNotFound()
-        setting.deleted_at = datetime.now()
+    @view_config(route_name="lot.entries.edit_report_setting", request_method="POST", renderer="lots/report_setting.html")
+    def edit_post(self):
+        f = LotEntryReportSettingForm(self.request.POST, context=self.context)
+        if not f.validate():
+            return dict(form=f, lot=self.context.lot)
+        report_setting = self.context.report_setting
+        report_setting = merge_session_with_post(report_setting, f.data)
+        report_setting.save()
+
+        self.request.session.flash(u'レポート送信設定を保存しました')
         return HTTPFound(self.index_url)
 
-    @view_config(route_name="lot.entries.send_report_setting",
-                 request_method="POST")
+    @view_config(route_name="lot.entries.delete_report_setting", request_method="POST")
+    def delete(self):
+        self.context.report_setting.deleted_at = datetime.now()
+        return HTTPFound(self.index_url)
+
+    @view_config(route_name="lot.entries.send_report_setting", request_method="POST")
     def send_report(self):
         """ 手動送信 """
-        setting = LotEntryReportSetting.query.filter(
-            LotEntryReportSetting.id==self.request.matchdict['setting_id']
-        ).first()
-        if setting is None:
-            return HTTPNotFound()
-
-
         mailer = get_mailer(self.request)
         sender = self.request.registry.settings['mail.message.sender']
-        reporter = LotEntryReporter(sender, mailer, setting)
+        reporter = LotEntryReporter(sender, mailer, self.context.report_setting)
         reporter.send()
         return HTTPFound(self.index_url)

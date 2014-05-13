@@ -1,15 +1,20 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch" />
-<%! from altair.app.ticketing.core.models import ReportFrequencyEnum %>
+
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'イベント', event.title, u'抽選'],
-      urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
+      names=[u'イベント', lot.event.title, u'抽選', lot.name, u'レポート送信設定'],
+      urls=[
+        request.route_path('events.index'),
+        request.route_path('events.show', event_id=lot.event.id),
+        request.route_path('lots.index', event_id=lot.event.id),
+        request.route_path('lots.show', lot_id=lot.id),
+      ]
   )}
 </%block>
 
 <div class="page-header">
-  <h3>新規メール送信先</h3>
+  <h3>レポート送信設定</h3>
 </div>
 
 <div class="content">
@@ -25,7 +30,15 @@
     ${ch.form_item(form.day_of_week)}
   </div>
   ${ch.form_item(form.period)}
-  ${ch.form_item(form.time)}
+  <div class="control-group">
+    <label class="required control-label">${form.report_hour.label.text}</label>
+    <div class="controls">
+      ${form.report_hour(style="width:60px;")} 時 ${form.report_minute(style="width:60px;")} 分
+      ${ch.validate_errors(form.report_hour)}
+      ${ch.validate_errors(form.report_minute)}
+    </div>
+  </div>
+  ${ch.form_item(form.report_type)}
   ${ch.form_item(form.start_on)}
   ${ch.form_item(form.end_on)}
   <div class="controls">
@@ -36,4 +49,3 @@
   ${ch.form_item(form.lot_id)}
   <button type="submit" class="btn">保存</button>
 </form>
-
