@@ -144,7 +144,7 @@ class ImportCSVParserError(ImporterErrorBase):
 
     @property
     def line_num(self):
-        return self.args[2]
+        return self.args[3]
 
 
 class ImporterValidationError(ImporterErrorBase):
@@ -191,22 +191,70 @@ class DummyCart(CartMixin):
 
 class ImportCSVParserContext(object):
     shipping_address_record_key_map = {
-        'first_name': u'shipping_address.first_name',
-        'last_name': u'shipping_address.last_name',
-        'first_name_kana': u'shipping_address.first_name_kana',
-        'last_name_kana': u'shipping_address.last_name_kana',
-        'zip': u'shipping_address.zip',
-        'country': u'shipping_address.country',
-        'prefecture': u'shipping_address.prefecture',
-        'city': u'shipping_address.city',
-        'address_1': u'shipping_address.address_1',
-        'address_2': u'shipping_address.address_2',
-        'tel_1': u'shipping_address.tel_1',
-        'tel_2': u'shipping_address.tel_2',
-        'fax': u'shipping_address.fax',
-        'email_1': u'shipping_address.email_1',
-        'email_2': u'shipping_address.email_2',
-        'sex': u'user_profile.sex',
+        'first_name': {
+            'key': u'shipping_address.first_name',
+            'required': True,
+            },
+        'last_name': {
+            'key': u'shipping_address.last_name',
+            'required': True,
+            },
+        'first_name_kana': {
+            'key': u'shipping_address.first_name_kana',
+            'required': True,
+            },
+        'last_name_kana': {
+            'key': u'shipping_address.last_name_kana',
+            'required': True,
+            },
+        'zip': {
+            'key': u'shipping_address.zip',
+            'required': True,
+            },
+        'country': {
+            'key': u'shipping_address.country',
+            'required': True,
+            },
+        'prefecture': {
+            'key': u'shipping_address.prefecture',
+            'required': True,
+            },
+        'city': {
+            'key': u'shipping_address.city',
+            'required': True,
+            },
+        'address_1': {
+            'key': u'shipping_address.address_1',
+            'required': True,
+            },
+        'address_2': {
+            'key': u'shipping_address.address_2',
+            'required': True,
+            },
+        'tel_1': {
+            'key': u'shipping_address.tel_1',
+            'required': True,
+            },
+        'tel_2': {
+            'key': u'shipping_address.tel_2',
+            'required': False,
+            },
+        'fax': {
+            'key': u'shipping_address.fax',
+            'required': False,
+            },
+        'email_1': {
+            'key': u'shipping_address.email_1',
+            'required': True,
+            },
+        'email_2': {
+            'key': u'shipping_address.email_2',
+            'required': False,
+            },
+        'sex': {
+            'key': u'user_profile.sex',
+            'required': False,
+            },
         }
 
     def __init__(self, request, session, exc_factory, order_import_task, organization, performance, event, default_payment_method, default_delivery_method):
@@ -303,7 +351,6 @@ class ImportCSVParserContext(object):
                 if order_no is None:
                     order_no = core_api.get_next_order_no(self.request, self.organization)
                     logger.info('always_issue_order_no is specified; new_order_no=%s' % order_no)
-                    note.append(u'CSVファイルでの予約番号: %s' % order_no_or_key)
             else:
                 if obj is not None:
                     order_no = order_no_or_key
@@ -474,19 +521,22 @@ class ImportCSVParserContext(object):
         # すべてのレコードがないときは省略されたとみなす
         unspecified = True
         record = {}
-        for k1, k2 in six.iteritems(self.shipping_address_record_key_map):
+        for k1, desc in six.iteritems(self.shipping_address_record_key_map):
+            k2 = desc['key']
             v = row.get(k2)
             if v is not None:
                 v = v.strip()
+            else:
+                v = u''
             if v:
-                record[k1] = v.strip()
                 unspecified = False
+            record[k1] = v
         if unspecified:
             return None
 
         # バリデーション (もうちょっと頑張った方が良い)
-        for k1, k2 in six.iteritems(self.shipping_address_record_key_map):
-            if not record.get(k1):
+        for k1, desc in six.iteritems(self.shipping_address_record_key_map):
+            if desc['required'] and not record[k1]:
                 raise self.exc_factory(u'「%s」が指定されていません' % japanese_columns[k2])
 
         record['zip'] = record['zip'].replace('-', '')
@@ -1061,7 +1111,8 @@ def run_import_task(request, task):
         note = re.split(ur'\r\n|\r|\n', order.note)
         # これは実時間でよいような
         imported_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        note.append(u'CSVファイル内の予約番号 (グループキー): %s' % proto_order.ref)
+        if proto_order.original_order is not None:
+            note.append(u'CSVファイル内の予約番号 (グループキー): %s' % proto_order.ref)
         note.append(u'インポート日時: %s' % imported_at)
         order.note = u'\n'.join(note)
         # 決済日時はコンビニ決済でないなら維持 (これは同じ処理を他でやっているはずなので必要ないかも)
