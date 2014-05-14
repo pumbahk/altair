@@ -1038,7 +1038,7 @@ class OrderDetailView(BaseView):
 
             nop.price = sum(nopi.price * nopi.product_item.quantity for nopi in nop.elements)
 
-        new_order.total_amount = recalculate_total_amount_for_order(self.request, order)
+        new_order.total_amount = recalculate_total_amount_for_order(self.request, new_order)
         return new_order
 
     @view_config(route_name='orders.edit.product', request_method='POST')
