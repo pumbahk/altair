@@ -653,6 +653,8 @@ class ImportCSVParserContext(object):
                         .filter(PaymentMethod.organization_id == self.organization.id) \
                         .filter(PaymentMethod.name == name) \
                         .one()
+                except MultipleResultsFound:
+                    raise self.exc_factory(u'「%s」という決済方法が複数あります' % name)
                 except NoResultFound:
                     raise self.exc_factory(u'決済方法「%s」は存在しません' % name)
             return payment_method
@@ -669,6 +671,8 @@ class ImportCSVParserContext(object):
                         .filter(DeliveryMethod.organization_id == self.organization.id) \
                         .filter(DeliveryMethod.name == name) \
                         .one()
+                except MultipleResultsFound:
+                    raise self.exc_factory(u'「%s」という引取方法が複数あります' % name)
                 except NoResultFound:
                     raise self.exc_factory(u'引取方法「%s」は存在しません' % name)
             return delivery_method
