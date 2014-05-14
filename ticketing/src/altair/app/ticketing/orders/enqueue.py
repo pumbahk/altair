@@ -40,7 +40,7 @@ class DummyEachPrintByToken(object):
         self.ticket_format_id = ticket_format_id
         self.candidate_id_list = candidate_id_list
 
-    def enqueue(self, operator):
+    def enqueue(self, request, operator):
         logger.warn("enqueue candidates is empty!")
 
 
