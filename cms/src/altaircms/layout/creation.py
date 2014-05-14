@@ -71,7 +71,10 @@ class LayoutCreator(object):
     def create_model(self, basename, params, blocks):
         layout = Layout(template_filename=basename, 
                         title=params["title"], 
-                        blocks=blocks)
+                        blocks=blocks,
+                        uploaded_at=datetime.now(),
+                        synced_at=datetime.now()
+                        )
         DBSession.add(layout)
         return layout
 
@@ -97,6 +100,7 @@ class LayoutUpdater(object):
         layout.blocks = blocks
         layout.template_filename = filename
         layout.updated_at = datetime.now()
+        layout.uploaded_at = datetime.now()
         DBSession.add(layout)
         return layout
 

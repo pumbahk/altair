@@ -125,7 +125,7 @@ class LayoutModelLookupInterceptHandler(object):
         self.loader = loader 
 
     def need_intercept(self, uri):
-        return self.layout_spec in uri
+        return self.layout_spec in uri and self.uploaded_at
 
     def need_refresh(self, last_modified_at):
         return last_modified_at and self.uploaded_at and self.uploaded_at_as_time > last_modified_at
