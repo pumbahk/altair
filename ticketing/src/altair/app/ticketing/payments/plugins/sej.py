@@ -4,6 +4,7 @@ import logging
 from datetime import datetime, timedelta
 from zope.interface import implementer
 from lxml import etree
+from decimal import Decimal
 import numpy
 import pystache
 from pyramid.view import view_config
@@ -296,6 +297,8 @@ def determine_payment_type(current_date, order_like):
 # http://www.unicode.org/charts/PDF/U30A0.pdf
 katakana_regex = re.compile(ur'^[\u30a1-\u30f6\u30fb\u30fc\u30fd\u30feー]+$')
 
+SEJ_MAX_ALLOWED_AMOUNT = Decimal('300000')
+
 def validate_order_like(current_date, order_like):
     if order_like.shipping_address is None:
         raise OrderLikeValidationFailure(u'shipping address does not exist', 'shipping_address')
@@ -353,6 +356,9 @@ def validate_order_like(current_date, order_like):
             ticketing_due_at = get_ticketing_due_at(current_date, order_like)
             if ticketing_due_at is not None and ticketing_due_at < current_date:
                 raise OrderLikeValidationFailure(u'issuing_end_at < now', 'order.issuing_end_at')
+
+    if payment_type is not None and payment_type != int(SejPaymentType.Paid) and order_like.total_amount > SEJ_MAX_ALLOWED_AMOUNT:
+        raise OrderLikeValidationFailure(u'total_amount exceeds the maximum allowed amount', 'order.total_amount')
 
 @implementer(IPaymentPlugin)
 class SejPaymentPlugin(object):
