@@ -191,6 +191,12 @@ def refresh_order(request, tenant, order, update_reason):
     if sej_order is None:
         raise Exception('no corresponding SejOrder found for order %s' % order.order_no)
 
+    if int(sej_order.payment_type) == SejPaymentType.PrepaymentOnly.v and order.paid_at is not None:
+        raise Exception('order %s is already paid' % order.order_no)
+
+    if order.delivered_at is not None:
+        raise Exception('order %s is already delivered' % order.order_no)
+
     sej_args = build_sej_args(sej_order.payment_type, order, order.created_at)
     ticket_dicts = get_tickets(order)
 
@@ -521,8 +527,6 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
         return bool(sej_order.billing_number)
 
     def refresh(self, request, order):
-        if order.paid_at is not None or order.delivered_at is not None:
-            raise Exception('order %s is already paid / delivered' % order.order_no)
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
             request,
