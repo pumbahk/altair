@@ -18,6 +18,7 @@ from pyramid.i18n import TranslationString as _
 from altair.app.ticketing.models import DBSession, asc_or_desc
 from altair.app.ticketing.utils import todatetime
 from altair.app.ticketing.core.models import (
+    Venue,
     Product,
     ProductItem,
     SalesSegment,
@@ -702,7 +703,7 @@ def validate_order(request, order_like, ref):
                 order_like.order_no,
                 u'「${path}」の入力値が不正です (${message})',
                 dict(
-                    path=japanese_columns[e.path],
+                    path=japanese_columns.get(e.path, e.path),
                     message=e.message
                     )
                 ))
@@ -1166,15 +1167,17 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
         else:
             payment_due_at = parsedate(payment_due_at_v)
 
-    issuing_start_at = todatetime(issuing_start_at)
-    issuing_end_at = todatetime(issuing_end_at)
-    payment_due_at = todatetime(payment_due_at)
+    issuing_start_at = todatetime(issuing_start_at) if issuing_start_at else None
+    issuing_end_at = todatetime(issuing_end_at) if issuing_end_at else None
+    payment_start_at = todatetime(payment_start_at) if payment_start_at else None
+    payment_due_at = todatetime(payment_due_at) if payment_due_at else None
     attributes = modify_data.get('attributes')
     if attributes is None:
         attributes = dict(original_order.attributes)
     proto_order = ProtoOrder(
         order_no=original_order.order_no,
         organization=original_order.ordered_from,
+        shipping_address=original_order.shipping_address,
         performance_id=performance_id,
         sales_segment_id=sales_segment_id,
         user=original_order.user,
@@ -1264,7 +1267,12 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
                     )
             md_seats = md_element.get('seats') # 数受けの場合は存在しない
             if md_seats:
-                new_seats = Seat.query.filter(Seat.l0_id.in_((md_seat.get('l0_id') or md_seat.get('id')) for md_seat in md_seats)).all()
+                new_seats = Seat.query \
+                    .join(Seat.venue) \
+                    .filter(
+                        Venue.performance_id == performance_id,
+                        Seat.l0_id.in_((md_seat.get('l0_id') or md_seat.get('id')) for md_seat in md_seats)
+                    ).all()
                 if len(new_seats) < element_quantity:
                     raise OrderCreationError(
                         proto_order.ref,

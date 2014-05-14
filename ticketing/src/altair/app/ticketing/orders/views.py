@@ -105,6 +105,7 @@ from .api import (
     get_ordered_product_metadata_provider_registry,
     get_order_metadata_provider_registry
 )
+from .exceptions import OrderCreationError
 from .utils import NumberIssuer
 from .models import OrderSummary
 from .helpers import build_candidate_id
@@ -1776,10 +1777,10 @@ class OrdersEditAPIView(BaseView):
                     for seat in opi.seats
                     ],
                 )
-                for opi in op.ordered_product_items
+                for opi in op.elements
                 ]
             )
-            for op in order.ordered_products
+            for op in order.items
             ]
         )
 
@@ -1929,20 +1930,23 @@ class OrdersEditAPIView(BaseView):
 
         # 手数料を再計算して返す
         sales_segment = None
-        products = []
+        products_for_get_amount = []
+        products_for_fee_calculator = []
         for op_data in order_data.get('ordered_products'):
             if sales_segment is None:
                 sales_segment_id = op_data.get('sales_segment_id')
                 sales_segment = SalesSegment.query.filter_by(id=sales_segment_id).first()
             product = Product.query.filter_by(id=op_data.get('product_id')).first()
-            products.append((product, product.price, op_data.get('quantity')))
+            quantity = op_data.get('quantity')
+            products_for_get_amount.append((product, product.price, quantity))
+            products_for_fee_calculator.append((product, quantity))
 
         try:
-            order_data['transaction_fee'] = int(sales_segment.get_transaction_fee(order.payment_delivery_pair, products))
-            order_data['delivery_fee'] = int(sales_segment.get_delivery_fee(order.payment_delivery_pair, products))
+            order_data['transaction_fee'] = int(sales_segment.get_transaction_fee(order.payment_delivery_pair, products_for_fee_calculator))
+            order_data['delivery_fee'] = int(sales_segment.get_delivery_fee(order.payment_delivery_pair, products_for_fee_calculator))
             order_data['system_fee'] = int(order.payment_delivery_pair.system_fee)
             order_data['special_fee'] = int(order.payment_delivery_pair.special_fee)
-            order_data['total_amount'] = int(sales_segment.get_amount(order.payment_delivery_pair, products))
+            order_data['total_amount'] = int(sales_segment.get_amount(order.payment_delivery_pair, products_for_get_amount))
         except Exception:
             logger.exception('fee calculation error')
             raise HTTPBadRequest(body=json.dumps(dict(message=u'手数料計算できません。変更内容を確認してください。')))
@@ -1956,8 +1960,8 @@ class OrdersEditAPIView(BaseView):
         order = Order.get(order_id, self.context.organization.id)
 
         try:
-            modiry_order, warnings = save_order_modification(order, order_data)
-        except OrderCreationException as e:
+            modiry_order, warnings = save_order_modification(self.request, order, order_data)
+        except OrderCreationError as e:
             logger.exception(u'save error (%s)' % unicode(e))
             raise HTTPBadRequest(body=json.dumps(dict(message=unicode(e))))
         except Exception as e:
