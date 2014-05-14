@@ -116,7 +116,7 @@ class OrderShowFormProvider(object):
 
     def get_order_form(self):
         order = self.order        
-        return OrderForm(record_to_multidict(order))
+        return OrderForm(record_to_multidict(order), context=self.context)
 
     def get_order_reserve_form(self):
         order = self.order        

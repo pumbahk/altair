@@ -3302,6 +3302,11 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
              pdmp.per_ticket_fee * product.num_priced_tickets(pdmp)) * quantity
             for product, price, quantity in product_price_quantity_triplets])
 
+    def get_products_amount_without_fee(self, pdmp, product_price_quantity_triplets):
+        return sum([
+            price * quantity
+            for product, price, quantity in product_price_quantity_triplets])
+
     def applicable(self, user=None, now=None, type='available'):
         return build_sales_segment_query(sales_segment_id=self.id, user=user, now=now, type=type).count() > 0
 

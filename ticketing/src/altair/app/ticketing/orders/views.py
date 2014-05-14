@@ -20,7 +20,9 @@ from sqlalchemy import and_, func
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import or_, desc, func
 from sqlalchemy.orm import joinedload, undefer
+from sqlalchemy.orm.session import make_transient
 from webob.multidict import MultiDict
+import transaction
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.tickets.api import get_svg_builder
 from altair.app.ticketing.models import DBSession, merge_session_with_post, record_to_multidict, asc_or_desc
@@ -47,12 +49,14 @@ from altair.app.ticketing.core.models import (
     ChannelEnum,
     MailTypeEnum,
     )
+from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.orders.models import (
     Order,
     OrderedProduct,
     OrderedProductItem,
     OrderedProductItemToken,
     OrderedProductAttribute,
+    ProtoOrder,
     )
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
@@ -103,9 +107,11 @@ from .api import (
     create_inner_order,
     save_order_modification,
     get_ordered_product_metadata_provider_registry,
-    get_order_metadata_provider_registry
+    get_order_metadata_provider_registry,
+    save_order_modifications_from_proto_orders,
+    recalculate_total_amount_for_order,
 )
-from .exceptions import OrderCreationError
+from .exceptions import OrderCreationError, MassOrderCreationError
 from .utils import NumberIssuer
 from .models import OrderSummary
 from .helpers import build_candidate_id
@@ -337,7 +343,7 @@ class OrderIndexView(OrderBaseView):
                 url=paginate.PageURL_WebOb(request)
             )
         return {
-            'form':OrderForm(),
+            'form':OrderForm(context=self.context),
             'form_search':form_search,
             'orders':orders,
             'page': page,
@@ -684,7 +690,7 @@ class OrdersRefundIndexView(BaseView):
         orders = []
 
         return {
-            'form':OrderForm(),
+            'form':OrderForm(context=self.context),
             'form_search':form_search,
             'page': page,
             'orders':orders,
@@ -726,7 +732,7 @@ class OrdersRefundIndexView(BaseView):
             orders = []
 
         return {
-            'form':OrderForm(),
+            'form':OrderForm(context=self.context),
             'form_search':form_search,
             'page': page,
             'orders':orders,
@@ -759,7 +765,7 @@ class OrdersRefundIndexView(BaseView):
             orders = []
 
         return {
-            'form':OrderForm(),
+            'form':OrderForm(context=self.context),
             'form_search':form_search,
             'page': page,
             'orders':orders,
@@ -1002,6 +1008,39 @@ class OrderDetailView(BaseView):
                 'form':f,
             }
 
+    def _new_order_from_order_form(self, f, order):
+        new_order = ProtoOrder.create_from_order_like(order)
+        new_order.system_fee = f.system_fee.data
+        new_order.transaction_fee = f.transaction_fee.data
+        new_order.delivery_fee = f.delivery_fee.data
+        new_order.special_fee = f.special_fee.data
+        new_order.special_fee_name = f.special_fee_name.data
+
+        for op, nop in itertools.izip(order.items, new_order.items):
+            # 個数が変更できるのは数受けのケースのみ
+            if op.product.seat_stock_type.quantity_only:
+                nop.quantity = f.products.data['products'].get(op.id) or 0
+
+            for opi, nopi in itertools.izip(op.elements, nop.elements):
+                nopi.price = f.products.data['product_items'].get(opi.id) or 0
+                if op.product.seat_stock_type.quantity_only:
+                    nopi.quantity = nop.quantity * nopi.product_item.quantity
+                    for token in nopi.tokens:
+                        make_transient(token)
+                    nopi.tokens = [
+                        OrderedProductItemToken(
+                            serial=i,
+                            seat=seat,
+                            valid=True
+                            )
+                        for i, seat in core_api.iterate_serial_and_seat(nopi)
+                        ]
+
+            nop.price = sum(nopi.price * nopi.product_item.quantity for nopi in nop.elements)
+
+        new_order.total_amount = recalculate_total_amount_for_order(self.request, order)
+        return new_order
+
     @view_config(route_name='orders.edit.product', request_method='POST')
     def edit_product_post(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
@@ -1009,52 +1048,33 @@ class OrderDetailView(BaseView):
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
 
-        f = OrderForm(self.request.POST)
+        f = OrderForm(self.request.POST, context=self.context)
         has_error = False
 
         try:
             if not f.validate():
                 raise ValidationError()
-            new_order = Order.clone(order, deep=True)
-            new_order.system_fee = f.system_fee.data
-            new_order.transaction_fee = f.transaction_fee.data
-            new_order.delivery_fee = f.delivery_fee.data
-            new_order.special_fee = f.special_fee.data
-            new_order.special_fee_name = f.special_fee_name.data
-
-            for op, nop in itertools.izip(order.items, new_order.items):
-                # 個数が変更できるのは数受けのケースのみ
-                if op.product.seat_stock_type.quantity_only:
-                    nop.quantity = int(self.request.params.get('product_quantity-%d' % op.id) or 0)
-                for opi, nopi in itertools.izip(op.ordered_product_items, nop.ordered_product_items):
-                    nopi.price = int(self.request.params.get('product_item_price-%d' % opi.id) or 0)
-                    if op.product.seat_stock_type.quantity_only:
-                        stock_status = opi.product_item.stock.stock_status
-                        new_quantity = nop.quantity * nopi.product_item.quantity
-                        old_quantity = op.quantity
-                        if stock_status.quantity < (new_quantity - old_quantity):
-                            raise NotEnoughStockException(stock_status.stock, stock_status.quantity, new_quantity)
-                        stock_status.quantity -= (new_quantity - old_quantity)
-                        nopi.quantity = new_quantity
-                nop.price = sum(nopi.price * nopi.product_item.quantity for nopi in nop.ordered_product_items)
-
-            total_amount = sum(nop.price * nop.quantity for nop in new_order.items)\
-                           + new_order.system_fee + new_order.transaction_fee + new_order.delivery_fee + new_order.special_fee
-            if new_order.payment_status != 'unpaid':
-                if total_amount != new_order.total_amount:
+            new_order = self._new_order_from_order_form(f, order)
+            if order.payment_status != 'unpaid':
+                if order.total_amount != new_order.total_amount:
                     raise ValidationError(u'入金済みの為、合計金額は変更できません')
-            new_order.total_amount = total_amount
-
-            new_order.save()
-        except ValidationError, e:
+            save_order_modifications_from_proto_orders(
+                self.request,
+                [(order, new_order)]
+                )
+        except ValidationError as e:
             if e.message:
                 self.request.session.flash(e.message)
             has_error = True
-        except NotEnoughStockException, e:
+        except NotEnoughStockException as e:
             logger.info("not enough stock quantity :%s" % e)
             self.request.session.flash(u'在庫がありません')
             has_error = True
-        except Exception, e:
+        except MassOrderCreationError as e:
+            for error in e.errors[order.order_no]:
+                self.request.session.flash(error.message)
+            has_error = True
+        except Exception as e:
             logger.info('save error (%s)' % e.message, exc_info=sys.exc_info())
             self.request.session.flash(u'入力された金額および個数が不正です')
             has_error = True
@@ -1062,6 +1082,7 @@ class OrderDetailView(BaseView):
             if has_error:
                 response = render_to_response('altair.app.ticketing:templates/orders/_form_product.html', {'form':f, 'order':order}, request=self.request)
                 response.status_int = 400
+                transaction.abort()
                 return response
 
         self.request.session.flash(u'予約を保存しました')

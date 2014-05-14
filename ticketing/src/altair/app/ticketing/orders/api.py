@@ -629,12 +629,23 @@ def refresh_order(request, session, order):
         delivery_plugin.refresh(request, order)
     logger.info('Finished refreshing order %s (id=%d)' % (order.order_no, order.id))
 
+def recalculate_total_amount_for_order(request, order_like):
+    return \
+        order_like.transaction_fee + \
+        order_like.delivery_fee + \
+        order_like.system_fee + \
+        order_like.special_fee + \
+        order_like.sales_segment.get_products_amount_without_fee(
+            order_like.payment_delivery_pair,
+            [ (item.product, item.price, item.quantity) for item in order_like.items ]
+            )
+
 def validate_order(request, order_like, ref):
     retval = []
     sum_quantity = dict()
 
     # 合計金額
-    calculated_total_amount = core_api.calculate_total_amount(order_like)
+    calculated_total_amount = recalculate_total_amount_for_order(request, order_like)
     if order_like.total_amount != calculated_total_amount:
         retval.append(OrderCreationError(
             ref,
@@ -691,9 +702,12 @@ def validate_order(request, order_like, ref):
                         )
                     ))
 
-    for plugin in lookup_plugin(request, order_like.payment_delivery_pair):
-        if plugin is None:
-            continue
+    payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order_like.payment_delivery_pair)
+    if payment_delivery_plugin is not None:
+        plugins = [payment_delivery_plugin]
+    else:
+        plugins = [payment_plugin, delivery_plugin]
+    for plugin in plugins:
         try:
             plugin.validate_order(request, order_like)
         except OrderLikeValidationFailure as e:
@@ -727,7 +741,7 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
         assert prev_order.ordered_from == proto_order.organization
 
     def build_element(stock_status_pairs, orig_element):
-        assert orig_element.quantity == len(orig_element.tokens), u'orig_element.id=%ld' % orig_element.id
+        assert orig_element.quantity == len(orig_element.tokens), u'orig_element.id=%ld / orig_element.quantity (%d) != len(orig_element.tokens) (%d)' % (orig_element.id, orig_element.quantity, len(orig_element.tokens))
         seats = []
         tokens = []
         quantity_only = orig_element.product_item.stock.stock_type.quantity_only
