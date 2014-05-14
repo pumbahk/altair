@@ -18,6 +18,7 @@ from pyramid.i18n import TranslationString as _
 from altair.app.ticketing.models import DBSession, asc_or_desc
 from altair.app.ticketing.utils import todatetime
 from altair.app.ticketing.core.models import (
+    Venue,
     Product,
     ProductItem,
     SalesSegment,
@@ -628,12 +629,23 @@ def refresh_order(request, session, order):
         delivery_plugin.refresh(request, order)
     logger.info('Finished refreshing order %s (id=%d)' % (order.order_no, order.id))
 
+def recalculate_total_amount_for_order(request, order_like):
+    return \
+        order_like.transaction_fee + \
+        order_like.delivery_fee + \
+        order_like.system_fee + \
+        order_like.special_fee + \
+        order_like.sales_segment.get_products_amount_without_fee(
+            order_like.payment_delivery_pair,
+            [ (item.product, item.price, item.quantity) for item in order_like.items ]
+            )
+
 def validate_order(request, order_like, ref):
     retval = []
     sum_quantity = dict()
 
     # 合計金額
-    calculated_total_amount = core_api.calculate_total_amount(order_like)
+    calculated_total_amount = recalculate_total_amount_for_order(request, order_like)
     if order_like.total_amount != calculated_total_amount:
         retval.append(OrderCreationError(
             ref,
@@ -690,9 +702,12 @@ def validate_order(request, order_like, ref):
                         )
                     ))
 
-    for plugin in lookup_plugin(request, order_like.payment_delivery_pair):
-        if plugin is None:
-            continue
+    payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order_like.payment_delivery_pair)
+    if payment_delivery_plugin is not None:
+        plugins = [payment_delivery_plugin]
+    else:
+        plugins = [payment_plugin, delivery_plugin]
+    for plugin in plugins:
         try:
             plugin.validate_order(request, order_like)
         except OrderLikeValidationFailure as e:
@@ -702,7 +717,7 @@ def validate_order(request, order_like, ref):
                 order_like.order_no,
                 u'「${path}」の入力値が不正です (${message})',
                 dict(
-                    path=japanese_columns[e.path],
+                    path=japanese_columns.get(e.path, e.path),
                     message=e.message
                     )
                 ))
@@ -726,7 +741,7 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
         assert prev_order.ordered_from == proto_order.organization
 
     def build_element(stock_status_pairs, orig_element):
-        assert orig_element.quantity == len(orig_element.tokens), u'orig_element.id=%ld' % orig_element.id
+        assert orig_element.quantity == len(orig_element.tokens), u'orig_element.id=%ld / orig_element.quantity (%d) != len(orig_element.tokens) (%d)' % (orig_element.id, orig_element.quantity, len(orig_element.tokens))
         seats = []
         tokens = []
         quantity_only = orig_element.product_item.stock.stock_type.quantity_only
@@ -1166,15 +1181,17 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
         else:
             payment_due_at = parsedate(payment_due_at_v)
 
-    issuing_start_at = todatetime(issuing_start_at)
-    issuing_end_at = todatetime(issuing_end_at)
-    payment_due_at = todatetime(payment_due_at)
+    issuing_start_at = todatetime(issuing_start_at) if issuing_start_at else None
+    issuing_end_at = todatetime(issuing_end_at) if issuing_end_at else None
+    payment_start_at = todatetime(payment_start_at) if payment_start_at else None
+    payment_due_at = todatetime(payment_due_at) if payment_due_at else None
     attributes = modify_data.get('attributes')
     if attributes is None:
         attributes = dict(original_order.attributes)
     proto_order = ProtoOrder(
         order_no=original_order.order_no,
         organization=original_order.ordered_from,
+        shipping_address=original_order.shipping_address,
         performance_id=performance_id,
         sales_segment_id=sales_segment_id,
         user=original_order.user,
@@ -1264,7 +1281,12 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
                     )
             md_seats = md_element.get('seats') # 数受けの場合は存在しない
             if md_seats:
-                new_seats = Seat.query.filter(Seat.l0_id.in_((md_seat.get('l0_id') or md_seat.get('id')) for md_seat in md_seats)).all()
+                new_seats = Seat.query \
+                    .join(Seat.venue) \
+                    .filter(
+                        Venue.performance_id == performance_id,
+                        Seat.l0_id.in_((md_seat.get('l0_id') or md_seat.get('id')) for md_seat in md_seats)
+                    ).all()
                 if len(new_seats) < element_quantity:
                     raise OrderCreationError(
                         proto_order.ref,

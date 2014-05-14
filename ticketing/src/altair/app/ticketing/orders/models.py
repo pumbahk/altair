@@ -1114,7 +1114,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         note = getattr(order_like, 'note', None)
         attributes = dict(getattr(order_like, 'attributes', {}))
         proto_order_like = cls(
-            order_like_no=order_like.order_like_no,
+            order_no=order_like.order_no,
             total_amount=order_like.total_amount,
             shipping_address=order_like.shipping_address,
             payment_delivery_pair=order_like.payment_delivery_pair,
