@@ -1114,6 +1114,7 @@ class LotReport(object):
                 new_setting = LotEntryReportSetting()
                 form.sync(new_setting)
                 DBSession.add(new_setting)
+                self.request.session.flash(u'レポート送信設定を保存しました')
                 return HTTPFound(self.index_url)
         return dict(form=form, lot=self.context.lot)
 
@@ -1139,6 +1140,8 @@ class LotReport(object):
     @view_config(route_name="lot.entries.delete_report_setting", request_method="POST")
     def delete(self):
         self.context.report_setting.deleted_at = datetime.now()
+
+        self.request.session.flash(u'レポート送信設定を削除しました')
         return HTTPFound(self.index_url)
 
     @view_config(route_name="lot.entries.send_report_setting", request_method="POST")
@@ -1148,4 +1151,6 @@ class LotReport(object):
         sender = self.request.registry.settings['mail.message.sender']
         reporter = LotEntryReporter(sender, mailer, self.context.report_setting)
         reporter.send()
+
+        self.request.session.flash(u'レポートを送信しました')
         return HTTPFound(self.index_url)
