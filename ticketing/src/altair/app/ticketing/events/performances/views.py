@@ -90,7 +90,7 @@ class PerformanceShowView(BaseView):
                 url=paginate.PageURL_WebOb(self.request)
                 ),
             form_search=form_search,
-            form_order=OrderForm(event_id=self.performance.event_id)
+            form_order=OrderForm(event_id=self.performance.event_id, context=self.context)
             )
 
     def _tab_summary(self):
