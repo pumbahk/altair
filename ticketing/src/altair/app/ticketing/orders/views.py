@@ -1373,7 +1373,7 @@ class OrderDetailView(BaseView):
         #token@seat@ticket.id
         actions = self.context.get_dependents_actions(order, ticket_format_id)
         candidates_action = actions.get_print_candidate_action(candidate_id_list)
-        candidates_action.enqueue(operator=self.context.user)
+        candidates_action.enqueue(self.request, operator=self.context.user)
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
 
