@@ -467,10 +467,9 @@ class LotEntries(BaseView):
             return u"( {detail} )".format(detail=detail)
 
     def _build_lot_search_query(self, form):
-        include_canceled = False
         enable_elect_all = False
         condition = (LotEntry.id != None)
-        s_a = ShippingAddress
+
         if form.entry_no.data:
             condition = sql.and_(condition, LotEntry.entry_no==form.entry_no.data)
         if form.tel.data:
@@ -478,6 +477,7 @@ class LotEntries(BaseView):
                                  sql.or_(ShippingAddress.tel_1==form.tel.data,
                                          ShippingAddress.tel_2==form.tel.data))
         if form.name.data:
+            s_a = ShippingAddress
             condition = sql.and_(condition,
                                  sql.or_(s_a.full_name==form.name.data,
                                          s_a.last_name==form.name.data,
@@ -489,46 +489,47 @@ class LotEntries(BaseView):
             condition = sql.and_(condition,
                                  sql.or_(s_a.email_1==form.email.data,
                                          s_a.email_2==form.email.data))
-
         if form.entried_from.data:
             condition = sql.and_(condition,
                                  LotEntry.created_at>=form.entried_from.data)
         if form.entried_to.data:
             condition = sql.and_(condition,
                                  LotEntry.created_at<=form.entried_to.data)
-        include_canceled = form.include_canceled.data
 
-        if (form.electing.data
-            or form.elected.data
-            or form.rejecting.data
-            or form.rejected.data):
-            wish_condition = (LotEntry.id == None) ## means False
-
-            if form.electing.data:
-                wish_condition = sql.or_(wish_condition,
-                                         sql.and_(LotEntryWish.entry_wish_no==LotElectWork.entry_wish_no,
-                                                  LotEntryWish.elected_at==None))
-            if form.rejecting.data:
-                wish_condition = sql.or_(wish_condition,
-                                         sql.and_(LotEntry.entry_no==LotRejectWork.lot_entry_no,
-                                                  LotEntryWish.rejected_at==None))
-            if form.elected.data:
-                wish_condition = sql.or_(wish_condition,
-                                         LotEntryWish.elected_at!=None)
-            if form.rejected.data:
-                wish_condition = sql.or_(wish_condition,
-                                         LotEntryWish.rejected_at!=None)
-
-            condition = sql.and_(condition, wish_condition)
+        wish_condition = (LotEntry.id == None) ## means False
+        if form.canceled.data:
+            wish_condition = sql.or_(wish_condition,
+                                     LotEntryWish.canceled_at!=None)
+        else:
+            condition = sql.and_(condition,
+                                 LotEntryWish.canceled_at==None)
+        if form.entried.data:
+            wish_condition = sql.or_(wish_condition,
+                                     sql.and_(LotEntryWish.elected_at==None,
+                                              LotEntryWish.rejected_at==None,
+                                              LotElectWork.id==None,
+                                              LotRejectWork.id==None))
+        if form.electing.data:
+            wish_condition = sql.or_(wish_condition,
+                                     sql.and_(LotEntryWish.entry_wish_no==LotElectWork.entry_wish_no,
+                                              LotEntryWish.elected_at==None))
+        if form.rejecting.data:
+            wish_condition = sql.or_(wish_condition,
+                                     sql.and_(LotEntry.entry_no==LotRejectWork.lot_entry_no,
+                                              LotEntryWish.rejected_at==None))
+        if form.elected.data:
+            wish_condition = sql.or_(wish_condition,
+                                     LotEntryWish.elected_at!=None)
+        if form.rejected.data:
+            wish_condition = sql.or_(wish_condition,
+                                     LotEntryWish.rejected_at!=None)
+        condition = sql.and_(condition, wish_condition)
 
         if form.wish_order.data:
             condition = sql.and_(condition,
                                  LotEntryWish.wish_order==form.wish_order.data)
             enable_elect_all = True
 
-        if not include_canceled:
-            condition = sql.and_(condition,
-                                 LotEntry.canceled_at == None)
         return condition, enable_elect_all
 
     @view_config(route_name='lots.entries.search',
