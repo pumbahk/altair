@@ -71,35 +71,38 @@ def order_import_task_stats(task):
     stats['allocation_mode'] = get_allocation_mode_label(task.allocation_mode)
     # インポートする予約数
 
+    def none_to_zero(x):
+        return [i or 0 for i in x]
+
     def build_counts_dict(filter_fn):
         return {
             'order_count': \
-                filter_fn(
+                none_to_zero(filter_fn(
                     session.query(ProtoOrder) \
                     .filter(ProtoOrder.order_import_task_id == task.id)
                     ) \
                 .with_entities(sql.func.count(ProtoOrder.id), sql.func.sum(ProtoOrder.processed_at != None)) \
-                .one(),
+                .one()),
             'seat_count': \
-                filter_fn(
+                none_to_zero(filter_fn(
                     session.query(ProtoOrder) \
                     .join(ProtoOrder.items) \
                     .join(OrderedProduct.elements) \
-                    .join(OrderedProductItem.seats) \
+                    .outerjoin(OrderedProductItem.seats) \
                     .filter(ProtoOrder.order_import_task_id == task.id)
                     ) \
                 .with_entities(sql.func.count(c_models.Seat.id), sql.func.sum(ProtoOrder.processed_at != None)) \
-                .one(),
+                .one()),
             'count_per_product': dict(
                 filter_fn(session.query(ProtoOrder) \
                     .join(ProtoOrder.items) \
                     .join(OrderedProduct.elements) \
                     .join(OrderedProduct.product) \
-                    .join(OrderedProductItem.seats) \
+                    .outerjoin(OrderedProductItem.tokens) \
                     .group_by(c_models.Product.id) \
                     .filter(ProtoOrder.order_import_task_id == task.id)
                     ) \
-                .with_entities(c_models.Product, sql.func.count(sql.func.distinct(c_models.Seat.id))) \
+                .with_entities(c_models.Product, sql.func.count(sql.func.distinct(OrderedProductItemToken.id))) \
                 ),
             'count_per_pdmp': dict(
                 (pdmp, (order_count, seat_count))
@@ -108,9 +111,9 @@ def order_import_task_stats(task):
                         .join(ProtoOrder.items) \
                         .join(ProtoOrder.payment_delivery_pair) \
                         .join(OrderedProduct.elements) \
-                        .join(OrderedProductItem.seats) \
+                        .outerjoin(OrderedProductItem.tokens) \
                         .group_by(c_models.PaymentDeliveryMethodPair.id) \
-                        .with_entities(c_models.PaymentDeliveryMethodPair, sql.func.count(sql.func.distinct(ProtoOrder.id)), sql.func.count(sql.func.distinct(c_models.Seat.id)))
+                        .with_entities(c_models.PaymentDeliveryMethodPair, sql.func.count(sql.func.distinct(ProtoOrder.id)), sql.func.count(sql.func.distinct(OrderedProductItemToken.id)))
                         .filter(ProtoOrder.order_import_task_id == task.id))
                 ),
             }
