@@ -13,7 +13,7 @@ from altair.app.ticketing.payments.plugins import CHECKOUT_PAYMENT_PLUGIN_ID
 class PaymentDeliveryMethodPairForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        super(PaymentDeliveryMethodPairForm, self).__init__(formdata, obj, prefix, **kwargs)
         if 'organization_id' in kwargs:
             self.payment_method_id.choices = [
                 (pm.id, pm.name) for pm in PaymentMethod.filter_by_organization_id(kwargs['organization_id'])
@@ -124,7 +124,7 @@ class PaymentDeliveryMethodPairForm(Form):
             Required(),
             NumberRange(min=0, message=u'有効な値を入力してください'),
         ],
-        default=1,
+        default=0,
     )
     issuing_start_at = DateTimeField(
         label=u'コンビニ発券開始日時',
