@@ -1,0 +1,137 @@
+@charset "utf-8";
+
+#selectSeatType li input {
+  display: none;
+}
+
+p.cartNickname{
+	margin:0 0 10px 10px;
+}
+
+
+/* modal */
+.btn-redo {
+  display: inline-block;
+  width: 206px;
+  background: url(../img/settlement/btn_redo.gif) no-repeat 0 0;
+  border: none;
+  padding: 46px 0 0 0;
+  height: 0px;
+  font-size: 0px;
+  line-height: -1px;
+}
+
+.btn-close {
+  display: inline-block;
+  width: 142px;
+  background: url(../img/settlement/btn_close.gif) no-repeat 0 0;
+  border: none;
+  padding: 47px 0 0 0;
+  height: 0px;
+  font-size: 0px;
+  line-height: -1px;
+  cursor: pointer;
+}
+
+.btn-buy {
+  display: inline-block;
+  width: 224px;
+  padding: 46px 0 0 0;
+  background: url(../img/settlement/btn_buy.gif) no-repeat 0 0;
+  border: none;
+  height: 0px;
+  font-size: 0px;
+  line-height: -1px;
+}
+
+.tooltip {
+    border: #888 1px solid;
+    background-color: #ffee88;
+    z-index: 100;
+    height: 20px;
+    padding: 0px 4px;
+    font-size: 12px;
+    line-height: 100%;
+}
+
+.modal {
+  /* margin-left: -340px; */
+  width: 660px;
+  text-align: left;
+}
+
+.modal-header {
+  background: url(../img/settlement/bg_box_modal_top.gif) no-repeat 0 0;
+  padding: 8px 8px 8px 8px;
+  height: 20px;
+}
+
+.modal-header h2 {
+  margin-left: 3px;
+  border-left: 2px solid #800;
+  line-height: 20px;
+  font-size: 16px;
+  padding: 4px 4px 2px 6px;
+}
+
+.modal-inner {
+  background: url(../img/settlement/bg_box_modal_bottom.gif) no-repeat left bottom;
+  padding: 10px 10px;
+}
+
+.modal-body {
+  padding: 10px 10px;
+}
+
+.modal-footer {
+  padding: 10px 10px;
+  text-align: center;
+}
+
+.modal-body table {
+  width: 610px;
+  background: url(../img/settlement/bg_seat_top.png) no-repeat 0 0;
+  margin-bottom: 15px;
+}
+
+.modal-body th {
+  padding: 5px 10px;
+  border-bottom: 1px dotted #cccccc;
+  white-space: nowrap;
+}
+
+.modal-body td {
+  padding: 5px 10px;
+  border-bottom: 1px dotted #cccccc;
+}
+
+.modal-body tr.last-child th,
+.modal-body tr.last-child td {
+  border: none;
+}
+
+.modal-body tr.last-child {
+  background: url(../img/settlement/bg_seat_bottom.gif) no-repeat left bottom;
+}
+
+.flow-widget {
+  width: 700px;
+  height: 45px;
+}
+
+.flow-widget img.flow-widget-body {
+  width: 100%;
+  height: 100%;
+  margin: 0 0;
+  padding: 0 0;
+  border: none;
+}
+
+#settlement .flow-widget {
+  margin: 0px auto 20px auto;
+  box-shadow: #888 2px 2px 4px -2px;
+}
+
+.notice-label {
+	color: #FF0000;
+}
