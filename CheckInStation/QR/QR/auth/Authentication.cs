@@ -49,7 +49,6 @@ namespace QR
                 var user = new LoginUser() { login_id = name, password = password, device_id = device_id };
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(user).ConfigureAwait(false);
                 response.EnsureSuccessStatusCodeExtend();
-
                 //成功後
                 this.Resource.LoginUser = user;
 
@@ -62,6 +61,7 @@ namespace QR
                 //@global ev:
                 GlobalStaticEvent.FireDescriptionMessageEvent(this, "アプリケーションに必要な情報を取得しています");
                 var result = DynamicJson.Parse(await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false));
+                logger.Info("*API Response* method=POST, url={0}, data={1}".WithMachineName(), this.GetLoginURL(), result.ToString());
                 var endpoint = new EndPoint(result.endpoint);
 
                 //広告用の画像のurl設定
@@ -87,6 +87,7 @@ namespace QR
             using (var wrapper = factory.Create (url)) {
                 var s = await wrapper.GetStringAsync ().ConfigureAwait (false);
                 var result = DynamicJson.Parse (s);
+                logger.Info("*API Response* method=GET, url={0}, data={1}".WithMachineName(), this.GetLoginURL(), result.ToString());
                 return new AuthInfo (result);
             }
         }
@@ -98,7 +99,7 @@ namespace QR
             var statusData = await TryLoginStatusRequest(endpoint.LoginStatus);
             if (statusData.login)
                 return OnSuccess(endpoint, statusData);
-            else
+                else
                 return OnFailure();
         }
 

@@ -49,6 +49,7 @@ namespace QR
         {
             try {
                 var json = DynamicJson.Parse (response);
+                logger.Info("*API Response* method=POST, url={0}, data={1}".WithMachineName(), this.GetQRFetchDataUrl(), json.ToString());
                 return new Success<string, TicketData> (new TicketData (json));
             } catch (System.Xml.XmlException e) {
                 logger.ErrorException (":".WithMachineName(), e);
