@@ -105,7 +105,7 @@ h3 {
 #mypageHistory form {
 	height: 40px;
 	padding: 5px 15px 0;
-	background: url(../../img/mypage/bg_search.gif) no-repeat 0 0;
+	background: url(../images/mypage/bg_search.gif) no-repeat 0 0;
 }
 
 #mypageHistory form input {
@@ -264,7 +264,7 @@ h3 {
 
 .mypageBox1 div dd a {
 	padding: 2px 0 2px 15px;
-	background: url(../../img/mypage/icon_map.gif) no-repeat 0 0;
+	background: url(../images/mypage/icon_map.gif) no-repeat 0 0;
 }
 
 .mypageBox1 div ul {

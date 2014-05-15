@@ -1,7 +1,7 @@
 <% from altair.app.ticketing.orderreview.api import safe_get_contact_url %>
 <div class="footer">
 	<div class="footer-inner">
-		<img src="${request.static_url('altair.app.ticketing.orderreview:static/images/vissel/tomoni.gif')}" alt="" />	  
+		<img src="${request.static_url('altair.app.ticketing.orderreview:static/vissel/pc/images/tomoni.gif')}" alt="" />	  
     <div class="footernav">
       <ul>
 		<li class="first"><a href="http://www.ticketstar.jp/corporate">運営会社</a></li>

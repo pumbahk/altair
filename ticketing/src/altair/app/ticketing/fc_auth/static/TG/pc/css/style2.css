@@ -275,7 +275,7 @@ text-decoration:none;
 }
 
 .gnavi ul li.current{
-background: url(images/gnavicurrent.png) 50% 27px no-repeat;
+background: url(../images/gnavicurrent.png) 50% 27px no-repeat;
 z-index: 100;
 }
 
