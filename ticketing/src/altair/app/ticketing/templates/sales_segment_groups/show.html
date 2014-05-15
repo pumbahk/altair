@@ -29,13 +29,13 @@ ${ch.breadcrumbs(
 
 <hr />
 
+<h3>決済引取方法</h3>
 <%include file="/payment_delivery_method_pairs/_list.html" args="payment_delivery_method_pairs=sales_segment_group.payment_delivery_method_pairs" />
 <%include file="/payment_delivery_method_pairs/_action_button.html" args="sales_segment_group=sales_segment_group" />
 
 <hr />
 
-<h4 style="margin-bottom:10px;">紐付いている会員区分の情報</h4>
-
+<h3>会員区分</h3>
 <div class="row-fluid">
   <div class="span12">
   <%include file="/memberships/groups/_list.html" args="member_groups=member_groups" />
@@ -55,8 +55,7 @@ ${ch.breadcrumbs(
 
 <hr />
 
-<h4 style="margin-bottom:10px;">紐づいている販売区分</h4>
-
+<h3>販売区分</h3>
 <div class="row-fluid">
   <div class="span12">
     <form>
