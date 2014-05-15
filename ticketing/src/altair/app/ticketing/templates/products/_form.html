@@ -20,6 +20,7 @@
     ${ch.form_item(form.max_product_quantity)}
     ${ch.form_item(form.description)}
     ${form.performance_id}
+    ${form.product_item_id}
 % if request.context.organization.point_feature_enabled and form.applied_point_grant_settings.choices:
     ${ch.form_item(form.applied_point_grant_settings)}
 % endif

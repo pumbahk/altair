@@ -145,6 +145,9 @@ class AdminHelperAdapter(object):
         if route_permission:
             count = 0
             for key in order:
+                if key == 'divider':
+                    html.append(u'<li class="divider"></li>')
+                    continue
                 if 'route_name' in actions[key]:
                     permissions = route_permission.get(actions[key]['route_name'])
                     if isinstance(permissions, basestring):

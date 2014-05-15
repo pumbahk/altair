@@ -13,6 +13,7 @@ class ProductResource(TicketingAdminResource):
     def __init__(self, request):
         super(ProductResource, self).__init__(request)
         self.product_id = None
+        self.product_item_id = None
 
         if not self.user:
             return
@@ -21,6 +22,11 @@ class ProductResource(TicketingAdminResource):
             self.product_id = long(self.request.matchdict.get('product_id'))
         except (TypeError, ValueError):
             raise HTTPNotFound()
+
+        try:
+            self.product_item_id = long(self.request.params.get('product_item_id'))
+        except (TypeError, ValueError):
+            pass
 
     @reify
     def product(self):
@@ -31,6 +37,19 @@ class ProductResource(TicketingAdminResource):
                     ).one()
         except NoResultFound:
             raise HTTPNotFound()
+        return p
+
+    @reify
+    def product_item(self):
+        p = None
+        if self.product_item_id is not None:
+            try:
+                p = ProductItem.query.join(ProductItem.product, Product.sales_segment).filter(
+                        ProductItem.id==self.product_item_id,
+                        SalesSegment.organization_id==self.user.organization_id
+                        ).one()
+            except NoResultFound:
+                raise HTTPNotFound()
         return p
 
 

@@ -67,33 +67,15 @@ class ProductAndProductItem(BaseView):
                 for point_grant_setting_id in f.applied_point_grant_settings.data
                 ]
 
-            if f.all_sales_segment.data and performance:
-                sales_segment_for_products = SalesSegment.query.filter(SalesSegment.performance_id==performance.id).filter(Organization.id==self.context.user.organization_id)
-                for sales_segment_for_product in sales_segment_for_products:
-                    product = merge_session_with_post(Product(), f.data)
-                    product.sales_segment_id = sales_segment_for_product.id
-                    product.performance_id = sales_segment_for_product.performance.id
-                    product.point_grant_settings.extend(point_grant_settings)
-                    product.save()
-
-                    stock = Stock.query.filter_by(
-                        stock_type_id=f.seat_stock_type_id.data,
-                        stock_holder_id=f.stock_holder_id.data,
-                        performance_id=sales_segment_for_product.performance.id
-                    ).one()
-                    product_item = ProductItem(
-                        performance_id=sales_segment_for_product.performance.id,
-                        product_id=product.id,
-                        name=f.name.data,
-                        price=f.price.data,
-                        quantity=f.product_item_quantity.data,
-                        stock_id=stock.id,
-                        ticket_bundle_id=f.ticket_bundle_id.data
-                    )
-                    product_item.save()
+            query = SalesSegment.query.filter(Organization.id==self.context.user.organization_id)
+            if f.all_sales_segment.data:
+                sales_segment_for_products = query.filter_by(performance_id=f.performance.id.data)
             else:
-                sales_segment_for_product = SalesSegment.query.filter_by(id=f.sales_segment_id.data).filter(Organization.id==self.context.user.organization_id).one()
+                sales_segment_for_products = query.filter_by(id=f.sales_segment_id.data)
+
+            for sales_segment_for_product in sales_segment_for_products:
                 product = merge_session_with_post(Product(), f.data)
+                product.sales_segment_id = sales_segment_for_product.id
                 product.performance_id = sales_segment_for_product.performance.id
                 product.point_grant_settings.extend(point_grant_settings)
                 product.save()
@@ -122,14 +104,11 @@ class ProductAndProductItem(BaseView):
                 'action': self.request.path,
                 }
 
-
-@view_defaults(decorator=with_bootstrap, permission='event_editor')
-class Products(BaseView):
-
     @view_config(route_name="products.edit", request_method="GET", renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
     def edit_xhr(self):
         product = self.context.product
-        f = ProductAndProductItemForm.from_model(product)
+        product_item = self.context.product_item
+        f = ProductAndProductItemForm.from_model(product, product_item)
         return {
             'form':f,
             'action': self.request.path,
@@ -138,16 +117,37 @@ class Products(BaseView):
     @view_config(route_name='products.edit', request_method='POST', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
     def edit_post_xhr(self):
         product = self.context.product
-        f = ProductAndProductItemForm(self.request.POST, sales_segment=product.sales_segment)
+        product_item = self.context.product_item
+        f = ProductAndProductItemForm(self.request.POST, performance=product.performance, sales_segment=product.sales_segment)
         if f.validate():
             point_grant_settings = [
                 PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one()
                 for point_grant_setting_id in f.applied_point_grant_settings.data
                 ]
-            product = merge_session_with_post(product, f.data, excludes={'performance_id'})
-            product.point_grant_settings[:] = []
-            product.point_grant_settings.extend(point_grant_settings)
-            product.save()
+
+            query = SalesSegment.query.filter(Organization.id==self.context.user.organization_id)
+            if f.all_sales_segment.data:
+                sales_segment_for_products = query.filter_by(performance_id=f.performance.id.data)
+            else:
+                sales_segment_for_products = query.filter_by(id=f.sales_segment_id.data)
+
+            for sales_segment_for_product in sales_segment_for_products:
+                product = merge_session_with_post(product, f.data, excludes={'performance_id'})
+                product.point_grant_settings[:] = []
+                product.point_grant_settings.extend(point_grant_settings)
+                product.save()
+
+                stock = Stock.query.filter_by(
+                    stock_type_id=f.seat_stock_type_id.data,
+                    stock_holder_id=f.stock_holder_id.data,
+                    performance_id=sales_segment_for_product.performance.id
+                ).one()
+                product_item.name = f.name.data
+                product_item.price = f.price.data
+                product_item.quantity = f.product_item_quantity.data
+                product_item.stock_id = stock.id
+                product_item.ticket_bundle_id = f.ticket_bundle_id.data
+                product_item.save()
 
             self.request.session.flash(u'商品を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
@@ -157,19 +157,11 @@ class Products(BaseView):
                 'action': self.request.path,
                 }
 
+
     @view_config(route_name='products.delete')
     def delete(self):
         product = self.context.product
-        try:
-            performance_id = long(self.request.params.get('performance_id'))
-        except (TypeError, ValueError):
-            performance_id = None
-
-        if performance_id:
-            location = self.request.route_path('performances.show_tab', performance_id=performance_id, tab='product')
-        else:
-            location = self.request.route_path('products.index', performance_id=product.sales_segment.performance_id)
-
+        location = self.request.route_path('performances.show_tab', performance_id=product.performance_id, tab='product')
         try:
             product.delete()
             self.request.session.flash(u'商品を削除しました')
@@ -445,7 +437,7 @@ class ProductItems(BaseView):
         location = self.request.route_path('performances.show_tab', performance_id=product_item.performance_id, tab='product')
         try:
             product_item.delete()
-            self.request.session.flash(u'商品から在庫の割当を外しました')
+            self.request.session.flash(u'商品明細を削除しました')
         except Exception, e:
             self.request.session.flash(e.message)
             raise HTTPFound(location=location)

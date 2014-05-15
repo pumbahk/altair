@@ -1,4 +1,6 @@
 <%page args="modal_id" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
 <script type="text/javascript">
   var new_product, edit_product, delete_product, preview_ticket;
   $(function() {
@@ -16,11 +18,11 @@
           null
         );
       };
-      edit_product = function edit_product(id) {
+      edit_product = function edit_product(id, product_item_id) {
         if (!id) return false;
         load_modal_form(
           modal_product,
-          '${request.route_path('products.edit', product_id='{id}')|n}'.replace(encodeURIComponent('{id}'), id),
+          '${request.route_path('products.edit', product_id='{id}', _query=dict(product_item_id='{product_item_id}'))|n}'.replace(encodeURIComponent('{id}'), id).replace(encodeURIComponent('{product_item_id}'), product_item_id),
           null,
           null
         );
@@ -56,3 +58,5 @@
     <a href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();" class="btn">保存</a>
   </div>
 </div>
+
+${delete_modal()}

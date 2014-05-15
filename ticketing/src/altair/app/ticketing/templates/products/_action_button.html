@@ -1,7 +1,6 @@
 <%page args="order=None" />
-<%namespace file="/common/modal.html" import="delete_modal" />
 <script type="text/javascript">
-var get_selected_product_id, get_selected_sales_segment_id;
+var get_selected_sales_segment_id;
 </script>
 <%
   actions = {
@@ -10,18 +9,7 @@ var get_selected_product_id, get_selected_sales_segment_id;
       url='javascript:new_product(get_selected_sales_segment_id());',
       icon='icon-plus',
     ),
-    'edit':dict(
-      label=u'編集',
-      url='javascript:edit_product(get_selected_product_id());',
-      icon='icon-pencil',
-    ),
-    'delete':dict(
-      label=u'削除',
-      url='javascript:delete_product(get_selected_product_id());',
-      icon='icon-minus',
-    ),
   }
-  order = iter(order or ['new', 'edit', 'delete'])
+  order = iter(order or ['new'])
 %>
 ${HH.action_button(actions, order)}
-${delete_modal()}

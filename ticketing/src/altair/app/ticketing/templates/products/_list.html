@@ -48,9 +48,6 @@ elif sales_segment:
     function get_active_tab() {
       return $('.tabbable.tabs-top.product-table.js-product-list').find('.tab-pane.active');
     }
-    get_selected_product_id = function get_selected_product_id() {
-      return get_active_tab().find('form input[name="product_id"]:checked').val();
-    };
     get_selected_sales_segment_id = function get_selected_sales_segment_id() {
       return get_active_tab().attr('data-id');
     };
