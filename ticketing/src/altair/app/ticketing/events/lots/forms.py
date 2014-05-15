@@ -375,8 +375,17 @@ class SearchEntryForm(Form):
         widget=OurDateWidget()
     )
 
-    include_canceled = BooleanField(
+    canceled = BooleanField(
         label=u"キャンセル",
+        default=False,
+        validators=[
+            Required(),
+        ],
+    )
+
+    entried = BooleanField(
+        label=u"申込",
+        default=True,
         validators=[
             Required(),
         ],
@@ -384,6 +393,7 @@ class SearchEntryForm(Form):
 
     electing = BooleanField(
         label=u"当選予定",
+        default=True,
         validators=[
             Required(),
         ],
@@ -391,6 +401,7 @@ class SearchEntryForm(Form):
 
     elected = BooleanField(
         label=u"当選",
+        default=True,
         validators=[
             Required(),
         ],
@@ -398,6 +409,7 @@ class SearchEntryForm(Form):
 
     rejecting = BooleanField(
         label=u"落選予定",
+        default=True,
         validators=[
             Required(),
         ],
@@ -405,6 +417,7 @@ class SearchEntryForm(Form):
 
     rejected = BooleanField(
         label=u"落選",
+        default=True,
         validators=[
             Required(),
         ],
