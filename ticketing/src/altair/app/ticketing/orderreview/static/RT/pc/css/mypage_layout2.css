@@ -93,19 +93,19 @@ h3 {
 
 /* -- mypage -- */
 #mypageHistory {
-	background: url(../images/bg_confirm_bottom.gif) no-repeat 0 bottom;
+	background: url(images/bg_confirm_bottom.gif) no-repeat 0 bottom;
 	padding-bottom: 12px;
 	margin: 0 auto 20px auto;
 }
 #mypageHistory .inner {
-	background: url(../images/bg_confirm_top.gif) no-repeat 0 0;
+	background: url(images/bg_confirm_top.gif) no-repeat 0 0;
 	padding: 10px 20px;
 }
 
 #mypageHistory form {
 	height: 40px;
 	padding: 5px 15px 0;
-	background: url(../../img/mypage/bg_search.gif) no-repeat 0 0;
+	background: url(../images/mypage/bg_search.gif) no-repeat 0 0;
 }
 
 #mypageHistory form input {
@@ -264,7 +264,7 @@ h3 {
 
 .mypageBox1 div dd a {
 	padding: 2px 0 2px 15px;
-	background: url(../../img/mypage/icon_map.gif) no-repeat 0 0;
+	background: url(../images/mypage/icon_map.gif) no-repeat 0 0;
 }
 
 .mypageBox1 div ul {

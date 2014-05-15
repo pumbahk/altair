@@ -8,7 +8,7 @@ padding:0;
 body{
 	margin: 0;
 	padding: 0;
-	background: url(../../images/bigbulls/bg_c.gif) repeat #eee;
+	background: url(../images/bg_c.gif) repeat #eee;
 	color: #555;
 	font-size: 12px;
     height: 100%;
@@ -797,7 +797,7 @@ dl.faq dd{
 }
 
 .function{
-	background: url(../../images/bigbulls/functions.png) no-repeat;
+	background: url(../images/functions.png) no-repeat;
 	width:575px;
 	height: 180px;
 	padding: 110px 50px 50px 50px;
@@ -1020,21 +1020,21 @@ div#performance-calendar table tbody td.holiday .day {
 
 
 div#performance-calendar table td ul li.maru{
-	background: url(../../images/bigbulls/maru.png) #f1fbff no-repeat left top;
+	background: url(../images/maru.png) #f1fbff no-repeat left top;
 	padding: 3px;
 	text-align: center;
 	font-size: 11px;
 }
 
 div#performance-calendar table td ul li.sankaku{
-	background: url(../../images/bigbulls/sankaku.png) #fffcf0 no-repeat left top;
+	background: url(../images/sankaku.png) #fffcf0 no-repeat left top;
 	padding: 3px;
 	text-align: center;
 	font-size: 11px;
 }
 
 div#performance-calendar table td ul li.batsu{
-	background: url(../../images/bigbulls/batsu.png) #eee no-repeat left top;
+	background: url(../images/batsu.png) #eee no-repeat left top;
 	padding: 3px;
 	text-align: center;
 	font-size: 11px;

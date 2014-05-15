@@ -210,7 +210,7 @@ h2:before {
 }
 
 h2 > span.bambi{
-	background: url(../../images/BT/h2_bg.png) 0 0 transparent no-repeat;
+	background: url(../images/h2_bg.png) 0 0 transparent no-repeat;
 	position: absolute;
 	width: 240px;
 	height: 38px;
@@ -269,7 +269,7 @@ h6 {
 
 
 body{
-	background: url(../../images/BT/bg_grad.gif) repeat-x 0 top #ffd7d9; 
+	background: url(../images/bg_grad.gif) repeat-x 0 top #ffd7d9; 
 	font-size: 14px;
 }
 
