@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using NLog;
+using QR.support;
 
 namespace QR
 {
@@ -13,11 +14,11 @@ namespace QR
         protected override System.Threading.Tasks.Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
         {
             if(request.Content == null){
-                logger.Info("*API Request* method={0}, url={1}", request.Method.Method, request.RequestUri.AbsoluteUri);
+                logger.Info("*API Request* method={0}, url={1}".WithMachineName(), request.Method.Method, request.RequestUri.AbsoluteUri);
             }else{
                 var t = request.Content.ReadAsStringAsync();
                 t.Wait();
-                logger.Info("*API Request* method={0}, url={1}, data={2}", request.Method.Method, request.RequestUri.AbsoluteUri, t.Result);                
+                logger.Info("*API Request* method={0}, url={1}, data={2}".WithMachineName(), request.Method.Method, request.RequestUri.AbsoluteUri, t.Result);                
             }
             return base.SendAsync(request, cancellationToken);
         }

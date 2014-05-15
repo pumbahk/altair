@@ -32,7 +32,8 @@ namespace QR
             {
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false);
                 response.EnsureSuccessStatusCodeExtend();
-                await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false);
+                var responseResult = await wrapper.ReadAsStringAsync(response.Content).ConfigureAwait(false);
+                logger.Info("*API Response* method=GET, url={0}, data={1}".WithMachineName(), this.GetUpdatePrintedAtURL(), responseResult);                
                 return true;
             }
         }

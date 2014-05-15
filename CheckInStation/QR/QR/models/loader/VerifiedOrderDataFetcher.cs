@@ -41,6 +41,7 @@ namespace QR
         {
             try {
                 var json = DynamicJson.Parse (response);
+                logger.Info("*API Response* method=POST, url={0}, data={1}".WithMachineName(), this.GetVerifyURL(), json.ToString());
                 return new Success<string, VerifiedOrdernoRequestData> (new VerifiedOrdernoRequestData(json));
             } catch (System.Xml.XmlException e) {
                 logger.ErrorException (":".WithMachineName(), e);

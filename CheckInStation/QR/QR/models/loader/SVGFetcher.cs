@@ -37,14 +37,20 @@ namespace QR
 
     public class SVGFetcherForOne
     {
-        public static async Task<Stream> GetSvgDataList (IHttpWrapperFactory<HttpWrapper> factory, TicketData tdata, string url)
+        public readonly String Url;
+        public static Logger logger = LogManager.GetCurrentClassLogger();
+        public SVGFetcherForOne(string url)
+        {
+            this.Url = url;
+        }
+        public async Task<Stream> GetSvgDataList (IHttpWrapperFactory<HttpWrapper> factory, TicketData tdata)
         {
             var data = new {
                 ordered_product_item_token_id = tdata.ordered_product_item_token_id,
                 secret = tdata.secret
             };
 
-            using (var wrapper = factory.Create(url))
+            using (var wrapper = factory.Create(this.Url))
             {
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false);
                 response.EnsureSuccessStatusCodeExtend();
@@ -52,9 +58,10 @@ namespace QR
             }
         }
 
-        public static IEnumerable<SVGData> ParseSvgDataList (Stream response)
+        public IEnumerable<SVGData> ParseSvgDataList (Stream response)
         {
             var json = DynamicJson.Parse (response); //throwable System.xml.XmlException
+            logger.Info("*API Response* method=POST, url={0}, data={1}".WithMachineName(), this.Url, json.ToString());
             var r = new List<SVGData> ();
             string token_id = ((long)(json.datalist [0].ordered_product_item_token_id)).ToString ();
             foreach (var data in json.datalist[0].svg_list) {
@@ -71,14 +78,21 @@ namespace QR
 
     public class SVGFetcherForAll
     {
-        public static async Task<Stream> GetSvgDataList(IHttpWrapperFactory<HttpWrapper> factory, TicketDataCollection collection, string url)
+        public readonly string Url;
+        public static Logger logger = LogManager.GetCurrentClassLogger();
+
+        public SVGFetcherForAll(string url)
+        {
+            this.Url = url;
+        }
+        public async Task<Stream> GetSvgDataList(IHttpWrapperFactory<HttpWrapper> factory, TicketDataCollection collection)
         {
             var parms = new
             {
                 token_id_list = collection.collection.Where(o => o.is_selected).Select(o => o.ordered_product_item_token_id).ToArray(),
                 secret = collection.secret
             };
-            using (var wrapper = factory.Create(url))
+            using (var wrapper = factory.Create(this.Url))
             {
                 HttpResponseMessage response = await wrapper.PostAsJsonAsync(parms).ConfigureAwait(false);
                 response.EnsureSuccessStatusCodeExtend();
@@ -89,9 +103,10 @@ namespace QR
             
         
 
-        public static IEnumerable<SVGData> ParseSvgDataList (Stream response)
+        public IEnumerable<SVGData> ParseSvgDataList (Stream response)
         {
             var json = DynamicJson.Parse (response); //throwable System.xml.XmlException
+            logger.Info("*API Response* method=POST, url={0}, data={1}".WithMachineName(), this.Url, json.ToString());
             var r = new List<SVGData> ();
             foreach (var datalist in json.datalist) {
                 string token_id = ((long)(datalist.ordered_product_item_token_id)).ToString ();
