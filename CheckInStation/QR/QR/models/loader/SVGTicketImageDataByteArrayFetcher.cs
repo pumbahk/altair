@@ -151,8 +151,9 @@ namespace QR
         public async Task<ResultTuple<string, List<TicketImageData>>> FetchImageDataForOneAsync (TicketData tdata)
         {
             try {
-                var response = await SVGFetcherForOne.GetSvgDataList (Resource.HttpWrapperFactory, tdata, GetSvgOneURL ());
-                var svg_list = SVGFetcherForOne.ParseSvgDataList (response);
+                var fetcher = new SVGFetcherForOne(GetSvgOneURL());
+                var response = await fetcher.GetSvgDataList (Resource.HttpWrapperFactory, tdata);
+                var svg_list = fetcher.ParseSvgDataList (response);
                 var r = new List<TicketImageData> ();
                 foreach (SVGData svgdata in svg_list) {
 
@@ -181,8 +182,9 @@ namespace QR
         public async Task<ResultTuple<string, List<TicketImageData>>>FetchImageDataForAllAsync (TicketDataCollection collection)
         {
             try {
-                var response = await SVGFetcherForAll.GetSvgDataList (Resource.HttpWrapperFactory, collection, GetSvgAllURL ()).ConfigureAwait (false);
-                var svg_list = SVGFetcherForAll.ParseSvgDataList (response);
+                var fetcher = new SVGFetcherForAll(GetSvgAllURL());
+                var response = await fetcher.GetSvgDataList (Resource.HttpWrapperFactory, collection).ConfigureAwait (false);
+                var svg_list = fetcher.ParseSvgDataList (response);
                 var r = new List<TicketImageData> ();
                 foreach (SVGData svgdata in svg_list) {
                     var image = await GetImageFromSvg (svgdata.svg).ConfigureAwait (false);
