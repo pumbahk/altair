@@ -90,7 +90,7 @@ ul.menu {
   font-family: Serif;
   color: #888;
   text-shadow: 1px 1px 2px #fff;
-  background: url("../img/rarrow.png") no-repeat center center;
+  background: url("../images/rarrow.png") no-repeat center center;
   margin: 0 8px 0 10px;
   width: 12px;
   height: 32px;
@@ -294,22 +294,22 @@ ul.buttonset i.icon {
 
 .icon.rlogo {
   background-position: center center;
-  background-image: url(../img/smartphone/icon.png);
+  background-image: url(../images/icon.png);
 }
 
 .icon.orderreview {
   background-position: center center;
-  background-image: url(../img/smartphone/orderreview.png);
+  background-image: url(../images/orderreview.png);
 }
 
 .icon.mailmag {
   background-position: center center;
-  background-image: url(../img/smartphone/mailmag.png);
+  background-image: url(../images/mailmag.png);
 }
 
 .icon.okng {
   background-position: center center;
-  background-image: url(../img/smartphone/okng.png);
+  background-image: url(../images/okng.png);
 }
 
 .condensed {
@@ -475,7 +475,7 @@ ul.panelgroup-inner > li.panel {
   font-family: Serif;
   color: #888;
   text-shadow: 1px 1px 2px #fff;
-  background: url("../img/smartphone/rarrow.png") no-repeat center center;
+  background: url("../images/rarrow.png") no-repeat center center;
   width: 12px;
   margin-top: -8px;
   vertical-align: top;
@@ -1014,13 +1014,13 @@ input[type="submit"] {
 
 .settlementBox {
 	margin-bottom: 20px;
-	background: url(../img/settlement/bg_box_bottom.gif) no-repeat left bottom #f7f7f0;
+	background: url(../images/bg_box_bottom.gif) no-repeat left bottom #f7f7f0;
 }
 
 .settlementBoxInner {
 	overflow: hidden;
 	padding-bottom: 10px;
-	background: url(../img/settlement/bg_box_top.gif) no-repeat 0 0;
+	background: url(../images/bg_box_top.gif) no-repeat 0 0;
 }
 
 .settlementBoxInner dl {
@@ -1042,14 +1042,14 @@ input[type="submit"] {
 
 .settlementBox2 {
 	margin: 0 10px 20px;
-	background: url(../img/settlement/bg_box_bottom_02.gif) no-repeat left bottom;
+	background: url(../images/bg_box_bottom_02.gif) no-repeat left bottom;
 }
 
 .settlementBoxInner2 {
 	height: 1%;
 	overflow: hidden;
 	padding: 0 8px 10px 12px;
-	background: url(../img/settlement/bg_box_top_02.gif) no-repeat 0 0;
+	background: url(../images/bg_box_top_02.gif) no-repeat 0 0;
 }
 
 .settlementBox h2 {

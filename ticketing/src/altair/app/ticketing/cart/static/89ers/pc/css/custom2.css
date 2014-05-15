@@ -13,7 +13,7 @@ p.cartNickname{
 .btn-redo {
   display: inline-block;
   width: 206px;
-  background: url(../img/settlement/btn_redo.gif) no-repeat 0 0;
+  background: url(../images/btn_redo.gif) no-repeat 0 0;
   border: none;
   padding: 46px 0 0 0;
   height: 0px;
@@ -24,7 +24,7 @@ p.cartNickname{
 .btn-close {
   display: inline-block;
   width: 142px;
-  background: url(../img/settlement/btn_close.gif) no-repeat 0 0;
+  background: url(../images/btn_close.gif) no-repeat 0 0;
   border: none;
   padding: 47px 0 0 0;
   height: 0px;
@@ -37,7 +37,7 @@ p.cartNickname{
   display: inline-block;
   width: 224px;
   padding: 46px 0 0 0;
-  background: url(../img/settlement/btn_buy.gif) no-repeat 0 0;
+  background: url(../images/btn_buy.gif) no-repeat 0 0;
   border: none;
   height: 0px;
   font-size: 0px;
@@ -61,7 +61,7 @@ p.cartNickname{
 }
 
 .modal-header {
-  background: url(../img/settlement/bg_box_modal_top.gif) no-repeat 0 0;
+  background: url(../images/bg_box_modal_top.gif) no-repeat 0 0;
   padding: 8px 8px 8px 8px;
   height: 20px;
 }
@@ -75,7 +75,7 @@ p.cartNickname{
 }
 
 .modal-inner {
-  background: url(../img/settlement/bg_box_modal_bottom.gif) no-repeat left bottom;
+  background: url(../images/bg_box_modal_bottom.gif) no-repeat left bottom;
   padding: 10px 10px;
 }
 
@@ -90,7 +90,7 @@ p.cartNickname{
 
 .modal-body table {
   width: 610px;
-  background: url(../img/settlement/bg_seat_top.png) no-repeat 0 0;
+  background: url(../images/bg_seat_top.png) no-repeat 0 0;
   margin-bottom: 15px;
 }
 
@@ -111,7 +111,7 @@ p.cartNickname{
 }
 
 .modal-body tr.last-child {
-  background: url(../img/settlement/bg_seat_bottom.gif) no-repeat left bottom;
+  background: url(../images/bg_seat_bottom.gif) no-repeat left bottom;
 }
 
 .flow-widget {

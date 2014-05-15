@@ -9,10 +9,10 @@
 /* Base style
 ----------------------------------------------------------- */
 @import url("default.css");
-@import url("layout.css");
-@import url("content.css");
+@import url("layout2.css");
+@import url("content2.css");
 
 
 /* Print style
 ----------------------------------------------------------- */
-@import url("print.css");
+@import url("print2.css");
