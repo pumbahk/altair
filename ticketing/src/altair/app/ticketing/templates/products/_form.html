@@ -40,5 +40,10 @@ $(function() {
     }
     previous_name = selected_name;
   }).change();
+
+  var tb = $('select[name="ticket_bundle_id"]');
+  if (tb.find('option').length <= 2 && tb.find('option:selected').val() == "") {
+    tb.val(tb.find('option:not(option:selected)').val());
+  }
 });
 </script>
