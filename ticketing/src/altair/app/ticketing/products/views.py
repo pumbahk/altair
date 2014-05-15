@@ -157,7 +157,7 @@ class Products(BaseView):
                 'action': self.request.path,
                 }
 
-    @view_config(route_name='products.delete', renderer='altair.app.ticketing:templates/products/_form.html')
+    @view_config(route_name='products.delete')
     def delete(self):
         product = self.context.product
         try:
@@ -439,7 +439,7 @@ class ProductItems(BaseView):
                 'action':self.request.path,
             }
 
-    @view_config(route_name='product_items.delete', renderer='altair.app.ticketing:templates/product_items/_form.html')
+    @view_config(route_name='product_items.delete')
     def delete(self):
         product_item = self.context.product_item
         location = self.request.route_path('performances.show_tab', performance_id=product_item.performance_id, tab='product')
