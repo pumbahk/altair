@@ -80,7 +80,8 @@ class Organizations(BaseView):
             organization.settings = [
                 OrganizationSetting(
                     name='default',
-                    performance_selector='matchup'
+                    performance_selector='matchup',
+                    default_mail_sender=f.default_mail_sender.data
                     )
                 ]
             organization.operators = [

@@ -108,6 +108,11 @@ class OrganizationForm(OurForm):
 class NewOrganizationForm(OrganizationForm):
     login = FormField(form_class=OperatorForm)
 
+    default_mail_sender = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.default_mail_sender)['label']
+        )
+
+
 class SejTenantForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         super(SejTenantForm, self).__init__(formdata, obj, prefix, **kwargs)
