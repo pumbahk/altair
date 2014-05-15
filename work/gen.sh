@@ -22,7 +22,7 @@ gensh_booster="python `pwd`/work/booster_replace.py"
 ($gensh $dst/cart.json > $dst/cart.sh)
 
 
-bucket="tstar-internal-dev/"
+bucket="tstar-dev/"
 gen_upload_s3cmd_sh="python `pwd`/work/upload.py"
 ($gen_upload_s3cmd_sh $dst/fc_auth.json $bucket > $dst/s3_fc_auth.sh)
 ($gen_upload_s3cmd_sh $dst/booster.json $bucket > $dst/s3_booster.sh)
