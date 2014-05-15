@@ -991,7 +991,7 @@ class PaymentView(object):
                 if e.path == 'order.total_amount':
                     raise self.ValidationFailed(u'合計金額が選択された決済方法では取り扱えない金額となっています。他の決済方法を選択してください')
                 else:
-                    return self.ValidationFailed(u'現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。')
+                    raise self.ValidationFailed(u'現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。')
         except self.ValidationFailed as e:
             self.request.session.flash(e.message)
             start_on = cart.performance.start_on
