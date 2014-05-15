@@ -294,22 +294,22 @@ ul.buttonset i.icon {
 
 .icon.rlogo {
   background-position: center center;
-  background-image: url(../img/icon.png);
+  background-image: url(../img/smartphone/icon.png);
 }
 
 .icon.orderreview {
   background-position: center center;
-  background-image: url(../img/orderreview.png);
+  background-image: url(../img/smartphone/orderreview.png);
 }
 
 .icon.mailmag {
   background-position: center center;
-  background-image: url(../img/mailmag.png);
+  background-image: url(../img/smartphone/mailmag.png);
 }
 
 .icon.okng {
   background-position: center center;
-  background-image: url(../img/okng.png);
+  background-image: url(../img/smartphone/okng.png);
 }
 
 .condensed {
@@ -475,7 +475,7 @@ ul.panelgroup-inner > li.panel {
   font-family: Serif;
   color: #888;
   text-shadow: 1px 1px 2px #fff;
-  background: url("../img/rarrow.png") no-repeat center center;
+  background: url("../img/smartphone/rarrow.png") no-repeat center center;
   width: 12px;
   margin-top: -8px;
   vertical-align: top;
