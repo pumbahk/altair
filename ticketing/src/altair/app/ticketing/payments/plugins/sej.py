@@ -546,6 +546,12 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
             )
 
 
+def payment_type_to_string(payment_type):
+    for entry in SejPaymentType:
+        if int(payment_type) == entry.v:
+            return entry.k
+    return None
+
 @view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_complete.html'))
 @view_config(context=IOrderDelivery, request_type='altair.mobile.interfaces.IMobileRequest',
              name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_complete_mobile.html'))
@@ -554,10 +560,15 @@ def sej_delivery_viewlet(context, request):
     sej_order = get_sej_order(order.order_no)
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
     delivery_method = context.order.payment_delivery_pair.delivery_method
-    is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
+    payment_type = payment_type_to_string(sej_order.payment_type)
+    now = datetime.now()
     return dict(
         order=order,
-        is_payment_with_sej=is_payment_with_sej, 
+        payment_type=payment_type,
+        can_receive_from_next_day=(
+            sej_order.ticketing_start_at is not None and \
+            (sej_order.ticketing_start_at.day - now.day) == 1
+            ),
         sej_order=sej_order,
         delivery_method=delivery_method,
     )
@@ -575,9 +586,11 @@ def sej_payment_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order.order_no)
     payment_method = context.order.payment_delivery_pair.payment_method
+    payment_type = payment_type_to_string(sej_order.payment_type)
     return dict(
         order=order,
         sej_order=sej_order,
+        payment_type=payment_type,
         payment_method=payment_method,
     )
 
@@ -594,9 +607,13 @@ def payment_mail_viewlet(context, request):
     """
     sej_order = get_sej_order(context.order.order_no)
     payment_method = context.order.payment_delivery_pair.payment_method
-    return dict(sej_order=sej_order, h=cart_helper, 
-                notice=context.mail_data("notice"),
-                payment_method=payment_method,
+    payment_type = payment_type_to_string(sej_order.payment_type)
+    return dict(
+        sej_order=sej_order,
+        h=cart_helper, 
+        notice=context.mail_data("notice"),
+        payment_type=payment_type,
+        payment_method=payment_method,
     )
 
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery('sej_delivery_mail_complete.html'))
@@ -605,14 +622,35 @@ def delivery_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailDelivery
     """
-    sej_order = get_sej_order(context.order.order_no)
+    provided_sej_order = getattr(context, 'sej_order', None)
+    if provided_sej_order is not None:
+        sej_order = provided_sej_order
+    else:
+        sej_order = get_sej_order(context.order.order_no)
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
     delivery_method = context.order.payment_delivery_pair.delivery_method
-    is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
-    return dict(sej_order=sej_order, h=cart_helper,
-                is_payment_with_sej=is_payment_with_sej, 
-                notice=context.mail_data("notice"),
-                delivery_method=delivery_method)
+    now = datetime.now()
+    if sej_order is not None:
+        payment_type = payment_type_to_string(sej_order.payment_type)
+        can_receive_from_next_day = \
+            sej_order.ticketing_start_at is not None and \
+            (sej_order.ticketing_start_at.day - now.day) == 1
+    else:
+        payment_type = (
+            SejPaymentType.CashOnDelivery
+            if payment_id == PAYMENT_PLUGIN_ID
+            else SejPaymentType.Paid
+            )
+        can_receive_from_next_day = (payment_id != PAYMENT_PLUGIN_ID)
+
+    return dict(
+        sej_order=sej_order,
+        h=cart_helper,
+        payment_type=payment_type,
+        can_receive_from_next_day=can_receive_from_next_day,
+        notice=context.mail_data("notice"),
+        delivery_method=delivery_method
+        )
 
 @view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 @view_config(context=IOrderCancelMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
