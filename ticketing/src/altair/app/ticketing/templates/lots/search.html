@@ -158,8 +158,11 @@ ${tabs.tabs(request)}
             <th>ステータス</th>
             <td>
               <div class="checkbox-set" id="status">
-                <label class="checkbox-set-item" for="include_canceled">${form.include_canceled.label.text}
-                  ${form.include_canceled()}
+                <label class="checkbox-set-item" for="canceled">${form.canceled.label.text}
+                  ${form.canceled()}
+                </label>
+                <label class="checkbox-set-item" for="entried">${form.entried.label.text}
+                  ${form.entried()}
                 </label>
                 <label class="checkbox-set-item" for="electing">${form.electing.label.text}
                   ${form.electing()}
