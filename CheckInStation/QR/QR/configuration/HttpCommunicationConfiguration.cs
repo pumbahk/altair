@@ -3,9 +3,26 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using NLog;
 
 namespace QR
 {
+    class LoggedClientHandler : WebRequestHandler
+    {
+        public static Logger logger = LogManager.GetCurrentClassLogger();
+        protected override System.Threading.Tasks.Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
+        {
+            if(request.Content == null){
+                logger.Info("*API Request* method={0}, url={1}", request.Method.Method, request.RequestUri.AbsoluteUri);
+            }else{
+                var t = request.Content.ReadAsStringAsync();
+                t.Wait();
+                logger.Info("*API Request* method={0}, url={1}, data={2}", request.Method.Method, request.RequestUri.AbsoluteUri, t.Result);                
+            }
+            return base.SendAsync(request, cancellationToken);
+        }
+    }
+
     public class HttpCommunicationConfiguration
     {
         public static Uri DefaultBasicAuthURI = new Uri("https://backend.stg2.rt.ticketstar.jp/checkinstation/login");
@@ -52,14 +69,14 @@ namespace QR
 
         public HttpClientHandler CreateHandler(CookieContainer cookieContainer)
         {
-            var handler = new HttpClientHandler() { Credentials = this.CredentialCacheFactory() };
+            var handler = new LoggedClientHandler() { Credentials = this.CredentialCacheFactory() };
             CookieUtils.PutCokkiesToRequestHandler(handler, cookieContainer);
             return handler;
         }
 
         public HttpClientHandler CreateHandlerWithCertificate(CookieContainer cookieContainer)
         {
-            var handler = new WebRequestHandler() { Credentials = this.CredentialCacheFactory() };
+            var handler = new LoggedClientHandler() { Credentials = this.CredentialCacheFactory() };
             handler.ClientCertificateOptions = ClientCertificateOption.Manual;
             handler.ClientCertificates.Add(this.Certificate);
             CookieUtils.PutCokkiesToRequestHandler(handler, cookieContainer);
