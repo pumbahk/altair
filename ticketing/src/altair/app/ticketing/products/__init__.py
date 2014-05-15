@@ -3,8 +3,6 @@ from altair.app.ticketing import newRootFactory
 from .resources import ProductResource, ProductCreateResource, ProductAPIResource, ProductShowResource, ProductItemResource
 
 def includeme(config):
-    config.add_route('products.index', '/products/{performance_id}')
-
     product_factory = newRootFactory(ProductResource)
     config.add_route('products.edit', '/edit/{product_id}', factory=product_factory)
     config.add_route('products.delete', '/delete/{product_id}', factory=product_factory)

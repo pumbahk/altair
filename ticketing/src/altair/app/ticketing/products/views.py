@@ -126,38 +126,6 @@ class ProductAndProductItem(BaseView):
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Products(BaseView):
 
-    @view_config(route_name='products.index', renderer='altair.app.ticketing:templates/products/index.html')
-    def index(self):
-        performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
-        if performance is None:
-            return HTTPNotFound('performance id %d is not found' % performance_id)
-
-        # XXX: is this injection safe?
-        sort = self.request.GET.get('sort', 'Product.id')
-        direction = self.request.GET.get('direction', 'asc')
-        if direction not in ['asc', 'desc']:
-            direction = 'asc'
-
-        conditions = {
-            'performance_id': performance.id
-            }
-        query = Product.filter_by(**conditions)
-        query = query.order_by(sort + ' ' + direction)
-
-        products = paginate.Page(
-            query,
-            page=int(self.request.params.get('page', 0)),
-            items_per_page=200,
-            url=paginate.PageURL_WebOb(self.request)
-            )
-
-        return {
-            'form': ProductAndProductItemForm(performance=performance),
-            'products': products,
-            'performance': performance
-        }
-
     @view_config(route_name="products.edit", request_method="GET", renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
     def edit_xhr(self):
         product = self.context.product

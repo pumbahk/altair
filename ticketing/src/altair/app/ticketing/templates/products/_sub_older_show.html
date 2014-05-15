@@ -28,7 +28,6 @@
         <tbody>
         <% row_count = 0 %>
         % for product in products:
-          <% if limit and row_count >= limit: break %>
           <% count = len(product.items) %>
           <% rowspan = 'rowspan=%s' % (count)  if count else '' %>
           <tr>
@@ -71,12 +70,6 @@
         % endfor
         </tbody>
       </table>
-      % if limit and len(st_to_prod) > limit:
-      <div class="pull-right">
-        ${len(st_to_prod)}件中${limit}件を表示
-        <a href="${request.route_path('products.index', _query=dict(performance_id=(performance and performance.id), sales_segment_id=(sales_segment and sales_segment.id)))}">もっと見る</a>
-      </div>
-      % endif
     </div>
   </form>
   <p class="pull-right"><i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p>

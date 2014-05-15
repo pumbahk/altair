@@ -307,7 +307,6 @@ class RouteConfig(object):
         'products.api.set'          : None,
         'products.delete'           : u'商品 削除',
         'products.edit'             : u'商品 編集',
-        'products.index'            : u'商品 一覧',
         'products.new'              : u'商品&商品明細 一括登録',
         'qr.make'                   : None,
         'report_settings.delete'    : u'レポート送信設定 削除',
