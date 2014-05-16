@@ -762,6 +762,10 @@ ${ch.breadcrumbs(
           <input type="checkbox" id="show-unmasked-only">
           印刷対象のみ表示
         </label>
+        <div class="btn-group">
+          <button class="btn" id="btn-check-all">全て選択</button>
+          <button class="btn" id="btn-uncheck-all">全て選択しない</button>
+        </div>
       </div>
     </div>
   </div>
@@ -787,7 +791,23 @@ ${ch.breadcrumbs(
   </div>
 </div>
 <script type="text/javascript">
+
+var CheckBoxHandler = function(expr){
+  return {
+    checkAll: function(){
+　　   $(expr).find(".c input").attr("checked", true);
+    },
+    uncheckAll: function(){
+　　   $(expr).find(".c input").attr("checked", false);
+    }
+  }
+}
+
 $(function () {
+  var checkboxHandler = CheckBoxHandler("#queue-entries tr:visible");
+  $("#btn-check-all").on("click", function(){checkboxHandler.checkAll(); return false;});
+  $("#btn-uncheck-all").on("click", function(){checkboxHandler.uncheckAll(); return false;});
+
   var $printAndProgress = $('#print-and-progress');
   var $doPrint = $('#do-print');
   var originalDoPrintButtonText = $doPrint.text();
