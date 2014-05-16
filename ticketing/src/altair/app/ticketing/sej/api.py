@@ -106,7 +106,7 @@ def refund_sej_order(request, tenant, sej_order, performance_name, performance_c
             re.ticket_expire_at = ticket_expire_at
             re.refund_enabled = 1
             re.need_stub = 1
-            session.merge(re)
+            re = session.merge(re)
 
             # create SejRefundTicket
             for i, sej_ticket in enumerate(sej_tickets):
@@ -130,6 +130,7 @@ def refund_sej_order(request, tenant, sej_order, performance_name, performance_c
                     rt.refund_other_amount += per_order_fee
 
                 session.merge(rt)
+            return re
         finally:
             session.commit()
     except SejErrorBase:

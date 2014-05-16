@@ -52,7 +52,7 @@ class RefundSejOrderTest(unittest.TestCase):
                 )
 
     def test_with_tickets(self):
-        from ..models import ThinSejTenant, SejOrder, SejTicket
+        from ..models import ThinSejTenant, SejOrder, SejTicket, SejRefundTicket
         from datetime import datetime
         from ..exceptions import SejError
         tenant = ThinSejTenant()
@@ -61,7 +61,7 @@ class RefundSejOrderTest(unittest.TestCase):
             tickets=[SejTicket()]
             )
         ticket_price_getter = mock.Mock(return_value=10.)
-        self._callFUT(
+        refund_event = self._callFUT(
             self.request,
             tenant=tenant,
             sej_order=sej_order,
@@ -76,4 +76,6 @@ class RefundSejOrderTest(unittest.TestCase):
             ticket_expire_at=datetime(2014, 2, 1, 0, 0, 0),
             now=datetime(2014, 1, 1, 0, 0, 0)
             )
+        self.assertTrue(refund_event.id is not None)
+        self.assertEqual(self.session.query(SejRefundTicket).filter_by(refund_event_id=refund_event.id).count(), 1)
 
