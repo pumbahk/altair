@@ -41,8 +41,8 @@
 
   % for order in orders:
         <div class="box">
-            <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/images/eagles/mypage/' + h.get_order_status_image(order))}" alt="${h.get_order_status(order)}" width="60" height="60" /></p>
-            <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/images/eagles/mypage/' + h.get_payment_status_image(order))}" alt="${h.get_payment_status(order)}" width="60" height="60" /></p>
+            <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/eagles/pc/images/mypage/' + h.get_order_status_image(order))}" alt="${h.get_order_status(order)}" width="60" height="60" /></p>
+            <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/eagles/pc/images/mypage/' + h.get_payment_status_image(order))}" alt="${h.get_payment_status(order)}" width="60" height="60" /></p>
             <dl>
               <form name="${order.order_no}" action="${request.route_path('mypage.order.show')}" method="POST">
                 <input type="hidden" name="order_no" value="${order.order_no}"/>
