@@ -132,7 +132,6 @@ def enable_ticket_template_list(ordered_product_item_token, delivery_plugin_ids=
     return r
 
 
-## progress
 def performance_data_from_performance_id(event_id, performance_id):
     performance = c_models.Performance.query.join(c_models.Event)\
         .filter(c_models.Event.id==event_id, c_models.Performance.id==performance_id)\
@@ -141,52 +140,21 @@ def performance_data_from_performance_id(event_id, performance_id):
             "start_on": h.japanese_datetime(performance.start_on), 
             "pk": performance.id}
 
-def _as_total_quantity(opi_query):
-    return int(opi_query.with_entities(sa.func.sum(OrderedProductItem.quantity)).first()[0] or 0)
-
-def _query_filtered_by_performance(query, event_id, performance_id):
-    return query.join(order_models.OrderedProduct)\
-        .join(order_models.Order)\
-        .filter(order_models.Order.performance_id==performance_id)\
-        .filter(order_models.Order.canceled_at==None)\
-        .filter(order_models.Order.deleted_at==None)
-
-def _query_filtered_by_delivery_plugin(query, delivery_plugin_id):
-    return query.join(c_models.PaymentDeliveryMethodPair)\
-        .join(c_models.DeliveryMethod)\
-        .filter(c_models.DeliveryMethod.delivery_plugin_id==delivery_plugin_id)
-
-def _query_removed_by_delivery_plugins(query, delivery_plugin_ids):
-    q = query.join(c_models.PaymentDeliveryMethodPair)\
-        .join(c_models.DeliveryMethod)
-    for delivery_plugin_id in delivery_plugin_ids:
-        q = q.filter(c_models.DeliveryMethod.delivery_plugin_id!=delivery_plugin_id)
-    return q
-
+from altair.app.ticketing.print_progress.progress import PerformancePrintProgress
 ## 余事象取れば計算で求められるけれど。実際にDBアクセスした方が良いのかな。
 def total_result_data_from_performance_id(event_id, performance_id):
-    opi_query = _query_filtered_by_performance(OrderedProductItem.query, event_id, performance_id)
-
-    total = _as_total_quantity(opi_query)
-    total_qr = _as_total_quantity(_query_filtered_by_delivery_plugin(opi_query, QR_DELIVERY_ID))
-    total_orion = _as_total_quantity(_query_filtered_by_delivery_plugin(opi_query, ORION_DELIVERY_PLUGIN_ID))
-
-    token_query = _query_filtered_by_performance(OrderedProductItemToken.query.join(OrderedProductItem), event_id, performance_id)
-    total_qr_printed = token_query.filter(OrderedProductItemToken.printed_at != None).count()
-
-    total_other_printed = _as_total_quantity(_query_removed_by_delivery_plugins(opi_query, [ QR_DELIVERY_ID, ORION_DELIVERY_PLUGIN_ID ]).filter(OrderedProductItem.printed_at != None))
-
+    performance = c_models.Performance.query.filter_by(id=performance_id,event_id=event_id).one()
+    progress = PerformancePrintProgress(performance)
     return {
-        "total": total, 
+        "total": progress.total,
 
-        "total_qr": total_qr + total_orion, 
-        "total_other": total - total_qr - total_orion, 
+        "total_qr": progress.qr.total,
+        "total_other": progress.total - progress.qr.total,
+        "qr_printed": progress.qr.printed,
+        "qr_unprinted": progress.qr.unprinted,
 
-        "qr_printed": total_qr_printed, 
-        "qr_unprinted": total_qr + total_orion - total_qr_printed, 
-
-        "other_printed": total_other_printed, 
-        "other_unprinted": total - total_qr - total_orion - total_other_printed, 
+        "other_printed": progress.shipping.printed+progress.other.printed,
+        "other_unprinted": progress.shipping.unprinted+progress.other.unprinted,
         }
-    
+
 
