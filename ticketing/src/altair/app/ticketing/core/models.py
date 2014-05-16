@@ -494,7 +494,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     note = Column(UnicodeText, doc=u"公演名備考", default=u"")
 
     open_on = AnnotatedColumn(DateTime, _a_label=(u"開場"))
-    start_on = AnnotatedColumn(DateTime, _a_label=(u"開演"))
+    start_on = AnnotatedColumn(DateTime, _a_label=(u"開演")) # 必須
     end_on = AnnotatedColumn(DateTime, _a_label=(u"終了"))
     public = Column(Boolean, nullable=False, default=False)  # 一般公開するか
 
