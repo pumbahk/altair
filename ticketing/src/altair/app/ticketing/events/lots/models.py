@@ -31,14 +31,13 @@ from altair.app.ticketing.core.models import (
     PaymentDeliveryMethodPair,
     PaymentMethod,
     DeliveryMethod,
-    Order,
     ShippingAddress,
-)
-from altair.app.ticketing.core.models import (
     ReportFrequencyEnum,
     Organization,
-    #ReportPeriodEnum,
 )
+from altair.app.ticketing.orders.models import (
+    Order,
+    )
 from altair.app.ticketing.lots.models import (
     Lot,
     LotEntry,
@@ -331,8 +330,9 @@ class LotEntryReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @classmethod
     def in_term(cls, now):
+        report_time = '{0:0>2}{1:0>2}'.format(now.hour, now.minute)[0:3] + '0'
         return and_(
-            cls.time==now.hour,
+            cls.time==report_time,
             or_(cls.start_on==None, cls.start_on<now),
             or_(cls.end_on==None, cls.end_on>now),
             or_(cls.day_of_week==None, cls.day_of_week==now.isoweekday())
@@ -347,15 +347,15 @@ class LotEntryReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return cls.query_in_term(now).all()
 
     @classmethod
-    def query_reporting_about(cls, time, frequency, 
-                              event_id=None, lot_id=None,
-                              day_of_week=None):
+    def query_reporting_about(cls, time, frequency, event_id=None, lot_id=None, day_of_week=None, id=None):
         query = cls.query
         query = query.filter(
             cls.frequency==frequency,
             cls.time==time,
         )
 
+        if id:
+            query = query.filter(cls.id!=id)
         if event_id:
             query = query.filter(cls.event_id==event_id)
         if lot_id:
@@ -363,7 +363,6 @@ class LotEntryReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if frequency == ReportFrequencyEnum.Weekly.v[0]:
             query = query.filter(cls.day_of_week==day_of_week)
         return query
-
 
 
 class CSVExporter(object):

@@ -36,7 +36,7 @@ def restore_sql(path):
     db = 'ticketing' if 'ticketing' in xz else 'altaircms'
     cmd = 'xz -cd {xz} | mysql -u root {db}'.format(xz=xz, db=db)
     print cmd
-    utils.call(cmd)
+    utils.Shell.system(cmd)
 
 def main(argv):
     for url in generate_snapshot_url():

@@ -27,7 +27,7 @@ def validate_report_type(event_id, report_type):
 class SalesReportForm(OurForm):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        super(type(self), self).__init__(formdata, obj, prefix, **kwargs)
+        super(SalesReportForm, self).__init__(formdata, obj, prefix, **kwargs)
         for name, field in iteritems(self._fields):
             if name in kwargs:
                 field.data = kwargs[name]
@@ -124,13 +124,13 @@ class SalesReportForm(OurForm):
 class ReportSettingForm(OurForm):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        super(type(self), self).__init__(formdata, obj, prefix, **kwargs)
+        super(ReportSettingForm, self).__init__(formdata, obj, prefix, **kwargs)
 
         context = kwargs.pop('context', None)
         self.context = context
 
-        if hasattr(context, 'user') and context.user.organization_id:
-            operators = Operator.query.filter_by(organization_id=context.user.organization_id).all()
+        if hasattr(context, 'organization') and context.organization.id:
+            operators = Operator.query.filter_by(organization_id=context.organization.id).all()
             self.operator_id.choices = [('', '')] + [(o.id, o.name) for o in operators]
 
         if obj:
@@ -201,6 +201,7 @@ class ReportSettingForm(OurForm):
         label=u'',
         validators=[Required()],
         choices=[(h, u'%d' % h) for h in [0, 10, 20, 30, 40, 50]],
+        default=10,
         coerce=lambda v: None if not v else int(v)
     )
     time = HiddenField(
@@ -293,20 +294,20 @@ class ReportSettingForm(OurForm):
         if field.data:
             validate_report_type(form.event_id.data, int(field.data))
 
+    def validate_event_id(form, field):
+        if (field.data and form.performance_id.data) or (not field.data and not form.performance_id.data):
+            raise ValidationError(u'エラーが発生しました')
+
     def process(self, formdata=None, obj=None, **kwargs):
-        super(type(self), self).process(formdata, obj, **kwargs)
+        super(ReportSettingForm, self).process(formdata, obj, **kwargs)
         if not self.event_id.data:
             self.event_id.data = None
         if not self.performance_id.data:
             self.performance_id.data = None
 
     def validate(self):
-        status = super(type(self), self).validate()
+        status = super(ReportSettingForm, self).validate()
         if status:
-            # event_id or performance_id のどちらか必須
-            if (self.event_id.data and self.performance_id.data) or (not self.event_id.data and not self.performance_id.data):
-                self.event_id.errors.append(u'エラーが発生しました')
-                status = False
             # operator_id or email のどちらか必須
             email_length = len(self.email.data) if self.email.data else 0
             if not self.operator_id.data and email_length == 0:

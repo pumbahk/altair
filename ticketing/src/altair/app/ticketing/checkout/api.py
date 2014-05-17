@@ -15,7 +15,7 @@ from pyramid.threadlocal import get_current_request
 
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart.models import Cart
-from altair.app.ticketing.core.models import Order
+from altair.app.ticketing.orders.models import Order
 from . import interfaces
 from . import models as m
 

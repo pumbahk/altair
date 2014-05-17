@@ -27,11 +27,16 @@ def move_eventdetail(request):
     form = EventDetailForm(request.GET)
     form.week.data = get_week_map()
     form.event.data = request.allowable(Event).filter(Event.id == form.event_id.data).first()
-    page_published = request.allowable(Page).filter(Page.event_id == form.event.data.id).filter(Page.published == True).first()
 
-    if not exist_value(form.event.data) or not page_published:
-        log_info("move_eventdetail", "event not found or page not published")
+    if not exist_value(form.event.data):
+        log_info("move_eventdetail", "event not found")
         raise ValidationFailure
+
+    page_published = request.allowable(Page).filter(Page.event_id == form.event.data.id).filter(Page.published == True).first()
+    if not exist_value(page_published):
+        log_info("move_eventdetail", "page not published")
+        raise ValidationFailure
+
 
     log_info("move_eventdetail", "detail infomation get start")
     form.purchase_links.data = get_purchase_links(request=request, event=form.event.data)

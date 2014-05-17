@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 def populate(env):
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.core import models as c_models
+    from altair.app.ticketing.orders import models as order_models
     from altair.app.ticketing.cart import models as cart_models
     from altair.app.ticketing.lots import models as lots_models
 
@@ -40,7 +41,7 @@ def populate(env):
         def created_at(self):
             return self.entry.created_at
 
-    order_no_list = DBSession.query(c_models.Order.order_no).all()
+    order_no_list = DBSession.query(order_models.Order.order_no).all()
     print 'Orders to process: %d' % len(order_no_list)
 
     i = 0
@@ -53,7 +54,7 @@ def populate(env):
             last = now
         print 'Processing %s...' % order_no,
         try:
-            order = DBSession.query(c_models.Order).filter_by(order_no=order_no).one()
+            order = DBSession.query(order_models.Order).filter_by(order_no=order_no).one()
         except Exception as e:
             print e
             continue

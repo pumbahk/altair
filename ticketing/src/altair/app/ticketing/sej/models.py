@@ -9,7 +9,7 @@ from zope.interface import implementer
 import sqlahelper
 from datetime import datetime
 from altair.app.ticketing.utils import StandardEnum
-from .interfaces import ISejTenant
+from .interfaces import ISejTenant, ISejTicketTemplateRecord
 
 Base = sqlahelper.get_base()
 
@@ -54,7 +54,7 @@ class SejOrderUpdateReason(StandardEnum):
 
 code_from_update_reason = dict((enum_.v, enum_) for enum_ in SejOrderUpdateReason)
 
-
+@implementer(ISejTicketTemplateRecord)
 class SejTicketTemplateFile(Base, WithTimestamp, LogicallyDeleted):
     __tablename__           = 'SejTicketTemplateFile'
     id                      = Column(Identifier, primary_key=True)

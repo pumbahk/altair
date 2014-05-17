@@ -16,11 +16,10 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
 from altair.app.ticketing.users import api as user_api
 from altair.app.ticketing.utils import toutc
-from altair.app.ticketing.payments.api import set_confirm_url
-from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 
+from altair.now import get_now
 from . import api
 from . import helpers as h
 from . import schemas
@@ -212,7 +211,7 @@ class EntryLotView(object):
         return performance_product_map
 
     def _create_form(self):
-        return api.create_client_form(self.context)
+        return api.create_client_form(self.context, self.request)
 
     @view_config(request_method="GET", custom_predicates=(nogizaka_auth,))
     def get(self, form=None):
@@ -309,7 +308,7 @@ class EntryLotView(object):
             raise HTTPNotFound()
 
 
-        cform = schemas.ClientForm(formdata=self.request.params)
+        cform = schemas.ClientFormFactory(self.request)(formdata=self.request.params)
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id')
@@ -384,13 +383,9 @@ class EntryLotView(object):
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
 
-        self.request.session['lots.entry.time'] = datetime.now()
-        cart = LotSessionCart(entry, self.request, self.context.lot)
+        self.request.session['lots.entry.time'] = get_now(self.request)
 
-        payment = Payment(cart, self.request)
-        set_confirm_url(self.request, urls.entry_confirm(self.request))
-
-        result = payment.call_prepare()
+        result = api.prepare1_for_payment(self.request, entry)
         if callable(result):
             return result
 
@@ -464,7 +459,7 @@ class ConfirmLotEntryView(object):
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
 
-        if basetime + timedelta(minutes=15) < datetime.now():
+        if basetime + timedelta(minutes=15) < get_now(self.request):
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
 
@@ -490,6 +485,8 @@ class ConfirmLotEntryView(object):
         except (TypeError, ValueError):
             raise HTTPBadRequest()
         logger.info(repr(self.request.session['lots.magazine_ids']))
+
+        api.prepare2_for_payment(self.request, entry)
 
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()

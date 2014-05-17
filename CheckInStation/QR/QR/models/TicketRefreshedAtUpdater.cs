@@ -43,6 +43,7 @@ namespace QR
                 try
                 {
                     var json = DynamicJson.Parse(await wrapper.ReadAsStreamAsync(response.Content).ConfigureAwait(false));
+                    logger.Info("*API Response* method=GET, url={0}, data={1}".WithMachineName(), this.GetUpdateRefreshedAtURL(), json.ToString());                
                     return new Success<string, string>(json.order_no);
                 }
                 catch (System.Xml.XmlException e)

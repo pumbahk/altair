@@ -52,7 +52,9 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
     def setUp(self):
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
-            'altair.app.ticketing.sej.models'
+            'altair.app.ticketing.orders.models',
+            'altair.app.ticketing.lots.models',
+            'altair.app.ticketing.sej.models',
             ])
         CoreTestMixin.setUp(self)
         self.products = self._create_products(self._create_stocks(self._create_stock_types(5)))

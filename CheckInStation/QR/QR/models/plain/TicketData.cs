@@ -9,6 +9,7 @@ namespace QR
         printed,
         canceled,
         before_start,
+        after_end,
         not_supported,
         unknown
     }

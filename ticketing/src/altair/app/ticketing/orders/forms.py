@@ -4,34 +4,156 @@ import logging
 
 from pyramid.security import has_permission, ACLAllowed
 from paste.util.multidict import MultiDict
+import decimal
 from wtforms import Form, ValidationError
-from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, BooleanField,
-                     RadioField, FieldList, FormField, DecimalField, IntegerField, FileField)
+from wtforms.fields import (
+    Field,
+    HiddenField,
+    TextField,
+    SelectField,
+    SelectMultipleField,
+    TextAreaField,
+    BooleanField,
+    RadioField,
+    FieldList,
+    FormField,
+    DecimalField,
+    IntegerField,
+    FileField,
+    _unset_value
+    )
 from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
 from wtforms.widgets import CheckboxInput, HiddenInput
-
 from altair.formhelpers import (
     Translations,
     DateTimeField, DateField, Max, OurDateWidget, OurDateTimeWidget,
     CheckboxMultipleSelect, BugFreeSelectField, BugFreeSelectMultipleField,
     Required, after1900, NFKC, Zenkaku, Katakana,
     strip_spaces, ignore_space_hyphen, OurForm)
-from altair.app.ticketing.core.models import (Organization, PaymentMethod, DeliveryMethod, SalesSegmentGroup, PaymentDeliveryMethodPair,
-                                   SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
+from altair.app.ticketing.core.models import (
+    Organization,
+    PaymentMethod,
+    DeliveryMethod,
+    SalesSegmentGroup,
+    PaymentDeliveryMethodPair,
+    SalesSegment,
+    Performance,
+    Product,
+    ProductItem,
+    Event
+    )
+from altair.app.ticketing.orders.models import (
+    OrderCancelReasonEnum,
+    )
 from altair.app.ticketing.cart.schemas import ClientForm
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.core import helpers as core_helpers
 from altair.app.ticketing.orders.importer import (
     ImportTypeEnum,
     ImportCSVReader,
-    get_import_type_label,
     AllocationModeEnum,
+    )
+from altair.app.ticketing.orders.helpers import (
+    get_import_type_label,
     get_allocation_mode_label,
     )
 from altair.app.ticketing.orders.export import OrderCSV
 from altair.app.ticketing.csvutils import AttributeRenderer
+from .models import OrderedProduct, OrderedProductItem
+from sqlalchemy import orm
 
 logger = logging.getLogger(__name__)
+
+class ProductsField(Field):
+    def __init__(self, _form=None, hide_on_new=False, label=None, validators=None, **kwargs):
+        super(ProductsField, self).__init__(label, validators, **kwargs)
+        self.form = _form
+        self.hide_on_new = hide_on_new
+
+    def _get_translations(self):
+        return Translations()
+
+    def process_data(self, data):
+        self.data = data
+
+    def process(self, formdata, data=_unset_value):
+        self.process_errors = []
+        if data is _unset_value:
+            try:
+                data = self.default()
+            except TypeError:
+                data = self.default
+
+        self.object_data = data
+        try:
+            self.process_data(data)
+        except ValueError as e:
+            self.process_errors.append(e.args[0])
+
+        if formdata:
+            self.data = None
+            products = {}
+            product_items = {}
+
+            for k in formdata:
+                v = formdata.getlist(k)[0]
+                if k.startswith('product_quantity-'):
+                    try:
+                        ordered_product_id = long(k[17:])
+                    except (TypeError, ValueError) as e:
+                        self.process_errors.append(self.gettext(u'invalid parameter name: %s') % k)
+                    product = Product.query \
+                        .join(OrderedProduct.product) \
+                        .join(Product.sales_segment) \
+                        .join(SalesSegment.sales_segment_group) \
+                        .join(SalesSegmentGroup.event) \
+                        .filter(Event.organization_id == self.form.context.organization.id) \
+                        .filter(OrderedProduct.id == ordered_product_id) \
+                        .first()
+
+                    if product is not None:
+                        try:
+                            quantity = int(v)
+                            products[ordered_product_id] = quantity
+                        except (TypeError, ValueError) as e:
+                            self.process_errors.append(self.gettext(u'Invalid value for %(field)s') % dict(field=product.name))
+                    else:
+                        self.process_errors.append(u'商品がありません (id=%d)' % ordered_product_id)
+
+                elif k.startswith('product_item_price-'):
+                    try:
+                        ordered_product_item_id = long(k[19:])
+                    except (TypeError, ValueError) as e:
+                        self.process_errors.append(self.gettext(u'invalid parameter name: %s') % k)
+                    product_item = ProductItem.query \
+                        .join(OrderedProductItem.product_item) \
+                        .join(ProductItem.product) \
+                        .join(Product.sales_segment) \
+                        .join(SalesSegment.sales_segment_group) \
+                        .join(SalesSegmentGroup.event) \
+                        .filter(Event.organization_id == self.form.context.organization.id) \
+                        .filter(OrderedProductItem.id == ordered_product_item_id) \
+                        .first()
+
+                    if product_item is not None:
+                        try:
+                            price = decimal.Decimal(v)
+                            product_items[ordered_product_item_id] = price
+                        except (TypeError, decimal.InvalidOperation):
+                            self.process_errors.append(self.gettext(u'Invalid value for %(field)s') % dict(field=product_item.name))
+                    else:
+                            self.process_errors.append(u'商品明細がありません (id=%d)' % product_item_id)
+                if not self.process_errors:
+                    self.data = {
+                        'products': products,
+                        'product_items': product_items,
+                        }
+
+        for filter in self.filters:
+            try:
+                self.data = filter(self.data)
+            except ValueError as e:
+                self.process_errors.append(e.args[0])
 
 
 class OrderForm(Form):
@@ -79,6 +201,14 @@ class OrderForm(Form):
         label=u'特別手数料名',
         validators=[Optional()],
     )
+    products = ProductsField(
+        label=u'商品'
+        )
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        context = kwargs.pop('context')
+        self.context = context
+        super(OrderForm, self).__init__(formdata, obj, prefix, **kwargs)
 
 class SearchFormBase(Form):
 
@@ -767,9 +897,12 @@ class OrderImportForm(Form):
     import_type = BugFreeSelectField(
         label=u'インポート方法',
         validators=[Required()],
-        choices=[(str(e.v), get_import_type_label(e.v)) for e in ImportTypeEnum],
+        choices=[(str(e.v), get_import_type_label(e.v, no_option_desc=True)) for e in [ImportTypeEnum.Create, ImportTypeEnum.Update, ImportTypeEnum.CreateOrUpdate]],
         default=ImportTypeEnum.Create.v,
         coerce=int,
+    )
+    always_issue_order_no = BooleanField(
+        label=u'常に新しい予約番号を発番'
     )
     allocation_mode = BugFreeSelectField(
         label=u'配席モード',
@@ -803,7 +936,7 @@ class OrderImportForm(Form):
 
         difference = set(import_header) - set(export_header)
         if len(difference) > 0 or len(import_header) == 0:
-            raise ValidationError(u'CSVファイルのフォーマットが正しくありません')
+            raise ValidationError(u'CSVファイルのフォーマットが正しくありません (不明なカラム: %s)' % u', '.join(unicode(s) for s in difference))
 
 
 class ClientOptionalForm(ClientForm):

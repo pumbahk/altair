@@ -50,11 +50,13 @@ def _make_request(*args, **kwargs):
 
 def _make_order_for_delivery(self, delivery_plugin_id, total_amount=10000):
     from altair.app.ticketing.core.models import (
-        Order, 
         PaymentDeliveryMethodPair, 
         DeliveryMethod, 
         ShippingAddress
     )
+    from altair.app.ticketing.orders.models import (
+        Order,
+        )
     delivery_method = DeliveryMethod(delivery_plugin_id=delivery_plugin_id)
     pdmp = PaymentDeliveryMethodPair(delivery_method=delivery_method)
     shipping_address = ShippingAddress() #xxx:
@@ -77,11 +79,13 @@ def _make_lot_entry_for_delivery(self, delivery_plugin_id):
 
 def _make_order_for_payment(self, payment_plugin_id, total_amount=10000):
     from altair.app.ticketing.core.models import (
-        Order, 
         PaymentDeliveryMethodPair, 
         PaymentMethod, 
         ShippingAddress
     )
+    from altair.app.ticketing.orders.models import (
+        Order,
+        )
     payment_method = PaymentMethod(payment_plugin_id=payment_plugin_id)
     pdmp = PaymentDeliveryMethodPair(payment_method=payment_method)
     shipping_address = ShippingAddress() #xxx:

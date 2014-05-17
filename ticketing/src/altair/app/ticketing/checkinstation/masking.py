@@ -2,7 +2,7 @@
 from datetime import timedelta
 from pyramid.decorator import reify
 from altair.app.ticketing.models import DBSession
-from altair.app.ticketing.core.models import OrderedProductItemToken
+from altair.app.ticketing.orders.models import OrderedProductItemToken
 from .models import CheckinTokenReservation
 
 class TokenReservationFilter(object):

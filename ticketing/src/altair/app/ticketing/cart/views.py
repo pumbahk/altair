@@ -22,12 +22,13 @@ from altair.pyramid_boto.s3.assets import IS3KeyProvider
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
+from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 from altair.app.ticketing.views import mobile_request
 from altair.app.ticketing.fanstatic import with_jquery, with_jquery_tools
-from altair.app.ticketing.payments.api import set_confirm_url
+from altair.app.ticketing.payments.api import set_confirm_url, lookup_plugin
 from altair.app.ticketing.payments.payment import Payment
-from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
+from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound, OrderLikeValidationFailure
 from altair.app.ticketing.users.models import UserPointAccountTypeEnum
 from altair.app.ticketing.users.api import (
     get_user,
@@ -45,7 +46,7 @@ from altair.app.ticketing.temp_store import TemporaryStoreError
 from . import api
 from . import helpers as h
 from . import schemas
-from .api import set_rendered_event, is_mobile, is_smartphone, is_smartphone_organization, is_point_input_organization
+from .api import set_rendered_event, is_mobile, is_smartphone, is_smartphone_organization, is_point_input_organization, is_fc_auth_organization
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -719,6 +720,10 @@ class ReserveView(object):
         logger.debug('ordered_items %s' % ordered_items)
 
         sales_segment = self.context.sales_segment
+        if not sales_segment.in_term(self.context.now):
+            transaction.abort()
+            logger.debug("out of term")
+            return dict(result='NG', reason="out_of_term")
 
         try:
             assert_quantity_within_bounds(sales_segment, ordered_items)
@@ -853,6 +858,10 @@ class ReleaseCartView(object):
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """
+
+    class ValidationFailed(Exception):
+        pass
+
     def __init__(self, request):
         self.request = request
         self.context = request.context
@@ -941,13 +950,11 @@ class PaymentView(object):
     def _validate_extras(self, cart, payment_delivery_pair, shipping_address_params):
         if not payment_delivery_pair or shipping_address_params is None:
             if not payment_delivery_pair:
-                self.request.session.flash(u"お支払／引取方法をお選びください")
                 logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
+                raise self.ValidationFailed(u"お支払／引取方法をお選びください")
             else:
                 logger.debug("invalid : %s" % self.form.errors)
-
-            return False
-        return True
+                raise self.ValidationFailed(u'購入者情報の入力内容を確認してください')
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
@@ -965,7 +972,28 @@ class PaymentView(object):
 
         self.form = schemas.ClientForm(formdata=self.request.params)
         shipping_address_params = self.get_validated_address_data()
-        if not self._validate_extras(cart, payment_delivery_pair, shipping_address_params):
+
+        try:
+            self._validate_extras(cart, payment_delivery_pair, shipping_address_params)
+            sales_segment = cart.sales_segment
+            cart.payment_delivery_pair = payment_delivery_pair
+            cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
+            self.context.check_order_limit()
+
+            DBSession.add(cart)
+
+            try:
+                plugins = lookup_plugin(self.request, cart.payment_delivery_pair)
+                for plugin in plugins:
+                    if plugin is not None:
+                        plugin.validate_order(self.request, cart)
+            except OrderLikeValidationFailure as e:
+                if e.path == 'order.total_amount':
+                    raise self.ValidationFailed(u'合計金額が選択された決済方法では取り扱えない金額となっています。他の決済方法を選択してください')
+                else:
+                    raise self.ValidationFailed(u'現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。')
+        except self.ValidationFailed as e:
+            self.request.session.flash(e.message)
             start_on = cart.performance.start_on
             sales_segment = self.request.context.sales_segment
             
@@ -975,16 +1003,8 @@ class PaymentView(object):
         
             if 0 == len(payment_delivery_methods):
                 raise PaymentMethodEmptyError.from_resource(self.context, self.request)
-        
-
             return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
 
-        sales_segment = cart.sales_segment
-        cart.payment_delivery_pair = payment_delivery_pair
-        cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
-        self.context.check_order_limit()
-
-        DBSession.add(cart)
 
         order = api.new_order_session(
             self.request,
@@ -995,9 +1015,11 @@ class PaymentView(object):
 
         set_confirm_url(self.request, self.request.route_url('payment.confirm'))
 
-        if is_point_input_organization(context=self.context, request=self.request):
+        if is_fc_auth_organization(context=self.context, request=self.request):
             if user:
                 get_or_create_user_profile(user, shipping_address_params)
+
+        if is_point_input_organization(context=self.context, request=self.request):
             return HTTPFound(self.request.route_path('cart.point'))
 
         payment = Payment(cart, self.request)
@@ -1219,7 +1241,7 @@ class CompleteView(object):
             # モバイルの場合はHTTPリダイレクトの際のSet-Cookieに対応していないと
             # 思われるので、直接ページをレンダリングする
             # transaction をコミットしたので、再度読み直し
-            order = c_models.Order.query.filter_by(id=order_id).one()
+            order = order_models.Order.query.filter_by(id=order_id).one()
             return dict(order=order)
         else:
             # PC/スマートフォンでは、HTTPリダイレクト時にクッキーをセット

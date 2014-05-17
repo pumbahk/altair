@@ -22,6 +22,9 @@ def login_post_view(context, request):
 
 def logout_view(context, request):
     operator = context.operator
+    if operator is None:
+        request.session.flash(u"既にログアウトしているようです")
+        raise HTTPFound(location=request.route_path("login"))
     headers = security.logout(request)
     request.session.flash(u"ログアウトしました")
     logger.info("*login logout name=%s", operator.name)

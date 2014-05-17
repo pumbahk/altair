@@ -15,6 +15,7 @@ import webhelpers.paginate as paginate
 
 from altair.sqlahelper import get_db_session
 
+from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.views import BaseView as _BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
@@ -53,7 +54,7 @@ from .forms import (
     LotForm,
     SearchEntryForm,
     SendingMailForm,
-    LotEntryReportMailForm,
+    LotEntryReportSettingForm,
 )
 
 from . import api
@@ -173,7 +174,6 @@ class Lots(BaseView):
                         raise HTTPFound(location=self.request.route_url("lots.show", lot_id=lot.id))
 
         slave_session = get_db_session(self.request, name="slave")
-
         performance_ids = [p.id for p in lot.performances]
         stock_holders = slave_session.query(StockHolder).join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
 
@@ -313,6 +313,8 @@ class Lots(BaseView):
             lot=lot,
             lots_cart_url=self.context.lots_cart_url,
             agreement_lots_cart_url=self.context.agreement_lots_cart_url,
+            lots_cart_now_url=self.context.lots_cart_now_url, 
+            agreement_lots_cart_now_url=self.context.agreement_lots_cart_now_url, 
             product_grid=product_grid,
             h=h,
             )
@@ -467,10 +469,9 @@ class LotEntries(BaseView):
             return u"( {detail} )".format(detail=detail)
 
     def _build_lot_search_query(self, form):
-        include_canceled = False
         enable_elect_all = False
         condition = (LotEntry.id != None)
-        s_a = ShippingAddress
+
         if form.entry_no.data:
             condition = sql.and_(condition, LotEntry.entry_no==form.entry_no.data)
         if form.tel.data:
@@ -478,6 +479,7 @@ class LotEntries(BaseView):
                                  sql.or_(ShippingAddress.tel_1==form.tel.data,
                                          ShippingAddress.tel_2==form.tel.data))
         if form.name.data:
+            s_a = ShippingAddress
             condition = sql.and_(condition,
                                  sql.or_(s_a.full_name==form.name.data,
                                          s_a.last_name==form.name.data,
@@ -489,46 +491,47 @@ class LotEntries(BaseView):
             condition = sql.and_(condition,
                                  sql.or_(s_a.email_1==form.email.data,
                                          s_a.email_2==form.email.data))
-
         if form.entried_from.data:
             condition = sql.and_(condition,
                                  LotEntry.created_at>=form.entried_from.data)
         if form.entried_to.data:
             condition = sql.and_(condition,
                                  LotEntry.created_at<=form.entried_to.data)
-        include_canceled = form.include_canceled.data
 
-        if (form.electing.data
-            or form.elected.data
-            or form.rejecting.data
-            or form.rejected.data):
-            wish_condition = (LotEntry.id == None) ## means False
-
-            if form.electing.data:
-                wish_condition = sql.or_(wish_condition,
-                                         sql.and_(LotEntryWish.entry_wish_no==LotElectWork.entry_wish_no,
-                                                  LotEntryWish.elected_at==None))
-            if form.rejecting.data:
-                wish_condition = sql.or_(wish_condition,
-                                         sql.and_(LotEntry.entry_no==LotRejectWork.lot_entry_no,
-                                                  LotEntryWish.rejected_at==None))
-            if form.elected.data:
-                wish_condition = sql.or_(wish_condition,
-                                         LotEntryWish.elected_at!=None)
-            if form.rejected.data:
-                wish_condition = sql.or_(wish_condition,
-                                         LotEntryWish.rejected_at!=None)
-
-            condition = sql.and_(condition, wish_condition)
+        wish_condition = (LotEntry.id == None) ## means False
+        if form.canceled.data:
+            wish_condition = sql.or_(wish_condition,
+                                     LotEntryWish.canceled_at!=None)
+        else:
+            condition = sql.and_(condition,
+                                 LotEntryWish.canceled_at==None)
+        if form.entried.data:
+            wish_condition = sql.or_(wish_condition,
+                                     sql.and_(LotEntryWish.elected_at==None,
+                                              LotEntryWish.rejected_at==None,
+                                              LotElectWork.id==None,
+                                              LotRejectWork.id==None))
+        if form.electing.data:
+            wish_condition = sql.or_(wish_condition,
+                                     sql.and_(LotEntryWish.entry_wish_no==LotElectWork.entry_wish_no,
+                                              LotEntryWish.elected_at==None))
+        if form.rejecting.data:
+            wish_condition = sql.or_(wish_condition,
+                                     sql.and_(LotEntry.entry_no==LotRejectWork.lot_entry_no,
+                                              LotEntryWish.rejected_at==None))
+        if form.elected.data:
+            wish_condition = sql.or_(wish_condition,
+                                     LotEntryWish.elected_at!=None)
+        if form.rejected.data:
+            wish_condition = sql.or_(wish_condition,
+                                     LotEntryWish.rejected_at!=None)
+        condition = sql.and_(condition, wish_condition)
 
         if form.wish_order.data:
             condition = sql.and_(condition,
                                  LotEntryWish.wish_order==form.wish_order.data)
             enable_elect_all = True
 
-        if not include_canceled:
-            condition = sql.and_(condition,
-                                 LotEntry.canceled_at == None)
         return condition, enable_elect_all
 
     @view_config(route_name='lots.entries.search',
@@ -620,15 +623,19 @@ class LotEntries(BaseView):
         lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
+        if not hasattr(self.request.params["entries"], "file"):
+            self.request.session.flash(u"ファイルを指定してください")
+            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
         f = self.request.params['entries'].file
         try:
             elect_wishes, reject_entries, reset_entries = self._parse_import_file(f)
         except CSVFileParserError as e:
-            self.request.session.flash(u"ファイルフォーマットが正しくありません ({0})".format(e.entry_no))
-            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+            self.request.session.flash(u"ファイルフォーマットが正しくありません ({})".format(e.entry_no))
+            return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
+
         if not (elect_wishes or reject_entries or reset_entries):
             self.request.session.flash(u"データがありませんでした")
-            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+            return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
         message = u"{0}件の当選予定、{1}件の落選予定、{2}件の申込を取り込みました"
         self.request.session.flash(message.format(len(elect_wishes), len(reject_entries), len(reset_entries)))
 
@@ -638,14 +645,14 @@ class LotEntries(BaseView):
         result_message = u"新たに{0}件が当選予定、{1}件が落選予定となり、{2}件が申込に戻されました"
         self.request.session.flash(result_message.format(electing_count, rejecting_count, reset_count))
 
-        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+        return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
     def _parse_import_file(self, file, encoding='cp932'):
         elect_wishes = []
         reject_entries = []
         reset_entries = []
         reader = csv.DictReader(file)
-        for row in reader:
+        for i, row in enumerate(reader):
             keys = [unicode(k.decode(encoding)) for k in row.keys()]
             values = [unicode(v.decode(encoding)) for v in row.values()]
             row = dict(zip(keys, values))
@@ -659,7 +666,10 @@ class LotEntries(BaseView):
                 wish_order = row[u'希望順序']
                 if not (status and entry_no and wish_order):
                     raise Exception
+                entry_no.encode("latin-1") #予約番号はasciiの範囲
                 wish_order = int(wish_order) - 1
+            except UnicodeEncodeError:
+                raise CSVFileParserError(entry_no=u"{i}行目の申込番号({entry_no})が不正です".format(i=i, entry_no=entry_no))
             except:
                 logger.info('parser error status=%s, entry_no=%s, wish_order=%s' % (status, entry_no, wish_order))
                 raise CSVFileParserError(entry_no=entry_no)
@@ -717,7 +727,7 @@ class LotEntries(BaseView):
         self.request.session.flash(u"オーソリ開放可能にしました。")
         lot.finish_lotting()
 
-        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+        return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.elect',
                  renderer="string",
@@ -735,7 +745,7 @@ class LotEntries(BaseView):
         self.request.session.flash(u"当選確定処理を行いました")
         lot.start_electing()
 
-        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+        return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.reject',
                  renderer="string",
@@ -754,7 +764,7 @@ class LotEntries(BaseView):
         self.request.session.flash(u"落選確定処理を行いました")
 
         lot.start_electing()
-        return HTTPFound(location=self.request.route_url('lots.entries.index',
+        return HTTPFound(location=self.request.route_url('lots.entries.elect',
                                                          lot_id=lot.id))
 
 
@@ -1103,49 +1113,54 @@ class LotReport(object):
 
     @property
     def index_url(self):
-        return self.request.route_url("lots.entries.index",
-                                      **self.request.matchdict)
+        return self.request.route_url("lots.entries.index", **self.request.matchdict)
 
-    @view_config(route_name="lot.entries.new_report_setting",
-                 renderer="lots/new_report_setting.html")
-    def new_setting(self):
-        form = LotEntryReportMailForm(formdata=self.request.POST)
+    @view_config(route_name="lot.entries.new_report_setting", renderer="lots/report_setting.html")
+    def new(self):
+        form = LotEntryReportSettingForm(formdata=self.request.POST, context=self.context)
         form.lot_id.data = self.context.lot.id
-
         if self.request.method == "POST":
             if form.validate():
                 new_setting = LotEntryReportSetting()
                 form.sync(new_setting)
                 DBSession.add(new_setting)
+                self.request.session.flash(u'レポート送信設定を保存しました')
                 return HTTPFound(self.index_url)
-        return dict(form=form,
-                    event=self.context.event)
+        return dict(form=form, lot=self.context.lot)
 
+    @view_config(route_name="lot.entries.edit_report_setting", request_method="GET", renderer="lots/report_setting.html")
+    def edit(self):
+        return dict(
+            form=LotEntryReportSettingForm(obj=self.context.report_setting, context=self.context),
+            lot=self.context.lot
+            )
 
-    @view_config(route_name="lot.entries.delete_report_setting",
-                 request_method="POST")
-    def delete_setting(self):
-        setting = LotEntryReportSetting.query.filter(
-            LotEntryReportSetting.id==self.request.matchdict['setting_id']
-        ).first()
-        if setting is None:
-            return HTTPNotFound()
-        setting.deleted_at = datetime.now()
+    @view_config(route_name="lot.entries.edit_report_setting", request_method="POST", renderer="lots/report_setting.html")
+    def edit_post(self):
+        f = LotEntryReportSettingForm(self.request.POST, context=self.context)
+        if not f.validate():
+            return dict(form=f, lot=self.context.lot)
+        report_setting = self.context.report_setting
+        report_setting = merge_session_with_post(report_setting, f.data)
+        report_setting.save()
+
+        self.request.session.flash(u'レポート送信設定を保存しました')
         return HTTPFound(self.index_url)
 
-    @view_config(route_name="lot.entries.send_report_setting",
-                 request_method="POST")
+    @view_config(route_name="lot.entries.delete_report_setting", request_method="POST")
+    def delete(self):
+        self.context.report_setting.deleted_at = datetime.now()
+
+        self.request.session.flash(u'レポート送信設定を削除しました')
+        return HTTPFound(self.index_url)
+
+    @view_config(route_name="lot.entries.send_report_setting", request_method="POST")
     def send_report(self):
         """ 手動送信 """
-        setting = LotEntryReportSetting.query.filter(
-            LotEntryReportSetting.id==self.request.matchdict['setting_id']
-        ).first()
-        if setting is None:
-            return HTTPNotFound()
-
-
         mailer = get_mailer(self.request)
         sender = self.request.registry.settings['mail.message.sender']
-        reporter = LotEntryReporter(sender, mailer, setting)
+        reporter = LotEntryReporter(sender, mailer, self.context.report_setting)
         reporter.send()
+
+        self.request.session.flash(u'レポートを送信しました')
         return HTTPFound(self.index_url)

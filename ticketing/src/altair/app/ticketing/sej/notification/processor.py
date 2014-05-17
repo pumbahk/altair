@@ -48,7 +48,7 @@ class SejNotificationProcessor(object):
             order.mark_issued_or_printed(issued=True, printed=True, now=notification.processed_at)
         elif payment_type == SejPaymentType.Prepayment.v:
             # 前払後日発券
-            if exchange_number is None:
+            if not exchange_number: # None もしくは空文字 (多分空文字)
                 # 支払
                 sej_order.mark_paid(notification.processed_at)
                 order.mark_paid(notification.processed_at)

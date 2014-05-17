@@ -4,10 +4,10 @@ import transaction
 from zope.interface import implementer 
 from sqlalchemy.orm.util import _is_mapped_class
 from altair.app.ticketing.models import DBSession
-from altair.app.ticketing.core.models import Order
+from altair.app.ticketing.orders.models import Order
 from .events import DeliveryErrorEvent
 from .exceptions import PaymentDeliveryMethodPairNotFound
-from .interfaces import IPayment
+from .interfaces import IPayment, IPaymentCart
 
 logger = logging.getLogger(__name__)
 
@@ -70,33 +70,74 @@ class Payment(object):
         event_id = self.cart.performance.event_id
         
         if payment_delivery_plugin is not None:
-            order = payment_delivery_plugin.finish(self.request, self.cart)
-            self.session.add(order)
-            self._bind_order(order)
-            # 注文確定として、他の処理でロールバックされないようにコミット
-            transaction.commit()
-            if _is_mapped_class(self.cart.__class__):
-                self.session.add(self.cart)
+            if IPaymentCart.providedBy(self.cart):
+                order = payment_delivery_plugin.finish(self.request, self.cart)
+                self.session.add(order)
+                self._bind_order(order)
+                # 注文確定として、他の処理でロールバックされないようにコミット
+                transaction.commit()
+                if _is_mapped_class(self.cart.__class__):
+                    self.session.add(self.cart)
+                self.session.add(order)
+            else:
+                payment_delivery_plugin.finish2(self.request, self.cart)
+                order = self.cart
         else:
             # 決済と配送を別々に処理する            
-            order = payment_plugin.finish(self.request, self.cart)
-            self.session.add(order)
-            self._bind_order(order)
-            # 注文確定として、他の処理でロールバックされないようにコミット
-            transaction.commit()
-            if _is_mapped_class(self.cart.__class__):
-                self.session.add(self.cart)
-            try:
-                delivery_plugin.finish(self.request, self.cart)
-            except Exception as e:
+            if IPaymentCart.providedBy(self.cart):
+                order = payment_plugin.finish(self.request, self.cart)
                 self.session.add(order)
+                self._bind_order(order)
+                # 注文確定として、他の処理でロールバックされないようにコミット
+                transaction.commit()
+                if _is_mapped_class(self.cart.__class__):
+                    self.session.add(self.cart)
+                try:
+                    delivery_plugin.finish(self.request, self.cart)
+                except Exception as e:
+                    self.session.add(order)
+                    self.request.registry.notify(DeliveryErrorEvent(e, self.request, order))
+                    raise
+                transaction.commit()
+                # transaction.commit() で order がデタッチされるので再度アタッチ
+                self.session.add(self.cart)
+                self.session.add(order)
+            else:
+                logger.info('cart is not a IPaymentCart')
+                payment_plugin.finish2(self.request, self.cart)
+                order = self.cart
+                try:
+                    delivery_plugin.finish2(self.request, self.cart)
+                except Exception as e:
+                    self.request.registry.notify(DeliveryErrorEvent(e, self.request, order))
+                    raise
+        return order
+
+    def call_payment2(self, order):
+        payment_delivery_plugin, payment_plugin, delivery_plugin = self._get_plugins(self.cart.payment_delivery_pair)
+        if payment_delivery_plugin is not None:
+            payment_delivery_plugin.finish2(self.request, order)
+        else:
+            payment_plugin.finish2(self.request, order)
+            try:
+                delivery_plugin.finish2(self.request, self.cart)
+            except Exception as e:
                 self.request.registry.notify(DeliveryErrorEvent(e, self.request, order))
                 raise
-        # transaction.commit() で order がデタッチされるので再度アタッチ
-        self.session.add(order)
         return order
 
     def call_delivery(self, order):
         payment_delivery_plugin, payment_plugin, delivery_plugin = self._get_plugins(self.cart.payment_delivery_pair)
-        self.cart.order = order
-        delivery_plugin.finish(self.request, self.cart)
+        if delivery_plugin is not None:
+            if IPaymentCart.providedBy(self.cart):
+                self._bind_order(order)
+                delivery_plugin.finish(self.request, self.cart)
+            else:
+                delivery_plugin.finish2(self.request, self.cart)
+        else:
+            logger.info(
+                u'no delivery plugin for %s (plugin_id=%d)' % (
+                    self.cart.payment_delivery_pair.delivery_method.name,
+                    self.cart.payment_delivery_pair.delivery_method.delivery_plugin_id
+                    )
+                )

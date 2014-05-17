@@ -162,9 +162,11 @@ def setup_shipping_address(mail_address="my@test.mail.com"):
 
 def setup_ordered_product_item(quantity, quantity_only, organization, order_no="Order:order_no", product_item=None, stock_type=None):
     """copied. from altair/ticketing/src/altair/app/ticketing/printqr/test_functional.py"""
-    from altair.app.ticketing.core.models import OrderedProductItem
-    from altair.app.ticketing.core.models import OrderedProduct
-    from altair.app.ticketing.core.models import Order
+    from altair.app.ticketing.orders.models import (
+        OrderedProductItem,
+        OrderedProduct,
+        Order,
+        )
 
     product_item = product_item or setup_product_item(quantity, quantity_only, organization, stock_type) #xxx:
     payment_delivery_method_pair = product_item.product.sales_segment.payment_delivery_method_pairs[0] #xxx:

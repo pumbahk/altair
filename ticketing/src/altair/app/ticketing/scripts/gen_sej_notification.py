@@ -5,7 +5,7 @@ from altair.app.ticketing.sej import models as sej_models
 from altair.app.ticketing.sej.userside_api import lookup_sej_tenant
 from pyramid.paster import bootstrap
 from sqlalchemy.sql.expression import desc
-from altair.app.ticketing.core import models as c_models
+from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.utils import uniurlencode
 from urllib import urlencode
 from datetime import datetime, timedelta
@@ -22,7 +22,7 @@ def generate_process_number(session, order):
         return "%012d" % (long(prev_notification.process_number) + 1)
 
 def get_order(session, order_no):
-    return session.query(c_models.Order).filter_by(order_no=order_no).order_by(desc(c_models.Order.branch_no)).limit(1).one()
+    return session.query(order_models.Order).filter_by(order_no=order_no).order_by(desc(order_models.Order.branch_no)).limit(1).one()
 
 def get_sej_order(session, order_no, exchange_number=None, billing_number=None):
     q = session.query(sej_models.SejOrder) \

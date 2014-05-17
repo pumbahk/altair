@@ -4,6 +4,7 @@ from pyramid.events import subscriber
 #from . import api
 from . import sendmail
 from altair.multicheckout.models import MultiCheckoutOrderStatus
+from altair.now import get_now
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ def finish_elected_lot_entry(event):
         wish = event.lot_wish
         request = event.request
         sendmail.send_elected_mail(request, entry, wish)
-        entry.ordered_mail_sent_at = datetime.now()
+        entry.ordered_mail_sent_at = get_now(request)
     except Exception as e:
         logger.exception(e)
 
@@ -34,7 +35,7 @@ def finish_rejected_lot_entry(event):
 
         request = event.request
         sendmail.send_rejected_mail(request, entry)
-        entry.ordered_mail_sent_at = datetime.now()
+        entry.ordered_mail_sent_at = get_now(request)
     except Exception as e:
         logger.exception(e)
 

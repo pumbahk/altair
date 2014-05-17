@@ -78,7 +78,7 @@ def route_path_with_params(request, url, _query=None, **kwargs):
                 del _query[k]
     return request.route_path(url, _query=_query, **kwargs)
 
-def _build_ticket_format_dicts(ticket_format_qs):
+def _build_selectitem_candidates_from_ticket_format_query(ticket_format_qs):
     sej_qs = ticket_format_qs.filter(
         c_models.TicketFormat.id==c_models.TicketFormat_DeliveryMethod.ticket_format_id,
         c_models.TicketFormat_DeliveryMethod.delivery_method_id==c_models.DeliveryMethod.id, 
@@ -86,15 +86,25 @@ def _build_ticket_format_dicts(ticket_format_qs):
 
     D = {}
     for t in ticket_format_qs:
-        D[t.id] = {"name": t.name, "type": ""}
+        D[(t.id, "")] = {"name": t.name, "type": ""}
     for t in sej_qs:
-        D[t.id] = {"name": t.name, "type": ":sej"}
-    return [dict(pk=k, **vs) for k, vs in D.iteritems()]
+        D[(t.id, "sej")] = {"name": t.name, "type": ":sej"}
+    return [dict(pk=k, **vs) 
+            for (k, _), vs in D.iteritems()]
 
-def _build_ticket_format_dict(ticket_format):
-    has_sej = any(dm.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for dm in ticket_format.delivery_methods)
-    ticket_format_type =  ":sej" if has_sej else ""
-    return {"pk": ticket_format.id, "name": ticket_format.name, "type": ticket_format_type}
+def _build_selectitem_candidates_from_ticket_format_unit(ticket_format, is_sej):
+    sej_value = None
+    normal_value = None
+    for dm in ticket_format.delivery_methods:
+        if int(dm.delivery_plugin_id) == int(SEJ_DELIVERY_PLUGIN_ID):
+            sej_value = {"pk": ticket_format.id, "name": ticket_format.name, "type": "sej"}
+        else:
+            normal_value = {"pk": ticket_format.id, "name": ticket_format.name, "type": ""}
+    if is_sej:
+        return [e for e in [sej_value, normal_value] if e is not None]
+    else:
+        return [e for e in [normal_value, sej_value] if e is not None]
+
 
 @view_config(route_name="tickets.preview", request_method="GET", renderer="altair.app.ticketing:templates/tickets/preview.html", 
              decorator=with_bootstrap, permission="event_editor")
@@ -107,8 +117,8 @@ def preview_ticket(context, request):
         "fillvalues_with_models": request.route_path("tickets.preview.api", action="fillvalues_with_models"), 
         "combobox": request.route_path("tickets.preview.combobox")
         }
-    ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=context.user.organization_id)
-    ticket_formats = _build_ticket_format_dicts(ticket_formats)
+    ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=context.organization.id)
+    ticket_formats = _build_selectitem_candidates_from_ticket_format_query(ticket_formats)
     return {"apis": apis, "ticket_formats": ticket_formats}
 
 
@@ -118,6 +128,10 @@ def preview_ticket_post(context, request):
     curl -Fsvgfile=@<file> <url> > out.png
     """
     preview = SVGPreviewCommunication.get_instance(request)
+    ticket_format = c_models.TicketFormat.query \
+        .filter(c_models.TicketFormat.organization_id == context.organization.id) \
+        .filter(c_models.TicketFormat.id == request.POST["ticket_format"]) \
+        .one()
     if "raw" in request.POST:
         svg_string = request.POST["svgfile"].file.read()
     else:
@@ -126,7 +140,7 @@ def preview_ticket_post(context, request):
         svgio = cleaner.get_cleaned_svgio()
         svg_string = svgio.getvalue()
     try:
-        imgdata_base64 = preview.communicate(request, svg_string)
+        imgdata_base64 = preview.communicate(request, svg_string, ticket_format)
         return as_filelike_response(request, base64.b64decode(imgdata_base64))
     except jsonrpc.ProtocolError, e:
         raise HTTPBadRequest(str(e))
@@ -143,8 +157,13 @@ def preview_ticket_post_sej(context, request):
     svgio = cleaner.get_cleaned_svgio()
     svgio.seek(0)
 
+    ticket_format = c_models.TicketFormat.query \
+        .filter(c_models.TicketFormat.organization_id == context.organization.id) \
+        .filter(c_models.TicketFormat.id == request.POST["ticket_format"]) \
+        .one()
+
     ptct = SEJTemplateTransformer(svgio=svgio, transform=transform).transform()
-    imgdata = preview.communicate(request, ptct)
+    imgdata = preview.communicate(request, ptct, ticket_format)
     return as_filelike_response(request, imgdata)
 
 
@@ -157,7 +176,7 @@ def preview_ticket_download(context, request):
 @view_config(route_name="tickets.preview.enqueue", request_method="POST", permission='sales_counter', request_param="svg", renderer="json")
 def ticket_preview_enqueue(context, request):
     svg = request.POST["svg"]
-    ticket_format_id = request.POST["ticket_format_id"]
+    ticket_format_id = request.POST["ticket_format_id"] # これが ticket_format_id になってしまっているのは歴史的経緯
     ticket = c_models.Ticket.query.filter(c_models.Ticket.ticket_format_id==ticket_format_id, 
                                           c_models.Ticket.event==None).first()
     try:
@@ -233,11 +252,15 @@ class PreviewApiView(object):
     @view_config(match_param="action=preview.base64")
     def preview_ticket_post64(self):
         preview = SVGPreviewCommunication.get_instance(self.request)
-        svg = self.request.POST["svg"]
         try:
+            svg = self.request.POST["svg"]
+            ticket_format = c_models.TicketFormat.query \
+                .filter(c_models.TicketFormat.organization_id == self.context.organization.id) \
+                .filter(c_models.TicketFormat.id == self.request.POST["ticket_format"]) \
+                .one()
             transformer = SVGTransformer(svg, self.request.POST)
             svg = transformer.transform()
-            imgdata_base64 = preview.communicate(self.request, svg)
+            imgdata_base64 = preview.communicate(self.request, svg, ticket_format)
             return {"status": True, "data":imgdata_base64, 
                     "width": transformer.width, "height": transformer.height} #original size
         except TicketPreviewTransformException, e:
@@ -252,19 +275,15 @@ class PreviewApiView(object):
     @view_config(match_param="action=preview.base64", request_param="type=sej") #svg
     def preview_ticket_post64_sej(self):
         try:
+            ticket_format = c_models.TicketFormat.query \
+                .filter(c_models.TicketFormat.organization_id == self.context.organization.id) \
+                .filter(c_models.TicketFormat.id == self.request.POST["ticket_format"]) \
+                .one()
             preview = SEJPreviewCommunication.get_instance(self.request)
-
-            ticket_format_id = self.request.POST["ticket_format"]
-            ticket_format = c_models.TicketFormat.query.filter_by(id=ticket_format_id).first()
-            if ticket_format is None:
-                logger.warn("ticket format %s is not found" % ticket_format_id)
-                global_transform = None
-            else:
-                global_transform = transform_matrix_from_ticket_format(ticket_format)
-
+            global_transform = transform_matrix_from_ticket_format(ticket_format)
             transformer = SEJTemplateTransformer(svgio=StringIO(self.request.POST["svg"]), global_transform=global_transform)
             ptct = transformer.transform()
-            imgdata = preview.communicate(self.request, ptct)
+            imgdata = preview.communicate(self.request, ptct, ticket_format)
             return {"status": True, "data":base64.b64encode(imgdata), 
                     "width": transformer.width, "height": transformer.height} #original size
         except TicketPreviewFillValuesException, e:
@@ -280,12 +299,16 @@ class PreviewApiView(object):
     @view_config(match_param="action=preview.base64.withmodels")
     def preview_ticket_post64_with_models(self):
         preview = SVGPreviewCommunication.get_instance(self.request)
-        svg = self.request.POST["svg"]
         try:
+            svg = self.request.POST["svg"]
+            ticket_format = c_models.TicketFormat.query \
+                .filter(c_models.TicketFormat.organization_id == self.context.organization.id) \
+                .filter(c_models.TicketFormat.id == self.request.POST["ticket_format"]) \
+                .one()
             svg = FillvaluesTransformer(svg, self.request.POST).transform()
             transformer = SVGTransformer(svg, self.request.POST)
             svg = transformer.transform()
-            imgdata_base64 = preview.communicate(self.request, svg)
+            imgdata_base64 = preview.communicate(self.request, svg, ticket_format)
             return {"status": True, "data":imgdata_base64, 
                     "width": transformer.width, "height": transformer.height} #original size
         except TicketPreviewTransformException, e:
@@ -300,17 +323,13 @@ class PreviewApiView(object):
     @view_config(match_param="action=preview.base64.withmodels", request_param="type=sej")
     def preview_ticket_post64_with_models_sej(self):
         preview = SEJPreviewCommunication.get_instance(self.request)
-        svg = self.request.POST["svg"]
-
         try:
-            ticket_format_id = self.request.POST["ticket_format"]
-            ticket_format = c_models.TicketFormat.query.filter_by(id=ticket_format_id).first()
-            if ticket_format is None:
-                logger.warn("ticket format %s is not found" % ticket_format_id)
-                global_transform = None
-            else:
-                global_transform = transform_matrix_from_ticket_format(ticket_format)
-
+            svg = self.request.POST["svg"]
+            ticket_format = c_models.TicketFormat.query \
+                .filter(c_models.TicketFormat.organization_id == self.context.organization.id) \
+                .filter(c_models.TicketFormat.id == self.request.POST["ticket_format"]) \
+                .one()
+            global_transform = transform_matrix_from_ticket_format(ticket_format)
             svg = FillvaluesTransformer(svg, self.request.POST).transform()
             transformer = SEJTemplateTransformer(svgio=StringIO(svg), global_transform=global_transform)
             ptct = transformer.transform()
@@ -441,9 +460,10 @@ class LoadSVGFromModelApiView(object):
         try:
             data = json.loads(self.request.GET["data"])
             ticket_id = data["fillvalues_resource"]["model"]
+            current_preview_type = data["svg_resource"].get("type")
             organization = self.context.organization
             ticket = c_models.Ticket.query.filter_by(id=ticket_id, organization_id=organization.id).first()
-            ticket_formats = [_build_ticket_format_dict(ticket.ticket_format)]
+            ticket_formats = _build_selectitem_candidates_from_ticket_format_unit(ticket.ticket_format, current_preview_type == "sej")
             return {"status": True, "data": ticket.drawing, "ticket_formats": ticket_formats}
         except KeyError, e:
             logger.exception(e)
@@ -535,7 +555,7 @@ class PreviewWithDefaultParameterDialogView(object):
             apis["combobox"] =  self.request.route_path("tickets.preview.combobox", _query=combobox_params)
 
             ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
-            ticket_formats = _build_ticket_format_dicts(ticket_formats)
+            ticket_formats = _build_selectitem_candidates_from_ticket_format_query(ticket_formats)
             return {"apis": apis, "ticket_formats": ticket_formats}
         except Exception, e:
             logger.exception(e)
@@ -554,7 +574,7 @@ class PreviewWithDefaultParameterDialogView(object):
             if self.request.GET.get("ticket_id"):
                 ticket_formats = ticket_formats.filter(c_models.TicketFormat.id==c_models.Ticket.ticket_format_id,
                                                        c_models.Ticket.id==self.request.GET.get("ticket_id"))
-            ticket_formats = _build_ticket_format_dicts(ticket_formats)
+            ticket_formats = _build_selectitem_candidates_from_ticket_format_query(ticket_formats)
             return {"apis": apis, "ticket_formats": ticket_formats}
         except Exception, e:
             logger.exception(e)
@@ -633,14 +653,14 @@ class DownloadListOfPreviewImage(object):
                 svg_string_list.append((svg, product_item, ticket))
         return svg_string_list
 
-    def store_image(self, svg_string_list, source_dir):
+    def store_image(self, svg_string_list, source_dir, ticket_format):
         preview = SVGPreviewCommunication.get_instance(self.request)
         ## 画像取得
         with open(os.path.join(source_dir, "memo.txt"), "w") as wf0:
             for i, (svg_string, product_item, ticket) in enumerate(svg_string_list):
                 wf0.write(u"* preview{0}.png -- 商品:{1}\n".format(i, product_item.name).encode("utf-8"))
 
-                imgdata_base64 = preview.communicate(self.request, svg_string)
+                imgdata_base64 = preview.communicate(self.request, svg_string, ticket_format)
                 fname = os.path.join(source_dir, "preview{0}.png".format(i))
                 logger.info("writing ... %s", fname)
                 with open(fname, "wb") as wf:

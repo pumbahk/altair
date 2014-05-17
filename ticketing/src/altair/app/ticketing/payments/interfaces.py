@@ -41,11 +41,17 @@ class IPaymentPreparerFactory(Interface):
 
 class IDeliveryPlugin(Interface):
     """ 配送処理プラグイン """
+    def validate_order(request, order_like):
+        """ バリデーション """
+
     def prepare(request, cart):
         """ 前処理 """
 
     def finish(request, cart):
         """ 確定処理 """
+
+    def finish2(request, order):
+        """ 確定処理 (先にOrderを作る場合) """
 
     def finished(request, order):
         """ 確定済みか判定する"""
@@ -58,11 +64,17 @@ class IDeliveryPlugin(Interface):
 
 class IPaymentPlugin(Interface, IPaymentPreparer):
     """ 決済プラグイン"""
+    def validate_order(request, order_like):
+        """ バリデーション """
+
     def prepare(request, cart):
         """ 前処理 """
 
     def finish(request, cart):
         """ 確定処理 """
+
+    def finish2(request, order):
+        """ 確定処理 (先にOrderを作る場合) """
 
     def sales(request, cart):
         """ 売上確定処理 """
@@ -78,11 +90,17 @@ class IPaymentPlugin(Interface, IPaymentPreparer):
 
 class IPaymentDeliveryPlugin(Interface):
     """ 決済配送を一度に行うプラグイン"""
+    def validate_order(request, order_like):
+        """ バリデーション """
+
     def prepare(request, cart):
         """ 前処理 """
 
     def finish(request, cart):
         """ 確定処理 """
+
+    def finish2(request, order):
+        """ 確定処理 (先にOrderを作る場合) """
 
     def refresh(request, order):
         """ 内容変更 """
@@ -119,4 +137,8 @@ class IPayment(Interface):
 
 class IPaymentViewRendererLookup(Interface):
     def __call__(path_or_renderer_name, info, for_, plugin_type, plugin_id, **kwargs):
+        pass
+
+class ISejDeliveryPlugin(Interface):
+    def template_record_for_ticket_format(request, ticket_format):
         pass

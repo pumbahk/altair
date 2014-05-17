@@ -104,7 +104,14 @@ class CooperationView(BaseView):
                 }))
 
             external_venue_code = external_venue_codes[0]
-            external_venue = GettiiVenue.query.filter(GettiiVenue.code==external_venue_code).one()
+
+            external_venue = None
+            try:
+                external_venue = GettiiVenue.query.filter(GettiiVenue.code==external_venue_code).one()
+            except NoResultFound:
+                raise HTTPBadRequest(body=json.dumps({
+                    'message':u'指定された会場コードを持つGettii会場が見つかりませんでした',
+                }))
             id_seat = dict([(ex_seat.l0_id, ex_seat) for ex_seat in external_venue.gettii_seats])
 
             success = {}

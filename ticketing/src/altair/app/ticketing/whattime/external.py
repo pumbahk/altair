@@ -55,8 +55,11 @@ class CandidatesURLDictBuilder(object):
                   "backend_event_id": unicode(backend_event_id) if backend_event_id else ""}
         try:
             res = api.create_response("/api/event/url_candidates?{qs}".format(qs=urllib.urlencode(params)))
+        except urllib2.URLError:
+            logger.error("connection refused. url=%s",api.get_url("/api/event/url_candidates?{qs}".format(qs=urllib.urlencode(params)) ))
+            return {}
         except urllib2.HTTPError as e:
-            logger.warn(str(e))
+            logger.error("%s. url=%s", e, api.get_url("/api/event/url_candidates?{qs}".format(qs=urllib.urlencode(params)) ))
             return {}
         cms_side = json.load(res)
         if cms_side["status"] == "NG":

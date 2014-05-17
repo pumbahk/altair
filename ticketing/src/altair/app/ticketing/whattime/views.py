@@ -35,6 +35,7 @@ def has_cms_login_key(info, request):
     request.accesskey = accesskey
     return True
 
+
 @view_config(route_name="whattime.nowsetting.form", custom_predicates=(has_cms_login_key, ),
              renderer="altair.app.ticketing.whattime:templates/nowsetting/form.html")
 @view_config(route_name="whattime.nowsetting.form", permission="cart_admin",
@@ -45,7 +46,7 @@ def form_view(context, request):
     organization = get_organization(request)
     candidates_url_dict = CandidatesURLDictBuilder(request).build(request.GET.get("event_id"), request.GET.get("backend_event_id"))
     return {"form": form, "now": now, "now_found": has_session_key(request), "organization": organization, 
-            "description_itr": description_iterate(request), "candidates_url_dict": candidates_url_dict}
+            "description_itr": description_iterate(request, HTTPBadRequest), "candidates_url_dict": candidates_url_dict}
 
 def _treat_dict(request, d2):
     D = request.GET.copy()
@@ -54,6 +55,7 @@ def _treat_dict(request, d2):
         if k in D:
             D.pop(k)
     return D
+
 
 @view_config(route_name="whattime.nowsetting.set",custom_predicates=(has_cms_login_key, ), request_method="POST", request_param="submit", 
              renderer="altair.app.ticketing.whattime:templates/nowsetting/form.html")
@@ -66,7 +68,7 @@ def now_set_view(context, request):
         organization = get_organization(request)
         candidates_url_dict = CandidatesURLDictBuilder(request).build(request.GET.get("event_id"), request.GET.get("backend_event_id"))
         return {"form": form, "now": now, "has_key": has_session_key(request), "organization": organization, 
-                "description_itr": description_iterate(request), "candidates_url_dict": candidates_url_dict}
+                "description_itr": description_iterate(request, HTTPBadRequest), "candidates_url_dict": candidates_url_dict}
  
     set_now(request, form.data["now"])
     request.session.flash(u"現在時刻が「{now}」に設定されました".format(now=form.data["now"]))
@@ -82,12 +84,14 @@ def now_goto_view(context, request):
         raise HTTPFound(request.route_path("whattime.nowsetting.form", _query=_treat_dict(request, request.GET)))
     return HTTPFound(request.params.get("redirect_to") or request.route_path("whattime.nowsetting.form"))
 
+
 @view_config(route_name="whattime.nowsetting.set", custom_predicates=(has_cms_login_key, ), request_method="POST", request_param="invalidate")
 @view_config(route_name="whattime.nowsetting.set", permission="cart_admin", request_method="POST", request_param="invalidate")
 def now_invalidate_view(context, request):
     set_now(request, None)
     request.session.flash(u"現在時刻の設定が取り消されました")
     return HTTPFound(request.route_path("whattime.nowsetting.form", _query=_treat_dict(request, request.POST)))
+
 
 @view_config(route_name="whattime.nowsetting.goto", custom_predicates=(has_cms_login_key, ), request_param="redirect_to")
 @view_config(route_name="whattime.nowsetting.goto", permission="cart_admin", request_param="redirect_to")

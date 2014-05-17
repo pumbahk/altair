@@ -30,6 +30,20 @@ class PaymentPluginException(Exception):
                     buf.append('\n')
         return ''.join(buf)
 
+
+class OrderLikeValidationFailure(Exception):
+    def __init__(self, message, path):
+        super(OrderLikeValidationFailure, self).__init__(message, path)
+
+    @property
+    def message(self):
+        return self.args[0]
+
+    @property
+    def path(self):
+        return self.args[1]
+
+
 class PaymentDeliveryMethodPairNotFound(Exception):
     """
     不思議な経路をたどるなどしてPDMPが取得できない.

@@ -7,14 +7,31 @@
 
 <%include file="_stats.html" args="stats=stats" />
 
-<% errors = stats.get('error_orders') %>
 % if errors:
-<h5>インポートできなかった予約のエラー詳細</h5>
-<div class="alert alert-error">
-  % for error in errors.values():
-  <p>${error}</p>
+<h4>インポートできなかった予約のエラー詳細</h4>
+<table class="table">
+  <thead>
+    <tr>
+      <th>CSV内の予約番号</th>
+      <th>新しい予約番号</th>
+      <th>詳細</th>
+    </tr>
+  </thead>
+  <tbody>
+  % for ref, (order_no, errors_for_order) in errors.items():
+    <tr>
+      <td rowspan="${len(errors_for_order)}">${ref}</td>
+      <td rowspan="${len(errors_for_order)}">${order_no}</td>
+    % for r, error in enumerate(errors_for_order):
+      % if r > 0:
+    <tr>
+      % endif
+      <td>${error}</td>
+    </tr>
+    % endfor
   % endfor
-</div>
+  </tbody>
+</table>
 % endif
 
 <form class="form-horizontal" action="${request.route_path('performances.import_orders.index', performance_id=performance.id)}" method="GET">

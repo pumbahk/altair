@@ -1,17 +1,19 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
-<%
-from altair.app.ticketing.cart.helpers import format_currency
-%>
+<%namespace file="_entries_tabs.html" name="tabs" />
+
 <%block name="style">
 <link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
 </%block>
+
 <%block name="fulltitle">
 Altair Backend -- ${lot.event.title}[${lot.name}]
 </%block>
+
 <%block name="javascript">
 </%block>
+
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
       names=[u'イベント', lot.event.title, u'抽選', lot.name],
@@ -22,19 +24,22 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
       ]
   )}
 </%block>
+
 <div class="page-header">
   <h1>
     ${lot.event.title}<br />
     <small>${lot.name}</small>
   </h1>
-  <a class="btn" href="${request.route_url('lots.entries.index', lot_id=lot.id)}">申し込み状況</a>
 </div>
+
+${tabs.tabs(request)}
+
 <div class="row-fluid">
-  <div class="span9">
+  <div class="span12">
     <table class="table table-bordered table-condensed">
       <tbody>
         <tr>
-          <th>抽選期間</th>
+          <th class="span3">抽選期間</th>
           <td>${vh.datetime(lot.start_at)} ${vh.datetime(lot.end_at)}</td>
         </tr>
         <tr>
@@ -60,95 +65,98 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
         </tr>
         <tr>
           <th>抽選カートURL</th>
-          <td><a href="${agreement_lots_cart_url}">${agreement_lots_cart_url}</a></td>
+          <td>
+            <a href="${lots_cart_url}">${lots_cart_url}</a>
+            (<a href="${lots_cart_now_url}">時間指定して抽選カート購入</a>)
+          </td>
         </tr>
         <tr>
           <th>同意抽選カートURL</th>
-          <td><a href="${lots_cart_url}">${lots_cart_url}</a></td>
+          <td>
+            <a href="${agreement_lots_cart_url}">${agreement_lots_cart_url}</a>
+            (<a href="${agreement_lots_cart_now_url}">時間指定して同意抽選カート購入</a>)
+          </td>
         </tr>
        </tbody>
     </table>
     <a class="btn" href="${request.route_url('lots.edit', lot_id=lot.id)}">編集</a>
-
   </div>
 </div>
 
-<div>
-<h2>決済引取方法</h2>
-    <form action="${request.url}" method="post">
-    <table class="table table-bordered table-condensed">
-      <thead>
-        <tr>
-            <th>&nbsp;</th>
-            <th>決済方法</th>
-            <th>引取方法</th>
-            <th>状態</th>
-        </tr>
-      </thead>
-      <tbody>
+<hr>
+
+<h3>決済引取方法</h3>
+<form action="${request.url}" method="post">
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>&nbsp;</th>
+        <th>決済方法</th>
+        <th>引取方法</th>
+        <th>状態</th>
+      </tr>
+    </thead>
+    <tbody>
     %for pdmp in lot.sales_segment.sales_segment_group.payment_delivery_method_pairs:
-        <tr>
-            <td><input type="checkbox" name="pdmp_id" value="${pdmp.id}" ${u"checked" if pdmp in lot.sales_segment.payment_delivery_method_pairs else u""} /></td>
-            <td>${pdmp.payment_method.name}</td>
-            <td>${pdmp.delivery_method.name}</td>
-            <td>${u"有効" if pdmp in lot.sales_segment.payment_delivery_method_pairs else u"無効"}</td>
-        </tr>
+      <tr>
+        <td><input type="checkbox" name="pdmp_id" value="${pdmp.id}" ${u"checked" if pdmp in lot.sales_segment.payment_delivery_method_pairs else u""} /></td>
+        <td>${pdmp.payment_method.name}</td>
+        <td>${pdmp.delivery_method.name}</td>
+        <td>${u"有効" if pdmp in lot.sales_segment.payment_delivery_method_pairs else u"無効"}</td>
+      </tr>
     %endfor
-      </tbody>
-    </table>
-    <div class="btn-group">
-        <button type="submit" name="action-update-pdmp" class="btn">更新</button>
-    </div>
+    </tbody>
+  </table>
+  <div class="btn-group">
+    <button type="submit" name="action-update-pdmp" class="btn">更新</button>
+  </div>
 </form>
 
+<hr>
 
-</div>
 <%include file="/lots/_product_list.html" args="lot=lot"/>
-<script type="text/javascript">
-</script>
 
-<h2>商品明細</h2>
+<hr>
+
+<h3>商品明細</h3>
 <div style="overflow-x: scroll;">
-<table id="products-grid"></table>
+  <table id="products-grid"></table>
 </div>
 <button id="sales-segment-save_button" class="btn">保存</button>
 <button id="sales-segment-clear_button" class="btn">リセット</button>
 <%
-import json
-grid = json.dumps(product_grid)
-
+  import json
+  grid = json.dumps(product_grid)
 %>
 <script>
 $(function() {
-
-    $.fn.linkFormatter = function(cellvalue, options, rowObject) {
-      var link = '';
-/*
-      if (!rowObject.level) {
-        link += '<a href="javascript:addRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-plus"></i></a>';
-      }
-*/
-      if (rowObject.product_item) {
-        link += '<a href="javascript:deleteRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-trash"></i></a>';
-      }
-/*
-      if (rowObject.ticket_bundle && rowObject.ticket_bundle.id) {
-        link += '<a href="javascript:preview_ticket(' + rowObject.product_item.id + ')"><i class="icon-eye-open"></i></a>';
-      }
-*/
-      return link;
-    };
-
+  $.fn.linkFormatter = function(cellvalue, options, rowObject) {
+    var link = '';
+    /*
+    if (!rowObject.level) {
+      link += '<a href="javascript:addRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-plus"></i></a>';
+    }
+    */
+    if (rowObject.product_item) {
+      link += '<a href="javascript:deleteRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-trash"></i></a>';
+    }
+    /*
+    if (rowObject.ticket_bundle && rowObject.ticket_bundle.id) {
+      link += '<a href="javascript:preview_ticket(' + rowObject.product_item.id + ')"><i class="icon-eye-open"></i></a>';
+    }
+    */
+    return link;
+  };
 
   var productGrid = ${grid|n};
   var grid = $('#products-grid')
 
-productGrid.colModel.push(
-{"label": ' ',
-"name": 'link',
-"width": 80,
-formatter:grid.linkFormatter}
-);
+  productGrid.colModel.push({
+    "label": ' ',
+    "name": 'link',
+    "width": 80,
+    formatter:grid.linkFormatter
+  });
 
   productGrid['afterSaveCell'] = function (id, name, val, iRow, iCol){
     grid.setCell(id, name, '', {background:'#F89406'});
@@ -185,7 +193,6 @@ formatter:grid.linkFormatter}
     row['id'] = rowId;
     grid.setRetainChanges([row]);
   }
-
 
   $('#sales-segment-clear_button').click(function(){
     grid.clearRetainChanges();

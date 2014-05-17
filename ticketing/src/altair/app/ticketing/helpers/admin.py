@@ -5,7 +5,7 @@ from markupsafe import Markup
 from pyramid.security import has_permission as security_has_permission
 from pyramid.security import ACLAllowed
 from webhelpers.util import html_escape
-from altair.app.ticketing.core.models import OrderCancelReasonEnum
+from altair.app.ticketing.orders.models import OrderCancelReasonEnum
 from altair.app.ticketing.permissions.utils import RouteConfig, PermissionCategory
 
 def render_label(label_text, label_type=None):

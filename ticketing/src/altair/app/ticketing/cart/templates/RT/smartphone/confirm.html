@@ -69,7 +69,7 @@
         <div class="dispBoxInner">
           <div id="name">
             ${cart.performance.event.title}<br/>
-            ${h.performance_date(cart.performance)}(予定)<br/>
+            ${h.performance_datetime(cart.performance)}(予定)<br/>
             ${cart.performance.venue.name}
           </div>
           <br/>
@@ -77,7 +77,7 @@
           <table id="contentsOfShopping" summary="席種、金額などのお買い物内容" class="methodArea">
             %for product in cart.items:
                 <tr id="commission">
-                  <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong>${product.seat_quantity}</strong>枚<br/></th>
+                  <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong>${product.seat_quantity}</strong>枚<br/></th>
                   <td>&nbsp;</td>
                   <td>&nbsp;</td>
                   <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
@@ -210,13 +210,13 @@
 	</div>
   </div>
   % endif
-  
+
+  <input id="btn-back" class="btn btn-primary" type="submit" name="back" value="座席選択に戻る" />
   % if delegator:
     ${delegator['submit']}
   % else:
     <input id="btn-complete" class="btn btn-primary" type="submit" value="購入する" />
   % endif
-  <input id="btn-back" class="btn btn-primary" type="submit" name="back" value="座席選択に戻る" /><br/>
   <div class="dispBox">
     <div class="dispBoxInner">
       ※座席選択に戻るボタンを押すと、ここまでのお申し込みがキャンセルになります。

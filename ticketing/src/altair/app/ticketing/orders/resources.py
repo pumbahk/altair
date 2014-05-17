@@ -15,9 +15,6 @@ from altair.app.ticketing.models import (
     )
 
 from altair.app.ticketing.core.models import (
-    Order, 
-    OrderedProduct,
-    OrderedProductItem,
     ProductItem,
     Product,
     Seat,
@@ -26,7 +23,12 @@ from altair.app.ticketing.core.models import (
     TicketFormat_DeliveryMethod,
     TicketBundle,
     TicketFormat,
-    OrderedProductItemToken
+    )
+from altair.app.ticketing.orders.models import (
+    Order, 
+    OrderedProduct,
+    OrderedProductItem,
+    OrderedProductItemToken,
     )
 from altair.app.ticketing.mailmags.models import(
     MailSubscription,
@@ -114,7 +116,7 @@ class OrderShowFormProvider(object):
 
     def get_order_form(self):
         order = self.order        
-        return OrderForm(record_to_multidict(order))
+        return OrderForm(record_to_multidict(order), context=self.context)
 
     def get_order_reserve_form(self):
         order = self.order        

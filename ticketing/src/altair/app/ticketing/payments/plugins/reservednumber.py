@@ -7,6 +7,7 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from zope.interface import implementer
 from altair.app.ticketing.core import models as c_models
+from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IOrderDelivery
 from altair.app.ticketing.cart.interfaces import ICartDelivery, ICartPayment
 from altair.app.ticketing.mails.interfaces import (
@@ -84,17 +85,23 @@ def reserved_number_payment_confirm_viewlet(context, request):
 @implementer(IDeliveryPlugin)
 class ReservedNumberDeliveryPlugin(object):
     """ 窓口引き換え予約番号プラグイン"""
+
+    def validate_order(self, request, order_like):
+        """ なにかしたほうが良い?""" 
+
     def prepare(self, request, cart):
         """ 前処理 なし"""
 
     def finish(self, request, cart):
         """ 確定処理 """
-        seq_no = sensible_alnum_decode(cart.order_no[2:])
+        self.finish2(request, cart)
+
+    def finish2(self, request, order_like):
+        seq_no = sensible_alnum_decode(order_like.order_no[2:])
         logger.debug('seq_no = %s' % seq_no)
         number = hashlib.md5(str(seq_no)).hexdigest()
-        reserved_number = m.ReservedNumber(order_no=cart.order_no, number=number)
+        reserved_number = m.ReservedNumber(order_no=order_like.order_no, number=number)
         m.DBSession.add(reserved_number)
-        logger.debug(u"引き換え番号: %s" % reserved_number.number)
 
     def finished(self, request, order):
         """ 引換番号が発行されていること """
@@ -138,6 +145,10 @@ def rand_string(seed, length):
 @implementer(IPaymentPlugin)
 class ReservedNumberPaymentPlugin(object):
     """ 窓口支払い番号プラグイン"""
+
+    def validate_order(self, request, order_like):
+        """ なにかしたほうが良い?""" 
+
     def prepare(self, request, cart):
         """ 前処理 なし"""
 
@@ -151,7 +162,7 @@ class ReservedNumberPaymentPlugin(object):
                 break
         m.DBSession.add(reserved_number)
         logger.debug(u"支払い番号: %s" % reserved_number.number)
-        order = c_models.Order.create_from_cart(cart)
+        order = order_models.Order.create_from_cart(cart)
         cart.finish()
 
         return order

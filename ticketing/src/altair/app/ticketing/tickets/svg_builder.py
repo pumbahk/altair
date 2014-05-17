@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from sqlalchemy.exc import InvalidRequestError
-from altair.app.ticketing.core.models import Order
+from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.core.utils import (
     merge_dict_recursive,
     tree_dict_from_flatten

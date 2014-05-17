@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 from altair.app.ticketing.seed import DataSet
-from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem
+from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
 from .product import *
 from .venue import *
 from .user import *

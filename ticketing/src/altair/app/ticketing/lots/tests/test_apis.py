@@ -7,9 +7,10 @@ from altair.app.ticketing.testing import _setup_db, _teardown_db
 from ..testing import _create_products, login
 
 dependency_modules = [
-    'altair.app.ticketing.core.models',
+    'altair.app.ticketing.orders.models',
     'altair.app.ticketing.users.models',
     'altair.app.ticketing.lots.models',
+    'altair.app.ticketing.core.models',
 ]
 
 # class get_productsTests(unittest.TestCase):
@@ -276,6 +277,14 @@ class get_entryTests(unittest.TestCase):
         self.assertEqual(result.id, entry.id)
 
 class entry_infoTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.session = _setup_db(modules=dependency_modules)
+
+    @classmethod
+    def tearDownClass(self):
+        _teardown_db()
+
     def _callFUT(self, *args, **kwargs):
         from .. import api
         return api._entry_info(*args, **kwargs)

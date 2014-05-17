@@ -13,12 +13,13 @@ import transaction
 from altair.augus.exporters import AugusExporter
 from altair.augus.parsers import AugusParser
 from altair.augus.protocols import AchievementRequest
+from altair import multilock
 from altair.app.ticketing.core.models import (
     Mailer,
     AugusPerformance,
     )
 from ..exporters import AugusAchievementExporter
-from .. import multilock
+
 
 logger = logging.getLogger(__name__)
 

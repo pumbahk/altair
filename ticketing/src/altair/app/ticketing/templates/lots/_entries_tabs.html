@@ -1,15 +1,19 @@
 <%def name="tabs(request)">
 <div>
-<ul class="nav nav-tabs">
-<%self:tab_item request="${request}" route_name='lots.entries.index'>
-  <a href="${request.route_url('lots.entries.index', lot_id=lot.id)}">抽選申し込み状況</a>
-</%self:tab_item>
-<%self:tab_item request="${request}" route_name='lots.entries.search'>
-  <a href="${request.route_url('lots.entries.search', lot_id=lot.id)}">検索</a>
-</%self:tab_item>
-<%self:tab_item request="${request}" route_name='lots.entries.elect'>
-  <a href="${request.route_url('lots.entries.elect', lot_id=lot.id)}">当選処理</a>
-</%self:tab_item>
+  <ul class="nav nav-tabs">
+  <%self:tab_item request="${request}" route_name='lots.show'>
+    <a href="${request.route_url('lots.show', lot_id=lot.id)}">抽選設定</a>
+  </%self:tab_item>
+  <%self:tab_item request="${request}" route_name='lots.entries.index'>
+    <a href="${request.route_url('lots.entries.index', lot_id=lot.id)}">レポート</a>
+  </%self:tab_item>
+  <%self:tab_item request="${request}" route_name='lots.entries.search'>
+    <a href="${request.route_url('lots.entries.search', lot_id=lot.id)}">申込検索</a>
+  </%self:tab_item>
+  <%self:tab_item request="${request}" route_name='lots.entries.elect'>
+    <a href="${request.route_url('lots.entries.elect', lot_id=lot.id)}">当選/落選</a>
+  </%self:tab_item>
+  </ul>
 </div>
 </%def>
 

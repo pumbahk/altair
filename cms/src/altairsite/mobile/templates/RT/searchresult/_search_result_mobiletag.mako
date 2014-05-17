@@ -1,4 +1,4 @@
-<%page args="events, word, num, page, page_num, path, week, genre, sub_genre, area, mobile_tag"/>
+<%page args="events, word, num, page, page_num, path, week, genre, sub_genre, area, mobile_tag, deal_open, deal_close"/>
 <%namespace file="../common/tags_mobile.mako" name="m" />
 % if int(num):
     ${num}件見つかりました。
@@ -16,7 +16,11 @@
 <div>
     % for count, event in enumerate(events):
 <a href="/eventdetail?event_id=${event.id}&genre=${genre}&sub_genre=${sub_genre}">${event.title}</a><br />
-　販売期間：${event.deal_open.year}/${str(event.deal_open.month).zfill(2)}/${str(event.deal_open.day).zfill(2)}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${str(event.deal_close.month).zfill(2)}/${str(event.deal_close.day).zfill(2)}(${week[event.deal_close.weekday()]})<br />
+% if deal_open[count] or deal_close[count]:
+　販売期間：${deal_open[count]}〜${deal_close[count]}<br/>
+% else:
+　販売期間：販売終了<br/>
+% endif
         % if event.performances[0]:
 　会場：${event.performances[0].venue}<br />
             % if count < len(events) - 1:

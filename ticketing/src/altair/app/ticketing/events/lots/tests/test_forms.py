@@ -3,19 +3,21 @@ from pyramid import testing
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
 
-class LotEntryReportMailFormTests(unittest.TestCase):
+class LotEntryReportSettingFormTests(unittest.TestCase):
 
     def setUp(self):
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
+            'altair.app.ticketing.lots.models',
+            'altair.app.ticketing.orders.models',
         ])
 
     def tearDown(self):
         _teardown_db()
 
     def _getTarget(self):
-        from ..forms import LotEntryReportMailForm
-        return LotEntryReportMailForm
+        from ..forms import LotEntryReportSettingForm
+        return LotEntryReportSettingForm
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
@@ -40,7 +42,10 @@ class LotEntryReportMailFormTests(unittest.TestCase):
         obj = None
         organization = self._organization()
         operator = organization.operators[0]
-        target = self._makeOne(formdata, obj, organization_id=organization.id)
+        context = testing.DummyResource(
+            organization=testing.DummyModel(id=organization.id)
+            )
+        target = self._makeOne(formdata, obj, context=context)
 
         self.assertEqual(target.operator_id.choices,
                          [('', ''), (operator.id, operator.name)])
@@ -91,7 +96,8 @@ class LotEntryReportMailFormTests(unittest.TestCase):
         target = self._makeOne(formdata, obj)
         target.event_id.data = event.id
         target.lot_id.data = lot.id
-        target.time.data = time
+        target.report_hour.data = time[0:2]
+        target.report_minute.data = time[2:]
         target.frequency.data = ReportFrequencyEnum.Weekly.v[0]
         target.day_of_week.data = day_of_week
         target.operator_id.data = operator.id
@@ -151,12 +157,13 @@ class LotEntryReportMailFormTests(unittest.TestCase):
         target = self._makeOne(formdata, obj)
         target.event_id.data = event.id
         target.lot_id.data = lot.id
-        target.time.data = time
+        target.report_hour.data = time[0:2]
+        target.report_minute.data = time[2:]
         target.frequency.data = ReportFrequencyEnum.Weekly.v[0]
         target.day_of_week.data = day_of_week
         target.email.data = email
 
-        field = testing.DummyModel(data=True)
+        field = testing.DummyModel(data=setting.email)
         assert self.session.query(LotEntryReportSetting).count() == 1
 
         try:

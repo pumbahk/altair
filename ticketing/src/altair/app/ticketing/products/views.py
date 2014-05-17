@@ -13,7 +13,7 @@ from paste.util.multidict import MultiDict
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
-from altair.app.ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment, SalesSegmentGroup, Organization, StockHolder
+from altair.app.ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment, SalesSegmentGroup, Organization, StockHolder, TicketBundle
 from altair.app.ticketing.products.forms import ProductForm, ProductItemForm, ProductAndProductItemForm
 from altair.app.ticketing.loyalty.models import PointGrantSetting
 from .forms import DeliveryMethodSelectForm
@@ -47,7 +47,12 @@ class ProductAndProductItem(BaseView):
             if performance is None:
                 return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        f = ProductAndProductItemForm(performance=performance, sales_segment=sales_segment, applied_point_grant_settings=(sales_segment and [pgs.id for pgs in sales_segment.point_grant_settings]))
+        ticket_bundles = TicketBundle.filter_by(event_id=performance.event.id).all()
+        ticket_bundle_default = 0
+        if ticket_bundles:
+            ticket_bundle_default = ticket_bundles[0].id
+
+        f = ProductAndProductItemForm(performance=performance, sales_segment=sales_segment, applied_point_grant_settings=(sales_segment and [pgs.id for pgs in sales_segment.point_grant_settings]), ticket_bundle_id=ticket_bundle_default)
 
         return {
             'form': f,

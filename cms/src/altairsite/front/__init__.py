@@ -1,4 +1,5 @@
 # coding: utf-8
+from pyramid.exceptions import ConfigurationError
 
 def install_resolver(config):
     settings = config.registry.settings
@@ -8,7 +9,7 @@ def install_resolver(config):
                                    checkskip=True)
     config.registry.registerUtility(layout_lookup, ILayoutModelResolver)
 
-def install_lookupwrapper(config, name="intercept"):
+def install_lookupwrapper(config, name="intercept", sync_trigger_attribute_name="synced_at"):
     from beaker.cache import cache_regions #xxx:
     from pyramid.mako_templating import IMakoLookup
     from altairsite.front.renderer import (
@@ -25,9 +26,16 @@ def install_lookupwrapper(config, name="intercept"):
                              S3Loader(bucket_name=settings["s3.bucket_name"],
                                       access_key=settings["s3.access_key"],
                                       secret_key=settings["s3.secret_key"],))
+
+    from altaircms.layout.models import Layout
+    if not hasattr(Layout, sync_trigger_attribute_name):
+        raise ConfigurationError("Layout hasn't this attribute: {}".format(sync_trigger_attribute_name))
+
     factory = LayoutModelLookupWrapperFactory(directory_spec=settings["altaircms.layout_directory"],
                                               loader=loader,
-                                              prefix=settings["altaircms.layout_s3prefix"])
+                                              prefix=settings["altaircms.layout_s3prefix"],
+                                              sync_trigger_attribute_name=sync_trigger_attribute_name)
+
     config.registry.adapters.register([IMakoLookup], ILookupWrapperFactory, name=name, value=factory)
 
 def install_page_key_generator(config):
@@ -65,7 +73,8 @@ def includeme(config):
     """
     config.add_route('front', '{page_name:.*}', factory=".resources.PageRenderingResource")
     config.include(install_resolver)
-    config.include(install_lookupwrapper, "intercept")
+    config.add_directive("set_lookup_wrapper", "altairsite.front.install_lookupwrapper")
+    config.set_lookup_wrapper(name="intercept", sync_trigger_attribute_name="synced_at")
     config.include(install_pagecache)
     config.include(install_page_key_generator)
     config.add_tween('altairsite.front.cache.cached_view_tween', under='altair.preview.tweens.preview_tween')

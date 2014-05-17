@@ -25,7 +25,7 @@ from altair.auth import who_api as get_who_api
 from altair.app.ticketing.fc_auth.api import do_authenticate
 from .api import safe_get_contact_url, is_mypage_organization, is_rakuten_auth_organization
 
-from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
+from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
 
 logger = logging.getLogger(__name__)
 

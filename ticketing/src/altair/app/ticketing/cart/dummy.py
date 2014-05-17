@@ -14,17 +14,24 @@ def includeme(config):
     config.add_route("dummy.cart.payment", "/dummy/payment")
     config.add_view(payment_view, route_name='dummy.cart.payment', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/pc/payment.html"))
     config.add_view(payment_view, route_name='dummy.cart.payment', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
+    config.add_view(payment_view, route_name='dummy.cart.payment', request_type='altair.mobile.interfaces.ISmartphoneRequest', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/smartphone/payment.html"))
+
 
     config.add_route("dummy.payment.confirm", "/dummy/confirm")
     config.add_view(confirm_view, route_name='dummy.payment.confirm', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/pc/confirm.html"))
     config.add_view(confirm_view, route_name='dummy.payment.confirm', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
+    config.add_view(confirm_view, route_name='dummy.payment.confirm', request_type='altair.mobile.interfaces.ISmartphoneRequest', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/smartphone/confirm.html"))
+
 
     config.add_route("dummy.payment.complete", "/dummy/complete")
     config.add_view(complete_view, route_name='dummy.payment.complete', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/pc/completion.html"))
     config.add_view(complete_view, route_name='dummy.payment.complete', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
+    config.add_view(complete_view, route_name='dummy.payment.complete', request_type='altair.mobile.interfaces.ISmartphoneRequest', request_method="GET", decorator=overwrite_validation, renderer=selectable_renderer("%(membership)s/smartphone/completion.html"))
 
     config.add_route("dummy.timeout", "/dummy/timeout")
     config.add_view(timeout_view, route_name="dummy.timeout", decorator=overwrite_validation, renderer=selectable_renderer("altair.app.ticketing.cart:templates/%(membership)s/pc/timeout.html"))
+
+
     config.add_route("dummy.notfound", "/dummy/notfound")
     config.add_view(notfound_view, route_name="dummy.notfound", decorator=overwrite_validation, renderer=selectable_renderer("altair.app.ticketing.cart:templates/%(membership)s/pc/errors/notfound.html"))
     config.add_view(notfound_view, route_name="dummy.notfound", request_type='altair.mobile.interfaces.IMobileRequest', decorator=overwrite_validation, renderer=selectable_renderer("altair.app.ticketing.cart:templates/%(membership)s/mobile/errors/notfound.html"))
@@ -45,10 +52,10 @@ def overwrite_validation(fn):
 
 def index_view(context, request):
     from altair.app.ticketing.core.models import Organization, Host
-    links = [("dummy.cart.payment", u"支払方法選択画面"), 
-             ("dummy.payment.confirm", u"注文確認画面"), 
-             ("dummy.payment.complete", u"注文完了画面"), 
-             ("dummy.timeout", u"タイムアウト画面"), 
+    links = [("dummy.cart.payment", u"支払方法選択画面"),
+             ("dummy.payment.confirm", u"注文確認画面"),
+             ("dummy.payment.complete", u"注文完了画面"),
+             ("dummy.timeout", u"タイムアウト画面"),
              ("dummy.notfound", u"404画面")]
     template = Template(u"""
 %for organization in organizations:
@@ -68,6 +75,7 @@ def _dummy_performance():
     class performance:
         name = "Hey"
         start_on = datetime.now()
+        end_on = datetime.now()
         id = 1111
         class event:
             title = "event"
@@ -84,6 +92,7 @@ def _dummy_order():
     order.transaction_fee = 100
     order.system_fee = 200
     order.delivery_fee = 300
+    order.special_fee = 400
     order.total_amount = 500
     order.payment_delivery_pair.payment_method.payment_plugin_id = 1
     order.payment_delivery_pair.delivery_method.delivery_plugin_id = 1
@@ -94,9 +103,11 @@ def _dummy_cart():
     cart = mock.Mock()
     cart.performance = _dummy_performance()
     cart.items = []
+    cart.products = []
     cart.transaction_fee = 100
     cart.system_fee = 200
     cart.delivery_fee = 300
+    cart.special_fee = 400
     cart.total_amount = 500
     cart.payment_delivery_pair.payment_method.payment_plugin_id = 1
     cart.payment_delivery_pair.delivery_method.delivery_plugin_id = 1
@@ -106,7 +117,7 @@ def _dummy_cart():
 def _get_mailmagazines_from_organization(organization):
     return mailmag_models.MailMagazine.query.outerjoin(mailmag_models.MailSubscription) \
             .filter(mailmag_models.MailMagazine.organization==organization)
-           
+
 
 def confirm_view(context, request):
     import mock
@@ -131,12 +142,12 @@ def payment_view(context, request):
     from .schemas import ClientForm
     request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
     with mock.patch("altair.rakuten_auth.api.authenticated_user"):
-        params=dict(form=ClientForm(), 
-                    payment_delivery_methods=[], 
-                    user=mock.Mock(), 
+        params=dict(form=ClientForm(),
+                    payment_delivery_methods=[],
+                    user=mock.Mock(),
                     user_profile=mock.Mock())
         return params
-    
+
 def timeout_view(context, request):
     return {}
 

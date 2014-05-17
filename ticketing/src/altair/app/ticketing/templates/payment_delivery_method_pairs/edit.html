@@ -26,14 +26,32 @@
     <% from altair.app.ticketing.payments import plugins %>
     var sej_payment_method_ids = ${[int(pm.id) for pm in payment_methods if pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID]};
     var sej_delivery_method_ids = ${[int(dm.id) for dm in delivery_methods if dm.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID]};
+    var sej_field = $('form').find('#sej_field');
+    var issuing_interval_days = sej_field.find('input[id="issuing_interval_days"]');
+    var issuing_interval_days_default = issuing_interval_days.val();
+    var issuing_interval_days_changed = false;
+
+    issuing_interval_days.on('change', function () {
+      issuing_interval_days_changed = true;
+    });
 
     var display_sej_field = function(){
-      var sej_field = $('form').find('#sej_field');
       var pm_id = parseInt($('#payment_method_id').val());
       var dm_id = parseInt($('#delivery_method_id').val());
-      if ($.inArray(pm_id, sej_payment_method_ids) >= 0 || $.inArray(dm_id, sej_delivery_method_ids) >= 0) {
+      var payment_method_is_sej = $.inArray(pm_id, sej_payment_method_ids) >= 0;
+      var delivery_method_id_sej = $.inArray(dm_id, sej_delivery_method_ids) >= 0;
+      if (payment_method_is_sej || delivery_method_id_sej) {
         sej_field.css('display', 'block');
         sej_field.find('input').removeAttr('disabled');
+        if (!payment_method_is_sej) {
+          if (!issuing_interval_days_changed) {
+            issuing_interval_days.val('1');
+          }
+        } else {
+          if (!issuing_interval_days_changed) {
+            issuing_interval_days.val(issuing_interval_days_default);
+          }
+        }
       } else {
         sej_field.css('display', 'none');
         sej_field.find('input').attr('disabled', 'disabled');

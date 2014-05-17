@@ -19,6 +19,7 @@ from altair.app.ticketing.users import api as user_api
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.core.interfaces import IOrderQueryable
 from altair.app.ticketing.users import models as u_models
 from . import models as m
@@ -298,11 +299,11 @@ class TicketingCartResourceBase(object):
                 if IOrderQueryable.providedBy(container):
                     slave_session = get_db_session(self.request, name="slave")
                     query = slave_session.query(
-                        sql.expression.func.count(sql.expression.distinct(c_models.Order.id)),
-                        sql.expression.func.sum(c_models.OrderedProductItem.quantity)
+                        sql.expression.func.count(sql.expression.distinct(order_models.Order.id)),
+                        sql.expression.func.sum(order_models.OrderedProductItem.quantity)
                         ) \
-                        .outerjoin(c_models.OrderedProduct, c_models.Order.items) \
-                        .outerjoin(c_models.OrderedProductItem, c_models.OrderedProduct.elements)
+                        .outerjoin(order_models.OrderedProduct, order_models.Order.items) \
+                        .outerjoin(order_models.OrderedProductItem, order_models.OrderedProduct.elements)
                     if user:
                         query = container.query_orders_by_user(user, filter_canceled=True, query=query)
                     elif mail_addresses:

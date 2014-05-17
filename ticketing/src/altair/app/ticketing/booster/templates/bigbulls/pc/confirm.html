@@ -3,8 +3,8 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<title>${layout.title}</title>
-  <link rel="stylesheet" type="text/css" href="${layout.static_url('static/style.css')}" media="all" />
-  <link rel="shortcut icon" href="${layout.static_url("static/favicon.ico")}" />
+  <link rel="stylesheet" type="text/css" href="${layout.static_url('pc/css/style2.css')}" media="all" />
+  <link rel="shortcut icon" href="${layout.static_url("pc/images/favicon.ico")}" />
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
   <script type="text/javascript">
   $(function() {
@@ -15,7 +15,7 @@
 <body>
 <div align="center">
   <div class="header">
-	  <img src="${layout.static_url('static/images/head_title.png')}" alt="${layout.team_name}" width="780" height="135" />
+	  <img src="${layout.static_url('pc/images/head_title.png')}" alt="${layout.team_name}" width="780" height="135" />
   </div>
   <h1 class="title">${layout.title}</h1>
   <form id="form1" action="${request.route_url('payment.finish')}" method="post">

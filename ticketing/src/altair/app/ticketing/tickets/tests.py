@@ -54,14 +54,16 @@ class TicketsUtilsTest(TestCase):
             DeliveryMethodPlugin,
             Product,
             ProductItem,
-            Order,
-            OrderedProduct,
-            OrderedProductItem,
             Ticket,
             TicketFormat,
             TicketBundle,
             TicketBundleAttribute,
             ShippingAddress,
+            )
+        from altair.app.ticketing.orders.models import (
+            Order,
+            OrderedProduct,
+            OrderedProductItem,
             OrderedProductItemToken,
             )
         from altair.app.ticketing.cart.models import (

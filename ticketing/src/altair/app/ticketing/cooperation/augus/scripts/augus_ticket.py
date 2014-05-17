@@ -17,9 +17,10 @@ from altair.app.ticketing.core.models import (
     )
 from altair.augus.protocols import TicketSyncRequest
 from altair.augus.parsers import AugusParser
+from altair import multilock
 from ..importers import AugusTicketImpoter
 from ..errors import AugusDataImportError
-from .. import multilock
+
 
 logger = logging.getLogger(__name__)
 

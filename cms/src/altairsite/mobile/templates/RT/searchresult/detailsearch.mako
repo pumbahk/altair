@@ -13,5 +13,6 @@
                 ,genre=form.genre.data, sub_genre=form.sub_genre.data, area=form.area.data
                 ,sale=form.sale.data, sales_segment=form.sales_segment.data, since_year=form.since_year.data
                 ,since_month=form.since_month.data, since_day=form.since_day.data
-                ,year=form.year.data, month=form.month.data, day=form.day.data, errors=form.errors"/>
+                ,year=form.year.data, month=form.month.data, day=form.day.data, errors=form.errors
+                ,deal_open=form.deal_open.data, deal_close=form.deal_close.data"/>
 <%include file='../detailsearch/_form.mako' args="form=form" />

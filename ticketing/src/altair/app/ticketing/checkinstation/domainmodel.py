@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
 import logging
 logger = logging.getLogger(__name__)
-from altair.app.ticketing.core.models import Performance, Event, Order, OrderedProductItemToken
+from altair.app.ticketing.core.models import Performance, Event
+from altair.app.ticketing.orders.models import Order, OrderedProductItemToken
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from pyramid.decorator import reify
