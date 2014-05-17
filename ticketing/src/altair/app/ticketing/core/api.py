@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 def refresh_organization(request):
     if hasattr(request, "organization"):
+        from altair.app.ticketing.models import DBSession
         request.organization = DBSession.merge(request.organization)
 
 def get_organization(request, override_host=None):
