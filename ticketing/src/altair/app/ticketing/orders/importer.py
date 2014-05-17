@@ -808,7 +808,7 @@ class ImportCSVParser(object):
         def exc(message):
             return ImportCSVParserError(order_no_or_key, message, IMPORT_ERROR, getattr(reader, 'line_num', None))
         context = self.create_context(exc)
-        errors = {}
+        errors = OrderedDict()
         for row in reader:
             order_no_or_key = row.get(u'order.order_no')
             if order_no_or_key is None:
@@ -881,7 +881,7 @@ class OrderImporter(object):
         ref = None
         cart = None
         carts_to_be_imported = []
-        errors = {}
+        errors = OrderedDict()
         refs_excluded = set()
         no_update = order_import_task.import_type & (ImportTypeEnum.Create.v | ImportTypeEnum.Update.v) == ImportTypeEnum.Create.v
 
@@ -996,7 +996,7 @@ class OrderImporter(object):
                                 if len(cpi.seats) > 0:
                                     add_error(u'自動配席が有効になっていて、かつ一部の座席が指定されています。指定のない座席は自動的に決定されます。 (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity), level=IMPORT_WARNING)
                                 else:
-                                    if cart.original_order is None:
+                                    if cart.original_order is not None:
                                         add_error(u'予約情報の更新で自動配席が有効になっていて、座席指定がありません。指定のない座席は自動的に決定されます。 (予定配席数=%d)' % (cpi.quantity,), level=IMPORT_WARNING)
 
                         for seat in cpi.seats:
@@ -1061,7 +1061,7 @@ class OrderImporter(object):
         carts, validation_errors = self.pass2(carts, task) # ここで carts はインポート可能なものに絞られる
 
         # パーサーのエラーとバリデーションエラーを合体
-        combined_errors = dict((ref, [error]) for ref, error in six.iteritems(parser_errors))
+        combined_errors = OrderedDict((ref, [error]) for ref, error in six.iteritems(parser_errors))
         for ref, errors in six.iteritems(validation_errors):
             errors_for_order = combined_errors.get(ref)
             if errors_for_order is None:
