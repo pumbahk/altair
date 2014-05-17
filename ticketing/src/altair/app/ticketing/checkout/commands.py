@@ -13,6 +13,7 @@ from sqlalchemy.orm import join
 
 from altair.app.ticketing.core import models as m
 from altair.app.ticketing.cart import models as m_cart
+from altair.app.ticketing.orders import models as m_order
 from altair.app.ticketing.checkout import models as m_checkout
 from altair.app.ticketing.payments.plugins import CHECKOUT_PAYMENT_PLUGIN_ID
 from altair.app.ticketing.payments.plugins.checkout import CheckoutPlugin
@@ -33,12 +34,12 @@ def rakuten_checkout_sales():
     orders_to_skip = set()
     while True:
         # あんしん支払いでオーソリ済みになっているOrderを売上済みにする
-        query = m.Order.query.filter(m.Order.canceled_at==None)
-        query = query.select_from(join(m.Order, m_cart.Cart, m.Order.order_no==m_cart.Cart._order_no))
+        query = m_order.Order.query.filter(m_order.Order.canceled_at==None)
+        query = query.select_from(join(m_order.Order, m_cart.Cart, m_order.Order.order_no==m_cart.Cart._order_no))
         query = query.join(m_checkout.Checkout).filter(m_checkout.Checkout.sales_at==None)
 
         if orders_to_skip:
-            query = query.filter(not_(m.Order.id.in_(orders_to_skip)))
+            query = query.filter(not_(m_order.Order.id.in_(orders_to_skip)))
         order = query.first()
 
         if order is None:
