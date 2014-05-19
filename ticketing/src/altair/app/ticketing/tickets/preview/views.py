@@ -92,18 +92,15 @@ def _build_selectitem_candidates_from_ticket_format_query(ticket_format_qs):
     return [dict(pk=k, **vs) 
             for (k, _), vs in D.iteritems()]
 
-def _build_selectitem_candidates_from_ticket_format_unit(ticket_format, is_sej):
-    sej_value = None
-    normal_value = None
+def _build_selectitem_candidates_from_ticket_format_unit(ticket_format):
+    D = {}
     for dm in ticket_format.delivery_methods:
         if int(dm.delivery_plugin_id) == int(SEJ_DELIVERY_PLUGIN_ID):
-            sej_value = {"pk": ticket_format.id, "name": ticket_format.name, "type": "sej"}
+            D[(ticket_format.id, "sej")] = ticket_format
         else:
-            normal_value = {"pk": ticket_format.id, "name": ticket_format.name, "type": ""}
-    if is_sej:
-        return [e for e in [sej_value, normal_value] if e is not None]
-    else:
-        return [e for e in [normal_value, sej_value] if e is not None]
+            D[(ticket_format.id, "")] = ticket_format
+    return [{"pk": k, "name": t.name, "type": preview_type} 
+            for (k, preview_type), t in D.items()]
 
 
 @view_config(route_name="tickets.preview", request_method="GET", renderer="altair.app.ticketing:templates/tickets/preview.html", 
@@ -460,10 +457,9 @@ class LoadSVGFromModelApiView(object):
         try:
             data = json.loads(self.request.GET["data"])
             ticket_id = data["fillvalues_resource"]["model"]
-            current_preview_type = data["svg_resource"].get("type")
             organization = self.context.organization
             ticket = c_models.Ticket.query.filter_by(id=ticket_id, organization_id=organization.id).first()
-            ticket_formats = _build_selectitem_candidates_from_ticket_format_unit(ticket.ticket_format, current_preview_type == "sej")
+            ticket_formats = _build_selectitem_candidates_from_ticket_format_unit(ticket.ticket_format)
             return {"status": True, "data": ticket.drawing, "ticket_formats": ticket_formats}
         except KeyError, e:
             logger.exception(e)
