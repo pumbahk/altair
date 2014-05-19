@@ -86,10 +86,10 @@ def _build_ticket_format_dicts(ticket_format_qs):
 
     D = {}
     for t in ticket_format_qs:
-        D[(t.id, "")] = {"name": t.name, "type": ""}
+        D[t.id] = {"name": t.name, "type": ""}
     for t in sej_qs:
-        D[(t.id, "sej")] = {"name": t.name, "type": ":sej"}
-    return [dict(pk=k, **vs) for (k, _), vs in D.iteritems()]
+        D[t.id] = {"name": t.name, "type": ":sej"}
+    return [dict(pk=k, **vs) for k, vs in D.iteritems()]
 
 def _build_ticket_format_dict(ticket_format):
     has_sej = any(dm.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for dm in ticket_format.delivery_methods)
