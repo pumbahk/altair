@@ -25,10 +25,9 @@ def delivery_type_from_built_dict(dict_):
         logger.warn("orders: preview ticket: %s" % e)
         return "other"
 
-def guess_preview_type_from_order(order):
-    dm = order.payment_delivery_method_pair.delivery_method
-    if int(dm.delivery_plugin_id) == int(SEJ_DELIVERY_PLUGIN_ID):
-        return "sej"
+def guess_preview_type_from_ticket_format(ticket_format):
+    if any(int(delivery_method.delivery_plugin_id) == int(SEJ_DELIVERY_PLUGIN_ID) for delivery_method in ticket_format.delivery_methods):
+        return 'sej'
     else:
         return 'other'
 
