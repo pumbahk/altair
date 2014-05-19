@@ -23,19 +23,13 @@ preview.ParameterManageView = Backbone.View.extend({
         this.vms.ticket_format.redraw(candidates); 
         this.model.changeTicketFormat({"pk": candidates[0] .pk, 
                                        "name": candidates[0].name, 
-                                       "type": candidates[0].type});
+                                       "type": candidates[0].type.replace(":", "")});
     }, 
     onChangeTicketFormat: function(){
-        var name = this.$ticket_format.find(":selected").text().split(":")[0];
-        var value_and_type = this.$ticket_format.val().split(":"); // <ticket_format_id:<delivery_method_type>
-        if(value_and_type.length < 2){
-            var value = value_and_type[0];
-            var type = "";
-        }else {
-            var value = value_and_type[0];
-            var type = value_and_type[1];
-        }
-        this.model.changeTicketFormat({"pk":value, "name": name, "type": type});
+        var name_and_type = this.$ticket_format.find(":selected").text().split(":"); // <ticket_format_name>:<delivery_method_type>
+        this.model.changeTicketFormat({"pk":this.$ticket_format.val(),
+                                       "name": name_and_type[0],
+                                       "type": name_and_type[1]});
         this.model.reDraw();
     }, 
     onChangeSx: function(){

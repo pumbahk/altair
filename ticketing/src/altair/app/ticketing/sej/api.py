@@ -105,7 +105,7 @@ def refund_sej_order(request, tenant, sej_order, performance_name, performance_c
             re.event_expire_at = refund_end_at
             re.ticket_expire_at = ticket_expire_at
             re.refund_enabled = 1
-            re.need_stub = 1
+            re.need_stub = 0
             re = session.merge(re)
 
             # create SejRefundTicket
