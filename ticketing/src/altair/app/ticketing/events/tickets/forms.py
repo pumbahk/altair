@@ -100,7 +100,7 @@ class EasyCreateChoiceForm(Form):
     def _get_translations(self):
         return Translations()
 
-    def configlure(self, ticket_templates):
+    def configure(self, ticket_templates):
         self.templates.choices = [(unicode(t.id),t.name) for t in ticket_templates]
         return self
 

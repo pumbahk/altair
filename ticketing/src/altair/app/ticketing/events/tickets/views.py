@@ -261,8 +261,11 @@ class BundleAttributeView(BaseView):
 
 
 @view_config(route_name="events.tickets.easycreate", request_method="GET",
+             decorator=with_bootstrap, permission="event_editor",
              renderer="altair.app.ticketing:templates/tickets/events/easycreate/index.html")
 def easycreate(context, request):
+    event = context.event
     templates = context.ticket_templates.all()
     choice_form = forms.EasyCreateChoiceForm(request.GET).configure(ticket_templates=templates)
-    return {"choice_form": choice_form}
+    return {"choice_form": choice_form,
+            "event": event}

@@ -1,6 +1,6 @@
 from pyramid.interfaces import IRootFactory
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
-from pyramid.decorators import reify
+from pyramid.decorator import reify
 from altair.app.ticketing.core.models import Event
 from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute, ProductItem
 from altair.app.ticketing.resources import TicketingAdminResource
