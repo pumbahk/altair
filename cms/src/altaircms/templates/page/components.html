@@ -29,7 +29,7 @@
         <th class="span2">url</th><td>${page.url}</td>
       </tr>
       <tr>
-        <th class="span2">layout</th><td>${page.layout.title}</td>
+        <th class="span2">layout</th><td>${page.layout.title if page.layout else "-"}</td>
       </tr>
 ##      <tr>
 ##        <th class="span2">structure</th><td>${page.structure}</td>
