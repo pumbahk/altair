@@ -2074,7 +2074,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 .join(ProductItem.ordered_product_items)\
                 .join(OrderedProductItem.ordered_product)\
                 .join(OrderedProduct.order)\
-                .filter(Order.canceled_at==None)\
+                .filter(Order.canceled_at==None, Order.refunded_at==None)\
                 .with_entities(func.sum(OrderedProductItem.quantity)).scalar() or 0
             # Cartで確保されている座席数
             reserved_quantity += Stock.filter(Stock.id==self.id).join(Stock.product_items)\

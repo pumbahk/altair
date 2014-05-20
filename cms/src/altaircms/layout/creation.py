@@ -73,7 +73,6 @@ class LayoutCreator(object):
                         title=params["title"], 
                         blocks=blocks,
                         uploaded_at=datetime.now(),
-                        synced_at=datetime.now()
                         )
         DBSession.add(layout)
         return layout
