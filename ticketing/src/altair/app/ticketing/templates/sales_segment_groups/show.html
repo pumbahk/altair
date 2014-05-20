@@ -66,6 +66,7 @@ ${ch.breadcrumbs(
             <th class="minwidth"></th>
             <th class="minwidth">id</th>
             <th>パフォーマンス</th>
+            <th>公演日</th>
             <th>販売開始日時</th>
             <th>販売終了日時</th>
             <th>配券元</th>
@@ -94,6 +95,13 @@ ${ch.breadcrumbs(
               % else:
                 -
               % endif
+            </td>
+            <td>
+              %if sales_segment.performance is not None:
+                ${vh.datetime(sales_segment.performance.start_on)}
+              %else:
+                -
+              %endif
             </td>
             <td>${vh.datetime(sales_segment.start_at)}</td>
             <td>${vh.datetime(sales_segment.end_at)}</td>
