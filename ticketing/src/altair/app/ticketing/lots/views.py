@@ -605,6 +605,11 @@ class LotReviewView(object):
         api.entry_session(self.request, lot_entry)
         event_id = lot_entry.lot.event.id
         lot_id = lot_entry.lot.id
+
+        orderreview_url = "/orderreview/mypage"
+        if is_nogizaka(self.context, self.request):
+            orderreview_url = "/orderreview/guest"
+
         # 当選して、未決済の場合、決済画面に移動可能
         return dict(entry=lot_entry,
             wishes=lot_entry.wishes,
@@ -612,7 +617,8 @@ class LotReviewView(object):
             shipping_address=lot_entry.shipping_address,
             gender=lot_entry.gender,
             birthday=lot_entry.birthday,
-            memo=lot_entry.memo) 
+            memo=lot_entry.memo,
+            orderreview_url=orderreview_url)
 
 @view_config(context=".exceptions.OutTermException",
              renderer=selectable_renderer("pc/%(membership)s/out_term_exception.html"))
