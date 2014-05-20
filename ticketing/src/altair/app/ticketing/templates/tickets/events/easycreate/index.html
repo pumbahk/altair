@@ -9,3 +9,78 @@ ${ch.breadcrumbs(
         request.route_path('events.tickets.index', event_id=event.id)]
 )}
 </%block>
+<%block name="style">
+<style type="text/css">
+  .radio-group { padding: 10px; }
+  .radio-group label { display: inline-block; margin-left:1px;}
+  .radio-group input[type="radio"] {margin-left:3px;}
+  .radio-group input[type="radio"]:nth-child(1) {margin-left:0px;}
+</style>
+</%block>
+
+<h3>チケット券面</h3>
+<div id="setting-input">
+<form>
+<div class="control-group">
+${choice_form.preview_type.label(class_="required control-label")}
+<div class="controls ">
+<div class="radio-group" id="preview_type">
+%for f in choice_form.preview_type:
+  ${f} ${f.label}
+%endfor
+</div>
+</div>
+</div>
+
+${ch.form_item(choice_form.templates)}
+<script type="text/javascript">
+var BrokerModule = {
+  onChangePreviewType: function($el){
+    var val = $el.val();
+    var url = this.loadcomponent_url.replace("__previewtype").replace(val);
+    return this.loadingComponent(url);
+  },
+  loadingComponent: function(loadcomponent_url){
+    return $.get(loadcomponent_url).fail(
+      function(){ $(".component-area").text("error: url="+loadcomponent_url)}
+    ).done(
+      function(html){ $(".component-area").html(html); }
+    );
+  },
+  onChangeTicketTemplate: function($el){
+    var val = $el.val();
+    var url = this.gettingsvg_url.replace("__ticket_id", val);
+    return this.sendingSVGViaRequest(url);
+  },
+  sendingSVGViaRequest: function(gettingsvg_url){
+    return $.get(gettingsvg_url).fail(
+      function(){ $(".component-area").text("error: url="+gettingsvg_url);}
+    ).done(
+      function(data){
+        //xxxx global variable: this variable create after loading component
+        window.appView.loadSVG(data.svg);
+    });
+  }
+};
+
+var BrokerData = {
+  loadcomponent_url: {value: "${request.route_path("events.tickets.easycreate.loadcomponent", event_id=event.id, preview_type="__previewtype")}"},
+  gettingsvg_url: {value: "${request.route_path("events.tickets.easycreate.gettingsvg", event_id=event.id, ticket_id="__ticket_id")}"},
+};
+
+// loading component, the trigger is preview type radio button of above area.
+(function(form){
+  var broker = Object.create(BrokerModule, BrokerData)
+
+  var radio_btn = form.find('input[name="preview_type"]:radio');
+  radio_btn.on("change", function(e){ broker.onChangePreviewType($(this))});
+
+  var select_btn = form.find('select[name="templates"]');
+  select_btn.on("change", function(e){broker.onChangeTicketTemplate($(this))});
+})($("script:last").parent());
+</script>
+</form>
+
+<div class="component-area">
+  
+</div>

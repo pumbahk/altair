@@ -114,6 +114,6 @@ class EasyCreateChoiceForm(Form):
         label=u"レンダリング方法",
         validators=[Required()],
         coerce=unicode,
-        choices=[("default","インナー発券"),("sej",u"SEJ発券")]
+        choices=[("default",u"インナー発券"),("sej",u"SEJ発券")]
     )
 

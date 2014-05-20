@@ -2,7 +2,9 @@ from pyramid.interfaces import IRootFactory
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.decorator import reify
 from altair.app.ticketing.core.models import Event
-from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute, ProductItem
+from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute, ProductItem, TicketFormat,TicketFormat_DeliveryMethod
+from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+
 from altair.app.ticketing.resources import TicketingAdminResource
 
 class EventBoundTicketsResource(TicketingAdminResource):
@@ -19,7 +21,7 @@ class EventBoundTicketsResource(TicketingAdminResource):
 
     @reify
     def event(self):
-        event = Event.filter_by(organization_id=self.user.organization_id, id=self.request.matchdict["event_id"]).first()
+        event = Event.filter_by(organization_id=self.organization.id, id=self.request.matchdict["event_id"]).first()
         if event is None:
             raise HTTPNotFound('event id %s is not found' % self.request.matchdict["event_id"])
         return event
@@ -59,15 +61,22 @@ class EventBoundTicketsResource(TicketingAdminResource):
 
     @reify
     def ticket_templates(self):
-        return Ticket.filter_by(organization_id=self.user.organization_id, event_id=None)
+        return Ticket.filter_by(organization_id=self.organization.id, event_id=None)
 
     @reify
     def tickets(self):
-        return Ticket.filter_by(organization_id=self.user.organization_id, event_id=self.request.matchdict["event_id"])
+        return Ticket.filter_by(organization_id=self.organization.id, event_id=self.request.matchdict["event_id"])
 
     @reify
-    def tickets(self):
-        return Ticket.filter_by(organization_id=self.user.organization_id, event_id=self.request.matchdict["event_id"])
+    def ticket_something_else_formats(self):
+        return TicketFormat.filter_by(organization_id=self.organization.id)
+
+    @reify
+    def ticket_sej_formats(self):
+        return (TicketFormat.filter_by(organization_id=self.organization.id)
+                .filter(TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id,
+                        TicketFormat_DeliveryMethod.delivery_method_id==DeliveryMethod.id, 
+                        DeliveryMethod.delivery_plugin_id==SEJ_DELIVERY_PLUGIN_ID))
 
     @reify
     def bundles(self):

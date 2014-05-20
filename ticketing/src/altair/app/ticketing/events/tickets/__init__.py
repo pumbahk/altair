@@ -3,7 +3,10 @@ def includeme(config):
     add_route = functools.partial(config.add_route, factory=".resources.EventBoundTicketsResource")
     add_route("events.tickets.index", "/event/{event_id}/")
     add_route("events.tickets.bind.ticket", "/event/{event_id}/bind/ticket")
+
     add_route("events.tickets.easycreate", "/event/{event_id}/easycreate")
+    add_route("events.tickets.easycreate.loadcomponent", "/api/event/{event_id}/easycreate/loadcomponent/{preview_type}")
+    add_route("events.tickets.easycreate.gettingsvg", "/api/event/{event_id}/easycreate/gettingsvg/{ticket_id}")
 
     add_route('events.tickets.boundtickets.show', '/event/{event_id}/ticket/{id}')
     add_route('events.tickets.boundtickets.edit', '/event/{event_id}/ticket/{id}/edit')
