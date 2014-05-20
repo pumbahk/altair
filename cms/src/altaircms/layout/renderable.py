@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 
 import json
+import logging
+logger = logging.getLogger(__name__)
 
 def _safe_json_loads(string):
     if string is None:
@@ -41,4 +43,7 @@ class LayoutRender(object):
         self.obj = layout
 
     def blocks_image(self):
+        if self.obj is None:
+            logger.warn("layout is not found")
+            return BlocksImage.from_json({})
         return BlocksImage.from_json(self.obj.blocks)
