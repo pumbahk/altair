@@ -1,0 +1,11 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+  names=[u'イベント', event.title, u'券面', u'券面簡易作成'],
+  urls=[request.route_path('events.index'),
+        request.route_path('events.show', event_id=event.id),
+        request.route_path('events.tickets.index', event_id=event.id)]
+)}
+</%block>

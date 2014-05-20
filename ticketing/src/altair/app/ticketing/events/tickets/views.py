@@ -258,3 +258,11 @@ class BundleAttributeView(BaseView):
         self.request.session.flash(u'"属性(TicketBundleAttribute)を削除しました')
         return HTTPFound(self.request.route_path("events.tickets.bundles.show",
                                                  event_id=event_id, bundle_id=bundle_id))
+
+
+@view_config(route_name="events.tickets.easycreate", request_method="GET",
+             renderer="altair.app.ticketing:templates/tickets/events/easycreate/index.html")
+def easycreate(context, request):
+    templates = context.ticket_templates.all()
+    choice_form = forms.EasyCreateChoiceForm(request.GET).configure(ticket_templates=templates)
+    return {"choice_form": choice_form}

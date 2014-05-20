@@ -3,10 +3,11 @@
 import json
 import os.path
 from wtforms import Form
-from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMultipleField, FileField
+from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMultipleField, FileField, RadioField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
 from wtforms.widgets import TextArea
 from altair.formhelpers import DateTimeField, Translations, Required
+from altair.formhelpers.fields import BugFreeSelectField as SelectField
 from altair.app.ticketing.core.models import Ticket, Product, ProductItem, TicketBundleAttribute
 
 class BoundTicketForm(Form):
@@ -68,6 +69,8 @@ class AttributeForm(Form):
         widget=TextArea()
         )
 
+
+
 class BundleForm(Form):
     def _get_translations(self):
         return Translations()
@@ -91,3 +94,26 @@ class BundleForm(Form):
         validators=[Required()], 
         coerce=long , 
         choices=[])
+
+
+class EasyCreateChoiceForm(Form):
+    def _get_translations(self):
+        return Translations()
+
+    def configlure(self, ticket_templates):
+        self.templates.choices = [(unicode(t.id),t.name) for t in ticket_templates]
+        return self
+
+    templates = SelectField(
+        label=u"券面テンプレート",
+        validators=[Required()], 
+        coerce=unicode, 
+        choices=[])
+
+    preview_type = RadioField(
+        label=u"レンダリング方法",
+        validators=[Required()],
+        coerce=unicode,
+        choices=[("default","インナー発券"),("sej",u"SEJ発券")]
+    )
+
