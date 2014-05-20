@@ -13,6 +13,7 @@ config = context.config
 from altair.app.ticketing import models
 
 import altair.app.ticketing.cart.models
+import altair.app.ticketing.orders.models
 import altair.app.ticketing.payments.plugins.models
 import altair.app.ticketing.checkout.models
 import altair.app.ticketing.core.models

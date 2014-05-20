@@ -2570,6 +2570,31 @@ class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     delivery_methods = relationship('DeliveryMethod', secondary=TicketFormat_DeliveryMethod.__table__, backref='ticket_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
 
+class TicketSkeleton(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    """
+    Ticketを簡易的な方法で作成するときに使われる。TicketTemplateのようなもの。
+    """
+    __tablename__ = "TicketSkeleton"
+
+    id = Column(Identifier, primary_key=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=True)
+    organization = relationship('Organization', uselist=False)
+    ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id', ondelete='CASCADE'), nullable=False)
+    ticket_format = relationship('TicketFormat', uselist=False, backref='skeletons')
+    name = Column(Unicode(255), nullable=False, default=u'')
+    data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+    filename = Column(Unicode(255), nullable=False, default=u"uploaded.svg")
+    cover_print = Column(Boolean, nullable=False, default=True)
+
+    @property
+    def drawing(self):
+        return self.data["drawing"]
+
+    @property
+    def vars_defaults(self):
+        return self.data.get("vars_defaults", {})
+
+
 class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     Ticket.event_idがNULLのものはマスターデータ。これを雛形として実際にeventとひもづけるTicketオブジェクトを作成する。
