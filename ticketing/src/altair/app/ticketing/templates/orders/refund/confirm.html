@@ -12,12 +12,19 @@
   <h1>払戻確認</h1>
 </div>
 
-<div class="alert alert-warning">
-  ${len(orders)}件の予約に払戻条件を設定し、払戻を予約します。
+<div class="alert alert-danger">
+  <h4>
+    <span class="badge badge-important" style="font-size: 15px;">${len(orders)} 件</span> の予約に払戻条件を設定し、払戻を予約します。
+  </h4>
+  <div style="margin-top: 8px;">
+    払戻対象の検索条件が適切か、対象件数が適切か確認し、払戻予約してください。<br>
+    払戻対象をダウンロードして確認することもできます。
+  </div>
 </div>
 
 <%include file="/orders/_search_condition.html" args="form=form_search" />
 
+<h4>払戻設定</h4>
 <div class="well">
   <script type="text/javascript">
     $(function() {

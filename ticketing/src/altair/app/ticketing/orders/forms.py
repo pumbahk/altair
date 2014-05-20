@@ -386,7 +386,6 @@ class SearchFormBase(Form):
                         data.append(choice[1])
                     elif choice[0] == field.data:
                         data.append(choice[1])
-                data = ', '.join(data)
             else:
                 data = field.data
             conditions[name] = (field.label.text, data)

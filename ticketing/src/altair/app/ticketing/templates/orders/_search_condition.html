@@ -3,9 +3,9 @@
 
 <% conditions = form_search.get_conditions() %>
 % if conditions:
+<h4>現在の検索条件</h4>
 <div class="well">
-  <div style="margin-bottom: 5px;">現在の検索条件</div>
-  <ul>
+  <dl class="dl-horizontal">
     <% listed = [] %>
     % for k, v in conditions.items():
       % if k in listed:
@@ -20,11 +20,21 @@
             (label, ordered_to) = ordered_to
             listed += ['ordered_from', 'ordered_to']
         %>
-        <li>${label}: ${vh.term(ordered_from, ordered_to)}</li>
+        <dt>${label}</dt>
+        <dd>${vh.term(ordered_from, ordered_to)}</dd>
       % else:
-        <li>${'%s : %s' % v}</li>
+        <dt>${v[0]}</dt>
+        <dd>
+        % if isinstance(v[1], list):
+          % for el in v[1]:
+            ${el}<br>
+          % endfor
+        % else:
+          ${v[1]}
+        % endif
+        </dd>
       % endif
     % endfor
-  </ul>
+  </dl>
 </div>
 % endif
