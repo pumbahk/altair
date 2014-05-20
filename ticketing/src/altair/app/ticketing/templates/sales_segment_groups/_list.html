@@ -10,15 +10,15 @@
         <tr>
           <th class="minwidth"></th>
           <th>${ch.sortable(SalesSegmentGroup.name, paging)}</th>
-          <%doc><th>${ch.sortable(SalesSegmentGroup.start_at, paging)}</a></th></%doc>
-          <%doc><th>${ch.sortable(SalesSegmentGroup.end_at, paging)}</a></th></%doc>
-          <th>${ch.sortable(SalesSegmentGroup.account_id, paging)}</a></th>
-          <th>${ch.sortable(SalesSegmentGroup.max_quantity, paging)}</a></th>
-          <%doc><th>${ch.sortable(SalesSegmentGroup.order_limit, paging)}</a></th></%doc>
-          <th>${ch.sortable(SalesSegmentGroup.seat_choice, paging)}</a></th>
-          <th>${ch.sortable(SalesSegmentGroupSetting.display_seat_no, paging)}</a></th>
-          <th>${ch.sortable(SalesSegmentGroup.public, paging)}</a></th>
-          <th>${ch.sortable(SalesSegmentGroup.reporting, paging)}</a></th>
+          <th>${ch.sortable(SalesSegmentGroup.start_at, paging)}</th>
+          <th>${ch.sortable(SalesSegmentGroup.end_at, paging)}</th>
+          <th>${ch.sortable(SalesSegmentGroup.account_id, paging)}</th>
+          <th>${ch.sortable(SalesSegmentGroup.max_quantity, paging)}</th>
+          <%doc><th>${ch.sortable(SalesSegmentGroup.order_limit, paging)}</th></%doc>
+          <th>${ch.sortable(SalesSegmentGroup.seat_choice, paging)}</th>
+          <th>${ch.sortable(SalesSegmentGroupSetting.display_seat_no, paging)}</th>
+          <th>${ch.sortable(SalesSegmentGroup.public, paging)}</th>
+          <th>${ch.sortable(SalesSegmentGroup.reporting, paging)}</th>
           <th>決済方法</th>
           <th>引取方法</th>
         </tr>
@@ -34,17 +34,17 @@
             <input type="hidden" id="kind" value="${sales_segment_group.kind}" />
           </td>
           <td ${rowspan}><a href="${request.route_path('sales_segment_groups.show', sales_segment_group_id=sales_segment_group.id)}">${sales_segment_group.name}</a></td>
-          <%doc><td ${rowspan}>${vh.datetime(sales_segment_group.start_at)}</td></%doc>
-          <%doc><td ${rowspan}>${vh.datetime(sales_segment_group.end_at)}</td></%doc>
+          <td ${rowspan}>${vh.datetime(sales_segment_group.start_at)}</td>
+          <td ${rowspan}>${vh.datetime(sales_segment_group.end_at)}</td>
           <td ${rowspan}>${sales_segment_group.account.name}</td>
           <td ${rowspan}>
             ${u'%s枚' % sales_segment_group.max_quantity if sales_segment_group.max_quantity else u'-'} / ${u'%s個' % sales_segment_group.max_product_quatity if sales_segment_group.max_product_quatity else u'-'}
           </td>
           <%doc><td ${rowspan}>${sales_segment_group.order_limit or u''}</td></%doc>
-          <td ${rowspan}>${u'○' if sales_segment_group.seat_choice else u'×'}</td>
-          <td ${rowspan}>${u'○' if sales_segment_group.setting.display_seat_no else u'×'}</td>
-          <td ${rowspan}>${u'○' if sales_segment_group.public else u'×'}</td>
-          <td ${rowspan}>${u'○' if sales_segment_group.reporting else u'×'}</td>
+          <td ${rowspan}>${u'選択可' if sales_segment_group.seat_choice else u'×選択不可'}</td>
+          <td ${rowspan}>${u'表示' if sales_segment_group.setting.display_seat_no else u'非表示'}</td>
+          <td ${rowspan}>${u'公開' if sales_segment_group.public else u'非公開'}</td>
+          <td ${rowspan}>${u'対象' if sales_segment_group.reporting else u'×対象外'}</td>
           % if count == 0:
           <td></td>
           <td></td>
