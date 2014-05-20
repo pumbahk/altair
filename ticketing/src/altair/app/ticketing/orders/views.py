@@ -377,7 +377,8 @@ class OrderDownloadView(BaseView):
             form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
             form_search.sort.data = None
             try:
-                query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text, sort=False)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id, OrderSummary.deleted_at==None))
+                builder = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text, sort=False)
+                query = builder(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id, OrderSummary.deleted_at==None))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
                 raise HTTPFound(location=route_path('orders.index', self.request))
@@ -707,7 +708,8 @@ class OrdersRefundIndexView(BaseView):
         if form_search.validate():
             query = Order.filter(Order.organization_id==self.organization_id)
             try:
-                query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==self.organization_id, OrderSummary.deleted_at==None))
+                builder = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)
+                query = builder(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==self.organization_id, OrderSummary.deleted_at==None))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
 
@@ -745,7 +747,8 @@ class OrdersRefundIndexView(BaseView):
         form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
         if form_search.validate():
             try:
-                query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==self.organization_id, OrderSummary.deleted_at==None))
+                builder = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)
+                query = builder(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==self.organization_id, OrderSummary.deleted_at==None))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
 

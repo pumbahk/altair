@@ -66,7 +66,7 @@
       </tr>
       <tr>
         <th><label for="performance_id">${form.performance_id.label.text}</label></th>
-        <td>${form.performance_id(style="width:750px", size=4)}</td>
+        <td>${form.performance_id(style="width:750px", size=4, multiple="")}</td>
       </tr>
       </tbody>
     </table>
@@ -111,7 +111,9 @@
               // optimize if slow.
               for(var i=0, j=data.result.length; i<j; i++){
                 var e = data.result[i];
-                $target.append($("<option>").attr("value", e.pk).text(e.name))
+                if (e.pk != "") {
+                  $target.append($("<option>").attr("value", e.pk).text(e.name))
+                }
               }
               $target.chosen().trigger("liszt:updated");
             }

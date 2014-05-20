@@ -276,7 +276,8 @@ class SearchFormBase(Form):
 
         # Performance が指定されていなかったらフォームから取得を試みる
         if performance is None and self.performance_id.data:
-            performance = Performance.get(self.performance_id.data)
+            if not isinstance(self.performance_id.data, list):
+                performance = Performance.get(self.performance_id.data)
 
     order_no = TextField(
         label=u'予約番号',
@@ -474,6 +475,10 @@ class OrderRefundSearchForm(OrderSearchForm):
         self.payment_status.data = ['paid']
         self.public.data = u'一般発売のみ'
 
+        # すべては選択不可
+        self.event_id.choices.pop(0)
+        self.performance_id.choices.pop(0)
+
     def _get_translations(self):
         return Translations()
 
@@ -495,11 +500,11 @@ class OrderRefundSearchForm(OrderSearchForm):
         choices=[],
         validators=[Required()],
     )
-    performance_id = SelectField(
+    performance_id = SelectMultipleField(
         label=u"公演",
         coerce=lambda x : int(x) if x else u"",
         choices=[],
-        validators=[Optional()],
+        validators=[Required()],
     )
     sales_segment_group_id = SelectMultipleField(
         label=u'販売区分',
