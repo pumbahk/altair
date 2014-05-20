@@ -266,9 +266,16 @@ class BundleAttributeView(BaseView):
 def easycreate(context, request):
     event = context.event
     templates = context.ticket_templates.all()
+
+    sej_format_set = set(context.ticket_sej_formats.all())
+    sej_templates = [t for t in templates if t.ticket_format in sej_format_set]
+
     choice_form = forms.EasyCreateChoiceForm(request.GET).configure(ticket_templates=templates)
     return {"choice_form": choice_form,
-            "event": event}
+            "event": event,
+            "template_candidates": {"default": templates, "sej": sej_templates}
+           }
+
 
 @view_config(route_name="events.tickets.easycreate.loadcomponent", request_method="GET",
              decorator=with_bootstrap, permission="event_editor",
