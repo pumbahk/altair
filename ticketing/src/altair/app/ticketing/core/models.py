@@ -3023,6 +3023,7 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_at = Column(DateTime, nullable=True)
     end_at = Column(DateTime, nullable=True)
     orders = relationship('Order', backref=backref('refund', uselist=False))
+    need_stub = Column(Boolean, nullable=True, default=None)
 
     def fee(self, order):
         total_fee = 0

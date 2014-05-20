@@ -26,7 +26,7 @@ from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
 from wtforms.widgets import CheckboxInput, HiddenInput
 from altair.formhelpers import (
     Translations,
-    DateTimeField, DateField, Max, OurDateWidget, OurDateTimeWidget,
+    DateTimeField, DateField, Max, OurDateWidget, OurDateTimeWidget, OurSelectField,
     CheckboxMultipleSelect, BugFreeSelectField, BugFreeSelectMultipleField,
     Required, after1900, NFKC, Zenkaku, Katakana,
     strip_spaces, ignore_space_hyphen, OurForm)
@@ -63,6 +63,7 @@ from .models import OrderedProduct, OrderedProductItem
 from sqlalchemy import orm
 
 logger = logging.getLogger(__name__)
+
 
 class ProductsField(Field):
     def __init__(self, _form=None, hide_on_new=False, label=None, validators=None, **kwargs):
@@ -771,8 +772,14 @@ class OrderRefundForm(Form):
         super(type(self), self).__init__(*args, **kwargs)
 
         organization_id = kwargs.get('organization_id')
+        payment_methods = PaymentMethod.filter_by_organization_id(organization_id)
         if organization_id:
-            self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in PaymentMethod.filter_by_organization_id(organization_id)]
+            self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in payment_methods]
+
+        self.payment_method_id.sej_plugin_id = []
+        for pm in payment_methods:
+            if pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
+                self.payment_method_id.sej_plugin_id.append(int(pm.id))
 
         self.orders = kwargs.get('orders', [])
 
@@ -838,6 +845,13 @@ class OrderRefundForm(Form):
         ),
         widget=OurDateWidget()
     )
+    need_stub = OurSelectField(
+        label=u'半券要否区分',
+        help=u'コンビニ店頭での払戻の際に、半券があるチケットのみ有効とするかどうかを指定します。' +
+             u'<br>公演前のケースでは「要」を指定、公演途中での中止等のケースでは「不要」を指定してください。',
+        choices=[(u'', u''), (u'1', u'要'), (u'0', u'不要')],
+        validators=[Optional()],
+    )
 
     def validate_payment_method_id(form, field):
         refund_pm = PaymentMethod.get(field.data)
@@ -878,6 +892,9 @@ class OrderRefundForm(Form):
                     status = False
                 if not self.end_at.data:
                     self.end_at.errors.append(u'入力してください')
+                    status = False
+                if not self.need_stub.data:
+                    self.need_stub.errors.append(u'コンビニ払戻の場合は半券要否区分を選択してください')
                     status = False
         return status
 

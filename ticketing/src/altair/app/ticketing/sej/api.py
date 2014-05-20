@@ -75,7 +75,7 @@ def cancel_sej_order(request, tenant, sej_order, now=None, session=None):
         logger.exception(u'unhandled exception')
         raise SejError(u'generic failure (reason: %s)' % unicode(e), sej_order.order_no)
 
-def refund_sej_order(request, tenant, sej_order, performance_name, performance_code, performance_start_on, per_order_fee, per_ticket_fee, ticket_price_getter, refund_start_at, refund_end_at, ticket_expire_at, now, session=None):
+def refund_sej_order(request, tenant, sej_order, performance_name, performance_code, performance_start_on, per_order_fee, per_ticket_fee, ticket_price_getter, refund_start_at, refund_end_at, need_stub, ticket_expire_at, now, session=None):
     if session is None:
         session = _session
     if sej_order.cancel_at:
@@ -105,7 +105,7 @@ def refund_sej_order(request, tenant, sej_order, performance_name, performance_c
             re.event_expire_at = refund_end_at
             re.ticket_expire_at = ticket_expire_at
             re.refund_enabled = 1
-            re.need_stub = 0
+            re.need_stub = need_stub
             re = session.merge(re)
 
             # create SejRefundTicket
