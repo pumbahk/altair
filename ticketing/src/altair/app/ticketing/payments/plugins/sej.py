@@ -335,14 +335,10 @@ def validate_order_like(current_date, order_like):
     user_name_kana = build_user_name_kana(order_like.shipping_address)
     if len(user_name_kana.encode('CP932')) > 40:
         raise OrderLikeValidationFailure(u'user name kana too long', 'shipping_address.last_name_kana')
-    if not order_like.shipping_address.zip:
-        raise OrderLikeValidationFailure(u'no zipcode specified', 'shipping_address.zip')
-    elif not re.match(ur'^[0-9]{7}', order_like.shipping_address.zip.replace(u'-', u'')):
+    if order_like.shipping_address.zip and not re.match(ur'^[0-9]{7}$', order_like.shipping_address.zip.replace(u'-', u'')):
         raise OrderLikeValidationFailure(u'invalid zipcode specified', 'shipping_address.zip')
     email = order_like.shipping_address.email_1 or order_like.shipping_address.email_2
-    if not email:
-        raise OrderLikeValidationFailure(u'no email address specified', 'shipping_address.email_1')
-    elif len(email) > 64:
+    if email and len(email) > 64:
         raise OrderLikeValidationFailure(u'invalid email address', 'shipping_address.email_1')
 
     payment_type = None
