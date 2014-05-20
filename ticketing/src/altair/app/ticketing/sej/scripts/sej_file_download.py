@@ -19,7 +19,7 @@ from ..models import (
     ThinSejTenant,
     code_from_notification_type
     )
-from ..api import validate_sej_tenant
+from ..api import validate_sej_tenant, get_default_sej_tenant
 from ...core.models import SejTenant
 from ..exceptions import SejServerError
 
@@ -65,7 +65,7 @@ def main(argv=sys.argv):
         from altair.app.ticketing.sej import userside_api
         tenant = userside_api.lookup_sej_tenant(request, args.organization)
     else:
-        tenant = get_default_sej_tenant()
+        tenant = get_default_sej_tenant(request)
 
     tenant = ThinSejTenant(
         original=tenant,
@@ -82,9 +82,10 @@ def main(argv=sys.argv):
 
     for date in args.date:
         body = request_fileget(
-            args.type,
-            parsedate(date),
-            tenant=tenant
+            request,
+            tenant=tenant,
+            notification_type=args.type,
+            date=parsedate(date)
             )
         sys.stdout.write(body)
         sys.stdout.flush()
