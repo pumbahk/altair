@@ -410,7 +410,11 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
         return query.filter(self.targets['subject'].order_no.in_(value))
 
     def _performance_id(self, query, value):
-        return query.filter(self.targets['subject'].performance_id == value)
+        if isinstance(value, list):
+            query = query.filter(self.targets['subject'].performance_id.in_(value))
+        else:
+            query = query.filter(self.targets['subject'].performance_id == value)
+        return query
 
     def _event_id(self, query, value):
         return query.filter(self.targets['subject'].event_id == value)

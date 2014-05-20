@@ -39,6 +39,7 @@ def includeme(config):
     config.add_route("orders.api.orders"                , "/api/orders/{action}")
 
     config.add_route('orders.refund.index'              , '/refund/')
+    config.add_route('orders.refund.new'                , '/refund/new/')
     config.add_route('orders.refund.search'             , '/refund/search/')
     config.add_route('orders.refund.checked'            , '/refund/checked/')
     config.add_route('orders.refund.confirm'            , '/refund/confirm/')

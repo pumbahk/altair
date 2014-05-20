@@ -181,7 +181,7 @@ def create_refund_zip_file(session, now=None, work_dir='/tmp'):
             sej_refund_event.ticket_expire_at.strftime('%Y%m%d'),
             sej_refund_event.refund_enabled,
             sej_refund_event.disapproval_reason,
-            sej_refund_event.need_stub or u'0',
+            unicode(sej_refund_event.need_stub),
             sej_refund_event.remarks,
             sej_refund_event.un_use_01,
             sej_refund_event.un_use_02,

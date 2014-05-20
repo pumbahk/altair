@@ -26,7 +26,7 @@ from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
 from wtforms.widgets import CheckboxInput, HiddenInput
 from altair.formhelpers import (
     Translations,
-    DateTimeField, DateField, Max, OurDateWidget, OurDateTimeWidget,
+    DateTimeField, DateField, Max, OurDateWidget, OurDateTimeWidget, OurSelectField,
     CheckboxMultipleSelect, BugFreeSelectField, BugFreeSelectMultipleField,
     Required, after1900, NFKC, Zenkaku, Katakana,
     strip_spaces, ignore_space_hyphen, OurForm)
@@ -63,6 +63,7 @@ from .models import OrderedProduct, OrderedProductItem
 from sqlalchemy import orm
 
 logger = logging.getLogger(__name__)
+
 
 class ProductsField(Field):
     def __init__(self, _form=None, hide_on_new=False, label=None, validators=None, **kwargs):
@@ -275,7 +276,8 @@ class SearchFormBase(Form):
 
         # Performance が指定されていなかったらフォームから取得を試みる
         if performance is None and self.performance_id.data:
-            performance = Performance.get(self.performance_id.data)
+            if not isinstance(self.performance_id.data, list):
+                performance = Performance.get(self.performance_id.data)
 
     order_no = TextField(
         label=u'予約番号',
@@ -384,7 +386,6 @@ class SearchFormBase(Form):
                         data.append(choice[1])
                     elif choice[0] == field.data:
                         data.append(choice[1])
-                data = ', '.join(data)
             else:
                 data = field.data
             conditions[name] = (field.label.text, data)
@@ -473,6 +474,10 @@ class OrderRefundSearchForm(OrderSearchForm):
         self.payment_status.data = ['paid']
         self.public.data = u'一般発売のみ'
 
+        # すべては選択不可
+        self.event_id.choices.pop(0)
+        self.performance_id.choices.pop(0)
+
     def _get_translations(self):
         return Translations()
 
@@ -494,11 +499,11 @@ class OrderRefundSearchForm(OrderSearchForm):
         choices=[],
         validators=[Required()],
     )
-    performance_id = SelectField(
+    performance_id = SelectMultipleField(
         label=u"公演",
         coerce=lambda x : int(x) if x else u"",
         choices=[],
-        validators=[Optional()],
+        validators=[Required()],
     )
     sales_segment_group_id = SelectMultipleField(
         label=u'販売区分',
@@ -772,7 +777,14 @@ class OrderRefundForm(Form):
 
         organization_id = kwargs.get('organization_id')
         if organization_id:
-            self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in PaymentMethod.filter_by_organization_id(organization_id)]
+            payment_methods = PaymentMethod.filter_by_organization_id(organization_id)
+            if organization_id:
+                self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in payment_methods]
+
+            self.payment_method_id.sej_plugin_id = []
+            for pm in payment_methods:
+                if pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
+                    self.payment_method_id.sej_plugin_id.append(int(pm.id))
 
         self.orders = kwargs.get('orders', [])
 
@@ -838,6 +850,13 @@ class OrderRefundForm(Form):
         ),
         widget=OurDateWidget()
     )
+    need_stub = OurSelectField(
+        label=u'半券要否区分',
+        help=u'コンビニ店頭での払戻の際に、半券があるチケットのみ有効とするかどうかを指定します。' +
+             u'<br>公演前のケースでは「要」を指定、公演途中での中止等のケースでは「不要」を指定してください。',
+        choices=[(u'', u''), (u'1', u'要'), (u'0', u'不要')],
+        validators=[Optional()],
+    )
 
     def validate_payment_method_id(form, field):
         refund_pm = PaymentMethod.get(field.data)
@@ -878,6 +897,9 @@ class OrderRefundForm(Form):
                     status = False
                 if not self.end_at.data:
                     self.end_at.errors.append(u'入力してください')
+                    status = False
+                if not self.need_stub.data:
+                    self.need_stub.errors.append(u'コンビニ払戻の場合は半券要否区分を選択してください')
                     status = False
         return status
 

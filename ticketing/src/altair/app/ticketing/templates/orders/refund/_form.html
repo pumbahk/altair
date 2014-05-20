@@ -10,8 +10,19 @@
         $(this).val(0);
       }
     }).change();
+
+    $('#payment_method_id').change(function(){
+      var sej_field = $('.sej_field');
+      if ($.inArray(parseInt($(this).val()), ${form_refund.payment_method_id.sej_plugin_id}) == -1) {
+        sej_field.css('display', 'none');
+      } else {
+        sej_field.css('display', 'block');
+      }
+    }).change();
+
     $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-header')});
     $('#modal-refund').disableOnSubmit();
+    $('[rel=popover]').popover({html:true});
   });
 </script>
 
@@ -32,13 +43,16 @@
       ${ch.form_item(form.include_transaction_fee)}
       ${ch.form_item(form.include_delivery_fee)}
       ${ch.form_item(form.cancel_reason)}
-      <div class="control-group">
-        <label class="control-label">コンビニでの払戻期間</label>
-        <div class="controls">
-          ${form.start_at} 〜 ${form.end_at}
-          ${ch.validate_errors(form.start_at)}
-          ${ch.validate_errors(form.end_at)}
+      <div class="sej_field">
+        <div class="control-group">
+          <label class="control-label">コンビニでの払戻期間</label>
+          <div class="controls">
+            ${form.start_at} 〜 ${form.end_at}
+            ${ch.validate_errors(form.start_at)}
+            ${ch.validate_errors(form.end_at)}
+          </div>
         </div>
+        ${ch.form_item(form.need_stub, help=ch.help(form_refund.need_stub))}
       </div>
     </form>
   </div>

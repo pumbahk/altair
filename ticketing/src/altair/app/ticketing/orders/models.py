@@ -579,6 +579,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             ),
                         refund_start_at=self.refund.start_at,
                         refund_end_at=self.refund.end_at,
+                        need_stub=self.refund.need_stub,
                         ticket_expire_at=self.refund.end_at + timedelta(days=+7),
                         ticket_price_getter=lambda sej_ticket: \
                             get_refund_ticket_price(

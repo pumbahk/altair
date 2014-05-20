@@ -3023,6 +3023,9 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_at = Column(DateTime, nullable=True)
     end_at = Column(DateTime, nullable=True)
     orders = relationship('Order', backref=backref('refund', uselist=False))
+    need_stub = Column(Boolean, nullable=True, default=None)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
+    organization = relationship('Organization', backref='refunds')
 
     def fee(self, order):
         total_fee = 0
@@ -3038,6 +3041,31 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def item(self, order):
         return sum(o.price * o.quantity for o in order.items) if self.include_item else 0
+
+    @property
+    def order_count(self):
+        from altair.app.ticketing.orders.models import Order
+        return Order.query.join(Order.refund).filter(Order.refund_id==self.id).count()
+
+    @property
+    def performances(self):
+        from altair.app.ticketing.orders.models import Order
+        return Order.query.join(
+                Order.refund, Order.performance
+            ).filter(
+                Order.refund_id==self.id,
+            ).with_entities(Performance.name).distinct().all()
+
+    @property
+    def status(self):
+        from altair.app.ticketing.orders.models import Order
+        order_count = self.order_count
+        refunded_count = Order.query.join(Order.refund).filter(Order.refund_id==self.id, Order.refunded_at!=None).count()
+        if order_count == refunded_count:
+            return u'払戻済'
+        if refunded_count > 0:
+            return u'払戻中'
+        return u'払戻予約'
 
 
 @implementer(ISettingContainer, IOrderQueryable)

@@ -3,98 +3,76 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-    names=[u'トップ', u'購入情報', u'払戻'],
-    urls=[request.route_path('index'), request.route_path('orders.index')]
+    names=[u'トップ', u'払戻一覧'],
+    urls=[request.route_path('index')]
   )}
 </%block>
 
 <div class="page-header">
-  <h1>払戻</h1>
+  <h1>払戻一覧</h1>
 </div>
 
+% if refunds:
+<%! from altair.app.ticketing.orders.models import OrderCancelReasonEnum %>
+<div></div>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>公演</th>
+        <th>予約数</th>
+        <th>ステータス</th>
+        <th>${form.payment_method_id.label.text}</th>
+        <th style="width: 80px;">払戻対象</th>
+        <th>理由</th>
+        <th>${form.start_at.label.text}</th>
+        <th>半券<br>要否</th>
+        <th>更新日時</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    % for refund in refunds:
+      <tr>
+        <td>
+        % for p in refund.performances:
+          ${p.name}
+        % endfor
+        </td>
+        <td>${refund.order_count}</td>
+        <td>${refund.status}</td>
+        <td>${refund.payment_method.name}</td>
+        <td>
+        % if refund.include_item:
+          <span class="label label-default">${form.include_item.label.text}</span>
+        % endif
+        % if refund.include_system_fee:
+          <span class="label label-warning">${form.include_system_fee.label.text}</span>
+        % endif
+        % if refund.include_transaction_fee:
+          <span class="label label-important">${form.include_transaction_fee.label.text}</span>
+        % endif
+        % if refund.include_delivery_fee:
+          <span class="label label-info">${form.include_delivery_fee.label.text}</span>
+        % endif
+        % if refund.include_special_fee:
+          <span class="label label-success">${form.include_special_fee.label.text}</span>
+        % endif
+        </td>
+        <td>${u''.join([enum.v[1] for enum in OrderCancelReasonEnum if refund.cancel_reason == unicode(enum.v[0])])}</td>
+        <td>
+        % if refund.start_at or refund.end_at:
+          ${refund.start_at or u''} 〜<br>
+          ${refund.end_at or u''}
+        % endif
+        </td>
+        <td>${u'要' if refund.need_stub else u'否'}</td>
+        <td>${refund.updated_at}</td>
+        <td>
 
-<div style="float: left;">
-  <div class="alert alert-warning">
-    <p>イベントおよび公演ごとに、一括で払戻設定を行います。</p>
-    <p>個別の予約ごとに払戻を行う場合は、各予約の詳細画面にて「払戻」を行うことで即時に払戻を行うことが可能です。(コンビニ払戻以外)</p>
-    <p>払戻は、受付時の決済方法および引取方法によって選択できる払戻方法が異なるため、決済方法(または引取方法)ごとに払戻設定を行ってください。</p>
-    <br />
-    <p>通常は以下の順に設定を行います。</p>
-    <div style="margin-bottom: 5px;"></div>
-    <ol>
-      <li>引取方法:「コンビニ引取」に対して「コンビニ決済」で一括払戻設定</li>
-      <li>決済方法:「クレジットカード決済」に対して「クレジットカード決済」で一括払戻設定</li>
-      <li>決済方法:「楽天あんしん支払いサービス」に対して「楽天あんしん支払いサービス」で一括払戻設定</li>
-      <li>〜 その他の決済方法ごとに同じ払戻方法の設定を行う</li>
-    </ol>
-    <br />
-    払戻対象を選択してください。以下の検索条件は自動的に付加されます。
-    <div style="margin-bottom: 5px;"></div>
-    <ul>
-      <li>ステータス: 受付済み、配送済み</li>
-      <li>決済: 入金済み</li>
-    </ul>
-  </div>
-  <%include file="/orders/refund/_search.html" args="form=form_search" />
-</div>
-<div style="clear: both;"></div>
-
-<script type="text/javascript">
-  <%include file="/orders/_checkbox_status.js" />
-
-  $.event.add(window, "load", function(){
-    var model = new CheckboxStatus(0);
-    var view = new CheckboxStatusAppView($("#checkbox_status_count"), $("input.checkbox_status"));
-    var urls = {
-      load: "${request.route_url('orders.api.checkbox_status', action='load')}",
-      add: "${request.route_url('orders.api.checkbox_status', action='add')}",
-      addall: "${request.route_url('orders.api.checkbox_status', action='addall')}",
-      remove: "${request.route_url('orders.api.checkbox_status', action='remove')}",
-      removeall: "${request.route_url('orders.api.checkbox_status', action='removeall')}",
-      reset: "${request.route_url('orders.api.checkbox_status', action='reset')}"
-    }
-
-    var presenter = new CheckboxStatusPresenter(model, view, urls);
-    $("input.checkbox_status[type='checkbox']").on("change", presenter.on_check.bind(presenter));
-    $("#checkbox_status_reset").click(presenter.on_reset.bind(presenter));
-    $("#addall").click(presenter.on_addall.bind(presenter));
-    $("#removeall").click(presenter.on_removeall.bind(presenter));
-    presenter.on_load();
-
-    // selectable check
-    $("table").selectable({
-      filter: "td.checkbox_status-wrap",
-      distance: 1,
-      stop: function(){
-        $(".ui-selected input[type='checkbox']", this).each(function(_,e){
-          $(e).click();
-        });
-        $(".ui-selected").removeClass("ui-selected");
-      }
-    })
-  });
-</script>
-
-<div class="area">
-  <dl>
-    <dt>チェックされた数</dt>
-    <dd id="checkbox_status_count"></dd>
-  </dl>
-
-  % if request.matched_route.name == 'orders.refund.checked':
-    <a type="button" class="btn" href="${request.route_path('orders.refund.search')}">全ての予約を表示</a>
-  % else:
-    <a type="button" class="btn" href="${request.route_path('orders.refund.checked')}">選択した予約だけ表示</a>
-  % endif
-  <button type="button" class="btn" id="checkbox_status_reset">リセット</button>
-  <a type="button" class="btn" id="addall">全て選択</a>
-  <a type="button" class="btn" id="removeall">全て選択しない</a>
-  <a type="button" class="btn btn-danger" href="${request.route_path('orders.refund.confirm')}">選択した予約に払戻条件を設定</a>
-</div>
-
-% if orders:
-<p> ${max(orders.items_per_page * (orders.page-1) + 1,0)}～${min(orders.items_per_page * orders.page, orders.item_count)} / ${orders.item_count}件</p>
-<div class="orders">
-  <%include file="/orders/_list.html" args="form=form, orders=orders" />
+        </td>
+      </tr>
+    % endfor
+    </tbody>
+  </table>
 </div>
 % endif

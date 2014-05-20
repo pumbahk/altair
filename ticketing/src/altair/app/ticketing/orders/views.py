@@ -48,6 +48,7 @@ from altair.app.ticketing.core.models import (
     SeatStatusEnum,
     ChannelEnum,
     MailTypeEnum,
+    Refund,
     )
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.orders.models import (
@@ -377,7 +378,8 @@ class OrderDownloadView(BaseView):
             form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
             form_search.sort.data = None
             try:
-                query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text, sort=False)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id, OrderSummary.deleted_at==None))
+                builder = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text, sort=False)
+                query = builder(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id, OrderSummary.deleted_at==None))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
                 raise HTTPFound(location=route_path('orders.index', self.request))
@@ -674,12 +676,34 @@ class OrderDownloadView(BaseView):
 @view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/index.html')
 class OrdersRefundIndexView(BaseView):
 
+    @view_config(route_name='orders.refund.index')
+    def index(self):
+        form = OrderRefundForm()
+        query = Refund.query.filter(Refund.organization_id==self.context.organization.id).order_by(desc(Refund.id))
+        page = int(self.request.params.get('page', 0))
+        refunds = paginate.Page(
+            query,
+            page=page,
+            items_per_page=40,
+            item_count=query.count(),
+            url=paginate.PageURL_WebOb(self.request)
+        )
+        return dict(
+            form=form,
+            refunds=refunds,
+            page=page,
+            )
+
+
+@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/new.html')
+class OrdersRefundCreateView(BaseView):
+
     def __init__(self, *args, **kwargs):
         super(type(self), self).__init__(*args, **kwargs)
         self.organization_id = int(self.context.organization.id)
 
-    @view_config(route_name='orders.refund.index')
-    def index(self):
+    @view_config(route_name='orders.refund.new')
+    def new(self):
         if self.request.session.get('orders'):
             del self.request.session['orders']
         if self.request.session.get('ticketing.refund.condition'):
@@ -707,7 +731,8 @@ class OrdersRefundIndexView(BaseView):
         if form_search.validate():
             query = Order.filter(Order.organization_id==self.organization_id)
             try:
-                query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==self.organization_id, OrderSummary.deleted_at==None))
+                builder = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)
+                query = builder(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==self.organization_id, OrderSummary.deleted_at==None))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
 
@@ -745,7 +770,8 @@ class OrdersRefundIndexView(BaseView):
         form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
         if form_search.validate():
             try:
-                query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==self.organization_id, OrderSummary.deleted_at==None))
+                builder = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)
+                query = builder(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==self.organization_id, OrderSummary.deleted_at==None))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
 

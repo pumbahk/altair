@@ -49,6 +49,7 @@ class RefundSejOrderTest(unittest.TestCase):
                 ticket_price_getter=ticket_price_getter,
                 refund_start_at=datetime(2014, 1, 1, 0, 0, 0),
                 refund_end_at=datetime(2014, 2, 1, 0, 0, 0),
+                need_stub=0,
                 ticket_expire_at=datetime(2014, 2, 1, 0, 0, 0),
                 now=datetime(2014, 1, 1, 0, 0, 0)
                 )
@@ -75,6 +76,7 @@ class RefundSejOrderTest(unittest.TestCase):
             ticket_price_getter=ticket_price_getter,
             refund_start_at=datetime(2014, 1, 1, 0, 0, 0),
             refund_end_at=datetime(2014, 2, 1, 0, 0, 0),
+            need_stub=0,
             ticket_expire_at=datetime(2014, 2, 1, 0, 0, 0),
             now=datetime(2014, 1, 1, 0, 0, 0)
             )
