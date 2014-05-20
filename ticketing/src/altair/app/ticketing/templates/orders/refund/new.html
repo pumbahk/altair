@@ -1,0 +1,108 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+    names=[u'トップ', u'払戻予約'],
+    urls=[request.route_path('index')]
+  )}
+</%block>
+
+<div class="page-header">
+  <h1>払戻予約</h1>
+</div>
+
+
+<div style="float: left;">
+  <div class="alert alert-warning">
+    <p><strong>払戻は2つの方法があります。</strong></p>
+    <ol>
+      <li><strong>個別払戻</strong></li>
+        お客様対応などで、予約1件ごとに払戻を行う場合は、各予約の詳細画面にて払戻を行います。<br>
+        クレジットカードでの払戻は即時、コンビニでの払戻は深夜1:00までに設定された分が翌朝より払戻可能となります。
+      <li><strong>一括払戻</strong></li>
+        公演中止など、公演単位で払戻を行いたい場合、ここで払戻予約をすることができます。(公演は複数選択可)<br>
+        払戻予約したものは、毎日夜間にまとめて払戻が行われます。<br>
+        クレジットカードでの払戻は夜間の払戻時に即時、コンビニでの払戻は1:00までに設定された分が翌日朝より払戻可能となります。
+    </ol>
+    <br />
+    <p class="text-error">受付時の決済方法および引取方法によって選択できる払戻方法が異なるため、決済方法(または引取方法)ごとに払戻設定を行ってください。</p>
+    <p>通常は以下の順に設定を行います。</p>
+    <div style="margin-bottom: 5px;"></div>
+    <ol>
+      <li>引取方法&nbsp;&nbsp;<span class="label label-important">コンビニ引取</span>&nbsp;に対して&nbsp;<span class="label label-default">コンビニ決済</span>&nbsp;で一括払戻設定</li>
+      <li>決済方法&nbsp;&nbsp;<span class="label label-warning">クレジットカード決済</span>&nbsp;に対して&nbsp;<span class="label label-warning">クレジットカード決済</span>&nbsp;で一括払戻設定</li>
+      <li>決済方法&nbsp;&nbsp;<span class="label label-info">楽天あんしん支払いサービス</span>&nbsp;に対して&nbsp;<span class="label label-info">楽天あんしん支払いサービス</span>&nbsp;で一括払戻設定</li>
+      <li>〜 その他の決済方法ごとに同じ払戻方法の設定を行う</li>
+    </ol>
+    <br />
+    払戻対象を検索し選択してください。以下の検索条件は自動的に付加されます。
+    <div style="margin-bottom: 5px;"></div>
+    <ul>
+      <li>ステータス: 受付済み、配送済み</li>
+      <li>決済: 入金済み</li>
+    </ul>
+  </div>
+  <%include file="/orders/refund/_search.html" args="form=form_search" />
+</div>
+<div style="clear: both;"></div>
+
+<script type="text/javascript">
+  <%include file="/orders/_checkbox_status.js" />
+
+  $.event.add(window, "load", function(){
+    var model = new CheckboxStatus(0);
+    var view = new CheckboxStatusAppView($("#checkbox_status_count"), $("input.checkbox_status"));
+    var urls = {
+      load: "${request.route_url('orders.api.checkbox_status', action='load')}",
+      add: "${request.route_url('orders.api.checkbox_status', action='add')}",
+      addall: "${request.route_url('orders.api.checkbox_status', action='addall')}",
+      remove: "${request.route_url('orders.api.checkbox_status', action='remove')}",
+      removeall: "${request.route_url('orders.api.checkbox_status', action='removeall')}",
+      reset: "${request.route_url('orders.api.checkbox_status', action='reset')}"
+    }
+
+    var presenter = new CheckboxStatusPresenter(model, view, urls);
+    $("input.checkbox_status[type='checkbox']").on("change", presenter.on_check.bind(presenter));
+    $("#checkbox_status_reset").click(presenter.on_reset.bind(presenter));
+    $("#addall").click(presenter.on_addall.bind(presenter));
+    $("#removeall").click(presenter.on_removeall.bind(presenter));
+    presenter.on_load();
+
+    // selectable check
+    $("table").selectable({
+      filter: "td.checkbox_status-wrap",
+      distance: 1,
+      stop: function(){
+        $(".ui-selected input[type='checkbox']", this).each(function(_,e){
+          $(e).click();
+        });
+        $(".ui-selected").removeClass("ui-selected");
+      }
+    })
+  });
+</script>
+
+<div class="area">
+  <dl>
+    <dt>チェックされた数</dt>
+    <dd id="checkbox_status_count"></dd>
+  </dl>
+
+  % if request.matched_route.name == 'orders.refund.checked':
+    <a type="button" class="btn" href="${request.route_path('orders.refund.search')}">全ての予約を表示</a>
+  % else:
+    <a type="button" class="btn" href="${request.route_path('orders.refund.checked')}">選択した予約だけ表示</a>
+  % endif
+  <button type="button" class="btn" id="checkbox_status_reset">リセット</button>
+  <a type="button" class="btn" id="addall">全て選択</a>
+  <a type="button" class="btn" id="removeall">全て選択しない</a>
+  <a type="button" class="btn btn-danger" href="${request.route_path('orders.refund.confirm')}">選択した予約に払戻条件を設定</a>
+</div>
+
+% if orders:
+<p> ${max(orders.items_per_page * (orders.page-1) + 1,0)}～${min(orders.items_per_page * orders.page, orders.item_count)} / ${orders.item_count}件</p>
+<div class="orders">
+  <%include file="/orders/_list.html" args="form=form, orders=orders" />
+</div>
+% endif

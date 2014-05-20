@@ -48,6 +48,7 @@ from altair.app.ticketing.core.models import (
     SeatStatusEnum,
     ChannelEnum,
     MailTypeEnum,
+    Refund,
     )
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.orders.models import (
@@ -675,12 +676,34 @@ class OrderDownloadView(BaseView):
 @view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/index.html')
 class OrdersRefundIndexView(BaseView):
 
+    @view_config(route_name='orders.refund.index')
+    def index(self):
+        form = OrderRefundForm()
+        query = Refund.query.filter(Refund.organization_id==self.context.organization.id).order_by(desc(Refund.id))
+        page = int(self.request.params.get('page', 0))
+        refunds = paginate.Page(
+            query,
+            page=page,
+            items_per_page=40,
+            item_count=query.count(),
+            url=paginate.PageURL_WebOb(self.request)
+        )
+        return dict(
+            form=form,
+            refunds=refunds,
+            page=page,
+            )
+
+
+@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/new.html')
+class OrdersRefundCreateView(BaseView):
+
     def __init__(self, *args, **kwargs):
         super(type(self), self).__init__(*args, **kwargs)
         self.organization_id = int(self.context.organization.id)
 
-    @view_config(route_name='orders.refund.index')
-    def index(self):
+    @view_config(route_name='orders.refund.new')
+    def new(self):
         if self.request.session.get('orders'):
             del self.request.session['orders']
         if self.request.session.get('ticketing.refund.condition'):

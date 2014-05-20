@@ -776,14 +776,15 @@ class OrderRefundForm(Form):
         super(type(self), self).__init__(*args, **kwargs)
 
         organization_id = kwargs.get('organization_id')
-        payment_methods = PaymentMethod.filter_by_organization_id(organization_id)
         if organization_id:
-            self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in payment_methods]
+            payment_methods = PaymentMethod.filter_by_organization_id(organization_id)
+            if organization_id:
+                self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in payment_methods]
 
-        self.payment_method_id.sej_plugin_id = []
-        for pm in payment_methods:
-            if pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
-                self.payment_method_id.sej_plugin_id.append(int(pm.id))
+            self.payment_method_id.sej_plugin_id = []
+            for pm in payment_methods:
+                if pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
+                    self.payment_method_id.sej_plugin_id.append(int(pm.id))
 
         self.orders = kwargs.get('orders', [])
 

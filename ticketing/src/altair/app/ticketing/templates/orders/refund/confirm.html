@@ -3,8 +3,11 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-    names=[u'トップ', u'購入情報', u'払戻', u'払戻確認'],
-    urls=[request.route_path('index'), request.route_path('orders.index'), request.route_path('orders.refund.search')]
+    names=[u'トップ', u'払戻予約', u'払戻確認'],
+    urls=[
+      request.route_path('index'),
+      request.route_path('orders.refund.search')
+    ]
   )}
 </%block>
 
