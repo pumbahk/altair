@@ -84,30 +84,28 @@ def refund_order():
 
     logging.info('start refund_order batch')
 
-    # 1件ずつ払戻処理
-    orders_to_skip = set()
-    while True:
-        query = Order.query.filter(Order.refund_id!=None, Order.refunded_at==None)
-        if orders_to_skip:
-            query = query.filter(not_(Order.id.in_(orders_to_skip)))
-        order = query.first()
+    refunds = Refund.query.filter(Refund.status==RefundStatusEnum.Waiting.v[0]).order_by(Refund.id).with_lockmode('update').all()
+    for refund in refunds:
+        refund.status = RefundStatusEnum.Refunding.v[0]
+        refund.save()
+        transaction.commit()
 
-        if not order:
-            logging.info('target order not found')
-            break
-
-        try:
-            logging.info('try to refund order (%s)' % order.id)
-            if order.call_refund(request):
-                logging.info('refund success')
-                transaction.commit()
-            else:
-                logging.error('failed to refund order (%s)' % order.order_no)
+        for order in refund.orders:
+            try:
+                logging.info('try to refund order (%s)' % order.id)
+                if order.call_refund(request):
+                    logging.info('refund success')
+                    transaction.commit()
+                else:
+                    logging.error('failed to refund order (%s)' % order.order_no)
+                    transaction.abort()
+            except Exception as e:
+                logging.error('failed to refund orders (%s)' % e.message)
                 transaction.abort()
-                orders_to_skip.add(order.id)
-        except Exception as e:
-            logging.error('failed to refund orders (%s)' % e.message)
-            break
+
+        refund.status = RefundStatusEnum.Refunded.v[0]
+        refund.save()
+        transaction.commit()
 
     # SEJ払戻ファイル送信
     create_and_send_refund_file(registry.settings)

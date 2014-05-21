@@ -3008,6 +3008,16 @@ class ChannelEnum(StandardEnum):
     INNER = 3
     IMPORT = 4
 
+class RefundStatusEnum(StandardEnum):
+    Waiting = (0, u'払戻予約')
+    Refunding = (1, u'払戻中')
+    Refunded = (2, u'払戻完了')
+
+class Refund_Performance(Base):
+    __tablename__ = 'Refund_Performance'
+    refund_id = Column(Unicode(48), ForeignKey('Refund.id', ondelete='CASCADE'), primary_key=True)
+    performance_id = Column(Identifier, ForeignKey('Performance.id', ondelete='CASCADE'), primary_key=True)
+
 class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Refund'
 
@@ -3025,7 +3035,10 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     orders = relationship('Order', backref=backref('refund', uselist=False))
     need_stub = Column(Boolean, nullable=True, default=None)
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
-    organization = relationship('Organization', backref='refunds')
+    organization = relationship('Organization')
+    performances = relationship('Performance', secondary=Refund_Performance.__table__)
+    order_count = Column(Integer, nullable=True)
+    status = Column(Integer, nullable=False, default=0, server_default='0')
 
     def fee(self, order):
         total_fee = 0
@@ -3042,31 +3055,8 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def item(self, order):
         return sum(o.price * o.quantity for o in order.items) if self.include_item else 0
 
-    @property
-    def order_count(self):
-        from altair.app.ticketing.orders.models import Order
-        return Order.query.join(Order.refund).filter(Order.refund_id==self.id).count()
-
-    @property
-    def performances(self):
-        from altair.app.ticketing.orders.models import Order
-        return Order.query.join(
-                Order.refund, Order.performance
-            ).filter(
-                Order.refund_id==self.id,
-            ).with_entities(Performance.name).distinct().all()
-
-    @property
-    def status(self):
-        from altair.app.ticketing.orders.models import Order
-        order_count = self.order_count
-        refunded_count = Order.query.join(Order.refund).filter(Order.refund_id==self.id, Order.refunded_at!=None).count()
-        if order_count == refunded_count:
-            return u'払戻済'
-        if refunded_count > 0:
-            return u'払戻中'
-        return u'払戻予約'
-
+    def editable(self):
+        return self.status == RefundStatusEnum.Waiting.v[0]
 
 @implementer(ISettingContainer, IOrderQueryable)
 class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):

@@ -679,7 +679,13 @@ class OrdersRefundIndexView(BaseView):
     @view_config(route_name='orders.refund.index')
     def index(self):
         form = OrderRefundForm()
-        query = Refund.query.filter(Refund.organization_id==self.context.organization.id).order_by(desc(Refund.id))
+        query = Refund.query.filter(
+                Refund.organization_id==self.context.organization.id
+            ).options(
+                undefer(Refund.updated_at),
+                joinedload(Refund.payment_method),
+                joinedload(Refund.performances)
+            ).order_by(desc(Refund.id))
         page = int(self.request.params.get('page', 0))
         refunds = paginate.Page(
             query,
@@ -894,8 +900,16 @@ class OrdersRefundConfirmView(BaseView):
             }
 
         # 払戻予約
+        performances = []
+        for o in orders:
+            if o.performance not in performances:
+                performances.append(o.performance)
         refund_param = form_refund.data
-        refund_param.update(dict(orders=orders))
+        refund_param.update(dict(
+            orders=orders,
+            order_count=len(orders),
+            performances=performances,
+        ))
         Order.reserve_refund(refund_param)
 
         del self.request.session['orders']

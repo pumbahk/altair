@@ -13,7 +13,10 @@
 </div>
 
 % if refunds:
-<%! from altair.app.ticketing.orders.models import OrderCancelReasonEnum %>
+<%!
+  from altair.app.ticketing.core.models import RefundStatusEnum
+  from altair.app.ticketing.orders.models import OrderCancelReasonEnum
+%>
 <div>
   <table class="table table-bordered table-condensed">
     <thead>
@@ -25,7 +28,7 @@
         <th style="width: 80px;">払戻対象</th>
         <th>理由</th>
         <th>払戻期間</th>
-        <th>半券<br>要否</th>
+        <th>半券</th>
         <th>更新日時</th>
         <th style="width: 120px;"></th>
       </tr>
@@ -35,11 +38,11 @@
       <tr>
         <td>
         % for p in refund.performances:
-          ${p.name}
+          ${p.name}<br>
         % endfor
         </td>
         <td>${refund.order_count}</td>
-        <td>${refund.status}</td>
+        <td>${u''.join([e.v[1] for e in RefundStatusEnum if refund.status == e.v[0]])}</td>
         <td>${refund.payment_method.name}</td>
         <td>
         % if refund.include_item:
@@ -68,7 +71,7 @@
         <td>${u'要' if refund.need_stub else u'否'}</td>
         <td>${refund.updated_at}</td>
         <td>
-        % if refund.status:
+        % if refund.editable():
           <div class="btn-group">
             <a class="btn btn-small" href="${request.route_path('orders.refund.edit', refund_id=refund.id)}"><i class="icon-pencil"></i> 編集</a>
             <a class="btn btn-small" href="javascript:delete_refund(${refund.id});"><i class="icon-remove"></i> 削除</a>
