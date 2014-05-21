@@ -155,85 +155,141 @@ function bind(bindable, model, attr) {
   onchange.call(model);
 }
 
+// 全体ロックボタンの表示
+//  * 白: そのグループ内にロック状態stockが1つもない時
+//  * 灰: そのグループ内のロック状態とロック解除状態のstockがそれぞれ1つ以上あるとき
+//  * 黒: そのグループ内のロック解除状態stockが1つもない時
+// 全体ロックボタン押下時の挙動
+//  * 白: そのグループ内のstockを全てロック状態にする
+//  * 灰: そのグループ内のstockを全てロック状態にする
+//  * 黒: そのグループ内のstockを全てロック解除状態にする
+
+
+var StockLockStatus = (function () {
+    function StockLockStatus() {
+    };
+
+    StockLockStatus.LOCKED = false;  // ロック状態
+    StockLockStatus.UNLOCKED = true; // ロック解除状態
+    StockLockStatus.ILLIGAL = "illigal status"; // 異常
+
+    StockLockStatus.get = function (stock){
+        return stock.get('assignable');
+    };
+
+    StockLockStatus.set = function (stock, status){
+        stock.set('assignable', status);
+    };
+
+    StockLockStatus.toggle = function (stock){
+        var now_status = this.get(stock);
+        var next_status = this.ILLIGAL;
+        if (now_status == this.UNLOCKED){
+            next_status = this.LOCKED
+        }else{
+            next_status = this.UNLOCKED
+        }
+        this.set(stock, next_status);
+    }
+    return StockLockStatus;
+})();
+
+var StockGroupLockStatus = (function () {
+    function StockGroupLockStatus() {
+    };
+    StockGroupLockStatus.get_color = function (status) {
+        switch (status) {
+        case this.LOCKED:
+            return "black";
+        case this.UNLOCKED:
+            return "white";
+        case this.MIXED:
+            return "gray";
+        default:
+            return "red";
+        }
+    };
+
+    StockGroupLockStatus.get_next_status = function (status) {
+        switch (status) {
+        case this.LOCKED:
+            return this.UNLOCKED;
+        case this.UNLOCKED:
+            return this.LOCKED;
+        case this.MIXED:
+            return this.LOCKED;
+        default:
+            return this.ILLIGAL;
+        }
+    };
+
+    StockGroupLockStatus.get_stock_lock_status = function (status){
+        switch (status) {
+        case this.LOCKED:
+            return StockLockStatus.LOCKED;
+        case this.UNLOCKED:
+            return StockLockStatus.UNLOCKED;
+        case this.MIXED:
+            return StockLockStatus.LOCKED;
+        default:
+            return StockLockStatus.ILLIGAL;
+        }
+    };
+
+    StockGroupLockStatus.LOCKED = "fa fa-lock";
+    StockGroupLockStatus.UNLOCKED = "fa fa-unlock";
+    StockGroupLockStatus.MIXED = "fa fa-unlock-alt";
+    StockGroupLockStatus.ILLIGAL = "fa fa-bug";
+    return StockGroupLockStatus;
+})();
+
+
+function get_now_status(stocks){
+    var lock_count = 0;
+    var unlock_count = 0;
+
+    for(key in stocks){
+        var stock = stocks[key];
+        var status = stock.get('assignable');
+        if(status == true){// unlock status
+            ++unlock_count;
+        }else{
+            ++lock_count;
+        }
+    }
+
+    if(lock_count == 0 && unlock_count == 0){
+        return StockGroupLockStatus.NOSTOCK;
+    }else if(lock_count > 0 && unlock_count == 0){
+        return StockGroupLockStatus.LOCKED;
+    }else if (lock_count == 0 && unlock_count > 0){
+        return StockGroupLockStatus.UNLOCKED;
+    }else if (lock_count > 0 && unlock_count > 0){
+        return StockGroupLockStatus.MIXED;
+    }else{
+        return StockGroupLockStatus.ILLIGAL;
+    }
+};
+
+
 function makeMultiStocksLockHandler(parent, id){
+    if (typeof id === "undefined") { id = ""; }
     var lockable = $('<i></i>').appendTo(parent);
     var venue = venueEditorRoot.venueeditor('model');
     var mapper = venue.perStockHolderStockMap;
     var stocks = mapper[id];
 
-    var LOCKED = "locked";
-    var UNLOCKED = "unlocked";
-    var MIXED =  "mixed";
-    var NOSTOCK =  "nostock";
-    
-    function now_status(stocks){
-        var lock_count = 0;
-        var unlock_count = 0;
-    
-        for(key in stocks){
-            var stock = stocks[key];
-            var status = stock.get('assignable');
-            if(status == true){// unlock status
-                ++unlock_count;
-            }else{
-                ++lock_count;
-            }
-        }
-        
-        if(lock_count == 0 && unlock_count == 0){// 在庫無し
-            return NOSTOCK;
-        }else if(lock_count > 0 && unlock_count == 0){// 全てロック状態 -> ロック解除する
-            return LOCKED;
-        }else if (lock_count == 0 && unlock_count > 0){// 全てロック解除状態 -> ロックする
-            return UNLOCKED;
-        }else if (lock_count > 0 && unlock_count > 0){// ミックス状態 -> ロックする
-            return MIXED;
-        }else{
-            alert("在庫状態が不正です。申し訳ございませんがページを再読み込みしてください。");
-            return 0;
-        }
+    function refresh(){
+        var status = get_now_status(stocks);
+        var next_status = status;
+        var next_color = StockGroupLockStatus.get_color(status);
+        lockable.removeClass('fa fa-lock');
+        lockable.removeClass('fa fa-unlock');
+        lockable.removeClass('fa fa-unlock-alt');
+        lockable.addClass(next_status);
+        lockable.css('color', next_color);
     }
-    var timer_id = 0;
 
-
-        function refresh(){
-            if (timer_id > 0){
-                clearInterval(timer_id);
-                timer_id = 0;
-            };
-            var now = now_status(stocks);
-            switch (now){
-            case LOCKED:
-                lockable.removeClass('fa fa-lock');                
-                lockable.removeClass('fa fa-unlock');                
-                lockable.removeClass('fa fa-unlock-alt');                
-                lockable.addClass('fa fa-lock');
-                lockable.css('color', 'black');
-                break;
-            case UNLOCKED:
-                lockable.removeClass('fa fa-lock');                
-                lockable.removeClass('fa fa-unlock');                
-                lockable.removeClass('fa fa-unlock-alt');                
-                lockable.addClass('fa fa-unlock');
-                lockable.css('color', 'white');
-                break;
-            case MIXED:
-                lockable.removeClass('fa fa-lock');                
-                lockable.removeClass('fa fa-unlock');                
-                lockable.removeClass('fa fa-unlock-alt');                
-                    lockable.addClass('fa fa-unlock-alt');
-                lockable.css('color', 'gray')
-                timer_id = setInterval(function(){
-                    lockable.fadeOut(1000,function(){$(this).fadeIn(500)});
-                });
-                break;
-            case NOSTOCK:
-                break;                
-            default:
-                alert("在庫状態に異常があります");
-            }
-        } 
-    
     for(key in stocks){
         var stock = stocks[key];
         stock.on('change:assignable', refresh);
@@ -242,84 +298,24 @@ function makeMultiStocksLockHandler(parent, id){
 }
 
 function makeMultiStocksByStockTypeLockHandler(parent, id){
+    if (typeof id === "undefined") { id = ""; }
     var lockable = $('<i></i>').appendTo(parent);
     var venue = venueEditorRoot.venueeditor('model');
     var mapper = venue.perStockTypeStockMap;
     var stocks = mapper[id];
 
-    var LOCKED = "locked";
-    var UNLOCKED = "unlocked";
-    var MIXED =  "mixed";
-    var NOSTOCK =  "nostock";
-    
-    function now_status(stocks){
-        var lock_count = 0;
-        var unlock_count = 0;
-    
-        for(key in stocks){
-            var stock = stocks[key];
-            var status = stock.get('assignable');
-            if(status == true){// unlock status
-                ++unlock_count;
-            }else{
-                ++lock_count;
-            }
-        }
-        
-        if(lock_count == 0 && unlock_count == 0){// 在庫無し
-            return NOSTOCK;
-        }else if(lock_count > 0 && unlock_count == 0){// 全てロック状態 -> ロック解除する
-            return LOCKED;
-        }else if (lock_count == 0 && unlock_count > 0){// 全てロック解除状態 -> ロックする
-            return UNLOCKED;
-        }else if (lock_count > 0 && unlock_count > 0){// ミックス状態 -> ロックする
-            return MIXED;
-        }else{
-            alert("在庫状態が不正です。申し訳ございませんがページを再読み込みしてください。");
-            return 0;
-        }
+    function refresh(){
+        var status = get_now_status(stocks);
+        var next_status = status;
+        var next_color = StockGroupLockStatus.get_color(status);
+        lockable.removeClass('fa fa-lock');
+        lockable.removeClass('fa fa-unlock');
+        lockable.removeClass('fa fa-unlock-alt');
+        lockable.addClass(next_status);
+        lockable.css('color', next_color);
     }
-    var timer_id = 0;
 
 
-        function refresh(){
-            if (timer_id > 0){
-                clearInterval(timer_id);
-                timer_id = 0;
-            };
-            var now = now_status(stocks);
-            switch (now){
-            case LOCKED:
-                lockable.removeClass('fa fa-lock');                
-                lockable.removeClass('fa fa-unlock');                
-                lockable.removeClass('fa fa-unlock-alt');                
-                lockable.addClass('fa fa-lock');
-                lockable.css('color', 'black');
-                break;
-            case UNLOCKED:
-                lockable.removeClass('fa fa-lock');                
-                lockable.removeClass('fa fa-unlock');                
-                lockable.removeClass('fa fa-unlock-alt');                
-                lockable.addClass('fa fa-unlock');
-                lockable.css('color', 'white');
-                break;
-            case MIXED:
-                lockable.removeClass('fa fa-lock');                
-                lockable.removeClass('fa fa-unlock');                
-                lockable.removeClass('fa fa-unlock-alt');                
-                    lockable.addClass('fa fa-unlock-alt');
-                lockable.css('color', 'gray')
-                timer_id = setInterval(function(){
-                    lockable.fadeOut(1000,function(){$(this).fadeIn(500)});
-                });
-                break;
-            case NOSTOCK:
-                break;                
-            default:
-                alert("在庫状態に異常があります");
-            }
-        } 
-    
     for(key in stocks){
         var stock = stocks[key];
         stock.on('change:assignable', refresh);
@@ -627,100 +623,40 @@ function buildStockHolderTypeTables(venue) {
 
 function lockStocksByStockHolder(id)
 {
+    if (typeof id === "undefined") { id = ""; }
     var venue = venueEditorRoot.venueeditor('model');
     var mapper = venue.perStockHolderStockMap;
-    
-    var lock_count = 0;
-    var unlock_count = 0;
-    
-    stocks = mapper[id];
-    for(key in stocks){
-        var stock = stocks[key];
-        var status = stock.get('assignable');
-        if(status == true){// unlock status
-            ++unlock_count;
-        }else{
-            ++lock_count;
-        }
-    }
-    
-    var LOCK = false;
-    var UNLOCK = true;
-    var next_status = false;
-    if(lock_count == 0 && unlock_count == 0){// 在庫無し
-        return 0;// 何もしない
-    }else if(lock_count > 0 && unlock_count == 0){// 全てロック状態 -> ロック解除する
-        next_status = UNLOCK;
-    }else if (lock_count == 0 && unlock_count > 0){// 全てロック解除状態 -> ロックする
-        next_status = LOCK;        
-    }else if (lock_count > 0 && unlock_count > 0){// ミックス状態 -> ロックする
-        next_status = LOCK;        
-    }else{
-        alert("在庫状態が不正です。申し訳ございませんがページを再読み込みしてください。");
-        return 0;
-    }
+    var stocks = mapper[id];
 
+    var now_status = get_now_status(stocks);
+    var next_status = StockGroupLockStatus.get_next_status(now_status);
+    var lock_status = StockGroupLockStatus.get_stock_lock_status(next_status);
     for(key in stocks){
         var stock = stocks[key];
-        stock.set('assignable', next_status);
+        StockLockStatus.set(stock, lock_status);
     }
 }
 
 function lockStocksByStockType(id)
 {
+    if (typeof id === "undefined") { id = ""; }
     var venue = venueEditorRoot.venueeditor('model');
     var mapper = venue.perStockTypeStockMap;
-    
+
     var lock_count = 0;
     var unlock_count = 0;
-    
-    stocks = mapper[id];
-    for(key in stocks){
-        var stock = stocks[key];
-        var status = stock.get('assignable');
-        if(status == true){// unlock status
-            ++unlock_count;
-        }else{
-            ++lock_count;
-        }
-    }
-    
-    var LOCK = false;
-    var UNLOCK = true;
-    var next_status = false;
-    if(lock_count == 0 && unlock_count == 0){// 在庫無し
-        return 0;// 何もしない
-    }else if(lock_count > 0 && unlock_count == 0){// 全てロック状態 -> ロック解除する
-        next_status = UNLOCK;
-    }else if (lock_count == 0 && unlock_count > 0){// 全てロック解除状態 -> ロックする
-        next_status = LOCK;        
-    }else if (lock_count > 0 && unlock_count > 0){// ミックス状態 -> ロックする
-        next_status = LOCK;        
-    }else{
-        alert("在庫状態が不正です。申し訳ございませんがページを再読み込みしてください。");
-        return 0;
-    }
 
+    stocks = mapper[id];
+    var now_status = get_now_status(stocks);
+    var next_status = StockGroupLockStatus.get_next_status(now_status);
+    var lock_status = StockGroupLockStatus.get_stock_lock_status(next_status);
     for(key in stocks){
         var stock = stocks[key];
-        stock.set('assignable', next_status);
+        StockLockStatus.set(stock, lock_status);
     }
 }
 
 
-  // stock.assignable    ロック状態
-  //  * true    ロック解除状態
-  //  * false   ロック状態
-  // 全体ロックボタンの表示
-  //  * 白: そのグループ内にロック状態stockが1つもない時
-  //  * 灰: そのグループ内のロック状態とロック解除状態のstockがそれぞれ1つ以上あるとき
-  //  * 黒: そのグループ内のロック解除状態stockが1つもない時
-  // 全体ロックボタン押下時の挙動
-  //  * 白: そのグループ内のstockを全てロック状態にする
-  //  * 灰: そのグループ内のstockを全てロック状態にする
-  //  * 黒: そのグループ内のstockを全てロック解除状態にする
- 
- 
 
 
 
