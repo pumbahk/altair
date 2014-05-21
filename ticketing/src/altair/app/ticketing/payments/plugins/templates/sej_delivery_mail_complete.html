@@ -1,6 +1,6 @@
 ＜セブン-イレブンでお引取りの方＞
 %if payment_type == 'CashOnDelivery':
-チケットは代金と引換です。<br/>
+チケットは代金と引換です。
 %else:
 %if delivery_method.hide_voucher:
 引換票番号は後日メールにてお送りいたします。
@@ -13,7 +13,6 @@
 購入いただいた日の翌日${h.japanese_time(sej_order.ticketing_start_at)}から引き取りが可能となります。
 %endif
 %endif
-
+%endif
+%endif
 ${notice}
-%endif
-%endif
