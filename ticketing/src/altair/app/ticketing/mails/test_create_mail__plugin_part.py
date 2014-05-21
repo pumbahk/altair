@@ -81,13 +81,16 @@ def _make_order_for_payment(self, payment_plugin_id, total_amount=10000):
     from altair.app.ticketing.core.models import (
         PaymentDeliveryMethodPair, 
         PaymentMethod, 
+        DeliveryMethod, 
         ShippingAddress
     )
     from altair.app.ticketing.orders.models import (
         Order,
         )
+    from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
     payment_method = PaymentMethod(payment_plugin_id=payment_plugin_id)
-    pdmp = PaymentDeliveryMethodPair(payment_method=payment_method)
+    delivery_method = DeliveryMethod(delivery_plugin_id=SEJ_DELIVERY_PLUGIN_ID)
+    pdmp = PaymentDeliveryMethodPair(payment_method=payment_method, delivery_method=delivery_method)
     shipping_address = ShippingAddress() #xxx:
     return Order(payment_delivery_pair=pdmp,
                  shipping_address=shipping_address, 
@@ -98,10 +101,13 @@ def _make_lot_entry_for_payment(self, payment_plugin_id):
     from altair.app.ticketing.core.models import (
         PaymentDeliveryMethodPair, 
         PaymentMethod, 
+        DeliveryMethod,
         ShippingAddress
     )
+    from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
     payment_method = PaymentMethod(payment_plugin_id=payment_plugin_id)
-    pdmp = PaymentDeliveryMethodPair(payment_method=payment_method)
+    delivery_method = DeliveryMethod(delivery_plugin_id=SEJ_DELIVERY_PLUGIN_ID)
+    pdmp = PaymentDeliveryMethodPair(payment_method=payment_method, delivery_method=delivery_method)
     shipping_address = ShippingAddress() #xxx:
     return LotEntry(payment_delivery_method_pair=pdmp, shipping_address=shipping_address)
 

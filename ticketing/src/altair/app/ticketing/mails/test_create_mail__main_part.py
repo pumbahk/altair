@@ -22,6 +22,7 @@ from altair.app.ticketing.testing import _setup_db, _teardown_db
 
 def setUpModule():
     _setup_db(['altair.app.ticketing.core.models',
+               'altair.app.ticketing.orders.models',
                'altair.app.ticketing.lots.models'])
 
 def tearDownModule():

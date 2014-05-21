@@ -601,9 +601,21 @@ def payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
     """
-    sej_order = get_sej_order(context.order.order_no)
+    provided_sej_order = getattr(context, 'sej_order', None)
+    if provided_sej_order is not None:
+        sej_order = provided_sej_order
+    else:
+        sej_order = get_sej_order(context.order.order_no)
+    delivery_plugin_id = context.order.payment_delivery_pair.delivery_method.delivery_plugin_id
     payment_method = context.order.payment_delivery_pair.payment_method
-    payment_type = payment_type_to_string(sej_order.payment_type)
+    if sej_order is not None:
+        payment_type = payment_type_to_string(sej_order.payment_type)
+    else:
+        payment_type = (
+            SejPaymentType.CashOnDelivery
+            if delivery_plugin_id == DELIVERY_PLUGIN_ID
+            else SejPaymentType.PrepaymentOnly
+            )
     return dict(
         sej_order=sej_order,
         h=cart_helper, 
