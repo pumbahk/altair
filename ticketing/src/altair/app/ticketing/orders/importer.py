@@ -229,7 +229,7 @@ class ImportCSVParserContext(object):
             },
         'address_2': {
             'key': u'shipping_address.address_2',
-            'required': True,
+            'required': False,
             },
         'tel_1': {
             'key': u'shipping_address.tel_1',
@@ -537,7 +537,7 @@ class ImportCSVParserContext(object):
         # バリデーション (もうちょっと頑張った方が良い)
         for k1, desc in six.iteritems(self.shipping_address_record_key_map):
             if desc['required'] and not record[k1]:
-                raise self.exc_factory(u'「%s」が指定されていません' % japanese_columns[k2])
+                raise self.exc_factory(u'「%s」が指定されていません' % japanese_columns[desc['key']])
 
         record['zip'] = record['zip'].replace('-', '')
 
