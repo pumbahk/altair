@@ -857,6 +857,10 @@ class OrderRefundForm(Form):
              u'<br>公演前のケースでは「要」を指定、公演途中での中止等のケースでは「不要」を指定してください。',
         choices=[(u'', u''), (u'1', u'要'), (u'0', u'不要')],
         validators=[Optional()],
+        coerce=lambda x : int(x) if x else None,
+    )
+    id = HiddenField(
+        validators=[Optional()],
     )
     organization_id = HiddenField(
         validators=[Optional()],

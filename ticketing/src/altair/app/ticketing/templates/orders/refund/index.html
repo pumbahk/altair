@@ -27,7 +27,7 @@
         <th>払戻期間</th>
         <th>半券<br>要否</th>
         <th>更新日時</th>
-        <th></th>
+        <th style="width: 120px;"></th>
       </tr>
     </thead>
     <tbody>
@@ -68,7 +68,12 @@
         <td>${u'要' if refund.need_stub else u'否'}</td>
         <td>${refund.updated_at}</td>
         <td>
-
+        % if refund.status:
+          <div class="btn-group">
+            <a class="btn btn-small" href="${request.route_path('orders.refund.edit', refund_id=refund.id)}"><i class="icon-pencil"></i> 編集</a>
+            <a class="btn btn-small" href="javascript:delete_refund(${refund.id});"><i class="icon-remove"></i> 削除</a>
+          </div>
+        % endif
         </td>
       </tr>
     % endfor
@@ -76,4 +81,17 @@
   </table>
   ${ch.pager(refunds)}
 </div>
+
+<script type="text/javascript">
+  function delete_refund(id) {
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '${request.route_path('orders.refund.delete', refund_id='{id}')}'.replace(encodeURIComponent('{id}'), id)).text('払戻予約を削除する');
+    var message = '選択した払戻予約を削除します。よろしいですか？';
+    modal.find('#message').html('<p>' + message + '</p>');
+    modal.modal('toggle');
+  }
+</script>
+
+<%namespace file="/common/modal.html" name="m" />
+${m.delete_modal(label_cancel=u'戻る')}
 % endif
