@@ -30,12 +30,12 @@
           <collectionProp name="Arguments.arguments">
             <elementProp name="EVENT_ID" elementType="Argument">
               <stringProp name="Argument.name">EVENT_ID</stringProp>
-              <stringProp name="Argument.value">1744</stringProp>
+              <stringProp name="Argument.value">1893</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
             <elementProp name="LOT_ID" elementType="Argument">
               <stringProp name="Argument.name">LOT_ID</stringProp>
-              <stringProp name="Argument.value">993</stringProp>
+              <stringProp name="Argument.value">1110</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
             <elementProp name="LOT_TOKEN" elementType="Argument">
@@ -45,27 +45,27 @@
             </elementProp>
             <elementProp name="PDMP_ID" elementType="Argument">
               <stringProp name="Argument.name">PDMP_ID</stringProp>
-              <stringProp name="Argument.value">12198</stringProp>
+              <stringProp name="Argument.value">13467</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
             <elementProp name="QUANTITY" elementType="Argument">
               <stringProp name="Argument.name">QUANTITY</stringProp>
-              <stringProp name="Argument.value">5</stringProp>
+              <stringProp name="Argument.value">2</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
             <elementProp name="STOCK_TYPE_ID" elementType="Argument">
               <stringProp name="Argument.name">STOCK_TYPE_ID</stringProp>
-              <stringProp name="Argument.value">7721</stringProp>
+              <stringProp name="Argument.value">8153</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
             <elementProp name="PERFORMANCE_ID" elementType="Argument">
               <stringProp name="Argument.name">PERFORMANCE_ID</stringProp>
-              <stringProp name="Argument.value">8737</stringProp>
+              <stringProp name="Argument.value">9929</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
             <elementProp name="PRODUCT_ID" elementType="Argument">
               <stringProp name="Argument.name">PRODUCT_ID</stringProp>
-              <stringProp name="Argument.value">272049</stringProp>
+              <stringProp name="Argument.value">287837</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
             <elementProp name="LOT_NAME" elementType="Argument">
@@ -95,7 +95,7 @@
             </elementProp>
             <elementProp name="EMAIL" elementType="Argument">
               <stringProp name="Argument.name">EMAIL</stringProp>
-              <stringProp name="Argument.value">takeshi.shimada@ticketstar.jp</stringProp>
+              <stringProp name="Argument.value">dev@ticketstar.jp</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
             <elementProp name="TEL" elementType="Argument">
