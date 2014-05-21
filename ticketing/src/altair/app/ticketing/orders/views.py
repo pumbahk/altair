@@ -51,6 +51,7 @@ from altair.app.ticketing.core.models import (
     Refund,
     )
 from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.core import helpers as core_helpers
 from altair.app.ticketing.orders.models import (
     Order,
     OrderedProduct,
@@ -679,7 +680,13 @@ class OrdersRefundIndexView(BaseView):
     @view_config(route_name='orders.refund.index')
     def index(self):
         form = OrderRefundForm()
-        query = Refund.query.filter(Refund.organization_id==self.context.organization.id).order_by(desc(Refund.id))
+        query = Refund.query.filter(
+                Refund.organization_id==self.context.organization.id
+            ).options(
+                undefer(Refund.updated_at),
+                joinedload(Refund.payment_method),
+                joinedload(Refund.performances)
+            ).order_by(desc(Refund.id))
         page = int(self.request.params.get('page', 0))
         refunds = paginate.Page(
             query,
@@ -692,6 +699,72 @@ class OrdersRefundIndexView(BaseView):
             form=form,
             refunds=refunds,
             page=page,
+            core_helpers=core_helpers
+            )
+
+    @view_config(route_name='orders.refund.delete')
+    def delete(self):
+        refund_id = int(self.request.matchdict.get('refund_id', 0))
+        refund = Refund.get(refund_id, organization_id=self.context.organization.id)
+        if refund is None:
+            return HTTPNotFound()
+
+        try:
+            refund.delete()
+            self.request.session.flash(u'払戻予約を削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
+            raise HTTPFound(location=self.request.route_path('orders.refund.index'))
+
+        return HTTPFound(location=self.request.route_path('orders.refund.index'))
+
+
+@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/edit.html')
+class OrdersRefundEditView(BaseView):
+
+    @view_config(route_name='orders.refund.edit', request_method='GET')
+    def edit_get(self):
+        refund_id = int(self.request.matchdict.get('refund_id', 0))
+        refund = Refund.get(refund_id, organization_id=self.context.organization.id)
+        if refund is None:
+            return HTTPNotFound()
+
+        f = OrderRefundForm(obj=refund, organization_id=self.context.organization.id)
+        return dict(form=f, refund=refund)
+
+    @view_config(route_name='orders.refund.edit', request_method='POST')
+    def edit_post(self):
+        refund_id = int(self.request.matchdict.get('refund_id', 0))
+        refund = Refund.get(refund_id, organization_id=self.context.organization.id)
+        if refund is None:
+            return HTTPNotFound()
+
+        f = OrderRefundForm(self.request.POST, organization_id=self.context.organization.id)
+        if f.validate():
+            logger.info(f.data)
+            refund = merge_session_with_post(refund, f.data)
+            refund.save()
+            self.request.session.flash(u'払戻予約を保存しました')
+            return HTTPFound(location=self.request.route_path('orders.refund.index', refund_id=refund.id))
+        else:
+            return dict(form=f, refund=refund)
+
+
+@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/show.html')
+class OrdersRefundDetailView(BaseView):
+
+    @view_config(route_name='orders.refund.show')
+    def index(self):
+        refund_id = int(self.request.matchdict.get('refund_id', 0))
+        refund = Refund.get(refund_id, organization_id=self.context.organization.id)
+        if refund is None:
+            return HTTPNotFound()
+
+        form = OrderRefundForm()
+        return dict(
+            form=form,
+            refund=refund,
+            core_helpers=core_helpers
             )
 
 
@@ -847,8 +920,16 @@ class OrdersRefundConfirmView(BaseView):
             }
 
         # 払戻予約
+        performances = []
+        for o in orders:
+            if o.performance not in performances:
+                performances.append(o.performance)
         refund_param = form_refund.data
-        refund_param.update(dict(orders=orders))
+        refund_param.update(dict(
+            orders=orders,
+            order_count=len(orders),
+            performances=performances,
+        ))
         Order.reserve_refund(refund_param)
 
         del self.request.session['orders']
@@ -923,10 +1004,10 @@ class OrderDetailView(BaseView):
 
         if order.cancel(self.request):
             notify_order_canceled(self.request, order)
-            self.request.session.flash(u'受注(%s)をキャンセルしました' % order.order_no)
+            self.request.session.flash(u'予約(%s)をキャンセルしました' % order.order_no)
             return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
         else:
-            self.request.session.flash(u'受注(%s)をキャンセルできません' % order.order_no)
+            self.request.session.flash(u'予約(%s)をキャンセルできません' % order.order_no)
             raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
     @view_config(route_name='orders.delete', permission='sales_editor')
@@ -939,10 +1020,10 @@ class OrderDetailView(BaseView):
         try:
             order.delete()
         except Exception:
-            self.request.session.flash(u'受注(%s)を非表示にできません' % order.order_no)
+            self.request.session.flash(u'予約(%s)を非表示にできません' % order.order_no)
             raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
-        self.request.session.flash(u'受注(%s)を非表示にしました' % order.order_no)
+        self.request.session.flash(u'予約(%s)を非表示にしました' % order.order_no)
         return HTTPFound(location=route_path('orders.index', self.request))
 
     @view_config(route_name='orders.refund.immediate', permission='sales_editor')
@@ -962,10 +1043,10 @@ class OrderDetailView(BaseView):
             refund_param.update(dict(orders=[order]))
             Order.reserve_refund(refund_param)
             if order.call_refund(self.request):
-                self.request.session.flash(u'受注(%s)を払戻しました' % order.order_no)
+                self.request.session.flash(u'予約(%s)を払戻しました' % order.order_no)
                 return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
             else:
-                self.request.session.flash(u'受注(%s)を払戻できません' % order.order_no)
+                self.request.session.flash(u'予約(%s)を払戻できません' % order.order_no)
 
         response = render_to_response('altair.app.ticketing:templates/orders/refund/_form.html', {'form':f}, request=self.request)
         response.status_int = 400
@@ -980,9 +1061,9 @@ class OrderDetailView(BaseView):
 
         status = self.request.matchdict.get('status', 0)
         if order.change_payment_status(status):
-            self.request.session.flash(u'受注(%s)のステータスを変更しました' % order.order_no)
+            self.request.session.flash(u'予約(%s)のステータスを変更しました' % order.order_no)
         else:
-            self.request.session.flash(u'受注(%s)のステータスを変更できません' % order.order_no)
+            self.request.session.flash(u'予約(%s)のステータスを変更できません' % order.order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
     @view_config(route_name='orders.delivered', permission='sales_editor')
@@ -993,9 +1074,9 @@ class OrderDetailView(BaseView):
             return HTTPNotFound('order id %d is not found' % order_id)
 
         if order.delivered():
-            self.request.session.flash(u'受注(%s)を配送済みにしました' % order.order_no)
+            self.request.session.flash(u'予約(%s)を配送済みにしました' % order.order_no)
         else:
-            self.request.session.flash(u'受注(%s)を配送済みにできません' % order.order_no)
+            self.request.session.flash(u'予約(%s)を配送済みにできません' % order.order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
     @view_config(route_name='orders.undelivered', permission='sales_editor')
@@ -1006,9 +1087,9 @@ class OrderDetailView(BaseView):
             return HTTPNotFound('order id %d is not found' % order_id)
 
         if order.undelivered():
-            self.request.session.flash(u'受注(%s)を未配送にしました' % order.order_no)
+            self.request.session.flash(u'予約(%s)を未配送にしました' % order.order_no)
         else:
-            self.request.session.flash(u'受注(%s)を未配送済みにできません' % order.order_no)
+            self.request.session.flash(u'予約(%s)を未配送済みにできません' % order.order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
     @view_config(route_name='orders.edit.shipping_address', request_method='POST', renderer='altair.app.ticketing:templates/orders/_modal_shipping_address.html')
