@@ -3008,6 +3008,16 @@ class ChannelEnum(StandardEnum):
     INNER = 3
     IMPORT = 4
 
+class RefundStatusEnum(StandardEnum):
+    Waiting = 0
+    Refunding = 1
+    Refunded = 2
+
+class Refund_Performance(Base):
+    __tablename__ = 'Refund_Performance'
+    refund_id = Column(Unicode(48), ForeignKey('Refund.id', ondelete='CASCADE'), primary_key=True)
+    performance_id = Column(Identifier, ForeignKey('Performance.id', ondelete='CASCADE'), primary_key=True)
+
 class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Refund'
 
@@ -3025,7 +3035,10 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     orders = relationship('Order', backref=backref('refund', uselist=False))
     need_stub = Column(Boolean, nullable=True, default=None)
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
-    organization = relationship('Organization', backref='refunds')
+    organization = relationship('Organization')
+    performances = relationship('Performance', secondary=Refund_Performance.__table__)
+    order_count = Column(Integer, nullable=True)
+    status = Column(Integer, nullable=False, default=0, server_default='0')
 
     def fee(self, order):
         total_fee = 0
@@ -3042,30 +3055,54 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def item(self, order):
         return sum(o.price * o.quantity for o in order.items) if self.include_item else 0
 
-    @property
-    def order_count(self):
-        from altair.app.ticketing.orders.models import Order
-        return Order.query.join(Order.refund).filter(Order.refund_id==self.id).count()
+    def editable(self):
+        return self.status == RefundStatusEnum.Waiting.v
 
-    @property
-    def performances(self):
-        from altair.app.ticketing.orders.models import Order
-        return Order.query.join(
-                Order.refund, Order.performance
+    def breakdowns(self):
+        from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
+        from sqlalchemy import distinct
+
+        stmt = Order.total_amount
+        if not self.include_item:
+            stmt = stmt - func.sum(OrderedProduct.price * OrderedProduct.quantity)
+        if not self.include_system_fee:
+            stmt = stmt - Order.system_fee
+        if not self.include_special_fee:
+            stmt = stmt - Order.special_fee
+        if not self.include_transaction_fee:
+            stmt = stmt - Order.transaction_fee
+        if not self.include_delivery_fee:
+            stmt = stmt - Order.delivery_fee
+
+        refund_payment_method = aliased(PaymentMethod, name='refund_payment_method')
+        query = Order.query.join(
+                Order.items,
+                OrderedProduct.elements,
+                Order.performance,
+                Order.payment_delivery_pair,
+                PaymentDeliveryMethodPair.payment_method,
+                PaymentDeliveryMethodPair.delivery_method,
+                Order.refund,
             ).filter(
-                Order.refund_id==self.id,
-            ).with_entities(Performance.name).distinct().all()
-
-    @property
-    def status(self):
-        from altair.app.ticketing.orders.models import Order
-        order_count = self.order_count
-        refunded_count = Order.query.join(Order.refund).filter(Order.refund_id==self.id, Order.refunded_at!=None).count()
-        if order_count == refunded_count:
-            return u'払戻済'
-        if refunded_count > 0:
-            return u'払戻中'
-        return u'払戻予約'
+                Refund.id==self.id,
+                Refund.payment_method_id==refund_payment_method.id
+            ).with_entities(
+                Performance.name.label('performance_name'),
+                PaymentMethod.name.label('payment_method_name'),
+                DeliveryMethod.name.label('delivery_method_name'),
+                Order.issued.label('issued'),
+                refund_payment_method.name.label('refund_payment_method_name'),
+                func.count(distinct(Order.id)).label('order_count'),
+                func.sum(OrderedProductItem.quantity).label('ticket_count'),
+                func.sum(stmt).label('amount'),
+            ).group_by(
+                Performance.id,
+                PaymentMethod.id,
+                DeliveryMethod.id,
+                Order.issued,
+                Refund.payment_method_id,
+            )
+        return query.all()
 
 
 @implementer(ISettingContainer, IOrderQueryable)

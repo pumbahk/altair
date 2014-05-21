@@ -1,9 +1,22 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime
 from pyramid.security import has_permission, ACLAllowed
 
+from altair.app.ticketing.core.models import RefundStatusEnum
+
 __all__ = [
     'build_sales_segment_list_for_inner_sales',
+    'get_refund_status_label',
     ]
+
+refund_status_labels = {
+    RefundStatusEnum.Waiting.v: u'払戻予約',
+    RefundStatusEnum.Refunding.v: u'払戻中',
+    RefundStatusEnum.Refunded.v: u'払戻完了',
+    }
+
+def get_refund_status_label(status):
+    return refund_status_labels.get(int(status), u'?')
 
 def build_sales_segment_list_for_inner_sales(sales_segments, now=None, request=None):
     if now is None:
