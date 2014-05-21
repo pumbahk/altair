@@ -778,13 +778,14 @@ class OrderRefundForm(Form):
         organization_id = kwargs.get('organization_id')
         if organization_id:
             payment_methods = PaymentMethod.filter_by_organization_id(organization_id)
-            if organization_id:
-                self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in payment_methods]
+            self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in payment_methods]
 
             self.payment_method_id.sej_plugin_id = []
             for pm in payment_methods:
                 if pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
                     self.payment_method_id.sej_plugin_id.append(int(pm.id))
+
+            self.organization_id.data = organization_id
 
         self.orders = kwargs.get('orders', [])
 
@@ -855,6 +856,9 @@ class OrderRefundForm(Form):
         help=u'コンビニ店頭での払戻の際に、半券があるチケットのみ有効とするかどうかを指定します。' +
              u'<br>公演前のケースでは「要」を指定、公演途中での中止等のケースでは「不要」を指定してください。',
         choices=[(u'', u''), (u'1', u'要'), (u'0', u'不要')],
+        validators=[Optional()],
+    )
+    organization_id = HiddenField(
         validators=[Optional()],
     )
 
