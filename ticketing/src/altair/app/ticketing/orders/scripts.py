@@ -84,9 +84,9 @@ def refund_order():
 
     logging.info('start refund_order batch')
 
-    refunds = Refund.query.filter(Refund.status==RefundStatusEnum.Waiting.v[0]).order_by(Refund.id).with_lockmode('update').all()
+    refunds = Refund.query.filter(Refund.status==RefundStatusEnum.Waiting.v).order_by(Refund.id).with_lockmode('update').all()
     for refund in refunds:
-        refund.status = RefundStatusEnum.Refunding.v[0]
+        refund.status = RefundStatusEnum.Refunding.v
         refund.save()
         transaction.commit()
 
@@ -103,7 +103,7 @@ def refund_order():
                 logging.error('failed to refund orders (%s)' % e.message)
                 transaction.abort()
 
-        refund.status = RefundStatusEnum.Refunded.v[0]
+        refund.status = RefundStatusEnum.Refunded.v
         refund.save()
         transaction.commit()
 

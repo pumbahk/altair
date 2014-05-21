@@ -51,6 +51,7 @@ from altair.app.ticketing.core.models import (
     Refund,
     )
 from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.core import helpers as core_helpers
 from altair.app.ticketing.orders.models import (
     Order,
     OrderedProduct,
@@ -698,6 +699,7 @@ class OrdersRefundIndexView(BaseView):
             form=form,
             refunds=refunds,
             page=page,
+            core_helpers=core_helpers
             )
 
     @view_config(route_name='orders.refund.delete')

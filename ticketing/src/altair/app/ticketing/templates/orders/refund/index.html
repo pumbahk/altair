@@ -14,7 +14,6 @@
 
 % if refunds:
 <%!
-  from altair.app.ticketing.core.models import RefundStatusEnum
   from altair.app.ticketing.orders.models import OrderCancelReasonEnum
 %>
 <div>
@@ -42,7 +41,7 @@
         % endfor
         </td>
         <td>${refund.order_count}</td>
-        <td>${u''.join([e.v[1] for e in RefundStatusEnum if refund.status == e.v[0]])}</td>
+        <td>${core_helpers.get_refund_status_label(refund.status)}</td>
         <td>${refund.payment_method.name}</td>
         <td>
         % if refund.include_item:

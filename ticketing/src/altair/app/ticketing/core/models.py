@@ -3009,9 +3009,9 @@ class ChannelEnum(StandardEnum):
     IMPORT = 4
 
 class RefundStatusEnum(StandardEnum):
-    Waiting = (0, u'払戻予約')
-    Refunding = (1, u'払戻中')
-    Refunded = (2, u'払戻完了')
+    Waiting = 0
+    Refunding = 1
+    Refunded = 2
 
 class Refund_Performance(Base):
     __tablename__ = 'Refund_Performance'
@@ -3056,7 +3056,7 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return sum(o.price * o.quantity for o in order.items) if self.include_item else 0
 
     def editable(self):
-        return self.status == RefundStatusEnum.Waiting.v[0]
+        return self.status == RefundStatusEnum.Waiting.v
 
 @implementer(ISettingContainer, IOrderQueryable)
 class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
