@@ -750,6 +750,24 @@ class OrdersRefundEditView(BaseView):
             return dict(form=f, refund=refund)
 
 
+@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/show.html')
+class OrdersRefundDetailView(BaseView):
+
+    @view_config(route_name='orders.refund.show')
+    def index(self):
+        refund_id = int(self.request.matchdict.get('refund_id', 0))
+        refund = Refund.get(refund_id, organization_id=self.context.organization.id)
+        if refund is None:
+            return HTTPNotFound()
+
+        form = OrderRefundForm()
+        return dict(
+            form=form,
+            refund=refund,
+            core_helpers=core_helpers
+            )
+
+
 @view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/new.html')
 class OrdersRefundCreateView(BaseView):
 

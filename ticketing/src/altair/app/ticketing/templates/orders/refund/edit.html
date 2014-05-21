@@ -1,0 +1,70 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+    names=[u'トップ', u'払戻一覧', u'編集'],
+    urls=[
+      request.route_path('index'),
+      request.route_path('orders.refund.index')
+    ]
+  )}
+</%block>
+
+<div class="page-header">
+  <h1>払戻予約編集</h1>
+</div>
+
+<div class="well">
+  <script type="text/javascript">
+    $(function() {
+      $('form').find("input[type='checkbox']").change(function() {
+        if ($(this).attr('checked')) {
+          $(this).val(1);
+        } else {
+          $(this).val(0);
+        }
+      }).change();
+
+      $('#payment_method_id').change(function(){
+        var sej_field = $('.sej_field');
+        if ($.inArray(parseInt($(this).val()), ${form.payment_method_id.sej_plugin_id}) == -1) {
+          sej_field.css('display', 'none');
+        } else {
+          sej_field.css('display', 'block');
+        }
+      }).change();
+
+      $('form').disableOnSubmit();
+      $('[rel=popover]').popover({html:true});
+    });
+  </script>
+
+  <form class="form-horizontal" action="${request.route_path('orders.refund.edit', refund_id=form.id.data)}" method="POST">
+    ${ch.form_item(form.payment_method_id)}
+    <label class="required control-label">払戻対象</label>
+    ${ch.form_item(form.include_item)}
+    ${ch.form_item(form.include_system_fee)}
+    ${ch.form_item(form.include_special_fee)}
+    ${ch.form_item(form.include_transaction_fee)}
+    ${ch.form_item(form.include_delivery_fee)}
+    ${ch.form_item(form.cancel_reason)}
+    <div class="sej_field">
+      <div class="control-group">
+        <label class="control-label">コンビニでの払戻期間</label>
+        <div class="controls">
+          ${form.start_at} 〜 ${form.end_at}
+          ${ch.validate_errors(form.start_at)}
+          ${ch.validate_errors(form.end_at)}
+        </div>
+      </div>
+      ${ch.form_item(form.need_stub, help=ch.help(form.need_stub))}
+    </div>
+    ${ch.form_item(form.id)}
+    <div class="pull-right">
+      <a href="${request.route_path('orders.refund.index')}" class="btn">戻る</a>
+      <button type="submit" class="btn btn-primary">保存</button>
+    </div>
+  </form>
+  <div style="clear: both;"></div>
+</div>

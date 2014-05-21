@@ -3058,6 +3058,53 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def editable(self):
         return self.status == RefundStatusEnum.Waiting.v
 
+    def breakdowns(self):
+        from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
+        from sqlalchemy import distinct
+
+        stmt = Order.total_amount
+        if not self.include_item:
+            stmt = stmt - func.sum(OrderedProduct.price * OrderedProduct.quantity)
+        if not self.include_system_fee:
+            stmt = stmt - Order.system_fee
+        if not self.include_special_fee:
+            stmt = stmt - Order.special_fee
+        if not self.include_transaction_fee:
+            stmt = stmt - Order.transaction_fee
+        if not self.include_delivery_fee:
+            stmt = stmt - Order.delivery_fee
+
+        refund_payment_method = aliased(PaymentMethod, name='refund_payment_method')
+        query = Order.query.join(
+                Order.items,
+                OrderedProduct.elements,
+                Order.performance,
+                Order.payment_delivery_pair,
+                PaymentDeliveryMethodPair.payment_method,
+                PaymentDeliveryMethodPair.delivery_method,
+                Order.refund,
+            ).filter(
+                Refund.id==self.id,
+                Refund.payment_method_id==refund_payment_method.id
+            ).with_entities(
+                Performance.name.label('performance_name'),
+                PaymentMethod.name.label('payment_method_name'),
+                DeliveryMethod.name.label('delivery_method_name'),
+                Order.issued.label('issued'),
+                refund_payment_method.name.label('refund_payment_method_name'),
+                func.count(distinct(Order.id)).label('order_count'),
+                func.sum(OrderedProductItem.quantity).label('ticket_count'),
+                func.sum(stmt).label('amount'),
+            ).group_by(
+                Performance.id,
+                PaymentMethod.id,
+                DeliveryMethod.id,
+                Order.issued,
+                Refund.payment_method_id,
+            )
+        return query.all()
+
+
 @implementer(ISettingContainer, IOrderQueryable)
 class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'SalesSegment'
