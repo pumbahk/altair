@@ -3104,6 +3104,11 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             )
         return query.all()
 
+    def delete(self):
+        if not self.editable():
+            raise Exception(u'払戻中または払戻済の為、削除できません')
+        super(Refund, self).delete()
+
 
 @implementer(ISettingContainer, IOrderQueryable)
 class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
