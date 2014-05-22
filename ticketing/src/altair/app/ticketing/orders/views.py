@@ -1210,7 +1210,7 @@ class OrderDetailView(BaseView):
         transformer = SVGTransformer(svg, data)
         svg = transformer.transform()
         preview = SVGPreviewCommunication.get_instance(self.request)
-        imgdata_base64 = preview.communicate(self.request, svg)
+        imgdata_base64 = preview.communicate(self.request, svg, cover.ticket.ticket_format)
         return {"order": order, "cover":cover, "data": imgdata_base64}
 
     @view_config(route_name="orders.ticket.placeholder", request_method="GET", renderer='json')
