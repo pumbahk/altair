@@ -479,18 +479,17 @@ class LotEntries(BaseView):
                                  sql.or_(ShippingAddress.tel_1==form.tel.data,
                                          ShippingAddress.tel_2==form.tel.data))
         if form.name.data:
-            s_a = ShippingAddress
             condition = sql.and_(condition,
-                                 sql.or_(s_a.full_name==form.name.data,
-                                         s_a.last_name==form.name.data,
-                                         s_a.first_name==form.name.data,
-                                         s_a.full_name_kana==form.name.data,
-                                         s_a.last_name_kana==form.name.data,
-                                         s_a.first_name_kana==form.name.data,))
+                                 sql.or_(ShippingAddress.full_name==form.name.data,
+                                         ShippingAddress.last_name==form.name.data,
+                                         ShippingAddress.first_name==form.name.data,
+                                         ShippingAddress.full_name_kana==form.name.data,
+                                         ShippingAddress.last_name_kana==form.name.data,
+                                         ShippingAddress.first_name_kana==form.name.data,))
         if form.email.data:
             condition = sql.and_(condition,
-                                 sql.or_(s_a.email_1==form.email.data,
-                                         s_a.email_2==form.email.data))
+                                 sql.or_(ShippingAddress.email_1==form.email.data,
+                                         ShippingAddress.email_2==form.email.data))
         if form.entried_from.data:
             condition = sql.and_(condition,
                                  LotEntry.created_at>=form.entried_from.data)
