@@ -391,60 +391,6 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         self.assertEqual(modified_order.items[1].elements[0].seats[0].stock, self.products[3].items[0].stock)
         self.assertEqual(prev_product_1_stock_status_quantity - self.products[3].items[0].stock.stock_status.quantity, 1)
 
-    def test_different_amount(self):
-        from altair.app.ticketing.orders.models import Order
-        from altair.app.ticketing.orders.exceptions import OrderCreationError
-        order = self._create_order([
-            (self.products[0], 2),
-            ],
-            self.sales_segment,
-            self.payment_delivery_method_pairs[0]
-            )
-        self.session.add(order)
-        self.session.flush()
-        self.assertEqual(len(order.items), 1)
-        self.assertEqual(order.items[0].quantity, 2)
-        self.assertEqual(len(order.items[0].elements), 1)
-        self.assertEqual(order.items[0].elements[0].quantity, 2)
-        self.assertEqual(len(order.items[0].elements[0].seats), 2)
-        modify_data = {
-            'performance_id': self.performance.id,
-            'sales_segment_id': self.sales_segment.id,
-            'transaction_fee': 0,
-            'delivery_fee': 0,
-            'system_fee': 0,
-            'special_fee': None,
-            'total_amount': 0,
-            'items': [
-                {
-                    'id': order.items[0].id,
-                    'product_id': order.items[0].product_id,
-                    'quantity': order.items[0].quantity,
-                    'price': order.items[0].price,
-                    'elements': [
-                        {
-                            'id': order.items[0].elements[0].id,
-                            'product_item_id': order.items[0].elements[0].product_item.id,
-                            'quantity': order.items[0].elements[0].quantity,
-                            'price': order.items[0].elements[0].price,
-                            'seats': [
-                                {
-                                    'id': order.items[0].elements[0].seats[0].l0_id
-                                    },
-                                {
-                                    'id': order.items[0].elements[0].seats[1].l0_id
-                                    }
-                                ],
-                            }
-                        ]
-                    }
-                ]
-            }
-        with self.assertRaises(OrderCreationError) as cm:
-            self._callFUT(self.request, order, modify_data)
-        self.assertEquals(cm.exception.order_no, '000000000000')
-        self.assertEquals(unicode(cm.exception.message), u'合計金額を確認してください。計算では200ですが0が指定されています')
-
 
 class SaveOrderModificationOldTest(SaveOrderModificationTestBase):
     __test__ = True
