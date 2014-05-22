@@ -18,25 +18,24 @@ preview.ParameterManageView = Backbone.View.extend({
         this.model.on("*params.ticketformat.update", this.reDrawTicketFormatCandidates, this);
         this.vms = opts.vms;
     }, 
-    reDrawTicketFormatCandidates: function(candidates){
+    reDrawTicketFormatCandidates: function(candidates, preview_type){
         // candidates: [{name: "foo", type: ":sej", pk: "10"}, ...];
+        if(!!preview_type){
+            this.model.changePreviewType(preview_type);
+        }
         this.vms.ticket_format.redraw(candidates); 
         this.model.changeTicketFormat({"pk": candidates[0] .pk, 
                                        "name": candidates[0].name, 
                                        "type": candidates[0].type});
     }, 
     onChangeTicketFormat: function(){
-        var name = this.$ticket_format.find(":selected").text().split(":")[0];
-        var value_and_type = this.$ticket_format.val().split(":"); // <ticket_format_id:<delivery_method_type>
-        if(value_and_type.length < 2){
-            var value = value_and_type[0];
-            var type = "";
-        }else {
-            var value = value_and_type[0];
-            var type = value_and_type[1];
+        var $select = this.$ticket_format.find(":selected");
+        var name = $select.text();
+        var value = $select.val();
+        if(!!name){
+            this.model.changeTicketFormat({"pk":value, "name": name});
+            this.model.reDraw();
         }
-        this.model.changeTicketFormat({"pk":value, "name": name, "type": type});
-        this.model.reDraw();
     }, 
     onChangeSx: function(){
         this.model.set("sx", this.$sx.val());

@@ -282,11 +282,6 @@ def easycreate(context, request):
              renderer="altair.app.ticketing:templates/tickets/events/easycreate/loadcomponent.html")
 def easycreate_ajax_loadcomponent(context,request):
     preview_type = request.matchdict["preview_type"]
-    if preview_type == "sej":
-        qs = context.ticket_sej_formats
-    else:
-        qs = context.ticket_something_else_formats
-
     get = request.GET.get
     combobox_params = dict(organization_id=context.organization.id, 
                            event_id=context.event.id, 
@@ -304,14 +299,10 @@ def easycreate_ajax_loadcomponent(context,request):
         "loadsvg": request.route_path("tickets.preview.loadsvg.api", model="Ticket"), 
         "combobox": request.route_path("tickets.preview.combobox", _query=combobox_params)
         }
-    return {"ticket_formats": _build_ticket_format_dicts(qs, preview_type),
+    return {"ticket_formats": [],
             "apis": apis,
             "preview_type": preview_type
     }
-
-def _build_ticket_format_dicts(qs, preview_type):
-    D = {t.id: {"pk": t.id, "name": t.name, "type": preview_type} for t in qs}
-    return list(D.values())
 
 @view_config(route_name="events.tickets.easycreate.gettingsvg",renderer="json")
 def getting_svgdata(context, request):
@@ -329,4 +320,14 @@ def getting_ticket_template_data(context, request):
         tickets = context.sej_ticket_templates
     else:
         tickets = context.something_else_ticket_templates
-    return {"iterable": [{"value": t.id, "label": t.name, "checked": False} for t in tickets]}
+    return {"iterable": [{"pk": t.id, "name": t.name, "checked": False} for t in tickets]}
+
+@view_config(route_name="events.tickets.easycreate.gettingformat",renderer="json")
+def getting_ticket_format_data(context, request):
+    preview_type = request.matchdict["preview_type"]
+    if preview_type == "sej":
+        qs = context.ticket_sej_formats
+    else:
+        qs = context.ticket_something_else_formats
+    D = {t.id: {"pk": t.id, "name": t.name, "type": preview_type} for t in qs}
+    return {"iterable": list(D.values()), "preview_type": preview_type}

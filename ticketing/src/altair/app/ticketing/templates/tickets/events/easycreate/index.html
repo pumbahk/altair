@@ -41,9 +41,11 @@ var BrokerModule = {
     var val = $el.val();
     this.preview_type = val;
     var load_url = this.loadcomponent_url.replace("__previewtype", val);
-    var getting_url = this.gettingtemplate_url.replace("__previewtype", val);
-    return this.gettingNewTemplates(getting_url)
-        .then(function(){return this.loadingComponent(load_url)}.bind(this));
+    var template_url = this.gettingtemplate_url.replace("__previewtype", val);
+    var format_url = this.gettingformat_url.replace("__previewtype", val);
+    return this.gettingNewTemplates(template_url)
+        .then(function(){return this.loadingComponent(load_url)}.bind(this))
+        .then(function(){return this.gettingNewFormats(format_url)}.bind(this));
   },
   loadingComponent: function(url){
     return $.get(url).fail(
@@ -51,6 +53,25 @@ var BrokerModule = {
     ).done(
       function(html){ $(".component-area").html(html); }
     );
+  },
+  gettingNewFormats: function(url){
+    var self = this;
+    return $.get(url).fail(
+      function(){ $(".component-area").text("error: url="+url)}
+    ).done(
+      function(data){
+        self.ticket_formats_iterable = data.iterable;
+        var wait_times = [50, 100, 300, 750, 1500, 3000, 7000, 160000];
+        setTimeout((function looping(){
+          //xxxx global variable: this variable create after loading component
+          if(!!window.appView){
+             window.appView.views.params_view.reDrawTicketFormatCandidates(data.iterable, data.preview_type);
+          } else {
+             var sec = wait_times.shift();
+             !!sec && setTimeout(looping, sec);
+          }
+        }), wait_times.shift());
+    });
   },
   gettingNewTemplates: function(url){
     var html_template = this.select_template;
@@ -77,19 +98,21 @@ var BrokerModule = {
   }
 };
 
-<%! fmt = '''<% _.each(iterable, function(d){%><option value="<%= d.value %>"><%= d.label %></option> <%});%>''' %>
+<%! fmt = '''<% _.each(iterable, function(d){%><option value="<%= d.pk %>"><%= d.name %></option> <%});%>''' %>
 var BrokerData = {
   select_template: {value: _.template('${fmt|n}')},
+  ticket_formats_iterable: {value: [], writable: true},
   preview_type: {value: "", writable: true},
   loadcomponent_url: {value: "${request.route_path("events.tickets.easycreate.loadcomponent", event_id=event.id, preview_type="__previewtype")}"},
   gettingtemplate_url: {value: "${request.route_path("events.tickets.easycreate.gettingtemplate", event_id=event.id, preview_type="__previewtype")}"},
+  gettingformat_url: {value: "${request.route_path("events.tickets.easycreate.gettingformat", event_id=event.id, preview_type="__previewtype")}"},
   gettingsvg_url: {value: "${request.route_path("events.tickets.easycreate.gettingsvg", event_id=event.id, ticket_id="__ticket_id", preview_type="__previewtype")}"},
 };
 
 // loading component, the trigger is preview type radio button of above area.
 (function(form){
   var broker = Object.create(BrokerModule, BrokerData)
-
+  window.broker = broker;
   var radio_btn = form.find('input[name="preview_type"]:radio');
   radio_btn.on("change", function(e){ broker.onChangePreviewType($(this))});
 

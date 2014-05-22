@@ -36,17 +36,12 @@ preview.LoadingSpinnerViewModel = core.ViewModel.extend({
 });
 
 preview.SelectCandidatesViewModel = core.ViewModel.extend({
+    template: _.template(
+        '<% _.each(iterable, function(d){%><option data-preview="<%= d.type %>" value="<%= d.pk %>"><%= d.name %></option><%});%>'
+    ),
     redraw: function(candidates){
-        var root = this.$el;
-        root.empty();
-        _(candidates).each(function(e){
-            if(!!e.type){
-                root.append($("<option>").attr("value", e.pk+":"+e.type).text(e.name+":"+e.type));
-            }else {
-                root.append($("<option>").attr("value", e.pk).text(e.name));
-            }
-        });
-    }, 
+        this.$el.html(this.template({iterable: candidates}));
+    },
 });
 
 preview.TemplateVarsTableViewModel = core.ViewModel.extend({
