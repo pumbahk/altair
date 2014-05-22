@@ -24,6 +24,7 @@ from ..exceptions import (
     PaymentError,
     CompletionPageNotRenderered,
 )
+from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import InvalidProductSelectionException, NotEnoughStockException
 from .. import api
@@ -43,6 +44,12 @@ def notfound(request):
         logger.debug("404 on event_id=%s" % event.id)
     request.response.status = 404
     return {}
+
+@mobile_view_config(context=PaymentDeliveryMethodPairNotFound, renderer=selectable_renderer("altair.app.ticketing.cart:templates/%(membership)s/pc/timeout.html"))
+@view_config(context=PaymentDeliveryMethodPairNotFound, renderer=selectable_renderer("altair.app.ticketing.cart:templates/%(membership)s/pc/timeout.html"))
+def handle_payment_delivery_method_pair_not_found(request):
+    cart = api.get_cart(request)
+    return HTTPFound(request.route_path('cart.payment', sales_segment_id=cart.sales_segment_id))
 
 @mobile_view_config(context=NoCartError, renderer=selectable_renderer("altair.app.ticketing.cart:templates/%(membership)s/pc/timeout.html"))
 @view_config(context=NoCartError, renderer=selectable_renderer("altair.app.ticketing.cart:templates/%(membership)s/pc/timeout.html"))
