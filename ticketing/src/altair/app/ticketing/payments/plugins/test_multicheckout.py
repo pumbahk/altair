@@ -95,7 +95,8 @@ class MultiCheckoutViewTests(unittest.TestCase):
             total_amount=1234,
             is_expired=lambda self, *args: False,
             finished_at=None,
-            order_no='000000000000'
+            order_no='000000000000',
+            payment_delivery_pair=testing.DummyModel(id=1),
             )
 
         request = DummyRequest(params=params, _cart=dummy_cart)
@@ -164,7 +165,8 @@ class MultiCheckoutViewTests(unittest.TestCase):
             is_expired=lambda self, *args: False,
             finished_at=None,
             order_no='000000000000',
-            performance=testing.DummyModel(id=1)
+            performance=testing.DummyModel(id=1),
+            payment_delivery_pair=testing.DummyModel(id=1),
             )
 
         request = DummyRequest(
@@ -224,7 +226,8 @@ class MultiCheckoutViewTests(unittest.TestCase):
             is_expired=lambda self, *args: False,
             finished_at=None,
             order_no='000000000000',
-            performance=testing.DummyModel(id=1)
+            performance=testing.DummyModel(id=1),
+            payment_delivery_pair=testing.DummyModel(id=1),
             )
 
         request = DummyRequest(
@@ -283,7 +286,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
             is_expired=lambda self, now: False,
             finished_at=None,
             order_no='000000000000',
-            payment_delivery_pair=1,
+            payment_delivery_pair=testing.DummyModel(id=1),
         )
         dummy_cart.finish = lambda: None
 
@@ -344,7 +347,8 @@ class MultiCheckoutViewTests(unittest.TestCase):
             products=[],
             is_expired=lambda self, *args: False,
             finished_at=None,
-            order_no='000000000000'
+            order_no='000000000000',
+            payment_delivery_pair=testing.DummyModel(id=1),
         )
         dummy_cart.finish = lambda: None
 
@@ -441,6 +445,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             order_no='000000000000',
             shipping_address=testing.DummyModel(),
             has_different_amount=False,
+            payment_delivery_pair=testing.DummyModel(id=1),
         )
         dummy_cart.finish = lambda: None
 
