@@ -17,7 +17,7 @@ import sqlahelper
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import SeatStatus, SeatStatusEnum
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, ShippingAddress, Mailer
-from altair.app.ticketing.core.models import Organization
+from altair.app.ticketing.core.models import Organization, Refund, RefundStatusEnum
 from altair.app.ticketing.orders.models import (
     Order,
     OrderedProduct,
@@ -88,10 +88,13 @@ def refund_order():
     for refund in refunds:
         refund.status = RefundStatusEnum.Refunding.v
         refund.save()
-        transaction.commit()
+    transaction.commit()
 
-        for order in refund.orders:
-            try:
+    try:
+        for refund in refunds:
+            status = True
+            refund = DBSession.merge(refund)
+            for order in refund.orders:
                 logging.info('try to refund order (%s)' % order.id)
                 if order.call_refund(request):
                     logging.info('refund success')
@@ -99,13 +102,16 @@ def refund_order():
                 else:
                     logging.error('failed to refund order (%s)' % order.order_no)
                     transaction.abort()
-            except Exception as e:
-                logging.error('failed to refund orders (%s)' % e.message)
-                transaction.abort()
+                    status = False
 
-        refund.status = RefundStatusEnum.Refunded.v
-        refund.save()
-        transaction.commit()
+            if status:
+                refund = DBSession.merge(refund)
+                refund.status = RefundStatusEnum.Refunded.v
+                refund.save()
+                transaction.commit()
+    except Exception as e:
+        logging.error('failed to refund orders (%s)' % e.message)
+        transaction.abort()
 
     # SEJ払戻ファイル送信
     create_and_send_refund_file(registry.settings)

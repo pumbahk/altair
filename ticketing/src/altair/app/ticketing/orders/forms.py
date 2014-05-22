@@ -40,7 +40,8 @@ from altair.app.ticketing.core.models import (
     Performance,
     Product,
     ProductItem,
-    Event
+    Event,
+    Refund
     )
 from altair.app.ticketing.orders.models import (
     OrderCancelReasonEnum,
@@ -855,9 +856,9 @@ class OrderRefundForm(Form):
         label=u'半券要否区分',
         help=u'コンビニ店頭での払戻の際に、半券があるチケットのみ有効とするかどうかを指定します。' +
              u'<br>公演前のケースでは「要」を指定、公演途中での中止等のケースでは「不要」を指定してください。',
-        choices=[(u'', u''), (u'1', u'要'), (u'0', u'不要')],
+        choices=[(1, u'要'), (0, u'不要')],
         validators=[Optional()],
-        coerce=lambda x : int(x) if x else None,
+        coerce=int,
     )
     id = HiddenField(
         validators=[Optional()],
@@ -906,9 +907,17 @@ class OrderRefundForm(Form):
                 if not self.end_at.data:
                     self.end_at.errors.append(u'入力してください')
                     status = False
-                if not self.need_stub.data:
+                if self.need_stub.data is None:
                     self.need_stub.errors.append(u'コンビニ払戻の場合は半券要否区分を選択してください')
                     status = False
+
+            # 払戻予約ステータスのみ変更可能
+            if self.id.data:
+                refund = Refund.get(self.id.data)
+                if not refund.editable():
+                    self.id.errors.append(u'払戻中または払戻済の為、変更できません')
+                    status = False
+
         return status
 
 

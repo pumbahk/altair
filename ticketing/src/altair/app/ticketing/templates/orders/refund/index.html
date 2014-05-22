@@ -67,7 +67,10 @@
           ${refund.end_at or u''}
         % endif
         </td>
-        <td>${u'要' if refund.need_stub else u'否'}</td>
+        <td>
+        % if refund.need_stub is not None:
+          ${u'要' if refund.need_stub else u'不要'}</td>
+        % endif
         <td>${refund.updated_at}</td>
         <td>
           <div class="btn-group">

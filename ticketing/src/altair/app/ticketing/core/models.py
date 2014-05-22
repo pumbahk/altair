@@ -3033,7 +3033,7 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_at = Column(DateTime, nullable=True)
     end_at = Column(DateTime, nullable=True)
     orders = relationship('Order', backref=backref('refund', uselist=False))
-    need_stub = Column(Boolean, nullable=True, default=None)
+    need_stub = Column(Integer, nullable=True, default=None)
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization')
     performances = relationship('Performance', secondary=Refund_Performance.__table__)
@@ -3059,25 +3059,23 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.status == RefundStatusEnum.Waiting.v
 
     def breakdowns(self):
-        from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
+        from altair.app.ticketing.orders.models import Order
         from sqlalchemy import distinct
 
         stmt = Order.total_amount
         if not self.include_item:
-            stmt = stmt - func.sum(OrderedProduct.price * OrderedProduct.quantity)
+            stmt = stmt - (Order.total_amount - Order.system_fee - Order.transaction_fee - Order.delivery_fee - Order.special_fee)
         if not self.include_system_fee:
             stmt = stmt - Order.system_fee
-        if not self.include_special_fee:
-            stmt = stmt - Order.special_fee
         if not self.include_transaction_fee:
             stmt = stmt - Order.transaction_fee
         if not self.include_delivery_fee:
             stmt = stmt - Order.delivery_fee
+        if not self.include_special_fee:
+            stmt = stmt - Order.special_fee
 
         refund_payment_method = aliased(PaymentMethod, name='refund_payment_method')
-        query = Order.query.join(
-                Order.items,
-                OrderedProduct.elements,
+        query = DBSession.query(Order, include_deleted=True).join(
                 Order.performance,
                 Order.payment_delivery_pair,
                 PaymentDeliveryMethodPair.payment_method,
@@ -3085,7 +3083,8 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 Order.refund,
             ).filter(
                 Refund.id==self.id,
-                Refund.payment_method_id==refund_payment_method.id
+                Refund.payment_method_id==refund_payment_method.id,
+                Order.refunded_at==None,
             ).with_entities(
                 Performance.name.label('performance_name'),
                 PaymentMethod.name.label('payment_method_name'),
@@ -3093,7 +3092,6 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 Order.issued.label('issued'),
                 refund_payment_method.name.label('refund_payment_method_name'),
                 func.count(distinct(Order.id)).label('order_count'),
-                func.sum(OrderedProductItem.quantity).label('ticket_count'),
                 func.sum(stmt).label('amount'),
             ).group_by(
                 Performance.id,
@@ -3103,6 +3101,11 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 Refund.payment_method_id,
             )
         return query.all()
+
+    def delete(self):
+        if not self.editable():
+            raise Exception(u'払戻中または払戻済の為、削除できません')
+        super(Refund, self).delete()
 
 
 @implementer(ISettingContainer, IOrderQueryable)

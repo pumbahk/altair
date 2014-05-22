@@ -66,7 +66,11 @@
           ${refund.end_at or u''}
         % endif
         </td>
-        <td>${u'要' if refund.need_stub else u'否'}</td>
+        <td>
+        % if refund.need_stub is not None:
+          ${u'要' if refund.need_stub else u'不要'}
+        % endif
+        </td>
         <td>${refund.updated_at}</td>
         <td>
           <div class="btn-group">
@@ -108,7 +112,6 @@ ${m.delete_modal(label_cancel=u'戻る')}
           <th>発券</th>
           <th>払戻方法</th>
           <th>払戻予約数</th>
-          <th>払戻枚数</th>
           <th>払戻金額</th>
         </tr>
       </thead>
@@ -121,7 +124,6 @@ ${m.delete_modal(label_cancel=u'戻る')}
           <td>${u'済' if bd.issued else u'未'}</td>
           <td>${bd.refund_payment_method_name}</td>
           <td>${bd.order_count}</td>
-          <td>${bd.ticket_count}</td>
           <td>${vh.price(bd.amount)}</td>
         </tr>
         % endfor
