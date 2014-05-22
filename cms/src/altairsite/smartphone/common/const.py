@@ -17,8 +17,8 @@ class Area(object):
 def get_areas():
     areas = []
     areas.append(Area('hokkaido', ['hokkaido','aomori','iwate','akita','miyagi','yamagata','fukushima']))
-    areas.append(Area('syutoken', ['chiba','tokyo','kanagawa','ibaraki','tochigi','gunma','saitama','yamanashi']))
-    areas.append(Area('koshinetsu', ['nagano','niigata','gifu','aichi','mie','shizuoka']))
+    areas.append(Area('syutoken', ['chiba','tokyo','kanagawa','ibaraki','tochigi','gunma','saitama']))
+    areas.append(Area('koshinetsu', ['nagano','niigata','gifu','aichi','mie','shizuoka','yamanashi']))
     areas.append(Area('kinki', ['kyoto','osaka','hyogo','shiga','nara','wakayama','toyama','ishikawa','fukui']))
     areas.append(Area('chugoku', ['hiroshima','okayama','tottori','shimane','yamaguchi','tokushima','kagawa','ehime','kouchi']))
     areas.append(Area('kyusyu', ['okinawa', 'fukuoka','saga','nagasaki','kumamoto','oita','miyazaki','kagoshima']))
