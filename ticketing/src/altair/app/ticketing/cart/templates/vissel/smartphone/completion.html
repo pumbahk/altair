@@ -27,7 +27,8 @@
 
 ${h.get_nickname(request)}
 購入を完了いたしました。<br/>
-下記受付番号は予約内容確認の際などに必要です。必ずお控え下さい。
+<div>下記受付番号は予約内容確認の際などに必要です。必ずお控え下さい。</div>
+<p>お申込内容は、「<a href="https://vissel.tstar.jp/orderreview" target="_blank">購入履歴確認</a>」からご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</p>
 
 <div class="confirmBox">
   <div class="confirmBoxInner">
@@ -126,21 +127,6 @@ ${h.get_nickname(request)}
       <%m:header>お引き取り</%m:header>
       <div class="confirm-message dispBoxInner">
         ${h.render_delivery_finished_viewlet(request, order)}
-      </div>
-    </div>
-  </div>
-</div>
-
-## todo: pluggable
-<div class="confirmBox">
-  <div class="confirmBoxInner">
-    <div class="dispBox">
-      <%m:header>注意事項</%m:header>
-      <div class="confirm-message dispBoxInner">
-        <div class="methodArea">
-        お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a target="_blank" href="mailto:vissel@tstar.jp">こちら</a> までご連絡ください。<br />
-        お申込内容は、「<a target="_blank" href="https://vissel.tstar.jp/orderreview">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
-        </div>
       </div>
     </div>
   </div>
