@@ -282,7 +282,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
             products=[],
             is_expired=lambda self, now: False,
             finished_at=None,
-            order_no='000000000000'
+            order_no='000000000000',
             payment_delivery_pair=1,
         )
         dummy_cart.finish = lambda: None
