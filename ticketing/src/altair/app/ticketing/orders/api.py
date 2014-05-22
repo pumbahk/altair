@@ -1087,7 +1087,6 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
     #     'delivery_fee': 0,
     #     'system_fee': 0,
     #     'special_fee': 0,
-    #     'total_amount': 0,
     #     'issuing_start_at': '...',
     #     'issuing_end_at': '...',
     #     'payment_start_at': '...',
@@ -1132,16 +1131,15 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
     special_fee_v = modify_data.get('special_fee')
     performance_id_v = modify_data.get('performance_id')
     sales_segment_id_v = modify_data.get('sales_segment_id')
-    total_amount_v = modify_data.get('total_amount')
     issuing_start_at_v = modify_data.get('issuing_start_at')
     issuing_end_at_v = modify_data.get('issuing_end_at')
     payment_start_at_v = modify_data.get('payment_start_at')
     payment_due_at_v = modify_data.get('payment_due_at')
 
-    transaction_fee = Decimal(transaction_fee_v) if transaction_fee_v is not None else original_order.transaction_fee
-    delivery_fee = Decimal(delivery_fee_v) if delivery_fee_v is not None else original_order.delivery_fee
-    system_fee = Decimal(system_fee_v) if system_fee_v is not None else original_order.system_fee
-    _special_fee = Decimal(special_fee_v) if special_fee_v is not None else original_order.special_fee
+    transaction_fee = Decimal(transaction_fee_v) if transaction_fee_v is not None else None
+    delivery_fee = Decimal(delivery_fee_v) if delivery_fee_v is not None else None
+    system_fee = Decimal(system_fee_v) if system_fee_v is not None else None
+    _special_fee = Decimal(special_fee_v) if special_fee_v is not None else None
     if _special_fee is not None:
         special_fee = Decimal(_special_fee)
     else:
@@ -1149,7 +1147,6 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
 
     performance_id = long(performance_id_v) if performance_id_v is not None else original_order.performance_id
     sales_segment_id = long(sales_segment_id_v) if sales_segment_id_v is not None else original_order.sales_segment_id
-    total_amount = Decimal(total_amount_v) if total_amount_v is not None else original_order.total_amount
     if operator is None:
         operator = original_order.operator
 
@@ -1196,12 +1193,7 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
         sales_segment_id=sales_segment_id,
         user=original_order.user,
         payment_delivery_pair=original_order.payment_delivery_pair,
-        transaction_fee=transaction_fee,
-        delivery_fee=delivery_fee,
-        system_fee=system_fee,
-        special_fee=special_fee,
         special_fee_name=original_order.special_fee_name,
-        total_amount=total_amount,
         operator=operator,
         issuing_start_at=issuing_start_at,
         issuing_end_at=issuing_end_at,
@@ -1223,12 +1215,12 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
 
     # calculated_total_amount の初期値
     calculated_total_amount = Decimal(0)
-    calculated_total_amount += transaction_fee
-    calculated_total_amount += delivery_fee
-    calculated_total_amount += system_fee
-    if special_fee is not None:
-        calculated_total_amount += special_fee
+    calculated_transaction_fee = Decimal(0)
+    calculated_delivery_fee = Decimal(0)
+    calculated_system_fee = Decimal(0)
+    calculated_special_fee = Decimal(0)
 
+    payment_delivery_pair = proto_order.payment_delivery_pair
     for md_item in md_items:
         item_price = md_item.get('price') # ないかも
         item_quantity = md_item['quantity']
@@ -1316,21 +1308,52 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
         item_total = new_item.price * new_item.quantity 
         if element_total != item_total:
             warnings.append(_(u'商品「${product_name}」の商品明細の価格の合計が商品の価格と一致しません (${element_total} ≠ ${item_total})') % dict(product_name=product.name, product_item_name=product_item.name, element_total=element_total, item_total=item_total))
-        # 合計金額は item (OrderedProduct) だけから計算する
+
         calculated_total_amount += item_total
+        num_priced_tickets = new_item.product.num_priced_tickets(payment_delivery_pair)
+        calculated_transaction_fee += \
+            (
+                payment_delivery_pair.transaction_fee_per_product + \
+                payment_delivery_pair.transaction_fee_per_ticket * num_priced_tickets
+                ) * new_item.quantity
+        calculated_delivery_fee += \
+            (
+                payment_delivery_pair.delivery_fee_per_product + \
+                payment_delivery_pair.delivery_fee_per_ticket * num_priced_tickets
+                ) * new_item.quantity
+        calculated_system_fee += \
+            (
+                payment_delivery_pair.system_fee_per_product + \
+                payment_delivery_pair.system_fee_per_ticket * num_priced_tickets
+                ) * new_item.quantity
+        calculated_special_fee += \
+            (
+                payment_delivery_pair.special_fee_per_product + \
+                payment_delivery_pair.special_fee_per_ticket * num_priced_tickets
+                ) * new_item.quantity
         proto_order.items.append(new_item)
 
-    logger.info('proto_order.total_amount=%s, calculated_total_amount=%s' % (proto_order.total_amount, calculated_total_amount))
-    if proto_order.total_amount != calculated_total_amount:
-        raise OrderCreationError(
-            proto_order.ref,
-            proto_order.order_no,
-            u'合計金額を確認してください。計算では${calculated_total_amount}ですが${total_amount}が指定されています',
-            dict(
-                calculated_total_amount=calculated_total_amount,
-                total_amount=proto_order.total_amount
-                )
-            )
+    calculated_transaction_fee += payment_delivery_pair.transaction_fee_per_order
+    calculated_delivery_fee += payment_delivery_pair.delivery_fee_per_order
+    calculated_system_fee += payment_delivery_pair.system_fee_per_order
+    calculated_special_fee += payment_delivery_pair.special_fee_per_order
+
+    if delivery_fee is None:
+        delivery_fee = calculated_delivery_fee
+    if transaction_fee is None:
+        transaction_fee = calculated_transaction_fee
+    if system_fee is None:
+        system_fee = calculated_system_fee
+    if special_fee is None:
+        special_fee = calculated_special_fee
+    calculated_total_amount += delivery_fee + transaction_fee + system_fee + special_fee
+
+    proto_order.total_amount = calculated_total_amount
+    proto_order.delivery_fee = delivery_fee
+    proto_order.transaction_fee = transaction_fee
+    proto_order.system_fee = system_fee
+    proto_order.special_fee = special_fee
+
     return proto_order, warnings
 
 def save_order_modification_new(request, order, modify_data, session=None):
