@@ -14,7 +14,8 @@ ${h.get_nickname(request)}
 ${self.widget.flow_widget(4)}
 
 <p><img src="${request.static_url('altair.app.ticketing.cart:static/vissel/pc/images/completion.gif')}" alt="購入を完了いたしました。" width="201" height="50" /></p>
-<p>下記受付番号は予約内容確認の際などに必要です。必ずお控え下さい。</p>
+<div>下記受付番号は予約内容確認の際などに必要です。必ずお控え下さい。</div>
+<p>お申込内容は、「<a href="https://vissel.tstar.jp/orderreview" target="_blank">購入履歴確認</a>」からご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</p>
 
 <div class="confirmBox">
   <div class="confirmBoxInner">
@@ -93,22 +94,6 @@ ${self.widget.flow_widget(4)}
     <h2><img src="${request.static_url('altair.app.ticketing.cart:static/vissel/pc/images/title_reception.gif')}" alt="お引き取り" width="103" height="30" /></h2>
     <div class="confirm-message">
       ${h.render_delivery_finished_viewlet(request, order)}
-    </div>
-  </div>
-</div>
-
-## todo: pluggable
-<div class="confirmBox">
-  <div class="confirmBoxInner">
-    <h3>注意事項</h3>
-    <div class="confirm-message">
-      <ul>
-
-        <li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a target="_blank" href="mailto:vissel@tstar.jp">vissel@tstar.jp</a> までご連絡ください。<br />
-          （お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）</li>
-        <li>お申込内容は、「<a target="_blank" href="https://vissel.tstar.jp/orderreview">購入履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</li>
-      </ul>
-
     </div>
   </div>
 </div>
