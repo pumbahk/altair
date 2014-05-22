@@ -28,7 +28,7 @@ from altair.app.ticketing.views import mobile_request
 from altair.app.ticketing.fanstatic import with_jquery, with_jquery_tools
 from altair.app.ticketing.payments.api import set_confirm_url, lookup_plugin
 from altair.app.ticketing.payments.payment import Payment
-from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound, OrderLikeValidationFailure
+from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
 from altair.app.ticketing.users.models import UserPointAccountTypeEnum
 from altair.app.ticketing.users.api import (
     get_user,
@@ -1152,11 +1152,9 @@ class ConfirmView(object):
         magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization, cart.shipping_address.emails)
 
         payment = Payment(cart, self.request)
-        try:
-            payment.call_validate()
-            delegator = payment.call_delegator()
-        except PaymentDeliveryMethodPairNotFound:
-            raise HTTPFound(self.request.route_path("cart.payment", sales_segment_id=cart.sales_segment_id))
+        payment.call_validate()
+        delegator = payment.call_delegator()
+
         return dict(
             cart=cart,
             mailmagazines_to_subscribe=magazines_to_subscribe,

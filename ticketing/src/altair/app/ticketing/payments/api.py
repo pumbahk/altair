@@ -33,7 +33,10 @@ def is_finished_delivery(request, pdmp, order):
 
 def get_cart(request):
     cart_if = request.registry.getUtility(ICartInterface)
-    return cart_if.get_cart(request)
+    cart = cart_if.get_cart(request)
+    if cart.payment_delivery_pair is None:
+        raise PaymentDeliveryMethodPairNotFound(u'payment/delivery method not specified')
+    return cart
 
 def get_confirm_url(request):
     cart_if = request.registry.getUtility(ICartInterface)
