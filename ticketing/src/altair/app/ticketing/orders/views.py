@@ -741,7 +741,6 @@ class OrdersRefundEditView(BaseView):
 
         f = OrderRefundForm(self.request.POST, organization_id=self.context.organization.id)
         if f.validate():
-            logger.info(f.data)
             refund = merge_session_with_post(refund, f.data)
             refund.save()
             self.request.session.flash(u'払戻予約を保存しました')

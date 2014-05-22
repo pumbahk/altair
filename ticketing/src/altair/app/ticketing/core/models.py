@@ -3033,7 +3033,7 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_at = Column(DateTime, nullable=True)
     end_at = Column(DateTime, nullable=True)
     orders = relationship('Order', backref=backref('refund', uselist=False))
-    need_stub = Column(Boolean, nullable=True, default=None)
+    need_stub = Column(Integer, nullable=True, default=None)
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization')
     performances = relationship('Performance', secondary=Refund_Performance.__table__)

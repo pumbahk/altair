@@ -30,8 +30,10 @@
         var sej_field = $('.sej_field');
         if ($.inArray(parseInt($(this).val()), ${form.payment_method_id.sej_plugin_id}) == -1) {
           sej_field.css('display', 'none');
+          sej_field.find('input, select').attr('disabled', 'disabled');
         } else {
           sej_field.css('display', 'block');
+          sej_field.find('input, select').removeAttr('disabled');
         }
       }).change();
 
