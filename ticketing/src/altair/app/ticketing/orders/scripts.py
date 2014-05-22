@@ -95,6 +95,7 @@ def refund_order():
             status = True
             refund = DBSession.merge(refund)
             for order in refund.orders:
+                order = DBSession.merge(order)
                 logging.info('try to refund order (%s)' % order.id)
                 if order.call_refund(request):
                     logging.info('refund success')
