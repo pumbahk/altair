@@ -49,6 +49,7 @@ from altair.app.ticketing.core.models import (
     ChannelEnum,
     MailTypeEnum,
     Refund,
+    RefundStatusEnum,
     )
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core import helpers as core_helpers
@@ -739,7 +740,11 @@ class OrdersRefundEditView(BaseView):
         if refund is None:
             return HTTPNotFound()
 
-        f = OrderRefundForm(self.request.POST, organization_id=self.context.organization.id)
+        f = OrderRefundForm(
+                self.request.POST,
+                organization_id=self.context.organization.id,
+                orders=refund.orders
+                )
         if f.validate():
             refund = merge_session_with_post(refund, f.data)
             refund.save()
@@ -1039,9 +1044,15 @@ class OrderDetailView(BaseView):
         )
         if f.validate():
             refund_param = f.data
-            refund_param.update(dict(orders=[order]))
+            refund_param.update(dict(
+                orders=[order],
+                order_count=1,
+                performances=[order.performance],
+            ))
             Order.reserve_refund(refund_param)
             if order.call_refund(self.request):
+                order.refund.status = RefundStatusEnum.Refunded.v
+                order.refund.save()
                 self.request.session.flash(u'予約(%s)を払戻しました' % order.order_no)
                 return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
             else:

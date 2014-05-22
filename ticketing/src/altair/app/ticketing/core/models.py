@@ -3105,6 +3105,9 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def delete(self):
         if not self.editable():
             raise InvalidRefundStateError(u'払戻中または払戻済の為、削除できません')
+        for order in self.orders:
+            order.refund_id = None
+            order.save()
         super(Refund, self).delete()
 
 
