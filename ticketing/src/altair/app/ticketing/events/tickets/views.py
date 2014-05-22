@@ -308,3 +308,5 @@ def getting_svgdata(context, request):
     if ticket is None:
         raise HTTPBadRequest("svg is not found");
     return {"svg": ticket.drawing}
+
+

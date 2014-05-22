@@ -2,7 +2,16 @@ from pyramid.interfaces import IRootFactory
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.decorator import reify
 from altair.app.ticketing.core.models import Event
-from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute, ProductItem, TicketFormat,TicketFormat_DeliveryMethod
+from altair.app.ticketing.core.models import (
+    Ticket,
+    TicketBundle,
+    TicketBundleAttribute,
+    ProductItem,
+    TicketFormat,
+    TicketFormat_DeliveryMethod,
+    TicketFormat_DeliveryMethod,
+    DeliveryMethod
+)
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 
 from altair.app.ticketing.resources import TicketingAdminResource
