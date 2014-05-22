@@ -153,11 +153,12 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         var params = {
             fillvalues_resource: {
                 modelname: holder.name, 
-                model: holder.pk, 
+                model: holder.pk 
             }, 
             svg_resource: {
                 modelname: "TicketFormat", 
-                model: this.params.get("ticket_format").pk
+                model: this.params.get("ticket_format").pk,
+                type: this.params.get("ticket_format").type || "default"
             }
         };
         if(!!holder.sub){
