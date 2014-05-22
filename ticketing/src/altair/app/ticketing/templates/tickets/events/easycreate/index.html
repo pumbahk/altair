@@ -19,6 +19,8 @@ ${ch.breadcrumbs(
 </%block>
 
 <h3>チケット券面</h3>
+<div class="row-fluid">
+<div class="span6">
 <div class="setting-area">
 <form>
 <div class="control-group">
@@ -31,8 +33,32 @@ ${choice_form.preview_type.label(class_="required control-label")}
 </div>
 </div>
 </div>
-
 ${ch.form_item(choice_form.templates)}
+</div>
+</div>
+
+<div class="span6">
+<div class="submit-area">
+${ch.form_item(upload_form.name)}
+<div class="control-group">
+${choice_form.preview_type.label(class_="required control-label")}
+<div class="controls ">
+<div class="radio-group" id="preview_type">
+%for f in choice_form.preview_type:
+  ${f} ${f.label}
+%endfor
+</div>
+</div>
+</div>
+${ch.form_item(upload_form.ticket_format_id)}
+${ch.form_item(upload_form.always_reissueable)}
+${ch.form_item(upload_form.priced)}
+${ch.form_item(upload_form.cover_print)}
+${ch.form_item(upload_form.drawing)}
+</div>
+</div>
+</div>
+
 <script type="text/javascript">
 
 // Module needs {"loadcomponent_url","gettingsvg_url","gettingtemplate_url", "select_template"}
@@ -48,6 +74,11 @@ var BrokerModule = {
         .then(function(){return this.gettingNewFormats(format_url)}.bind(this));
   },
   loadingComponent: function(url){
+    if(!!window.appView){
+       var $dfd = new $.Deferred();
+       $dfd.resolve();
+       return $dfd.promise();
+    }
     return $.get(url).fail(
       function(){ $(".component-area").text("error: url="+url)}
     ).done(
@@ -66,6 +97,7 @@ var BrokerModule = {
           //xxxx global variable: this variable create after loading component
           if(!!window.appView){
              window.appView.views.params_view.reDrawTicketFormatCandidates(data.iterable, data.preview_type);
+             $('.submit-area select[name="ticket_format_id"]').html(self.select_template({"iterable": data.iterable}));
           } else {
              var sec = wait_times.shift();
              !!sec && setTimeout(looping, sec);
@@ -123,9 +155,5 @@ var BrokerData = {
 </form>
 
 <div class="component-area">
-  
-</div>
-
-<div class="submit-area">
   
 </div>

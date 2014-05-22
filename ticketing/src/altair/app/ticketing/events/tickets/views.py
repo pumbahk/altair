@@ -271,7 +271,9 @@ def easycreate(context, request):
     sej_templates = [t for t in templates if t.ticket_format in sej_format_set]
 
     choice_form = forms.EasyCreateChoiceForm(request.GET).configure(ticket_templates=templates)
+    upload_form = forms.EasyCreateTemplateUploadForm()
     return {"choice_form": choice_form,
+            "upload_form": upload_form, 
             "event": event,
             "template_candidates": {"default": templates, "sej": sej_templates}
            }
