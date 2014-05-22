@@ -33,7 +33,7 @@ from pyramid.i18n import TranslationString as _
 
 from zope.deprecation import deprecation
 
-from .exceptions import InvalidStockStateError
+from .exceptions import InvalidStockStateError, InvalidRefundStateError
 from .interfaces import (
     ISalesSegmentQueryable,
     IOrderQueryable,
@@ -3104,7 +3104,7 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def delete(self):
         if not self.editable():
-            raise Exception(u'払戻中または払戻済の為、削除できません')
+            raise InvalidRefundStateError(u'払戻中または払戻済の為、削除できません')
         super(Refund, self).delete()
 
 
