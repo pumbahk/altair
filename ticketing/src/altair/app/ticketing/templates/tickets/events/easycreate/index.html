@@ -19,7 +19,7 @@ ${ch.breadcrumbs(
 </%block>
 
 <h3>チケット券面</h3>
-<div id="setting-input">
+<div class="setting-area">
 <form>
 <div class="control-group">
 ${choice_form.preview_type.label(class_="required control-label")}
@@ -34,38 +34,56 @@ ${choice_form.preview_type.label(class_="required control-label")}
 
 ${ch.form_item(choice_form.templates)}
 <script type="text/javascript">
+
+// Module needs {"loadcomponent_url","gettingsvg_url","gettingtemplate_url", "select_template"}
 var BrokerModule = {
   onChangePreviewType: function($el){
     var val = $el.val();
-    var url = this.loadcomponent_url.replace("__previewtype").replace(val);
-    return this.loadingComponent(url);
+    this.preview_type = val;
+    var load_url = this.loadcomponent_url.replace("__previewtype", val);
+    var getting_url = this.gettingtemplate_url.replace("__previewtype", val);
+    return this.gettingNewTemplates(getting_url)
+        .then(function(){return this.loadingComponent(load_url)}.bind(this));
   },
-  loadingComponent: function(loadcomponent_url){
-    return $.get(loadcomponent_url).fail(
-      function(){ $(".component-area").text("error: url="+loadcomponent_url)}
+  loadingComponent: function(url){
+    return $.get(url).fail(
+      function(){ $(".component-area").text("error: url="+url)}
     ).done(
       function(html){ $(".component-area").html(html); }
     );
   },
+  gettingNewTemplates: function(url){
+    var html_template = this.select_template;
+    return $.get(url).fail(
+      function(){ $(".component-area").text("error: url="+url)}
+    ).done(
+      function(data){ $('.setting-area select[name="templates"]').html(html_template({"iterable": data.iterable}));}
+    );
+  },
   onChangeTicketTemplate: function($el){
     var val = $el.val();
-    var url = this.gettingsvg_url.replace("__ticket_id", val);
+    var url = this.gettingsvg_url.replace("__ticket_id", val).replace("__previewtype", this.preview_type);
+
     return this.sendingSVGViaRequest(url);
   },
-  sendingSVGViaRequest: function(gettingsvg_url){
-    return $.get(gettingsvg_url).fail(
-      function(){ $(".component-area").text("error: url="+gettingsvg_url);}
+  sendingSVGViaRequest: function(url){
+    return $.get(url).fail(
+      function(){ $(".component-area").text("error: url="+url);}
     ).done(
       function(data){
         //xxxx global variable: this variable create after loading component
-        window.appView.loadSVG(data.svg);
+        window.appView.loadSVG(data.svg, data.preview_type);
     });
   }
 };
 
+<%! fmt = '''<% _.each(iterable, function(d){%><option value="<%= d.value %>"><%= d.label %></option> <%});%>''' %>
 var BrokerData = {
+  select_template: {value: _.template('${fmt|n}')},
+  preview_type: {value: "", writable: true},
   loadcomponent_url: {value: "${request.route_path("events.tickets.easycreate.loadcomponent", event_id=event.id, preview_type="__previewtype")}"},
-  gettingsvg_url: {value: "${request.route_path("events.tickets.easycreate.gettingsvg", event_id=event.id, ticket_id="__ticket_id")}"},
+  gettingtemplate_url: {value: "${request.route_path("events.tickets.easycreate.gettingtemplate", event_id=event.id, preview_type="__previewtype")}"},
+  gettingsvg_url: {value: "${request.route_path("events.tickets.easycreate.gettingsvg", event_id=event.id, ticket_id="__ticket_id", preview_type="__previewtype")}"},
 };
 
 // loading component, the trigger is preview type radio button of above area.

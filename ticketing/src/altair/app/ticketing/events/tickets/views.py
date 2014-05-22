@@ -287,15 +287,27 @@ def easycreate_ajax_loadcomponent(context,request):
     else:
         qs = context.ticket_something_else_formats
 
+    get = request.GET.get
+    combobox_params = dict(organization_id=context.organization.id, 
+                           event_id=context.event.id, 
+                           performance_id=get("performance_id"), 
+                           product_id=get("product_id"), 
+                           )
+
     apis = {
         "normalize": request.route_path("tickets.preview.api", action="normalize"), 
         "previewbase64": request.route_path("tickets.preview.api", action="preview.base64"), 
         "collectvars": request.route_path("tickets.preview.api", action="collectvars"), 
         "fillvalues": request.route_path("tickets.preview.api", action="fillvalues"), 
         "fillvalues_with_models": request.route_path("tickets.preview.api", action="fillvalues_with_models"), 
-        "combobox": request.route_path("tickets.preview.combobox")
+        "combobox": request.route_path("tickets.preview.combobox"), 
+        "loadsvg": request.route_path("tickets.preview.loadsvg.api", model="Ticket"), 
+        "combobox": request.route_path("tickets.preview.combobox", _query=combobox_params)
         }
-    return {"ticket_formats": _build_ticket_format_dicts(qs, preview_type), "apis": apis}
+    return {"ticket_formats": _build_ticket_format_dicts(qs, preview_type),
+            "apis": apis,
+            "preview_type": preview_type
+    }
 
 def _build_ticket_format_dicts(qs, preview_type):
     D = {t.id: {"pk": t.id, "name": t.name, "type": preview_type} for t in qs}
@@ -303,10 +315,18 @@ def _build_ticket_format_dicts(qs, preview_type):
 
 @view_config(route_name="events.tickets.easycreate.gettingsvg",renderer="json")
 def getting_svgdata(context, request):
+    preview_type = request.matchdict["preview_type"]
     ticket_id = request.matchdict["ticket_id"]
     ticket = context.ticket_templates.filter_by(id=ticket_id).first()
     if ticket is None:
         raise HTTPBadRequest("svg is not found");
-    return {"svg": ticket.drawing}
+    return {"svg": ticket.drawing,  "preview_type": preview_type}
 
-
+@view_config(route_name="events.tickets.easycreate.gettingtemplate",renderer="json")
+def getting_ticket_template_data(context, request):
+    preview_type = request.matchdict["preview_type"]
+    if preview_type == "sej":
+        tickets = context.sej_ticket_templates
+    else:
+        tickets = context.something_else_ticket_templates
+    return {"iterable": [{"value": t.id, "label": t.name, "checked": False} for t in tickets]}

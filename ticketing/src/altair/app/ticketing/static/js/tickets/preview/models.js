@@ -12,9 +12,13 @@ if (!window.preview)
             default_sx: 2.0,  //fetch default
             default_sy: 2.0, 
             ticket_format: null, 
+            preview_type: "default", // or "sej"
             holder: null,  //holder is svg data source{name: "", pk: ""}
             changed: NONE_CHANGED
         }, 
+        changePreviewType: function(v){
+            this.set("preview_type", v)
+        },
         changeSx: function(v){ //todo: use this;
             this.set("sx", v);
             if(this.get("default_sx") < v){

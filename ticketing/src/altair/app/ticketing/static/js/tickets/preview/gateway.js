@@ -78,7 +78,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
                       sx: this.params.get("default_sx"),
                       sy: this.params.get("default_sy"), 
                       ticket_format: this.params.get("ticket_format").pk, 
-                      type: this.params.get("ticket_format").type || "default"
+                      type: this.params.get("preview_type")
                      };
         return this.apis.previewbase64(params)
             .pipe(core.ApiService.rejectIfStatusFail(function(data){                
@@ -105,7 +105,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         var params = {svg: this.svg.get("data"),
                       sx: ma, sy: ma, 
                       ticket_format: this.params.get("ticket_format").pk, 
-                      type: this.params.get("ticket_format").type || "default"
+                      type: this.params.get("preview_type")
                      };
         var self = this;
         return this.apis.previewbase64(params)
@@ -158,7 +158,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
             svg_resource: {
                 modelname: "TicketFormat", 
                 model: this.params.get("ticket_format").pk,
-                type: this.params.get("ticket_format").type || "default"
+                type: this.params.get("preview_type")
             }
         };
         if(!!holder.sub){

@@ -38,8 +38,9 @@ preview.ApplicationView = Backbone.View.extend({
     fillsVarsWithParams: function(params){
         this.views.template_fillvalues_view.fillsVarsWithParams(params);
     }, 
-    loadSVG: function(svg){
+    loadSVG: function(svg, preview_type){
         if(!!svg){
+            this.models.params.changePreviewType(preview_type);
             this.models.svg.updateToRaw(svg);
         }
     }
@@ -60,7 +61,7 @@ preview.ApplicationViewFactory = function(apis,
         vars: new preview.TemplateVarStore(), 
         params: new preview.ParameterStore()
     };
-
+    models.params.on("change:preview_type", function(model,v){console.log(v);});
     var view_models = {
         preview: new preview.PreviewImageViewModel({el: $preview_area}),
         droparea: new preview.DropAreaViewModel({el: $svg_droparea}),

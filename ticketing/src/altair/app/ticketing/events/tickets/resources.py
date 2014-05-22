@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 from pyramid.interfaces import IRootFactory
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.decorator import reify
@@ -86,6 +88,17 @@ class EventBoundTicketsResource(TicketingAdminResource):
                 .filter(TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id,
                         TicketFormat_DeliveryMethod.delivery_method_id==DeliveryMethod.id, 
                         DeliveryMethod.delivery_plugin_id==SEJ_DELIVERY_PLUGIN_ID))
+
+    @reify
+    def something_else_ticket_templates(self):
+        return self.ticket_templates
+
+    @reify
+    def sej_ticket_templates(self):
+        subq = self.ticket_sej_formats.with_entities(TicketFormat.id).distinct(TicketFormat.id).subquery()
+        q = self.ticket_templates.join(subq, Ticket.ticket_format_id==subq.c.id).filter(Ticket.ticket_format_id==subq.c.id)
+        logger.info("hmm:%s", q)
+        return q
 
     @reify
     def bundles(self):
