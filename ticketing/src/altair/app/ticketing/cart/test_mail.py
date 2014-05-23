@@ -414,9 +414,11 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
 
         order = _build_order()
 
+        from altair.app.ticketing.sej.models import SejPaymentType
         sej_order = _build_sej(
             request,
             order_no='101010',
+            payment_type=SejPaymentType.Paid.v,
             ticketing_start_at=datetime(3000, 1, 1), 
             ticketing_due_at=datetime(4000, 1, 1), 
             )
@@ -494,7 +496,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
         self.assertBodyContains(u"100-0001", body)
         self.assertBodyContains(u"東京都 千代田区 千代田1番1号 ()", body)
 
-    def test_payment_by_seven_delivery_by_seven(self):
+    def test_payment_by_seven_delivery_by_seven_cash_on_delivery(self):
         from altair.app.ticketing.core.models import (
             PaymentDeliveryMethodPair, 
             PaymentMethod, 
@@ -505,9 +507,64 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
         order = _build_order()
         
         ## extra info
+        from altair.app.ticketing.sej.models import SejPaymentType
         sej_order = _build_sej(
             request,
             order_no='101010',
+            payment_type=SejPaymentType.CashOnDelivery.v,
+            payment_due_at=datetime(2000, 1, 1), 
+            ticketing_start_at=datetime(3000, 1, 1), 
+            ticketing_due_at=datetime(4000, 1, 1)
+            )
+        sej_order.billing_number="909090"
+        sej_order.exchange_number="707070"
+        self.session.add(sej_order)
+        self.session.flush()
+        order.order_no = sej_order.order_no
+        
+        payment_method = PaymentMethod(payment_plugin_id=3, name=u"セブン支払い")
+        from altair.app.ticketing.payments.plugins.sej import PAYMENT_PLUGIN_ID
+        self.assertEquals(payment_method.payment_plugin_id, PAYMENT_PLUGIN_ID)
+
+
+        delivery_method = DeliveryMethod(delivery_plugin_id=2, name=u"セブン受け取り")
+        from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID
+        self.assertEquals(delivery_method.delivery_plugin_id, DELIVERY_PLUGIN_ID)
+
+        method_pair = PaymentDeliveryMethodPair(payment_method=payment_method, 
+                                                delivery_method=delivery_method)
+        order.payment_delivery_pair = method_pair
+
+        self._callFUT(request, order)
+        result = self._get_mailer().outbox.pop()
+
+        body = result.body
+        self.assertBodyContains(u"＜セブン-イレブンでのお支払いの方＞", body)
+        self.assertBodyContains(u"909090", body)
+        self.assertBodyContains(h.japanese_date(datetime(2000, 1, 1)), body)
+
+        self.assertBodyContains(u"＜セブン-イレブンでお引取りの方＞", body)
+        self.assertBodyContains(u"チケットは代金と引換です", body)
+        self.assertBodyDoesNotContain(u"次の日から", body)
+        # self.assertIn(h.japanese_datetime(datetime(3000, 1, 1)), body, u"3000")
+        # self.assertIn(h.japanese_datetime(datetime(4000, 1, 1)), body, u"4000")
+
+    def test_payment_by_seven_delivery_by_seven_prepayment(self):
+        from altair.app.ticketing.core.models import (
+            PaymentDeliveryMethodPair, 
+            PaymentMethod, 
+            DeliveryMethod
+         )
+        request = testing.DummyRequest()
+
+        order = _build_order()
+        
+        ## extra info
+        from altair.app.ticketing.sej.models import SejPaymentType
+        sej_order = _build_sej(
+            request,
+            order_no='101010',
+            payment_type=SejPaymentType.Prepayment.v,
             payment_due_at=datetime(2000, 1, 1), 
             ticketing_start_at=datetime(3000, 1, 1), 
             ticketing_due_at=datetime(4000, 1, 1)
