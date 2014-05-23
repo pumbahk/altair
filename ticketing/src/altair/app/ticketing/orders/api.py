@@ -727,6 +727,19 @@ def validate_order(request, order_like, ref):
                 ))
     return retval
 
+def get_order_by_id(request, order_id, session=None, include_deleted=False):
+    if session is None:
+        from altair.app.ticketing.models import DBSession
+        session = DBSession
+    _Order = orm.aliased(Order) 
+    order = session.query(Order, include_deleted=True) \
+        .outerjoin(_Order, Order.order_no == _Order.order_no) \
+        .filter(Order.id == order_id) \
+        .order_by(desc(_Order.branch_no)) \
+        .with_entities(_Order) \
+        .first()
+    return order
+
 def get_order_by_order_no(request, order_no, session=None, include_deleted=False):
     if session is None:
         from altair.app.ticketing.models import DBSession
@@ -1361,6 +1374,8 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
     return proto_order, warnings
 
 def save_order_modification_new(request, order, modify_data, session=None):
+    assert order.canceled_at is None
+    assert order.deleted_at is None
     if session is None:
         from altair.app.ticketing.models import DBSession
         session = DBSession

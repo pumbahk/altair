@@ -877,3 +877,61 @@ class GetRefundTicketPrice(unittest.TestCase):
         result = self._callFUT(refund, order, 3)
         self.assertEqual(result, Decimal(0))
 
+
+class GetOrderByIdTest(unittest.TestCase):
+    def _getTarget(self):
+        from .api import get_order_by_id
+        return get_order_by_id
+
+    def _callFUT(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def setUp(self):
+        self.session = _setup_db(
+            modules=[
+                'altair.app.ticketing.core.models',
+                'altair.app.ticketing.lots.models',
+                'altair.app.ticketing.orders.models',
+                ]
+            )
+        self.request = testing.DummyRequest()
+
+    def tearDown(self):
+        testing.tearDown()
+        _teardown_db()
+
+    def _make_order(self, order_no, branch_no, id=None, **kwargs):
+        from .models import Order
+        return Order(
+            id=id,
+            order_no=order_no,
+            branch_no=branch_no,
+            total_amount=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            system_fee=0,
+            special_fee=0,
+            **kwargs
+            )
+
+    def test_no_branches(self):
+        order = self._make_order(id=1, order_no='a', branch_no=1)
+        self.session.add(order)
+        self.session.flush()
+        result = self._callFUT(self.request, 1) 
+        self.assertEqual(order, result)
+
+    def test_branches(self):
+        branches = [
+            self._make_order(id=1, order_no='a', branch_no=1),
+            self._make_order(id=2, order_no='a', branch_no=2),
+            self._make_order(id=3, order_no='a', branch_no=3)
+            ]
+        for order in branches:
+            self.session.add(order)
+        self.session.flush()
+        for order in branches:
+            result = self._callFUT(self.request, order.id) 
+            self.assertEqual(branches[2], result)
+
+
