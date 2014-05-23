@@ -275,6 +275,11 @@ class OrganizationSettingForm(OurForm):
     entrust_separate_seats = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.entrust_separate_seats)['label']
         )
+    sales_report_type = OurSelectField(
+        label=get_annotations_for(c_models.OrganizationSetting.sales_report_type)['label'],
+        coerce=lambda x: int(x) if x else None,
+        choices=[(int(e.v), e.k) for e in c_models.SalesReportTypeEnum]
+        )
     augus_use = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.augus_use)['label']
         )
