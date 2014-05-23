@@ -84,6 +84,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.orders.events import notify_order_canceled
 from altair.app.ticketing.orders.exceptions import InnerCartSessionException
+from altair.app.ticketing.orders.api import get_order_by_id
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.api import get_delivery_plugin
 from altair.app.ticketing.payments import plugins as payments_plugins
@@ -1161,8 +1162,8 @@ class OrderDetailView(BaseView):
     @view_config(route_name='orders.edit.product', request_method='POST')
     def edit_product_post(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.organization.id)
-        if order is None:
+        order = get_order_by_id(self.request, order_id)
+        if order is None or order.organization_id != self.context.organization.id:
             return HTTPNotFound('order id %d is not found' % order_id)
 
         f = OrderForm(self.request.POST, context=self.context)
@@ -1288,8 +1289,8 @@ class OrderDetailView(BaseView):
     @view_config(route_name="orders.attributes_edit", request_method="POST")
     def edit_order_attributes(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.organization.id)
-        if order is None:
+        order = get_order_by_id(self.request, order_id)
+        if order is None or order.organization_id != self.context.organization.id:
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'不正なデータです',
             }))
@@ -1303,8 +1304,8 @@ class OrderDetailView(BaseView):
     @view_config(route_name="orders.memo_on_order", request_method="POST", renderer="json")
     def edit_memo_on_order(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.organization.id)
-        if order is None:
+        order = get_order_by_id(self.request, order_id)
+        if order is None or order.organization_id != self.context.organization.id:
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'不正なデータです',
             }))
@@ -1326,8 +1327,8 @@ class OrderDetailView(BaseView):
     @view_config(route_name='orders.note', request_method='POST', renderer='json', permission='sales_counter')
     def note(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.organization.id)
-        if order is None:
+        order = get_order_by_id(self.request, order_id)
+        if order is None or order.organization_id != self.context.organization.id:
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'不正なデータです',
             }))
@@ -1555,8 +1556,8 @@ class OrderDetailView(BaseView):
     @view_config(route_name='orders.fraud.clear', permission='sales_editor')
     def fraud_clear(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.organization.id)
-        if order is None:
+        order = get_order_by_id(self.request, order_id)
+        if order is None or order.organization_id != self.context.organization.id:
             return HTTPNotFound('order id %d is not found' % order_id)
 
         order.fraud_suspect = 0
@@ -1926,8 +1927,9 @@ class OrdersEditAPIView(BaseView):
         order_data = self.request.json_body
         logger.info('order data=%s' % order_data)
 
-        order = Order.get(order_data.get('id'), self.context.organization.id)
-        if order is None:
+        order_id = order_data.get('id')
+        order = get_order_by_id(self.request, order_id)
+        if order is None or order.organization_id != self.context.organization.id:
             raise HTTPBadRequest(body=json.dumps(dict(message=u'予約データが見つかりません。既に更新されている可能性があります。')))
 
         if not order.is_inner_channel:
@@ -2049,8 +2051,8 @@ class OrdersEditAPIView(BaseView):
     @view_config(route_name='orders.api.edit', request_method='GET', renderer='json')
     def api_edit_get(self):
         order_id = self.request.matchdict.get('order_id', 0)
-        order = Order.get(order_id, self.context.organization.id)
-        if order is None:
+        order = get_order_by_id(self.request, order_id)
+        if order is None or order.organization_id != self.context.organization.id:
             raise HTTPNotFound('order id %s is not found' % order_id)
         if order.is_canceled():
             raise HTTPBadRequest(body=json.dumps(dict(message=u'既にキャンセルされています')))
@@ -2060,8 +2062,9 @@ class OrdersEditAPIView(BaseView):
     def api_edit_confirm(self):
         order_data = self._validate_order_data()
         order_id = order_data.get('id')
-        order = Order.get(order_id, self.context.organization.id)
-
+        order = get_order_by_id(self.request, order_id)
+        if order is None or order.organization_id != self.context.organization.id:
+            raise HTTPNotFound('order id %s is not found' % order_id)
         prev_data = self._get_order_dicts(order)
         if order_data == prev_data:
             raise HTTPBadRequest(body=json.dumps(dict(message=u'変更がありません')))
@@ -2095,7 +2098,9 @@ class OrdersEditAPIView(BaseView):
     def api_edit_post(self):
         order_data = MultiDict(self._validate_order_data())
         order_id = order_data.get('id')
-        order = Order.get(order_id, self.context.organization.id)
+        order = get_order_by_id(self.request, order_id)
+        if order is None or order.organization_id != self.context.organization.id:
+            raise HTTPNotFound('order id %s is not found' % order_id)
 
         try:
             modiry_order, warnings = save_order_modification(self.request, order, order_data)
@@ -2127,7 +2132,9 @@ class MailInfoView(BaseView):
     @view_config(match_param="action=complete_mail_preview", renderer="string")
     def complete_mail_preview(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.organization.id)
+        order = get_order_by_id(self.request, order_id)
+        if order is None or order.organization_id != self.context.organization.id:
+            return HTTPNotFound('order id %d is not found' % order_id)
         mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCompleteMail)
         return mutil.preview_text(self.request, order)
 
