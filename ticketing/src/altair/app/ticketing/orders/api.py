@@ -732,12 +732,14 @@ def get_order_by_id(request, order_id, session=None, include_deleted=False):
         from altair.app.ticketing.models import DBSession
         session = DBSession
     _Order = orm.aliased(Order) 
-    order = session.query(Order, include_deleted=True) \
+    q = session.query(Order, include_deleted=True) \
         .outerjoin(_Order, Order.order_no == _Order.order_no) \
         .filter(Order.id == order_id) \
         .order_by(desc(_Order.branch_no)) \
-        .with_entities(_Order) \
-        .first()
+        .with_entities(_Order)
+    if not include_deleted:
+        q = q.filter(_Order.deleted_at == None)
+    order = q.first()
     return order
 
 def get_order_by_order_no(request, order_no, session=None, include_deleted=False):

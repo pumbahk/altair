@@ -934,4 +934,22 @@ class GetOrderByIdTest(unittest.TestCase):
             result = self._callFUT(self.request, order.id) 
             self.assertEqual(branches[2], result)
 
+    def test_branches_deleted(self):
+        from datetime import datetime
+        branches = [
+            self._make_order(id=1, order_no='a', branch_no=1),
+            self._make_order(id=2, order_no='a', branch_no=2),
+            self._make_order(id=3, order_no='a', branch_no=3, deleted_at=datetime.now())
+            ]
+        for order in branches:
+            self.session.add(order)
+        self.session.flush()
+        for order in branches:
+            result = self._callFUT(self.request, order.id, include_deleted=False)
+            self.assertEqual(branches[1], result)
+
+        for order in branches:
+            result = self._callFUT(self.request, order.id, include_deleted=True)
+            self.assertEqual(branches[2], result)
+
 
