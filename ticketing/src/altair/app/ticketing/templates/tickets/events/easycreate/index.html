@@ -124,7 +124,7 @@ $(function(){
   var select_btn = app.setting.$el.find('select[name="templates"]');
   select_btn.on("change", function(e){ app.setting.onChangeTicketTemplate($(this))});
 
-  app.submit.$el.find("form:first").on("submit", function(){app.submit.onSubmit($(this));})
+  app.submit.$el.find("form:first").on("submit", function(){app.submit.onSubmit($(this)); return false;})
 
 
   //fisrt time invokeing onesself

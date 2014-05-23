@@ -42,7 +42,8 @@ if (!window.app)
       var svg = this.broker.getCurrentSVG()
       this.$el.find('input[name="drawing"]').val(svg);
       var params = h.serialize($form);
-      return $.post($form.attr("action"), params)
+      var url = $form.attr("action");
+      return $.post(url, params)
       .fail(
         function(){ this.$el.text("error: url="+url);}.bind(this)
       ).done(
