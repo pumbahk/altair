@@ -30,12 +30,24 @@ if (!window.app)
           !!sec && setTimeout(looping, sec);
         }
       }), wait_times.shift());
+    },
+    getCurrentSVG: function(){
+      //xxxx global variable: this variable create after loading component
+      return window.appView.models.svg.get("data");
     }
   };
 
   var SubmitAreaModule = {
-    onSubmit: function($el){
-debugger;
+    onSubmit: function($form){
+      var svg = this.broker.getCurrentSVG()
+      this.$el.find('input[name="drawing"]').val(svg);
+      var params = h.serialize($form);
+      return $.post($form.attr("action"), params)
+      .fail(
+        function(){ this.$el.text("error: url="+url);}.bind(this)
+      ).done(
+        function(data){ this.$el.text(data); }.bind(this)
+      );
     }
   };
 

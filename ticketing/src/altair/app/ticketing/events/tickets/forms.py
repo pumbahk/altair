@@ -126,6 +126,7 @@ class EasyCreateChoiceForm(OurForm):
 
 from altair.app.ticketing.tickets.cleaner.api import get_validated_svg_cleaner
 
+
 class EasyCreateTemplateUploadForm(OurForm):
     def _get_translations(self):
         return Translations()
@@ -149,7 +150,7 @@ class EasyCreateTemplateUploadForm(OurForm):
     ticket_format_id = SelectField(
         label=u"チケット様式",
         choices=[],
-        coerce=long ,
+        coerce=long,
         validators=[Required()]
     )
 
@@ -167,12 +168,17 @@ class EasyCreateTemplateUploadForm(OurForm):
 
     drawing = HiddenField()
 
+    def configure(self, formats, organization):
+        self.ticket_format_id.choices = [(long(f.id), f.name) for f in formats]
+        self.organization = organization
+        return self
+
     def validate(self):
         if not super(type(self), self).validate():
             return False
 
         svgio = StringIO(self.drawing.data)
-        ticket_format = TicketFormat.query.filter_by(id=self.ticket_format_id.data, organization_id=self.context.organization.id).first()
+        ticket_format = TicketFormat.query.filter_by(id=self.ticket_format_id.data, organization_id=self.organization.id).first()
         if ticket_format is None:
             errors = list(self.ticket_format_id.errors or ())
             errors.append(u'未知の券面フォーマットです')

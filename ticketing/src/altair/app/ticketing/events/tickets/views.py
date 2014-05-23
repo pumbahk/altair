@@ -262,11 +262,30 @@ class BundleAttributeView(BaseView):
 
 @view_config(route_name="events.tickets.easycreate", request_method="POST",
              decorator=with_bootstrap, permission="event_editor",
+             request_param="preview_type", 
              renderer="json")
 def easycreate_upload(context, request):
     event = context.event
-    upload_form = forms.EasyCreateTemplateUploadForm(request.POST)
+    assert event.organization_id == context.organization.id
+
+    preview_type = request.POST["preview_type"]
+    if preview_type == "sej":
+        formats = context.ticket_sej_formats.all()
+    else:
+        formats = context.ticket_something_else_formats.all()
+    upload_form = forms.EasyCreateTemplateUploadForm(request.POST).configure(formats, context.organization)
     if upload_form.validate():
+        data = upload_form.data
+        ticket_template = Ticket(name=data["name"],
+                                 ticket_format_id=data["ticket_format_id"],
+                                 data=upload_form.data_value,
+                                 always_reissueable=data["always_reissueable"],
+                                 priced=data["priced"],
+                                 cover_print=data["cover_print"],
+                                 filename="upload.svg",  # xxx:
+                                 organization_id=event.organization.id,
+                                 event_id=event.id)
+        ticket_template.save()  # flush and DBSession.add(o)
         return dict(status="ok")
     else:
         return dict(status="ng", errors=upload_form.errors)
