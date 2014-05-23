@@ -9,151 +9,117 @@ ${ch.breadcrumbs(
         request.route_path('events.tickets.index', event_id=event.id)]
 )}
 </%block>
+
+## todo:moveto helpers
 <%block name="style">
 <style type="text/css">
-  .radio-group { padding: 10px; }
-  .radio-group label { display: inline-block; margin-left:1px;}
-  .radio-group input[type="radio"] {margin-left:3px;}
-  .radio-group input[type="radio"]:nth-child(1) {margin-left:0px;}
+  .input-group { padding: 10px; }
+  .input-group label { display: inline-block; margin-left:1px;}
+  .input-group input[type="radio"] {margin-left:3px;}
+  .input-group input[type="radio"]:nth-child(1) {margin-left:0px;}
+  .input-group input[type="checkbox"] {margin-left:3px;}
+  .input-group input[type="checkbox"]:nth-child(1) {margin-left:0px;}
 </style>
 </%block>
 
-<h3>チケット券面</h3>
-<div class="row-fluid">
-<div class="span6">
-<div class="setting-area">
-<form>
+<%def name="radio_group(form, attrname, required=True)">
 <div class="control-group">
-${choice_form.preview_type.label(class_="required control-label")}
+${getattr(form,attrname).label(class_="required control-label")}
 <div class="controls ">
-<div class="radio-group" id="preview_type">
-%for f in choice_form.preview_type:
+<div class="input-group" id="${attrname}">
+%for f in getattr(form,attrname):
   ${f} ${f.label}
 %endfor
 </div>
 </div>
 </div>
+</%def>
+
+<%def name="checkbox_group_list(form, attrname_list, required=True)">
+<div class="control-group">
+<div class="controls ">
+<div class="input-group">
+%for attrname in attrname_list:
+  <% f = getattr(form,attrname) %>
+  ${f(id=attrname)} ${f.label}
+%endfor
+</div>
+</div>
+</div>
+</%def>
+
+<h3>チケット券面</h3>
+<div class="row-fluid">
+<div class="span4">
+<div class="setting-area">
+<form>
+${radio_group(choice_form, "preview_type")}
 ${ch.form_item(choice_form.templates)}
 </div>
 </div>
 
-<div class="span6">
+<div class="span5">
 <div class="submit-area">
 ${ch.form_item(upload_form.name)}
-<div class="control-group">
-${choice_form.preview_type.label(class_="required control-label")}
-<div class="controls ">
-<div class="radio-group" id="preview_type">
-%for f in choice_form.preview_type:
-  ${f} ${f.label}
-%endfor
-</div>
-</div>
-</div>
+${radio_group(upload_form,"preview_type")}
 ${ch.form_item(upload_form.ticket_format_id)}
-${ch.form_item(upload_form.always_reissueable)}
-${ch.form_item(upload_form.priced)}
-${ch.form_item(upload_form.cover_print)}
+${checkbox_group_list(upload_form, ["always_reissueable","priced","cover_print"])}
 ${ch.form_item(upload_form.drawing)}
 </div>
 </div>
 </div>
 
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/easycreate/app.js")}"></script>
 <script type="text/javascript">
-
-// Module needs {"loadcomponent_url","gettingsvg_url","gettingtemplate_url", "select_template"}
-var BrokerModule = {
-  onChangePreviewType: function($el){
-    var val = $el.val();
-    this.preview_type = val;
-    var load_url = this.loadcomponent_url.replace("__previewtype", val);
-    var template_url = this.gettingtemplate_url.replace("__previewtype", val);
-    var format_url = this.gettingformat_url.replace("__previewtype", val);
-    return this.gettingNewTemplates(template_url)
-        .then(function(){return this.loadingComponent(load_url)}.bind(this))
-        .then(function(){return this.gettingNewFormats(format_url)}.bind(this));
-  },
-  loadingComponent: function(url){
-    if(!!window.appView){
-       var $dfd = new $.Deferred();
-       $dfd.resolve();
-       return $dfd.promise();
-    }
-    return $.get(url).fail(
-      function(){ $(".component-area").text("error: url="+url)}
-    ).done(
-      function(html){ $(".component-area").html(html); }
-    );
-  },
-  gettingNewFormats: function(url){
-    var self = this;
-    return $.get(url).fail(
-      function(){ $(".component-area").text("error: url="+url)}
-    ).done(
-      function(data){
-        self.ticket_formats_iterable = data.iterable;
-        var wait_times = [50, 100, 300, 750, 1500, 3000, 7000, 160000];
-        setTimeout((function looping(){
-          //xxxx global variable: this variable create after loading component
-          if(!!window.appView){
-             window.appView.views.params_view.reDrawTicketFormatCandidates(data.iterable, data.preview_type);
-             $('.submit-area select[name="ticket_format_id"]').html(self.select_template({"iterable": data.iterable}));
-          } else {
-             var sec = wait_times.shift();
-             !!sec && setTimeout(looping, sec);
-          }
-        }), wait_times.shift());
-    });
-  },
-  gettingNewTemplates: function(url){
-    var html_template = this.select_template;
-    return $.get(url).fail(
-      function(){ $(".component-area").text("error: url="+url)}
-    ).done(
-      function(data){ $('.setting-area select[name="templates"]').html(html_template({"iterable": data.iterable}));}
-    );
-  },
-  onChangeTicketTemplate: function($el){
-    var val = $el.val();
-    var url = this.gettingsvg_url.replace("__ticket_id", val).replace("__previewtype", this.preview_type);
-
-    return this.sendingSVGViaRequest(url);
-  },
-  sendingSVGViaRequest: function(url){
-    return $.get(url).fail(
-      function(){ $(".component-area").text("error: url="+url);}
-    ).done(
-      function(data){
-        //xxxx global variable: this variable create after loading component
-        window.appView.loadSVG(data.svg, data.preview_type);
-    });
-  }
-};
-
-<%! fmt = '''<% _.each(iterable, function(d){%><option value="<%= d.pk %>"><%= d.name %></option> <%});%>''' %>
-var BrokerData = {
-  select_template: {value: _.template('${fmt|n}')},
-  ticket_formats_iterable: {value: [], writable: true},
-  preview_type: {value: "", writable: true},
-  loadcomponent_url: {value: "${request.route_path("events.tickets.easycreate.loadcomponent", event_id=event.id, preview_type="__previewtype")}"},
-  gettingtemplate_url: {value: "${request.route_path("events.tickets.easycreate.gettingtemplate", event_id=event.id, preview_type="__previewtype")}"},
-  gettingformat_url: {value: "${request.route_path("events.tickets.easycreate.gettingformat", event_id=event.id, preview_type="__previewtype")}"},
-  gettingsvg_url: {value: "${request.route_path("events.tickets.easycreate.gettingsvg", event_id=event.id, ticket_id="__ticket_id", preview_type="__previewtype")}"},
-};
-
 // loading component, the trigger is preview type radio button of above area.
 (function(form){
-  var broker = Object.create(BrokerModule, BrokerData)
-  window.broker = broker;
-  var radio_btn = form.find('input[name="preview_type"]:radio');
-  radio_btn.on("change", function(e){ broker.onChangePreviewType($(this))});
+  app.BrokerData = {
+    component: {value: null, writable: true},
+    setting: {value: null, writable: true},
+    submit: {value: null, writable: true}
+  }
+  app.broker = Object.create(app.BrokerModule, app.BrokerData);
 
-  var select_btn = form.find('select[name="templates"]');
-  select_btn.on("change", function(e){broker.onChangeTicketTemplate($(this))});
+  $(function(){
+    app.ComponentAreaData = {
+      broker: {value: app.broker},
+      $el: {value: $(".component-area"), writable: false},
+      ticket_formats_iterable: {value: [], writable: true},
+      preview_type: {value: "", writable: true},
+      loadcomponent_url: {value: "${request.route_path("events.tickets.easycreate.loadcomponent", event_id=event.id, preview_type="__previewtype")}"},
+      gettingtemplate_url: {value: "${request.route_path("events.tickets.easycreate.gettingtemplate", event_id=event.id, preview_type="__previewtype")}"},
+      gettingformat_url: {value: "${request.route_path("events.tickets.easycreate.gettingformat", event_id=event.id, preview_type="__previewtype")}"},
+      gettingsvg_url: {value: "${request.route_path("events.tickets.easycreate.gettingsvg", event_id=event.id, ticket_id="__ticket_id", preview_type="__previewtype")}"},
+    };
+
+    app.SettingAreaData = {
+      broker: {value: app.broker},
+      $el: {value: $(".setting-area"), writable: false}
+    }
+
+    app.SubmitAreaData = {
+      broker: {value: app.broker},
+      $el: {value: $(".submit-area"), writable: false}
+    }
+
+    app.setting = Object.create(app.SettingAreaModule, app.SettingAreaData);
+    app.submit = Object.create(app.SubmitAreaModule, app.SubmitAreaData);
+    app.component = Object.create(app.ComponentAreaModule, app.ComponentAreaData);
+
+    app.broker.setting = app.setting;
+    app.broker.submit = app.submit;
+    app.broker.component = app.component;
+
+    var radio_btn = form.find('input[name="preview_type"]:radio');
+    radio_btn.on("change", function(e){ app.setting.onChangePreviewType($(this))});
+
+    var select_btn = form.find('select[name="templates"]');
+    select_btn.on("change", function(e){ app.setting.onChangeTicketTemplate($(this))});
+  });
 })($("script:last").parent());
 </script>
 </form>
 
 <div class="component-area">
-  
+xxxx
 </div>
