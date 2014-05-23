@@ -179,6 +179,15 @@ var StockLockStatus = (function () {
 
     StockLockStatus.set = function (stock, status){
         stock.set('assignable', status);
+        var venue = venueEditorRoot.venueeditor('model');        
+        if (venue.perStockSeatSet[stock.id]) {
+            venue.perStockSeatSet[stock.id].each(function(seat){
+                if (!seat.get('sold')){
+                    seat.set('selectable', status);
+                }
+            });
+        }
+        return false;
     };
 
     StockLockStatus.toggle = function (stock){
@@ -289,20 +298,6 @@ function makeMultiStocksLockHandler(parent, id){
         lockable.addClass(next_status);
         lockable.css('color', next_color);
     }
-    function onClick() {
-        for(var key in stocks){
-            var stock = stocks[key];
-            var status = stock.get('assignable') ? false : true;
-            stock.set('assignable', status);
-            if (venue.perStockSeatSet[stock.id]) {
-                venue.perStockSeatSet[stock.id].each(function(seat){
-                    if (!seat.get('sold')) seat.set('selectable', status);
-                });
-            }
-        }
-        return false;
-    }
-    lockable.bind('click', onClick);
 
     for(key in stocks){
         var stock = stocks[key];
@@ -320,7 +315,6 @@ function makeMultiStocksByStockTypeLockHandler(parent, id){
 
     function refresh(){
         var status = get_now_status(stocks);
-        var next_status = status;
         var next_color = StockGroupLockStatus.get_color(status);
         lockable.removeClass('fa fa-lock');
         lockable.removeClass('fa fa-unlock');
@@ -328,22 +322,7 @@ function makeMultiStocksByStockTypeLockHandler(parent, id){
         lockable.addClass(next_status);
         lockable.css('color', next_color);
     }
-
-    function onClick() {
-        for(var key in stocks){
-            var stock = stocks[key];
-            var status = stock.get('assignable') ? false : true;
-            stock.set('assignable', status);
-            if (venue.perStockSeatSet[stock.id]) {
-                venue.perStockSeatSet[stock.id].each(function(seat){
-                    if (!seat.get('sold')) seat.set('selectable', status);
-                });
-            }
-        }
-        return false;
-    }
-    lockable.bind('click', onClick);
-
+    
     for(key in stocks){
         var stock = stocks[key];
         stock.on('change:assignable', refresh);
