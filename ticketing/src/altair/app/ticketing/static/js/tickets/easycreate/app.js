@@ -34,14 +34,17 @@ if (!window.app)
   };
 
   var SubmitAreaModule = {
+    onSubmit: function($el){
+debugger;
+    }
   };
 
   var SettingAreaModule = {
     onChangePreviewType: function($el){
-      this.broker.component.onChangePreviewType($el);
+      return this.broker.component.onChangePreviewType($el);
     },
     onChangeTicketTemplate: function($el){
-      this.broker.component.onChangeTicketTemplate($el);
+      return this.broker.component.onChangeTicketTemplate($el);
     }
   };
 

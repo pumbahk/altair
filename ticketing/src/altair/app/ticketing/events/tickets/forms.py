@@ -119,8 +119,9 @@ class EasyCreateChoiceForm(OurForm):
     preview_type = RadioField(
         label=u"レンダリング方法",
         validators=[Required()],
+        default="default",
         coerce=unicode,
-        choices=[("default",u"インナー発券"),("sej",u"SEJ発券")]
+        choices=[("default", u"インナー発券"), ("sej", u"SEJ発券")]
     )
 
 from altair.app.ticketing.tickets.cleaner.api import get_validated_svg_cleaner
@@ -141,13 +142,14 @@ class EasyCreateTemplateUploadForm(OurForm):
         label=u"レンダリング方法",
         validators=[Required()],
         coerce=unicode,
-        choices=[("default",u"インナー発券"),("sej",u"SEJ発券")]
+        default="default",
+        choices=[("default", u"インナー発券"), ("sej", u"SEJ発券")]
     )
 
     ticket_format_id = SelectField(
         label=u"チケット様式",
-        choices=[], 
-        coerce=long , 
+        choices=[],
+        coerce=long ,
         validators=[Required()]
     )
 
