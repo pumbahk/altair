@@ -15,21 +15,19 @@ if (!window.app)
     },
     onNewSVGData: function(data){
       //xxxx global variable: this variable create after loading component
-      window.appView.loadSVG(data.svg, data.preview_type);
+      h.synchronizedWait(function predicate(){return !!window.appView},
+                         function then(){
+                           window.appView.loadSVG(data.svg, data.preview_type);
+                         });
     },
     onNewTicketFormatData: function(data){
       var self = this;
-      var wait_times = [50, 100, 300, 750, 1500, 3000, 7000, 160000];
-      setTimeout((function looping(){
-        //xxxx global variable: this variable create after loading component
-        if(!!window.appView){
-          window.appView.views.params_view.reDrawTicketFormatCandidates(data.iterable, data.preview_type);
-          self.onTicketFormatSelectElementUpdate(selectContentTemplate({"iterable": data.iterable}));
-        } else {
-          var sec = wait_times.shift();
-          !!sec && setTimeout(looping, sec);
-        }
-      }), wait_times.shift());
+      h.synchronizedWait(function predicate(){return !!window.appView},
+                         function then(){
+                           //xxxx global variable: this variable create after loading component
+                           window.appView.views.params_view.reDrawTicketFormatCandidates(data.iterable, data.preview_type);
+                           self.onTicketFormatSelectElementUpdate(selectContentTemplate({"iterable": data.iterable}));
+                         });
     },
     getCurrentSVG: function(){
       //xxxx global variable: this variable create after loading component
@@ -76,6 +74,7 @@ if (!window.app)
     },
     loadingComponent: function(url){
       if(!!window.appView){
+        // if loaded already,then skip;
         var $dfd = new $.Deferred();
         $dfd.resolve();
         return $dfd.promise();
