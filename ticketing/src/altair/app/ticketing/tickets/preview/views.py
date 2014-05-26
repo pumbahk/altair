@@ -238,7 +238,7 @@ class PreviewApiView(object):
     @view_config(match_param="action=normalize", request_param="svg")
     def preview_api_normalize(self):
         try:
-            svgio = StringIO(unicode(self.request.POST["svg"]).encode("utf-8")) #unicode only
+            svgio = StringIO(unicode(self.request.POST["svg"]).encode("utf-8"))  # unicode only
             cleaner = get_validated_svg_cleaner(svgio, exc_class=Exception)
             svgio = cleaner.get_cleaned_svgio()
             return {"status": True, "data": svgio.getvalue()}
@@ -248,6 +248,9 @@ class PreviewApiView(object):
             logger.exception(e)
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
+    @view_config(match_param="action=identity", request_param="svg")
+    def preview_api_identity(self):
+        return {"status": True, "data": self.request.POST["svg"]}
 
     @view_config(match_param="action=preview.base64")
     def preview_ticket_post64(self):

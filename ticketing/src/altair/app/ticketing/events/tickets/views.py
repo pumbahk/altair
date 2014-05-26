@@ -324,7 +324,7 @@ def easycreate_ajax_loadcomponent(context,request):
                            )
 
     apis = {
-        "normalize": request.route_path("tickets.preview.api", action="normalize"),
+        "normalize": request.route_path("tickets.preview.api", action="identity"),
         "previewbase64": request.route_path("tickets.preview.api", action="preview.base64"),
         "collectvars": request.route_path("tickets.preview.api", action="collectvars"),
         "fillvalues": request.route_path("tickets.preview.api", action="fillvalues"),
