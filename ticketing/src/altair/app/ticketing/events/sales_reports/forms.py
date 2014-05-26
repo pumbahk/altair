@@ -3,11 +3,11 @@
 import logging
 
 from wtforms import Form, TextField, SelectField, HiddenField
-from wtforms.validators import Regexp, Length, Optional, ValidationError, Email
+from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.compat import iteritems
 
 from altair.formhelpers import (
-    OurDateTimeField, Translations, Required, RequiredOnUpdate,
+    OurDateTimeField, Translations, Required, RequiredOnUpdate, Email,
     OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField,
     OurTimeField, zero_as_none, after1900)
 from altair.app.ticketing.core.models import Operator, ReportSetting, SalesSegment, Performance, Event

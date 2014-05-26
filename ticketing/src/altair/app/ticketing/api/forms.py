@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import TextField, PasswordField
-from wtforms.validators import Required, Email, Length, EqualTo, optional
+from wtforms.validators import Required, Length, EqualTo, optional
 from wtforms import Form
 
 class AuthorizeForm(Form):

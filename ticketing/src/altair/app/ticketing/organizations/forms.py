@@ -5,9 +5,9 @@ from wtforms.fields import PasswordField, HiddenField, FormField
 from altair.formhelpers import filters
 from altair.formhelpers.widgets import OurTextInput
 from altair.formhelpers.fields import OurTextField, OurIntegerField, OurSelectField, OurBooleanField, OurDecimalField
-from wtforms.validators import Length, Regexp, Email, Optional
+from wtforms.validators import Length, Regexp, Optional
 
-from altair.formhelpers import Translations, Required, Phone
+from altair.formhelpers import Translations, Required, Phone, Email
 from altair.app.ticketing.master.models import Prefecture
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.users import models as u_models
