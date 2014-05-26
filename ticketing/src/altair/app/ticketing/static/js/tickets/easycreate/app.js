@@ -33,7 +33,8 @@ if (!window.app)
     },
     getCurrentSVG: function(){
       //xxxx global variable: this variable create after loading component
-      return window.appView.models.svg.get("data");
+      return h.synchronizedWait(function predicate (){return !!window.appView},
+                                function then(){window.appView.models.svg.get("data")});
     }
   };
 

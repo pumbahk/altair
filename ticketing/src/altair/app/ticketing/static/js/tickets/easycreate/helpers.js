@@ -3,7 +3,7 @@ if(!window.h)
 
 (function(h){
   // _.object
-  h.object = function(list, values) {
+  h.object = function object(list, values) {
     if (list === null) return {};
     var result = {};
     for (var i = 0, length = list.length; i < length; i++) {
@@ -16,7 +16,7 @@ if(!window.h)
     return result;
   };
 
-  h.serialize = function($form){
+  h.serialize = function serialize($form){
     var xs = _.map($form.find("select,input"), function(e){
       var $e = $(e);
       if($e.attr("type") == "checkbox"){
@@ -28,5 +28,22 @@ if(!window.h)
       }
     });
     return h.object(_.compact(xs));
+  };
+
+  defaultWaitTimes = [50, 100, 300, 750, 1500, 3000, 7000, 160000];
+  h.synchronizedWait = function synchronizedWait(prediate, onSuccess, waitTimes){
+    if(!waitTimes){
+      waitTimes = Array.apply(null,defaultWaitTimes);
+    }
+    setTimeout((function looping(){
+      if(prediate()){
+        onSuccess();
+      }else{
+        var sec = waitTimes.shift();
+        if(!!sec){
+          setTimeout(looping,sec);
+        }
+      }
+    }));
   };
 })(window.h);
