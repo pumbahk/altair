@@ -89,6 +89,15 @@ def get_checkout_service(request, organization=None, channel=None):
 
     return Checkout(**params)
 
+def get_signer(auth_method, secret):
+    if auth_method == 'HMAC-SHA1':
+        signer = HMAC_SHA1(secret)
+    elif auth_method == 'HMAC-MD5':
+        signer = HMAC_MD5(secret)
+    else:
+        raise Exception('setting(auth_method) not found')
+    return signer
+
 def sign_to_xml(request, organization, channel, xml):
     shop_settings = m.RakutenCheckoutSetting.query.filter_by(
         organization_id=organization.id,
@@ -138,11 +147,14 @@ class Checkout(object):
 
     def create_checkout_request_xml(self, cart):
         request = get_current_request()
+        success_url = urlparse.urljoin(request.application_url, self.success_url)
+        fail_url = urlparse.urljoin(request.application_url, self.fail_url)
+
         root = et.Element('orderItemsInfo')
 
         et.SubElement(root, 'serviceId').text = self.service_id
-        et.SubElement(root, 'orderCompleteUrl').text = 'https://%(host)s%(path)s' % dict(host=request.host, path=self.success_url)
-        et.SubElement(root, 'orderFailedUrl').text = 'https://%(host)s%(path)s' % dict(host=request.host, path=self.fail_url)
+        et.SubElement(root, 'orderCompleteUrl').text = success_url
+        et.SubElement(root, 'orderFailedUrl').text = fail_url
         et.SubElement(root, 'authMethod').text = AUTH_METHOD_TYPE.get(self.auth_method)
         if self.is_test is not None:
             et.SubElement(root, 'isTMode').text = self.is_test
