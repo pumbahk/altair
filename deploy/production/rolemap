@@ -1,6 +1,7 @@
 apbv1.1a.vpc.altr	adminapp
 apbv1.1c.vpc.altr	adminapp
-apbv2.1a.vpc.altr	adminapp
+apcs1.1c.vpc.altr	gateapp
+apcs1.1a.vpc.altr	gateapp
 apmv4.1b.vpc.altr	userapp-with-booster
 apmv4.1c.vpc.altr	userapp-with-booster
 apmv6.1c.vpc.altr	userapp-api
@@ -24,5 +25,4 @@ btmv2.1c.vpc.altr	batch
 samv1.1c.vpc.altr	newsletter
 apcv1.1c.vpc.altr	sej
 apsv1.1b.vpc.altr	solr
-apcs1.1c.vpc.altr	gateapp
 # vim: noet
