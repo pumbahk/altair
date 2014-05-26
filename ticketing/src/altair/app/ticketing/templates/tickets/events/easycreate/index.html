@@ -32,7 +32,12 @@ ${ch.breadcrumbs(
   .wizard .current:after { border-left-color: #75A843; }
 
 /* message */
-  .message { display: block; margin-left: 30px; position: absolute; top: 85px; left: 750px; z-index: 10; }
+  .message { display: block; margin-left: 30px; position: absolute; top: 45px; left: 350px; z-index: 10; }
+  .message-row {height:0px;}
+
+/* description */
+  .description-box { padding: 10px;}
+  .userhandle-box { padding: 10px;}
 </style>
 </%block>
 
@@ -70,32 +75,57 @@ ${getattr(form,attrname).label(class_="required control-label")}
 
 <div class="userhandle-area">
   <div class="wizard">
-    <a href="#" class="wizard-nav current" data-toggle="#userhandle0"><span class="badge">1.</span> レンダリング方法選択</a>
-    <a href="#" class="wizard-nav" data-toggle="#userhandle1"><span class="badge badge-inverse">2.</span> 文言変更</a>
-    <a href="#" class="wizard-nav" data-toggle="#userhandle2"><span class="badge">3.</span> 登録データ設定</a>
+    <a href="#" id="wizard-nav0" class="wizard-nav current" data-toggle="#userhandle0"><span class="badge">1.</span> レンダリング方法選択</a>
+    <a href="#" id="wizard-nav1" class="wizard-nav" data-toggle="#userhandle1"><span class="badge badge-inverse">2.</span> 文言変更</a>
+    <a href="#" id="wizard-nav2" class="wizard-nav" data-toggle="#userhandle2"><span class="badge">3.</span> 登録データ設定</a>
+    <a href="#" id="wizard-nav3" class="wizard-nav" data-toggle="#userhandle3"><span class="badge">4.</span> 登録された券面一覧</a>
   </div>
 
   <div class="row-fluid">
     <div id="userhandle0" class="userhandle">
-<div class="setting-area">
-
-${radio_group(choice_form, "preview_type")}
-${ch.form_item(choice_form.templates)}
-</div>
+        <div class="setting-area hero-unit span4">
+        ${radio_group(choice_form, "preview_type")}
+        ${ch.form_item(choice_form.templates)}
+        </div>
+        <div class="description-box span5">
+          <h4>1. レンダリング方法を指定してください。</h4>
+          <ul>
+            <li>インナー発券 --- 通常利用する券面です。previewにかかる時間が短いです</li>
+            <li>SEJ発券 ---  SEJ引取の際に利用するする券面です。previewにかかる時間はとても長いです</li>
+          </ul>
+          <h4>2. 券面テンプレートを指定してください</h4>
+          <p>システムに券面の雛型となるデータが格納されています。preview結果を見ながら左の選択欄で設定してください</p>
+          <div class="userhandle-box">
+            <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav1">次へ</a>
+          </div>
+        </div>
     </div>
     <div id="userhandle1" class="userhandle" style="display:none">
+      <div class="descriptioin-area span6 hero-unit">
+      </div>
+        <div class="description-box span5">
+          <div class="userhandle-box">
+            <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav0">戻る</a>
+            <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav2">次へ</a>
+          </div>
+        </div>
     </div>
     <div id="userhandle2" class="userhandle" style="display:none">
-<div class="submit-area">
-<form method="POST" action="${request.route_path("events.tickets.easycreate",event_id=event.id)}">
-${ch.form_item(upload_form.name)}
-${radio_group(upload_form,"preview_type")}
-${ch.form_item(upload_form.ticket_format_id)}
-${checkbox_group_list(upload_form, ["always_reissueable","priced","cover_print"])}
-${ch.form_item(upload_form.drawing)}
-<input type="submit" value="券面を作成"/>
-</form>
-</div>
+        <div class="submit-area hero-unit span5">
+        <form method="POST" action="${request.route_path("events.tickets.easycreate",event_id=event.id)}">
+        ${ch.form_item(upload_form.name)}
+        ${radio_group(upload_form,"preview_type")}
+        ${ch.form_item(upload_form.ticket_format_id)}
+        ${checkbox_group_list(upload_form, ["always_reissueable","priced","cover_print"])}
+        ${ch.form_item(upload_form.drawing)}
+        <input type="submit" value="券面を作成"/>
+        </form>
+        </div>
+        <div class="description-box span5">
+          <div class="userhandle-box">
+            <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav1">戻る</a>
+          </div>
+        </div>
     </div>
   </div>
 </div>
@@ -149,6 +179,7 @@ $(function(){
 
   // binding observer event
    app.userhandle.$el.find("a.wizard-nav").on("click", function(e){app.userhandle.onClickNavigation($(this)); return false;});
+   app.userhandle.$el.find("a.js-handle-btn").on("click", function(e){app.userhandle.onClickHandleButton($(this)); return false;});
 
   var radio_btn = app.setting.$el.find('input[name="preview_type"]:radio');
   radio_btn.on("change", function(e){ app.setting.onChangePreviewType($(this))});

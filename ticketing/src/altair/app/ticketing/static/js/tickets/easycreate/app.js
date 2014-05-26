@@ -31,8 +31,7 @@ if (!window.app)
     },
     getCurrentSVG: function(){
       //xxxx global variable: this variable create after loading component
-      return h.synchronizedWait(function predicate (){return !!window.appView},
-                                function then(){window.appView.models.svg.get("data")});
+      return window.appView.models.svg.get("data");
     }
   };
   
@@ -138,6 +137,9 @@ if (!window.app)
         $el.find(".badge").addClass("badge-inverse");
         $el.addClass("current");
       }
+    },
+    onClickHandleButton: function($el){
+      $($el.data("toggle")).click();
     }
   };
   app.UserHandleAreaModule = UserHandleAreaModule;
