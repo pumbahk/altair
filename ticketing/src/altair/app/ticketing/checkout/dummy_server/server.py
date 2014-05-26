@@ -3,17 +3,16 @@
 import re
 from base64 import b64encode, b64decode
 from lxml import etree
-import lxml.builder
 from hmac import new as hmac_new
 from decimal import Decimal
 import hashlib
 import urllib2
+import logging
 from urllib import urlencode
 from datetime import datetime
-from dateutil.parser import parse as parsedate
 from zope.interface import Interface, implementer
 from pyramid.view import view_defaults, view_config
-from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
+from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPOk
 from pyramid.decorator import reify
 import js.bootstrap_ts
 from wtforms.validators import Required
@@ -28,6 +27,18 @@ from .models import (
     DummyProduct,
     )
 
+from .payload import (
+    parse_order,
+    build_payload_for_cart_confirming,
+    parse_cart_confirming_callback_response,
+    build_payload_for_completion_notification,
+    parse_completion_notification_callback_response,
+    build_settlement_response,
+    parse_settlement_request,
+    )
+
+logger = logging.getLogger(__name__)
+
 class DummyServerApplicationException(Exception):
     pass
 
@@ -39,6 +50,15 @@ class PayloadParseError(DummyServerApplicationException):
 
 class InvalidCallbackResponseError(DummyServerApplicationException):
     pass
+
+class ApiError(DummyServerApplicationException):
+    @property
+    def message(self):
+        return self.args[0]
+
+    @property
+    def code(self):
+        return self.args[1]
 
 class IConfigurationProvider(Interface):
     def find_by_service_name(service_name):
@@ -67,13 +87,13 @@ class ConfigurationProvider(object):
         settings_list = []
         for service in services:
             service_id = pyramid_settings['%s.%s.service_id' % (services_prefix, service)]
-            signature_key = pyramid_settings['%s.%s.signature_key' % (services_prefix, service)]
+            access_key = pyramid_settings['%s.%s.access_key' % (services_prefix, service)]
             cart_confirming_url = pyramid_settings.get('%s.%s.cart_confirming_url' % (services_prefix, service), None)
             completion_notification_url = pyramid_settings.get('%s.%s.completion_notification_url' % (services_prefix, service), None)
             settings = {
                 'name': service,
                 'service_id': service_id,
-                'signature_key': signature_key,
+                'access_key': access_key,
                 'endpoints': {
                     'cart_confirming_url': cart_confirming_url,
                     'completion_notification_url': completion_notification_url,
@@ -107,215 +127,6 @@ class SerialNumberGenerator(object):
 
 def bad_request(message):
     return HTTPBadRequest(content_type='text/html', unicode_body=message)
-
-def must_find(n, path):
-    retval = n.find(path)
-    if retval is None:
-        raise PayloadParseError(u'%s does not exist' % path)
-    return retval
-
-def retrieve_item_from_tree(item_n):
-    if item_n.tag != u'item':
-        raise PayloadParseError(u'unexpected element %s within itemsInfo element' % item_n.tag)
-    item_id_n = must_find(item_n, u'itemId')
-    item_name_n = must_find(item_n, u'itemName')
-    item_numbers_n = must_find(item_n, u'itemNumbers')
-    item_fee_n = must_find(item_n, u'itemFee')
-    try:
-        item_id_str = item_id_n.text.strip()
-    except AttributeError:
-        raise PayloadParseError(u'empty itemId')
-    try:
-        item_name_str = item_name_n.text.strip()
-    except AttributeError:
-        raise PayloadParseError(u'empty itemName')
-    try:
-        item_numbers_str = item_numbers_n.text.strip()
-    except AttributeError:
-        raise PayloadParseError(u'empty itemNumbers')
-    try:
-        item_fee_str = item_fee_n.text.strip()
-    except AttributeError:
-        raise PayloadParseError(u'empty itemFee')
-    try:
-        quantity = int(item_numbers_str)
-    except (TypeError, ValueError):
-        raise PayloadParseError(u'invalid value for itemNumbers: %s' % item_numbers_str)
-    try:
-        price = Decimal(item_fee_str)
-    except TypeError:
-        raise PayloadParseError(u'invalid value for itemFee: %s' % item_fee_str)
-    item = {
-        'id': item_id_str,
-        'name': item_name_str,
-        'quantity': quantity,
-        'price': price,
-        }
-    return item
-
-def parse_order(root):
-    order_cart_id_n = must_find(root, u'orderCartId')
-    order_complete_url_n = must_find(root, u'orderCompleteUrl')
-    order_failed_url_n = must_find(root, u'orderFailedUrl')
-    order_total_fee_n = must_find(root, u'orderTotalFee')
-    is_t_mode_n = must_find(root, u'isTMode')
-    items_info_n = must_find(root, u'itemsInfo')
-
-    try:
-        order_cart_id_str = order_cart_id_n.text.strip()
-    except AttributeError:
-        raise PayloadParseError(u'empty orderCartId')
-    try:
-        order_complete_url_str = order_complete_url_n.text.strip()
-    except AttributeError:
-        raise PayloadParseError(u'empty orderCompleteUrl')
-    try:
-        order_failed_url_str = order_failed_url_n.text.strip()
-    except AttributeError:
-        raise PayloadParseError(u'empty orderFailedUrl')
-    try:
-        order_total_fee_str = order_total_fee_n.text.strip()
-    except AttributeError:
-        raise PayloadParseError(u'empty orderTotalFee')
-
-    is_t_mode_str = is_t_mode_n.text.strip() if is_t_mode_n.text else u''
-
-    try:
-        total_amount = Decimal(order_total_fee_str)
-    except AttributeError:
-        raise PayloadParseError(u'invalid value for orderTotalFee: %s' % order_total_fee_str)
-
-    items = [
-        retrieve_item_from_tree(item_n)
-        for item_n in items_info_n
-        ]
-    return {
-        'order_cart_id': order_cart_id_str,
-        'order_complete_url': order_complete_url_str,
-        'order_failed_url': order_failed_url_str,
-        'total_amount': total_amount,
-        'test_mode': is_t_mode_str,
-        'items': items,
-        }
-
-def build_payload_for_cart_confirming(order, cart_confirmation_id, openid_claimed_id):
-    E = lxml.builder.E
-    payload = E.cartConfirmationRequest(
-        E.openId(openid_claimed_id),
-        E.carts(
-            E.cart(
-                E.cartConfirmationId(cart_confirmation_id),
-                E.orderCartId(order['order_cart_id']),
-                E.orderTotalFee(unicode(order['total_amount'].quantize(0))),
-                E.items(*(
-                    E.item(
-                        E.itemId(item['id']),
-                        E.itemName(item['name']),
-                        E.itemNumbers(unicode(item['quantity'])),
-                        E.itemFee(unicode(item['price'].quantize(0)))
-                        )
-                    for item in order['items']
-                    )),
-                E.isTMode(order['test_mode']),
-                )
-            )
-        )
-    return payload
-
-def parse_cart_confirming_callback_response(xml):
-    if xml.tag != u'cartConfirmationResponse':
-        raise PayloadParseError(u'root element must be cartConfirmationResponse')
-
-    carts_n = xml.find('carts')
-    if carts_n is None:
-        raise PayloadParseError(u'missing <carts> element under cartConfirmationResponse')
-    carts = []
-    for cart_n in carts_n:
-        if cart_n.tag != u'cart':
-            raise PayloadParseError(u'unexpected element <%s> under <carts>' % cart_n.tag)
-        items_n = must_find(cart_n, 'items')
-        cart_confirmation_id_n = must_find(cart_n, 'cartConfirmationId')
-        order_cart_id_n = must_find(cart_n, 'orderCartId')
-        order_items_total_fee_n = must_find(cart_n, 'orderItemsTotalFee')
-        try:
-            cart_confirmation_id_str = cart_confirmation_id_n.text.strip()
-        except AttributeError:
-            raise PayloadParseError(u'empty cartConfirmationId')
-        try:
-            order_cart_id_str = order_cart_id_n.text.strip()
-        except AttributeError:
-            raise PayloadParseError(u'empty orderCartId')
-        try:
-            order_items_total_fee_str = order_items_total_fee_n.text.strip()
-        except AttributeError:
-            raise PayloadParseError(u'empty orderItemsTotalFee')
-        try:
-            total_amount = Decimal(order_items_total_fee_str)
-        except AttributeError:
-            raise PayloadParseError(u'invalid value for orderTotalFee: %s' % order_items_total_fee_str)
-
-        items = [
-            retrieve_item_from_tree(item)
-            for item in items_n
-            ]
-        cart = {
-            'cart_confirmation_id': cart_confirmation_id_str,
-            'order_cart_id': order_cart_id_str,
-            'total_fee': total_fee,
-            'items': items,
-            }
-        carts.append(cart)
-    return {
-        'carts': carts,
-        }
-        
-def build_payload_for_completion_notification(order, order_id, order_control_id, order_date, used_point, openid_claimed_id):
-    E = lxml.builder.E
-    payload = E.orderCompleteRequest(
-        E.orderId(order_id),
-        E.orderControlId(order_control_id),
-        E.openId(openid_claimed_id),
-        E.orderCartId(order['order_cart_id']),
-        E.usedPoint(unicode(used_point.quantize(0))),
-        E.orderDate(order_date.strftime('%Y-%m-%d %H:%M:%S').decode('utf-8')),
-        E.orderTotalFee(unicode(order['total_amount'].quantize(0))),
-        E.items(*[
-            E.item(
-                E.itemId(item['id']),
-                E.itemName(item['name']),
-                E.itemNumbers(unicode(item['quantity'])),
-                E.itemFee(unicode(item['price'].quantize(0)))
-                )
-            for item in order['items']
-            ]),
-        E.isTMode(order['test_mode'])
-        )
-    return payload
-
-def parse_completion_notification_callback_response(xml):
-    if xml.tag != u'orderCompleteResponse':
-        raise PayloadParseError(u'root element must be orderCompleteResponse')
-
-    result_n = must_find(xml, u'result')
-    complete_time_n = must_find(xml, u'completeTime')
-
-    try:
-        result = int(result_n.text.strip())
-    except AttributeError:
-        raise PayloadParseError(u'empty <result> element')
-    except (TypeError, ValueError):
-        raise PayloadParseError(u'invalid value for <result> element')
-
-    try:
-        complete_time = parsedate(complete_time_n.text.strip())
-    except AttributeError:
-        raise PayloadParseError(u'empty <completeTime> element')
-    except ValueError:
-        raise PayloadParseError(u'invalid value for <completeTime> element')
-    return {
-        'result': result,
-        'complete_time': complete_time,
-        }
 
 
 def build_opener():
@@ -491,7 +302,7 @@ class DummyCheckoutView(object):
             raise bad_request(u'serviceId not provided')
 
         service_settings = get_service_settings(self.request.registry, service_id)
-        h = hmac_new(service_settings['signature_key'], payload, auth_method).hexdigest()
+        h = hmac_new(service_settings['access_key'], payload, auth_method).hexdigest()
         if sig != h:
             raise bad_request(u'invalid signature')
         return xml, service_settings
@@ -582,7 +393,7 @@ class DummyCheckoutView(object):
                 self.request.route_path('checkout_dummy_server.diag'),
                 self.request.route_path('checkout_dummy_server.diag'),
                 'HMAC-SHA1',
-                service_settings['signature_key'],
+                service_settings['access_key'],
                 self.request.application_url,
                 False
                 )
@@ -600,6 +411,70 @@ class DummyCheckoutView(object):
     @view_config(context=OrderNotExist, renderer='error.mako')
     def _order_not_exist(self):
         return {u'summary': u'no order specified', u'detail': self.context.message}
+
+
+class DummyCheckoutApiView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    def get_payload(self):
+        self.request.content_type = 'application/x-www-form-urlencoded'
+        encoded_payload = self.request.POST.get('rparam')
+        if encoded_payload is None:
+            raise ApiError(u'no payload given', 600)
+        try:
+            payload = b64decode(encoded_payload)
+        except:
+            raise ApiError(u'failed to decode payload', 600)
+        try:
+            xml = etree.fromstring(payload)
+        except Exception as e:
+            raise ApiError(u'failed to parse payload', 600)
+
+        service_id_n = xml.find(u'serviceId')
+        if service_id_n is None:
+            raise bad_request(u'serviceId not provided')
+        service_id = service_id_n.text
+        if service_id is None:
+            raise bad_request(u'serviceId not provided')
+
+        access_key_n = xml.find('accessKey')
+        if access_key_n is None:
+            raise ApiError(u'accessKey not provided', 400)
+        access_key = access_key_n.text
+        if access_key is None:
+            raise ApiError(u'accessKey not provided', 400)
+
+        service_settings = get_service_settings(self.request.registry, service_id)
+        if service_settings['access_key'] != access_key:
+            raise ApiError(u'accessKey does not match', 400)
+        return xml, service_settings
+
+    @view_config(context=ApiError)
+    def _api_error(self):
+        out_xml = build_settlement_response([], 1, self.context.code)
+        logger.error(self.context)
+        return HTTPOk(
+            body=etree.tostring(out_xml, xml_declaration=True, encoding='utf-8'),
+            content_type='text/xml; charset=utf-8'
+            )
+
+    @view_config(route_name='checkout_dummy_server.api.settlement')
+    def api_settlement(self):
+        xml, service_settings = self.get_payload()
+        try:
+            settlement_req = parse_settlement_request(xml)
+        except PayloadParseError as e:
+            raise ApiError(e.message, 600)
+
+        orders = settlement_req['orders']
+        out_xml = build_settlement_response(orders, 0, None)
+        return HTTPOk(
+            body=etree.tostring(out_xml, xml_declaration=True, encoding='utf-8'),
+            content_type='text/xml; charset=utf-8'
+            )
+
 
 def errors_for(request, field):
     buf = []
@@ -626,6 +501,7 @@ def register_helpers(event):
 
 def setup_routes(config):
     config.add_route('checkout_dummy_server.stepin', '/myc/cdodl/1.0/stepin')
+    config.add_route('checkout_dummy_server.api.settlement', '/odrctla/fixationorder/1.0/')
     config.add_route('checkout_dummy_server.diag', '/.dummy/diag/')
     config.add_route('checkout_dummy_server.index', '/.dummy/')
 
