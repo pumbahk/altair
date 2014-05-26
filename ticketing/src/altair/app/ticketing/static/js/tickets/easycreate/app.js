@@ -35,7 +35,7 @@ if (!window.app)
                                 function then(){window.appView.models.svg.get("data")});
     }
   };
-
+  
   var SubmitAreaModule = {
     onSubmit: function($form){
       var svg = this.broker.getCurrentSVG()
@@ -119,6 +119,28 @@ if (!window.app)
     }
   };
 
+  var UserHandleAreaModule = {
+    onClickNavigation: function($el){
+      var $prevel = this.$el.find("a.current");
+      var nextUserHandleId = $el.data("toggle").substring(1,$el.data("toggle").length); //lstrip #
+      if($prevel.data("toggle") != nextUserHandleId){
+        $prevel.find(".badge").removeClass("badge-inverse");
+        $prevel.removeClass("current");
+
+        _.each(this.$el.find(".userhandle"), function(e){
+          var $e = $(e);
+          if($e.attr("id") == nextUserHandleId){
+            $e.show();
+          }else {
+            $e.hide();
+          }
+        });
+        $el.find(".badge").addClass("badge-inverse");
+        $el.addClass("current");
+      }
+    }
+  };
+  app.UserHandleAreaModule = UserHandleAreaModule;
   app.ComponentAreaModule = ComponentAreaModule;
   app.SettingAreaModule = SettingAreaModule;
   app.SubmitAreaModule = SubmitAreaModule;
