@@ -430,6 +430,10 @@ class SearchEntryForm(Form):
     )
 
 class SendingMailForm(Form):
+
+    def _get_translations(self):
+        return Translations()
+
     recipient = TextField(
         label=u"送り先メールアドレス",
         validators=[
