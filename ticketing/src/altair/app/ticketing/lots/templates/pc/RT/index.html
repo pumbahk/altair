@@ -205,10 +205,12 @@
                 <td>
                   <div class="form-field">
                     ${form['last_name'].label} ${form['last_name']}
+                     (例：山田)
                     ${self.error(form, 'last_name')}
                   </div>
                   <div class="form-field">
                     ${form['first_name'].label} ${form['first_name']}
+                     (例：太郎)
                     ${self.error(form, 'first_name')}
                   </div>
                 </td>
@@ -217,10 +219,12 @@
                 <td>
                   <div class="form-field">
                     ${form['last_name_kana'].label} ${form['last_name_kana']}
+                     (例：ヤマダ)
                     ${self.error(form, 'last_name_kana')}
                   </div>
                   <div class="form-field">
                     ${form['first_name_kana'].label} ${form['first_name_kana']}
+                     (例：タロウ)
                     ${self.error(form, 'first_name_kana')}
                   </div>
                 </td>
@@ -231,11 +235,13 @@
                   <div class="form-field">
                     ${form['email_1'].label}
                     ${form['email_1']}
+                     (例：mail@example.ne.jp)
                     ${self.error(form, 'email_1')}
                   </div>
                   <div class="form-field">
                     ${form['email_1_confirm'].label}
                     ${form['email_1_confirm']}
+                     (例：mail@example.ne.jp)
                     ${self.error(form, 'email_1_confirm')}
                   </div>
                 </td>
@@ -246,6 +252,7 @@
                   <div class="form-field">
                     ${form['tel_1'].label}
                     ${form['tel_1']}
+                     (例: 080xxxxyyyy)
                     ${self.error(form, 'tel_1')}
                   </div>
                   <div class="form-field">
@@ -262,26 +269,31 @@
                   <div class="form-field">
                     ${form['zip'].label}
                     ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
+                     (例: 1030001)
                     ${self.error(form, 'zip')}
                   </div>
                   <div class="form-field">
                     ${form['prefecture'].label}
                     ${form['prefecture']}
+                     (例: 東京都)
                     ${self.error(form, 'prefecture')}
                   </div>
                   <div class="form-field">
                     ${form['city'].label}
                     ${form['city']}
+                     (例: 中央区)
                     ${self.error(form, 'city')}
                   </div>
                   <div class="form-field">
                     ${form['address_1'].label}
                     ${form['address_1'](style="width: 30em")}
+                     (例: 日本橋x-xx-xx)
                     ${self.error(form, 'address_1')}
                   </div>
                   <div class="form-field">
                     ${form['address_2'].label}
                     ${form['address_2'](style="width: 30em")}
+                     (例: yyビルz階)
                     ${self.error(form, 'address_2')}
                   </div>
                 </td>
