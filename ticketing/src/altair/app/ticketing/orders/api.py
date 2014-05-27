@@ -1242,7 +1242,7 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
     payment_delivery_pair = proto_order.payment_delivery_pair
     for md_item in md_items:
         item_price = md_item.get('price') # ないかも
-        item_quantity = md_item['quantity']
+        item_quantity = int(md_item['quantity'])
         old_item_id = md_item['id']
         product_id = md_item['product_id']
         product = Product.query.filter_by(id=product_id).one()
@@ -1266,7 +1266,7 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
         element_total = 0
         for md_element in md_elements:
             old_element_id = md_element['id']
-            element_quantity = md_element['quantity'] # 0 だと明細削除
+            element_quantity = int(md_element['quantity']) if md_element.get('quantity') else 0 # 0 だと明細削除
             product_item_dict = md_element.get('product_item') # 互換性のため
             element_price = None
             if product_item_dict is None:
