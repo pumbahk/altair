@@ -179,7 +179,7 @@ var StockLockStatus = (function () {
 
     StockLockStatus.set = function (stock, status){
         stock.set('assignable', status);
-        var venue = venueEditorRoot.venueeditor('model');        
+        var venue = venueEditorRoot.venueeditor('model');
         if (venue.perStockSeatSet[stock.id]) {
             venue.perStockSeatSet[stock.id].each(function(seat){
                 if (!seat.get('sold')){
@@ -319,10 +319,10 @@ function makeMultiStocksByStockTypeLockHandler(parent, id){
         lockable.removeClass('fa fa-lock');
         lockable.removeClass('fa fa-unlock');
         lockable.removeClass('fa fa-unlock-alt');
-        lockable.addClass(next_status);
+        lockable.addClass(status);
         lockable.css('color', next_color);
     }
-    
+
     for(key in stocks){
         var stock = stocks[key];
         stock.on('change:assignable', refresh);
