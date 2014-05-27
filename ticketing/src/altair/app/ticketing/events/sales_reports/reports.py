@@ -14,7 +14,7 @@ from datetime import date, timedelta
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import Account, Event, Mailer
 from altair.app.ticketing.core.models import StockType, StockHolder, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
-from altair.app.ticketing.core.models import ReportTypeEnum
+from altair.app.ticketing.core.models import ReportTypeEnum, SalesReportTypeEnum
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
 from altair.app.ticketing.events.sales_reports.forms import SalesReportForm
 
@@ -377,8 +377,8 @@ class SalesDetailReporter(object):
         else:
             logger.error('event_id not found')
             return
-        organization = self.event.organization
-        self.accounts = Account.query.filter(Account.user_id==organization.user_id, Account.organization_id==organization.id).all()
+        self.organization = self.event.organization
+        self.accounts = Account.query.filter(Account.user_id==self.organization.user_id, Account.organization_id==self.organization.id).all()
 
         # レポートデータ生成
         self.create_reports()
@@ -613,6 +613,9 @@ class SalesDetailReporter(object):
                 total.total_paid_quantity += report.total_paid_quantity
                 total.total_sum_amount += (report.total_paid_quantity + report.total_unpaid_quantity) / report.sales_unit * report.product_price
         self.total = total
+
+    def is_simple_type(self):
+        return self.organization.setting.sales_report_type == SalesReportTypeEnum.Simple.v
 
 
 class PerformanceReporter(object):
