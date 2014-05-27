@@ -37,6 +37,8 @@ ${ch.breadcrumbs(
 
 /* description */
   .description-box { padding: 10px;}
+  .descriptioin-area { padding: 12px;}
+  .descriptioin-area .label {font-size: 12px;}
   .userhandle-box { padding: 10px;}
 </style>
 </%block>
@@ -102,8 +104,87 @@ ${getattr(form,attrname).label(class_="required control-label")}
     </div>
     <div id="userhandle1" class="userhandle" style="display:none">
       <div class="descriptioin-area span6 hero-unit">
+<script>
+  $(function() {
+    $('.descriptioin-area [rel=popover]').popover()
+  });
+</script>
+<h4>データ登録時に設定されるもの</h4>
+<span class="label">イベント名
+<span class="help-inline">
+          <a rel="popover" 
+             data-tigger="hover"
+             data-original-title="イベント名"
+             data-animation="false"
+             data-placement="top"
+             data-content="イベントの名前 (例: 楽天・ジャパン・オープン・テニス・チャンピオンシップス2013)">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+</span>
+<span class="label">イベント名略称
+<span class="help-inline">
+          <a rel="popover" 
+             data-tigger="hover"
+             data-original-title="イベント名"
+             data-animation="false"
+             data-placement="top"
+             data-content="イベントの略称 (例: 楽天オープン2013)">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+</span>
+<span class="label">チケット価格</span>
+<span class="label">パフォーマンス名</span>
+<span class="label">公演コード</span>
+<span class="label">公演名備考</span>
+<span class="label">公演名副題</span>
+<span class="label">公演名略称</span>
+<span class="label">会場名</span>
+<span class="label">券種名</span>
+<span class="label">商品価格</span>
+<span class="label">商品名</span>
+<span class="label">商品詳細</span>
+<span class="label">対戦名</span>
+<span class="label">席番</span>
+<span class="label">席種名</span>
+<span class="label">座席詳細</span>
+<span class="label">終了時刻</span>
+<span class="label">終了時刻s</span>
+<span class="label">開催日</span>
+<span class="label">開催日s</span>
+<span class="label">開場時刻</span>
+<span class="label">開場時刻s</span>
+<span class="label">開始時刻</span>
+<span class="label">開始時刻s</span>
+<h4>購入時に設定されるもの</h4>
+<span class="label">予約番号</span>
+<span class="label">住所</span>
+<span class="label">メールアドレス</span>
+<span class="label">予約時補助文言1</span>
+<span class="label">予約時補助文言2</span>
+<span class="label">予約時補助文言3</span>
+<span class="label">受付日時</span>
+<span class="label">受付日時s</span>
+<span class="label">受付番号</span>
+<span class="label">合計枚数</span>
+<span class="label">合計金額</span>
+<span class="label">氏名</span>
+<span class="label">氏名カナ</span>
+<span class="label">電話番号</span>
+<span class="label">注文日時</span>
+<span class="label">注文日時s</span>
+<span class="label">注文番号</span>
+<span class="label">発券日時</span>
+<span class="label">発券日時s</span>
+<span class="label">発券番号</span>
+<h4>zz系<h4>
       </div>
         <div class="description-box span5">
+<h4>3. 券面で印字する文言用のプレースホルダーを追加してください </h4>
+プレースホルダーとは"{{"と"}}"で囲まれたような文字列のことです。
+実際の印刷時には左記の単語の箇所がシステムが保持するデータに置き換えられます。
+(例: {{イベント略称}} => 楽天オープン2014)
           <div class="userhandle-box">
             <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav0">戻る</a>
             <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav2">次へ</a>

@@ -148,3 +148,4 @@ if (!window.app)
   app.SubmitAreaModule = SubmitAreaModule;
   app.BrokerModule = BrokerModule;
 })(window.app);
+
