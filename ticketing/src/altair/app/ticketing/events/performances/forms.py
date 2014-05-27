@@ -9,7 +9,7 @@ from altair.formhelpers.form import OurForm
 from altair.formhelpers.filters import zero_as_none
 from altair.formhelpers.fields import OurIntegerField, DateTimeField, OurGroupedSelectField, OurSelectField
 from altair.formhelpers import replace_ambiguous
-from altair.app.ticketing.core.models import Site, Venue, Performance, PerformanceSetting, Stock
+from altair.app.ticketing.core.models import Site, Venue, Performance, PerformanceSetting, Stock, SalesSegment
 from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.helpers import label_text_for
@@ -154,6 +154,28 @@ class PerformanceForm(OurForm):
     def validate_start_on(form, field):
         if field.data and form.open_on.data and field.data < form.open_on.data:
             raise ValidationError(u'開場日時より過去の日時は入力できません')
+
+        # コンビニ発券開始日時をチェックする
+        if field.data is not None:
+            from altair.app.ticketing.events.sales_segments.forms import validate_issuing_start_at
+            from altair.app.ticketing.events.sales_segments.exceptions import IssuingStartAtOutTermException
+            performance_end_on = form.end_on.data or field.data
+            targets = []
+            if form.id.data:
+                sales_segments = SalesSegment.query.filter_by(performance_id=form.id.data).all()
+                for ss in sales_segments:
+                    end_at = ss.sales_segment_group.end_at if ss.use_default_end_at else ss.end_at
+                    targets.append((end_at, ss.payment_delivery_method_pairs))
+            else:
+                sales_segment_groups = form.context.event.sales_segment_groups
+                for ssg in sales_segment_gruops:
+                    targets.append((ssg.end_at, ssg.payment_delivery_method_pairs))
+            for end_at, pdmps in targets:
+                for pdmp in pdmps:
+                    try:
+                        validate_issuing_start_at(performance_end_on, end_at, pdmp)
+                    except IssuingStartAtOutTermException as e:
+                        raise ValidationError(e.message)
 
     def validate_end_on(form, field):
         if field.data and form.start_on.data and field.data < form.start_on.data:

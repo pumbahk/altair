@@ -169,4 +169,21 @@ class PaymentDeliveryMethodPairForm(Form):
                 if form.special_fee.data > 0:
                     form.special_fee.errors.append(error_message)
                     status = False
+
+            # コンビニ発券開始日時をチェックする
+            if form.id.data:
+                from altair.app.ticketing.events.sales_segments.forms import validate_issuing_start_at
+                from altair.app.ticketing.events.sales_segments.exceptions import IssuingStartAtOutTermException
+                pdmp = PaymentDeliveryMethodPair.query.filter_by(id=form.id.data).one()
+                for ss in pdmp.sales_segments:
+                    performance_end_on = ss.performance.end_on or ss.performance.start_on
+                    end_at = ss.sales_segment_group.end_at if ss.use_default_end_at else ss.end_at
+                    try:
+                        validate_issuing_start_at(performance_end_on, end_at, pdmp, form.issuing_start_at.data, form.issuing_interval_days.data)
+                    except IssuingStartAtOutTermException as e:
+                        if form.issuing_start_at.data:
+                            form.issuing_start_at.errors.append(e.message)
+                        else:
+                            form.issuing_interval_days.errors.append(e.message)
+                        status = False
         return status
