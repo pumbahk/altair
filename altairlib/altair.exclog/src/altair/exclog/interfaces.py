@@ -9,7 +9,7 @@ class IExceptionMessageBuilderFactory(Interface):
         pass
 
 class IExceptionLogger(Interface):
-    def __call__(exc_info, message):
+    def __call__(exc_info, message, extra_info):
         pass
 
 class IExceptionLoggerFactory(Interface):
@@ -17,7 +17,7 @@ class IExceptionLoggerFactory(Interface):
         pass
 
 class IExceptionMessageRenderer(Interface):
-    def __call__(request, exc_info, message):
+    def __call__(request, exc_info, message, extra_info):
         pass
 
 class IExceptionMessageRendererFactory(Interface):
