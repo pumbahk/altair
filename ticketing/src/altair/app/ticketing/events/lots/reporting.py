@@ -105,13 +105,12 @@ class LotEntryReporter(object):
 
 
     def create_report_mail(self, status):
-
         subject = self.subject_prefix + u" " + self.report_setting.lot.name
         body = render_to_response(self.body_template,
                                   dict(lot=self.lot,
                                        lot_status=status))
         return Message(subject=subject,
-                       recipients=[self.report_setting.recipient],
+                       recipients=[self.report_setting.recipient.split(',')],
                        html=body.text,
                        sender=self.sender)
 
