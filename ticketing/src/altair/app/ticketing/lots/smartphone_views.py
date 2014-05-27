@@ -177,7 +177,7 @@ class EntryLotView(object):
     def _create_form(self):
         return api.create_client_form(self.context, self.request)
 
-    @view_config(route_name='lots.entry.index', renderer=selectable_renderer("smartphone/%(membership)s/index.html"), custom_predicates=(nogizaka_auth, ))
+    @view_config(route_name='lots.entry.index', request_method="GET", renderer=selectable_renderer("smartphone/%(membership)s/index.html"), custom_predicates=(nogizaka_auth, ))
     def index(self):
         """
         イベント詳細
@@ -208,9 +208,10 @@ class EntryLotView(object):
                 raise HTTPNotFound()
             self.request.session['lots.passed.keyword'] = keyword
             return self.index()
-        raise HTTPNotFound()
+        else:
+            return self.step1()
 
-    @view_config(route_name='lots.entry.sp_step1', renderer=selectable_renderer("smartphone/%(membership)s/step1.html"), custom_predicates=())
+    @view_config(route_name='lots.entry.sp_step1', renderer=selectable_renderer("smartphone/%(membership)s/step1.html"), custom_predicates=(lambda *args:not is_nogizaka(*args), ))
     def step1(self):
         """
         抽選第N希望まで選択
