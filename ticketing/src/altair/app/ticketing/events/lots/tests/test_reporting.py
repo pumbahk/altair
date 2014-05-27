@@ -279,6 +279,7 @@ class send_lot_report_mailsTests(unittest.TestCase):
         )
         report_setting = LotEntryReportSetting(
             lot=lot,
+            email=u"testing-recipient@example.com",
             frequency=ReportFrequencyEnum.Daily.v[0],
             period=ReportPeriodEnum.Normal.v[0],
             time="1030",
@@ -299,7 +300,25 @@ class send_lot_report_mailsTests(unittest.TestCase):
 
         mailer = get_mailer(request)
         self.assertEqual(len(mailer.outbox), 1)
+        self.assertEqual(len(mailer.outbox[0].recipients), 1)
         self.assertEqual(mailer.outbox[0].subject, u"[抽選申込状況レポート] テスト抽選")
+
+    @mock.patch("altair.app.ticketing.events.lots.reporting.datetime")
+    def test_it_multi(self, mock_dt):
+        mock_dt.now.return_value = datetime(2013, 2, 3, 10, 33)
+        from pyramid_mailer import get_mailer
+        from altair.app.ticketing.events.lots.models import LotEntryReportSetting
+        self._add_lot_entries()
+        rs = self.session.query(LotEntryReportSetting).filter_by(time="1030").one()
+        rs.email = u"testing-recipient@example.com, testing-second@example.com"
+        request = testing.DummyRequest()
+        sender = "testing@example.com"
+
+        self._callFUT(request, sender)
+
+        mailer = get_mailer(request)
+        self.assertEqual(len(mailer.outbox), 1)
+        self.assertEqual(len(mailer.outbox[0].recipients), 2)
 
     @mock.patch("altair.app.ticketing.events.lots.reporting.ReportCondition")
     @mock.patch("altair.app.ticketing.events.lots.reporting.datetime")
