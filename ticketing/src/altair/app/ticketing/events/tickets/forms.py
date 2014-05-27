@@ -102,27 +102,43 @@ class BundleForm(Form):
         choices=[])
 
 
-class EasyCreateChoiceForm(OurForm):
-    def _get_translations(self):
-        return Translations()
+class EasyCreateKindsChoiceForm(OurForm):
+    def configure(self, event_id):
+        self.event_id.choices = [
+            ("", u"基本券面から"), 
+            (unicode(event_id), u"既存の券面から")
+        ]
+        return self
 
+    @property
+    def ticket_kind(self):
+        return self.event_id
+
+    event_id= RadioField(
+        label=u"作成方法",
+        validators=[Optional()],
+        coerce=unicode,
+        choices=[]
+    )
+
+    preview_type = RadioField(
+        label=u"利用目的",
+        validators=[Required()],
+        coerce=unicode,
+        choices=[("default", u"自社発券"), ("sej", u"SEJ発券")]
+    )
+    
+
+class EasyCreateTemplateChoiceForm(OurForm):
     def configure(self, ticket_templates):
         self.templates.choices = [(unicode(t.id),t.name) for t in ticket_templates]
         return self
 
     templates = SelectField(
-        label=u"券面テンプレート",
+        label=u"基本券面",
         validators=[Required()], 
         coerce=unicode, 
         choices=[])
-
-    preview_type = RadioField(
-        label=u"レンダリング方法",
-        validators=[Required()],
-        default="default",
-        coerce=unicode,
-        choices=[("default", u"インナー発券"), ("sej", u"SEJ発券")]
-    )
 
 from altair.app.ticketing.tickets.cleaner.api import get_validated_svg_cleaner
 
@@ -140,11 +156,11 @@ class EasyCreateTemplateUploadForm(OurForm):
     )
 
     preview_type = RadioField(
-        label=u"レンダリング方法",
-        validators=[Required()],
+        label=u"利用目的",
+        validators=[Optional()],
         coerce=unicode,
         default="default",
-        choices=[("default", u"インナー発券"), ("sej", u"SEJ発券")]
+        choices=[("default", u"自社発券"), ("sej", u"SEJ発券")]
     )
 
     ticket_format_id = SelectField(
@@ -167,9 +183,9 @@ class EasyCreateTemplateUploadForm(OurForm):
         )
 
     drawing = HiddenField()
-
-    def configure(self, formats, organization):
-        self.ticket_format_id.choices = [(long(f.id), f.name) for f in formats]
+    def configure(self, organization, ticket=None):
+        if ticket:
+            self.ticket_format_id.choices = [(long(f.id), f.name) for f in [ticket.ticket_format]]
         self.organization = organization
         return self
 

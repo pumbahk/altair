@@ -296,17 +296,14 @@ def easycreate_upload(context, request):
              renderer="altair.app.ticketing:templates/tickets/events/easycreate/index.html")
 def easycreate(context, request):
     event = context.event
-    templates = context.ticket_templates.all()
 
-    sej_format_set = set(context.ticket_sej_formats.all())
-    sej_templates = [t for t in templates if t.ticket_format in sej_format_set]
-
-    choice_form = forms.EasyCreateChoiceForm(request.GET).configure(ticket_templates=templates)
+    choice_form = forms.EasyCreateKindsChoiceForm().configure(event)
+    template_form = forms.EasyCreateTemplateChoiceForm()
     upload_form = forms.EasyCreateTemplateUploadForm()
     return {"choice_form": choice_form,
+            "template_form": template_form,
             "upload_form": upload_form,
             "event": event,
-            "template_candidates": {"default": templates, "sej": sej_templates}
            }
 
 

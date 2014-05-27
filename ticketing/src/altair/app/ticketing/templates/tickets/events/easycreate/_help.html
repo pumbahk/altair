@@ -1,0 +1,110 @@
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/ZeroClipboard.min.js")}"></script>
+<script>
+  $(function() {
+    var r = $(".help-box");
+    r.find('[rel=popover]').popover()
+    ZeroClipboard.config({"moviePath": "${request.static_url("altair.app.ticketing:static/js/ZeroClipboard.swf")}"});
+    r.find('.copy-button').each(function(i,el){new ZeroClipboard(el)});
+
+    $(".sticky-button").on("click", function(){
+      var $el = $(this).parents(".help-box");
+      if($el.hasClass("sticky")){
+        $el.removeClass("sticky");
+        $el.css({"position": "static"});
+      }else {
+        $el.addClass("sticky")
+        $el.css({"position": "fixed"});
+      }
+    });
+  });
+</script>
+
+<div class="help-box">
+<button class="sticky-button">画面にくっつける</button>
+<h4>データ登録時に設定されるもの</h4>
+<%!
+on_settings_help_list = [
+{"name": u"イベント名", "description": u"イベントの名前 (例: 楽天・ジャパン・オープン・テニス・チャンピオンシップス2013)"},
+{"name": u"イベント名略称", "description": u"イベントの略称 (例: 楽天オープン2013)"},
+{"name": u"チケット価格", "description": u""},
+{"name": u"パフォーマンス名", "description": u""},
+{"name": u"公演コード", "description": u""},
+{"name": u"公演名備考", "description": u""},
+{"name": u"公演名副題", "description": u""},
+{"name": u"公演名略称", "description": u""},
+{"name": u"会場名", "description": u""},
+{"name": u"券種名", "description": u""},
+{"name": u"商品価格", "description": u""},
+{"name": u"商品名", "description": u""},
+{"name": u"商品詳細", "description": u""},
+{"name": u"対戦名", "description": u""},
+{"name": u"席番", "description": u""},
+{"name": u"席種名", "description": u""},
+{"name": u"座席詳細", "description": u""},
+{"name": u"終了時刻", "description": u""},
+{"name": u"終了時刻s", "description": u""},
+{"name": u"開催日", "description": u""},
+{"name": u"開催日s", "description": u""},
+{"name": u"開場時刻", "description": u""},
+{"name": u"開場時刻s", "description": u""},
+{"name": u"開始時刻", "description": u""},
+{"name": u"開始時刻s", "description": u""},
+]
+%>
+%for d in on_settings_help_list:
+<span class="label copy-button" data-clipboard-text="{{${d['name']}}}">
+${d["name"]}
+<span class="help-inline">
+          <a rel="popover" 
+             data-tigger="hover"
+             data-original-title="${d['name']}"
+             data-animation="false"
+             data-placement="top"
+             data-content="${d['description']}">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+</span>
+%endfor
+<h4>購入時に設定されるもの</h4>
+<%!
+on_buy_help_list = [
+{"name": u"予約番号", "description":u""},
+{"name": u"住所", "description":u""},
+{"name": u"メールアドレス", "description":u""},
+{"name": u"予約時補助文言1", "description":u""},
+{"name": u"予約時補助文言2", "description":u""},
+{"name": u"予約時補助文言3", "description":u""},
+{"name": u"受付日時", "description":u""},
+{"name": u"受付日時s", "description":u""},
+{"name": u"受付番号", "description":u""},
+{"name": u"合計枚数", "description":u""},
+{"name": u"合計金額", "description":u""},
+{"name": u"氏名", "description":u""},
+{"name": u"氏名カナ", "description":u""},
+{"name": u"電話番号", "description":u""},
+{"name": u"注文日時", "description":u""},
+{"name": u"注文日時s", "description":u""},
+{"name": u"注文番号", "description":u""},
+{"name": u"発券日時", "description":u""},
+{"name": u"発券日時s", "description":u""},
+{"name": u"発券番号", "description":u""},
+]
+%>
+%for d in on_buy_help_list:
+<span class="label copy-button" data-clipboard-text="{{${d['name']}}}">
+${d["name"]}
+<span class="help-inline">
+          <a rel="popover" 
+             data-tigger="hover"
+             data-original-title="${d['name']}"
+             data-animation="false"
+             data-placement="top"
+             data-content="${d['description']}">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+</span>
+%endfor
+<h4>zz系<h4>
+</div>

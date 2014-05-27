@@ -3,6 +3,21 @@ if (!window.app)
 
 (function(app){
   "use strict";
+
+  /* model singleton object ?*/
+  var ticketSelectSourceModel = Object.create(
+    {
+      isEnough: function(){
+        console.log("ok?"+(!!this.templateKind && !! this.previewType).toString());
+        return !!this.templateKind && !! this.previewType;
+      }
+    },
+    {
+      previewType: {value: null, writable: true},
+      eventId: {value: null, writable: true},
+      templateKind: {value: null, writable: true}
+    });
+
   var selectContentTemplate = _.template('<% _.each(iterable, function(d){%><option value="<%= d.pk %>"><%= d.name %></option> <%});%>');
 
   // Module needs: {"submit","setting","component"}
@@ -42,11 +57,11 @@ if (!window.app)
       var params = h.serialize($form);
       var url = $form.attr("action");
       return $.post(url, params)
-      .fail(
-        function(){ this.$el.text("error: url="+url);}.bind(this)
-      ).done(
-        function(data){ this.$el.text(data); }.bind(this)
-      );
+        .fail(
+          function(){ this.$el.text("error: url="+url);}.bind(this)
+        ).done(
+          function(data){ this.$el.text(data); }.bind(this)
+        );
     }
   };
 
@@ -58,6 +73,24 @@ if (!window.app)
       return this.broker.component.onChangeTicketTemplate($el);
     }
   };
+
+  var ChooseAreaModule = {
+    onChangePreviewType: function($el){
+      var m = this.broker.model;
+      m.previewType = $el.val();
+      if(m.isEnough()){
+        return this.broker.component.onChangePreviewType($el);
+      }
+    },
+    onChangeTemplateKind: function($el){
+      var m = this.broker.model;
+      m.eventId = $el.val();
+      m.templateKind = (!!$el.val()) ? "event" : "base"
+      if(m.isEnough()){
+        return this.broker.component.onChangePreviewType($el); //xxx:
+      }
+    }
+  }
 
   // Module needs {$el, broker,loadcomponent_url, gettingsvg_url, gettingformat_url, gettingtemplate_url, select_template"}
   var ComponentAreaModule = {
@@ -142,7 +175,11 @@ if (!window.app)
       $($el.data("toggle")).click();
     }
   };
+
+  app.ticketSelectSourceModel = ticketSelectSourceModel;
+
   app.UserHandleAreaModule = UserHandleAreaModule;
+  app.ChooseAreaModule = ChooseAreaModule;
   app.ComponentAreaModule = ComponentAreaModule;
   app.SettingAreaModule = SettingAreaModule;
   app.SubmitAreaModule = SubmitAreaModule;
