@@ -6,7 +6,7 @@
   need_total = form.need_total.data
 %>
 
-<h3 style="margin-top: 30px;">${performance.name}　開催日: ${vh.datetime(performance.start_on)}</h3>
+<h3 style="margin-top: 30px;">${performance.name}　開催日: ${vh.datetime(performance.start_on, with_weekday=True)}</h3>
 <%
   sales_segments = performance_reporter.sort_index()
   if not (form.is_detail_report() and len(sales_segments) <= 1):

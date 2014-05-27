@@ -49,7 +49,7 @@
   </tr>
   <tr>
     <td>${record.title}</td>
-    <td>${vh.datetime(record.sales_start_day)} 〜 ${vh.datetime(record.sales_end_day)}</td>
+    <td>${vh.datetime(record.sales_start_day, with_weekday=True)} 〜 ${vh.datetime(record.sales_end_day, with_weekday=True)}</td>
     <td class="numeric">${vh.number(record.stock_quantity)}</td>
     <td class="numeric">${vh.number(record.vacant_quantity)}</td>
     <td class="numeric">${vh.number(record.total_order_quantity)}</td>

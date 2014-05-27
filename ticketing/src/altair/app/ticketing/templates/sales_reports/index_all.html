@@ -50,9 +50,9 @@
   <tr>
     <td><a href='javascript:event_link("${request.route_path("sales_reports.event", event_id=record.id)}");'>${record.title}</a></td>
     % if record.sales_start_day == record.sales_end_day:
-    <td>${vh.datetime(record.sales_start_day)}</td>
+    <td>${vh.datetime(record.sales_start_day, with_weekday=True)}</td>
     % else:
-    <td>${vh.datetime(record.sales_start_day)} 〜 ${vh.datetime(record.sales_end_day)}</td>
+    <td>${vh.datetime(record.sales_start_day, with_weekday=True)} 〜 ${vh.datetime(record.sales_end_day, with_weekday=True)}</td>
     % endif
     <td class="numeric">${vh.number(record.stock_quantity)}</td>
     <td class="numeric">${vh.number(record.vacant_quantity)}</td>
