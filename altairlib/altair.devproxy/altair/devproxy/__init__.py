@@ -31,6 +31,7 @@ SUBDOMAINS = [
     'duojapan',
     'popcircus',
     'sc',
+    'jubilo',
     ]
 
 class MyProxy(proxy.Proxy):
@@ -39,7 +40,7 @@ class MyProxy(proxy.Proxy):
 
     def create_prerewrite_patterns(self, real_apphost):
         return [
-        (r'http://api.ticket.rakuten.co.jp/rid/rc/http/stg/([^/]+)(/.+)?/(verify.*)', 
+        (r'http://api.ticket.rakuten.co.jp/rid/rc/http/stg/([^/]+)(/.+)?/(verify.*)',
          r'http://\1.stg2.rt.ticketstar.jp\2/\3'),
         ]
 
@@ -47,7 +48,7 @@ class MyProxy(proxy.Proxy):
         return [
             (r'http://backend.stg2.rt.ticketstar.jp(/qrreader(?:/.*)?)',
              r'http://{hostname}:8030\1'.format(hostname=real_apphost)),
-            (r'http://backend.stg2.rt.ticketstar.jp(/.*)?', 
+            (r'http://backend.stg2.rt.ticketstar.jp(/.*)?',
              r'http://{hostname}:8021\1'.format(hostname=real_apphost)),
             (r'http://cms.stg2.rt.ticketstar.jp(/.*)?',
              r'http://{hostname}:8001\1'.format(hostname=real_apphost)),
@@ -63,7 +64,7 @@ class MyProxy(proxy.Proxy):
         proxy.Proxy.__init__(self, *args, **kwargs)
         app_settings = self.config.settings["app"]
         real_apphost = app_settings.hostname or "localhost"
-        
+
         self.prerewrite_patterns = self.create_prerewrite_patterns(real_apphost)
         self.rewrite_patterns = self.create_rewrite_patters(real_apphost)
 
@@ -158,7 +159,7 @@ subdomains =
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l', '--log', dest='log', type=str, 
+    parser.add_argument('-l', '--log', dest='log', type=str,
                         help='access log')
     parser.add_argument("-c", "--configfile", dest="configfile", type=str)
     parser.add_argument('address', type=str,
