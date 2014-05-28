@@ -305,6 +305,77 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         self.assertEqual(modified_order.items[0].elements[0].quantity, 1)
         self.assertTrue(set(modified_order.items[0].elements[0].seats) < set(order.items[0].elements[0].seats))
 
+    def test_removal_with_zero_quantity(self):
+        from altair.app.ticketing.orders.models import Order
+        order = self._create_order([
+            (self.products[0], 2),
+            (self.products[1], 1),
+            ],
+            self.sales_segment,
+            self.payment_delivery_method_pairs[0]
+            )
+        self.session.add(order)
+        self.session.flush()
+        self.assertEqual(len(order.items), 2)
+        self.assertEqual(order.items[0].quantity, 2)
+        self.assertEqual(len(order.items[0].elements), 1)
+        self.assertEqual(order.items[0].elements[0].quantity, 2)
+        self.assertEqual(len(order.items[0].elements[0].seats), 2)
+        modify_data = {
+            'performance_id': self.performance.id,
+            'sales_segment_id': self.sales_segment.id,
+            'transaction_fee': 0,
+            'delivery_fee': 0,
+            'system_fee': 0,
+            'special_fee': None,
+            'total_amount': self.products[0].price * 1,
+            'items': [
+                {
+                    'id': order.items[0].id,
+                    'product_id': order.items[0].product_id,
+                    'quantity': 1,
+                    'price': order.items[0].price,
+                    'elements': [
+                        {
+                            'id': order.items[0].elements[0].id,
+                            'product_item_id': order.items[0].elements[0].product_item.id,
+                            'quantity': 1,
+                            'price': order.items[0].elements[0].price,
+                            'seats': [
+                                {
+                                    'id': order.items[0].elements[0].seats[0].l0_id
+                                    },
+                                ],
+                            }
+                        ]
+                    },
+                {
+                    'id': order.items[1].id,
+                    'product_id': order.items[1].product_id,
+                    'quantity': 0,
+                    'price': order.items[1].price,
+                    'elements': [
+                        {
+                            'id': order.items[1].elements[0].id,
+                            'product_item_id': order.items[1].elements[0].product_item.id,
+                            'quantity': 1,
+                            'price': order.items[1].elements[0].price,
+                            }
+                        ]
+                    }
+                ]
+            }
+        modified_order, warnings = self._callFUT(self.request, order, modify_data)
+        self.assertTrue(len(warnings) == 0)
+        self.assertTrue(self._refresh_order.called_with_arguments(modified_order))
+        self.assertEqual(modified_order.order_no, order.order_no)
+        self.assertEqual(modified_order.branch_no, order.branch_no + 1)
+        self.assertEqual(len(modified_order.items), 1)
+        self.assertEqual(modified_order.items[0].quantity, 1)
+        self.assertEqual(len(modified_order.items[0].elements), 1)
+        self.assertEqual(modified_order.items[0].elements[0].quantity, 1)
+        self.assertTrue(set(modified_order.items[0].elements[0].seats) < set(order.items[0].elements[0].seats))
+
     def test_appending(self):
         from altair.app.ticketing.core.models import SeatStatusEnum
         from altair.app.ticketing.orders.models import Order
