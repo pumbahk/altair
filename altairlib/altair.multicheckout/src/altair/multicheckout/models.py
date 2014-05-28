@@ -295,21 +295,23 @@ class MultiCheckoutOrderStatus(Base, WithTimestamp):
 
 
     @classmethod
-    def get_or_create(cls, order_no, storecd):
-        s = _session.query(cls).filter(
+    def get_or_create(cls, order_no, storecd, session=None):
+        if session is None:
+            session = _session
+        s = session.query(cls).filter(
                 cls.OrderNo==order_no
             ).filter(
                 cls.Storecd==storecd
             ).first()
         if not s:
             s = cls(OrderNo=order_no, Storecd=storecd, Summary=u"")
-            _session.add(s)
+            session.add(s)
         return s
 
 
     @classmethod
-    def set_status(cls, order_no, storecd, status, amount, summary):
-        s = cls.get_or_create(order_no, storecd)
+    def set_status(cls, order_no, storecd, status, amount, summary, session=None):
+        s = cls.get_or_create(order_no, storecd, session)
         if s.Status != status:
             s.Status = status
             if amount is not None:
@@ -317,8 +319,8 @@ class MultiCheckoutOrderStatus(Base, WithTimestamp):
             s.Summary = (s.Summary or u"") + "\n" + summary
 
     @classmethod
-    def keep_auth(cls, order_no, storecd, name):
-        s = cls.get_or_create(order_no, storecd)
+    def keep_auth(cls, order_no, storecd, name, session=None):
+        s = cls.get_or_create(order_no, storecd, session)
         s.KeepAuthFor = name
 
     @classmethod
