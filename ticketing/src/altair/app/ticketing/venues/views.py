@@ -249,8 +249,6 @@ def download(request):
         .filter(Stock.deleted_at == None) \
         .filter(StockHolder.deleted_at == None) \
         .filter(StockType.deleted_at == None) \
-        .filter(OrderedProductItem.deleted_at == None) \
-        .filter(OrderedProduct.deleted_at == None) \
         .order_by(asc(Seat.id), desc(Order.id))
     seats_csv = SeatCSV(seats_q)
 
