@@ -48,7 +48,9 @@ class SeatCSV(object):
         ('order_no', u'予約番号'),
     ])
 
-    def __init__(self, seats):
+    excluded_order_statuses = ['canceled']
+
+    def __init__(self, seat_order_pairs):
         self.header = self.seat_header.values()\
                     + self.stock_attribute_header.values()\
                     + self.stock_type_header.values()\
@@ -56,43 +58,56 @@ class SeatCSV(object):
                     + self.account_header.values()\
                     + self.seat_status_header.values()
         self.header = [column.encode('cp932') for column in self.header]
-        self.rows = [self._convert_to_csv(seat) for seat in seats]
+        self.seat_order_pairs = seat_order_pairs
+        self.seat_rendered = set()
 
-    def get_row_data(self, header, data):
-        data = record_to_multidict(data)
-        return [(label, data.get(column)) for column, label in header.items()]
+    def _convert_to_csv(self, seat_order_pair):
+        seat, order = seat_order_pair
 
-    def add_row_data(self, header, data):
-        self.row_data += self.get_row_data(header, data)
+        valid_order = order and (order.deleted_at is None) and order.status not in self.excluded_order_statuses
+        if (not valid_order) and (seat.id in self.seat_rendered):
+            return None
 
-    def _convert_to_csv(self, seat):
-        self.row_data = []
+        row_data = []
+        def get_row_data(header, data):
+            data = record_to_multidict(data)
+            return [(label, data.get(column)) for column, label in header.items()]
 
-        self.add_row_data(self.seat_header, seat)
+        def add_row_data(header, data):
+            row_data.extend(get_row_data(header, data))
+
+        add_row_data(self.seat_header, seat)
         if seat.stock.stock_type:
-            self.add_row_data(self.stock_type_header, seat.stock.stock_type)
+            add_row_data(self.stock_type_header, seat.stock.stock_type)
         if seat.stock.stock_holder:
-            self.add_row_data(self.stock_holder_header, seat.stock.stock_holder)
+            add_row_data(self.stock_holder_header, seat.stock.stock_holder)
             if seat.stock.stock_holder.account:
-                self.add_row_data(self.account_header, seat.stock.stock_holder.account)
+                add_row_data(self.account_header, seat.stock.stock_holder.account)
 
         for k, v in seat.attributes.items():
             if k in self.stock_attribute_header:
                 label = self.stock_attribute_header.get(k)
-                self.row_data.append((label, v))
+                row_data.append((label, v))
 
         for status in SeatStatusEnum:
             if status.v == seat.status:
                 label = self.seat_status_header.get('status')
-                self.row_data.append((label, status.k))
+                row_data.append((label, status.k))
                 break
-        if seat.ordered_product_items:
-            for opi in seat.ordered_product_items:
-                if opi.ordered_product.order.status not in ('canceled'):
-                    label = self.seat_status_header.get('order_no')
-                    self.row_data.append((label, opi.ordered_product.order.order_no))
-                    break
+
+        if valid_order:
+            label = self.seat_status_header.get('order_no')
+            row_data.append((label, order.order_no))
+
+        self.seat_rendered.add(seat.id)
 
         # encoding
-        row = dict(self.row_data)
+        row = dict(row_data)
         return encode_to_cp932(row)
+
+    @property
+    def rows(self):
+        for seat_order_pair in self.seat_order_pairs:
+            retval = self._convert_to_csv(seat_order_pair)
+            if retval is not None:
+                yield retval
