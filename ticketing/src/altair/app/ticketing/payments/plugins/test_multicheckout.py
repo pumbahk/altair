@@ -13,7 +13,6 @@ def _setup_test_db():
         'altair.app.ticketing.core.models',
         'altair.app.ticketing.cart.models',
         'altair.app.ticketing.orders.models',
-        'altair.multicheckout.models',
         ])
     from altair.app.ticketing.core.models import Host, Organization, OrganizationSetting
     org = Organization(short_name='TEST')
@@ -392,11 +391,16 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         self.config.add_route('payment.secure3d', '/payment.secure3d')
         self._register_dummy_card_brand_detector()
         self.session = _setup_test_db()
-
+        from altair.multicheckout import models as mc_models
+        mc_models._session.remove()
+        mc_models.Base.metadata.create_all()
 
     def tearDown(self):
         testing.tearDown()
         _teardown_db()
+        from altair.multicheckout import models as mc_models
+        mc_models._session.remove()
+        mc_models.Base.metadata.drop_all()
         import transaction
         transaction.abort()
 
