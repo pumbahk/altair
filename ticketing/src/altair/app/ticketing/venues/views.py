@@ -20,6 +20,8 @@ from sqlalchemy.sql import exists, join, func, or_, not_
 from sqlalchemy.sql.expression import asc, desc
 from sqlalchemy.orm import joinedload, noload, aliased, undefer
 
+from altair.sqlahelper import get_db_session
+
 from altair.pyramid_assets import get_resolver
 from altair.pyramid_assets.data import DataSchemeAssetDescriptor
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
@@ -231,7 +233,27 @@ def download(request):
     ]
     response = Response(headers=headers)
 
-    seats_csv = SeatCSV(venue.seats)
+    slave_session = get_db_session(request, 'slave')
+    from altair.app.ticketing.orders.models import OrderedProductItem, OrderedProduct, Order
+    seats_q = slave_session.query(Seat, Order) \
+        .outerjoin(Seat.status_) \
+        .outerjoin(Seat.attributes_) \
+        .outerjoin(Seat.stock) \
+        .outerjoin(Stock.stock_holder) \
+        .outerjoin(Stock.stock_type) \
+        .outerjoin(Seat.ordered_product_items) \
+        .outerjoin(OrderedProductItem.ordered_product) \
+        .outerjoin(OrderedProduct.order) \
+        .filter(Seat.venue_id == venue.id) \
+        .filter(Seat.deleted_at == None) \
+        .filter(Stock.deleted_at == None) \
+        .filter(StockHolder.deleted_at == None) \
+        .filter(StockType.deleted_at == None) \
+        .filter(OrderedProductItem.deleted_at == None) \
+        .filter(OrderedProduct.deleted_at == None) \
+        .filter(Order.deleted_at == None) \
+        .order_by(asc(Seat.id), desc(Order.id))
+    seats_csv = SeatCSV(seats_q)
 
     writer = csv.DictWriter(response, seats_csv.header, delimiter=',', quoting=csv.QUOTE_ALL)
     writer.writeheader()
