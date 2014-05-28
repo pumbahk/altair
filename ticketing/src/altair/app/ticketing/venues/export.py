@@ -64,7 +64,7 @@ class SeatCSV(object):
     def _convert_to_csv(self, seat_order_pair):
         seat, order = seat_order_pair
 
-        valid_order = order and order.status not in self.excluded_order_statuses
+        valid_order = order and (order.deleted_at is None) and order.status not in self.excluded_order_statuses
         if (not valid_order) and (seat.id in self.seat_rendered):
             return None
 

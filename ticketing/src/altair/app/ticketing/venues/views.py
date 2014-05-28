@@ -235,7 +235,7 @@ def download(request):
 
     slave_session = get_db_session(request, 'slave')
     from altair.app.ticketing.orders.models import OrderedProductItem, OrderedProduct, Order
-    seats_q = slave_session.query(Seat, Order) \
+    seats_q = slave_session.query(Seat, Order, include_deleted=True) \
         .outerjoin(Seat.status_) \
         .outerjoin(Seat.attributes_) \
         .outerjoin(Seat.stock) \
@@ -251,7 +251,6 @@ def download(request):
         .filter(StockType.deleted_at == None) \
         .filter(OrderedProductItem.deleted_at == None) \
         .filter(OrderedProduct.deleted_at == None) \
-        .filter(Order.deleted_at == None) \
         .order_by(asc(Seat.id), desc(Order.id))
     seats_csv = SeatCSV(seats_q)
 
