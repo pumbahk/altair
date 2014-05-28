@@ -373,7 +373,7 @@ class Performances(BaseView):
 
     @view_config(route_name='performances.new', request_method='POST', renderer='altair.app.ticketing:templates/performances/edit.html')
     def new_post(self):
-        f = PerformanceForm(self.request.POST, organization_id=self.context.user.organization_id)
+        f = PerformanceForm(self.request.POST, organization_id=self.context.user.organization_id, event=self.context.event)
         if f.validate():
             performance = merge_session_with_post(
                 Performance(
@@ -444,6 +444,7 @@ class Performances(BaseView):
         f = PerformanceForm(
             self.request.POST,
             organization_id=self.context.user.organization_id,
+            event=self.context.event,
             venue_id=performance.venue.id
             )
         if f.validate():

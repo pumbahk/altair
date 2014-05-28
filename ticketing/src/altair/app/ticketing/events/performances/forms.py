@@ -19,6 +19,11 @@ PREFECTURE_ORDER = { u'北海道': 1, u'青森県': 2, u'岩手県': 3, u'宮城
 class PerformanceForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         super(PerformanceForm, self).__init__(formdata, obj, prefix, **kwargs)
+
+        self.event = None
+        if 'event' in kwargs:
+            self.event = kwargs['event']
+
         if 'organization_id' in kwargs:
             venue_by_pref = dict()
             venues = Venue.query.join(Site).filter(
@@ -167,8 +172,8 @@ class PerformanceForm(OurForm):
                     end_at = ss.sales_segment_group.end_at if ss.use_default_end_at else ss.end_at
                     targets.append((end_at, ss.payment_delivery_method_pairs))
             else:
-                sales_segment_groups = form.context.event.sales_segment_groups
-                for ssg in sales_segment_gruops:
+                sales_segment_groups = form.event.sales_segment_groups
+                for ssg in sales_segment_groups:
                     targets.append((ssg.end_at, ssg.payment_delivery_method_pairs))
             for end_at, pdmps in targets:
                 for pdmp in pdmps:
