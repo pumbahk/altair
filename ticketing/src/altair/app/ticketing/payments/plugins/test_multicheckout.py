@@ -693,13 +693,13 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         )
         dummy_cart.finish = lambda: None
 
-        self.session.add(mc_models.MultiCheckoutOrderStatus(
+        mc_models._session.add(mc_models.MultiCheckoutOrderStatus(
             OrderNo=dummy_cart.order_no,
             Storecd=get_multicheckout_impl.return_value.shop_code,
             Status='110',
             KeepAuthFor='something_good'
             ))
-        self.session.flush()
+        mc_models._session.flush()
 
         session_order = {
             'client_name': u'楽天太郎',
