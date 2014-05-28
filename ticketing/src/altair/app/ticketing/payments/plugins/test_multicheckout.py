@@ -9,7 +9,12 @@ from altair.multicheckout.impl import Checkout3D
 import mock
 
 def _setup_test_db():
-    session = _setup_db(['altair.app.ticketing.core.models'])
+    session = _setup_db([
+        'altair.app.ticketing.core.models',
+        'altair.app.ticketing.cart.models',
+        'altair.app.ticketing.orders.models',
+        'altair.multicheckout.models',
+        ])
     from altair.app.ticketing.core.models import Host, Organization, OrganizationSetting
     org = Organization(short_name='TEST')
     host = Host(host_name='example.com:80')
@@ -413,7 +418,86 @@ class MultiCheckoutPluginTests(unittest.TestCase):
     @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_sales')
     @mock.patch('altair.multicheckout.api.get_multicheckout_impl')
     @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.save_api_response')
-    def test_finish(self, save_api_response, get_multicheckout_impl, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
+    def test_finish_success(self, save_api_response, get_multicheckout_impl, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
+        from .. import api as p_api
+        from altair.multicheckout import models as mc_models
+        from altair.app.ticketing.cart import models as cart_models
+        from altair.app.ticketing.core import models as core_models
+        get_multicheckout_impl.return_value = Checkout3D(
+            auth_id='auth_id',
+            auth_password='password',
+            shop_code='000000',
+            api_base_url='http://example.com/',
+            api_timeout=90,
+            )
+        request_card_sales.return_value = mc_models.MultiCheckoutResponseCard(
+            CmnErrorCd='000000'
+            )
+        request_card_cancel_auth.return_value = mc_models.MultiCheckoutResponseCard(
+            CmnErrorCd='000000'
+            )
+        create_from_cart.return_value = testing.DummyModel()
+
+        self.config.registry.settings['cart.item_name'] = u'楽天チケット'
+        self.config.registry.settings['altair_cart.expire_time'] = 15
+        cart_id = 500
+        dummy_cart = cart_models.Cart(
+            id=cart_id,
+            performance=core_models.Performance(id=100, name=u'テスト公演'),
+            products=[],
+            is_expired=lambda self, *args: False,
+            finished_at=None,
+            _order_no='000000000000',
+            shipping_address=core_models.ShippingAddress(),
+            has_different_amount=False,
+            payment_delivery_pair=core_models.PaymentDeliveryMethodPair()
+        )
+
+        session_order = {
+            'client_name': u'楽天太郎',
+            'email_1': u'ticketstar@example.com',
+            'card_number': u'XXXXXXXXXXXXXXXX',
+            'exp_year': '12',
+            'exp_month': '06',
+            'card_holder_name': u'RAKUTEN TAROU',
+            'order_no': '000000000000',
+            'pares': '*pares*',
+            'md': '*md*',
+            'tran': {
+                'mvn': '*tran*',
+                'xid': '*xid*',
+                'ts': '*ts*',
+                'eci': '*eci*',
+                'cavv': '*cavv*',
+                'cavv_algorithm': '*cavv_algorithm*',
+                },
+            }
+        params = {
+            'PaRes': 'this-is-pa-res',
+            'MD': 'this-is-md',
+        }
+        request = DummyRequest(
+            params=params,
+            _cart=dummy_cart,
+            session=DummySession(order=session_order)
+            )
+
+        target = self._makeOne()
+
+        try:
+            target.finish(request, dummy_cart)
+            self.assertTrue(True)
+        except Exception as e:
+            self.fail()
+        self.assertFalse(request_card_cancel_auth.called)
+
+    @mock.patch('transaction._transaction.Transaction.commit')
+    @mock.patch('altair.app.ticketing.orders.models.Order.create_from_cart')
+    @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_cancel_auth')
+    @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_sales')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_impl')
+    @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.save_api_response')
+    def test_finish_fail(self, save_api_response, get_multicheckout_impl, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
         from .. import api as p_api
         from altair.multicheckout import models as mc_models
         get_multicheckout_impl.return_value = Checkout3D(
@@ -484,3 +568,172 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         with self.assertRaises(MultiCheckoutSettlementFailure) as m:
             target.finish(request, dummy_cart)
         self.assertEqual(m.exception.error_code, '000001')
+        self.assertTrue(request_card_cancel_auth.called)
+
+    @mock.patch('transaction._transaction.Transaction.commit')
+    @mock.patch('altair.app.ticketing.orders.models.Order.create_from_cart')
+    @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_cancel_auth')
+    @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_sales')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_impl')
+    @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.save_api_response')
+    def test_finish_api_fail(self, save_api_response, get_multicheckout_impl, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
+        from .. import api as p_api
+        from altair.multicheckout import models as mc_models
+        get_multicheckout_impl.return_value = Checkout3D(
+            auth_id='auth_id',
+            auth_password='password',
+            shop_code='000000',
+            api_base_url='http://example.com/',
+            api_timeout=90,
+            )
+        def raise_api_exception(*args, **kwargs):
+            from altair.multicheckout.exceptions import MultiCheckoutAPIError
+            raise MultiCheckoutAPIError('oops')
+        request_card_sales.side_effect = raise_api_exception
+        request_card_cancel_auth.return_value = mc_models.MultiCheckoutResponseCard(
+            CmnErrorCd='000000'
+            )
+        create_from_cart.return_value = testing.DummyModel()
+
+        self.config.registry.settings['cart.item_name'] = u'楽天チケット'
+        self.config.registry.settings['altair_cart.expire_time'] = 15
+        cart_id = 500
+        dummy_cart = testing.DummyModel(
+            id=cart_id,
+            name=u"9999999999",
+            total_amount=1234,
+            performance=testing.DummyModel(id=100, name=u'テスト公演'),
+            products=[],
+            is_expired=lambda self, *args: False,
+            finished_at=None,
+            order_no='000000000000',
+            shipping_address=testing.DummyModel(),
+            has_different_amount=False,
+            payment_delivery_pair=testing.DummyModel(id=1),
+        )
+        dummy_cart.finish = lambda: None
+
+        session_order = {
+            'client_name': u'楽天太郎',
+            'email_1': u'ticketstar@example.com',
+            'card_number': u'XXXXXXXXXXXXXXXX',
+            'exp_year': '12',
+            'exp_month': '06',
+            'card_holder_name': u'RAKUTEN TAROU',
+            'order_no': '000000000000',
+            'pares': '*pares*',
+            'md': '*md*',
+            'tran': {
+                'mvn': '*tran*',
+                'xid': '*xid*',
+                'ts': '*ts*',
+                'eci': '*eci*',
+                'cavv': '*cavv*',
+                'cavv_algorithm': '*cavv_algorithm*',
+                },
+            }
+        params = {
+            'PaRes': 'this-is-pa-res',
+            'MD': 'this-is-md',
+        }
+        request = DummyRequest(
+            params=params,
+            _cart=dummy_cart,
+            session=DummySession(order=session_order)
+            )
+
+        target = self._makeOne()
+
+        from multicheckout import MultiCheckoutSettlementFailure
+        with self.assertRaises(MultiCheckoutSettlementFailure) as m:
+            target.finish(request, dummy_cart)
+        self.assertEqual(m.exception.error_code, None)
+        self.assertTrue(request_card_cancel_auth.called)
+
+    @mock.patch('transaction._transaction.Transaction.commit')
+    @mock.patch('altair.app.ticketing.orders.models.Order.create_from_cart')
+    @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_cancel_auth')
+    @mock.patch('altair.multicheckout.impl.Checkout3D.request_card_sales')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_impl')
+    @mock.patch('altair.multicheckout.api.Multicheckout3DAPI.save_api_response')
+    def test_finish_api_fail_keep_auth(self, save_api_response, get_multicheckout_impl, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
+        from .. import api as p_api
+        from altair.multicheckout import models as mc_models
+        get_multicheckout_impl.return_value = Checkout3D(
+            auth_id='auth_id',
+            auth_password='password',
+            shop_code='000000',
+            api_base_url='http://example.com/',
+            api_timeout=90,
+            )
+        def raise_api_exception(*args, **kwargs):
+            from altair.multicheckout.exceptions import MultiCheckoutAPIError
+            raise MultiCheckoutAPIError('oops')
+        request_card_sales.side_effect = raise_api_exception
+        request_card_cancel_auth.return_value = mc_models.MultiCheckoutResponseCard(
+            CmnErrorCd='000000'
+            )
+        create_from_cart.return_value = testing.DummyModel()
+
+        self.config.registry.settings['cart.item_name'] = u'楽天チケット'
+        self.config.registry.settings['altair_cart.expire_time'] = 15
+        cart_id = 500
+        dummy_cart = testing.DummyModel(
+            id=cart_id,
+            name=u"9999999999",
+            total_amount=1234,
+            performance=testing.DummyModel(id=100, name=u'テスト公演'),
+            products=[],
+            is_expired=lambda self, *args: False,
+            finished_at=None,
+            order_no='000000000000',
+            shipping_address=testing.DummyModel(),
+            has_different_amount=False,
+            payment_delivery_pair=testing.DummyModel(id=1),
+        )
+        dummy_cart.finish = lambda: None
+
+        self.session.add(mc_models.MultiCheckoutOrderStatus(
+            OrderNo=dummy_cart.order_no,
+            Storecd=get_multicheckout_impl.return_value.shop_code,
+            Status='110',
+            KeepAuthFor='something_good'
+            ))
+        self.session.flush()
+
+        session_order = {
+            'client_name': u'楽天太郎',
+            'email_1': u'ticketstar@example.com',
+            'card_number': u'XXXXXXXXXXXXXXXX',
+            'exp_year': '12',
+            'exp_month': '06',
+            'card_holder_name': u'RAKUTEN TAROU',
+            'order_no': '000000000000',
+            'pares': '*pares*',
+            'md': '*md*',
+            'tran': {
+                'mvn': '*tran*',
+                'xid': '*xid*',
+                'ts': '*ts*',
+                'eci': '*eci*',
+                'cavv': '*cavv*',
+                'cavv_algorithm': '*cavv_algorithm*',
+                },
+            }
+        params = {
+            'PaRes': 'this-is-pa-res',
+            'MD': 'this-is-md',
+        }
+        request = DummyRequest(
+            params=params,
+            _cart=dummy_cart,
+            session=DummySession(order=session_order)
+            )
+
+        target = self._makeOne()
+
+        from multicheckout import MultiCheckoutSettlementFailure
+        with self.assertRaises(MultiCheckoutSettlementFailure) as m:
+            target.finish(request, dummy_cart)
+        self.assertEqual(m.exception.error_code, None)
+        self.assertFalse(request_card_cancel_auth.called)

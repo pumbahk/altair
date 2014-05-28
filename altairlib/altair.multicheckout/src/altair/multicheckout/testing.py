@@ -1,10 +1,11 @@
 from pyramid import testing
 
 class DummyCheckout3D(object):
-    def __init__(self, CmnErrorCd=u'000000', ErrorCd=u'000000', RetCd=u''):
+    def __init__(self, CmnErrorCd=u'000000', ErrorCd=u'000000', RetCd=u'', shop_code=u'00000000'):
         self.CmnErrorCd = CmnErrorCd
         self.ErrorCd = ErrorCd
         self.RetCd = RetCd
+        self.shop_code = shop_code
 
     def secure3d_enrol(self, response_factory, order_no, enrol):
         resp = response_factory.create_secure3d_req_enrol_response()
@@ -22,6 +23,8 @@ class DummyCheckout3D(object):
         resp = response_factory.create_multicheckout_response_card()
         resp.OrderNo = order_no
         resp.CmnErrorCd = self.CmnErrorCd
+        resp.Storecd = self.shop_code
+        resp.Status = u'110'
         self.last_params = dict((k, getattr(params, k)) for k in dir(params))
         return resp
 
@@ -29,18 +32,24 @@ class DummyCheckout3D(object):
         resp = response_factory.create_multicheckout_response_card()
         resp.OrderNo = order_no
         resp.CmnErrorCd = self.CmnErrorCd
+        resp.Storecd = self.shop_code
+        resp.Status = u'110'
         return resp
 
     def request_card_cancel_auth(self, response_factory, order_no):
         resp = response_factory.create_multicheckout_response_card()
         resp.OrderNo = order_no
         resp.CmnErrorCd = self.CmnErrorCd
+        resp.Storecd = self.shop_code
+        resp.Status = u'100'
         return resp
 
     def request_card_sales_part_cancel(self, response_factory, order_no, params):
         resp = response_factory.create_multicheckout_response_card()
         resp.OrderNo = order_no
         resp.CmnErrorCd = self.CmnErrorCd
+        resp.Storecd = self.shop_code
+        resp.Status = u'130'
         self.last_params = dict((k, getattr(params, k)) for k in dir(params))
         return resp
 
@@ -48,12 +57,15 @@ class DummyCheckout3D(object):
         resp = response_factory.create_multicheckout_response_card()
         resp.OrderNo = order_no
         resp.CmnErrorCd = self.CmnErrorCd
+        resp.Storecd = self.shop_code
+        resp.Status = u'100'
         return resp
 
     def request_card_inquiry(self, response_factory, order_no):
         resp = response_factory.create_multicheckout_inquiry_response_card()
         resp.OrderNo = order_no
         resp.CmnErrorCd = self.CmnErrorCd
+        resp.Storecd = self.shop_code
         return resp
 
 

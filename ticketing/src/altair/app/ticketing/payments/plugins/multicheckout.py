@@ -242,11 +242,8 @@ class MultiCheckoutPlugin(object):
                     message='uncaught exception',
                     order_no=order_like.order_no,
                     back_url=back_url(request))
-            if amount_to_cancel != 0:
-                ## 抽選特有の事情により、キャンセルは管理画面から行う
-                pass
-            else:
-                multicheckout_api.checkout_auth_cancel(mc_order_no)
+            # KeepAuthFor が MultiCheckoutOrderStatus に設定されていると、実際にはオーソリキャンセルは行われない
+            multicheckout_api.checkout_auth_cancel(mc_order_no)
             raise e
 
         return checkout_sales_result
