@@ -1243,6 +1243,9 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
     for md_item in md_items:
         item_price = md_item.get('price') # ないかも
         item_quantity = int(md_item['quantity'])
+        if item_quantity == 0:
+            # 0 なら商品削除っぽい
+            continue
         old_item_id = md_item['id']
         product_id = md_item['product_id']
         product = Product.query.filter_by(id=product_id).one()
