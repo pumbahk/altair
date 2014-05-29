@@ -43,6 +43,12 @@ preview.ApplicationView = Backbone.View.extend({
             this.models.params.changePreviewType(preview_type);
             this.models.svg.updateToRaw(svg);
         }
+    },
+    getVarsValues: function(){
+      return this.models.vars.collectVarsValues();
+    },
+    getSVGData: function(){
+      return this.models.svg.get("data");
     }
 });
 

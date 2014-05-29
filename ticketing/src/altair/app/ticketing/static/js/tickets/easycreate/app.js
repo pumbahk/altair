@@ -37,6 +37,7 @@ if (!window.app)
             r[k] = v;
           }
         });
+        //r.fill_mapping = JSON.stringify(r.fill_mapping);
         return r;
       }
     },
@@ -46,7 +47,8 @@ if (!window.app)
       template_kind: {value: "default", writable:true, enumerable:true},
       cover_print: {value: false, writable:true, enumerable:true},
       base_template_id: {value: null, writable:true, enumerable:true},
-      drawing: {value: "", writable:true, enumerable:true}
+      drawing: {value: "", writable:true, enumerable:true},
+      fill_mapping: {value: "{}", writable:true, enumerable:true},
     }
   );
 
@@ -76,7 +78,11 @@ if (!window.app)
     },
     getCurrentSVG: function(){
       //xxxx global variable: this variable create after loading component
-      return window.appView.models.svg.get("data");
+      return window.appView.getSVGData();
+    },
+    getCurrentVarsValues: function(){
+      //xxxx global variable: this variable create after loading component
+      return window.appView.getVarsValues();
     }
   };
 
@@ -91,9 +97,13 @@ if (!window.app)
 
     onSubmit: function($form){
       var src = this.broker.models.source;
-      this.broker.models.submit.preview_type = src.previewType;
-      this.broker.models.submit.template_kind = src.templateKind;
-      this.broker.models.submit.drawing = this.broker.getCurrentSVG();
+
+      var m = this.broker.models.submit;
+      m.preview_type = src.previewType;
+      m.template_kind = src.templateKind;
+      m.drawing = this.broker.getCurrentSVG();
+      m.fill_mapping = JSON.stringify(this.broker.getCurrentVarsValues());
+
       var params = this.broker.models.submit.collect();
       var url = $form.attr("action");
       return $.post(url, params)

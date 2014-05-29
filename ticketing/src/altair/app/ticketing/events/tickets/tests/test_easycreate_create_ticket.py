@@ -38,18 +38,19 @@ class EasyCreateTicketTests(unittest.TestCase):
         from altair.app.ticketing.events.tickets.forms import EasyCreateTemplateUploadForm
         return EasyCreateTemplateUploadForm(request.POST).configure(event, base_ticket)
 
-    def _makeRequest(self, base_template_id, name="anything name", drawing="", cover_print=False):
+    def _makeRequest(self, base_template_id, name="anything name", drawing="", fill_mapping="{}", cover_print=False):
         from altair.app.ticketing.testing import DummyRequest
         return DummyRequest(POST=dict(
             base_template_id=base_template_id,
             cover_print=cover_print,
             name=name,
             preview_type="default",
-            template_kind="base", 
-            drawing=drawing
+            template_kind="base",
+            drawing=drawing,
+            fill_mapping=fill_mapping
         ))
 
-    def test_defaults_values(self):
+    def test_defaults_values__are_set__after_callFUT(self):
         template_id = 10
 
         event = self._makeEvent(event_id=1)
@@ -57,20 +58,24 @@ class EasyCreateTicketTests(unittest.TestCase):
         request = self._makeRequest(template_id, drawing=self.sample_svg)
         form = self._makeForm(request, base_ticket, event)
 
-        form.validate()
-        print(form.errors)
+        self.assertTrue(form.validate())
+
         result = self._callFUT(form, base_ticket)
 
         self.assertTrue(result.always_reissueable)
         self.assertTrue(result.priced)
         self.assertEqual(result.organization, event.organization)
 
-    def test_form_values(self):
+    def test_form_values__are_set__after_callFUT(self):
         template_id = 10
 
         event = self._makeEvent(event_id=1)
         base_ticket = self._makeBaseTicket(event.organization, template_id, ticket_format_id=100)
-        request = self._makeRequest(template_id, name="*new ticket*", drawing=self.sample_svg, cover_print=True)
+        request = self._makeRequest(template_id,
+                                    name="*new ticket*", 
+                                    fill_mapping=u'{"oneline": "this is test"}', 
+                                    drawing=self.sample_svg,
+                                    cover_print=True)
         form = self._makeForm(request, base_ticket, event)
 
         self.assertTrue(form.validate())
@@ -83,3 +88,4 @@ class EasyCreateTicketTests(unittest.TestCase):
         self.assertEqual(result.event_id, 1)
 
         self.assertEqual(normalize(result.data["drawing"]), normalize(self.sample_svg))
+        self.assertEqual(result.data["fill_mapping"], {"oneline": "this is test"})

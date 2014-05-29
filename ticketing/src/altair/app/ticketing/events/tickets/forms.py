@@ -183,6 +183,7 @@ class EasyCreateTemplateUploadForm(OurForm):
         )
 
     drawing = HiddenField()
+    fill_mapping = HiddenField()
     event_id = HiddenField()
 
     def configure(self, event, ticket=None):
@@ -201,8 +202,12 @@ class EasyCreateTemplateUploadForm(OurForm):
             cleaner = get_validated_svg_cleaner(svgio, exc_class=ValidationError,  sej=self.data["preview_type"] == "sej")
             self.data_value = {
                 "drawing": cleaner.get_cleaned_svgio().getvalue(), 
+                "fill_mapping": json.loads(self.fill_mapping.data), 
                 "vars_defaults": cleaner.vars_defaults
             }
+        except ValueError as e:
+            self.name.errors = list(self.drawing.errors or ()) + [unicode(e)]
+            self.data_value = {"drawing": None}
         except ValidationError as e:
             self.name.errors = list(self.drawing.errors or ()) + [unicode(e)]
             self.data_value = {"drawing": None}

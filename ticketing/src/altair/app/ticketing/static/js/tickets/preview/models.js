@@ -163,11 +163,15 @@ if (!window.preview)
             if(this.get("vars").length <= 0){
                 return this.trigger("*vars.commit.vars", {});
             }
+            var vars_values = this.collectVarsValues();
+            return this.trigger("*vars.commit.vars",  var_values);
+        },
+        collectVarsValues: function(){
             var var_values = {};
             _(this.get("vars").models).each(function(m){
                 var_values[m.get("name")] = m.get("value");
             });
-            return this.trigger("*vars.commit.vars",  var_values);
+          return var_values;
         }
     });
 })(window.preview);
