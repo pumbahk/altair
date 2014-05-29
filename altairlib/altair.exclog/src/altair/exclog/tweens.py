@@ -1,3 +1,5 @@
+import sys
+import traceback
 from pyramid.settings import asbool
 from pyramid.httpexceptions import HTTPInternalServerError, WSGIHTTPException
 
@@ -23,10 +25,15 @@ class ExcLogTween(object):
         except self.ignored:
             raise
         except:
-            exc_info, message = self.message_builder(request)
-            self.exc_logger(exc_info, message)
-            if self.response_renderer:
-                return self.response_renderer(request, exc_info, message)
+            try:
+                exc_info, message, extra_info = self.message_builder(request)
+                self.exc_logger(exc_info, message, extra_info)
+                if self.response_renderer:
+                    return self.response_renderer(request, exc_info, message, extra_info)
+            except Exception as e:
+                # the last resort...
+                traceback.print_exc(file=sys.stderr)
+                raise
             return HTTPInternalServerError()
 
     def filter_environ(self, environ):

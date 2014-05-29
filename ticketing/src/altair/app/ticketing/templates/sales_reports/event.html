@@ -42,14 +42,14 @@
     <th style="width: 24%;">販売期間</th>
     <th style="width: 6%;">配席数</th>
     <th style="width: 6%;">残席数</th>
-    <th style="width: 6%;">販売枚数</th>
-    <th style="width: 6%;">販売金額</th>
-    <th style="width: 6%;">販売枚数</th>
-    <th style="width: 6%;">販売金額</th>
+    <th style="width: 6%;">受付数</th>
+    <th style="width: 6%;">受付金額</th>
+    <th style="width: 6%;">受付数</th>
+    <th style="width: 6%;">受付金額</th>
   </tr>
   <tr>
     <td>${record.title}</td>
-    <td>${vh.datetime(record.sales_start_day)} 〜 ${vh.datetime(record.sales_end_day)}</td>
+    <td>${vh.datetime(record.sales_start_day, with_weekday=True)} 〜 ${vh.datetime(record.sales_end_day, with_weekday=True)}</td>
     <td class="numeric">${vh.number(record.stock_quantity)}</td>
     <td class="numeric">${vh.number(record.vacant_quantity)}</td>
     <td class="numeric">${vh.number(record.total_order_quantity)}</td>

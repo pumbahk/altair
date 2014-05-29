@@ -25,7 +25,7 @@
     </tr>
     <tr>
       <th>カート生成日時</th>
-      <td>${vh.datetime(cart.created_at)}</td>
+      <td>${vh.datetime(cart.created_at, with_weekday=True)}</td>
     </tr>
     <tr>
       <th>browserid</th>
@@ -158,4 +158,3 @@
     });
   });
 </script>
-

@@ -14,7 +14,7 @@ from datetime import date, timedelta
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import Account, Event, Mailer
 from altair.app.ticketing.core.models import StockType, StockHolder, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
-from altair.app.ticketing.core.models import ReportTypeEnum
+from altair.app.ticketing.core.models import ReportTypeEnum, ReportSetting, SalesReportTypeEnum
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
 from altair.app.ticketing.events.sales_reports.forms import SalesReportForm
 
@@ -130,6 +130,22 @@ class SalesTotalReporter(object):
 
         if self.form.event_title.data:
             query = query.filter(Event.title.like('%' + self.form.event_title.data + '%'))
+
+        if self.form.recipient.data:
+            email_pattern = '%{}%'.format(self.form.recipient.data)
+            event_rs = aliased(ReportSetting, name='ReportSetting_event')
+            performance_rs = aliased(ReportSetting, name='ReportSetting_performance')
+            query = query.outerjoin(event_rs, and_(
+                event_rs.event_id==Event.id,
+                event_rs.email.like(email_pattern),
+                event_rs.deleted_at==None
+            )).outerjoin(performance_rs, and_(
+                performance_rs.performance_id==Performance.id,
+                performance_rs.email.like(email_pattern),
+                performance_rs.deleted_at==None
+            )).filter(
+                or_(event_rs.id!=None, performance_rs.id!=None)
+            )
 
         query = self._create_range_where(query, self.form.event_from.data, self.form.event_to.data, \
             Performance.start_on, Performance.end_on)
@@ -377,8 +393,8 @@ class SalesDetailReporter(object):
         else:
             logger.error('event_id not found')
             return
-        organization = self.event.organization
-        self.accounts = Account.query.filter(Account.user_id==organization.user_id, Account.organization_id==organization.id).all()
+        self.organization = self.event.organization
+        self.accounts = Account.query.filter(Account.user_id==self.organization.user_id, Account.organization_id==self.organization.id).all()
 
         # レポートデータ生成
         self.create_reports()
@@ -613,6 +629,9 @@ class SalesDetailReporter(object):
                 total.total_paid_quantity += report.total_paid_quantity
                 total.total_sum_amount += (report.total_paid_quantity + report.total_unpaid_quantity) / report.sales_unit * report.product_price
         self.total = total
+
+    def is_simple_type(self):
+        return self.organization.setting.sales_report_type == SalesReportTypeEnum.Simple.v
 
 
 class PerformanceReporter(object):

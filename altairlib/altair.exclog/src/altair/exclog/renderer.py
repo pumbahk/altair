@@ -13,7 +13,7 @@ class BasicExceptionMessageRenderer(object):
     def __init__(self, show_traceback):
         self.show_traceback = show_traceback
 
-    def __call__(self, request, exc_info, message):
+    def __call__(self, request, exc_info, message, extra_info):
         if self.show_traceback:
             out = StringIO.StringIO()
             out.write(message + "\n")

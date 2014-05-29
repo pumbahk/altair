@@ -38,13 +38,13 @@ def get_prefecture_name(area):
 
 def get_prefecture(area):
     areas = {
-        '1':['chiba','tokyo','kanagawa']
+        '1':['chiba','tokyo','kanagawa','saitama','yamanashi']
         ,'2':['shiga','kyoto','osaka','hyogo','nara','wakayama']
         ,'3':['gifu','aichi','mie','shizuoka']
         ,'4':['hokkaido']
         ,'5':['aomori', 'iwate', 'akita', 'miyagi', 'yamagata', 'fukushima']
-        ,'6':['ibaraki','tochigi','gunma','saitama']
-        ,'7':['niigata','yamanashi','nagano']
+        ,'6':['ibaraki','tochigi','gunma']
+        ,'7':['niigata','nagano']
         ,'8':['toyama','ishikawa','fukui']
         ,'9':['tottori','shimane','okayama','hiroshima','yamaguchi']
         ,'10':['tokushima','kagawa','ehime','kouchi']

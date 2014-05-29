@@ -7,10 +7,10 @@ from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, TextAreaField
 from wtforms.widgets import CheckboxInput
 from wtforms.validators import Regexp, Length, Optional, ValidationError
-from wtforms.validators import Optional, AnyOf, Length, Email, Regexp, NumberRange
+from wtforms.validators import Optional, AnyOf, Length, Regexp, NumberRange
 
 from altair.formhelpers import (
-    DateTimeField, Translations, Required, DateField, Max, OurDateWidget,
+    DateTimeField, Translations, Required, DateField, Max, OurDateWidget, Email,
     after1900, CheckboxMultipleSelect, BugFreeSelectMultipleField,
     NFKC, Zenkaku, Katakana, strip_spaces, ignore_space_hyphen,
     LazySelectMultipleField,
@@ -430,6 +430,10 @@ class SearchEntryForm(Form):
     )
 
 class SendingMailForm(Form):
+
+    def _get_translations(self):
+        return Translations()
+
     recipient = TextField(
         label=u"送り先メールアドレス",
         validators=[

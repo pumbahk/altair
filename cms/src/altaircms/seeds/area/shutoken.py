@@ -5,4 +5,5 @@ SHUTOKEN_CHOICES = [
     ("chiba", u'千葉県'),
     ("tokyo", u'東京都'),
     ("kanagawa", u'神奈川県'),
+    ("yamanashi", u'山梨県'),
 ]

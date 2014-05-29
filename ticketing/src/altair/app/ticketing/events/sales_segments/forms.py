@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import logging
+from datetime import timedelta
+
 from wtforms import Form
 from wtforms import TextField, TextAreaField, SelectField, HiddenField, IntegerField, BooleanField, SelectMultipleField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, NumberRange
@@ -28,14 +31,38 @@ from altair.app.ticketing.core.models import (
     SalesSegment,
     SalesSegmentSetting,
     Account,
+    Performance
     )
 from altair.app.ticketing.loyalty.models import PointGrantSetting, SalesSegment_PointGrantSetting
 from altair.app.ticketing.events.sales_segment_groups.forms import UPPER_LIMIT_OF_MAX_QUANTITY
+from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 
 from .resources import ISalesSegmentAdminResource
+from .exceptions import IssuingStartAtOutTermException
 from zope.interface import providedBy
 
 propagation_attrs = ('margin_ratio', 'refund_ratio', 'printing_fee', 'registration_fee', 'reporting')
+
+logger = logging.getLogger(__name__)
+
+
+def validate_issuing_start_at(performance_end_on, sales_segment_end_at, pdmp, issuing_start_at=None, issuing_interval_days=None):
+    # 公演終了日 < コンビニ発券開始日時 とならないこと
+    if issuing_start_at is None:
+        issuing_start_at = pdmp.issuing_start_at
+    if issuing_interval_days is None:
+        issuing_interval_days = pdmp.issuing_interval_days
+    if issuing_start_at is None:
+        issuing_start_at = sales_segment_end_at + timedelta(days=issuing_interval_days)
+        issuing_start_at = issuing_start_at.replace(hour=0, minute=0, second=0)
+    # 複数日にまたがる公演のケースがあるので公演終了日で算出
+    logger.debug('performance_end_on={}, issuing_start_at={}'.format(performance_end_on, issuing_start_at))
+    delivery_plugin_id = pdmp.delivery_method.delivery_plugin_id
+    if delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID and performance_end_on < issuing_start_at:
+        pdmp_name = u'{0} - {1}'.format(pdmp.payment_method.name, pdmp.delivery_method.name)
+        message = u'決済引取方法「{}」のコンビニ発券開始日時が公演終了日時より後になる可能性があります'.format(pdmp_name)
+        raise IssuingStartAtOutTermException(message)
+
 
 class SalesSegmentForm(OurForm):
     def _get_translations(self):
@@ -86,7 +113,7 @@ class SalesSegmentForm(OurForm):
         widget=CheckboxInput()
     )
     disp_orderreview = OurBooleanField(
-        label=u'一般チケットの購入履歴表示/非表示',
+        label=u'マイページへの購入履歴表示/非表示',
         default=True,
         widget=CheckboxInput()
     )
@@ -309,14 +336,30 @@ class SalesSegmentForm(OurForm):
     )
 
     def _validate_terms(self):
-        start_at = self.start_at.data
-        end_at = self.end_at.data
+        ssg = SalesSegmentGroup.query.filter_by(id=self.sales_segment_group_id.data).one()
+        start_at = ssg.start_at if self.use_default_start_at.data else self.start_at.data
+        end_at = ssg.end_at if self.use_default_end_at.data else self.end_at.data
 
         # 販売開始日時と販売終了日時の前後関係をチェックする
         if start_at is not None and end_at is not None and start_at > end_at:
             self.start_at.errors.append(u'販売開始日時が販売終了日時より後に設定されています')
             self.end_at.errors.append(u'販売終了日時が販売開始日時より前に設定されています')
             return False
+
+        # コンビニ発券開始日時をチェックする
+        if end_at is not None:
+            performance = Performance.get(self.performance_id.data, self.context.organization.id)
+            performance_end_on = performance.end_on or performance.start_on
+            pdmps = self.context.sales_segment_group.payment_delivery_method_pairs
+            if not self.use_default_payment_delivery_method_pairs.data:
+                pdmps = [x for x in pdmps if x.id in self.payment_delivery_method_pairs.data]
+            for pdmp in pdmps:
+                try:
+                    validate_issuing_start_at(performance_end_on, end_at, pdmp)
+                except IssuingStartAtOutTermException as e:
+                    self.end_at.errors.append(e.message)
+                    return False
+
         return True
 
     def _validate_performance_terms(self):

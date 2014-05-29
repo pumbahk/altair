@@ -47,7 +47,7 @@ def send_refund_file(session):
         _session.commit()
     logging.info('end send_refund_file batch')
 
-def send_refund_file_with_proxy(session):
+def send_refund_file_with_proxy(session=None):
     ''' 払戻ファイルをプロキシ経由でSEJへ送信
     '''
     parser = argparse.ArgumentParser()
@@ -57,6 +57,9 @@ def send_refund_file_with_proxy(session):
     setup_logging(args.config)
     env = bootstrap(args.config)
     settings = env['registry'].settings
+
+    if session is None:
+        session = _session
 
     logging.info('start send_refund_file_with_proxy batch')
     try:

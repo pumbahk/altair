@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import TextField, PasswordField, HiddenField
-from wtforms.validators import Regexp, Email, Length, EqualTo, Optional, ValidationError
+from wtforms.validators import Regexp, Length, EqualTo, Optional, ValidationError
 from wtforms import Form
 
-from altair.formhelpers import Translations, Required, ASCII, halfwidth
+from altair.formhelpers import Translations, Required, ASCII, halfwidth, Email
 from altair.app.ticketing.operators.models import Operator, OperatorAuth
 
 class LoginForm(Form):

@@ -12,7 +12,7 @@
       <th width="8%">公演コード</th>
       <td width="12%">${performance.code}</td>
       <th width="8%">開場</th>
-      <td width="12%">${vh.datetime(performance.open_on)}</td>
+      <td width="12%">${vh.datetime(performance.open_on, with_weekday=True)}</td>
     </tr>
     <tr>
       <th>公演名副題</th>
@@ -22,7 +22,7 @@
       <th>公演名備考</th>
       <td>${performance.note or u""}</td>
       <th>開演</th>
-      <td>${vh.datetime(performance.start_on)}</td>
+      <td>${vh.datetime(performance.start_on, with_weekday=True)}</td>
     </tr>
 % if expanded:
     <tr>
@@ -69,4 +69,3 @@
   </tfoot>
 % endif
 </table>
-

@@ -4,10 +4,10 @@
 <script type="text/javascript">
   $(function() {
     $("#btn-report-sold-seats").click(function(){
-      modal = $('#modal-report');  
+      modal = $('#modal-report');
       modal.find('form select[name="report_type"]').val("sold");
       modal.modal("show");
-    });      
+    });
     $("#btn-report-event-stocks").click(function() {
       modal = $('#modal-report');
       modal.find('form select[name="report_type"]').val('stock');
@@ -123,7 +123,7 @@
                 <input class="performance" type="checkbox" name="performance_id" value="${performance.id}" checked="checked" />
               </td>
               <td>
-                ${vh.datetime(performance.start_on)}
+                ${vh.datetime(performance.start_on, with_weekday=True)}
               </td>
               <td>
                 <span>${vh.truncate_eaw(performance.name, 40)}</span><br/>
