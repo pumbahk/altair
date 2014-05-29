@@ -1,4 +1,5 @@
 import unittest
+import mock
 from pyramid import testing
 
 class DummyEntry(object):
@@ -18,6 +19,14 @@ class DummyLot(testing.DummyModel):
         self.called.append('finish_lotting')
 
 class LotCloseTests(unittest.TestCase):
+    def setUp(self):
+        config = testing.setUp()
+        self.subscriber = mock.Mock()
+        config.add_subscriber(self.subscriber, 'altair.app.ticketing.lots.events.LotClosedEvent')
+
+    def tearDown(self):
+        testing.tearDown()
+
     def _getTarget(self):
         from .. import closing
         return closing.LotCloser
@@ -35,9 +44,11 @@ class LotCloseTests(unittest.TestCase):
     def test_one(self):
         entry = DummyEntry(entry_no="testing-entry-no")
         lot = DummyLot(id=989898989, remained_entries=[entry])
-        target = self._makeOne(lot, None)
+        request = testing.DummyRequest()
+        target = self._makeOne(lot, request)
 
         target.close()
 
         self.assertEqual(entry.called, ["close"])
         self.assertEqual(lot.called, ["finish_lotting"])
+        self.assertTrue(self.subscriber.called)
