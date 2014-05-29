@@ -34,6 +34,7 @@ ${ch.breadcrumbs(
 /* hero-unit */
   .hero-unit { padding: 24px;}
   .setting-area { padding: 12px;}
+  .listing-area { padding: 12px;}
 
 /* message */
   .message { display: block; margin-left: 30px; position: absolute; top: 45px; left: 350px; z-index: 10; }
@@ -131,6 +132,7 @@ ${getattr(form,attrname).label(class_="required control-label")}
         ${checkbox_group_list(upload_form, ["cover_print"])}
         ${ch.form_item(upload_form.drawing)}
         <input type="submit" value="券面を作成"/>
+       </form>
       </div>
         <div class="submit-box span5">
           <div class="userhandle-box">
@@ -141,9 +143,11 @@ ${getattr(form,attrname).label(class_="required control-label")}
     </div>
     <div id="userhandle3" class="userhandle" style="display:none">
         <div class="listing-area hero-unit span5">
-        </form>
+           <ul id="listing-ticket">
+           </ul>
         </div>
-        <div class="description-box span5">
+        <div class="description-box span6">
+          <p>現在登録されているチケット券面の一覧です</p>
           <div class="userhandle-box">
             <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav3">戻る</a>
           </div>
@@ -163,6 +167,7 @@ app.BrokerData = {
   component: {value: null, writable: true},
   setting: {value: null, writable: true},
   submit: {value: null, writable: true},
+  listing: {value: null, writable: true},
   models: {value: {source: app.ticketSelectSourceModel, submit: app.submitParamatersModel}} 
 }
 app.broker = Object.create(app.BrokerModule, app.BrokerData);
@@ -198,15 +203,22 @@ $(function(){
     $el: {value: $(".submit-area"), writable: false}
   }
 
+  app.ListingAreaData = {
+    broker: {value: app.broker},
+    $el: {value: $(".listing-area"), writable: false}
+  }
+
   app.userhandle = Object.create(app.UserHandleAreaModule,app.UserHandleAreaData);
   app.choose = Object.create(app.ChooseAreaModule, app.ChooseAreaData);
   app.setting = Object.create(app.SettingAreaModule, app.SettingAreaData);
   app.submit = Object.create(app.SubmitAreaModule, app.SubmitAreaData);
+  app.listing = Object.create(app.ListingAreaModule, app.ListingAreaData);
   app.component = Object.create(app.ComponentAreaModule, app.ComponentAreaData);
 
   app.broker.choose = app.choose;
   app.broker.setting = app.setting;
   app.broker.submit = app.submit;
+  app.broker.listing = app.listing;
   app.broker.component = app.component;
 
   // binding observer event

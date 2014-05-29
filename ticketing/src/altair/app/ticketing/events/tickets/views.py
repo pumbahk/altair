@@ -371,13 +371,18 @@ def getting_ticket_template_data(context, request):
     if event_id:
         assert unicode(context.event.id) == unicode(event_id)
         tickets = context.tickets
+        genurl = lambda t: request.route_path("events.tickets.boundtickets.show", event_id=context.event.id, id=t.id)
     else:
         tickets = context.ticket_templates
+        genurl = lambda t: request.route_path("tickets.templates.show", id=t.id)
     if preview_type == "sej":
         tickets = context.filter_sej_ticket_templates(tickets)
     else:
         tickets = context.filter_something_else_ticket_templates(tickets)
-    return {"iterable": [{"pk": t.id, "name": t.name, "checked": False} for t in tickets]}
+    return {
+        "iterable": [{"pk": t.id, "name": t.name, "checked": False} for t in tickets],
+        "tickets": [{"name": t.name, "url": genurl(t)} for t in tickets]
+    }
 
 
 @view_config(route_name="events.tickets.easycreate.gettingformat",renderer="json")

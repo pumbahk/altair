@@ -23,6 +23,9 @@ if (!window.app)
     });
 
   var selectContentTemplate = _.template('<% _.each(iterable, function(d){%><option value="<%= d.pk %>"><%= d.name %></option> <%});%>');
+  var listingTicketTemplate = _.template([
+    '<% _.each(tickets, function(d){%><li><a target="_blank" href="<%= d.url %>"><%= d.name %></a></li><%});%>'
+  ].join("\n"));
 
   var submitParamatersModel = Object.create(
     {
@@ -65,6 +68,9 @@ if (!window.app)
                          function then(){
                            $select.change();
                          });
+    },
+    onNewTicketsList: function(data){
+      this.listing.onNewTicketsList(data);
     },
     onNewSVGData: function(data){
       //xxxx global variable: this variable create after loading component
@@ -146,6 +152,14 @@ if (!window.app)
     }
   }
 
+  var ListingAreaModule = {
+    onNewTicketsList: function(data){
+      var $wrapper = this.$el.find("ul#listing-ticket");
+      var html = listingTicketTemplate({"tickets": data.tickets});
+      $wrapper.html(html);
+    }
+  }
+
   // Module needs {$el, broker,loadcomponent_url, gettingsvg_url, gettingformat_url, gettingtemplate_url, select_template"}
   var ComponentAreaModule = {
     onChangePreviewType: function($el){
@@ -187,6 +201,7 @@ if (!window.app)
       ).done(
         function(data){ 
           this.broker.onTicketTemplateSelectElementUpdate(selectContentTemplate({"iterable": data.iterable}));
+          this.broker.onNewTicketsList(data);
         }.bind(this)
       );
     },
@@ -239,6 +254,7 @@ if (!window.app)
   app.ComponentAreaModule = ComponentAreaModule;
   app.SettingAreaModule = SettingAreaModule;
   app.SubmitAreaModule = SubmitAreaModule;
+  app.ListingAreaModule = ListingAreaModule;
   app.BrokerModule = BrokerModule;
 })(window.app);
 
