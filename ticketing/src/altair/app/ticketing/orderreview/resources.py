@@ -59,8 +59,7 @@ class OrderReviewResource(object):
         order = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
             join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
             filter(Order.organization_id==self.organization_id). \
-            filter(Order.order_no==order_no). \
-            filter(SalesSegmentSetting.disp_orderreview==True).first()
+            filter(Order.order_no==order_no).first()
         logger.info("organization_id=%s, order_no=%s, order=%s" % (self.organization_id, order_no, order))
         sej_order = None
         if order:
@@ -84,6 +83,7 @@ class OrderReviewResource(object):
         return shipping_address
 
     def get_orders(self, user, page, per):
+        #disp_orderreviewは、マイページに表示するかしないかのフラグとなった
         orders = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
             join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
             filter(Order.organization_id==self.organization_id). \

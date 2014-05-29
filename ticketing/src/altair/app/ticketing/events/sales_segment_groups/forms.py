@@ -176,7 +176,7 @@ class SalesSegmentGroupForm(OurForm):
         hide_on_new=True
     )
     disp_orderreview = OurBooleanField(
-        label=u'一般チケットの購入履歴の表示/非表示',
+        label=u'マイページへの購入履歴表示/非表示',
         hide_on_new=True
     )
     disp_agreement = OurBooleanField(

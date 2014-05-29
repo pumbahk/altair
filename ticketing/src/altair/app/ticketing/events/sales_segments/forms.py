@@ -113,7 +113,7 @@ class SalesSegmentForm(OurForm):
         widget=CheckboxInput()
     )
     disp_orderreview = OurBooleanField(
-        label=u'一般チケットの購入履歴表示/非表示',
+        label=u'マイページへの購入履歴表示/非表示',
         default=True,
         widget=CheckboxInput()
     )

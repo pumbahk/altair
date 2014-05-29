@@ -3480,7 +3480,7 @@ class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted,
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'))
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
     disp_orderreview = AnnotatedColumn(Boolean, default=True,
-                                  _a_label=_(u'一般チケットの購入履歴表示／非表示'))
+                                  _a_label=_(u'マイページへの購入履歴表示／非表示'))
     disp_agreement = AnnotatedColumn(Boolean, default=True, _a_label=_(u'規約の表示／非表示'))
     agreement_body = AnnotatedColumn(UnicodeText, _a_label=_(u"規約内容"), default=u"")
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
@@ -3501,7 +3501,7 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'))
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
     disp_orderreview = AnnotatedColumn(Boolean, default=True,
-                                  _a_label=_(u'一般チケットの購入履歴表示／非表示'))
+                                  _a_label=_(u'マイページへの購入履歴表示／非表示'))
     disp_agreement = AnnotatedColumn(Boolean, default=True, _a_label=_(u'規約の表示／非表示'))
     agreement_body = AnnotatedColumn(UnicodeText, _a_label=_(u"規約内容"), default=u"")
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
