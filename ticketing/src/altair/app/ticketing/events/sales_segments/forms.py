@@ -337,8 +337,13 @@ class SalesSegmentForm(OurForm):
 
     def _validate_terms(self):
         ssg = SalesSegmentGroup.query.filter_by(id=self.sales_segment_group_id.data).one()
-        start_at = ssg.start_at if self.use_default_start_at.data else self.start_at.data
-        end_at = ssg.end_at if self.use_default_end_at.data else self.end_at.data
+        performance = Performance.get(self.performance_id.data, self.context.organization.id)
+        start_at = self.start_at.data
+        if self.use_default_start_at.data:
+            start_at = ssg.start_for_performance(performance)
+        end_at = self.end_at.data
+        if self.use_default_end_at.data:
+            end_at = ssg.end_for_performance(performance)
 
         # 販売開始日時と販売終了日時の前後関係をチェックする
         if start_at is not None and end_at is not None and start_at > end_at:
@@ -348,7 +353,6 @@ class SalesSegmentForm(OurForm):
 
         # コンビニ発券開始日時をチェックする
         if end_at is not None:
-            performance = Performance.get(self.performance_id.data, self.context.organization.id)
             performance_end_on = performance.end_on or performance.start_on
             pdmps = self.context.sales_segment_group.payment_delivery_method_pairs
             if not self.use_default_payment_delivery_method_pairs.data:
