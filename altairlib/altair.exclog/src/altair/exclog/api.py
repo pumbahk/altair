@@ -15,7 +15,7 @@ def render_exception_message(request, exc_info, message):
     else:
         return HTTPInternalServerError()
 
-def log_exception_message(request, exc_info, message):
+def log_exception_message(request, exc_info, message, extra_info):
     logger = request.registry.queryUtility(IExceptionLogger)
     if logger:
-        logger(exc_info, message)
+        logger(exc_info, message, extra_info)
