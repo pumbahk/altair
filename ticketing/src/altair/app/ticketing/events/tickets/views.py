@@ -284,22 +284,29 @@ def easycreate_upload(context, request):
     if base_ticket is None:
         raise HTTPBadRequest("base ticket is not found")
 
-    upload_form = forms.EasyCreateTemplateUploadForm(request.POST).configure(context.organization, base_ticket)
+    upload_form = forms.EasyCreateTemplateUploadForm(request.POST).configure(context.event, base_ticket)
     if upload_form.validate():
-        data = upload_form.data
-        ticket_template = Ticket(name=data["name"],
-                                 ticket_format_id=data["ticket_format_id"],
-                                 data=upload_form.data_value,
-                                 always_reissueable=data["always_reissueable"],
-                                 priced=data["priced"],
-                                 cover_print=data["cover_print"],
-                                 filename="upload.svg",  # xxx:
-                                 organization_id=event.organization.id,
-                                 event_id=event.id)
+        ticket_template = create_ticket_from_form(upload_form, base_ticket)
         ticket_template.save()  # flush and DBSession.add(o)
         return dict(status="ok")
     else:
         return dict(status="ng", errors=upload_form.errors)
+
+
+def create_ticket_from_form(form, base_ticket):  # xxx: todo: move to anywhere
+    ticket = Ticket(
+        always_reissueable=base_ticket.always_reissueable, 
+        priced=base_ticket.priced, 
+        filename="uploaded.svg", 
+        organization=base_ticket.organization, 
+    )
+    formdata = form.data
+    ticket.name = formdata["name"]
+    ticket.ticket_format_id = formdata["ticket_format_id"]
+    ticket.data = form.data_value
+    ticket.cover_print = formdata["cover_print"]
+    ticket.event_id = formdata["event_id"]
+    return ticket
 
 
 @view_config(route_name="events.tickets.easycreate", request_method="GET",
@@ -316,7 +323,6 @@ def easycreate(context, request):
             "upload_form": upload_form,
             "event": event,
            }
-
 
 
 @view_config(route_name="events.tickets.easycreate.loadcomponent", request_method="GET",
@@ -346,6 +352,7 @@ def easycreate_ajax_loadcomponent(context,request):
             "preview_type": preview_type
     }
 
+
 @view_config(route_name="events.tickets.easycreate.gettingsvg",renderer="json")
 def getting_svgdata(context, request):
     preview_type = request.matchdict["preview_type"]
@@ -354,6 +361,7 @@ def getting_svgdata(context, request):
     if ticket is None:
         raise HTTPBadRequest("svg is not found");
     return {"svg": ticket.drawing,  "preview_type": preview_type}
+
 
 @view_config(route_name="events.tickets.easycreate.gettingtemplate",renderer="json")
 def getting_ticket_template_data(context, request):
@@ -370,6 +378,7 @@ def getting_ticket_template_data(context, request):
     else:
         tickets = context.filter_something_else_ticket_templates(tickets)
     return {"iterable": [{"pk": t.id, "name": t.name, "checked": False} for t in tickets]}
+
 
 @view_config(route_name="events.tickets.easycreate.gettingformat",renderer="json")
 def getting_ticket_format_data(context, request):

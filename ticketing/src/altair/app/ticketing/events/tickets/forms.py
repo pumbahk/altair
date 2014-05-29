@@ -183,11 +183,13 @@ class EasyCreateTemplateUploadForm(OurForm):
         )
 
     drawing = HiddenField()
-    def configure(self, organization, ticket=None):
+    event_id = HiddenField()
+
+    def configure(self, event, ticket=None):
         if ticket:
             self.ticket_format_id.choices = [(long(f.id), f.name) for f in [ticket.ticket_format]]
             self.ticket_format_id.data = long(ticket.ticket_format.id)
-        self.organization = organization
+        self.event_id.data = event.id
         return self
 
     def validate(self):
