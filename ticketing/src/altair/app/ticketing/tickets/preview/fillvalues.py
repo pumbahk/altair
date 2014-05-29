@@ -14,13 +14,13 @@ class IndexedVariation(object):
     def __init__(self, style="fill:#015a01", ):
         self.style = style
         self.count = _CachedCounter(1)
-        
+
     def rendering_string(self, name, v):
         i = self.count(name)
         fmt = u'<flowSpan style="%s">%s. </flowSpan>{{{%s}}}'
         return fmt % (self.style, i, name)
 
-    padding = len(". </flowSpan>")    
+    padding = len(". </flowSpan>")
     def make_escape_method(self, renderer):
         default_escape = renderer.escape
         def escape(pair):
@@ -38,13 +38,13 @@ class IndexedVariation(object):
 class IdentityVariation(object):
     """ no change output. like {{fooo}}"""
     def rendering_string(self, name, v):
-        return u"{{{%s}}}" % name
+        return u"{{%s}}" % name
 
     def make_escape_method(self, renderer):
         default_escape = renderer.escape
         def escape(x):
-            if x.startswith("{") and x.endswith("}"):
-                return default_escape(x[1:-1])
+            # if x.startswith("{") and x.endswith("}"):
+            #     return default_escape(x[1:-1])
             return default_escape(x)
         return escape
 
