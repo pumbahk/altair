@@ -31,7 +31,7 @@ if (!window.app)
         console.log("sync: name={0} value={1}".replace("{0}",name).replace("{1}",val));
       },
       collect: function(){
-        var r = {}
+        var r = {};
         _.each(this, function(v,k){
           if(typeof(k) !== "function"){
             r[k] = v;
@@ -58,7 +58,13 @@ if (!window.app)
       this.submit.$el.find('select[name="ticket_format_id"]').html(html);
     },
     onTicketTemplateSelectElementUpdate: function(html){
-      this.setting.$el.find('select[name="templates"]').html(html);
+      var $select = this.setting.$el.find('select[name="templates"]');
+      $select.html(html);
+      // hmm.
+      h.synchronizedWait(function predicate(){return !!window.appView && $select.find("option").length >= 1;},
+                         function then(){
+                           $select.change();
+                         });
     },
     onNewSVGData: function(data){
       //xxxx global variable: this variable create after loading component
