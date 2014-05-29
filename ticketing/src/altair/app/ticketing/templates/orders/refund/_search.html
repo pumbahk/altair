@@ -89,6 +89,20 @@
       </tr>
       </tbody>
     </table>
+    <table class="packed-checkboxes">
+      <tbody>
+        <tr>
+          <th>
+            <label for="status">${form.status.label.text}</label>
+          </th>
+          <td>
+            ${form.status(disabled='disabled')}
+            ${form.issue_status()}
+            ${form.payment_status(disabled='disabled')}
+          </td>
+        </tr>
+      </tbody>
+    </table>
     <script type="text/javascript">
       $(function(){
         var update_on_empty = function(){
