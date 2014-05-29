@@ -3,6 +3,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from .events import LotClosedEvent
+
 class LotCloser(object):
     def __init__(self, lot, request):
         self.request = request
@@ -13,6 +15,8 @@ class LotCloser(object):
         for entry in self.lot.remained_entries:
             logger.debug('close {0}'.format(entry.entry_no))
             entry.close()
+            event = LotClosedEvent(self.request, entry)
+            self.request.registry.notify(event)
 
         # 終了状態でフラグ管理
         self.lot.finish_lotting()
