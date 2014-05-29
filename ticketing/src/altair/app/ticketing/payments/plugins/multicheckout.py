@@ -140,10 +140,13 @@ class CardForm(CSRFSecureForm):
 def get_error_message(request, error_code):
     return u'決済エラー:' + error_messages.get(error_code, u'決済に失敗しました。カードや内容を確認の上再度お試しください。')
 
-def get_order_no(request, order_like):
+def get_multicheckout_order_no(request, order_no):
     if request.registry.settings.get('multicheckout.testing', False):
-        return order_like.order_no + "00"
-    return order_like.order_no
+        return order_no + "00"
+    return order_no
+
+def get_order_no(request, order_like):
+    return get_multicheckout_order_no(request, order_like.order_no)
 
 @implementer(IPaymentPlugin)
 class MultiCheckoutPlugin(object):
