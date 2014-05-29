@@ -71,12 +71,16 @@ class EventBoundTicketsResource(TicketingAdminResource):
         return item
 
     @reify
+    def ticket_alls(self):
+        return Ticket.filter_by(organization_id=self.organization.id)
+
+    @reify
     def ticket_templates(self):
-        return Ticket.filter_by(organization_id=self.organization.id, event_id=None)
+        return self.ticket_alls.filter_by(event_id=None)
 
     @reify
     def tickets(self):
-        return Ticket.filter_by(organization_id=self.organization.id, event_id=self.request.matchdict["event_id"])
+        return self.ticket_alls.filter_by(event_id=self.request.matchdict["event_id"])
 
     @reify
     def ticket_something_else_formats(self):
@@ -89,15 +93,13 @@ class EventBoundTicketsResource(TicketingAdminResource):
                         TicketFormat_DeliveryMethod.delivery_method_id==DeliveryMethod.id, 
                         DeliveryMethod.delivery_plugin_id==SEJ_DELIVERY_PLUGIN_ID))
 
-    @reify
-    def something_else_ticket_templates(self):
-        return self.ticket_templates
+    def filter_something_else_ticket_templates(self, ticket_query):
+        return ticket_query
 
-    @reify
-    def sej_ticket_templates(self):
+
+    def filter_sej_ticket_templates(self, tickets_query):
         subq = self.ticket_sej_formats.with_entities(TicketFormat.id).distinct(TicketFormat.id).subquery()
-        q = self.ticket_templates.join(subq, Ticket.ticket_format_id==subq.c.id).filter(Ticket.ticket_format_id==subq.c.id)
-        logger.info("hmm:%s", q)
+        q = tickets_query.join(subq, Ticket.ticket_format_id==subq.c.id).filter(Ticket.ticket_format_id==subq.c.id)
         return q
 
     @reify

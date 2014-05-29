@@ -33,6 +33,7 @@ ${ch.breadcrumbs(
 
 /* hero-unit */
   .hero-unit { padding: 24px;}
+  .setting-area { padding: 12px;}
 
 /* message */
   .message { display: block; margin-left: 30px; position: absolute; top: 45px; left: 350px; z-index: 10; }
@@ -40,7 +41,6 @@ ${ch.breadcrumbs(
 
 /* description */
   .description-box { padding: 10px;}
-  .descriptioin-area { padding: 12px;}
   .descriptioin-area .label {font-size: 12px;}
   .userhandle-box { padding: 10px;}
 </style>
@@ -89,7 +89,7 @@ ${getattr(form,attrname).label(class_="required control-label")}
 
   <div class="row-fluid">
     <div id="userhandle0" class="userhandle">
-        <div class="setting-area hero-unit span4">
+        <div class="choose-area hero-unit span4">
         ${radio_group(choice_form, "event_id")}
         ${radio_group(choice_form, "preview_type")}
         </div>
@@ -125,7 +125,7 @@ ${getattr(form,attrname).label(class_="required control-label")}
         </div>
     </div>
     <div id="userhandle2" class="userhandle" style="display:none">
-      <div class="descriptioin-area span5 hero-unit">
+      <div class="submit-area span5 hero-unit">
         <form method="POST" action="${request.route_path("events.tickets.easycreate",event_id=event.id)}">
         ${ch.form_item(upload_form.name)}
         ${checkbox_group_list(upload_form, ["cover_print"])}
@@ -162,7 +162,8 @@ ${getattr(form,attrname).label(class_="required control-label")}
 app.BrokerData = {
   component: {value: null, writable: true},
   setting: {value: null, writable: true},
-  submit: {value: null, writable: true}
+  submit: {value: null, writable: true},
+  models: {value: {source: app.ticketSelectSourceModel, submit: app.submitParamatersModel}} 
 }
 app.broker = Object.create(app.BrokerModule, app.BrokerData);
 
@@ -171,7 +172,6 @@ $(function(){
     broker: {value: app.broker},
     $el: {value: $(".component-area"), writable: false},
     ticket_formats_iterable: {value: [], writable: true},
-    preview_type: {value: "", writable: true},
     loadcomponent_url: {value: "${request.route_path("events.tickets.easycreate.loadcomponent", event_id=event.id, preview_type="__previewtype")}"},
     gettingtemplate_url: {value: "${request.route_path("events.tickets.easycreate.gettingtemplate", event_id=event.id, preview_type="__previewtype")}"},
     gettingformat_url: {value: "${request.route_path("events.tickets.easycreate.gettingformat", event_id=event.id, preview_type="__previewtype")}"},
@@ -182,6 +182,11 @@ $(function(){
     broker: {value: app.broker},
     $el: {value: $(".userhandle-area"),writable: false}
   };
+
+  app.ChooseAreaData = {
+    broker: {value: app.broker},
+    $el: {value: $(".choose-area"), writable: false}
+  }
 
   app.SettingAreaData = {
     broker: {value: app.broker},
@@ -194,10 +199,12 @@ $(function(){
   }
 
   app.userhandle = Object.create(app.UserHandleAreaModule,app.UserHandleAreaData);
+  app.choose = Object.create(app.ChooseAreaModule, app.ChooseAreaData);
   app.setting = Object.create(app.SettingAreaModule, app.SettingAreaData);
   app.submit = Object.create(app.SubmitAreaModule, app.SubmitAreaData);
   app.component = Object.create(app.ComponentAreaModule, app.ComponentAreaData);
 
+  app.broker.choose = app.choose;
   app.broker.setting = app.setting;
   app.broker.submit = app.submit;
   app.broker.component = app.component;
@@ -206,12 +213,16 @@ $(function(){
    app.userhandle.$el.find("a.wizard-nav").on("click", function(e){app.userhandle.onClickNavigation($(this)); return false;});
    app.userhandle.$el.find("a.js-handle-btn").on("click", function(e){app.userhandle.onClickHandleButton($(this)); return false;});
 
-  var radio_btn = app.setting.$el.find('input[name="preview_type"]:radio');
-  radio_btn.on("change", function(e){ app.setting.onChangePreviewType($(this))});
+  var radio_btn = app.choose.$el.find('input[name="event_id"]:radio');
+  radio_btn.on("change", function(e){ app.choose.onChangeTemplateKind($(this))});
+  var radio_btn = app.choose.$el.find('input[name="preview_type"]:radio');
+  radio_btn.on("change", function(e){ app.choose.onChangePreviewType($(this))});
 
   var select_btn = app.setting.$el.find('select[name="templates"]');
   select_btn.on("change", function(e){ app.setting.onChangeTicketTemplate($(this))});
 
+  app.submit.$el.find('input[name="name"]').on("change", function(e){app.submit.onChangeTicketName($(this));});
+  app.submit.$el.find('input[name="cover_print"]').on("change", function(e){app.submit.onChangeIsPrintConver($(this));});
   app.submit.$el.find("form:first").on("submit", function(){app.submit.onSubmit($(this)); return false;})
 
 

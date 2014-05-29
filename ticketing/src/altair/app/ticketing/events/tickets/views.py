@@ -11,8 +11,8 @@ from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleA
 from altair.app.ticketing.views import BaseView
 from . import forms
 
-from altair.app.ticketing.tickets.utils import build_dict_from_product_item
-import pystache
+import logging
+logger = logging.getLogger(__name__)
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class IndexView(BaseView):
@@ -262,18 +262,29 @@ class BundleAttributeView(BaseView):
 
 @view_config(route_name="events.tickets.easycreate", request_method="POST",
              decorator=with_bootstrap, permission="event_editor",
-             request_param="preview_type", 
+             request_param="template_kind", 
              renderer="json")
 def easycreate_upload(context, request):
     event = context.event
     assert event.organization_id == context.organization.id
 
+    template_kind = request.POST["template_kind"]
     preview_type = request.POST["preview_type"]
-    if preview_type == "sej":
-        formats = context.ticket_sej_formats.all()
+    base_template_id = request.POST["base_template_id"]
+
+    logger.info("easycreate upload: template_kind=%s, preview_type=%s", template_kind, preview_type)
+
+    if template_kind == "event":
+        base_ticket = context.tickets.filter_by(id=base_template_id).first()
+    elif template_kind == "base":
+        base_ticket = context.ticket_templates.filter_by(id=base_template_id).first()
     else:
-        formats = context.ticket_something_else_formats.all()
-    upload_form = forms.EasyCreateTemplateUploadForm(request.POST).configure(formats, context.organization)
+        raise HTTPBadRequest("not support template kind {}".format(template_kind))
+
+    if base_ticket is None:
+        raise HTTPBadRequest("base ticket is not found")
+
+    upload_form = forms.EasyCreateTemplateUploadForm(request.POST).configure(context.organization, base_ticket)
     if upload_form.validate():
         data = upload_form.data
         ticket_template = Ticket(name=data["name"],
@@ -339,7 +350,7 @@ def easycreate_ajax_loadcomponent(context,request):
 def getting_svgdata(context, request):
     preview_type = request.matchdict["preview_type"]
     ticket_id = request.matchdict["ticket_id"]
-    ticket = context.ticket_templates.filter_by(id=ticket_id).first()
+    ticket = context.ticket_alls.filter_by(id=ticket_id).first()
     if ticket is None:
         raise HTTPBadRequest("svg is not found");
     return {"svg": ticket.drawing,  "preview_type": preview_type}
@@ -347,10 +358,17 @@ def getting_svgdata(context, request):
 @view_config(route_name="events.tickets.easycreate.gettingtemplate",renderer="json")
 def getting_ticket_template_data(context, request):
     preview_type = request.matchdict["preview_type"]
-    if preview_type == "sej":
-        tickets = context.sej_ticket_templates
+    event_id = request.params.get("event_id")
+    logger.info("***event id %s ******", event_id)
+    if event_id:
+        assert unicode(context.event.id) == unicode(event_id)
+        tickets = context.tickets
     else:
-        tickets = context.something_else_ticket_templates
+        tickets = context.ticket_templates
+    if preview_type == "sej":
+        tickets = context.filter_sej_ticket_templates(tickets)
+    else:
+        tickets = context.filter_something_else_ticket_templates(tickets)
     return {"iterable": [{"pk": t.id, "name": t.name, "checked": False} for t in tickets]}
 
 @view_config(route_name="events.tickets.easycreate.gettingformat",renderer="json")

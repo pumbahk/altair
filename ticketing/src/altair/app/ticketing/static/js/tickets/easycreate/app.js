@@ -10,6 +10,10 @@ if (!window.app)
       isEnough: function(){
         console.log("ok?"+(!!this.templateKind && !! this.previewType).toString());
         return !!this.templateKind && !! this.previewType;
+      },
+      sync: function(name, val){
+        this[name] = val;
+        console.log("sync: name={0} value={1}".replace("{0}",name).replace("{1}",val));
       }
     },
     {
@@ -19,6 +23,32 @@ if (!window.app)
     });
 
   var selectContentTemplate = _.template('<% _.each(iterable, function(d){%><option value="<%= d.pk %>"><%= d.name %></option> <%});%>');
+
+  var submitParamatersModel = Object.create(
+    {
+      sync: function(name, val){
+        this[name] = val;
+        console.log("sync: name={0} value={1}".replace("{0}",name).replace("{1}",val));
+      },
+      collect: function(){
+        var r = {}
+        _.each(this, function(v,k){
+          if(typeof(k) !== "function"){
+            r[k] = v;
+          }
+        });
+        return r;
+      }
+    },
+    {
+      name: {value: "", writable:true, enumerable:true},
+      preview_type: {value: "default", writable:true, enumerable:true},
+      template_kind: {value: "default", writable:true, enumerable:true},
+      cover_print: {value: false, writable:true, enumerable:true},
+      base_template_id: {value: null, writable:true, enumerable:true},
+      drawing: {value: "", writable:true, enumerable:true}
+    }
+  );
 
   // Module needs: {"submit","setting","component"}
   var BrokerModule = {
@@ -49,12 +79,22 @@ if (!window.app)
       return window.appView.models.svg.get("data");
     }
   };
-  
+
   var SubmitAreaModule = {
+    onChangeTicketName: function($el){
+      this.broker.models.submit.sync("name", $el.val());
+    },
+    onChangeIsPrintConver: function($el){
+      var v = $el.attr("checked") ? "y" : null
+      this.broker.models.submit.sync("cover_print", v);
+    },
+
     onSubmit: function($form){
-      var svg = this.broker.getCurrentSVG()
-      this.$el.find('input[name="drawing"]').val(svg);
-      var params = h.serialize($form);
+      var src = this.broker.models.source;
+      this.broker.models.submit.preview_type = src.previewType;
+      this.broker.models.submit.template_kind = src.templateKind;
+      this.broker.models.submit.drawing = this.broker.getCurrentSVG();
+      var params = this.broker.models.submit.collect();
       var url = $form.attr("action");
       return $.post(url, params)
         .fail(
@@ -66,26 +106,24 @@ if (!window.app)
   };
 
   var SettingAreaModule = {
-    onChangePreviewType: function($el){
-      return this.broker.component.onChangePreviewType($el);
-    },
     onChangeTicketTemplate: function($el){
+      this.broker.models.submit.sync("base_template_id", $el.val());
       return this.broker.component.onChangeTicketTemplate($el);
     }
   };
 
   var ChooseAreaModule = {
     onChangePreviewType: function($el){
-      var m = this.broker.model;
-      m.previewType = $el.val();
+      var m = this.broker.models.source;
+      m.sync("previewType",$el.val());
       if(m.isEnough()){
         return this.broker.component.onChangePreviewType($el);
       }
     },
     onChangeTemplateKind: function($el){
-      var m = this.broker.model;
-      m.eventId = $el.val();
-      m.templateKind = (!!$el.val()) ? "event" : "base"
+      var m = this.broker.models.source;
+      m.sync("eventId", $el.val());
+      m.sync("templateKind", (!!$el.val()) ? "event" : "base");
       if(m.isEnough()){
         return this.broker.component.onChangePreviewType($el); //xxx:
       }
@@ -95,8 +133,7 @@ if (!window.app)
   // Module needs {$el, broker,loadcomponent_url, gettingsvg_url, gettingformat_url, gettingtemplate_url, select_template"}
   var ComponentAreaModule = {
     onChangePreviewType: function($el){
-      var val = $el.val();
-      this.preview_type = val;
+      var val = this.broker.models.source.previewType;
       var load_url = this.loadcomponent_url.replace("__previewtype", val);
       var template_url = this.gettingtemplate_url.replace("__previewtype", val);
       var format_url = this.gettingformat_url.replace("__previewtype", val);
@@ -128,7 +165,8 @@ if (!window.app)
         });
     },
     gettingNewTemplates: function(url){
-      return $.get(url).fail(
+      var params={"event_id": this.broker.models.source.eventId};
+      return $.post(url, params).fail(
         function(){ this.$el.text("error: url="+url);}.bind(this)
       ).done(
         function(data){ 
@@ -138,7 +176,8 @@ if (!window.app)
     },
     onChangeTicketTemplate: function($el){
       var val = $el.val();
-      var url = this.gettingsvg_url.replace("__ticket_id", val).replace("__previewtype", this.preview_type);
+      var previewType =  this.broker.models.source.previewType;
+      var url = this.gettingsvg_url.replace("__ticket_id", val).replace("__previewtype", previewType);
 
       return this.sendingSVGViaRequest(url);
     },
@@ -177,6 +216,7 @@ if (!window.app)
   };
 
   app.ticketSelectSourceModel = ticketSelectSourceModel;
+  app.submitParamatersModel = submitParamatersModel
 
   app.UserHandleAreaModule = UserHandleAreaModule;
   app.ChooseAreaModule = ChooseAreaModule;

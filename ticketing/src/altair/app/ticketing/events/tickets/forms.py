@@ -103,10 +103,10 @@ class BundleForm(Form):
 
 
 class EasyCreateKindsChoiceForm(OurForm):
-    def configure(self, event_id):
+    def configure(self, event):
         self.event_id.choices = [
             ("", u"基本券面から"), 
-            (unicode(event_id), u"既存の券面から")
+            (unicode(event.id), u"既存の券面から")
         ]
         return self
 
@@ -186,6 +186,7 @@ class EasyCreateTemplateUploadForm(OurForm):
     def configure(self, organization, ticket=None):
         if ticket:
             self.ticket_format_id.choices = [(long(f.id), f.name) for f in [ticket.ticket_format]]
+            self.ticket_format_id.data = long(ticket.ticket_format.id)
         self.organization = organization
         return self
 
@@ -194,12 +195,6 @@ class EasyCreateTemplateUploadForm(OurForm):
             return False
 
         svgio = StringIO(self.drawing.data)
-        ticket_format = TicketFormat.query.filter_by(id=self.ticket_format_id.data, organization_id=self.organization.id).first()
-        if ticket_format is None:
-            errors = list(self.ticket_format_id.errors or ())
-            errors.append(u'未知の券面フォーマットです')
-            self.ticket_format_id.errors = errors
-            return False
         try:
             cleaner = get_validated_svg_cleaner(svgio, exc_class=ValidationError,  sej=self.data["preview_type"] == "sej")
             self.data_value = {
