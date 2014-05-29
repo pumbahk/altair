@@ -176,8 +176,12 @@ class PaymentDeliveryMethodPairForm(Form):
                 from altair.app.ticketing.events.sales_segments.exceptions import IssuingStartAtOutTermException
                 pdmp = PaymentDeliveryMethodPair.query.filter_by(id=form.id.data).one()
                 for ss in pdmp.sales_segments:
+                    if not ss.performance:
+                        continue
                     performance_end_on = ss.performance.end_on or ss.performance.start_on
-                    end_at = ss.sales_segment_group.end_at if ss.use_default_end_at else ss.end_at
+                    end_at = ss.end_at
+                    if ss.use_default_end_at:
+                        end_at = ss.sales_segment_group.end_for_performance(ss.performance)
                     try:
                         validate_issuing_start_at(performance_end_on, end_at, pdmp, form.issuing_start_at.data, form.issuing_interval_days.data)
                     except IssuingStartAtOutTermException as e:
@@ -186,4 +190,5 @@ class PaymentDeliveryMethodPairForm(Form):
                         else:
                             form.issuing_interval_days.errors.append(e.message)
                         status = False
+                        break
         return status

@@ -328,9 +328,10 @@ class SalesSegmentGroupForm(OurForm):
                 if not ss.use_default_end_at:
                     continue
                 performance_end_on = ss.performance.end_on or ss.performance.start_on
+                end_at = self.end_at.data or ssg.end_for_performance(ss.performance)
                 for pdmp in ss.payment_delivery_method_pairs:
                     try:
-                        validate_issuing_start_at(performance_end_on, self.end_at.data, pdmp)
+                        validate_issuing_start_at(performance_end_on, end_at, pdmp)
                     except IssuingStartAtOutTermException as e:
                         self.end_at.errors.append(e.message)
                         return False

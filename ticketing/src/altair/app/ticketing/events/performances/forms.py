@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime, timedelta
 from wtforms import Form
 from wtforms import TextField, HiddenField, TextAreaField, BooleanField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
@@ -169,12 +170,19 @@ class PerformanceForm(OurForm):
             if form.id.data:
                 sales_segments = SalesSegment.query.filter_by(performance_id=form.id.data).all()
                 for ss in sales_segments:
-                    end_at = ss.sales_segment_group.end_at if ss.use_default_end_at else ss.end_at
+                    end_at = ss.end_at
+                    if ss.use_default_end_at:
+                        end_at = ss.sales_segment_group.end_for_performance(ss.performance)
                     targets.append((end_at, ss.payment_delivery_method_pairs))
             else:
                 sales_segment_groups = form.event.sales_segment_groups
                 for ssg in sales_segment_groups:
-                    targets.append((ssg.end_at, ssg.payment_delivery_method_pairs))
+                    end_at = ssg.end_at
+                    if not end_at:
+                        s = field.data
+                        end_at = datetime(s.year, s.month, s.day, ssg.end_time.hour, ssg.end_time.minute)
+                        end_at -= timedelta(days=ssg.end_day_prior_to_performance)
+                    targets.append((end_at, ssg.payment_delivery_method_pairs))
             for end_at, pdmps in targets:
                 for pdmp in pdmps:
                     try:
