@@ -675,6 +675,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def reserve_refund(kwargs):
         refund = Refund(**kwargs)
         refund.save()
+        return refund
 
     def call_refund(self, request):
         # 払戻対象の金額をクリア

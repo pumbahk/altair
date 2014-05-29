@@ -1,0 +1,21 @@
+${refund.created_at.strftime('%Y-%m-%d %H:%M:%S')} に払戻予約が登録されました。
+
+払戻予約数: ${refund.order_count}
+払戻方法  : ${refund.payment_method.name}
+払戻対象  : 商品金額       ${u'含む' if refund.include_item else u'含まない'}
+            システム手数料 ${u'含む' if refund.include_system_fee else u'含まない'}
+            決済手数料     ${u'含む' if refund.include_transaction_fee else u'含まない'}
+            引取手数料     ${u'含む' if refund.include_delivery_fee else u'含まない'}
+            特別手数料     ${u'含む' if refund.include_special_fee else u'含まない'}
+払戻期間  : ${refund.start_at or ''} - ${refund.end_at or ''}
+半券要否  : ${u'要' if refund.need_stub else u'否'}
+% for i, p in enumerate(refund.performances):
+  % if i == 0:
+公演      : ${p.name}
+  % endif
+            ${p.name}
+% endfor
+
+翌日夜間に払戻が実行されます。
+設定の変更および払戻の取消は以下から行ってください。
+https://service.ticketstar.jp/orders/refund/

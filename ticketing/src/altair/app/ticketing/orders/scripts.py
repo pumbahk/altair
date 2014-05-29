@@ -26,6 +26,7 @@ from altair.app.ticketing.orders.models import (
     ImportStatusEnum,
     )
 from altair.app.ticketing.orders.importer import OrderImporter
+from altair.app.ticketing.orders.mail import send_refund_complete_mail, send_refund_error_mail
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.sej.refund import create_and_send_refund_file
 
@@ -93,6 +94,7 @@ def refund_order():
     try:
         for refund in refunds:
             status = True
+            error_message = []
             refund = DBSession.merge(refund)
             for order in refund.orders:
                 order = DBSession.merge(order)
@@ -101,15 +103,20 @@ def refund_order():
                     logging.info('refund success')
                     transaction.commit()
                 else:
-                    logging.error('failed to refund order (%s)' % order.order_no)
+                    message = 'failed to refund order (%s)' % order.order_no
+                    logging.error(message)
+                    error_message.append(message)
                     transaction.abort()
                     status = False
 
+            refund = DBSession.merge(refund)
             if status:
-                refund = DBSession.merge(refund)
                 refund.status = RefundStatusEnum.Refunded.v
                 refund.save()
                 transaction.commit()
+                send_refund_complete_mail(request, refund)
+            else:
+                send_refund_error_mail(request, refund, error_message)
     except Exception as e:
         logging.error('failed to refund orders (%s)' % e.message)
         transaction.abort()
