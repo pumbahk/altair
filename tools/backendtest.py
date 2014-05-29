@@ -6,6 +6,7 @@ import time
 import string
 import random
 import datetime
+import argparse
 from selenium.webdriver.common.keys import Keys
 from pywad.part import Part
 from pywad.runner import Runner
@@ -574,6 +575,9 @@ class PDMPCreator(Part, SalesSegmentGroupShowPageMixin, BreadCrumbMixin):
             if u'インナー' in option.text:
                 option.click()
                 break
+            elif u'窓口' in option.text:
+                option.click()
+                break
         else:
             raise BackendOperationError()
 
@@ -581,6 +585,9 @@ class PDMPCreator(Part, SalesSegmentGroupShowPageMixin, BreadCrumbMixin):
         options = method.find_elements_by_tag_name('option')
         for option in options:
             if u'インナー' in option.text:
+                option.click()
+                break
+            elif u'窓口' in option.text:
                 option.click()
                 break
         else:
@@ -691,13 +698,23 @@ class PerformanceCreator(Part):
         return False
 
 def main():
-    backendtest = Pit.get('backendtest',
-                          {'require':{'basic_username':'',
-                                      'basic_password':'',
-                                  }})
-    basic_username = backendtest['basic_username']
-    basic_password = backendtest['basic_password']
-    url = 'https://{}:{}@backend.stg2.rt.ticketstar.jp'.format(basic_username, basic_password)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('url', default='https://backend.stg2.rt.ticketstar.jp')
+    opts = parser.parse_args()
+
+    url = opts.url
+
+    basic_auth_pair = ''
+    if 'stg2' in url or 'dev' in url:
+        backendtest = Pit.get('backendtest',
+                            {'require':{'basic_username':'',
+                                        'basic_password':'',
+                                    }})
+        basic_username = backendtest['basic_username']
+        basic_password = backendtest['basic_password']
+        if basic_username and basic_password:
+            basic_auth_pair = '{}:{}@'.format(basic_username, basic_password)
+    url = url.replace('://', '://{}'.format(basic_auth_pair))
 
     browser = None
     status = None
