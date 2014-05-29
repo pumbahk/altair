@@ -28,7 +28,7 @@ requires = [
     'js.jquery_form == 3.09',
     'pyramid_who',
     'uamobile',
-    'fluent-logger == 0.3.3moriyoshi5',
+    'fluent-logger == 0.3.3moriyoshi7',
     'pyramid_selectable_renderer >= 0.0.4',
     'altair.findable_label',
     'altair.log',

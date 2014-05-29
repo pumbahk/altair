@@ -1118,7 +1118,7 @@ def run_import_task(request, task):
         note = re.split(ur'\r\n|\r|\n', order.note)
         # これは実時間でよいような
         imported_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        if proto_order.original_order is not None:
+        if proto_order.original_order is None or proto_order.order_no != proto_order.original_order.order_no:
             note.append(u'CSVファイル内の予約番号 (グループキー): %s' % proto_order.ref)
         note.append(u'インポート日時: %s' % imported_at)
         order.note = u'\n'.join(note)

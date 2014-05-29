@@ -101,7 +101,7 @@ formatter = generic
 
 [handler_fluent]
 class = altair.log.filters.BrowserIdFluentHandler
-args = ('altair.ticketing.booster.bigbulls', '127.0.0.1', 24224)
+args = ('altair.ticketing.booster.bigbulls', '127.0.0.1', 24224, 3.0, False, 'utf-8', None, ['environ', 'params', 'session'])
 level = NOTSET
 formatter = generic
 

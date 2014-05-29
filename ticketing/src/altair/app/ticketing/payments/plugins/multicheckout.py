@@ -140,10 +140,13 @@ class CardForm(CSRFSecureForm):
 def get_error_message(request, error_code):
     return u'決済エラー:' + error_messages.get(error_code, u'決済に失敗しました。カードや内容を確認の上再度お試しください。')
 
-def get_order_no(request, order_like):
+def get_multicheckout_order_no(request, order_no):
     if request.registry.settings.get('multicheckout.testing', False):
-        return order_like.order_no + "00"
-    return order_like.order_no
+        return order_no + "00"
+    return order_no
+
+def get_order_no(request, order_like):
+    return get_multicheckout_order_no(request, order_like.order_no)
 
 @implementer(IPaymentPlugin)
 class MultiCheckoutPlugin(object):
@@ -242,11 +245,8 @@ class MultiCheckoutPlugin(object):
                     message='uncaught exception',
                     order_no=order_like.order_no,
                     back_url=back_url(request))
-            if amount_to_cancel != 0:
-                ## 抽選特有の事情により、キャンセルは管理画面から行う
-                pass
-            else:
-                multicheckout_api.checkout_auth_cancel(mc_order_no)
+            # KeepAuthFor が MultiCheckoutOrderStatus に設定されていると、実際にはオーソリキャンセルは行われない
+            multicheckout_api.checkout_auth_cancel(mc_order_no)
             raise e
 
         return checkout_sales_result

@@ -28,16 +28,16 @@
           <th style="width: 64%;">パフォーマンス名</th>
           <th style="width: 6%;">配席数</th>
           <th style="width: 6%;">残席数</th>
-          <th style="width: 6%;">販売枚数</th>
-          <th style="width: 6%;">販売金額</th>
-          <th style="width: 6%;">販売枚数</th>
-          <th style="width: 6%;">販売金額</th>
+          <th style="width: 6%;">受付数</th>
+          <th style="width: 6%;">受付金額</th>
+          <th style="width: 6%;">受付数</th>
+          <th style="width: 6%;">受付金額</th>
         </tr>
       </thead>
       <tbody>
         % for record in reporter.sort_data():
         <tr>
-          <td><a href="javascript:performance_report(${record.id})">${record.title} (${vh.datetime(record.start_on)}開始)</a></td>
+          <td><a href="javascript:performance_report(${record.id})">${record.title} (${vh.datetime(record.start_on, with_weekday=True)}開始)</a></td>
           <td class="numeric">${vh.number(record.stock_quantity)}</td>
           <td class="numeric">${vh.number(record.vacant_quantity)}</td>
           <td class="numeric">${vh.number(record.total_order_quantity)}</td>

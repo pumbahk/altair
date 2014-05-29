@@ -3383,6 +3383,10 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     def applicable(self, user=None, now=None, type='available'):
         return build_sales_segment_query(sales_segment_id=self.id, user=user, now=now, type=type).count() > 0
 
+class SalesReportTypeEnum(StandardEnum):
+    Default = 1
+    Simple = 2
+
 class SettingMixin(object):
     def describe_iter(self):
         for prop in self.__mapper__.iterate_properties:
@@ -3426,6 +3430,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     default_mail_sender = AnnotatedColumn(Unicode(255), _a_label=u"デフォルトの送信元メールアドレス")
     entrust_separate_seats = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"バラ席のおまかせが有効", _a_label=u"おまかせ座席選択でバラ席を許可する")
     notify_point_granting_failure = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"ポイント付与失敗時のメール通知on/off", _a_label=u"ポイント付与失敗時のメール通知を有効にする")
+    sales_report_type = AnnotatedColumn(Integer, nullable=False, default=1, server_default='1', _a_label=u"売上レポートタイプ")
 
     # augus
     augus_use = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"オーガス連携", _a_label=u"オーガス連携")
@@ -3475,7 +3480,7 @@ class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted,
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'))
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
     disp_orderreview = AnnotatedColumn(Boolean, default=True,
-                                  _a_label=_(u'一般チケットの購入履歴表示／非表示'))
+                                  _a_label=_(u'マイページへの購入履歴表示／非表示'))
     disp_agreement = AnnotatedColumn(Boolean, default=True, _a_label=_(u'規約の表示／非表示'))
     agreement_body = AnnotatedColumn(UnicodeText, _a_label=_(u"規約内容"), default=u"")
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
@@ -3496,7 +3501,7 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'))
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
     disp_orderreview = AnnotatedColumn(Boolean, default=True,
-                                  _a_label=_(u'一般チケットの購入履歴表示／非表示'))
+                                  _a_label=_(u'マイページへの購入履歴表示／非表示'))
     disp_agreement = AnnotatedColumn(Boolean, default=True, _a_label=_(u'規約の表示／非表示'))
     agreement_body = AnnotatedColumn(UnicodeText, _a_label=_(u"規約内容"), default=u"")
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))

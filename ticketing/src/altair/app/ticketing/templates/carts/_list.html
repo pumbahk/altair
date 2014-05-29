@@ -61,8 +61,8 @@ url = request.current_route_path(_query=params)
         <td>
           <a href="${request.route_path('cart.show', order_no=cart.order_no)}">${cart.order_no}</a>
         </td>
-        <td>${vh.datetime(cart.created_at)}</td>
-        <td>${vh.datetime(cart.finished_at)}</td>
+        <td>${vh.datetime(cart.created_at, with_weekday=True)}</td>
+        <td>${vh.datetime(cart.finished_at, with_weekday=True)}</td>
         <td style="text-align: right;">${vh.price(cart.total_amount) if cart.sales_segment and cart.payment_delivery_pair else u'-'}</td>
         <td>
           % if cart.shipping_address:
@@ -84,4 +84,3 @@ url = request.current_route_path(_query=params)
 % if paging:
   ${ch.pager(carts, "javascript:sort_carts('', '', '$partial_url')")}
 % endif
-

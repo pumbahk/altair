@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 def create_exception_message_builder(registry):
     settings = registry.settings
     return ExceptionMessageBuilder(
-        extra_info=asbool(settings.get('altair.exclog.extra_info', True)),
+        include_env_dump=asbool(settings.get('altair.exclog.include_env_dump', True)),
         includes=aslist(settings.get('altair.exclog.includes', DEFAULT_INCLUDES)))
 
 def create_exception_message_renderer(config):

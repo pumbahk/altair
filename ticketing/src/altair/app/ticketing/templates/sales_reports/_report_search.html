@@ -24,26 +24,29 @@
 <form id="limitation" action="${route_path}" method="POST" style="margin-bottom: 0;">
   <div class="control-group">
     <div class="controls">
-        販売枚数、販売金額の抽出条件
-        <table>
-            <tr>
-                <td>販売期間</td><td>${form.limited_from} 〜 ${form.limited_to}</td>
-            </tr>
-        </table>
-        <br/><br/>
+      <h4>集計期間の絞り込み</h4>
+      <table>
+        <tr>
+          <td>販売期間</td><td>${form.limited_from} 〜 ${form.limited_to}</td>
+        </tr>
+      </table>
+      <br/><br/>
 
-        表示条件
-        <table>
-            <tr>
-                <td>イベント名</td><td>${form.event_title}</td>
-            </tr><tr>
-                <td>公演期間</td><td>${form.event_from} 〜 ${form.event_to}</td>
-            </tr><tr>
-                <td>公演開始日</td><td>${form.event_start_from} 〜 ${form.event_start_to}</td>
-            </tr><tr>
-                <td>公演終了日</td><td>${form.event_end_from} 〜 ${form.event_end_to}</td>
-            </tr>
-        </table>
+      <h4>イベント検索</h4>
+      <table>
+        <tr>
+          <td>イベント名</td><td>${form.event_title}</td>
+        </tr><tr>
+          <td>公演期間</td><td>${form.event_from} 〜 ${form.event_to}</td>
+        </tr><tr>
+          <td>公演開始日</td><td>${form.event_start_from} 〜 ${form.event_start_to}</td>
+        </tr><tr>
+          <td>公演終了日</td><td>${form.event_end_from} 〜 ${form.event_end_to}</td>
+        </tr>
+        <tr>
+          <td>レポート送信先メールアドレス</td><td>${form.recipient}</td>
+        </tr>
+      </table>
 
       <input type="submit" class="btn" value="検索" >
       <a href="${request.route_path('sales_reports.index')}">

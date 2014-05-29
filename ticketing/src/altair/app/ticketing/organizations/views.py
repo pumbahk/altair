@@ -214,6 +214,7 @@ class OrganizationSettings(BaseView):
         organization_setting.bcc_recipient = f.bcc_recipient.data
         organization_setting.default_mail_sender = f.default_mail_sender.data
         organization_setting.entrust_separate_seats = f.entrust_separate_seats.data
+        organization_setting.sales_report_type = f.sales_report_type.data
         organization_setting.augus_use = f.augus_use.data
         organization_setting.augus_customer_id = f.augus_customer_id.data
         organization_setting.augus_upload_url = f.augus_upload_url.data

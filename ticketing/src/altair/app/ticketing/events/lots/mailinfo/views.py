@@ -28,8 +28,9 @@ def send_mail(context, request):
     organization_id = context.user.organization_id
     form = SendingMailForm(request.POST)
     if not form.validate():
-        request.session.flash(u'失敗しました: %s' % form.errors)
-        raise HTTPFound(request.current_route_url(entry_id=entry_id, action="show"))
+        for k, v in form.errors.items():
+            request.session.flash(u'メール送信に失敗しました: %s' % ''.join(v))
+        raise HTTPFound(request.params.get("next_url") or "/")
 
     lot_entry = LotEntry.query.filter(LotEntry.lot_id==Lot.id, Lot.event_id==Event.id, Event.organization_id==organization_id,  LotEntry.id==entry_id).one()
     elected_wish = None
@@ -41,5 +42,3 @@ def send_mail(context, request):
 
     request.session.flash(u'メール再送信しました')
     return HTTPFound(request.params.get("next_url") or "/")
-
-

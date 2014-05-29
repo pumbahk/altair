@@ -26,7 +26,7 @@
         %for product in lot.products:
         <tr>
           <td><input type="checkbox" name="product_id" value="${product.id}"></td>
-          <td>${product.performance.name}${vh.datetime(product.performance.open_on)}</td>
+          <td>${product.performance.name}${vh.datetime(product.performance.open_on, with_weekday=True)}</td>
           <td>${product.name}</td>
           <td>${product.seat_stock_type.name}</td>
           <td style="text-align: right;">${format_currency(product.price)}</td>

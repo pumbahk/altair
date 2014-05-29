@@ -4,15 +4,16 @@ from pyramid.threadlocal import get_current_request
 
 from wtforms import Form, ValidationError
 from wtforms import TextField, HiddenField, DateField, PasswordField, SelectMultipleField
-from wtforms.validators import Length, Email, Optional, Regexp
+from wtforms.validators import Length, Optional, Regexp
 from pyramid.security import has_permission, ACLAllowed
 
-from altair.formhelpers import Translations, Required, PHPCompatibleSelectMultipleField, strip_spaces, NFKC
+from altair.formhelpers import Translations, Required, PHPCompatibleSelectMultipleField, strip_spaces, NFKC, Email
 from altair.formhelpers.fields import DateTimeField
 from altair.formhelpers.widgets import CheckboxMultipleSelect
 from altair.app.ticketing.operators.models import Operator, OperatorAuth, OperatorRole, Permission, ensure_ascii
 from altair.app.ticketing.permissions.utils import PermissionCategory
 from altair.app.ticketing.models import DBSession
+
 
 class OperatorRoleForm(Form):
 

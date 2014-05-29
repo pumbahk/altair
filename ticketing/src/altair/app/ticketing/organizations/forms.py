@@ -5,9 +5,9 @@ from wtforms.fields import PasswordField, HiddenField, FormField
 from altair.formhelpers import filters
 from altair.formhelpers.widgets import OurTextInput
 from altair.formhelpers.fields import OurTextField, OurIntegerField, OurSelectField, OurBooleanField, OurDecimalField
-from wtforms.validators import Length, Regexp, Email, Optional
+from wtforms.validators import Length, Regexp, Optional
 
-from altair.formhelpers import Translations, Required, Phone
+from altair.formhelpers import Translations, Required, Phone, Email
 from altair.app.ticketing.master.models import Prefecture
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.users import models as u_models
@@ -274,6 +274,11 @@ class OrganizationSettingForm(OurForm):
         )
     entrust_separate_seats = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.entrust_separate_seats)['label']
+        )
+    sales_report_type = OurSelectField(
+        label=get_annotations_for(c_models.OrganizationSetting.sales_report_type)['label'],
+        coerce=lambda x: int(x) if x else None,
+        choices=[(int(e.v), e.k) for e in c_models.SalesReportTypeEnum]
         )
     augus_use = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.augus_use)['label']
