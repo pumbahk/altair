@@ -86,6 +86,8 @@ class EasyCreateTicketTests(unittest.TestCase):
         self.assertEqual(result.ticket_format_id, 100)
         self.assertEqual(result.cover_print, True)
         self.assertEqual(result.event_id, 1)
+        self.assertEqual(result.base_template, base_ticket)
 
         self.assertEqual(normalize(result.data["drawing"]), normalize(self.sample_svg))
         self.assertEqual(result.data["fill_mapping"], {"oneline": "this is test"})
+

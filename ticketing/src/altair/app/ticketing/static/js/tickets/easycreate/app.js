@@ -4,7 +4,7 @@ if (!window.app)
 (function(app){
   "use strict";
 
-  /* model singleton object ?*/
+  /// これはsubmitする前の状態での値。settingの範囲ではこちら
   var ticketSelectSourceModel = Object.create(
     {
       isEnough: function(){
@@ -19,7 +19,8 @@ if (!window.app)
     {
       previewType: {value: null, writable: true},
       eventId: {value: null, writable: true},
-      templateKind: {value: null, writable: true}
+      templateKind: {value: null, writable: true},
+      templateId: {value: null, writable: true}
     });
 
   var selectContentTemplate = _.template('<% _.each(iterable, function(d){%><option value="<%= d.pk %>"><%= d.name %></option> <%});%>');
@@ -27,6 +28,7 @@ if (!window.app)
     '<% _.each(tickets, function(d){%><li><a target="_blank" href="<%= d.url %>"><%= d.name %></a></li><%});%>'
   ].join("\n"));
 
+  /// これはsubmitする際の状態
   var submitParamatersModel = Object.create(
     {
       sync: function(name, val){
@@ -74,18 +76,26 @@ if (!window.app)
     },
     onNewSVGData: function(data){
       //xxxx global variable: this variable create after loading component
-      h.synchronizedWait(function predicate(){return !!window.appView},
+      h.synchronizedWait(function predicate(){return !!window.appView;},
                          function then(){
                            window.appView.loadSVG(data.svg, data.preview_type);
                          });
     },
     onNewTicketFormatData: function(data){
       var self = this;
-      h.synchronizedWait(function predicate(){return !!window.appView},
+      h.synchronizedWait(function predicate(){return !!window.appView;},
                          function then(){
                            //xxxx global variable: this variable create after loading component
                            window.appView.views.params_view.reDrawTicketFormatCandidates(data.iterable, data.preview_type);
                            self.onTicketFormatSelectElementUpdate(selectContentTemplate({"iterable": data.iterable}));
+                         });
+    },
+    onNewFillValues: function(data){
+      var self = this;
+      h.synchronizedWait(function predicate(){return !!window.appView;},
+                         function then(){
+                           //xxxx global variable: this variable create after loading component
+                           window.appView.fillsVarsWithParams(data.params);
                          });
     },
     getCurrentSVG: function(){
@@ -103,7 +113,7 @@ if (!window.app)
       this.broker.models.submit.sync("name", $el.val());
     },
     onChangeIsPrintConver: function($el){
-      var v = $el.attr("checked") ? "y" : null
+      var v = $el.attr("checked") ? "y" : null;
       this.broker.models.submit.sync("cover_print", v);
     },
 
@@ -129,6 +139,7 @@ if (!window.app)
 
   var SettingAreaModule = {
     onChangeTicketTemplate: function($el){
+      this.broker.models.source.sync("templateId", $el.val());
       this.broker.models.submit.sync("base_template_id", $el.val());
       return this.broker.component.onChangeTicketTemplate($el);
     },
@@ -137,16 +148,19 @@ if (!window.app)
         $el.removeClass("sticky");
         $el.css({"position": "static"});
       }else {
-        $el.addClass("sticky")
+        $el.addClass("sticky");
         $el.css({"position": "fixed"});
       }
     },
+    onClickFillButton: function($el){
+      return this.broker.component.onFillValues($el);
+    },
     bindClipboardCopy: function($el, moviePath){
       ZeroClipboard.config({"moviePath": moviePath});
-      $el.find('.copy-button').each(function(i,el){new ZeroClipboard(el)});
+      $el.find('.copy-button').each(function(i,el){new ZeroClipboard(el);});
     },
     bindHelpPopOver: function($el){
-      $el.find('[rel=popover]').popover()
+      $el.find('[rel=popover]').popover();
     }
   };
 
@@ -166,7 +180,7 @@ if (!window.app)
         return this.broker.component.onChangePreviewType($el); //xxx:
       }
     }
-  }
+  };
 
   var ListingAreaModule = {
     onNewTicketsList: function(data){
@@ -174,7 +188,7 @@ if (!window.app)
       var html = listingTicketTemplate({"tickets": data.tickets});
       $wrapper.html(html);
     }
-  }
+  };
 
   // Module needs {$el, broker,loadcomponent_url, gettingsvg_url, gettingformat_url, gettingtemplate_url, select_template"}
   var ComponentAreaModule = {
@@ -224,8 +238,9 @@ if (!window.app)
     onChangeTicketTemplate: function($el){
       var val = $el.val();
       var previewType =  this.broker.models.source.previewType;
-      var url = this.gettingsvg_url.replace("__ticket_id", val).replace("__previewtype", previewType);
-
+      if(!!previewType){
+        var url = this.gettingsvg_url.replace("__ticket_id", val).replace("__previewtype", previewType);
+      }
       return this.sendingSVGViaRequest(url);
     },
     sendingSVGViaRequest: function(url){
@@ -233,6 +248,21 @@ if (!window.app)
         function(){ this.$el.text("error: url="+url);}.bind(this)
       ).done(
         function(data){this.broker.onNewSVGData(data);}.bind(this)
+      );
+    },
+    onFillValues: function($el){
+      var previewType = this.broker.models.source.previewType;
+      var templateId =  this.broker.models.source.templateId;
+      if(!!templateId && !!previewType){
+        var url = this.gettingvarsvals_url.replace("__ticket_id", templateId).replace("__previewtype", previewType);
+        return this.loadingFillVallues(url);
+      }
+    },
+    loadingFillVallues: function(url){
+      return $.get(url).fail(
+        function(){ this.$el.text("error: url="+url);}.bind(this)
+      ).done(
+        function(data){this.broker.onNewFillValues(data);}.bind(this)
       );
     }
   };
@@ -263,7 +293,7 @@ if (!window.app)
   };
 
   app.ticketSelectSourceModel = ticketSelectSourceModel;
-  app.submitParamatersModel = submitParamatersModel
+  app.submitParamatersModel = submitParamatersModel;
 
   app.UserHandleAreaModule = UserHandleAreaModule;
   app.ChooseAreaModule = ChooseAreaModule;

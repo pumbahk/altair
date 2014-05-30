@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import json
-from StringIO import StringIO
 from altair.app.ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import ProductItem, Performance
-from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute, TicketPrintQueueEntry
+from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute
 from altair.app.ticketing.views import BaseView
+from altair.app.ticketing.tickets.preview.merging import TicketVarsCollector
 from . import forms
 
 import logging
@@ -306,6 +306,8 @@ def create_ticket_from_form(form, base_ticket):  # xxx: todo: move to anywhere
     ticket.data = form.data_value
     ticket.cover_print = formdata["cover_print"]
     ticket.event_id = formdata["event_id"]
+    ticket.base_template = base_ticket
+    ticket.base_template_id = base_ticket.id
     return ticket
 
 
@@ -360,14 +362,13 @@ def getting_svgdata(context, request):
     ticket = context.ticket_alls.filter_by(id=ticket_id).first()
     if ticket is None:
         raise HTTPBadRequest("svg is not found");
-    return {"svg": ticket.drawing,  "preview_type": preview_type}
+    return {"svg": TicketVarsCollector(ticket).template,  "preview_type": preview_type}
 
 
 @view_config(route_name="events.tickets.easycreate.gettingtemplate",renderer="json")
 def getting_ticket_template_data(context, request):
     preview_type = request.matchdict["preview_type"]
     event_id = request.params.get("event_id")
-    logger.info("***event id %s ******", event_id)
     if event_id:
         assert unicode(context.event.id) == unicode(event_id)
         tickets = context.tickets
@@ -394,3 +395,12 @@ def getting_ticket_format_data(context, request):
         qs = context.ticket_something_else_formats
     D = {t.id: {"pk": t.id, "name": t.name, "type": preview_type} for t in qs}
     return {"iterable": list(D.values()), "preview_type": preview_type}
+
+
+@view_config(route_name="events.tickets.easycreate.gettingvarsvals", renderer="json")
+def getting_getting_vars_values(context, request):
+    ticket_id = request.matchdict["ticket_id"]
+    ticket = context.ticket_alls.filter_by(id=ticket_id).first()
+    if ticket is None:
+        raise HTTPBadRequest("svg is not found");
+    return {"params": TicketVarsCollector(ticket).collect()}

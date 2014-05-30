@@ -9,6 +9,7 @@ def includeme(config):
     add_route("events.tickets.easycreate.gettingtemplate", "/api/event/{event_id}/easycreate/gettingtemplate/{preview_type}")
     add_route("events.tickets.easycreate.gettingformat", "/api/event/{event_id}/easycreate/gettingformat/{preview_type}")
     add_route("events.tickets.easycreate.gettingsvg", "/api/event/{event_id}/easycreate/gettingsvg/{ticket_id}/{preview_type}")
+    add_route("events.tickets.easycreate.gettingvarsvals", "/api/event/{event_id}/easycreate/gettingvarsvals/{ticket_id}/{preview_type}")
 
     add_route('events.tickets.boundtickets.show', '/event/{event_id}/ticket/{id}')
     add_route('events.tickets.boundtickets.edit', '/event/{event_id}/ticket/{id}/edit')

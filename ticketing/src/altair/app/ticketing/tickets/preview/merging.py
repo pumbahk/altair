@@ -1,4 +1,7 @@
 # -*- coding:utf-8 -*-
+import logging
+logger = logging.getLogger(__name__)
+
 from .fillvalues import (
     template_fillvalues,
     template_collect_vars,
@@ -27,6 +30,15 @@ class TicketVarsCollector(object):
 
     def is_support(self):
         return self.base_template is not None
+
+    @property
+    def template(self):
+        if self.is_support():
+            logger.info("base template found id=%s", self.ticket.id)
+            return self.base_template.drawing
+        else:
+            logger.info("base template not found id=%s", self.ticket.id)
+            return self.ticket.drawing
 
     def collect_from_self(self):
         template = self.ticket.drawing

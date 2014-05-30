@@ -2614,9 +2614,9 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def vars_defaults(self):
         return self.data.get("vars_defaults", {})
 
-    @memoized_property
+    @property
     def fill_mapping(self):
-        return json.loads(self.data.get("fill_mapping", "{}"))
+        return self.data.get("fill_mapping", {})
 
 
     def create_event_bound(self, event):
