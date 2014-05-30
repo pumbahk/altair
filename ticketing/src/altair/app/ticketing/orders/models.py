@@ -433,8 +433,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return False
 
     def can_refund(self):
-        # 入金済または払戻予約のみ払戻可能
-        return (self.status in ['ordered', 'delivered'] and self.payment_status in ['paid', 'refunding'])
+        # 入金済のみ払戻可能
+        return (self.status in ['ordered', 'delivered'] and self.payment_status == 'paid')
 
     def can_deliver(self):
         # 受付済のみ配送済に変更可能
