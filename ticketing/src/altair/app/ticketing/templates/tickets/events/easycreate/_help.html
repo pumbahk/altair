@@ -52,8 +52,8 @@ on_settings_help_list = [
 ]
 %>
 %for d in on_settings_help_list:
-<span class="label copy-button" data-clipboard-text="{{${d['name']}}}">
-${d["name"]}
+<div class="label">
+<span class="copy-button" data-clipboard-text="{{${d['name']}}}">${d["name"]}</span>
 <span class="help-inline">
           <a rel="popover" 
              data-tigger="hover"
@@ -64,7 +64,7 @@ ${d["name"]}
             <i class="icon-question-sign"></i>
           </a>
         </span>
-</span>
+</div>
 %endfor
 <h4>購入時に設定されるもの</h4>
 <%!
