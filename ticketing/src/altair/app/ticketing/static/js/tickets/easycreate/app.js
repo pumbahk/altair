@@ -131,6 +131,22 @@ if (!window.app)
     onChangeTicketTemplate: function($el){
       this.broker.models.submit.sync("base_template_id", $el.val());
       return this.broker.component.onChangeTicketTemplate($el);
+    },
+    onClickStickyButton: function($el){
+      if($el.hasClass("sticky")){
+        $el.removeClass("sticky");
+        $el.css({"position": "static"});
+      }else {
+        $el.addClass("sticky")
+        $el.css({"position": "fixed"});
+      }
+    },
+    bindClipboardCopy: function($el, moviePath){
+      ZeroClipboard.config({"moviePath": moviePath});
+      $el.find('.copy-button').each(function(i,el){new ZeroClipboard(el)});
+    },
+    bindHelpPopOver: function($el){
+      $el.find('[rel=popover]').popover()
     }
   };
 

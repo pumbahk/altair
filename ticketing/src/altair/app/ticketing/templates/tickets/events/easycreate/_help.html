@@ -1,26 +1,3 @@
-<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/ZeroClipboard.min.js")}"></script>
-<script>
-  $(function() {
-    var r = $(".help-box");
-    r.find('[rel=popover]').popover()
-    ZeroClipboard.config({"moviePath": "${request.static_url("altair.app.ticketing:static/js/ZeroClipboard.swf")}"});
-    r.find('.copy-button').each(function(i,el){new ZeroClipboard(el)});
-
-    $(".sticky-button").on("click", function(){
-      var $el = $(this).parents(".help-box");
-      if($el.hasClass("sticky")){
-        $el.removeClass("sticky");
-        $el.css({"position": "static"});
-      }else {
-        $el.addClass("sticky")
-        $el.css({"position": "fixed"});
-      }
-    });
-  });
-</script>
-
-<div class="help-box">
-<button class="sticky-button">画面にくっつける</button>
 <h4>データ登録時に設定されるもの</h4>
 <%!
 on_settings_help_list = [
@@ -107,4 +84,4 @@ on_buy_help_list = [
 </div>
 %endfor
 <h4>zz系<h4>
-</div>
+

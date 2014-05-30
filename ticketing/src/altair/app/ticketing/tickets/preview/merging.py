@@ -1,9 +1,7 @@
 # -*- coding:utf-8 -*-
-from collections import OrderedDict
 from .fillvalues import (
     template_fillvalues,
     template_collect_vars,
-    natural_order
 )
 
 def _remove_empty_values_from_mapping(mapping):
@@ -32,17 +30,17 @@ class TicketVarsCollector(object):
 
     def collect_from_self(self):
         template = self.ticket.drawing
-        vars_values = natural_order(template_collect_vars(template))
-        params = OrderedDict()
+        vars_values = template_collect_vars(template)
+        params ={}
         for k in vars_values:
             params[k] = ""
         return params
 
     def collect_from_base_template(self):
         template = self.base_template.drawing
-        vars_values = natural_order(template_collect_vars(template))
+        vars_values = template_collect_vars(template)
         fill_mapping = self.ticket.fill_mapping
-        params = OrderedDict()
+        params = {}
         for k in vars_values:
             params[k] = fill_mapping.get(k, "")
         return params

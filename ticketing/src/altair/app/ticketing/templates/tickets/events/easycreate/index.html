@@ -110,7 +110,10 @@ ${getattr(form,attrname).label(class_="required control-label")}
     <div id="userhandle1" class="userhandle" style="display:none">
         <div class="setting-area hero-unit span6">
         ${ch.form_item(template_form.templates)}
-        <%include file="./_help.html"/>
+          <div class="help-box">
+            <button class="sticky-button">画面にくっつける</button>
+            <%include file="./_help.html"/>
+          </div>
         </div>
         <div class="description-box span5">
           <h4>2. 券面テンプレートを指定してください</h4>
@@ -160,6 +163,7 @@ ${getattr(form,attrname).label(class_="required control-label")}
 <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/easycreate/helpers.js")}"></script>
 <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/easycreate/app.js")}"></script>
 <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/easycreate/helpers.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/ZeroClipboard.min.js")}"></script>
 <script type="text/javascript">
 
 // loading component, the trigger is preview type radio button of above area.
@@ -222,27 +226,22 @@ $(function(){
   app.broker.component = app.component;
 
   // binding observer event
-   app.userhandle.$el.find("a.wizard-nav").on("click", function(e){app.userhandle.onClickNavigation($(this)); return false;});
-   app.userhandle.$el.find("a.js-handle-btn").on("click", function(e){app.userhandle.onClickHandleButton($(this)); return false;});
+  app.userhandle.$el.find("a.wizard-nav").on("click", function(e){app.userhandle.onClickNavigation($(this)); return false;});
+  app.userhandle.$el.find("a.js-handle-btn").on("click", function(e){app.userhandle.onClickHandleButton($(this)); return false;});
 
   var radio_btn = app.choose.$el.find('input[name="event_id"]:radio');
   radio_btn.on("change", function(e){ app.choose.onChangeTemplateKind($(this))});
   var radio_btn = app.choose.$el.find('input[name="preview_type"]:radio');
   radio_btn.on("change", function(e){ app.choose.onChangePreviewType($(this))});
 
-  var select_btn = app.setting.$el.find('select[name="templates"]');
-  select_btn.on("change", function(e){ app.setting.onChangeTicketTemplate($(this))});
+  app.setting.$el.find('select[name="templates"]').on("change", function(e){ app.setting.onChangeTicketTemplate($(this))});
+  app.setting.$el.find(".sticky-button").on("click", function(){app.setting.onClickStickyButton($(this).parents(".help-box"));});
+  app.setting.bindClipboardCopy(app.setting.$el.find(".help-box"), "${request.static_url("altair.app.ticketing:static/js/ZeroClipboard.swf")}")
+  app.setting.bindHelpPopOver(app.setting.$el.find(".help-box"));
 
   app.submit.$el.find('input[name="name"]').on("change", function(e){app.submit.onChangeTicketName($(this));});
   app.submit.$el.find('input[name="cover_print"]').on("change", function(e){app.submit.onChangeIsPrintConver($(this));});
   app.submit.$el.find("form:first").on("submit", function(){app.submit.onSubmit($(this)); return false;})
-
-
-  //fisrt time invokeing onesself
-  //app.setting.onChangePreviewType(radio_btn)
-  //   .then(function(){app.setting.onChangeTicketTemplate(select_btn);})
-
-
 });
 
 </script>
