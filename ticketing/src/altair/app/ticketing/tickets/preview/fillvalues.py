@@ -27,8 +27,8 @@ class IndexedVariation(object):
             try:
                 midpoint = pair.index(". </flowSpan>{{")+self.padding
                 prefix, x = pair[:midpoint], pair[midpoint:]
-                if x.startswith("{") and x.endswith("}"):
-                    return prefix + default_escape(x[1:-1])
+                # if x.startswith("{") and x.endswith("}"):
+                #     return prefix + default_escape(x[1:-1])
                 return prefix + default_escape(x)
             except ValueError:
                 return default_escape(pair) # rendered string
