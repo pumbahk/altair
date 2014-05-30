@@ -2592,7 +2592,7 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     derived_tickets = relationship('Ticket', backref=backref('original_ticket', remote_side=[id],), 
                                    foreign_keys=[original_ticket_id], primaryjoin="Ticket.id==Ticket.original_ticket_id")
     base_template_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='SET NULL'), nullable=True)
-    base_template = relationship('Ticket', uselist=False,
+    base_template = relationship('Ticket', uselist=False, remote_side=[id], 
                                  foreign_keys=[base_template_id], primaryjoin="Ticket.id==Ticket.base_template_id")
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
     filename = Column(Unicode(255), nullable=False, default=u"uploaded.svg")

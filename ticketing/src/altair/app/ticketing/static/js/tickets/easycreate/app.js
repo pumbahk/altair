@@ -20,7 +20,9 @@ if (!window.app)
       previewType: {value: null, writable: true},
       eventId: {value: null, writable: true},
       templateKind: {value: null, writable: true},
-      templateId: {value: null, writable: true}
+      templateId: {value: null, writable: true},
+      createdTemplateId: {value: null, writable: true},
+      isAfterCreatedFirst: {value: false, writable: true}
     });
 
   var selectContentTemplate = _.template('<% _.each(iterable, function(d){%><option value="<%= d.pk %>"><%= d.name %></option> <%});%>');
@@ -98,6 +100,12 @@ if (!window.app)
                            window.appView.fillsVarsWithParams(data.params);
                          });
     },
+    onAfterSubmitSuccess: function(data){
+      this.models.source.sync("createdTemplateId", data.ticket_id);
+      this.models.source.sync("isAfterCreatedFirst", true);
+      this.choose.onChangeTemplateKindToEvent();
+      this.userhandle.onClickHandleButton(this.submit.$el.parents(".userhandle").find(".js-next-btn"));
+    },
     getCurrentSVG: function(){
       //xxxx global variable: this variable create after loading component
       return window.appView.getSVGData();
@@ -105,7 +113,7 @@ if (!window.app)
     getCurrentVarsValues: function(){
       //xxxx global variable: this variable create after loading component
       return window.appView.getVarsValues();
-    }
+    },
   };
 
   var SubmitAreaModule = {
@@ -132,7 +140,9 @@ if (!window.app)
         .fail(
           function(){ this.$el.text("error: url="+url);}.bind(this)
         ).done(
-          function(data){ this.$el.text(data); }.bind(this)
+          function(data){
+            this.broker.onAfterSubmitSuccess(data);
+          }.bind(this)
         );
     }
   };
@@ -179,6 +189,12 @@ if (!window.app)
       if(m.isEnough()){
         return this.broker.component.onChangePreviewType($el); //xxx:
       }
+    },
+    onChangeTemplateKindToEvent: function(){
+      var $select = this.$el.find('input[name="event_id"]');
+      var e = _.find($select, function(e){ return !!$(e).val();});  //xxx:
+      $(e).attr("checked","checked");
+      return this.onChangeTemplateKind($(e));
     }
   };
 
@@ -226,6 +242,10 @@ if (!window.app)
     },
     gettingNewTemplates: function(url){
       var params={"event_id": this.broker.models.source.eventId};
+      if (this.broker.models.source.isAfterCreatedFirst){
+        this.broker.models.source.sync("isAfterCreatedFirst",false);
+        params.template_id = this.broker.models.source.createdTemplateId;
+      }
       return $.post(url, params).fail(
         function(){ this.$el.text("error: url="+url);}.bind(this)
       ).done(
@@ -240,8 +260,8 @@ if (!window.app)
       var previewType =  this.broker.models.source.previewType;
       if(!!previewType){
         var url = this.gettingsvg_url.replace("__ticket_id", val).replace("__previewtype", previewType);
+        return this.sendingSVGViaRequest(url);
       }
-      return this.sendingSVGViaRequest(url);
     },
     sendingSVGViaRequest: function(url){
       return $.get(url).fail(

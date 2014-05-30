@@ -82,10 +82,10 @@ ${getattr(form,attrname).label(class_="required control-label")}
 
 <div class="userhandle-area">
   <div class="wizard">
-    <a href="#" id="wizard-nav0" class="wizard-nav current" data-toggle="#userhandle0"><span class="badge">0.</span> 作成方法の選択</a>
-    <a href="#" id="wizard-nav1" class="wizard-nav" data-toggle="#userhandle1"><span class="badge">1.</span> テンプレートの選択</a>
-    <a href="#" id="wizard-nav2" class="wizard-nav" data-toggle="#userhandle2"><span class="badge">2.</span> 登録データ設定</a>
-    <a href="#" id="wizard-nav3" class="wizard-nav" data-toggle="#userhandle3"><span class="badge">3.</span> 登録された券面一覧</a>
+    <a href="#" id="wizard-nav0" class="wizard-nav current" data-toggle="#userhandle0"><span class="badge">1.</span> 作成方法の選択</a>
+    <a href="#" id="wizard-nav1" class="wizard-nav" data-toggle="#userhandle1"><span class="badge">2.</span> テンプレートの選択</a>
+    <a href="#" id="wizard-nav2" class="wizard-nav" data-toggle="#userhandle2"><span class="badge">3.</span> 登録データ設定</a>
+    <a href="#" id="wizard-nav3" class="wizard-nav" data-toggle="#userhandle3"><span class="badge">4.</span> 登録された券面一覧</a>
   </div>
 
   <div class="row-fluid">
@@ -95,16 +95,21 @@ ${getattr(form,attrname).label(class_="required control-label")}
         ${radio_group(choice_form, "preview_type")}
         </div>
         <div class="description-box span5">
-          <h4>0. チケット券面の作成方法を指定してください。</h4>
-          <ul>
-            <li>基本券面から -- 元々用意されている券面テンプレートを利用してチケット券面を作成します</li>
-            <li>既存の券面から -- 既に作成したチケットの一部を変更してチケット券面を作成します</li>
+          <h4>1. チケット券面の作成方法を指定してください。</h4>
+          <dl>
+            <dt>基本券面から</dt>
+            <dd>元々用意されている券面テンプレートを利用してチケット券面を作成します</dd>
+            <dt>既存の券面から</dt> 
+            <dd>既に作成したチケットの一部を変更してチケット券面を作成します</dd>
           </ul>
-          <h4>1. 利用目的を指定してください。</h4>
-          <ul>
-            <li>自社発券 --- 通常利用する券面です。previewにかかる時間が短いです</li>
-            <li>SEJ発券 ---  SEJ引取の際に利用するする券面です。previewにかかる時間はとても長いです</li>
-          </ul>
+          <h4>2. 利用目的を指定してください。</h4>
+          <dl>
+            <dt>自社発券</dt><dd>通常利用する券面です。previewにかかる時間が短いです</dd>
+            <dt>SEJ発券</dt><dd>EJ引取の際に利用するする券面です。previewにかかる時間はとても長いです</dd>
+          </dl>
+          <div class="userhandle-box">
+            <a class="btn js-handle-btn js-next-btn" href="#" data-toggle="#wizard-nav1">次へ</a>
+          </div>
         </div>
     </div>
     <div id="userhandle1" class="userhandle" style="display:none">
@@ -117,15 +122,16 @@ ${getattr(form,attrname).label(class_="required control-label")}
           </div>
         </div>
         <div class="description-box span5">
-          <h4>2. 券面テンプレートを指定してください</h4>
+          <h4>3. 券面テンプレートを指定してください</h4>
           <p>システムに券面の雛型となるデータが格納されています。preview結果を見ながら左の選択欄で設定してください</p>
-          <h4>3. 券面で印字する文言用の箱を追加してください </h4>
+          <h4>4. 券面で印字する文言用の箱を追加してください </h4>
           <p>箱とは"{{"と"}}"で囲まれたような文字列のことです。
           実際の印刷時には左記の単語の箇所がシステムが保持するデータに置き換えられます。
           (例: {{イベント略称}} => 楽天オープン2014)
           </p>
           <div class="userhandle-box">
-            <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav2">次へ</a>
+            <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav0">戻る</a>
+            <a class="btn js-handle-btn js-next-btn" href="#" data-toggle="#wizard-nav2">次へ</a>
           </div>
         </div>
     </div>
@@ -141,7 +147,7 @@ ${getattr(form,attrname).label(class_="required control-label")}
         <div class="submit-box span5">
           <div class="userhandle-box">
             <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav1">戻る</a>
-            <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav3">次へ</a>
+            <a class="btn js-handle-btn js-next-btn" href="#" data-toggle="#wizard-nav3">次へ</a>
           </div>
         </div>
     </div>
@@ -153,7 +159,7 @@ ${getattr(form,attrname).label(class_="required control-label")}
         <div class="description-box span6">
           <p>現在登録されているチケット券面の一覧です</p>
           <div class="userhandle-box">
-            <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav3">戻る</a>
+            <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav2">戻る</a>
           </div>
         </div>
     </div>
@@ -169,6 +175,7 @@ ${getattr(form,attrname).label(class_="required control-label")}
 
 // loading component, the trigger is preview type radio button of above area.
 app.BrokerData = {
+  userhandle: {value: null, writable: true},
   component: {value: null, writable: true},
   setting: {value: null, writable: true},
   submit: {value: null, writable: true},
@@ -226,6 +233,7 @@ $(function(){
   app.broker.submit = app.submit;
   app.broker.listing = app.listing;
   app.broker.component = app.component;
+  app.broker.userhandle = app.userhandle;
 
   // binding observer event
   app.userhandle.$el.find("a.wizard-nav").on("click", function(e){app.userhandle.onClickNavigation($(this)); return false;});
@@ -250,5 +258,4 @@ $(function(){
 </script>
 
 <div class="component-area">
-xxxx
 </div>

@@ -288,9 +288,9 @@ def easycreate_upload(context, request):
     if upload_form.validate():
         ticket_template = create_ticket_from_form(upload_form, base_ticket)
         ticket_template.save()  # flush and DBSession.add(o)
-        return dict(status="ok")
+        return dict(status="ok", ticket_id=ticket_template.id)
     else:
-        return dict(status="ng", errors=upload_form.errors)
+        raise HTTPBadRequest(upload_form.errors)
 
 
 def create_ticket_from_form(form, base_ticket):  # xxx: todo: move to anywhere
@@ -306,8 +306,8 @@ def create_ticket_from_form(form, base_ticket):  # xxx: todo: move to anywhere
     ticket.data = form.data_value
     ticket.cover_print = formdata["cover_print"]
     ticket.event_id = formdata["event_id"]
+    # ticket.base_template_id = base_ticket.id
     ticket.base_template = base_ticket
-    ticket.base_template_id = base_ticket.id
     return ticket
 
 
@@ -369,6 +369,10 @@ def getting_svgdata(context, request):
 def getting_ticket_template_data(context, request):
     preview_type = request.matchdict["preview_type"]
     event_id = request.params.get("event_id")
+
+    ## チケット券面発券後のみこの値が付加されてリクエストされてくる。コレを先頭に持ってくる
+    created_template_id = request.params.get("template_id")
+
     if event_id:
         assert unicode(context.event.id) == unicode(event_id)
         tickets = context.tickets
@@ -377,9 +381,21 @@ def getting_ticket_template_data(context, request):
         tickets = context.ticket_templates
         genurl = lambda t: request.route_path("tickets.templates.show", id=t.id)
     if preview_type == "sej":
-        tickets = context.filter_sej_ticket_templates(tickets)
+        tickets = list(context.filter_sej_ticket_templates(tickets))
     else:
-        tickets = context.filter_something_else_ticket_templates(tickets)
+        tickets = list(context.filter_something_else_ticket_templates(tickets))
+
+    if created_template_id:
+        ## todo: 移動。合致したidを持つobjectを先頭に移動している
+        idx = None
+        for i, t in enumerate(tickets):
+            if unicode(t.id) == unicode(created_template_id):
+                idx = i
+                break
+        if idx:
+            selected = tickets.pop(idx)
+            tickets.insert(0, selected)
+
     return {
         "iterable": [{"pk": t.id, "name": t.name, "checked": False} for t in tickets],
         "tickets": [{"name": t.name, "url": genurl(t)} for t in tickets]
