@@ -83,7 +83,15 @@ class FillvaluesTests(unittest.TestCase):
         result = self._callFUT(tmpl, {u"aux.販売区分": u"---"})
         self.assertEquals(result, u"---")
 
+    def test_with_expression_without_sysvals(self):
+        tmpl = u"{{aux.販売区分}}"
+        result = self._callFUT(tmpl, {})
+        self.assertEquals(result, u"{{aux.販売区分}}")
 
+    def test_with_zenkaku_braces(self):
+        tmpl = u"{｛aa}} {{bb}｝ ｛｛cc｝｝"
+        result = self._callFUT(tmpl, {})
+        self.assertEquals(result, u"{{aa}} {{bb}} {{cc}}")
 
 
 if __name__ == "__main__":

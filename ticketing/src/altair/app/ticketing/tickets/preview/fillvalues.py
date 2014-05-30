@@ -65,13 +65,14 @@ def template_fillvalues(template, params, variation=IdentityVariation()):
     """
     >>> template = u"{{hello}} this is a {{item}} {{{heee}}}"
     >>> template_fillvalues(template, {})
-    u"{{hello}} this is a {{item}} {{heee}}"    
+    u"{{hello}} this is a {{item}} {{heee}}"
 
     >>> template_fillvalues(template, {"hello": "good-bye, "})
-    u"good-bye,  this is a {{item}} {{heee}}"    
+    u"good-bye,  this is a {{item}} {{heee}}"
     """
     try:
-        return FillValuesRenderer(variation).render(template, convert_to_nested_dict(params))
+        rendered = FillValuesRenderer(variation).render(template, convert_to_nested_dict(params))
+        return rendered.replace(u"｛", u"{").replace(u"｝", u"}")
     except Exception, e:
         logger.exception(e)
         raise TicketPreviewFillValuesException(u"Templateへの文字列埋込みに失敗しました")
