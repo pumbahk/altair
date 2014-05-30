@@ -10,16 +10,16 @@ def page_clone(request, page, session=None):
     """
     params = page.to_dict()
     params["title"] = u"%s(コピー)" % page.title
-    params["url"] = None
+    params["url"] = page.url  # xxx?
     del params["id"]
-
+    del params["widgets"]
     new_page = models.Page.from_dict(params)
 
     if session:
         session.add(new_page)
         session.flush()
     wtree = WidgetTreeProxy(page)
-    new_wtree = wclone.clone(session, page, wtree)
+    new_wtree = wclone.clone(session, new_page, wtree)
     if session:
         session.flush()
     new_structure = wclone.to_structure(new_wtree)
