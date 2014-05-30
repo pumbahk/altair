@@ -262,9 +262,9 @@ class BundleAttributeView(BaseView):
 
 @view_config(route_name="events.tickets.easycreate", request_method="POST",
              decorator=with_bootstrap, permission="event_editor",
-             request_param="template_kind", 
+             request_param="create", 
              renderer="json")
-def easycreate_upload(context, request):
+def easycreate_upload_create(context, request):
     event = context.event
     assert event.organization_id == context.organization.id
 
@@ -289,6 +289,42 @@ def easycreate_upload(context, request):
         ticket_template = create_ticket_from_form(upload_form, base_ticket)
         ticket_template.save()  # flush and DBSession.add(o)
         return dict(status="ok", ticket_id=ticket_template.id)
+    else:
+        raise HTTPBadRequest(upload_form.errors)
+
+@view_config(route_name="events.tickets.easycreate", request_method="POST",
+             decorator=with_bootstrap, permission="event_editor",
+             request_param="update", 
+             renderer="json")
+def easycreate_upload_update(context, request):
+    event = context.event
+    assert event.organization_id == context.organization.id
+
+    template_kind = request.POST["template_kind"]
+    preview_type = request.POST["preview_type"]
+    base_template_id = request.POST["base_template_id"]
+
+    logger.info("easycreate upload: template_kind=%s, preview_type=%s", template_kind, preview_type)
+
+    if template_kind == "event":
+        base_ticket = context.tickets.filter_by(id=base_template_id).first()
+    elif template_kind == "base":
+        base_ticket = context.ticket_templates.filter_by(id=base_template_id).first()
+    else:
+        raise HTTPBadRequest("not support template kind {}".format(template_kind))
+
+    if base_ticket is None:
+        raise HTTPBadRequest("base ticket is not found")
+
+    upload_form = forms.EasyCreateTemplateUploadForm(request.POST).configure(context.event, base_ticket)
+    if upload_form.validate():
+        base_ticket.data = upload_form.data_value
+        formdata = upload_form.data
+        base_ticket.name = formdata["name"]
+        base_ticket.cover_print = formdata["cover_print"]
+        base_ticket.data = upload_form.data_value
+        base_ticket.save()  # flush and DBSession.add(o)
+        return dict(status="ok", ticket_id=base_ticket.id)
     else:
         raise HTTPBadRequest(upload_form.errors)
 

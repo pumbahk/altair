@@ -125,7 +125,7 @@ if (!window.app)
       this.broker.models.submit.sync("cover_print", v);
     },
 
-    onSubmit: function($form){
+    collectParamatersForSubmit: function($form){
       var src = this.broker.models.source;
 
       var m = this.broker.models.submit;
@@ -133,9 +133,12 @@ if (!window.app)
       m.template_kind = src.templateKind;
       m.drawing = this.broker.getCurrentSVG();
       m.fill_mapping = JSON.stringify(this.broker.getCurrentVarsValues());
-
-      var params = this.broker.models.submit.collect();
+      return this.broker.models.submit.collect();
+    },
+    onSubmitCreate: function($form){
       var url = $form.attr("action");
+      var params = this.collectParamatersForSubmit($form);
+      params.create = true;
       return $.post(url, params)
         .fail(
           function(){ this.$el.text("error: url="+url);}.bind(this)
@@ -144,7 +147,20 @@ if (!window.app)
             this.broker.onAfterSubmitSuccess(data);
           }.bind(this)
         );
-    }
+    },
+    onSubmitUpdate: function($form){
+      var url = $form.attr("action");
+      var params = this.collectParamatersForSubmit($form);
+      params.update = true;
+      return $.post(url, params)
+        .fail(
+          function(){ this.$el.text("error: url="+url);}.bind(this)
+        ).done(
+          function(data){
+            this.broker.onAfterSubmitSuccess(data);
+          }.bind(this)
+        );
+   }
   };
 
   var SettingAreaModule = {
