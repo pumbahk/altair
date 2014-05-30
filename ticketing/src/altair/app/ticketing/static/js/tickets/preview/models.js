@@ -164,7 +164,7 @@ if (!window.preview)
                 return this.trigger("*vars.commit.vars", {});
             }
             var vars_values = this.collectVarsValues();
-            return this.trigger("*vars.commit.vars",  var_values);
+            return this.trigger("*vars.commit.vars",  vars_values);
         },
         collectVarsValues: function(){
             var var_values = {};
