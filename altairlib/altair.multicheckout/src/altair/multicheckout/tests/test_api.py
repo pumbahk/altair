@@ -4,6 +4,8 @@ import mock
 from pyramid import testing
 
 class Multicheckout3DAPITests(unittest.TestCase):
+    shop_code = u'00000000'
+
     def setUp(self):
         from sqlalchemy import create_engine
         from sqlalchemy.orm import Session
@@ -11,7 +13,7 @@ class Multicheckout3DAPITests(unittest.TestCase):
         import sqlahelper
 
         self.config = testing.setUp()
-        self.dummy_impl = DummyCheckout3D()
+        self.dummy_impl = DummyCheckout3D(shop_code=self.shop_code)
         self.request = testing.DummyRequest()
         engine = create_engine("sqlite:///")
         sqlahelper.add_engine(engine)
@@ -325,3 +327,17 @@ class Multicheckout3DAPITests(unittest.TestCase):
         self.assertEqual(card_no, self.dummy_impl.last_params['CardNo'])
         self.assertEqual(card_limit, self.dummy_impl.last_params['CardLimit'])
         self.assertEqual(mail_address, self.dummy_impl.last_params['MailAddress'])
+
+    def test_keep_auth(self):
+        from .. import models as m
+        status = m.MultiCheckoutOrderStatus(OrderNo=u'XX0000000000', Status=u'110', Storecd=self.shop_code, KeepAuthFor=u'')
+        self.session.add(status)
+        self.session.commit()
+        target = self._makeOne()
+        self.assertEqual(target.authorization_kept_for(status.OrderNo), None)
+        target.keep_authorization(status.OrderNo, 'something_good')
+        self.assertEqual(target.authorization_kept_for(status.OrderNo), u'something_good')
+        self.assertEqual(target.checkout_auth_cancel(status.OrderNo), None)
+        reloaded_status = self.session.query(m.MultiCheckoutOrderStatus).filter_by(OrderNo=status.OrderNo).one()
+        self.assertEqual(reloaded_status.KeepAuthFor, u'something_good')
+        self.assertEqual(reloaded_status.Status, u'110')

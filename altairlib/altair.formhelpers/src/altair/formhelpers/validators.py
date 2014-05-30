@@ -15,6 +15,8 @@ __all__ = (
     'JISX0208',
     'CP932',
     'ASCII',
+    'Email',
+    'MultipleEmail',
     'SejCompliantEmail',
     'Zenkaku',
     'after1900',
@@ -117,6 +119,26 @@ class Charset(object):
 ASCII = Charset('ASCII')
 JISX0208 = Charset('Shift_JIS')
 CP932 = Charset('CP932')
+
+class Email(validators.Regexp):
+    def __init__(self, message=None):
+        super(Email, self).__init__(r'^[a-zA-Z0-9_+\-*/=.]+@[^.][a-zA-Z0-9_\-.]*\.[a-z]{2,10}$', re.IGNORECASE, message)
+
+    def __call__(self, form, field):
+        if self.message is None:
+            self.message = field.gettext(u'Invalid email address.')
+
+        super(Email, self).__call__(form, field)
+
+class MultipleEmail(validators.Regexp):
+    def __init__(self, message=None):
+        super(MultipleEmail, self).__init__(r'^([,]*[a-zA-Z0-9_+\-*/=.]+@[^.][a-zA-Z0-9_\-.]*\.[a-z]{2,10})+$', re.IGNORECASE, message)
+
+    def __call__(self, form, field):
+        if self.message is None:
+            self.message = field.gettext(u'不正な文字が含まれています')
+
+        super(MultipleEmail, self).__call__(form, field)
 
 class SejCompliantEmail(validators.Regexp):
     def __init__(self, message=None):

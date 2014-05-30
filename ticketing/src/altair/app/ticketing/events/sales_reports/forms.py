@@ -3,11 +3,11 @@
 import logging
 
 from wtforms import Form, TextField, SelectField, HiddenField
-from wtforms.validators import Regexp, Length, Optional, ValidationError, Email
+from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.compat import iteritems
 
 from altair.formhelpers import (
-    OurDateTimeField, Translations, Required, RequiredOnUpdate,
+    OurDateTimeField, Translations, Required, RequiredOnUpdate, MultipleEmail,
     OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField,
     OurTimeField, zero_as_none, after1900)
 from altair.app.ticketing.core.models import Operator, ReportSetting, SalesSegment, Performance, Event
@@ -33,6 +33,8 @@ class SalesReportForm(OurForm):
                 field.data = kwargs[name]
         if formdata and not 'need_total' in formdata:
             self.need_total.data = True
+        if formdata and 'recipient' in formdata:
+            self.recipient.data = ','.join([email.strip() for email in self.recipient.data.split(',')])
 
     def _get_translations(self):
         return Translations()
@@ -92,7 +94,7 @@ class SalesReportForm(OurForm):
     )
     recipient = TextField(
         label=u'送信先',
-        validators=[Required(), Regexp(r'^[\x20-\x7E]+$', message=u'不正な文字が含まれています')],
+        validators=[Required(), MultipleEmail()],
     )
     subject = TextField(
         label=u'件名',
@@ -132,7 +134,8 @@ class ReportSettingForm(OurForm):
         if hasattr(context, 'organization') and context.organization.id:
             operators = Operator.query.filter_by(organization_id=context.organization.id).all()
             self.operator_id.choices = [('', '')] + [(o.id, o.name) for o in operators]
-
+        if formdata and 'email' in formdata:
+            self.email.data = ','.join([e.strip() for e in self.email.data.split(',')])
         if obj:
             self.report_hour.data = int(obj.time[0:2] or 0)
             self.report_minute.data = int(obj.time[2:4] or 0)
@@ -167,7 +170,7 @@ class ReportSettingForm(OurForm):
         label=u'メールアドレス',
         validators=[
             Optional(),
-            Email()
+            MultipleEmail()
         ]
     )
     frequency = SelectField(

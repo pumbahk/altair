@@ -77,3 +77,159 @@ class SalesSegmentFormTests(unittest.TestCase):
                 print e.encode('utf-8')
 
         self.assertNotIn('start_at', target.errors)
+
+
+class validate_issuing_start_atTests(unittest.TestCase):
+
+    def setUp(self):
+        import altair.app.ticketing.core.models
+        import sqlalchemy.orm
+        sqlalchemy.orm.configure_mappers()
+
+    def _getTarget(self):
+        from ..forms import validate_issuing_start_at
+        return validate_issuing_start_at
+
+    def _callFUT(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_validate_issuing_start_at_other_delivery_plugin(self):
+        from datetime import datetime
+        from altair.app.ticketing.payments import plugins
+        pdmp = DummyResource(
+            issuing_start_at=None,
+            issuing_interval_days=1,
+            payment_method=Mock(name=u'コンビニ決済'),
+            delivery_method=Mock(name=u'配送', delivery_plugin_id=plugins.SHIPPING_DELIVERY_PLUGIN_ID)
+            )
+        try:
+            self._callFUT(
+                datetime(2014, 1, 10, 10, 0, 0),
+                datetime(2014, 1, 10, 23, 59, 59),
+                pdmp,
+                issuing_start_at=None,
+                issuing_interval_days=None
+                )
+            self.assert_(True)
+        except:
+            self.fail()
+
+    def test_validate_issuing_start_at_in_term(self):
+        from datetime import datetime
+        from altair.app.ticketing.payments import plugins
+        pdmp = DummyResource(
+            issuing_start_at=None,
+            issuing_interval_days=1,
+            payment_method=Mock(name=u'コンビニ決済'),
+            delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
+            )
+        try:
+            self._callFUT(
+                datetime(2014, 1, 10, 10, 0, 0),
+                datetime(2014, 1, 9, 23, 59, 59),
+                pdmp,
+                issuing_start_at=None,
+                issuing_interval_days=None
+                )
+            self.assert_(True)
+        except:
+            self.fail()
+
+    def test_validate_issuing_start_at_in_term_issuing_interval_days(self):
+        from datetime import datetime
+        from altair.app.ticketing.payments import plugins
+        pdmp = DummyResource(
+            issuing_start_at=None,
+            issuing_interval_days=2,
+            payment_method=Mock(name=u'コンビニ決済'),
+            delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
+            )
+        try:
+            self._callFUT(
+                datetime(2014, 1, 10, 10, 0, 0),
+                datetime(2014, 1, 8, 23, 59, 59),
+                pdmp,
+                issuing_start_at=None,
+                issuing_interval_days=None
+                )
+            self.assert_(True)
+        except:
+            self.fail()
+
+    def test_validate_issuing_start_at_in_term_with_issuing_interval_days(self):
+        from datetime import datetime
+        from altair.app.ticketing.payments import plugins
+        from ..exceptions import IssuingStartAtOutTermException
+        pdmp = DummyResource(
+            issuing_start_at=None,
+            issuing_interval_days=2,
+            payment_method=Mock(name=u'コンビニ決済'),
+            delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
+            )
+        with self.assertRaises(IssuingStartAtOutTermException):
+            self._callFUT(
+                datetime(2014, 1, 10, 10, 0, 0),
+                datetime(2014, 1, 8, 23, 59, 59),
+                pdmp,
+                issuing_start_at=None,
+                issuing_interval_days=3
+                )
+
+    def test_validate_issuing_start_at_in_term_with_issuing_start_at(self):
+        from datetime import datetime
+        from altair.app.ticketing.payments import plugins
+        pdmp = DummyResource(
+            issuing_start_at=None,
+            issuing_interval_days=2,
+            payment_method=Mock(name=u'コンビニ決済'),
+            delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
+            )
+        try:
+            self._callFUT(
+                datetime(2014, 1, 10, 10, 0, 0),
+                datetime(2014, 1, 8, 23, 59, 59),
+                pdmp,
+                issuing_start_at=datetime(2014, 1, 9, 23, 59, 59),
+                issuing_interval_days=3
+                )
+            self.assert_(True)
+        except:
+            self.fail()
+
+    def test_validate_issuing_start_at_out_term(self):
+        from datetime import datetime
+        from altair.app.ticketing.payments import plugins
+        from ..exceptions import IssuingStartAtOutTermException
+        pdmp = DummyResource(
+            issuing_start_at=None,
+            issuing_interval_days=1,
+            payment_method=Mock(name=u'コンビニ決済'),
+            delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
+            )
+        with self.assertRaises(IssuingStartAtOutTermException):
+            self._callFUT(
+                datetime(2014, 1, 10, 10, 0, 0),
+                datetime(2014, 1, 10, 23, 59, 59),
+                pdmp,
+                issuing_start_at=None,
+                issuing_interval_days=None
+                )
+
+    def test_validate_issuing_start_at_out_term_issuing_interval_days(self):
+        from datetime import datetime
+        from altair.app.ticketing.payments import plugins
+        from ..exceptions import IssuingStartAtOutTermException
+        pdmp = DummyResource(
+            issuing_start_at=None,
+            issuing_interval_days=2,
+            payment_method=Mock(name=u'コンビニ決済'),
+            delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
+            )
+        with self.assertRaises(IssuingStartAtOutTermException):
+            self._callFUT(
+                datetime(2014, 1, 10, 10, 0, 0),
+                datetime(2014, 1, 9, 23, 59, 59),
+                pdmp,
+                issuing_start_at=None,
+                issuing_interval_days=None
+                )

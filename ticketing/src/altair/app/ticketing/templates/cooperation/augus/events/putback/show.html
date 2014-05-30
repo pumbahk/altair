@@ -9,9 +9,9 @@
 
 <p>返券コード: ${putback.augus_putback_code}</p>
 <p>返券タイプ: ${putback.augus_putback_type}</p>
-<p>返券予約: ${putback.reserved_at}</p>
-<p>返券通知: ${putback.notified_at}</p>
-<p>返券完了: ${putback.finished_at}</p>
+<p>返券予約: ${vh.datetime(putback.reserved_at, with_weekday=True)}</p>
+<p>返券通知: ${vh.datetime(putback.notified_at, with_weekday=True)}</p>
+<p>返券完了: ${vh.datetime(putback.finished_at, with_weekday=True)}</p>
 
 <table class="table">
   <tr>

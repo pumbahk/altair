@@ -105,12 +105,18 @@ class Multicheckout3DAPI(object):
                     if hasattr(req, 'SalesAmount'):
                         amount = req.SalesAmount
                     elif hasattr(req, 'SalesAmountCancellation'):
-                        prev_status = m.MultiCheckoutOrderStatus.get_or_create(res.OrderNo, res.Storecd)
+                        prev_status = m.MultiCheckoutOrderStatus.get_or_create(res.OrderNo, res.Storecd, session=self.session)
                         if prev_status.SalesAmount is not None:
                             amount = prev_status.SalesAmount - req.SalesAmountCancellation
-                m.MultiCheckoutOrderStatus.set_status(res.OrderNo, res.Storecd, status, amount, invoker)
+                m.MultiCheckoutOrderStatus.set_status(res.OrderNo, res.Storecd, status, amount, invoker, session=self.session)
         finally:
             self.session.commit()
+
+    def _get_order_status(self, order_no):
+        return self.session.query(m.MultiCheckoutOrderStatus) \
+            .filter(m.MultiCheckoutOrderStatus.OrderNo == order_no) \
+            .filter(m.MultiCheckoutOrderStatus.Storecd == self.impl.shop_code) \
+            .first()
 
     def secure3d_enrol(self, order_no, card_number, exp_year, exp_month, total_amount):
         """ セキュア3D認証要求 """
@@ -205,8 +211,10 @@ class Multicheckout3DAPI(object):
 
     def checkout_auth_cancel(self, order_no):
         """ オーソリキャンセル """
-
         order_no = maybe_unicode(order_no)
+        status = self._get_order_status(order_no)
+        if status is not None and status.KeepAuthFor:
+            return None
         res = self.impl.request_card_cancel_auth(self, order_no)
         events.CheckoutAuthCancelEvent.notify(self.request, order_no, res)
         self.save_api_response(res, None)
@@ -259,12 +267,26 @@ class Multicheckout3DAPI(object):
 
     def get_authorized_amount(self, order_no):
         order_no = maybe_unicode(order_no)
-        status = m._session.query(m.MultiCheckoutOrderStatus) \
-            .filter(m.MultiCheckoutOrderStatus.OrderNo == order_no) \
-            .filter(m.MultiCheckoutOrderStatus.Storecd == self.impl.shop_code) \
-            .first()
+        status = self._get_order_status(order_no)
         if status is not None:
             return status.SalesAmount
+        else:
+            return None
+
+    def keep_authorization(self, order_no, for_what):
+        status = self._get_order_status(order_no)
+        if status is None:
+            return
+        status.KeepAuthFor = for_what
+        self.session.add(status)
+        self.session.commit()
+
+    def authorization_kept_for(self, order_no):
+        order_no = maybe_unicode(order_no)
+        status = self._get_order_status(order_no)
+        if status is not None:
+            # 空文字列が入っていたとしても None を返したい
+            return status.KeepAuthFor if status.KeepAuthFor else None
         else:
             return None
 

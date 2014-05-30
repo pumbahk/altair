@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime, timedelta
 from wtforms import Form
 from wtforms import TextField, HiddenField, TextAreaField, BooleanField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
@@ -9,7 +10,7 @@ from altair.formhelpers.form import OurForm
 from altair.formhelpers.filters import zero_as_none
 from altair.formhelpers.fields import OurIntegerField, DateTimeField, OurGroupedSelectField, OurSelectField
 from altair.formhelpers import replace_ambiguous
-from altair.app.ticketing.core.models import Site, Venue, Performance, PerformanceSetting, Stock
+from altair.app.ticketing.core.models import Site, Venue, Performance, PerformanceSetting, Stock, SalesSegment
 from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.helpers import label_text_for
@@ -19,6 +20,11 @@ PREFECTURE_ORDER = { u'北海道': 1, u'青森県': 2, u'岩手県': 3, u'宮城
 class PerformanceForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         super(PerformanceForm, self).__init__(formdata, obj, prefix, **kwargs)
+
+        self.event = None
+        if 'event' in kwargs:
+            self.event = kwargs['event']
+
         if 'organization_id' in kwargs:
             venue_by_pref = dict()
             venues = Venue.query.join(Site).filter(
@@ -154,6 +160,35 @@ class PerformanceForm(OurForm):
     def validate_start_on(form, field):
         if field.data and form.open_on.data and field.data < form.open_on.data:
             raise ValidationError(u'開場日時より過去の日時は入力できません')
+
+        # コンビニ発券開始日時をチェックする
+        if field.data is not None:
+            from altair.app.ticketing.events.sales_segments.forms import validate_issuing_start_at
+            from altair.app.ticketing.events.sales_segments.exceptions import IssuingStartAtOutTermException
+            performance_end_on = form.end_on.data or field.data
+            targets = []
+            if form.id.data:
+                sales_segments = SalesSegment.query.filter_by(performance_id=form.id.data).all()
+                for ss in sales_segments:
+                    end_at = ss.end_at
+                    if ss.use_default_end_at:
+                        end_at = ss.sales_segment_group.end_for_performance(ss.performance)
+                    targets.append((end_at, ss.payment_delivery_method_pairs))
+            else:
+                sales_segment_groups = form.event.sales_segment_groups
+                for ssg in sales_segment_groups:
+                    end_at = ssg.end_at
+                    if not end_at:
+                        s = field.data
+                        end_at = datetime(s.year, s.month, s.day, ssg.end_time.hour, ssg.end_time.minute)
+                        end_at -= timedelta(days=ssg.end_day_prior_to_performance)
+                    targets.append((end_at, ssg.payment_delivery_method_pairs))
+            for end_at, pdmps in targets:
+                for pdmp in pdmps:
+                    try:
+                        validate_issuing_start_at(performance_end_on, end_at, pdmp)
+                    except IssuingStartAtOutTermException as e:
+                        raise ValidationError(e.message)
 
     def validate_end_on(form, field):
         if field.data and form.start_on.data and field.data < form.start_on.data:

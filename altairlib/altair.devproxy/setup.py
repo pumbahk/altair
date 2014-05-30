@@ -13,7 +13,7 @@ requires = [
     ]
 
 setup(name='altair.devproxy',
-      version='0.0',
+      version='0.2.0',
       description='altair_devproxy',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[

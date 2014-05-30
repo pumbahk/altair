@@ -11,13 +11,13 @@
             </tr>
             <tr>
               <th>予約日時</th>
-              <td>${vh.datetime(order.created_at)}</td>
+              <td>${vh.datetime(order.created_at, with_weekday=True)}</td>
             </tr>
             <tr>
               <th>決済日時</th>
               <td>
                 % if order.paid_at:
-                  ${vh.datetime(order.paid_at)}
+                  ${vh.datetime(order.paid_at, with_weekday=True)}
                 % endif
                 ${HH.payment_status(order)}
               </td>
@@ -26,7 +26,7 @@
               <th>最終発券 (印字) 日時</th>
               <td>
                 % if order.issued_at:
-                  ${vh.datetime(order.issued_at)}
+                  ${vh.datetime(order.issued_at, with_weekday=True)}
                 % else:
                   % if order.queued:
                     - <span class="label label-info">既に印刷キューに入っています</span>
@@ -60,7 +60,7 @@
               <th>配送日時</th>
               <td>
                 % if order.delivered_at:
-		   ${vh.datetime(order.delivered_at)}
+		   ${vh.datetime(order.delivered_at, with_weekday=True)}
                 % endif
                 ${HH.delivery_status(order)}
                 % if order.delivered_at:
@@ -71,7 +71,7 @@
             % if order.status == 'canceled':
             <tr>
               <th>キャンセル日時</th>
-              <td>${vh.datetime(order.canceled_at)}</td>
+              <td>${vh.datetime(order.canceled_at, with_weekday=True)}</td>
             </tr>
             % endif
             <tr>

@@ -49,19 +49,19 @@
     <th style="width: 24%;">販売期間</th>
     <th style="width: 6%;">配席数</th>
     <th style="width: 6%;">残席数</th>
-    <th style="width: 6%;">販売枚数</th>
-    <th style="width: 6%;">販売金額</th>
-    <th style="width: 6%;">販売枚数</th>
-    <th style="width: 6%;">販売金額</th>
+    <th style="width: 6%;">受付数</th>
+    <th style="width: 6%;">受付金額</th>
+    <th style="width: 6%;">受付数</th>
+    <th style="width: 6%;">受付金額</th>
   </tr>
   % if event_total_reporter:
     % for record in event_total_reporter.sort_data():
     <tr>
       <td><a href='javascript:event_link("${request.route_path("sales_reports.event", event_id=record.id)}");'>${record.title}</a></td>
       % if record.sales_start_day == record.sales_end_day:
-      <td>${vh.datetime(record.sales_start_day)}</td>
+      <td>${vh.datetime(record.sales_start_day, with_weekday=True)}</td>
       % else:
-      <td>${vh.datetime(record.sales_start_day)} 〜 ${vh.datetime(record.sales_end_day)}</td>
+      <td>${vh.datetime(record.sales_start_day, with_weekday=True)} 〜 ${vh.datetime(record.sales_end_day, with_weekday=True)}</td>
       % endif
       <td class="numeric">${vh.number(record.stock_quantity)}</td>
       <td class="numeric">${vh.number(record.vacant_quantity)}</td>

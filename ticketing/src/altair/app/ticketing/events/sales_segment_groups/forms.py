@@ -176,7 +176,7 @@ class SalesSegmentGroupForm(OurForm):
         hide_on_new=True
     )
     disp_orderreview = OurBooleanField(
-        label=u'一般チケットの購入履歴の表示/非表示',
+        label=u'マイページへの購入履歴表示/非表示',
         hide_on_new=True
     )
     disp_agreement = OurBooleanField(
@@ -318,6 +318,23 @@ class SalesSegmentGroupForm(OurForm):
         if self.end_at.data is not None and self.start_at.data is not None and self.end_at.data < self.start_at.data:
             append_error(self.end_at, ValidationError(u'開演日時より過去の日時は入力できません'))
             return False
+
+        # コンビニ発券開始日時をチェックする
+        if self.id.data and self.end_at.data is not None:
+            from altair.app.ticketing.events.sales_segments.forms import validate_issuing_start_at
+            from altair.app.ticketing.events.sales_segments.exceptions import IssuingStartAtOutTermException
+            ssg = SalesSegmentGroup.query.filter_by(id=self.id.data).one()
+            for ss in ssg.sales_segments:
+                if not ss.use_default_end_at:
+                    continue
+                performance_end_on = ss.performance.end_on or ss.performance.start_on
+                end_at = self.end_at.data or ssg.end_for_performance(ss.performance)
+                for pdmp in ss.payment_delivery_method_pairs:
+                    try:
+                        validate_issuing_start_at(performance_end_on, end_at, pdmp)
+                    except IssuingStartAtOutTermException as e:
+                        self.end_at.errors.append(e.message)
+                        return False
         return True
 
     def _validate_public(self, *args, **kwargs):
