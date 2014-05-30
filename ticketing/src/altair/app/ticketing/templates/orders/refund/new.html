@@ -13,9 +13,9 @@
 </div>
 
 
-<div style="float: left;">
+<div>
   <div class="alert alert-warning">
-    <p><strong>払戻は2つの方法があります。</strong></p>
+    <p><strong>払戻方法は2つあります。</strong></p>
     <ol>
       <li><strong>個別払戻</strong></li>
         お客様対応などで、予約1件ごとに払戻を行う場合は、各予約の詳細画面にて払戻を行います。<br>
@@ -99,9 +99,9 @@
   <a type="button" class="btn" id="removeall">全て選択しない</a>
   <a type="button" class="btn btn-danger" href="${request.route_path('orders.refund.confirm')}">選択した予約に払戻条件を設定</a>
 </div>
+<p/>
 
 % if orders:
-<p> ${max(orders.items_per_page * (orders.page-1) + 1,0)}～${min(orders.items_per_page * orders.page, orders.item_count)} / ${orders.item_count}件</p>
 <div class="orders">
   <%include file="/orders/_list.html" args="form=form, orders=orders" />
 </div>
