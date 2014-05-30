@@ -342,6 +342,9 @@ class SearchFormBase(Form):
         choices=[],
         validators=[Optional()],
     )
+    refund_id = HiddenField(
+        validators=[Optional()],
+    )
     start_on_from = DateTimeField(
         label=u'公演日',
         validators=[Optional(), after1900],
