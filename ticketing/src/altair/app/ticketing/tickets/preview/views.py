@@ -16,27 +16,35 @@ logger = logging.getLogger(__name__)
 
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core import models as c_models
-from altair.app.ticketing.tickets.utils import transform_matrix_from_ticket_format
-from altair.app.ticketing.tickets.utils import build_dict_from_product
-from altair.app.ticketing.tickets.utils import build_dict_from_venue
-from altair.app.ticketing.tickets.utils import build_dict_from_event
-from altair.app.ticketing.tickets.utils import build_dict_from_organization
+from altair.app.ticketing.tickets.utils import (
+    transform_matrix_from_ticket_format,
+    build_dict_from_product,
+    build_dict_from_venue,
+    build_dict_from_event,
+    build_dict_from_organization,
+)
 
-from .api import SVGPreviewCommunication
-from .api import SEJPreviewCommunication
-from .api import as_filelike_response
+from .api import (
+    SVGPreviewCommunication,
+    SEJPreviewCommunication,
+    as_filelike_response
+)
+from .transform import (
+    SVGTransformer,
+    FillvaluesTransformer,
+    SEJTemplateTransformer
+)
 
-from .transform import SVGTransformer
-from .transform import FillvaluesTransformer
-from .transform import SEJTemplateTransformer
-
-from .fillvalues import template_collect_vars
-from .fillvalues import template_fillvalues
+from .fillvalues import (
+    template_collect_vars,
+    template_fillvalues,
+    natural_order
+)
 from .fetchsvg import fetch_svg_from_postdata
 from ..cleaner.api import get_validated_svg_cleaner
 from altair.response import (
-    FileLikeResponse, 
-    ZipFileResponse, 
+    FileLikeResponse,
+    ZipFileResponse,
     ZipFileCreateRecursiveWalk
 )
 
@@ -351,7 +359,7 @@ class PreviewApiView(object):
     def preview_collectvars(self):
         svg = self.request.POST["svg"]
         try:
-            return {"status": True, "data": list(sorted(template_collect_vars(svg)))}
+            return {"status": True, "data": natural_order(template_collect_vars(svg))}
         except TicketPreviewFillValuesException, e:
             return {"status": False, "message": "%s" % e.message}
         except Exception, e:

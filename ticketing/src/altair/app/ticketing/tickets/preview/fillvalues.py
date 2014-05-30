@@ -172,3 +172,11 @@ class CollectVarsRenderEngine(RenderEngine):
         return self._parse(template)._parse_tree
     def render(self, template, context):
         self.parse(template)
+
+import re
+DIGIT_RX = re.compile(r"([0-9]+)")
+def natural_order_key(name):
+    return [(int(x) if x.isdigit() else x) for x in re.split(DIGIT_RX, name) if x]
+
+def natural_order(xs):
+    return sorted(xs, key=natural_order_key)
