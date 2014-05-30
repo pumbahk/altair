@@ -170,6 +170,12 @@ actions = {
     attrs={'class': 'btn-danger'},
     route_name='orders.refund.immediate',
   ),
+  'refund_info':dict(
+    label=u'払戻詳細',
+    url=request.route_path("orders.refund.show", refund_id=order.refund_id),
+    icon='icon-list',
+    route_name='orders.refund.show',
+  ),
   'edit_shipping_address':dict(
     label=u'編集',
     url='javascript:edit_shipping_address(%d);' % order.id,
@@ -213,6 +219,9 @@ if 'cancel' in sort:
 if 'refund' in sort:
   if not order.can_refund():
     sort.remove('refund')
+if 'refund_info' in sort:
+  if not order.refund_id:
+    sort.remove('refund_info')
 if 'delivered' in sort:
   if not order.can_deliver():
     sort.remove('delivered')
