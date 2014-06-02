@@ -141,7 +141,7 @@ if (!window.app)
       params.create = true;
       return $.post(url, params)
         .fail(
-          function(){ this.$el.text("error: url="+url);}.bind(this)
+          function(){ this.broker.message.errorMessage("error: url="+url);}.bind(this)
         ).done(
           function(data){
             this.broker.onAfterSubmitSuccess(data);
@@ -154,7 +154,7 @@ if (!window.app)
       params.update = true;
       return $.post(url, params)
         .fail(
-          function(){ this.$el.text("error: url="+url);}.bind(this)
+          function(){ this.broker.message.errorMessage("error: url="+url);}.bind(this)
         ).done(
           function(data){
             this.broker.onAfterSubmitSuccess(data);
@@ -241,7 +241,7 @@ if (!window.app)
         return $dfd.promise();
       }
       return $.get(url).fail(
-        function(){ this.$el.text("error: url="+url);}.bind(this)
+        function(){ this.broker.message.errorMessage("error: url="+url);}.bind(this)
       ).done(
         function(html){ this.$el.html(html); }.bind(this)
       );
@@ -249,7 +249,7 @@ if (!window.app)
     gettingNewFormats: function(url){
       var self = this;
       return $.get(url).fail(
-        function(){ this.$el.text("error: url="+url);}.bind(this)
+        function(){ this.broker.message.errorMessage("error: url="+url);}.bind(this)
       ).done(
         function(data){
           self.ticket_formats_iterable = data.iterable;
@@ -263,7 +263,7 @@ if (!window.app)
         params.template_id = this.broker.models.source.createdTemplateId;
       }
       return $.post(url, params).fail(
-        function(){ this.$el.text("error: url="+url);}.bind(this)
+        function(){ this.broker.message.errorMessage("error: url="+url);}.bind(this)
       ).done(
         function(data){ 
           this.broker.onTicketTemplateSelectElementUpdate(selectContentTemplate({"iterable": data.iterable}));
@@ -281,7 +281,7 @@ if (!window.app)
     },
     sendingSVGViaRequest: function(url){
       return $.get(url).fail(
-        function(){ this.$el.text("error: url="+url);}.bind(this)
+        function(){ this.broker.message.errorMessage("error: url="+url);}.bind(this)
       ).done(
         function(data){this.broker.onNewSVGData(data);}.bind(this)
       );
@@ -296,7 +296,7 @@ if (!window.app)
     },
     loadingFillVallues: function(url){
       return $.get(url).fail(
-        function(){ this.$el.text("error: url="+url);}.bind(this)
+        function(){ this.broker.message.errorMessage("error: url="+url);}.bind(this)
       ).done(
         function(data){this.broker.onNewFillValues(data);}.bind(this)
       );
@@ -327,6 +327,35 @@ if (!window.app)
       $($el.data("toggle")).click();
     }
   };
+
+  var MessageServiceModule = {
+    doMessage: function(expr, message){
+      var messages = this.$el.find(".message");
+      messages.hide();
+      var target = this.$el.find(".message"+expr);
+      if (target.length <= 0){
+        target = $('<div class="message">');
+        target.attr('id', expr.substring(1,expr.length));
+        this.$el.append(target);
+      }
+      target.text(message);
+      target.show();
+    },
+    successMessage: function(message){
+      this.doMessage(this.success, message);
+    },
+    infoMessage: function(message){
+      this.doMessage(this.info, message);
+    },
+    alertMessage: function(message){
+      this.doMessage(this.alert, message);
+    },
+    errorMessage: function(message){
+      this.doMessage(this.error, message);
+    }
+  };
+
+  app.MessageServiceModule = MessageServiceModule;
 
   app.ticketSelectSourceModel = ticketSelectSourceModel;
   app.submitParamatersModel = submitParamatersModel;

@@ -454,5 +454,5 @@ def getting_getting_vars_values(context, request):
     ticket_id = request.matchdict["ticket_id"]
     ticket = context.ticket_alls.filter_by(id=ticket_id).first()
     if ticket is None:
-        raise HTTPBadRequest("svg is not found");
+        raise HTTPBadRequest("svg is not found")
     return {"params": TicketVarsCollector(ticket).collect()}

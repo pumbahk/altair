@@ -181,7 +181,8 @@ app.BrokerData = {
   setting: {value: null, writable: true},
   submit: {value: null, writable: true},
   listing: {value: null, writable: true},
-  models: {value: {source: app.ticketSelectSourceModel, submit: app.submitParamatersModel}} 
+  message: {value: null, writable: true},
+  models: {value: {source: app.ticketSelectSourceModel, submit: app.submitParamatersModel}}
 }
 app.broker = Object.create(app.BrokerModule, app.BrokerData);
 
@@ -222,12 +223,21 @@ $(function(){
     $el: {value: $(".listing-area"), writable: false}
   }
 
+  app.MessageServiceData = {
+    $el: {value: $("body")},
+    success: {value: "#succes_message"},
+    alert: {value: "#alert_message"},
+    info: {value: "#info_message"},
+    error: {value: "#error_message"}
+  };
+
   app.userhandle = Object.create(app.UserHandleAreaModule,app.UserHandleAreaData);
   app.choose = Object.create(app.ChooseAreaModule, app.ChooseAreaData);
   app.setting = Object.create(app.SettingAreaModule, app.SettingAreaData);
   app.submit = Object.create(app.SubmitAreaModule, app.SubmitAreaData);
   app.listing = Object.create(app.ListingAreaModule, app.ListingAreaData);
   app.component = Object.create(app.ComponentAreaModule, app.ComponentAreaData);
+  app.message = Object.create(app.MessageServiceModule, app.MessageServiceData);
 
   app.broker.choose = app.choose;
   app.broker.setting = app.setting;
@@ -235,6 +245,7 @@ $(function(){
   app.broker.listing = app.listing;
   app.broker.component = app.component;
   app.broker.userhandle = app.userhandle;
+  app.broker.message = app.message;
 
   // binding observer event
   app.userhandle.$el.find("a.wizard-nav").on("click", function(e){app.userhandle.onClickNavigation($(this)); return false;});
