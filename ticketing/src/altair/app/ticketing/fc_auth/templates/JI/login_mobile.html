@@ -19,12 +19,14 @@
 <div>
   会員ID<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
-  %if message:
-  <br/><span style="color: red">IDまたはパスワードが一致しません</span>
-  %endif
-
-  <input type="hidden" name="password" value="jubilo">
 </div>
+<div>
+  パスワード<br/>
+  <input type="password" name="password" value="">
+</div>
+%if message:
+<br/><span style="color: red">IDまたはパスワードが一致しません</span></br>
+%endif
 <input type="submit" value="ログイン" />
 </form>
 </div>

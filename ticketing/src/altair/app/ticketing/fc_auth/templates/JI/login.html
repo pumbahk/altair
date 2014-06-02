@@ -40,7 +40,6 @@
                 </td>
                 <td>
                   <form action="${request.path}" method="post">
-                    <input type="hidden" name="password" value="jubilo"/>
                     <table class="loginbox">
                         <thead>
                             <tr>
@@ -56,17 +55,26 @@
                                       <td style="text-align:left">
                                         <div class="tal">
                                             <input type="text" class="text" name="username">
-                                            %if message:
-                                            <br/><span class="small red">IDが一致しません</span>
-                                            %endif
                                         </div>
                                       </td>
                                     </tr>
+                                    <tr>
+                                      <th style="text-align:right">パスワード</th>
+                                      <td style="text-align:left">
+                                        <div class="tal">
+                                            <input type="password" name="password" value=""/>
+                                        </div>
+                                      </td>
+                                    </tr>
+
                                   </tbody>
                                 </table>
-<div id="btn_login" style="text-align:center">
-<input type="submit" value="ログイン" class="btnLogin">
-</div>
+                                %if message:
+                                <br/><span class="small red">IDまたはパスワードが一致しません</span>
+                                %endif
+                                <div id="btn_login" style="text-align:center">
+                                  <input type="submit" value="ログイン" class="btnLogin">
+                                </div>
                             </td>
                         </tr>
                     </table>
