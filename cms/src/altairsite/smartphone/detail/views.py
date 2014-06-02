@@ -30,7 +30,7 @@ def moveDetail(context, request):
     month_unit_keys = keys
     tickets = get_tickets(request=request, event=event)
     sales_start, sales_end = get_sales_date(request=request, event=event)
-    event_info = get_event_notify_info(event=event)
+    event_info = get_event_notify_info(event=event, page=page_published)
     utils = SnsUtils(request=request)
     stock_status = get_stockstatus_summary(request=request, event=event, status_impl=StockStatus)
 
