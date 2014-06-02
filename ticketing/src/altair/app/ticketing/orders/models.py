@@ -819,7 +819,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         DBSession.flush() # これとっちゃだめ
         return order
 
-    @staticmethod
+    def release_stocks(self):
+        # 払戻済のみ座席解放可能
+        if self.status == 'ordered' and self.payment_status == 'refunded':
+            logger.info('try release stock (order_no=%s)' % self.order_no)
+            self.release()
+            return True
+        return False
+
     def filter_by_performance_id(id):
         performance = Performance.get(id)
         if not performance:

@@ -1570,6 +1570,19 @@ class OrderDetailView(BaseView):
         self.request.session.flash(u'不正アラートを解除しました')
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
+    @view_config(route_name='orders.release_stocks', permission='sales_editor')
+    def release_stocks(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        if order.release_stocks():
+            self.request.session.flash(u'予約(%s)の在庫を解放しました' % order.order_no)
+        else:
+            self.request.session.flash(u'予約(%s)の在庫を解放できません' % order.order_no)
+        return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
 class OrdersReserveView(BaseView):
