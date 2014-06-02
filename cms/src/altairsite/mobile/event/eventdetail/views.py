@@ -14,10 +14,20 @@ from altairsite.mobile.core.eventhelper import EventHelper
 from altairsite.exceptions import UsersiteException
 from altairsite.separation import selectable_renderer
 from altairsite.separation import enable_full_usersite_function as enable_search_function
-#from altairsite.separation import enable_search_function
+# from altairsite.separation import enable_search_function
+from altair.now import get_now
 
 class ValidationFailure(UsersiteException):
     pass
+
+
+def get_page_published(request, event_id, dt):
+    page = (request.allowable(Page)
+            .filter(Page.event_id == event_id)
+            .filter(Page.published == True)
+            .filter(Page.in_term(dt))
+            ).first()
+    return page
 
 @mobile_site_view_config(custom_predicates=(enable_search_function, ), route_name='eventdetail', request_type="altairsite.tweens.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/eventdetail/eventdetail.mako'))
@@ -32,7 +42,7 @@ def move_eventdetail(request):
         log_info("move_eventdetail", "event not found")
         raise ValidationFailure
 
-    page_published = request.allowable(Page).filter(Page.event_id == form.event.data.id).filter(Page.published == True).first()
+    page_published = get_page_published(request, form.event.data.id, get_now(request))
     if not exist_value(page_published):
         log_info("move_eventdetail", "page not published")
         raise ValidationFailure
@@ -47,7 +57,7 @@ def move_eventdetail(request):
     form.tickets.data = get_tickets(request=request, event=form.event.data)
     form.sales_start.data, form.sales_end.data = get_sales_date(request=request, event=form.event.data)
     log_info("move_eventdetail", "detail infomation get end")
-    event_info = get_event_notify_info(event=form.event.data)
+    event_info = get_event_notify_info(event=form.event.data, page=page_published)
     stock_status = get_stockstatus_summary(request=request, event=form.event.data, status_impl=StockStatus)
 
     log_info("move_eventdetail", "end")
