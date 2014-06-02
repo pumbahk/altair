@@ -1,10 +1,10 @@
 <html lang="ja">
 <head>
-  <title>デュオジャパン</title>
+  <title>キッス・エンタテインメント</title>
 </head>
 <body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
 <div align="center">
-  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/DJ/mobile/images/logo_mobile.gif')}" width="240" height="96" alt="デュオジャパン" />
+  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/KE/mobile/images/logo_mobile.gif')}" width="240" height="96" alt="キッス・エンタテインメント" />
 </div>
 <div>
 <div style="background-color:#533B23" bgcolor="#533B23"><font color="white">チケット購入</font></div>
@@ -16,7 +16,7 @@
 
 </div>
 <form action="${request.path}" method="post">
-<input type="hidden" name="membership" value="DJ" />
+<input type="hidden" name="membership" value="KE" />
 <div>
   会員ID<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
@@ -24,7 +24,7 @@
   <br/><span style="color: red">IDまたはパスワードが一致しません</span>
   %endif
 
-  <input type="hidden" name="password" value="duojapan">
+  <input type="hidden" name="password" value="kissent">
 </div>
 <input type="submit" value="ログイン" />
 </form>
