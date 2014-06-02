@@ -10,7 +10,7 @@ from altairsite.mobile.core.helper import get_performances_month_unit, get_purch
     , get_tickets, get_sales_date
 from altairsite.exceptions import UsersiteException
 from altairsite.separation import selectable_renderer
-
+from altair.now import get_now 
 class ValidationFailure(UsersiteException):
     pass
 
@@ -19,7 +19,8 @@ class ValidationFailure(UsersiteException):
 def moveDetail(context, request):
     form = DetailForm(request.GET)
     event = context.get_event(form.data['event_id'])
-    page_published = context.get_page_published(form.data['event_id'])
+    now = get_now(request)
+    page_published = context.get_page_published(form.data['event_id'], now)
     if not event or not page_published:
         raise ValidationFailure
 
