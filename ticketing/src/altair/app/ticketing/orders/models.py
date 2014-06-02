@@ -615,9 +615,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 logger.info('skip cancel delivery method. SejOrder not found (order_no=%s)' % self.order_no)
 
         # 在庫を戻す
-        logger.info('try release stock (order_no=%s)' % self.order_no)
-        self.release()
         if self.payment_status != 'refunding':
+            logger.info('try release stock (order_no=%s)' % self.order_no)
+            self.release()
             self.mark_canceled()
         if self.payment_status in ['paid', 'refunding']:
             self.mark_refunded()
