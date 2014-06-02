@@ -19,14 +19,26 @@
 <div>
   会員ID<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
-  %if message:
-  <br/><span style="color: red">IDまたはパスワードが一致しません</span>
-  %endif
-
-  <input type="hidden" name="password" value="jubilo">
 </div>
+<div>
+  パスワード<br/>
+  <input type="password" name="password" value="">
+</div>
+%if message:
+<br/><span style="color: red">IDまたはパスワードが一致しません</span></br>
+%endif
 <input type="submit" value="ログイン" />
 </form>
+                                <p>
+◆会員IDは、会員証記載の10桁の番号です。<br/>
+◆パスワードは入会申し込み時に登録した4桁の番号です。<br/>
+<br/>
+会員ID・パスワードがわからない方は、ジュビロ磐田会員センターへお問合わせください。<br/>
+■ジュビロ磐田会員センター<br/>
+[10:00～18:00(日・月休み)]<br/>
+TEL 050-3786-1212　/　0538-36-2000<br/>
+                                </p>
+
 </div>
 
 <div>
