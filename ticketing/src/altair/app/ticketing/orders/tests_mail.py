@@ -28,6 +28,7 @@ class send_refund_reserve_mailTests(unittest.TestCase, MailTestMixin):
         request = DummyRequest()
         request.registry.settings['altair.mailer'] = 'pyramid_mailer.testing'
         request.registry.settings['mail.message.sender'] = 'sender@example.com'
+        request.registry.settings['mail.report.recipient'] = 'report@example.com'
         refund = DummyModel(
             created_at=datetime(2014, 1, 1, 23),
             order_count=10,
@@ -51,7 +52,7 @@ class send_refund_reserve_mailTests(unittest.TestCase, MailTestMixin):
         self.assertEqual(len(mailer.outbox), 1)
         self.assertEqual(mailer.outbox[0].subject, u'[払戻予約] 公演1')
         self.assertEqual(mailer.outbox[0].sender, u'sender@example.com')
-        self.assertEqual(mailer.outbox[0].recipients, [u'testing@example.com'])
+        self.assertEqual(mailer.outbox[0].recipients, [u'testing@example.com', u'report@example.com'])
 
 
 class send_refund_complete_mailTests(unittest.TestCase, MailTestMixin):
@@ -76,6 +77,7 @@ class send_refund_complete_mailTests(unittest.TestCase, MailTestMixin):
         request = DummyRequest()
         request.registry.settings['altair.mailer'] = 'pyramid_mailer.testing'
         request.registry.settings['mail.message.sender'] = 'sender@example.com'
+        request.registry.settings['mail.report.recipient'] = 'report@example.com'
         refund = DummyModel(
             updated_at=datetime(2014, 1, 1, 23),
             order_count=10,
@@ -99,7 +101,7 @@ class send_refund_complete_mailTests(unittest.TestCase, MailTestMixin):
         self.assertEqual(len(mailer.outbox), 1)
         self.assertEqual(mailer.outbox[0].subject, u'[払戻完了] 公演1, 公演2')
         self.assertEqual(mailer.outbox[0].sender, u'sender@example.com')
-        self.assertEqual(mailer.outbox[0].recipients, [u'testing@example.com'])
+        self.assertEqual(mailer.outbox[0].recipients, [u'testing@example.com', u'report@example.com'])
 
 
 class send_refund_error_mailTests(unittest.TestCase, MailTestMixin):
@@ -124,6 +126,7 @@ class send_refund_error_mailTests(unittest.TestCase, MailTestMixin):
         request = DummyRequest()
         request.registry.settings['altair.mailer'] = 'pyramid_mailer.testing'
         request.registry.settings['mail.message.sender'] = 'sender@example.com'
+        request.registry.settings['mail.report.recipient'] = 'report@example.com'
         refund = DummyModel(
             created_at=datetime(2014, 1, 1, 23),
             order_count=10,
@@ -148,4 +151,4 @@ class send_refund_error_mailTests(unittest.TestCase, MailTestMixin):
         self.assertEqual(len(mailer.outbox), 1)
         self.assertEqual(mailer.outbox[0].subject, u'[払戻エラー] 公演1, 公演2')
         self.assertEqual(mailer.outbox[0].sender, u'sender@example.com')
-        self.assertEqual(mailer.outbox[0].recipients, [u'testing@example.com'])
+        self.assertEqual(mailer.outbox[0].recipients, [u'testing@example.com', u'report@example.com'])

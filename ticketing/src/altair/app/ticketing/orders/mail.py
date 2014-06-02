@@ -39,7 +39,8 @@ def send_refund_error_mail(request, refund, message):
 
 def send(request, subject, recipients, body):
     mailer = get_mailer(request)
-    sender = request.registry.settings['mail.message.sender']
+    sender = request.registry.settings.get('mail.message.sender')
+    recipients.append(request.registry.settings.get('mail.report.recipient', u'dev@ticketstar.jp'))
     message = Message(subject=subject,
                       recipients=recipients,
                       body=body.text,
