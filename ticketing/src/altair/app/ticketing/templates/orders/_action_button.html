@@ -217,7 +217,7 @@ if 'cancel' in sort:
   if not order.can_cancel():
     sort.remove('cancel')
 if 'refund' in sort:
-  if not order.can_refund():
+  if not order.can_refund() or order.refund_id:
     sort.remove('refund')
 if 'refund_info' in sort:
   if not order.refund_id:
