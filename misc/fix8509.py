@@ -50,7 +50,7 @@ def main(argv):
         sys.stderr.flush()
         is_execute = sys.stdin.readline().strip() == "Y"
         logger.info("dry run is %s", not is_execute)
-        return run(env, organization_id, is_execute)
+        run(env, organization_id, is_execute)
         if is_execute:
             transaction.commit()
     except Exception as e:
