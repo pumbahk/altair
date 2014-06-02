@@ -345,8 +345,6 @@ def request_update_order(request_or_registry, tenant, sej_order, update_reason):
             for ticket in sorted(ticket_dict.values(), lambda a, b: cmp(a.ticket_idx, b.ticket_idx))
             ]
         )
-    params['X_ticket_cnt']      = '%02d' % sej_order.total_ticket_count
-    params['X_ticket_hon_cnt']  = '%02d' % sej_order.ticket_count
     params['X_upd_riyu']        = '%02d' % update_reason.v
     if sej_order.billing_number is not None:
         params['X_haraikomi_no']    = sej_order.billing_number
