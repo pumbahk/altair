@@ -62,12 +62,16 @@ if (!window.app)
   // Module needs: {"submit","setting","component"}
   var BrokerModule = {
     onChangeToEventTicket: function(){
-      this.setting.onChangeToEventTicketLabel();
-      this.submit.onChangeToEventTicket();
+      this.setting.receiveChangeToEventTicketLabel();
+      this.submit.receiveChangeToEventTicket();
     },
     onChangeToTicketTemplate: function(){
-      this.setting.onChangeToTicketTemplateLabel();
-      this.submit.onChangeToTicketTemplate();
+      this.setting.receiveChangeToTicketTemplateLabel();
+      this.submit.receiveChangeToTicketTemplate();
+    },
+    onChangeTicketTemplate: function($el){
+      this.submit.receiveDefaultTicketName($el.find("option:selected").text());
+      return this.component.receiveSVGRequest($el.val());
     },
     onTicketFormatSelectElementUpdate: function(html){
       this.submit.$el.find('select[name="ticket_format_id"]').html(html);
@@ -82,7 +86,7 @@ if (!window.app)
                          });
     },
     onNewTicketsList: function(data){
-      this.listing.onNewTicketsList(data);
+      this.listing.receiveNewTicketsList(data);
     },
     onNewSVGData: function(data){
       //xxxx global variable: this variable create after loading component
@@ -125,6 +129,9 @@ if (!window.app)
   };
 
   var SubmitAreaModule = {
+    receiveDefaultTicketName: function(name){
+      this.$el.find('input[name="name"]').val(name);
+    },
     onChangeTicketName: function($el){
       this.broker.models.submit.sync("name", $el.val());
     },
@@ -132,10 +139,10 @@ if (!window.app)
       var v = $el.attr("checked") ? "y" : null;
       this.broker.models.submit.sync("cover_print", v);
     },
-    onChangeToEventTicket: function(){
+    receiveChangeToEventTicket: function(){
       this.$el.find('input[name="update"]').show();
     },
-    onChangeToTicketTemplate: function(){
+    receiveChangeToTicketTemplate: function(){
       this.$el.find('input[name="update"]').hide();
     },
     collectParamatersForSubmit: function($form){
@@ -179,16 +186,16 @@ if (!window.app)
   };
 
   var SettingAreaModule = {
-    onChangeToEventTicketLabel: function(){
+    receiveChangeToEventTicketLabel: function(){
       this.$el.find("#templates").parents(".control-group").find("label").text("チケット券面");
     },
-    onChangeToTicketTemplateLabel: function(){
+    receiveChangeToTicketTemplateLabel: function(){
       this.$el.find("#templates").parents(".control-group").find("label").text("券面テンプレート");
     },
     onChangeTicketTemplate: function($el){
       this.broker.models.source.sync("templateId", $el.val());
       this.broker.models.submit.sync("base_template_id", $el.val());
-      return this.broker.component.onChangeTicketTemplate($el);
+      return this.broker.onChangeTicketTemplate($el);
     },
     onClickStickyButton: function($el){
       if($el.hasClass("sticky")){
@@ -243,7 +250,7 @@ if (!window.app)
   };
 
   var ListingAreaModule = {
-    onNewTicketsList: function(data){
+    receiveNewTicketsList: function(data){
       var $wrapper = this.$el.find("ul#listing-ticket");
       var html = listingTicketTemplate({"tickets": data.tickets});
       $wrapper.html(html);
@@ -299,8 +306,8 @@ if (!window.app)
         }.bind(this)
       );
     },
-    onChangeTicketTemplate: function($el){
-      var val = $el.val();
+    receiveSVGRequest: function(ticketId){
+      var val = ticketId;
       var previewType =  this.broker.models.source.previewType;
       if(!!previewType){
         var url = this.gettingsvg_url.replace("__ticket_id", val).replace("__previewtype", previewType);

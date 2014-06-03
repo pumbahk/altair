@@ -259,6 +259,23 @@ class BundleAttributeView(BaseView):
         return HTTPFound(self.request.route_path("events.tickets.bundles.show",
                                                  event_id=event_id, bundle_id=bundle_id))
 
+def _get_base_ticket(request):
+    try:
+        template_kind = request.POST["template_kind"]
+        preview_type = request.POST["preview_type"]
+        base_template_id = request.POST["base_template_id"]
+    except KeyError as e:
+        raise HTTPBadRequest(str(e))
+
+    logger.info("easycreate upload: template_kind=%s, preview_type=%s", template_kind, preview_type)
+    context = request.context
+    if template_kind == "event":
+        return context.tickets.filter_by(id=base_template_id).first()
+    elif template_kind == "base":
+        return context.ticket_templates.filter_by(id=base_template_id).first()
+    else:
+        raise HTTPBadRequest("not support template kind {}".format(template_kind))
+
 
 @view_config(route_name="events.tickets.easycreate", request_method="POST",
              decorator=with_bootstrap, permission="event_editor",
@@ -268,19 +285,7 @@ def easycreate_upload_create(context, request):
     event = context.event
     assert event.organization_id == context.organization.id
 
-    template_kind = request.POST["template_kind"]
-    preview_type = request.POST["preview_type"]
-    base_template_id = request.POST["base_template_id"]
-
-    logger.info("easycreate upload: template_kind=%s, preview_type=%s", template_kind, preview_type)
-
-    if template_kind == "event":
-        base_ticket = context.tickets.filter_by(id=base_template_id).first()
-    elif template_kind == "base":
-        base_ticket = context.ticket_templates.filter_by(id=base_template_id).first()
-    else:
-        raise HTTPBadRequest("not support template kind {}".format(template_kind))
-
+    base_ticket = _get_base_ticket(request)
     if base_ticket is None:
         raise HTTPBadRequest("base ticket is not found")
 
@@ -300,19 +305,7 @@ def easycreate_upload_update(context, request):
     event = context.event
     assert event.organization_id == context.organization.id
 
-    template_kind = request.POST["template_kind"]
-    preview_type = request.POST["preview_type"]
-    base_template_id = request.POST["base_template_id"]
-
-    logger.info("easycreate upload: template_kind=%s, preview_type=%s", template_kind, preview_type)
-
-    if template_kind == "event":
-        base_ticket = context.tickets.filter_by(id=base_template_id).first()
-    elif template_kind == "base":
-        base_ticket = context.ticket_templates.filter_by(id=base_template_id).first()
-    else:
-        raise HTTPBadRequest("not support template kind {}".format(template_kind))
-
+    base_ticket = _get_base_ticket(request)
     if base_ticket is None:
         raise HTTPBadRequest("base ticket is not found")
 
