@@ -415,16 +415,6 @@ class SalesDetailReporter(object):
         query = query.join(SalesSegment, SalesSegment.id==Product.sales_segment_id).filter(
             or_(SalesSegment.performance_id==None, SalesSegment.reporting==True)
         )
-        # 期間指定内で有効な販売区分のみ対象
-        if form.limited_from.data and form.limited_to.data:
-            query = query.filter(or_(
-                form.limited_from.data <= SalesSegment.end_at,
-                SalesSegment.start_at <= form.limited_to.data
-            ))
-        elif form.limited_from.data:
-            query = query.filter(form.limited_from.data <= SalesSegment.end_at)
-        elif form.limited_to.data:
-            query = query.filter(SalesSegment.start_at <= form.limited_to.data)
 
         if form.sales_segment_group_id.data:
             query = query.join(SalesSegmentGroup).filter(and_(
@@ -650,13 +640,14 @@ class PerformanceReporter(object):
             for sales_segment in performance.sales_segments:
                 if not sales_segment.reporting:
                     continue
-                if (self.form.limited_from.data and sales_segment.end_at < self.form.limited_from.data) or\
-                   (self.form.limited_to.data and self.form.limited_to.data < sales_segment.start_at):
-                    continue
                 self.form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
-                reporter= SalesDetailReporter(request, self.form)
+                reporter = SalesDetailReporter(request, self.form)
                 if not reporter.reports:
                     continue
+                if (self.form.limited_from.data and sales_segment.end_at < self.form.limited_from.data) or\
+                   (self.form.limited_to.data and self.form.limited_to.data < sales_segment.start_at):
+                    if reporter.total.total_paid_quantity == 0 and reporter.total.total_unpaid_quantity == 0:
+                        continue
                 self.reporters[sales_segment] = reporter
 
     def sort_index(self):

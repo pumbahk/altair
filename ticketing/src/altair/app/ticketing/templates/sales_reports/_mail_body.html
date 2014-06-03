@@ -29,7 +29,7 @@
   % if form.limited_from.data or form.limited_to.data:
   <tr style="background-color:#dcdcdc;">
     <th colspan="6"></th>
-    <% colspan = 3 if not reporter.is_simple_type() else 4 %>
+    <% colspan = 3 if reporter.is_simple_type() else 4 %>
     % if need_total:
     <th colspan="${colspan}">累計</th>
     % endif
