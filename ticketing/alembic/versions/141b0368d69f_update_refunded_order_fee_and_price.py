@@ -64,7 +64,7 @@ def downgrade():
                    o.delivery_fee    = o.original_delivery_fee,
                    o.special_fee     = o.original_special_fee,
                    op.price          = op.original_price,
-                   opi.price         = opi.original_price,
+                   opi.price         = opi.original_price
                WHERE o.id = op.order_id
                  AND op.id = opi.ordered_product_id
                  AND old_o.id = old_op.order_id

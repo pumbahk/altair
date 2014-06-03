@@ -283,10 +283,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_start_at = sa.Column(sa.DateTime, nullable=True)
     payment_due_at   = sa.Column(sa.DateTime, nullable=True)
 
-    refund_total_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
-    refund_system_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
-    refund_transaction_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
-    refund_delivery_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
+    refund_total_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
+    refund_system_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
+    refund_transaction_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
+    refund_delivery_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
     refund_special_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
 
     @property
@@ -857,7 +857,7 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product = orm.relationship('Product', backref='ordered_products')
     price = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
     quantity = sa.Column(sa.Integer)
-    refund_price = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
+    refund_price = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
 
     @property
     def ordered_product_items(self):
@@ -910,7 +910,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     printed_at = sa.Column(sa.DateTime, nullable=True, default=None)
     seats = orm.relationship("Seat", secondary=orders_seat_table, backref='ordered_product_items')
     price = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
-    refund_price = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
+    refund_price = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
 
     _attributes = orm.relationship("OrderedProductAttribute", backref='ordered_product_item', collection_class=orm.collections.attribute_mapped_collection('name'), cascade='all,delete-orphan')
     attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderedProductAttribute(name=k, value=v))
