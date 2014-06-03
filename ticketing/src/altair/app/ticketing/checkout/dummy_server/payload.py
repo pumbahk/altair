@@ -265,3 +265,12 @@ def build_settlement_response(orders, status_code, error_code):
         *([E.apiErrorCode(u'%03d' % error_code)] if error_code is not None else [])
         )
     return payload
+
+def parse_cancel_request(xml):
+    # exactly the same payload form for now
+    return parse_settlement_request(xml)
+
+def build_cancel_response(orders, status_code, error_code):
+    # exactly the same payload form for now
+    return build_settlement_response(orders, status_code, error_code)
+
