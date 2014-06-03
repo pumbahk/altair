@@ -1199,6 +1199,11 @@ class OrderSummary(Base):
             Order.__table__.c.special_fee,
             Order.__table__.c.special_fee_name,
             Order.__table__.c.total_amount,
+            Order.__table__.c.refund_transaction_fee,
+            Order.__table__.c.refund_delivery_fee,
+            Order.__table__.c.refund_system_fee,
+            Order.__table__.c.refund_special_fee,
+            Order.__table__.c.refund_total_amount,
             Order.__table__.c.note,
             Order.__table__.c.card_brand,
             Order.__table__.c.card_ahead_com_code,
@@ -1259,6 +1264,11 @@ class OrderSummary(Base):
     delivery_fee = Order.delivery_fee
     system_fee = Order.system_fee
     total_amount = Order.total_amount
+    refund_transaction_fee = Order.refund_transaction_fee
+    refund_delivery_fee = Order.refund_delivery_fee
+    refund_system_fee = Order.refund_system_fee
+    refund_special_fee = Order.refund_special_fee
+    refund_total_amount = Order.refund_total_amount
     note = Order.note
     card_brand = Order.card_brand
     card_ahead_com_code = Order.card_ahead_com_code
@@ -1438,5 +1448,3 @@ class OrderSummary(Base):
     @property
     def cancel_reason(self):
         return self.refund.cancel_reason if self.refund else None
-
-
