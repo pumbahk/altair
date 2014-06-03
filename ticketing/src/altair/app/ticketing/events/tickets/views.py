@@ -4,7 +4,7 @@ import json
 from altair.app.ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
-from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.models import DBSession, record_to_appstruct
 from altair.app.ticketing.core.models import ProductItem, Performance
 from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute
 from altair.app.ticketing.views import BaseView
@@ -320,6 +320,37 @@ def easycreate_upload_update(context, request):
         return dict(status="ok", ticket_id=base_ticket.id)
     else:
         raise HTTPBadRequest(upload_form.errors)
+
+
+@view_config(route_name="events.tickets.easycreate.transcribe", request_method="POST",
+             decorator=with_bootstrap, permission="event_editor",
+             request_param="update", 
+             renderer="json")
+def easycreate_transcribe_ticket(context, request):
+    event = context.event
+    assert event.organization_id == context.organization.id
+
+    try:
+        base_template_id = request.POST["base_template_id"]
+        mapping_id = request.POST["mapping_id"]
+    except KeyError as e:
+        raise HTTPBadRequest(repr(e))
+
+    base_ticket = context.ticket_templates.filter_by(id=base_template_id).first()
+    if base_ticket is None:
+        raise HTTPBadRequest("base ticket is not found")
+    mapping_ticket = context.ticket_templates.filter_by(id=mapping_id).first()
+    if mapping_ticket is None:
+        raise HTTPBadRequest("mapping ticket is not found")
+
+    data = record_to_appstruct(base_ticket)
+    base_ticket.data = upload_form.data_value
+    formdata = upload_form.data
+    base_ticket.name = formdata["name"]
+    base_ticket.cover_print = formdata["cover_print"]
+    base_ticket.data = upload_form.data_value
+    base_ticket.save()  # flush and DBSession.add(o)
+    return dict(status="ok", ticket_id=base_ticket.id)
 
 
 def create_ticket_from_form(form, base_ticket):  # xxx: todo: move to anywhere

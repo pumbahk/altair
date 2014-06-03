@@ -27,7 +27,7 @@ if (!window.app)
 
   var selectContentTemplate = _.template('<% _.each(iterable, function(d){%><option value="<%= d.pk %>"><%= d.name %></option> <%});%>');
   var listingTicketTemplate = _.template([
-    '<% _.each(tickets, function(d){%><li><a target="_blank" href="<%= d.url %>"><%= d.name %></a></li><%});%>'
+    '<% _.each(tickets, function(d){%><li><input name="mapping_id" type="radio" value="<%= d.pk %>"></input><a target="_blank" href="<%= d.url %>"><%= d.name %></a></li><%});%>'
   ].join("\n"));
 
   /// これはsubmitする際の状態
@@ -59,6 +59,31 @@ if (!window.app)
     }
   );
 
+  // これはtranscribeする際の状態
+  var transcribeParamatersModel = Object.create(
+    {
+      sync: function(name, val){
+        this[name] = val;
+        console.log("sync: name={0} value={1}".replace("{0}",name).replace("{1}",val));
+      },
+      collect: function(){
+        var r = {};
+        _.each(this, function(v,k){
+          if(typeof(k) !== "function"){
+            r[k] = v;
+          }
+        });
+        return r;
+      }
+    },
+    {
+      name: {value: "", writable:true, enumerable:true},
+      base_template_id: {value: null, writable:true, enumerable:true},
+      mapping_id: {value: "{}", writable:true, enumerable:true},
+    }
+  );
+
+  
   // Module needs: {"submit","setting","component"}
   var BrokerModule = {
     onChangeToEventTicket: function(){
@@ -70,7 +95,9 @@ if (!window.app)
       this.submit.receiveChangeToTicketTemplate();
     },
     onChangeTicketTemplate: function($el){
-      this.submit.receiveDefaultTicketName($el.find("option:selected").text());
+      var text = $el.find("option:selected").text();
+      this.submit.receiveDefaultTicketName(text);
+      this.listing.receiveChangeSelectedTemplate(text, $el.val());
       return this.component.receiveSVGRequest($el.val());
     },
     onTicketFormatSelectElementUpdate: function(html){
@@ -255,6 +282,22 @@ if (!window.app)
       var $wrapper = this.$el.find("ul#listing-ticket");
       var html = listingTicketTemplate({"tickets": data.tickets});
       $wrapper.html(html);
+    },
+    receiveChangeSelectedTemplate: function(name, templateId){
+      this.broker.models.transcribe.sync("name", name);
+      this.broker.models.transcribe.sync("base_template_id", templateId);
+      this.$el.find(".selected-template").text(name);
+    },
+    receiveChangeSelectedMapping: function(name){
+      this.$el.find(".selected-mapping").text(name);
+    },
+    onChangeSelectedMapping: function($el){
+      var text = $el.parent("li").find("a").text();
+      this.broker.models.transcribe.sync("mapping_id",$el.val());
+      this.receiveChangeSelectedMapping(text);
+    },
+    onChangeTicketName: function($el){
+      this.broker.models.submit.sync("name", $el.val());
     }
   };
 
@@ -396,6 +439,7 @@ if (!window.app)
 
   app.ticketSelectSourceModel = ticketSelectSourceModel;
   app.submitParamatersModel = submitParamatersModel;
+  app.transcribeParamatersModel = transcribeParamatersModel;
 
   app.UserHandleAreaModule = UserHandleAreaModule;
   app.ChooseAreaModule = ChooseAreaModule;
