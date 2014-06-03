@@ -135,7 +135,7 @@ class EasyCreateTemplateChoiceForm(OurForm):
         return self
 
     templates = SelectField(
-        label=u"基本券面",
+        label=u"チケットテンプレート",
         validators=[Required()], 
         coerce=unicode, 
         choices=[])

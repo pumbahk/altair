@@ -61,6 +61,14 @@ if (!window.app)
 
   // Module needs: {"submit","setting","component"}
   var BrokerModule = {
+    onChangeToEventTicket: function(){
+      this.setting.onChangeToEventTicketLabel();
+      this.submit.onChangeToEventTicket();
+    },
+    onChangeToTicketTemplate: function(){
+      this.setting.onChangeToTicketTemplateLabel();
+      this.submit.onChangeToTicketTemplate();
+    },
     onTicketFormatSelectElementUpdate: function(html){
       this.submit.$el.find('select[name="ticket_format_id"]').html(html);
     },
@@ -124,7 +132,12 @@ if (!window.app)
       var v = $el.attr("checked") ? "y" : null;
       this.broker.models.submit.sync("cover_print", v);
     },
-
+    onChangeToEventTicket: function(){
+      this.$el.find('input[name="update"]').show();
+    },
+    onChangeToTicketTemplate: function(){
+      this.$el.find('input[name="update"]').hide();
+    },
     collectParamatersForSubmit: function($form){
       var src = this.broker.models.source;
 
@@ -164,6 +177,12 @@ if (!window.app)
   };
 
   var SettingAreaModule = {
+    onChangeToEventTicketLabel: function(){
+      this.$el.find("#templates").parents(".control-group").find("label").text("チケット券面");
+    },
+    onChangeToTicketTemplateLabel: function(){
+      this.$el.find("#templates").parents(".control-group").find("label").text("券面テンプレート");
+    },
     onChangeTicketTemplate: function($el){
       this.broker.models.source.sync("templateId", $el.val());
       this.broker.models.submit.sync("base_template_id", $el.val());
@@ -201,7 +220,14 @@ if (!window.app)
     onChangeTemplateKind: function($el){
       var m = this.broker.models.source;
       m.sync("eventId", $el.val());
-      m.sync("templateKind", (!!$el.val()) ? "event" : "base");
+      var templateKind = (!!$el.val()) ? "event" : "base";
+      m.sync("templateKind", templateKind);
+
+      if(templateKind === "event"){
+        this.broker.onChangeToEventTicket();
+      }else {
+        this.broker.onChangeToTicketTemplate();
+      }
       if(m.isEnough()){
         return this.broker.component.onChangePreviewType($el); //xxx:
       }
