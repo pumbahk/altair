@@ -561,15 +561,21 @@ def sej_delivery_viewlet(context, request):
     return dict(
         order=order,
         payment_type=payment_type,
-        can_receive_from_next_day=(
-            sej_order.ticketing_start_at is not None and \
-            (sej_order.ticketing_start_at.day - now.day) == 1
-            ),
+        can_receive_from_next_day=can_receive_from_next_day(now, sej_order.ticketing_start_at),
         sej_order=sej_order,
         delivery_method=delivery_method,
     )
 
-@view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, 
+def can_receive_from_next_day(now, ticketing_start_at):
+    if ticketing_start_at is None:
+        return False
+
+    next_day = now + timedelta(days=1)
+    return bool(next_day.year == ticketing_start_at.year \
+        and next_day.month == ticketing_start_at.month \
+        and next_day.day == ticketing_start_at.day)
+
+@view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID,
              renderer=_overridable_delivery('sej_delivery_confirm.html'))
 def sej_delivery_confirm_viewlet(context, request):
     return Response(text=u'セブン-イレブン受け取り')
