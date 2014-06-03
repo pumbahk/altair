@@ -52,7 +52,7 @@ def first_or_nullmodel(parent, relation_name):
     try:
         return children[0]
     except IndexError as e:
-        logger.warn("first_or_nullmodel {}:{} -- {}".format(parent, relation_name, repr(e)))
+        logger.warn("first_or_nullmodel %s:%s -- %s", parent, relation_name, repr(e))
         child_class = getattr(parent.__class__, relation_name).property.mapper.class_
         return null_model(child_class)
 
@@ -68,7 +68,7 @@ def model_from_dict(modelclass, D):
             try:
                 setattr(instance, k, v)
             except Exception as e:
-                logger.warn("class={0}, k={1}, v={2}, message={3}".format(modelclass, k, v, e))
+                logger.warn("class=%s, k=%s, v=%s, message=%s", modelclass, k, v, e)
     return instance
 
 def model_column_items(obj):
