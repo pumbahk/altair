@@ -1617,9 +1617,9 @@ def get_refund_per_order_fee(refund, order):
     pdmp = order.payment_delivery_pair
     fee = 0
     if refund.include_system_fee:
-        fee += order.system_fee
+        fee += order.refund_system_fee
     if refund.include_special_fee:
-        fee += order.special_fee
+        fee += order.refund_special_fee
     if refund.include_transaction_fee:
         fee += pdmp.transaction_fee_per_order
     if refund.include_delivery_fee:
@@ -1629,7 +1629,7 @@ def get_refund_per_order_fee(refund, order):
         for op in order.items:
             for opi in op.elements:
                 if not opi.product_item.ticket_bundle_id:
-                    fee += opi.price * opi.quantity
+                    fee += opi.refund_price * opi.quantity
     return fee
 
 def get_refund_per_ticket_fee(refund, order):
@@ -1647,5 +1647,5 @@ def get_refund_ticket_price(refund, order, product_item_id):
     for op in order.items:
         for opi in op.elements:
             if opi.product_item_id == product_item_id:
-                return opi.price
+                return opi.refund_price
     return 0
