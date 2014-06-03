@@ -13,24 +13,25 @@
 </div>
 
 
-<div style="float: left;">
+<div>
   <div class="alert alert-warning">
-    <p><strong>払戻は2つの方法があります。</strong></p>
+    <p><strong>払戻方法</strong></p>
     <ol>
       <li><strong>個別払戻</strong></li>
         お客様対応などで、予約1件ごとに払戻を行う場合は、各予約の詳細画面にて払戻を行います。<br>
         クレジットカードでの払戻は即時、コンビニでの払戻は深夜1:00までに設定された分が翌朝より払戻可能となります。
-      <li><strong>一括払戻</strong></li>
+      <li><strong>一括払戻予約</strong></li>
         公演中止など、公演単位で払戻を行いたい場合、ここで払戻予約をすることができます。(公演は複数選択可)<br>
         払戻予約したものは、毎日夜間にまとめて払戻が行われます。<br>
         クレジットカードでの払戻は夜間の払戻時に即時、コンビニでの払戻は1:00までに設定された分が翌日朝より払戻可能となります。
     </ol>
     <br />
-    <p class="text-error">受付時の決済方法および引取方法によって選択できる払戻方法が異なるため、決済方法(または引取方法)ごとに払戻設定を行ってください。</p>
+    <b><p class="text-error">受付時の決済引取方法によって選択できる払戻方法が異なるため、決済方法または引取方法ごとに払戻設定を行ってください。</p></b>
     <p>通常は以下の順に設定を行います。</p>
     <div style="margin-bottom: 5px;"></div>
     <ol>
-      <li>引取方法&nbsp;&nbsp;<span class="label label-important">コンビニ引取</span>&nbsp;に対して&nbsp;<span class="label label-default">コンビニ決済</span>&nbsp;で一括払戻設定</li>
+      <li>決済方法&nbsp;&nbsp;<span class="label">指定無し</span>、引取方法&nbsp;&nbsp;<span class="label label-important">コンビニ引取</span>、
+          ステータス&nbsp;&nbsp;<span class="label label-important">発券済み</span>&nbsp;に対して&nbsp;<span class="label">コンビニ決済</span>&nbsp;で一括払戻設定</li>
       <li>決済方法&nbsp;&nbsp;<span class="label label-warning">クレジットカード決済</span>&nbsp;に対して&nbsp;<span class="label label-warning">クレジットカード決済</span>&nbsp;で一括払戻設定</li>
       <li>決済方法&nbsp;&nbsp;<span class="label label-info">楽天あんしん支払いサービス</span>&nbsp;に対して&nbsp;<span class="label label-info">楽天あんしん支払いサービス</span>&nbsp;で一括払戻設定</li>
       <li>〜 その他の決済方法ごとに同じ払戻方法の設定を行う</li>
@@ -99,9 +100,9 @@
   <a type="button" class="btn" id="removeall">全て選択しない</a>
   <a type="button" class="btn btn-danger" href="${request.route_path('orders.refund.confirm')}">選択した予約に払戻条件を設定</a>
 </div>
+<p/>
 
 % if orders:
-<p> ${max(orders.items_per_page * (orders.page-1) + 1,0)}～${min(orders.items_per_page * orders.page, orders.item_count)} / ${orders.item_count}件</p>
 <div class="orders">
   <%include file="/orders/_list.html" args="form=form, orders=orders" />
 </div>

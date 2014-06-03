@@ -89,6 +89,20 @@
       </tr>
       </tbody>
     </table>
+    <table class="packed-checkboxes">
+      <tbody>
+        <tr>
+          <th>
+            <label for="status">${form.status.label.text}</label>
+          </th>
+          <td>
+            ${form.status(disabled='disabled')}
+            ${form.issue_status()}
+            ${form.payment_status(disabled='disabled')}
+          </td>
+        </tr>
+      </tbody>
+    </table>
     <script type="text/javascript">
       $(function(){
         var update_on_empty = function(){
@@ -153,7 +167,7 @@
   <ul class="nav nav-pills">
     <li class="dropdown" style="margin-left: 10px;">
       <div class="btn-group">
-        <a href="${request.route_url('orders.refund.index')}" class="btn">
+        <a href="${request.route_url('orders.refund.new')}" class="btn">
           </i> リセット
         </a>
       </div>

@@ -675,6 +675,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def reserve_refund(kwargs):
         refund = Refund(**kwargs)
         refund.save()
+        return refund
 
     def call_refund(self, request):
         # 払戻対象の金額をクリア
@@ -1193,6 +1194,7 @@ class OrderSummary(Base):
             Order.__table__.c.shipping_address_id,
             Order.__table__.c.issued,
             Order.__table__.c.user_id,
+            Order.__table__.c.refund_id,
             Order.__table__.c.fraud_suspect,
             Order.__table__.c.created_at,
             Order.__table__.c.deleted_at,
@@ -1252,6 +1254,7 @@ class OrderSummary(Base):
     shipping_address_id = Order.shipping_address_id
     issued = Order.issued
     user_id = Order.user_id
+    refund_id = Order.refund_id
     fraud_suspect = Order.fraud_suspect
     created_at = Order.created_at
     deleted_at = Order.deleted_at

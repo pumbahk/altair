@@ -419,6 +419,9 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
     def _event_id(self, query, value):
         return query.filter(self.targets['subject'].event_id == value)
 
+    def _refund_id(self, query, value):
+        return query.filter(self.targets['subject'].refund_id == value)
+
     def _payment_method(self, query, value):
         if isinstance(value, list):
             query = query.filter(self.targets['subject'].payment_method_id.in_(value))
