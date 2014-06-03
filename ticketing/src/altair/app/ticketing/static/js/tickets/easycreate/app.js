@@ -131,6 +131,7 @@ if (!window.app)
   var SubmitAreaModule = {
     receiveDefaultTicketName: function(name){
       this.$el.find('input[name="name"]').val(name);
+      this.broker.models.submit.sync("name", name);
     },
     onChangeTicketName: function($el){
       this.broker.models.submit.sync("name", $el.val());
@@ -364,30 +365,30 @@ if (!window.app)
   };
 
   var MessageServiceModule = {
-    doMessage: function(expr, message){
+    doMessage: function(name, expr, message){
       var messages = this.$el.find(".message");
       messages.hide();
       var target = this.$el.find(".message"+expr);
       if (target.length <= 0){
         var idname = expr.substring(1,expr.length);
         target = $('<div class="alert message">');
-        target.attr('id', idname).addClass("message-"+idname);
+        target.attr('id', idname).addClass("alert-"+name);  //xx
         this.$el.append(target);
       }
       target.text(message);
       target.show();
     },
     successMessage: function(message){
-      this.doMessage(this.success, message);
+      this.doMessage("success",this.success, message);
     },
     infoMessage: function(message){
-      this.doMessage(this.info, message);
+      this.doMessage("info", this.info, message);
     },
     alertMessage: function(message){
-      this.doMessage(this.alert, message);
+      this.doMessage("alert", this.alert, message);
     },
     errorMessage: function(message){
-      this.doMessage(this.error, message);
+      this.doMessage("error", this.error, message);
     }
   };
 
