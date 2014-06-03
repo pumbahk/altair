@@ -31,7 +31,7 @@ from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.sej import userside_api
 from altair.app.ticketing.sej.exceptions import SejErrorBase
 from altair.app.ticketing.sej.models import SejOrder, SejPaymentType, SejTicketType, SejOrderUpdateReason
-from altair.app.ticketing.sej.api import do_sej_order, refresh_sej_order, build_sej_tickets_from_dicts, create_sej_order, get_sej_order, get_ticket_template_record
+from altair.app.ticketing.sej.api import do_sej_order, refresh_sej_order, build_sej_tickets_from_dicts, create_sej_order, get_sej_order, get_ticket_template_record, refund_sej_order
 from altair.app.ticketing.sej.utils import han2zen
 
 from altair.app.ticketing.tickets.convert import convert_svg
@@ -194,13 +194,13 @@ def is_same_sej_order(sej_order, sej_args, ticket_dicts):
 def refresh_order(request, tenant, order, update_reason):
     sej_order = get_sej_order(order.order_no)
     if sej_order is None:
-        raise Exception('no corresponding SejOrder found for order %s' % order.order_no)
+        raise SejPluginFailure('no corresponding SejOrder found for order %s' % order.order_no)
 
     if int(sej_order.payment_type) == SejPaymentType.PrepaymentOnly.v and order.paid_at is not None:
-        raise Exception('order %s is already paid' % order.order_no)
+        raise SejPluginFailure('order %s is already paid' % order.order_no)
 
     if order.delivered_at is not None:
-        raise Exception('order %s is already delivered' % order.order_no)
+        raise SejPluginFailure('order %s is already delivered' % order.order_no)
 
     sej_args = build_sej_args(sej_order.payment_type, order, order.created_at)
     ticket_dicts = get_tickets(order)
@@ -229,6 +229,29 @@ def refresh_order(request, tenant, order, update_reason):
     except SejErrorBase:
         raise SejPluginFailure('refresh_order', order_no=order.order_no, back_url=None)
 
+def refund_order(request, tenant, order, refund_record, now=None):
+    refund = refund_record.refund
+    sej_order = get_sej_order(order.order_no)
+    performance = order.performance
+    try:
+        refund_sej_order(
+            request,
+            tenant=tenant,
+            sej_order=sej_order,
+            performance_name=performance.name,
+            performance_code=performance.code,
+            performance_start_on=order.performance.start_on,
+            per_order_fee=refund_record.refund_per_order_fee,
+            per_ticket_fee=refund_record.refund_per_ticket_fee,
+            refund_start_at=refund.start_at,
+            refund_end_at=refund.end_at,
+            need_stub=refund.need_stub,
+            ticket_expire_at=refund.end_at + timedelta(days=+7),
+            ticket_price_getter=lambda sej_ticket: refund_record.get_refund_ticket_price(sej_ticket.product_item_id),
+            now=now
+            )
+    except SejErrorBase:
+        raise SejPluginFailure('refund_order', order_no=order.order_no, back_url=None)
 
 def build_sej_args(payment_type, order_like, now):
     shipping_address = order_like.shipping_address
@@ -411,7 +434,7 @@ class SejPaymentPlugin(object):
     @clear_exc
     def refresh(self, request, order):
         if order.paid_at is not None:
-            raise Exception('order %s is already paid' % order.order_no)
+            raise SejPluginFailure('order %s is already paid' % order.order_no)
 
         settings = request.registry.settings
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
@@ -422,6 +445,17 @@ class SejPaymentPlugin(object):
             update_reason=SejOrderUpdateReason.Change
             )
 
+    @clear_exc
+    def refund(self, request, order, refund_record):
+        if order.paid_at is None:
+            raise SejPluginFailure(u'cannot refund an order that is not paid yet')
+        tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
+        refund_order(
+            request,
+            tenant=tenant,
+            order=order,
+            refund_record=refund_record
+            )
 
 @implementer(ISejDeliveryPlugin)
 class SejDeliveryPluginBase(object):
@@ -475,9 +509,10 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
 
         return bool(sej_order.exchange_number)
 
+    @clear_exc
     def refresh(self, request, order):
         if order.delivered_at is not None:
-            raise Exception('order %s is already delivered' % order.order_no)
+            raise SejPluginFailure('order %s is already delivered' % order.order_no)
 
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
@@ -485,6 +520,18 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
             tenant=tenant,
             order=order,
             update_reason=SejOrderUpdateReason.Change
+            )
+
+    @clear_exc
+    def refund(self, request, order, refund_record):
+        if order.paid_at is None:
+            raise SejPluginFailure(u'cannot refund an order that is not paid yet')
+        tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
+        refund_order(
+            request,
+            tenant=tenant,
+            order=order,
+            refund_record=refund_record
             )
 
 @implementer(IDeliveryPlugin)
@@ -532,6 +579,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
 
         return bool(sej_order.billing_number)
 
+    @clear_exc
     def refresh(self, request, order):
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
@@ -539,6 +587,18 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
             tenant=tenant,
             order=order,
             update_reason=SejOrderUpdateReason.Change
+            )
+
+    @clear_exc
+    def refund(self, request, order, refund_record):
+        if order.paid_at is None:
+            raise SejPluginFailure(u'cannot refund an order that is not paid yet')
+        tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
+        refund_order(
+            request,
+            tenant=tenant,
+            order=order,
+            refund_record=refund_record
             )
 
 

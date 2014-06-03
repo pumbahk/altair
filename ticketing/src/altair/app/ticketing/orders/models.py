@@ -401,9 +401,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def checkout(self):
-        from altair.app.ticketing.cart.models import Cart
-        from altair.app.ticketing.checkout.models import Checkout
-        return Cart.query.filter(Cart._order_no==self.order_no).join(Checkout).with_entities(Checkout).first()
+        from altair.app.ticketing.checkout import api as checkout_api
+        service = checkout_api.get_checkout_service(request, self.ordered_from, core_api.get_channel(self.channel))
+        return service.get_checkout_object_by_order_no(self.order_no)
 
     @property
     def is_inner_channel(self):
@@ -523,31 +523,30 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # 入金済みなら決済をキャンセル
             if self.payment_status in ['paid', 'refunding']:
                 from altair.app.ticketing.checkout import api as checkout_api
+                from altair.app.ticketing.checkout.exceptions import AnshinCheckoutAPIError
                 from altair.app.ticketing.core import api as core_api
                 service = checkout_api.get_checkout_service(request, self.ordered_from, core_api.get_channel(self.channel))
-                checkout = self.checkout
                 if self.payment_status == 'refunding':
                     # 払戻(合計100円以上なら注文金額変更API、0円なら注文キャンセルAPIを使う)
                     remaining_amount = self.total_amount - self.refund_total_amount
-                    if remaining_amount >= 100:
-                        result = service.request_change_order([checkout.orderControlId])
-                        # オーソリ済みになるので売上バッチの処理対象になるようにsales_atをクリア
-                        checkout.sales_at = None
-                        checkout.save()
-                    elif remaining_amount == 0:
-                        result = service.request_cancel_order([checkout.orderControlId])
-                    else:
+                    if remaining_amount > 0 and remaining_amount < 100:
                         logger.error(u'0円以上100円未満の注文は払戻できません (order_no=%s)' % self.order_no)
                         return False
-                    if 'statusCode' in result and result['statusCode'] != '0':
-                        logger.error(u'あんしん決済を払戻できませんでした %s' % result)
+                    try:
+                        if remaining_amount == 0:
+                            result = service.request_cancel_order([self])
+                        else:
+                            result = service.request_change_order([(self, self)])
+                    except AnshinCheckoutAPIError as e:
+                        logger.error(u'あんしん決済を払戻できませんでした %s' % e)
                         return False
                 else:
                     # 売り上げキャンセル
                     logger.debug(u'売り上げキャンセル')
-                    result = service.request_cancel_order([checkout.orderControlId])
-                    if 'statusCode' in result and result['statusCode'] != '0':
-                        logger.error(u'あんしん決済をキャンセルできませんでした %s' % result)
+                    try:
+                        result = service.request_cancel_order([self])
+                    except AnshinCheckoutAPIError as e:
+                        logger.error(u'あんしん決済をキャンセルできませんでした %s' % e)
                         return False
 
         # コンビニ決済 (セブン-イレブン)
@@ -675,6 +674,28 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             self.issued_at = now
         if printed:
             self.printed_at = now
+
+
+    @property
+    def refund_per_order_fee(self):
+        from altair.app.ticketing.orders.api import get_refund_per_order_fee
+        return get_refund_per_order_fee(self.refund, self)
+
+    @property
+    def refund_per_ticket_fee(self):
+        from altair.app.ticketing.orders.api import get_refund_per_ticket_fee
+        return get_refund_per_ticket_fee(self.refund, self),
+
+    def get_refund_ticket_price(self, product_item_id):
+        from altair.app.ticketing.orders.api import get_refund_ticket_price
+        return get_refund_ticket_price(
+            self.refund,
+            self,
+            product_item_id
+            )
+
+    def get_item_refund_record(self, item):
+        return item
 
     @staticmethod
     def reserve_refund(kwargs):
@@ -905,6 +926,9 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             element.delete()
 
         super(OrderedProduct, self).delete()
+
+    def get_element_refund_record(self, element):
+        return element
 
 
 @implementer(IOrderedProductItemLike)

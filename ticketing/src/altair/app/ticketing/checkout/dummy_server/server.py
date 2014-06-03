@@ -375,7 +375,7 @@ class DummyCheckoutView(object):
 
     @view_config(route_name='checkout_dummy_server.diag', renderer='diag.mako')
     def diag(self):
-        from altair.app.ticketing.checkout.api import Checkout, get_signer
+        from altair.app.ticketing.checkout.payload import AnshinCheckoutPayloadBuilder, get_signer
         order = DummyCart(
             id=0,
             system_fee=Decimal(100),
@@ -390,16 +390,15 @@ class DummyCheckoutView(object):
             )
         payloads = []
         for service_settings in enumerate_service_settings(self.request.registry):
-            co = Checkout(
+            co = AnshinCheckoutPayloadBuilder(
                 service_settings['service_id'],
                 self.request.route_path('checkout_dummy_server.diag'),
                 self.request.route_path('checkout_dummy_server.diag'),
                 'HMAC-SHA1',
                 service_settings['access_key'],
-                self.request.application_url,
                 False
                 )
-            payload = co.create_checkout_request_xml(order).encode('utf-8')
+            payload = etree.tostring(co.create_checkout_request_xml(order), xml_declaration=True, encoding='utf-8')
             signer = get_signer(co.auth_method, co.secret)
             payloads.append({
                 'name': service_settings['name'],

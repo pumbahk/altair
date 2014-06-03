@@ -87,6 +87,7 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
         #config.add_route('payment.checkout.callback.success', self.CALLBACK_SUCCESS_URL)
         #config.add_route('payment.checkout.callback.error', self.CALLBACK_ERROR_URL)
         self.cart = Cart(
+            id=10,
             performance=self.sales_segment.performance,
             sales_segment=self.sales_segment,
             payment_delivery_pair=self.payment_delivery_method_pair,
@@ -106,15 +107,16 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
         set_cart(request, self.cart)
         return HTTPOk()
 
-    @mock.patch('altair.app.ticketing.checkout.api.Checkout')
+    @mock.patch('altair.app.ticketing.checkout.api.AnshinCheckoutAPI')
     def test_login(self, checkout_class):
-        checkout_class.return_value.create_checkout_request_xml.return_value = '<?xml version="1.0" ?><dummy-request></dummy-request>'
+        form_html = '<form></form>'
+        checkout_class.return_value.build_checkout_request_form.return_value = (testing.DummyModel(), form_html)
         resp = self.test_app.post(self.LOGIN_URL, {})
-        checkout_class.return_value.create_checkout_request_xml.assert_called_once_with(self.cart)
+        checkout_class.return_value.build_checkout_request_form.assert_called_once_with(self.cart)
         self.assertEqual(resp.status_code, 200)
-        self.assertTrue(repr(self) in resp.body)
+        self.assertTrue(form_html in resp.body)
 
-    @mock.patch('altair.app.ticketing.checkout.api.Checkout')
+    @mock.patch('altair.app.ticketing.checkout.api.AnshinCheckoutAPI')
     def test_complete(self, checkout_class):
         from datetime import datetime
         class dummy_datetime(datetime):
@@ -124,7 +126,8 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
         with mock.patch('altair.app.ticketing.checkout.api.datetime', new_callable=lambda:dummy_datetime):
             with mock.patch('altair.app.ticketing.payments.plugins.checkout.datetime', new_callable=lambda:dummy_datetime):
                 checkout = testing.DummyModel(
-                    cart=self.cart
+                    orderCartId=u'XX0000000000',
+                    orderCartId_old=10
                     )
                 dummy_response = '<dummy-response></dummy-response>'
                 checkout_class.return_value.create_order_complete_response_xml.return_value = dummy_response
