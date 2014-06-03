@@ -157,6 +157,7 @@ if (!window.app)
           function(){ this.broker.message.errorMessage("error: url="+url);}.bind(this)
         ).done(
           function(data){
+            this.broker.message.successMessage("チケット券面を１つ作成しました");
             this.broker.onAfterSubmitSuccess(data);
           }.bind(this)
         );
@@ -170,6 +171,7 @@ if (!window.app)
           function(){ this.broker.message.errorMessage("error: url="+url);}.bind(this)
         ).done(
           function(data){
+            this.broker.message.successMessage("チケット券面を１つ更新しました");
             this.broker.onAfterSubmitSuccess(data);
           }.bind(this)
         );
@@ -360,8 +362,9 @@ if (!window.app)
       messages.hide();
       var target = this.$el.find(".message"+expr);
       if (target.length <= 0){
-        target = $('<div class="message">');
-        target.attr('id', expr.substring(1,expr.length));
+        var idname = expr.substring(1,expr.length);
+        target = $('<div class="alert message">');
+        target.attr('id', idname).addClass("message-"+idname);
         this.$el.append(target);
       }
       target.text(message);
