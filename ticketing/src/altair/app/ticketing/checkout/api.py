@@ -297,19 +297,19 @@ class Checkout(object):
                     self._create_checkout_item_xml(items, **dict(
                         itemId=ordered_product.product.id,
                         itemNumbers=ordered_product.quantity,
-                        itemFee=ordered_product.price,
+                        itemFee=ordered_product.price - ordered_product.refund_price,
                     ))
                 # 商品:システム利用料
                 self._create_checkout_item_xml(items, **dict(
                     itemId='system_fee',
                     itemNumbers='1',
-                    itemFee=str(int(order.system_fee)),
+                    itemFee=str(int(order.system_fee - order.refund_system_fee)),
                 ))
                 # 商品:配送手数料
                 self._create_checkout_item_xml(items, **dict(
                     itemId='delivery_fee',
                     itemNumbers='1',
-                    itemFee=str(int(order.delivery_fee)),
+                    itemFee=str(int(order.delivery_fee - order.refund_delivery_fee)),
                 ))
                 id_el('orderShippingFee').text = '0'
 
