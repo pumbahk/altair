@@ -239,6 +239,7 @@ class MemberGroup(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     membership_id = AnnotatedColumn(Identifier, ForeignKey('Membership.id'), _a_label=_(u'会員種別'))
     membership = relationship('Membership', backref='membergroups')
     is_guest = AnnotatedColumn(Boolean, default=False, server_default='0', nullable=False, _a_label=_(u'ゲストログイン'))
+    enable_auto_input_form = AnnotatedColumn(Boolean, default=True, server_default='1', nullable=False, _a_label=_(u'自動フォーム入力'))
 
     sales_segment_groups = relationship('SalesSegmentGroup',
         secondary=MemberGroup_SalesSegmentGroup,
