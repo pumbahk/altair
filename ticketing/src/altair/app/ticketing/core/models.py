@@ -3040,21 +3040,6 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     order_count = Column(Integer, nullable=True)
     status = Column(Integer, nullable=False, default=0, server_default='0')
 
-    def fee(self, order):
-        total_fee = 0
-        if self.include_system_fee:
-            total_fee += order.system_fee
-        if self.include_special_fee:
-            total_fee += order.special_fee
-        if self.include_transaction_fee:
-            total_fee += order.transaction_fee
-        if self.include_delivery_fee:
-            total_fee += order.delivery_fee
-        return total_fee
-
-    def item(self, order):
-        return sum(o.price * o.quantity for o in order.items) if self.include_item else 0
-
     def editable(self):
         return self.status == RefundStatusEnum.Waiting.v
 
