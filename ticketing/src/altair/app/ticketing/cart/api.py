@@ -347,7 +347,6 @@ def is_fc_auth_organization(context, request):
     return bool(organization.settings[0].auth_type == "fc_auth")
 
 def enable_auto_input_form(user):
-    import ipdb;ipdb.set_trace()
     from altair.app.ticketing.users.models import User
     if not isinstance(user, User):
         return False
