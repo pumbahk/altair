@@ -113,10 +113,10 @@ def refund_order():
             if status:
                 refund.status = RefundStatusEnum.Refunded.v
                 refund.save()
-                transaction.commit()
                 send_refund_complete_mail(request, refund)
             else:
                 send_refund_error_mail(request, refund, error_message)
+            transaction.commit()
     except Exception as e:
         logging.error('failed to refund orders (%s)' % e.message)
         transaction.abort()
