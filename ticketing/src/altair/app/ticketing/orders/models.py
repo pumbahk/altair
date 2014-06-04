@@ -253,6 +253,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     canceled_at = sa.Column(sa.DateTime, nullable=True, default=None)
     refund_id = sa.Column(Identifier, sa.ForeignKey('Refund.id'))
     refunded_at = sa.Column(sa.DateTime, nullable=True, default=None)
+    released_at = sa.Column(sa.DateTime, nullable=True, default=None)
 
     order_no = sa.Column(sa.Unicode(255))
     branch_no = sa.Column(sa.Integer, nullable=False, default=1, server_default='1')
@@ -449,6 +450,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # キャンセルのみ論理削除可能
         return self.status == 'canceled'
 
+    def can_release_stocks(self):
+        # 払戻済のみ座席解放可能
+        return (self.status == 'ordered' and self.payment_status == 'refunded')
+
     def cancel(self, request, payment_method=None, now=None):
         now = now or datetime.now()
         if not self.can_refund() and not self.can_cancel():
@@ -635,6 +640,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def mark_paid(self, now=None):
         self.paid_at = now or datetime.now()
 
+    def mark_released(self, now=None):
+        self.released_at = now or datetime.now()
+
     def mark_issued_or_printed(self, issued=False, printed=False, now=None):
         if not issued and not printed:
             raise ValueError('either issued or printed must be True')
@@ -816,12 +824,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def release_stocks(self):
         # 払戻済のみ座席解放可能
-        if self.status == 'ordered' and self.payment_status == 'refunded':
+        if self.can_release_stocks():
             logger.info('try release stock (order_no=%s)' % self.order_no)
             self.release()
+            self.mark_released()
             return True
         return False
 
+    @staticmethod
     def filter_by_performance_id(id):
         performance = Performance.get(id)
         if not performance:

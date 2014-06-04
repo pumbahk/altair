@@ -19,13 +19,20 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    op.add_column(u'Order', sa.Column(u'refund_total_amount', sa.Numeric(precision=16, scale=2), nullable=False, default=0))
-    op.add_column(u'Order', sa.Column(u'refund_system_fee', sa.Numeric(precision=16, scale=2), nullable=False, default=0))
-    op.add_column(u'Order', sa.Column(u'refund_transaction_fee', sa.Numeric(precision=16, scale=2), nullable=False, default=0))
-    op.add_column(u'Order', sa.Column(u'refund_delivery_fee', sa.Numeric(precision=16, scale=2), nullable=False, default=0))
-    op.add_column(u'Order', sa.Column(u'refund_special_fee', sa.Numeric(precision=16, scale=2), nullable=False, default=0))
-    op.add_column(u'OrderedProduct', sa.Column(u'refund_price', sa.Numeric(precision=16, scale=2), nullable=False, default=0))
-    op.add_column(u'OrderedProductItem', sa.Column(u'refund_price', sa.Numeric(precision=16, scale=2), nullable=False, default=0))
+    op.execute('''
+               ALTER TABLE `Order` ADD COLUMN refund_total_amount NUMERIC(16, 2) NOT NULL,
+                                   ADD COLUMN refund_system_fee NUMERIC(16, 2) NOT NULL,
+                                   ADD COLUMN refund_transaction_fee NUMERIC(16, 2) NOT NULL,
+                                   ADD COLUMN refund_delivery_fee NUMERIC(16, 2) NOT NULL,
+                                   ADD COLUMN refund_special_fee NUMERIC(16, 2) NOT NULL,
+                                   ADD COLUMN released_at datetime DEFAULT NULL
+               ''')
+    op.execute('''
+               ALTER TABLE `OrderedProduct` ADD COLUMN refund_price NUMERIC(16, 2) NOT NULL
+               ''')
+    op.execute('''
+               ALTER TABLE `OrderedProductItem` ADD COLUMN refund_price NUMERIC(16, 2) NOT NULL
+               ''')
     op.execute('''
                UPDATE `Order` o,
                       `OrderedProduct` op,
