@@ -528,12 +528,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 checkout = self.checkout
                 if self.payment_status == 'refunding':
                     # 払戻(合計100円以上なら注文金額変更API、0円なら注文キャンセルAPIを使う)
-                    if self.total_amount >= 100:
+                    remaining_amount = self.total_amount - self.refund_total_amount
+                    if remaining_amount >= 100:
                         result = service.request_change_order([checkout.orderControlId])
                         # オーソリ済みになるので売上バッチの処理対象になるようにsales_atをクリア
                         checkout.sales_at = None
                         checkout.save()
-                    elif self.total_amount == 0:
+                    elif remaining_amount == 0:
                         result = service.request_cancel_order([checkout.orderControlId])
                     else:
                         logger.error(u'0円以上100円未満の注文は払戻できません (order_no=%s)' % self.order_no)
