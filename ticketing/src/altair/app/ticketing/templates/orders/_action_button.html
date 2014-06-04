@@ -239,7 +239,7 @@ if 'refund_info' in sort:
   if not order.refund_id:
     sort.remove('refund_info')
 if 'release_stocks' in sort:
-  if order.can_release_stocks():
+  if not order.can_release_stocks():
     sort.remove('release_stocks')
 if 'delivered' in sort:
   if not order.can_deliver():
