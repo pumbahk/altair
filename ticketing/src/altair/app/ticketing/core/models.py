@@ -3075,7 +3075,7 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             stmt = stmt - Order.special_fee
 
         refund_payment_method = aliased(PaymentMethod, name='refund_payment_method')
-        query = DBSession.query(Order, include_deleted=True).join(
+        query = DBSession.query(Order).join(
                 Order.performance,
                 Order.payment_delivery_pair,
                 PaymentDeliveryMethodPair.payment_method,
@@ -3084,7 +3084,6 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             ).filter(
                 Refund.id==self.id,
                 Refund.payment_method_id==refund_payment_method.id,
-                Order.refunded_at==None,
             ).with_entities(
                 Performance.name.label('performance_name'),
                 PaymentMethod.name.label('payment_method_name'),
