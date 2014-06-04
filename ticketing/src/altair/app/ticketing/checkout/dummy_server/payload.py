@@ -2,27 +2,34 @@ import lxml.builder
 from decimal import Decimal
 from dateutil.parser import parse as parsedate
 
+class PayloadParseError(Exception):
+    pass
+
 def must_find(n, path):
     retval = n.find(path)
     if retval is None:
         raise PayloadParseError(u'%s does not exist' % path)
     return retval
 
-def retrieve_item_from_tree(item_n):
+def retrieve_item_from_tree(item_n, no_item_name=False):
     if item_n.tag != u'item':
         raise PayloadParseError(u'unexpected element %s within itemsInfo element' % item_n.tag)
     item_id_n = must_find(item_n, u'itemId')
-    item_name_n = must_find(item_n, u'itemName')
     item_numbers_n = must_find(item_n, u'itemNumbers')
     item_fee_n = must_find(item_n, u'itemFee')
     try:
         item_id_str = item_id_n.text.strip()
     except AttributeError:
         raise PayloadParseError(u'empty itemId')
-    try:
-        item_name_str = item_name_n.text.strip()
-    except AttributeError:
-        raise PayloadParseError(u'empty itemName')
+
+    if not no_item_name:
+        item_name_n = must_find(item_n, u'itemName')
+        try:
+            item_name_str = item_name_n.text.strip()
+        except AttributeError:
+            raise PayloadParseError(u'empty itemName')
+    else:
+        item_name_str = None
     try:
         item_numbers_str = item_numbers_n.text.strip()
     except AttributeError:
@@ -274,3 +281,60 @@ def build_cancel_response(orders, status_code, error_code):
     # exactly the same payload form for now
     return build_settlement_response(orders, status_code, error_code)
 
+def parse_update_request(xml):
+    access_key_n = must_find(xml, u'accessKey')
+    request_id_n = must_find(xml, u'requestId')
+    orders_n = must_find(xml, u'orders')
+
+    try:
+        access_key_str = access_key_n.text.strip()
+    except AttributeError:
+        raise PayloadParseError(u'empty accessKey')
+
+    try:
+        request_id_str = request_id_n.text.strip()
+    except AttributeError:
+        raise PayloadParseError(u'empty requestId')
+
+    orders = []
+    for order_n in orders_n:
+        if order_n.tag != u'order':
+            raise PayloadParseError(u'unexpected element <%s> found under <orders>' % order_n.tag)
+
+        order_control_id_n = must_find(order_n, u'orderControlId')
+        try:
+            order_control_id_str = order_control_id_n.text.strip()
+        except AttributeError:
+            raise PayloadParseError(u'empty orderControlId') 
+
+        order_shipping_fee_n = must_find(order_n, u'orderShippingFee')
+        try:
+            order_shipping_fee_str = order_shipping_fee_n.text.strip()
+        except AttributeError:
+            raise PayloadParseError(u'empty orderShippingFee')
+
+        try:
+            order_shipping_fee = Decimal(order_shipping_fee_str)
+        except TypeError:
+            raise PayloadParseError(u'invalid value for orderShippingFee: %s' % order_shipping_fee_str)
+
+        items_n = must_find(order_n, u'items')
+        order = {
+            'order_control_id': order_control_id_str,
+            'order_shipping_fee': order_shipping_fee,
+            'items': [
+                retrieve_item_from_tree(item_n, no_item_name=True)
+                for item_n in items_n
+                ]
+            }
+        orders.append(order)
+
+    return {
+        'access_key': access_key_str,
+        'request_id': request_id_str,
+        'orders': orders,
+        }
+
+def build_update_response(orders, status_code, error_code):
+    # exactly the same payload form for now
+    return build_settlement_response(orders, status_code, error_code)

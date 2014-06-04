@@ -28,6 +28,7 @@ from .models import (
     )
 
 from .payload import (
+    PayloadParseError,
     parse_order,
     build_payload_for_cart_confirming,
     parse_cart_confirming_callback_response,
@@ -37,6 +38,8 @@ from .payload import (
     parse_settlement_request,
     build_cancel_response,
     parse_cancel_request,
+    build_update_response,
+    parse_update_request,
     )
 
 logger = logging.getLogger(__name__)
@@ -45,9 +48,6 @@ class DummyServerApplicationException(Exception):
     pass
 
 class OrderNotExist(DummyServerApplicationException):
-    pass
-
-class PayloadParseError(DummyServerApplicationException):
     pass
 
 class InvalidCallbackResponseError(DummyServerApplicationException):
@@ -492,6 +492,21 @@ class DummyCheckoutApiView(object):
             content_type='text/xml; charset=utf-8'
             )
 
+    @view_config(route_name='checkout_dummy_server.api.update')
+    def api_update(self):
+        xml, service_settings = self.get_payload()
+        try:
+            settlement_req = parse_update_request(xml)
+        except PayloadParseError as e:
+            raise ApiError(e.message, 600)
+
+        orders = settlement_req['orders']
+        out_xml = build_update_response(orders, 0, None)
+        return HTTPOk(
+            body=etree.tostring(out_xml, xml_declaration=True, encoding='utf-8'),
+            content_type='text/xml; charset=utf-8'
+            )
+
 
 
 def errors_for(request, field):
@@ -521,6 +536,7 @@ def setup_routes(config):
     config.add_route('checkout_dummy_server.stepin', '/myc/cdodl/1.0/stepin')
     config.add_route('checkout_dummy_server.api.settlement', '/odrctla/fixationorder/1.0/')
     config.add_route('checkout_dummy_server.api.cancel', '/odrctla/cancelorder/1.0/')
+    config.add_route('checkout_dummy_server.api.update', '/odrctla/changepayment/1.0/')
     config.add_route('checkout_dummy_server.diag', '/.dummy/diag/')
     config.add_route('checkout_dummy_server.index', '/.dummy/')
 
