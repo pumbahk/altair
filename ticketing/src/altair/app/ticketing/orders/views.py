@@ -119,7 +119,7 @@ from .exceptions import OrderCreationError, MassOrderCreationError
 from .utils import NumberIssuer
 from .models import OrderSummary
 from .helpers import build_candidate_id
-from .mail import send_refund_reserve_mail, send_refund_complete_mail
+from .mail import send_refund_reserve_mail
 from altair.app.ticketing.tickets.preview.api import SVGPreviewCommunication
 from altair.app.ticketing.tickets.preview.api import get_placeholders_from_ticket
 from altair.app.ticketing.tickets.preview.transform import SVGTransformer
@@ -1057,7 +1057,6 @@ class OrderDetailView(BaseView):
             if order.call_refund(self.request):
                 order.refund.status = RefundStatusEnum.Refunded.v
                 order.refund.save()
-                send_refund_complete_mail(self.request, refund)
                 self.request.session.flash(u'予約(%s)を払戻しました' % order.order_no)
                 return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
             else:
