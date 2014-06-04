@@ -55,29 +55,21 @@ def downgrade():
                UPDATE `Order` o,
                       `OrderedProduct` op,
                       `OrderedProductItem` opi,
-                      `Order` old_o,
-                      `OrderedProduct` old_op,
-                      `OrderedProductItem` old_opi
-               SET o.total_amount    = o.original_total_amount,
-                   o.system_fee      = o.original_system_fee,
-                   o.transaction_fee = o.original_transaction_fee,
-                   o.delivery_fee    = o.original_delivery_fee,
-                   o.special_fee     = o.original_special_fee,
-                   op.price          = op.original_price,
-                   opi.price         = opi.original_price
+                      `tmp_order_fee_and_price` tmp_o
+               SET o.total_amount    = tmp_o.total_amount,
+                   o.system_fee      = tmp_o.system_fee,
+                   o.transaction_fee = tmp_o.transaction_fee,
+                   o.delivery_fee    = tmp_o.delivery_fee,
+                   o.special_fee     = tmp_o.special_fee,
+                   op.price          = tmp_o.ordered_product_price,
+                   opi.price         = tmp_o.ordered_product_item_price
                WHERE o.id = op.order_id
                  AND op.id = opi.ordered_product_id
-                 AND old_o.id = old_op.order_id
-                 AND old_op.id = old_opi.ordered_product_id
-                 AND o.order_no = old_o.order_no
-                 AND op.product_id = old_op.product_id
-                 AND opi.product_item_id = old_opi.product_item_id
                  AND o.branch_no > 1
                  AND o.refund_id IS NOT NULL
                  AND o.refunded_at IS NOT NULL
                  AND o.deleted_at IS NULL
-                 AND (o.branch_no - 1) = old_o.branch_no
-                 AND old_o.refund_id IS NOT NULL
-                 AND old_o.refunded_at IS NULL
-                 AND old_o.deleted_at IS NOT NULL
+                 AND o.id = tmp_o.order_id
+                 AND op.id = tmp_o.ordered_product_id
+                 AND opi.id = tmp_o.ordered_product_item_id
                ''')
