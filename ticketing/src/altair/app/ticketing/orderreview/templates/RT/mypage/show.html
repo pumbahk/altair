@@ -65,7 +65,7 @@ ${render_mailmagazine(request)}
             % if h.is_disabled_order(entry):
               <dt>${entry.lot.name}</dt>
             % else:
-              <dt><a href="javascript:void(0);" onclick="document.${entry.entry_no}.submit()">${entry.lot.name}</a></dt>
+              <dt><a href="javascript:void(0);" onclick="document.getElementById('${entry.entry_no}').submit()">${entry.lot.name}</a></dt>
             % endif
             <dd>受付番号：${entry.entry_no}　申込日時：${h.japanese_datetime(entry.created_at)}</dd>
           </form>
@@ -91,7 +91,7 @@ ${render_pager(lot_entries)}
 <dl>
 <form name="${order.order_no}" action="${request.route_path('mypage.order.show')}" method="POST">
 <input type="hidden" name="order_no" value="${order.order_no}"/>
-<dt><a href="javascript:void(0);" onclick="document.${order.order_no}.submit()">${order.performance.name}</a></dt>
+<dt><a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()">${order.performance.name}</a></dt>
 <dd>受付番号：${order.order_no}　予約日時：${h.japanese_datetime(order.created_at)}</dd>
 <dd>${h.japanese_datetime(order.performance.start_on)}開演 ${order.performance.venue.name}</dd>
 </form>
