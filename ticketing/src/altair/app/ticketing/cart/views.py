@@ -46,7 +46,7 @@ from altair.app.ticketing.temp_store import TemporaryStoreError
 from . import api
 from . import helpers as h
 from . import schemas
-from .api import set_rendered_event, is_mobile, is_smartphone, is_smartphone_organization, is_point_input_organization, is_fc_auth_organization
+from .api import set_rendered_event, is_mobile, is_smartphone, is_smartphone_organization, is_point_input_organization, is_fc_auth_organization, enable_auto_input_form
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -889,7 +889,7 @@ class PaymentView(object):
 
         user = get_or_create_user(self.context.authenticated_user())
         user_profile = None
-        if user is not None:
+        if enable_auto_input_form(user):
             user_profile = user.user_profile
 
         if user_profile is not None:
