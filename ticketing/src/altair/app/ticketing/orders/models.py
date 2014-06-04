@@ -234,12 +234,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     total_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
     system_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
-
-    special_fee_name = sa.Column(sa.Unicode(255), nullable=False, default=u"")
-    special_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
-
     transaction_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
     delivery_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
+    special_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
+    special_fee_name = sa.Column(sa.Unicode(255), nullable=False, default=u"")
 
     multicheckout_approval_no = sa.Column(sa.Unicode(255), doc=u"マルチ決済受領番号")
 
@@ -255,6 +253,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     canceled_at = sa.Column(sa.DateTime, nullable=True, default=None)
     refund_id = sa.Column(Identifier, sa.ForeignKey('Refund.id'))
     refunded_at = sa.Column(sa.DateTime, nullable=True, default=None)
+    released_at = sa.Column(sa.DateTime, nullable=True, default=None)
 
     order_no = sa.Column(sa.Unicode(255))
     branch_no = sa.Column(sa.Integer, nullable=False, default=1, server_default='1')
@@ -284,6 +283,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     issuing_end_at   = sa.Column(sa.DateTime, nullable=True)
     payment_start_at = sa.Column(sa.DateTime, nullable=True)
     payment_due_at   = sa.Column(sa.DateTime, nullable=True)
+
+    refund_total_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
+    refund_system_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
+    refund_transaction_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
+    refund_delivery_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
+    refund_special_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
 
     @property
     def organization(self):
@@ -445,6 +450,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # キャンセルのみ論理削除可能
         return self.status == 'canceled'
 
+    def can_release_stocks(self):
+        # 払戻済のみ座席解放可能
+        return (self.status == 'ordered' and self.payment_status == 'refunded' and self.released_at is None)
+
     def cancel(self, request, payment_method=None, now=None):
         now = now or datetime.now()
         if not self.can_refund() and not self.can_cancel():
@@ -487,9 +496,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 # - ただし、売上一部取消APIを有効にする以前に予約があったものはキャンセルAPIをつかう
                 if self.payment_status in ['refunding']:
                     logger.info(u'売上一部取消APIで払戻 %s' % self.order_no)
-                    prev = self.prev
-                    total_amount = prev.refund.item(prev) + prev.refund.fee(prev)
-                    multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(order_no, total_amount, 0)
+                    multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(order_no, self.refund_total_amount, 0)
                 else:
                     sales_part_cancel_enabled_from = '2012-12-03 08:00'
                     if self.created_at < datetime.strptime(sales_part_cancel_enabled_from, "%Y-%m-%d %H:%M"):
@@ -521,12 +528,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 checkout = self.checkout
                 if self.payment_status == 'refunding':
                     # 払戻(合計100円以上なら注文金額変更API、0円なら注文キャンセルAPIを使う)
-                    if self.total_amount >= 100:
+                    remaining_amount = self.total_amount - self.refund_total_amount
+                    if remaining_amount >= 100:
                         result = service.request_change_order([checkout.orderControlId])
                         # オーソリ済みになるので売上バッチの処理対象になるようにsales_atをクリア
                         checkout.sales_at = None
                         checkout.save()
-                    elif self.total_amount == 0:
+                    elif remaining_amount == 0:
                         result = service.request_cancel_order([checkout.orderControlId])
                     else:
                         logger.error(u'0円以上100円未満の注文は払戻できません (order_no=%s)' % self.order_no)
@@ -569,22 +577,16 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         performance_name=self.performance.name,
                         performance_code=self.performance.code,
                         performance_start_on=self.performance.start_on,
-                        per_order_fee=get_refund_per_order_fee(
-                            self.prev.refund,
-                            self.prev
-                            ),
-                        per_ticket_fee=get_refund_per_ticket_fee(
-                            self.prev.refund,
-                            self.prev
-                            ),
+                        per_order_fee=get_refund_per_order_fee(self.refund, self),
+                        per_ticket_fee=get_refund_per_ticket_fee(self.refund, self),
                         refund_start_at=self.refund.start_at,
                         refund_end_at=self.refund.end_at,
                         need_stub=self.refund.need_stub,
                         ticket_expire_at=self.refund.end_at + timedelta(days=+7),
                         ticket_price_getter=lambda sej_ticket: \
                             get_refund_ticket_price(
-                                self.prev.refund,
-                                self.prev,
+                                self.refund,
+                                self,
                                 sej_ticket.product_item_id
                                 ),
                         now=now
@@ -615,9 +617,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 logger.info('skip cancel delivery method. SejOrder not found (order_no=%s)' % self.order_no)
 
         # 在庫を戻す
-        logger.info('try release stock (order_no=%s)' % self.order_no)
-        self.release()
         if self.payment_status != 'refunding':
+            logger.info('try release stock (order_no=%s)' % self.order_no)
+            self.release()
             self.mark_canceled()
         if self.payment_status in ['paid', 'refunding']:
             self.mark_refunded()
@@ -638,6 +640,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def mark_paid(self, now=None):
         self.paid_at = now or datetime.now()
+
+    def mark_released(self, now=None):
+        self.released_at = now or datetime.now()
 
     def mark_issued_or_printed(self, issued=False, printed=False, now=None):
         if not issued and not printed:
@@ -675,28 +680,28 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def reserve_refund(kwargs):
         refund = Refund(**kwargs)
         refund.save()
+        return refund
 
     def call_refund(self, request):
-        # 払戻対象の金額をクリア
-        order = Order.clone(self, deep=True)
+        # 払戻金額を保存
         if self.refund.include_system_fee:
-            order.system_fee = 0
+            self.refund_system_fee = self.system_fee
         if self.refund.include_special_fee:
-            order.special_fee = 0
+            self.refund_special_fee = self.special_fee
         if self.refund.include_transaction_fee:
-            order.transaction_fee = 0
+            self.refund_transaction_fee = self.transaction_fee
         if self.refund.include_delivery_fee:
-            order.delivery_fee = 0
+            self.refund_delivery_fee = self.delivery_fee
         if self.refund.include_item:
-            for ordered_product in order.items:
-                ordered_product.price = 0
+            for ordered_product in self.items:
+                ordered_product.refund_price = ordered_product.price
                 for ordered_product_item in ordered_product.ordered_product_items:
-                    ordered_product_item.price = 0
-        fee = order.special_fee + order.system_fee + order.transaction_fee + order.delivery_fee
-        order.total_amount = sum(o.price * o.quantity for o in order.items) + fee
+                    ordered_product_item.refund_price = ordered_product_item.price
+        refund_fee = self.refund_special_fee + self.refund_system_fee + self.refund_transaction_fee + self.refund_delivery_fee
+        self.refund_total_amount = sum(o.refund_price * o.quantity for o in self.items) + refund_fee
 
         try:
-            return order.cancel(request, self.refund.payment_method)
+            return self.cancel(request, self.refund.payment_method)
         except Exception:
             logger.exception(u'払戻処理でエラーが発生しました')
         return False
@@ -818,6 +823,15 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         DBSession.flush() # これとっちゃだめ
         return order
 
+    def release_stocks(self):
+        # 払戻済のみ座席解放可能
+        if self.can_release_stocks():
+            logger.info('try release stock (order_no=%s)' % self.order_no)
+            self.release()
+            self.mark_released()
+            return True
+        return False
+
     @staticmethod
     def filter_by_performance_id(id):
         performance = Performance.get(id)
@@ -854,6 +868,7 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product = orm.relationship('Product', backref='ordered_products')
     price = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
     quantity = sa.Column(sa.Integer)
+    refund_price = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
 
     @property
     def ordered_product_items(self):
@@ -906,6 +921,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     printed_at = sa.Column(sa.DateTime, nullable=True, default=None)
     seats = orm.relationship("Seat", secondary=orders_seat_table, backref='ordered_product_items')
     price = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
+    refund_price = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
 
     _attributes = orm.relationship("OrderedProductAttribute", backref='ordered_product_item', collection_class=orm.collections.attribute_mapped_collection('name'), cascade='all,delete-orphan')
     attributes = association_proxy('_attributes', 'value', creator=lambda k, v: OrderedProductAttribute(name=k, value=v))
@@ -1185,6 +1201,11 @@ class OrderSummary(Base):
             Order.__table__.c.special_fee,
             Order.__table__.c.special_fee_name,
             Order.__table__.c.total_amount,
+            Order.__table__.c.refund_transaction_fee,
+            Order.__table__.c.refund_delivery_fee,
+            Order.__table__.c.refund_system_fee,
+            Order.__table__.c.refund_special_fee,
+            Order.__table__.c.refund_total_amount,
             Order.__table__.c.note,
             Order.__table__.c.card_brand,
             Order.__table__.c.card_ahead_com_code,
@@ -1193,6 +1214,7 @@ class OrderSummary(Base):
             Order.__table__.c.shipping_address_id,
             Order.__table__.c.issued,
             Order.__table__.c.user_id,
+            Order.__table__.c.refund_id,
             Order.__table__.c.fraud_suspect,
             Order.__table__.c.created_at,
             Order.__table__.c.deleted_at,
@@ -1244,6 +1266,11 @@ class OrderSummary(Base):
     delivery_fee = Order.delivery_fee
     system_fee = Order.system_fee
     total_amount = Order.total_amount
+    refund_transaction_fee = Order.refund_transaction_fee
+    refund_delivery_fee = Order.refund_delivery_fee
+    refund_system_fee = Order.refund_system_fee
+    refund_special_fee = Order.refund_special_fee
+    refund_total_amount = Order.refund_total_amount
     note = Order.note
     card_brand = Order.card_brand
     card_ahead_com_code = Order.card_ahead_com_code
@@ -1252,6 +1279,7 @@ class OrderSummary(Base):
     shipping_address_id = Order.shipping_address_id
     issued = Order.issued
     user_id = Order.user_id
+    refund_id = Order.refund_id
     fraud_suspect = Order.fraud_suspect
     created_at = Order.created_at
     deleted_at = Order.deleted_at
@@ -1422,5 +1450,3 @@ class OrderSummary(Base):
     @property
     def cancel_reason(self):
         return self.refund.cancel_reason if self.refund else None
-
-

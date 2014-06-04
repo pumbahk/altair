@@ -342,6 +342,9 @@ class SearchFormBase(Form):
         choices=[],
         validators=[Optional()],
     )
+    refund_id = HiddenField(
+        validators=[Optional()],
+    )
     start_on_from = DateTimeField(
         label=u'公演日',
         validators=[Optional(), after1900],
@@ -873,18 +876,23 @@ class OrderRefundForm(Form):
         for refund_order in form.orders:
             settlement_payment_plugin_id = refund_order.payment_delivery_pair.payment_method.payment_plugin_id
             settlement_delivery_plugin_id = refund_order.payment_delivery_pair.delivery_method.delivery_plugin_id
-            if settlement_delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID and refund_order.is_issued():
-                # 引取方法が「コンビニ」で発券済みなら「コンビニ払戻」のみ可能
-                if refund_pm.payment_plugin_id != plugins.SEJ_PAYMENT_PLUGIN_ID:
-                    raise ValidationError('%s: %s(%s)' % (error_msg, u'既にコンビニ発券済なのでコンビニ払戻を選択してください', refund_order.order_no))
-            elif refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID and settlement_delivery_plugin_id != plugins.SEJ_DELIVERY_PLUGIN_ID:
-                # コンビニ引取でないなら「コンビニ払戻」は不可
+
+            # コンビニ引取
+            if settlement_delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
+                if refund_order.is_issued():
+                    # 発券済ならコンビニ払戻のみ可能
+                    if refund_pm.payment_plugin_id != plugins.SEJ_PAYMENT_PLUGIN_ID:
+                        raise ValidationError('%s: %s(%s)' % (error_msg, u'既にコンビニ発券済なのでコンビニ払戻を選択してください', refund_order.order_no))
+                else:
+                    # 未発券ならコンビニ払戻は不可
+                    if refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
+                        raise ValidationError('%s: %s(%s)' % (error_msg, u'コンビニ発券していないのでコンビニ払戻は選択できません', refund_order.order_no))
+            elif refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
+                # コンビニ引取でないならコンビニ払戻は不可
                 raise ValidationError('%s: %s(%s)' % (error_msg, u'コンビニ引取ではありません', refund_order.order_no))
-            elif refund_pm.payment_plugin_id == settlement_payment_plugin_id:
-                # 決済方法 = 払戻方法ならOK
-                continue
-            elif refund_pm.payment_plugin_id not in [plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID]:
-                # 決済と払戻が別でもよいのは、払戻方法が 銀行振込 コンビニ払戻 のケースのみ
+
+            # 決済方法=払戻方法 または払戻方法がコンビニ払戻/銀行振込ならOK
+            if refund_pm.payment_plugin_id not in [settlement_payment_plugin_id, plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID]:
                 raise ValidationError('%s: (%s)' % (error_msg, refund_order.order_no))
 
     def validate(self):

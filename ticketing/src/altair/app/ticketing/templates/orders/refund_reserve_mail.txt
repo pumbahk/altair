@@ -1,0 +1,7 @@
+${refund.created_at.strftime('%Y-%m-%d %H:%M:%S')} に払戻予約が登録されました。
+
+<%include file="./_refund_info.txt" args="refund=refund"/>
+
+翌日夜間に払戻が実行されます。
+設定の変更および払戻の取消は以下から行ってください。
+https://service.ticketstar.jp/orders/refund/

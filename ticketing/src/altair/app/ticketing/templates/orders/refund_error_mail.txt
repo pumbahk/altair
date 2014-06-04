@@ -1,0 +1,7 @@
+払戻でエラーが発生しました。
+
+% for m in message:
+${m}
+% endfor
+
+<%include file="./_refund_info.txt" args="refund=refund"/>

@@ -3,11 +3,20 @@
 <%namespace file="/common/modal.html" name="m" />
 
 <script type="text/javascript">
+  function release_stocks(id) {
+    var modal = $('#modal-confirm');
+    var form = modal.find('form');
+    form.attr('action', '/orders/release_stocks/' + id);
+    form.find('input[type=submit]').val('在庫を解放する');
+    var message = 'この予約が確保している在庫を解放します。よろしいですか？';
+    modal.find('.message').html('<p>' + message + '</p>');
+    modal.modal('toggle');
+  }
   function cancel_order(id) {
     var modal = $('#modal-confirm');
     var form = modal.find('form');
     form.attr('action', '/orders/cancel/' + id);
-    form.find('input[type=submit]').val('注文をキャンセルする (取消不可)');
+    form.find('input[type=submit]').val('予約をキャンセルする (取消不可)');
     var message = '選択した予約をキャンセルします。よろしいですか？';
     % if order.printed_at or order.issued_at or order.issued:
       message += '<br><div class="alert alert-error">この予約は既に発券済み(または発券予約中)です。</div>'
@@ -17,7 +26,7 @@
   }
   function delete_order(id) {
     var modal = $('#modal-delete');
-    modal.find('#delete').attr('href', '/orders/delete/' + id).text('注文を非表示にする (取消不可)');
+    modal.find('#delete').attr('href', '/orders/delete/' + id).text('予約を非表示にする (取消不可)');
     var message = '選択した予約を非表示にします。よろしいですか？';
     message += '<br><div class="alert alert-error">この操作を行うとこの予約情報は閲覧できなくなります。</div>'
     modal.find('#message').html('<p>' + message + '</p>');
@@ -170,6 +179,19 @@ actions = {
     attrs={'class': 'btn-danger'},
     route_name='orders.refund.immediate',
   ),
+  'refund_info':dict(
+    label=u'払戻詳細',
+    url=request.route_path("orders.refund.show", refund_id=order.refund_id),
+    icon='icon-list',
+    route_name='orders.refund.show',
+  ),
+  'release_stocks':dict(
+    label=u'在庫を解放',
+    url='javascript:release_stocks(%d);' % order.id,
+    icon='icon-remove-circle',
+    attrs={'class': 'btn-danger'},
+    route_name='orders.release_stocks',
+  ),
   'edit_shipping_address':dict(
     label=u'編集',
     url='javascript:edit_shipping_address(%d);' % order.id,
@@ -211,8 +233,14 @@ if 'cancel' in sort:
   if not order.can_cancel():
     sort.remove('cancel')
 if 'refund' in sort:
-  if not order.can_refund():
+  if not order.can_refund() or order.refund_id:
     sort.remove('refund')
+if 'refund_info' in sort:
+  if not order.refund_id:
+    sort.remove('refund_info')
+if 'release_stocks' in sort:
+  if not order.can_release_stocks():
+    sort.remove('release_stocks')
 if 'delivered' in sort:
   if not order.can_deliver():
     sort.remove('delivered')

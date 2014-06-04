@@ -577,6 +577,10 @@ class GetRefundPerOrderFeeTest(unittest.TestCase):
             transaction_fee=Decimal(17),
             delivery_fee=Decimal(19),
             special_fee=Decimal(23),
+            refund_system_fee=Decimal(13),
+            refund_transaction_fee=Decimal(17),
+            refund_delivery_fee=Decimal(19),
+            refund_special_fee=Decimal(23),
             items=[
                 testing.DummyModel(
                     price=Decimal(13),
@@ -585,6 +589,7 @@ class GetRefundPerOrderFeeTest(unittest.TestCase):
                         testing.DummyModel(
                             price=Decimal(7),
                             quantity=1,
+                            refund_price=Decimal(7),
                             product_item_id=1,
                             product_item=testing.DummyModel(
                                 id=1,
@@ -595,6 +600,7 @@ class GetRefundPerOrderFeeTest(unittest.TestCase):
                         testing.DummyModel(
                             price=Decimal(3),
                             quantity=2,
+                            refund_price=Decimal(3),
                             product_item_id=2,
                             product_item=testing.DummyModel(
                                 id=2,
@@ -748,6 +754,10 @@ class GetRefundPerTicketFeeTest(unittest.TestCase):
             transaction_fee=Decimal(17),
             delivery_fee=Decimal(19),
             special_fee=Decimal(23),
+            refund_system_fee=Decimal(13),
+            refund_transaction_fee=Decimal(17),
+            refund_delivery_fee=Decimal(19),
+            refund_special_fee=Decimal(23),
             items=[
                 testing.DummyModel(
                     price=Decimal(13),
@@ -756,6 +766,7 @@ class GetRefundPerTicketFeeTest(unittest.TestCase):
                         testing.DummyModel(
                             price=Decimal(7),
                             quantity=1,
+                            refund_price=Decimal(7),
                             product_item_id=1,
                             product_item=testing.DummyModel(
                                 id=1,
@@ -766,6 +777,7 @@ class GetRefundPerTicketFeeTest(unittest.TestCase):
                         testing.DummyModel(
                             price=Decimal(3),
                             quantity=2,
+                            refund_price=Decimal(3),
                             product_item_id=2,
                             product_item=testing.DummyModel(
                                 id=2,
@@ -846,6 +858,10 @@ class GetRefundTicketPrice(unittest.TestCase):
             transaction_fee=Decimal(17),
             delivery_fee=Decimal(19),
             special_fee=Decimal(23),
+            refund_system_fee=Decimal(13),
+            refund_transaction_fee=Decimal(17),
+            refund_delivery_fee=Decimal(19),
+            refund_special_fee=Decimal(23),
             items=[
                 testing.DummyModel(
                     price=Decimal(13),
@@ -854,6 +870,7 @@ class GetRefundTicketPrice(unittest.TestCase):
                         testing.DummyModel(
                             price=Decimal(7),
                             quantity=1,
+                            refund_price=Decimal(7),
                             product_item_id=1,
                             product_item=testing.DummyModel(
                                 id=1,
@@ -864,6 +881,7 @@ class GetRefundTicketPrice(unittest.TestCase):
                         testing.DummyModel(
                             price=Decimal(3),
                             quantity=2,
+                            refund_price=Decimal(3),
                             product_item_id=2,
                             product_item=testing.DummyModel(
                                 id=2,

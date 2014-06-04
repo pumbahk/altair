@@ -1,0 +1,3 @@
+${refund.updated_at.strftime('%Y-%m-%d %H:%M:%S')} に払戻が完了しました。
+
+<%include file="./_refund_info.txt" args="refund=refund"/>
