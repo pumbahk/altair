@@ -2,7 +2,7 @@
 import logging
 logger = logging.getLogger(__name__)
 
-from .fillvalues import (
+from altair.app.ticketing.tickets.preview.fillvalues import (
     template_fillvalues,
     template_collect_vars,
 )
@@ -24,12 +24,13 @@ def emit_to_another_template(template, ticket):
 
 
 class TicketVarsCollector(object):
-    def __init__(self, ticket):
+    def __init__(self, ticket, force_self_template=False):
         self.ticket = ticket
         self.base_template = ticket.base_template
+        self.force_self_template = force_self_template
 
     def is_support(self):
-        return self.base_template is not None
+        return not self.force_self_template and self.base_template is not None
 
     @property
     def template(self):

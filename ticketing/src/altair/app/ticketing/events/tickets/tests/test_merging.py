@@ -5,18 +5,17 @@ import altair.app.ticketing.orders.models
 
 class CollectVarsWithDefaultTests(unittest.TestCase):
     def _getTarget(self):
-        from altair.app.ticketing.tickets.preview.merging import TicketVarsCollector
+        from altair.app.ticketing.events.tickets.merging import TicketVarsCollector
         return TicketVarsCollector
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
     def _makeTemplate(self, drawing, fill_mapping={}):
-        import json
         from altair.app.ticketing.core.models import Ticket
         data = {
             "drawing": drawing, 
-            "fill_mapping": json.dumps(fill_mapping)
+            "fill_mapping": fill_mapping
         }
         return Ticket(data=data)
 
@@ -51,18 +50,31 @@ class CollectVarsWithDefaultTests(unittest.TestCase):
         self.assertEqual(dict(result), {})
 
 
+    def test_it__force_self_template__is_True__use_self_template(self):
+        ticket = self._makeTemplate(
+            drawing="""** base template **""",
+        )
+        ticket.base_template = self._makeTemplate(
+            drawing="""{{prefix}}, {{message}}"""
+        )
+
+        target = self._makeOne(ticket, force_self_template=True)
+
+        self.assertFalse(target.is_support())
+        self.assertEqual(target.template, "** base template **")
+
+
 class EmitToAnotherTemplateTests(unittest.TestCase):
     def _makeTemplate(self, drawing, fill_mapping):
-        import json
         from altair.app.ticketing.core.models import Ticket
         data = {
             "drawing": drawing, 
-            "fill_mapping": json.dumps(fill_mapping)
+            "fill_mapping": fill_mapping
         }
         return Ticket(data=data)
 
     def _callFUT(self, *args, **kwargs):
-        from altair.app.ticketing.tickets.preview.merging import emit_to_another_template
+        from altair.app.ticketing.events.tickets.merging import emit_to_another_template
         return emit_to_another_template(*args, **kwargs)
 
     def test_it(self):

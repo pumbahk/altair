@@ -8,7 +8,7 @@ from altair.app.ticketing.models import DBSession, record_to_appstruct
 from altair.app.ticketing.core.models import ProductItem, Performance
 from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute
 from altair.app.ticketing.views import BaseView
-from altair.app.ticketing.tickets.preview.merging import TicketVarsCollector, emit_to_another_template
+from altair.app.ticketing.events.tickets.merging import TicketVarsCollector, emit_to_another_template
 from . import forms
 
 import logging
