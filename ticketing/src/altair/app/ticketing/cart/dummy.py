@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
-from altair.app.ticketing.core.api import get_organization
 from altair.app.ticketing.mailmags import models as mailmag_models
 from pyramid.response import Response
 from functools import wraps
@@ -122,6 +121,7 @@ def _get_mailmagazines_from_organization(organization):
 def confirm_view(context, request):
     import mock
     from collections import defaultdict
+    from .api import get_organization
     with mock.patch("altair.rakuten_auth.api.authenticated_user"):
         form = mock.Mock()
         cart = _dummy_cart()

@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 @SelectByRequestGen.generate
 def get_template_path_args(request):
-    from altair.app.ticketing.core.api import get_organization
+    from altair.app.ticketing.cart.api import get_organization
     try:
         return dict(membership=get_organization(request).short_name)
     except Exception, e:

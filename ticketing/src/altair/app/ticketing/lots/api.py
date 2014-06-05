@@ -39,8 +39,7 @@ from sqlalchemy.orm.exc import NoResultFound
 #from pyramid.interfaces import IRequest
 from webob.multidict import MultiDict
 from altair.now import get_now
-from altair.app.ticketing.core import api as c_api
-import altair.app.ticketing.cart.api as cart_api
+from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import sensible_alnum_encode
 from altair.rakuten_auth.api import authenticated_user
 from altair.app.ticketing.core import api as core_api
@@ -98,7 +97,7 @@ def get_member_group(request):
     if user is None:
         return None
 
-    org = c_api.get_organization(request)
+    org = cart_api.get_organization(request)
     member_ship = user.get('membership')
     member_group_name = user.get('membergroup')
     if member_ship is None or member_group_name is None:

@@ -152,8 +152,14 @@ dependency_modules = [
 
 class entry_lotTests(unittest.TestCase):
     def setUp(self):
+        from altair.sqlahelper import register_sessionmaker_with_engine
         self.config = testing.setUp()
         self.session = _setup_db(modules=dependency_modules)
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
         from altair.app.ticketing.core.models import Host, Organization
         organization = Organization(name='test', short_name='test')
         host = Host(organization=organization, host_name='example.com:80')
@@ -243,12 +249,19 @@ class entry_lotTests(unittest.TestCase):
 class get_entryTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        from altair.sqlahelper import register_sessionmaker_with_engine
         cls.session = _setup_db(modules=dependency_modules)
-
+        cls.config = testing.setUp()
+        register_sessionmaker_with_engine(
+            cls.config.registry,
+            'slave',
+            cls.session.bind
+            )
 
     @classmethod
     def tearDownClass(self):
         _teardown_db()
+        testing.tearDown()
 
     def setUp(self):
         self.session.remove()
@@ -279,11 +292,19 @@ class get_entryTests(unittest.TestCase):
 class entry_infoTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        from altair.sqlahelper import register_sessionmaker_with_engine
         cls.session = _setup_db(modules=dependency_modules)
+        cls.config = testing.setUp()
+        register_sessionmaker_with_engine(
+            cls.config.registry,
+            'slave',
+            cls.session.bind
+            )
 
     @classmethod
     def tearDownClass(self):
         _teardown_db()
+        testing.tearDown()
 
     def _callFUT(self, *args, **kwargs):
         from .. import api

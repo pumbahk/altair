@@ -112,7 +112,7 @@ ${shipping.address_2}
 ※チケットはご観覧日の当日、ご予約いただいた公演時間の開演20分前までに会場チケット窓口にてお受け取り下さい。
 </div>
 % elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 4:
-    <% from altair.app.ticketing.core.api import get_organization %>
+    <% from altair.app.ticketing.cart.api import get_organization %>
     % if not get_organization(request).id == 24:
 <div>QRコード</div>
     % endif

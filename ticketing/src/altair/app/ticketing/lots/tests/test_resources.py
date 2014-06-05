@@ -8,13 +8,9 @@ class LotResourceTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db(modules=[
             'altair.app.ticketing.core.models',
+            'altair.app.ticketing.orders.models',
             'altair.app.ticketing.lots.models',
             ])
-        from altair.app.ticketing.core.models import Host, Organization
-        self.organization = Organization(short_name='testing')
-        host = Host(host_name='example.com:80', organization=self.organization)
-        self.session.add(host)
-
         from altair.sqlahelper import register_sessionmaker_with_engine
         self.config = testing.setUp()
         register_sessionmaker_with_engine(
@@ -22,6 +18,11 @@ class LotResourceTests(unittest.TestCase):
             'slave',
             self.session.bind
             )
+        from altair.app.ticketing.core.models import Host, Organization
+        self.organization = Organization(short_name='testing')
+        host = Host(host_name='example.com:80', organization=self.organization)
+        self.session.add(host)
+        self.session.flush()
 
     def tearDown(self):
         _teardown_db()

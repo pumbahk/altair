@@ -377,8 +377,6 @@ class MobileSelectProductView(object):
             api.release_cart(self.request, old_cart)
             api.remove_cart(self.request)
             transaction.commit()
-            c_api.refresh_organization(self.request)
-                
 
         # セールスセグメント必須
         sales_segment = c_models.SalesSegment.filter_by(id=sales_segment_group_id).first()
@@ -424,7 +422,7 @@ class MobileSelectProductView(object):
             logger.debug("not enough adjacency")
 
             # バラ席でのおすすめが可能なら確認画面を挟む
-            organization = c_api.get_organization(self.request)
+            organization = api.get_organization(self.request)
             if organization.setting.entrust_separate_seats:
                 data = dict(
                     form=schemas.CSRFSecureForm(csrf_context=self.request.session),

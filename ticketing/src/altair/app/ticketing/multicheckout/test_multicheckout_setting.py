@@ -6,16 +6,22 @@ from altair.app.ticketing.testing import _setup_db, _teardown_db
 class MulticheckoutSettingTest(unittest.TestCase):
     def setUp(self):
         from altair.app.ticketing.core.models import Organization, OrganizationSetting, Host
-        self.config = setUp(settings={
-            'altair.multicheckout.endpoint.base_url': 'example.com',
-            'altair.multicheckout.endpoint.timeout': 10,
-            })
-        self.config.include('altair.app.ticketing.multicheckout')
-        self.config.include('altair.multicheckout')
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
             'altair.multicheckout.models',
             ])
+        self.config = setUp(settings={
+            'altair.multicheckout.endpoint.base_url': 'example.com',
+            'altair.multicheckout.endpoint.timeout': 10,
+            })
+        from altair.sqlahelper import register_sessionmaker_with_engine
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
+        self.config.include('altair.app.ticketing.multicheckout')
+        self.config.include('altair.multicheckout')
         organization_settings = []
         for i in range(0, 3):
             organization = Organization(
