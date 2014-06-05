@@ -8,7 +8,7 @@ from altair.app.ticketing.models import DBSession, record_to_appstruct
 from altair.app.ticketing.core.models import ProductItem, Performance
 from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute
 from altair.app.ticketing.views import BaseView
-from altair.app.ticketing.tickets.preview.merging import TicketVarsCollector
+from altair.app.ticketing.tickets.preview.merging import TicketVarsCollector, emit_to_another_template
 from . import forms
 
 import logging
@@ -324,7 +324,6 @@ def easycreate_upload_update(context, request):
 
 @view_config(route_name="events.tickets.easycreate.transcribe", request_method="POST",
              decorator=with_bootstrap, permission="event_editor",
-             request_param="update", 
              renderer="json")
 def easycreate_transcribe_ticket(context, request):
     event = context.event
@@ -336,21 +335,21 @@ def easycreate_transcribe_ticket(context, request):
     except KeyError as e:
         raise HTTPBadRequest(repr(e))
 
-    base_ticket = context.ticket_templates.filter_by(id=base_template_id).first()
+    base_ticket = context.tickets.filter_by(id=base_template_id).first()
     if base_ticket is None:
         raise HTTPBadRequest("base ticket is not found")
-    mapping_ticket = context.ticket_templates.filter_by(id=mapping_id).first()
+    mapping_ticket = context.tickets.filter_by(id=mapping_id).first()
     if mapping_ticket is None:
         raise HTTPBadRequest("mapping ticket is not found")
 
     data = record_to_appstruct(base_ticket)
-    base_ticket.data = upload_form.data_value
-    formdata = upload_form.data
-    base_ticket.name = formdata["name"]
-    base_ticket.cover_print = formdata["cover_print"]
-    base_ticket.data = upload_form.data_value
-    base_ticket.save()  # flush and DBSession.add(o)
-    return dict(status="ok", ticket_id=base_ticket.id)
+    del data["id"]
+    ticket = Ticket(**data)
+    ticket.data["drawing"] = emit_to_another_template(base_ticket, mapping_ticket)
+    ticket.event = context.event
+    ticket.name = request.POST["name"]
+    ticket.save()  # flush and DBSession.add(o)
+    return dict(status="ok", ticket_id=ticket.id)
 
 
 def create_ticket_from_form(form, base_ticket):  # xxx: todo: move to anywhere
@@ -458,7 +457,7 @@ def getting_ticket_template_data(context, request):
 
     return {
         "iterable": [{"pk": t.id, "name": t.name, "checked": False} for t in tickets],
-        "tickets": [{"name": t.name, "url": genurl(t)} for t in tickets]
+        "tickets": [{"pk": t.id, "name": t.name, "url": genurl(t)} for t in tickets]
     }
 
 

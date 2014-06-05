@@ -97,7 +97,7 @@ if (!window.app)
     onChangeTicketTemplate: function($el){
       var text = $el.find("option:selected").text();
       this.submit.receiveDefaultTicketName(text);
-      this.listing.receiveChangeSelectedTemplate(text, $el.val());
+      this.listing.receiveChangeSelectedMapping(text, $el.val());
       return this.component.receiveSVGRequest($el.val());
     },
     onTicketFormatSelectElementUpdate: function(html){
@@ -283,21 +283,34 @@ if (!window.app)
       var html = listingTicketTemplate({"tickets": data.tickets});
       $wrapper.html(html);
     },
-    receiveChangeSelectedTemplate: function(name, templateId){
-      this.broker.models.transcribe.sync("name", name);
-      this.broker.models.transcribe.sync("base_template_id", templateId);
+    receiveChangeSelectedTemplate: function(name){
       this.$el.find(".selected-template").text(name);
     },
-    receiveChangeSelectedMapping: function(name){
+    receiveChangeSelectedMapping: function(name, templateId){
+      this.broker.models.transcribe.sync("name", name);
+      this.broker.models.transcribe.sync("mapping_id", templateId);
       this.$el.find(".selected-mapping").text(name);
     },
-    onChangeSelectedMapping: function($el){
+    onChangeSelectTemplate: function($el){
       var text = $el.parent("li").find("a").text();
-      this.broker.models.transcribe.sync("mapping_id",$el.val());
-      this.receiveChangeSelectedMapping(text);
+      this.broker.models.transcribe.sync("base_template_id",$el.val());
+      this.receiveChangeSelectedTemplate(text);
     },
     onChangeTicketName: function($el){
-      this.broker.models.submit.sync("name", $el.val());
+      this.broker.models.transcribe.sync("name", $el.val());
+    },
+    onSubmitTranscribe: function($form){
+      var url = $form.attr("action");
+      var params = this.broker.models.transcribe.collect();
+      return $.post(url, params)
+        .fail(
+          function(){ this.broker.message.errorMessage("error: url="+url);}.bind(this)
+        ).done(
+          function(data){
+            this.broker.message.successMessage("チケット券面を１つ転写しました");
+            this.broker.onAfterSubmitSuccess(data);
+          }.bind(this)
+        );
     }
   };
 
