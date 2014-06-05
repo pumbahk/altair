@@ -3040,21 +3040,6 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     order_count = Column(Integer, nullable=True)
     status = Column(Integer, nullable=False, default=0, server_default='0')
 
-    def fee(self, order):
-        total_fee = 0
-        if self.include_system_fee:
-            total_fee += order.system_fee
-        if self.include_special_fee:
-            total_fee += order.special_fee
-        if self.include_transaction_fee:
-            total_fee += order.transaction_fee
-        if self.include_delivery_fee:
-            total_fee += order.delivery_fee
-        return total_fee
-
-    def item(self, order):
-        return sum(o.price * o.quantity for o in order.items) if self.include_item else 0
-
     def editable(self):
         return self.status == RefundStatusEnum.Waiting.v
 
@@ -3075,7 +3060,7 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             stmt = stmt - Order.special_fee
 
         refund_payment_method = aliased(PaymentMethod, name='refund_payment_method')
-        query = DBSession.query(Order, include_deleted=True).join(
+        query = DBSession.query(Order).join(
                 Order.performance,
                 Order.payment_delivery_pair,
                 PaymentDeliveryMethodPair.payment_method,
@@ -3084,7 +3069,6 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             ).filter(
                 Refund.id==self.id,
                 Refund.payment_method_id==refund_payment_method.id,
-                Order.refunded_at==None,
             ).with_entities(
                 Performance.name.label('performance_name'),
                 PaymentMethod.name.label('payment_method_name'),

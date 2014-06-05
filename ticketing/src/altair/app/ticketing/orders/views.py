@@ -119,6 +119,7 @@ from .exceptions import OrderCreationError, MassOrderCreationError
 from .utils import NumberIssuer
 from .models import OrderSummary
 from .helpers import build_candidate_id
+from .mail import send_refund_reserve_mail
 from altair.app.ticketing.tickets.preview.api import SVGPreviewCommunication
 from altair.app.ticketing.tickets.preview.api import get_placeholders_from_ticket
 from altair.app.ticketing.tickets.preview.transform import SVGTransformer
@@ -935,10 +936,12 @@ class OrdersRefundConfirmView(BaseView):
             order_count=len(orders),
             performances=performances,
         ))
-        Order.reserve_refund(refund_param)
+        refund = Order.reserve_refund(refund_param)
 
         del self.request.session['orders']
         del self.request.session['ticketing.refund.condition']
+
+        send_refund_reserve_mail(self.request, refund)
 
         self.request.session.flash(u'払戻予約しました')
         return HTTPFound(location=route_path('orders.refund.index', self.request))
@@ -1050,7 +1053,7 @@ class OrderDetailView(BaseView):
                 order_count=1,
                 performances=[order.performance],
             ))
-            Order.reserve_refund(refund_param)
+            refund = Order.reserve_refund(refund_param)
             if order.call_refund(self.request):
                 order.refund.status = RefundStatusEnum.Refunded.v
                 order.refund.save()
@@ -1564,6 +1567,19 @@ class OrderDetailView(BaseView):
         order.save()
 
         self.request.session.flash(u'不正アラートを解除しました')
+        return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
+    @view_config(route_name='orders.release_stocks', permission='sales_editor')
+    def release_stocks(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        if order.release_stocks():
+            self.request.session.flash(u'予約(%s)の在庫を解放しました' % order.order_no)
+        else:
+            self.request.session.flash(u'予約(%s)の在庫を解放できません' % order.order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
 

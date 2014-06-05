@@ -28,6 +28,7 @@ def includeme(config):
     config.add_route('orders.attributes_edit'           , '/attributes/edit/{order_id}')
     config.add_route('orders.note'                      , '/note/{order_id}')
     config.add_route('orders.issue_status'              , '/issue_status/{order_id}')
+    config.add_route('orders.release_stocks'            , '/release_stocks/{order_id}')
     config.add_route('orders.api.get'                   , '/api/get/')
     config.add_route('orders.api.get.html'              , '/api/get/html/')
     config.add_route('orders.api.edit'                  , '/api/edit/{order_id}')
