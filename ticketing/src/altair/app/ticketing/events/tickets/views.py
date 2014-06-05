@@ -379,10 +379,17 @@ def easycreate(context, request):
     choice_form = forms.EasyCreateKindsChoiceForm().configure(event)
     template_form = forms.EasyCreateTemplateChoiceForm()
     upload_form = forms.EasyCreateTemplateUploadForm()
+
+    event_ticket_genurl = lambda t: request.route_path("events.tickets.boundtickets.show", event_id=context.event.id, id=t.id)
+    event_tickets =  [{"pk": t.id, "name": t.name, "url": event_ticket_genurl(t)} for t in context.tickets]
+    base_ticket_genurl = lambda t: request.route_path("tickets.templates.show", id=t.id)
+    base_tickets =  [{"pk": t.id, "name": t.name, "url": base_ticket_genurl(t)} for t in context.ticket_templates]
     return {"choice_form": choice_form,
             "template_form": template_form,
             "upload_form": upload_form,
             "event": event,
+            "event_tickets": event_tickets,
+            "base_tickets": base_tickets
            }
 
 

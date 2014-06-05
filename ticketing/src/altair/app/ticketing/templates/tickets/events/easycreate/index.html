@@ -180,10 +180,18 @@ ${getattr(form,attrname).label(class_="required control-label")}
            </ul>
           <div class="tab-content">
             <div class="tab-pane active" id="listing-ticket-wrap">
-              <ul id="listing-ticket"></ul>
+              <ul id="listing-ticket">
+                %for d in event_tickets:
+                <li><input name="mapping_id" type="radio" value="${d['pk']}"></input><a target="_blank" href="${d['url']}">${d['name']}</a></li>
+                %endfor
+              </ul>
             </div>
             <div class="tab-pane" id="listing-template-wrap">
-              <ul id="listing-template"></ul>
+              <ul id="listing-template">
+                %for d in base_tickets:
+                <li><input name="mapping_id" type="radio" value="${d['pk']}"></input><a target="_blank" href="${d['url']}">${d['name']}</a></li>
+                %endfor
+              </ul>
             </div>
           </div>
         </div>
