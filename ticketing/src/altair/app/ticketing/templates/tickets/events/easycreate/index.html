@@ -46,9 +46,12 @@ ${ch.breadcrumbs(
   .userhandle-box { padding: 10px;}
 
 /* listing */
-  #listing-ticket { max-height: 250px; overflow: scroll;}
-  #listing-ticket input[type="radio"] { margin-right: 7px;}
-  .pseudo-input {background:#eee; foreground:#fff; border-style: solid; border-width:1px; border-color:#aaa; padding:2px
+  #listing-ticket, #listing-template { max-height: 250px; overflow: scroll;}
+  #listing-ticket input[type="radio"], #listing-template input[type="radio"] { margin-right: 7px;}
+  #listing-ticket ul, #listing-template ul {margin: 0px 0px 8px 8px;  list-style-type: none;}
+  .pseudo-input {background:#eee; foreground:#fff; border-style: solid; border-width:1px; border-color:#aaa; padding:2px}
+  .tab-content .active {background:#fffffa; padding:10px;}
+
 </style>
 </%block>
 
@@ -151,19 +154,40 @@ ${getattr(form,attrname).label(class_="required control-label")}
        </form>
       </div>
         <div class="submit-box span5">
+          <h4>5. チケット券面の作成／更新</h4>
+          <p>データを入力してチケット券面を作成／更新します</p>
+          <dl>
+            <dt>券面作成</dt>
+            <dd>新たに新しいチケット券面を作成します<dd>
+          </dl>
+          <dl>
+            <dt>券面の更新</dt>
+            <dd>現在設定している内容にチケット券面を更新します<dd>
+          </dl>
+
           <div class="userhandle-box">
             <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav1">戻る</a>
             <a class="btn js-handle-btn js-next-btn" href="#" data-toggle="#wizard-nav3">次へ</a>
           </div>
         </div>
     </div>
-    <div id="userhandle3" class="listing-area userhandle" style="display:none">
-        <div class="hero-unit span5">
-           <ul id="listing-ticket">
+    <div id="userhandle3" class="listing-area userhandle tabbable" style="display:none">
+        <div class="hero-unit span6">
+          <p>現在登録されているチケット券面の一覧</p>
+           <ul class="nav-tabs nav">
+             <li class="active"><a data-toggle="tab" href="#listing-ticket-wrap">登録されたチケット券面</a></li>
+             <li><a data-toggle="tab" href="#listing-template-wrap">券面テンプレート</a></li>
            </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="listing-ticket-wrap">
+              <ul id="listing-ticket"></ul>
+            </div>
+            <div class="tab-pane" id="listing-template-wrap">
+              <ul id="listing-template"></ul>
+            </div>
+          </div>
         </div>
-        <div class="description-box span6">
-          <p>現在登録されているチケット券面の一覧です</p>
+        <div class="description-box span5">
 
           <div class="hero-unit">
             <p><span class="selected-template pseudo-input"></span>を<span class="selected-mapping pseudo-input"></span>の箱の内容で転写</p>
@@ -281,6 +305,7 @@ $(function(){
   app.submit.$el.find('input[name="update"]').on('click', function(){app.submit.onSubmitUpdate($(this)); return false;})
 
   app.listing.$el.find('#listing-ticket').on('change','input[type="radio"]', function(){app.listing.onChangeSelectTemplate($(this));});
+  app.listing.$el.find('#listing-template').on('change','input[type="radio"]', function(){app.listing.onChangeSelectTemplate($(this));});
   app.listing.$el.find('input[name="name"]').on("change", function(e){app.listing.onChangeTicketName($(this));});
   app.listing.$el.find('form:first').on('submit', function(){app.listing.onSubmitTranscribe($(this)); return false;})
 });

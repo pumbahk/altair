@@ -279,7 +279,12 @@ if (!window.app)
 
   var ListingAreaModule = {
     receiveNewTicketsList: function(data){
-      var $wrapper = this.$el.find("ul#listing-ticket");
+      var $wrapper;
+      if(this.broker.models.source.templateKind === "event"){
+          $wrapper = this.$el.find("ul#listing-ticket");
+      }else {
+          $wrapper = this.$el.find("ul#listing-template");
+      }
       var html = listingTicketTemplate({"tickets": data.tickets});
       $wrapper.html(html);
     },
