@@ -1059,6 +1059,10 @@ class PaymentView(object):
     @view_config(route_name='cart.point', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
     @view_config(route_name='cart.point', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
     def point(self):
+        cart = self.request.context.cart
+        if cart.payment_delivery_pair is None or cart.shipping_address is None:
+            # 不正な画面遷移
+            raise NoCartError()
 
         formdata = MultiDict(
             accountno=""
@@ -1094,6 +1098,10 @@ class PaymentView(object):
         self.form = schemas.PointForm(formdata=self.request.params)
 
         cart = self.request.context.cart
+        if cart.payment_delivery_pair is None or cart.shipping_address is None:
+            # 不正な画面遷移
+            raise NoCartError()
+
         user = self.context.user_object
 
         form = self.form
