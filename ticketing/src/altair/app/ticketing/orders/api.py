@@ -243,8 +243,8 @@ class CartSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin
         return query
 
     def _seat_number(self, query, value):
-        query = query.join(self.targets['Cart'].products)
-        query = query.join(self.targets['CartedProduct'].items)
+        query = query.join(self.targets['Cart'].items)
+        query = query.join(self.targets['CartedProduct'].elements)
         query = query.join(self.targets['CartedProductItem'].seats)
         query = query.filter(self.targets['Seat'].name.like('%s%%' % value))
         return query
@@ -526,8 +526,8 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
         return query.filter(self.targets['subject'].auth_identifier==value)
 
     def _seat_number(self, query, value):
-        query = query.join(self.targets['subject'].ordered_products)
-        query = query.join(self.targets['OrderedProduct'].ordered_product_items)
+        query = query.join(self.targets['subject'].items)
+        query = query.join(self.targets['OrderedProduct'].elements)
         query = query.join(self.targets['OrderedProductItem'].seats)
         query = query.filter(self.targets['Seat'].name.like('%s%%' % value))
         return query
