@@ -41,7 +41,7 @@ ${ch.breadcrumbs(
   .message-row {height:0px;}
 
 /* description */
-  .description-box { padding: 10px;}
+  .description-box { padding: 0px;}
   .descriptioin-area .label {font-size: 12px;}
   .userhandle-box { padding: 10px;}
 
@@ -173,7 +173,7 @@ ${getattr(form,attrname).label(class_="required control-label")}
     </div>
     <div id="userhandle3" class="listing-area userhandle tabbable" style="display:none">
         <div class="hero-unit span6">
-          <p>現在登録されているチケット券面の一覧</p>
+          <h4>現在登録されているチケット券面の一覧</h4>
            <ul class="nav-tabs nav">
              <li class="active"><a data-toggle="tab" href="#listing-ticket-wrap">登録されたチケット券面</a></li>
              <li><a data-toggle="tab" href="#listing-template-wrap">券面テンプレート</a></li>
@@ -198,6 +198,7 @@ ${getattr(form,attrname).label(class_="required control-label")}
         <div class="description-box span5">
 
           <div class="hero-unit">
+          <h4>転写</h4>
             <p><span class="selected-template pseudo-input"></span>を<span class="selected-mapping pseudo-input"></span>の箱の内容で転写</p>
             <form  method="POST" action="${request.route_path("events.tickets.easycreate.transcribe",event_id=event.id)}">
             ${ch.form_item(upload_form.name)}

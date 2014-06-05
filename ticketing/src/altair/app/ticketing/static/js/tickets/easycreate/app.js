@@ -137,6 +137,7 @@ if (!window.app)
                          function then(){
                            //xxxx global variable: this variable create after loading component
                            window.appView.fillsVarsWithParams(data.params);
+                           window.appView.reDrawImage();
                          });
     },
     onAfterSubmitSuccess: function(data){
