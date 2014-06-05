@@ -74,6 +74,7 @@ class TicketingCartResourceBase(object):
         self.now = get_now(request)
         self._sales_segment_id = sales_segment_id
         self._sales_segment = None
+        self._cart = None
         self._populate_params()
         self._validate_sales_segment()
 
@@ -109,9 +110,14 @@ class TicketingCartResourceBase(object):
                 raise InvalidCartStatusError(cart.id)
         return
 
-    @reify
+    @property
     def cart(self):
-        return get_cart_safe(self.request, for_update=True)
+        from altair.app.ticketing.models import DBSession as session
+        if self._cart is None:
+            self._cart = get_cart_safe(self.request, for_update=True)
+        else:
+            self._cart = session.merge(self._cart)
+        return self._cart
 
     @property
     def sales_segments(self):

@@ -429,6 +429,8 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
             .join(Performance.event) \
             .filter(Event.organization_id == organization.id) \
             .filter(Order.canceled_at == None) \
+            .filter(Order.refunded_at == None) \
+            .filter(Order.refund_id == None) \
             .filter(Order.paid_at != None)
         if start_date:
             query = query.filter(Performance.start_on >= start_date)

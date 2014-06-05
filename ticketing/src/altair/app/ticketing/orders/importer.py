@@ -328,6 +328,7 @@ class ImportCSVParserContext(object):
             note = re.split(ur'\r\n|\r|\n', row.get(u'order.note', u'').strip())
             # SalesSegment, PaymentDeliveryMethodPair
             original_order = None
+            obj = None
             if order_no_or_key:
                 obj = get_relevant_object(self.request, order_no_or_key, self.session, include_deleted=True)
                 logger.info('relevant_object=%s' % obj)

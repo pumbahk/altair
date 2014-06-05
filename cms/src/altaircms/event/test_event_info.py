@@ -71,5 +71,35 @@ class GetEventInfoTests(unittest.TestCase):
         self.assertEquals(result[0], {"name": u"name", "content": u"this-is-summary-content", "label": u"見出し"})
         self.assertEquals(result[1], {"content": u"no-name", "label": u"見出し", "name": u""})
 
+    def test_info_from_summary_widget__with_page(self):
+        import json
+        from altaircms.event.models import Event
+        from altaircms.page.models import Page
+        from altaircms.plugins.widget.summary.models import SummaryWidget
+
+        event = Event()
+        another_page = Page(event=event)
+        another_widget = SummaryWidget(page=another_page, bound_event=event)
+        another_widget.items = unicode(json.dumps([
+            {"name": u"name", "content": u"this-is-summary-content", "label": u"見出し", "notify": True},
+            {"content": u"no-name", "label": u"見出し", "notify": True}
+        ]))
+
+        page = Page(event=event)
+        widget = SummaryWidget(page=page, bound_event=event)
+        widget.items = unicode(json.dumps([
+            {"name": u"***", "content": u"***", "label": u"***", "notify": True},
+            {"content": u"***", "label": u"***", "notify": True}
+        ]))
+
+        self.session.add(another_widget)
+        self.session.add(widget)
+        self.session.flush()
+
+        result = self._callFUT(event, page=page)["event"]
+
+        self.assertEquals(result[0], {"name": u"***", "content": u"***", "label": u"***"})
+        self.assertEquals(result[1], {"content": u"***", "label": u"***", "name": u""})
+
 if __name__ == "__main__":
     unittest.main()
