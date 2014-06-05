@@ -2,6 +2,7 @@
 #-*- coding: utf-8 -*-
 """altair backend巡回テストscript
 """
+import sys
 import time
 import string
 import random
@@ -697,10 +698,10 @@ class PerformanceCreator(Part):
                 return True
         return False
 
-def main():
+def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()
-    parser.add_argument('url', default='https://backend.stg2.rt.ticketstar.jp')
-    opts = parser.parse_args()
+    parser.add_argument('url', nargs='?', default='https://backend.stg2.rt.ticketstar.jp')
+    opts = parser.parse_args(argv)
 
     url = opts.url
 
