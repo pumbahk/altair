@@ -22,7 +22,8 @@ if (!window.app)
       templateKind: {value: null, writable: true},
       templateId: {value: null, writable: true},
       createdTemplateId: {value: null, writable: true},
-      isAfterCreatedFirst: {value: false, writable: true}
+      isAfterCreatedFirst: {value: false, writable: true},
+      callback: {value: null, writable: true}
     });
 
   var selectContentTemplate = _.template('<% _.each(iterable, function(d){%><option value="<%= d.pk %>"><%= d.name %></option> <%});%>');
@@ -105,21 +106,46 @@ if (!window.app)
     },
     onTicketTemplateSelectElementUpdate: function(html){
       var $select = this.setting.$el.find('select[name="templates"]');
+      var mo = new MutationObserver(function(mrList,mo){
+        console.log("template select changed");
+        $select.change();
+        mo.disconnect();
+      });
+      mo.observe($select[0], {childList: true});
       $select.html(html);
       // hmm.
-      h.synchronizedWait(function predicate(){return !!window.appView && $select.find("option").length >= 1;},
-                         function then(){
-                           $select.change();
-                         });
+      // h.synchronizedWait(function predicate(){return !!window.appView && $select.find("option").length >= 1;},
+      //                    function then(){
+      //                      $select.change();
+      //                    });
     },
     onNewTicketsList: function(data){
       this.listing.receiveNewTicketsList(data);
     },
     onNewSVGData: function(data){
+      var self = this;
       //xxxx global variable: this variable create after loading component
       h.synchronizedWait(function predicate(){return !!window.appView;},
                          function then(){
                            window.appView.loadSVG(data.svg, data.preview_type);
+                           //console.log("after loading SVG");
+
+                           // for fillvaluse input ui (that is table object so checking target.nodeName === "TBODY"'s chlid).
+                           var mo = new MutationObserver(function(mrList,mo){
+                             //console.dir(mrList);
+                             var firstRow = _.find(mrList, function(mr){return mr.target.nodeName === "TBODY";});
+                             if(!!firstRow){
+                               mo.disconnect();
+                             }
+                             var srcModel = app.broker.models.source;
+                             if(!!srcModel.eventId && !!srcModel.templateId){
+                               console.log("ok;")
+                               app.component.onFillValues(null);
+                             } else {
+                               console.log("hmm;")
+                             }
+                           });
+                           mo.observe(self.component.$el[0], {childList: true, subtree: true});
                          });
     },
     onNewTicketFormatData: function(data){
@@ -133,6 +159,7 @@ if (!window.app)
     },
     onNewFillValues: function(data){
       var self = this;
+      console.log("on new fill values");
       h.synchronizedWait(function predicate(){return !!window.appView;},
                          function then(){
                            //xxxx global variable: this variable create after loading component
