@@ -2409,6 +2409,9 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from altair.app.ticketing.lots.models import LotEntryProduct
         return bool(LotEntryProduct.query.filter(LotEntryProduct.product_id==self.id).count())
 
+    def is_amount_mismatching(self):
+        return self.price != sum(pi.price * pi.quantity for pi in self.items)
+
 
 class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__  = "SeatIndexType"

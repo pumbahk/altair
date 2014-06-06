@@ -79,6 +79,16 @@ label.required:after {
   background-color: #d9534f;
 }
 
+tr.price_error {
+  background-color: #f2dede;
+}
+
+td.price_error {
+  background-color: #f2dede;
+  color: #dd1100;
+  font-weight: bold;
+}
+
 #search table {
   border-collapse: separate;
   width: 100%;

@@ -6,7 +6,7 @@
 % if products:
   <form>
     <div>
-      <table class="table table-striped table-bordered table-condensed" style="margin-bottom: 10px;">
+      <table class="table table-bordered table-condensed" style="margin-bottom: 10px;">
         <thead>
           <tr>
             <th style="width: 100px;">席種</th>
@@ -27,20 +27,21 @@
         <tbody>
         % for product in products:
           <% count = len(product.items) %>
-          <% rowspan = 'rowspan=%s' % (count)  if count else '' %>
-          <tr>
+          <% rowspan = 'rowspan=%s' % (count) if count else '' %>
+          <% price_class = 'price_error' if product.is_amount_mismatching() else '' %>
+          <tr class=${price_class}>
             <td ${rowspan}>${product.seat_type()}</td>
             <td ${rowspan}>${product.name}</td>
-            <td ${rowspan}>${vh.price(product.price)}</td>
+            <td ${rowspan} class="${price_class}">${vh.price(product.price)}</td>
             <td ${rowspan}>${product.display_order}</td>
             <td ${rowspan}>${u'○' if product.public else u'×'}</td>
               % for j, item in enumerate(product.items):
                 % if j != 0:
-          <tr>
+          <tr class=${price_class}>
                 % endif
             <td style="border-left-style: dotted;">${item.stock.stock_holder.name}</td>
             <td>${item.name}</td>
-            <td>${vh.price(item.price)}</td>
+            <td class="${price_class}">${vh.price(item.price)}</td>
             <td>${item.quantity}</td>
             <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>
             <td>
