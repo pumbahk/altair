@@ -96,7 +96,7 @@ def _build_selectitem_candidates_from_ticket_format_query(ticket_format_qs):
     for t in ticket_format_qs:
         D[(t.id, "")] = {"name": t.name, "type": ""}
     for t in sej_qs:
-        D[(t.id, "sej")] = {"name": t.name, "type": ":sej"}
+        D[(t.id, "sej")] = {"name": t.name, "type": "sej"}
     return [dict(pk=k, **vs) 
             for (k, _), vs in D.iteritems()]
 

@@ -69,7 +69,7 @@
         <li style="margin-left:50px;">チケット様式の選択
             <select id="ticket_format" class="inline input-medium">
               %for tf in ticket_formats:
-                <option value="${tf["pk"]}">${tf["name"]}:${tf["type"]}</option>
+                <option data-preview="${tf["type"]}" value="${tf["pk"]}">${tf["name"]}:${tf["type"]}</option>
               %endfor
             </select>
         </li>

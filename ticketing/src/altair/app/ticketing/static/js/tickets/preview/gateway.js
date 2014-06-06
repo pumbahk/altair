@@ -164,7 +164,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
             svg_resource: {
                 modelname: "TicketFormat", 
                 model: this.params.get("ticket_format").pk,
-                type: this.params.get("preview_type").type || "default"
+                type: this.params.get("preview_type") || "default"
             }
         };
         if(!!holder.sub){

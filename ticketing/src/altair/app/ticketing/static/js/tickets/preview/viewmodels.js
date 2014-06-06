@@ -1,5 +1,62 @@
 if (!window.preview)
-    window.preview = {}
+    window.preview = {};
+
+preview.CandidateCollectionViewModel = core.ViewModel.extend({
+    initialize: function(id,className){
+        this.id = id;
+        this.$el = $('<select class="inline">').addClass(className).attr("id", id);
+        this.candidates = [];
+        this.models = {};
+        this.children = {};
+        this.i = 0;
+    },
+    addModel: function(vm){
+        this.candidates[this.i] = vm;
+        this.models[vm.pk] = vm;    //viewmodel.pk == viewmodel.model.get("pk")
+        this.i += 1;
+    },
+    addChild: function(k,val){
+        this.children[k] = val;
+    },
+    getChild: function(k){
+        return this.children[k];
+    },
+    exactCandidates: function(filter_id){
+        var arr = [];
+        if(!!filter_id){
+            _(this.candidates).each(function(vm){
+                if(vm.model.get("format_id") == filter_id)
+                    arr.push(vm);
+            });
+        } else {
+            _(this.candidates).each(function(vm){
+                arr.push(vm);
+            });
+        }
+        return arr
+    },
+    render: function(filter_id){
+        var $el = this.$el;
+        _(this.exactCandidates()).each(function(vm){
+            $el.append(vm.render());
+        });
+        return $el;
+    }
+});
+
+
+preview.ResourceViewModel = core.ViewModel.extend({
+    initialize: function(model, className){
+        this.model = model;
+        this.pk = model.get("pk");
+        this.$el = $('<option>');
+    },
+    render: function(){
+        this.$el.text(this.model.get("label")).attr("value", this.pk);
+        return this.$el;
+    }
+});
+
 
 preview.PreviewImageViewModel = core.ViewModel.extend({
     draw: function(imgdata, width, height){

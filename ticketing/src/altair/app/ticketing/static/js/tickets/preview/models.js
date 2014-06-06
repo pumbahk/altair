@@ -2,6 +2,14 @@ if (!window.preview)
     window.preview = {};
 
 (function(preview){
+    preview.Resource = Backbone.Model.extend({
+        defaults: {
+           pk: null,
+           label: "<default>",
+           format_id: null
+        },
+    });
+
     var NONE_CHANGED = 0;
     var REDRAW_IMAGE = 1;
     var RELOAD_SVG = 2;
