@@ -38,8 +38,11 @@ preview.ApplicationView = Backbone.View.extend({
     fillsVarsWithParams: function(params){
         this.views.template_fillvalues_view.fillsVarsWithParams(params);
     }, 
-    loadSVG: function(svg, preview_type){
+    loadSVG: function(svg, preview_type, notRendering){
         if(!!svg){
+            if(!!notRendering){
+                this.models.preview.set("canceled", true);
+            }
             this.models.params.changePreviewType(preview_type);
             this.models.svg.updateToRaw(svg);
         }

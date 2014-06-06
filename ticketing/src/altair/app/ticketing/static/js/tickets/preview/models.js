@@ -97,6 +97,7 @@ if (!window.preview)
             height: 0, 
             rendering_width: 0, 
             rendering_height: 0, 
+            canceled: false,
             stage: PreviewStage.empty
         }, 
         beforeRendering: function(){

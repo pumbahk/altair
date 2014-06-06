@@ -74,6 +74,13 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         this.preview.beforeRendering();
         var self = this;
         self.message.info("preview画像をレンダリングしています....");
+        if(!!this.preview.get("canceled")){
+          this.message.alert("preview画像のレンダリングがキャンセルされました");
+          this.preview.set("canceled", false);
+          var dfd = $.Deferred()
+          dfd.resolve();
+          return dfd.promise();
+        }
         var params = {"svg": this.svg.get("data"), 
                       sx: this.params.get("default_sx"),
                       sy: this.params.get("default_sy"), 
@@ -122,9 +129,8 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
             .fail(this._apiFail.bind(this));
     }, 
     svgFilledToX: function(){
-        var self = this;
         this.preview.beforeRendering();
-        self.message.info("preview画像をレンダリングしています....");
+        this.message.info("preview画像をレンダリングしています....");
 
         var sx = this.params.get("sx");
         var sy = this.params.get("sy");

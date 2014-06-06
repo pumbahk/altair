@@ -125,7 +125,6 @@ ${getattr(form,attrname).label(class_="required control-label")}
         ${ch.form_item(template_form.templates)}
           <div class="help-box">
             <button class="sticky-button">画面にくっつける</button>
-            <button class="fill-button">登録時の値挿入(もしあれば)</button>
             <%include file="./_help.html"/>
           </div>
         </div>
@@ -304,7 +303,6 @@ $(function(){
 
   app.setting.$el.find('select[name="templates"]').on("change", function(e){ app.setting.onChangeTicketTemplate($(this))});
   app.setting.$el.find(".sticky-button").on("click", function(){app.setting.onClickStickyButton($(this).parents(".help-box"));});
-  app.setting.$el.find(".fill-button").on("click", function(){app.setting.onClickFillButton($(this));});
   app.setting.bindClipboardCopy(app.setting.$el.find(".help-box"), "${request.static_url("altair.app.ticketing:static/js/ZeroClipboard.swf")}")
   app.setting.bindHelpPopOver(app.setting.$el.find(".help-box"));
 

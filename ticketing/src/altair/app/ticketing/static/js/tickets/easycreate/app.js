@@ -127,22 +127,21 @@ if (!window.app)
       //xxxx global variable: this variable create after loading component
       h.synchronizedWait(function predicate(){return !!window.appView;},
                          function then(){
-                           window.appView.loadSVG(data.svg, data.preview_type);
-                           //console.log("after loading SVG");
-
+                           var srcModel = app.broker.models.source;
+                           var cancelFirstPreview = (srcModel.templateKind === "event");
+                           window.appView.loadSVG(data.svg, data.preview_type, cancelFirstPreview);
                            // for fillvaluse input ui (that is table object so checking target.nodeName === "TBODY"'s chlid).
                            var mo = new MutationObserver(function(mrList,mo){
                              //console.dir(mrList);
                              var firstRow = _.find(mrList, function(mr){return mr.target.nodeName === "TBODY";});
                              if(!!firstRow){
                                mo.disconnect();
-                             }
-                             var srcModel = app.broker.models.source;
-                             if(!!srcModel.eventId && !!srcModel.templateId){
-                               console.log("ok;")
-                               app.component.onFillValues(null);
-                             } else {
-                               console.log("hmm;")
+                               if(!!srcModel.eventId && !!srcModel.templateId){
+                                 console.log("ok;")
+                                 app.component.onFillValues(null);
+                               } else {
+                                 console.log("hmm;")
+                               }
                              }
                            });
                            mo.observe(self.component.$el[0], {childList: true, subtree: true});
@@ -261,9 +260,6 @@ if (!window.app)
         $el.addClass("sticky");
         $el.css({"position": "fixed"});
       }
-    },
-    onClickFillButton: function($el){
-      return this.broker.component.onFillValues($el);
     },
     bindClipboardCopy: function($el, moviePath){
       ZeroClipboard.config({"moviePath": moviePath});
