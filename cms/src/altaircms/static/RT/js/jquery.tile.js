@@ -21,7 +21,7 @@
 
 
 $(function() {
-　　$(".tileImg").tile(4);
-　　$(".tileTitle").tile(4);
-　　$(".tileText").tile(4);
+  $(".tileImg").tile(4);
+  $(".tileTitle").tile(4);
+  $(".tileText").tile(4);
 });
