@@ -115,6 +115,7 @@ def main(argv=sys.argv[1:]):
     parser.add_argument('--event', default=0, type=int)
     parser.add_argument('--performance', default=None)
     parser.add_argument('--date', default=None)
+    parser.add_argument('--release', default=False, action='store_true')
     parser.add_argument('--organization-code', dest='organization_code', default='QA')
     parser.add_argument('--no-backup', dest='no_backup', default=False)
     opts = parser.parse_args(argv)
@@ -161,28 +162,41 @@ def main(argv=sys.argv[1:]):
                 parser.error('invalid format: {}'.format(opts.date))
 
     orders = qs.all()
+    order_ids = [order.id for order in orders]
 
     tmpl = mako.template.Template(CANCEL_DATA_DETAIL_TEMPLATE)
     print(tmpl.render(orders=orders))
-    word = raw_input('OK? (yes/no)')
 
+    do_cancel = False
+    word = raw_input('OK? (yes/no: need yes)')
     if word == 'yes':
+        word = raw_input('abort? (yes/no: need no)')
+        if word == 'no':
+            do_cancel = True
+
+    if do_cancel:
         fp = None
         if opts.no_backup:
             fp = stringio.StringIO()
         else:
             fp = open(BACKUP_FILE_NAME, 'w+b')
 
-        for order in orders:
+        for order_id in order_ids:
+            order = Order.query.filter(Order.id==order_id).one()
+
             txt = '{} ->'.format(order.order_no)
             fp.write(txt)
-            print(txt)
+            print txt,
 
-            status = order.cancel(request)
-
+            status = None
+            if opts.release:
+                status = order.release(request)
+            else:
+                status = order.cancel(request)
+            transaction.commit()
             txt = '{}\n'.format(status)
             fp.write(txt)
-            print(txt)
+            print txt,
         fp.close()
     else:
         print('bye')
