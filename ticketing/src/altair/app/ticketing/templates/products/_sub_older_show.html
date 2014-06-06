@@ -35,10 +35,10 @@
             <td ${rowspan} class="${price_class}">${vh.price(product.price)}</td>
             <td ${rowspan}>${product.display_order}</td>
             <td ${rowspan}>${u'○' if product.public else u'×'}</td>
-              % for j, item in enumerate(product.items):
-                % if j != 0:
+            % for j, item in enumerate(product.items):
+              % if j != 0:
           <tr class=${price_class}>
-                % endif
+              % endif
             <td style="border-left-style: dotted;">${item.stock.stock_holder.name}</td>
             <td>${item.name}</td>
             <td class="${price_class}">${vh.price(item.price)}</td>
@@ -46,22 +46,26 @@
             <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>
             <td>
               % if item.ticket_bundle_id:
-                <a id="productItem${item.id}" class="preview-link" data-pk="${item.id}" data-name="${item.name}">${item.ticket_bundle.name} <i class="icon-eye-open"></i></a>
+              <a id="productItem${item.id}" class="preview-link" data-pk="${item.id}" data-name="${item.name}">${item.ticket_bundle.name} <i class="icon-eye-open"></i></a>
               % else:
-                -
+              -
               % endif
             </td>
             <td>
               <input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />
+              % if j == 0:
               ${HH.action_button(b.actions(product, item), order=['edit', 'delete', 'divider', 'edit_item', 'new_item', 'delete_item', 'divider', 'preview'], options='btn-small', align='right')}
+              % else:
+              ${HH.action_button(b.actions(product, item), order=['edit_item', 'new_item', 'delete_item', 'divider', 'preview'], options='btn-small', align='right')}
+              % endif
             </td>
           </tr>
-              % endfor
-              % if count == 0:
+            % endfor
+            % if count == 0:
             <td colspan="6"></td>
             <td>${HH.action_button(b.actions(product), order=['edit', 'delete', 'divider', 'new_item'], options='btn-small')}</td>
           </tr>
-              % endif
+            % endif
           </tr>
         % endfor
         </tbody>
