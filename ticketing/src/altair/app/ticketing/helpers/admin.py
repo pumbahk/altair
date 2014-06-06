@@ -119,7 +119,7 @@ class AdminHelperAdapter(object):
             ACLAllowed
             )
 
-    def action_button(self, actions, order=None, vertical=True, options=None, dropup=False, extra_classes=None):
+    def action_button(self, actions, order=None, vertical=True, options=None, dropup=False, align=None, extra_classes=None):
         count = 0
         if order is None:
             order = actions.keys()
@@ -140,7 +140,8 @@ class AdminHelperAdapter(object):
             return ' '.join(u'%s="%s"' % (name, html_escape(value)) for name, value in attrs.iteritems())
 
         html = []
-        html.append(u'<div class="btn-group">')
+        btn_group_class = 'dropup' if dropup else ''
+        html.append(u'<div class="btn-group {}">'.format(btn_group_class))
         route_permission = self.request.route_permission
         if route_permission:
             count = 0
@@ -163,10 +164,10 @@ class AdminHelperAdapter(object):
                     html.append(u'<button class="btn%s dropdown-toggle" data-toggle="dropdown">' % (u' ' + u' '.join(extra_classes) if extra_classes else u''))
                     html.append(u'<span class="caret"></span>')
                     html.append(u'</button>')
-                    if dropup:
-                        html.append(u'<ul class="dropdown-menu bottom-up">')
-                    else:
-                        html.append(u'<ul class="dropdown-menu">')
+                    dropdown_menu_class = ''
+                    if align == 'right':
+                        dropdown_menu_class = 'pull-right'
+                    html.append(u'<ul class="dropdown-menu {}">'.format(dropdown_menu_class))
                 if vertical and count > 0:
                     html.append(u'<li>')
                 html.append(u'<a href="%s" %s>' % (html_escape(actions[key]['url']), attrs_str()))

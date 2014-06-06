@@ -53,7 +53,7 @@
             </td>
             <td>
               <input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />
-              ${HH.action_button(b.actions(product, item), order=['edit', 'delete', 'divider', 'edit_item', 'new_item', 'delete_item', 'divider', 'preview'], options='btn-small')}
+              ${HH.action_button(b.actions(product, item), order=['edit', 'delete', 'divider', 'edit_item', 'new_item', 'delete_item', 'divider', 'preview'], options='btn-small', align='right')}
             </td>
           </tr>
               % endfor
