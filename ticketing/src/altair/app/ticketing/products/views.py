@@ -47,10 +47,7 @@ class ProductAndProductItem(BaseView):
                 ticket_bundle_id=ticket_bundle_default
                 )
 
-        return {
-            'form': f,
-            'action': self.request.path,
-            }
+        return dict(form=f)
 
     @view_config(route_name='products.new', request_method='POST', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
     def new_post_xhr(self):
@@ -69,11 +66,11 @@ class ProductAndProductItem(BaseView):
 
             query = SalesSegment.query.filter(Organization.id==self.context.user.organization_id)
             if f.all_sales_segment.data:
-                sales_segment_for_products = query.filter_by(performance_id=f.performance.id.data)
+                query = query.filter_by(performance_id=f.performance_id.data)
             else:
-                sales_segment_for_products = query.filter_by(id=f.sales_segment_id.data)
+                query = query.filter_by(id=f.sales_segment_id.data)
 
-            for sales_segment_for_product in sales_segment_for_products:
+            for sales_segment_for_product in query:
                 product = merge_session_with_post(Product(), f.data)
                 product.sales_segment_id = sales_segment_for_product.id
                 product.performance_id = sales_segment_for_product.performance.id
@@ -99,39 +96,53 @@ class ProductAndProductItem(BaseView):
             self.request.session.flash(u'商品を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
-            return {
-                'form': f,
-                'action': self.request.path,
-                }
+            return dict(form=f)
 
     @view_config(route_name="products.edit", request_method="GET", renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
     def edit_xhr(self):
         product = self.context.product
         product_item = self.context.product_item
         f = ProductAndProductItemForm.from_model(product, product_item)
-        return {
-            'form':f,
-            'action': self.request.path,
-            }
+        return dict(form=f)
 
     @view_config(route_name='products.edit', request_method='POST', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
     def edit_post_xhr(self):
-        product = self.context.product
-        product_item = self.context.product_item
-        f = ProductAndProductItemForm(self.request.POST, performance=product.performance, sales_segment=product.sales_segment)
-        if f.validate():
-            point_grant_settings = [
-                PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one()
-                for point_grant_setting_id in f.applied_point_grant_settings.data
-                ]
+        target_product = self.context.product
+        target_product_item = self.context.product_item
+        product_query = Product.query.filter(
+            Product.name==target_product.name,
+            Product.price==target_product.price,
+            Product.seat_stock_type_id==target_product.seat_stock_type_id
+            )
+        product_item_query = ProductItem.query.filter(
+            ProductItem.name==target_product_item.name,
+            ProductItem.price==target_product_item.price,
+            ProductItem.stock_id==target_product_item.stock_id
+            )
 
-            query = SalesSegment.query.filter(Organization.id==self.context.user.organization_id)
-            if f.all_sales_segment.data:
-                sales_segment_for_products = query.filter_by(performance_id=f.performance.id.data)
-            else:
-                sales_segment_for_products = query.filter_by(id=f.sales_segment_id.data)
+        f = ProductAndProductItemForm(self.request.POST, performance=target_product.performance)
+        query = SalesSegment.query.filter(Organization.id==self.context.user.organization_id)
+        if f.all_sales_segment.data:
+            query = query.filter_by(performance_id=f.performance_id.data)
+        else:
+            query = query.filter_by(id=f.sales_segment_id.data)
 
-            for sales_segment_for_product in sales_segment_for_products:
+        for sales_segment_for_product in query:
+            product = product_query.filter(Product.sales_segment_id==sales_segment_for_product.id).first()
+            if not product:
+                logger.debug(u'product not found (sales_segment.id={0}, product.name={1})'.format(sales_segment_for_product.id, target_product.name))
+                continue
+            product_item = ProductItem.query.filter(ProductItem.product_id==product.id).first()
+
+            f = ProductAndProductItemForm(self.request.POST, performance=product.performance, sales_segment=sales_segment_for_product)
+            f.id.data = product.id
+            f.product_item_id.data = product_item.id if product_item else None
+            if f.validate():
+                point_grant_settings = [
+                    PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one()
+                    for point_grant_setting_id in f.applied_point_grant_settings.data
+                    ]
+
                 product = merge_session_with_post(product, f.data, excludes={'performance_id'})
                 product.point_grant_settings[:] = []
                 product.point_grant_settings.extend(point_grant_settings)
@@ -142,20 +153,21 @@ class ProductAndProductItem(BaseView):
                     stock_holder_id=f.stock_holder_id.data,
                     performance_id=sales_segment_for_product.performance.id
                 ).one()
+
+                if not product_item:
+                    continue
                 product_item.name = f.name.data
                 product_item.price = f.price.data
                 product_item.quantity = f.product_item_quantity.data
                 product_item.stock_id = stock.id
                 product_item.ticket_bundle_id = f.ticket_bundle_id.data
                 product_item.save()
+            else:
+                transaction.abort()
+                return dict(form=f)
 
-            self.request.session.flash(u'商品を保存しました')
-            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
-        else:
-            return {
-                'form': f,
-                'action': self.request.path,
-                }
+        self.request.session.flash(u'商品を保存しました')
+        return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
 
     @view_config(route_name='products.delete')
@@ -344,7 +356,6 @@ class ProductItems(BaseView):
             'form_product':ProductAndProductItemForm(
                 record_to_multidict(product),
                 sales_segment=product.sales_segment),
-            'action':self.request.path,
             }
 
     @view_config(route_name='product_items.new', request_method='POST', renderer='altair.app.ticketing:templates/product_items/_form.html', xhr=True)
@@ -376,7 +387,6 @@ class ProductItems(BaseView):
                 'form_product':ProductAndProductItemForm(
                     record_to_multidict(product),
                     sales_segment=product.sales_segment),
-                'action':self.request.path,
             }
 
     @view_config(route_name='product_items.edit', request_method='GET', renderer='altair.app.ticketing:templates/product_items/_form.html', xhr=True)
@@ -397,7 +407,6 @@ class ProductItems(BaseView):
             'form_product':ProductAndProductItemForm(
                 record_to_multidict(product_item.product),
                 sales_segment=product_item.product.sales_segment),
-            'action': self.request.path,
         }
 
     @view_config(route_name='product_items.edit', request_method='POST', renderer='altair.app.ticketing:templates/product_items/_form.html', xhr=True)
@@ -428,7 +437,6 @@ class ProductItems(BaseView):
                 'form_product':ProductAndProductItemForm(
                     record_to_multidict(product_item.product),
                     sales_segment=product_item.product.sales_segment),
-                'action':self.request.path,
             }
 
     @view_config(route_name='product_items.delete')

@@ -1,6 +1,6 @@
-<%page args="form, form_product, action='#'" />
+<%page args="form, form_product" />
 <%namespace file="/common/helpers.html" name="ch" />
-<form action="${action}" method="POST">
+<form action="${request.url}" method="POST">
   <fieldset>
     <table class="table table-bordered">
       <tr>
@@ -32,3 +32,12 @@
     ${ch.form_item(form.ticket_bundle_id)}
   </fieldset>
 </form>
+
+<script type="text/javascript">
+$(function() {
+  var tb = $('select[name="ticket_bundle_id"]');
+  if (tb.find('option').length <= 2 && tb.find('option:selected').val() == "") {
+    tb.val(tb.find('option:not(option:selected)').val());
+  }
+});
+</script>

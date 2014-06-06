@@ -100,7 +100,7 @@ class ProductItemResource(TicketingAdminResource):
     def product_item(self):
         try:
             p = ProductItem.query.join(ProductItem.product, Product.sales_segment).filter(
-                    ProductItem.id==product_item_id,
+                    ProductItem.id==self.product_item_id,
                     SalesSegment.organization_id==self.user.organization_id
                     ).one()
         except NoResultFound:
