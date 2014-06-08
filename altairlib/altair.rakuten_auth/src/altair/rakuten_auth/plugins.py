@@ -7,6 +7,7 @@ from webob.exc import HTTPFound
 from zope.interface import implementer
 from repoze.who.api import get_api as get_who_api
 from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator, IMetadataProvider
+from repoze.who.plugins.auth_tkt import AuthTktCookiePlugin
 from altair.auth.api import get_current_request
 from altair.browserid import get_browserid
 from beaker.cache import Cache, CacheManager, cache_regions
@@ -19,8 +20,8 @@ logger = logging.getLogger(__name__)
 
 cache_manager = CacheManager(cache_regions=cache_regions)
 
-def make_plugin(rememberer_name, cache_region=None):
-    return RakutenOpenIDPlugin(rememberer_name, cache_region)
+def make_plugin(cache_region=None, **kwargs):
+    return RakutenOpenIDPlugin(cache_region, **kwargs)
 
 def sex_no(s, encoding='utf-8'):
     if isinstance(s, str):
@@ -32,17 +33,38 @@ def sex_no(s, encoding='utf-8'):
     else:
         return 0
 
+
+class RemembererWrapper(object):
+    def __init__(self, impl):
+        self.impl = impl
+
+    def remember(self, environ, identity):
+        retval = self.impl.remember(environ, {
+            'repoze.who.userid': identity['repoze.who.userid'],
+            })
+        return retval
+
+    def forget(self, environ, identity):
+        return self.impl.forget(environ, identity)
+
+    def get_identity(self, environ):
+        identity = self.impl.identify(environ)
+        if identity is None:
+            return None
+        return self.impl.authenticate(environ, identity)
+
+
 @implementer(IIdentifier, IAuthenticator, IChallenger, IMetadataProvider)
 class RakutenOpenIDPlugin(object):
     cache_manager = cache_manager
     AUTHENTICATED_KEY = __name__ + '.authenticated'
     METADATA_KEY = __name__ + '.metadata'
 
-    def __init__(self, rememberer_name, cache_region=None):
-        self.rememberer_name = rememberer_name
+    def __init__(self, cache_region=None, **kwargs):
         if cache_region is None:
             cache_region = __name__ + '.metadata'
         self.cache_region = cache_region
+        self.rememberer = RemembererWrapper(AuthTktCookiePlugin(**kwargs))
 
     def _get_cache(self):
         return self.cache_manager.get_cache_region(
@@ -54,16 +76,8 @@ class RakutenOpenIDPlugin(object):
         request = get_current_request(environ)
         return request.registry.queryUtility(IRakutenOpenID)
 
-    def _get_rememberer(self, environ):
-        
-        #rememberer = environ['repoze.who.plugins'][self.rememberer_name]
-        api = get_who_api(environ)
-        rememberer = api.name_registry[self.rememberer_name]
-        return rememberer
-
     def get_identity(self, req):
-        rememberer = self._get_rememberer(req.environ)
-        return rememberer.identify(req.environ)
+        return self.rememberer.get_identity(req.environ)
 
     def _get_extras(self, request, identity):
         access_token = get_rakuten_oauth(request).get_access_token(identity['oauth_request_token'])
@@ -125,9 +139,8 @@ class RakutenOpenIDPlugin(object):
                             }
 
             if identity is None:
-                remembered_identity = self.get_identity(req)
-                logging.debug('got identity from rememberer: %s' % remembered_identity)
-                authenticated = remembered_identity and remembered_identity.get('repoze.who.plugins.auth_tkt.userid')
+                authenticated = self.get_identity(req)
+                logging.debug('got identity from rememberer: %s' % authenticated)
                 if authenticated:
                     try:
                         identity = pickle.loads(authenticated.decode('base64'))
@@ -202,8 +215,7 @@ class RakutenOpenIDPlugin(object):
                 session.save()
             else:
                 logger.warning('could not retrieve session')
-        rememberer = self._get_rememberer(environ)
-        return rememberer.remember(environ, identity)
+        return self.rememberer.remember(environ, identity)
 
     # IIdentifier
     def forget(self, environ, identity):
@@ -214,8 +226,7 @@ class RakutenOpenIDPlugin(object):
         session = impl.get_session(req)
         if session is not None:
             session.invalidate()
-        rememberer = self._get_rememberer(environ)
-        return rememberer.forget(environ, identity)
+        return self.rememberer.forget(environ, identity)
 
     def _flush_cache(self, identity):
         try:
