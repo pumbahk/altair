@@ -144,7 +144,6 @@
 <script type="text/javascript">
   // collect candidates info
   var candidates = ${preview_item_candidates|n};  //[{pk,name}]
-  var ticket_formats = ${ticket_formats|n} //[{pk,name,type}]
 
   $(function(){
     var modalView = false;
@@ -162,10 +161,9 @@
         return false;
       }
 
-      var qstring = "event_id="+"${event.id}"; //ugly
       modalView = new modal.api.AjaxModalView({
         el: $el,
-        href: "${request.route_path('tickets.preview.dialog', model="ProductItem")}"+"?"+qstring, 
+        href: "${request.route_path('tickets.preview.dialog', model="ProductItem")}?${"event_id={}".format(event.id)}", 
         modalArea: $("#preview_ticket_modal"), 
         option: {backdrop: false, stretch: true}, 
         header: "チケット券面のpreview",

@@ -115,7 +115,7 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
         var pk = middleVal || this.middle.$el.val();
         var sub_pk = rightVal || this.right.$el.val();
         if(this.right.models[sub_pk].model && this.right.models[sub_pk].model.hasTicketFormats()){
-            this.model.trigger("*params.ticket_format.restriction", this.right.models[sub_pk]);
+            this.model.trigger("*params.ticket_format.restriction", this.right.models[sub_pk].model);
         }
         this.model.changeHolder({pk: pk, name: this.modelname, sub: {pk: sub_pk,  name: "Sub"}}); //params
     }, 
@@ -125,7 +125,7 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
     onChangeLeft: function(e, leftVal){
         leftVal = leftVal || this.left.$el.val();
         if(this.left.models[leftVal].model && this.left.models[leftVal].model.hasTicketFormats()){
-            this.model.trigger("*params.ticket_format.restriction", this.left.models[leftVal]);
+            this.model.trigger("*params.ticket_format.restriction", this.left.models[leftVal].model);
         }
         this.middle = this.left.getChild(leftVal);
         this.$middleWrapper.html(this.middle.render());
@@ -137,7 +137,7 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
         middleVal = middleVal || this.middle.$el.val();
         this.right = this.middle.getChild(middleVal);
         if(this.middle.models[middleVal].model && this.middle.models[middleVal].model.hasTicketFormats()){
-            this.model.trigger("*params.ticket_format.restriction", this.middles[middleVal]);
+            this.model.trigger("*params.ticket_format.restriction", this.middles[middleVal].model);
         }
         var filterId = this.model.get("ticket_format").pk;
         this.$rightWrapper.html(this.right.render(filterId));
@@ -146,12 +146,16 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
         }
     },
     settingChildren: function(candidates){
-        this.left = new preview.CandidateCollectionViewModel(this.leftIdname, "input-medium");
+        this.left = null;
         this.middle = null;
         this.right = null;
         _(candidates).each(function(c){
+            var left = new preview.CandidateCollectionViewModel(this.leftIdname, "input-medium");
+            if(!this.left){
+                this.left = left;
+            }
             // left setting
-            this.left.addModel(
+            left.addModel(
                 new preview.ResourceViewModel(
                     new preview.Resource({label: c.name, pk: c.pk, ticket_formats: (c.ticket_formats || [])})));
 
@@ -160,7 +164,7 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
             if(!this.middle){
                 this.middle = middle;
             }
-            this.left.addChild(c.pk, middle);
+            left.addChild(c.pk, middle);
 
             _(c.candidates).each(function(subc){
                 middle.addModel(
@@ -172,11 +176,11 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
                 if(!this.right){
                     this.right = right;
                 }
-                this.middle.addChild(subc.pk, right);
+                middle.addChild(subc.pk, right);
                 _(subc.candidates).each(function(subsubc){
-                  right.addModel(
-                      new preview.ResourceViewModel(
-                          new preview.Resource({label: subsubc.name, pk: subsubc.pk, format_id: subsubc.format_id, ticket_formats: (subsubc.ticket_formats || [])})));
+                    right.addModel(
+                        new preview.ResourceViewModel(
+                            new preview.Resource({label: subsubc.name, pk: subsubc.pk, format_id: subsubc.format_id, ticket_formats: (subsubc.ticket_formats || [])})));
                 }.bind(this));
             }.bind(this));
         }.bind(this));

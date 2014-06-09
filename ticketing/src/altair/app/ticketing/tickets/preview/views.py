@@ -6,11 +6,13 @@ import json
 import base64
 import os.path
 from StringIO import StringIO
+from collections import OrderedDict
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from jsonrpclib import jsonrpc
 from pyramid.httpexceptions import HTTPBadRequest
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
 import logging
 logger = logging.getLogger(__name__)
 
@@ -564,9 +566,21 @@ class PreviewWithDefaultParameterDialogView(object):
             apis = self._apis_defaults()
             apis["loadsvg"]  =  self.request.route_path("tickets.preview.loadsvg.api", model="ProductItem"), 
             apis["combobox"] =  self.request.route_path("tickets.preview.combobox", _query=combobox_params)
-
-            ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
-            ticket_formats = _build_selectitem_candidates_from_ticket_format_query(ticket_formats)
+            if "event_id" in self.request.GET:
+                bundles = c_models.TicketBundle.query.filter(c_models.TicketBundle.event_id == self.request.GET.get("event_id")).all()
+                D = OrderedDict()
+                for b in bundles:
+                    for t in ApplicableTicketsProducer(b).will_issued_by_own_tickets():
+                        tf = t.ticket_format
+                        D[(tf.id, "")] = {"pk": tf.id, "name": tf.name, "type": ""}
+                for b in bundles:
+                    for t in ApplicableTicketsProducer(b).sej_only_tickets():
+                        tf = t.ticket_format
+                        D[(tf.id, "sej")] = {"pk": tf.id, "name": tf.name, "type": "sej"}
+                ticket_formats = D.values()
+            else:
+                ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
+                ticket_formats = _build_selectitem_candidates_from_ticket_format_query(ticket_formats)
             return {"apis": apis, "ticket_formats": ticket_formats}
         except Exception, e:
             logger.exception(e)
@@ -577,6 +591,7 @@ class PreviewWithDefaultParameterDialogView(object):
         try:
             combobox_params = self._combobox_defaults()
             apis = self._apis_defaults()
+
             apis["loadsvg"]  =  self.request.route_path("tickets.preview.loadsvg.api", model="Ticket"), 
             apis["combobox"] =  self.request.route_path("tickets.preview.combobox", _query=combobox_params)
 
