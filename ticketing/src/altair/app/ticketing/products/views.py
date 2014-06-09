@@ -174,14 +174,13 @@ class ProductAndProductItem(BaseView):
     def delete(self):
         product = self.context.product
         location = self.request.route_path('performances.show_tab', performance_id=product.performance_id, tab='product')
-        f = ProductAndProductItemForm.from_model(product)
-        if f.validate():
-            try:
-                product.delete()
-                self.request.session.flash(u'商品を削除しました')
-            except Exception, e:
-                self.request.session.flash(e.message)
-                raise HTTPFound(location=location)
+        try:
+            product.delete()
+            self.request.session.flash(u'商品を削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
+            raise HTTPFound(location=location)
+
         return HTTPFound(location=location)
 
     @view_config(route_name='products.api.get', renderer='json')
@@ -444,14 +443,13 @@ class ProductItems(BaseView):
     def delete(self):
         product_item = self.context.product_item
         location = self.request.route_path('performances.show_tab', performance_id=product_item.performance_id, tab='product')
-        f = ProductItemForm(obj=product_item, product=product_item.product)
-        if f.validate():
-            try:
-                product_item.delete()
-                self.request.session.flash(u'商品明細を削除しました')
-            except Exception, e:
-                self.request.session.flash(e.message)
-                raise HTTPFound(location=location)
+        try:
+            product_item.delete()
+            self.request.session.flash(u'商品明細を削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
+            raise HTTPFound(location=location)
+
         return HTTPFound(location=location)
 
 @view_config(route_name="products.sub.older.show", renderer="altair.app.ticketing:templates/products/_sub_older_show.html")
