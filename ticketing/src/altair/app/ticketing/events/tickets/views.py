@@ -165,7 +165,9 @@ class BundleView(BaseView):
                 }
         ## for ticket-preview
         ## [{name: <performance.name>, pk: <performance.id>,  candidates: [{name: <item.name>, pk: <item.id>}, ...]}, ...]
-        tickets_candidates = [{"name": t.name,  "pk": t.id, "format_id": t.ticket_format_id} for t in bundle.tickets]
+        
+        tickets_candidates = [{"name": t.name,  "pk": t.id, "format_id": t.ticket_format_id, } for t in bundle.tickets]
+        ticket_formats = [{"name": t.ticket_format.name, "pk": t.ticket_format_id, "type": "default"} for t in bundle.tickets] ## typeも後で
         preview_item_candidates = []
         for perf_k, performance_d in product_item_dict.iteritems():
             candidates = []
@@ -176,6 +178,7 @@ class BundleView(BaseView):
         return dict(bundle=self.context.bundle,
                     event=self.context.event,
                     product_item_dict=product_item_dict,
+                    ticket_formats=json.dumps(ticket_formats),
                     preview_item_candidates=json.dumps(preview_item_candidates))
 
 

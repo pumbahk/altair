@@ -111,39 +111,38 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
         this.vms = opts.vms;
         this.model.on("*params.ticket_format.update", this.onChangeFormat, this);
     }, 
-    onChangeRight: function(e,middleName, rightName){
-        var pk = middleName || this.middle.$el.val();
-        var sub_pk = rightName || this.right.$el.val();
-        if(this.right.model.hasTicketFormats()){
-            this.model.trigger("*params.ticket_format.restriction", this.right.model);
+    onChangeRight: function(e,middleVal, rightVal){
+        var pk = middleVal || this.middle.$el.val();
+        var sub_pk = rightVal || this.right.$el.val();
+        if(this.right.models[sub_pk].model && this.right.models[sub_pk].model.hasTicketFormats()){
+            this.model.trigger("*params.ticket_format.restriction", this.right.models[sub_pk]);
         }
         this.model.changeHolder({pk: pk, name: this.modelname, sub: {pk: sub_pk,  name: "Sub"}}); //params
     }, 
     onChangeFormat: function(){
         return this.onChangeMiddle(null, null);
     },
-    onChangeLeft: function(e, middleName){
-        middleName = middleName || this.left.$el.val();
-
-        if(this.left.model.hasTicketFormats()){
-            this.model.trigger("*params.ticket_format.restriction", this.left.model);
+    onChangeLeft: function(e, leftVal){
+        leftVal = leftVal || this.left.$el.val();
+        if(this.left.models[leftVal].model && this.left.models[leftVal].model.hasTicketFormats()){
+            this.model.trigger("*params.ticket_format.restriction", this.left.models[leftVal]);
         }
-        this.middle = this.left.getChild(middleName);
+        this.middle = this.left.getChild(leftVal);
         this.$middleWrapper.html(this.middle.render());
         if(this.middle.candidates.length == 1){
             this.onChangeMiddle(null, this.middle.candidates[0].pk);
         }
     }, 
-    onChangeMiddle: function(e,middleName){
-        middleName = middleName || this.middle.$el.val();
-        this.right = this.middle.getChild(middleName);
-        if(this.middle.model.hasTicketFormats()){
-            this.model.trigger("*params.ticket_format.restriction", this.middle.model);
+    onChangeMiddle: function(e,middleVal){
+        middleVal = middleVal || this.middle.$el.val();
+        this.right = this.middle.getChild(middleVal);
+        if(this.middle.models[middleVal].model && this.middle.models[middleVal].model.hasTicketFormats()){
+            this.model.trigger("*params.ticket_format.restriction", this.middles[middleVal]);
         }
         var filterId = this.model.get("ticket_format").pk;
         this.$rightWrapper.html(this.right.render(filterId));
         if(this.right.exactCandidates(filterId).length == 1){
-            this.onChangeRight(null, middleName, this.right.candidates[0].pk);
+            this.onChangeRight(null, middleVal, this.right.candidates[0].pk);
         }
     },
     settingChildren: function(candidates){
