@@ -88,7 +88,7 @@ body {
 	display: block;
 	width: 113px;
 	height: 57px;
-	background: url(../img/tmp/logo.gif) no-repeat 0 0;
+	background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/logo.gif) no-repeat 0 0;
 }
 #grpHeader #siteID p#markPoint {
 	float: left;
@@ -128,31 +128,31 @@ body {
 	text-indent: -9999px;
 }
 #globalNav ul#globalNav1 li#gnav_top a{
-	background: url(../img/tmp/gnav_top.gif) no-repeat 0 0;
+	background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/gnav_top.gif) no-repeat 0 0;
 	width: 120px;
 }
 #globalNav ul#globalNav1 li#gnav_music a{
-	background: url(../img/tmp/gnav_music.gif) no-repeat 0 0;
+	background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/gnav_music.gif) no-repeat 0 0;
 	width: 150px;
 	margin-left: 2px;
 }
 #globalNav ul#globalNav1 li#gnav_stage a{
-	background: url(../img/tmp/gnav_stage.gif) no-repeat 0 0;
+	background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/gnav_stage.gif) no-repeat 0 0;
 	width: 150px;
 	margin-left: 2px;
 }
 #globalNav ul#globalNav1 li#gnav_sports a{
-	background: url(../img/tmp/gnav_sports.gif) no-repeat 0 0;
+	background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/gnav_sports.gif) no-repeat 0 0;
 	width: 150px;
 	margin-left: 2px;
 }
 #globalNav ul#globalNav1 li#gnav_event a{
-	background: url(../img/tmp/gnav_event.gif) no-repeat 0 0;
+	background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/gnav_event.gif) no-repeat 0 0;
 	width: 150px;
 	margin-left: 2px;
 }
 #globalNav ul#globalNav1 li#gnav_confirm a{
-	background: url(../img/tmp/gnav_confirm.gif) no-repeat 0 0;
+	background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/gnav_confirm.gif) no-repeat 0 0;
 	width: 212px;
 	margin-left: 5px;
 }
@@ -225,7 +225,7 @@ body {
 	margin-bottom: 20px;
 }
 #mainArea #topics h3 {
-	background: url(../img/tmp/ttl_h3_default.jpg) no-repeat 0 0;
+	background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/ttl_h3_default.jpg) no-repeat 0 0;
 	height: 37px;
 	font-weight: bold;
 	color: #EBEBEB;
@@ -241,7 +241,7 @@ body {
 	border-right: 1px solid #D9D9CE;
 }
 #mainArea #topics li {
-	background: url(../img/tmp/icon_arrow.gif) no-repeat 0 2px;
+	background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/icon_arrow.gif) no-repeat 0 2px;
 	padding-left: 20px;
 	margin: 5px 0;
 }
@@ -308,7 +308,7 @@ body {
 	display: block;
 	width: 70px;
 	height: 15px;
-	background: url(../img/tmp/btn_list.png) no-repeat 0 0;
+	background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/btn_list.png) no-repeat 0 0;
 }
 
 .musicList h3, .stageList h3, .sportsList h3, .eventList h3 {
@@ -319,10 +319,10 @@ body {
 	margin-bottom: 10px;
 	padding: 10px 0 0 50px;
 }
-.musicList h3 { background: url(../img/tmp/ttl_genre_music.gif) no-repeat 0 0; }
-.stageList h3 { background: url(../img/tmp/ttl_genre_stage.gif) no-repeat 0 0; }
-.sportsList h3 { background: url(../img/tmp/ttl_genre_sports.gif) no-repeat 0 0; }
-.eventList h3 { background: url(../img/tmp/ttl_genre_event.gif) no-repeat 0 0; }
+.musicList h3 { background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/ttl_genre_music.gif) no-repeat 0 0; }
+.stageList h3 { background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/ttl_genre_stage.gif) no-repeat 0 0; }
+.sportsList h3 { background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/ttl_genre_sports.gif) no-repeat 0 0; }
+.eventList h3 { background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/ttl_genre_event.gif) no-repeat 0 0; }
 
 
 
@@ -337,7 +337,7 @@ body {
 	border-right: 1px solid #D9D9CE;
 }
 #saleTicketInfo h3 {
-	background: url(../img/tmp/ttl_h3_default.jpg) no-repeat 0 0;
+	background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/ttl_h3_default.jpg) no-repeat 0 0;
 	height: 37px;
 	font-weight: bold;
 	color: #EBEBEB;
@@ -375,7 +375,7 @@ body {
 #info h3 {
 	width: 300px;
 	height: 26px;
-	background: url(../img/tmp/ttl_side.jpg) no-repeat 0 0;
+	background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/ttl_side.jpg) no-repeat 0 0;
 	color: #EDEDED;
 	font-weight: bold;
 	font-size: 1.2em;
@@ -400,7 +400,7 @@ body {
 	padding: 10px;
 }
 #info li {
-	background: url(../img/tmp/icon_arrow.gif) no-repeat 0 2px;
+	background: url(https://tstar.s3.amazonaws.com/usersite/static/RT/img/tmp/icon_arrow.gif) no-repeat 0 2px;
 	padding-left: 20px;
 	margin: 5px 0;
 }
