@@ -963,7 +963,7 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
                     u'配席可能な座席がありません (席種: ${stock_type_name}, 個数: ${quantity})',
                     dict(
                         stock_type_name=stock.stock_type.name,
-                        quantity=quantity
+                        quantity=e.quantity
                         )
                     )
                 )
