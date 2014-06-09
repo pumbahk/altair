@@ -112,7 +112,7 @@ class ProductAndProductItemForm(OurForm):
         )
     price = OurDecimalField(
         label=label_text_for(Product.price),
-        places=2,
+        places=0,
         validators=[Required()]
         )
     ticket_bundle_id = OurSelectField(
