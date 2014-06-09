@@ -21,10 +21,14 @@ SEJ_BACKUP_FILE_NAME = time.strftime('sej_order_shop_id_backup_%Y%m%d_%H%M%S.csv
 PERFORMANCE_BACKUP_FILE_NAME = time.strftime('performance_public_backup_%Y%m%d_%H%M%S.csv')
 DUMMY_SHOP_ID = '77777'
 
+class NotYetRetouchDBError(Exception):
+    message = ''
+
 def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()
     parser.add_argument('conf')
     parser.add_argument('--no-backup', dest='no_backup', default=False)
+    parser.add_argument('--force', dest='force', default=False, action='store_true')
     parser.add_argument('--shop_id', dest='shop_id', default=DUMMY_SHOP_ID)
     opts = parser.parse_args(argv)
 
@@ -33,6 +37,12 @@ def main(argv=sys.argv[1:]):
     settings = env['registry'].settings
     request = pyramid.testing.DummyRequest()
     session = altair.sqlahelper.get_db_session(request, 'slave')
+
+    retouched_at = DBSession.execute('SELECT retouched_at FROM retouch LIMIT 1').scalar()
+    if not retouched_at:
+        print('It is db-dev-snapshot really?')
+        if not opts.force:
+            return 1 # error
 
     ## SejOrder
     if not opts.no_backup:
