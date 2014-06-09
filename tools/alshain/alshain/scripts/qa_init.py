@@ -70,7 +70,7 @@ def main(argv=sys.argv[1:]):
 
     for performance in performances:
         performance.public = True
-
+    DBSession.execute(time.strftime('UPDATE retouch SET qa_retouched_at="%Y-%m-%d %H:%M:%S"'))
     transaction.commit()
 
 if __name__ == '__main__':
