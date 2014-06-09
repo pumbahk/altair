@@ -41,22 +41,6 @@ def checkdigit(numbers):
     if check == 10:
         check = 0
     return str(check)
-   
-def authenticated_user(request):
-    data = security.authenticated_userid(request)
-    if data is None:
-        return None
-    
-    return pickle.loads(data.decode('base64'))
-
-def remember_user(request, user_data):
-    data = pickle.dumps(user_data)
-            
-    headers = security.remember(request, data.encode('base64'))
-    return headers
-
-def forget(request):
-    return security.forget(request)
 
 def get_rakuten_oauth(request_or_registry):
     if IRequest.providedBy(request_or_registry):

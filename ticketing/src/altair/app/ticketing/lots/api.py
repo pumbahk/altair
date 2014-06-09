@@ -41,7 +41,6 @@ from webob.multidict import MultiDict
 from altair.now import get_now
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import sensible_alnum_encode
-from altair.rakuten_auth.api import authenticated_user
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core.models import (
     Event,
@@ -74,7 +73,6 @@ from .models import (
     TemporaryLotEntryWish,
     TemporaryLotEntryProduct,
 )
-from altair.app.ticketing.users import api as user_api
 from altair.app.ticketing.payments.api import set_confirm_url
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID
@@ -94,13 +92,10 @@ def get_event(request):
     return Event.query.filter(Event.id==event_id).one()
 
 def get_member_group(request):
-    user = authenticated_user(request)
-    if user is None:
-        return None
-
     org = cart_api.get_organization(request)
-    member_ship = user.get('membership')
-    member_group_name = user.get('membergroup')
+    auth_info = cart_api.get_auth_info(request)
+    member_ship = auth_info.get('membership')
+    member_group_name = auth_info.get('membergroup')
     if member_ship is None or member_group_name is None:
         return None
     # TODO: membershipの条件
@@ -480,9 +475,7 @@ def send_rejected_mails(request):
         transaction.commit()
 
 def get_entry_user(request):
-    from altair.rakuten_auth.api import authenticated_user
-    user = authenticated_user(request)
-    return user
+    return cart_api.get_auth_info(request)
 
 def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, shipping_address_dict, gender, birthday, memo):
     request.session[LOT_ENTRY_DICT_KEY] = dict(
@@ -560,7 +553,7 @@ def get_options(request, lot_id):
     return Options(request, lot_id)
 
 def create_client_form(context, request):
-    user = user_api.get_or_create_user(context.authenticated_user())
+    user = cart_api.get_or_create_user(context.authenticated_user())
     user_profile = None
     if user is not None:
         user_profile = user.user_profile

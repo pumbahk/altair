@@ -187,7 +187,7 @@ class entry_lotTests(unittest.TestCase):
         from ..testing import _add_lot
 
         request = testing.DummyRequest(host='example.com:80')
-        login(self.config, {"membership": "test", "membergroup": "test"})
+        login(self.config, {"username": "test", "membership": "test", "membergroup": "test"})
         
         event = testing.DummyModel(id=1111)
         sales_segment = testing.DummyModel(id=12345)

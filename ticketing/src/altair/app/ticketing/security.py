@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 import logging
 
+from pyramid.security import authenticated_userid, effective_principals
+
 logger = logging.getLogger(__name__)
 
 class OrganizationSettingBasedWhoDecider(object):
@@ -41,3 +43,20 @@ def auth_model_callback(identity, request):
         principals.append('auth_type:%s' % auth_type)
 
     return principals
+
+def get_extra_auth_info_from_principals(principals):
+    auth_type = None
+    membership = None
+    membergroup = None
+    for principal in principals:
+        if principal.startswith('membership:'):
+            membership = principal[11:]
+        elif principal.startswith('membergroup:'):
+            membergroup = principal[12:]
+        elif principal.startswith('auth_type:'):
+            auth_type = principal[10:]
+    return {
+        'auth_type': auth_type,
+        'membership': membership,
+        'membergroup': membergroup,
+        }

@@ -122,7 +122,7 @@ def confirm_view(context, request):
     import mock
     from collections import defaultdict
     from .api import get_organization
-    with mock.patch("altair.rakuten_auth.api.authenticated_user"):
+    with mock.patch("pyramid.security.authenticated_userid"):
         form = mock.Mock()
         cart = _dummy_cart()
         request.session["order"] = defaultdict(str)
@@ -133,7 +133,7 @@ def confirm_view(context, request):
 
 def complete_view(context, request):
     import mock
-    with mock.patch("altair.rakuten_auth.api.authenticated_user"):
+    with mock.patch("pyramid.security.authenticated_userid"):
         order = _dummy_order()
         return dict(order=order)
 
@@ -141,7 +141,7 @@ def payment_view(context, request):
     import mock
     from .schemas import ClientForm
     request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
-    with mock.patch("altair.rakuten_auth.api.authenticated_user"):
+    with mock.patch("pyramid.security.authenticated_userid"):
         params=dict(form=ClientForm(),
                     payment_delivery_methods=[],
                     user=mock.Mock(),

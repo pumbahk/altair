@@ -14,7 +14,7 @@ from beaker.cache import Cache, CacheManager, cache_regions
 from .api import get_rakuten_oauth, get_rakuten_id_api_factory
 from .interfaces import IRakutenOpenID
 
-import traceback
+from . import IDENT_METADATA_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -39,19 +39,27 @@ class RemembererWrapper(object):
         self.impl = impl
 
     def remember(self, environ, identity):
-        retval = self.impl.remember(environ, {
-            'repoze.who.userid': identity['repoze.who.userid'],
+        return self.impl.remember(environ, {
+            'repoze.who.userid': pickle.dumps({
+                'claimed_id': identity['claimed_id'],
+                }).encode('base64'),
             })
-        return retval
 
-    def forget(self, environ, identity):
-        return self.impl.forget(environ, identity)
+    def forget(self, environ):
+        return self.impl.forget(environ, {})
 
     def get_identity(self, environ):
         identity = self.impl.identify(environ)
         if identity is None:
             return None
-        return self.impl.authenticate(environ, identity)
+        # identity is encoded as user id
+        payload = self.impl.authenticate(environ, identity)
+        retval = None
+        try:
+            retval = pickle.loads(payload.decode('base64'))
+        except:
+            pass
+        return retval
 
 
 @implementer(IIdentifier, IAuthenticator, IChallenger, IMetadataProvider)
@@ -76,13 +84,8 @@ class RakutenOpenIDPlugin(object):
         request = get_current_request(environ)
         return request.registry.queryUtility(IRakutenOpenID)
 
-    def get_identity(self, req):
-        return self.rememberer.get_identity(req.environ)
-
     def _get_extras(self, request, identity):
         access_token = get_rakuten_oauth(request).get_access_token(identity['oauth_request_token'])
-        logger.debug('access token : %s' % access_token)
-
         idapi = get_rakuten_id_api_factory(request)(access_token)
         user_info = idapi.get_basic_info()
         birthday = None
@@ -115,118 +118,84 @@ class RakutenOpenIDPlugin(object):
     # IIdentifier
     def identify(self, environ):
         impl = self._get_impl(environ)
-        # return_to URLの場合にverifyする
-        # それ以外の場合デシリアライズしてclaimed_idを返す
         req = get_current_request(environ)
-        logger.debug('identity (req.path_url=%s, impl.verify_url=%s, impl.extra_verify_url=%s)' % (req.path_url, impl.verify_url, impl.extra_verify_url))
-
-        identity = None
-
-        if req.path_url == impl.verify_url:
-            logging.debug('path_url is identical to verify_url. returning the passed parameters as identity for authenticate()')
-            identity = impl.openid_params(req)
-        else:
-            # check out the temporary session first
-            if req.path_url == impl.extra_verify_url:
-                session = impl.get_session(req)
-                if session is not None:
-                    remembered_identity = session.get(self.__class__.__name__ + '.identity')
-                    if remembered_identity is not None:
-                        logging.debug('got identity from temporary session: %s' % remembered_identity)
-                        identity = {
-                            'claimed_id': remembered_identity['claimed_id'],
-                            'oauth_request_token': remembered_identity['oauth_request_token'],
-                            }
-
-            if identity is None:
-                authenticated = self.get_identity(req)
-                logging.debug('got identity from rememberer: %s' % authenticated)
-                if authenticated:
-                    try:
-                        identity = pickle.loads(authenticated.decode('base64'))
-                    except Exception as e:
-                        logger.exception(e)
-
+        logger.debug('identify (req.path_url=%s)' % req.path_url)
+        identity = environ.get(self.AUTHENTICATED_KEY)
+        if not identity:
+            # backwards compatibility
+            identity = self.rememberer.get_identity(req.environ)
+            logging.debug('got identity from rememberer: %s' % identity)
         return identity
 
     # IAuthenticator
     def authenticate(self, environ, identity):
-        userdata = None
         req = get_current_request(environ)
         impl = self._get_impl(environ)
-        logger.debug('authenticate (req.path_url=%s, impl.verify_url=%s, identity=%s)' % (req.path_url, impl.verify_url, identity))
-        if req.path_url == impl.verify_url and \
-            self.AUTHENTICATED_KEY not in environ:
-            self._flush_cache(identity)
-            if not impl.verify_authentication(req, identity):
-                logger.debug('authentication failed')
-                return None
-            # We don't want to keep everything in it.
-            userdata = {
-                'claimed_id': identity['claimed_id'],
-                'oauth_request_token': identity['oauth_request_token'],
-                }
-        else:
-            if 'claimed_id' in identity:
-                userdata = identity
-                # ネガティブキャッシュなので、not in で調べる
-                if self.METADATA_KEY not in environ:
-                    cache = self._get_cache()
+        logger.debug('authenticate (req.path_url=%s, identity=%s)' % (req.path_url, identity))
 
-                    def get_extras():
-                        retval = self._get_extras(req, identity)
-                        browserid = get_browserid(req)
-                        retval['browserid'] = browserid
-                        return retval
-
-                    extras = None
-                    try:
-                        extras = cache.get(
-                            key=identity['claimed_id'],
-                            createfunc=get_extras
-                            )
-                    except:
-                        logger.warning("Failed to retrieve extra information", exc_info=sys.exc_info())
-                    environ[self.METADATA_KEY] = extras
-                else:
-                    # ネガティブキャッシュなので extras is None になる可能性
-                    extras = environ[self.METADATA_KEY]
-                if extras is None:
-                    # ユーザ情報が取れない→ポイント口座番号が取れない
-                    # →クリティカルな状況と考えられるので認証失敗
-                    logger.info("Could not retrieve extra information")
+        # login() から呼ばれた場合
+        openid_params = identity.get(impl.IDENT_OPENID_PARAMS_KEY, None)
+        if openid_params is not None:
+            if not environ.get(self.AUTHENTICATED_KEY):
+                # not verified yet
+                self._flush_cache(identity)
+                if not impl.verify_authentication(req, identity[impl.IDENT_OPENID_PARAMS_KEY]):
+                    logger.debug('authentication failed')
                     return None
+                # claimed_id と oauth_request_token は、validate に成功した時のみ入る
+                identity['claimed_id'] = identity[impl.IDENT_OPENID_PARAMS_KEY]['claimed_id']
+                identity['oauth_request_token'] = identity[impl.IDENT_OPENID_PARAMS_KEY]['oauth_request_token']
+                # temporary session や rememberer には OpenID parameters は渡さない
+                del identity[impl.IDENT_OPENID_PARAMS_KEY]
 
-        if userdata:
-            environ[self.AUTHENTICATED_KEY] = True
-            return (pickle.dumps(userdata)).encode('base64')
-        else:
+        if 'claimed_id' not in identity:
             return None
+
+        # extra_verify もしくは普通のリクエストで通る
+        # ネガティブキャッシュなので、not in で調べる
+        logger.debug('metadata=%r' % environ.get(self.METADATA_KEY, '*not set*'))
+        if self.METADATA_KEY not in environ:
+            cache = self._get_cache()
+
+            def get_extras():
+                retval = self._get_extras(req, identity)
+                browserid = get_browserid(req)
+                retval['browserid'] = browserid
+                return retval
+
+            extras = None
+            try:
+                extras = cache.get(
+                    key=identity['claimed_id'],
+                    createfunc=get_extras
+                    )
+            except:
+                logger.warning("Failed to retrieve extra information", exc_info=sys.exc_info())
+            environ[self.METADATA_KEY] = extras
+        else:
+            # ネガティブキャッシュなので extras is None になる可能性
+            extras = environ[self.METADATA_KEY]
+        if extras is None:
+            # ユーザ情報が取れない→ポイント口座番号が取れない
+            # →クリティカルな状況と考えられるので認証失敗
+            logger.info("Could not retrieve extra information")
+            return None
+
+        environ[self.AUTHENTICATED_KEY] = identity
+        return identity['claimed_id']
 
     # IIdentifier
     def remember(self, environ, identity):
         req = get_current_request(environ)
-        impl = self._get_impl(environ)
-        logger.debug('remember identity (req.path_url=%s, impl.verify_url=%s): %s' % (req.path_url, impl.verify_url, identity))
-        if req.path_url == impl.verify_url:
-            session = impl.get_session(req)
-            if session is not None:
-                session[self.__class__.__name__ + '.identity'] = identity
-                session.save()
-            else:
-                logger.warning('could not retrieve session')
+        logger.debug('remember identity (req.path_url=%s): %s' % (req.path_url, identity))
         return self.rememberer.remember(environ, identity)
 
     # IIdentifier
     def forget(self, environ, identity):
         req = get_current_request(environ)
-        impl = self._get_impl(environ)
         logger.debug('forget identity')
         self._flush_cache(identity)
-        session = impl.get_session(req)
-        if session is not None:
-            session.invalidate()
-        return self.rememberer.forget(environ, identity)
+        return self.rememberer.forget(environ)
 
     def _flush_cache(self, identity):
         try:
@@ -237,16 +206,12 @@ class RakutenOpenIDPlugin(object):
     # IMetadataProvider
     def add_metadata(self, environ, identity):
         if self.METADATA_KEY in environ:
-            identity.update(environ[self.METADATA_KEY])
+            identity[IDENT_METADATA_KEY] = environ[self.METADATA_KEY]
             del environ[self.METADATA_KEY]
 
     # IChallenger
     def challenge(self, environ, status, app_headers, forget_headers):
         logger.debug('challenge')
-        request = get_current_request(environ)
         impl = self._get_impl(environ)
-        session = impl.new_session(request)
-        impl.set_return_url(session, request.url)
-        session.save()
-        logger.debug('redirect from %s' % request.url)
-        return HTTPFound(location=impl.get_redirect_url(session))
+        req = get_current_request(environ)
+        return impl.on_challenge(req)
