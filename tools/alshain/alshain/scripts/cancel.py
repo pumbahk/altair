@@ -13,6 +13,7 @@ import pyramid.testing
 import transaction
 import mako.template
 import altair.sqlahelper
+from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import (
     Event,
     Performance,
@@ -128,6 +129,12 @@ def main(argv=sys.argv[1:]):
     settings = env['registry'].settings
     request = pyramid.testing.DummyRequest()
     session = altair.sqlahelper.get_db_session(request, 'slave')
+
+    qa_retouched_at = DBSession.execute('SELECT qa_retouched_at FROM retouch LIMIT 1').scalar()
+    if not qa_retouched_at:
+        print('It is db-dev-snapshot really?')
+        return 1 # error
+
 
     qs = Order.query\
       .join(Performance)\
