@@ -6,9 +6,45 @@ if (!window.preview)
         defaults: {
            pk: null,
            label: "<default>",
-           format_id: null
+           format_id: null,
+           ticket_formats: [],
         },
+        hasTicketFormats: function(){
+          return this.get("ticket_formats").length > 0 || !!this.get("format_id");
+        }
     });
+
+    preview.TicketFormatManager = Backbone.Model.extend({
+      defaults: {
+        visibles: [],
+        all: {}
+      },
+      refresh: function(ticket_formats){
+        // ticket_formats is [{pk: 1, name: "foo", type: "sej"},....]
+        var all = {};
+        var visibles = [];
+        this.set("all", all);
+        this.set("visibles", visibles);
+        _.each(ticket_formats, function(d){
+          alls[d.pk] = d;
+          visibles.push(d);
+        });
+      },
+      updateVisibles: function(ticket_formats){
+        // xs is [{pk: 1, name: "foo", type: "sej"},...]
+        var visibles = [];
+        this.set("visibles", visibles);
+        alls = this.get("all");
+        _.each(ticket_formats, function(d){
+          var k = d.pk;
+          if(!(alls.hasOwnProperty(k))){
+            alls[k] = d;
+          }
+          visibles.push(d);
+        });
+        return visibles;
+      }
+    })
 
     var NONE_CHANGED = 0;
     var REDRAW_IMAGE = 1;

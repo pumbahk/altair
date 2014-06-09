@@ -17,6 +17,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         this.svg = this.models.svg;
         this.vars = this.models.vars;
         this.params = this.models.params;
+        this.ticket_formats = this.models.ticket_formats;
 
         this.svg.on("*svg.update.raw", this.svgRawToX, this);
         this.svg.on("*svg.update.normalize", this.svgNormalizeToX, this);
@@ -29,18 +30,29 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         this.params.on("*params.preview.redraw", this.previewReDraw, this);
 
         this.params.on("*params.change.holder", this.changeHolderLoadSVG, this);
-    }, 
+        this.params.on("*params.ticket_format.restriction", this.ticketFormatRestriction, this);
+    },
+    ticketFormatRestriction: function(resource){
+        if(resource.get("ticket_formats").length > 0){
+            this.ticket_formats.updateVisibles(resource.get("ticket_formats"));
+            var ticket_format = null
+            if(!!resource.get("format_id")){
+                ticket_format = this.ticket_formats.get("all")[resource.get("format_id")];
+            }
+            this.params.on("*params.ticket_format.update", this.ticket_formats.get("visibles"), null, ticket_format);
+        }
+    },
     hasChangedModels: function(){
         return this.vars.get("changed") || this.params.get("changed");
-    }, 
+    },
     useChangedModels: function(){
         this.vars.set("changed", false);
         this.params.set("changed", false);
-    }, 
+    },
     _apiFail: function(s, err){
         this.message.error(s.responseText);
         this.preview.cancelRendering();
-    }, 
+    },
     previewReDraw: function(){
         this.vars.commitVarsValues();
     }, 
@@ -174,7 +186,8 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.params.refreshDefault();
                 if(!!data.ticket_formats){
-                    self.params.trigger("*params.ticketformat.update", data.ticket_formats); //move to model.js?
+                    self.ticket_formats.refresh(ticket_formats);
+                    self.params.trigger("*params.ticket_format.update", self.ticket_formats.visibles); //move to model.js?
                 }
                 self.svg.updateToNormalize(data.data);
                 self.message.info("テンプレートを取得しました");

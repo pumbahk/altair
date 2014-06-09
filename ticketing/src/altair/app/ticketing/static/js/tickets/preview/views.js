@@ -15,19 +15,24 @@ preview.ParameterManageView = Backbone.View.extend({
         this.onChangeTicketFormat();
         this.model.on("change:sx", this.reDrawSx, this);
         this.model.on("change:sy", this.reDrawSy, this);
-        this.model.on("*params.ticketformat.update", this.reDrawTicketFormatCandidates, this);
+        this.model.on("*params.ticket_format.update", this.reDrawTicketFormatCandidates, this);
         this.vms = opts.vms;
     }, 
-    reDrawTicketFormatCandidates: function(candidates, preview_type){
+    reDrawTicketFormatCandidates: function(candidates, preview_type, ticket_format){
         // candidates: [{name: "foo", type: ":sej", pk: "10"}, ...];
-        if(!!preview_type){
-            this.model.changePreviewType(preview_type);
-        }
         this.vms.ticket_format.redraw(candidates); 
-        this.model.changeTicketFormat({"pk": candidates[0].pk, 
-                                       "name": candidates[0].name, 
-                                       "type": candidates[0].type});
-    }, 
+        if(!!ticket_format){
+            this.model.changePreviewType(ticket_format.type);
+            this.model.changeTicketFormat(ticket_format);
+        }else{
+            if(!!preview_type){
+                this.model.changePreviewType(preview_type);
+            }
+            this.model.changeTicketFormat({"pk": candidates[0].pk, 
+                                           "name": candidates[0].name, 
+                                           "type": candidates[0].type});
+        }
+    },
     onChangeTicketFormat: function(){
         var $option = this.$ticket_format.find(":selected");
         var name = $option.text();
@@ -104,11 +109,14 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
         if(!this.middleIdname) {this.middleIdname = "middle_candidates";}
         if(!this.rightIdname) {this.rightIdname = "right_candidates";}
         this.vms = opts.vms;
-        this.model.on("*params.ticketformat.update", this.onChangeFormat, this);
+        this.model.on("*params.ticket_format.update", this.onChangeFormat, this);
     }, 
     onChangeRight: function(e,middleName, rightName){
         var pk = middleName || this.middle.$el.val();
         var sub_pk = rightName || this.right.$el.val();
+        if(this.right.model.hasTicketFormats()){
+            this.model.trigger("*params.ticket_format.restriction", this.right.model);
+        }
         this.model.changeHolder({pk: pk, name: this.modelname, sub: {pk: sub_pk,  name: "Sub"}}); //params
     }, 
     onChangeFormat: function(){
@@ -117,6 +125,9 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
     onChangeLeft: function(e, middleName){
         middleName = middleName || this.left.$el.val();
 
+        if(this.left.model.hasTicketFormats()){
+            this.model.trigger("*params.ticket_format.restriction", this.left.model);
+        }
         this.middle = this.left.getChild(middleName);
         this.$middleWrapper.html(this.middle.render());
         if(this.middle.candidates.length == 1){
@@ -126,6 +137,9 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
     onChangeMiddle: function(e,middleName){
         middleName = middleName || this.middle.$el.val();
         this.right = this.middle.getChild(middleName);
+        if(this.middle.model.hasTicketFormats()){
+            this.model.trigger("*params.ticket_format.restriction", this.middle.model);
+        }
         var filterId = this.model.get("ticket_format").pk;
         this.$rightWrapper.html(this.right.render(filterId));
         if(this.right.exactCandidates(filterId).length == 1){
@@ -140,7 +154,7 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
             // left setting
             this.left.addModel(
                 new preview.ResourceViewModel(
-                    new preview.Resource({label: c.name, pk: c.pk})));
+                    new preview.Resource({label: c.name, pk: c.pk, ticket_formats: (c.ticket_formats || [])})));
 
             // middle setting
             var middle = new preview.CandidateCollectionViewModel(this.middleIdname, "input-medium");
@@ -150,7 +164,9 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
             this.left.addChild(c.pk, middle);
 
             _(c.candidates).each(function(subc){
-                middle.addModel(new preview.ResourceViewModel(new preview.Resource({label: subc.name, pk: subc.pk})));
+                middle.addModel(
+                    new preview.ResourceViewModel(
+                        new preview.Resource({label: subc.name, pk: subc.pk, ticket_formats: (subc.ticket_formats || [])})));
 
                 // right setting
                 var right = new preview.CandidateCollectionViewModel(this.rightIdname, "input-medium");
@@ -159,7 +175,9 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
                 }
                 this.middle.addChild(subc.pk, right);
                 _(subc.candidates).each(function(subsubc){
-                  right.addModel(new preview.ResourceViewModel(new preview.Resource({label: subsubc.name, pk: subsubc.pk, format_id: subsubc.format_id})));
+                  right.addModel(
+                      new preview.ResourceViewModel(
+                          new preview.Resource({label: subsubc.name, pk: subsubc.pk, format_id: subsubc.format_id, ticket_formats: (subsubc.ticket_formats || [])})));
                 }.bind(this));
             }.bind(this));
         }.bind(this));

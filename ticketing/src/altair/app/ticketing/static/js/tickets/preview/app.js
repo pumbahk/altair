@@ -67,8 +67,9 @@ preview.ApplicationViewFactory = function(apis,
     var models = {
         svg: new preview.SVGStore(),
         preview: new preview.PreviewImageStore(),
-        vars: new preview.TemplateVarStore(), 
-        params: new preview.ParameterStore()
+        vars: new preview.TemplateVarStore(),
+        params: new preview.ParameterStore(),
+        ticket_formats: new preview.TicketFormatManager()
     };
     models.params.on("change:preview_type", function(model,v){console.log(v);});
     var view_models = {
