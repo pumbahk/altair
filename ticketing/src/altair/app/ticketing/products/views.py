@@ -114,11 +114,12 @@ class ProductAndProductItem(BaseView):
             Product.price==target_product.price,
             Product.seat_stock_type_id==target_product.seat_stock_type_id
             )
-        product_item_query = ProductItem.query.filter(
-            ProductItem.name==target_product_item.name,
-            ProductItem.price==target_product_item.price,
-            ProductItem.stock_id==target_product_item.stock_id
-            )
+        if target_product_item:
+            product_item_query = ProductItem.query.filter(
+                ProductItem.name==target_product_item.name,
+                ProductItem.price==target_product_item.price,
+                ProductItem.stock_id==target_product_item.stock_id
+                )
 
         f = ProductAndProductItemForm(self.request.POST, performance=target_product.performance)
         query = SalesSegment.query.filter(Organization.id==self.context.user.organization_id)
@@ -132,7 +133,11 @@ class ProductAndProductItem(BaseView):
             if not product:
                 logger.debug(u'product not found (sales_segment.id={0}, product.name={1})'.format(sales_segment_for_product.id, target_product.name))
                 continue
-            product_item = ProductItem.query.filter(ProductItem.product_id==product.id).first()
+            product_item = None
+            if target_product_item:
+                product_item = product_item_query.filter(ProductItem.product_id==product.id).first()
+                if not product_item:
+                    continue
 
             f = ProductAndProductItemForm(self.request.POST, performance=product.performance, sales_segment=sales_segment_for_product)
             f.id.data = product.id
@@ -154,14 +159,13 @@ class ProductAndProductItem(BaseView):
                     performance_id=sales_segment_for_product.performance.id
                 ).one()
 
-                if not product_item:
-                    continue
-                product_item.name = f.name.data
-                product_item.price = f.price.data
-                product_item.quantity = f.product_item_quantity.data
-                product_item.stock_id = stock.id
-                product_item.ticket_bundle_id = f.ticket_bundle_id.data
-                product_item.save()
+                if target_product_item:
+                    product_item.name = f.name.data
+                    product_item.price = f.price.data
+                    product_item.quantity = f.product_item_quantity.data
+                    product_item.stock_id = stock.id
+                    product_item.ticket_bundle_id = f.ticket_bundle_id.data
+                    product_item.save()
             else:
                 transaction.abort()
                 return dict(form=f)
