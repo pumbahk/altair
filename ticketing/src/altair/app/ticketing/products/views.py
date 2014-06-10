@@ -14,7 +14,7 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment, SalesSegmentGroup, Organization, StockHolder, TicketBundle
-from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProductItemForm
+from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProductItemForm, ProductAndProductItemAPIForm
 from altair.app.ticketing.loyalty.models import PointGrantSetting
 from .forms import DeliveryMethodSelectForm
 
@@ -195,13 +195,14 @@ class ProductAndProductItem(BaseView):
             raise HTTPBadRequest(body=json.dumps({'message':u'データが見つかりません'}))
 
         rows = []
+        parent_id = 0
         for product in products:
             row = dict(
                 product=dict(
                     id=product.id,
                     name=product.name,
                     price=int(product.price),
-                    order=product.display_order,
+                    display_order=product.display_order,
                     public=product.public
                 ),
                 stock_type=dict(
@@ -240,18 +241,21 @@ class ProductAndProductItem(BaseView):
                 # 1つのProductに複数のProductItemが紐づいているケースはtree表示
                 if len(product_items) > 1:
                     if i == 0:
+                        parent_id = len(rows) + 1
                         row2.update(
+                            row_id=parent_id,
                             parent='null',
                             level=0,
-                            isLeaf=False,
+                            is_leaf=False,
                             expanded=True,
                             loaded=True
                         )
                     else:
                         row2.update(
-                            parent=product_items[0].id,
+                            row_id=len(rows) + 1,
+                            parent=parent_id,
                             level=1,
-                            isLeaf=True,
+                            is_leaf=True,
                             expanded=True,
                             loaded=True,
                             product=dict(
@@ -272,9 +276,9 @@ class ProductAndProductItem(BaseView):
 
     @view_config(route_name='products.api.set', renderer='json')
     def api_set(self):
-        performance_id = int(self.request.params.get('performance_id', 0))
+        performance_id = long(self.request.params.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.organization.id)
-        sales_segment_id = int(self.request.params.get('sales_segment_id'), 0)
+        sales_segment_id = long(self.request.params.get('sales_segment_id'), 0)
         sales_segment = SalesSegment.query \
             .join(SalesSegment.sales_segment_group) \
             .join(SalesSegmentGroup.event) \
@@ -296,7 +300,7 @@ class ProductAndProductItem(BaseView):
             row_data = MultiDict(row_data)
 
             if row_data.get('product_item_id'):
-                product_item_id = int(row_data.get('product_item_id', 0))
+                product_item_id = long(row_data.get('product_item_id', 0))
                 product_item = ProductItem.get(product_item_id)
             else:
                 product_item = ProductItem()
@@ -317,13 +321,20 @@ class ProductAndProductItem(BaseView):
                 product_id = row_data['product_id']
                 product = Product.query.filter(Product.id==product_id).one()
 
-                f = ProductItemForm(row_data, performance_id=product.performance.id, product=product)
+                f = ProductAndProductItemAPIForm(row_data, performance_id=performance_id, product=product)
                 if not f.validate():
                     logger.info('validation error:%s' % f.errors)
                     raise HTTPBadRequest(body=json.dumps({
                         'message':u'入力データを確認してください',
                         'rows':{'rowid':row_data.get('id'), 'errors':f.errors}
                     }))
+
+                if not f.is_leaf.data:
+                    product.name = f.name.data
+                    product.price = f.price.data
+                    product.display_order = f.display_order.data
+                    product.public = f.public.data
+                    product.save()
 
                 stock = Stock.query.filter_by(
                     stock_type_id=f.stock_type_id.data,

@@ -3,6 +3,7 @@
 import logging
 from decimal import Decimal
 from datetime import datetime
+import distutils.util
 
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField, BooleanField
@@ -259,11 +260,11 @@ class ProductItemForm(OurForm):
     def _get_translations(self):
         return Translations()
 
-    product_item_id = HiddenField(
-        validators=[Optional()]
-    )
     product_id = HiddenField(
         validators=[Required()]
+    )
+    product_item_id = HiddenField(
+        validators=[Optional()]
     )
     product_item_name = OurTextField(
         label=u'商品明細名',
@@ -279,6 +280,7 @@ class ProductItemForm(OurForm):
     )
     product_item_quantity = OurIntegerField(
         label=u'販売単位 (席数・個数)',
+        default='1',
         validators=[Required()]
     )
     stock_type_id = OurSelectField(
@@ -345,7 +347,7 @@ class ProductItemForm(OurForm):
                 raise ValidationError(u'既にこの商品明細への予約がある為、変更できません')
 
     def validate(self):
-        status = super(type(self), self).validate()
+        status = super(ProductItemForm, self).validate()
         if status:
             if self.product_item_id.data:
                 # 販売期間内で公開済みの場合、またはこの商品が予約/抽選申込されている場合は
@@ -360,6 +362,43 @@ class ProductItemForm(OurForm):
                         self.product_item_price.errors.append(error_message)
                         status = False
         return status
+
+
+class ProductAndProductItemAPIForm(ProductItemForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(ProductAndProductItemAPIForm, self).__init__(formdata, obj, prefix, **kwargs)
+        if formdata:
+            try:
+                self.public.data = bool(distutils.util.strtobool(formdata['public']))
+            except Exception as e:
+                self.public.data = True
+            try:
+                self.is_leaf.data = bool(distutils.util.strtobool(formdata['is_leaf']))
+            except Exception as e:
+                self.is_leaf.data = False
+
+    public = OurBooleanField(
+        default=True
+        )
+    name = OurTextField(
+        validators=[
+            Optional(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+            JISX0208,
+            ]
+        )
+    price = OurDecimalField(
+        places=0,
+        validators=[Optional()]
+        )
+    display_order = OurIntegerField(
+        default=1,
+        validators=[Optional()]
+        )
+    is_leaf = OurBooleanField(
+        default=False
+        )
+
 
 class DeliveryMethodSelectForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
