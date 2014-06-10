@@ -56,7 +56,7 @@ def render_tstar_top(request, widget):
     template_name = "altaircms.plugins.widget:promotion/render.html"
     pm = get_promotion_manager(request)
     info = pm.promotion_info(request, promotion_sheet(request, widget), limit=limit)
-    params = {"show_image": pm.show_image, "info": info}
+    params = {"show_image": pm.show_image, "info": info, "widget": widget}
     return render(template_name, params, request=request)
 
 def render_tstar_category_top(request, widget):
@@ -64,7 +64,7 @@ def render_tstar_category_top(request, widget):
     template_name = "altaircms.plugins.widget:promotion/category_render.html"
     pm = get_promotion_manager(request)
     info = pm.promotion_info(request, promotion_sheet(request, widget), limit=limit)
-    params = {"show_image": pm.show_image, "info": info}
+    params = {"show_image": pm.show_image, "info": info, "widget": widget}
     return render(template_name, params, request=request)
 
 @implementer(IWidgetUtility)

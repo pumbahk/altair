@@ -51,7 +51,8 @@ widget.configure({
         var root = $(we.dialog);
         return {"display_type": root.find("#display_type").val(), 
                 "tag": root.find("#tag").val(), 
-                "system_tag": root.find("#system_tag").val()};                
+                "system_tag": root.find("#system_tag").val(),
+                "use_newstyle": root.find("#use_newstyle").val() && "1"};
     };
     return widget.include("promotion", {
         load_page: load_page, 

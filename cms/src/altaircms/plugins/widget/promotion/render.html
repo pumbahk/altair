@@ -1,10 +1,131 @@
 ## promotion widget output template
-## 
+##
+% if widget.use_newstyle:
+  ${render_newstyle()}
+% else:
+  ${render()}
+% endif
+
+<%def name="render_newstyle()">
 %if info:
 <%
 import random
 prefix = str(random.random())[2:]
 %>
+<div class="promotion-widget">
+  <div id="mainSlider">
+    <div id="showcase" class="showcase">
+
+      <div class="showcase-slide">
+        <div class="showcase-content">
+          <a href="http://ticket.rakuten.co.jp/features/disney-on-ice/index.html">
+            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" />
+          </a>
+        </div>
+        <div style="display: none;" class="showcase-caption">
+          <p>ディズニー・オン・アイス「デア・トゥ・ドリーム</p>
+        </div>
+        <div class="showcase-thumbnail">
+          <div class="showcase-thumbnail-img">
+            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" width="60px" />
+          </div>
+          <div class="showcase-thumbnail-caption">ディズニー・オン・アイス「デア・トゥ・ドリーム～絶対にあきらめないプリンセスたちの物語～
+          </div>
+        </div>
+      </div>
+
+      <div class="showcase-slide">
+        <div class="showcase-content">
+          <a href="http://ticket.rakuten.co.jp/features/disney-on-ice/index.html">
+            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" />
+          </a>
+        </div>
+        <div style="display: none;" class="showcase-caption">
+          <p>ディズニー・オン・アイス「デア・トゥ・ドリーム</p>
+        </div>
+        <div class="showcase-thumbnail">
+          <div class="showcase-thumbnail-img">
+            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" width="60px" />
+          </div>
+          <div class="showcase-thumbnail-caption">ディズニー・オン・アイス「デア・トゥ・ドリーム～絶対にあきらめないプリンセスたちの物語～
+          </div>
+        </div>
+      </div>
+
+      <div class="showcase-slide">
+        <div class="showcase-content">
+          <a href="http://ticket.rakuten.co.jp/features/disney-on-ice/index.html">
+            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" />
+          </a>
+        </div>
+        <div style="display: none;" class="showcase-caption">
+          <p>ディズニー・オン・アイス「デア・トゥ・ドリーム</p>
+        </div>
+        <div class="showcase-thumbnail">
+          <div class="showcase-thumbnail-img">
+            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" width="60px" />
+          </div>
+          <div class="showcase-thumbnail-caption">ディズニー・オン・アイス「デア・トゥ・ドリーム～絶対にあきらめないプリンセスたちの物語～
+          </div>
+        </div>
+      </div>
+
+      <div class="showcase-slide">
+        <div class="showcase-content">
+          <a href="http://ticket.rakuten.co.jp/features/disney-on-ice/index.html">
+            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" />
+          </a>
+        </div>
+        <div style="display: none;" class="showcase-caption">
+          <p>ディズニー・オン・アイス「デア・トゥ・ドリーム</p>
+        </div>
+        <div class="showcase-thumbnail">
+          <div class="showcase-thumbnail-img">
+            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" width="60px" />
+          </div>
+          <div class="showcase-thumbnail-caption">ディズニー・オン・アイス「デア・トゥ・ドリーム～絶対にあきらめないプリンセスたちの物語～
+          </div>
+        </div>
+      </div>
+
+      <div class="showcase-slide">
+        <div class="showcase-content">
+          <a href="http://ticket.rakuten.co.jp/features/disney-on-ice/index.html">
+            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" />
+          </a>
+        </div>
+        <div style="display: none;" class="showcase-caption">
+          <p>ディズニー・オン・アイス「デア・トゥ・ドリーム</p>
+        </div>
+        <div class="showcase-thumbnail">
+          <div class="showcase-thumbnail-img">
+            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" width="60px" />
+          </div>
+          <div class="showcase-thumbnail-caption">ディズニー・オン・アイス「デア・トゥ・ドリーム～絶対にあきらめないプリンセスたちの物語～
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+</div>
+</%def>
+
+<%def name="render()">
+%if info:
+<%
+import random
+prefix = str(random.random())[2:]
+%>
+
+
+
+
+
+
+
+
 
 <div class="promotion-widget">
   <div id="slideShow">
@@ -126,3 +247,4 @@ prefix = str(random.random())[2:]
   });
   </script>
 %endif
+</%def>
