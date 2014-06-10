@@ -17,13 +17,15 @@ elif sales_segment:
     stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
 </%doc>
 
-<div>
+<div class="grid">
   <table id="sales-segment-${sales_segment.id}-grid"></table>
   <input type="button" id="sales-segment-${sales_segment.id}-save_button" value="保存" class="btn" />
   <input type="button" id="sales-segment-${sales_segment.id}-clear_button" value="取消" class="btn" />
+  <div><p class="pull-right"><i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p></div>
 </div>
 
 <script type="text/javascript">
+    var public_options = {value:"true:公開;false:非公開"};
     <% options = ["%s:%s" % (st.id, st.name) for st in stock_types] %>
     var stock_type_options = {value:"${';'.join(options)|n}"};
     <% options = ["%s:%s" % (sh.id, sh.name) for sh in stock_holders] %>
@@ -44,20 +46,21 @@ elif sales_segment:
       jsonReader : {repeatitems: false},
       mtype: 'GET',
       colModel:[
+        {hidden: true, jsonmap:'row_id', name:'row_id', editable:false},
         {hidden: true, jsonmap:'product.id', name:'product_id', editable:false},
-        {label:'商品名', jsonmap:'product.name', name:'product_name', index:'product_name', width:150, editable:false},
-        {label:'価格', jsonmap:'product.price', name:'product_price', index:'product_price', sorttype:'int', width:60, align:'right', editable:false},
-        {label:'表示順', jsonmap:'product.order', name:'product_order', index:'product_order', sorttype:'int', width:40, align:'right', editable:false},
-        {label:'一般公開', jsonmap:'product.public', name:'product_public', index:'product_public', width:60, align:'right', editable:false},
-        {label:'席種', jsonmap:'stock_type.id', name:'stock_type_id', index:'stock_type_id', width:150, formatter:'select', editable:true, edittype:'select', editoptions:stock_type_options},
+        {label:'商品名', jsonmap:'product.name', name:'name', index:'name', width:150, editable:true},
+        {label:'価格', jsonmap:'product.price', name:'price', index:'price', sorttype:'int', width:60, align:'right', editable:true},
+        {label:'表示順', jsonmap:'product.display_order', name:'display_order', index:'display_order', sorttype:'int', width:40, align:'right', editable:true},
+        {label:'公開', jsonmap:'product.public', name:'public', index:'public', width:60, align:'right', formatter:'select', editable:true, edittype:'select', editoptions:public_options},
         {label:'配券先', jsonmap:'stock_holder.id', name:'stock_holder_id', index:'stock_holder_id', width:100, formatter:'select', editable:true, edittype:'select', editoptions:stock_holder_options},
         {hidden: true, jsonmap:'product_item.id', name:'product_item_id', editable:false},
+        {label:'席種', jsonmap:'stock_type.id', name:'stock_type_id', index:'stock_type_id', width:100, formatter:'select', editable:true, edittype:'select', editoptions:stock_type_options},
         {label:'商品明細名', jsonmap:'product_item.name', name:'product_item_name', index:'product_item_name', width:150, editable:true},
         {label:'単価', jsonmap:'product_item.price', name:'product_item_price', index:'product_item_price', sorttype:'int', width:60, align:'right', editable:true},
         {label:'販売単位', jsonmap:'product_item.quantity', name:'product_item_quantity', index:'product_item_quantity', sorttype:'int', width:60, align:'right', editable:true},
-        {label:'券面', jsonmap:'ticket_bundle.id', name:'ticket_bundle_id', index:'ticket_bundle_id', width:80, formatter:'select', editable:true, edittype:'select', editoptions:ticket_bundle_options},
-        {label:'席数', jsonmap:'stock.quantity', name:'stock_quantity', index:'stock_quantity', sorttype:'int',  width:60, align:'right', editable:false},
         {label:'残席数', jsonmap:'stock_status.quantity', name:'stock_status_quantity', index:'stock_status_quantity', sorttype:'int', width:60, align:'right', editable:false},
+        {label:'席数', jsonmap:'stock.quantity', name:'stock_quantity', index:'stock_quantity', sorttype:'int',  width:60, align:'right', editable:false},
+        {label:'券面', jsonmap:'ticket_bundle.id', name:'ticket_bundle_id', index:'ticket_bundle_id', width:80, formatter:'select', editable:true, edittype:'select', editoptions:ticket_bundle_options},
         {label:' ', name:'link', width:80, formatter:grid.linkFormatter},
         {hidden: true, jsonmap:'product_item', name:'product_item', editable:false},
         {hidden: true, jsonmap:'ticket_bundle', name:'ticket_bundle', editable:false},
@@ -78,10 +81,13 @@ elif sales_segment:
           }
         }
       },  // sort時にセルの状態を維持
+      loadError: function (xhr, st, err) {
+        $('.grid').hide();
+      },
       //pager: '',  //footerのページャー要素のid
       rowNum:200,  //1ページに表示する行数
       //rowList:[40, 100, 200],  //変更可能な1ページ当たりの行数
-      sortname: 'product_order',
+      sortname: 'display_order',
       sortorder: 'asc',
       loadonce: true,
       //caption: '',  //ヘッダーのキャプション
@@ -92,7 +98,13 @@ elif sales_segment:
       treeGrid: true,
       treeGridModel: 'adjacency',
       treedatatype: 'local',
-      ExpandColumn: 'product_name'
+      treeReader: {
+         level_field: "level",
+         parent_id_field: "parent",
+         leaf_field: "is_leaf",
+         expanded_field: "expanded"
+      },
+      ExpandColumn: 'row_id'
     });
 
     $('#sales-segment-${sales_segment.id}-save_button').click(function(){
@@ -133,4 +145,3 @@ elif sales_segment:
       grid.clearRetainChanges();
     });
 </script>
-

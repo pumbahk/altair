@@ -3,7 +3,7 @@
 <%! from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegmentGroupSetting, SalesSegmentKindEnum %>
 <table class="table table-striped table-bordered table-condensed" id="sales_segment_group-${sales_segment_group.id}">
   <tr>
-    <th>${HH.label_text_for(SalesSegmentGroup.kind)}</th>
+    <th style="width: 30%;">${HH.label_text_for(SalesSegmentGroup.kind)}</th>
     <td id="kind" value="${sales_segment_group.kind}">${u''.join(e.v for e in SalesSegmentKindEnum._values if sales_segment_group.kind == e.k)}</td>
   </tr>
   <tr>

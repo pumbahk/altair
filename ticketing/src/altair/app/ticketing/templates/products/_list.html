@@ -11,7 +11,7 @@ elif sales_segment:
     sales_segments = [sales_segment]
 %>
 
-## 新旧の登録フォームの使い分け用のjs
+## table/jqgridの登録フォームの使い分け用のjs
 <script type="text/javascript">
   $(function() {
     $('#use-grid-editor').change(function() {
@@ -21,14 +21,14 @@ elif sales_segment:
         if(!!location.hash){
          $(location.hash.replace(/#sales-segment-(?:tab-)?/, '#product_editor')).click();
         }
-        $(this).text('旧商品登録フォームを使う');
+        $(this).text('グリッドフォームを使わない');
       } else {
         $('.product-table').show();
         $('.grid-editor').hide();
         if(!!location.hash){
          $(location.hash.replace(/#sales-segment-(?:tab-)?/, '#product_table')).click();
         }
-        $(this).text('新商品登録フォームを使う');
+        $(this).text('グリッドフォームを使う');
       }
     }).change();
     $('#use-grid-editor').click(function() {
@@ -41,16 +41,13 @@ elif sales_segment:
     });
   });
 </script>
-<div id="use-grid-editor" class="label label-warning pull-right" style="width: 200px; margin-bottom: 5px; text-align: center;"></div>
+<div id="use-grid-editor" class="label label-warning pull-right" style="width: 150px; margin-bottom: 5px; text-align: center;"></div>
 
 ## action button用のjs
 <script type="text/javascript">
     function get_active_tab() {
       return $('.tabbable.tabs-top.product-table.js-product-list').find('.tab-pane.active');
     }
-    get_selected_product_id = function get_selected_product_id() {
-      return get_active_tab().find('form input[name="product_id"]:checked').val();
-    };
     get_selected_sales_segment_id = function get_selected_sales_segment_id() {
       return get_active_tab().attr('data-id');
     };
@@ -244,7 +241,7 @@ $(function(){
 });
 </script>
 
-## 新商品登録フォーム
+## グリッドフォーム
 <div class="tabbable tabs-top grid-editor js-product-list">
   <ul class="nav nav-tabs">
     % for i, sales_segment in enumerate(sales_segments):
@@ -253,7 +250,6 @@ $(function(){
   </ul>
 
   <div class="tab-content">
-    <p>※このアイコン<i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p>
     %for i, sales_segment in enumerate(sales_segments):
       <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-tab-${sales_segment.id}" data-id="${sales_segment.id}">
         <%sb:react_subview
@@ -269,7 +265,7 @@ $(function(){
 </div>
 % endif
 
-## 旧商品登録フォーム
+## 通常商品登録フォーム
 <div class="tabbable tabs-top product-table js-product-list">
   <ul class="nav nav-tabs">
   %for i, sales_segment in enumerate(sales_segments):
@@ -277,7 +273,6 @@ $(function(){
   %endfor
   </ul>
   <div class="tab-content" id="tabbable-tab-content">
-    <p>※このアイコン<i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p>
     %for i, sales_segment in enumerate(sales_segments):
       <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-${sales_segment.id}" data-id="${sales_segment.id}">
         <%sb:react_subview

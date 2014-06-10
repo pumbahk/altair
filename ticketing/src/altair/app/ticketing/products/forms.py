@@ -3,6 +3,7 @@
 import logging
 from decimal import Decimal
 from datetime import datetime
+import distutils.util
 
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField, BooleanField
@@ -35,14 +36,12 @@ from altair.app.ticketing.helpers import label_text_for
 
 logger = logging.getLogger(__name__)
 
+
 class ProductAndProductItemForm(OurForm):
+
     def __init__(self, formdata=None, obj=None, prefix='', performance=None, sales_segment=None, **kwargs):
-        self.performance = performance
         self.sales_segment = sales_segment
         super(ProductAndProductItemForm, self).__init__(formdata, obj, prefix, **kwargs)
-
-        if performance:
-            self.performance_id.data = performance.id
 
         if sales_segment is not None:
             self.sales_segment_id.choices = [(sales_segment.id, sales_segment.name)]
@@ -56,21 +55,24 @@ class ProductAndProductItemForm(OurForm):
             event = performance.event
         else:
             raise Exception('either sales_segment or performance must be non-None value')
+
         self.seat_stock_type_id.choices = [
             (stock_type.id, stock_type.name) \
             for stock_type in StockType.filter(StockType.event_id == event.id).all()
             ]
 
         if performance:
-            event = performance.event
+            self.performance_id.data = performance.id
             stock_holders = StockHolder.get_own_stock_holders(event=event)
             self.stock_holder_id.choices = [(sh.id, sh.name) for sh in stock_holders]
-            stock_types = StockType.query.filter_by(event_id=event.id).all()
             ticket_bundles = TicketBundle.filter_by(event_id=event.id)
             self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
 
+    def _get_translations(self):
+        return Translations()
+
     all_sales_segment = OurBooleanField(
-        label=u'全ての販売区分に追加',
+        label=u'同じ公演の全ての販売区分に追加',
         hide_on_new=True,
         widget=CheckboxInput(),
         )
@@ -96,7 +98,7 @@ class ProductAndProductItemForm(OurForm):
         validators=[Required()],
         choices=[],
         coerce=int
-    )
+        )
     id = HiddenField(
         label=label_text_for(Product.id),
         validators=[Optional()],
@@ -111,14 +113,14 @@ class ProductAndProductItemForm(OurForm):
         )
     price = OurDecimalField(
         label=label_text_for(Product.price),
-        places=2,
+        places=0,
         validators=[Required()]
         )
     ticket_bundle_id = OurSelectField(
         label=u'券面構成',
         validators=[],
         coerce=lambda v: None if not v else int(v),
-    )
+        )
     display_order = OurIntegerField(
         label=label_text_for(Product.display_order),
         default=1,
@@ -128,7 +130,7 @@ class ProductAndProductItemForm(OurForm):
         label=u'販売単位 (席数・個数)',
         default='1',
         validators=[Required()],
-    )
+        )
     min_product_quantity = OurIntegerField(
         label=u'商品購入下限数',
         hide_on_new=True,
@@ -156,15 +158,9 @@ class ProductAndProductItemForm(OurForm):
         coerce=long,
         widget=CheckboxMultipleSelect(multiple=True)
         )
-
-    def validate_price(form, field):
-        if field.data and form.id.data:
-            sum_amount = ProductItem.query \
-                .filter(ProductItem.product_id == form.id.data) \
-                .with_entities(func.sum(ProductItem.price)) \
-                .scalar() or 0
-            if Decimal(field.data) < Decimal(sum_amount):
-                raise ValidationError(u'既に登録された商品合計金額以上で入力してください')
+    product_item_id = HiddenField(
+        validators=[Optional()]
+        )
 
     def validate_seat_stock_type_id(form, field):
         if form.id.data:
@@ -189,7 +185,7 @@ class ProductAndProductItemForm(OurForm):
             # 価格、席種の変更は不可
             product = Product.query.filter_by(id=self.id.data).one()
             now = datetime.now()
-            if (product.public and product.sales_segment.public and product.sales_segment.in_term(now))\
+            if (product.public and product.sales_segment.public and product.sales_segment.in_term(now) and product.performance.public)\
                or product.ordered_products or product.has_lot_entry_products():
                 error_message = u'既に販売中か予約および抽選申込がある為、変更できません'
                 if self.price.data != product.price:
@@ -211,184 +207,35 @@ class ProductAndProductItemForm(OurForm):
             validity = False
         return validity
 
-
-
-
-class ProductForm(OurForm):
     @classmethod
-    def from_model(cls, product):
+    def from_model(cls, product, product_item=None):
+        product_item_params = dict()
+        if product_item:
+            product_item_params = dict(
+                product_item_id=product_item.id,
+                stock_holder_id=product_item.stock.stock_holder_id,
+                ticket_bundle_id=product_item.ticket_bundle_id,
+                product_item_quantity=product_item.quantity,
+                )
         form = cls(
-            id=product.id, 
+            id=product.id,
             name=product.name, 
             price=product.price, 
             display_order=product.display_order, 
             seat_stock_type_id=product.seat_stock_type_id, 
             sales_segment_id=product.sales_segment_id, 
-            public=1 if product.public else 0, # why integer?
+            public=product.public,
             all_sales_sagment=0,
             performance_id=0,
             description=product.description,
             sales_segment=product.sales_segment,
+            performance=product.performance,
             min_product_quantity=product.min_product_quantity,
             max_product_quantity=product.max_product_quantity,
-            applied_point_grant_settings=[pgs.id for pgs in product.point_grant_settings]
+            applied_point_grant_settings=[pgs.id for pgs in product.point_grant_settings],
+            **product_item_params
             )
         return form
-
-    def __init__(self, formdata=None, obj=None, prefix='', performance=None, sales_segment=None, **kwargs):
-        self.performance = performance
-        self.sales_segment = sales_segment
-        super(ProductForm, self).__init__(formdata, obj, prefix, **kwargs)
-
-        if performance:
-            self.performance_id.data = performance.id
-
-        if sales_segment is not None:
-            self.sales_segment_id.choices = [(sales_segment.id, sales_segment.name)]
-            self.sales_segment_id.data = sales_segment.id
-            event = sales_segment.sales_segment_group.event
-        elif performance is not None:
-            self.sales_segment_id.choices = [
-                (sales_segment.id, sales_segment.name) \
-                for sales_segment in SalesSegment.filter(SalesSegment.performance_id == performance.id).all()
-                ]
-            event = performance.event
-        else:
-            raise Exception('either sales_segment or performance must be non-None value')
-        self.seat_stock_type_id.choices = [
-            (stock_type.id, stock_type.name) \
-            for stock_type in StockType.filter(StockType.event_id == event.id).all()
-            ]
-
-    def _get_translations(self):
-        return Translations()
-
-    id = HiddenField(
-        label=label_text_for(Product.id),
-        validators=[Optional()],        
-        )
-    name = OurTextField(
-        label=label_text_for(Product.name),
-        validators=[
-            Required(),
-            Length(max=255, message=u'255文字以内で入力してください'),
-            JISX0208,
-            ]
-        )
-    price = OurDecimalField(
-        label=label_text_for(Product.price),
-        places=2,
-        validators=[Required()]
-        )
-    min_product_quantity = OurIntegerField(
-        label=u'商品購入下限数',
-        hide_on_new=True,
-        default=None,
-        validators=[Optional()],
-        )
-    max_product_quantity = OurIntegerField(
-        label=u'商品購入上限数',
-        hide_on_new=True,
-        default=None,
-        validators=[Optional()],
-        )
-    display_order = OurIntegerField(
-        label=label_text_for(Product.display_order),
-        default=1,
-        hide_on_new=True,
-        )
-    seat_stock_type_id = OurSelectField(
-        label=label_text_for(Product.seat_stock_type),
-        validators=[Required(u'選択してください')],
-        choices=[],
-        coerce=int
-        )
-    sales_segment_id = OurSelectField(
-        label=label_text_for(Product.sales_segment_id),
-        validators=[Required(u'選択してください')],
-        choices=[],
-        coerce=int
-        )
-    performance_id = HiddenField(
-        validators=[Optional()]
-        )
-    public = OurBooleanField(
-        label=u'一般公開',
-        hide_on_new=True,
-        widget=CheckboxInput(),
-        )
-    all_sales_segment = OurBooleanField(
-        label=u'全ての販売区分に追加',
-        hide_on_new=True,
-        widget=CheckboxInput(),
-        )
-    description = NullableTextField(
-        label=u'説明',
-        hide_on_new=True,
-        widget=TextArea()
-        )
-    applied_point_grant_settings = OurPHPCompatibleSelectMultipleField(
-        label=u'適用されるポイント付与設定',
-        choices=lambda field: [(pgs.id, pgs.name) for pgs in field.form.sales_segment.point_grant_settings] if field.form.sales_segment else [],
-        hide_on_new=True,
-        coerce=long,
-        widget=CheckboxMultipleSelect(multiple=True)
-        )
-
-    def validate_price(form, field):
-        if field.data and form.id.data:
-            sum_amount = ProductItem.query \
-                .filter(ProductItem.product_id == form.id.data) \
-                .with_entities(func.sum(ProductItem.price)) \
-                .scalar() or 0
-            if Decimal(field.data) < Decimal(sum_amount):
-                raise ValidationError(u'既に登録された商品合計金額以上で入力してください')
-
-    def validate_seat_stock_type_id(form, field):
-        if form.id.data:
-            product = Product.get(form.id.data)
-            if product.items and field.data != product.seat_stock_type_id:
-                raise ValidationError(u'既に在庫が割り当てられているため、席種は変更できません')
-
-    def validate_min_product_quantity(self, field):
-        if field.data is not None and field.data < 0:
-            raise ValidationError(u'0以上の数値を入力してください') 
-
-    def validate_max_product_quantity(self, field):
-        if field.data is not None and field.data < 0:
-            raise ValidationError(u'0以上の数値を入力してください') 
-
-    def validate(self, *args, **kwargs):
-        if not super(ProductForm, self).validate(*args, **kwargs):
-            return False
-        validity = True
-        if self.id.data:
-            # 販売期間内で公開済みの場合、またはこの商品が予約/抽選申込されている場合は
-            # 価格、席種の変更は不可
-            product = Product.query.filter_by(id=self.id.data).one()
-            now = datetime.now()
-            if (product.public and product.sales_segment.public and product.sales_segment.in_term(now))\
-               or product.ordered_products or product.has_lot_entry_products():
-                error_message = u'既に販売中か予約および抽選申込がある為、変更できません'
-                if self.price.data != product.price:
-                    self.price.errors.append(error_message)
-                    validity = False
-                if self.seat_stock_type_id.data != product.seat_stock_type_id:
-                    self.seat_stock_type_id.errors.append(error_message)
-                    validity = False
-        if self.min_product_quantity.data is not None and \
-           self.max_product_quantity.data is not None and \
-           self.min_product_quantity.data > self.max_product_quantity.data:
-            errors = self.max_product_quantity.errors
-            if errors is None:
-                errors = []
-            else:
-                errors = list(errors)
-            errors.append(u'最大商品購入数には最小商品購入数以上の値を指定してください')
-            self.max_product_quantity.errors = errors
-            validity = False
-        return validity
-           
 
 
 class ProductItemForm(OurForm):
@@ -413,11 +260,11 @@ class ProductItemForm(OurForm):
     def _get_translations(self):
         return Translations()
 
-    product_item_id = HiddenField(
-        validators=[Optional()]
-    )
     product_id = HiddenField(
         validators=[Required()]
+    )
+    product_item_id = HiddenField(
+        validators=[Optional()]
     )
     product_item_name = OurTextField(
         label=u'商品明細名',
@@ -433,6 +280,7 @@ class ProductItemForm(OurForm):
     )
     product_item_quantity = OurIntegerField(
         label=u'販売単位 (席数・個数)',
+        default='1',
         validators=[Required()]
     )
     stock_type_id = OurSelectField(
@@ -452,16 +300,6 @@ class ProductItemForm(OurForm):
         validators=[],
         coerce=lambda v: None if not v else int(v)
     )
-
-    def validate_product_item_price(form, field):
-        if field.data and form.product_item_quantity.data and form.product_id.data and form.product_item_id.data:
-            product = Product.get(form.product_id.data)
-            sum_amount = int(field.data) * int(form.product_item_quantity.data)
-            for item in product.items:
-                if item.id != int(form.product_item_id.data):
-                    sum_amount += item.quantity * item.price
-            if product.price < sum_amount:
-                raise ValidationError(u'単価×販売単位が商品合計金額以内になるように入力してください')
 
     def validate_ticket_bundle_id(form, field):
         # 引取方法にコンビニ発券が含まれていたら必須
@@ -509,7 +347,7 @@ class ProductItemForm(OurForm):
                 raise ValidationError(u'既にこの商品明細への予約がある為、変更できません')
 
     def validate(self):
-        status = super(type(self), self).validate()
+        status = super(ProductItemForm, self).validate()
         if status:
             if self.product_item_id.data:
                 # 販売期間内で公開済みの場合、またはこの商品が予約/抽選申込されている場合は
@@ -524,6 +362,43 @@ class ProductItemForm(OurForm):
                         self.product_item_price.errors.append(error_message)
                         status = False
         return status
+
+
+class ProductAndProductItemAPIForm(ProductItemForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(ProductAndProductItemAPIForm, self).__init__(formdata, obj, prefix, **kwargs)
+        if formdata:
+            try:
+                self.public.data = bool(distutils.util.strtobool(formdata['public']))
+            except Exception as e:
+                self.public.data = True
+            try:
+                self.is_leaf.data = bool(distutils.util.strtobool(formdata['is_leaf']))
+            except Exception as e:
+                self.is_leaf.data = False
+
+    public = OurBooleanField(
+        default=True
+        )
+    name = OurTextField(
+        validators=[
+            Optional(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+            JISX0208,
+            ]
+        )
+    price = OurDecimalField(
+        places=0,
+        validators=[Optional()]
+        )
+    display_order = OurIntegerField(
+        default=1,
+        validators=[Optional()]
+        )
+    is_leaf = OurBooleanField(
+        default=False
+        )
+
 
 class DeliveryMethodSelectForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):

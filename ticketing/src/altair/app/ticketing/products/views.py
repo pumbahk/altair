@@ -14,106 +14,65 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment, SalesSegmentGroup, Organization, StockHolder, TicketBundle
-from altair.app.ticketing.products.forms import ProductForm, ProductItemForm, ProductAndProductItemForm
+from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProductItemForm, ProductAndProductItemAPIForm
 from altair.app.ticketing.loyalty.models import PointGrantSetting
 from .forms import DeliveryMethodSelectForm
 
 logger = logging.getLogger(__name__)
 
+
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class ProductAndProductItem(BaseView):
 
-    @view_config(route_name='product.new', request_method='GET', renderer='altair.app.ticketing:templates/products/_new_form.html', xhr=True)
+    @view_config(route_name='products.new', request_method='GET', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
     def new_xhr(self):
         # 商品、商品明細一括登録画面
-        try:
-            performance_id = long(self.request.params.get('performance_id'))
-        except (TypeError, ValueError):
-            performance_id = None
-        try:
-            sales_segment_id = long(self.request.params.get('sales_segment_id'))
-        except (TypeError, ValueError):
-            sales_segment_id = None
+        performance_id = self.context.performance_id
+        sales_segment_id = self.context.sales_segment_id
+        performance = self.context.performance
+        sales_segment = self.context.sales_segment
 
-        performance = sales_segment = None
-
-        if sales_segment_id is not None:
-            sales_segment = SalesSegment.query.filter_by(id=sales_segment_id).filter(Organization.id==self.context.user.organization_id).one()
-            if sales_segment is None:
-                return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
-
-        if performance_id is not None:
-            performance = Performance.get(performance_id, self.context.user.organization_id)
-            if performance is None:
-                return HTTPNotFound('performance id %d is not found' % performance_id)
+        if not performance_id and sales_segment:
+            performance = sales_segment.performance
 
         ticket_bundles = TicketBundle.filter_by(event_id=performance.event.id).all()
         ticket_bundle_default = 0
         if ticket_bundles:
             ticket_bundle_default = ticket_bundles[0].id
 
-        f = ProductAndProductItemForm(performance=performance, sales_segment=sales_segment, applied_point_grant_settings=(sales_segment and [pgs.id for pgs in sales_segment.point_grant_settings]), ticket_bundle_id=ticket_bundle_default)
+        f = ProductAndProductItemForm(
+                performance=performance,
+                sales_segment=sales_segment,
+                applied_point_grant_settings=(sales_segment and [pgs.id for pgs in sales_segment.point_grant_settings]),
+                ticket_bundle_id=ticket_bundle_default
+                )
 
-        return {
-            'form': f,
-            'action': self.request.path,
-            }
+        return dict(form=f)
 
-    @view_config(route_name='product.new', request_method='POST', renderer='altair.app.ticketing:templates/products/_new_form.html', xhr=True)
+    @view_config(route_name='products.new', request_method='POST', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
     def new_post_xhr(self):
         # 商品、商品明細一括登録画面
-        try:
-            performance_id = long(self.request.params.get('performance_id'))
-        except (TypeError, ValueError):
-            performance_id = None
-        try:
-            sales_segment_id = long(self.request.params.get('sales_segment_id'))
-        except (TypeError, ValueError):
-            sales_segment_id = None
-
-        performance = sales_segment = None
-
-        if sales_segment_id is not None:
-            sales_segment = SalesSegment.query.filter_by(id=sales_segment_id).filter(Organization.id==self.context.user.organization_id).one()
-            if sales_segment is None:
-                return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
-
-        if performance_id is not None:
-            performance = Performance.get(performance_id, self.context.user.organization_id)
-            if performance is None:
-                return HTTPNotFound('performance id %d is not found' % performance_id)
+        performance_id = self.context.performance_id
+        sales_segment_id = self.context.sales_segment_id
+        performance = self.context.performance
+        sales_segment = self.context.sales_segment
 
         f = ProductAndProductItemForm(self.request.POST, performance=performance, sales_segment=sales_segment)
         if f.validate():
-            point_grant_settings = [PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one() for point_grant_setting_id in f.applied_point_grant_settings.data]
+            point_grant_settings = [
+                PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one()
+                for point_grant_setting_id in f.applied_point_grant_settings.data
+                ]
 
-            if f.all_sales_segment.data and performance:
-                sales_segment_for_products = SalesSegment.query.filter(SalesSegment.performance_id==performance.id).filter(Organization.id==self.context.user.organization_id)
-                for sales_segment_for_product in sales_segment_for_products:
-                    product = merge_session_with_post(Product(), f.data)
-                    product.sales_segment_id = sales_segment_for_product.id
-                    product.performance_id = sales_segment_for_product.performance.id
-                    product.point_grant_settings.extend(point_grant_settings)
-                    product.save()
-
-                    stock = Stock.query.filter_by(
-                        stock_type_id=f.seat_stock_type_id.data,
-                        stock_holder_id=f.stock_holder_id.data,
-                        performance_id=sales_segment_for_product.performance.id
-                    ).one()
-                    product_item = ProductItem(
-                        performance_id=sales_segment_for_product.performance.id,
-                        product_id=product.id,
-                        name=f.name.data,
-                        price=f.price.data,
-                        quantity=f.product_item_quantity.data,
-                        stock_id=stock.id,
-                        ticket_bundle_id=f.ticket_bundle_id.data
-                    )
-                    product_item.save()
+            query = SalesSegment.query.filter(Organization.id==self.context.user.organization_id)
+            if f.all_sales_segment.data:
+                query = query.filter_by(performance_id=f.performance_id.data)
             else:
-                sales_segment_for_product = SalesSegment.query.filter_by(id=f.sales_segment_id.data).filter(Organization.id==self.context.user.organization_id).one()
+                query = query.filter_by(id=f.sales_segment_id.data)
+
+            for sales_segment_for_product in query:
                 product = merge_session_with_post(Product(), f.data)
+                product.sales_segment_id = sales_segment_for_product.id
                 product.performance_id = sales_segment_for_product.performance.id
                 product.point_grant_settings.extend(point_grant_settings)
                 product.save()
@@ -137,183 +96,53 @@ class ProductAndProductItem(BaseView):
             self.request.session.flash(u'商品を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
-            return {
-                'form': f,
-                'action': self.request.path,
-                }
+            return dict(form=f)
 
-@view_defaults(decorator=with_bootstrap, permission='event_editor')
-class Products(BaseView):
-
-    @view_config(route_name='products.index', renderer='altair.app.ticketing:templates/products/index.html')
-    def index(self):
-        performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
-        if performance is None:
-            return HTTPNotFound('performance id %d is not found' % performance_id)
-
-        # XXX: is this injection safe?
-        sort = self.request.GET.get('sort', 'Product.id')
-        direction = self.request.GET.get('direction', 'asc')
-        if direction not in ['asc', 'desc']:
-            direction = 'asc'
-
-        conditions = {
-            'performance_id': performance.id
-            }
-        query = Product.filter_by(**conditions)
-        query = query.order_by(sort + ' ' + direction)
-
-        products = paginate.Page(
-            query,
-            page=int(self.request.params.get('page', 0)),
-            items_per_page=200,
-            url=paginate.PageURL_WebOb(self.request)
-            )
-
-        return {
-            'form': ProductForm(performance=performance),
-            'products': products,
-            'performance': performance
-        }
-
-    @view_config(route_name='products.new', request_method='GET', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
-    def new_xhr(self):
-        try:
-            performance_id = long(self.request.params.get('performance_id'))
-        except (TypeError, ValueError):
-            performance_id = None
-
-        if performance_id:
-            return HTTPFound(location=self.request.route_path('product.new', _query=dict(self.request.GET)))
-
-        try:
-            sales_segment_id = long(self.request.params.get('sales_segment_id'))
-        except (TypeError, ValueError):
-            sales_segment_id = None
-
-        performance = sales_segment = None
-
-        if sales_segment_id is not None:
-            sales_segment = SalesSegment.query.filter_by(id=sales_segment_id).filter(Organization.id==self.context.user.organization_id).one()
-            if sales_segment is None:
-                return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
-
-        if performance_id is not None:
-            performance = Performance.get(performance_id, self.context.user.organization_id)
-            if performance is None:
-                return HTTPNotFound('performance id %d is not found' % performance_id)
-
-        f = ProductForm(performance=performance, sales_segment=sales_segment, applied_point_grant_settings=(sales_segment and [pgs.id for pgs in sales_segment.point_grant_settings]))
-        return {
-            'form': f,
-            'action': self.request.path,
-            }
-
-
-    @view_config(route_name='products.new', request_method='POST', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
-    def new_post_xhr(self):
-        try:
-            performance_id = long(self.request.params.get('performance_id'))
-        except (TypeError, ValueError):
-            performance_id = None
-        try:
-            sales_segment_id = long(self.request.params.get('sales_segment_id'))
-        except (TypeError, ValueError):
-            sales_segment_id = None
-
-        performance = sales_segment = None
-
-        if sales_segment_id is not None:
-            sales_segment = SalesSegment.query.filter_by(id=sales_segment_id).filter(Organization.id==self.context.user.organization_id).one()
-            if sales_segment is None:
-                return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
-
-        if performance_id is not None:
-            performance = Performance.get(performance_id, self.context.user.organization_id)
-            if performance is None:
-                return HTTPNotFound('performance id %d is not found' % performance_id)
-            
-        f = ProductForm(self.request.POST, performance=performance, sales_segment=sales_segment)
-        if f.validate():
-            point_grant_settings = [PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one() for point_grant_setting_id in f.applied_point_grant_settings.data]
-
-            if f.all_sales_segment.data and performance:
-                sales_segment_for_products = SalesSegment.query.filter(SalesSegment.performance_id==performance.id).filter(Organization.id==self.context.user.organization_id)
-                for sales_segment_for_product in sales_segment_for_products:
-                    product = merge_session_with_post(Product(), f.data)
-                    product.sales_segment_id = sales_segment_for_product.id
-                    product.performance_id = sales_segment_for_product.performance.id
-                    product.point_grant_settings.extend(point_grant_settings)
-                    product.save()
-            else:
-                sales_segment_for_product = SalesSegment.query.filter_by(id=f.sales_segment_id.data).filter(Organization.id==self.context.user.organization_id).one()
-                product = merge_session_with_post(Product(), f.data)
-                product.performance_id = sales_segment_for_product.performance.id
-                product.point_grant_settings.extend(point_grant_settings)
-                product.save()
-
-            self.request.session.flash(u'商品を保存しました')
-            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
-        else:
-            return {
-                'form': f,
-                'action': self.request.path,
-                }
-
-    @view_config(route_name="products.edit", request_method="GET", renderer='altair.app.ticketing:templates/products/_form_edit.html', xhr=True)
+    @view_config(route_name="products.edit", request_method="GET", renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
     def edit_xhr(self):
-        product_id = int(self.request.matchdict.get('product_id', 0))
-        product = Product.get(product_id)
-        if product is None:
-            raise HTTPNotFound('product id %d is not found' % product_id)
-        f = ProductForm.from_model(product)
+        product = self.context.product
+        product_item = self.context.product_item
+        f = ProductAndProductItemForm.from_model(product, product_item)
+        return dict(form=f)
 
-        return {
-            'form':f,
-            'action': self.request.path,
-            }
-
-    @view_config(route_name='products.edit', request_method='POST', renderer='altair.app.ticketing:templates/products/_form_edit.html', xhr=True)
+    @view_config(route_name='products.edit', request_method='POST', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
     def edit_post_xhr(self):
-        product_id = int(self.request.matchdict.get('product_id', 0))
-        product = Product.get(product_id)
+        product = self.context.product
+        product_item = self.context.product_item
 
-        if product is None:
-            return HTTPNotFound('product id %d is not found' % product_id)
-
-        f = ProductForm(self.request.POST, sales_segment=product.sales_segment)
+        f = ProductAndProductItemForm(self.request.POST, performance=product.performance, sales_segment=product.sales_segment)
         if f.validate():
-            point_grant_settings = [PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one() for point_grant_setting_id in f.applied_point_grant_settings.data]
+            point_grant_settings = [
+                PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one()
+                for point_grant_setting_id in f.applied_point_grant_settings.data
+                ]
             product = merge_session_with_post(product, f.data, excludes={'performance_id'})
             product.point_grant_settings[:] = []
             product.point_grant_settings.extend(point_grant_settings)
             product.save()
 
+            if product_item:
+                stock = Stock.query.filter_by(
+                    stock_type_id=f.seat_stock_type_id.data,
+                    stock_holder_id=f.stock_holder_id.data,
+                    performance_id=f.performance_id.data
+                ).one()
+                product_item.name = f.name.data
+                product_item.price = f.price.data
+                product_item.quantity = f.product_item_quantity.data
+                product_item.stock_id = stock.id
+                product_item.ticket_bundle_id = f.ticket_bundle_id.data
+                product_item.save()
+
             self.request.session.flash(u'商品を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
-            return {
-                'form': f,
-                'action': self.request.path,
-                }
+            return dict(form=f)
 
-    @view_config(route_name='products.delete', renderer='altair.app.ticketing:templates/products/_form.html')
+    @view_config(route_name='products.delete')
     def delete(self):
-        product_id = int(self.request.matchdict.get('product_id', 0))
-        product = Product.get(product_id)
-        if product is None:
-            return HTTPNotFound('product id %d is not found' % product_id)
-
-        try:
-            performance_id = long(self.request.params.get('performance_id'))
-        except (TypeError, ValueError):
-            performance_id = None
-
-        location = route_path('products.index', self.request, performance_id=product.sales_segment.performance_id)
-        if performance_id:
-            location = self.request.route_path('performances.show_tab', performance_id=performance_id, tab='product')
-
+        product = self.context.product
+        location = self.request.route_path('performances.show_tab', performance_id=product.performance_id, tab='product')
         try:
             product.delete()
             self.request.session.flash(u'商品を削除しました')
@@ -331,13 +160,14 @@ class Products(BaseView):
             raise HTTPBadRequest(body=json.dumps({'message':u'データが見つかりません'}))
 
         rows = []
+        parent_id = 0
         for product in products:
             row = dict(
                 product=dict(
                     id=product.id,
                     name=product.name,
                     price=int(product.price),
-                    order=product.display_order,
+                    display_order=product.display_order,
                     public=product.public
                 ),
                 stock_type=dict(
@@ -376,18 +206,21 @@ class Products(BaseView):
                 # 1つのProductに複数のProductItemが紐づいているケースはtree表示
                 if len(product_items) > 1:
                     if i == 0:
+                        parent_id = len(rows) + 1
                         row2.update(
+                            row_id=parent_id,
                             parent='null',
                             level=0,
-                            isLeaf=False,
+                            is_leaf=False,
                             expanded=True,
                             loaded=True
                         )
                     else:
                         row2.update(
-                            parent=product_items[0].id,
+                            row_id=len(rows) + 1,
+                            parent=parent_id,
                             level=1,
-                            isLeaf=True,
+                            is_leaf=True,
                             expanded=True,
                             loaded=True,
                             product=dict(
@@ -408,9 +241,9 @@ class Products(BaseView):
 
     @view_config(route_name='products.api.set', renderer='json')
     def api_set(self):
-        performance_id = int(self.request.params.get('performance_id', 0))
+        performance_id = long(self.request.params.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.organization.id)
-        sales_segment_id = int(self.request.params.get('sales_segment_id'), 0)
+        sales_segment_id = long(self.request.params.get('sales_segment_id'), 0)
         sales_segment = SalesSegment.query \
             .join(SalesSegment.sales_segment_group) \
             .join(SalesSegmentGroup.event) \
@@ -432,7 +265,7 @@ class Products(BaseView):
             row_data = MultiDict(row_data)
 
             if row_data.get('product_item_id'):
-                product_item_id = int(row_data.get('product_item_id', 0))
+                product_item_id = long(row_data.get('product_item_id', 0))
                 product_item = ProductItem.get(product_item_id)
             else:
                 product_item = ProductItem()
@@ -453,13 +286,20 @@ class Products(BaseView):
                 product_id = row_data['product_id']
                 product = Product.query.filter(Product.id==product_id).one()
 
-                f = ProductItemForm(row_data, performance_id=product.performance.id, product=product)
+                f = ProductAndProductItemAPIForm(row_data, performance_id=performance_id, product=product)
                 if not f.validate():
                     logger.info('validation error:%s' % f.errors)
                     raise HTTPBadRequest(body=json.dumps({
                         'message':u'入力データを確認してください',
                         'rows':{'rowid':row_data.get('id'), 'errors':f.errors}
                     }))
+
+                if not f.is_leaf.data:
+                    product.name = f.name.data
+                    product.price = f.price.data
+                    product.display_order = f.display_order.data
+                    product.public = f.public.data
+                    product.save()
 
                 stock = Stock.query.filter_by(
                     stock_type_id=f.stock_type_id.data,
@@ -483,9 +323,7 @@ class ProductItems(BaseView):
 
     @view_config(route_name='product_items.new', request_method='GET', renderer='altair.app.ticketing:templates/product_items/_form.html', xhr=True)
     def new_xhr(self):
-        product_id = int(self.request.matchdict.get('product_id', 0))
-        product = Product.query.filter_by(id=product_id).filter(Organization.id==self.context.user.organization_id).one()
-
+        product = self.context.product
         default = MultiDict(
             stock_type_id=product.seat_stock_type_id,
             product_item_name=product.name,
@@ -495,19 +333,14 @@ class ProductItems(BaseView):
         f = ProductItemForm(default, product=product)
         return {
             'form':f,
-            'form_product':ProductForm(
+            'form_product':ProductAndProductItemForm(
                 record_to_multidict(product),
                 sales_segment=product.sales_segment),
-            'action':self.request.path,
             }
 
     @view_config(route_name='product_items.new', request_method='POST', renderer='altair.app.ticketing:templates/product_items/_form.html', xhr=True)
     def new_post_xhr(self):
-        product_id = int(self.request.matchdict.get('product_id', 0))
-        product = Product.get(product_id)
-        if product is None:
-            return HTTPNotFound('product id %d is not found' % product_id)
-
+        product = self.context.product
         f = ProductItemForm(self.request.POST, product=product)
         if f.validate():
             stock = Stock.query.filter_by(
@@ -531,17 +364,14 @@ class ProductItems(BaseView):
         else:
             return {
                 'form':f,
-                'form_product':ProductForm(
+                'form_product':ProductAndProductItemForm(
                     record_to_multidict(product),
                     sales_segment=product.sales_segment),
-                'action':self.request.path,
             }
 
     @view_config(route_name='product_items.edit', request_method='GET', renderer='altair.app.ticketing:templates/product_items/_form.html', xhr=True)
     def edit_xhr(self):
-        product_item_id = int(self.request.matchdict.get('product_item_id', 0))
-        product_item = ProductItem.query.filter_by(id=product_item_id).filter(Organization.id==self.context.user.organization_id).one()
-
+        product_item = self.context.product_item
         params = MultiDict(
             product_item_id=product_item.id,
             product_item_name=product_item.name,
@@ -554,17 +384,14 @@ class ProductItems(BaseView):
         f = ProductItemForm(params, product=product_item.product)
         return {
             'form': f,
-            'form_product':ProductForm(
+            'form_product':ProductAndProductItemForm(
                 record_to_multidict(product_item.product),
                 sales_segment=product_item.product.sales_segment),
-            'action': self.request.path,
         }
 
     @view_config(route_name='product_items.edit', request_method='POST', renderer='altair.app.ticketing:templates/product_items/_form.html', xhr=True)
     def edit_post_xhr(self):
-        product_item_id = int(self.request.matchdict.get('product_item_id', 0))
-        product_item = ProductItem.query.filter_by(id=product_item_id).filter(Organization.id==self.context.user.organization_id).one()
-
+        product_item = self.context.product_item
         f = ProductItemForm(self.request.POST, product=product_item.product)
         if f.validate():
             stock = Stock.query.filter_by(
@@ -587,21 +414,18 @@ class ProductItems(BaseView):
         else:
             return {
                 'form':f,
-                'form_product':ProductForm(
+                'form_product':ProductAndProductItemForm(
                     record_to_multidict(product_item.product),
                     sales_segment=product_item.product.sales_segment),
-                'action':self.request.path,
             }
 
-    @view_config(route_name='product_items.delete', renderer='altair.app.ticketing:templates/product_items/_form.html')
+    @view_config(route_name='product_items.delete')
     def delete(self):
-        product_item_id = int(self.request.matchdict.get('product_item_id', 0))
-        product_item = ProductItem.query.filter_by(id=product_item_id).filter(Organization.id==self.context.user.organization_id).one()
-
+        product_item = self.context.product_item
         location = self.request.route_path('performances.show_tab', performance_id=product_item.performance_id, tab='product')
         try:
             product_item.delete()
-            self.request.session.flash(u'商品から在庫の割当を外しました')
+            self.request.session.flash(u'商品明細を削除しました')
         except Exception, e:
             self.request.session.flash(e.message)
             raise HTTPFound(location=location)
@@ -610,15 +434,11 @@ class ProductItems(BaseView):
 
 @view_config(route_name="products.sub.older.show", renderer="altair.app.ticketing:templates/products/_sub_older_show.html")
 def subview_older(context, request):
-    sales_segment_id = request.matchdict["sales_segment_id"]
-    sales_segment = SalesSegment.query.filter_by(id=sales_segment_id).first()
-
-    if sales_segment is None:
-        raise HTTPNotFound()
+    sales_segment = context.sales_segment
     ## todo: order
     ## todo: joined load
     products = (Product.query
-                .filter_by(sales_segment_id=sales_segment_id)
+                .filter_by(sales_segment_id=sales_segment.id)
                 .order_by(Product.display_order)
                 .all())
 
@@ -631,11 +451,7 @@ def subview_older(context, request):
 
 @view_config(route_name="products.sub.newer.show", renderer="altair.app.ticketing:templates/products/_sub_newer_show.html")
 def subview_newer(context, request):
-    sales_segment_id = request.matchdict["sales_segment_id"]
-    sales_segment = SalesSegment.query.filter_by(id=sales_segment_id).first()
-    if sales_segment is None:
-        raise HTTPNotFound()
-
+    sales_segment = context.sales_segment
     event = sales_segment.event
     try:
         performance_id = request.params["performance_id"]

@@ -5,7 +5,6 @@ from .resources import PerformanceAdminResource
 
 def includeme(config):
     factory = newRootFactory(PerformanceAdminResource)
-    config.add_route('products.index', '/products/{performance_id}', factory=factory)
     config.add_route('performances.index', '/{event_id}', factory=factory)
     config.add_route('performances.new', '/new/{event_id}', factory=factory)
     config.add_route('performances.show', '/show/{performance_id}', factory=factory)

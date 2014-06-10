@@ -3,14 +3,19 @@
 <%namespace file="/product_items/_action_button.html" name="b" />
 <%! from altair.app.ticketing.core.models import Product %>
 
+% if products:
   <form>
     <div>
-      <table class="table table-striped table-bordered table-condensed" style="margin-bottom: 10px;">
+      <table class="table table-bordered table-condensed" style="margin-bottom: 10px;">
         <thead>
           <tr>
-            <th style="width: 20px;"></th>
+            <th colspan="5">商品</th>
+            <th colspan="6">商品明細</th>
+            <th rowspan="2" style="width: 110px;"></th>
+          </tr>
+          <tr>
             <th style="width: 100px;">席種</th>
-            <th style="width: 130px;">${HH.label_text_for(Product.name)}</th>
+            <th style="width: 150px;">${HH.label_text_for(Product.name)}</th>
             <th style="width: 100px;">${HH.label_text_for(Product.price)}</th>
             <th style="width: 60px;">${HH.label_text_for(Product.display_order)}</th>
             <th style="width: 60px;">${HH.label_text_for(Product.public)}</th>
@@ -20,81 +25,76 @@
             <th style="width: 80px;">販売単位</th>
             <th style="width: 100px;">席数</th>
             <th style="width: 100px;">券面</th>
-            <th style="width: 110px;"></th>
           </tr>
         </thead>
 
         <tbody>
-        <% row_count = 0 %>
         % for product in products:
-          <% if limit and row_count >= limit: break %>
           <% count = len(product.items) %>
-          <% rowspan = 'rowspan=%s' % (count)  if count else '' %>
-          <tr>
-            <td ${rowspan}><input type="radio" name="product_id" value="${product.id}" /></td>
+          <% rowspan = 'rowspan=%s' % (count) if count else '' %>
+          <% price_class = 'price_error' if product.is_amount_mismatching() else '' %>
+          <tr class=${price_class}>
             <td ${rowspan}>${product.seat_type()}</td>
-            <td ${rowspan}><a href="javascript:edit_product('${product.id}');">${product.name}</a></td>
-            <td ${rowspan}>${vh.price(product.price)}</td>
+            <td ${rowspan}>${product.name}</td>
+            <td ${rowspan} class="${price_class}">${vh.price(product.price)}</td>
             <td ${rowspan}>${product.display_order}</td>
             <td ${rowspan}>${u'○' if product.public else u'×'}</td>
-              % for j, item in enumerate(product.items):
-                % if j != 0:
-          <tr>
-                % endif
+            % for j, item in enumerate(product.items):
+              % if j != 0:
+          <tr class=${price_class}>
+              % endif
             <td style="border-left-style: dotted;">${item.stock.stock_holder.name}</td>
             <td>${item.name}</td>
-            <td>${vh.price(item.price)}</td>
+            <td class="${price_class}">${vh.price(item.price)}</td>
             <td>${item.quantity}</td>
             <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>
             <td>
               % if item.ticket_bundle_id:
-                <a id="productItem${item.id}" class="preview-link" data-pk="${item.id}" data-name="${item.name}">${item.ticket_bundle.name}<i class="icon-eye-open"></i></a>
+              <a id="productItem${item.id}" class="preview-link" data-pk="${item.id}" data-name="${item.name}">${item.ticket_bundle.name} <i class="icon-eye-open"></i></a>
               % else:
-                -
+              -
               % endif
             </td>
-              % if row_count == 0:
-            <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${HH.action_button(b.actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small')}</td>
+            <td>
+              <input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />
+              % if j == 0:
+              ${HH.action_button(b.actions(product, item), order=['edit', 'delete', 'divider', 'edit_item', 'new_item', 'delete_item', 'divider', 'preview'], options='btn-small', align='right')}
               % else:
-            <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${HH.action_button(b.actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small', dropup=True)}</td>
+              ${HH.action_button(b.actions(product, item), order=['edit_item', 'new_item', 'delete_item', 'divider', 'preview'], options='btn-small', align='right')}
               % endif
+            </td>
           </tr>
-              % endfor
-              % if count == 0:
-            <td colspan="7"></td>
-            <td>${HH.action_button(b.actions(product), options='btn-small')}</td>
+            % endfor
+            % if count == 0:
+            <td colspan="6"></td>
+            <td>${HH.action_button(b.actions(product), order=['edit', 'delete', 'divider', 'new_item'], options='btn-small')}</td>
           </tr>
-              % endif
+            % endif
           </tr>
-          <% row_count += 1 %>
         % endfor
         </tbody>
       </table>
-      % if limit and len(st_to_prod) > limit:
-      <div class="pull-right">
-        ${len(st_to_prod)}件中${limit}件を表示
-        <a href="${request.route_path('products.index', _query=dict(performance_id=(performance and performance.id), sales_segment_id=(sales_segment and sales_segment.id)))}">もっと見る</a>
-      </div>
-      % endif
     </div>
   </form>
+  <p class="pull-right"><i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p>
+% endif
 
 ## download zip file
-%if download_form and sales_segment and performance:
-  <h4>券面のpreview結果をまとめてdownload</h4>
+% if download_form and sales_segment and performance and products:
+  <h5>券面プレビューをまとめてダウンロード</h5>
   <form method="GET" action="${request.route_path("tickets.preview.download.list.zip", performance_id=performance.id, sales_segment_id=sales_segment.id)}">
-  ${download_form.delivery_method_id()}
-  <input type="submit" class="btn btn-inverse" value="download"/>
-  <script type="text/javascript">
-   (function($form){
-	 $form.submit(function(form_submission) {
-       if ($(form_submission.target).attr('data-submitted')) {
-         form_submission.preventDefault();
-       } else {
-         $(form_submission.target).attr('data-submitted', true);
-       }
-     });
-    })($("script:last").closest("form"))
-  </script>
+    ${download_form.delivery_method_id()}
+    <input type="submit" class="btn btn-inverse" style="margin-bottom: 8px;" value="ダウンロード"/>
+    <script type="text/javascript">
+      (function($form){
+        $form.submit(function(form_submission) {
+          if ($(form_submission.target).attr('data-submitted')) {
+            form_submission.preventDefault();
+          } else {
+            $(form_submission.target).attr('data-submitted', true);
+          }
+        });
+      })($("script:last").closest("form"))
+    </script>
   </form>
-%endif
+% endif

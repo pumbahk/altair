@@ -1,31 +1,54 @@
 <%def name="actions(product, product_item=None)">
 <%
   action_dict = {}
-  if product_item:
+  if product:
+    if product_item:
+      action_dict.update({
+        'edit':dict(
+          label=u'編集',
+          url='javascript:edit_product({0}, {1});'.format(product.id, product_item.id),
+          icon='icon-pencil',
+        ),
+      })
+    else:
+      action_dict.update({
+        'edit':dict(
+          label=u'編集',
+          url='javascript:edit_product({});'.format(product.id),
+          icon='icon-pencil',
+        ),
+      })
+
     action_dict.update({
-      'edit':dict(
-        label=u'編集',
-        url='javascript:edit_product_item(%s);' % (product_item.id),
-        icon='icon-pencil',
-      ),
       'delete':dict(
         label=u'削除',
-        url='javascript:delete_product_item(%s);' % product_item.id,
+        url='javascript:delete_product({});'.format(product.id),
+        icon='icon-minus',
+      ),
+      'new_item':dict(
+        label=u'商品明細追加',
+        url='javascript:new_product_item({});'.format(product.id),
+        icon='icon-plus',
+      ),
+    })
+  if product_item:
+    action_dict.update({
+      'edit_item':dict(
+        label=u'商品明細編集',
+        url='javascript:edit_product_item({});'.format(product_item.id),
+        icon='icon-pencil',
+      ),
+      'delete_item':dict(
+        label=u'商品明細削除',
+        url='javascript:delete_product_item({});'.format(product_item.id),
         icon='icon-minus',
       ),
       'preview':dict(
         label=u'券面プレビュー',
-        url='javascript:preview_ticket(%s);' % product_item.id,
-        icon='icon-print'
+        url='javascript:preview_ticket({});'.format(product_item.id),
+        icon='icon-eye-open'
       ),
     })
-  action_dict.update({
-    'new':dict(
-      label=u'追加',
-      url='javascript:new_product_item(%s);' % product.id,
-      icon='icon-plus',
-    ),
-  })
   return action_dict
 %>
 </%def>
