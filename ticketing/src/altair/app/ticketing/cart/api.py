@@ -346,6 +346,20 @@ def is_fc_auth_organization(context, request):
     organization = c_api.get_organization(request)
     return bool(organization.settings[0].auth_type == "fc_auth")
 
+def enable_auto_input_form(user):
+    from altair.app.ticketing.users.models import User
+    if not isinstance(user, User):
+        return False
+
+    if user.member is None:
+        # 楽天認証
+        return True
+
+    if user.member.membergroup.enable_auto_input_form:
+        return True
+
+    return False
+
 def get_temporary_store(request):
     return request.registry.queryUtility(ITemporaryStore)
 

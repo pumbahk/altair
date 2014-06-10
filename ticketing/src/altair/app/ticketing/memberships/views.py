@@ -129,7 +129,8 @@ class MemberGroupView(BaseView):
 
         membergroup = umodels.MemberGroup(name=form.data["name"], 
                                           membership_id=form.data["membership_id"], 
-                                          is_guest=form.data["is_guest"])
+                                          is_guest=form.data["is_guest"],
+                                          enable_auto_input_form=form.data['enable_auto_input_form'])
         DBSession.add(membergroup)
         self.request.session.flash(u"membergroupを保存しました")
         dummy_url = self.request.route_path("memberships", action="index", membership_id="*") ## this is dummy
@@ -160,6 +161,7 @@ class MemberGroupView(BaseView):
         membergroup.name=form.data["name"]
         membergroup.membership_id=form.data["membership_id"]
         membergroup.is_guest=form.data["is_guest"]
+        membergroup.enable_auto_input_form=form.data["enable_auto_input_form"]
         DBSession.add(membergroup)
 
         self.request.session.flash(u"membergroupを更新しました")
