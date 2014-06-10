@@ -23,17 +23,6 @@ namespace QR
             logger.Warn ("Sample warning message");
             logger.Error ("Sample error message");
             logger.Fatal ("Sample fatal error message");
-            
-            //var t = GetJsonData ();
-            try {
-                var app = new InternalApplication ();
-                var t = app.Run (new CaseAuthInput (app.Resource));
-                t.Wait ();
-                // var t = GetAuthData (resource);
-                // t.Wait ();
-            } catch (Exception ex) {
-                logger.ErrorException ("toplevel:", ex);
-            }
         }
 
         public static async Task GetJsonData ()
