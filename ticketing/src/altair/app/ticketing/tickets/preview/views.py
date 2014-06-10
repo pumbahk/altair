@@ -570,7 +570,7 @@ class PreviewWithDefaultParameterDialogView(object):
                 bundles = c_models.TicketBundle.query.filter(c_models.TicketBundle.event_id == self.request.GET.get("event_id")).all()
                 D = OrderedDict()
                 for b in bundles:
-                    for t in ApplicableTicketsProducer(b).will_issued_by_own_tickets():
+                    for t in b.tickets:  #xxx: ApplicableTicketsProducer.will_issued_by_own_ticketsはsejと紐つくとダメ。
                         tf = t.ticket_format
                         D[(tf.id, "")] = {"pk": tf.id, "name": tf.name, "type": ""}
                 for b in bundles:
