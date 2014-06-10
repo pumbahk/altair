@@ -72,7 +72,7 @@ class ProductAndProductItemForm(OurForm):
         return Translations()
 
     all_sales_segment = OurBooleanField(
-        label=u'同じ公演の全ての販売区分に追加/更新',
+        label=u'同じ公演の全ての販売区分に追加',
         hide_on_new=True,
         widget=CheckboxInput(),
         )

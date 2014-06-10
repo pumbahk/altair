@@ -3,7 +3,7 @@
 
 <form action="${request.url}" method="POST" class="form-horizontal">
   <fieldset>
-% if form.performance_id.data:
+% if not form.id.data:
     ${ch.form_item(form.all_sales_segment)}
 % endif
     ${ch.form_item(form.public)}
