@@ -998,7 +998,7 @@ class OrderImporter(object):
                                     add_error(u'自動配席が有効になっていて、かつ一部の座席が指定されています。指定のない座席は自動的に決定されます。 (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity), level=IMPORT_WARNING)
                                 else:
                                     if cart.original_order is not None:
-                                        add_error(u'予約情報の更新で自動配席が有効になっていて、座席指定がありません。指定のない座席は自動的に決定されます。 (予定配席数=%d)' % (cpi.quantity,), level=IMPORT_WARNING)
+                                        add_error(u'座席は自動的に決定されます (予定配席数=%d)' % (cpi.quantity,), level=IMPORT_WARNING)
 
                         for seat in cpi.seats:
                             if seat.status == SeatStatusEnum.Ordered.v:
