@@ -18,7 +18,8 @@ namespace QR.support
         {
             var assembly = Assembly.GetExecutingAssembly();
             var attribute = assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), true).FirstOrDefault() as AssemblyInformationalVersionAttribute;
-            return attribute.InformationalVersion.Substring(0, "0.0.0.".Length+7);
+            return "<todo fix>";
+            //return attribute.InformationalVersion.Substring(0, "0.0.0.".Length+7);
         }
 
         public static string WithMachineName(this string fmt)
