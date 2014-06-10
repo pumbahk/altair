@@ -18,7 +18,7 @@ namespace QR
         FinishStatus Status { get; set; }
     }
 
-    class FinishEvent :AbstractEvent,IInternalEvent
+   public class FinishEvent :AbstractEvent,IInternalEvent
     {
         public IFinishStatusInfo StatusInfo { get; set; }
 
