@@ -49,22 +49,315 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="presentation\gui\BindingErrorDialogAction.cs" />
+    <Compile Include="presentation\gui\CandidateCreator.cs" />
+    <Compile Include="presentation\gui\command\AppCloseCommand.cs" />
+    <Compile Include="presentation\gui\command\DialogCloseCommand.cs" />
+    <Compile Include="presentation\gui\command\DialogOpenCommand.cs" />
+    <Compile Include="presentation\gui\control\IDialog.cs" />
+    <Compile Include="presentation\gui\control\InspectCase.xaml.cs">
+      <DependentUpon>InspectCase.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\control\AlnumPad.cs" />
+    <Compile Include="presentation\gui\control\MenuDialog.xaml.cs">
+      <DependentUpon>MenuDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\control\MessageDialog.xaml.cs">
+      <DependentUpon>MessageDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\control\QRCodeCanvas.cs" />
+    <Compile Include="presentation\gui\control\TelPad.cs" />
+    <Compile Include="presentation\gui\converter\MathConverter.cs" />
+    <Compile Include="presentation\gui\converter\NotEmptyStringConverter.cs" />
+    <Compile Include="presentation\gui\HomeWindow.xaml.cs">
+      <DependentUpon>HomeWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageAuthPassword.xaml.cs">
+      <DependentUpon>PageAuthPassword.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageCloseConfirm.xaml.cs">
+      <DependentUpon>PageCloseConfirm.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageDummy.xaml.cs">
+      <DependentUpon>PageDummy.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageHomeMenu.xaml.cs">
+      <DependentUpon>PageHomeMenu.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageQRRefresh.xaml.cs">
+      <DependentUpon>PageQRRefresh.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\ProgressSingletonAction.cs" />
+    <Compile Include="presentation\gui\PageNavigator.cs" />
+    <Compile Include="presentation\gui\page\IDataContextHasCase.cs" />
+    <Compile Include="presentation\gui\MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageAuthInput.xaml.cs">
+      <DependentUpon>PageAuthInput.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageInputStrategySelect.xaml.cs">
+      <DependentUpon>PageInputStrategySelect.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageQRCodeInput.xaml.cs">
+      <DependentUpon>PageQRCodeInput.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageOrdernoOrdernoInput.xaml.cs">
+      <DependentUpon>PageOrdernoOrdernoInput.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageOrdernoTelInput.xaml.cs">
+      <DependentUpon>PageOrdernoTelInput.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageConfirmOne.xaml.cs">
+      <DependentUpon>PageConfirmOne.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageConfirmAll.xaml.cs">
+      <DependentUpon>PageConfirmAll.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PagePrinting.xaml.cs">
+      <DependentUpon>PagePrinting.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageFinish.xaml.cs">
+      <DependentUpon>PageFinish.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageFailure.xaml.cs">
+      <DependentUpon>PageFailure.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\viewmodel\DisplayTicketData.cs" />
+    <Compile Include="presentation\gui\viewmodel\InputDataContext.cs" />
+    <Compile Include="presentation\gui\viewmodel\ViewModel.cs" />
+    <Compile Include="InternalApplication.cs" />
+    <Compile Include="configuration\AuthConfiguration.cs" />
+    <Compile Include="configuration\QRConfiguration.cs" />
+    <Compile Include="configuration\HttpCommunicationConfiguration.cs" />
+    <Compile Include="presentation\cli\AuthInput.cs" />
+    <Compile Include="presentation\cli\QRInput.cs" />
+    <Compile Include="models\FakeTicketImagePrinting.cs" />
+    <Compile Include="presentation\cli\SelectInputStrategy.cs" />
+    <Compile Include="presentation\cli\OrdernoInput.cs" />
+    <Compile Include="models\TicketImagePrinting.cs" />
+    <Compile Include="models\TicketXamlPrinting.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Resource Include="Resource\qr.input.jpg" />
+    <Resource Include="Resource\printing.gif" />
+    <Resource Include="Resource\background.png" />
+    <None Include="app.config" />
+    <Content Include="NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </Content>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="tests\misc\gen.sh" />
+    <EmbeddedResource Include="tests\misc\login.json" />
+    <EmbeddedResource Include="tests\misc\login.status.json" />
+    <EmbeddedResource Include="tests\misc\qrdata.json" />
+    <EmbeddedResource Include="tests\misc\qrdata.all.json" />
+    <EmbeddedResource Include="tests\misc\svgone.json" />
+    <EmbeddedResource Include="tests\misc\svgall.json" />
+    <EmbeddedResource Include="tests\misc\update.printed_at.json" />
+    <EmbeddedResource Include="tests\misc\sample.qr.svg" />
+    <EmbeddedResource Include="tests\misc\server.py" />
+  </ItemGroup>
+  <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
+    <DesignData Include="Data\DisplayTicketData.xaml">
+      <SubType>Designer</SubType>
+    </DesignData>
+    <Page Include="presentation\gui\control\InspectCase.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\control\MenuDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\control\MessageDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\HomeWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageAuthInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageAuthPassword.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="presentation\gui\page\PageCloseConfirm.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageDummy.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageHomeMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageInputStrategySelect.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageQRCodeInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageOrdernoOrdernoInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageOrdernoTelInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageConfirmOne.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageConfirmAll.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PagePrinting.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageFinish.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageFailure.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageQRRefresh.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.Checkbox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.MenuButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.ToggleButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Themes.Text.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Eagles\Controls.MessageDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Eagles\Controls.ToggleButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Individual.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Brush.Background.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.CaseInspect.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.CenterContent.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.GrayoutDisabled.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.HomeMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.KeyPad.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.MetroButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.SubmitButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.ConfirmAllMainSection.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Controls.Toplevel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Styles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Themes.Window.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Eagles\Brush.Background.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Eagles\Controls.Checkbox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Eagles\Brush.Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Eagles\Controls.GrayoutDisabled.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Eagles\Controls.SubmitButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Base\Resources.Image.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\Eagles\Styles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

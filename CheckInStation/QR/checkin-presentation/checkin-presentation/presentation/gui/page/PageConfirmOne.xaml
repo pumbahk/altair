@@ -1,0 +1,65 @@
+﻿<Page x:Class="QR.presentation.gui.page.PageConfirmOne"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:control="clr-namespace:QR.presentation.gui.control"
+      mc:Ignorable="d"    
+      d:DesignHeight="50" d:DesignWidth="50"
+    ShowsNavigationUI="False"
+	Title="PageConfirmOne"
+    Loaded="OnLoaded">
+    <Grid Style="{StaticResource ToplevelGrid}">
+        <Grid Style="{StaticResource CenterContentGrid}">
+            <Grid.RowDefinitions>
+                <RowDefinition></RowDefinition>
+                <RowDefinition Height="2*"></RowDefinition>
+                <RowDefinition Height="2*"></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <control:InspectCase Grid.Row="0"></control:InspectCase>
+            <ListView Grid.Row="1">
+                    <ListViewItem>
+                    <WrapPanel>
+                        <TextBlock Text="{Binding PerformanceName}"/>
+                        <TextBlock Text="{Binding PerformanceDate}"/>
+                    </WrapPanel>
+                </ListViewItem>
+                <ListViewItem>
+                    <WrapPanel>
+                        <TextBlock>受付番号</TextBlock>
+                        <TextBlock Text="{Binding OrderNo}"/>
+                    </WrapPanel>
+                </ListViewItem>
+                <ListViewItem>
+                    <WrapPanel>
+                        <TextBlock>購入者</TextBlock>
+                        <TextBlock Text="{Binding UserName}"/>
+                    </WrapPanel>
+                </ListViewItem>
+                <ListViewItem>
+                    <WrapPanel>
+                        <TextBlock>座席</TextBlock>
+                        <TextBlock Text="{Binding ProductName}"/>
+                        <TextBlock Text="{Binding SeatName}"/>
+                    </WrapPanel>
+                </ListViewItem>
+            </ListView>
+            
+            
+            <ListBox Grid.Row="2" ItemsSource="{Binding Candidates}" SelectionChanged="OnSubmitWithBoundContext">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"></StackPanel>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Key}" Width="150" TextWrapping="Wrap"></TextBlock>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Button Grid.Row="3" Click="OnBackwardWithBoundContext">戻る</Button>
+        </Grid>
+    </Grid>
+</Page>
