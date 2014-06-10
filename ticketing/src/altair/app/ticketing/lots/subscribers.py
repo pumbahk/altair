@@ -56,10 +56,3 @@ def finish_closed_lot_entry(event):
         multicheckout_api.keep_authorization(order_no, None)
     except Exception as e:
         logger.exception(e)
-
-@subscriber('altair.multicheckout.events.CheckoutAuthSecure3DEvent')
-@subscriber('altair.multicheckout.events.CheckoutAuthSecureCodeEvent')
-def keep_auth(event):
-    order_no = event.order_no
-    storecd = event.result.Storecd
-    MultiCheckoutOrderStatus.keep_auth(order_no, storecd, u"lots")
