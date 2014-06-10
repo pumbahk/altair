@@ -12,26 +12,26 @@ namespace QR
     public class EndPoint
     {
         [DataMember]
-        internal string LoginStatus;
+        public string LoginStatus;
         [DataMember]
-        internal string QRFetchData;
+        public string QRFetchData;
         [DataMember]
-        internal string DataCollectionFetchData;
+        public string DataCollectionFetchData;
         [DataMember]
-        internal string QRSvgOne;
+        public string QRSvgOne;
         [DataMember]
-        internal string QRSvgAll;
+        public string QRSvgAll;
         [DataMember]
-        internal string ImageFromSvg;
+        public string ImageFromSvg;
         [DataMember]
-        internal string UpdatePrintedAt;
+        public string UpdatePrintedAt;
         [DataMember]
-        internal string UpdateRefreshedAt;
+        public string UpdateRefreshedAt;
         [DataMember]
-        internal string VerifyOrderData;
+        public string VerifyOrderData;
 
         [DataMember]
-        internal string[] AdImages; //xxx: 
+        public string[] AdImages; //xxx: 
 
         public static string asURL (string url)
         {

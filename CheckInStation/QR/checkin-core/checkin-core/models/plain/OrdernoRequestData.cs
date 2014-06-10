@@ -14,9 +14,9 @@ namespace QR
     public class VerifiedOrdernoRequestData
     {
         [DataMember]
-        internal string order_no;
+        public string order_no;
         [DataMember]
-        internal string secret;
+        public string secret;
 
         public VerifiedOrdernoRequestData (dynamic json)
         {

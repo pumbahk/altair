@@ -13,17 +13,17 @@ namespace QR
     public class AuthInfo
     {
         [DataMember]
-        internal bool login;
+        public bool login;
         [DataMember]
-        internal string loginname;
+        public string loginname;
         //        [DataMember]
-        //        internal string secret;
+        //        public string secret;
         [DataMember]
-        internal string organization_code;
+        public string organization_code;
         [DataMember]
-        internal string device_id;
+        public string device_id;
         [DataMember]
-        internal string organization_id;
+        public string organization_id;
 
         public AuthInfo (dynamic json)
         {

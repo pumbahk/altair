@@ -13,19 +13,19 @@ namespace QR
     {
         public static Logger logger = LogManager.GetCurrentClassLogger();
         [DataMember]
-        internal string ordered_product_item_token_id;
+        public string ordered_product_item_token_id;
         [DataMember]
-        internal string printed_at;
+        public string printed_at;
         [DataMember]
-        internal string locked_at;
+        public string locked_at;
         [DataMember]
-        internal string refreshed_at;
+        public string refreshed_at;
         [DataMember]
-        internal _SeatData seat;
+        public _SeatData seat;
         [DataMember]
-        internal _ProductData product;
+        public _ProductData product;
         [DataMember]
-        internal bool is_selected;
+        public bool is_selected;
 
         public TicketDataMinumum()
         {
@@ -56,14 +56,14 @@ namespace QR
     public class TicketDataCollection
     {
         [DataMember]
-        internal TokenStatus status;
+        public TokenStatus status;
         //認証情報
         [DataMember]
-        internal string secret;
+        public string secret;
         [DataMember]
-        internal AdditionalData additional;
+        public AdditionalData additional;
         [DataMember]
-        internal TicketDataMinumum[] collection;
+        public TicketDataMinumum[] collection;
 
         public void ConfigureCollection (dynamic json)
         {            

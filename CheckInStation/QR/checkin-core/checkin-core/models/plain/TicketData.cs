@@ -19,27 +19,27 @@ namespace QR
     {
         //QR
         [DataMember]
-        internal string codeno;
+        public string codeno;
         //Status
         [DataMember]
-        internal string refreshed_at;
+        public string refreshed_at;
         [DataMember]
-        internal string printed_at;
+        public string printed_at;
         [DataMember]
-        internal string ordered_product_item_token_id;
+        public string ordered_product_item_token_id;
         [DataMember]
-        internal TokenStatus status;
+        public TokenStatus status;
         //認証情報
         [DataMember]
-        internal string secret;
+        public string secret;
         //Seat
         [DataMember]
-        internal _SeatData seat;
+        public _SeatData seat;
         [DataMember]
-        internal _ProductData product;
+        public _ProductData product;
         //Additional
         [DataMember]
-        internal AdditionalData additional;
+        public AdditionalData additional;
         //statusのdefaultはvalid
         public TicketData (dynamic json)
         {

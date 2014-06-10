@@ -7,11 +7,11 @@ namespace QR
     public class _OrderData
     {
         [DataMember]
-        internal string order_no;
+        public string order_no;
         [DataMember]
-        internal string id;
+        public string id;
         [DataMember]
-        internal string note;
+        public string note;
 
         public _OrderData (dynamic json)
         {
@@ -25,9 +25,9 @@ namespace QR
     public class _SeatData
     {
         [DataMember]
-        internal string id;
+        public string id;
         [DataMember]
-        internal string name;
+        public string name;
 
         public _SeatData (dynamic json)
         {
@@ -39,9 +39,9 @@ namespace QR
     public class _PerformanceData
     {
         [DataMember]
-        internal string name;
+        public string name;
         [DataMember]
-        internal string date;
+        public string date;
         public _PerformanceData(dynamic json)
         {
             this.name = json.name;
@@ -53,7 +53,7 @@ namespace QR
     public class _ProductData
     {
         [DataMember]
-        internal string name;
+        public string name;
 
         public _ProductData(dynamic json)
         {
@@ -65,12 +65,12 @@ namespace QR
     public class AdditionalData
     {
         [DataMember]
-        internal string user;
+        public string user;
         //Order
         [DataMember]
-        internal _OrderData order;
+        public _OrderData order;
         [DataMember]
-        internal _PerformanceData performance;
+        public _PerformanceData performance;
 
         public AdditionalData (dynamic json)
         {
