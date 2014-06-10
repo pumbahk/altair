@@ -895,6 +895,8 @@ class OrderImporter(object):
             if level > IMPORT_WARNING:
                 refs_excluded.add(ref)
 
+        original_order_nos = set(cart.original_order.order_no for cart in carts.values() if cart.original_order is not None)
+
         for ref, cart in carts.items():
             if cart.new_order_created_at is None:
                 cart.new_order_created_at = self.now
@@ -1011,7 +1013,8 @@ class OrderImporter(object):
                                     .first()
                                 if order != cart.original_order:
                                     if order is not None:
-                                        add_error(u'座席「%s」(id=%ld, l0_id=%s) は予約 %s に配席済みです' % (seat.name, seat.id, seat.l0_id, order.order_no))
+                                        if order.order_no not in original_order_nos:
+                                            add_error(u'座席「%s」(id=%ld, l0_id=%s) は予約 %s に配席済みです' % (seat.name, seat.id, seat.l0_id, order.order_no))
                                     else:
                                         add_error(u'座席「%s」(id=%ld, l0_id=%s) は配席済みです' % (seat.name, seat.id, seat.l0_id))
                             elif seat.status in (SeatStatusEnum.InCart.v, SeatStatusEnum.Keep.v):
