@@ -117,6 +117,7 @@ def downgrade():
     op.drop_column(u'Order', u'refund_transaction_fee')
     op.drop_column(u'Order', u'refund_delivery_fee')
     op.drop_column(u'Order', u'refund_special_fee')
+    op.drop_column(u'Order', u'released_at')
     op.drop_column(u'OrderedProduct', u'refund_price')
     op.drop_column(u'OrderedProductItem', u'refund_price')
     op.drop_table(u'tmp_order_fee_and_price')
