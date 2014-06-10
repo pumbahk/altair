@@ -895,6 +895,8 @@ class OrderImporter(object):
             if level > IMPORT_WARNING:
                 refs_excluded.add(ref)
 
+        original_order_nos = set(cart.original_order.order_no for cart in carts.values() if cart.original_order is not None)
+
         for ref, cart in carts.items():
             if cart.new_order_created_at is None:
                 cart.new_order_created_at = self.now
@@ -998,7 +1000,7 @@ class OrderImporter(object):
                                     add_error(u'自動配席が有効になっていて、かつ一部の座席が指定されています。指定のない座席は自動的に決定されます。 (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity), level=IMPORT_WARNING)
                                 else:
                                     if cart.original_order is not None:
-                                        add_error(u'予約情報の更新で自動配席が有効になっていて、座席指定がありません。指定のない座席は自動的に決定されます。 (予定配席数=%d)' % (cpi.quantity,), level=IMPORT_WARNING)
+                                        add_error(u'座席は自動的に決定されます (予定配席数=%d)' % (cpi.quantity,), level=IMPORT_WARNING)
 
                         for seat in cpi.seats:
                             if seat.status == SeatStatusEnum.Ordered.v:
@@ -1011,7 +1013,8 @@ class OrderImporter(object):
                                     .first()
                                 if order != cart.original_order:
                                     if order is not None:
-                                        add_error(u'座席「%s」(id=%ld, l0_id=%s) は予約 %s に配席済みです' % (seat.name, seat.id, seat.l0_id, order.order_no))
+                                        if order.order_no not in original_order_nos:
+                                            add_error(u'座席「%s」(id=%ld, l0_id=%s) は予約 %s に配席済みです' % (seat.name, seat.id, seat.l0_id, order.order_no))
                                     else:
                                         add_error(u'座席「%s」(id=%ld, l0_id=%s) は配席済みです' % (seat.name, seat.id, seat.l0_id))
                             elif seat.status in (SeatStatusEnum.InCart.v, SeatStatusEnum.Keep.v):

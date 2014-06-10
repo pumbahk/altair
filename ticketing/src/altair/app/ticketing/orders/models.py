@@ -1118,7 +1118,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     original_order = orm.relationship('Order')
 
     order_import_task_id = sa.Column(Identifier, sa.ForeignKey('OrderImportTask.id'), nullable=True)
-    order_import_task = orm.relationship('OrderImportTask', backref='proto_orders')
+    order_import_task = orm.relationship('OrderImportTask', backref=orm.backref('proto_orders', order_by='ProtoOrder.id'))
 
     new_order_created_at = sa.Column(sa.TIMESTAMP, nullable=True, default=None)
     new_order_paid_at = sa.Column(sa.DateTime, nullable=True, default=None)
