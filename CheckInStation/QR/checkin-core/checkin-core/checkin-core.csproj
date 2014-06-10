@@ -127,7 +127,6 @@
     <Compile Include="models\ModelValidation.cs" />
     <Compile Include="models\Resource.cs" />
     <Compile Include="models\ResultStatusCollector.cs" />
-    <Compile Include="models\TicketImagePrinting.cs" />
     <Compile Include="models\TicketPrintedAtUpdater.cs" />
     <Compile Include="models\TicketRefreshedAtUpdater.cs" />
     <Compile Include="models\loader\AdImageCollector.cs" />
