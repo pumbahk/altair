@@ -1,11 +1,13 @@
 # -*- coding:utf-8 -*-
-from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
-from altair.app.ticketing.mailmags import models as mailmag_models
-from pyramid.response import Response
-from functools import wraps
 import logging
-logger = logging.getLogger()
+from functools import wraps
+from pyramid.response import Response
 from mako.template import Template
+from .selectable_renderer import selectable_renderer
+from altair.app.ticketing.mailmags import models as mailmag_models
+from . import api
+
+logger = logging.getLogger()
 
 def includeme(config):
     config.add_route("dummy.cart.index", "/dummy")
@@ -42,9 +44,7 @@ def overwrite_validation(fn):
         if "organization_id" in request.params:
             organization_id = request.params["organization_id"]
             logger.info("* dummy overwrite organization: organization_id = {0}".format(organization_id))
-            organization = Organization.query.filter_by(id=organization_id).first()
-            if organization:
-                request.organization = organization
+            request.environ[api.ENV_ORGANIZATION_ID_KEY] = organization_id
         return fn(context, request)
     return wrapped
 
