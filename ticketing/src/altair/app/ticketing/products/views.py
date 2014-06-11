@@ -144,7 +144,8 @@ class ProductAndProductItem(BaseView):
                     name=product.name,
                     price=int(product.price),
                     display_order=product.display_order,
-                    public=product.public
+                    public=product.public,
+                    performance_id=product.performance_id,
                 ),
                 stock_type=dict(
                     id=product.seat_stock_type.id
@@ -262,15 +263,15 @@ class ProductAndProductItem(BaseView):
                     product.public = f.public.data
                     product.seat_stock_type_id = f.stock_type_id.data
                     product.sales_segment = sales_segment
-                    product.performance = sales_segment.performance
+                    product.performance_id = f.performance_id.data
                     product.save()
 
                 stock = Stock.query.filter_by(
                     stock_type_id=f.stock_type_id.data,
                     stock_holder_id=f.stock_holder_id.data,
-                    performance_id=sales_segment.performance.id
+                    performance_id=f.performance_id.data
                 ).one()
-                product_item.performance_id = sales_segment.performance.id
+                product_item.performance_id = f.performance_id.data
                 product_item.product_id = product.id
                 product_item.name = f.product_item_name.data
                 product_item.price = f.product_item_price.data

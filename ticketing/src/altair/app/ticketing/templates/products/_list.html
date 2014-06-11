@@ -285,7 +285,7 @@ $(function(){
       <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-${sales_segment.id}" data-id="${sales_segment.id}">
         <%sb:react_subview
            target="product_table${unicode(sales_segment.id)}"
-           url="${request.route_path('products.sub.older.show',sales_segment_id=sales_segment.id)}"
+           url="${request.route_path('products.sub.older.show', sales_segment_id=sales_segment.id)}"
            data="${dict(i=i)}"
            autoload="${is_autoload(sales_segment, i)}"
            continuation="$('#use-grid-editor').trigger('collectPreviewCandidates', []);"

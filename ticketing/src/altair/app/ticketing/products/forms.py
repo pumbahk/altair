@@ -424,6 +424,9 @@ class ProductAndProductItemAPIForm(OurForm, ProductItemFormMixin):
         default=1,
         validators=[Optional()]
         )
+    performance_id = HiddenField(
+        validators=[Optional()]
+        )
     is_leaf = OurBooleanField(
         default=False
         )
