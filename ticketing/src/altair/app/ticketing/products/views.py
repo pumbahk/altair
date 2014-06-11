@@ -174,6 +174,10 @@ class ProductAndProductItem(BaseView):
                     id=product.seat_stock_type.id
                 ),
                 parent='null',  # need for sorting
+                level=0,
+                is_leaf=False,
+                expanded=True,
+                loaded=True
             )
             product_items = product.items
 
@@ -207,17 +211,8 @@ class ProductAndProductItem(BaseView):
                 if len(product_items) > 1:
                     if i == 0:
                         parent_id = len(rows) + 1
-                        row2.update(
-                            row_id=parent_id,
-                            parent='null',
-                            level=0,
-                            is_leaf=False,
-                            expanded=True,
-                            loaded=True
-                        )
                     else:
                         row2.update(
-                            row_id=len(rows) + 1,
                             parent=parent_id,
                             level=1,
                             is_leaf=True,
@@ -228,6 +223,7 @@ class ProductAndProductItem(BaseView):
                                 name=u'(複数在庫商品)',
                             ),
                         )
+                row2.update(row_id=len(rows) + 1)
                 rows.append(row2)
             if not product_items:
                 rows.append(row)
@@ -241,8 +237,6 @@ class ProductAndProductItem(BaseView):
 
     @view_config(route_name='products.api.set', renderer='json')
     def api_set(self):
-        performance_id = long(self.request.params.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.organization.id)
         sales_segment_id = long(self.request.params.get('sales_segment_id'), 0)
         sales_segment = SalesSegment.query \
             .join(SalesSegment.sales_segment_group) \
@@ -250,11 +244,10 @@ class ProductAndProductItem(BaseView):
             .filter(SalesSegment.id==sales_segment_id) \
             .filter(Event.organization_id == self.context.organization.id) \
             .first()
-
-        if performance is None and sales_segment is None:
-            logger.warning('performance id %d is not found' % performance_id)
+        if sales_segment is None:
+            logger.warning('sales_segment id %d is not found' % sales_segment_id)
             raise HTTPBadRequest(body=json.dumps({
-                'message':u'パフォーマンスが存在しません',
+                'message':u'販売区分が存在しません',
             }))
 
         json_data = self.request.json_body
@@ -264,17 +257,25 @@ class ProductAndProductItem(BaseView):
         for row_data in json_data:
             row_data = MultiDict(row_data)
 
+            if row_data.get('product_id'):
+                product_id = row_data.get('product_id')
+                product = Product.query.filter(Product.id==product_id).first()
+            else:
+                product = Product()
+
             if row_data.get('product_item_id'):
                 product_item_id = long(row_data.get('product_item_id', 0))
                 product_item = ProductItem.get(product_item_id)
             else:
                 product_item = ProductItem()
-            if product_item is None:
-                raise HTTPBadRequest(body=json.dumps({'message':u'不正なデータです'}))
 
+            f = ProductAndProductItemAPIForm(row_data, sales_segment=sales_segment, product=product)
             if row_data.get('deleted'):
                 try:
-                    product_item.delete()
+                    if f.is_leaf.data:
+                        product_item.delete()
+                    else:
+                        product.delete()
                 except Exception, e:
                     logger.info(row_data)
                     logger.info('validation error:%s' % e.message)
@@ -283,10 +284,6 @@ class ProductAndProductItem(BaseView):
                         'rows':{'rowid':row_data.get('id'), 'errors':[e.message]}
                     }))
             else:
-                product_id = row_data['product_id']
-                product = Product.query.filter(Product.id==product_id).one()
-
-                f = ProductAndProductItemAPIForm(row_data, performance_id=performance_id, product=product)
                 if not f.validate():
                     logger.info('validation error:%s' % f.errors)
                     raise HTTPBadRequest(body=json.dumps({
@@ -299,14 +296,17 @@ class ProductAndProductItem(BaseView):
                     product.price = f.price.data
                     product.display_order = f.display_order.data
                     product.public = f.public.data
+                    product.seat_stock_type_id = f.stock_type_id.data
+                    product.sales_segment = sales_segment
+                    product.performance = sales_segment.performance
                     product.save()
 
                 stock = Stock.query.filter_by(
                     stock_type_id=f.stock_type_id.data,
                     stock_holder_id=f.stock_holder_id.data,
-                    performance_id=product.performance.id
+                    performance_id=sales_segment.performance.id
                 ).one()
-                product_item.performance_id = product.performance.id
+                product_item.performance_id = sales_segment.performance.id
                 product_item.product_id = product.id
                 product_item.name = f.product_item_name.data
                 product_item.price = f.product_item_price.data
@@ -314,7 +314,6 @@ class ProductAndProductItem(BaseView):
                 product_item.stock_id = stock.id
                 product_item.ticket_bundle_id = f.ticket_bundle_id.data
                 product_item.save()
-
         return {}
 
 

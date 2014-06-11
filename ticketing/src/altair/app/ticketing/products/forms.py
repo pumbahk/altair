@@ -366,7 +366,7 @@ class ProductItemForm(OurForm):
 
 class ProductAndProductItemAPIForm(ProductItemForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        super(ProductAndProductItemAPIForm, self).__init__(formdata, obj, prefix, **kwargs)
+        super(ProductItemForm, self).__init__(formdata, obj, prefix, **kwargs)
         if formdata:
             try:
                 self.public.data = bool(distutils.util.strtobool(formdata['public']))
@@ -377,6 +377,23 @@ class ProductAndProductItemAPIForm(ProductItemForm):
             except Exception as e:
                 self.is_leaf.data = False
 
+        if 'sales_segment' in kwargs:
+            sales_segment = kwargs['sales_segment']
+            event = sales_segment.sales_segment_group.event
+            stock_holders = StockHolder.get_own_stock_holders(event=event)
+            self.stock_holder_id.choices = [(sh.id, sh.name) for sh in stock_holders]
+            stock_types = StockType.query.filter_by(event_id=event.id).all()
+            self.stock_type_id.choices = [(st.id, st.name) for st in stock_types]
+            ticket_bundles = TicketBundle.filter_by(event_id=event.id)
+            self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
+
+        if 'product' in kwargs:
+            self.product = kwargs['product']
+            self.product_id.data = self.product.id
+
+    product_id = HiddenField(
+        validators=[Optional()]
+        )
     public = OurBooleanField(
         default=True
         )
