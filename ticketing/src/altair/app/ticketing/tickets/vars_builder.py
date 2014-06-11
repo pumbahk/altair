@@ -151,6 +151,7 @@ class TicketDictBuilder(object):
         if shipping_address is None:
             data['shippingAddress'] = {}
             return data
+
         data[u'shippingAddress'] = {
             u"email_1": shipping_address.email_1,
             u"email_2": shipping_address.email_2,
@@ -170,6 +171,7 @@ class TicketDictBuilder(object):
             u"tel_2": shipping_address.tel_2,
             u"fax": shipping_address.fax
             }
+
         return data
 
     def build_dict_from_stock(self, stock, retval=None):
