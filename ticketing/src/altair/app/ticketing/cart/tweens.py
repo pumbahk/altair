@@ -6,7 +6,9 @@ from datetime import datetime
 from time import mktime, time
 from email.utils import formatdate
 from sqlalchemy.orm import joinedload
+from sqlalchemy.orm.session import make_transient
 from pyramid.httpexceptions import HTTPFound
+from altair.sqlahelper import get_db_session
 from altair.app.ticketing.payments.exceptions import PaymentPluginException
 from .exceptions import PaymentError
 
@@ -42,7 +44,8 @@ class OrganizationPathTween(object):
 
     def get_hosts(self, request):
         from altair.app.ticketing.core.models import Host, Organization
-        hosts = Host.query \
+        session = get_db_session(request, 'slave')
+        hosts = session.query(Host) \
             .options(
                 joinedload(Host.organization),
                 joinedload(Host.organization,
@@ -51,29 +54,33 @@ class OrganizationPathTween(object):
         return list(reversed(sorted(hosts, key=lambda h: h.path)))
 
     def __call__(self, request):
+        from .api import ENV_ORGANIZATION_ID_KEY, ENV_ORGANIZATION_PATH_KEY
         # もしパスつきのHostドメインだったら
         hosts = self.get_hosts(request)
         if not hosts:
             return self.handler(request)
 
-        for host in hosts:
-            if not host.path:
-                return self.handler(request)
+        try:
+            for host in hosts:
+                # そのパスであるか request 判定して
+                if host.path is not None and request.path_info.startswith(host.path):
+                    # script_nameにずらす
+                    (script_name, path_info) = (request.script_name 
+                                                + request.path_info[:len(host.path)], 
+                                                request.path_info[len(host.path):])
+                    request.script_name = script_name
+                    request.path_info = path_info
+                    break
 
-            # そのパスであるか request 判定して
-            if request.path_info.startswith(host.path):
-
-                # script_nameにずらす
-                (script_name, path_info) = (request.script_name 
-                                            + request.path_info[:len(host.path)], 
-                                            request.path_info[len(host.path):])
-                logger.debug("{0} {1}".format(script_name, path_info))
-                request.script_name = script_name
-                request.path_info = path_info
-                request.organization = host.organization
-                request.environ['altair.app.ticketing.cart.organization_id'] = host.organization.id
-                request.environ['altair.app.ticketing.cart.organization_path'] = host.path
-                return self.handler(request)
+            import sys
+            make_transient(host)
+            make_transient(host.organization)
+            request.organization = host.organization
+            request.environ[ENV_ORGANIZATION_ID_KEY] = host.organization.id
+            request.environ[ENV_ORGANIZATION_PATH_KEY] = host.path
+        except:
+            logger.exception('oops')
+            raise
         return self.handler(request)
 
 def response_time_tween_factory(handler, registry):
