@@ -41,11 +41,12 @@ def setup_temporary_store(config):
     from datetime import timedelta
     from altair.app.ticketing.interfaces import ITemporaryStore
     from altair.app.ticketing.temp_store import TemporaryCookieStore
+    from altair.app.ticketing.orders.models import Order
     from altair.app.ticketing.cart.models import Cart
 
     def extra_secret_provider(request, value):
         # master を見ないとダメ
-        cart = Cart.query.filter_by(order_no=value).first()
+        cart = Cart.query.join(Cart.order).filter(Order.order_no == value).first()
         if cart is None:
             return ''
         else:
