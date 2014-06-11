@@ -13,7 +13,8 @@ from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.sej.api import get_sej_order
 import webhelpers.paginate as paginate
-import altair.app.ticketing.core.api as core_api
+from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.payments.plugins import (
     SEJ_PAYMENT_PLUGIN_ID, 
     SEJ_DELIVERY_PLUGIN_ID,
@@ -28,7 +29,7 @@ class OrderReviewResource(object):
 
     @reify
     def organization_id(self):
-        organization = core_api.get_organization(self.request)
+        organization = cart_api.get_organization(self.request)
         return organization.id if organization else None
 
     @reify
@@ -72,7 +73,7 @@ class OrderReviewResource(object):
         return order, sej_order
 
     def get_membership(self):
-        org = core_api.get_organization(self.request)
+        org = cart_api.get_organization(self.request)
         membership = Membership.query.filter(Membership.organization_id==org.id).first()
         return membership
 

@@ -4,7 +4,7 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.users.models import Membership
 from altair.app.ticketing.models import DBSession
-from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.cart import api as cart_api
 import altair.app.ticketing.users.models as u_m
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ def do_authenticate(request, membership, username, password):
     return { 'user_id': user.id }
 
 def login_url(request):
-    organization = core_api.get_organization(request)
+    organization = cart_api.get_organization(request)
     url = request.route_url('fc_auth.login', membership=organization.short_name)
     logger.debug("login url %s" % url)
     return url 

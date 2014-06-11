@@ -10,7 +10,6 @@ from pyramid.tweens import EXCVIEW
 from pyramid.tweens import INGRESS
 from pyramid_selectable_renderer import SelectableRendererSetup
 from pyramid_selectable_renderer.custom import ReceiveTemplatePathFormat, ReceiveTemplatePathCandidatesDict, SelectByRequestGen
-from altair.app.ticketing.core.api import get_organization
 from altair.app.ticketing.wsgi import direct_static_serving_filter_factory
 
 import sqlalchemy as sa
@@ -24,9 +23,6 @@ class WhoDecider(object):
     def decide(self):
         """ WHO API 選択
         """
-        #return self.request.organization.setting.auth_type
-        #return get_organization(self.request).setting.auth_type
-
         if hasattr(self.request, "context") and hasattr(self.request.context, "lot"):
             return self.request.context.lot.auth_type
 
@@ -37,8 +33,10 @@ def register_globals(event):
 
 @SelectByRequestGen.generate
 def get_template_path_args(request):
+    # move to here because of circular dependency between modules.
+    from altair.app.ticketing.cart import api as cart_api
     try:
-        return dict(membership=get_organization(request).short_name)
+        return dict(membership=cart_api.get_organization(request).short_name)
     except:
         return dict(membership="__default__")
 

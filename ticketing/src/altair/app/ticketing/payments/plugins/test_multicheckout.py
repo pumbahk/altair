@@ -8,12 +8,18 @@ from altair.app.ticketing.testing import DummyRequest
 from altair.multicheckout.impl import Checkout3D
 import mock
 
-def _setup_test_db():
+def _setup_test_db(config):
     session = _setup_db([
         'altair.app.ticketing.core.models',
         'altair.app.ticketing.cart.models',
         'altair.app.ticketing.orders.models',
         ])
+    from altair.sqlahelper import register_sessionmaker_with_engine
+    register_sessionmaker_with_engine(
+        config.registry,
+        'slave',
+        session.bind
+        )
     from altair.app.ticketing.core.models import Host, Organization, OrganizationSetting
     org = Organization(short_name='TEST')
     host = Host(host_name='example.com:80')
@@ -21,6 +27,7 @@ def _setup_test_db():
     host.organization = org
     settings.organization = org
     session.add(org)
+    session.flush()
     return session
 
 
@@ -29,7 +36,13 @@ class MultiCheckoutViewTests(unittest.TestCase):
         self.config = testing.setUp()
         self._register_dummy_card_brand_detector()
         self._register_cart_interface()
-        self.session = _setup_test_db()
+        self.session = _setup_test_db(self.config)
+        from altair.sqlahelper import register_sessionmaker_with_engine
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
 
     def tearDown(self):
         testing.tearDown()
@@ -388,9 +401,15 @@ class MultiCheckoutViewTests(unittest.TestCase):
 class MultiCheckoutPluginTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
+        self.session = _setup_test_db(self.config)
+        from altair.sqlahelper import register_sessionmaker_with_engine
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
         self.config.add_route('payment.secure3d', '/payment.secure3d')
         self._register_dummy_card_brand_detector()
-        self.session = _setup_test_db()
         from altair.multicheckout import models as mc_models
         mc_models._session.remove()
         mc_models.Base.metadata.create_all()

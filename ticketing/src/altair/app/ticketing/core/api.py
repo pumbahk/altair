@@ -1,40 +1,11 @@
 # encoding: utf-8
 
 import logging
-from sqlalchemy.orm import joinedload
-from sqlalchemy.orm.exc import NoResultFound
 from datetime import datetime
+from sqlalchemy.orm.exc import NoResultFound
 from ..utils import sensible_alnum_encode
 
 logger = logging.getLogger(__name__)
-
-def refresh_organization(request):
-    if hasattr(request, "organization"):
-        from altair.app.ticketing.models import DBSession
-        request.organization = DBSession.merge(request.organization)
-
-def get_organization(request, override_host=None):
-    from .models import Host, Organization
-    if hasattr(request, 'organization'):
-        organization_id = request.environ.get('altair.app.ticketing.cart.organization_id')
-        organization_path = request.environ.get('altair.app.ticketing.cart.organization_path')
-        logger.debug("organization_id = %s organization_path = %s" % (organization_id, organization_path))
-        return request.organization
-
-    host_name = override_host or request.host
-    try:
-        host = Host.query.options(
-            joinedload(Host.organization),
-            joinedload(Host.organization,
-                       Organization.settings),
-        ).filter(
-            Host.host_name==unicode(host_name)
-        ).one()
-        request.organization = host.organization
-        request.environ['altair.app.ticketing.cart.organization_id'] = request.organization.id
-        return request.organization
-    except NoResultFound as e:
-        raise Exception("Host that named %s is not Found" % host_name)
 
 def get_organization_setting(request, organization, name=None):
     from .models import OrganizationSetting

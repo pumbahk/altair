@@ -397,7 +397,7 @@ class TicketingCartResourceTestBase(object):
         self.session.add(sales_segment)
         return sales_segment
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     def test_membership_none(self, get_organization):
         from altair.app.ticketing.core.models import Performance, Event, Organization, SalesSegmentGroup
         from datetime import datetime
@@ -426,7 +426,7 @@ class TicketingCartResourceTestBase(object):
 
         self.assertEqual(result, [])
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     def test_membership(self, get_organization):
         from altair.app.ticketing.users.models import Membership, MemberGroup
         from altair.app.ticketing.core.models import Event, Performance, Organization, SalesSegmentGroup, SalesSegmentKindEnum
@@ -463,7 +463,7 @@ class TicketingCartResourceTestBase(object):
 
         self.assertEqual(result, [ms])
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     def test_event_id(self, get_organization):
         from altair.app.ticketing.core.models import Organization
         organization = get_organization.return_value = self.organization
@@ -474,7 +474,7 @@ class TicketingCartResourceTestBase(object):
         result = target.event.id
         self.assertEqual(result, event.id)
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     def test_get_sales_segment(self, get_organization):
         from altair.app.ticketing.core.models import Event, Performance, Organization, SalesSegmentGroup, SalesSegmentKindEnum
         from datetime import datetime
@@ -799,7 +799,7 @@ class TicketingCartResourceTestBase(object):
         except:
             self.fail()
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     def test__validate_sales_segment_no_cart(self, get_organization):
         from altair.app.ticketing.core.models import Event, Performance, Organization, SalesSegmentGroup, SalesSegmentKindEnum
         from datetime import datetime
@@ -821,7 +821,7 @@ class TicketingCartResourceTestBase(object):
         request = DummyRequest(matchdict={'event_id': event_id})
         self.assertIsNotNone(self._makeOne(request))
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
     def test__validate_sales_segment_guest_user(self, get_cart_safe, get_organization):
         from .models import Cart
@@ -874,7 +874,7 @@ class TicketingCartResourceTestBase(object):
         self.assertIsNotNone(self._makeOne(request))
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase.authenticated_user')
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
     def test__validate_sales_segment_authenticated_user(self, get_cart_safe, get_organization, authenticated_user):
         from .models import Cart
@@ -928,7 +928,7 @@ class TicketingCartResourceTestBase(object):
         self.assertIsNotNone(self._makeOne(request))
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase.authenticated_user')
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
     def test__validate_sales_segment_invalid_cart(self, get_cart_safe, get_organization, authenticated_user):
         from .models import Cart
@@ -1062,7 +1062,7 @@ class ReserveViewTests(unittest.TestCase):
         venue = Venue(id=venue_id, site=site, organization_id=organization.id)
         return venue
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     def test_it(self, get_organization):
         from altair.app.ticketing.core.models import (
             Seat,
@@ -1214,7 +1214,7 @@ class ReserveViewTests(unittest.TestCase):
         for stock_status in stock_statuses:
             self.assertEqual(stock_status.quantity, 98)
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     def test_it_no_stock(self, get_organization):
         from altair.app.ticketing.core.models import (
             Seat,

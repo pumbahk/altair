@@ -8,6 +8,10 @@ import contextlib
 
 from zope.deprecation import deprecate
 from sqlalchemy.sql.expression import or_, and_
+from sqlalchemy.orm.session import make_transient
+from sqlalchemy.orm.attributes import instance_state
+from sqlalchemy.orm import joinedload
+from sqlalchemy.orm.exc import NoResultFound
 
 from pyramid.interfaces import IRoutesMapper, IRequest
 from pyramid.security import effective_principals, forget
@@ -155,7 +159,7 @@ def _maybe_encoded(s, encoding='utf-8'):
     return s.decode(encoding)
 
 def get_item_name(request, cart_name):
-    organization = c_api.get_organization(request)
+    organization = get_organization(request)
     base_item_name = organization.setting.cart_item_name
     return _maybe_encoded(base_item_name) + " " + str(cart_name)
 
@@ -335,11 +339,11 @@ def is_smartphone_organization(context, request):
     return organization.setting.enable_smartphone_cart
 
 def is_point_input_organization(context, request):
-    organization = c_api.get_organization(request)
+    organization = get_organization(request)
     return organization.id == 24
 
 def is_fc_auth_organization(context, request):
-    organization = c_api.get_organization(request)
+    organization = get_organization(request)
     return bool(organization.settings[0].auth_type == "fc_auth")
 
 def enable_auto_input_form(user):
@@ -372,3 +376,26 @@ def get_order_for_read_by_order_no(request, order_no):
         .first()
     orders[order_no] = order
     return order
+
+def get_organization(request, override_host=None):
+    if hasattr(request, 'organization'):
+        organization_id = request.environ.get('altair.app.ticketing.cart.organization_id')
+        organization_path = request.environ.get('altair.app.ticketing.cart.organization_path')
+        logger.debug("organization_id = %s organization_path = %s" % (organization_id, organization_path))
+        assert instance_state(request.organization).session_id is None
+        return request.organization
+
+    host_name = override_host or request.host
+    session = get_db_session(request, 'slave')
+    try:
+        organization = session.query(c_models.Organization) \
+            .options(joinedload(c_models.Organization.settings)) \
+            .join(c_models.Organization.hosts) \
+            .filter(c_models.Host.host_name == unicode(host_name)) \
+            .one()
+    except NoResultFound as e:
+        raise Exception("Host that named %s is not Found" % host_name)
+    make_transient(organization)
+    request.organization = organization
+    request.environ['altair.app.ticketing.cart.organization_id'] = request.organization.id
+    return request.organization

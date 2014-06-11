@@ -434,7 +434,7 @@ class IndexAjaxView(object):
         sales_segment = self.request.context.sales_segment # XXX: matchdict から取得していることを期待
 
         order_separate_seats_url = u''
-        organization = c_api.get_organization(self.request)
+        organization = api.get_organization(self.request)
         if organization.setting.entrust_separate_seats:
             qs = {'separate_seats': 'true'}
             order_separate_seats_url = self.request.route_url('cart.order', sales_segment_id=sales_segment.id, _query=qs)

@@ -11,7 +11,7 @@ from . import schemas
 from . import api
 from altair.mobile import mobile_view_config
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
-from altair.app.ticketing.core.api import get_organization
+from altair.app.ticketing.cart import api as cart_api
 from datetime import datetime
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe, multi_unsubscribe
 from altair.app.ticketing.payments import plugins
@@ -69,7 +69,10 @@ class MypageView(object):
 
         magazines_to_subscribe = None
         if shipping_address:
-            magazines_to_subscribe = get_magazines_to_subscribe(get_organization(self.request), shipping_address.emails)
+            magazines_to_subscribe = get_magazines_to_subscribe(
+                cart_api.get_organization(self.request),
+                shipping_address.emails
+                )
 
         return dict(
             shipping_address=shipping_address,
@@ -119,7 +122,10 @@ class MypageView(object):
             raise HTTPNotFound()
 
         shipping_address = self.context.get_shipping_address(user)
-        magazines_to_subscribe = get_magazines_to_subscribe(get_organization(self.request), shipping_address.emails)
+        magazines_to_subscribe = get_magazines_to_subscribe(
+            cart_api.get_organization(self.request),
+            shipping_address.emails
+            )
         subscribe_ids = self.request.params.getall('mailmagazine')
 
         return dict(
@@ -146,7 +152,10 @@ class MypageView(object):
             raise HTTPNotFound()
 
         shipping_address = self.context.get_shipping_address(user)
-        magazines_to_subscribe = get_magazines_to_subscribe(get_organization(self.request), shipping_address.emails)
+        magazines_to_subscribe = get_magazines_to_subscribe(
+            cart_api.get_organization(self.request),
+            shipping_address.emails
+            )
         emails = shipping_address.emails
         subscribe_ids = self.request.params.getall('mailmagazine')
 
