@@ -27,37 +27,15 @@ class ProductAndProductItem(BaseView):
     @view_config(route_name='products.new', request_method='GET', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
     def new_xhr(self):
         # 商品、商品明細一括登録画面
-        performance_id = self.context.performance_id
-        sales_segment_id = self.context.sales_segment_id
-        performance = self.context.performance
         sales_segment = self.context.sales_segment
-
-        if not performance_id and sales_segment:
-            performance = sales_segment.performance
-
-        ticket_bundles = TicketBundle.filter_by(event_id=performance.event.id).all()
-        ticket_bundle_default = 0
-        if ticket_bundles:
-            ticket_bundle_default = ticket_bundles[0].id
-
-        f = ProductAndProductItemForm(
-                performance=performance,
-                sales_segment=sales_segment,
-                applied_point_grant_settings=(sales_segment and [pgs.id for pgs in sales_segment.point_grant_settings]),
-                ticket_bundle_id=ticket_bundle_default
-                )
-
+        f = ProductAndProductItemForm(sales_segment=sales_segment)
         return dict(form=f)
 
     @view_config(route_name='products.new', request_method='POST', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
     def new_post_xhr(self):
         # 商品、商品明細一括登録画面
-        performance_id = self.context.performance_id
-        sales_segment_id = self.context.sales_segment_id
-        performance = self.context.performance
         sales_segment = self.context.sales_segment
-
-        f = ProductAndProductItemForm(self.request.POST, performance=performance, sales_segment=sales_segment)
+        f = ProductAndProductItemForm(self.request.POST, sales_segment=sales_segment)
         if f.validate():
             point_grant_settings = [
                 PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one()
@@ -71,9 +49,9 @@ class ProductAndProductItem(BaseView):
                 query = query.filter_by(id=f.sales_segment_id.data)
 
             for sales_segment_for_product in query:
-                product = merge_session_with_post(Product(), f.data)
-                product.sales_segment_id = sales_segment_for_product.id
-                product.performance_id = sales_segment_for_product.performance.id
+                product = merge_session_with_post(Product(), f.data, excludes={'id'})
+                product.sales_segment = sales_segment_for_product
+                product.performance = sales_segment_for_product.performance
                 product.point_grant_settings.extend(point_grant_settings)
                 product.save()
 
@@ -84,7 +62,7 @@ class ProductAndProductItem(BaseView):
                 ).one()
                 product_item = ProductItem(
                     performance_id=sales_segment_for_product.performance.id,
-                    product_id=product.id,
+                    product=product,
                     name=f.name.data,
                     price=f.price.data,
                     quantity=f.product_item_quantity.data,
@@ -109,8 +87,7 @@ class ProductAndProductItem(BaseView):
     def edit_post_xhr(self):
         product = self.context.product
         product_item = self.context.product_item
-
-        f = ProductAndProductItemForm(self.request.POST, performance=product.performance, sales_segment=product.sales_segment)
+        f = ProductAndProductItemForm(self.request.POST, sales_segment=product.sales_segment)
         if f.validate():
             point_grant_settings = [
                 PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one()
@@ -149,13 +126,12 @@ class ProductAndProductItem(BaseView):
         except Exception, e:
             self.request.session.flash(e.message)
             raise HTTPFound(location=location)
-
         return HTTPFound(location=location)
 
     @view_config(route_name='products.api.get', renderer='json')
     def api_get(self):
-        sales_segment_id = self.request.params.get('sales_segment_id', 0)
-        products = Product.query.filter_by(sales_segment_id=sales_segment_id).order_by(Product.display_order).all()
+        sales_segment = self.context.sales_segment
+        products = Product.query.filter_by(sales_segment_id=sales_segment.id).order_by(Product.display_order).all()
         if not products:
             raise HTTPBadRequest(body=json.dumps({'message':u'データが見つかりません'}))
 
@@ -237,19 +213,7 @@ class ProductAndProductItem(BaseView):
 
     @view_config(route_name='products.api.set', renderer='json')
     def api_set(self):
-        sales_segment_id = long(self.request.params.get('sales_segment_id'), 0)
-        sales_segment = SalesSegment.query \
-            .join(SalesSegment.sales_segment_group) \
-            .join(SalesSegmentGroup.event) \
-            .filter(SalesSegment.id==sales_segment_id) \
-            .filter(Event.organization_id == self.context.organization.id) \
-            .first()
-        if sales_segment is None:
-            logger.warning('sales_segment id %d is not found' % sales_segment_id)
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'販売区分が存在しません',
-            }))
-
+        sales_segment = self.context.sales_segment
         json_data = self.request.json_body
         if not json_data:
             raise HTTPBadRequest(body=json.dumps({'message':u'保存するデータがありません'}))
@@ -257,19 +221,19 @@ class ProductAndProductItem(BaseView):
         for row_data in json_data:
             row_data = MultiDict(row_data)
 
-            if row_data.get('product_id'):
-                product_id = row_data.get('product_id')
-                product = Product.query.filter(Product.id==product_id).first()
+            product_id = long(row_data.get('product_id') or 0)
+            if product_id:
+                product = Product.get(product_id)
             else:
                 product = Product()
 
-            if row_data.get('product_item_id'):
-                product_item_id = long(row_data.get('product_item_id', 0))
+            product_item_id = long(row_data.get('product_item_id') or 0)
+            if product_item_id:
                 product_item = ProductItem.get(product_item_id)
             else:
                 product_item = ProductItem()
 
-            f = ProductAndProductItemAPIForm(row_data, sales_segment=sales_segment, product=product)
+            f = ProductAndProductItemAPIForm(row_data, sales_segment=sales_segment)
             if row_data.get('deleted'):
                 try:
                     if f.is_leaf.data:
@@ -327,7 +291,6 @@ class ProductItems(BaseView):
             stock_type_id=product.seat_stock_type_id,
             product_item_name=product.name,
             product_item_price=int(product.price),
-            product_item_quantity=1
         )
         f = ProductItemForm(default, product=product)
         return {
@@ -428,7 +391,6 @@ class ProductItems(BaseView):
         except Exception, e:
             self.request.session.flash(e.message)
             raise HTTPFound(location=location)
-
         return HTTPFound(location=location)
 
 @view_config(route_name="products.sub.older.show", renderer="altair.app.ticketing:templates/products/_sub_older_show.html")
