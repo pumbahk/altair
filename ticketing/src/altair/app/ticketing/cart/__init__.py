@@ -315,7 +315,6 @@ def main(global_config, **local_config):
     from authorization import MembershipAuthorizationPolicy
     config.set_authorization_policy(MembershipAuthorizationPolicy())
     config.add_tween('.tweens.CacheControlTween')
-    config.add_tween('.tweens.OrganizationPathTween')
     config.include('altair.app.ticketing.organization_settings')
     config.include('altair.app.ticketing.fc_auth')
     config.include('altair.app.ticketing.checkout')
@@ -331,8 +330,9 @@ def main(global_config, **local_config):
 
     config.include('.errors')
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
-    config.add_tween('altair.app.ticketing.cart.tweens.response_time_tween_factory', over=MAIN)
-    config.add_tween('altair.app.ticketing.cart.tweens.PaymentPluginErrorConverterTween', under=EXCVIEW)
+    config.add_tween('.tweens.OrganizationPathTween', over=EXCVIEW)
+    config.add_tween('.tweens.response_time_tween_factory', over=MAIN)
+    config.add_tween('.tweens.PaymentPluginErrorConverterTween', under=EXCVIEW)
     config.include(setup_cart_interface)
     config.include(setup_mq)
     config.include(setup_renderers)

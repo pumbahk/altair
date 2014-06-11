@@ -38,6 +38,9 @@ from altair.preview.api import set_rendered_target
 
 logger = logging.getLogger(__name__)
 
+ENV_ORGANIZATION_ID_KEY = 'altair.app.ticketing.cart.organization_id'
+ENV_ORGANIZATION_PATH_KEY = 'altair.app.ticketing.cart.organization_path'
+
 def set_rendered_event(request, event):
     set_rendered_target(request, "event", event)
 
@@ -377,25 +380,31 @@ def get_order_for_read_by_order_no(request, order_no):
     orders[order_no] = order
     return order
 
-def get_organization(request, override_host=None):
-    if hasattr(request, 'organization'):
-        organization_id = request.environ.get('altair.app.ticketing.cart.organization_id')
-        organization_path = request.environ.get('altair.app.ticketing.cart.organization_path')
-        logger.debug("organization_id = %s organization_path = %s" % (organization_id, organization_path))
-        assert instance_state(request.organization).session_id is None
-        return request.organization
+def get_organization(request):
+    override_organization_id = request.environ.get(ENV_ORGANIZATION_ID_KEY)
 
-    host_name = override_host or request.host
+    if hasattr(request, 'organization'):
+        assert instance_state(request.organization).session_id is None
+        if override_organization_id is None or request.organization.id == override_organization_id:
+            return request.organization
+
     session = get_db_session(request, 'slave')
     try:
-        organization = session.query(c_models.Organization) \
-            .options(joinedload(c_models.Organization.settings)) \
-            .join(c_models.Organization.hosts) \
-            .filter(c_models.Host.host_name == unicode(host_name)) \
-            .one()
+        if override_organization_id is not None:
+            organization = session.query(c_models.Organization) \
+                .options(joinedload(c_models.Organization.settings)) \
+                .filter(c_models.Organization.id == override_organization_id) \
+                .one()
+        else:
+            organization = session.query(c_models.Organization) \
+                .options(joinedload(c_models.Organization.settings)) \
+                .join(c_models.Organization.hosts) \
+                .filter(c_models.Host.host_name == unicode(request.host)) \
+                .one()
     except NoResultFound as e:
-        raise Exception("Host that named %s is not Found" % host_name)
+        raise Exception("Host that named %s is not Found" % request.host)
     make_transient(organization)
-    request.organization = organization
-    request.environ['altair.app.ticketing.cart.organization_id'] = request.organization.id
-    return request.organization
+    if override_organization_id is None:
+        request.organization = organization
+        request.environ[ENV_ORGANIZATION_ID_KEY] = request.organization.id
+    return organization
