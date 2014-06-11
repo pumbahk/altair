@@ -61,7 +61,7 @@
     ${h.error_list(request, form, 'email_1_confirm')}
   </div>
 </div>
-<p>※ 注文受付完了、確認メール等をメールでご案内します。「kissent@tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
+<p>※ 注文受付完了、確認メール等をメールでご案内します。「buffaloes@tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
 
 <div>
 <%mobile:form_header>住所</%mobile:form_header>
@@ -135,11 +135,11 @@ ${m.special_fee_name}:${h.format_currency(m.special_fee)} (${h.fee_type(m.specia
 % if m.payment_method.payment_plugin_id == 1:
 <font size="-2">
 注文受付完了と同時に決済され、即時注文確定となります。支払回数は≪1回払い≫のみのお取扱いとなります。以下のクレジットカードがご利用できます。<br />
-<img src="${request.static_url('altair.app.ticketing.cart:static/KE/mobile/images/kc_logo_rakuten.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/KE/mobile/images/visa.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/KE/mobile/images/master.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/KE/mobile/images/jcb.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/KE/mobile/images/amex_logo.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/BS/mobile/images/kc_logo_rakuten.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/BS/mobile/images/visa.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/BS/mobile/images/master.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/BS/mobile/images/jcb.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/BS/mobile/images/amex_logo.gif')}" height="30px" />
 </font>
 % elif m.payment_method.payment_plugin_id == 2:
 <font size="-2">
