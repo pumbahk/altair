@@ -3,7 +3,7 @@ import logging
 import itertools
 from datetime import datetime, timedelta
 import sqlalchemy as sa
-import sqlalchemy.orm.collections 
+import sqlalchemy.orm.collections
 import sqlalchemy.orm as orm
 from sqlalchemy.sql import and_
 from sqlalchemy.sql.expression import exists, desc, select, case
@@ -842,6 +842,9 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         valid=True #valid=Falseの時は何時だろう？
                         )
                     ordered_product_item.tokens.append(token)
+
+        order_notification = OrderNotification(order_id=order.id)
+        order_notification.save()
         DBSession.flush() # これとっちゃだめ
         return order
 
@@ -874,6 +877,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             session = DBSession
         return session.query(cls).filter_by(order_no=order_no).one()
 
+
+class OrderNotification(Base, BaseModel):
+    __tablename__ = 'OrderNotification'
+    id = sa.Column(Identifier, primary_key=True)
+    order_id = sa.Column(Identifier, sa.ForeignKey("Order.id"), nullable=False, unique=True)
+    sej_remind_at = sa.Column(sa.DateTime(), nullable=True) # SEJ 支払い期限リマインドメール送信日時
+
+    order = orm.relationship('Order', backref=orm.backref('order_notification', uselist=False))
 
 
 @implementer(IOrderedProductLike)
@@ -1116,7 +1127,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     total_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=True)
     system_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=True)
- 
+
     special_fee_name = sa.Column(sa.Unicode(255), nullable=True)
     special_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=True)
     transaction_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=True)

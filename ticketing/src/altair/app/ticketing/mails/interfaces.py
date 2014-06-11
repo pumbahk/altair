@@ -36,10 +36,10 @@ class IMailUtility(Interface):
 
     def build_message(request, something):
         """orderからメールオブジェクト作成"""
-        
+
     def send_mail(request, something, override=None):
         """ orderからメールを作成して送信"""
-        
+
     def preview_text(request, something):
         """ orderから送信されるメールのpreviewを作成"""
 
@@ -63,6 +63,10 @@ class ICompleteMail(IPurchaseInfoMail):
 
 class ICancelMail(IPurchaseInfoMail):
     """ 購入キャンセルメールを送る
+    """
+
+class IRemindMail(IPurchaseInfoMail):
+    """ 支払いリマインドメールを送る
     """
 
 class IPointGrantHistoryEntryInfoMail(IMailBuilder):

@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 import sys
-import traceback 
+import traceback
 import logging
 import cgi
 import re
@@ -20,8 +20,8 @@ from altair.app.ticketing.core.models import ExtraMailInfo
 from altair.app.ticketing.core.api import get_default_contact_url
 
 from .interfaces import (
-    IMailUtility, 
-    ITraverserFactory, 
+    IMailUtility,
+    ITraverserFactory,
     IMailSettingDefault,
     IMessagePartFactory,
     IFakeObjectFactory,
@@ -237,10 +237,10 @@ def stringize_message_body(body):
         return body
 
 def preview_text_from_message(message):
-    params = dict(subject=message.subject, 
-                  recipients=message.recipients, 
-                  bcc=message.bcc, 
-                  sender=message.sender, 
+    params = dict(subject=message.subject,
+                  recipients=message.recipients,
+                  bcc=message.bcc,
+                  sender=message.sender,
                   body=stringize_message_body(message.body))
     return u"""\
 subject: %(subject)s
