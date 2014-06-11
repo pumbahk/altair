@@ -16,7 +16,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment, SalesSegmentGroup, Organization, StockHolder, TicketBundle
 from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProductItemForm, ProductAndProductItemAPIForm
 from altair.app.ticketing.loyalty.models import PointGrantSetting
-from .forms import DeliveryMethodSelectForm
+from .forms import PreviewImageDownloadForm
 
 logger = logging.getLogger(__name__)
 
@@ -446,7 +446,7 @@ def subview_older(context, request):
         "sales_segment": sales_segment, 
         "products": products, 
         "performance": sales_segment.performance, 
-        "download_form": DeliveryMethodSelectForm(obj=sales_segment)
+        "download_form": PreviewImageDownloadForm(sales_segment=sales_segment)
     }
 
 @view_config(route_name="products.sub.newer.show", renderer="altair.app.ticketing:templates/products/_sub_newer_show.html")

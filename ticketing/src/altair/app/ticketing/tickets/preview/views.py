@@ -583,6 +583,10 @@ class DownloadListOfPreviewImage(object):
         except KeyError:
             logger.warn("delivery method not found")
             raise HTTPNotFound("delivery_method not found")
+        ticket_format = c_models.TicketFormat.query \
+            .filter(c_models.TicketFormat.organization_id == self.context.organization.id) \
+            .filter(c_models.TicketFormat.id == self.request.params["ticket_format_id"]) \
+            .one()
 
         self.assertion(performance_id, self.context.organization)
 
@@ -594,7 +598,7 @@ class DownloadListOfPreviewImage(object):
         source_dir = tempfile.mkdtemp()
         try:
             ## preview serverと通信して取得した画像を保存
-            self.store_image(svg_string_list, source_dir)
+            self.store_image(svg_string_list, source_dir, ticket_format)
         except jsonrpc.ProtocolError, e:
             raise HTTPBadRequest(str(e))
 

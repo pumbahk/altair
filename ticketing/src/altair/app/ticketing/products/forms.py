@@ -10,6 +10,7 @@ from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMu
 from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
 from wtforms.widgets import CheckboxInput, TextArea
 from sqlalchemy.sql import func
+from sqlalchemy.orm import object_session
 
 from altair.formhelpers import (
     Translations,
@@ -30,7 +31,10 @@ from altair.formhelpers.widgets import (
     CheckboxMultipleSelect,
     )
 from altair.formhelpers.validators import JISX0208
-from altair.app.ticketing.core.models import SalesSegment, Product, ProductItem, StockHolder, StockType, TicketBundle
+from altair.app.ticketing.core.models import (
+    SalesSegment, Product, ProductItem, StockHolder, StockType, TicketBundle,
+    SalesSegmentGroup, Event, Ticket, TicketFormat, DeliveryMethod,
+    )
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.helpers import label_text_for
 
@@ -400,14 +404,41 @@ class ProductAndProductItemAPIForm(ProductItemForm):
         )
 
 
-class DeliveryMethodSelectForm(Form):
+class PreviewImageDownloadForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        super(DeliveryMethodSelectForm, self).__init__(formdata, obj, prefix, **kwargs)
-        self.delivery_method_id.choices = list(set([(pdmp.delivery_method_id, pdmp.delivery_method.name) for pdmp in obj.payment_delivery_method_pairs if pdmp.delivery_method.delivery_plugin_id != SEJ_DELIVERY_PLUGIN_ID]))
+        self.sales_segment = kwargs.pop('sales_segment')
+        super(PreviewImageDownloadForm, self).__init__(formdata, obj, prefix, **kwargs)
 
+    def delivery_methods(field):
+        return set(
+            (pdmp.delivery_method_id, pdmp.delivery_method.name)
+            for pdmp in field.form.sales_segment.payment_delivery_method_pairs
+            if pdmp.delivery_method.delivery_plugin_id != SEJ_DELIVERY_PLUGIN_ID)
+
+    def ticket_formats(field):
+        tickets = object_session(field.form.sales_segment) \
+            .query(TicketFormat.id, TicketFormat.name) \
+            .join(Ticket.ticket_format) \
+            .join(TicketFormat.delivery_methods) \
+            .join(Ticket.event) \
+            .join(Event.sales_segment_groups) \
+            .join(SalesSegmentGroup.sales_segments) \
+            .filter(SalesSegment.id == field.form.sales_segment.id) \
+            .group_by(TicketFormat.id) \
+            .having(func.sum(DeliveryMethod.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID) == 0)
+        return tickets
+ 
     delivery_method_id = OurSelectField(
         label=u'配送方法',
         validators=[Required(u'選択してください')],
-        choices=[],
+        choices=delivery_methods,
         coerce=int,
     )
+
+    ticket_format_id = OurSelectField(
+        label=u'チケット様式',
+        validators=[Required(u'選択してください')],
+        choices=ticket_formats,
+        coerce=int,
+    )
+

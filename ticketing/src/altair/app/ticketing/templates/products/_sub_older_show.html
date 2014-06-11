@@ -84,6 +84,7 @@
   <h5>券面プレビューをまとめてダウンロード</h5>
   <form method="GET" action="${request.route_path("tickets.preview.download.list.zip", performance_id=performance.id, sales_segment_id=sales_segment.id)}">
     ${download_form.delivery_method_id()}
+    ${download_form.ticket_format_id()}
     <input type="submit" class="btn btn-inverse" style="margin-bottom: 8px;" value="ダウンロード"/>
     <script type="text/javascript">
       (function($form){
