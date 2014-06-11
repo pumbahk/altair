@@ -50,6 +50,11 @@ class _IntegrationAssertionMixin(object):
         self.assertEquals(data[u"注文日時s"], u"2000/01/01 (土) 01:00")
         self.assertEquals(data[u"受付日時s"], u"2000/01/01 (土) 01:00")
 
+        self.assertEquals(data[u"住所"], u":zip :prefecture :city :address_1 :address_2")
+        self.assertEquals(data[u"氏名"], u":last_name :first_name")
+        self.assertEquals(data[u"氏名カナ"], u":last_name_kana :first_name_kana")
+        self.assertEquals(data[u"電話番号"], u":tel_1")
+        self.assertEquals(data[u"メールアドレス"], u":email_1")
 
 class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
     def tearDown(self):
