@@ -206,34 +206,6 @@ class ProductItemFormMixin(object):
                     if pdmp.delivery_method.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
                         raise ValidationError(u'券面構成を選択してください')
 
-    def validate_stock_type_id(form, field):
-        if not field.data:
-            raise ValidationError(u'席種を選択してください')
-        elif form.product_id.data:
-            #product = Product.get(form.product_id.data)
-            #stock = Stock.query.filter_by(
-            #    stock_type_id=field.data,
-            #    stock_holder_id=form.stock_holder_id.data,
-            #    performance_id=product.performance.id
-            #).one()
-            #product_item = ProductItem.query.filter_by(product_id=form.product_id.data, stock_id=stock.id).first()
-            #if product_item:
-            #    if not form.product_item_id.data or int(form.product_item_id.data) != product_item.id:
-            #        raise ValidationError(u'既に登録済みの在庫です')
-
-            stock_type = StockType.get(field.data)
-            if stock_type.is_seat:
-                # 商品の席種と在庫の席種は同一であること
-                product = Product.get(form.product_id.data)
-                if stock_type.id != product.seat_stock_type_id:
-                    raise ValidationError(u'商品の席種と異なる在庫を登録することはできません')
-
-                ## 同一Product内に登録できる席種は1つのみ
-                #for product_item in product.items:
-                #    if product_item.stock_type.is_seat and \
-                #       (not form.product_item_id.data or int(form.product_item_id.data) != product_item.id):
-                #        raise ValidationError(u'1つの商品に席種を複数登録することはできません')
-
     def validate_stock_holder_id(form, field):
         # 既に予約があるならStockHolderの変更は不可
         if form.product_item_id.data:
@@ -370,6 +342,17 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
 
     def _get_translations(self):
         return Translations()
+
+    def validate_stock_type_id(form, field):
+        if not field.data:
+            raise ValidationError(u'席種を選択してください')
+        elif form.product_id.data:
+            stock_type = StockType.get(field.data)
+            if stock_type.is_seat:
+                # 商品の席種と在庫の席種は同一であること
+                product = Product.get(form.product_id.data)
+                if stock_type.id != product.seat_stock_type_id:
+                    raise ValidationError(u'商品の席種と異なる在庫を登録することはできません')
 
     def validate(self, *args, **kwargs):
         status = super(ProductItemForm, self).validate(*args, **kwargs)
