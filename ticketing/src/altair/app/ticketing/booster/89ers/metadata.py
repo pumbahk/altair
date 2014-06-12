@@ -12,7 +12,7 @@ metadata_provider = DefaultModelAttributeMetadataProvider(
             'type': bool,
             'coercer': lambda x: bool(int(x)),
             },
-        'extra.publicity': {
+        'extra.memorial_book': {
             'display_name': {
                 'ja_JP': u'メモリアルブックへの氏名掲載希望',
                 },

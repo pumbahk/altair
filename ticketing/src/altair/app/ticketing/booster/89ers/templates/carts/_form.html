@@ -146,8 +146,17 @@
         メモリアルブックへの氏名掲載希望
       </th>
       <td>
-        ${form.extra.form.publicity(disabled="disabled", class_=" ".join(["has-permission", "publicity"]))} <span><small>レギュラー・ジュニア会員は記載されません</small></span>
-        ${h.error('extra.publicity')}
+        ${form.extra.form.memorial_book(disabled="disabled", class_=" ".join(["has-permission", "memorial_book"]))} <span><small>レギュラー・ジュニア会員は記載されません</small></span>
+        ${h.error('extra.memorial_book')}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        ClubナイナーズＴシャツサイズ（ゴールド・プラチナ会員のみ）
+      </th>
+      <td>
+        サイズ${form.extra.form.t_shirts_size(id='t_shirts_size',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.t_shirts_size]))}
+        ${h.error(['extra.form.t_shirts_size'])}
       </td>
     </tr>
     <tr>

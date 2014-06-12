@@ -27,7 +27,7 @@ def setup_booster_settings(config):
         attr_names = Default.attr_names[:]
         attr_names.extend([
                 u'extra.mail_permission', ###
-                u'extra.publicity',
+                u'extra.memorial_book',
                 u'extra.motivation',
                 u'extra.num_times_at_venue',
                 ])

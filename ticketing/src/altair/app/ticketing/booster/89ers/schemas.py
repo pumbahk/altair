@@ -12,8 +12,16 @@ from datetime import date
 from ..schemas import length_limit_for_sej, length_limit_long
 from ..widgets import ymd_widget, radio_list_widget, get_year_choices, get_year_months, get_year_days
 
+def prepend_list(x, xs):
+    r = [x]
+    r.extend(xs)
+    return r
+
+def prepend_validator(field, x):
+    field.validators = prepend_list(x, field.validators)
+
 class ExtraForm(Form):
-    publicity = fields.SelectField(
+    memorial_book = fields.SelectField(
         u"媒体への掲載希望",
         validators=[v.Optional()],
         choices=[
@@ -44,6 +52,44 @@ class ExtraForm(Form):
         u"昨シーズンの会場での観戦回数",
         validators=[v.Optional()]
         )
+    t_shirts_size = fields.SelectField(u"Tシャツサイズ",
+                                       choices=[('L', u'L'),('3L', u'3L')],
+                                       validators=[v.Optional()],
+                                       coerce=text_type_but_none_if_not_given)
+
+
+
+    def configure_for_memorial_book(self):
+        pass
+
+    def configure_for_t_shirts_size(self):
+        pass
+
+    def configure_for_official_ball(self):
+        pass
+
+    def configure_coupon(self):
+        pass
+
+    def configure_for_kids(self, age_limit_adjective):
+        message = u'お申込者が%sの場合は必須項目です' % age_limit_adjective
+        prepend_validator(self.parent_first_name, v.Required(message))
+        prepend_validator(self.parent_first_name_kana, v.Required(message))
+        prepend_validator(self.parent_last_name, v.Required(message))
+        prepend_validator(self.parent_last_name_kana, v.Required(message))
+        prepend_validator(self.relationship, v.Required(message))
+
+    def configure_for_authentic_uniform(self):
+        prepend_validator(self.authentic_uniform_no, v.Required())
+        prepend_validator(self.authentic_uniform_size, v.Required())
+        prepend_validator(self.authentic_uniform_name, v.Required())
+        prepend_validator(self.authentic_uniform_color, v.Required())
+
+    def configure_for_replica_uniform(self):
+        prepend_validator(self.replica_uniform_size, v.Required())
+
+    def configure_for_t_shirts_size(self):
+        prepend_validator(self.t_shirts_size, v.Required())
 
 class OrderFormSchema(Form):
     def validate_day(self, field):

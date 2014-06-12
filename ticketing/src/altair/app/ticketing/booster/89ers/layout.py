@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 from markupsafe import Markup
+from .reflect import Symbols
 
 class Layout(object):
+    symbols = Symbols
     def __init__(self, context, request):
         self.context = context
         self.request = request
