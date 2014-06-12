@@ -56,6 +56,6 @@ def rakuten_checkout_sales():
                 transaction.commit()
                 logging.info('success')
             except Exception as e:
-                logging.error('failed checkout sales (%s)' % e.message)
+                logging.error('failed checkout sales (%s)' % unicode(e))
 
     logging.info('end checkout sales  batch')

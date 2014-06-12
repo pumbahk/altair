@@ -1,4 +1,10 @@
 # -*- coding:utf-8 -*-
 
+def configure_session(config):
+    from .models import _session
+    from sqlahelper import get_engine
+    _session.configure(bind=get_engine())
+
 def includeme(config):
-    pass
+    config.include(configure_session)
+    config.add_tween('.tweens.anshin_checkout_dbsession_tween_factory')
