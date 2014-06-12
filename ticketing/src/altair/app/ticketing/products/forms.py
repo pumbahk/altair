@@ -367,7 +367,6 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
         required_fields = [
             self.product_id,
             self.product_item_quantity,
-            self.product_item_price,
             self.product_item_name,
             self.ticket_bundle_id,
             self.stock_holder_id,
@@ -443,7 +442,6 @@ class ProductAndProductItemAPIForm(OurForm, ProductItemFormMixin):
         error_message = u'入力してください'
         required_fields = [
             self.product_item_quantity,
-            self.product_item_price,
             self.product_item_name,
             self.ticket_bundle_id,
             self.stock_holder_id,
