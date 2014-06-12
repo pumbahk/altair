@@ -310,7 +310,7 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
             status = self.validate_product(*args, **kwargs)
         if status:
             status = self.validate_product_item(*args, **kwargs)
-        if not self.id.data or self.product_item_id:
+        if not self.id.data or self.product_item_id.data:
             error_message = u'入力してください'
             required_fields = [
                 self.stock_holder_id,
