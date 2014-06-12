@@ -256,6 +256,11 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
         if not self.ticket_bundle_id.data and ticket_bundles:
             self.ticket_bundle_id.data = ticket_bundles[0].id
 
+        if self.name.data and not self.product_item_name.data:
+            self.product_item_name.data = self.name.data
+        if self.price.data and not self.product_item_price.data:
+            self.product_item_price.data = self.price.data
+
     def _get_translations(self):
         return Translations()
 
