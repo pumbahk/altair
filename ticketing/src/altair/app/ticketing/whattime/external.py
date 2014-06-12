@@ -5,7 +5,7 @@ import urllib2
 import logging
 from zope.interface import implementer
 from altair.app.ticketing.api.impl import CMSCommunicationApi
-from altair.app.ticketing.cort import api import cart_api
+from altair.app.ticketing.cart import api as cart_api
 from altair.preview.data import AccesskeyPermissionData
 from altair.preview.api import get_preview_secret
 from .interfaces import IAccessKeyGetter
