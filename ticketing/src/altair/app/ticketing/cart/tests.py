@@ -346,6 +346,8 @@ class TicketingCartResourceTestBase(object):
             self.session.bind
             )
         self.organization = self._add_organization(1)
+        self.session.add(self.organization)
+        self.session.flush()
 
     def tearDown(self):
         testing.tearDown()
@@ -358,7 +360,17 @@ class TicketingCartResourceTestBase(object):
 
     def _add_organization(self, organization_id):
         from ..core import models
-        organization = models.Organization(id=organization_id, name='example', hosts=[models.Host(organization_id=organization_id, host_name='example.com:80')])
+        organization = models.Organization(
+            id=organization_id,
+            name='example',
+            short_name='XX',
+            hosts=[
+                models.Host(
+                    organization_id=organization_id,
+                    host_name='example.com:80'
+                    )
+                ]
+            )
         return organization
 
     def _add_stock_status(self, quantity=100):
@@ -598,8 +610,8 @@ class TicketingCartResourceTestBase(object):
         return sales_segment, user
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
-    @mock.patch('altair.app.ticketing.cart.resources.user_api.get_user')
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch('altair.app.ticketing.cart.api.get_user')
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test_check_order_limit_noset(self, get_cart_safe, get_user, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
@@ -620,8 +632,8 @@ class TicketingCartResourceTestBase(object):
         self.assert_(True)
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
-    @mock.patch('altair.app.ticketing.cart.resources.user_api.get_user')
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch('altair.app.ticketing.cart.api.get_user')
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test_check_order_limit_user_over(self, get_cart_safe, get_user, validate_sales_segment):
         from .models import Cart
         from .exceptions import OverOrderLimitException
@@ -644,8 +656,8 @@ class TicketingCartResourceTestBase(object):
             target.check_order_limit()
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
-    @mock.patch('altair.app.ticketing.cart.resources.user_api.get_user')
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch('altair.app.ticketing.cart.api.get_user')
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test_check_order_limit_user_under(self, get_cart_safe, get_user, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
@@ -753,7 +765,7 @@ class TicketingCartResourceTestBase(object):
         return sales_segment, None
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test_check_order_limit_email_over(self, get_cart_safe, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
@@ -775,7 +787,7 @@ class TicketingCartResourceTestBase(object):
             target.check_order_limit()
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test_check_order_limit_email_under(self, get_cart_safe, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
@@ -822,7 +834,7 @@ class TicketingCartResourceTestBase(object):
         self.assertIsNotNone(self._makeOne(request))
 
     @mock.patch("altair.app.ticketing.cart.api.get_organization")
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test__validate_sales_segment_guest_user(self, get_cart_safe, get_organization):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
@@ -875,7 +887,7 @@ class TicketingCartResourceTestBase(object):
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase.authenticated_user')
     @mock.patch("altair.app.ticketing.cart.api.get_organization")
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test__validate_sales_segment_authenticated_user(self, get_cart_safe, get_organization, authenticated_user):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
@@ -929,7 +941,7 @@ class TicketingCartResourceTestBase(object):
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase.authenticated_user')
     @mock.patch("altair.app.ticketing.cart.api.get_organization")
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test__validate_sales_segment_invalid_cart(self, get_cart_safe, get_organization, authenticated_user):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
@@ -1418,7 +1430,7 @@ class PaymentViewTests(unittest.TestCase):
         payment_delivery_method.payment_method = payment_method
         
         request.context.available_payment_delivery_method_pairs = lambda sales_segment: [payment_delivery_method]
-        request.context.authenticated_user = lambda: { 'claimed_id': 'http://ticketstar.example.com/user/1' }
+        request.context.authenticated_user = lambda: { 'claimed_id': 'http://ticketstar.example.com/user/1', 'organization_id': 1 }
         request.context.get_payment_delivery_method_pair = lambda: None
         request.context.sales_segment = testing.DummyModel()
         target = self._makeOne(request)

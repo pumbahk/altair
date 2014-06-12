@@ -94,8 +94,7 @@ class EntryLotViewTests(unittest.TestCase):
         
         membergroup = MemberGroup(name='test-group')
         self.session.add(membergroup)
-        login(self.config, {'membergroup': 'test-group'})
-        
+        login(self.config, {"username": "test", "membership": "test-membership", "membergroup": "test-group"})
         #event = testing.DummyModel(id=1111)
         #sales_segment = testing.DummyModel(id=12345)
         #lot = _add_lot(self.session, event.id, sales_segment.id, 5, 3, membergroups=[membergroup])
@@ -106,9 +105,9 @@ class EntryLotViewTests(unittest.TestCase):
             matchdict=dict(event_id=1111, lot_id=lot.id),
         )
 
-        context = DummyAuthenticatedResource(user=None,
-                                             event=event,
-                                             lot=lot)
+        context = DummyAuthenticatedResource(
+            event=event, lot=lot,
+            user={'is_guest': True, 'organization_id': 1})
         target = self._makeOne(context, request)
         result = target.get()
 
@@ -120,7 +119,7 @@ class EntryLotViewTests(unittest.TestCase):
 
         membergroup = MemberGroup(name='test-group')
         self.session.add(membergroup)
-        login(self.config, {'membergroup': 'test-group'})
+        login(self.config, {"username": "test", "membership": "test-membership", "membergroup": "test-group"})
         
         lot, products = _add_lots(self.session, product_data, [membergroup])
         return lot, products
@@ -190,7 +189,7 @@ class EntryLotViewTests(unittest.TestCase):
         context = testing.DummyResource(event=lot.event, lot=lot,
                                         organization=lot.event.organization,
                                         check_entry_limit=lambda wishes, user, email: True,
-                                        authenticated_user=lambda:{'is_guest':True})
+                                        authenticated_user=lambda:{'is_guest':True, 'organization_id': 1})
         request.context = context
         target = self._makeOne(context, request)
         result = target.post()
@@ -235,7 +234,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         self.session.add(host)
         self.session.add(membership)
         self.session.add(membergroup)
-        login(self.config, {'membership': 'test-membership', 'membergroup': 'test-group'})
+        login(self.config, {"username": "test", "membership": "test-membership", "membergroup": "test-group"})
         
         lot, products = _add_lots(self.session, product_data, [membergroup])
         return lot, products
@@ -438,7 +437,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         request.registry.settings['lots.accepted_mail_subject'] = '抽選テスト'
         request.registry.settings['lots.accepted_mail_sender'] = 'testing@sender.example.com'
         request.registry.settings['lots.accepted_mail_template'] = 'altair.app.ticketing.lots:mail_templates/accept_entry.txt'
-        context = DummyAuthenticatedResource(user=None)
+        context = DummyAuthenticatedResource(user={ 'is_guest': True, 'organization_id': 1 })
         context.lot = lot
         context.event = lot.event
         request.context = context

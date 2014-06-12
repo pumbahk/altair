@@ -20,7 +20,7 @@ from altair.app.ticketing.mails.interfaces import ILotsElectedMailPayment
 from altair.app.ticketing.mails.interfaces import ILotsRejectedMailPayment
 
 from altair.app.ticketing.cart import helpers as h
-from altair.app.ticketing.cart import api as a
+from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.models import Cart, CartedProduct
 from altair.app.ticketing.core.api import get_channel
 from altair.app.ticketing.cart.exceptions import NoCartError
@@ -37,7 +37,6 @@ from altair.app.ticketing.payments.exceptions import PaymentPluginException
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.mailmags.api import multi_subscribe
-from altair.app.ticketing.users.api import get_or_create_user
 
 from . import CHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 
@@ -184,7 +183,7 @@ class CheckoutView(object):
     @view_config(route_name='payment.checkout.login', renderer='altair.app.ticketing.payments.plugins:templates/checkout_login.html', request_method='POST')
     @view_config(route_name='payment.checkout.login', renderer=selectable_renderer("%(membership)s/mobile/checkout_login_mobile.html"), request_method='POST', request_type='altair.mobile.interfaces.IMobileRequest')
     def login(self):
-        cart = a.get_cart_safe(self.request)
+        cart = cart_api.get_cart_safe(self.request)
         try:
             self.request.session['altair.app.ticketing.cart.magazine_ids'] = [long(v) for v in self.request.params.getall('mailmagazine')]
         except TypeError, ValueError:
@@ -264,13 +263,13 @@ class CheckoutCallbackView(object):
     @view_config(route_name='payment.checkout.callback.success', renderer=selectable_renderer("%(membership)s/pc/completion.html"), request_method='GET')
     @view_config(route_name='payment.checkout.callback.success', request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"), request_method='GET')
     def success(self):
-        cart = a.get_cart(self.request)
+        cart = cart_api.get_cart(self.request)
         if not cart:
             raise NoCartError()
 
         # メール購読
         try:
-            user = get_or_create_user(self.context.authenticated_user())
+            user = cart_api.get_or_create_user(self.context.authenticated_user())
             emails = cart.shipping_address.emails
             magazine_ids = self.request.session.get('altair.app.ticketing.cart.magazine_ids')
             multi_subscribe(user, emails, magazine_ids)
@@ -280,15 +279,15 @@ class CheckoutCallbackView(object):
         finally:
             del self.request.session['altair.app.ticketing.cart.magazine_ids']
             self.request.session.persist()
-        a.remove_cart(self.request)
-        a.logout(self.request)
+        cart_api.remove_cart(self.request)
+        cart_api.logout(self.request)
 
         return dict(order=cart.order)
 
     @clear_exc
     @view_config(route_name='payment.checkout.callback.error', request_method='GET')
     def error(self):
-        cart = a.get_cart(self.request)
+        cart = cart_api.get_cart(self.request)
         logger.info(u'CheckoutPlugin finish: 決済エラー order_no = %s' % (cart.order_no))
         self.request.session.flash(u'決済に失敗しました。しばらくしてから再度お試しください。')
         raise CheckoutSettlementFailure(

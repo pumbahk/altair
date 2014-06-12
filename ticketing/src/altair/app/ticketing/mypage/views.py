@@ -4,10 +4,11 @@ from pyramid.view import view_config
 
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.response import Response
+from pyramid.security import forget
 from altair.app.ticketing.core.models import ProductItem, Performance, Seat, TicketPrintHistory
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
+from altair.app.ticketing.cart.api import get_auth_info
 from altair.app.ticketing.core import models as m
-from altair.rakuten_auth.api import authenticated_user, forget
 from altair.app.ticketing.cart import api
 from .helpers import make_order_data
 from altair.app.ticketing.orderreview.views import build_qr_by_token_id, order_review_qr_image
@@ -34,8 +35,7 @@ class MyPageView(object):
 
     @view_config(route_name='mypage.index', renderer='mypage/index.html', xhr=False, permission="view")
     def index(self):
-
-        openid = authenticated_user(self.request)
+        openid = get_auth_info(self.request)
         user = api.get_or_create_user(self.request, openid['claimed_id'])
 
         q = self.request.POST.get('q')
@@ -82,7 +82,7 @@ class MyPageView(object):
     @view_config(route_name='mypage.order', renderer='mypage/order.html', xhr=False, permission="view")
     def order(self):
 
-        openid = authenticated_user(self.request)
+        openid = get_auth_info(self.request)
         user = api.get_or_create_user(self.request, openid['claimed_id'])
         order_id = int(self.request.matchdict.get('order_id', 0))
 
@@ -124,7 +124,7 @@ class MyPageView(object):
     
     @view_config(route_name='mypage.qr_print', renderer='mypage/qr.html', xhr=False, permission="view")
     def show_qr_page(self):
-        openid = authenticated_user(self.request)
+        openid = get_auth_info(self.request)
         user = api.get_or_create_user(self.request, openid['claimed_id'])
         
         ticket = build_qr_by_token_id(self.request.params['order_no'], self.request.params['seat'])

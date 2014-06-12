@@ -17,7 +17,6 @@ from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_
 from altair.app.ticketing.payments import plugins
 
 import helpers as h
-from ..users.api import get_user
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.qr.utils import build_qr_by_history_id
 from altair.app.ticketing.qr.utils import build_qr_by_token_id, build_qr_by_orion, get_matched_token_from_token_id
@@ -56,7 +55,7 @@ class MypageView(object):
     def show(self):
 
         authenticated_user = self.context.authenticated_user()
-        user = get_user(authenticated_user)
+        user = cart_api.get_user(authenticated_user)
         per = 10
 
         if not user:
@@ -93,7 +92,7 @@ class MypageView(object):
     def order_show(self):
 
         authenticated_user = self.context.authenticated_user()
-        user = get_user(authenticated_user)
+        user = cart_api.get_user(authenticated_user)
 
         if not user:
             raise HTTPNotFound()
@@ -116,7 +115,7 @@ class MypageView(object):
     def mailmag_confirm(self):
 
         authenticated_user = self.context.authenticated_user()
-        user = get_user(authenticated_user)
+        user = cart_api.get_user(authenticated_user)
 
         if not user:
             raise HTTPNotFound()
@@ -146,7 +145,7 @@ class MypageView(object):
     def mailmag_complete(self):
 
         authenticated_user = self.context.authenticated_user()
-        user = get_user(authenticated_user)
+        user = cart_api.get_user(authenticated_user)
 
         if not user:
             raise HTTPNotFound()

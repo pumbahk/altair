@@ -22,6 +22,7 @@ from altair.auth import who_api as get_who_api
 
 from .interfaces import IRakutenOpenID
 from .events import Authenticated
+from . import IDENT_METADATA_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +66,8 @@ class RakutenOpenIDHTTPSessionFactory(object):
 @implementer(IRakutenOpenID)
 class RakutenOpenID(object):
     SESSION_KEY = '_%s_session' % __name__
+    SESSION_IDENT_KEY = 'RakutenOpenIDPlugin.identity'
+    IDENT_OPENID_PARAMS_KEY = '%s.params' % __name__
 
     def __init__(self,
             endpoint,
@@ -99,6 +102,9 @@ class RakutenOpenID(object):
                 setattr(request, self.SESSION_KEY, session)
         return session
 
+    def get_who_api(self, request):
+        return get_who_api(request, name='rakuten')
+
     def combine_session_id(self, url, session):
         return urljoin(url, '?ak=' + urllib.quote(session.id))
 
@@ -118,25 +124,25 @@ class RakutenOpenID(object):
             # ('openid.ax.required', 'nickname'),
         ])
 
-    def verify_authentication(self, request, identity):
+    def verify_authentication(self, request, params):
         url = self.endpoint + "?" + urllib.urlencode(
-           [('openid.ns', identity['ns']),
-            ('openid.op_endpoint', identity['op_endpoint']),
-            ('openid.claimed_id', identity['claimed_id']),
-            ('openid.response_nonce',identity['response_nonce']),
-            ('openid.mode', identity['mode']),
-            ('openid.identity', identity['identity']),
-            ('openid.return_to', identity['return_to']),
-            ('openid.assoc_handle', identity['assoc_handle']),
-            ('openid.signed', identity['signed']),
-            ('openid.sig', identity['sig']),
-            ('openid.ns.oauth', identity['ns_oauth']),
-            ('openid.oauth.request_token', identity['oauth_request_token']),
-            ('openid.oauth.scope', identity['oauth_scope']),
-            # ('openid.ns.ax', identity['ns_ax']),
-            # ('openid.ax.mode', identity['ax_mode']),
-            # ('openid.ax.type.nickname', identity['ax_type_nickname']),
-            # ('openid.ax.value.nickname', identity['ax_value_nickname'].encode('utf-8')),
+           [('openid.ns', params['ns']),
+            ('openid.op_endpoint', params['op_endpoint']),
+            ('openid.claimed_id', params['claimed_id']),
+            ('openid.response_nonce',params['response_nonce']),
+            ('openid.mode', params['mode']),
+            ('openid.identity', params['identity']),
+            ('openid.return_to', params['return_to']),
+            ('openid.assoc_handle', params['assoc_handle']),
+            ('openid.signed', params['signed']),
+            ('openid.sig', params['sig']),
+            ('openid.ns.oauth', params['ns_oauth']),
+            ('openid.oauth.request_token', params['oauth_request_token']),
+            ('openid.oauth.scope', params['oauth_scope']),
+            # ('openid.ns.ax', params['ns_ax']),
+            # ('openid.ax.mode', params['ax_mode']),
+            # ('openid.ax.type.nickname', params['ax_type_nickname']),
+            # ('openid.ax.value.nickname', params['ax_value_nickname'].encode('utf-8')),
         ])
 
         f = urllib2.urlopen(url, timeout=self.timeout)
@@ -145,14 +151,12 @@ class RakutenOpenID(object):
         finally:
             f.close()
 
-        logger.debug('authenticate result : %s' % response_body)
+        logger.debug('authenticate result: %s' % response_body)
         is_valid = response_body.split("\n")[0].split(":")[1]
 
         if is_valid == "true":
-            logger.debug("authentication OK")
             return True
         else:
-            logger.debug("authentication NG")
             return False
 
     def openid_params(self, request):
@@ -184,36 +188,76 @@ class RakutenOpenID(object):
     def set_return_url(self, session, url):
         session[self.__class__.__name__ + '.return_url'] = url
 
-    def on_verify(self, request):
-        who_api = get_who_api(request, name="rakuten")
-        params = self.openid_params(request)
-        identity, headers = who_api.login(params)
-        session = self.get_session(request)
+    def extra_verification_phase(self, request):
+        return request.path_url == self.extra_verify_url
 
+    def extra_verification_phase_exists(self, request):
+        return self.extra_verify_url is not None 
+
+    def on_challenge(self, request):
+        session = self.new_session(request)
+        self.set_return_url(session, request.url)
+        session.save()
+        logger.debug('redirect from %s' % request.url)
+        return HTTPFound(location=self.get_redirect_url(session))
+
+    def on_verify(self, request):
+        who_api = self.get_who_api(request)
+        params = self.openid_params(request)
+        identity, headers = who_api.login({ self.IDENT_OPENID_PARAMS_KEY: params })
         if identity:
-            return HTTPFound(
-	    	self.combine_session_id(
-                    self.extra_verify_url,
-                    session))
+            session = self.get_session(request)
+            if self.extra_verification_phase_exists(request):
+                session[self.SESSION_IDENT_KEY] = identity
+                session.save()
+                return HTTPFound(
+                    self.combine_session_id(
+                        self.extra_verify_url,
+                        session))
+            else:
+                return self._on_success(request, session, identity, headers)
         else:
             return HTTPFound(location=self.error_to)
 
     def on_extra_verify(self, request):
-        who_api = get_who_api(request, name="rakuten")
-        identity = who_api.authenticate()
-        if identity:
-            request.registry.notify(Authenticated(request, identity))
-            session = self.get_session(request)
-            return_url = self.get_return_url(session)
-            if not return_url:
-                # TODO: デフォルトURLをHostからひいてくる
-                return_url = "/"
-            session.invalidate()
-            headers = identity['identifier'].remember(request.environ, identity)
-            return HTTPFound(location=return_url, headers=headers)
-        else:
-            logger.error('authentication failure on extra_verify, check that request.path_url (%s) is identical to %s' % (request.path_url, self.extra_verify_url))
+        if not self.extra_verification_phase(request):
+            logger.error('authentication failure on verify. request.path_url (%s) != extra_verify_url (%s)' % (request.path_url, self.extra_verify_url))
             return HTTPFound(location=self.error_to)
+
+        session = self.get_session(request)
+        if session is None:
+            logging.info('could not retrieve the temporary session')
+            return HTTPFound(location=self.error_to)
+
+        identity = session.get(self.SESSION_IDENT_KEY)
+        if identity is None:
+            logging.info('no identity stored in the temporary session')
+            return HTTPFound(location=self.error_to)
+
+        who_api = self.get_who_api(request)
+        identity, headers = who_api.login(identity)
+        if identity is not None:
+            session = self.get_session(request)
+            return self._on_success(request, session, identity, headers)
+        else:
+            logger.info('authentication failure on verify. temporary session timeout, oauth API failures etc.')
+            return HTTPFound(location=self.error_to)
+
+    def _on_success(self, request, session, identity, headers):
+        who_api = self.get_who_api(request)
+        identity = who_api.authenticate() # needed to fetch metadata
+        request.registry.notify(Authenticated(
+            request,
+            identity['repoze.who.userid'],
+            identity[IDENT_METADATA_KEY]
+            ))
+        return_url = self.get_return_url(session)
+        if not return_url:
+            # TODO: デフォルトURLをHostからひいてくる
+            return_url = "/"
+        session.invalidate()
+        return HTTPFound(location=return_url, headers=headers)
+
 
 def openid_consumer_from_settings(settings, prefix):
     session_args = {}

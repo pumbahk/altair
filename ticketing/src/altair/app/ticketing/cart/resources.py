@@ -5,8 +5,8 @@ import logging
 from datetime import datetime, date
 import itertools
 from sqlalchemy import sql
-from pyramid.security import Everyone, Authenticated
-from pyramid.security import Allow
+from pyramid.security import Everyone, Authenticated, Allow
+from pyramid.security import effective_principals
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm import joinedload, joinedload_all
@@ -14,8 +14,8 @@ from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
 from altair.sqlahelper import get_db_session
 from .interfaces import ICartPayment, ICartDelivery
+from .api import get_auth_info
 from altair.app.ticketing.payments.interfaces import IOrderPayment, IOrderDelivery
-from altair.app.ticketing.users import api as user_api
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as core_api
@@ -24,7 +24,6 @@ from altair.app.ticketing.core.interfaces import IOrderQueryable
 from altair.app.ticketing.users import models as u_models
 from . import models as m
 from . import api as cart_api
-from .api import get_cart_safe
 from .exceptions import NoCartError
 from .interfaces import ICartContext
 from .exceptions import (
@@ -99,7 +98,7 @@ class TicketingCartResourceBase(object):
         if cart and cart.sales_segment:
             logger.info('validate sales_segment_id:%s' % cart.sales_segment_id)
             user = self.authenticated_user()
-            if not cart.sales_segment.applicable(user=self.authenticated_user(), type='all'):
+            if not cart.sales_segment.applicable(user=user, type='all'):
                 logger.warn('sales_segment_id({0}) does not permit membership({1})'.format(cart.sales_segment_id, self.membership))
                 try:
                     cart_api.release_cart(self.request, cart)
@@ -114,7 +113,7 @@ class TicketingCartResourceBase(object):
     def cart(self):
         from altair.app.ticketing.models import DBSession as session
         if self._cart is None:
-            self._cart = get_cart_safe(self.request, for_update=True)
+            self._cart = cart_api.get_cart_safe(self.request, for_update=True)
         else:
             self._cart = session.merge(self._cart)
         return self._cart
@@ -176,9 +175,7 @@ class TicketingCartResourceBase(object):
 
     def authenticated_user(self):
         """現在認証中のユーザ"""
-        from altair.rakuten_auth.api import authenticated_user
-        user = authenticated_user(self.request)
-        return user or { 'is_guest': True }
+        return get_auth_info(self.request)
 
     @reify
     def available_sales_segments(self):
@@ -271,8 +268,7 @@ class TicketingCartResourceBase(object):
 
     @property
     def membership(self):
-        from altair.rakuten_auth.api import authenticated_user
-        user = authenticated_user(self.request)
+        user = self.authenticated_user()
         if user is None:
             return None
         if 'membership' not in user:
@@ -283,7 +279,7 @@ class TicketingCartResourceBase(object):
 
     @reify
     def user_object(self):
-        return user_api.get_user(self.authenticated_user())
+        return cart_api.get_user(self.authenticated_user())
 
     @reify
     def host_base_url(self):

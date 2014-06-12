@@ -58,7 +58,6 @@ class LoginView(object):
             # 議論の余地がある。user_id を identity にしてしまえば DB 負荷を
             # かなり減らすことができるだろう。
             identity = {
-                'login': True,
                 'membership': membership,
                 'username': username,
                 }
@@ -82,7 +81,6 @@ class LoginView(object):
         logger.debug("guest authenticate for membership %s" % membership)
 
         identity = {
-            'login': True,
             'membership': membership,
             'is_guest': True,
         }
