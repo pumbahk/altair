@@ -1,7 +1,7 @@
 import logging
 from altair.rakuten_auth.events import Authenticated
 from pyramid.events import subscriber
-from .api import get_or_create_user
+from altair.app.ticketing.cart.api import get_or_create_user
 from .models import UserPointAccountTypeEnum, UserPointAccountStatusEnum, UserPointAccount, UserProfile
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart.api import get_auth_info
