@@ -5,6 +5,7 @@ import json
 import urllib2
 import logging
 import contextlib
+import re
 
 from zope.deprecation import deprecate
 from sqlalchemy.sql.expression import or_, and_
