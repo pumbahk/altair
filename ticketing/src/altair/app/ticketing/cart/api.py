@@ -403,6 +403,7 @@ def get_auth_info(request):
             retval['claimed_id'] = user_id
         else:
             retval['username'] = user_id
+        retval['is_guest'] = False
     else:
         retval['is_guest'] = True
     retval['organization_id'] = get_organization(request).id
