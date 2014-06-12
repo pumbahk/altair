@@ -255,7 +255,7 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
         stock_holders = StockHolder.get_own_stock_holders(event=event)
         self.stock_holder_id.choices = [(sh.id, sh.name) for sh in stock_holders]
 
-        ticket_bundles = TicketBundle.filter_by(event_id=event.id)
+        ticket_bundles = TicketBundle.query.filter_by(event_id=event.id).all()
         self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
         if not self.ticket_bundle_id.data and ticket_bundles:
             self.ticket_bundle_id.data = ticket_bundles[0].id

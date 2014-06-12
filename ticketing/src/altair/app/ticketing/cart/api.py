@@ -22,7 +22,6 @@ from altair.app.ticketing.api.impl import CMSCommunicationApi
 from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.mobile.api import detect_from_ip_address
 from altair.app.ticketing.core import models as c_models
-from altair.app.ticketing.core import api as c_api
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.interfaces import ITemporaryStore
 from altair.mq import get_publisher
@@ -338,7 +337,7 @@ def get_cart_user_identifiers(request):
     return retval
 
 def is_smartphone_organization(context, request):
-    organization = c_api.get_organization(request)
+    organization = get_organization(request)
     return organization.setting.enable_smartphone_cart
 
 def is_point_input_organization(context, request):
