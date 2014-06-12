@@ -59,7 +59,7 @@ class GetContactURLTest(TestCase):
         request = cls._create_request(organization)
         return request, organization, setting
 
-    @patch('altair.app.ticketing.cart.api.get_organization_setting')
+    @patch('altair.app.ticketing.core.api.get_organization_setting')
     @patch('altair.app.ticketing.cart.api.get_organization')
     def normal_test(self, get_organization, get_organization_setting):
         """Normal case.
@@ -78,7 +78,7 @@ class GetContactURLTest(TestCase):
         url = api.get_contact_url(request)
         self.assertEqual(url, self.pc_url)
 
-    @patch('altair.app.ticketing.cart.api.get_organization_setting')
+    @patch('altair.app.ticketing.core.api.get_organization_setting')
     @patch('altair.app.ticketing.cart.api.get_organization')
     def invalid_url_test(self, get_organization, get_organization_setting):
 
@@ -108,7 +108,7 @@ class GetContactURLTest(TestCase):
         with self.assertRaises(error):
             api.get_contact_url(request, error)
 
-    @patch('altair.app.ticketing.cart.api.get_organization_setting')
+    @patch('altair.app.ticketing.core.api.get_organization_setting')
     @patch('altair.app.ticketing.cart.api.get_organization')
     def cannot_get_organization_test(self, get_organization, get_organization_setting):
         """No organization case.
