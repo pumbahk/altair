@@ -25,7 +25,7 @@ class ExtraForm(Form):
         u"メルマガ配信",
         default=True)
     motivation = fields.SelectField(
-        u"ブースタークラブに入会しようと思ったきっかけは？",
+        u"クラブナイナーズに入会しようと思ったきっかけは？",
         choices=[
             (u"", u"お選びください"),
             (u"継続で入会", u"継続で入会"),

@@ -21,7 +21,7 @@ metadata_provider = DefaultModelAttributeMetadataProvider(
             },
         'extra.motivation': {
             'display_name': {
-                'ja_JP': u'ブースタークラブに入会しようと思ったきっかけ',
+                'ja_JP': u'クラブナイナーズに入会しようと思ったきっかけ',
                 },
             'type': unicode,
             },

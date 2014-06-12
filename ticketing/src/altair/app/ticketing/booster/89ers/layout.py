@@ -6,14 +6,14 @@ class Layout(object):
         self.context = context
         self.request = request
 
-    title = u"仙台89ERS 2013-2014 ブースタークラブ入会申込ページ"
-    mini_title = u"仙台89ERS ブースタークラブ入会申込ページ"
-    orderreview_title = u"仙台89ERS 2013-2014 ブースタークラブ受付確認ページ"
-    complete_title = u"仙台89 ERS 2013-2014 ブースター会員申込"
+    title = u"仙台89ERS 2014-2015 クラブナイナーズ入会申込ページ"
+    mini_title = u"仙台89ERS クラブナイナーズ入会申込ページ"
+    orderreview_title = u"仙台89ERS 2014-2015 クラブナイナーズ受付確認ページ"
+    complete_title = u"仙台89 ERS 2014-2015 ブースター会員申込"
     team_name = u"仙台89ERS"
     mailaddress = u"89ers@tstar.jp"
-    contact_name = u"仙台89ERS　ブースタークラブ事務局"
-    product_name = u"仙台89ERS 2013-2014 ブースタークラブ"
+    contact_name = u"仙台89ERS　クラブナイナーズ事務局"
+    product_name = u"仙台89ERS 2014-2015 クラブナイナーズ"
     tel = u"022-215-8138　(平日：9:00〜18:00)"
     ##html
     form_class_name = u"form89ers"
