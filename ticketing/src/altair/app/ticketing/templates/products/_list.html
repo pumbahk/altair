@@ -9,6 +9,7 @@ if performance is not None:
     sales_segments = sorted(performance.sales_segments, key=lambda x:(x.order, x.name))
 elif sales_segment:
     sales_segments = [sales_segment]
+    performance = sales_segment.performance
 %>
 
 ## table/jqgridの登録フォームの使い分け用のjs
@@ -133,7 +134,8 @@ elif sales_segment:
 
     var data ={
       product_id:row.product_id,
-      name:'(複数在庫商品)'
+      name:'(複数在庫商品)',
+      performance_id:${performance.id}
     }
     grid.addChildNode(undefined, rowId, data);
   }
@@ -192,10 +194,10 @@ elif sales_segment:
         apps["loadsvg"].model.changeHolder({pk: pk, name: config.modelname})
         return false;
       }
-% if performance:
-      var qstring = "event_id="+"${performance.event_id}"+"&performance_id="+"${performance.id}"; //ugly
-% else:
+% if sales_segment:
       var qstring = "sales_segment_id="+"${sales_segment.id}"; //ugly
+% else:
+      var qstring = "event_id="+"${performance.event_id}"+"&performance_id="+"${performance.id}"; //ugly
 % endif
       config.modalView = new modal.api.AjaxModalView({
         el: $el,

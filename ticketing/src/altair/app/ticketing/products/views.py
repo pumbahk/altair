@@ -104,8 +104,8 @@ class ProductAndProductItem(BaseView):
                     stock_holder_id=f.stock_holder_id.data,
                     performance_id=f.performance_id.data
                 ).one()
-                product_item.name = f.name.data
-                product_item.price = f.price.data
+                product_item.name = f.product_item_name.data
+                product_item.price = f.product_item_price.data
                 product_item.quantity = f.product_item_quantity.data
                 product_item.stock_id = stock.id
                 product_item.ticket_bundle_id = f.ticket_bundle_id.data

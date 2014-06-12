@@ -232,6 +232,9 @@ class ProductItemFormMixin(object):
                 if self.product_item_price.data != pi.price:
                     self.product_item_price.errors.append(error_message)
                     status = False
+                if self.product_item_quantity.data != pi.quantity:
+                    self.product_item_quantity.errors.append(error_message)
+                    status = False
         return status
 
 
@@ -259,6 +262,11 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
         self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
         if not self.ticket_bundle_id.data and ticket_bundles:
             self.ticket_bundle_id.data = ticket_bundles[0].id
+
+        if self.name.data and not self.product_item_name.data:
+            self.product_item_name.data = self.name.data
+        if self.price.data and not self.product_item_price.data:
+            self.product_item_price.data = self.price.data
 
     def _get_translations(self):
         return Translations()
