@@ -61,35 +61,3 @@
     return link;
   };
 })(jQuery);
-
-function addRow(gid, rowId) {
-  var grid = $('#' + gid);
-  var row = grid.getRowData(rowId);
-  if (!row.level) {
-    grid.setCell(rowId, 'parent', 'null');
-    grid.setCell(rowId, 'level', 0);
-    grid.setCell(rowId, 'isLeaf', false);
-    grid.setCell(rowId, 'expanded', true);
-    grid.setCell(rowId, 'loaded', true);
-  }
-
-  var data ={
-    product_id:row.product_id,
-    product_name:'(複数在庫商品)'
-  }
-  grid.addChildNode(undefined, rowId, data);
-}
-function deleteRow(gid, rowId) {
-  var grid = $('#' + gid);
-  grid.setCell(rowId, 'stock_holder_id', '', {background:'#BD362F'});
-  grid.setCell(rowId, 'product_item_name', '', {background:'#BD362F'});
-  grid.setCell(rowId, 'product_item_price', '', {background:'#BD362F'});
-  grid.setCell(rowId, 'product_item_quantity', '', {background:'#BD362F'});
-  grid.setCell(rowId, 'stock_quantity', '', {background:'#BD362F'});
-  grid.setCell(rowId, 'stock_status_quantity', '', {background:'#BD362F'});
-  grid.setCell(rowId, 'ticket_bundle_id', '', {background:'#BD362F'});
-  grid.setCell(rowId, 'deleted', true);
-  var row = new Object();
-  row['id'] = rowId;
-  grid.setRetainChanges([row]);
-}

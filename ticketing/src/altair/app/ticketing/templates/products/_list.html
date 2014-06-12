@@ -107,14 +107,14 @@ elif sales_segment:
     };
     $.fn.linkFormatter = function(cellvalue, options, rowObject) {
       var link = '';
-      if (!rowObject.level) {
-        link += '<a href="javascript:addRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-plus"></i></a>';
+      if (rowObject.ticket_bundle && rowObject.ticket_bundle.id) {
+        link += '<a href="javascript:preview_ticket(' + rowObject.product_item.id + ')"><i class="icon-eye-open"></i></a>';
       }
       if (rowObject.product_item) {
         link += '<a href="javascript:deleteRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-trash"></i></a>';
       }
-      if (rowObject.ticket_bundle && rowObject.ticket_bundle.id) {
-        link += '<a href="javascript:preview_ticket(' + rowObject.product_item.id + ')"><i class="icon-eye-open"></i></a>';
+      if (!rowObject.level) {
+        link += '<a href="javascript:addRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-plus"></i></a>';
       }
       return link;
     };
@@ -126,20 +126,28 @@ elif sales_segment:
     if (!row.level) {
       grid.setCell(rowId, 'parent', 'null');
       grid.setCell(rowId, 'level', 0);
-      grid.setCell(rowId, 'isLeaf', false);
+      grid.setCell(rowId, 'is_leaf', false);
       grid.setCell(rowId, 'expanded', true);
       grid.setCell(rowId, 'loaded', true);
     }
 
     var data ={
       product_id:row.product_id,
-      product_name:'(複数在庫商品)'
+      name:'(複数在庫商品)'
     }
     grid.addChildNode(undefined, rowId, data);
   }
   function deleteRow(gid, rowId) {
     var grid = $('#' + gid);
+    var row = grid.getRowData(rowId);
+    if (row.is_leaf == 'false') {
+      grid.setCell(rowId, 'name', '', {background:'#BD362F'});
+      grid.setCell(rowId, 'price', '', {background:'#BD362F'});
+      grid.setCell(rowId, 'display_order', '', {background:'#BD362F'});
+      grid.setCell(rowId, 'public', '', {background:'#BD362F'});
+    }
     grid.setCell(rowId, 'stock_holder_id', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'stock_type_id', '', {background:'#BD362F'});
     grid.setCell(rowId, 'product_item_name', '', {background:'#BD362F'});
     grid.setCell(rowId, 'product_item_price', '', {background:'#BD362F'});
     grid.setCell(rowId, 'product_item_quantity', '', {background:'#BD362F'});
@@ -277,7 +285,7 @@ $(function(){
       <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-${sales_segment.id}" data-id="${sales_segment.id}">
         <%sb:react_subview
            target="product_table${unicode(sales_segment.id)}"
-           url="${request.route_path('products.sub.older.show',sales_segment_id=sales_segment.id)}"
+           url="${request.route_path('products.sub.older.show', sales_segment_id=sales_segment.id)}"
            data="${dict(i=i)}"
            autoload="${is_autoload(sales_segment, i)}"
            continuation="$('#use-grid-editor').trigger('collectPreviewCandidates', []);"

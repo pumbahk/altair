@@ -2,23 +2,10 @@
 ## active <- i==0
 ## stock_holders
 ## ticket_bundles
-<%doc>
-if performance is not None:
-    stock_types = performance.event.stock_types
-    stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id == performance.id).distinct().all()
-    ticket_bundles = performance.event.ticket_bundles
-    sales_segments = sorted(performance.sales_segments, key=lambda x:(x.order, x.name))
-elif sales_segment:
-    event = sales_segment.event
-    stock_types = event.stock_types
-    ticket_bundles = event.ticket_bundles
-    sales_segments = [sales_segment]
-    performance_ids = [p.id for p in sales_segment.sales_segment_group.event.performances]
-    stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
-</%doc>
 
 <div class="grid">
   <table id="sales-segment-${sales_segment.id}-grid"></table>
+  <input type="button" id="sales-segment-${sales_segment.id}-add_button" value="新規" class="btn" />
   <input type="button" id="sales-segment-${sales_segment.id}-save_button" value="保存" class="btn" />
   <input type="button" id="sales-segment-${sales_segment.id}-clear_button" value="取消" class="btn" />
   <div><p class="pull-right"><i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p></div>
@@ -33,11 +20,7 @@ elif sales_segment:
     <% options = [u":(なし)"] + ["%s:%s" % (tb.id, tb.name) for tb in ticket_bundles] %>
     var ticket_bundle_options = {value:"${';'.join(options)|n}"};
 
-    <%
-      query_string = 'sales_segment_id=%d' % sales_segment.id
-      if performance:
-        query_string += '&performance_id=%d' % performance.id
-    %>
+    <% query_string = 'sales_segment_id=%d' % sales_segment.id %>
     var grid = $('#sales-segment-${sales_segment.id}-grid');
     grid.jqGrid({
       url: '/products/api/get/?${query_string|n}',  //表示したいデータ
@@ -52,9 +35,9 @@ elif sales_segment:
         {label:'価格', jsonmap:'product.price', name:'price', index:'price', sorttype:'int', width:60, align:'right', editable:true},
         {label:'表示順', jsonmap:'product.display_order', name:'display_order', index:'display_order', sorttype:'int', width:40, align:'right', editable:true},
         {label:'公開', jsonmap:'product.public', name:'public', index:'public', width:60, align:'right', formatter:'select', editable:true, edittype:'select', editoptions:public_options},
-        {label:'配券先', jsonmap:'stock_holder.id', name:'stock_holder_id', index:'stock_holder_id', width:100, formatter:'select', editable:true, edittype:'select', editoptions:stock_holder_options},
-        {hidden: true, jsonmap:'product_item.id', name:'product_item_id', editable:false},
         {label:'席種', jsonmap:'stock_type.id', name:'stock_type_id', index:'stock_type_id', width:100, formatter:'select', editable:true, edittype:'select', editoptions:stock_type_options},
+        {hidden: true, jsonmap:'product_item.id', name:'product_item_id', editable:false},
+        {label:'配券先', jsonmap:'stock_holder.id', name:'stock_holder_id', index:'stock_holder_id', width:100, formatter:'select', editable:true, edittype:'select', editoptions:stock_holder_options},
         {label:'商品明細名', jsonmap:'product_item.name', name:'product_item_name', index:'product_item_name', width:150, editable:true},
         {label:'単価', jsonmap:'product_item.price', name:'product_item_price', index:'product_item_price', sorttype:'int', width:60, align:'right', editable:true},
         {label:'販売単位', jsonmap:'product_item.quantity', name:'product_item_quantity', index:'product_item_quantity', sorttype:'int', width:60, align:'right', editable:true},
@@ -64,6 +47,7 @@ elif sales_segment:
         {label:' ', name:'link', width:80, formatter:grid.linkFormatter},
         {hidden: true, jsonmap:'product_item', name:'product_item', editable:false},
         {hidden: true, jsonmap:'ticket_bundle', name:'ticket_bundle', editable:false},
+        {hidden: true, jsonmap:'product.performance_id', name:'performance_id', editable:false},
         {hidden: true, name:'deleted', editable:false}
       ],  //列ごとの設定
       forceFit : true,
@@ -107,6 +91,22 @@ elif sales_segment:
       ExpandColumn: 'row_id'
     });
 
+    $('#sales-segment-${sales_segment.id}-add_button').click(function(){
+      var grid = $('#sales-segment-${sales_segment.id}-grid');
+      var rows = grid.getRowData();
+      var max = 0;
+      for (i = 0; i < rows.length; i++) {
+        var cur = parseInt(rows[i].rid);
+        if (max < cur) {
+          max = cur;
+        }
+      }
+      var data = {
+        rid: max + 1,
+        performance_id: ${sales_segment.performance_id}
+      };
+      grid.addRowData(undefined, data);
+    });
     $('#sales-segment-${sales_segment.id}-save_button').click(function(){
       $.ajax({
         type: 'POST',
