@@ -16,6 +16,7 @@
       };
       edit_product = function edit_product(id, product_item_id) {
         if (!id) return false;
+        if (!product_item_id) product_item_id = '';
         load_modal_form(
           modal_product,
           '${request.route_path('products.edit', product_id='{id}', _query=dict(product_item_id='{product_item_id}'))|n}'.replace(encodeURIComponent('{id}'), id).replace(encodeURIComponent('{product_item_id}'), product_item_id),
