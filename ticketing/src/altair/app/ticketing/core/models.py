@@ -3440,6 +3440,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     augus_username = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのユーザ名', _a_label=u'オーガス用サーバのユーザ名')
     augus_password = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのパスワード', _a_label=u'オーガス用サーバのパスワード')
 
+    enable_smartphone_cart = AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=u'スマートフォン用のカートを有効にする')
+
     @property
     def container(self):
         return self.organization
