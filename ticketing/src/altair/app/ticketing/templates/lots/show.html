@@ -119,7 +119,7 @@ ${tabs.tabs(request)}
 <hr>
 
 <h3>商品明細</h3>
-<div style="overflow-x: scroll;">
+<div style="overflow-x: auto;">
   <table id="products-grid"></table>
 </div>
 <button id="sales-segment-save_button" class="btn">保存</button>
@@ -132,19 +132,9 @@ ${tabs.tabs(request)}
 $(function() {
   $.fn.linkFormatter = function(cellvalue, options, rowObject) {
     var link = '';
-    /*
-    if (!rowObject.level) {
-      link += '<a href="javascript:addRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-plus"></i></a>';
-    }
-    */
     if (rowObject.product_item) {
       link += '<a href="javascript:deleteRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-trash"></i></a>';
     }
-    /*
-    if (rowObject.ticket_bundle && rowObject.ticket_bundle.id) {
-      link += '<a href="javascript:preview_ticket(' + rowObject.product_item.id + ')"><i class="icon-eye-open"></i></a>';
-    }
-    */
     return link;
   };
 
@@ -154,7 +144,7 @@ $(function() {
   productGrid.colModel.push({
     "label": ' ',
     "name": 'link',
-    "width": 80,
+    "width": 30,
     formatter:grid.linkFormatter
   });
 
@@ -181,6 +171,11 @@ $(function() {
 
   function deleteRow(gid, rowId) {
     var grid = $('#' + gid);
+    grid.setCell(rowId, 'name', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'price', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'display_order', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'public', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'stock_type_id', '', {background:'#BD362F'});
     grid.setCell(rowId, 'stock_holder_id', '', {background:'#BD362F'});
     grid.setCell(rowId, 'product_item_name', '', {background:'#BD362F'});
     grid.setCell(rowId, 'product_item_price', '', {background:'#BD362F'});

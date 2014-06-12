@@ -7,6 +7,13 @@
       urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
   )}
 </%block>
+
+<script type="text/javascript">
+  $(function() {
+    $('[rel=popover]').popover({html:true});
+  });
+</script>
+
 <div class="page-header">
   <h1>抽選</h1>
 </div>
@@ -15,9 +22,9 @@
     <fieldset>
         <legend>抽選情報</legend>
       ${ch.form_item(form.name, class_='span8', maxlength=255)}
-      ${ch.form_item(form.limit_wishes, help=u"1回の申し込み中で第何希望まで出せるかの設定")}
-      ${ch.form_item(form.entry_limit, help=u"同一ユーザーがこの抽選に何回申し込めるかの設定")}
-      ${ch.form_item(form.description, help=u"抽選申し込み画面に表示される注意事項など")}
+      ${ch.form_item(form.limit_wishes, help=ch.help(form.limit_wishes, u"1回の申し込み中で第何希望まで出せるかの設定"))}
+      ${ch.form_item(form.entry_limit, help=ch.help(form.entry_limit, u"同一ユーザーがこの抽選に何回申し込めるかの設定"))}
+      ${ch.form_item(form.description, help=ch.help(form.description, u"抽選申し込み画面に表示される注意事項など"))}
       ${ch.form_item(form.lotting_announce_datetime)}
       ${ch.form_item(form.lotting_announce_timezone)}
       ${ch.form_item(form.custom_timezone_label)}
@@ -25,7 +32,7 @@
     </fieldset>
     <fieldset>
         <legend>販売区分情報</legend>
-      ${ch.form_item(form.sales_segment_group_id,)}
+      ${ch.form_item(form.sales_segment_group_id)}
       ${ch.form_item(form.start_at)}
       ${ch.form_item(form.end_at)}
       ${ch.form_item(form.max_quantity)}
