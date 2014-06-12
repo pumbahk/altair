@@ -228,6 +228,9 @@ class ProductItemFormMixin(object):
                 if self.product_item_price.data != pi.price:
                     self.product_item_price.errors.append(error_message)
                     status = False
+                if self.product_item_quantity.data != pi.quantity:
+                    self.product_item_quantity.errors.append(error_message)
+                    status = False
         return status
 
 
