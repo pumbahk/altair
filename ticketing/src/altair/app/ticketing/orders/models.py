@@ -399,11 +399,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from altair.app.ticketing.models import DBSession
         return DBSession.query(Order, include_deleted=True).filter_by(order_no=self.order_no).filter_by(branch_no=self.branch_no-1).one()
 
+    @deprecation.deprecate(u"altair.app.ticketing.orders.api.get_anshin_checkout_object()を使ってほしい")
     @property
     def checkout(self):
-        from altair.app.ticketing.checkout import api as checkout_api
-        service = checkout_api.get_checkout_service(request, self.ordered_from, core_api.get_channel(self.channel))
-        return service.get_checkout_object_by_order_no(self.order_no)
+        request = get_current_request()
+        from .api import get_anshin_checkout_object
+        return get_anshin_checkout_object(request, self)
 
     @property
     def is_inner_channel(self):

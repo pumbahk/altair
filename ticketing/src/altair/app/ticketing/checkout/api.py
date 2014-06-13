@@ -6,7 +6,7 @@ from lxml import etree
 from base64 import b64encode
 from datetime import datetime
 from collections import OrderedDict
-
+from sqlalchemy.orm.exc import NoResultFound
 from altair.app.ticketing.core.models import ChannelEnum
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart.models import Cart
@@ -96,11 +96,6 @@ def anshin_checkout_session(func):
 def remove_default_session():
     m._session.remove()
 
-def get_cart_id_by_order_no(request, order_no):
-    from altair.app.ticketing.models import DBSession as session
-    from altair.app.ticketing.cart.models import Cart
-    return session.query(Cart).filter_by(order_no=order_no).one().id
-
 BASIC_FEE_ITEMS = [
     ('delivery_fee', 'refund_delivery_fee', u'引取手数料'),
     ('system_fee', 'refund_system_fee', u'システム利用料'),
@@ -141,6 +136,11 @@ def build_checkout_object_from_order_like(request, order_like):
                 )
             )
     return checkout_object
+
+def get_cart_id_by_order_no(request, order_no):
+    from altair.app.ticketing.models import DBSession as session
+    from altair.app.ticketing.cart.models import Cart
+    return session.query(Cart).filter_by(order_no=order_no).one().id
 
 def get_checkout_object(request, session, order_no):
     from altair.app.ticketing.cart.models import Cart
@@ -283,10 +283,16 @@ class AnshinCheckoutAPI(object):
         return self.get_checkout_object_by_order_no(order_like.order_no).authorized_at
 
     def get_checkout_object_by_order_no(self, order_no):
-        return get_checkout_object(self.request, self.session, order_no)
+        try:
+            return get_checkout_object(self.request, self.session, order_no)
+        except NoResultFound:
+            return None
 
     def get_checkout_object_by_id(self, id):
-        return get_checkout_object_by_id(self.request, self.session, id)
+        try:
+            return get_checkout_object_by_id(self.request, self.session, id)
+        except NoResultFound:
+            return None
 
     def mark_authorized(self, order_no):
         checkout_object = self.get_checkout_object_by_order_no(order_no)
@@ -295,7 +301,7 @@ class AnshinCheckoutAPI(object):
         self.session.commit()
 
     def request_fixation_order(self, order_like_list):
-        checkout_object_list = [self.get_checkout_object_by_order_no(order_like.order_no) for order_like in order_like_list]
+        checkout_object_list = [get_checkout_object(self.request, self.session, order_like.order_no) for order_like in order_like_list]
         xml = self.pb.create_order_control_request_xml(checkout_object_list)
         try:
             res = self.comm.send_order_fixation_request(xml)
@@ -315,7 +321,7 @@ class AnshinCheckoutAPI(object):
         return result
 
     def request_cancel_order(self, order_like_list):
-        checkout_object_list = [self.get_checkout_object_by_order_no(order_like.order_no) for order_like in order_like_list]
+        checkout_object_list = [get_checkout_object(self.request, self.session, order_like.order_no) for order_like in order_like_list]
         xml = self.pb.create_order_control_request_xml(checkout_object_list)
         try:
             res = self.comm.send_order_cancel_request(xml)
@@ -336,7 +342,7 @@ class AnshinCheckoutAPI(object):
         checkout_object_list = [
             update_checkout_object_by_order_like(
                 self.request, self.session,
-                self.get_checkout_object_by_order_no(order_like.order_no),
+                get_checkout_object(self.request, self.session, order_like.order_no),
                 order_like,
                 refund_record
                 )
