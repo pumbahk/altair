@@ -93,13 +93,17 @@ class EventsNew(Part):
     """イベント作成ページ
     """
 
+    def __init__(self, title='TEST'):
+        self.title = title
+
+
     @url_match('/events/new$')
     def is_target(self, browser, status):
         return True
 
     def run(self, browser, status):
         id_value = {
-            'title': u'TEST',
+            'title': self.title,
             'abbreviated_title': u'TEST',
             'code': get_code(7),
             'display_order': '-100',
@@ -623,9 +627,10 @@ class PerformanceCreator(Part):
     """イベント詳細ページ Performance作成
     """
 
-    def __init__(self, *args, **kwds):
-        super(type(self), self).__init__(*args, **kwds)
+    def __init__(self, name='TEST', *args, **kwds):
+        self.name = name
         self.created_at = None
+        super(type(self), self).__init__(*args, **kwds)
 
     @url_match('/events/show/(?P<event_id>\d+)$')
     def is_target(self, browser, status):
@@ -655,7 +660,7 @@ class PerformanceCreator(Part):
             raise BackendOperationError()
 
     def edit_performance_page(self, browser, status):
-        name_value = {u'name': u'TEST',
+        name_value = {u'name': self.name,
                       u'code': get_code(12),
                       }
 
@@ -701,6 +706,8 @@ class PerformanceCreator(Part):
 def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()
     parser.add_argument('url', nargs='?', default='https://backend.stg2.rt.ticketstar.jp')
+    parser.add_argument('--event', default='TEST')
+    parser.add_argument('--performance', default='TEST')
     opts = parser.parse_args(argv)
 
     url = opts.url
@@ -724,7 +731,7 @@ def main(argv=sys.argv[1:]):
     event_runner += [
         BackendLogin(),
         Events(),
-        EventsNew(),
+        EventsNew(opts.event),
         StockTypeCreator(),
         ReturnEventPageFromTicketPage(),
         TicketCreator(),
@@ -738,7 +745,7 @@ def main(argv=sys.argv[1:]):
     performance_runner = Runner(browser, status)
     performance_runner += [
         BackendLogin(),
-        PerformanceCreator()
+        PerformanceCreator(name=opts.performance)
         ]
     performance_runner.run()
 
