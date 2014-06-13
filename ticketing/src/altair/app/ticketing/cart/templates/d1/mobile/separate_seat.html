@@ -21,8 +21,8 @@
     <input type="submit" value="次へ" />
   </div>
 </form>
-<form action="${request.current_route_path()}" method="GET">
+<%mobile:form_get action="${request.current_route_path()}">
   <div style="text-align:center;">
     <input type="submit" value="戻る" />
   </div>
-</form>
+</%mobile:form_get>

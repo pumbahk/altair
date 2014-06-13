@@ -29,9 +29,9 @@
   %     endfor
   %   endfor
   % endif
-  <form action="${request.route_path('cart.index', event_id=event.id)}" method="get">
+  <%mobile:form_get action="${request.route_path('cart.index', event_id=event.id)}">
     <div style="text-align:center;">
       <input type="submit" value="戻る">
     </div>
-  </form>
+  </%mobile:form_get>
 % endif
