@@ -24,6 +24,7 @@ def upgrade():
         sa.Column('id', Identifier, primary_key=True),
         sa.Column('order_id', Identifier, nullable=False, unique=True),
         sa.Column('sej_remind_at', sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(['order_id'], ['Order.id'], 'ordernotification_ibfk_1', ondelete='CASCADE'),
         )
 
 def downgrade():

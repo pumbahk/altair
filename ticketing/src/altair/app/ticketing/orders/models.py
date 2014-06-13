@@ -879,7 +879,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'
     id = sa.Column(Identifier, primary_key=True)
-    order_id = sa.Column(Identifier, sa.ForeignKey("Order.id"), nullable=False, unique=True)
+    order_id = sa.Column(Identifier, sa.ForeignKey("Order.id", ondelete='CASCADE'), nullable=False, unique=True)
     sej_remind_at = sa.Column(sa.DateTime(), nullable=True) # SEJ 支払い期限リマインドメール送信日時
 
     order = orm.relationship('Order', backref=orm.backref('order_notification', uselist=False))
