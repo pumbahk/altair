@@ -23,7 +23,7 @@ namespace QR
 
 		public ICase AfterAuthorization (IResource resource)
 		{
-			this.CurrentInputUnit = InputUnit.qrcode;
+			this.CurrentInputUnit = InputUnit.order_no;
 			return new CaseOrdernoOrdernoInput(resource);
 		}
 
