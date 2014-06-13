@@ -429,12 +429,13 @@ def get_auth_identifier_membership(info):
         )
 
 def lookup_user_credential(d):
-    credential = u_models.UserCredential.query \
+    q = u_models.UserCredential.query \
         .filter(u_models.UserCredential.auth_identifier==d['auth_identifier']) \
         .filter(u_models.UserCredential.membership_id==u_models.Membership.id) \
-        .filter(u_models.Membership.name==d['membership_name']) \
-        .filter(u_models.Membership.organization_id == d['organization_id']) \
-        .first()
+        .filter(u_models.Membership.name==d['membership_name'])
+    if d['membership_name'] != 'rakuten':
+        q = q.filter(u_models.Membership.organization_id == d['organization_id'])
+    credential = q.first()
     if credential:
         return credential.user
     else:
