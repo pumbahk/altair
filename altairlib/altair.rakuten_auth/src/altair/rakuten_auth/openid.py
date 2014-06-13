@@ -209,9 +209,10 @@ class RakutenOpenID(object):
             _session = request.session # Session gets created here!
             if _session is not None:
                 session_restorer = request.environ.get(HybridHTTPBackend.ENV_SESSION_RESTORER_KEY)
-                self.set_session_restorer(session, session_restorer)
-                return_url = merge_session_restorer_to_url(return_url, request.environ.get(HybridHTTPBackend.ENV_QUERY_STRING_KEY_KEY), session_restorer)
-        impl.set_return_url(session, return_url)
+                if session_restorer is not None:
+                    self.set_session_restorer(session, session_restorer)
+                    return_url = merge_session_restorer_to_url(return_url, request.environ.get(HybridHTTPBackend.ENV_QUERY_STRING_KEY_KEY), session_restorer)
+        self.set_return_url(session, return_url)
         session.save()
         logger.debug('redirect from %s' % request.url)
         return HTTPFound(location=self.get_redirect_url(session))
