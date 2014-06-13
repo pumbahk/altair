@@ -113,7 +113,7 @@ class CartBot(object):
             self.m.submit_form(form)
         else:
             raise NotImplementedError(host)
-        
+
     def do_payment_with_credit_card(self):
         initial_location = self.m.location
         form = self.m.page.root.xpath('.//form[@action!="/cart/logout"]')[0]
@@ -199,7 +199,7 @@ class CartBot(object):
             pdmp_id = sample(choices, 1)[0]
         else:
             pdmp_id = sample(eligible_choices, 1)[0]
-        
+
         pdmp_choices_made.add(pdmp_id)
         return choices[pdmp_id]
 
@@ -243,7 +243,7 @@ class CartBot(object):
 
         #sales_segment = all_sales_segments.pop(0) # why use a first element.
         sales_segment = choice(all_sales_segments)
-            
+
         self.print_(u'Trying to buy some products that belong to %s' % sales_segment['name'])
         self.print_()
         sales_segment_detail = json.load(self.m.create_loader(urllib2.Request(sales_segment['seat_types_url']))())
