@@ -34,6 +34,7 @@ from altair.app.ticketing.core.models import (
     )
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
+from altair.app.ticketing.checkout import api as checkout_api
 from altair.app.ticketing.cart.stocker import (
     NotEnoughStockException,
     InvalidProductSelectionException,
@@ -1649,3 +1650,9 @@ def get_refund_ticket_price(refund, order, product_item_id):
             if opi.product_item_id == product_item_id:
                 return opi.refund_price
     return 0
+
+def get_anshin_checkout_object(request, order):
+    service = checkout_api.get_checkout_service(request, order.ordered_from, core_api.get_channel(order.channel))
+    return service.get_checkout_object_by_order_no(order.order_no)
+
+    

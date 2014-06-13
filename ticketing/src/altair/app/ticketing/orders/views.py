@@ -114,6 +114,7 @@ from .api import (
     get_order_metadata_provider_registry,
     save_order_modifications_from_proto_orders,
     recalculate_total_amount_for_order,
+    get_anshin_checkout_object
 )
 from .exceptions import OrderCreationError, MassOrderCreationError
 from .utils import NumberIssuer
@@ -992,6 +993,7 @@ class OrderDetailView(BaseView):
             'order_history':order_history,
             'point_grant_settings': loyalty_api.applicable_point_grant_settings_for_order(order),
             'sej_order':get_sej_order(order.order_no),
+            'checkout':get_anshin_checkout_object(self.request, order),
             'mail_magazines':mail_magazines,
             'form_shipping_address':form_shipping_address,
             'form_order':form_order,
