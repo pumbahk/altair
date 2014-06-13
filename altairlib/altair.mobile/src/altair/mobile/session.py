@@ -13,7 +13,7 @@ __all__ = [
 logger = logging.getLogger(__name__)
 
 def parse_query_string(query_string):
-    return (tuple(urllib.unquote(kv) for kv in c.partition(b'=')) for c in query_string.split(b'&'))
+    return (tuple(urllib.unquote_plus(kv) for kv in c.partition(b'=')) for c in query_string.split(b'&'))
 
 
 def get_cookie_factory(secret):
@@ -46,8 +46,8 @@ def append_session_restorer(query_string, query_string_key, session_restorer):
     else:
         x = ''
     x += '%s=%s' % (
-        urllib.quote(query_string_key),
-        urllib.quote(session_restorer),
+        urllib.quote_plus(query_string_key),
+        urllib.quote_plus(session_restorer),
         )
     return query_string + x
 
