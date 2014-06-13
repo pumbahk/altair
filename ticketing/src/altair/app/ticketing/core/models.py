@@ -862,7 +862,7 @@ def build_sales_segment_query(event_id=None, performance_id=None, sales_segment_
     elif type == 'before':
         q = q.filter(SalesSegment.end_at < now)
 
-    if user and user.get('is_guest'):
+    if user and (user.get('is_guest') or user.get('membership') == 'rakuten'):
         q = q \
             .outerjoin(MemberGroup,
                        SalesSegmentGroup.membergroups) \
