@@ -28,14 +28,14 @@
 % endfor
 <hr />
 合計金額: &yen;${cart['total_amount']}<br />
-<form action="${request.route_url('cart.payment', sales_segment_id=sales_segment_id)}" method="get">
+<%mobile:form_get action="${request.route_path('cart.payment', sales_segment_id=sales_segment_id)}">
   <div style="text-align:center;">
   <br/>
   <input type="submit" value="決済へ">
   </div>
-</form>
-<form action="${back_url}" method="get">
+</%mobile:form_get>
+<%mobile:form_get action="${back_url}">
   <div style="text-align:center;">
   <input type="submit" value="戻る">
   </div>
-</form>
+</%mobile:form_get>

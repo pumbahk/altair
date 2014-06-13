@@ -105,6 +105,7 @@ class MobileIndexView(IndexViewMixin):
         if key:
             key_to_formatted_sales_segments_map = [(k, v) for k, v in key_to_formatted_sales_segments_map if k == key]
             if not key_to_formatted_sales_segments_map:
+                logger.debug('no sales segment found for key %s' % key)
                 return HTTPFound(self.request.route_url('cart.index', event_id=self.context.event.id))
 
         return dict(
