@@ -23,6 +23,9 @@ from ..api.impl import bind_communication_api ## cmsとの通信
 from altair.mobile import PC_ACCESS_COOKIE_NAME
 PC_SWITCH_COOKIE_NAME = PC_ACCESS_COOKIE_NAME
 
+def empty_resource_factory(request):
+    return None
+
 def exception_message_renderer_factory(show_traceback):
     def exception_message_renderer(request, exc_info, message):
         from pyramid.httpexceptions import HTTPInternalServerError
@@ -165,10 +168,10 @@ def includeme(config):
     config.add_route('cart.switchsp.perf', 'switchsp/{event_id}/{performance}')
 
     # 楽天認証URL
-    config.add_route('rakuten_auth.login', '/login')
-    config.add_route('rakuten_auth.verify', '/verify')
-    config.add_route('rakuten_auth.verify2', '/verify2')
-    config.add_route('rakuten_auth.error', '/error')
+    config.add_route('rakuten_auth.login', '/login', factory=empty_resource_factory)
+    config.add_route('rakuten_auth.verify', '/verify', factory=empty_resource_factory)
+    config.add_route('rakuten_auth.verify2', '/verify2', factory=empty_resource_factory)
+    config.add_route('rakuten_auth.error', '/error', factory=empty_resource_factory)
     config.add_route('cart.logout', '/logout')
 
     setup_components(config)

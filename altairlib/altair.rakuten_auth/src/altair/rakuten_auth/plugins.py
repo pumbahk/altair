@@ -205,7 +205,8 @@ class RakutenOpenIDPlugin(object):
         try:
             self._get_cache().remove_value(claimed_id)
         except:
-            logger.warning("failed to flush metadata cache for %s" % claimed_id)
+            import sys
+            logger.warning("failed to flush metadata cache for %s" % identity, exc_info=sys.exc_info())
 
     # IMetadataProvider
     def add_metadata(self, environ, identity):
