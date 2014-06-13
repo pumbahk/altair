@@ -496,6 +496,11 @@ function buildStockRow(stock) {
     makeAssignable(quantity, stock);
   } else {
     bind(makeEditable(quantity, stock), stock, 'assigned');
+    stock_mover = $('<i class="fa fa-share-square-o"/>');
+    stock_mover.on('click', function (){
+        buildTransferStocksQuantityOnlyModal(stock.get('id'));
+    });
+    stock_mover.appendTo(quantity);
   }
   var lock = $('<td class="stock-lock"></td>');
   makeLockHandler(lock, stock);
@@ -782,6 +787,21 @@ function buildTransferStocksSelectedModal() {
   modal.show();
 }
 
+function buildTransferStocksQuantityOnlyModal(id) {
+  var id = id || "";
+  var modal = $('#modal-transfer-quantity-only');
+  var body = modal.find('.modal-body');
+  var venue = venueEditorRoot.venueeditor('model');
+  var select = $('<p>移動先の枠：</p><select name="to"></select>');
+  var quantity = $('<p>移動する数：</p><input id="transfer-quantity-only-quantity" type="number" value="0" min="1"></input>');
+  var stock_id = $('<input id="transfer-quantity-only-id" type="hidden" value="'+id+'"></input>');
+  venue.stockHolders.each(function (stockHolder) {
+      select.append($("<option>").text(stockHolder.get('name')).attr("value", stockHolder.get('id')));
+  });
+  body.empty().append(select).append(quantity).append(stock_id);
+  modal.show();
+}
+
 function buildCannotSeatActionModal(seats, message){
     if (seats.length == 0){
         return; // no error
@@ -909,6 +929,45 @@ function transferStocksSelected() {
           }
       }
   });
+  modal.hide();
+  buildCannotSeatActionModal(errors, '枠移動ができなかった座席がありました');
+  setTimeout(update_tables, 1000);
+}
+
+
+function transferStocksQuantityOnly() {
+  var modal = $('#modal-transfer-quantity-only');
+  var body = modal.find('.modal-body');
+  var venue = venueEditorRoot.venueeditor('model');
+  var stock_id = parseInt(body.find('input#transfer-quantity-only-id').attr('value'));
+  var quantity = parseInt(body.find('input#transfer-quantity-only-quantity').attr('value'));
+  var to_stock_holder_id = body.find('select[name="to"]').val();
+
+  var src_stock = venue.stocks.get(stock_id);
+  var stock_type_id = src_stock.get('stockType').get('id');
+
+  var mapper = venue.perStockHolderStockMap;
+  var dst_stock = null;
+  var dst_stocks = mapper[to_stock_holder_id];
+
+
+  $.each(dst_stocks, function (name){
+      var buf_stock = dst_stocks[name];
+      if (stock_type_id == buf_stock.get('stockType').get('id')){
+          dst_stock = buf_stock;
+      }
+  });
+
+  if(!dst_stock){
+      alert("NG");
+  }else if(!src_stock.get('assignable') || !dst_stock.get('assignable')){
+      alert("LOCK");
+  }else if(src_stock.get('assigned') < quantity){
+      alert("too large");
+  }else{
+      src_stock.set('assigned', src_stock.get('assigned')-quantity);
+      dst_stock.set('assigned', dst_stock.get('assigned')+quantity);
+  }
   modal.hide();
   buildCannotSeatActionModal(errors, '枠移動ができなかった座席がありました');
   setTimeout(update_tables, 1000);
@@ -1074,6 +1133,24 @@ function update_selection_table(selection) {
     <a href="javascript:transferStocksSelected();" class="btn danger">移動</a>
   </div>
 </div>
+
+
+<div id="modal-transfer-quantity-only" class="modal hide">
+  <div class="modal-header">
+    <a href="javascript:void(0);" onclick="$('#modal-transfer').hide();" class="close btn-close">&times;</a>
+    <h3>数指定移動</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>指定した数を指定した枠の同一席種に移動します。</p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-transfer-quantity-only').hide();" class="btn secondary btn-close">閉じる</a>
+    <a href="javascript:transferStocksQuantityOnly();" class="btn danger">移動</a>
+  </div>
+</div>
+
 
 <div id="modal-report" class="modal hide">
   <div class="modal-header">
