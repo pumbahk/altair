@@ -1,14 +1,14 @@
 """separate_checkout_models_from_core
 
 Revision ID: 2339a4ac4859
-Revises: 141b0368d69f
+Revises: 2e07bb5c93c9
 Create Date: 2014-06-03 16:50:09.820796
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '2339a4ac4859'
-down_revision = '141b0368d69f'
+down_revision = '2e07bb5c93c9'
 
 from alembic import op
 import sqlalchemy as sa
