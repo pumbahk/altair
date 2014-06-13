@@ -38,6 +38,7 @@ def auth_model_callback(identity, request):
             principals.append("membergroup:%s" % identity['membergroup'])
     elif isinstance(identity['authenticator'], RakutenOpenIDPlugin):
         auth_type = 'rakuten'
+        principals.append("membership:rakuten")
 
     if auth_type is not None:
         principals.append('auth_type:%s' % auth_type)
