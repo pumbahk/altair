@@ -19,6 +19,8 @@ from pyramid.path import DottedNameResolver
 from pyramid import security
 
 from altair.auth import who_api as get_who_api
+from altair.mobile.interfaces import IMobileRequest
+from altair.mobile.session import HybridHTTPBackend, merge_session_restorer_to_url
 
 from .interfaces import IRakutenOpenID
 from .events import Authenticated
