@@ -20,6 +20,7 @@ from pyramid import security
 
 from altair.auth import who_api as get_who_api
 from altair.mobile.interfaces import IMobileRequest
+from altair.mobile.session import HybridHTTPBackend
 
 from .interfaces import IRakutenOpenID
 from .events import Authenticated
