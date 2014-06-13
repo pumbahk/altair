@@ -399,8 +399,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from altair.app.ticketing.models import DBSession
         return DBSession.query(Order, include_deleted=True).filter_by(order_no=self.order_no).filter_by(branch_no=self.branch_no-1).one()
 
-    @deprecation.deprecate(u"altair.app.ticketing.orders.api.get_anshin_checkout_object()を使ってほしい")
     @property
+    @deprecation.deprecate(u"altair.app.ticketing.orders.api.get_anshin_checkout_object()を使ってほしい")
     def checkout(self):
         request = get_current_request()
         from .api import get_anshin_checkout_object
