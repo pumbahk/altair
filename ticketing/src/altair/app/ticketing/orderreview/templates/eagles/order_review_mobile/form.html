@@ -1,7 +1,7 @@
 <%inherit file="../commons/layout_mobile.html" />
 <%namespace file="../commons/tags_mobile.html" name="mobile" />
 <%mobile:header>各種会員の方はこちら</%mobile:header>
-<%mobile:form_get method="post" action="${request.url}">
+<form method="post" action="${request.url}">
 会員ID<br/>
 <input type="text" class="text" name="username"><br/>
 パスワード<br/>
@@ -10,7 +10,7 @@
 %if message:
 <br/><span style="color: red">IDまたはパスワードが一致しません</span>
 %endif
-</%mobile:form_get>
+</form>
 
 <%mobile:header>一般の方のチケット確認</%mobile:header>
 <%mobile:form_get method="get" action="${request.route_path('guest.order_review.form')}">
