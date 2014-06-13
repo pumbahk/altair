@@ -73,7 +73,7 @@ from .models import (
 ## backward compatibility
 from altair.metadata.api import get_metadata_provider_registry
 from .metadata import (
-    METADATA_NAME_ORDERED_PRODUCT, 
+    METADATA_NAME_ORDERED_PRODUCT,
     METADATA_NAME_ORDER
 )
 from .exceptions import OrderCreationError, MassOrderCreationError
@@ -188,7 +188,7 @@ class BaseSearchQueryBuilderMixin(object):
                 )
         return query
 
-    def _email(self, query, value): 
+    def _email(self, query, value):
         query = query.join(self.targets['subject'].shipping_address)
         # 完全一致です
         return query \
@@ -280,7 +280,7 @@ class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixi
         'PaymentMethod': PaymentMethod,
         'DeliveryMethod': DeliveryMethod,
         }
-    
+
     def _ordered_from(self, query, value):
         return query.filter(self.targets['subject'].created_at >= value)
 
@@ -452,7 +452,7 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
                 )
         return query
 
-    def _email(self, query, value): 
+    def _email(self, query, value):
         # 完全一致です
         return query \
             .filter(or_(self.targets['subject'].email_1 == value,
@@ -735,7 +735,7 @@ def get_order_by_id(request, order_id, session=None, include_deleted=False):
     if session is None:
         from altair.app.ticketing.models import DBSession
         session = DBSession
-    _Order = orm.aliased(Order) 
+    _Order = orm.aliased(Order)
     q = session.query(Order, include_deleted=True) \
         .outerjoin(_Order, Order.order_no == _Order.order_no) \
         .filter(Order.id == order_id) \
@@ -1331,7 +1331,7 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
                 )
             new_item.elements.append(new_element)
             element_total += element_price * element_quantity
-        item_total = new_item.price * new_item.quantity 
+        item_total = new_item.price * new_item.quantity
         if element_total != item_total:
             warnings.append(_(u'商品「${product_name}」の商品明細の価格の合計が商品の価格と一致しません (${element_total} ≠ ${item_total})') % dict(product_name=product.name, product_item_name=product_item.name, element_total=element_total, item_total=item_total))
 
