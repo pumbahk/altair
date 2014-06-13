@@ -35,7 +35,58 @@
                         x:Name="MainBorder"
                         Style="{StaticResource MainBorder}">
                         <Grid>
-                            <ListBox Grid.Row="0" ItemsSource="{Binding Candidates}" SelectionChanged="OnSubmitWithBoundContext">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="20*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="1*"/>
+                                <RowDefinition Height="2*"/>
+                                <RowDefinition Height="4*"/>
+                                <RowDefinition Height="2*"/>
+                                <RowDefinition Height="1*"/>
+                            </Grid.RowDefinitions>
+                            <WrapPanel Grid.Row="1" Grid.Column="1">
+                                <TextBlock FontSize="20pt" HorizontalAlignment="Center">
+                            １枚だけ発見する際には「１枚だけ発券」を                                </TextBlock>
+                                <TextBlock FontSize="20pt" HorizontalAlignment="Center">
+                            同じ受付番号のものをまとめて発券する場合には「まとめて発券」を選んでください。
+                                </TextBlock>
+                            </WrapPanel>
+                            <ListView Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch">
+                                <ListView.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontSize" Value="24pt"/>
+                                    </Style>
+                                </ListView.Resources>
+                                <ListViewItem>
+                                    <WrapPanel>
+                                        <TextBlock d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName}"/>
+                                        <TextBlock Text="{Binding PerformanceDate}"/>
+                                    </WrapPanel>
+                                </ListViewItem>
+                                <ListViewItem>
+                                    <WrapPanel>
+                                        <TextBlock>受付番号</TextBlock>
+                                        <TextBlock Text="{Binding OrderNo}"/>
+                                    </WrapPanel>
+                                </ListViewItem>
+                                <ListViewItem>
+                                    <WrapPanel>
+                                        <TextBlock>購入者</TextBlock>
+                                        <TextBlock Text="{Binding UserName}"/>
+                                    </WrapPanel>
+                                </ListViewItem>
+                                <ListViewItem>
+                                    <WrapPanel>
+                                        <TextBlock>座席</TextBlock>
+                                        <TextBlock Text="{Binding ProductName}"/>
+                                        <TextBlock Text="{Binding SeatName}"/>
+                                    </WrapPanel>
+                                </ListViewItem>
+                            </ListView>
+                            <ListBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Candidates}" SelectionChanged="OnSubmitWithBoundContext">
                                 <ListBox.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"></StackPanel>
@@ -49,8 +100,6 @@
                             </ListBox>
                         </Grid>
                     </Border>
-
-
 
                     <!-- 説明(description)-->
                     <StackPanel
@@ -76,6 +125,14 @@
                     </StackPanel>
 
                     <!-- ボタン -->
+                    <Button
+                        Canvas.Left="60"
+                        Canvas.Top="655"
+                        Style="{StaticResource BackwardButton}"
+                        Click="OnBackwardWithBoundContext"
+            >
+                        <TextBlock FontSize="20">戻る</TextBlock>
+                    </Button>
                     <!--
                     <Button
                      Canvas.Right="60"
@@ -98,7 +155,7 @@
                             Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
                             />
 
-  
+
                 </Canvas>
             </Grid>
         </Viewbox>
@@ -112,36 +169,7 @@
                 <RowDefinition Height="2*"></RowDefinition>
                 <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
-            <control:InspectCase Grid.Row="0"></control:InspectCase>
-            <ListView Grid.Row="1">
-                    <ListViewItem>
-                    <WrapPanel>
-                        <TextBlock Text="{Binding PerformanceName}"/>
-                        <TextBlock Text="{Binding PerformanceDate}"/>
-                    </WrapPanel>
-                </ListViewItem>
-                <ListViewItem>
-                    <WrapPanel>
-                        <TextBlock>受付番号</TextBlock>
-                        <TextBlock Text="{Binding OrderNo}"/>
-                    </WrapPanel>
-                </ListViewItem>
-                <ListViewItem>
-                    <WrapPanel>
-                        <TextBlock>購入者</TextBlock>
-                        <TextBlock Text="{Binding UserName}"/>
-                    </WrapPanel>
-                </ListViewItem>
-                <ListViewItem>
-                    <WrapPanel>
-                        <TextBlock>座席</TextBlock>
-                        <TextBlock Text="{Binding ProductName}"/>
-                        <TextBlock Text="{Binding SeatName}"/>
-                    </WrapPanel>
-                </ListViewItem>
-            </ListView>
-            
-            
+            <control:InspectCase Grid.Row="0"></control:InspectCase>            
             <ListBox Grid.Row="2" ItemsSource="{Binding Candidates}" SelectionChanged="OnSubmitWithBoundContext">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>

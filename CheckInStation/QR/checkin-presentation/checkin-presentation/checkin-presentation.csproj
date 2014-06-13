@@ -117,6 +117,9 @@
     <Compile Include="presentation\gui\page\PageHomeMenu.xaml.cs">
       <DependentUpon>PageHomeMenu.xaml</DependentUpon>
     </Compile>
+    <Compile Include="presentation\gui\page\PagePrintingConfirm.xaml.cs">
+      <DependentUpon>PagePrintingConfirm.xaml</DependentUpon>
+    </Compile>
     <Compile Include="presentation\gui\page\PageQRRefresh.xaml.cs">
       <DependentUpon>PageQRRefresh.xaml</DependentUpon>
     </Compile>
@@ -248,6 +251,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="presentation\gui\page\PageInputStrategySelect.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PagePrintingConfirm.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
