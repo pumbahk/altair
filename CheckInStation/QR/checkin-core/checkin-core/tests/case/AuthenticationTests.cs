@@ -51,28 +51,6 @@ namespace QR
             });
             t.Wait ();
         }
-
-        [Test, Description ("認証情報入力した後のvalidation. failureした時エラーメッセージ")]
-        public void TestAuthenticationInput__Verify__False__DisplayErrorMessage ()
-        {
-            var resource = new Resource ();
-            var inputUsername = "*username*";
-            var inputPassword = "*password*";
-            resource.Authentication = new FakeAuthentication (resource, "x", "xx");
-
-            CaseAuthDataFetch target = new CaseAuthDataFetch (
-                                           resource,
-                                           inputUsername, 
-                                           inputPassword);
-            var t = Task.Run (async () => {
-                var ev = new AuthenticationEvent (inputUsername, inputPassword);
-                await target.PrepareAsync (ev);
-                Assert.IsEmpty (ev.messages);
-                Assert.IsFalse (await target.VerifyAsync ());
-                Assert.IsNotEmpty (ev.messages);
-            });
-            t.Wait ();
-        }
     }
 }
 
