@@ -758,7 +758,7 @@ background: #f3a9c9;
 .loginbox{
 border: 1px #555 solid;
 width: 420px;
-height: 240px;
+height: 400px;
 }
 .loginbox thead th{
 background: #7CB93B;
@@ -793,6 +793,7 @@ border-right: 1px solid #09355F !important;
 table.member td input{
 border: 1px solid #000;
 height: 20px;
+width: 100%;
 }
 table.member #btn_login{
 background: none;
