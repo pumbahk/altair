@@ -12,8 +12,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using QR.support;
+using NLog;
 
-namespace checkin_presentation.presentation.gui.page
+//model ::xxx
+using QR.message;
+
+namespace QR.presentation.gui.page
 {
     /// <summary>
     /// Interaction logic for PagePrintingConfirm.xaml
@@ -23,15 +28,32 @@ namespace checkin_presentation.presentation.gui.page
         public PagePrintingConfirm()
         {
             InitializeComponent();
-        }
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            OnGotoNextPageStart();
+            this.DataContext = this.CreateDataContext();
         }
 
-        private void OnGotoNextPageStart()
+        private InputDataContext CreateDataContext()
         {
+            return new InputDataContext(this) { Broker = AppUtil.GetCurrentBroker() };;
+        }
 
+        private async void OnBackwardWithBoundContext(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            var ctx = this.DataContext as InputDataContext;
+            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
+            {
+                var case_ = await ctx.BackwardAsync();
+                ctx.TreatErrorMessage();
+                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+            });
+        }
+
+        private void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            var broker = AppUtil.GetCurrentBroker();
+            var case_ = broker.FlowManager.Peek().Case;
+            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
         }
     }
 }

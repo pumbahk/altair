@@ -194,7 +194,8 @@ namespace QR.presentation.gui.page
                 {
                     dc.PropertyChanged -= OnCountChangePrintableTicket;
                 }
-                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
+                this.NavigationService.Navigate(new PagePrintingConfirm());
+               // AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
             });
         }
 
