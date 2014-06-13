@@ -62,7 +62,6 @@ from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
 from altair.app.ticketing.payments import plugins as payments_plugins
 from .models import (
     Order,
-    OrderNotification,
     OrderedProduct,
     OrderedProductItem,
     OrderedProductItemToken,
@@ -853,8 +852,6 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
         order.branch_no = (prev_order.branch_no or 0) + 1
         for k in ['channel', 'browserid', 'card_ahead_com_code', 'card_ahead_com_name', 'card_brand', 'delivered_at', 'fraud_suspect', 'issued', 'issued_at', 'printed_at', 'refund_id', 'refunded_at']:
             setattr(order, k, getattr(prev_order, k))
-    order_notification = OrderNotification(order_id=order.id)
-    order_notification.save()
     return order
 
 def label_for_object(v):

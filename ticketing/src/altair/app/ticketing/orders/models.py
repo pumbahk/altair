@@ -1,8 +1,9 @@
-# encoding: utf-8
+#-*- encoding: utf-8 -*-
 import logging
 import itertools
 from datetime import datetime, timedelta
 import sqlalchemy as sa
+import sqlalchemy.event
 import sqlalchemy.orm.collections
 import sqlalchemy.orm as orm
 from sqlalchemy.sql import and_
@@ -842,9 +843,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         valid=True #valid=Falseの時は何時だろう？
                         )
                     ordered_product_item.tokens.append(token)
-
-        order_notification = OrderNotification(order_id=order.id)
-        order_notification.save()
         DBSession.flush() # これとっちゃだめ
         return order
 
@@ -886,6 +884,30 @@ class OrderNotification(Base, BaseModel):
 
     order = orm.relationship('Order', backref=orm.backref('order_notification', uselist=False))
 
+    def copy(self):
+        new_order_notification = type(self)()
+        new_order_notification.order_id = self.order_id
+        ner_order_notification.sej_remind_at = self.sej_remind_at
+        return ner_order_notification
+
+@sqlalchemy.event.listens_for(Order, 'after_insert')
+def create_order_notification(mapper, connection, order):
+    """Orderが作成されたタイミングでOrderNotificationも作成する
+    """
+    from altair.app.ticketing.models import DBSession
+    order_notification = None
+
+    # branch_noが1っこ前のorder
+    before_order = DBSession.query(Order, include_deleted=True)\
+      .filter(Order.order_no==order.order_no)\
+      .filter(Order.branch_no==order.branch_no-1)\
+      .first()
+
+    if before_order and before_order.order_notification:
+        order_notification = before_order.order_notification.copy()
+    else:
+        order_notification = OrderNotification(order_id=order.id)
+    DBSession.add(order_notification)
 
 @implementer(IOrderedProductLike)
 class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
