@@ -4,6 +4,7 @@
 """
 import sys
 import time
+import random
 import string
 import random
 import datetime
@@ -204,6 +205,11 @@ class TicketCreator(Part):
 
 
 class BreadCrumbMixin:
+    def get_bread_crumb(self, browser, status):
+        breadcrumb = browser.find_elements_by_class_name('breadcrumb')[0]
+        atags = breadcrumb.find_elements_by_tag_name('a')
+        return list(atags)
+
     def jump_events_show_page(self, browser, status):
         breadcrumb = browser.find_elements_by_class_name('breadcrumb')[0]
         atags = breadcrumb.find_elements_by_tag_name('a')
@@ -639,6 +645,7 @@ class PerformanceCreator(Part):
     def run(self, *args, **kwds):
         self.create_performance(*args, **kwds)
 
+
     def create_performance(self, browser, status):
         self.push_create_button(browser, status)
         self.edit_performance_page(browser, status)
@@ -703,6 +710,129 @@ class PerformanceCreator(Part):
                 return True
         return False
 
+class PerformanceDetailPage(Part):
+    @url_match('/events/performances/show/(?P<performance_id>\d+)$')
+    def is_target(self, browser, status):
+        return True
+
+    def run(self, browser, status):
+        tab = browser.find_element_by_id('seat-allocation-tab')
+        tab = tab.find_element_by_css_selector('a')
+        tab.click()
+
+class SeatAllocatorr(Part):
+    """イベント詳細ページ Performance作成
+    """
+
+    def __init__(self, *args, **kwds):
+        self.created_at = None
+        super(type(self), self).__init__(*args, **kwds)
+
+    @url_match('/events/performances/show/(?P<performance_id>\d+)/seat-allocation$')
+    def is_target(self, browser, status):
+        return True
+
+    def run(self, *args, **kwds):
+        if not self.created_at:
+            self.allocate_seats(*args, **kwds)
+        self.jump_product_page(*args, **kwds)
+
+    def jump_product_page(self, browser, status):
+        tab = browser.find_element_by_id('product-tab')
+        tab = tab.find_element_by_css_selector('a')
+        tab.click()
+
+    def allocate_seats(self, browser, status):
+        btn = browser.find_element_by_css_selector('a.btn-init-load')
+        btn.click()
+
+        time.sleep(3)
+
+        span = list(browser.find_elements_by_css_selector('span.swatch'))[1]
+        span.click()
+        strnum = str(random.randint(100, 1000))
+
+        script_ = "venueEditorRoot.venueeditor('model').stocks.each(function (stock){ stock.set('assigned', "+strnum+")});"
+        browser.execute_script(script_)
+
+        # spans = browser.find_elements_by_css_selector('span.editable')
+        # span = spans[3] # (--;)
+        # span.click()
+        # time.sleep(1)
+
+        # input_ = browser.find_element_by_css_selector('input.editable')
+        # input_.click()
+        # input_.send_keys('1000')
+        # input_.send_keys(Keys.ENTER)
+
+        btns = browser.find_elements_by_css_selector('a.btn.btn-primary')
+        for btn in btns:
+            if u'save' == btn.get_attribute('name'):
+                btn.click()
+                break
+            else:
+                raise BackendOperationError()
+
+        time.sleep(3)
+        self.created_at = datetime.datetime.now()
+
+class ProductCreator(Part, BreadCrumbMixin):
+    """商品作成page
+    """
+
+    def __init__(self, *args, **kwds):
+        self.created_at = None
+        super(type(self), self).__init__(*args, **kwds)
+
+    @url_match('/events/performances/show/(?P<performance_id>\d+)/product\#.*$')
+    def is_target(self, browser, status):
+        return True
+
+    def run(self, *args, **kwds):
+        if not self.created_at:
+            self.create_product(*args, **kwds)
+        self.jump_performance_list_page(*args, **kwds)
+
+    def jump_performance_list_page(self, browser, status):
+        breadcrumb = self.get_bread_crumb(browser, status)
+        link = breadcrumb[2] # パフォーマンス一覧
+        link.click()
+
+    def create_product(self, browser, status):
+        script_ = 'new_product(get_selected_sales_segment_id())'
+        browser.execute_script(script_)
+
+        input_ = browser.find_element_by_id('price')
+        input_.send_keys('1')
+
+        script_ = "$('#modal-product').find('form').submit()"
+        browser.execute_script(script_)
+
+class PerformancePublicChanger(Part):
+    @url_match('/events/performances/(?P<event_id>\d+)$')
+    def is_target(self, browser, status):
+        return True
+
+    def run(self, browser, status):
+        while True:
+            btn = browser.find_element_by_css_selector('.btn.btn-warning.btn-mini')
+            if btn:
+                btn.click()
+                time.sleep(1)
+                btns = browser.find_elements_by_css_selector('.btn.btn-danger')
+                for btn in btns:
+                    if 'delete' != btn.get_attribute('id'):
+                        btn.click()
+                        break
+                time.sleep(3)
+            else:
+                break
+
+        breadcrumb = self.get_bread_crumb(browser, status)
+        link = breadcrumb[1] # イベントページ
+        link.click()
+
+
 def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()
     parser.add_argument('url', nargs='?', default='https://backend.stg2.rt.ticketstar.jp')
@@ -745,7 +875,11 @@ def main(argv=sys.argv[1:]):
     performance_runner = Runner(browser, status)
     performance_runner += [
         BackendLogin(),
-        PerformanceCreator(name=opts.performance)
+        PerformanceCreator(name=opts.performance),
+        PerformanceDetailPage(),
+        SeatAllocatorr(),
+        ProductCreator(),
+        PerformancePublicChanger(),
         ]
     performance_runner.run()
 
