@@ -53,7 +53,10 @@ namespace QR
             //<QR:QRCodeCanvas xmlns:QR="clr-namespace:QR.presentation.gui.control;assembly=QR"
             xaml = xaml.Replace("@fullns@", "@ns@.presentation.gui.control");
             xaml = xaml.Replace("@qrclass@", "@ns@:QRCodeCanvas");
-            xaml = ReplaceExecutableNamespaceName.Replace(xaml, "@ns@");
+            // this is sooooooooooooooooooooo ugly.
+            xaml = xaml.Replace("@ns@", "QR");
+            xaml = xaml.Replace("assembly=QR", "assembly=checkin-presentation");
+            //xaml = ReplaceExecutableNamespaceName.Replace(xaml, "@ns@");
             return xaml;
         }
 
