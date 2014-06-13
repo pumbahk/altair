@@ -283,6 +283,9 @@ class OrganizationSettingForm(OurForm):
     enable_smartphone_cart = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_smartphone_cart)['label']
         )
+    enable_mypage = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_mypage)['label']
+    )
     augus_use = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.augus_use)['label']
         )
