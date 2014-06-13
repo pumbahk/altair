@@ -138,13 +138,14 @@ class RakutenOpenIDPlugin(object):
         if openid_params is not None:
             if not environ.get(self.AUTHENTICATED_KEY):
                 # not verified yet
-                self._flush_cache(identity)
-                if not impl.verify_authentication(req, identity[impl.IDENT_OPENID_PARAMS_KEY]):
+                claimed_id = openid_params['claimed_id']
+                self._flush_cache(claimed_id)
+                if not impl.verify_authentication(req, openid_params):
                     logger.debug('authentication failed')
                     return None
                 # claimed_id と oauth_request_token は、validate に成功した時のみ入る
-                identity['claimed_id'] = identity[impl.IDENT_OPENID_PARAMS_KEY]['claimed_id']
-                identity['oauth_request_token'] = identity[impl.IDENT_OPENID_PARAMS_KEY]['oauth_request_token']
+                identity['claimed_id'] = claimed_id
+                identity['oauth_request_token'] = openid_params['oauth_request_token']
                 # temporary session や rememberer には OpenID parameters は渡さない
                 del identity[impl.IDENT_OPENID_PARAMS_KEY]
 
@@ -194,14 +195,16 @@ class RakutenOpenIDPlugin(object):
     def forget(self, environ, identity):
         req = get_current_request(environ)
         logger.debug('forget identity')
-        self._flush_cache(identity)
+        claimed_id = identity.get('claimed_id')
+        if claimed_id:
+            self._flush_cache(claimed_id)
         return self.rememberer.forget(environ)
 
-    def _flush_cache(self, identity):
+    def _flush_cache(self, claimed_id):
         try:
-            self._get_cache().remove_value(identity['claimed_id'])
+            self._get_cache().remove_value(claimed_id)
         except:
-            logger.warning("failed to flush metadata cache for %s" % identity)
+            logger.warning("failed to flush metadata cache for %s" % claimed_id)
 
     # IMetadataProvider
     def add_metadata(self, environ, identity):
