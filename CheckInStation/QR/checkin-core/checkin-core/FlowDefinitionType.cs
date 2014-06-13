@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace checkin_core
+namespace QR
 {
-    public class Class1
+   public enum FlowDefinitionType
     {
+        QRFront,
+        OrdernoFront
     }
 }

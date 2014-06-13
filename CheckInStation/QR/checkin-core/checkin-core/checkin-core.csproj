@@ -65,9 +65,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Configurator.cs" />
     <Compile Include="DynamicJson.cs" />
+    <Compile Include="FlowDefinitionType.cs" />
     <Compile Include="IConfigurator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ReleaseStageType.cs" />

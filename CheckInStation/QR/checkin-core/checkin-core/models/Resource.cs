@@ -54,6 +54,8 @@ namespace QR
                 throw new InvalidOperationException ("AdImageCollector is null");
             if (HttpWrapperFactory == null)
                 throw new InvalidOperationException ("HttpWrapperFactory is null");
+            if (FlowDefinition == null)
+                throw new InvalidOperationException("FlowDefinition is  null");
             return true;
         }
         public IModelValidation Validation { get; set; }
@@ -73,6 +75,7 @@ namespace QR
         public EndPoint EndPoint { get; set; }
 
         public AuthInfo AuthInfo { get; set; }
+
         public LoginUser LoginUser { get; set; }
 
         public IAuthentication Authentication { get; set; }
@@ -82,6 +85,8 @@ namespace QR
         public IHttpWrapperFactory<HttpWrapper> HttpWrapperFactory { get; set; }
 
         public int WaitingTimeAfterFinish { get; set; }
+
+        public IFlowDefinition FlowDefinition { get; set; }
 
         public string SettingValue (string key)
         {

@@ -9,13 +9,16 @@ namespace QR
     {
         public IResource Resource { get; set; }
         public ReleaseStageType ReleaseStageType { get; set; }
+        public FlowDefinitionType FlowDefinitionType { get; set; }
         public static Logger logger = LogManager.GetCurrentClassLogger();
 
         public Configurator (IResource resource)
         {
             Resource = resource;
             this.ReleaseStageType = (ReleaseStageType)Enum.Parse(typeof(ReleaseStageType), resource.SettingValue("application.stage"));
+            this.FlowDefinitionType = (FlowDefinitionType)Enum.Parse(typeof(FlowDefinitionType), resource.SettingValue("application.flow"));
             logger.Info("application.stage = {0}".WithMachineName(), this.ReleaseStageType);
+            logger.Info("application.flow = {0}".WithMachineName(), this.FlowDefinitionType);
         }
 
         public bool Verify()

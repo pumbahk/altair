@@ -36,6 +36,7 @@ namespace QR
 
         IHttpWrapperFactory<HttpWrapper> HttpWrapperFactory { get; set; }
 
+        IFlowDefinition FlowDefinition { get; set; }
 
         string SettingValue(string key);
         int WaitingTimeAfterFinish { get; set; } // 印刷完了後の待ち時間(ミリ秒)

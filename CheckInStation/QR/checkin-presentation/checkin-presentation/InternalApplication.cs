@@ -15,6 +15,19 @@ namespace QR
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
+        public IFlowDefinition CreateFlowDefinition(IConfigurator config)
+        {
+            switch (config.FlowDefinitionType)
+            {
+                case FlowDefinitionType.QRFront:
+                    return new EaglesFlowDefinition();
+                case FlowDefinitionType.OrdernoFront:
+                    return new VisselFlowDefinition();
+                default:
+                    throw new InvalidOperationException("anything is wrong");
+            }         
+        }
+
         public InternalApplication ()
         {
             if (!logger.IsInfoEnabled)
@@ -24,12 +37,11 @@ namespace QR
             logger.Info("Internal Application starting.".WithMachineName());
             var config = new Configurator (new Resource (true));
             this.Resource = config.Resource;
-            //config.Include (AuthConfiguration.MockIncludeMe);
             config.Include(AuthConfiguration.IncludeMe);
             config.Include (QRConfiguration.IncludeMe);
             config.Include (HttpCommunicationConfiguration.IncludeMe);
-
-            this.FlowManager = new FlowManager (new VisselFlowDefinition ());
+            this.Resource.FlowDefinition = this.CreateFlowDefinition(config);
+            this.FlowManager = new FlowManager(this.Resource.FlowDefinition);
             this.RequestBroker = new RequestBroker (FlowManager);
 
             // verify
