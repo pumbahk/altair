@@ -280,6 +280,9 @@ class OrganizationSettingForm(OurForm):
         coerce=lambda x: int(x) if x else None,
         choices=[(int(e.v), e.k) for e in c_models.SalesReportTypeEnum]
         )
+    enable_mypage = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_mypage)['label']
+    )
     augus_use = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.augus_use)['label']
         )

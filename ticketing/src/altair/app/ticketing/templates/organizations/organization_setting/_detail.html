@@ -99,6 +99,10 @@
       <td>${organization_setting.sales_report_type}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.enable_mypage)}</th>
+      <td>${u'ON' if organization_setting.enable_mypage else u'OFF'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.augus_use)}</th>
       <td>${u'使う' if organization_setting.augus_use  else u'使わない'}</td>
     </tr>
