@@ -5,6 +5,18 @@ ${u'希望する' if int(pm['extra']['mail_permission']) else u'希望しない'
 <%mobile:form_header>メモリアルブックの掲載希望 </%mobile:form_header>
 ${u'はい' if pm['extra']['publicity'] == 'yes' else u'いいえ'}
 % endif
+% if 't_shirts_size' in pm['extra']:
+<%mobile:form_header>ClubナイナーズＴシャツサイズ </%mobile:form_header>
+${pm['extra']['t_shirts_size']}
+% endif
+% if 'official_ball' in pm['extra']:
+<%mobile:form_header>オリジナル公式球への記載希望 </%mobile:form_header>
+${pm['extra']['official_ball']}
+% endif
+% if 'coupon' in pm['extra']:
+<%mobile:form_header>特典の会場受け取り希望 </%mobile:form_header>
+${pm['extra']['coupon']}
+% endif
 % if 'motivation' in pm['extra']:
 <%mobile:form_header>クラブナイナーズに入会しようと思ったきっかけは？</%mobile:form_header>
 ${pm['extra']['motivation']}
