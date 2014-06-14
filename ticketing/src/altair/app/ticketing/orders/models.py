@@ -887,8 +887,8 @@ class OrderNotification(Base, BaseModel):
     def copy(self):
         new_order_notification = type(self)()
         new_order_notification.order_id = self.order_id
-        ner_order_notification.sej_remind_at = self.sej_remind_at
-        return ner_order_notification
+        new_order_notification.sej_remind_at = self.sej_remind_at
+        return new_order_notification
 
 @sqlalchemy.event.listens_for(Order, 'after_insert')
 def create_order_notification(mapper, connection, order):
