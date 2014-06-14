@@ -21,7 +21,7 @@ def prepend_validator(field, x):
     field.validators = prepend_list(x, field.validators)
 
 class ExtraForm(Form):
-    memorial_book = fields.SelectField(
+    publicity = fields.SelectField(
         u"媒体への掲載希望",
         validators=[v.Optional()],
         choices=[
@@ -65,8 +65,8 @@ class ExtraForm(Form):
                                        validators=[v.Optional()],
                                        coerce=text_type_but_none_if_not_given)
 
-    def configure_for_memorial_book(self):
-        prepend_validator(self.memorial_book, v.Required())
+    def configure_for_publicity(self):
+        prepend_validator(self.publicity, v.Required())
 
     def configure_for_t_shirts_size(self):
         prepend_validator(self.t_shirts_size, v.Required())

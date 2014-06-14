@@ -17,7 +17,7 @@ class SymbolPool(object):
             setattr(self, k, v)
 
 s = Symbols = SymbolPool(
-    "memorial_book",
+    "publicity",
     "t_shirts_size",
     "official_ball",
     "coupon")
@@ -30,8 +30,8 @@ ms = MemberTypeSymbols = SymbolPool(
     )
 
 product_reflections = {
-    ms.platinum: [s.memorial_book, s.t_shirts_size, s.coupon, s.official_ball],
-    ms.gold: [s.memorial_book, s.t_shirts_size, s.coupon],
+    ms.platinum: [s.publicity, s.t_shirts_size, s.coupon, s.official_ball],
+    ms.gold: [s.publicity, s.t_shirts_size, s.coupon],
     ms.regular: [s.coupon],
     ms.junior: []
     ## 年齢がN歳以下をどうしようか
