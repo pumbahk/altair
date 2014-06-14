@@ -152,11 +152,30 @@
     </tr>
     <tr>
       <th>
-        ClubナイナーズＴシャツサイズ（ゴールド・プラチナ会員のみ）
+        ClubナイナーズＴシャツサイズ
       </th>
       <td>
-        サイズ${form.extra.form.t_shirts_size(id='t_shirts_size',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.t_shirts_size]))}
-        ${h.error(['extra.form.t_shirts_size'])}
+        サイズ${form.extra.form.t_shirts_size(id='t_shirts_size',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.t_shirts_size]))}<span><small>（ゴールド・プラチナ会員のみ）</small></span>
+        ${h.error(['extra.t_shirts_size'])}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        オリジナル公式球への記載希望
+      </th>
+      <td>
+        ${form.extra.form.official_ball(id='official_ball',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.official_ball]))}<span><small>（プラチナ会員のみ）</small></span>
+        ${h.error(['extra.official_ball'])}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        特典の会場受け取り希望
+      </th>
+      <td>
+        ${form.extra.form.coupon(id='official_ball',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.coupon]))}<span><small>（レギュラー・ゴールド・プラチナ会員のみ）</small></span>
+        ${h.error(['extra.coupon'])}<br/>
+        <span style="color: red"><small>会場受渡をお選びいただいた方には500円分のグッズクーポンをプレゼントいたします。</red></small></span>
       </td>
     </tr>
     <tr>
