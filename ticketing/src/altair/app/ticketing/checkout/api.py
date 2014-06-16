@@ -127,14 +127,18 @@ def build_checkout_object_from_order_like(request, order_like):
             )
     # 手数料も商品として登録する
     for item_id, (attr_name, _, name) in get_fee_items_dict(request, order_like).items():
-        checkout_object.items.append(
-            m.CheckoutItem(
-                itemId=item_id,
-                itemName=name,
-                itemNumbers=1,
-                itemFee=int(getattr(order_like, attr_name))
-                )
-            )
+        fee = getattr(order_like, attr_name)
+        if fee is not None:
+            fee = int(fee)
+            if fee > 0:
+                checkout_object.items.append(
+                    m.CheckoutItem(
+                        itemId=item_id,
+                        itemName=name,
+                        itemNumbers=1,
+                        itemFee=fee
+                        )
+                    )
     return checkout_object
 
 def get_cart_id_by_order_no(request, order_no):
@@ -221,20 +225,23 @@ def update_checkout_object_by_order_like(request, session, checkout_object, orde
 
     for k, (attr_name, refund_attr_name, item_name) in fee_items_dict.items():
         checkout_item = checkout_object_fee_item_map.get(k)
-        if checkout_item is None:
-            fee = getattr(order_like, attr_name)
+        fee = getattr(order_like, attr_name, None)
+        if fee is not None:
             if refund_record is not None:
                 fee -= getattr(refund_record, refund_attr_name)
-            added_checkout_items[k] = m.CheckoutItem(
-                itemId=k,
-                itemName=item_name,
-                itemNumbers=1,
-                itemFee=int(fee)
-                )
+            fee = int(fee)
+        if checkout_item is None:
+            if fee > 0:
+                added_checkout_items[k] = m.CheckoutItem(
+                    itemId=k,
+                    itemName=item_name,
+                    itemNumbers=1,
+                    itemFee=fee
+                    )
         else:
             checkout_item.itemName = item_name
             checkout_item.itemNumbers = 1
-            checkout_item.itemFee = int(getattr(order_like, k))
+            checkout_item.itemFee = fee
             updated_checkout_items[checkout_item.itemId] = checkout_item
 
     for k, checkout_item in checkout_object_fee_item_map.items():

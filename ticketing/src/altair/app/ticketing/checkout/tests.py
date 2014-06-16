@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import unittest
+import mock
 from datetime import datetime
 
 from pyramid import testing
@@ -1164,7 +1165,8 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         self.assertEqual(len(result['orders']), 1)
         self.assertEqual(result['orders'][0]['orderControlId'], 'dc-1234567890-110415-0000022222')
 
-    def test_request_change_order_refunding(self):
+    @mock.patch('altair.app.ticketing.checkout.api.get_cart_id_by_order_no')
+    def test_request_change_order_refunding(self, get_cart_id_by_order_no):
         from lxml import etree
         from urlparse import parse_qs
         from base64 import b64decode
@@ -1172,6 +1174,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         from altair.app.ticketing.orders.models import Order, OrderedProduct
         from altair.app.ticketing.core.models import SalesSegment, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, FeeTypeEnum, Product
         from .models import Checkout
+        from .api import build_checkout_object_from_order_like
 
         self.create_order_test_data()
 
@@ -1190,14 +1193,6 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         )
         target = self._buildTarget()
         target.comm._httplib = DummyHTTPLib(etree.tostring(res_data))
-
-        self.session.add(
-            Checkout(
-                orderCartId='XX0000000000',
-                orderControlId='dc-1234567890-110415-0000022222'
-                )
-            )
-        self.session.flush()
 
         order = Order(
             order_no='XX0000000000',
@@ -1238,6 +1233,10 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         self._session.add(order)
         self._session.flush()
 
+        get_cart_id_by_order_no.return_value = 1
+        checkout_object = build_checkout_object_from_order_like(self.request, order)
+        self.session.add(checkout_object)
+
         result = target.request_change_order([(order, order)])
 
         self.assertEqual(target.comm._httplib.path, '/api_url/odrctla/changepayment/1.0/')
@@ -1257,10 +1256,10 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         self.assertEqual(item_n_list[0].find(u'itemId').text, u'1')
         self.assertEqual(item_n_list[0].find(u'itemNumbers').text, u'1')
         self.assertEqual(item_n_list[0].find(u'itemFee').text, u'50')
-        self.assertEqual(item_n_list[1].find(u'itemId').text, u'system_fee')
+        self.assertEqual(item_n_list[1].find(u'itemId').text, u'delivery_fee')
         self.assertEqual(item_n_list[1].find(u'itemNumbers').text, u'1')
         self.assertEqual(item_n_list[1].find(u'itemFee').text, u'20')
-        self.assertEqual(item_n_list[2].find(u'itemId').text, u'delivery_fee')
+        self.assertEqual(item_n_list[2].find(u'itemId').text, u'system_fee')
         self.assertEqual(item_n_list[2].find(u'itemNumbers').text, u'1')
         self.assertEqual(item_n_list[2].find(u'itemFee').text, u'20')
         self.assertEqual(item_n_list[3].find(u'itemId').text, u'special_fee')
