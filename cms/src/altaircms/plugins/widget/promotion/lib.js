@@ -52,7 +52,7 @@ widget.configure({
         return {"display_type": root.find("#display_type").val(), 
                 "tag": root.find("#tag").val(), 
                 "system_tag": root.find("#system_tag").val(),
-                "use_newstyle": root.find("#use_newstyle").val() && "1"};
+                "use_newstyle": root.find("#use_newstyle").attr("checked")};
     };
     return widget.include("promotion", {
         load_page: load_page, 

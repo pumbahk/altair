@@ -21,6 +21,11 @@ class PromotionWidgetView(object):
                 data["system_tag"] = self.context.Tag.query.filter_by(id=data["system_tag"]).one()
             else:
                 data["system_tag"] = None
+            use_newstyle = bool(data.get("use_newstyle"))
+            if use_newstyle:
+                data["use_newstyle"] = 1
+            else:
+                data.update({"use_newstyle": 0})
             page_id = self.request.json_body["page_id"]
             context = self.request.context
             widget = context.get_widget(self.request.json_body.get("pk"))
