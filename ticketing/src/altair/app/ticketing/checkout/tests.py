@@ -1100,9 +1100,9 @@ class AnshinCheckoutAPITest(unittest.TestCase):
     def test_request_change_order_normal(self):
         from lxml import etree
         from altair.multicheckout.testing import DummyHTTPLib
-        from altair.app.ticketing.orders.models import Order
-        from altair.app.ticketing.core.models import SalesSegment, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, FeeTypeEnum
-        from .models import Checkout
+        from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
+        from altair.app.ticketing.core.models import SalesSegment, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, FeeTypeEnum, Product
+        from .models import Checkout, CheckoutItem
 
         self.create_order_test_data()
 
@@ -1125,7 +1125,33 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         self.session.add(
             Checkout(
                 orderCartId='XX0000000000',
-                orderControlId='dc-1234567890-110415-0000022222'
+                orderControlId='dc-1234567890-110415-0000022222',
+                items=[
+                    CheckoutItem(
+                        itemId='1',
+                        itemName='dummy1',
+                        itemNumbers=1,
+                        itemFee=1000
+                        ),
+                    CheckoutItem(
+                        itemId='2',
+                        itemName='dummy2',
+                        itemNumbers=2,
+                        itemFee=2000
+                        ),
+                    CheckoutItem(
+                        itemId='system_fee',
+                        itemName='system_fee',
+                        itemNumbers=1,
+                        itemFee=100
+                        ),
+                    CheckoutItem(
+                        itemId='delivery_fee',
+                        itemName='delivery_fee',
+                        itemNumbers=1,
+                        itemFee=100
+                        ),
+                    ],
                 )
             )
         self.session.flush()
@@ -1134,9 +1160,11 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             order_no='XX0000000000',
             sales_segment=SalesSegment(),
             total_amount=0,
-            system_fee=0,
+            system_fee=200,
             transaction_fee=0,
             delivery_fee=0,
+            special_fee_name='special',
+            special_fee=100,
             payment_delivery_pair=PaymentDeliveryMethodPair(
                 system_fee=0,
                 delivery_fee=0,
@@ -1150,7 +1178,14 @@ class AnshinCheckoutAPITest(unittest.TestCase):
                     fee=0,
                     fee_type=FeeTypeEnum.Once.v[0]
                     )
-                )
+                ),
+            items=[
+                OrderedProduct(
+                    product=Product(id=1, name='dummy1', price=500),
+                    price=500,
+                    quantity=2
+                    ),
+                ]
             )
         self._session.add(order)
         self._session.flush()
