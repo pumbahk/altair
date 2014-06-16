@@ -1,3 +1,28 @@
+% if widget.use_newstyle:
+  ${render_newstyle()}
+% else:
+  ${render()}
+% endif
+
+<%def name="render_newstyle()">
+<div class="topic-widget">
+  <div id="topics">
+    <h3>トピックス</h3>
+    <ul>
+	  %for topic in topics:
+        <% link  = h.link.get_link_from_topic(request,topic) %>
+        %if link:
+          <li><a href="${link}">${topic.title}</li>
+        %else:
+          ${topic.title}
+        %endif
+      %endfor
+    </ul>
+  </div>
+</div>
+</%def>
+
+<%def name="render()">
 <div class="topic-widget">
   <ul id="topics">
 	%for topic in topics:
@@ -6,10 +31,12 @@
       %if link:
         <a href="${link}">${topic.title}</a>
       %else:
-        ${topic.title}      
+        ${topic.title}
       %endif
     </li>
 	%endfor
   </ul>
 </div>
 <div class="clear"></div>
+</%def>
+
