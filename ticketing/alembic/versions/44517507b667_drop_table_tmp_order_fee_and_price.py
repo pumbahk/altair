@@ -1,14 +1,14 @@
 """drop table tmp_order_fee_and_price
 
 Revision ID: 44517507b667
-Revises: 2339a4ac4859
+Revises: b73f93b4116
 Create Date: 2014-06-13 13:16:01.287823
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '44517507b667'
-down_revision = '2339a4ac4859'
+down_revision = 'b73f93b4116'
 
 from alembic import op
 import sqlalchemy as sa
