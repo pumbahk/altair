@@ -28,6 +28,9 @@ def setup_booster_settings(config):
         attr_names.extend([
                 u'extra.mail_permission', ###
                 u'extra.publicity',
+                u'extra.official_ball',
+                u'extra.t_shirts_size',
+                u'extra.coupon',
                 u'extra.motivation',
                 u'extra.num_times_at_venue',
                 ])

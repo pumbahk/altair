@@ -103,12 +103,29 @@ ${h.error('email_1_confirm')}
   ${form.extra.mail_permission}メルマガ購読を希望<br />
 ${h.error('extra.mail_permission')}
 </div>
-<%mobile:form_header>メモリアルブックへの氏名掲載希望</%mobile:form_header>
+<%mobile:form_header>メモリアルブックへの氏名掲載希望（ゴールド・プラチナ会員のみ）</%mobile:form_header>
 <div>
   ${form.extra.publicity}<br />
 ${h.error('extra.publicity')}
 </div>
-<%mobile:form_header required="true">ブースタークラブに入会しようと思ったきっかけは？</%mobile:form_header>
+<%mobile:form_header>ClubナイナーズＴシャツサイズ（ゴールド・プラチナ会員のみ）</%mobile:form_header>
+<div>
+  ${form.extra.t_shirts_size}<br />
+${h.error('extra.t_shirts_size')}
+</div>
+<%mobile:form_header>オリジナル公式球への記載希望（プラチナ会員のみ）</%mobile:form_header>
+<div><font color="red">（アルファベット大小文字可、記号不可）</font></div>
+<div>
+  ${form.extra.official_ball}<br />
+${h.error('extra.official_ball')}
+</div>
+<%mobile:form_header>特典の会場受け取り希望（レギュラー・ゴールド・プラチナ会員のみ）</%mobile:form_header>
+<div><font color="red">会場受渡をお選びいただいた方には500円分のグッズクーポンをプレゼントいたします。</font></div>
+<div>
+  ${form.extra.coupon}<br />
+${h.error('extra.coupon')}
+</div>
+<%mobile:form_header required="true">クラブナイナーズに入会しようと思ったきっかけは？</%mobile:form_header>
 <div>
   ${form.extra.motivation}<br />
 ${h.error('extra.motivation')}
