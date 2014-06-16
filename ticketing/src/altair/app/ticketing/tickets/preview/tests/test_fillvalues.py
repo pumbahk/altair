@@ -44,10 +44,26 @@ class FillvaluesTests(unittest.TestCase):
         from altair.app.ticketing.tickets.preview.fillvalues import template_fillvalues
         return template_fillvalues(*args, **kwargs)
 
+    def test_simple__no_sysvalues__return_same(self):
+        tmpl = u"{{aa}}"
+        result = self._callFUT(tmpl, {})
+        self.assertEqual(result, "{{aa}}")
+
+    def test_simple__with_sysvalues__return_erplaced(self):
+        tmpl = u"{{aa}}"
+        result = self._callFUT(tmpl, {"aa": "hello"})
+        self.assertEqual(result, "hello")
+
+    def test_simple__with_another_template__return_erplaced(self):
+        tmpl = u"{{aa}}"
+        result = self._callFUT(tmpl, {"aa": "{{bb}}"})
+        self.assertEqual(result, "{{bb}}")
+
+
     def test_it(self):
         tmpl = u"{{foo}} {{{bar}}} {{{fooo}}} {{foo}}"
         result = self._callFUT(tmpl, {"bar": "this-is-rendered"})
-        self.assertEquals(result, "{{foo}} this-is-rendered {{{fooo}}} {{foo}}")
+        self.assertEquals(result, "{{foo}} this-is-rendered {{fooo}} {{foo}}")  # this is FillValuesRenderer's specification
 
     def test_it_with_indexed(self):
         from altair.app.ticketing.tickets.preview.fillvalues import IndexedVariation
@@ -66,6 +82,16 @@ class FillvaluesTests(unittest.TestCase):
         tmpl = u"{{aux.販売区分}}"
         result = self._callFUT(tmpl, {u"aux.販売区分": u"---"})
         self.assertEquals(result, u"---")
+
+    def test_with_expression_without_sysvals(self):
+        tmpl = u"{{aux.販売区分}}"
+        result = self._callFUT(tmpl, {})
+        self.assertEquals(result, u"{{aux.販売区分}}")
+
+    def test_with_zenkaku_braces(self):
+        tmpl = u"{｛aa}} {{bb}｝ ｛｛cc｝｝"
+        result = self._callFUT(tmpl, {})
+        self.assertEquals(result, u"{{aa}} {{bb}} {{cc}}")
 
 
 if __name__ == "__main__":

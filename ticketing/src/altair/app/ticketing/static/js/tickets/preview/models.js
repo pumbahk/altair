@@ -2,6 +2,50 @@ if (!window.preview)
     window.preview = {};
 
 (function(preview){
+    preview.Resource = Backbone.Model.extend({
+        defaults: {
+           pk: null,
+           label: "<default>",
+           format_id: null,
+           ticket_formats: [],
+        },
+        hasTicketFormats: function(){
+          return this.get("ticket_formats").length > 0 || !!this.get("format_id");
+        }
+    });
+
+    preview.TicketFormatManager = Backbone.Model.extend({
+      defaults: {
+        visibles: [],
+        all: {}
+      },
+      refresh: function(ticket_formats){
+        // ticket_formats is [{pk: 1, name: "foo", type: "sej"},....]
+        var all = {};
+        var visibles = [];
+        this.set("all", all);
+        this.set("visibles", visibles);
+        _.each(ticket_formats, function(d){
+          alls[d.pk] = d;
+          visibles.push(d);
+        });
+      },
+      updateVisibles: function(ticket_formats){
+        // xs is [{pk: 1, name: "foo", type: "sej"},...]
+        var visibles = [];
+        this.set("visibles", visibles);
+        alls = this.get("all");
+        _.each(ticket_formats, function(d){
+          var k = d.pk;
+          if(!(alls.hasOwnProperty(k))){
+            alls[k] = d;
+          }
+          visibles.push(d);
+        });
+        return visibles;
+      }
+    })
+
     var NONE_CHANGED = 0;
     var REDRAW_IMAGE = 1;
     var RELOAD_SVG = 2;
@@ -12,9 +56,13 @@ if (!window.preview)
             default_sx: 2.0,  //fetch default
             default_sy: 2.0, 
             ticket_format: null, 
+            preview_type: "default", // or "sej"
             holder: null,  //holder is svg data source{name: "", pk: ""}
             changed: NONE_CHANGED
         }, 
+        changePreviewType: function(v){
+            this.set("preview_type", v)
+        },
         changeSx: function(v){ //todo: use this;
             this.set("sx", v);
             if(this.get("default_sx") < v){
@@ -93,6 +141,7 @@ if (!window.preview)
             height: 0, 
             rendering_width: 0, 
             rendering_height: 0, 
+            canceled: false,
             stage: PreviewStage.empty
         }, 
         beforeRendering: function(){
@@ -159,11 +208,15 @@ if (!window.preview)
             if(this.get("vars").length <= 0){
                 return this.trigger("*vars.commit.vars", {});
             }
+            var vars_values = this.collectVarsValues();
+            return this.trigger("*vars.commit.vars",  vars_values);
+        },
+        collectVarsValues: function(){
             var var_values = {};
             _(this.get("vars").models).each(function(m){
                 var_values[m.get("name")] = m.get("value");
             });
-            return this.trigger("*vars.commit.vars",  var_values);
+          return var_values;
         }
     });
 })(window.preview);

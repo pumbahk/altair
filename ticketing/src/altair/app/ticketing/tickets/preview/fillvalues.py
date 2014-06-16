@@ -14,21 +14,21 @@ class IndexedVariation(object):
     def __init__(self, style="fill:#015a01", ):
         self.style = style
         self.count = _CachedCounter(1)
-        
+
     def rendering_string(self, name, v):
         i = self.count(name)
         fmt = u'<flowSpan style="%s">%s. </flowSpan>{{{%s}}}'
         return fmt % (self.style, i, name)
 
-    padding = len(". </flowSpan>")    
+    padding = len(". </flowSpan>")
     def make_escape_method(self, renderer):
         default_escape = renderer.escape
         def escape(pair):
             try:
                 midpoint = pair.index(". </flowSpan>{{")+self.padding
                 prefix, x = pair[:midpoint], pair[midpoint:]
-                if x.startswith("{") and x.endswith("}"):
-                    return prefix + default_escape(x[1:-1])
+                # if x.startswith("{") and x.endswith("}"):
+                #     return prefix + default_escape(x[1:-1])
                 return prefix + default_escape(x)
             except ValueError:
                 return default_escape(pair) # rendered string
@@ -38,13 +38,13 @@ class IndexedVariation(object):
 class IdentityVariation(object):
     """ no change output. like {{fooo}}"""
     def rendering_string(self, name, v):
-        return u"{{{%s}}}" % name
+        return u"{{%s}}" % name
 
     def make_escape_method(self, renderer):
         default_escape = renderer.escape
         def escape(x):
-            if x.startswith("{") and x.endswith("}"):
-                return default_escape(x[1:-1])
+            # if x.startswith("{") and x.endswith("}"):
+            #     return default_escape(x[1:-1])
             return default_escape(x)
         return escape
 
@@ -65,13 +65,14 @@ def template_fillvalues(template, params, variation=IdentityVariation()):
     """
     >>> template = u"{{hello}} this is a {{item}} {{{heee}}}"
     >>> template_fillvalues(template, {})
-    u"{{hello}} this is a {{item}} {{heee}}"    
+    u"{{hello}} this is a {{item}} {{heee}}"
 
     >>> template_fillvalues(template, {"hello": "good-bye, "})
-    u"good-bye,  this is a {{item}} {{heee}}"    
+    u"good-bye,  this is a {{item}} {{heee}}"
     """
     try:
-        return FillValuesRenderer(variation).render(template, convert_to_nested_dict(params))
+        rendered = FillValuesRenderer(variation).render(template, convert_to_nested_dict(params))
+        return rendered.replace(u"｛", u"{").replace(u"｝", u"}")
     except Exception, e:
         logger.exception(e)
         raise TicketPreviewFillValuesException(u"Templateへの文字列埋込みに失敗しました")
@@ -172,3 +173,11 @@ class CollectVarsRenderEngine(RenderEngine):
         return self._parse(template)._parse_tree
     def render(self, template, context):
         self.parse(template)
+
+import re
+DIGIT_RX = re.compile(r"([0-9]+)")
+def natural_order_key(name):
+    return [(int(x) if x.isdigit() else x) for x in re.split(DIGIT_RX, name) if x]
+
+def natural_order(xs):
+    return sorted(xs, key=natural_order_key)
