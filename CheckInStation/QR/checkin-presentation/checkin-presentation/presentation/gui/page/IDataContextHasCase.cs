@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace QR.presentation.gui.page
+namespace checkin.presentation.gui.page
 {
     interface IDataContextHasCase
     {

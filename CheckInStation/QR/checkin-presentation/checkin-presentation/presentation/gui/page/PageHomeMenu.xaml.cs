@@ -18,9 +18,12 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using QR.support;
+using checkin.core.support;
+using checkin.core.events;
+using checkin.core.models;
+using checkin.core;
 
-namespace QR.presentation.gui.page{
+namespace checkin.presentation.gui.page{
 
 
     class HomeMenuDataContext : ViewModel

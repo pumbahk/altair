@@ -5,9 +5,11 @@ using System.Printing;
 using System.Threading.Tasks;
 using System.Windows.Documents;
 using System.Windows.Media.Imaging;
-using QR.support;
+using checkin.core.support;
+using checkin.core.models;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.presentation.models
    {
     public class TicketImagePrinting : ITicketPrinting
     {

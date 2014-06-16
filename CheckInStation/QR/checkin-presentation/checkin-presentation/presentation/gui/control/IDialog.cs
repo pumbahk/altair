@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace QR.presentation.gui.control
+namespace checkin.presentation.gui.control
 {
     public interface IDialog
     {

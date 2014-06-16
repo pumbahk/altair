@@ -7,11 +7,14 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
-using QR.presentation.gui;
+using checkin.presentation.gui;
 using NLog;
-using QR.support;
+using checkin.core.support;
+using checkin.core;
+using checkin.core.models;
+using checkin.core.flow;
 
-namespace QR
+namespace checkin.presentation
 {
     /// <summary>
     /// ロジック的な処理のbroker

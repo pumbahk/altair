@@ -1,6 +1,9 @@
 using System;
+using checkin.core.models;
+using checkin.presentation.models;
+using checkin.core;
 
-namespace QR
+namespace checkin.config
 {
     public class QRConfiguration
     {

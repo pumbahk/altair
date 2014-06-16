@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace QR.presentation.gui.page
+namespace checkin.presentation.gui.page
 {
     /// <summary>
     /// HomeWindow.xaml の相互作用ロジック

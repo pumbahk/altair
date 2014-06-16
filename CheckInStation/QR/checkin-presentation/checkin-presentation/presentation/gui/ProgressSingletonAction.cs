@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using QR.support;
+using checkin.core.support;
+using checkin.core.events;
 
-namespace QR.presentation.gui
+namespace checkin.presentation.gui
 {
     public class ProgressSingletonAction
     {

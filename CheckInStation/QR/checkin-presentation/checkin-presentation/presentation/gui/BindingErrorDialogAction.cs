@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using QR.presentation.gui.control;
+using checkin.presentation.gui.control;
 
-namespace QR.presentation.gui
+namespace checkin.presentation.gui
 {
     /// <summary>
     /// ErrorMessageが変更されたときにエラーダイアログを表示させる

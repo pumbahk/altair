@@ -1,5 +1,5 @@
 using NLog;
-using QR.presentation.gui.viewmodel;
+using checkin.presentation.gui.viewmodel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,8 +17,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using checkin.core.events;
+using checkin.core.models;
 
-namespace QR.presentation.gui.page
+namespace checkin.presentation.gui.page
 {
   
     class PageConfirmAllDataContext : InputDataContext, IConfirmAllStatusInfo, INotifyPropertyChanged

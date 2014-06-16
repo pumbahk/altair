@@ -1,7 +1,13 @@
 using System;
 using System.Threading.Tasks;
+using checkin.core;
+using checkin.core.flow;
+using checkin.core.events;
+using checkin.core;
+using checkin.core.flow;
+using checkin.core.events;
 
-namespace QR.presentation.cli
+namespace checkin.presentation.cli
 {
     public class OrdernoInput
     {

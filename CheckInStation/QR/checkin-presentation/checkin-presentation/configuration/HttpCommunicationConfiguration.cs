@@ -4,9 +4,12 @@ using System.Net.Http;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using NLog;
-using QR.support;
+using checkin.core.support;
+using checkin.core.models;
+using checkin.core;
+using checkin.core.web;
 
-namespace QR
+namespace checkin.config
 {
     class LoggedClientHandler : WebRequestHandler
     {

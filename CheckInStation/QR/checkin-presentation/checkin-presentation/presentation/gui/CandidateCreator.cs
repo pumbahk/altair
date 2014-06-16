@@ -6,8 +6,10 @@ using System.Printing;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using checkin.core.models;
+using checkin.core.events;
 
-namespace QR.presentation.gui
+namespace checkin.presentation.gui
 {
     public class UnitStringPair
     {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QR.presentation.gui
+namespace checkin.presentation.gui
 {
     public class ViewModel : INotifyPropertyChanged
     {

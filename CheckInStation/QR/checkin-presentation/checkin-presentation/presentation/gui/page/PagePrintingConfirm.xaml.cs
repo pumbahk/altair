@@ -12,13 +12,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using QR.support;
+using checkin.core.support;
 using NLog;
 
 //model ::xxx
-using QR.message;
+using checkin.core.message;
 
-namespace QR.presentation.gui.page
+namespace checkin.presentation.gui.page
 {
     /// <summary>
     /// Interaction logic for PagePrintingConfirm.xaml

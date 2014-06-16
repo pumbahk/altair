@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace QR.presentation.gui.control
+namespace checkin.presentation.gui.control
 {
     /// <summary>
     /// MenuDialog.xaml の相互作用ロジック

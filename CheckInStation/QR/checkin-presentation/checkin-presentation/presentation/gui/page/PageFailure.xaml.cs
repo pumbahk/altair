@@ -15,8 +15,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
-namespace QR.presentation.gui.page
+using checkin.core.events;
+namespace checkin.presentation.gui.page
 {
 
     class PageFailureDataContext : InputDataContext, INotifyPropertyChanged, IFailureStatusInfo

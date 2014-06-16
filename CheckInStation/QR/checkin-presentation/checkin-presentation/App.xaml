@@ -1,9 +1,9 @@
-﻿<Application x:Class="QR.App"
+﻿<Application x:Class="checkin.presentation.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:c="clr-namespace:QR.presentation.gui.control"
-             xmlns:converter="clr-namespace:QR.presentation.gui.converter"
+             xmlns:c="clr-namespace:checkin.presentation.gui.control"
+             xmlns:converter="clr-namespace:checkin.presentation.gui.converter"
              Startup="App_Startup"
              DispatcherUnhandledException="App_DispatcherUnhandledException"
              StartupUri="presentation/gui/HomeWIndow.xaml">

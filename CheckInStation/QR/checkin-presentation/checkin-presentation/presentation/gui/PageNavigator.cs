@@ -5,11 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
-using QR.presentation.gui.page;
+using checkin.presentation.gui.page;
 using NLog;
-using QR.support;
+using checkin.core.support;
+using checkin.core.flow;
 
-namespace QR.presentation.gui
+namespace checkin.presentation.gui
 {
     /// <summary>
     /// case -> page

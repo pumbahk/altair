@@ -8,12 +8,14 @@ using System.Windows.Markup;
 using System.Windows.Media.Imaging;
 using System.Xml;
 
-using QR.support;
+using checkin.core.support;
 using Microsoft.TeamFoundation.Controls.WPF;
-using QR.presentation.gui.control;
+using checkin.presentation.gui.control;
 using System.Windows.Shapes;
+using checkin.core.models;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.presentation.models
    {
     public class TicketXamlPrinting :ITicketPrinting
     {
@@ -50,7 +52,7 @@ namespace QR
             // Convert From:
             //<@qrclass@ xmlns:@ns@="clr-namespace:@fullns;assembly=@ns" 
             // To:
-            //<QR:QRCodeCanvas xmlns:QR="clr-namespace:QR.presentation.gui.control;assembly=QR"
+            //<QR:QRCodeCanvas xmlns:QR="clr-namespace:checkin.presentation.gui.control;assembly=QR"
             xaml = xaml.Replace("@fullns@", "@ns@.presentation.gui.control");
             xaml = xaml.Replace("@qrclass@", "@ns@:QRCodeCanvas");
             // this is sooooooooooooooooooooo ugly.

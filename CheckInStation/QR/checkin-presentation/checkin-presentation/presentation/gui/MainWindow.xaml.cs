@@ -14,7 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Input;
 
-namespace QR.presentation.gui.page
+namespace checkin.presentation.gui.page
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

@@ -5,12 +5,15 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using QR.support;
+using checkin.core.support;
 using System.Windows.Controls;
 using System.Windows.Input;
-using QR.presentation.gui.command;
+using checkin.presentation.gui.command;
+using checkin.core;
+using checkin.core.events;
+using checkin.core.flow;
 
-namespace QR.presentation.gui
+namespace checkin.presentation.gui
 {
     public enum DataContextProgress
     {

@@ -1,12 +1,13 @@
-﻿using QR.presentation.gui;
+﻿using checkin.presentation.gui;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using checkin.core.models;
 
-namespace QR.presentation.gui.viewmodel
+namespace checkin.presentation.gui.viewmodel
 {
     public class DisplayTicketData : ViewModel
     {

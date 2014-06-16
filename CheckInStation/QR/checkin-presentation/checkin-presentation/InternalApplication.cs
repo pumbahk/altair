@@ -1,9 +1,14 @@
 using NLog;
 using System;
 using System.Threading.Tasks;
-using QR.support;
+using checkin.core.support;
+using checkin.core;
+using checkin.core.flow;
+using checkin.core.events;
+using checkin.core.models;
+using checkin.config;
 
-namespace QR    
+namespace checkin.presentation
 {
     public class InternalApplication
     {
@@ -58,23 +63,23 @@ namespace QR
         public async Task Run (ICase case_)
         {
             this.RequestBroker.SetStartCase (case_);
-            var p = new QR.presentation.cli.AuthInput (RequestBroker, case_); //todo:change
+            var p = new checkin.presentation.cli.AuthInput (RequestBroker, case_); //todo:change
 
             ICase authedCase = await p.Run ();
 
             // 別のスレッドで取りたい。本当は
             await this.Resource.AdImageCollector.Run (this.Resource.EndPoint.AdImages).ConfigureAwait(false);
 
-            var q = new QR.presentation.cli.SelectInputStrategy (RequestBroker, authedCase);
+            var q = new checkin.presentation.cli.SelectInputStrategy (RequestBroker, authedCase);
             ICase selectedCase = await q.Run ().ConfigureAwait(false);
 
             if (selectedCase is CaseQRCodeInput) {
-                var r = new QR.presentation.cli.QRInput (RequestBroker, selectedCase);
+                var r = new checkin.presentation.cli.QRInput (RequestBroker, selectedCase);
                 while (true) {
                     await r.Run ().ConfigureAwait(false);
                 }
             } else if (selectedCase is CaseOrdernoOrdernoInput) {
-                var r = new QR.presentation.cli.OrdernoInput (RequestBroker, selectedCase);
+                var r = new checkin.presentation.cli.OrdernoInput (RequestBroker, selectedCase);
                 while (true) {
                     await r.Run ().ConfigureAwait(false);
                 }

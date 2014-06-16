@@ -9,7 +9,7 @@ using System.Windows.Shapes;
 using System.Windows.Media;
 using System.Windows.Markup;
 
-namespace QR.presentation.gui.control
+namespace checkin.presentation.gui.control
 {
     public class QRCodeCanvas : Canvas
     {

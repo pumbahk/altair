@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using QR;
+using checkin.core;
 using System.Windows;
-using QR.presentation.gui.viewmodel;
+using checkin.presentation.gui.viewmodel;
 using System.Windows.Controls;
-using QR.presentation.gui.page;
+using checkin.presentation.gui.page;
 
-namespace QR.presentation.gui.command
+namespace checkin.presentation.gui.command
 {
     public class AppCloseCommand : ICommand
     {

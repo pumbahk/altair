@@ -1,5 +1,5 @@
-﻿<p:PageConfirmAllDataContext xmlns:l="clr-namespace:QR.presentation.gui.viewmodel"
-                            xmlns:p="clr-namespace:QR.presentation.gui.page">
+﻿<p:PageConfirmAllDataContext xmlns:l="clr-namespace:checkin.presentation.gui.viewmodel"
+                            xmlns:p="clr-namespace:checkin.presentation.gui.page">
     <p:PageConfirmAllDataContext.Description>
         まとめて発券されるチケットは以下です
     </p:PageConfirmAllDataContext.Description>

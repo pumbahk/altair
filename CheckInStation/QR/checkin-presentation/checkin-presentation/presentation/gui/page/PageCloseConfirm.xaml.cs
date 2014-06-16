@@ -1,4 +1,4 @@
-﻿using QR.presentation.gui.command;
+﻿using checkin.presentation.gui.command;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +14,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using vkeyboard.control;
-using QR.message;
+using checkin.core.message;
+using checkin.core.models;
 
-namespace QR.presentation.gui.page
+namespace checkin.presentation.gui.page
 {
     /// <summary>
     /// PageCloseConfirm.xaml の相互作用ロジック

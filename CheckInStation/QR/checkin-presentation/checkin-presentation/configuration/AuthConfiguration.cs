@@ -1,6 +1,9 @@
 using System;
+using checkin.core;
+using checkin.core.auth;
+using checkin.core.message;
 
-namespace QR
+namespace checkin.config
 {
     public class AuthConfiguration
     {

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
-namespace QR.presentation.gui.converter
+namespace checkin.presentation.gui.converter
 {
     class NotEmptyStringConverter : IValueConverter
     {

@@ -8,7 +8,7 @@ using WindowsInput;
 using WpfKb.Controls;
 using WpfKb.LogicalKeys;
 
-namespace QR.presentation.gui.control
+namespace checkin.presentation.gui.control
 {
     public class TelPad  : UniformOnScreenKeyboard
     {

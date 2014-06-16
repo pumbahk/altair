@@ -1,6 +1,6 @@
 ﻿using NLog;
-using QR.events;
-using QR.presentation.gui.control;
+using checkin.core.events;
+using checkin.presentation.gui.control;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -20,8 +20,11 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using vkeyboard.control;
+using checkin.core.flow;
+using checkin.core.events;
+using checkin.core.models;
 
-namespace QR.presentation.gui.page
+namespace checkin.presentation.gui.page
 {
 
     class AuthPasswordDataContext : InputDataContext

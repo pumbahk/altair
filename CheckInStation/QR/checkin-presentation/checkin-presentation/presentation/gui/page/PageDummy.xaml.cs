@@ -1,4 +1,4 @@
-﻿using QR.presentation.gui.control;
+﻿using checkin.presentation.gui.control;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace QR.presentation.gui.page
+namespace checkin.presentation.gui.page
 {
     /// <summary>
     /// PageDummy.xaml の相互作用ロジック

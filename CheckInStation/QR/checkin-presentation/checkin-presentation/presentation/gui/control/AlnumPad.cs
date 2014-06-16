@@ -9,7 +9,7 @@ using WindowsInput;
 using WpfKb.LogicalKeys;
 using WpfKb.Controls;
 
-namespace QR.presentation.gui.control
+namespace checkin.presentation.gui.control
 
 
 {

@@ -1,4 +1,4 @@
-﻿using QR.presentation.gui.control;
+﻿using checkin.presentation.gui.control;
 using System;
 using System.Windows.Input;
 
