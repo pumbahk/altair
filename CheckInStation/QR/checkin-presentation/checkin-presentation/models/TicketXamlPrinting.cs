@@ -56,8 +56,8 @@ namespace checkin.presentation.models
             xaml = xaml.Replace("@fullns@", "@ns@.presentation.gui.control");
             xaml = xaml.Replace("@qrclass@", "@ns@:QRCodeCanvas");
             // this is sooooooooooooooooooooo ugly.
-            xaml = xaml.Replace("@ns@", "QR");
-            xaml = xaml.Replace("assembly=QR", "assembly=checkin-presentation");
+            xaml = xaml.Replace("@ns@", "checkin");
+            xaml = xaml.Replace("assembly=checkin", "assembly=checkin-presentation");
             //xaml = ReplaceExecutableNamespaceName.Replace(xaml, "@ns@");
             return xaml;
         }
