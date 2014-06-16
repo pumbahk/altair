@@ -795,10 +795,11 @@ function buildTransferStocksQuantityOnlyModal(id) {
   var select = $('<p>移動先の枠：</p><select name="to"></select>');
   var quantity = $('<p>移動する数：</p><input id="transfer-quantity-only-quantity" type="number" value="0" min="1"></input>');
   var stock_id = $('<input id="transfer-quantity-only-id" type="hidden" value="'+id+'"></input>');
+  var msg = $('<p id="modal-transfer-quantity-only-message"></p>').css({'color': 'red'});
   venue.stockHolders.each(function (stockHolder) {
       select.append($("<option>").text(stockHolder.get('name')).attr("value", stockHolder.get('id')));
   });
-  body.empty().append(select).append(quantity).append(stock_id);
+  body.empty().append(select).append(quantity).append(stock_id).append(msg);
   modal.show();
 }
 
@@ -958,19 +959,20 @@ function transferStocksQuantityOnly() {
       }
   });
 
+
+  var msg = body.find('#modal-transfer-quantity-only-message');
   if(!dst_stock){
-      alert("NG");
+      msg.text("移動先の在庫がありません。");
   }else if(!src_stock.get('assignable') || !dst_stock.get('assignable')){
-      alert("LOCK");
+      msg.text("移動元、または移動先の在庫にロックがかかった状態です。(ロックを外してください)");
   }else if(src_stock.get('assigned') < quantity){
-      alert("too large");
+      msg.text("指定した数が大きすぎます。移動元の在庫の数より大きい数は指定できません。");
   }else{
       src_stock.set('assigned', src_stock.get('assigned')-quantity);
       dst_stock.set('assigned', dst_stock.get('assigned')+quantity);
+      modal.hide();
+      setTimeout(update_tables, 1000);
   }
-  modal.hide();
-  buildCannotSeatActionModal(errors, '枠移動ができなかった座席がありました');
-  setTimeout(update_tables, 1000);
 }
 
 function saveStocks() {
@@ -1144,7 +1146,7 @@ function update_selection_table(selection) {
   <div class="modal-body">
     <p>指定した数を指定した枠の同一席種に移動します。</p>
   </div>
-
+  <p id="modal-transfer-quantity-only-message"></p>
   <div class="modal-footer">
     <a href="javascript:void(0);" onclick="$('#modal-transfer-quantity-only').hide();" class="btn secondary btn-close">閉じる</a>
     <a href="javascript:transferStocksQuantityOnly();" class="btn danger">移動</a>
