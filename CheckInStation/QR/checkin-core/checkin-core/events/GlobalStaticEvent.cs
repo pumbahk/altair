@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace QR.events
+namespace checkin.core.events
 {
     public class DescriptionMessageEventArgs : EventArgs
     {

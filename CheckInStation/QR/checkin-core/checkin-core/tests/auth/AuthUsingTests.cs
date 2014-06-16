@@ -1,7 +1,11 @@
 using NUnit.Framework;
 using System;
+using checkin.core.models;
+using checkin.core.auth;
+using checkin.core.message;
+using checkin.core.web;
 
-namespace QR
+namespace checkin.core
 {
     [TestFixture ()]
     public class AuthUsingTests

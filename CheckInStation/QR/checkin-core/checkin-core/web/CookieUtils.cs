@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using QR.support;
+using checkin.core.support;
 
-namespace QR
+namespace checkin.core.web
 {
     public class CookieUtils
     {

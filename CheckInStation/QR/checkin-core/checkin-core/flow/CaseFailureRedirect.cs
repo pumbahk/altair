@@ -1,10 +1,12 @@
 using System;
 using System.Threading.Tasks;
-using QR.message;
+using checkin.core.message;
 using NLog;
-using QR.support;
+using checkin.core.support;
+using checkin.core.models;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.core.flow
 {
     /// <summary>
     /// Case failure redirect. エラー表示。 キャンセル済みなど予期しない状況の時にリダイレクトメッセージ表示する状況

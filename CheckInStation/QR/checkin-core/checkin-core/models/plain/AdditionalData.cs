@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace QR
+namespace checkin.core.models
 {
     [DataContract]
     public class _OrderData

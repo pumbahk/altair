@@ -4,9 +4,10 @@ using System.Linq;
 using System.Collections.Generic;
 using NLog;
 using Microsoft.CSharp.RuntimeBinder;
-using QR.support;
+using checkin.core.support;
+using checkin.core.message;
 
-namespace QR
+namespace checkin.core.models
 {
     [DataContract]
     public class TicketDataMinumum

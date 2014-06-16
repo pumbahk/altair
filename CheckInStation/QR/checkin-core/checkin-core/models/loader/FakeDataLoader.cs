@@ -1,8 +1,8 @@
 using System;
-using QR.message;
+using checkin.core.message;
 using System.Threading.Tasks;
 
-namespace QR
+namespace checkin.core.models
 {
     public class FakeDataLoader<G,T> :IDataFetcher<G,T>
     {

@@ -1,7 +1,9 @@
 using System;
 using System.Threading.Tasks;
+using checkin.core.models;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.core.flow
 {
     /// <summary>
     /// Caseの使われ方

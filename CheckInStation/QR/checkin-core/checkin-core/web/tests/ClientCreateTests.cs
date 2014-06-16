@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Linq;
 using System.Net;
 
-namespace QR
+namespace checkin.core.web
 {
     [TestFixture ()]
     public class ClientCreateTests

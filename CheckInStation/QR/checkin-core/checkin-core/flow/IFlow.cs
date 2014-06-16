@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace QR
+namespace checkin.core.flow
 {
     public interface IFlow
     {

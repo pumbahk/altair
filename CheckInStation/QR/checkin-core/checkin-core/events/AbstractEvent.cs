@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using NLog;
 using System.Windows.Threading;
 
-namespace QR
+namespace checkin.core.events
 {
     public abstract class AbstractEvent
     {

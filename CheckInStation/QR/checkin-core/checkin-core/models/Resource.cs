@@ -2,9 +2,12 @@ using System;
 using System.Configuration;
 using System.Net.Http;
 using NLog;
-using QR.support;
-
-namespace QR
+using checkin.core.support;
+using checkin.core.web;
+using checkin.core.flow;
+using checkin.core.events;
+using checkin.core.auth;
+namespace checkin.core.models
 {
     public class Resource :IResource
     {

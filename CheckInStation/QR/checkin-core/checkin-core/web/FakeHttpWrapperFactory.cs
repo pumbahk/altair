@@ -1,7 +1,7 @@
 using System;
 using System.Net.Http;
 
-namespace QR
+namespace checkin.core.web
 {
     public class FakeHttpWrapperFactory<T> : HttpWrapperFactory<T>, IHttpWrapperFactory<T>
         where T : IHttpWrapper, new()

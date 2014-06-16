@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.IO;
 
-namespace QR
+namespace checkin.core.web
 {
     public interface IHttpWrapper :IDisposable
     {

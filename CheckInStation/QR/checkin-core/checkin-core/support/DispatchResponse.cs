@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using QR.message;
+using checkin.core.message;
+using checkin.core.models;
 using NLog;
 using System.Net;
 using System.Text.RegularExpressions;
+using checkin.core.support;
 
-namespace QR.support
+namespace checkin.core.support
 {
     public class DispatchResponse<T>
     {

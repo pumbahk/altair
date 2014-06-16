@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using QR.message;
+using checkin.core.message;
 
-namespace QR
+namespace checkin.core.models
 {
     using NG = Failure<string, bool>;
 

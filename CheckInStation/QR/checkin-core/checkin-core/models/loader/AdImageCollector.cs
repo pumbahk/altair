@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using NLog;
 using System.Windows.Media.Imaging;
-using QR.support;
+using checkin.core.support;
 
-namespace QR
+namespace checkin.core.models
 {
     public enum CollectorState
     {

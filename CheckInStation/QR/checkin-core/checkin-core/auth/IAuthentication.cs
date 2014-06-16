@@ -1,8 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using QR.message;
+using checkin.core.message;
+using checkin.core.models;
 
-namespace QR
+namespace checkin.core.auth
 {
     public interface IAuthentication
     {

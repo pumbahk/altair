@@ -1,8 +1,11 @@
 using System;
 using NUnit.Framework;
 using System.Threading.Tasks;
+using checkin.core.models;
+using checkin.core.flow;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.core
 {
     [TestFixture ()]
     public class FlowAuthTests

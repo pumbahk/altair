@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using checkin.core.models;
 
-namespace QR
+namespace checkin.core.events
 {
     public interface IConfirmOneStatusInfo {
         string PerformanceName {get; set;}

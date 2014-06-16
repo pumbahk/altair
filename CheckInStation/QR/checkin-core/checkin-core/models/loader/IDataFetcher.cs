@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using QR.message;
+using checkin.core.message;
 
-namespace QR
+namespace checkin.core.models
 {
     public interface IDataFetcher<Required,Provided>
     {

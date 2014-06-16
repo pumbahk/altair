@@ -5,11 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using NLog;
 using System.Net.Http;
-using QR.support;
+using checkin.core.support;
 using Codeplex.Data;
-using QR.message;
+using checkin.core.message;
+using checkin.core.web;
 
-namespace QR
+namespace checkin.core.models
 {
     public class TicketRefreshedAtUpdater
     {

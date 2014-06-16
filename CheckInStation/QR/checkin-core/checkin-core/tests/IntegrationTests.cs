@@ -2,7 +2,7 @@ using NUnit.Framework;
 using System;
 using System.Reflection;
 
-namespace QR
+namespace checkin.core
 {
 
     [TestFixture ()]

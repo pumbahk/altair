@@ -1,13 +1,15 @@
 using System;
 using System.Threading.Tasks;
-using QR.message;
+using checkin.core.message;
 using System.Collections.Generic;
 using NLog;
 using System.Linq;
 using System.Net;
-using QR.support;
+using checkin.core.support;
+using checkin.core.models;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.core.flow
 {
 
     /// <summary>

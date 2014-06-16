@@ -1,11 +1,14 @@
 using System;
 using System.Threading.Tasks;
-using QR.message;
+using checkin.core.message;
 using NLog;
-using QR.support;
-using QR.flow;
+using checkin.core.support;
+using checkin.core.flow;
+using checkin.core;
+using checkin.core.events;
+using checkin.core.models;
 
-namespace QR
+namespace checkin.core.flow
 {
     /// <summary>
     /// Case QR data fetch. QRからデータ取得中

@@ -1,13 +1,14 @@
 using System;
 using NLog;
-using QR.message;
+using checkin.core.message;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Codeplex.Data;
 using System.IO;
-using QR.support;
+using checkin.core.support;
+using checkin.core.web;
 
-namespace QR
+namespace checkin.core.models
 {
     public class VerifiedOrderDataFetcher: IDataFetcher<OrdernoRequestData, VerifiedOrdernoRequestData>
     {

@@ -1,7 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.core.flow
 {
     class FakeFlow : Flow
     {

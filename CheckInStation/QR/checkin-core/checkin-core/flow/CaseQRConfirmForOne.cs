@@ -1,9 +1,12 @@
 using System;
 using System.Threading.Tasks;
 using NLog;
-using QR.support;
+using checkin.core.support;
+using checkin.core.events;
+using checkin.core.models;
+using checkin.core.message;
 
-namespace QR
+namespace checkin.core.flow
 {
     /// <summary>
     /// Case QR confirm for one. QR表示(1枚)

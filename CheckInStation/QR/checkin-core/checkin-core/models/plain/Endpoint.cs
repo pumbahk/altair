@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 - validな値か
 */
 // see also: tests.misc.login.json
-namespace QR
+namespace checkin.core.models
 {
     [DataContract]
     public class EndPoint

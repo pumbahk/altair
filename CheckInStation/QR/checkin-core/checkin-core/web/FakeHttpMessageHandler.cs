@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace QR
+namespace checkin.core.web
 {
     public class FakeHttpMessageHandler : HttpMessageHandler
     {

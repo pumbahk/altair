@@ -2,8 +2,13 @@ using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
 using Codeplex.Data;
+using checkin.core.events;
+using checkin.core.models;
+using checkin.core.web;
+using checkin.core.message;
+using checkin.core.flow;
 
-namespace QR
+namespace checkin.core
 {
     public class MockSVGImage : SVGTicketImageDataByteArrayFetcher
     {

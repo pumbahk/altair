@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using QR.support;
+using checkin.core.support;
+using checkin.core.models;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.core.models
 {
     using TokenTicketTemplatePairCollector = ResultStatusCollector<Tuple<string, string>>;
     using TokenTicketTemplatePair = Tuple<string, string>;

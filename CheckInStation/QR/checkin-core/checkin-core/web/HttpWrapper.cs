@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.IO;
 using NLog;
-using QR.support;
+using checkin.core.support;
 
-namespace QR
+namespace checkin.core.web
 {
     public class HttpWrapper :IHttpWrapper
     {

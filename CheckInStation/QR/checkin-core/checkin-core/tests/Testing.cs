@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace QR
+namespace checkin.core
 {
     // *utility*
     public static class Testing

@@ -1,7 +1,8 @@
 using System;
 using System.Runtime.Serialization;
+using checkin.core.message;
 
-namespace QR
+namespace checkin.core.models
 {
     public enum TokenStatus
     {

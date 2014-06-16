@@ -1,8 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using NLog;
+using checkin.core.models;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.core.flow
 {
     /// <summary>
     /// Case CaseOrdernoTelInput. 電話番号読み込み

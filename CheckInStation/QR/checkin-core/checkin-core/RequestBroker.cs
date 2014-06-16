@@ -1,9 +1,11 @@
 using NLog;
 using System;
 using System.Threading.Tasks;
-using QR.support;
-                
-namespace QR
+using checkin.core.support;
+using checkin.core.flow;
+using checkin.core.events;
+
+namespace checkin.core
 {
     /// <summary>
     /// Application. [Presentation Layer] --RequestBroker--  [Domain Layer]

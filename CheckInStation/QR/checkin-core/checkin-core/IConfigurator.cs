@@ -1,6 +1,7 @@
 using System;
+using checkin.core.models;
 
-namespace QR
+namespace checkin.core
 {
     public interface IConfigurator
     {

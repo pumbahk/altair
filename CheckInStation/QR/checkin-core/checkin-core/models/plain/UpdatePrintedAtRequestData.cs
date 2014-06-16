@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace QR
+namespace checkin.core.models
 {
     using System.Collections.Generic;
 using TokenTicketTemplatePair = Tuple<string, string>;

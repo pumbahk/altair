@@ -1,8 +1,10 @@
 using NUnit.Framework;
 using System;
-using QR.message;
+using checkin.core.message;
+using checkin.core.models;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.core
 {
     [TestFixture ()]
     public class TokenStatusMessageAppConfigTests

@@ -5,12 +5,12 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using NLog;
 using Codeplex.Data;
-using QR.message;
+using checkin.core.message;
 using System.IO;
 using System.Text;
 using System.Net.Http.Headers;
 
-namespace QR
+namespace checkin.core.models
 {
 
     public class TicketImageData

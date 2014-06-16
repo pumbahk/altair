@@ -1,13 +1,15 @@
 using System;
 using System.Threading.Tasks;
 using System.Net.Http;
-using QR.message;
+using checkin.core.message;
 using Codeplex.Data;
 using NLog;
-using QR.support;
-using QR.events;
+using checkin.core.support;
+using checkin.core.events;
+using checkin.core.models;
+using checkin.core.web;
 
-namespace QR
+namespace checkin.core.auth
 {
     public class Authentication :IAuthentication
     {

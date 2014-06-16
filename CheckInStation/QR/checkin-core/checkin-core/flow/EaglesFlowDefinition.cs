@@ -1,8 +1,10 @@
 using System;
 using NLog;
-using QR.support;
+using checkin.core.support;
+using checkin.core.events;
+using checkin.core.models;
 
-namespace QR
+namespace checkin.core.flow
 {
 
     public class EaglesFlowDefinition : IFlowDefinition

@@ -1,8 +1,11 @@
 using System;
 using NLog;
-using QR.support;
+using checkin.core.support;
+using checkin.core.events;
+using checkin.core.models;
+using checkin.core.flow;
 
-namespace QR
+namespace checkin.core.flow
 {
 
 	public class VisselFlowDefinition : IFlowDefinition
@@ -56,7 +59,8 @@ namespace QR
 				return new CaseOrdernoOrdernoInput(previous.Resource);
 			case InputUnit.order_no:
 				this.CurrentInputUnit = InputUnit.qrcode;
-				return new CaseQRCodeInput(previous.Resource);
+				return 
+                    new CaseQRCodeInput(previous.Resource);
 			default:
 				logger.Warn("invalid redirect is found. (get alternative case from {0})".WithMachineName(), previous);
 				this.CurrentInputUnit = InputUnit.before_auth;

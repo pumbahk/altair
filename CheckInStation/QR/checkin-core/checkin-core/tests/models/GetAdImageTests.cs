@@ -1,7 +1,8 @@
 using NUnit.Framework;
 using System;
+using checkin.core.models;
 
-namespace QR
+namespace checkin.core
 {
     [TestFixture ()]
     public class GetAdImageTests

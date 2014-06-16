@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using NLog;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
-using QR.support;
+using checkin.core.support;
 
-namespace QR
+namespace checkin.core.web
 {
     public class HttpWrapperFactory <T> : IHttpWrapperFactory<T>
         where T : IHttpWrapper, new()

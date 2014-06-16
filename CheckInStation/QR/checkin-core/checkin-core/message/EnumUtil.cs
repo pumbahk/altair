@@ -1,8 +1,8 @@
 using System;
 using NLog;
-using QR.support;
+using checkin.core.support;
 
-namespace QR
+namespace checkin.core.message
 {
     public class EnumUtil
     {

@@ -1,11 +1,13 @@
 using System;
-using QR.message;
+using checkin.core.message;
 using System.Threading.Tasks;
 using NLog;
 using System.Collections.Generic;
-using QR.support;
+using checkin.core.support;
+using checkin.core.models;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.core.flow
 {
     /// <summary>
     /// Case Orderno confirm for all. Orderno表示(all)

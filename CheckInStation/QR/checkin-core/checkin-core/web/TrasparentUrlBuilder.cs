@@ -1,7 +1,7 @@
 
 using NLog;
-using QR.support;
-namespace QR
+using checkin.core.support;
+namespace checkin.core.web
 {
     public class TrasparentUrlBuilder :IUrlBuilder
     {

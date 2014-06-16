@@ -1,11 +1,12 @@
-﻿using QR.support;
+﻿using checkin.core.support;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using checkin.core.events;
 
-namespace QR.flow
+namespace checkin.core.flow
 {
     /// <summary>
     /// 画面遷移しないエラーに対応するためのadhocなクラス

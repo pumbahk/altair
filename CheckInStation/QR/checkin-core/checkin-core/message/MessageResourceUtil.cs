@@ -1,6 +1,9 @@
 ﻿using System;
 
-namespace QR.message
+using checkin.core.models;
+using checkin.core.flow;
+
+namespace checkin.core.message
 {
     public static class MessageResourceUtil
     {

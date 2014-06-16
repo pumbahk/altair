@@ -1,8 +1,9 @@
 using NUnit.Framework;
 using System;
 using System.Linq;
+using checkin.core.models;
 
-namespace QR
+namespace checkin.core
 {
     [TestFixture ()]
     public class ResultStatusCollectorTests

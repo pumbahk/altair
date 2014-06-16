@@ -1,11 +1,12 @@
 using System;
 using System.Threading.Tasks;
 using NLog;
-using QR.message;
-using QR.support;
-using QR.flow;
+using checkin.core.message;
+using checkin.core.support;
+using checkin.core.flow;
+using checkin.core.models;
 
-namespace QR
+namespace checkin.core.flow
 {
     /// <summary>
     /// Case CaseOrdernoVerifyRequestData. 注文番号データのverify

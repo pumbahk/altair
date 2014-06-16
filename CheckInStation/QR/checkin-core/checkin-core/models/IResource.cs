@@ -1,7 +1,10 @@
 using System;
 using System.Net.Http;
+using checkin.core.auth;
+using checkin.core.web;
+using checkin.core.flow;
 
-namespace QR
+namespace checkin.core.models
 {
     public interface IResource
     {

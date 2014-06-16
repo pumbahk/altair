@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 //TODO: 2度押し防止
 /*
-namespace QR
+namespace checkin.core
 {
     //fake object
     [TestFixture ()]

@@ -1,13 +1,14 @@
 using System;
 using System.Threading.Tasks;
-using QR.message;
+using checkin.core.message;
 using System.Net.Http;
 using Codeplex.Data;
 using NLog;
 using System.IO;
-using QR.support;
+using checkin.core.support;
+using checkin.core.web;
 
-namespace QR
+namespace checkin.core.models
 {
     public class TicketDataCollectionFetcher : IDataFetcher<TicketDataCollectionRequestData, TicketDataCollection>
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace QR.message
+namespace checkin.core.message
 {
     public class ResultTuple<T,G>
     {

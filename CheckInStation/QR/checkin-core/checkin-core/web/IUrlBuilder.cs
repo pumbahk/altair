@@ -1,6 +1,6 @@
 using System;
 
-namespace QR
+namespace checkin.core.web
 {
     public interface IUrlBuilder
     {

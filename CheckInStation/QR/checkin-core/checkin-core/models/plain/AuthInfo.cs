@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
         "name": operator.name},
     "organization": {"id": operator.organization_id}}
 */
-namespace QR
+namespace checkin.core.models
 {
     [DataContract]
     public class AuthInfo

@@ -1,6 +1,8 @@
 using System;
+using checkin.core.models;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.core.flow
 {
     public interface IFlowDefinition
     {

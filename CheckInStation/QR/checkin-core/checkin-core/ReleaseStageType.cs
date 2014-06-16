@@ -1,4 +1,4 @@
-﻿namespace QR
+﻿namespace checkin.core
 {
     public enum ReleaseStageType
     {

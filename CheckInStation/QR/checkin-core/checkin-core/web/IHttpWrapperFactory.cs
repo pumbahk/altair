@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 
-namespace QR
+namespace checkin.core.web
 {
     public interface IHttpWrapperFactory<T>
         where T: IHttpWrapper

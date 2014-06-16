@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace QR
+namespace checkin.core.models
 {
     public class StatusResult <T>
     {

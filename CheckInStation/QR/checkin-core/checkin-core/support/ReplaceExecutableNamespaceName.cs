@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QR.support
+namespace checkin.core.support
 {
     /// <summary>
     /// XamlReaderで読み込む文字列中でこのアプリのnamespaceで定義されているクラスを使うために変換する。

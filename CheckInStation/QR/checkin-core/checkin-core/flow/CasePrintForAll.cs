@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
-using QR.message;
+using checkin.core.message;
 using NLog;
 using System.Net;
-using QR.support;
+using checkin.core.support;
+using checkin.core.models;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.core.flow
 {
     /// <summary>
     /// Case QR print for all. 印刷(all)

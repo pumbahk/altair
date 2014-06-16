@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QR.support
+namespace checkin.core.support
 {
     public static class EnvironmentName
     {

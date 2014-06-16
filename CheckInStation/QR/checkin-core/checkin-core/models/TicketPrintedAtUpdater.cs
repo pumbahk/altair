@@ -4,10 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Net.Http;
 using NLog;
-using QR.message;
-using QR.support;
+using checkin.core.message;
+using checkin.core.support;
+using checkin.core.web;
 
-namespace QR
+namespace checkin.core.models
 {
 	public class TicketPrintedAtUpdater
 	{

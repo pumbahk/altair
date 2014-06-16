@@ -1,9 +1,10 @@
 using NLog;
 using System;
 using System.Threading.Tasks;
-using QR.support;
+using checkin.core.support;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.core.flow
 {
     public enum FlowState
     {

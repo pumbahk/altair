@@ -1,8 +1,10 @@
 using System;
 using System.Threading.Tasks;
-using QR.message;
+using checkin.core.message;
+using checkin.core.events;
+using checkin.core.models;
 
-namespace QR
+namespace checkin.core.flow
 {
     /// <summary>
     /// Case QR code input. QR読み込み

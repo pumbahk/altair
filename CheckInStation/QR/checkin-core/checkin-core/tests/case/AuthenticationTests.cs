@@ -1,8 +1,12 @@
 using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
+using checkin.core.models;
+using checkin.core.events;
+using checkin.core.auth;
+using checkin.core.flow;
 
-namespace QR
+namespace checkin.core
 {
     [TestFixture, Description ("AuthenticationInput")]
     public class AuthenticationTests

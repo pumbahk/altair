@@ -1,9 +1,10 @@
 using System;
 using System.Configuration;
-using QR.support;
+using checkin.core.support;
 using NLog;
+using checkin.core.models;
 
-namespace QR
+namespace checkin.core
 {
     public class Configurator : IConfigurator
     {

@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Threading;
 
-namespace QR
+namespace checkin.core.events
 {
     /// <summary>
     /// I internal event. the Event from presentation layer;

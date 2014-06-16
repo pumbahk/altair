@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NLog;
-using QR.support;
+using checkin.core.support;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.core.flow
 {
     public class FlowManager
     {

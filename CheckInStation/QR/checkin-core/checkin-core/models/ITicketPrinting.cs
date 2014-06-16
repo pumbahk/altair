@@ -1,8 +1,9 @@
 using System;
 using System.Printing;
 using System.Threading.Tasks;
+using checkin.core.events;
 
-namespace QR
+namespace checkin.core.models
 {
     public interface ITicketPrinting
     {

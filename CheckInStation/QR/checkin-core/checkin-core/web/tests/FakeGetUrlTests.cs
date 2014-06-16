@@ -2,7 +2,7 @@ using NUnit.Framework;
 using System;
 
 
-namespace QR
+namespace checkin.core.web
 {
     [TestFixture ()]
     public class FakeGetUrlTests

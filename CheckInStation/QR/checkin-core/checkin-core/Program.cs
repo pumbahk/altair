@@ -2,11 +2,13 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using QR.message;
+using checkin.core.message;
 using NLog;
-using QR.support;
+using checkin.core.support;
+using checkin.core.models;
+using checkin.core.auth;
 
-namespace QR
+namespace checkin.core
 {
     class MainClass
     {
