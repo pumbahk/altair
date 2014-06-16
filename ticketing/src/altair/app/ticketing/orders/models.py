@@ -6,6 +6,10 @@ import sqlalchemy as sa
 import sqlalchemy.event
 import sqlalchemy.orm.collections
 import sqlalchemy.orm as orm
+from sqlalchemy.orm.exc import (
+    MultipleResultsFound,
+    NoResultFound,
+    )
 from sqlalchemy.sql import and_
 from sqlalchemy.sql.expression import exists, desc, select, case
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -886,7 +890,6 @@ class OrderNotification(Base, BaseModel):
 
     def copy(self):
         new_order_notification = type(self)()
-        new_order_notification.order_id = self.order_id
         new_order_notification.sej_remind_at = self.sej_remind_at
         return new_order_notification
 
@@ -896,17 +899,22 @@ def create_order_notification(mapper, connection, order):
     """
     from altair.app.ticketing.models import DBSession
     order_notification = None
+    before_order = None
 
-    # branch_noが1っこ前のorder
-    before_order = DBSession.query(Order, include_deleted=True)\
-      .filter(Order.order_no==order.order_no)\
-      .filter(Order.branch_no==order.branch_no-1)\
-      .first()
+    # branch_noが1っこ前のorderがあればそれの通知状態を引き継ぐ
+    try:
+        before_order = order.prev
+    except NoResultFound as err:
+        pass
+    except MultipleResultsFound as err:
+        assert False, '!? multiple order'
 
     if before_order and before_order.order_notification:
         order_notification = before_order.order_notification.copy()
     else:
-        order_notification = OrderNotification(order_id=order.id)
+        order_notification = OrderNotification()
+
+    order_notification.order_id = order.id
     DBSession.add(order_notification)
 
 @implementer(IOrderedProductLike)
