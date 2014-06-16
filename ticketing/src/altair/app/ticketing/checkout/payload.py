@@ -9,7 +9,6 @@ import functools
 from datetime import datetime
 from lxml import etree
 from base64 import b64encode
-from altair.app.ticketing.core.models import ChannelEnum
 
 logger = logging.getLogger(__name__)
 
@@ -223,6 +222,7 @@ class AnshinCheckoutHTMLFormBuilder(object):
         self.nonmobile_checkin_url = nonmobile_checkin_url
 
     def build_checkout_request_form(self, checkout_object):
+        from altair.app.ticketing.core.models import ChannelEnum
         xml_str = etree.tostring(self.pb.create_checkout_request_xml(checkout_object), encoding='utf-8')
         # 署名作成する
         sig = self.pb.sign_to_xml(xml_str)

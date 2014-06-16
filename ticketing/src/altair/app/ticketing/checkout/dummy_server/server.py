@@ -22,9 +22,11 @@ from altair.formhelpers.form import OurForm
 from altair.formhelpers.fields import OurTextField, OurIntegerField
 
 from .models import (
-    DummyCart,
-    DummyCartedProduct,
-    DummyProduct,
+    DummyCheckoutItemObject,
+    DummyCheckoutObject,
+    CheckoutOrder,
+    CheckoutOrderItem,
+    serial_number_table,
     )
 
 from .payload import (
@@ -47,11 +49,14 @@ logger = logging.getLogger(__name__)
 class DummyServerApplicationException(Exception):
     pass
 
+
 class OrderNotExist(DummyServerApplicationException):
     pass
 
+
 class InvalidCallbackResponseError(DummyServerApplicationException):
     pass
+
 
 class ApiError(DummyServerApplicationException):
     @property
@@ -61,6 +66,7 @@ class ApiError(DummyServerApplicationException):
     @property
     def code(self):
         return self.args[1]
+
 
 class IConfigurationProvider(Interface):
     def find_by_service_name(service_name):
@@ -72,9 +78,27 @@ class IConfigurationProvider(Interface):
     def __iter__():
         pass
 
+
 class ISerialNumberGenerator(Interface):
     def __call__(name):
         pass
+
+
+class IMiscellaneousIdGenerator(Interface):
+    def next_cart_confirmation_id(service_id, now):
+        pass
+
+    def next_order_id(service_id, now):
+        pass
+
+    def next_order_control_id(service_id, now):
+        pass
+
+
+class IMiscellaneousIdGeneratorFactory(Interface):
+    def __call__(serial_number_generator):
+        pass
+
 
 @implementer(IConfigurationProvider)
 class ConfigurationProvider(object):
@@ -119,11 +143,20 @@ class ConfigurationProvider(object):
 
 @implementer(ISerialNumberGenerator)
 class SerialNumberGenerator(object):
-    def __init__(self):
-        self.serials = {}
+    def __init__(self, engine):
+        self.engine = engine
 
     def __call__(self, name):
-        retval = self.serials[name] = self.serials.get(name, 0) + 1
+        retval = None
+        conn = self.engine.connect()
+        tx = conn.begin()
+        try:
+            r = conn.execute(serial_number_table.insert(used_for=name))
+            retval = r.inserted_primary_key[0]
+            tx.commit()
+        except:
+            tx.rollback()
+            raise
         return retval
 
 
@@ -140,43 +173,44 @@ def build_opener():
         urllib2.HTTPErrorProcessor()
         )
 
-class CallbackSender(object):
-    def __init__(self, serial_number_generator, opener, now, service_settings, openid_claimed_id):
+@implementer(IMiscellaneousIdGenerator)
+class MiscellaneousIdGenerator(object):
+    def __init__(self, serial_number_generator):
         self.serial_number_generator = serial_number_generator
-        self.opener = opener
-        self.now = now
-        self.service_settings = service_settings
-        self.openid_claimed_id = openid_claimed_id
 
-    def next_cart_confirmation_id(self):
+    def next_cart_confirmation_id(self, service_id, now):
         return '%s-%04d%02d%02d-%08d' % (
-            self.service_settings['service_id'],
-            self.now.year, self.now.month, self.now.day,
+            service_id,
+            now.year, now.month, now.day,
             self.serial_number_generator('cart_confirmation_id'),
             )
 
-    def next_order_id(self):
+    def next_order_id(self, service_id, now):
         return '%s-%04d%02d%02d-%010d' % (
-            self.service_settings['service_id'],
-            self.now.year, self.now.month, self.now.day,
+            service_id,
+            now.year, now.month, now.day,
             self.serial_number_generator('order_id'),
             )
 
-    def next_order_control_id(self):
+    def next_order_control_id(self, service_id, now):
         return 'dc-%s-%02d%02d%02d-%010d' % (
-            self.service_settings['service_id'],
-            self.now.year % 100, self.now.month, self.now.day,
+            service_id,
+            now.year % 100, now.month, now.day,
             self.serial_number_generator('order_control_id'),
             )
 
-    def send_cart_confirming_request(self, order):
+
+class CallbackSender(object):
+    def __init__(self, opener, service_settings):
+        self.opener = opener
+        self.service_settings = service_settings
+
+    def send_cart_confirming_request(self, order_dict, openid_claimed_id, cart_confirmation_id):
         cart_confirming_url = self.service_settings['endpoints']['cart_confirming_url']
-        if cart_confirming_url is None:
-            return
         xml = build_payload_for_cart_confirming(
-            order=order,
-            cart_confirmation_id=self.next_cart_confirmation_id(),
-            openid_claimed_id=self.openid_claimed_id
+            order=order_dict,
+            cart_confirmation_id=cart_confirmation_id,
+            openid_claimed_id=openid_claimed_id
             )
         in_payload = etree.tostring(xml, encoding='utf-8', xml_declaration=True)
         req = urllib2.Request(
@@ -196,17 +230,17 @@ class CallbackSender(object):
         finally:
             resp.close()
 
-    def send_order_completion_notification_request(self, order, used_point=Decimal(0)):
+    def send_order_completion_notification_request(self, order_dict, order_id, order_control_id, openid_claimed_id, now, used_points=Decimal(0)):
         completion_notification_url = self.service_settings['endpoints']['completion_notification_url']
         if completion_notification_url is None:
             return
         xml = build_payload_for_completion_notification(
-            order=order,
-            order_id=self.next_order_id(),
-            order_control_id=self.next_order_control_id(),
-            order_date=self.now,
-            used_point=used_point,
-            openid_claimed_id=self.openid_claimed_id
+            order=order_dict,
+            order_id=order_id,
+            order_control_id=order_control_id,
+            order_date=now,
+            used_points=used_points,
+            openid_claimed_id=openid_claimed_id
             )
         in_payload = etree.tostring(xml, encoding='utf-8', xml_declaration=True)
         req = urllib2.Request(
@@ -229,16 +263,17 @@ class CallbackSender(object):
 def get_serial_number_generator(registry):
     return registry.getUtility(ISerialNumberGenerator)
 
-def make_callback_sender(registry, service_settings, openid_claimed_id=None):
-    if openid_claimed_id is None:
-        openid_claimed_id = u'http://example.com/dummy-open-id'
+def get_miscellaneous_id_generator(registry):
+    return registry.getAdapter(
+        get_serial_number_generator(registry),
+        IMiscellaneousIdGenerator
+        )
+
+def make_callback_sender(registry, service_settings):
     opener = build_opener()
     return CallbackSender(
-        get_serial_number_generator(registry),
         opener,
-        datetime.now(),
-        service_settings,
-        openid_claimed_id
+        service_settings
         )
 
 def get_configuration_provider(registry):
@@ -250,6 +285,59 @@ def get_service_settings(registry, service_id):
 def enumerate_service_settings(registry):
     return iter(get_configuration_provider(registry))
 
+def build_checkout_order_from_order_dict(service_id, order_dict):
+    return CheckoutOrder(
+        service_id=service_id,
+        provided_id=order_dict['order_cart_id'],
+        total_amount=order_dict['total_amount'],
+        test_mode=order_dict['test_mode'],
+        items=[
+            CheckoutOrderItem(
+                provided_id=order_item_dict['id'],
+                name=order_item_dict['name'],
+                quantity=order_item_dict['quantity'],
+                price=order_item_dict['price']
+                )
+            for order_item_dict in order_dict['items']
+            ]
+        )
+
+def build_order_dict_from_checkout_order(order_object):
+    return dict(
+        service_id=order_object.service_id,
+        order_cart_id=order_object.provided_id,
+        order_id=order_object.order_id,
+        order_control_id=order_object.order_control_id,
+        order_date=order_object.order_date,
+        total_amount=order_object.total_amount,
+        used_points=order_object.used_points,
+        test_mode=order_object.test_mode,
+        items=[
+            dict(
+                id=order_item_object.provided_id,
+                name=order_item_object.name,
+                quantity=order_item_object.quantity,
+                price=order_item_object.price
+                )
+            for order_item_object in order_object.items
+            ]
+        )
+
+def populate_order_dict_from_order_confirmation_dict(order_dict, order_confirmation_dict):
+    order_item_dict_map = dict(
+        (order_item_dict['id'], order_item_dict)
+        for order_item_object in order_object.items
+        )
+    for item in order_confirmation_dict['items']:
+        order_item_dict = order_item_dict_map.get(item['item_id'])
+        if order_item_dict is None:
+            raise InvalidCallbackResponseError('unknown item id: %s' % item['item_id'])
+        order_item_dict['result_code'] = item['confirmation_result']
+        order_item_dict['quantity'] = item['quantity']
+        order_item_dict['price'] = item['price']
+        order_item_dict['quantity_change_note'] = item['quantity_change_note']
+        order_item_dict['price_change_note'] = item['price_change_note']
+
 class PaymentInfoForm(OurForm):
     openid_claimed_id = OurTextField(
         validators=[
@@ -258,7 +346,7 @@ class PaymentInfoForm(OurForm):
         default=u'http://example.com/dummy-open-id'
         )
 
-    used_point = OurIntegerField(
+    used_points = OurIntegerField(
         default=u'0'
         )
 
@@ -268,6 +356,10 @@ class DummyCheckoutView(object):
         self.request = request
         js.bootstrap_ts.bootstrap.need()
         js.bootstrap_ts.bootstrap_responsive_css.need()
+
+    @property
+    def id_generator(self):
+        return get_miscellaneous_id_generator(self.request.registry)
 
     def get_payload(self):
         encoded_payload = self.request.POST.get('checkout')
@@ -341,7 +433,7 @@ class DummyCheckoutView(object):
     def index_post(self):
         if 'order' not in self.request.session:
             raise OrderNotExist()
-        order = self.request.session['order']
+        order_dict = self.request.session['order']
         service_settings = self.request.session['service_settings']
         f = PaymentInfoForm(self.request.POST)
         if not f.validate():
@@ -351,40 +443,105 @@ class DummyCheckoutView(object):
                 'form': f,
                 }
         openid_claimed_id = f.openid_claimed_id.data
-        used_point = Decimal(f.used_point.data)
+        used_points = f.used_points.data
         if self.verb == 'Authorize':
-            sender = make_callback_sender(self.request.registry, service_settings, openid_claimed_id)
-            try:
-                sender.send_cart_confirming_request(order)
-                sender.send_order_completion_notification_request(order, used_point)
-            except Exception as e:
-                self.request.session.flash(unicode(e))
-                return {
-                    'service_settings': service_settings,
-                    'order': order,
-                    'form': f,
-                    }
-            del self.request.session['order']
-            del self.request.session['service_settings']
-            return HTTPFound(location=order['order_complete_url'])
+            cart_confirming_url = service_settings['endpoints']['cart_confirming_url']
+            if cart_confirming_url is not None:
+                now = datetime.now()
+                sender = make_callback_sender(self.request.registry, service_settings)
+                cart_confirmation_id = self.id_generator.next_cart_confirmation_id(service_settings['service_id'], now)
+                try:
+                    order_confirmation_dict = sender.send_cart_confirming_request(order_dict, openid_claimed_id, cart_confirmation_id)
+                except Exception as e:
+                    self.request.session.flash(unicode(e))
+                    return HTTPFound(location=self.request.current_route_path())
+                populate_order_dict_from_order_confirmation_dict(order_dict, order_confirmation_dict)
+                self.request.session['order'] = order_dict
+            self.request.session['openid_claimed_id']  = openid_claimed_id
+            self.request.session['used_points'] = used_points
+            return HTTPFound(location=self.request.route_path('checkout_dummy_server.confirm'))
         elif self.verb == 'AuthorizeFailure':
             del self.request.session['order']
             del self.request.session['service_settings']
             return HTTPFound(location=order['order_failed_url'])
         return HTTPFound(location=self.request.current_route_path())
 
+    @view_config(route_name='checkout_dummy_server.confirm', renderer='confirm.mako', request_method='GET')
+    def confirm(self):
+        if 'order' not in self.request.session:
+            raise OrderNotExist()
+        if 'used_points' not in self.request.session or \
+           'openid_claimed_id' not in self.request.session:
+            raise HTTPFound(location=self.request.route_path('checkout_dummy_server.index'))
+        return {
+            'service_settings': self.request.session['service_settings'],
+            'used_points': self.request.session['used_points'],
+            'openid_claimed_id': self.request.session['openid_claimed_id'],
+            'order': self.request.session['order'], 
+            }
+
+    @view_config(route_name='checkout_dummy_server.confirm', renderer='confirm.mako', request_method='POST')
+    def confirm_post(self):
+        if 'order' not in self.request.session:
+            raise OrderNotExist()
+        if 'used_points' not in self.request.session or \
+           'openid_claimed_id' not in self.request.session:
+            raise HTTPFound(location=self.request.route_path('checkout_dummy_server.index'))
+        now = datetime.now()
+        original_order_dict = self.request.session['order']
+        service_settings = self.request.session['service_settings']
+        openid_claimed_id = self.request.session['openid_claimed_id']
+        used_points = Decimal(self.request.session['used_points'])
+        sender = make_callback_sender(self.request.registry, service_settings)
+        order_control_id = self.id_generator.next_order_control_id(service_settings['service_id'],  now)
+        order_id = self.id_generator.next_order_id(service_settings['service_id'],  now)
+        order_object = build_checkout_order_from_order_dict(service_settings['service_id'], original_order_dict)
+        order_object.openid_claimed_id = openid_claimed_id
+        order_object.used_points = used_points
+        order_object.order_control_id = order_control_id
+        order_object.order_id = order_id
+        order_object.order_date = now
+        self.request.sa_session.add(order_object)
+        order_dict = build_order_dict_from_checkout_order(order_object)
+        try:
+            sender.send_order_completion_notification_request(order_dict, order_id, order_control_id, openid_claimed_id, now, used_points)
+        except Exception as e:
+            self.request.session.flash(unicode(e))
+            return HTTPFound(location=self.request.route_path('checkout_dummy_server.index'))
+        del self.request.session['order']
+        del self.request.session['service_settings']
+        return HTTPFound(location=original_order_dict['order_complete_url'])
+
     @view_config(route_name='checkout_dummy_server.diag', renderer='diag.mako')
     def diag(self):
         from altair.app.ticketing.checkout.payload import AnshinCheckoutPayloadBuilder, get_signer
-        order = DummyCart(
-            id=0,
-            system_fee=Decimal(100),
-            delivery_fee=Decimal(100),
-            special_fee=Decimal(100),
+        checkout_object = DummyCheckoutObject(
+            order_id='XX0000000000',
+            total_amount=Decimal(1300),
             items=[
-                DummyCartedProduct(
-                    product=DummyProduct(id=1, name=u'ダミー', price=Decimal(1000)),
+                DummyCheckoutItemObject(
+                    id='1',
+                    name=u'ダミー',
+                    price=Decimal(1000),
                     quantity=3
+                    ),
+                DummyCheckoutItemObject(
+                    id='system_fee',
+                    name=u'システム手数料',
+                    price=Decimal(100),
+                    quantity=1
+                    ),
+                DummyCheckoutItemObject(
+                    id='delivery_fee',
+                    name=u'引取手数料',
+                    price=Decimal(100),
+                    quantity=1
+                    ),
+                DummyCheckoutItemObject(
+                    id='special_fee',
+                    name=u'特別手数料',
+                    price=Decimal(100),
+                    quantity=1
                     ),
                 ]
             )
@@ -396,9 +553,9 @@ class DummyCheckoutView(object):
                 self.request.route_path('checkout_dummy_server.diag'),
                 'HMAC-SHA1',
                 service_settings['access_key'],
-                False
+                '0'
                 )
-            payload = etree.tostring(co.create_checkout_request_xml(order), xml_declaration=True, encoding='utf-8')
+            payload = etree.tostring(co.create_checkout_request_xml(checkout_object), xml_declaration=True, encoding='utf-8')
             signer = get_signer(co.auth_method, co.secret)
             payloads.append({
                 'name': service_settings['name'],
@@ -538,17 +695,33 @@ def setup_routes(config):
     config.add_route('checkout_dummy_server.api.update', '/odrctla/changepayment/1.0/')
     config.add_route('checkout_dummy_server.diag', '/.dummy/diag/')
     config.add_route('checkout_dummy_server.index', '/.dummy/')
+    config.add_route('checkout_dummy_server.confirm', '/.dummy/confirm')
 
 def setup_renderers(config):
     config.add_renderer('.mako' , 'pyramid.mako_templating.renderer_factory')
 
 def setup_sqlalchemy(config):
     import sqlalchemy
+    import sqlalchemy.orm
     from .models import Base
-    config.registry.sa_engine = sqlalchemy.create_engine('sqlite:///')
+    config.registry.sa_engine = sqlalchemy.create_engine('sqlite:///checkout_dummy_server.db')
     config.registry.sa_base = Base
     config.registry.sa_base.metadata.drop_all(config.registry.sa_engine)
     config.registry.sa_base.metadata.create_all(config.registry.sa_engine)
+    config.registry.sa_session_maker = sqlalchemy.orm.sessionmaker(bind=config.registry.sa_engine)
+    def get_sa_session(request):
+        retval = request.registry.sa_session_maker()
+        def cleanup(request):
+            try:
+                if request.exception is not None:
+                    request.sa_session.rollback()
+                else:
+                    request.sa_session.commit()
+            finally:
+                request.sa_session.close()
+        request.add_finished_callback(cleanup)
+        return retval
+    config.set_request_property(get_sa_session, 'sa_session', reify=True)
 
 def setup_session(config):
     from altair.httpsession.pyramid import PyramidSessionFactory, cookies
@@ -567,7 +740,8 @@ def setup_session(config):
 
 def setup_components(config):
     config.registry.registerUtility(ConfigurationProvider(config), IConfigurationProvider)
-    config.registry.registerUtility(SerialNumberGenerator(), ISerialNumberGenerator)
+    config.registry.registerUtility(SerialNumberGenerator(config.registry.sa_engine), ISerialNumberGenerator)
+    config.registry.registerAdapter(MiscellaneousIdGenerator, (ISerialNumberGenerator, ), IMiscellaneousIdGenerator)
 
 def setup_helpers(config):
     config.add_subscriber(register_helpers, 'pyramid.events.BeforeRender')
@@ -584,10 +758,10 @@ def paster_main(global_config, **local_config):
     config.scan('.')
     config.include("pyramid_fanstatic")
     config.include('altair.exclog')
+    config.include(setup_sqlalchemy)
     config.include(setup_components)
     config.include(setup_renderers)
     config.include(setup_session)
-    config.include(setup_sqlalchemy)
     config.include(setup_routes)
     config.include(setup_helpers)
     return config.make_wsgi_app()

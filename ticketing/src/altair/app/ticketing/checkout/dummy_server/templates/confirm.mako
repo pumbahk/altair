@@ -62,6 +62,8 @@ body {
           <th>価格</th>
           <th>数量</th>
           <th>小計</th>
+          <th>金額変更メッセージ</th>
+          <th>数量変更メッセージ</th>
         </tr>
       </thead>
       <tbody>
@@ -72,16 +74,30 @@ body {
           <td>${item['price']}</td>
           <td>${item['quantity']}</td>
           <td>${item['price'] * item['quantity']}</td>
+          <td>${item.get('price_change_note') or u'-'}</td>
+          <td>${item.get('quantity_change_note') or u'-'}</td>
         </tr>
       % endfor
       </tbody>
       <tfoot>
         <tr>
-          <td colspan="3">&nbsp;</td>
+          <td colspan="5">&nbsp;</td>
           <td>総計</th>
           <td>${order['total_amount']}</td>
         </tr>
       </tfoot>
+    </table>
+    <table class="table">
+      <tbody>
+        <tr>
+          <th>OpenID claimed ID</th>
+          <td>${openid_claimed_id}</td>
+        </tr>
+        <tr>
+          <th>利用ポイント数</th>
+          <td>${used_points}</td>
+        </tr>
+      </tbody>
     </table>
     <% flash_messages = request.session.pop_flash() %>
     % if flash_messages:
@@ -94,19 +110,7 @@ body {
     </div>
     % endif
     <form method="post">
-      <fieldset>
-        <legend>決済情報</legend>
-        <label class="control-label" for="openid_claimed_id">OpenID Claimed ID</label>
-        ${form.openid_claimed_id()}
-        ${h.errors_for(form.openid_claimed_id)}
-        <label class="control-label" for="used_points">利用ポイント数</label>
-        ${form.used_points()}
-        ${h.errors_for(form.used_points)}
-        <div class="form-actions">
-          <input type="submit" name="doAuthorize" class="btn" value="オーソリする (確認画面へ)" />
-          <input type="submit" name="doAuthorizeFailure" class="btn" value="オーソリ失敗にする" />
-        </div>
-      </fieldset>
+      <input type="submit" class="btn btn-normal" value="オーソリする" />
     </form>
   </div>
 </body>
