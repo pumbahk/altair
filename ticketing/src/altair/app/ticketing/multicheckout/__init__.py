@@ -18,7 +18,7 @@ def includeme(config):
 
 # appの実装
 def get_multicheckout_setting(request, override_name=None, organization_id=None):
-    import altair.app.ticketing.core.api as core_api
+    import altair.app.ticketing.cart.api as cart_api 
 
     logger.info('get_multicheckout_setting override_name = %s, request_host = %s' % (override_name, request.host))
     if override_name:
@@ -27,7 +27,7 @@ def get_multicheckout_setting(request, override_name=None, organization_id=None)
         if organization_id != None:
             os = core_Models.OrganizationSetting.query.filter_by(organization_id=organization_id).one()
         else:
-            organization = core_api.get_organization(request)
+            organization = cart_api.get_organization(request)
             os = organization.setting
     return MulticheckoutSetting(os)
 

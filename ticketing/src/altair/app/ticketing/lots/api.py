@@ -39,8 +39,7 @@ from sqlalchemy.orm.exc import NoResultFound
 #from pyramid.interfaces import IRequest
 from webob.multidict import MultiDict
 from altair.now import get_now
-from altair.app.ticketing.core import api as c_api
-import altair.app.ticketing.cart.api as cart_api
+from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import sensible_alnum_encode
 from altair.rakuten_auth.api import authenticated_user
 from altair.app.ticketing.core import api as core_api
@@ -78,7 +77,8 @@ from .models import (
 from altair.app.ticketing.users import api as user_api
 from altair.app.ticketing.payments.api import set_confirm_url
 from altair.app.ticketing.payments.payment import Payment
-from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID
+from altair.multicheckout.api import get_multicheckout_3d_api
 
 from . import sendmail
 from .events import LotEntriedEvent
@@ -98,7 +98,7 @@ def get_member_group(request):
     if user is None:
         return None
 
-    org = c_api.get_organization(request)
+    org = cart_api.get_organization(request)
     member_ship = user.get('membership')
     member_group_name = user.get('membergroup')
     if member_ship is None or member_group_name is None:
@@ -213,9 +213,17 @@ def prepare1_for_payment(request, entry_dict):
     return payment.call_prepare()
 
 def prepare2_for_payment(request, entry_dict):
-    # とりあえず何もしないでおく
-    # 将来的に何かしたくなったらやる
-    pass
+    # FIXME: マルチ決済のときだけ、 keep_authorization を実行する
+    cart = LotSessionCart(entry_dict, request, request.context.lot)
+    if cart.payment_delivery_pair.payment_method.payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID:
+        multicheckout_api = get_multicheckout_3d_api(
+            request,
+            override_name=cart.lot.event.organization.setting.multicheckout_shop_name
+            )
+        # FIXME
+        from altair.app.ticketing.payments.plugins.multicheckout import get_multicheckout_order_no
+        order_no = get_multicheckout_order_no(request, cart.order_no)
+        multicheckout_api.keep_authorization(order_no, u"lots")
 
 def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo):
     """
@@ -247,6 +255,7 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
     for wish in entry.wishes:
         wish.entry_wish_no = "{0}-{1}".format(entry.entry_no, wish.wish_order)
     request.session['altair.lots.entry_id'] = entry.id
+
     return entry
 
 def get_entry(request, entry_no, tel_no):

@@ -24,7 +24,7 @@ function get_selected_sales_segment_id() {
 <table class="table">
   <tbody>
     <tr>
-      <th>${HH.label_text_for(SalesSegment.sales_segment_group)}</th>
+      <th style="width: 30%;">${HH.label_text_for(SalesSegment.sales_segment_group)}</th>
       <td>
         ${sales_segment.sales_segment_group.name}
         <a href="${request.route_path('sales_segment_groups.show', sales_segment_group_id=sales_segment.sales_segment_group_id)}">この販売区分グループを編集する</a>
@@ -91,14 +91,19 @@ function get_selected_sales_segment_id() {
   <%include file="/sales_segments/_modal.html" args="modal_id='modal-sales_segment'" />
 </div>
 
-<h2>決済・引取方法</h2>
+<hr />
+
+<h3>決済引取方法</h3>
 <%include file="/payment_delivery_method_pairs/_list.html" args="payment_delivery_method_pairs=sales_segment.payment_delivery_method_pairs" />
+
+<hr />
+
 % if request.context.organization.point_feature_enabled:
-<h2>ポイント付与設定</h2>
+<h3>ポイント付与設定</h3>
 <p>ポイント付与設定は全パフォーマンス・販売区分で共通です。追加は<a href="${request.route_path('point_grant_settings.index')}">こちら</a></p>
 <form method="post" action="#">
-<%include file="./_action_button_modal_point_grant_setting.html" args="sales_segment=sales_segment" />
 <%include file="/point_grant_settings/_list.html" args="point_grant_settings=sales_segment.point_grant_settings, organization_setting=sales_segment.sales_segment_group.event.organization.setting" />
+<%include file="./_action_button_modal_point_grant_setting.html" args="sales_segment=sales_segment" />
 <script type="text/javascript">
 var get_selected_point_grant_setting_ids;
 var add_point_grant_setting, remove_point_grant_settings;
@@ -126,8 +131,11 @@ var add_point_grant_setting, remove_point_grant_settings;
 </form>
 <%include file="./_modal_point_grant_setting.html" args="modal_id='point_grant_setting', sales_segment=sales_segment" />
 % endif
-<h2>商品</h2>
-<%include file="/products/_action_button.html" />
+
+<hr />
+
+<h3>商品</h3>
 <%include file="/products/_list.html" args="products=sales_segment.products, sales_segment=sales_segment" />
+<%include file="/products/_action_button.html" />
 <%include file="/products/_modal.html" args="modal_id='modal-product'" />
 <%include file="/product_items/_modal.html" args="modal_id='modal-product-item'" />

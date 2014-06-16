@@ -2409,6 +2409,9 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from altair.app.ticketing.lots.models import LotEntryProduct
         return bool(LotEntryProduct.query.filter(LotEntryProduct.product_id==self.id).count())
 
+    def is_amount_mismatching(self):
+        return self.price != sum(pi.price * pi.quantity for pi in self.items)
+
 
 class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__  = "SeatIndexType"
@@ -2458,15 +2461,28 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     user_id = Column(Identifier, ForeignKey("User.id"), nullable=True)
     user = relationship("User", uselist=False, backref=backref('organization', uselist=False))
 
+    _setting = None
+
     def get_setting(self, name):
-        for setting in self.settings:
-            if setting.name == name:
-                return setting
-        raise Exception, "organization; id={0} does'nt have {1} setting".format(self.id, name)
+        settings = getattr(self, 'settings', None)
+        if settings is not None:
+            for setting in settings:
+                if setting.name == name:
+                    break
+            else:
+                setting = None
+        else:
+            setting = object_session(self).query(OrganizationSetting).filter_by(organization_id=self.id, name=name).first()
+        if setting is None:
+            raise Exception("organization; id={0} does not have {1} setting".format(self.id, name))
+        return setting
 
     @property
     def setting(self):
-        return self.get_setting(u'default')
+        if self._setting is not None:
+            return self._setting
+        self._setting = setting = self.get_setting(u'default')
+        return self._setting
 
     @property
     def point_feature_enabled(self):
@@ -3423,6 +3439,9 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     augus_download_url = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのダウンロードURL', _a_label=u'オーガス用サーバのダウンロードURL')
     augus_username = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのユーザ名', _a_label=u'オーガス用サーバのユーザ名')
     augus_password = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのパスワード', _a_label=u'オーガス用サーバのパスワード')
+
+    enable_smartphone_cart = AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=u'スマートフォン用のカートを有効にする')
+    enable_mypage = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"マイページの使用", _a_label=u"マイページの使用")
 
     @property
     def container(self):

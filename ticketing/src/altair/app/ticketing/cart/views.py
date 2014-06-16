@@ -46,7 +46,7 @@ from altair.app.ticketing.temp_store import TemporaryStoreError
 from . import api
 from . import helpers as h
 from . import schemas
-from .api import set_rendered_event, is_mobile, is_smartphone, is_smartphone_organization, is_point_input_organization, is_fc_auth_organization
+from .api import set_rendered_event, is_mobile, is_smartphone, is_smartphone_organization, is_point_input_organization, is_fc_auth_organization, enable_auto_input_form
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -434,7 +434,7 @@ class IndexAjaxView(object):
         sales_segment = self.request.context.sales_segment # XXX: matchdict から取得していることを期待
 
         order_separate_seats_url = u''
-        organization = c_api.get_organization(self.request)
+        organization = api.get_organization(self.request)
         if organization.setting.entrust_separate_seats:
             qs = {'separate_seats': 'true'}
             order_separate_seats_url = self.request.route_url('cart.order', sales_segment_id=sales_segment.id, _query=qs)
@@ -889,7 +889,7 @@ class PaymentView(object):
 
         user = get_or_create_user(self.context.authenticated_user())
         user_profile = None
-        if user is not None:
+        if enable_auto_input_form(user):
             user_profile = user.user_profile
 
         if user_profile is not None:

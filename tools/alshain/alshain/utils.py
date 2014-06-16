@@ -177,3 +177,14 @@ class AltairPath(object):
 
     def env(self, *args, **kwds):
         return self.style('env', *args, **kwds)
+
+class AlshainPath(object):
+    @classmethod
+    def join(self, *args, **kwds):
+        return os.path.join(*args, **kwds)
+
+    def scripts(self, *args, **kwds):
+        scripts_dir = os.path.join(
+            os.path.dirname(
+                os.path.abspath(__file__)), 'scripts')
+        return self.join(scripts_dir, *args, **kwds)

@@ -10,10 +10,8 @@ class OrganizationSettingBasedWhoDecider(object):
     def decide(self):
         """ WHO API 選択
         """
-        from altair.app.ticketing.core.api import get_organization
-        from altair.app.ticketing.models import DBSession
+        from altair.app.ticketing.cart.api import get_organization
         org = get_organization(self.request)
-        DBSession.add(org) # XXX
         return org.setting.auth_type
 
 def auth_model_callback(identity, request):

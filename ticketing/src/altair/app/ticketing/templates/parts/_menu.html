@@ -15,9 +15,6 @@
       <li><a href="${request.route_path('reports.index', event_id=event.id)}">帳票</a></li>
     </ul>
     % endif
-    % if performance:
-      <li><a href="${request.route_path('products.index', performance_id=performance.id)}">商品</a></li>
-    % endif
     % if HH.has_permission('master_viewer'):
     <li><a href="${request.route_path('accounts.index')}">取引先</a></li>
     % endif

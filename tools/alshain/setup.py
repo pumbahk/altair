@@ -20,6 +20,7 @@ requires = ['jumon',
             'pymysql',
             'enum34',
             'pit',
+            'pywad',
             ]
 
 setup(

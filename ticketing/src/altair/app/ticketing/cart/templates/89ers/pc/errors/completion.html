@@ -1,5 +1,4 @@
 <%inherit file="./base.html"/>
-<% from altair.app.ticketing.core.api import get_organization, get_default_contact_url %>
 <table class="layout" style="width:760px" class="wrapper">
   <tbody>
     <tr>
@@ -17,7 +16,7 @@
                   <p>支払・引取方法についての詳細は、「<a href="/orderreview">購入履歴確認</a>」にて照会いただけます。</p>
                   <h4 style="color:#800; font-size: 1.25em; margin: 1em 0 0 0;">ご注意</h4>
                   <p style="font-weight:bold">混雑時などに、正常な購入処理が行われた際にも、まれにこの画面が表示されることがございます。</p>
-                  <p>そのような状況で、メール受信設定などの理由で購入完了メールの確認ができない場合は、<a href="${get_default_contact_url(request, get_organization(request), request.mobile_ua.carrier)}">こちら</a>にお問い合わせください。</p>
+                  <p>そのような状況で、メール受信設定などの理由で購入完了メールの確認ができない場合は、<a href="${default_contact_url}">こちら</a>にお問い合わせください。</p>
                 </td>
               </tr>
             </tbody>

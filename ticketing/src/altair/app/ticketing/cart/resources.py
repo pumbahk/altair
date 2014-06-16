@@ -134,10 +134,12 @@ class TicketingCartResourceBase(object):
 
     @property
     def memberships(self):
-        organization = core_api.get_organization(self.request)
+        from altair.app.ticketing.models import DBSession as session
+        organization = cart_api.get_organization(self.request)
+        memberships = session.query(u_models.Membership).filter_by(organization_id=organization.id).all()
         logger.debug('organization %s' % organization.code)
-        logger.debug('memberships %s' % organization.memberships)
-        return organization.memberships
+        logger.debug('memberships %s' % memberships)
+        return memberships
 
     @reify
     def membergroups(self):
@@ -253,7 +255,7 @@ class TicketingCartResourceBase(object):
         if self._sales_segment is None:
             if self._sales_segment_id is None:
                 return None
-            organization = core_api.get_organization(self.request)
+            organization = cart_api.get_organization(self.request)
             sales_segment = None
             try:
                 sales_segment = c_models.SalesSegment.query \
@@ -370,7 +372,8 @@ class TicketingCartResourceBase(object):
     def login_required(self):
         if self.event is None:
             return False
-        if self.event.organization.setting.auth_type == "rakuten":
+        organization = cart_api.get_organization(self.request)
+        if organization.setting.auth_type == "rakuten":
             return True
 
         """ 指定イベントがログイン画面を必要とするか """
@@ -451,13 +454,13 @@ class EventOrientedTicketingCartResource(TicketingCartResourceBase):
             return performance.event
 
         if self._event is None:
-            organization = core_api.get_organization(self.request)
+            organization = cart_api.get_organization(self.request)
             event = None
             try:
                 event = c_models.Event.query \
                     .options(joinedload(c_models.Event.setting)) \
                     .filter(c_models.Event.id==self._event_id) \
-                    .filter(c_models.Event.organization==organization) \
+                    .filter(c_models.Event.organization_id==organization.id) \
                     .one()
             except NoResultFound:
                 pass
@@ -513,7 +516,7 @@ class PerformanceOrientedTicketingCartResource(TicketingCartResourceBase):
                 return cart.performance
         else:
             if self._performance is None:
-                organization = core_api.get_organization(self.request)
+                organization = cart_api.get_organization(self.request)
                 performance = None
                 try:
                     performance = c_models.Performance.query \

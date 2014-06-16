@@ -41,11 +41,12 @@ def setup_temporary_store(config):
     from datetime import timedelta
     from altair.app.ticketing.interfaces import ITemporaryStore
     from altair.app.ticketing.temp_store import TemporaryCookieStore
+    from altair.app.ticketing.orders.models import Order
     from altair.app.ticketing.cart.models import Cart
 
     def extra_secret_provider(request, value):
         # master を見ないとダメ
-        cart = Cart.query.filter_by(order_no=value).first()
+        cart = Cart.query.join(Cart.order).filter(Order.order_no == value).first()
         if cart is None:
             return ''
         else:
@@ -315,7 +316,6 @@ def main(global_config, **local_config):
     from authorization import MembershipAuthorizationPolicy
     config.set_authorization_policy(MembershipAuthorizationPolicy())
     config.add_tween('.tweens.CacheControlTween')
-    config.add_tween('.tweens.OrganizationPathTween')
     config.include('altair.app.ticketing.organization_settings')
     config.include('altair.app.ticketing.fc_auth')
     config.include('altair.app.ticketing.checkout')
@@ -331,8 +331,9 @@ def main(global_config, **local_config):
 
     config.include('.errors')
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
-    config.add_tween('altair.app.ticketing.cart.tweens.response_time_tween_factory', over=MAIN)
-    config.add_tween('altair.app.ticketing.cart.tweens.PaymentPluginErrorConverterTween', under=EXCVIEW)
+    config.add_tween('.tweens.OrganizationPathTween', over=EXCVIEW)
+    config.add_tween('.tweens.response_time_tween_factory', over=MAIN)
+    config.add_tween('.tweens.PaymentPluginErrorConverterTween', under=EXCVIEW)
     config.include(setup_cart_interface)
     config.include(setup_mq)
     config.include(setup_renderers)

@@ -3,7 +3,9 @@ import logging
 from pyramid.view import render_view_to_response
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
-from altair.app.ticketing.core.api import get_organization, get_organization_setting, is_mobile_request, get_default_contact_url
+from altair.app.ticketing.core.api import get_organization_setting, is_mobile_request, get_default_contact_url
+from altair.app.ticketing.cart import api as cart_api
+from altair.app.ticketing.cart.api import get_organization
 from altair.app.ticketing.mails.api import get_appropriate_message_part
 from pyramid.threadlocal import get_current_registry
 from altair.app.ticketing.qr.utils import get_matched_token_from_token_id
@@ -41,7 +43,7 @@ def _send_mail_simple(request, recipient, sender, mail_body, subject=u"QRチケ�
     return get_mailer(request).send(message)
 
 def get_contact_url(request, fail_exc=ValueError):
-    organization = get_organization(request)
+    organization = cart_api.get_organization(request)
     if organization is None:
         raise fail_exc("organization is not found")
     retval = get_default_contact_url(request, organization, request.mobile_ua.carrier)
@@ -121,14 +123,10 @@ def send_to_orion(request, context, recipient, data):
 
 def is_mypage_organization(context, request):
     organization = get_organization(request)
-    mypage_orgs = [15, 24]
-    for org in mypage_orgs:
-        if organization.id == org:
-            return True
-    return False
+    return organization.setting.enable_mypage
 
 def is_rakuten_auth_organization(context, request):
-    organization = get_organization(request)
+    organization = cart_api.get_organization(request)
     rakuten_auth_orgs = [15]
     for org in rakuten_auth_orgs:
         if organization.id == org:

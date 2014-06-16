@@ -62,25 +62,13 @@
   };
 })(jQuery);
 
-function addRow(gid, rowId) {
-  var grid = $('#' + gid);
-  var row = grid.getRowData(rowId);
-  if (!row.level) {
-    grid.setCell(rowId, 'parent', 'null');
-    grid.setCell(rowId, 'level', 0);
-    grid.setCell(rowId, 'isLeaf', false);
-    grid.setCell(rowId, 'expanded', true);
-    grid.setCell(rowId, 'loaded', true);
-  }
-
-  var data ={
-    product_id:row.product_id,
-    product_name:'(複数在庫商品)'
-  }
-  grid.addChildNode(undefined, rowId, data);
-}
 function deleteRow(gid, rowId) {
   var grid = $('#' + gid);
+  grid.setCell(rowId, 'name', '', {background:'#BD362F'});
+  grid.setCell(rowId, 'price', '', {background:'#BD362F'});
+  grid.setCell(rowId, 'display_order', '', {background:'#BD362F'});
+  grid.setCell(rowId, 'public', '', {background:'#BD362F'});
+  grid.setCell(rowId, 'stock_type_id', '', {background:'#BD362F'});
   grid.setCell(rowId, 'stock_holder_id', '', {background:'#BD362F'});
   grid.setCell(rowId, 'product_item_name', '', {background:'#BD362F'});
   grid.setCell(rowId, 'product_item_price', '', {background:'#BD362F'});
@@ -92,4 +80,4 @@ function deleteRow(gid, rowId) {
   var row = new Object();
   row['id'] = rowId;
   grid.setRetainChanges([row]);
-}
+};

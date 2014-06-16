@@ -97,6 +97,11 @@ class MemberGroupForm(Form):
         label=u"ゲストログイン"
         )
 
+    enable_auto_input_form = BooleanField(
+        label=u"自動フォーム入力",
+        default=True
+        )
+
     membership_id = HiddenField(
         label=u"membership", 
         validators=[Optional()]

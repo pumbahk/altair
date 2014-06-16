@@ -1,4 +1,6 @@
 <%page args="modal_id" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
 <script type="text/javascript">
   var new_product, edit_product, delete_product, preview_ticket;
   $(function() {
@@ -7,20 +9,17 @@
         if (!sales_segment_id) return false;
         load_modal_form(
           modal_product,
-          % if performance:
-            '${request.route_path('products.new', _query=dict(sales_segment_id='__sales_segment_id__', performance_id=performance.id))}'.replace('__sales_segment_id__', sales_segment_id),
-          % else:
-            '${request.route_path('products.new', _query=dict(sales_segment_id='__sales_segment_id__'))}'.replace('__sales_segment_id__', sales_segment_id),
-          % endif
+          '${request.route_path('products.new', _query=dict(sales_segment_id='__sales_segment_id__'))}'.replace('__sales_segment_id__', sales_segment_id),
           null,
           null
         );
       };
-      edit_product = function edit_product(id) {
+      edit_product = function edit_product(id, product_item_id) {
         if (!id) return false;
+        if (!product_item_id) product_item_id = '';
         load_modal_form(
           modal_product,
-          '${request.route_path('products.edit', product_id='{id}')|n}'.replace(encodeURIComponent('{id}'), id),
+          '${request.route_path('products.edit', product_id='{id}', _query=dict(product_item_id='{product_item_id}'))|n}'.replace(encodeURIComponent('{id}'), id).replace(encodeURIComponent('{product_item_id}'), product_item_id),
           null,
           null
         );
@@ -56,3 +55,5 @@
     <a href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();" class="btn">保存</a>
   </div>
 </div>
+
+${delete_modal()}

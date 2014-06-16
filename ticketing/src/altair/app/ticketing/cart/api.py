@@ -8,6 +8,10 @@ import contextlib
 
 from zope.deprecation import deprecate
 from sqlalchemy.sql.expression import or_, and_
+from sqlalchemy.orm.session import make_transient
+from sqlalchemy.orm.attributes import instance_state
+from sqlalchemy.orm import joinedload
+from sqlalchemy.orm.exc import NoResultFound
 
 from pyramid.interfaces import IRoutesMapper, IRequest
 from pyramid.security import effective_principals, forget
@@ -18,7 +22,6 @@ from altair.app.ticketing.api.impl import CMSCommunicationApi
 from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.mobile.api import detect_from_ip_address
 from altair.app.ticketing.core import models as c_models
-from altair.app.ticketing.core import api as c_api
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.interfaces import ITemporaryStore
 from altair.mq import get_publisher
@@ -33,6 +36,9 @@ from .exceptions import NoCartError
 from altair.preview.api import set_rendered_target
 
 logger = logging.getLogger(__name__)
+
+ENV_ORGANIZATION_ID_KEY = 'altair.app.ticketing.cart.organization_id'
+ENV_ORGANIZATION_PATH_KEY = 'altair.app.ticketing.cart.organization_path'
 
 def set_rendered_event(request, event):
     set_rendered_target(request, "event", event)
@@ -155,7 +161,7 @@ def _maybe_encoded(s, encoding='utf-8'):
     return s.decode(encoding)
 
 def get_item_name(request, cart_name):
-    organization = c_api.get_organization(request)
+    organization = get_organization(request)
     base_item_name = organization.setting.cart_item_name
     return _maybe_encoded(base_item_name) + " " + str(cart_name)
 
@@ -331,20 +337,30 @@ def get_cart_user_identifiers(request):
     return retval
 
 def is_smartphone_organization(context, request):
-    organization = c_api.get_organization(request)
-    smartphone_organization = [4, 15, 24, 25, 26, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37]
-    for org in smartphone_organization:
-        if organization.id == org:
-            return True
-    return False
+    organization = get_organization(request)
+    return organization.setting.enable_smartphone_cart
 
 def is_point_input_organization(context, request):
-    organization = c_api.get_organization(request)
+    organization = get_organization(request)
     return organization.id == 24
 
 def is_fc_auth_organization(context, request):
-    organization = c_api.get_organization(request)
+    organization = get_organization(request)
     return bool(organization.settings[0].auth_type == "fc_auth")
+
+def enable_auto_input_form(user):
+    from altair.app.ticketing.users.models import User
+    if not isinstance(user, User):
+        return False
+
+    if user.member is None:
+        # 楽天認証
+        return True
+
+    if user.member.membergroup.enable_auto_input_form:
+        return True
+
+    return False
 
 def get_temporary_store(request):
     return request.registry.queryUtility(ITemporaryStore)
@@ -362,3 +378,32 @@ def get_order_for_read_by_order_no(request, order_no):
         .first()
     orders[order_no] = order
     return order
+
+def get_organization(request):
+    override_organization_id = request.environ.get(ENV_ORGANIZATION_ID_KEY)
+
+    if hasattr(request, 'organization'):
+        assert instance_state(request.organization).session_id is None
+        if override_organization_id is None or request.organization.id == override_organization_id:
+            return request.organization
+
+    session = get_db_session(request, 'slave')
+    try:
+        if override_organization_id is not None:
+            organization = session.query(c_models.Organization) \
+                .options(joinedload(c_models.Organization.settings)) \
+                .filter(c_models.Organization.id == override_organization_id) \
+                .one()
+        else:
+            organization = session.query(c_models.Organization) \
+                .options(joinedload(c_models.Organization.settings)) \
+                .join(c_models.Organization.hosts) \
+                .filter(c_models.Host.host_name == unicode(request.host)) \
+                .one()
+    except NoResultFound as e:
+        raise Exception("Host that named %s is not Found" % request.host)
+    make_transient(organization)
+    if override_organization_id is None:
+        request.organization = organization
+        request.environ[ENV_ORGANIZATION_ID_KEY] = request.organization.id
+    return organization

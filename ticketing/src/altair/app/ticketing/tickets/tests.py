@@ -272,7 +272,7 @@ class TicketsUtilsTest(TestCase):
                 sex=SexEnum.Male.v,
                 zip=u'1410022',
                 country=u'Japan',
-                prefecture='東京都',
+                prefecture=u'東京都',
                 city=u'品川区',
                 address_1=u'東五反田5-21-15',
                 address_2=u'メタリオンOSビル7F',

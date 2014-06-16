@@ -55,8 +55,14 @@ class keep_authTests(unittest.TestCase):
 class EntryLotViewTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        from altair.sqlahelper import register_sessionmaker_with_engine
         cls.session = _setup_db(modules=dependency_modules, echo=False)
         cls.config = testing.setUp(settings=testing_settings)
+        register_sessionmaker_with_engine(
+            cls.config.registry,
+            'slave',
+            cls.session.bind
+            )
         cls.config.include('pyramid_layout')
         cls.config.include('altair.app.ticketing.lots')
         cls.config.include('altair.pyramid_tz')
@@ -235,8 +241,14 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         return lot, products
 
     def setUp(self):
+        from altair.sqlahelper import register_sessionmaker_with_engine
         self.session = _setup_db(modules=dependency_modules, echo=False)
         self.config = testing.setUp(settings=testing_settings)
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
         self.config.include('pyramid_layout')
         self.config.include('altair.app.ticketing.lots')
 
@@ -453,8 +465,14 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
 class LotReviewViewTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        from altair.sqlahelper import register_sessionmaker_with_engine
         cls.session = _setup_db(modules=dependency_modules, echo=False)
         cls.config = testing.setUp(settings=testing_settings)
+        register_sessionmaker_with_engine(
+            cls.config.registry,
+            'slave',
+            cls.session.bind
+            )
         cls.config.include('pyramid_layout')
         cls.config.include('altair.app.ticketing.lots')
 
