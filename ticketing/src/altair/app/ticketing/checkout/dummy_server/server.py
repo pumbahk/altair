@@ -704,7 +704,7 @@ def setup_sqlalchemy(config):
     import sqlalchemy
     import sqlalchemy.orm
     from .models import Base
-    config.registry.sa_engine = sqlalchemy.create_engine('sqlite:///checkout_dummy_server.db')
+    config.registry.sa_engine = sqlalchemy.engine_from_config(config.registry.settings)
     config.registry.sa_base = Base
     config.registry.sa_base.metadata.drop_all(config.registry.sa_engine)
     config.registry.sa_base.metadata.create_all(config.registry.sa_engine)
