@@ -48,6 +48,7 @@
         {hidden: true, jsonmap:'product_item', name:'product_item', editable:false},
         {hidden: true, jsonmap:'ticket_bundle', name:'ticket_bundle', editable:false},
         {hidden: true, jsonmap:'product.performance_id', name:'performance_id', editable:false},
+        {hidden: true, jsonmap:'product.amount_mismatching', name:'amount_mismatching', editable:false},
         {hidden: true, name:'deleted', editable:false}
       ],  //列ごとの設定
       forceFit : true,
@@ -62,6 +63,18 @@
         for (var i=0; i<cells.length; i++) {
           for (var name in cells[i]) {
             grid.setCell(cells[i].id, name, '', {background:'#F89406'});
+          }
+        }
+        var rows = grid.getRowData();
+        for (var i=0; i<rows.length; i++) {
+          if (rows[i].amount_mismatching === 'true') {
+            for (var name in rows[i]) {
+              if ($.inArray(name, ['price', 'product_item_price']) > -1 && rows[i][name]) {
+                grid.setCell(i+1, name, '', {background:'#dd1100'});
+              } else {
+                grid.setCell(i+1, name, '', {background:'#F2DEDE'});
+              }
+            }
           }
         }
       },  // sort時にセルの状態を維持

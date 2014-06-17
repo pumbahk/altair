@@ -158,6 +158,7 @@ class ProductAndProductItem(BaseView):
                     display_order=product.display_order,
                     public=product.public,
                     performance_id=product.performance_id,
+                    amount_mismatching=product.is_amount_mismatching(),
                 ),
                 stock_type=dict(
                     id=product.seat_stock_type.id
@@ -210,6 +211,7 @@ class ProductAndProductItem(BaseView):
                             product=dict(
                                 id=product.id,
                                 name=u'(複数在庫商品)',
+                                amount_mismatching=product.is_amount_mismatching(),
                             ),
                         )
                 row2.update(row_id=len(rows) + 1)
