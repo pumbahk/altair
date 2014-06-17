@@ -94,18 +94,10 @@
     $('#sales-segment-${sales_segment.id}-add_button').click(function(){
       var grid = $('#sales-segment-${sales_segment.id}-grid');
       var rows = grid.getRowData();
-      var max = 0;
-      for (i = 0; i < rows.length; i++) {
-        var cur = parseInt(rows[i].rid);
-        if (max < cur) {
-          max = cur;
-        }
-      }
       var data = {
-        rid: max + 1,
         performance_id: ${sales_segment.performance_id}
       };
-      grid.addRowData(undefined, data);
+      grid.addRowData(rows.length + 1, data);
     });
     $('#sales-segment-${sales_segment.id}-save_button').click(function(){
       $.ajax({
