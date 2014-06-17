@@ -8,12 +8,12 @@ if (!window.app)
   var ticketSelectSourceModel = Object.create(
     {
       isEnough: function(){
-        console.log("ok?"+(!!this.templateKind && !! this.previewType).toString());
+        // console.log("ok?"+(!!this.templateKind && !! this.previewType).toString());
         return !!this.templateKind && !! this.previewType;
       },
       sync: function(name, val){
         this[name] = val;
-        console.log("sync: name={0} value={1}".replace("{0}",name).replace("{1}",val));
+        // console.log("sync: name={0} value={1}".replace("{0}",name).replace("{1}",val));
       }
     },
     {
@@ -36,7 +36,7 @@ if (!window.app)
     {
       sync: function(name, val){
         this[name] = val;
-        console.log("sync: name={0} value={1}".replace("{0}",name).replace("{1}",val));
+        // console.log("sync: name={0} value={1}".replace("{0}",name).replace("{1}",val));
       },
       collect: function(){
         var r = {};
@@ -65,7 +65,7 @@ if (!window.app)
     {
       sync: function(name, val){
         this[name] = val;
-        console.log("sync: name={0} value={1}".replace("{0}",name).replace("{1}",val));
+        // console.log("sync: name={0} value={1}".replace("{0}",name).replace("{1}",val));
       },
       collect: function(){
         var r = {};
@@ -107,17 +107,12 @@ if (!window.app)
     onTicketTemplateSelectElementUpdate: function(html){
       var $select = this.setting.$el.find('select[name="templates"]');
       var mo = new MutationObserver(function(mrList,mo){
-        console.log("template select changed");
+        // console.log("template select changed");
         $select.change();
         mo.disconnect();
       });
       mo.observe($select[0], {childList: true});
       $select.html(html);
-      // hmm.
-      // h.synchronizedWait(function predicate(){return !!window.appView && $select.find("option").length >= 1;},
-      //                    function then(){
-      //                      $select.change();
-      //                    });
     },
     onNewTicketsList: function(data){
       this.listing.receiveNewTicketsList(data);
@@ -137,10 +132,8 @@ if (!window.app)
                              if(!!firstRow){
                                mo.disconnect();
                                if(!!srcModel.eventId && !!srcModel.templateId){
-                                 console.log("ok;")
+                                 // console.log("ok;")
                                  app.component.onFillValues(null);
-                               } else {
-                                 console.log("hmm;")
                                }
                              }
                            });
@@ -158,7 +151,7 @@ if (!window.app)
     },
     onNewFillValues: function(data){
       var self = this;
-      console.log("on new fill values");
+      // console.log("on new fill values");
       h.synchronizedWait(function predicate(){return !!window.appView;},
                          function then(){
                            //xxxx global variable: this variable create after loading component
