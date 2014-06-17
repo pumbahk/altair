@@ -39,7 +39,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
             if(!!resource.get("format_id")){
                 ticket_format = this.ticket_formats.get("all")[resource.get("format_id")];
             }
-            this.params.on("*params.ticket_format.update", this.ticket_formats.get("visibles"), null, ticket_format);
+            this.params.on("*params.ticket_format.recreate", this.ticket_formats.get("visibles"), null, ticket_format);
         }
     },
     hasChangedModels: function(){
@@ -186,8 +186,13 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
             .pipe(core.ApiService.rejectIfStatusFail(function(data){
                 self.params.refreshDefault();
                 if(!!data.ticket_formats){
-                    self.ticket_formats.refresh(ticket_formats);
-                    self.params.trigger("*params.ticket_format.update", self.ticket_formats.visibles); //move to model.js?
+                    self.ticket_formats.refresh(data.ticket_formats);
+                    var visibles = self.ticket_formats.get("visibles");
+                    if(visibles.length > 0){
+                      self.params.trigger("*params.ticket_format.update", visibles, visibles[0]["type"]); //move to model.js?
+                    } else {
+                      self.params.trigger("*params.ticket_format.update", visibles); //move to model.js?
+                    }
                 }
                 self.svg.updateToNormalize(data.data);
                 self.message.info("テンプレートを取得しました");

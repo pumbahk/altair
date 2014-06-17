@@ -71,7 +71,7 @@ preview.ApplicationViewFactory = function(apis,
         params: new preview.ParameterStore(),
         ticket_formats: new preview.TicketFormatManager()
     };
-    models.params.on("change:preview_type", function(model,v){console.log(v);});
+    // models.params.on("change:preview_type", function(model,v){console.log(v);});
     var view_models = {
         preview: new preview.PreviewImageViewModel({el: $preview_area}),
         droparea: new preview.DropAreaViewModel({el: $svg_droparea}),

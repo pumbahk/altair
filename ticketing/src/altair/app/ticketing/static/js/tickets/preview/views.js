@@ -15,7 +15,7 @@ preview.ParameterManageView = Backbone.View.extend({
         this.onChangeTicketFormat();
         this.model.on("change:sx", this.reDrawSx, this);
         this.model.on("change:sy", this.reDrawSy, this);
-        this.model.on("*params.ticket_format.update", this.reDrawTicketFormatCandidates, this);
+        this.model.on("*params.ticket_format.recreate", this.reDrawTicketFormatCandidates, this);
         this.vms = opts.vms;
     }, 
     reDrawTicketFormatCandidates: function(candidates, preview_type, ticket_format){
@@ -111,18 +111,18 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
         this.vms = opts.vms;
         this.model.on("*params.ticket_format.update", this.onChangeFormat, this);
     }, 
-    onChangeRight: function(e,middleVal, rightVal){
+    onChangeRight: function(e,middleVal, rightVal, silent){
         var pk = middleVal || this.middle.$el.val();
         var sub_pk = rightVal || this.right.$el.val();
         if(this.right.models[sub_pk].model && this.right.models[sub_pk].model.hasTicketFormats()){
             this.model.trigger("*params.ticket_format.restriction", this.right.models[sub_pk].model);
         }
-        this.model.changeHolder({pk: pk, name: this.modelname, sub: {pk: sub_pk,  name: "Sub"}}); //params
+        this.model.changeHolder({pk: pk, name: this.modelname, sub: {pk: sub_pk,  name: "Sub"}}, silent); //params
     }, 
     onChangeFormat: function(){
-        return this.onChangeMiddle(null, null);
+        return this.onChangeMiddle(null, null, true);
     },
-    onChangeLeft: function(e, leftVal){
+    onChangeLeft: function(e, leftVal, silent){
         leftVal = leftVal || this.left.$el.val();
         if(this.left.models[leftVal].model && this.left.models[leftVal].model.hasTicketFormats()){
             this.model.trigger("*params.ticket_format.restriction", this.left.models[leftVal].model);
@@ -130,10 +130,10 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
         this.middle = this.left.getChild(leftVal);
         this.$middleWrapper.html(this.middle.render());
         if(this.middle.candidates.length == 1){
-            this.onChangeMiddle(null, this.middle.candidates[0].pk);
+            this.onChangeMiddle(null, this.middle.candidates[0].pk, silent);
         }
     }, 
-    onChangeMiddle: function(e,middleVal){
+    onChangeMiddle: function(e,middleVal, silent){
         middleVal = middleVal || this.middle.$el.val();
         this.right = this.middle.getChild(middleVal);
         if(this.middle.models[middleVal].model && this.middle.models[middleVal].model.hasTicketFormats()){
@@ -141,21 +141,18 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
         }
         var filterId = this.model.get("ticket_format").pk;
         this.$rightWrapper.html(this.right.render(filterId));
-        if(this.right.exactCandidates(filterId).length == 1){
-            this.onChangeRight(null, middleVal, this.right.candidates[0].pk);
+        var candidates = this.right.exactCandidates(filterId);
+        if(candidates.length == 1){
+            this.onChangeRight(null, middleVal, candidates[0].pk, silent);
         }
     },
     settingChildren: function(candidates){
-        this.left = null;
+        this.left = new preview.CandidateCollectionViewModel(this.leftIdname, "input-medium");
         this.middle = null;
         this.right = null;
         _(candidates).each(function(c){
-            var left = new preview.CandidateCollectionViewModel(this.leftIdname, "input-medium");
-            if(!this.left){
-                this.left = left;
-            }
             // left setting
-            left.addModel(
+            this.left.addModel(
                 new preview.ResourceViewModel(
                     new preview.Resource({label: c.name, pk: c.pk, ticket_formats: (c.ticket_formats || [])})));
 
@@ -164,7 +161,7 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
             if(!this.middle){
                 this.middle = middle;
             }
-            left.addChild(c.pk, middle);
+            this.left.addChild(c.pk, middle);
 
             _(c.candidates).each(function(subc){
                 middle.addModel(

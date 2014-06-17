@@ -26,7 +26,7 @@ if (!window.preview)
         this.set("all", all);
         this.set("visibles", visibles);
         _.each(ticket_formats, function(d){
-          alls[d.pk] = d;
+          all[d.pk] = d;
           visibles.push(d);
         });
       },
@@ -78,11 +78,14 @@ if (!window.preview)
         changeTicketFormat: function(v){
             this.set("ticket_format", v);
             this.set("changed", RELOAD_SVG);
+            this.trigger("*params.ticket_format.update");
         }, 
-        changeHolder: function(h){
+        changeHolder: function(h, silent){
             this.set("holder", h);
             this.set("changed", RELOAD_SVG);
-            this.reDraw();
+            if(!silent){
+                this.reDraw();
+            }
         }, 
         refreshDefault: function(){
             this.set("default_sx", 2.0);

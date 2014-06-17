@@ -37,9 +37,11 @@ preview.CandidateCollectionViewModel = core.ViewModel.extend({
     },
     render: function(filter_id){
         var $el = this.$el;
-        _(this.exactCandidates()).each(function(vm){
+        $el.empty();
+        _(this.exactCandidates(filter_id)).each(function(vm){
             $el.append(vm.render());
         });
+        console.log($el.html());
         return $el;
     }
 });
@@ -94,7 +96,7 @@ preview.LoadingSpinnerViewModel = core.ViewModel.extend({
 
 preview.SelectCandidatesViewModel = core.ViewModel.extend({
     template: _.template(
-        '<% _.each(iterable, function(d){%><option data-preview="<%= d.type %>" value="<%= d.pk %>"><%= d.name %></option><%});%>'
+        '<% _.each(iterable, function(d){%><option data-preview="<%= d.type %>" value="<%= d.pk %>"><%= d.name %>:<%= d.type %></option><%});%>'
     ),
     redraw: function(candidates){
         this.$el.html(this.template({iterable: candidates}));
