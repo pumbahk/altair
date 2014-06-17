@@ -940,8 +940,8 @@ function transferStocksQuantityOnly() {
   var modal = $('#modal-transfer-quantity-only');
   var body = modal.find('.modal-body');
   var venue = venueEditorRoot.venueeditor('model');
-  var stock_id = parseInt(body.find('input#transfer-quantity-only-id').attr('value'));
-  var quantity = parseInt(body.find('input#transfer-quantity-only-quantity').attr('value'));
+  var stock_id = body.find('input#transfer-quantity-only-id').attr('value');
+  var quantity = +body.find('input#transfer-quantity-only-quantity').attr('value'); // cast integer or NaN
   var to_stock_holder_id = body.find('select[name="to"]').val();
 
   var src_stock = venue.stocks.get(stock_id);
@@ -951,14 +951,12 @@ function transferStocksQuantityOnly() {
   var dst_stock = null;
   var dst_stocks = mapper[to_stock_holder_id];
 
-
   $.each(dst_stocks, function (name){
       var buf_stock = dst_stocks[name];
       if (stock_type_id == buf_stock.get('stockType').get('id')){
           dst_stock = buf_stock;
       }
   });
-
 
   var msg = body.find('#modal-transfer-quantity-only-message');
   if(!dst_stock){
@@ -967,6 +965,8 @@ function transferStocksQuantityOnly() {
       msg.text("移動元、または移動先の在庫にロックがかかった状態です。(ロックを外してください)");
   }else if(src_stock.get('assigned') < quantity){
       msg.text("指定した数が大きすぎます。移動元の在庫の数より大きい数は指定できません。");
+  }else if(isNaN(quantity) || 1 > quantity){
+      msg.text("正の整数を指定してください。");
   }else{
       src_stock.set('assigned', src_stock.get('assigned')-quantity);
       dst_stock.set('assigned', dst_stock.get('assigned')+quantity);
