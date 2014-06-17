@@ -258,8 +258,6 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
 
         ticket_bundles = TicketBundle.query.filter_by(event_id=event.id).all()
         self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
-        if not self.ticket_bundle_id.data and ticket_bundles:
-            self.ticket_bundle_id.data = ticket_bundles[0].id
 
         if self.name.data and not self.product_item_name.data:
             self.product_item_name.data = self.name.data
@@ -321,7 +319,6 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
             required_fields = [
                 self.stock_holder_id,
                 self.product_item_quantity,
-                self.ticket_bundle_id
                 ]
             for field in required_fields:
                 if not field.data:
