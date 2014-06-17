@@ -985,6 +985,11 @@ class OrderDetailView(BaseView):
         form_refund = forms.get_order_refund_form()
         form_each_print = forms.get_each_print_form(default_ticket_format_id)
 
+        checkout_object = None
+        try:
+            checkout_object = get_anshin_checkout_object(self.request, order)
+        except Exception as e:
+            pass
         return {
             'is_current_order': order.deleted_at is None,
             'order':order,
@@ -993,7 +998,7 @@ class OrderDetailView(BaseView):
             'order_history':order_history,
             'point_grant_settings': loyalty_api.applicable_point_grant_settings_for_order(order),
             'sej_order':get_sej_order(order.order_no),
-            'checkout':get_anshin_checkout_object(self.request, order),
+            'checkout': checkout_object,
             'mail_magazines':mail_magazines,
             'form_shipping_address':form_shipping_address,
             'form_order':form_order,
