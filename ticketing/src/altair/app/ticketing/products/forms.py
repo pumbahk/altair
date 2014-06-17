@@ -267,6 +267,12 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
     def _get_translations(self):
         return Translations()
 
+    ticket_bundle_id = OurSelectField(
+        label=u'券面構成',
+        validators=[Optional()],
+        coerce=lambda v: None if not v else int(v)
+        )
+
     @classmethod
     def from_model(cls, product, product_item=None):
         product_item_params = dict()
@@ -301,7 +307,7 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
 
     def validate_ticket_bundle_id(form, field):
         # 引取方法にコンビニ発券が含まれていたら必須
-        if not field.data and form.sales_segment_id.data:
+        if form.product_item_id.data and not field.data and form.sales_segment_id.data:
             sales_segment = SalesSegment.get(form.sales_segment_id.data)
             if sales_segment:
                 for pdmp in sales_segment.payment_delivery_method_pairs:
