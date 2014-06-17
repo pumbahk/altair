@@ -78,6 +78,7 @@ if (!window.preview)
         changeTicketFormat: function(v){
             this.set("ticket_format", v);
             this.set("changed", RELOAD_SVG);
+            this.trigger("*params.ticket_format.update");
         }, 
         changeHolder: function(h, silent){
             this.set("holder", h);

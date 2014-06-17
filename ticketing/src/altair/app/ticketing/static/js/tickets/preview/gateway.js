@@ -39,7 +39,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
             if(!!resource.get("format_id")){
                 ticket_format = this.ticket_formats.get("all")[resource.get("format_id")];
             }
-            this.params.on("*params.ticket_format.update", this.ticket_formats.get("visibles"), null, ticket_format);
+            this.params.on("*params.ticket_format.recreate", this.ticket_formats.get("visibles"), null, ticket_format);
         }
     },
     hasChangedModels: function(){

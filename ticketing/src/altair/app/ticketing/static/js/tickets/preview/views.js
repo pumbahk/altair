@@ -15,7 +15,7 @@ preview.ParameterManageView = Backbone.View.extend({
         this.onChangeTicketFormat();
         this.model.on("change:sx", this.reDrawSx, this);
         this.model.on("change:sy", this.reDrawSy, this);
-        this.model.on("*params.ticket_format.update", this.reDrawTicketFormatCandidates, this);
+        this.model.on("*params.ticket_format.recreate", this.reDrawTicketFormatCandidates, this);
         this.vms = opts.vms;
     }, 
     reDrawTicketFormatCandidates: function(candidates, preview_type, ticket_format){
@@ -141,8 +141,9 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
         }
         var filterId = this.model.get("ticket_format").pk;
         this.$rightWrapper.html(this.right.render(filterId));
-        if(this.right.exactCandidates(filterId).length == 1){
-            this.onChangeRight(null, middleVal, this.right.candidates[0].pk);
+        var candidates = this.right.exactCandidates(filterId);
+        if(candidates.length == 1){
+            this.onChangeRight(null, middleVal, candidates[0].pk);
         }
     },
     settingChildren: function(candidates){
