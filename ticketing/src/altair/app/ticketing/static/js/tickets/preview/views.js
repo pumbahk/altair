@@ -133,7 +133,7 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
             this.onChangeMiddle(null, this.middle.candidates[0].pk, silent);
         }
     }, 
-    onChangeMiddle: function(e,middleVal){
+    onChangeMiddle: function(e,middleVal, silent){
         middleVal = middleVal || this.middle.$el.val();
         this.right = this.middle.getChild(middleVal);
         if(this.middle.models[middleVal].model && this.middle.models[middleVal].model.hasTicketFormats()){
@@ -143,7 +143,7 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
         this.$rightWrapper.html(this.right.render(filterId));
         var candidates = this.right.exactCandidates(filterId);
         if(candidates.length == 1){
-            this.onChangeRight(null, middleVal, candidates[0].pk);
+            this.onChangeRight(null, middleVal, candidates[0].pk, silent);
         }
     },
     settingChildren: function(candidates){
