@@ -9,8 +9,6 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
     SET_CART_URL = '/set_cart'
     LOGIN_URL = '/checkout/login'
     COMPLETE_URL = '/checkout/order_complete'
-    CALLBACK_SUCCESS_URL = '/checkout/callback/success'
-    CALLBACK_ERROR_URL = '/checkout/callback/error'
 
     def _dummy_root_factory(self, request):
         return testing.DummyResource()
@@ -84,8 +82,6 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
         config.add_route('set_cart', self.SET_CART_URL)
         config.add_route('payment.checkout.login', self.LOGIN_URL)
         config.add_route('payment.checkout.order_complete', self.COMPLETE_URL)
-        #config.add_route('payment.checkout.callback.success', self.CALLBACK_SUCCESS_URL)
-        #config.add_route('payment.checkout.callback.error', self.CALLBACK_ERROR_URL)
         self.cart = Cart(
             id=10,
             performance=self.sales_segment.performance,
@@ -105,6 +101,8 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.cart.api import set_cart
         from pyramid.httpexceptions import HTTPOk
         set_cart(request, self.cart)
+        self.callback_success_url = request.route_url('payment.checkout.callback.success')
+        self.callback_error_url = request.route_url('payment.checkout.callback.error')
         return HTTPOk()
 
     @mock.patch('altair.app.ticketing.checkout.api.AnshinCheckoutAPI')
@@ -112,7 +110,11 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
         form_html = '<form></form>'
         checkout_class.return_value.build_checkout_request_form.return_value = (testing.DummyModel(), form_html)
         resp = self.test_app.post(self.LOGIN_URL, {})
-        checkout_class.return_value.build_checkout_request_form.assert_called_once_with(self.cart)
+        checkout_class.return_value.build_checkout_request_form.assert_called_once_with(
+            self.cart,
+            success_url=self.callback_success_url,
+            fail_url=self.callback_error_url
+            )
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(form_html in resp.body)
 
