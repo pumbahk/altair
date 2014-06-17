@@ -187,7 +187,12 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
                 self.params.refreshDefault();
                 if(!!data.ticket_formats){
                     self.ticket_formats.refresh(data.ticket_formats);
-                    self.params.trigger("*params.ticket_format.update", self.ticket_formats.get("visibles")); //move to model.js?
+                    var visibles = self.ticket_formats.get("visibles");
+                    if(visibles.length > 0){
+                      self.params.trigger("*params.ticket_format.update", visibles, visibles[0]["type"]); //move to model.js?
+                    } else {
+                      self.params.trigger("*params.ticket_format.update", visibles); //move to model.js?
+                    }
                 }
                 self.svg.updateToNormalize(data.data);
                 self.message.info("テンプレートを取得しました");

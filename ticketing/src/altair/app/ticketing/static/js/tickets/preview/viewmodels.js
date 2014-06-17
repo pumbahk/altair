@@ -94,7 +94,7 @@ preview.LoadingSpinnerViewModel = core.ViewModel.extend({
 
 preview.SelectCandidatesViewModel = core.ViewModel.extend({
     template: _.template(
-        '<% _.each(iterable, function(d){%><option data-preview="<%= d.type %>" value="<%= d.pk %>"><%= d.name %></option><%});%>'
+        '<% _.each(iterable, function(d){%><option data-preview="<%= d.type %>" value="<%= d.pk %>"><%= d.name %>:<%= d.type %></option><%});%>'
     ),
     redraw: function(candidates){
         this.$el.html(this.template({iterable: candidates}));
