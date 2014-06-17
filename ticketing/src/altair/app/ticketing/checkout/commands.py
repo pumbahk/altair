@@ -49,7 +49,7 @@ def rakuten_checkout_sales():
 
         if order.payment_delivery_pair.payment_method.payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID:
             try:
-                logging.info('target order_id : %s' % order.id)
+                logging.info('target order: %s' % order.order_no)
                 plugin = CheckoutPlugin()
                 plugin.sales(request, order)
                 order.save()
