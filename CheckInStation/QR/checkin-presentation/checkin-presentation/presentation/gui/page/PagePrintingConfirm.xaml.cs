@@ -13,13 +13,21 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using checkin.core.support;
-using NLog;
-
+using checkin.core.events;
 //model ::xxx
 using checkin.core.message;
 
 namespace checkin.presentation.gui.page
 {
+
+    class PagePrintingConfirmDataContext : InputDataContext
+    {
+        public PagePrintingConfirmDataContext(Page page) : base(page) { }
+
+        public int NumberOfPrintableTicket {get;set;}
+    }
+
+
     /// <summary>
     /// Interaction logic for PagePrintingConfirm.xaml
     /// </summary>
@@ -33,19 +41,21 @@ namespace checkin.presentation.gui.page
 
         private InputDataContext CreateDataContext()
         {
-            return new InputDataContext(this) { Broker = AppUtil.GetCurrentBroker() };;
+            var broker = AppUtil.GetCurrentBroker();
+            var ev = broker.GetInternalEvent() as ConfirmAllEvent;
+            var numOfPrintableTicket = ev.StatusInfo.TicketDataCollection.collection.Where(o => o.is_selected).Count();
+            return new PagePrintingConfirmDataContext(this) { 
+                Broker = AppUtil.GetCurrentBroker(),
+                NumberOfPrintableTicket = numOfPrintableTicket
+            };
         }
 
         private async void OnBackwardWithBoundContext(object sender, RoutedEventArgs e)
         {
             e.Handled = true;
             var ctx = this.DataContext as InputDataContext;
-            await ProgressSingletonAction.ExecuteWhenWaiting(ctx, async () =>
-            {
-                var case_ = await ctx.BackwardAsync();
-                ctx.TreatErrorMessage();
-                AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
-            });
+            var case_ = await ctx.BackwardAsync();
+            AppUtil.GetNavigator().NavigateToMatchedPage(case_, this);
         }
 
         private void OnSubmitWithBoundContext(object sender, RoutedEventArgs e)

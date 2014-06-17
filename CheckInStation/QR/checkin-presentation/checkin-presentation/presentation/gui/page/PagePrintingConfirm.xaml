@@ -9,85 +9,89 @@
       d:DesignHeight="364" d:DesignWidth="683"
     ShowsNavigationUI="False"
 	Title="PagePrintingConfirm">
-<Page.Resources>
-    <Style x:Key="MainBorder" TargetType="Border">
-        <Setter Property="CornerRadius" Value="24.5"/>
-        <Setter Property="Height" Value="500"/>
-        <Setter Property="Width" Value="1100"/>
-        <Setter Property="BorderThickness" Value="10"/>
-        <Setter Property="BorderBrush" Value="{StaticResource MainBorderBrush}"/>
-    </Style>
-</Page.Resources>
-<Grid>
-    <Viewbox Style="{StaticResource ContentViewboxStyle}">
-        <Grid Background="{StaticResource LogoBackgroundBrush}">
-            <Canvas Width="1366" Height="728">
+    <Page.Resources>
+        <Style x:Key="MainBorder" TargetType="Border">
+            <Setter Property="CornerRadius" Value="24.5"/>
+            <Setter Property="Height" Value="500"/>
+            <Setter Property="Width" Value="1100"/>
+            <Setter Property="BorderThickness" Value="10"/>
+            <Setter Property="BorderBrush" Value="{StaticResource MainBorderBrush}"/>
+        </Style>
+    </Page.Resources>
+    <Grid>
+        <Viewbox Style="{StaticResource ContentViewboxStyle}">
+            <Grid Background="{StaticResource LogoBackgroundBrush}">
+                <Canvas Width="1366" Height="728">
 
-                <c:InspectCase Canvas.Top="7" Canvas.Left="298" Width="882" Height="84"/>
+                    <c:InspectCase Canvas.Top="7" Canvas.Left="298" Width="882" Height="84"/>
 
 
-                <!-- メインコンテンツ -->
-                <Border 
+                    <!-- メインコンテンツ -->
+                    <Border 
                         Canvas.Left="140"
                         Canvas.Top="143"
                         Style="{StaticResource MainBorder}">
-                    <Grid>
-                    </Grid>
-                </Border>
+                        <Grid>
+                        </Grid>
+                    </Border>
 
+                    <StackPanel Height="70" Width="778" RenderTransformOrigin="0.923,1.301" Canvas.Top="215" Canvas.Left="222">
+                        <WrapPanel>
+                            <TextBlock FontSize="38">発券されるチケットは</TextBlock>
+                            <TextBlock FontSize="38" Text="{Binding NumberOfPrintableTicket, Mode=OneTime}"/>
+                            <TextBlock FontSize="38">枚です。よろしいですか？</TextBlock>
+                        </WrapPanel>
+                    </StackPanel>
 
-
-                <!-- 説明(description)-->
-                <StackPanel
+                    <!-- 説明(description)-->
+                    <StackPanel
                         Canvas.Top="100"
                         Orientation="Horizontal"
                         >
-                    <StackPanel.Style>
-                        <Style TargetType="StackPanel">
-                            <Style.Triggers>
-                                <Trigger Property="Orientation" Value="Horizontal">
-                                    <Setter Property="Canvas.Left" 
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Style.Triggers>
+                                    <Trigger Property="Orientation" Value="Horizontal">
+                                        <Setter Property="Canvas.Left" 
                                                 Value="{Binding RelativeSource={RelativeSource Self}, 
                                                 Path=ActualWidth,
                                                 Converter={StaticResource MathConverter}, 
                                                 ConverterParameter=(1366-@VALUE)*0.5}" />
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </StackPanel.Style>
-                    <TextBlock 
-                        d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"
-                        Text="{Binding Description}" Style="{StaticResource DescriptionText}"/>
-                </StackPanel>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="確認画面" Style="{StaticResource DescriptionText}"/>
+                    </StackPanel>
 
-                <!-- ボタン -->
-                <Button
+                    <!-- ボタン -->
+                    <Button
                      Canvas.Right="60"
-                     Canvas.Top="655"
+                     Canvas.Top="430"
                      Click="OnSubmitWithBoundContext"
-                     Style="{StaticResource SubmitButton}">
-                    <TextBlock Style="{StaticResource SubmitButtonTextStyle}">決定</TextBlock>
-                </Button>
-                <Button
-                    Canvas.Left="60"
-                    Canvas.Top="655"
+                     Style="{StaticResource SubmitButton}" Canvas.Left="718">
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">決定</TextBlock>
+                    </Button>
+                    <Button
+                    Canvas.Left="407"
+                    Canvas.Top="430"
                     Click="OnBackwardWithBoundContext"
                     Style="{StaticResource BackwardButton}"
                     >
-                    <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
-                </Button>
-                <!-- エラーダイアログ -->
-                <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
+                        <TextBlock Style="{StaticResource SubmitButtonTextStyle}">戻る</TextBlock>
+                    </Button>
+                    <!-- エラーダイアログ -->
+                    <c:MessageDialog  x:Name="ErrorDialog" Style="{StaticResource ErrorDialogStyle}"
                                       MessageText="{Binding ErrorMessage}"
                                       ButtonText="OK"/>
 
-                <!-- 終了ボタン-->
-                <Button Command="{Binding AppCloseCommand}" Canvas.Left="158" Canvas.Top="12" Height="75" Width="181"
+                    <!-- 終了ボタン-->
+                    <Button Command="{Binding AppCloseCommand}" Canvas.Left="158" Canvas.Top="12" Height="75" Width="181"
                             Background="Transparent"
                             Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" 
                             />
-            </Canvas>
-        </Grid>
-    </Viewbox>
-</Grid>
+                </Canvas>
+            </Grid>
+        </Viewbox>
+    </Grid>
 </Page>
