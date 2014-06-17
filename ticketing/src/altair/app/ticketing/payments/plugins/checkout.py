@@ -126,7 +126,7 @@ class CheckoutPlugin(object):
     @clear_exc
     def sales(self, request, order):
         """ 売り上げ確定 """
-        service = api.get_checkout_service(request, order.performance.event.organization, get_channel(order.channel))
+        service = api.get_checkout_service(request, order.organization_id, get_channel(order.channel))
         try:
             result = service.request_fixation_order([order])
         except AnshinCheckoutAPIError as e:
@@ -141,7 +141,7 @@ class CheckoutPlugin(object):
 
     def finished(self, request, order):
         """ 売上確定済か判定 """
-        service = api.get_checkout_service(request, order.performance.event.organization, get_channel(order.channel))
+        service = api.get_checkout_service(request, order.organization_id, get_channel(order.channel))
         return bool(service.get_order_settled_at(order))
 
     def refresh(self, request, order_like):
@@ -151,7 +151,8 @@ class CheckoutPlugin(object):
             logger.info('order %s is inner order' % order_like.order_no)
             return
 
-        raise NotImplementedError()
+        service = api.get_checkout_service(request, order_like.organization_id, get_channel(order_like.channel))
+        service.request_change_order([(order_like, order_like)])
 
 @view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def confirm_viewlet(context, request):

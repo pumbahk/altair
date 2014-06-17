@@ -5,6 +5,7 @@ import urlparse
 from lxml import etree
 from base64 import b64encode
 from datetime import datetime
+import warnings
 from collections import OrderedDict
 from sqlalchemy.orm.exc import NoResultFound
 from altair.app.ticketing.core.models import ChannelEnum
@@ -25,7 +26,7 @@ from .exceptions import AnshinCheckoutAPIError
 logger = logging.getLogger(__name__)
 
 
-def get_checkout_service(request, organization=None, channel=None):
+def get_checkout_service(request, organization_or_organization_id=None, channel=None):
     settings = request.registry.settings
 
     success_url = settings.get('altair_checkout.success_url')
@@ -49,13 +50,19 @@ def get_checkout_service(request, organization=None, channel=None):
         secret=None
     )
 
-    if organization and channel:
+    if organization_or_organization_id and channel:
+        from altair.app.ticketing.core.models import Organization
+        if isinstance(organization_or_organization_id, Organization):
+            organization_id = organization_or_organization_id.id
+            warnings.warn("organization_id should be passed to get_checkout_service() instead of an organization object", DeprecationWarning)
+        else:
+            organization_id = organization_or_organization_id
         shop_settings = m._session.query(m.RakutenCheckoutSetting).filter_by(
-            organization_id=organization.id,
+            organization_id=organization_id,
             channel=channel.v
         ).first()
         if not shop_settings:
-            raise Exception('RakutenCheckoutSetting not found (organization_id=%s, channel=%s)' % (organization.id, channel.v))
+            raise Exception('RakutenCheckoutSetting not found (organization_id=%s, channel=%s)' % (organization_id, channel.v))
 
         params.update(dict(
             service_id=shop_settings.service_id,
