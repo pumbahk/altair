@@ -20,6 +20,7 @@ from markupsafe import Markup
 from webhelpers.util import html_escape
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.fields import OurTextField, OurIntegerField
+from altair.mobile.interfaces import IMobileRequest
 
 from .models import (
     DummyCheckoutItemObject,
@@ -354,8 +355,9 @@ class DummyCheckoutView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-        js.bootstrap_ts.bootstrap.need()
-        js.bootstrap_ts.bootstrap_responsive_css.need()
+        if not IMobileRequest.providedBy(self.request):
+            js.bootstrap_ts.bootstrap.need()
+            js.bootstrap_ts.bootstrap_responsive_css.need()
 
     @property
     def id_generator(self):
@@ -409,6 +411,7 @@ class DummyCheckoutView(object):
         return None
 
     @view_config(route_name='checkout_dummy_server.stepin')
+    @view_config(route_name='checkout_dummy_server.stepin.mobile')
     def stepin(self):
         xml, service_settings = self.get_payload()
         self.request.session['service_settings'] = service_settings
@@ -420,6 +423,7 @@ class DummyCheckoutView(object):
         return HTTPFound(self.request.route_path('checkout_dummy_server.index'))
 
     @view_config(route_name='checkout_dummy_server.index', renderer='index.mako', request_method="GET")
+    @view_config(route_name='checkout_dummy_server.index', renderer='index.mobile.mako', request_method="GET", request_type=IMobileRequest)
     def index(self):
         if 'order' not in self.request.session:
             raise OrderNotExist()
@@ -430,6 +434,7 @@ class DummyCheckoutView(object):
             }
 
     @view_config(route_name='checkout_dummy_server.index', renderer='index.mako', request_method="POST")
+    @view_config(route_name='checkout_dummy_server.index', renderer='index.mobile.mako', request_method="POST", request_type=IMobileRequest)
     def index_post(self):
         if 'order' not in self.request.session:
             raise OrderNotExist()
@@ -467,6 +472,7 @@ class DummyCheckoutView(object):
         return HTTPFound(location=self.request.current_route_path())
 
     @view_config(route_name='checkout_dummy_server.confirm', renderer='confirm.mako', request_method='GET')
+    @view_config(route_name='checkout_dummy_server.confirm', renderer='confirm.mobile.mako', request_method='GET', request_type=IMobileRequest)
     def confirm(self):
         if 'order' not in self.request.session:
             raise OrderNotExist()
@@ -481,6 +487,7 @@ class DummyCheckoutView(object):
             }
 
     @view_config(route_name='checkout_dummy_server.confirm', renderer='confirm.mako', request_method='POST')
+    @view_config(route_name='checkout_dummy_server.confirm', renderer='confirm.mobile.mako', request_method='POST', request_type=IMobileRequest)
     def confirm_post(self):
         if 'order' not in self.request.session:
             raise OrderNotExist()
@@ -690,6 +697,7 @@ def register_helpers(event):
 
 def setup_routes(config):
     config.add_route('checkout_dummy_server.stepin', '/myc/cdodl/1.0/stepin')
+    config.add_route('checkout_dummy_server.stepin.mobile', '/myc_m/stepin/dl_1_0')
     config.add_route('checkout_dummy_server.api.settlement', '/odrctla/fixationorder/1.0/')
     config.add_route('checkout_dummy_server.api.cancel', '/odrctla/cancelorder/1.0/')
     config.add_route('checkout_dummy_server.api.update', '/odrctla/changepayment/1.0/')
@@ -724,11 +732,12 @@ def setup_sqlalchemy(config):
     config.set_request_property(get_sa_session, 'sa_session', reify=True)
 
 def setup_session(config):
-    from altair.httpsession.pyramid import PyramidSessionFactory, cookies
+    from altair.httpsession.pyramid import PyramidSessionFactory
+    from altair.mobile.session import http_backend_factory 
     from altair.httpsession.pyramid.interfaces import ISessionHTTPBackendFactory, ISessionPersistenceBackendFactory
     from altair.httpsession.inmemory import factory as inmemory_session_backend_factory
     config.registry.registerUtility(
-        lambda request: cookies(request),
+        lambda request: http_backend_factory(request, 'PHPSESSID', 'secret'),
         ISessionHTTPBackendFactory
         )
 
@@ -758,6 +767,7 @@ def paster_main(global_config, **local_config):
     config.scan('.')
     config.include("pyramid_fanstatic")
     config.include('altair.exclog')
+    config.include('altair.mobile')
     config.include(setup_sqlalchemy)
     config.include(setup_components)
     config.include(setup_renderers)

@@ -198,7 +198,11 @@ class CheckoutView(object):
         logger.debug(u'mailmagazine = %s' % self.request.session['altair.app.ticketing.cart.magazine_ids'])
         channel = get_channel(cart.channel)
         service = api.get_checkout_service(self.request, cart.performance.event.organization, channel)
-        _, form = service.build_checkout_request_form(cart)
+        _, form = service.build_checkout_request_form(
+            cart,
+            success_url=self.request.route_url('payment.checkout.callback.success'),
+            fail_url=self.request.route_url('payment.checkout.callback.error')
+            )
         return dict(
             form=literal(form)
             )

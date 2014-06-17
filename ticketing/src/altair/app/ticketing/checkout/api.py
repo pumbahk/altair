@@ -388,10 +388,14 @@ class AnshinCheckoutAPI(object):
     def create_order_complete_response_xml(self, result, complete_time):
         return etree.tostring(self.pb.create_order_complete_response_xml(result, complete_time), xml_declaration=True, encoding='utf-8')
 
-    def build_checkout_request_form(self, order_like):
+    def build_checkout_request_form(self, order_like, success_url=None, fail_url=None):
         # checkoutをXMLに変換
         checkout_object = build_checkout_object_from_order_like(self.request, order_like)
         self.session.add(checkout_object)
         self.session.commit()
 
-        return checkout_object, self.hfb.build_checkout_request_form(checkout_object)
+        return checkout_object, self.hfb.build_checkout_request_form(
+            checkout_object,
+            success_url=success_url,
+            fail_url=fail_url
+            )
