@@ -39,6 +39,7 @@ class TopcontentWidget(Widget):
     system_tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
     rendering_image_attribute = sa.Column(sa.String(length=16), nullable=False, default="thumbnail_path")
     system_tag = orm.relationship("TopcontentTag", uselist=False, primaryjoin="TopcontentWidget.system_tag_id==TopcontentTag.id")
+    use_newstyle = sa.Column(sa.Boolean)
 
     def merge_settings(self, bname, bsettings):
         ## lookup utilities.py

@@ -1,4 +1,53 @@
 ## sizeがwidth,height固定はひどい
+% if hasattr(widget, "use_newstyle"):
+  % if widget.use_newstyle:
+    ${render_newstyle()}
+  % else:
+    ${render()}
+  % endif
+% else:
+  ${render()}
+% endif
+
+
+<%def name="render_newstyle()">
+<div id="notableEvents">
+  <div class="musicList genreTopics clearfix">
+    <h3>音楽</h3>
+    <p class="listBtn">
+      <a href="/music">
+        <span class="offleft">一覧を見る</span>
+      </a>
+    </p>
+    <ul>
+      % for content in h.chunk(qs, 1):
+      <li>
+        <dl>
+          <dt class="tileImg">
+            <a href="${h.link.get_link_from_topcontent(request, content[0])}">
+              <img src="${getattr(h.asset.rendering_object(request, content[0].image_asset), widget.rendering_image_attribute)}" alt="${content[0].title}" width="150" height="150" />
+            </a>
+          </dt>
+          <dd>
+            <p class="tileTitle">
+              <a href="${h.link.get_link_from_topcontent(request, content[0])}">${h.truncate(content[0].title, 35) }</a>
+            </p>
+            <p class="tileText">
+              ${h.truncate(content[0].text, 57)}
+                %if content[0].linked_page and content[0].linked_page.event:
+                (${content[0].countdown_type_ja}まであと${h.base.countdown_days_from(request, content[0].countdown_limit)}日)
+              %endif
+            </p>
+          </dd>
+        </dl>
+      </li>
+      % endfor
+    </ul>
+  </div>
+</div>
+</%def>
+
+<%def name="render()">
 <div id="notableEvents">
   <table>
     <tbody>
@@ -20,3 +69,4 @@
     </tbody>
   </table>
 </div>
+</%def>

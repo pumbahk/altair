@@ -1,5 +1,9 @@
-% if widget.use_newstyle:
-  ${render_newstyle()}
+% if hasattr(widget, "use_newstyle"):
+  % if widget.use_newstyle:
+    ${render_newstyle()}
+  % else:
+    ${render()}
+  % endif
 % else:
   ${render()}
 % endif
@@ -12,7 +16,7 @@
 	  %for topic in topics:
         <% link  = h.link.get_link_from_topic(request,topic) %>
         %if link:
-          <li><a href="${link}">${topic.title}</li>
+          <li><a href="${link}">${topic.title}</a></li>
         %else:
           ${topic.title}
         %endif
