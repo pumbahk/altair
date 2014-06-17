@@ -4,6 +4,7 @@ import json
 import logging
 import webhelpers.paginate as paginate
 import sqlalchemy.orm as orm
+from sqlalchemy import func
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.renderers import render_to_response
@@ -28,7 +29,7 @@ class ProductAndProductItem(BaseView):
     def new_xhr(self):
         # 商品、商品明細一括登録画面
         sales_segment = self.context.sales_segment
-        f = ProductAndProductItemForm(sales_segment=sales_segment)
+        f = ProductAndProductItemForm(sales_segment=sales_segment, new_form=True)
         return dict(form=f)
 
     @view_config(route_name='products.new', request_method='POST', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
@@ -50,6 +51,12 @@ class ProductAndProductItem(BaseView):
 
             for sales_segment_for_product in query:
                 product = merge_session_with_post(Product(), f.data, excludes={'id'})
+                max_display_order = Product.query.filter(
+                        Product.sales_segment_id==sales_segment_for_product.id
+                    ).with_entities(
+                        func.max(Product.display_order)
+                    ).scalar()
+                product.display_order = (max_display_order or 1) + 1
                 product.sales_segment = sales_segment_for_product
                 product.performance = sales_segment_for_product.performance
                 product.point_grant_settings.extend(point_grant_settings)

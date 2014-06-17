@@ -73,7 +73,6 @@ class ProductFormMixin(object):
         )
     public = OurBooleanField(
         label=u'一般公開',
-        hide_on_new=True,
         widget=CheckboxInput(),
         default=True
         )
@@ -112,7 +111,6 @@ class ProductFormMixin(object):
         )
     all_sales_segment = OurBooleanField(
         label=u'同じ公演の全ての販売区分に追加',
-        hide_on_new=True,
         widget=CheckboxInput(),
         )
 
@@ -433,6 +431,7 @@ class ProductAndProductItemAPIForm(OurForm, ProductItemFormMixin):
         )
     display_order = OurIntegerField(
         default=1,
+        hide_on_new=True,
         validators=[Optional()]
         )
     performance_id = HiddenField(
