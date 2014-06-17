@@ -30,13 +30,18 @@ class ProductAndProductItem(BaseView):
         # 商品、商品明細一括登録画面
         sales_segment = self.context.sales_segment
         f = ProductAndProductItemForm(sales_segment=sales_segment, new_form=True)
+
+        ticket_bundles = TicketBundle.query.filter_by(event_id=sales_segment.sales_segment_group.event_id).all()
+        if len(ticket_bundles) == 1:
+            f.ticket_bundle_id.data = ticket_bundles[0].id
+
         return dict(form=f)
 
     @view_config(route_name='products.new', request_method='POST', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
     def new_post_xhr(self):
         # 商品、商品明細一括登録画面
         sales_segment = self.context.sales_segment
-        f = ProductAndProductItemForm(self.request.POST, sales_segment=sales_segment)
+        f = ProductAndProductItemForm(self.request.POST, sales_segment=sales_segment, new_form=True)
         if f.validate():
             point_grant_settings = [
                 PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one()
@@ -153,6 +158,7 @@ class ProductAndProductItem(BaseView):
                     display_order=product.display_order,
                     public=product.public,
                     performance_id=product.performance_id,
+                    amount_mismatching=product.is_amount_mismatching(),
                 ),
                 stock_type=dict(
                     id=product.seat_stock_type.id
@@ -205,6 +211,7 @@ class ProductAndProductItem(BaseView):
                             product=dict(
                                 id=product.id,
                                 name=u'(複数在庫商品)',
+                                amount_mismatching=product.is_amount_mismatching(),
                             ),
                         )
                 row2.update(row_id=len(rows) + 1)
@@ -268,7 +275,7 @@ class ProductAndProductItem(BaseView):
                     product.price = f.price.data
                     product.display_order = f.display_order.data
                     product.public = f.public.data
-                    product.seat_stock_type_id = f.stock_type_id.data
+                    product.seat_stock_type_id = f.seat_stock_type_id.data
                     product.sales_segment = sales_segment
                     product.performance_id = f.performance_id.data
                     product.save()

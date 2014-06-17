@@ -13,16 +13,22 @@
           null,
           null
         );
+        modal_product.find('.modal-header h3').text('商品＆商品明細 登録');
       };
       edit_product = function edit_product(id, product_item_id) {
         if (!id) return false;
-        if (!product_item_id) product_item_id = '';
+        var title = '商品＆商品明細編集';
+        if (!product_item_id) {
+          product_item_id = '';
+          title = '商品編集';
+        }
         load_modal_form(
           modal_product,
           '${request.route_path('products.edit', product_id='{id}', _query=dict(product_item_id='{product_item_id}'))|n}'.replace(encodeURIComponent('{id}'), id).replace(encodeURIComponent('{product_item_id}'), product_item_id),
           null,
           null
         );
+        modal_product.find('.modal-header h3').text(title);
       };
       delete_product = function delete_product(id) {
         if (!id) return false;
@@ -32,6 +38,7 @@
         % else:
           modal.find('#delete').attr('href', '${request.route_path('products.delete', product_id='{id}')}'.replace(encodeURIComponent('{id}'), id));
         % endif
+        modal.find('.modal-header h3').text('商品削除');
         modal.find('#message').text('選択した商品を削除します。よろしいですか？');
         modal.modal('toggle');
       };
