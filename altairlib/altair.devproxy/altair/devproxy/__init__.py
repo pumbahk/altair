@@ -2,6 +2,7 @@
 from twisted.web import proxy, http
 from twisted.internet import reactor
 from twisted.python import log
+import itertools
 import sys
 import ConfigParser
 import argparse
@@ -34,6 +35,66 @@ SUBDOMAINS = [
     'jubilo',
     ]
 
+class URLRewriterPatternBuilder(object):
+    def __init__(self, subdomains, real_apphost):
+        self.subdomains = subdomains
+        self.real_apphost = real_apphost
+
+    def backend_rewrite_patterns(self):
+        return [
+            (r'http://backend.stg2.rt.ticketstar.jp(/qrreader(?:/.*)?)',
+             r'http://{hostname}:8030\1'.format(hostname=self.real_apphost)),
+            (r'http://backend.stg2.rt.ticketstar.jp(/.*)?',
+             r'http://{hostname}:8021\1'.format(hostname=self.real_apphost)),
+            (r'http://cms.stg2.rt.ticketstar.jp(/.*)?',
+             r'http://{hostname}:8001\1'.format(hostname=self.real_apphost)),
+            ]
+
+    def booster_rewrite_patterns(self):
+        return [
+            (r'http://89ers.stg2.rt.ticketstar.jp(/booster(?:/.*)?)',
+             r'http://{hostname}:9081\1'.format(hostname=self.real_apphost)),
+            (r'http://bambitious.stg2.rt.ticketstar.jp(/booster(?:/.*)?)',
+             r'http://{hostname}:9082\1'.format(hostname=self.real_apphost)),
+            (r'http://bigbulls.stg2.rt.ticketstar.jp(/booster(?:/.*)?)',
+             r'http://{hostname}:9083\1'.format(hostname=self.real_apphost)),
+        ]
+
+    def extra_rewrite_patterns(self):
+        return [
+            (r'http://dummy-checkout-server.stg2.rt.ticketstar.jp(/.*)',
+             r'http://{hostname}:8071\1'.format(hostname=self.real_apphost)),
+            ]
+
+    def _create_front_rewrite_patterns_for_subdomain(self, subdomain):
+        return [
+            (r'http://{subdomain}.stg2.rt.ticketstar.jp(/orderreview(?:/.*)?)'.format(subdomain=subdomain),
+             r'http://{hostname}:9061\1'.format(hostname=self.real_apphost)),
+            (r'http://{subdomain}.stg2.rt.ticketstar.jp(/lots(?:/.*)?)'.format(subdomain=subdomain),
+             r'http://{hostname}:9121\1'.format(hostname=self.real_apphost)),
+            (r'http://{subdomain}.stg2.rt.ticketstar.jp(/cart(?:/.*)?)'.format(subdomain=subdomain),
+             r'http://{hostname}:9021\1'.format(hostname=self.real_apphost)),
+            (r'http://{subdomain}.stg2.rt.ticketstar.jp(/whattime(?:/.*)?)'.format(subdomain=subdomain),
+             r'http://{hostname}:9071\1'.format(hostname=self.real_apphost)),
+            (r'http://{subdomain}.stg2.rt.ticketstar.jp(/maintenance(?:/.*)?)'.format(subdomain=subdomain),
+             r'http://{hostname}:8000\1'.format(hostname=self.real_apphost)),
+            (r'http://{subdomain}.stg2.rt.ticketstar.jp(/.*)?'.format(subdomain=subdomain),
+             r'http://{hostname}:9001\1'.format(hostname=self.real_apphost)),
+             ]
+
+    def front_rewrite_patterns(self):
+        return itertools.chain.from_iterable(
+            self._create_front_rewrite_patterns_for_subdomain(subdomain)
+            for subdomain in self.subdomains
+            )
+
+    def __call__(self):
+        return list(itertools.chain.from_iterable(
+            getattr(self, attr)()
+            for attr in dir(self) if attr[0] != '_' and attr.endswith('_rewrite_patterns')
+            ))
+
+
 class MyProxy(proxy.Proxy):
     requestFactory = MyProxyRequest
     config = None #xxx: use get_current_registry?
@@ -44,45 +105,13 @@ class MyProxy(proxy.Proxy):
          r'http://\1.stg2.rt.ticketstar.jp\2/\3'),
         ]
 
-    def create_rewrite_patters(self, real_apphost):
-        return [
-            (r'http://backend.stg2.rt.ticketstar.jp(/qrreader(?:/.*)?)',
-             r'http://{hostname}:8030\1'.format(hostname=real_apphost)),
-            (r'http://backend.stg2.rt.ticketstar.jp(/.*)?',
-             r'http://{hostname}:8021\1'.format(hostname=real_apphost)),
-            (r'http://cms.stg2.rt.ticketstar.jp(/.*)?',
-             r'http://{hostname}:8001\1'.format(hostname=real_apphost)),
-            (r'http://89ers.stg2.rt.ticketstar.jp(/booster(?:/.*)?)',
-             r'http://{hostname}:9081\1'.format(hostname=real_apphost)),
-            (r'http://bambitious.stg2.rt.ticketstar.jp(/booster(?:/.*)?)',
-             r'http://{hostname}:9082\1'.format(hostname=real_apphost)),
-            (r'http://bigbulls.stg2.rt.ticketstar.jp(/booster(?:/.*)?)',
-             r'http://{hostname}:9083\1'.format(hostname=real_apphost)),
-        ]
-
     def __init__(self, *args, **kwargs):
         proxy.Proxy.__init__(self, *args, **kwargs)
         app_settings = self.config.settings["app"]
         real_apphost = app_settings.hostname or "localhost"
 
         self.prerewrite_patterns = self.create_prerewrite_patterns(real_apphost)
-        self.rewrite_patterns = self.create_rewrite_patters(real_apphost)
-
-        for subdomain in app_settings.subdomains:
-            self.rewrite_patterns.extend([
-                (r'http://{subdomain}.stg2.rt.ticketstar.jp(/orderreview(?:/.*)?)'.format(subdomain=subdomain),
-                 r'http://{hostname}:9061\1'.format(hostname=real_apphost)),
-                (r'http://{subdomain}.stg2.rt.ticketstar.jp(/lots(?:/.*)?)'.format(subdomain=subdomain),
-                 r'http://{hostname}:9121\1'.format(hostname=real_apphost)),
-                (r'http://{subdomain}.stg2.rt.ticketstar.jp(/cart(?:/.*)?)'.format(subdomain=subdomain),
-                 r'http://{hostname}:9021\1'.format(hostname=real_apphost)),
-                (r'http://{subdomain}.stg2.rt.ticketstar.jp(/whattime(?:/.*)?)'.format(subdomain=subdomain),
-                 r'http://{hostname}:9071\1'.format(hostname=real_apphost)),
-                (r'http://{subdomain}.stg2.rt.ticketstar.jp(/maintenance(?:/.*)?)'.format(subdomain=subdomain),
-                 r'http://{hostname}:8000\1'.format(hostname=real_apphost)),
-                (r'http://{subdomain}.stg2.rt.ticketstar.jp(/.*)?'.format(subdomain=subdomain),
-                 r'http://{hostname}:9001\1'.format(hostname=real_apphost))])
-
+        self.rewrite_patterns = URLRewriterPatternBuilder(app_settings.subdomains, real_apphost)()
 
 ## setup
 
