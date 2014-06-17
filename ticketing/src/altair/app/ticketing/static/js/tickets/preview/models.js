@@ -26,7 +26,7 @@ if (!window.preview)
         this.set("all", all);
         this.set("visibles", visibles);
         _.each(ticket_formats, function(d){
-          alls[d.pk] = d;
+          all[d.pk] = d;
           visibles.push(d);
         });
       },
