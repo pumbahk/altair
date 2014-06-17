@@ -111,18 +111,18 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
         this.vms = opts.vms;
         this.model.on("*params.ticket_format.update", this.onChangeFormat, this);
     }, 
-    onChangeRight: function(e,middleVal, rightVal){
+    onChangeRight: function(e,middleVal, rightVal, silent){
         var pk = middleVal || this.middle.$el.val();
         var sub_pk = rightVal || this.right.$el.val();
         if(this.right.models[sub_pk].model && this.right.models[sub_pk].model.hasTicketFormats()){
             this.model.trigger("*params.ticket_format.restriction", this.right.models[sub_pk].model);
         }
-        this.model.changeHolder({pk: pk, name: this.modelname, sub: {pk: sub_pk,  name: "Sub"}}); //params
+        this.model.changeHolder({pk: pk, name: this.modelname, sub: {pk: sub_pk,  name: "Sub"}}, silent); //params
     }, 
     onChangeFormat: function(){
-        return this.onChangeMiddle(null, null);
+        return this.onChangeMiddle(null, null, true);
     },
-    onChangeLeft: function(e, leftVal){
+    onChangeLeft: function(e, leftVal, silent){
         leftVal = leftVal || this.left.$el.val();
         if(this.left.models[leftVal].model && this.left.models[leftVal].model.hasTicketFormats()){
             this.model.trigger("*params.ticket_format.restriction", this.left.models[leftVal].model);
@@ -130,7 +130,7 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
         this.middle = this.left.getChild(leftVal);
         this.$middleWrapper.html(this.middle.render());
         if(this.middle.candidates.length == 1){
-            this.onChangeMiddle(null, this.middle.candidates[0].pk);
+            this.onChangeMiddle(null, this.middle.candidates[0].pk, silent);
         }
     }, 
     onChangeMiddle: function(e,middleVal){

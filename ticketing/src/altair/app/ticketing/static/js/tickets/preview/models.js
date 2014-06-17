@@ -79,10 +79,12 @@ if (!window.preview)
             this.set("ticket_format", v);
             this.set("changed", RELOAD_SVG);
         }, 
-        changeHolder: function(h){
+        changeHolder: function(h, silent){
             this.set("holder", h);
             this.set("changed", RELOAD_SVG);
-            this.reDraw();
+            if(!silent){
+                this.reDraw();
+            }
         }, 
         refreshDefault: function(){
             this.set("default_sx", 2.0);
