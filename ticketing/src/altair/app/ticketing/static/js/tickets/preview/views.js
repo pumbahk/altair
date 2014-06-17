@@ -147,16 +147,12 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
         }
     },
     settingChildren: function(candidates){
-        this.left = null;
+        this.left = new preview.CandidateCollectionViewModel(this.leftIdname, "input-medium");
         this.middle = null;
         this.right = null;
         _(candidates).each(function(c){
-            var left = new preview.CandidateCollectionViewModel(this.leftIdname, "input-medium");
-            if(!this.left){
-                this.left = left;
-            }
             // left setting
-            left.addModel(
+            this.left.addModel(
                 new preview.ResourceViewModel(
                     new preview.Resource({label: c.name, pk: c.pk, ticket_formats: (c.ticket_formats || [])})));
 
@@ -165,7 +161,7 @@ preview.Combobox3SVGFromModelView = Backbone.View.extend({
             if(!this.middle){
                 this.middle = middle;
             }
-            left.addChild(c.pk, middle);
+            this.left.addChild(c.pk, middle);
 
             _(c.candidates).each(function(subc){
                 middle.addModel(
