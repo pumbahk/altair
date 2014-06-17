@@ -224,7 +224,7 @@ class ProductItemFormMixin(object):
             pi = ProductItem.query.filter_by(id=self.product_item_id.data).one()
             product = pi.product
             now = datetime.now()
-            if (product.public and product.sales_segment.public and product.sales_segment.in_term(now))\
+            if (product.public and product.sales_segment.public and product.sales_segment.in_term(now) and product.performance.public)\
                or product.ordered_products or product.has_lot_entry_products():
                 error_message = u'既に販売中か予約および抽選申込がある為、変更できません'
                 if self.product_item_price.data != pi.price:
