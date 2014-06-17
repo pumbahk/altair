@@ -55,7 +55,10 @@ def includeme(config):
     config.scan(__name__)
 
 def back_url(request):
-    return request.route_url('payment.confirm')
+    try:
+        return request.route_url('payment.confirm')
+    except:
+        return None
 
 class CheckoutSettlementFailure(PaymentPluginException):
     def __init__(self, message, order_no, back_url, ignorable=False, error_code=None, return_code=None):

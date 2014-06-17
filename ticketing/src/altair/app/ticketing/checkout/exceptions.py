@@ -41,3 +41,6 @@ class AnshinCheckoutAPIError(Exception):
             self.error_code,
             ERROR_CODES.get(self.error_code, u'')
             )
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
