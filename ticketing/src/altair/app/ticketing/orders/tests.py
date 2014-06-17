@@ -615,3 +615,70 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
             target.cancel(request)
             self.assertTrue(self.checkout_get_checkout_service.return_value.request_change_order.called)
             self.assertEqual(target.payment_status, 'refunded', description)
+
+
+class OrderTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.session = _setup_db(
+            modules=[
+                'altair.app.ticketing.core.models',
+                'altair.app.ticketing.orders.models',
+            ],
+        )
+
+    @classmethod
+    def tearDownClass(cls):
+        _teardown_db()
+
+    def tearDown(self):
+        import transaction
+        transaction.abort()
+
+    def _getTarget(self):
+        from .models import Order
+        return Order
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def _make_order(self, order_no, branch_no, id=None, **kwargs):
+        from altair.app.ticketing.orders.models import  Order
+        return Order(
+            id=id,
+            order_no=order_no,
+            branch_no=branch_no,
+            total_amount=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            system_fee=0,
+            special_fee=0,
+            **kwargs
+            )
+
+    def test_create_order_and_notification(self):
+        order = self._make_order(id=1, order_no='a', branch_no=1)
+        self.session.add(order)
+        self.session.flush()
+        self.assertTrue(order.order_notification)
+
+
+    def test_clone(self):
+        from sqlalchemy import desc
+        from altair.app.ticketing.orders.models import Order
+
+        order = self._make_order(id=1, order_no='a', branch_no=1)
+        self.session.add(order)
+        self.session.flush()
+
+        old_order = Order.query.order_by(desc(Order.id)).first()
+        new_order = Order.clone(order, deep=True)
+
+        self.assertTrue(new_order.order_notification)
+        new_notification = new_order.order_notification
+
+        if old_order.order_notification:
+            old_notification = old_order.order_notification
+            self.assertEqual(old_notification.sej_remind_at, new_notification.sej_remind_at)
+        self.assertEqual(new_order.id, new_notification.order_id)
