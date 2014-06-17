@@ -135,7 +135,7 @@ class ProductFormMixin(object):
                 if self.price.data != product.price:
                     self.price.errors.append(error_message)
                     validity = False
-                if self.seat_stock_type_id.data != product.seat_stock_type_id:
+                if long(self.seat_stock_type_id.data or 0) != product.seat_stock_type_id:
                     self.seat_stock_type_id.errors.append(error_message)
                     validity = False
         if self.min_product_quantity.data is not None and \
@@ -314,6 +314,7 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
             status = self.validate_product(*args, **kwargs)
         if status:
             status = self.validate_product_item(*args, **kwargs)
+            self.price.errors += self.product_item_price.errors
         if not self.id.data or self.product_item_id.data:
             error_message = u'入力してください'
             required_fields = [
@@ -382,7 +383,7 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
         return status
 
 
-class ProductAndProductItemAPIForm(OurForm, ProductItemFormMixin):
+class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMixin):
 
     def __init__(self, formdata=None, obj=None, prefix='', sales_segment=None, **kwargs):
         super(ProductAndProductItemAPIForm, self).__init__(formdata, obj, prefix, **kwargs)
@@ -400,6 +401,8 @@ class ProductAndProductItemAPIForm(OurForm, ProductItemFormMixin):
         self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
 
         if formdata:
+            self.id.data = formdata['product_id']
+            self.seat_stock_type_id.data = formdata['stock_type_id']
             try:
                 self.public.data = bool(distutils.util.strtobool(formdata['public']))
             except Exception as e:
@@ -438,8 +441,35 @@ class ProductAndProductItemAPIForm(OurForm, ProductItemFormMixin):
         default=False
         )
 
+    id = HiddenField(
+        validators=[Optional()],
+        )
+    seat_stock_type_id = HiddenField(
+        validators=[Optional()],
+        )
+    description = HiddenField(
+        validators=[Optional()],
+        )
+    sales_segment_id = HiddenField(
+        validators=[Optional()],
+        )
+    min_product_quantity = HiddenField(
+        validators=[Optional()],
+        )
+    max_product_quantity = HiddenField(
+        validators=[Optional()],
+        )
+    applied_point_grant_settings = HiddenField(
+        validators=[Optional()],
+        )
+    all_sales_segment = HiddenField(
+        validators=[Optional()],
+        )
+
     def validate(self, *args, **kwargs):
         status = super(ProductAndProductItemAPIForm, self).validate(*args, **kwargs)
+        if status:
+            status = self.validate_product(*args, **kwargs)
         if status:
             status = self.validate_product_item(*args, **kwargs)
 

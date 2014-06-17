@@ -273,7 +273,7 @@ class ProductAndProductItem(BaseView):
                     product.price = f.price.data
                     product.display_order = f.display_order.data
                     product.public = f.public.data
-                    product.seat_stock_type_id = f.stock_type_id.data
+                    product.seat_stock_type_id = f.seat_stock_type_id.data
                     product.sales_segment = sales_segment
                     product.performance_id = f.performance_id.data
                     product.save()
