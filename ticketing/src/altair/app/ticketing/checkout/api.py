@@ -365,8 +365,6 @@ class AnshinCheckoutAPI(object):
                     u'あんしん決済の金額変更に失敗しました',
                     error_code
                     )
-            for checkout in checkout_object_list:
-                checkout.sales_at = None
             self.session.commit()
         except:
             self.session.rollback()
