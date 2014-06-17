@@ -41,7 +41,6 @@ preview.CandidateCollectionViewModel = core.ViewModel.extend({
         _(this.exactCandidates(filter_id)).each(function(vm){
             $el.append(vm.render());
         });
-        console.log($el.html());
         return $el;
     }
 });
