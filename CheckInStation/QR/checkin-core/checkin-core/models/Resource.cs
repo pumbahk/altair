@@ -102,6 +102,11 @@ namespace checkin.core.models
         {
             return EnvironmentName.GetMachineName();
         }
+
+        public bool IsEnableAnotherMode()
+        {
+            return this.SettingValue("application.enable.anothermode").ToLower() == "true";
+        }
     }
 }
 

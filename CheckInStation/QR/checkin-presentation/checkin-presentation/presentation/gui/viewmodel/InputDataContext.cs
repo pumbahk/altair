@@ -30,6 +30,10 @@ namespace checkin.presentation.gui
         public InputDataContext()
         {
         }
+        public bool EnableAnotherMode
+        {
+            get { return this.Case.Resource.IsEnableAnotherMode(); }
+        }
 
         public DataContextProgress Progress;
         public RequestBroker Broker { get; set; }
