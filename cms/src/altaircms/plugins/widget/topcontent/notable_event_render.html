@@ -14,23 +14,28 @@
 <%
   genre = ""
   link = ""
+  style = "musicList"
   if widget.system_tag.label == u'音楽':
-    genre = u"音楽";
+    genre = u"音楽"
     link = "/music"
-  elif widget.system_tag.label == u'演劇･ステージ':
-    genre = u"演劇･ステージ";
+    style = "musicList"
+  elif widget.system_tag.label == u'演劇・ステージ・舞台':
+    genre = u"演劇･ステージ"
     link = "/stage"
+    style = "stageList"
   elif widget.system_tag.label == u'スポーツ':
-    genre = u"スポーツ";
+    genre = u"スポーツ"
     link = "/sports"
-  elif widget.system_tag.label == u'イベント':
-    genre = u"イベント";
+    style = "sportsList"
+  elif widget.system_tag.label == u'イベント・その他':
+    genre = u"イベント"
     link = "/event"
+    style = "eventList"
   endif
 %>
 
 <div id="notableEvents">
-  <div class="musicList genreTopics clearfix">
+  <div class="${style} genreTopics clearfix">
     <h3>${genre}</h3>
     <p class="listBtn">
       <a href="${link}">
