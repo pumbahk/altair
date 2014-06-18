@@ -160,14 +160,16 @@ $(function() {
         grid.setCell(cells[i].id, name, '', {background:'#F89406'});
       }
     }
-    var rows = grid.getRowData();
-    for (var i=0; i<rows.length; i++) {
-      if (rows[i].amount_mismatching === 'true') {
-        for (var name in rows[i]) {
-          if ($.inArray(name, ['price', 'product_item_price']) > -1 && rows[i][name]) {
-            grid.setCell(i+1, name, '', {background:'#dd1100'});
+    var row_ids = grid.getDataIDs();
+    for (var i=0; i<row_ids.length; i++) {
+      var row_id = row_ids[i];
+      var row = grid.getRowData(row_id);
+      if (row.amount_mismatching === 'true') {
+        for (var name in row) {
+          if ($.inArray(name, ['price', 'product_item_price']) > -1 && row[name]) {
+            grid.setCell(row_id, name, '', {background:'#dd1100'});
           } else {
-            grid.setCell(i+1, name, '', {background:'#F2DEDE'});
+            grid.setCell(row_id, name, '', {background:'#F2DEDE'});
           }
         }
       }
