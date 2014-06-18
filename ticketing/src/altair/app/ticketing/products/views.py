@@ -211,6 +211,7 @@ class ProductAndProductItem(BaseView):
                             product=dict(
                                 id=product.id,
                                 name=u'(複数在庫商品)',
+                                performance_id=product.performance_id,
                                 amount_mismatching=product.is_amount_mismatching(),
                             ),
                         )
