@@ -466,6 +466,17 @@ class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMix
         validators=[Optional()],
         )
 
+    def validate_stock_type_id(form, field):
+        if not field.data:
+            raise ValidationError(u'席種を選択してください')
+        elif form.is_leaf.data and form.product_id.data:
+            stock_type = StockType.get(field.data)
+            if stock_type.is_seat:
+                # 商品の席種と在庫の席種は同一であること
+                product = Product.get(form.product_id.data)
+                if stock_type.id != product.seat_stock_type_id:
+                    raise ValidationError(u'商品の席種と異なる在庫を登録することはできません')
+
     def validate(self, *args, **kwargs):
         status = super(ProductAndProductItemAPIForm, self).validate(*args, **kwargs)
         if status:
@@ -479,7 +490,6 @@ class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMix
             self.product_item_name,
             self.ticket_bundle_id,
             self.stock_holder_id,
-            self.stock_type_id
             ]
         if not self.is_leaf.data:
             required_fields += [
