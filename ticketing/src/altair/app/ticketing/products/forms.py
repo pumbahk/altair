@@ -296,6 +296,17 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
             )
         return form
 
+    def validate_seat_stock_type_id(form, field):
+        if field.data and form.id.data and not form.product_item_id.data:
+            stock_type = StockType.get(field.data)
+            if stock_type.is_seat:
+                # 商品の席種と在庫の席種は同一であること
+                product = Product.get(form.id.data)
+                for product_item in product.items:
+                    st = product_item.stock.stock_type
+                    if st.is_seat and st.id != field.data:
+                        raise ValidationError(u'商品の席種と異なる在庫を登録することはできません')
+
     def validate(self, *args, **kwargs):
         status = super(ProductAndProductItemForm, self).validate(*args, **kwargs)
         if status:
