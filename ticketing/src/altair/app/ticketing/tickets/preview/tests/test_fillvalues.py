@@ -70,7 +70,7 @@ class FillvaluesTests(unittest.TestCase):
 
         tmpl = u"{{foo}} {{{bar}}} {{{fooo}}} {{foo}}"
         result = self._callFUT(tmpl, {"bar": "this-is-rendered"}, variation=IndexedVariation(style="fill:#afa"))
-        self.assertEquals(result, u'<flowSpan style="fill:#afa">1. </flowSpan>{{{foo}}} this-is-rendered <flowSpan style="fill:#afa">2. </flowSpan>{{{fooo}}} <flowSpan style="fill:#afa">1. </flowSpan>{{{foo}}}')
+        self.assertEquals(result, u'<flowSpan style="fill:#afa">1. </flowSpan>{{foo}} this-is-rendered <flowSpan style="fill:#afa">2. </flowSpan>{{fooo}} <flowSpan style="fill:#afa">1. </flowSpan>{{foo}}')
 
     def test_it_with_indexed_emit(self):
         from altair.app.ticketing.tickets.preview.fillvalues import IndexedVariation

@@ -17,7 +17,7 @@ class IndexedVariation(object):
 
     def rendering_string(self, name, v):
         i = self.count(name)
-        fmt = u'<flowSpan style="%s">%s. </flowSpan>{{{%s}}}'
+        fmt = u'<flowSpan style="%s">%s. </flowSpan>{{%s}}'
         return fmt % (self.style, i, name)
 
     padding = len(". </flowSpan>")
