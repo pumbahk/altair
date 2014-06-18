@@ -182,7 +182,7 @@ class ProductItemFormMixin(object):
         )
     ticket_bundle_id = OurSelectField(
         label=u'券面構成',
-        validators=[],
+        validators=[Required()],
         coerce=lambda v: None if not v else int(v)
         )
 
@@ -198,15 +198,6 @@ class ProductItemFormMixin(object):
         choices=[],
         coerce=int
         )
-
-    def validate_ticket_bundle_id(form, field):
-        # 引取方法にコンビニ発券が含まれていたら必須
-        if not field.data and form.product_id.data:
-            product = Product.get(form.product_id.data)
-            if product:
-                for pdmp in product.sales_segment.payment_delivery_method_pairs:
-                    if pdmp.delivery_method.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
-                        raise ValidationError(u'券面構成を選択してください')
 
     def validate_stock_holder_id(form, field):
         # 既に予約があるならStockHolderの変更は不可
@@ -305,15 +296,6 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
             )
         return form
 
-    def validate_ticket_bundle_id(form, field):
-        # 引取方法にコンビニ発券が含まれていたら必須
-        if form.product_item_id.data and not field.data and form.sales_segment_id.data:
-            sales_segment = SalesSegment.get(form.sales_segment_id.data)
-            if sales_segment:
-                for pdmp in sales_segment.payment_delivery_method_pairs:
-                    if pdmp.delivery_method.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
-                        raise ValidationError(u'券面構成を選択してください')
-
     def validate(self, *args, **kwargs):
         status = super(ProductAndProductItemForm, self).validate(*args, **kwargs)
         if status:
@@ -326,6 +308,7 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
             required_fields = [
                 self.stock_holder_id,
                 self.product_item_quantity,
+                self.ticket_bundle_id
                 ]
             for field in required_fields:
                 if not field.data:
