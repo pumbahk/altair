@@ -41,7 +41,6 @@ def linklist_render(widget, finder, request=None):
     content = widget.delimiter.join(candidates)
     element = u'<p>%s</p>' % content if content else ''
 
-    import ipdb;ipdb.set_trace()
     if widget.use_newstyle:
         element = u'<li>%s</li>' % content if content else ''
         return u'<h4>%s</h4><ul>%s</ul>' % (title, element)
