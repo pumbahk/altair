@@ -11,6 +11,11 @@ from .interfaces import IRemindMail
 from .forms import SubjectInfoRenderer
 from .forms import OrderInfoDefault, SubjectInfo, SubjectInfoWithValue
 from .api import (
+    create_or_update_mailinfo,
+    create_fake_order,
+    get_mail_setting_default,
+    get_appropriate_message_part,
+    get_default_contact_reference,
     get_mail_setting_default,
     get_default_contact_reference,
     )
@@ -75,7 +80,7 @@ class SejRemindMail(object):
         pair = order.payment_delivery_pair
         info_renderder = SubjectInfoRenderer(request, order, traverser.data, default_impl=RemindInfoDefault)
         title=order.performance.event.title
-        payment_due_at = DefaultDateTimeFormatter().format_datetime(order.sej_order.payment_due_at, with_weekday=True)
+        payment_due_at = DefaultDateTimeFormatter().format_datetime(order.sej_order.payment_due_at)
         value = dict(h=ch,
                      payment_du_at=payment_due_at,
                      order=order,
