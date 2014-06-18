@@ -48,6 +48,12 @@ class RemindInfoDefault(OrderInfoDefault):
 商品、決済・発送に関するお問い合わせ %s""" % (order.ordered_from.name, contact_ref)
     contact = SubjectInfo(name=u"contact", label=u"お問い合わせ", getval=get_contact)
 
+def get_subject_info_default():
+    return RemindInfoDefault()
+
+def get_mailtype_description():
+    return u"リマインドメール"
+
 
 @implementer(IRemindMail)
 class SejRemindMail(object):

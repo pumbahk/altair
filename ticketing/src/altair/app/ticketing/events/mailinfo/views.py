@@ -20,7 +20,7 @@ def mailinfo_index_view(context, request):
     return HTTPFound(request.route_url("events.mailinfo.edit", event_id=event_id, mailtype=MailTypeChoices[0][0]))
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor",
-               route_name="events.mailinfo.edit", 
+               route_name="events.mailinfo.edit",
                renderer="altair.app.ticketing:templates/events/mailinfo/new.html")
 class MailInfoNewView(BaseView):
     @view_config(request_method="GET")
@@ -36,13 +36,13 @@ class MailInfoNewView(BaseView):
         choice_form = template.as_choice_formclass()()
         formclass = template.as_formclass()
         form = formclass(**(event.extra_mailinfo.data.get(mailtype, {}) if event.extra_mailinfo else {}))
-        return {"event": event, 
-                "form": form, 
-                "organization": event.organization, 
-                "extra_mailinfo": event.extra_mailinfo, 
-                "mailtype": mailtype, 
-                "mutil": mutil, 
-                "choices": MailTypeChoices, 
+        return {"event": event,
+                "form": form,
+                "organization": event.organization,
+                "extra_mailinfo": event.extra_mailinfo,
+                "mailtype": mailtype,
+                "mutil": mutil,
+                "choices": MailTypeChoices,
                 "choice_form": choice_form}
 
     @view_config(request_method="POST")
@@ -65,10 +65,10 @@ class MailInfoNewView(BaseView):
             logger.debug("mailinfo.data: %s" % mailinfo.data)
             DBSession.add(mailinfo)
             self.request.session.flash(u"メールの付加情報を登録しました")
-        return {"event": event, 
-                "form": form, 
-                "choice_form": choice_form, 
-                "organization": event.organization, 
-                "mutil": mutil, 
-                "mailtype": self.request.matchdict["mailtype"], 
+        return {"event": event,
+                "form": form,
+                "choice_form": choice_form,
+                "organization": event.organization,
+                "mutil": mutil,
+                "mailtype": self.request.matchdict["mailtype"],
                 "choices": MailTypeChoices}
