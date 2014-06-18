@@ -10,7 +10,7 @@
     </tr>
     <tr>
       <td>払戻商品金額</td>
-      <td style="text-align: right;">${vh.price(sum(element.refund_price for item in order.items for element in item.elements))}</td>
+      <td style="text-align: right;">${vh.price(sum(element.refund_price * element.quantity for item in order.items for element in item.elements))}</td>
     </tr>
     <tr>
       <td>払戻決済手数料</td>
