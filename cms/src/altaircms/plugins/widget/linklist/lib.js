@@ -53,7 +53,8 @@ widget.configure({
                 "max_items": root.find("#max_items").val(), 
                 "limit_span": root.find("#limit_span").val(), 
                 "delimiter": root.find("#delimiter").val(), 
-                "system_tag": root.find("#system_tag").val()
+                "system_tag": root.find("#system_tag").val(),
+                "use_newstyle": root.find("#use_newstyle").attr("checked")
                };
     };
     return widget.include("linklist", {
