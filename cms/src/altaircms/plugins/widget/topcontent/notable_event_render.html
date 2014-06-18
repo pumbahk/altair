@@ -11,11 +11,29 @@
 
 
 <%def name="render_newstyle()">
+<%
+  genre = ""
+  link = ""
+  if widget.system_tag.label == u'音楽':
+    genre = u"音楽";
+    link = "/music"
+  elif widget.system_tag.label == u'演劇･ステージ':
+    genre = u"演劇･ステージ";
+    link = "/stage"
+  elif widget.system_tag.label == u'スポーツ':
+    genre = u"スポーツ";
+    link = "/sports"
+  elif widget.system_tag.label == u'イベント':
+    genre = u"イベント";
+    link = "/event"
+  endif
+%>
+
 <div id="notableEvents">
   <div class="musicList genreTopics clearfix">
-    <h3>音楽</h3>
+    <h3>${genre}</h3>
     <p class="listBtn">
-      <a href="/music">
+      <a href="${link}">
         <span class="offleft">一覧を見る</span>
       </a>
     </p>
