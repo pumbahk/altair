@@ -196,9 +196,10 @@ class RakutenOpenIDPlugin(object):
     def forget(self, environ, identity):
         req = get_current_request(environ)
         logger.debug('forget identity')
-        claimed_id = identity.get('claimed_id')
-        if claimed_id:
-            self._flush_cache(claimed_id)
+        if identity:
+            claimed_id = identity.get('claimed_id')
+            if claimed_id:
+                self._flush_cache(claimed_id)
         return self.rememberer.forget(environ)
 
     def _flush_cache(self, claimed_id):
