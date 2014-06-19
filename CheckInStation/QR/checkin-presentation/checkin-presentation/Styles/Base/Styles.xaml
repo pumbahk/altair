@@ -122,14 +122,82 @@
 
   <!-- <ResourceDictionary Source="./Brush.Generic.xaml" /> -->
   <SolidColorBrush x:Key="MainTextBrush">
-    <SolidColorBrush.Color>#333333</SolidColorBrush.Color>
+    <SolidColorBrush.Color>#840315</SolidColorBrush.Color>
   </SolidColorBrush>
 
   <SolidColorBrush x:Key="MainBorderBrush">
-    <SolidColorBrush.Color>#333333</SolidColorBrush.Color>
+    <SolidColorBrush.Color>#840315</SolidColorBrush.Color>
   </SolidColorBrush>
 
-  <!-- <ResourceDictionary Source="./Controls.GrayoutDisabled.xaml" /> -->
+    <!-- <ResourceDictionary Source="./Controls.ToggleButton.xaml" /> -->
+    <Style x:Key="ToggleButtonFocusVisual">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Rectangle Margin="1"
+                     StrokeThickness="1"
+                     Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"
+                     StrokeDashArray="1 2"
+                     SnapsToDevicePixels="true"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+    <Style TargetType="{x:Type ToggleButton}" x:Key="MyToggleButtonStyle">
+        <Setter Property="Padding"
+            Value="4" />
+        <Setter Property="Foreground"
+            Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+        <Setter Property="Background"
+            Value="{DynamicResource ToggleButtonFillNormal}"/>
+        <Setter Property="BorderBrush"
+            Value="{DynamicResource ToggleButtonStrokeNormal}"/>
+        <Setter Property="FocusVisualStyle"
+            Value="{DynamicResource ToggleButtonFocusVisual}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Grid>
+                        <Border Margin="0"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="4"
+                    SnapsToDevicePixels="true"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    Background="{TemplateBinding Background}">
+                            <ContentPresenter
+                  x:Name="contentPresenter"
+                  Content="{TemplateBinding Content}"
+                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                  Margin="{TemplateBinding Padding}" />
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsChecked" Value="true">
+                <Setter Property="Background"
+                Value="{DynamicResource ToggleButtonFillSelected}"/>
+                <Setter Property="BorderBrush"
+                Value="{DynamicResource ToggleButtonStrokeSelected}"/>
+                <Setter Property="Foreground"
+                Value="{DynamicResource ToggleButtonForegroundSelected}"/>
+                <Setter Property="FontWeight" Value="Bold" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="false">
+                <Setter Property="Background"
+                Value="{DynamicResource ToggleButtonFillDisabled}"/>
+                <Setter Property="BorderBrush"
+                Value="{DynamicResource ToggleButtonStrokeDisabled}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+
+    <!-- <ResourceDictionary Source="./Controls.GrayoutDisabled.xaml" /> -->
   <SolidColorBrush x:Key="Grayout_CurrentSelectionBoxColor">
     <SolidColorBrush.Color>#fefee0</SolidColorBrush.Color>
   </SolidColorBrush>
@@ -297,12 +365,12 @@
   <SolidColorBrush x:Key="SubmitButtonTextBrush" Color="#840315"/>
   
   <Style x:Key="SubmitButtonTextStyle" TargetType="TextBlock">
-    <Setter Property="Foreground" Value="{StaticResource SubmitButtonTextBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource SubmitButtonTextBrush}"/>
     <Setter Property="FontSize" Value="30"/>
   </Style>
 
   <Style x:Key="SubmitButtonLongTextStyle" TargetType="TextBlock">
-    <Setter Property="Foreground" Value="{StaticResource SubmitButtonTextBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource SubmitButtonTextBrush}"/>
     <Setter Property="FontSize" Value="22"/>
   </Style>
 
@@ -356,14 +424,14 @@
     <Setter Property="CornerRadius" Value="10"/>
     <Setter Property="BorderThickness" Value="3"/>
     <Setter Property="Padding" Value="27,37,27,3"/>
-    <Setter Property="BorderBrush" Value="{StaticResource SubmitButtonBorderBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource SubmitButtonBorderBrush}"/>
   </Style>
 
   <Style TargetType="Button" x:Key="SubmitButton" BasedOn="{StaticResource SubmitButtonStyle}">
-    <Setter Property="Foreground" Value="{StaticResource SubmitButtonForegroundBrush}"/>
-    <Setter Property="Background" Value="{StaticResource SubmitButtonBackGroundBrush}"/>
-    <Setter Property="Template">
-      <Setter.Value>
+    <Setter Property="Foreground" Value="{DynamicResource SubmitButtonForegroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource SubmitButtonBackGroundBrush}"/>
+        <Setter Property="Template">
+            <Setter.Value>
         <ControlTemplate TargetType="Button">
           <Border Style="{StaticResource SubmitButtonContainer}">
             <ContentPresenter x:Name="contentPresenter"
@@ -452,9 +520,9 @@
     <Setter Property="Foreground"
             Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
     <Setter Property="Background"
-            Value="{StaticResource CheckBoxFillNormal}"/>
+            Value="{DynamicResource CheckBoxFillNormal}"/>
     <Setter Property="BorderBrush"
-            Value="{StaticResource CheckBoxStroke}"/>
+            Value="{DynamicResource CheckBoxStroke}"/>
     <Setter Property="BorderThickness"
             Value="1"/>
     <Setter Property="FocusVisualStyle"
@@ -498,73 +566,6 @@
         </ControlTemplate>
       </Setter.Value>
     </Setter>
-  </Style>
-
-  <!-- <ResourceDictionary Source="./Controls.ToggleButton.xaml" /> -->
-  <Style x:Key="ToggleButtonFocusVisual">
-    <Setter Property="Control.Template">
-      <Setter.Value>
-        <ControlTemplate>
-          <Rectangle Margin="1"
-                     StrokeThickness="1"
-                     Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"
-                     StrokeDashArray="1 2"
-                     SnapsToDevicePixels="true"/>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-
-
-  <Style TargetType="{x:Type ToggleButton}" x:Key="MyToggleButtonStyle">
-    <Setter Property="Padding"
-            Value="4" />
-    <Setter Property="Foreground"
-            Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
-    <Setter Property="Background"
-            Value="{StaticResource ToggleButtonFillNormal}"/>
-    <Setter Property="BorderBrush"
-            Value="{StaticResource ToggleButtonStrokeNormal}"/>
-    <Setter Property="FocusVisualStyle"
-            Value="{StaticResource ToggleButtonFocusVisual}"/>
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="ToggleButton">
-          <Grid>
-            <Border Margin="0"
-                    BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="4"
-                    SnapsToDevicePixels="true"
-                    BorderBrush="{TemplateBinding BorderBrush}"
-                    Background="{TemplateBinding Background}">
-              <ContentPresenter
-                  x:Name="contentPresenter"
-                  Content="{TemplateBinding Content}"
-                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                  Margin="{TemplateBinding Padding}" />
-            </Border>
-          </Grid>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-    <Style.Triggers>
-      <Trigger Property="IsChecked" Value="true">
-        <Setter Property="Background"
-                Value="{StaticResource ToggleButtonFillSelected}"/>
-        <Setter Property="BorderBrush"
-                Value="{StaticResource ToggleButtonStrokeSelected}"/>
-        <Setter Property="Foreground"
-                Value="{StaticResource ToggleButtonForegroundSelected}"/>
-        <Setter Property="FontWeight" Value="Bold" />
-      </Trigger>
-      <Trigger Property="IsEnabled" Value="false">
-        <Setter Property="Background"
-                Value="{StaticResource ToggleButtonFillDisabled}"/>
-        <Setter Property="BorderBrush"
-                Value="{StaticResource ToggleButtonStrokeDisabled}"/>
-      </Trigger>
-    </Style.Triggers>
   </Style>
 
   <!-- <ResourceDictionary Source="./Controls.MenuButton.xaml" /> -->
