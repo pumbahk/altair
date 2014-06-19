@@ -265,7 +265,6 @@ def get_valid_sales_url(request, event):
                 return request.route_url('cart.index.sales', event_id=event.id, sales_segment_group_id=sales_segment_group.id)
 
 def logout(request, response=None):
-    request.session.invalidate()
     headers = forget(request)
     if response is None:
         response = request.response
