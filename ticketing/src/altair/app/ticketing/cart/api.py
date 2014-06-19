@@ -5,6 +5,7 @@ import json
 import urllib2
 import logging
 import contextlib
+import re
 
 from zope.deprecation import deprecate
 from sqlalchemy.sql.expression import or_, and_
@@ -14,7 +15,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
 from pyramid.interfaces import IRoutesMapper, IRequest
-from pyramid.security import effective_principals, forget
+from pyramid.security import effective_principals, forget, authenticated_userid
 from pyramid.httpexceptions import HTTPNotFound
 
 from altair.app.ticketing.api.impl import get_communication_api
@@ -22,8 +23,11 @@ from altair.app.ticketing.api.impl import CMSCommunicationApi
 from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.mobile.api import detect_from_ip_address
 from altair.app.ticketing.core import models as c_models
+from altair.app.ticketing.core import api as c_api
+from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.interfaces import ITemporaryStore
+from altair.app.ticketing.security import get_extra_auth_info_from_principals
 from altair.mq import get_publisher
 from altair.sqlahelper import get_db_session
 
@@ -165,14 +169,6 @@ def get_item_name(request, cart_name):
     base_item_name = organization.setting.cart_item_name
     return _maybe_encoded(base_item_name) + " " + str(cart_name)
 
-def get_nickname(request, suffix=u'さん'):
-    from altair.rakuten_auth.api import authenticated_user
-    user = authenticated_user(request) or {}
-    nickname = user.get('nickname', '')
-    if not nickname:
-        return ""
-    return unicode(nickname, 'utf-8') + suffix
-
 def get_payment_method_manager(request=None, registry=None):
     if request is not None:
         registry = request.registry
@@ -269,6 +265,7 @@ def get_valid_sales_url(request, event):
                 return request.route_url('cart.index.sales', event_id=event.id, sales_segment_group_id=sales_segment_group.id)
 
 def logout(request, response=None):
+    request.session.invalidate()
     headers = forget(request)
     if response is None:
         response = request.response
@@ -298,24 +295,12 @@ def get_performance_selector(request, name):
     return performance_selector
 
 def get_cart_user_identifiers(request):
-    from altair.rakuten_auth.api import authenticated_user
     from altair.browserid import get_browserid
 
     retval = []
 
-    user = authenticated_user(request)
-    if user and hasattr(user, '__getitem__'):
-        if not user.get('is_guest', False):
-            # Rakuten OpenID
-            claimed_id = user.get('claimed_id')
-            if claimed_id:
-                retval.append((claimed_id, 'strong'))
-
-            # fc_auth
-            triplet = tuple((user.get(k) or '') for k in ('username', 'membergroup', 'membership'))
-            fc_auth_id = ''.join(triplet)
-            if fc_auth_id:
-                retval.append((fc_auth_id, 'strong'))
+    user_id = authenticated_userid(request)
+    retval.append((user_id, 'strong'))
 
     # browserid is decent
     browserid = get_browserid(request)
@@ -407,3 +392,160 @@ def get_organization(request):
         request.organization = organization
         request.environ[ENV_ORGANIZATION_ID_KEY] = request.organization.id
     return organization
+
+def get_auth_info(request):
+    retval = {}
+    user_id = authenticated_userid(request)
+    principals = effective_principals(request)
+    if principals:
+        extra = get_extra_auth_info_from_principals(principals)
+        retval.update(extra)
+        if extra['auth_type'] == 'rakuten':
+            retval['claimed_id'] = user_id
+        else:
+            retval['username'] = user_id
+        retval['is_guest'] = False
+    else:
+        retval['is_guest'] = True
+    retval['organization_id'] = get_organization(request).id
+    return retval
+
+def get_auth_identifier_membership(info):
+    if 'claimed_id' in info:
+        auth_identifier = info['claimed_id']
+        membership_name = 'rakuten'
+    elif 'username' in info:
+        auth_identifier = info['username']
+        membership_name = info['membership']
+    elif info.get('is_guest', False):
+        auth_identifier = None
+        membership_name = None
+    else:
+        raise ValueError('clamed_id, username not in %s' % info)
+    return dict(
+        organization_id=info['organization_id'],
+        auth_identifier=auth_identifier,
+        membership_name=membership_name
+        )
+
+def lookup_user_credential(d):
+    q = u_models.UserCredential.query \
+        .filter(u_models.UserCredential.auth_identifier==d['auth_identifier']) \
+        .filter(u_models.UserCredential.membership_id==u_models.Membership.id) \
+        .filter(u_models.Membership.name==d['membership_name'])
+    if d['membership_name'] != 'rakuten':
+        q = q.filter(u_models.Membership.organization_id == d['organization_id'])
+    credential = q.first()
+    if credential:
+        return credential.user
+    else:
+        return None
+
+def get_user(info):
+    d = get_auth_identifier_membership(info)
+    return lookup_user_credential(d)
+
+def get_or_create_user(info):
+    d = get_auth_identifier_membership(info)
+    user = lookup_user_credential(d)
+    if user is not None:
+        return user
+
+    if info.get('is_guest', False):
+        # ゲストのときはユーザを作らない
+        return None
+
+    user = u_models.User()
+    # TODO: 楽天OpenID以外にも対応できるフレームワークを...
+    membership = u_models.Membership.query.filter(
+        u_models.Membership.organization_id == d['organization_id'],
+        u_models.Membership.name == 'rakuten').first()
+    if membership is None:
+        membership = u_models.Membership(name='rakuten')
+        DBSession.add(membership)
+    credential = u_models.UserCredential(
+        user=user,
+        auth_identifier=d['auth_identifier'],
+        membership=membership
+        )
+    DBSession.add(credential)
+    DBSession.add(user)
+    return user
+
+def get_or_create_user_from_point_no(point):
+    if not point:
+        return None
+
+    credential = u_models.UserCredential.query.filter(
+        u_models.UserCredential.auth_identifier==point
+    ).filter(
+        u_models.UserCredential.membership_id==u_models.Membership.id
+    ).filter(
+        u_models.Membership.name=='rakuten'
+    ).first()
+    if credential:
+        return credential.user
+
+    user = u_models.User()
+    membership = u_models.Membership.query.filter(u_models.Membership.name=='rakuten').first()
+    if membership is None:
+        membership = u_models.Membership(name='rakuten')
+        DBSession.add(membership)
+    credential = u_models.UserCredential(user=user, auth_identifier=point, membership=membership)
+    DBSession.add(user)
+
+    credential = u_models.UserCredential.query.filter(
+        u_models.UserCredential.auth_identifier==point
+    ).first()
+    return credential.user
+
+def create_user_point_account_from_point_no(user_id, type, account_number):
+    assert account_number is not None and account_number != ""
+
+    if int(type) == int(u_models.UserPointAccountTypeEnum.Rakuten.v) and \
+       not re.match(r'^\d{4}-\d{4}-\d{4}-\d{4}$', account_number):
+        raise ValueError('invalid account number format; %s' % account_number)
+
+    acc = u_models.UserPointAccount.query.filter(
+        u_models.UserPointAccount.user_id==user_id
+    ).first()
+
+    if not acc:
+        acc = u_models.UserPointAccount()
+
+    acc.user_id = user_id
+    acc.account_number = account_number
+    acc.type = int(type)
+    acc.status = u_models.UserPointAccountStatusEnum.Valid.v
+    DBSession.add(acc)
+    return acc
+
+def get_user_point_account(user_id):
+    acc = u_models.UserPointAccount.query.filter(
+        u_models.UserPointAccount.user_id==user_id
+    ).first()
+    return acc
+
+def get_or_create_user_profile(user, data):
+    profile = None
+    if user.user_profile:
+        profile = user.user_profile
+
+    if not profile:
+        profile = u_models.UserProfile()
+
+    profile.first_name=data['first_name'],
+    profile.last_name=data['last_name'],
+    profile.first_name_kana=data['first_name_kana'],
+    profile.last_name_kana=data['last_name_kana'],
+    profile.zip=data['zip'],
+    profile.prefecture=data['prefecture'],
+    profile.city=data['city'],
+    profile.address_1=data['address_1'],
+    profile.address_2=data['address_2'],
+    profile.email_1=data['email_1'],
+    profile.tel_1=data['tel_1'],
+
+    user.user_profile = profile
+    DBSession.add(user)
+    return user.user_profile

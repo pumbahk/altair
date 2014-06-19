@@ -4,8 +4,10 @@ import logging
 from datetime import datetime
 from dateutil import parser
 from pyramid.decorator import reify
+from pyramid.security import effective_principals
 from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
+from altair.app.ticketing.cart.api import get_auth_info
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting, ShippingAddress
@@ -51,9 +53,7 @@ class OrderReviewResource(object):
 
     def authenticated_user(self):
         """現在認証中のユーザ"""
-        from altair.rakuten_auth.api import authenticated_user
-        user = authenticated_user(self.request)
-        return user or { 'is_guest': True }
+        return get_auth_info(self.request)
 
     def get_order(self):
         order_no = self.order_no

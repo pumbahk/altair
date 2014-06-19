@@ -82,7 +82,7 @@ ${ch.breadcrumbs(
           <div class="page-header">
             <h3>決済情報</h3>
           </div>
-          <%include file="./_show_payment_table.html" args="order=order,checkout=order.checkout,sej_order=sej_order" />
+          <%include file="./_show_payment_table.html" args="order=order,checkout=checkout,sej_order=sej_order" />
 
           % if sej_order:
           <div class="pull-right">
@@ -123,6 +123,7 @@ ${ch.breadcrumbs(
             </tr>
           </table>
           <%include file="./_show_product_table.html"/ args="order=order,form=form_each_print,objects_for_describe_product_item=objects_for_describe_product_item" />
+          <%include file="./_show_refund_table.html"/ args="order=order" />
           % if is_current_order:
           <div class="pull-right">
             <%include file="/orders/_action_button.html" args="order=order, sort=['edit_product']" />

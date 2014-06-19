@@ -21,6 +21,33 @@ class RegressionTest(TestCase):
             detect_from_email_address(self.config.registry, 'test@docomo.ne.jp'),
             DoCoMo)
 
+    def test_make_mobile_request_hybrid(self):
+        from .api import make_mobile_request
+        from . import install_mobile_request_maker
+        from .session import HybridHTTPBackend
+        from pyramid.request import Request
+        install_mobile_request_maker(self.config)
+        request = Request(
+            environ={
+                'QUERY_STRING': 'a=b&c=d&e=f&g=h+i&k=l%20m',
+                'HTTP_USER_AGENT': 'DoCoMo/2.0',
+                }
+            )
+        request.registry = self.config.registry
+        request.session = testing.DummySession()
+        request.mobile_ua = testing.DummyModel(
+            carrier=testing.DummyModel(
+                is_docomo=True
+                )
+            )
+        HybridHTTPBackend(request, 'e')
+        result = make_mobile_request(request)
+        self.assertEqual(result.params['a'], 'b')
+        self.assertEqual(result.params['c'], 'd')
+        self.assertTrue('e' not in result.params)
+        self.assertEqual(result.params['g'], 'h i')
+        self.assertEqual(result.params['k'], 'l m')
+
 
 class MobileRequestMakerTest(TestCase):
     def _getTarget(self):

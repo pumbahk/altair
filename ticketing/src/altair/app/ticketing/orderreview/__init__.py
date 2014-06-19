@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 import json
 from pyramid.config import Configurator
-from pyramid_beaker import session_factory_from_settings
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.exceptions import PredicateMismatch
 # from altair.app.ticketing.cart.interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
@@ -19,8 +18,7 @@ def main(global_config, **local_config):
     engine = engine_from_config(settings, poolclass=NullPool)
     sqlahelper.add_engine(engine)
 
-    my_session_factory = session_factory_from_settings(settings)
-    config = Configurator(settings=settings, session_factory=my_session_factory)
+    config = Configurator(settings=settings)
     config.include('altair.app.ticketing.setup_beaker_cache')
     config.set_root_factory('.resources.OrderReviewResource')
     #config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
@@ -32,9 +30,10 @@ def main(global_config, **local_config):
     config.add_static_view('img', 'altair.app.ticketing.cart:static', cache_max_age=3600)
 
     ### include altair.*
-    config.include('altair.sqlahelper')
+    config.include('altair.httpsession.pyramid')
     config.include('altair.exclog')
     config.include('altair.browserid')
+    config.include('altair.sqlahelper')
 
     config.include("altair.cdnpath")
     from altair.cdnpath import S3StaticPathFactory
@@ -43,9 +42,12 @@ def main(global_config, **local_config):
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
             mapping={"altair.app.ticketing.cart:static/": "/cart/static/"}))
 
-    config.include('altair.rakuten_auth')
     from .authorization import MypageAuthorizationPolicy
     config.set_authorization_policy(MypageAuthorizationPolicy())
+
+    config.include('altair.app.ticketing.fc_auth')
+    config.include('altair.rakuten_auth')
+    config.include('altair.mobile')
 
     config.include('altair.app.ticketing.checkout')
     config.include('altair.app.ticketing.multicheckout')
@@ -58,7 +60,6 @@ def main(global_config, **local_config):
 
     config.commit() #override qr plugins view(e.g. qr)
     config.include(".plugin_override")
-    config.include('altair.mobile')
 
     config.include('altair.app.ticketing.cart.selectable_renderer')
     config.include(import_view)

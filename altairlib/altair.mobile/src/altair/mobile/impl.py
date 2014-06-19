@@ -178,6 +178,7 @@ class MobileRequestMaker(object):
         decoded = request.decode("cp932:normalized-tilde")
         request.environ.update(decoded.environ)
         decoded.environ = request.environ
+        decoded.response_callbacks = request.response_callbacks
         manager.get()['request'] = decoded # hack!
         decoded.is_mobile = True
         directlyProvides(decoded, IMobileRequest)

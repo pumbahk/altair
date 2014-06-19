@@ -1,3 +1,4 @@
+<%namespace file="../commons/tags_mobile.html" name="mobile" />
 <html>
 <head>
   <title>${event.title} - ${performance.name}</title>
@@ -13,7 +14,7 @@
 <div>${performance.venue.name}</div>
 <div><font color="#990018">■</font>券種名</div>
 <div>${product.name}</div>
-<form method="get" action="${request.route_path('order_review.qr', ticket_id=ticket.id, sign=sign)}" target="_blank">
+<%mobile:form_get action="${request.route_path('order_review.qr', ticket_id=ticket.id, sign=sign)}" target="_blank">
 <div align="center" border="2px" bordercolor="#cccccc" style="background-color:#ffb900; border:2px solid #cccccc">
 <br />
 以下の注意事項に同意しQRチケットを取得<br />
@@ -21,7 +22,7 @@
 <br />
 <br />
 </div>
-</form>
+</%mobile:form_get>
 <div style="background-color:#ffb900;text-align:center" bgcolor="#b59557" align="center">
 <b><font size="4" color="#fff">注意事項</font></b>
 </div>

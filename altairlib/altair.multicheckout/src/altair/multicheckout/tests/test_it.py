@@ -336,26 +336,24 @@ class Checkout3DTests(unittest.TestCase):
         return impl.Checkout3D
 
     def _makeOne(self, *args, **kwargs):
-        # quick hack
-        kwargs['api_timeout'] = kwargs.get('api_timeout', 90)
         return self._getTarget()(*args, **kwargs)
 
     def test_add_params(self):
         e = etree.Element('root')
-        target = self._makeOne(None, None, None, None)
+        target = self._makeOne('AUTH01', 'PASS01', 'SHOPID', 'http://example.com/', 90)
         result = target._add_param(e, 'param1', 'value')
 
         self.assertEqual(etree.tostring(result), '<param1>value</param1>')
 
     def test_auth_header(self):
         #auth_id, auth_password, shop_code, api_base_url
-        target = self._makeOne('AUTH01', 'PASS01', 'SHOPID', 'http://example.com/')
+        target = self._makeOne('AUTH01', 'PASS01', 'SHOPID', 'http://example.com/', 90)
         result = {'Authorization': 'Basic QVVUSDAxOlBBU1MwMQ=='}
 
         self.assertEqual(target.auth_header, result)
 
     def test_create_request_card_xml(self):
-        target = self._makeOne(None, None, None, None)
+        target = self._makeOne('AUTH01', 'PASSo1', 'SHOPID', 'http://example.com/', 90)
 
         params = models.MultiCheckoutRequestCard(
             ItemCd='this-is-item-cd',
@@ -412,7 +410,7 @@ class Checkout3DTests(unittest.TestCase):
         self.assertTrue(compare_xml(etree.tostring(result), xml_data))
 
     def test_create_request_card_xml_cvv(self):
-        target = self._makeOne(None, None, None, None)
+        target = self._makeOne('AUTH01', 'PASSo1', 'SHOPID', 'http://example.com/', 90)
 
         params = models.MultiCheckoutRequestCard(
             ItemCd=u'this-is-item-cd',
@@ -472,7 +470,7 @@ class Checkout3DTests(unittest.TestCase):
         self.assertTrue(compare_xml(etree.tostring(result), xml_data))
 
     def test_create_request_secure3d(self):
-        target = self._makeOne(None, None, None, None)
+        target = self._makeOne('AUTH01', 'PASSo1', 'SHOPID', 'http://example.com/', 90)
 
         params = models.MultiCheckoutRequestCard(
             ItemCd='this-is-item-cd',
@@ -543,7 +541,7 @@ class Checkout3DTests(unittest.TestCase):
             TaxCarriageCancellation=10,
         )
 
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         result = target._create_request_card_sales_part_cancel_xml(sales_part_cancel)
 
         xml_data = '''<?xml version="1.0"?>
@@ -560,51 +558,51 @@ class Checkout3DTests(unittest.TestCase):
         self.assertTrue(compare_xml(etree.tostring(result), xml_data))
 
     def test_api_url(self):
-        target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         self.assertEqual(target.api_url, 'http://example.com/SHOP')
 
     def test_secure3d_enrol_url(self):
-        target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         order_no = u'123456789012'
         self.assertEqual(target.secure3d_enrol_url(order_no), 'http://example.com/SHOP/3D-Secure/OrderNo/%s/Enrol' % order_no)
 
     def test_secure3d_auth_url(self):
-        target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         order_no = u'123456789013'
         self.assertEqual(target.secure3d_auth_url(order_no), 'http://example.com/SHOP/3D-Secure/OrderNo/%s/Auth' % order_no)
 
     def test_card_check_url(self):
-        target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         order_no = u'123456789014'
         self.assertEqual(target.card_check_url(order_no), 'http://example.com/SHOP/card/OrderNo/%s/Check' % order_no)
 
     def test_card_auth_url(self):
-        target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         order_no = u'123456789015'
         self.assertEqual(target.card_auth_url(order_no), 'http://example.com/SHOP/card/OrderNo/%s/Auth' % order_no)
 
     def test_card_auth_cancel_url(self):
-        target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         order_no = u'123456789016'
         self.assertEqual(target.card_auth_cancel_url(order_no), 'http://example.com/SHOP/card/OrderNo/%s/AuthCan' % order_no)
 
     def test_card_sales_url(self):
-        target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         order_no = u'123456789017'
         self.assertEqual(target.card_sales_url(order_no), 'http://example.com/SHOP/card/OrderNo/%s/Sales' % order_no)
 
     def test_card_sales_part_cancel_url(self):
-        target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         order_no = u'123456789018'
         self.assertEqual(target.card_sales_part_cancel_url(order_no), 'http://example.com/SHOP/card/OrderNo/%s/SalesPartCan' % order_no)
 
     def test_card_cancel_sales_url(self):
-        target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         order_no = u'123456789018'
         self.assertEqual(target.card_cancel_sales_url(order_no), 'http://example.com/SHOP/card/OrderNo/%s/SalesCan' % order_no)
 
     def test_card_inquiry_url(self):
-        target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         order_no = u'123456789019'
         self.assertEqual(target.card_inquiry_url(order_no), 'http://example.com/SHOP/card/OrderNo/%s' % order_no)
 
@@ -629,7 +627,7 @@ class Checkout3DTests(unittest.TestCase):
             </Result>
         </Message>
         """
-        target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
 
         el = etree.XML(xml_data)
         result = target._parse_response_card_xml(self.dummy_response_factory, el)
@@ -693,7 +691,7 @@ class Checkout3DTests(unittest.TestCase):
             </Result>
         </Message>
         """
-        target = self._makeOne(None, None, api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
 
         el = etree.XML(data)
         result = target._parse_inquiry_response_card_xml(self.dummy_response_factory, el)
@@ -737,7 +735,7 @@ class Checkout3DTests(unittest.TestCase):
         self.assertEqual(h2.SalesAmount, '8888888')
 
     def test_request(self):
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         target._httplib = DummyHTTPLib("<Message />")
         element = etree.XML('<root />')
         result = target._request('http://example.com/a/b/c', element)
@@ -758,7 +756,7 @@ class Checkout3DTests(unittest.TestCase):
 
     def test_request_with_error(self):
         from ..exceptions import MultiCheckoutAPIError
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         target._httplib = DummyHTTPLib("<Message />", status="401")
         element = etree.XML('<root />')
         try:
@@ -814,7 +812,7 @@ class Checkout3DTests(unittest.TestCase):
         </Message>
         """
 
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         target._httplib = DummyHTTPLib(res_data)
         result = target.request_card_check(self.dummy_response_factory, order_no, params)
 
@@ -878,7 +876,7 @@ class Checkout3DTests(unittest.TestCase):
         </Message>
         """
 
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         target._httplib = DummyHTTPLib(res_data)
         result = target.request_card_auth(self.dummy_response_factory, order_no, params)
 
@@ -942,7 +940,7 @@ class Checkout3DTests(unittest.TestCase):
         </Message>
         """
 
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         target._httplib = DummyHTTPLib(res_data)
         result = target.request_card_cancel_auth(self.dummy_response_factory, order_no)
 
@@ -1006,7 +1004,7 @@ class Checkout3DTests(unittest.TestCase):
         </Message>
         """
 
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         target._httplib = DummyHTTPLib(res_data)
         result = target.request_card_sales(self.dummy_response_factory, order_no)
 
@@ -1060,7 +1058,7 @@ class Checkout3DTests(unittest.TestCase):
         </Message>
         '''
 
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         target._httplib = DummyHTTPLib(res_data)
         result = target.request_card_sales_part_cancel(self.dummy_response_factory, order_no, params)
 
@@ -1116,7 +1114,7 @@ class Checkout3DTests(unittest.TestCase):
         </Message>
         """
 
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         target._httplib = DummyHTTPLib(res_data)
         result = target.request_card_cancel_sales(self.dummy_response_factory, order_no)
 
@@ -1206,7 +1204,7 @@ class Checkout3DTests(unittest.TestCase):
         </Message>
         """
 
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         target._httplib = DummyHTTPLib(res_data)
         result = target.request_card_inquiry(self.dummy_response_factory, order_no)
 
@@ -1259,7 +1257,7 @@ class Checkout3DTests(unittest.TestCase):
         """
 
         element = etree.XML(data)
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         result = target._parse_secure3d_enrol_response(self.dummy_response_factory, element)
 
         self.assertEqual(result.__class__, models.Secure3DReqEnrolResponse)
@@ -1277,7 +1275,7 @@ class Checkout3DTests(unittest.TestCase):
             TotalAmount=1234567,
             Currency="392",
         )
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         result = target._create_secure3d_enrol_xml(enrol)
 
         xml_data = '''
@@ -1320,7 +1318,7 @@ class Checkout3DTests(unittest.TestCase):
         </Message>
         '''
 
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         target._httplib = DummyHTTPLib(res_data)
         result = target.secure3d_enrol(self.dummy_response_factory, order_no, enrol)
 
@@ -1338,7 +1336,7 @@ class Checkout3DTests(unittest.TestCase):
             Md="this-is-md",
             PaRes="this-is-pares",
         )
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         result = target._create_secure3d_auth_xml(auth)
 
         xml_data = '''
@@ -1365,7 +1363,7 @@ class Checkout3DTests(unittest.TestCase):
         """
 
         element = etree.XML(data)
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         result = target._parse_secure3d_auth_response(self.dummy_response_factory, element)
 
         self.assertEqual(result.__class__, models.Secure3DAuthResponse)
@@ -1403,7 +1401,7 @@ class Checkout3DTests(unittest.TestCase):
         </Message>
         '''
 
-        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
+        target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP", api_timeout=90)
         target._httplib = DummyHTTPLib(res_data)
         result = target.secure3d_auth(self.dummy_response_factory, order_no, auth)
 

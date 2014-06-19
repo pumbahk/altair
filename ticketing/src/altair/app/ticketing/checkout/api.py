@@ -1,71 +1,48 @@
 # -*- coding:utf-8 -*-
 
-import hashlib
-import hmac
-import httplib
-import urllib
-import uuid
-import functools
 import logging
 import urlparse
-import xml.etree.ElementTree as et
+from lxml import etree
+from base64 import b64encode
 from datetime import datetime
-
-from pyramid.threadlocal import get_current_request
-
+import warnings
+from collections import OrderedDict
+from sqlalchemy.orm.exc import NoResultFound
+from altair.app.ticketing.core.models import ChannelEnum
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart.models import Cart
 from altair.app.ticketing.orders.models import Order
+from altair.sqla import session_scope
 from . import interfaces
 from . import models as m
+from .payload import (
+    RESULT_FLG_SUCCESS,
+    RESULT_FLG_FAILED,
+    )
+from .payload import AnshinCheckoutPayloadBuilder, AnshinCheckoutHTMLFormBuilder
+from .communicator import AnshinCheckoutCommunicator
+from .exceptions import AnshinCheckoutAPIError
 
 logger = logging.getLogger(__name__)
 
-AUTH_METHOD_TYPE = {
-    'HMAC-SHA1':'1',
-    'HMAC-MD5':'2',
-    }
 
-RESULT_FLG_SUCCESS = 0
-RESULT_FLG_FAILED = 1
-
-ERROR_CODES = {
-    "100": u"メンテナンス中",
-    "200": u"システムエラー",
-    "300": u"入力値のフォーマットエラー",
-    "400": u"サービス ID、アクセスキーのエラー",
-    "500": u"リクエスト ID 重複エラー または 実在しないリクエスト ID に対するリクエストエラー",
-    "600": u"XML 解析エラー",
-    "700": u"全て受付エラー(成功件数が0件)",
-    "800": u"最大処理件数エラー(リクエストの処理依頼件数超過)",
-    }
-
-ORDER_ERROR_CODES = {
-    "10", u"設定された注文管理番号が存在しない",
-    "11", u"設定された注文管理番号が不正",
-    "20", u"􏰀済ステータスが不正",
-    "30", u"締め日チェックエラー",
-    "40", u"商品 ID が不一致",
-    "41", u"商品数が不足",
-    "42", u"商品個数が不正(商品個数が 501 以上)",
-    "50", u"リクエストの総合計金額が不正(100 円未満)",
-    "51", u"リクエストの総合計金額が不正(合計金額が 0 円)",
-    "52", u"リクエストの総合計金額が不正(合計金額が 9 桁以上)",
-    "60", u"別処理を既に受付(当該データが受付済みで処理待ち)",
-    "90", u"システムエラー",
-    }
-
-def generate_requestid():
-    """
-    楽天あんしん支払いサービスの一意なリクエストIDを生成する
-    """
-    return uuid.uuid4().hex[:16]  # uuidの前半16桁
-
-def get_checkout_service(request, organization=None, channel=None):
+def get_checkout_service(request, organization_or_organization_id=None, channel=None):
     settings = request.registry.settings
+
+    success_url = settings.get('altair_checkout.success_url')
+    fail_url = settings.get('altair_checkout.fail_url')
+
+    success_url = urlparse.urljoin(request.application_url, success_url)
+    fail_url = urlparse.urljoin(request.application_url, fail_url)
+
+    nonmobile_checkin_url = settings.get('altair_checkout.checkin_url')
+    mobile_checkin_url = settings.get('altair_checkout.mobile_checkin_url')
+
     params = dict(
-        success_url=settings.get('altair_checkout.success_url'),
-        fail_url=settings.get('altair_checkout.fail_url'),
+        success_url=success_url,
+        fail_url=fail_url,
+        nonmobile_checkin_url=nonmobile_checkin_url,
+        mobile_checkin_url=mobile_checkin_url,
         api_url=settings.get('altair_checkout.api_url'),
         is_test=settings.get('altair_checkout.is_test', False),
         service_id=None,
@@ -73,13 +50,19 @@ def get_checkout_service(request, organization=None, channel=None):
         secret=None
     )
 
-    if organization and channel:
-        shop_settings = m.RakutenCheckoutSetting.query.filter_by(
-            organization_id=organization.id,
+    if organization_or_organization_id and channel:
+        from altair.app.ticketing.core.models import Organization
+        if isinstance(organization_or_organization_id, Organization):
+            organization_id = organization_or_organization_id.id
+            warnings.warn("organization_id should be passed to get_checkout_service() instead of an organization object", DeprecationWarning)
+        else:
+            organization_id = organization_or_organization_id
+        shop_settings = m._session.query(m.RakutenCheckoutSetting).filter_by(
+            organization_id=organization_id,
             channel=channel.v
         ).first()
         if not shop_settings:
-            raise Exception('RakutenCheckoutSetting not found (organization_id=%s, channel=%s)' % (organization.id, channel.v))
+            raise Exception('RakutenCheckoutSetting not found (organization_id=%s, channel=%s)' % (organization_id, channel.v))
 
         params.update(dict(
             service_id=shop_settings.service_id,
@@ -87,293 +70,337 @@ def get_checkout_service(request, organization=None, channel=None):
             secret=shop_settings.secret
         ))
 
-    return Checkout(**params)
+    pb = AnshinCheckoutPayloadBuilder(
+        service_id=params['service_id'],
+        success_url=params['success_url'],
+        fail_url=params['fail_url'],
+        auth_method=params['auth_method'],
+        secret=params['secret'],
+        is_test=params['is_test']
+        )
+    hfb = AnshinCheckoutHTMLFormBuilder(
+        payload_builder=pb,
+        channel=channel,
+        nonmobile_checkin_url=params['nonmobile_checkin_url'],
+        mobile_checkin_url=params['mobile_checkin_url'],
+        )
 
-def sign_to_xml(request, organization, channel, xml):
-    shop_settings = m.RakutenCheckoutSetting.query.filter_by(
-        organization_id=organization.id,
-        channel=channel.v
-    ).first()
-    if not shop_settings:
-        raise Exception('RakutenCheckoutSetting not found (organization_id=%s, channel=%s)' % (organization.id, channel.v))
+    comm = AnshinCheckoutCommunicator(params['api_url'])
+    now = datetime.now()
+    return AnshinCheckoutAPI(
+        request=request,
+        session=m._session,
+        now=now,
+        payload_builder=pb,
+        html_form_builder=hfb,
+        communicator=comm
+        )
 
-    if shop_settings.auth_method == 'HMAC-SHA1':
-        signer = HMAC_SHA1(str(shop_settings.secret))
-    elif shop_settings.auth_method == 'HMAC-MD5':
-        signer = HMAC_MD5(str(shop_settings.secret))
+def anshin_checkout_session(func):
+    from .models import _session
+    return session_scope('anshin_checkout', _session)(func)
+
+def remove_default_session():
+    m._session.remove()
+
+BASIC_FEE_ITEMS = [
+    ('delivery_fee', 'refund_delivery_fee', u'引取手数料'),
+    ('system_fee', 'refund_system_fee', u'システム利用料'),
+    ]
+
+def get_fee_items_dict(request, order_like):
+    retval = OrderedDict(
+        (triplet[0], triplet)
+        for triplet in BASIC_FEE_ITEMS
+        )
+    if order_like.special_fee:
+        retval['special_fee'] = ('special_fee', 'refund_special_fee', order_like.special_fee_name)
+    return retval
+
+def build_checkout_object_from_order_like(request, order_like):
+    checkout_object = m.Checkout(
+        orderCartId=order_like.order_no,
+        orderCartId_old=get_cart_id_by_order_no(request, order_like.order_no),
+        orderTotalFee=int(order_like.total_amount)
+        )
+    for item in order_like.items:
+        checkout_object.items.append(
+            m.CheckoutItem(
+                itemId=unicode(item.product.id),
+                itemName=item.product.name,
+                itemNumbers=item.quantity,
+                itemFee=int(item.price)
+                )
+            )
+    # 手数料も商品として登録する
+    for item_id, (attr_name, _, name) in get_fee_items_dict(request, order_like).items():
+        fee = getattr(order_like, attr_name)
+        if fee is not None:
+            fee = int(fee)
+            if fee > 0:
+                checkout_object.items.append(
+                    m.CheckoutItem(
+                        itemId=item_id,
+                        itemName=name,
+                        itemNumbers=1,
+                        itemFee=fee
+                        )
+                    )
+    return checkout_object
+
+def get_cart_id_by_order_no(request, order_no):
+    from altair.app.ticketing.models import DBSession as session
+    from altair.app.ticketing.cart.models import Cart
+    return session.query(Cart).filter_by(order_no=order_no).one().id
+
+def get_checkout_object(request, session, order_no):
+    from altair.app.ticketing.cart.models import Cart
+    expr = (m.Checkout.orderCartId == order_no)
+    cart = Cart.query.filter_by(order_no=order_no).first()
+    if cart is not None:
+        expr |= (m.Checkout.orderCartId_old == cart.id)
+    return session.query(m.Checkout).filter(expr).one()
+
+def get_checkout_object_by_order_cart_id(request, session, orderCartId):
+    from altair.app.ticketing.cart.models import Cart
+    cart = Cart.query.filter_by(id=orderCartId).first()
+    if cart is not None:
+        q = session.query(m.Checkout) \
+            .filter(
+                (m.Checkout.orderCartId == orderCartId) |
+                (m.Checkout.orderCartId_old == cart.id))
     else:
-        raise Exception('setting(auth_method) not found')
-    return signer(xml)
+        q = session.query(m.Checkout) \
+            .filter(m.Checkout.orderCartId == orderCartId)
+    return q.one()
 
+def get_checkout_object_by_id(request, session, id):
+    return session.query(m.Checkout) \
+        .filter(m.Checkout.id == id) \
+        .one()
 
-class HMAC_SHA1(object):
+def update_checkout_object_by_order_like(request, session, checkout_object, order_like, refund_record=None):
+    total_amount = order_like.total_amount
+    if refund_record is not None and \
+       refund_record.refund_total_amount is not None:
+        total_amount -= refund_record.refund_total_amount
+    fee_items_dict = get_fee_items_dict(request, order_like)
+    checkout_object.orderTotalFee = total_amount
+    checkout_object_item_map = dict(
+        (item.itemId, item)
+        for item in checkout_object.items
+        if item.itemId not in fee_items_dict
+        )
+    checkout_object_fee_item_map = dict(
+        (item.itemId, item)
+        for item in checkout_object.items
+        if item.itemId in fee_items_dict
+        )
+    order_like_item_map = dict(
+        (unicode(item.product.id), item)
+        for item in order_like.items
+        )
 
-    def __init__(self, secret):
-        self.secret = secret
+    added_checkout_items = {}
+    updated_checkout_items = {}
+    deleted_checkout_items = {}
 
-    def __call__(self, checkout_xml):
-        return hmac.new(self.secret, checkout_xml, hashlib.sha1).hexdigest()
+    for k, item in order_like_item_map.items():
+        checkout_item = checkout_object_item_map.get(k)
+        price = item.price
+        if refund_record is not None:
+            item_refund_record = refund_record.get_item_refund_record(item)
+            if item_refund_record is not None and \
+               item_refund_record.refund_price is not None:
+                price -= item_refund_record.refund_price
+        if checkout_item is None:
+            added_checkout_items[item.product.id] = \
+                m.CheckoutItem(
+                    itemId=unicode(item.product.id),
+                    itemName=item.product.name,
+                    itemNumbers=item.quantity,
+                    itemFee=int(price)
+                    )
+        else:
+            checkout_item.itemName = item.product.name
+            checkout_item.itemNumbers = item.quantity
+            checkout_item.itemFee = int(price)
+            updated_checkout_items[checkout_item.itemId] = checkout_item
+    for k, checkout_item in checkout_object_item_map.items():
+        if k not in order_like_item_map:
+            deleted_checkout_items[k] = checkout_item
 
+    for k, (attr_name, refund_attr_name, item_name) in fee_items_dict.items():
+        checkout_item = checkout_object_fee_item_map.get(k)
+        fee = getattr(order_like, attr_name, None)
+        if fee is not None:
+            if refund_record is not None:
+                fee -= getattr(refund_record, refund_attr_name)
+            fee = int(fee)
+        if checkout_item is None:
+            if fee > 0:
+                added_checkout_items[k] = m.CheckoutItem(
+                    itemId=k,
+                    itemName=item_name,
+                    itemNumbers=1,
+                    itemFee=fee
+                    )
+        else:
+            checkout_item.itemName = item_name
+            checkout_item.itemNumbers = 1
+            checkout_item.itemFee = fee
+            updated_checkout_items[checkout_item.itemId] = checkout_item
 
-class HMAC_MD5(object):
+    for k, checkout_item in checkout_object_fee_item_map.items():
+        if k not in fee_items_dict:
+            deleted_checkout_items[k] = checkout_item
 
-    def __init__(self, secret):
-        self.secret = secret
+    logger.info("added items: %d" % len(added_checkout_items))
+    logger.info("deleted items: %d" % len(deleted_checkout_items))
+    logger.info("updated items: %d" % len(updated_checkout_items))
 
-    def __call__(self, checkout_xml):
-        return hmac.new(self.secret, checkout_xml, hashlib.md5).hexdigest()
+    for i in range(len(checkout_object.items) - 1, -1, -1):
+        checkout_item = checkout_object.items[i]
+        updated_checkout_item = updated_checkout_items.get(checkout_item.itemId)
+        if checkout_item.itemId in deleted_checkout_items:
+            del checkout_object.items[i]
+        elif updated_checkout_item is not None:
+            checkout_object.items[i] = updated_checkout_item
 
+    for checkout_item in added_checkout_items.values():
+        checkout_object.items.append(checkout_item)
 
-class Checkout(object):
-    _httplib = httplib
+    return checkout_object
 
-    def __init__(self, service_id, success_url, fail_url, auth_method, secret, api_url, is_test):
-        self.service_id = service_id
-        self.success_url = success_url
-        self.fail_url = fail_url
-        self.auth_method = auth_method
-        self.secret = secret
-        self.api_url = api_url
-        self.is_test = is_test
+class AnshinCheckoutAPI(object):
+    def __init__(self, request, session, now, payload_builder, html_form_builder, communicator):
+        self.request = request
+        self.session = session
+        self.now = now
+        self.pb = payload_builder
+        self.hfb = html_form_builder
+        self.comm = communicator
 
-    def create_checkout_request_xml(self, cart):
-        request = get_current_request()
-        root = et.Element('orderItemsInfo')
+    def create_checkout_object(self, orderCartId):
+        if orderCartId is None:
+            return m.Checkout(orderCartId=orderCartId)
+        else:
+            return get_checkout_object_by_order_cart_id(self.request, self.session, orderCartId)
 
-        et.SubElement(root, 'serviceId').text = self.service_id
-        et.SubElement(root, 'orderCompleteUrl').text = 'https://%(host)s%(path)s' % dict(host=request.host, path=self.success_url)
-        et.SubElement(root, 'orderFailedUrl').text = 'https://%(host)s%(path)s' % dict(host=request.host, path=self.fail_url)
-        et.SubElement(root, 'authMethod').text = AUTH_METHOD_TYPE.get(self.auth_method)
-        if self.is_test is not None:
-            et.SubElement(root, 'isTMode').text = self.is_test
+    def create_checkout_item_object(self):
+        return m.CheckoutItem()
 
-        # カート
-        et.SubElement(root, 'orderCartId').text = str(cart.id)
-        et.SubElement(root, 'orderTotalFee').text = str(int(cart.total_amount))
+    def get_order_settled_at(self, order_like):
+        return self.get_checkout_object_by_order_no(order_like.order_no).sales_at
 
-        # 商品
-        itemsInfo = et.SubElement(root, 'itemsInfo')
-        for carted_product in cart.items:
-            self._create_checkout_item_xml(itemsInfo, **dict(
-                itemId=carted_product.product.id,
-                itemName=carted_product.product.name,
-                itemNumbers=carted_product.quantity,
-                itemFee=carted_product.product.price
-            ))
+    def get_order_authorized_at(self, order_like):
+        return self.get_checkout_object_by_order_no(order_like.order_no).authorized_at
 
-        # 商品:システム利用料
-        self._create_checkout_item_xml(itemsInfo, **dict(
-            itemId='system_fee',
-            itemName=u'システム利用料',
-            itemNumbers='1',
-            itemFee=str(int(cart.system_fee))
-        ))
+    def get_checkout_object_by_order_no(self, order_no):
+        try:
+            return get_checkout_object(self.request, self.session, order_no)
+        except NoResultFound:
+            return None
 
-        # 商品:引取手数料
-        self._create_checkout_item_xml(itemsInfo, **dict(
-            itemId='delivery_fee',
-            itemName=u'引取手数料',
-            itemNumbers='1',
-            itemFee=str(int(cart.delivery_fee))
-        ))
+    def get_checkout_object_by_id(self, id):
+        try:
+            return get_checkout_object_by_id(self.request, self.session, id)
+        except NoResultFound:
+            return None
 
-        logger.debug(et.tostring(root))
-        return et.tostring(root)
+    def mark_authorized(self, order_no):
+        checkout_object = self.get_checkout_object_by_order_no(order_no)
+        checkout_object.authorized_at = self.now
+        self.session.add(checkout_object)
+        self.session.commit()
 
-    def _create_checkout_item_xml(self, parent, **kwargs):
-        el = et.SubElement(parent, 'item')
-        subelement = functools.partial(et.SubElement, el)
-        subelement('itemId').text = str(kwargs.get('itemId'))
-        subelement('itemNumbers').text = str(kwargs.get('itemNumbers'))
-        subelement('itemFee').text = str(int(kwargs.get('itemFee')))
-        if 'itemName' in kwargs:
-            subelement('itemName').text = kwargs.get('itemName')
+    def request_fixation_order(self, order_like_list):
+        checkout_object_list = [get_checkout_object(self.request, self.session, order_like.order_no) for order_like in order_like_list]
+        xml = self.pb.create_order_control_request_xml(checkout_object_list)
+        try:
+            res = self.comm.send_order_fixation_request(xml)
+            result = self.pb.parse_order_control_response_xml(res)
+            if 'statusCode' in result and result['statusCode'] != '0':
+                error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
+                raise AnshinCheckoutAPIError(
+                    u'楽天あんしん支払いサービスの決済確定に失敗しました',
+                    error_code
+                    )
+            for checkout in checkout_object_list:
+                checkout.sales_at = self.now
+            self.session.commit()
+        except:
+            self.session.rollback()
+            raise
+        return result
+
+    def request_cancel_order(self, order_like_list):
+        checkout_object_list = [get_checkout_object(self.request, self.session, order_like.order_no) for order_like in order_like_list]
+        xml = self.pb.create_order_control_request_xml(checkout_object_list)
+        try:
+            res = self.comm.send_order_cancel_request(xml)
+            result = self.pb.parse_order_control_response_xml(res)
+            if 'statusCode' in result and result['statusCode'] != '0':
+                error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
+                raise AnshinCheckoutAPIError(
+                    u'楽天あんしん支払いサービスのキャンセルに失敗しました',
+                    error_code
+                    )
+            self.session.commit()
+        except:
+            self.session.rollback()
+            raise
+        return result
+
+    def request_change_order(self, order_like_refund_record_pairs):
+        checkout_object_list = [
+            update_checkout_object_by_order_like(
+                self.request, self.session,
+                get_checkout_object(self.request, self.session, order_like.order_no),
+                order_like,
+                refund_record
+                )
+            for order_like, refund_record in order_like_refund_record_pairs
+            ]
+        xml = self.pb.create_order_control_request_xml(checkout_object_list, with_items=True)
+        try:
+            res = self.comm.send_order_change_request(xml)
+            result = self.pb.parse_order_control_response_xml(res)
+            if 'statusCode' in result and result['statusCode'] != '0':
+                error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
+                raise AnshinCheckoutAPIError(
+                    u'あんしん決済の金額変更に失敗しました',
+                    error_code
+                    )
+            self.session.commit()
+        except:
+            self.session.rollback()
+            raise
+        return result
+
+    def save_order_complete(self, params):
+        confirmId = params['confirmId']
+        xml = confirmId.replace(' ', '+').decode('base64')
+        checkout_object = self.pb.parse_order_complete_xml(self, etree.fromstring(xml))
+
+        # compatibility code (should be removed later)
+        checkout_object.orderCartId_old = get_cart_id_by_order_no(self.request, checkout_object.orderCartId)
+
+        self.session.add(checkout_object)
+        self.session.commit()
+        return checkout_object
 
     def create_order_complete_response_xml(self, result, complete_time):
-        root = et.Element('orderCompleteResponse')
-        et.SubElement(root, 'result').text = str(result)
-        et.SubElement(root, 'completeTime').text = str(complete_time)
+        return etree.tostring(self.pb.create_order_complete_response_xml(result, complete_time), xml_declaration=True, encoding='utf-8')
 
-        return et.tostring(root)
+    def build_checkout_request_form(self, order_like, success_url=None, fail_url=None):
+        # checkoutをXMLに変換
+        checkout_object = build_checkout_object_from_order_like(self.request, order_like)
+        self.session.add(checkout_object)
+        self.session.commit()
 
-    def save_order_complete(self, request):
-        confirmId = request.params['confirmId']
-        xml = confirmId.replace(' ', '+').decode('base64')
-        checkout = self._parse_order_complete_xml(et.XML(xml))
-        checkout.save()
-        return checkout
-
-    def _parse_order_complete_xml(self, root):
-        if root.tag != 'orderCompleteRequest':
-            return None
-
-        checkout = m.Checkout()
-        for e in root:
-            if e.tag == 'orderId':
-                checkout.orderId = unicode(e.text.strip())
-            elif e.tag == 'orderControlId':
-                checkout.orderControlId = unicode(e.text.strip())
-            elif e.tag == 'orderCartId':
-                checkout.orderCartId = e.text.strip()
-            elif e.tag == 'orderTotalFee':
-                checkout.orderTotalFee = e.text.strip()
-            elif e.tag == 'orderDate':
-                checkout.orderDate = datetime.strptime(e.text.strip(), '%Y-%m-%d %H:%M:%S')
-            elif e.tag == 'isTMode':
-                checkout.isTMode = e.text.strip()
-            elif e.tag == 'usedPoint':
-                checkout.usedPoint = e.text.strip()
-            elif e.tag == 'items':
-                self._parse_item_xml(e, checkout)
-            elif e.tag == 'openId':
-                checkout.openId = unicode(e.text.strip())
-        return checkout
-
-    def _parse_item_xml(self, element, checkout):
-        for item_el in element:
-            if item_el.tag != 'item':
-                continue
-
-            item = m.CheckoutItem()
-            checkout.items.append(item)
-            for e in item_el:
-                if e.tag == 'itemId':
-                    item.itemId = e.text.strip()
-                elif e.tag == 'itemName':
-                    item.itemName = unicode(e.text.strip())
-                elif e.tag == 'itemNumbers':
-                    item.itemNumbers = int(e.text.strip())
-                elif e.tag == 'itemFee':
-                    item.itemFee = int(e.text.strip())
-
-    def _request_order_control(self, url, message=None):
-        content_type = "application/xhtml+xml;charset=UTF-8"
-        body = message if message is not None else ''
-        url_parts = urlparse.urlparse(url)
-
-        if url_parts.scheme == "http":
-            http = self._httplib.HTTPConnection(host=url_parts.hostname, port=url_parts.port)
-        elif url_parts.scheme == "https":
-            http = self._httplib.HTTPSConnection(host=url_parts.hostname, port=url_parts.port)
-        else:
-            raise ValueError, "unknown scheme %s" % (url_parts.scheme)
-
-        logger.debug("request %s body = %s" % (url, body))
-        headers = {"Content-Type": content_type}
-        http.request("POST", url_parts.path, body=body, headers=headers)
-        res = http.getresponse()
-        try:
-            logger.debug('%(url)s %(status)s %(reason)s' % dict(
-                url=url,
-                status=res.status,
-                reason=res.reason,
-            ))
-            if res.status != 200:
-                raise Exception, res.reason
-            return et.parse(res).getroot()
-        finally:
-            res.close()
-
-    def _create_order_control_request_xml(self, order_control_ids, request_id=None, with_items=False):
-        request_id = request_id or generate_requestid()
-        root = et.Element('root')
-        et.SubElement(root, 'serviceId').text = self.service_id
-        et.SubElement(root, 'accessKey').text = self.secret
-        et.SubElement(root, 'requestId').text = request_id
-        sub_element = et.SubElement(root, 'orders')
-
-        for order_control_id in order_control_ids:
-            el = et.SubElement(sub_element, 'order')
-            id_el = functools.partial(et.SubElement, el)
-            id_el('orderControlId').text = order_control_id
-
-            if with_items:
-                # 商品
-                items = et.SubElement(el, 'items')
-                order = Order.query.join(Cart, Order.order_no==Cart._order_no).join(Cart.checkout).filter(m.Checkout.orderControlId==order_control_id).first()
-                if not order:
-                    raise Exception('order (order_control_id=%s) not found' % order_control_id)
-                for ordered_product in order.items:
-                    self._create_checkout_item_xml(items, **dict(
-                        itemId=ordered_product.product.id,
-                        itemNumbers=ordered_product.quantity,
-                        itemFee=ordered_product.price - ordered_product.refund_price,
-                    ))
-                # 商品:システム利用料
-                self._create_checkout_item_xml(items, **dict(
-                    itemId='system_fee',
-                    itemNumbers='1',
-                    itemFee=str(int(order.system_fee - order.refund_system_fee)),
-                ))
-                # 商品:配送手数料
-                self._create_checkout_item_xml(items, **dict(
-                    itemId='delivery_fee',
-                    itemNumbers='1',
-                    itemFee=str(int(order.delivery_fee - order.refund_delivery_fee)),
-                ))
-                id_el('orderShippingFee').text = '0'
-
-        logger.debug(et.tostring(root))
-        return et.tostring(root)
-
-    def _parse_order_control_response_xml(self, root):
-        if root.tag != 'root':
-            return None
-
-        response = {}
-        for e in root:
-            if e.tag == 'orders':
-                response['orders'] = []
-                for sub_el in e:
-                    if sub_el.tag != 'order':
-                        continue
-                    order = {}
-                    for order_el in sub_el:
-                        if order_el.tag in ['orderControlId', 'orderErrorCode']:
-                            order[order_el.tag] = order_el.text.strip()
-                    response['orders'].append(order)
-            elif e.tag in ['statusCode', 'acceptNumber', 'successNumber', 'failedNumber', 'apiErrorCode']:
-                response[e.tag] = e.text.strip()
-        return response
-
-    def request_fixation_order(self, order_control_ids):
-        url = self.api_url + '/odrctla/fixationorder/1.0/'
-        message = self._create_order_control_request_xml(order_control_ids)
-        logger.info('checkout fixation request body = %s' % message)
-
-        res = self._request_order_control(url, 'rparam=%s' % urllib.quote(message.encode('base64')))
-        logger.info('got response %s' % et.tostring(res))
-        result = self._parse_order_control_response_xml(res)
-
-        if 'statusCode' in result and result['statusCode'] != '0':
-            error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
-            logger.warn(u'楽天あんしん支払いサービスの決済確定に失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
-        return result
-
-    def request_cancel_order(self, order_control_ids):
-        url = self.api_url + '/odrctla/cancelorder/1.0/'
-        message = self._create_order_control_request_xml(order_control_ids)
-        logger.info('checkout cancel request body = %s' % message)
-
-        res = self._request_order_control(url, 'rparam=%s' % urllib.quote(message.encode('base64')))
-        logger.info('got response %s' % et.tostring(res))
-        result = self._parse_order_control_response_xml(res)
-
-        if 'statusCode' in result and result['statusCode'] != '0':
-            error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
-            logger.warn(u'楽天あんしん支払いサービスのキャンセルに失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
-        return result
-
-    def request_change_order(self, order_control_ids):
-        url = self.api_url + '/odrctla/changepayment/1.0/'
-        message = self._create_order_control_request_xml(order_control_ids, with_items=True)
-        logger.info('checkout change request body = %s' % message)
-
-        res = self._request_order_control(url, 'rparam=%s' % urllib.quote(message.encode('base64')))
-        logger.info('got response %s' % et.tostring(res))
-        result = self._parse_order_control_response_xml(res)
-
-        if 'statusCode' in result and result['statusCode'] != '0':
-            error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
-            logger.warn(u'あんしん決済の金額変更に失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
-        return result
+        return checkout_object, self.hfb.build_checkout_request_form(
+            checkout_object,
+            success_url=success_url,
+            fail_url=fail_url
+            )

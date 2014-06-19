@@ -15,6 +15,14 @@ class Checkout3D(object):
     _httplib = httplib
 
     def __init__(self, auth_id, auth_password, shop_code, api_base_url, api_timeout):
+        if auth_id is None:
+            raise TypeError('auth_id may not be None')
+        if auth_password is None:
+            raise TypeError('auth_password may not be None')
+        if shop_code is None:
+            raise TypeError('shop_code may not be None')
+        if api_base_url is None:
+            raise TypeError('api_base_url may not be None')
         self.auth_id = auth_id
         self.auth_password = auth_password
         self.shop_code = shop_code

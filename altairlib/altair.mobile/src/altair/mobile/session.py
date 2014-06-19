@@ -3,6 +3,7 @@ import logging
 from altair.httpsession.cookies import PlainCookie, SignedCookie
 from altair.httpsession.api import CookieSessionBinder
 from .interfaces import IMobileRequest
+from urlparse import urlparse, urlunparse
 
 __all__ = [
     'HybridHTTPBackend',
@@ -39,6 +40,21 @@ def pop_session_restorer(environ, query_string_key):
             return session_restorer
     return None
 
+def append_session_restorer(query_string, query_string_key, session_restorer):
+    if query_string:
+        x = ';'
+    else:
+        x = ''
+    x += '%s=%s' % (
+        urllib.quote_plus(query_string_key),
+        urllib.quote_plus(session_restorer),
+        )
+    return query_string + x
+
+def merge_session_restorer_to_url(url, query_string_key, session_restorer):
+    parsed_url = urlparse(url)
+    query_string = append_session_restorer(parsed_url[4], query_string_key, session_restorer)
+    return urlunparse((parsed_url[0], parsed_url[1], parsed_url[2], parsed_url[3], query_string, parsed_url[5]))
 
 class HybridHTTPBackend(object):
     ENV_QUERY_STRING_KEY_KEY = 'altair.mobile.session.HybridHTTPBackend.key'
@@ -48,7 +64,11 @@ class HybridHTTPBackend(object):
         cookie_factory = get_cookie_factory(secret)
         cookie_header_value = None
 
-        session_restorer = pop_session_restorer(request.environ, query_string_key)
+        # first try to fetch session restorer from environ
+        session_restorer = request.environ.get(self.ENV_SESSION_RESTORER_KEY)
+        if session_restorer is None:
+            session_restorer = pop_session_restorer(request.environ, query_string_key)
+
         if session_restorer is not None:
             cookie_header_value = b'%s=%s' % (key, urllib.quote(session_restorer))
         else:

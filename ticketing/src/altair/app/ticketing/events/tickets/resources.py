@@ -1,7 +1,21 @@
+import logging
+logger = logging.getLogger(__name__)
 from pyramid.interfaces import IRootFactory
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
+from pyramid.decorator import reify
 from altair.app.ticketing.core.models import Event
-from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute, ProductItem
+from altair.app.ticketing.core.models import (
+    Ticket,
+    TicketBundle,
+    TicketBundleAttribute,
+    ProductItem,
+    TicketFormat,
+    TicketFormat_DeliveryMethod,
+    TicketFormat_DeliveryMethod,
+    DeliveryMethod
+)
+from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+
 from altair.app.ticketing.resources import TicketingAdminResource
 
 class EventBoundTicketsResource(TicketingAdminResource):
@@ -16,14 +30,14 @@ class EventBoundTicketsResource(TicketingAdminResource):
     def tickets_query(self):
         return Ticket.filter_by(event_id=self.request.matchdict["event_id"])
 
-    @property
+    @reify
     def event(self):
-        event = Event.filter_by(organization_id=self.user.organization_id, id=self.request.matchdict["event_id"]).first()
+        event = Event.filter_by(organization_id=self.organization.id, id=self.request.matchdict["event_id"]).first()
         if event is None:
             raise HTTPNotFound('event id %s is not found' % self.request.matchdict["event_id"])
         return event
 
-    @property
+    @reify
     def bundle(self):
         mdict = self.request.matchdict
         bundle = TicketBundle.filter_by(id=mdict["bundle_id"], event_id=mdict["event_id"]).first()
@@ -31,7 +45,7 @@ class EventBoundTicketsResource(TicketingAdminResource):
             raise HTTPNotFound('bundle id %s is not found' % mdict["bundle_id"])
         return bundle
 
-    @property
+    @reify
     def bundle_attribute(self):
         mdict = self.request.matchdict
         attribute = TicketBundleAttribute.filter_by(ticket_bundle_id=mdict["bundle_id"], 
@@ -40,7 +54,7 @@ class EventBoundTicketsResource(TicketingAdminResource):
             raise HTTPNotFound('attribute id %s is not found' % mdict["attribute_id"])
         return attribute
 
-    @property
+    @reify
     def ticket_template(self):
         mdict = self.request.matchdict
         template = Ticket.filter_by(id=mdict["template_id"]).first()
@@ -48,7 +62,7 @@ class EventBoundTicketsResource(TicketingAdminResource):
             raise HTTPNotFound('template id %s is not found' % mdict["template_id"])
         return template
 
-    @property
+    @reify
     def product_item(self):
         mdict = self.request.matchdict
         item = ProductItem.filter_by(id=mdict["item_id"]).first()
@@ -56,10 +70,38 @@ class EventBoundTicketsResource(TicketingAdminResource):
             raise HTTPNotFound('item id %s is not found' % mdict["item_id"])
         return item
 
-    @property
-    def tickets(self):
-        return Ticket.filter_by(organization_id=self.user.organization_id, event_id=self.request.matchdict["event_id"])
+    @reify
+    def ticket_alls(self):
+        return Ticket.filter_by(organization_id=self.organization.id)
 
-    @property
+    @reify
+    def ticket_templates(self):
+        return self.ticket_alls.filter_by(event_id=None)
+
+    @reify
+    def tickets(self):
+        return self.ticket_alls.filter_by(event_id=self.request.matchdict["event_id"])
+
+    @reify
+    def ticket_something_else_formats(self):
+        return TicketFormat.filter_by(organization_id=self.organization.id)
+
+    @reify
+    def ticket_sej_formats(self):
+        return (TicketFormat.filter_by(organization_id=self.organization.id)
+                .filter(TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id,
+                        TicketFormat_DeliveryMethod.delivery_method_id==DeliveryMethod.id, 
+                        DeliveryMethod.delivery_plugin_id==SEJ_DELIVERY_PLUGIN_ID))
+
+    def filter_something_else_ticket_templates(self, ticket_query):
+        return ticket_query
+
+
+    def filter_sej_ticket_templates(self, tickets_query):
+        subq = self.ticket_sej_formats.with_entities(TicketFormat.id).distinct(TicketFormat.id).subquery()
+        q = tickets_query.join(subq, Ticket.ticket_format_id==subq.c.id).filter(Ticket.ticket_format_id==subq.c.id)
+        return q
+
+    @reify
     def bundles(self):
         return TicketBundle.filter_by(event_id=self.request.matchdict["event_id"])

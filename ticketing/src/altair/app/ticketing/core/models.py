@@ -17,7 +17,7 @@ from altair.sqla import association_proxy_many
 from sqlalchemy.sql import functions as sqlf
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint
-from sqlalchemy.util import warn_deprecated
+from sqlalchemy.util import warn_deprecated, memoized_property
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText, TIMESTAMP, Time
 from sqlalchemy.orm import join, backref, column_property, joinedload, deferred, relationship, aliased
@@ -862,7 +862,7 @@ def build_sales_segment_query(event_id=None, performance_id=None, sales_segment_
     elif type == 'before':
         q = q.filter(SalesSegment.end_at < now)
 
-    if user and user.get('is_guest'):
+    if user and (user.get('is_guest') or user.get('membership') == 'rakuten'):
         q = q \
             .outerjoin(MemberGroup,
                        SalesSegmentGroup.membergroups) \
@@ -2605,7 +2605,11 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     name = Column(Unicode(255), nullable=False, default=u'')
     flags = Column(Integer, nullable=False, default=FLAG_PRICED)
     original_ticket_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='SET NULL'), nullable=True)
-    derived_tickets = relationship('Ticket', backref=backref('original_ticket', remote_side=[id]))
+    derived_tickets = relationship('Ticket', backref=backref('original_ticket', remote_side=[id],), 
+                                   foreign_keys=[original_ticket_id], primaryjoin="Ticket.id==Ticket.original_ticket_id")
+    base_template_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='SET NULL'), nullable=True)
+    base_template = relationship('Ticket', uselist=False, remote_side=[id], 
+                                 foreign_keys=[base_template_id], primaryjoin="Ticket.id==Ticket.base_template_id")
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
     filename = Column(Unicode(255), nullable=False, default=u"uploaded.svg")
     cover_print = Column(Boolean, nullable=False, default=True)
@@ -2625,6 +2629,11 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def vars_defaults(self):
         return self.data.get("vars_defaults", {})
+
+    @property
+    def fill_mapping(self):
+        return self.data.get("fill_mapping", {})
+
 
     def create_event_bound(self, event):
         new_object = self.__class__.clone(self)
@@ -2945,13 +2954,24 @@ class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class MailTypeEnum(StandardEnum):
     PurchaseCompleteMail = 1
     PurchaseCancelMail = 2
+    PurcacheSejRemindMail = 3
     LotsAcceptedMail = 11
     LotsElectedMail = 12
     LotsRejectedMail = 13
     PointGrantingFailureMail = 21
     BoosterPurchaseCompleteMail = 31
 
-MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール", u"抽選申し込み完了メール", u"抽選当選通知メール", u"抽選落選通知メール", u"ポイント付与失敗通知メール", u"ブースター購入完了メール")
+MailTypeLabels = (
+    u"購入完了メール",
+    u"購入キャンセルメール",
+    u"リマインドメール",
+    u"抽選申し込み完了メール",
+    u"抽選当選通知メール",
+    u"抽選落選通知メール",
+    u"ポイント付与失敗通知メール",
+    u"ブースター購入完了メール",
+    )
+
 assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
 MailTypeChoices = [(str(e) , label) for e, label in zip([enum.v for enum in sorted(iter(MailTypeEnum), key=lambda e: e.v)], MailTypeLabels)]
 MailTypeEnum.dict = dict(MailTypeChoices)

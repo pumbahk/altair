@@ -1,4 +1,7 @@
+from . import IDENT_METADATA_KEY
+
 class Authenticated(object):
-    def __init__(self, request, identity):
+    def __init__(self, request, userid, metadata):
         self.request = request
-        self.identity = identity
+        self.userid = userid
+        self.metadata = metadata

@@ -85,10 +85,9 @@ ${ch.breadcrumbs(
           apps["loadsvg"].model.changeHolder({pk: pk, name: modelname})
           return true;
         }
-        var qstring = "event_id="+"${event.id}"; //ugly
         modalView = new modal.api.AjaxModalView({
           el: $el,
-          href: "${request.route_path('tickets.preview.dialog', model="Ticket")}"+"?"+qstring,
+          href: "${request.route_path('tickets.preview.dialog', model="Ticket", _query=dict(event_id=event.id, ticket_id=request.matchdict["id"]))}",
           modalArea: $("#ticket-viewer"), 
           option: {backdrop: false, stretch: true}, 
           header: "チケット券面のpreview",

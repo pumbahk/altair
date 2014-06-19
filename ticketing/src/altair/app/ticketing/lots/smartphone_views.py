@@ -14,7 +14,6 @@ from altair.pyramid_tz.api import get_timezone
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
-from altair.app.ticketing.users import api as user_api
 from altair.app.ticketing.utils import toutc
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
@@ -345,7 +344,7 @@ class EntryLotView(object):
         logger.debug('wishes={0}'.format(wishes))
 
         validated = True
-        user = user_api.get_user(self.context.authenticated_user())
+        user = cart_api.get_user(self.context.authenticated_user())
         # 申込回数チェック
         try:
             self.context.check_entry_limit(wishes, user=user, email=cform.email_1.data)

@@ -49,11 +49,15 @@ def _add_lots(session, product_data, membergroups):
     session.flush()
     return lot, products
 
-def login(config, user):
-    import pickle
-    data = pickle.dumps(user)
-    data = data.encode('base64')
-    config.testing_securitypolicy(userid=data)
+def login(config, info):
+    membership = info.get('membership')
+    membergroup = info.get('membergroup')
+    groups = []
+    if membership is not None:
+        groups.append('membership:%s' % membership)
+    if membergroup is not None:
+        groups.append('membergroup:%s' % membergroup)
+    config.testing_securitypolicy(info['username'], groups)
 
 def _create_products(session, values):
     from altair.app.ticketing.core.models import Product

@@ -43,7 +43,7 @@ pm = _api.load_user_profile(request)
 <%mobile:form_header>メモリアルブックへの掲載希望</%mobile:form_header>
 <div>${u'はい' if pm['extra']['publicity'] == 'yes' else u'いいえ'}</div>
 % endif
-<%mobile:form_header>ブースタークラブに入会しようと思ったきっかけは？</%mobile:form_header>
+<%mobile:form_header>クラブナイナーズに入会しようと思ったきっかけは？</%mobile:form_header>
 <div>${pm['extra']['motivation']}</div>
 <%mobile:form_header>昨シーズンの会場での観戦回数</%mobile:form_header>
 <div>
