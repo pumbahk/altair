@@ -32,7 +32,6 @@ from altair.app.ticketing.cart.interfaces import ICartPayment
 from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
 from altair.app.ticketing.cart.views import back, back_to_top, back_to_product_list_for_mobile
 from altair.app.ticketing.checkout import api
-from altair.app.ticketing.checkout import helpers
 from altair.app.ticketing.checkout.exceptions import AnshinCheckoutAPIError
 from altair.app.ticketing.mailmags.api import multi_subscribe
 
