@@ -20,7 +20,6 @@ from altair.app.ticketing.mails.interfaces import ILotsAcceptedMailPayment
 from altair.app.ticketing.mails.interfaces import ILotsElectedMailPayment
 from altair.app.ticketing.mails.interfaces import ILotsRejectedMailPayment
 
-from altair.app.ticketing.cart import helpers as h
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.models import Cart, CartedProduct
 from altair.app.ticketing.core.api import get_channel
