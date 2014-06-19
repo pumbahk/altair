@@ -40,7 +40,11 @@ def get_target_order_nos():
         .join(PaymentDeliveryMethodPair)\
         .join(PaymentMethod)\
         .join(OrderNotification)\
+        .join(Organization)\
+        .join(OrganizationSetting)\
         .filter(PaymentMethod.payment_plugin_id==SEJ_PAYMENT_PLUGIN_ID)\
+        .filter(OrganizationSetting.notify_remind_mail==True)\
+        .filter(Order.canceled_at==None)\
         .filter(Order.canceled_at==None)\
         .filter(Order.refunded_at==None)\
         .filter(Order.refund_id==None)\

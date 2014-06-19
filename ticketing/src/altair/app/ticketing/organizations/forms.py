@@ -266,6 +266,9 @@ class OrganizationSettingForm(OurForm):
     notify_point_granting_failure = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.notify_point_granting_failure)['label']
         )
+    notify_remind_mail = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.notify_remind_mail)['label']
+        )
     bcc_recipient = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.bcc_recipient)['label']
         )

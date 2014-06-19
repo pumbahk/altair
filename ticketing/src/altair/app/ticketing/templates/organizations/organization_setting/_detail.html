@@ -83,6 +83,10 @@
       <td>${u'付与失敗をメールで通知する' if organization_setting.notify_point_granting_failure else u'付与失敗をメールで通知しない'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.notify_remind_mail)}</th>
+      <td>${u'コンビニ入金期限前をメールで通知する' if organization_setting.notify_remind_mail else u'コンビニ入金期限前をメールで通知しない'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.bcc_recipient)}</th>
       <td>${organization_setting.bcc_recipient or u'-'}</td>
     </tr>

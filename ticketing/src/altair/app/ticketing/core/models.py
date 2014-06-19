@@ -2605,10 +2605,10 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     name = Column(Unicode(255), nullable=False, default=u'')
     flags = Column(Integer, nullable=False, default=FLAG_PRICED)
     original_ticket_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='SET NULL'), nullable=True)
-    derived_tickets = relationship('Ticket', backref=backref('original_ticket', remote_side=[id],), 
+    derived_tickets = relationship('Ticket', backref=backref('original_ticket', remote_side=[id],),
                                    foreign_keys=[original_ticket_id], primaryjoin="Ticket.id==Ticket.original_ticket_id")
     base_template_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='SET NULL'), nullable=True)
-    base_template = relationship('Ticket', uselist=False, remote_side=[id], 
+    base_template = relationship('Ticket', uselist=False, remote_side=[id],
                                  foreign_keys=[base_template_id], primaryjoin="Ticket.id==Ticket.base_template_id")
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
     filename = Column(Unicode(255), nullable=False, default=u"uploaded.svg")
@@ -3450,6 +3450,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     default_mail_sender = AnnotatedColumn(Unicode(255), _a_label=u"デフォルトの送信元メールアドレス")
     entrust_separate_seats = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"バラ席のおまかせが有効", _a_label=u"おまかせ座席選択でバラ席を許可する")
     notify_point_granting_failure = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"ポイント付与失敗時のメール通知on/off", _a_label=u"ポイント付与失敗時のメール通知を有効にする")
+    notify_remind_mail = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"コンビニ入金期限前リマインドメールのメール通知on/off", _a_label=u"コンビニ入金期限前リマインドメールのメール通知を有効にする")
     sales_report_type = AnnotatedColumn(Integer, nullable=False, default=1, server_default='1', _a_label=u"売上レポートタイプ")
 
     # augus
