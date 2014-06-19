@@ -17,7 +17,7 @@ from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
 from altair.app.ticketing.utils import toutc
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
-from altair.app.tickeitng.cart import api as cart_api
+from altair.app.ticketing.cart import api as cart_api
 from altair.now import get_now
 
 from . import api
