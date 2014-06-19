@@ -11,7 +11,20 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from jsonrpclib import jsonrpc
 from pyramid.httpexceptions import HTTPBadRequest
-from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import(
+    SEJ_DELIVERY_PLUGIN_ID,
+    QR_DELIVERY_PLUGIN_ID,
+    ORION_DELIVERY_PLUGIN_ID,
+    RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
+    SHIPPING_DELIVERY_PLUGIN_ID
+)
+INENR_DELIVERY_PLUGIN_ID_LIST = [
+    SHIPPING_DELIVERY_PLUGIN_ID,
+    RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
+    QR_DELIVERY_PLUGIN_ID,
+    ORION_DELIVERY_PLUGIN_ID,
+]
+
 from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
 import logging
 logger = logging.getLogger(__name__)
@@ -93,9 +106,13 @@ def _build_selectitem_candidates_from_ticket_format_query(ticket_format_qs):
         c_models.TicketFormat.id==c_models.TicketFormat_DeliveryMethod.ticket_format_id,
         c_models.TicketFormat_DeliveryMethod.delivery_method_id==c_models.DeliveryMethod.id, 
         c_models.DeliveryMethod.delivery_plugin_id==SEJ_DELIVERY_PLUGIN_ID)
+    qs = ticket_format_qs.filter(
+        c_models.TicketFormat.id==c_models.TicketFormat_DeliveryMethod.ticket_format_id,
+        c_models.TicketFormat_DeliveryMethod.delivery_method_id==c_models.DeliveryMethod.id, 
+        c_models.DeliveryMethod.delivery_plugin_id!=SEJ_DELIVERY_PLUGIN_ID).distinct(c_models.TicketFormat.id)
 
     D = {}
-    for t in ticket_format_qs:
+    for t in qs:
         D[(t.id, "")] = {"name": t.name, "type": ""}
     for t in sej_qs:
         D[(t.id, "sej")] = {"name": t.name, "type": "sej"}
@@ -570,7 +587,7 @@ class PreviewWithDefaultParameterDialogView(object):
                 bundles = c_models.TicketBundle.query.filter(c_models.TicketBundle.event_id == self.request.GET.get("event_id")).all()
                 D = OrderedDict()
                 for b in bundles:
-                    for t in b.tickets:  #xxx: ApplicableTicketsProducer.will_issued_by_own_ticketsはsejと紐つくとダメ。
+                    for t in ApplicableTicketsProducer(b).will_issued_by_own_tickets(delivery_plugin_ids=INENR_DELIVERY_PLUGIN_ID_LIST): #xxx: ApplicableTicketsProducer.will_issued_by_own_ticketsはsejと紐つくとダメ。
                         tf = t.ticket_format
                         D[(tf.id, "")] = {"pk": tf.id, "name": tf.name, "type": ""}
                 for b in bundles:
