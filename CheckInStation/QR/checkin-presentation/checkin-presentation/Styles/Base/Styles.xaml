@@ -63,8 +63,8 @@
     <Setter Property="AllowsTransparency" Value="True"/>
     <Setter Property="HorizontalAlignment" Value="Center"/>
     <Setter Property="VerticalAlignment" Value="Center"/>
-    <Setter Property="Background" Value="{StaticResource MessageDialogBackgroundBrush}"/>
-    <Setter Property="InnerBackground" Value="{StaticResource MessageDialogInnerBackgroundBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource MessageDialogBackgroundBrush}"/>
+    <Setter Property="InnerBackground" Value="{DynamicResource MessageDialogInnerBackgroundBrush}"/>
   </Style>
 
 
@@ -586,7 +586,7 @@
     <Setter Property="Height" Value="500"/>
     <Setter Property="Width" Value="1260"/>
     <Setter Property="BorderThickness" Value="10"/>
-    <Setter Property="BorderBrush" Value="{StaticResource MainBorderBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource MainBorderBrush}"/>
   </Style>
 
   <SolidColorBrush x:Key="StampColorBrush" Color="White" Opacity="0.8"/>
@@ -642,20 +642,20 @@
       <Style TargetType="Border">
         <Style.Triggers>
           <DataTrigger Binding="{Binding IsSelected,Mode=OneWay}" Value="False">
-            <Setter Property="Background" Value="{StaticResource StatusBoxUnSelected}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource StatusBoxUnSelected}"/>                        
+            <Setter Property="Background" Value="{DynamicResource StatusBoxUnSelected}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource StatusBoxUnSelected}"/>                        
           </DataTrigger>
           <DataTrigger Binding="{Binding IsSelected,Mode=OneTime}" Value="False">
-            <Setter Property="Background" Value="{StaticResource StatusBoxDisabled}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource StatusBoxDisabled}"/>
+            <Setter Property="Background" Value="{DynamicResource StatusBoxDisabled}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource StatusBoxDisabled}"/>
           </DataTrigger>
           <DataTrigger Binding="{Binding LockedAt,Mode=OneTime, Converter={StaticResource notEmptyStringConverter}}" Value="True">
-            <Setter Property="Background" Value="{StaticResource StatusBoxLocked}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource StatusBoxLocked}"/>
+            <Setter Property="Background" Value="{DynamicResource StatusBoxLocked}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource StatusBoxLocked}"/>
           </DataTrigger>
         </Style.Triggers>
-        <Setter Property="Background" Value="{StaticResource StatusBoxSelected}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource StatusBoxSelected}"/>
+        <Setter Property="Background" Value="{DynamicResource StatusBoxSelected}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource StatusBoxSelected}"/>
       </Style>
       <Style TargetType="TextBlock">
         <Style.Triggers>
@@ -682,7 +682,7 @@
   <Style TargetType="Canvas" x:Key="StampCanvas">
     <Style.Resources>
       <Style TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource StampColorBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource StampColorBrush}"/>
         <Setter Property="FontSize" Value="15"/>
         <Setter Property="Height" Value="24"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -690,11 +690,11 @@
       </Style>
       <Style TargetType="Ellipse">
         <Setter Property="StrokeThickness" Value="4"/>
-        <Setter Property="Stroke" Value="{StaticResource StampColorBrush}"/>
+        <Setter Property="Stroke" Value="{DynamicResource StampColorBrush}"/>
       </Style>
       <Style TargetType="Rectangle">
         <Setter Property="StrokeThickness" Value="4"/>
-        <Setter Property="Stroke" Value="{StaticResource StampColorBrush}"/>
+        <Setter Property="Stroke" Value="{DynamicResource StampColorBrush}"/>
       </Style>
     </Style.Resources>
     <Setter Property="Panel.ZIndex" Value="1"/>
@@ -770,7 +770,7 @@
 
   <!-- <ResourceDictionary Source="./Controls.Toplevel.xaml" /> -->
   <Style TargetType="Grid" x:Key="ToplevelGrid">
-    <Setter Property="Background" Value="{StaticResource BackgroundImageBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource BackgroundImageBrush}"/>
   </Style>
   
   <Style TargetType="Viewbox" x:Key="ContentViewboxStyle">
@@ -779,7 +779,7 @@
   
   <Style TargetType="TextBlock" x:Key="DescriptionText">
     <Setter Property="FontSize" Value="38"/>
-    <Setter Property="Foreground" Value="{StaticResource MainTextBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/>
   </Style>
 
   <!-- <ResourceDictionary Source="./Controls.ToggleButton.xaml" /> -->

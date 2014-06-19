@@ -16,9 +16,9 @@
      
         <Style TargetType="c:CustomTextBox" x:Key="KeyPadInputBox2">
             <Setter Property="Background" Value="#FEFEE0"/>
-            <Setter Property="BorderBrush" Value="{StaticResource MainBorderBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource MainBorderBrush}"/>
             <Setter Property="BorderThickness" Value="5"/>
-            <Setter Property="Foreground" Value="{StaticResource MainTextBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/>
             <Setter Property="Padding" Value="20,0,20,0"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="FontSize" Value="40"/>
@@ -54,22 +54,22 @@
         <Style TargetType="vm:AlphabetKeyPad">
             <Style.Resources>
                 <Style TargetType="vm:KeyboardSurface">
-                    <Setter Property="Background" Value="{StaticResource KeyPadSurfaceBrush}"/>
-                    <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource KeyPadSurfaceBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource KeyPadSurfaceBorderBrush}"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding DisableAlphabetKey, ElementName=Container}" Value="True">
-                            <Setter Property="Background" Value="{StaticResource KeyPadSurfaceDisableBrush}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderDisableBrush}"/>
+                            <Setter Property="Background" Value="{DynamicResource KeyPadSurfaceDisableBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource KeyPadSurfaceBorderDisableBrush}"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
                 <Style TargetType="vm:MouseOverKeyboardSurface">
-                    <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceBrush}"/>
-                    <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource KeyPadMouseOverSurfaceBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource KeyPadSurfaceBorderBrush}"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding DisableAlphabetKey, ElementName=Container}" Value="True">
-                            <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceDisableBrush}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderDisableBrush}"/>
+                            <Setter Property="Background" Value="{DynamicResource KeyPadMouseOverSurfaceDisableBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource KeyPadSurfaceBorderDisableBrush}"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
@@ -78,22 +78,22 @@
         <Style TargetType="vm:TenKeyPad">
             <Style.Resources>
                 <Style TargetType="vm:KeyboardSurface">
-                    <Setter Property="Background" Value="{StaticResource KeyPadSurfaceBrush}"/>
-                    <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource KeyPadSurfaceBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource KeyPadSurfaceBorderBrush}"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding DisableTenKey, ElementName=Container}" Value="True">
-                            <Setter Property="Background" Value="{StaticResource KeyPadSurfaceDisableBrush}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderDisableBrush}"/>
+                            <Setter Property="Background" Value="{DynamicResource KeyPadSurfaceDisableBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource KeyPadSurfaceBorderDisableBrush}"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
                 <Style TargetType="vm:MouseOverKeyboardSurface">
-                    <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceBrush}"/>
-                    <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource KeyPadMouseOverSurfaceBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource KeyPadSurfaceBorderBrush}"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding DisableTenKey, ElementName=Container}" Value="True">
-                            <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceDisableBrush}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderDisableBrush}"/>
+                            <Setter Property="Background" Value="{DynamicResource KeyPadMouseOverSurfaceDisableBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource KeyPadSurfaceBorderDisableBrush}"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
@@ -102,20 +102,20 @@
         <Style TargetType="vm:CursorsKeyPad">
             <Style.Resources>
                 <Style TargetType="vm:KeyboardSurface">
-                    <Setter Property="Background" Value="{StaticResource KeyPadSurfaceBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource KeyPadSurfaceBrush}"/>
                 </Style>
                 <Style TargetType="vm:MouseOverKeyboardSurface">
-                    <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource KeyPadMouseOverSurfaceBrush}"/>
                 </Style>
             </Style.Resources>
         </Style>
         <Style TargetType="vm:ClearKeysPad">
             <Style.Resources>
                 <Style TargetType="vm:KeyboardSurface">
-                    <Setter Property="Background" Value="{StaticResource KeyPadSurfaceBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource KeyPadSurfaceBrush}"/>
                 </Style>
                 <Style TargetType="vm:MouseOverKeyboardSurface">
-                    <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource KeyPadMouseOverSurfaceBrush}"/>
                 </Style>
             </Style.Resources>
         </Style>
@@ -123,22 +123,22 @@
         <Style TargetType="vm:ModifyKeysPad">
             <Style.Resources>
                 <Style TargetType="vm:KeyboardSurface">
-                    <Setter Property="Background" Value="{StaticResource KeyPadSurfaceBrush}"/>
-                    <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource KeyPadSurfaceBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource KeyPadSurfaceBorderBrush}"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding DisableModifyKey, ElementName=Container}" Value="True">
-                            <Setter Property="Background" Value="{StaticResource KeyPadSurfaceDisableBrush}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderDisableBrush}"/>
+                            <Setter Property="Background" Value="{DynamicResource KeyPadSurfaceDisableBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource KeyPadSurfaceBorderDisableBrush}"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
                 <Style TargetType="vm:MouseOverKeyboardSurface">
-                    <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceBrush}"/>
-                    <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderBrush}"/>
+                    <Setter Property="Background" Value="{DynamicResource KeyPadMouseOverSurfaceBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource KeyPadSurfaceBorderBrush}"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding DisableModifyKey, ElementName=Container}" Value="True">
-                            <Setter Property="Background" Value="{StaticResource KeyPadMouseOverSurfaceDisableBrush}"/>
-                            <Setter Property="BorderBrush" Value="{StaticResource KeyPadSurfaceBorderDisableBrush}"/>
+                            <Setter Property="Background" Value="{DynamicResource KeyPadMouseOverSurfaceDisableBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource KeyPadSurfaceBorderDisableBrush}"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
