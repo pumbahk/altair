@@ -87,6 +87,9 @@
     <Compile Include="presentation\gui\command\AppCloseCommand.cs" />
     <Compile Include="presentation\gui\command\DialogCloseCommand.cs" />
     <Compile Include="presentation\gui\command\DialogOpenCommand.cs" />
+    <Compile Include="presentation\gui\control\CustomTextBox.xaml.cs">
+      <DependentUpon>CustomTextBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="presentation\gui\control\IDialog.cs" />
     <Compile Include="presentation\gui\control\InspectCase.xaml.cs">
       <DependentUpon>InspectCase.xaml</DependentUpon>
@@ -100,8 +103,12 @@
     </Compile>
     <Compile Include="presentation\gui\control\QRCodeCanvas.cs" />
     <Compile Include="presentation\gui\control\TelPad.cs" />
+    <Compile Include="presentation\gui\control\VirtualKeyboard.xaml.cs">
+      <DependentUpon>VirtualKeyboard.xaml</DependentUpon>
+    </Compile>
     <Compile Include="presentation\gui\converter\MathConverter.cs" />
     <Compile Include="presentation\gui\converter\NotEmptyStringConverter.cs" />
+    <Compile Include="presentation\gui\converter\StarConverter.cs" />
     <Compile Include="presentation\gui\HomeWindow.xaml.cs">
       <DependentUpon>HomeWindow.xaml</DependentUpon>
     </Compile>
@@ -210,6 +217,10 @@
     <DesignData Include="Data\DisplayTicketData.xaml">
       <SubType>Designer</SubType>
     </DesignData>
+    <Page Include="presentation\gui\control\CustomTextBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="presentation\gui\control\InspectCase.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -221,6 +232,10 @@
     <Page Include="presentation\gui\control\MessageDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\control\VirtualKeyboard.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="presentation\gui\HomeWindow.xaml">
       <SubType>Designer</SubType>

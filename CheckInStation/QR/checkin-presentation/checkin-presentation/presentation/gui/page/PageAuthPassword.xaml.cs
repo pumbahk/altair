@@ -19,9 +19,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using vkeyboard.control;
 using checkin.core.flow;
-using checkin.core.events;
 using checkin.core.models;
 
 namespace checkin.presentation.gui.page
