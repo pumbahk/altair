@@ -6,8 +6,7 @@ from datetime import datetime
 from webob.exc import HTTPFound
 from zope.interface import implementer
 from repoze.who.api import get_api as get_who_api
-from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator, IMetadataProvider
-from repoze.who.plugins.auth_tkt import AuthTktCookiePlugin
+from repoze.who.interfaces import IChallenger, IAuthenticator, IMetadataProvider
 from altair.auth.api import get_current_request
 from altair.browserid import get_browserid
 from beaker.cache import Cache, CacheManager, cache_regions
@@ -63,7 +62,7 @@ class RemembererWrapper(object):
         return retval
 
 
-@implementer(IIdentifier, IAuthenticator, IChallenger, IMetadataProvider)
+@implementer(IAuthenticator, IChallenger, IMetadataProvider)
 class RakutenOpenIDPlugin(object):
     cache_manager = cache_manager
     AUTHENTICATED_KEY = __name__ + '.authenticated'
@@ -73,7 +72,6 @@ class RakutenOpenIDPlugin(object):
         if cache_region is None:
             cache_region = __name__ + '.metadata'
         self.cache_region = cache_region
-        self.rememberer = RemembererWrapper(AuthTktCookiePlugin(**kwargs))
 
     def _get_cache(self):
         return self.cache_manager.get_cache_region(
@@ -115,18 +113,6 @@ class RakutenOpenIDPlugin(object):
             tel_1=contact_info.get('tel'),
             rakuten_point_account=point_account.get('pointAccount')
             )
-
-    # IIdentifier
-    def identify(self, environ):
-        impl = self._get_impl(environ)
-        req = get_current_request(environ)
-        logger.debug('identify (req.path_url=%s)' % req.path_url)
-        identity = environ.get(self.AUTHENTICATED_KEY)
-        if not identity:
-            # backwards compatibility
-            identity = self.rememberer.get_identity(req.environ)
-            logging.debug('got identity from rememberer: %s' % identity)
-        return identity
 
     # IAuthenticator
     def authenticate(self, environ, identity):
@@ -185,22 +171,6 @@ class RakutenOpenIDPlugin(object):
 
         environ[self.AUTHENTICATED_KEY] = identity
         return identity['claimed_id']
-
-    # IIdentifier
-    def remember(self, environ, identity):
-        req = get_current_request(environ)
-        logger.debug('remember identity (req.path_url=%s): %s' % (req.path_url, identity))
-        return self.rememberer.remember(environ, identity)
-
-    # IIdentifier
-    def forget(self, environ, identity):
-        req = get_current_request(environ)
-        logger.debug('forget identity')
-        if identity:
-            claimed_id = identity.get('claimed_id')
-            if claimed_id:
-                self._flush_cache(claimed_id)
-        return self.rememberer.forget(environ)
 
     def _flush_cache(self, claimed_id):
         try:
