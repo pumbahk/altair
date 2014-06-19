@@ -1,0 +1,323 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+  names=[u'イベント', event.title, u'券面', u'券面簡易作成'],
+  urls=[request.route_path('events.index'),
+        request.route_path('events.show', event_id=event.id),
+        request.route_path('events.tickets.index', event_id=event.id)]
+)}
+</%block>
+
+## todo:moveto helpers
+<%block name="style">
+<style type="text/css">
+  .input-group { padding: 10px; }
+  .input-group label { display: inline-block; margin-left:1px;}
+  .input-group input[type="radio"] {margin-left:3px;}
+  .input-group input[type="radio"]:nth-child(1) {margin-left:0px;}
+  .input-group input[type="checkbox"] {margin-left:3px;}
+  .input-group input[type="checkbox"]:nth-child(1) {margin-left:0px;}
+
+/* steps */
+  .wizard {margin-left: 20px; margin-bottom:10px;}
+  .wizard a {padding: 5px 6px 5px; margin-right: 5px; background: #EFEFE1; position: relative; display: inline-block; }
+  .wizard a:before { width: 0; height: 0; border-top: 14px inset transparent; border-bottom: 15px inset transparent; border-left: 16px solid #FFFFF4; position: absolute; content: ""; top: 0; left: 0; }
+  .wizard a:after { width: 0; height: 0; border-top: 14px inset transparent; border-bottom: 15px inset transparent; border-left: 16px solid #EFEFE1; position: absolute; content: ""; top: 0; right: -15px; z-index: 2; }
+  .wizard a:first-child:before{ border: none; }
+  .wizard .badge { margin: 0 5px 0 18px; position: relative; top: -1px; }
+  .wizard a:first-child .badge { margin-left: 0; }
+  .wizard .current { background: #75A843; color: #FFFFFF; }
+  .wizard .current:after { border-left-color: #75A843; }
+
+/* hero-unit */
+  .hero-unit { padding: 24px;}
+  .setting-area { padding: 12px;}
+  .listing-area { padding: 12px;}
+
+/* message */
+  .message { display: block; margin-left: 30px; position: absolute; top: 45px; left: 350px; z-index: 10; }
+  .message-row {height:0px;}
+
+/* description */
+  .description-box { padding: 0px;}
+  .descriptioin-area .label {font-size: 12px;}
+  .userhandle-box { padding: 10px;}
+
+/* listing */
+  #listing-ticket, #listing-template { max-height: 250px; overflow: scroll;}
+  #listing-ticket input[type="radio"], #listing-template input[type="radio"] { margin-right: 7px;}
+  #listing-ticket ul, #listing-template ul {margin: 0px 0px 8px 8px;  list-style-type: none;}
+  .pseudo-input {background:#eee; foreground:#fff; border-style: solid; border-width:1px; border-color:#aaa; padding:2px}
+  .tab-content .active {background:#fffffa; padding:10px;}
+
+</style>
+</%block>
+
+
+<%def name="radio_group(form, attrname, required=True)">
+<div class="control-group">
+${getattr(form,attrname).label(class_="required control-label")}
+<div class="controls ">
+<div class="input-group" id="${attrname}">
+%for f in getattr(form,attrname):
+  %if f.checked:
+    ${f(checked="checked")} ${f.label}
+  %else:
+    ${f} ${f.label}
+  %endif
+%endfor
+</div>
+</div>
+</div>
+</%def>
+
+<%def name="checkbox_group_list(form, attrname_list, required=True)">
+<div class="control-group">
+<div class="controls ">
+<div class="input-group">
+%for attrname in attrname_list:
+  <% f = getattr(form,attrname) %>
+  ${f(id=attrname)} ${f.label}
+%endfor
+</div>
+</div>
+</div>
+</%def>
+
+<h3>チケット券面</h3>
+
+<div class="userhandle-area">
+  <div class="wizard">
+    <a href="#" id="wizard-nav0" class="wizard-nav current" data-toggle="#userhandle0"><span class="badge">1.</span> 作成方法の選択</a>
+    <a href="#" id="wizard-nav1" class="wizard-nav" data-toggle="#userhandle1"><span class="badge">2.</span> テンプレートの選択</a>
+    <a href="#" id="wizard-nav2" class="wizard-nav" data-toggle="#userhandle2"><span class="badge">3.</span> 登録データ設定</a>
+    <a href="#" id="wizard-nav3" class="wizard-nav" data-toggle="#userhandle3"><span class="badge">4.</span> 登録された券面一覧</a>
+  </div>
+
+  <div class="row-fluid">
+    <div id="userhandle0" class="userhandle">
+        <div class="choose-area hero-unit span4">
+        ${radio_group(choice_form, "event_id")}
+        ${radio_group(choice_form, "preview_type")}
+        </div>
+        <div class="description-box span5">
+          <h4>1. チケット券面の作成方法を指定してください。</h4>
+          <dl>
+            <dt>基本券面から</dt>
+            <dd>元々用意されている券面テンプレートを利用してチケット券面を作成します</dd>
+            <dt>既存の券面から</dt> 
+            <dd>既に作成したチケットの一部を変更してチケット券面を作成します</dd>
+          </ul>
+          <h4>2. 利用目的を指定してください。</h4>
+          <dl>
+            <dt>自社発券</dt><dd>通常利用する券面です。previewにかかる時間が短いです</dd>
+            <dt>SEJ発券</dt><dd>EJ引取の際に利用するする券面です。previewにかかる時間はとても長いです</dd>
+          </dl>
+          <div class="userhandle-box">
+            <a class="btn js-handle-btn js-next-btn" href="#" data-toggle="#wizard-nav1">次へ</a>
+          </div>
+        </div>
+    </div>
+    <div id="userhandle1" class="userhandle" style="display:none">
+        <div class="setting-area hero-unit span6">
+        ${ch.form_item(template_form.templates)}
+          <div class="help-box">
+            <button class="sticky-button">画面にくっつける</button>
+            <%include file="./_help.html"/>
+          </div>
+        </div>
+        <div class="description-box span5">
+          <h4>3. 券面テンプレートを指定してください</h4>
+          <p>システムに券面の雛型となるデータが格納されています。preview結果を見ながら左の選択欄で設定してください</p>
+          <h4>4. 券面で印字する文言用の箱を追加してください </h4>
+          <p>箱とは"{{"と"}}"で囲まれたような文字列のことです。
+          実際の印刷時には左記の単語の箇所がシステムが保持するデータに置き換えられます。
+          (例: {{イベント略称}} => 楽天オープン2014)
+          </p>
+          <div class="userhandle-box">
+            <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav0">戻る</a>
+            <a class="btn js-handle-btn js-next-btn" href="#" data-toggle="#wizard-nav2">次へ</a>
+          </div>
+        </div>
+    </div>
+    <div id="userhandle2" class="userhandle" style="display:none">
+      <div class="submit-area span5 hero-unit">
+        <form method="POST" action="${request.route_path("events.tickets.easycreate",event_id=event.id)}">
+        ${ch.form_item(upload_form.name)}
+        ${checkbox_group_list(upload_form, ["cover_print"])}
+        ${ch.form_item(upload_form.drawing)}
+        <input class="btn btn-success" type="submit" name="create" value="券面を作成"/>
+        <input class="btn btn-primary" type="submit" name="update" value="券面を更新"/>
+       </form>
+      </div>
+        <div class="submit-box span5">
+          <h4>5. チケット券面の作成／更新</h4>
+          <p>データを入力してチケット券面を作成／更新します</p>
+          <dl>
+            <dt>券面作成</dt>
+            <dd>新たに新しいチケット券面を作成します<dd>
+          </dl>
+          <dl>
+            <dt>券面の更新</dt>
+            <dd>現在設定している内容にチケット券面を更新します<dd>
+          </dl>
+
+          <div class="userhandle-box">
+            <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav1">戻る</a>
+            <a class="btn js-handle-btn js-next-btn" href="#" data-toggle="#wizard-nav3">次へ</a>
+          </div>
+        </div>
+    </div>
+    <div id="userhandle3" class="listing-area userhandle tabbable" style="display:none">
+        <div class="hero-unit span6">
+          <h4>現在登録されているチケット券面の一覧</h4>
+           <ul class="nav-tabs nav">
+             <li class="active"><a data-toggle="tab" href="#listing-ticket-wrap">登録されたチケット券面</a></li>
+             <li><a data-toggle="tab" href="#listing-template-wrap">券面テンプレート</a></li>
+           </ul>
+          <div class="tab-content">
+            <div class="tab-pane active" id="listing-ticket-wrap">
+              <ul id="listing-ticket">
+                %for d in event_tickets:
+                <li><input name="mapping_id" type="radio" value="${d['pk']}"></input><a target="_blank" href="${d['url']}">${d['name']}</a></li>
+                %endfor
+              </ul>
+            </div>
+            <div class="tab-pane" id="listing-template-wrap">
+              <ul id="listing-template">
+                %for d in base_tickets:
+                <li><input name="mapping_id" type="radio" value="${d['pk']}"></input><a target="_blank" href="${d['url']}">${d['name']}</a></li>
+                %endfor
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="description-box span5">
+
+          <div class="hero-unit">
+          <h4>転写</h4>
+            <p><span class="selected-template pseudo-input"></span>を<span class="selected-mapping pseudo-input"></span>の箱の内容で転写</p>
+            <form  method="POST" action="${request.route_path("events.tickets.easycreate.transcribe",event_id=event.id)}">
+            ${ch.form_item(upload_form.name)}
+            <input type="submit" name="transcribe" class="btn btn-primary" value="転写">
+            </form>
+          </div>
+          <div class="userhandle-box">
+            <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav2">戻る</a>
+          </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/easycreate/helpers.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/easycreate/app.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/easycreate/helpers.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/ZeroClipboard.min.js")}"></script>
+<script type="text/javascript">
+
+// loading component, the trigger is preview type radio button of above area.
+app.BrokerData = {
+  userhandle: {value: null, writable: true},
+  component: {value: null, writable: true},
+  setting: {value: null, writable: true},
+  submit: {value: null, writable: true},
+  listing: {value: null, writable: true},
+  message: {value: null, writable: true},
+  models: {value: {source: app.ticketSelectSourceModel, submit: app.submitParamatersModel, transcribe: app.transcribeParamatersModel}}
+};
+app.broker = Object.create(app.BrokerModule, app.BrokerData);
+
+$(function(){
+  app.ComponentAreaData = {
+    broker: {value: app.broker},
+    $el: {value: $(".component-area"), writable: false},
+    ticket_formats_iterable: {value: [], writable: true},
+    loadcomponent_url: {value: "${request.route_path("events.tickets.easycreate.loadcomponent", event_id=event.id, preview_type="__previewtype")}"},
+    gettingtemplate_url: {value: "${request.route_path("events.tickets.easycreate.gettingtemplate", event_id=event.id, preview_type="__previewtype")}"},
+    gettingformat_url: {value: "${request.route_path("events.tickets.easycreate.gettingformat", event_id=event.id, preview_type="__previewtype")}"},
+    gettingsvg_url: {value: "${request.route_path("events.tickets.easycreate.gettingsvg", event_id=event.id, ticket_id="__ticket_id", preview_type="__previewtype")}"},
+    gettingvarsvals_url: {value: "${request.route_path("events.tickets.easycreate.gettingvarsvals", event_id=event.id, ticket_id="__ticket_id", preview_type="__previewtype")}"}
+  };
+
+  app.UserHandleAreaData = {
+    broker: {value: app.broker},
+    $el: {value: $(".userhandle-area"),writable: false}
+  };
+
+  app.ChooseAreaData = {
+    broker: {value: app.broker},
+    $el: {value: $(".choose-area"), writable: false}
+  }
+
+  app.SettingAreaData = {
+    broker: {value: app.broker},
+    $el: {value: $(".setting-area"), writable: false}
+  }
+
+  app.SubmitAreaData = {
+    broker: {value: app.broker},
+    $el: {value: $(".submit-area"), writable: false}
+  }
+
+  app.ListingAreaData = {
+    broker: {value: app.broker},
+    $el: {value: $(".listing-area"), writable: false}
+  }
+
+  app.MessageServiceData = {
+    $el: {value: $("body")},
+    success: {value: "#succes_message"},
+    alert: {value: "#alert_message"},
+    info: {value: "#info_message"},
+    error: {value: "#error_message"}
+  };
+
+  app.userhandle = Object.create(app.UserHandleAreaModule,app.UserHandleAreaData);
+  app.choose = Object.create(app.ChooseAreaModule, app.ChooseAreaData);
+  app.setting = Object.create(app.SettingAreaModule, app.SettingAreaData);
+  app.submit = Object.create(app.SubmitAreaModule, app.SubmitAreaData);
+  app.listing = Object.create(app.ListingAreaModule, app.ListingAreaData);
+  app.component = Object.create(app.ComponentAreaModule, app.ComponentAreaData);
+  app.message = Object.create(app.MessageServiceModule, app.MessageServiceData);
+
+  app.broker.choose = app.choose;
+  app.broker.setting = app.setting;
+  app.broker.submit = app.submit;
+  app.broker.listing = app.listing;
+  app.broker.component = app.component;
+  app.broker.userhandle = app.userhandle;
+  app.broker.message = app.message;
+
+  // binding observer event
+  app.userhandle.$el.find("a.wizard-nav").on("click", function(e){app.userhandle.onClickNavigation($(this)); return false;});
+  app.userhandle.$el.find("a.js-handle-btn").on("click", function(e){app.userhandle.onClickHandleButton($(this)); return false;});
+
+  var radio_btn = app.choose.$el.find('input[name="event_id"]:radio');
+  radio_btn.on("change", function(e){ app.choose.onChangeTemplateKind($(this))});
+  var radio_btn = app.choose.$el.find('input[name="preview_type"]:radio');
+  radio_btn.on("change", function(e){ app.choose.onChangePreviewType($(this))});
+
+  app.setting.$el.find('select[name="templates"]').on("change", function(e){ app.setting.onChangeTicketTemplate($(this))});
+  app.setting.$el.find(".sticky-button").on("click", function(){app.setting.onClickStickyButton($(this).parents(".help-box"));});
+  app.setting.bindClipboardCopy(app.setting.$el.find(".help-box"), "${request.static_url("altair.app.ticketing:static/js/ZeroClipboard.swf")}")
+  app.setting.bindHelpPopOver(app.setting.$el.find(".help-box"));
+
+  app.submit.$el.find('input[name="name"]').on("change", function(e){app.submit.onChangeTicketName($(this));});
+  app.submit.$el.find('input[name="cover_print"]').on("change", function(e){app.submit.onChangeIsPrintConver($(this));});
+  app.submit.$el.find('input[name="create"]').on('click', function(){app.submit.onSubmitCreate($(this)); return false;})
+  app.submit.$el.find('input[name="update"]').on('click', function(){app.submit.onSubmitUpdate($(this)); return false;})
+
+  app.listing.$el.find('#listing-ticket').on('change','input[type="radio"]', function(){app.listing.onChangeSelectTemplate($(this));});
+  app.listing.$el.find('#listing-template').on('change','input[type="radio"]', function(){app.listing.onChangeSelectTemplate($(this));});
+  app.listing.$el.find('input[name="name"]').on("change", function(e){app.listing.onChangeTicketName($(this));});
+  app.listing.$el.find('form:first').on('submit', function(){app.listing.onSubmitTranscribe($(this)); return false;})
+});
+
+</script>
+
+<div class="component-area">
+</div>

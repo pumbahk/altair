@@ -48,6 +48,7 @@
         {hidden: true, jsonmap:'product_item', name:'product_item', editable:false},
         {hidden: true, jsonmap:'ticket_bundle', name:'ticket_bundle', editable:false},
         {hidden: true, jsonmap:'product.performance_id', name:'performance_id', editable:false},
+        {hidden: true, jsonmap:'product.amount_mismatching', name:'amount_mismatching', editable:false},
         {hidden: true, name:'deleted', editable:false}
       ],  //列ごとの設定
       forceFit : true,
@@ -62,6 +63,20 @@
         for (var i=0; i<cells.length; i++) {
           for (var name in cells[i]) {
             grid.setCell(cells[i].id, name, '', {background:'#F89406'});
+          }
+        }
+        var row_ids = grid.getDataIDs();
+        for (var i=0; i<row_ids.length; i++) {
+          var row_id = row_ids[i];
+          var row = grid.getRowData(row_id);
+          if (row.amount_mismatching === 'true') {
+            for (var name in row) {
+              if ($.inArray(name, ['price', 'product_item_price']) > -1 && row[name]) {
+                grid.setCell(row_id, name, '', {background:'#dd1100'});
+              } else {
+                grid.setCell(row_id, name, '', {background:'#F2DEDE'});
+              }
+            }
           }
         }
       },  // sort時にセルの状態を維持
@@ -93,19 +108,18 @@
 
     $('#sales-segment-${sales_segment.id}-add_button').click(function(){
       var grid = $('#sales-segment-${sales_segment.id}-grid');
-      var rows = grid.getRowData();
       var max = 0;
-      for (i = 0; i < rows.length; i++) {
-        var cur = parseInt(rows[i].rid);
-        if (max < cur) {
-          max = cur;
+      var row_ids = grid.getDataIDs();
+      for (var i=0; i<row_ids.length; i++) {
+        var row_id = parseInt(row_ids[i]);
+        if (max < row_id) {
+          max = row_id;
         }
       }
       var data = {
-        rid: max + 1,
         performance_id: ${sales_segment.performance_id}
       };
-      grid.addRowData(undefined, data);
+      grid.addRowData(max + 1, data);
     });
     $('#sales-segment-${sales_segment.id}-save_button').click(function(){
       $.ajax({

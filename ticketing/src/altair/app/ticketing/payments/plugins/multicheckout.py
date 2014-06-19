@@ -314,6 +314,45 @@ class MultiCheckoutPlugin(object):
                 error_code=part_cancel_res.CmnErrorCd
                 )
 
+    @clear_exc
+    def refund(self, request, order):
+        multicheckout_api = get_multicheckout_3d_api(request)
+        real_order_no = get_order_no(request, order)
+
+        res = multicheckout_api.checkout_inquiry(real_order_no)
+        if res.CmnErrorCd != '000000':
+            raise MultiCheckoutSettlementFailure(
+                message='checkout_sales_part_cancel: generic failure',
+                order_no=order.order_no,
+                back_url=back_url(request),
+                error_code=res.CmnErrorCd
+                )
+
+        if res.Status not in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
+            raise MultiCheckoutSettlementFailure("status of order %s (%s) is neither `Settled' nor `PartCanceled' (%s)" % (order.order_no, real_order_no, res.Status), order.order_no, None)
+
+        remaining_amount = order.total_amount - order.refund_total_amount
+
+        if remaining_amount == res.SalesAmount:
+            # no need to make requests
+            logger.info('as the result of refunding %s, remaining amount (%s) of order %s (%s) will be equal to the amount already committed (%s). nothing seems to be done' % (order.refund_total_amount, remaining_amount, order.order_no, real_order_no, res.SalesAmount))
+            return
+        elif remaining_amount > res.SalesAmount:
+            # we can't get the amount increased later
+            raise MultiCheckoutSettlementFailure('remaining amount (%s) of order %s (%s) cannot be greater than the amount already committed (%s)' % (remaining_amount, order.order_no, real_order_no, res.SalesAmount), order.order_no, None)
+
+        part_cancel_res = multicheckout_api.checkout_sales_part_cancel(
+            real_order_no,
+            remaining_amount,
+            0)
+        if part_cancel_res.CmnErrorCd != '000000':
+            raise MultiCheckoutSettlementFailure(
+                message='checkout_sales_part_cancel: generic failure',
+                order_no=order.order_no,
+                back_url=back_url(request),
+                error_code=part_cancel_res.CmnErrorCd
+                )
+
 
 def card_number_mask(number):
     """ 下4桁以外をマスク"""

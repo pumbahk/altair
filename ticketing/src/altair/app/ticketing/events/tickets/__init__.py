@@ -4,6 +4,14 @@ def includeme(config):
     add_route("events.tickets.index", "/event/{event_id}/")
     add_route("events.tickets.bind.ticket", "/event/{event_id}/bind/ticket")
 
+    add_route("events.tickets.easycreate", "/event/{event_id}/easycreate")
+    add_route("events.tickets.easycreate.transcribe", "/event/{event_id}/easycreate/transcribe")
+    add_route("events.tickets.easycreate.loadcomponent", "/api/event/{event_id}/easycreate/loadcomponent/{preview_type}")
+    add_route("events.tickets.easycreate.gettingtemplate", "/api/event/{event_id}/easycreate/gettingtemplate/{preview_type}")
+    add_route("events.tickets.easycreate.gettingformat", "/api/event/{event_id}/easycreate/gettingformat/{preview_type}")
+    add_route("events.tickets.easycreate.gettingsvg", "/api/event/{event_id}/easycreate/gettingsvg/{ticket_id}/{preview_type}")
+    add_route("events.tickets.easycreate.gettingvarsvals", "/api/event/{event_id}/easycreate/gettingvarsvals/{ticket_id}/{preview_type}")
+
     add_route('events.tickets.boundtickets.show', '/event/{event_id}/ticket/{id}')
     add_route('events.tickets.boundtickets.edit', '/event/{event_id}/ticket/{id}/edit')
     add_route('events.tickets.boundtickets.download', '/event/{event_id}/ticket/{id}/download')

@@ -73,7 +73,6 @@ class ProductFormMixin(object):
         )
     public = OurBooleanField(
         label=u'一般公開',
-        hide_on_new=True,
         widget=CheckboxInput(),
         default=True
         )
@@ -112,7 +111,6 @@ class ProductFormMixin(object):
         )
     all_sales_segment = OurBooleanField(
         label=u'同じ公演の全ての販売区分に追加',
-        hide_on_new=True,
         widget=CheckboxInput(),
         )
 
@@ -137,7 +135,7 @@ class ProductFormMixin(object):
                 if self.price.data != product.price:
                     self.price.errors.append(error_message)
                     validity = False
-                if self.seat_stock_type_id.data != product.seat_stock_type_id:
+                if long(self.seat_stock_type_id.data or 0) != product.seat_stock_type_id:
                     self.seat_stock_type_id.errors.append(error_message)
                     validity = False
         if self.min_product_quantity.data is not None and \
@@ -184,7 +182,7 @@ class ProductItemFormMixin(object):
         )
     ticket_bundle_id = OurSelectField(
         label=u'券面構成',
-        validators=[],
+        validators=[Required()],
         coerce=lambda v: None if not v else int(v)
         )
 
@@ -200,15 +198,6 @@ class ProductItemFormMixin(object):
         choices=[],
         coerce=int
         )
-
-    def validate_ticket_bundle_id(form, field):
-        # 引取方法にコンビニ発券が含まれていたら必須
-        if not field.data and form.product_id.data:
-            product = Product.get(form.product_id.data)
-            if product:
-                for pdmp in product.sales_segment.payment_delivery_method_pairs:
-                    if pdmp.delivery_method.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
-                        raise ValidationError(u'券面構成を選択してください')
 
     def validate_stock_holder_id(form, field):
         # 既に予約があるならStockHolderの変更は不可
@@ -226,7 +215,7 @@ class ProductItemFormMixin(object):
             pi = ProductItem.query.filter_by(id=self.product_item_id.data).one()
             product = pi.product
             now = datetime.now()
-            if (product.public and product.sales_segment.public and product.sales_segment.in_term(now))\
+            if (product.public and product.sales_segment.public and product.sales_segment.in_term(now) and product.performance.public)\
                or product.ordered_products or product.has_lot_entry_products():
                 error_message = u'既に販売中か予約および抽選申込がある為、変更できません'
                 if self.product_item_price.data != pi.price:
@@ -260,8 +249,6 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
 
         ticket_bundles = TicketBundle.query.filter_by(event_id=event.id).all()
         self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
-        if not self.ticket_bundle_id.data and ticket_bundles:
-            self.ticket_bundle_id.data = ticket_bundles[0].id
 
         if self.name.data and not self.product_item_name.data:
             self.product_item_name.data = self.name.data
@@ -270,6 +257,12 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
 
     def _get_translations(self):
         return Translations()
+
+    ticket_bundle_id = OurSelectField(
+        label=u'券面構成',
+        validators=[Optional()],
+        coerce=lambda v: None if not v else int(v)
+        )
 
     @classmethod
     def from_model(cls, product, product_item=None):
@@ -303,14 +296,16 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
             )
         return form
 
-    def validate_ticket_bundle_id(form, field):
-        # 引取方法にコンビニ発券が含まれていたら必須
-        if not field.data and form.sales_segment_id.data:
-            sales_segment = SalesSegment.get(form.sales_segment_id.data)
-            if sales_segment:
-                for pdmp in sales_segment.payment_delivery_method_pairs:
-                    if pdmp.delivery_method.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
-                        raise ValidationError(u'券面構成を選択してください')
+    def validate_seat_stock_type_id(form, field):
+        if field.data and form.id.data and not form.product_item_id.data:
+            stock_type = StockType.get(field.data)
+            if stock_type.is_seat:
+                # 商品の席種と在庫の席種は同一であること
+                product = Product.get(form.id.data)
+                for product_item in product.items:
+                    st = product_item.stock.stock_type
+                    if st.is_seat and st.id != field.data:
+                        raise ValidationError(u'商品の席種と異なる在庫を登録することはできません')
 
     def validate(self, *args, **kwargs):
         status = super(ProductAndProductItemForm, self).validate(*args, **kwargs)
@@ -318,6 +313,7 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
             status = self.validate_product(*args, **kwargs)
         if status:
             status = self.validate_product_item(*args, **kwargs)
+            self.price.errors += self.product_item_price.errors
         if not self.id.data or self.product_item_id.data:
             error_message = u'入力してください'
             required_fields = [
@@ -387,7 +383,7 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
         return status
 
 
-class ProductAndProductItemAPIForm(OurForm, ProductItemFormMixin):
+class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMixin):
 
     def __init__(self, formdata=None, obj=None, prefix='', sales_segment=None, **kwargs):
         super(ProductAndProductItemAPIForm, self).__init__(formdata, obj, prefix, **kwargs)
@@ -405,6 +401,8 @@ class ProductAndProductItemAPIForm(OurForm, ProductItemFormMixin):
         self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
 
         if formdata:
+            self.id.data = formdata['product_id']
+            self.seat_stock_type_id.data = formdata['stock_type_id']
             try:
                 self.public.data = bool(distutils.util.strtobool(formdata['public']))
             except Exception as e:
@@ -433,6 +431,7 @@ class ProductAndProductItemAPIForm(OurForm, ProductItemFormMixin):
         )
     display_order = OurIntegerField(
         default=1,
+        hide_on_new=True,
         validators=[Optional()]
         )
     performance_id = HiddenField(
@@ -442,8 +441,46 @@ class ProductAndProductItemAPIForm(OurForm, ProductItemFormMixin):
         default=False
         )
 
+    id = HiddenField(
+        validators=[Optional()],
+        )
+    seat_stock_type_id = HiddenField(
+        validators=[Optional()],
+        )
+    description = HiddenField(
+        validators=[Optional()],
+        )
+    sales_segment_id = HiddenField(
+        validators=[Optional()],
+        )
+    min_product_quantity = HiddenField(
+        validators=[Optional()],
+        )
+    max_product_quantity = HiddenField(
+        validators=[Optional()],
+        )
+    applied_point_grant_settings = HiddenField(
+        validators=[Optional()],
+        )
+    all_sales_segment = HiddenField(
+        validators=[Optional()],
+        )
+
+    def validate_stock_type_id(form, field):
+        if not field.data:
+            raise ValidationError(u'席種を選択してください')
+        elif form.is_leaf.data and form.product_id.data:
+            stock_type = StockType.get(field.data)
+            if stock_type.is_seat:
+                # 商品の席種と在庫の席種は同一であること
+                product = Product.get(form.product_id.data)
+                if stock_type.id != product.seat_stock_type_id:
+                    raise ValidationError(u'商品の席種と異なる在庫を登録することはできません')
+
     def validate(self, *args, **kwargs):
         status = super(ProductAndProductItemAPIForm, self).validate(*args, **kwargs)
+        if status:
+            status = self.validate_product(*args, **kwargs)
         if status:
             status = self.validate_product_item(*args, **kwargs)
 
@@ -453,7 +490,6 @@ class ProductAndProductItemAPIForm(OurForm, ProductItemFormMixin):
             self.product_item_name,
             self.ticket_bundle_id,
             self.stock_holder_id,
-            self.stock_type_id
             ]
         if not self.is_leaf.data:
             required_fields += [

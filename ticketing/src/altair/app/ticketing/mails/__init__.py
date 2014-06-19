@@ -13,7 +13,7 @@ def install_mail_utility(config):
         asbool(config.registry.settings.get("altair.mails.bcc.show_flash_message", "false"))
         )
     config.registry.registerUtility(mail_default_setting, IMailSettingDefault)
-    
+
     from .interfaces import IMailDataStoreGetter
     config.registry.registerUtility(config.maybe_dotted(".resources.get_mail_data_store"), IMailDataStoreGetter)
 
@@ -27,18 +27,21 @@ def install_mail_utility(config):
     config.add_order_mail_utility(MailTypeEnum.BoosterPurchaseCompleteMail,
                                   ".complete", BoosterPurchaseCompleteMail, "altair.app.ticketing:templates/mail/booster_complete.txt")
     from altair.app.ticketing.mails.order_cancel import CancelMail
-    config.add_order_mail_utility(MailTypeEnum.PurchaseCancelMail, 
+    config.add_order_mail_utility(MailTypeEnum.PurchaseCancelMail,
                                   ".order_cancel", CancelMail, "altair.app.ticketing:templates/mail/order_cancel.txt")
+    from altair.app.ticketing.mails.remindmail import SejRemindMail
+    config.add_order_mail_utility(MailTypeEnum.PurcacheSejRemindMail,
+                                  ".remindmail", SejRemindMail, "altair.app.ticketing:templates/mail/remindmail.txt")
 
     ## lots
     from altair.app.ticketing.mails.lots_mail import LotsAcceptedMail
-    config.add_lot_entry_mail_utility(MailTypeEnum.LotsAcceptedMail, 
+    config.add_lot_entry_mail_utility(MailTypeEnum.LotsAcceptedMail,
                                   ".lots_mail", LotsAcceptedMail, "altair.app.ticketing:templates/mail/lot_accept_entry.txt")
     from altair.app.ticketing.mails.lots_mail import LotsElectedMail
-    config.add_lot_entry_mail_utility(MailTypeEnum.LotsElectedMail, 
+    config.add_lot_entry_mail_utility(MailTypeEnum.LotsElectedMail,
                                   ".lots_mail", LotsElectedMail, "altair.app.ticketing:templates/mail/lot_elect_entry.txt")
     from altair.app.ticketing.mails.lots_mail import LotsRejectedMail
-    config.add_lot_entry_mail_utility(MailTypeEnum.LotsRejectedMail, 
+    config.add_lot_entry_mail_utility(MailTypeEnum.LotsRejectedMail,
                                   ".lots_mail", LotsRejectedMail, "altair.app.ticketing:templates/mail/lot_reject_entry.txt")
 
     ## point granting

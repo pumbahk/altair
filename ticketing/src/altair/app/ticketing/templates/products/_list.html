@@ -114,7 +114,7 @@ elif sales_segment:
       if (rowObject.product_item) {
         link += '<a href="javascript:deleteRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-trash"></i></a>';
       }
-      if (!rowObject.level) {
+      if (!rowObject.level && rowObject.product) {
         link += '<a href="javascript:addRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-plus"></i></a>';
       }
       return link;

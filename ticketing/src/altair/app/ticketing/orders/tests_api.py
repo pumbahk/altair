@@ -75,7 +75,7 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.core.models import SeatStatusEnum
         assert stock in self.stocks
         assert not stock.stock_type.quantity_only
-       
+
         result = []
         for seat in self.seats:
             if seat.stock == stock and seat.status == SeatStatusEnum.Vacant.v:
@@ -116,7 +116,7 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         patches = []
         patch = mock.patch('altair.app.ticketing.orders.api.refresh_order')
         patches.append(patch)
-        self._refresh_order = patch.start() 
+        self._refresh_order = patch.start()
         patch = mock.patch('altair.app.ticketing.orders.api.lookup_plugin')
         patches.append(patch)
         self._lookup_plugin = patch.start()
@@ -1007,7 +1007,7 @@ class GetOrderByIdTest(unittest.TestCase):
         order = self._make_order(id=1, order_no='a', branch_no=1)
         self.session.add(order)
         self.session.flush()
-        result = self._callFUT(self.request, 1) 
+        result = self._callFUT(self.request, 1)
         self.assertEqual(order, result)
 
     def test_branches(self):
@@ -1020,7 +1020,7 @@ class GetOrderByIdTest(unittest.TestCase):
             self.session.add(order)
         self.session.flush()
         for order in branches:
-            result = self._callFUT(self.request, order.id) 
+            result = self._callFUT(self.request, order.id)
             self.assertEqual(branches[2], result)
 
     def test_branches_deleted(self):
@@ -1040,5 +1040,3 @@ class GetOrderByIdTest(unittest.TestCase):
         for order in branches:
             result = self._callFUT(self.request, order.id, include_deleted=True)
             self.assertEqual(branches[2], result)
-
-

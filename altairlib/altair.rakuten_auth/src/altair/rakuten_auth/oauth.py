@@ -34,6 +34,10 @@ def create_oauth_signature(method, url, oauth_consumer_key, secret, oauth_token,
     return oauth_signature.strip()
 
 
+class RakutenOAuthNegotiationError(Exception):
+    pass
+
+
 @implementer(IRakutenOAuth)
 class RakutenOAuth(object):
     @staticmethod
@@ -84,7 +88,10 @@ class RakutenOAuth(object):
             f.close()
 
         logger.debug('raw access token : %s' % response_body)
-        return self.parse_access_token_response(response_body)
+        retval = self.parse_access_token_response(response_body)
+        if 'oauth_token' not in retval:
+            raise RakutenOAuthNegotiationError(retval)
+        return retval
 
 
 @implementer(IRakutenIDAPI)

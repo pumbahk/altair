@@ -4,8 +4,8 @@ from pyramid import testing
 
 class auth_model_callbackTests(unittest.TestCase):
     def setUp(self):
-        self.fc_auth_plugin = self._get_fc_auth_plugin()('rememberer')
-        self.rakuten_auth_plugin = self._get_rakuten_auth_plugin()('rememberer')
+        self.fc_auth_plugin = self._get_fc_auth_plugin()()
+        self.rakuten_auth_plugin = self._get_rakuten_auth_plugin()(secret='secret')
 
     def _get_fc_auth_plugin(self):
         from altair.app.ticketing.fc_auth.plugins import FCAuthPlugin
@@ -49,4 +49,4 @@ class auth_model_callbackTests(unittest.TestCase):
 
         result = self._callFUT(identity, request)
 
-        self.assertEqual(result, ['auth_type:rakuten'])
+        self.assertEqual(result, ['membership:rakuten', 'auth_type:rakuten'])

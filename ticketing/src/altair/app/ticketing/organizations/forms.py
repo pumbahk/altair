@@ -280,6 +280,9 @@ class OrganizationSettingForm(OurForm):
         coerce=lambda x: int(x) if x else None,
         choices=[(int(e.v), e.k) for e in c_models.SalesReportTypeEnum]
         )
+    enable_smartphone_cart = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_smartphone_cart)['label']
+        )
     enable_mypage = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_mypage)['label']
     )

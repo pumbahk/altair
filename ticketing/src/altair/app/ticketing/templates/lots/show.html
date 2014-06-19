@@ -153,6 +153,29 @@ $(function() {
     grid.setRetainChanges();
   };
 
+  productGrid['loadComplete'] = function (id, name, val, iRow, iCol){
+    var cells = grid.getRetainChanges('cell');
+    for (var i=0; i<cells.length; i++) {
+      for (var name in cells[i]) {
+        grid.setCell(cells[i].id, name, '', {background:'#F89406'});
+      }
+    }
+    var row_ids = grid.getDataIDs();
+    for (var i=0; i<row_ids.length; i++) {
+      var row_id = row_ids[i];
+      var row = grid.getRowData(row_id);
+      if (row.amount_mismatching === 'true') {
+        for (var name in row) {
+          if ($.inArray(name, ['price', 'product_item_price']) > -1 && row[name]) {
+            grid.setCell(row_id, name, '', {background:'#dd1100'});
+          } else {
+            grid.setCell(row_id, name, '', {background:'#F2DEDE'});
+          }
+        }
+      }
+    } // sort時にセルの状態を維持
+  };
+
   grid.jqGrid(productGrid);
 
   var showDialog = function(title, msg, cls) {

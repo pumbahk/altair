@@ -1,0 +1,89 @@
+${header}
+${name}　様
+
+ご利用いただきありがとうございます。
+このたびお申込いただきました下記内容の入金期限についてお知らせ申し上げます。
+
+お客様のお申し込みいただいたご予約の支払期限が【 ${payment_du_at} まで】となっております。
+支払手続きがお済みでないお客様は、入金状況・入金方法等をご確認の上
+期限までにお手続きいただくようお願いいたします。
+
+お申し込み内容
+=====================================================================
+%if get("ordered_from").status:
+■${get("ordered_from").label}
+${get("ordered_from").body}
+%endif
+=====================================================================
+%if get("order_no").status:
+${get("order_no").label} ${get("order_no").body}
+%endif
+%if get("order_datetime").status:
+${get("order_datetime").label} ${get("order_datetime").body}
+%endif
+%if get("name_kana").status:
+${get("name_kana").label} ${get("name_kana").body} 様
+%endif
+%if get("payment_method").status:
+${get("payment_method").label} ${get("payment_method").body}
+%endif
+%if get("delivery_method").status:
+${get("delivery_method").label} ${get("delivery_method").body}
+%endif
+
+==========
+%if get("address").status:
+${get("address").body}
+%endif
+%if get("event_name").status:
+${get("event_name").label}
+${get("event_name").body}
+%endif
+%if get("pdate").status:
+${get("pdate").label}: ${get("pdate").body}(予定)
+%endif
+%if get("venue").status:
+${get("venue").label}: ${get("venue").body}
+%endif
+%if get("for_seat").status:
+■${get("for_seat").label}
+${get("for_seat").body}
+%endif
+%if get("for_product").status:
+■${get("for_product").label}
+${get("for_product").body}
+%endif
+
+%if get("system_fee").status:
+${get("system_fee").label} ${get("system_fee").body}
+%endif
+%if get("special_fee").body != u"￥0":
+${get("special_fee_name").body} ${get("special_fee").body}
+%endif
+%if get("transaction_fee").status:
+${get("transaction_fee").label} ${get("transaction_fee").body}
+%endif
+%if get("delivery_fee").status:
+${get("delivery_fee").label} ${get("delivery_fee").body}
+%endif
+%if get("total_amount").status:
+********************************************************************
+${get("total_amount").label} ${get("total_amount").body} （円）
+%endif
+
+お支払方法： ${payment_method_name}
+${h.render_payment_cancel_mail_viewlet(request,order)}
+お受取方法： ${delivery_method_name}
+${h.render_delivery_cancel_mail_viewlet(request,order)}
+
+なお、本メールと行き違いでお支払いいただいております折は、なにとぞご容赦ください。
+
+${notice}
+
+%if get("contact").status:
+─────────────${get("contact").label}─────────────────
+${get("contact").body}
+───────────────────────────────────
+%endif
+
+${footer}

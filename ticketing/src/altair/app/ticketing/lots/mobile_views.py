@@ -13,7 +13,6 @@ from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, Performa
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.cart.views import back
-from altair.app.ticketing.users import api as user_api
 from altair.now import get_now
 from . import api
 from . import helpers as h
@@ -400,7 +399,7 @@ class EntryLotView(object):
             self.request.session.flash(u"入力内容を確認してください")
             return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
 
-        user = user_api.get_user(self.context.authenticated_user())
+        user = cart_api.get_user(self.context.authenticated_user())
 
         # 申込回数チェック
         try:

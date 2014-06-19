@@ -1105,7 +1105,7 @@ class OrderSearchBase(list):
 class OrderSummary(OrderSearchBase):
     target = order_summary_joins
     columns = summary_columns
-    default_order = t_order.c.created_at.desc()
+    default_order = t_order.c.id.desc()
 
 
 class OrderDownload(OrderSearchBase):
