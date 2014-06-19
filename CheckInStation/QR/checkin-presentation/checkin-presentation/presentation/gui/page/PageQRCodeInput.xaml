@@ -52,7 +52,7 @@
 
                     <!-- 説明(description)-->
                     <StackPanel
-                        Canvas.Top="100"
+                        Canvas.Top="90"
                         Orientation="Horizontal"
                         >
                         <StackPanel.Style>
