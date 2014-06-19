@@ -640,4 +640,30 @@
     <Setter Property="FontSize" Value="38"/>
     <Setter Property="Foreground" Value="{StaticResource MainTextBrush}"/>
   </Style>
+
+    <!-- virtual keyboard用のbrush-->
+    <LinearGradientBrush x:Key="KeyPadSurfaceBrush" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Color="#B70017" Offset="0.0"></GradientStop>
+        <GradientStop Color="#860010" Offset="1.0"></GradientStop>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="KeyPadMouseOverSurfaceBrush" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Color="#860010" Offset="0.0"></GradientStop>
+        <GradientStop Color="#B70017" Offset="1.0"></GradientStop>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="KeyPadSurfaceDisableBrush" StartPoint="0.5,0" EndPoint="0.5,1" Opacity="0.95">
+        <GradientStop Color="#CCCCCC" Offset="0.0"></GradientStop>
+        <GradientStop Color="#AAAAAA" Offset="1.0"></GradientStop>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="KeyPadMouseOverSurfaceDisableBrush" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Color="#AAAAAA" Offset="0.0"></GradientStop>
+        <GradientStop Color="#CCCCCC" Offset="1.0"></GradientStop>
+    </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="KeyPadSurfaceBorderBrush" Color="#860010"/>
+    <SolidColorBrush x:Key="KeyPadSurfaceBorderDisableBrush" Color="#999999"/>
+
+
 </ResourceDictionary>

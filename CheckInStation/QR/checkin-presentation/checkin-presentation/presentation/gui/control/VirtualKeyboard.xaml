@@ -13,15 +13,7 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
         <vm:VirtualCapsLockKeyFactory x:Key="KeyEnv"/>
-
-        <SolidColorBrush x:Key="MainTextBrush">
-            <SolidColorBrush.Color>#840315</SolidColorBrush.Color>
-        </SolidColorBrush>
-
-        <SolidColorBrush x:Key="MainBorderBrush">
-            <SolidColorBrush.Color>#840315</SolidColorBrush.Color>
-        </SolidColorBrush>
-
+     
         <Style TargetType="c:CustomTextBox" x:Key="KeyPadInputBox2">
             <Setter Property="Background" Value="#FEFEE0"/>
             <Setter Property="BorderBrush" Value="{StaticResource MainBorderBrush}"/>
@@ -34,30 +26,6 @@
             <Setter Property="CaretWidth" Value="7"/>
         </Style>
         
-        <!-- keyboard用のbrush-->
-        <LinearGradientBrush x:Key="KeyPadSurfaceBrush" StartPoint="0.5,0" EndPoint="0.5,1">
-            <GradientStop Color="#B70017" Offset="0.0"></GradientStop>
-            <GradientStop Color="#860010" Offset="1.0"></GradientStop>
-        </LinearGradientBrush>
-
-        <LinearGradientBrush x:Key="KeyPadMouseOverSurfaceBrush" StartPoint="0.5,0" EndPoint="0.5,1">
-            <GradientStop Color="#860010" Offset="0.0"></GradientStop>
-            <GradientStop Color="#B70017" Offset="1.0"></GradientStop>
-        </LinearGradientBrush>
-
-        <LinearGradientBrush x:Key="KeyPadSurfaceDisableBrush" StartPoint="0.5,0" EndPoint="0.5,1" Opacity="0.95">
-            <GradientStop Color="#CCCCCC" Offset="0.0"></GradientStop>
-            <GradientStop Color="#AAAAAA" Offset="1.0"></GradientStop>
-        </LinearGradientBrush>
-
-        <LinearGradientBrush x:Key="KeyPadMouseOverSurfaceDisableBrush" StartPoint="0.5,0" EndPoint="0.5,1">
-            <GradientStop Color="#AAAAAA" Offset="0.0"></GradientStop>
-            <GradientStop Color="#CCCCCC" Offset="1.0"></GradientStop>
-        </LinearGradientBrush>
-
-        <SolidColorBrush x:Key="KeyPadSurfaceBorderBrush" Color="#860010"/>
-        <SolidColorBrush x:Key="KeyPadSurfaceBorderDisableBrush" Color="#999999"/>
-
         <Style TargetType="Border" x:Key="ObstructiveBorderAlphabetKey">
             <Setter Property="Background" Value="Transparent"/>
             <Style.Triggers>
