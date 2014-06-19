@@ -300,7 +300,8 @@ def get_cart_user_identifiers(request):
     retval = []
 
     user_id = authenticated_userid(request)
-    retval.append((user_id, 'strong'))
+    if user_id is not None:
+        retval.append((user_id, 'strong'))
 
     # browserid is decent
     browserid = get_browserid(request)
