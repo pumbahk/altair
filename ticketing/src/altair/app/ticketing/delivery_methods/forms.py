@@ -30,7 +30,7 @@ class DeliveryMethodForm(Form):
     )
     fee = DecimalField(
         label=u'発券/引取手数料',
-        places=2,
+        places=0,
         validators=[Required()]
     )
     fee_type = SelectField(

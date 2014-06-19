@@ -1,6 +1,6 @@
-<%page args="form, action" />
+<%page args="form" />
 <%namespace file="/common/helpers.html" name="ch" />
-<form action="${action}" method="POST">
+<form action="${request.url}" method="POST">
   ${ch.form_item(form.id)}
   ${ch.form_item(form.organization_id, class_='span6')}
   ${ch.form_item(form.payment_plugin_id)}

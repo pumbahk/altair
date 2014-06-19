@@ -44,7 +44,6 @@ class PaymentMethods(BaseView):
     def new(self):
         return {
             'form': PaymentMethodForm(),
-            'action': self.request.route_path('payment_methods.new'),
             }
 
     @view_config(route_name='payment_methods.new', request_method='POST', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
@@ -60,7 +59,6 @@ class PaymentMethods(BaseView):
         else:
             return {
                 'form':f,
-                'action': self.request.route_path('payment_methods.new'),
             }
 
     @view_config(route_name='payment_methods.edit', request_method='GET', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
@@ -68,7 +66,6 @@ class PaymentMethods(BaseView):
         payment_method_id = long(self.request.matchdict.get('payment_method_id', 0))
         return {
             'form': PaymentMethodForm(obj=PaymentMethod.query.filter_by(id=payment_method_id).one()),
-            'action': self.request.route_path('payment_methods.edit', payment_method_id=payment_method_id),
             }
 
     @view_config(route_name='payment_methods.edit', request_method='POST', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
@@ -89,7 +86,6 @@ class PaymentMethods(BaseView):
         else:
             return {
                 'form':f,
-                'action': self.request.route_path('payment_methods.edit', payment_method_id=payment_method_id),
             }
 
     @view_config(route_name='payment_methods.delete')
@@ -108,45 +104,3 @@ class PaymentMethods(BaseView):
             raise HTTPFound(location=location)
 
         return HTTPFound(location=location)
-
-'''以下付け足し'''
-'''
-@view_config(route_name="sample", request_method="GET",
-             request_param="_search")
-def sample_search(request):
-    return Response("You searched!")
-
-
-@view_config(route_name="sample", request_method="POST",
-             request_param="_confirm")
-def sample_confirm(request):
-    return Response("You confirmed!")
-
-
-@view_config(route_name="sample", request_method="POST",
-             request_param="_complete")
-def sample_complete(request):
-    return Response("You completed!")
-
-
-@view_config(route_name="sample", request_method="GET",
-             request_param="_back")
-def sample_back(request):
-    return Response("You backed!")
-
-@view_config(route_name="sample", request_method="GET")
-def welcome(request):
-    return Response('<form action="/sample" method="GET">'
-                        '<input type="submit" name="_search" value="検索">'
-                    '</form>'
-                    '<form action="/sample" method="POST">'
-                        '<input type="submit" name="_confirm" value="確認">'
-                    '</form>'
-                    '<form action="/sample" method="POST">'
-                        '<input type="submit" name="_complete" value="確定">'
-                    '</form>'
-                    '<form action="/sample" method="GET">'
-                        '<input type="submit" name="_back" value="戻る">'
-                    '</form>'
-                    )
-'''
