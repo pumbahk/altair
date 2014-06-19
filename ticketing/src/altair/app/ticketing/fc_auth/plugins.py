@@ -6,7 +6,7 @@ import wsgiref.util
 from webob.exc import HTTPFound
 from zope.interface import implementer
 from repoze.who.api import get_api as get_who_api
-from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator
+from repoze.who.interfaces import IChallenger, IAuthenticator
 from altair.auth.api import get_current_request
 from altair.sqlahelper import get_db_session
 from .api import login_url, get_memberships
