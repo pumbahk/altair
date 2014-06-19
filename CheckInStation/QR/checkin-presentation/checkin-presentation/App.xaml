@@ -9,16 +9,16 @@
              StartupUri="presentation/gui/HomeWIndow.xaml">
 
 
+
     <Application.Resources>
         <ResourceDictionary>
           <!-- converter -->
             <converter:MathConverter x:Key="MathConverter"/>
             <converter:NotEmptyStringConverter x:Key="NotEmptyStringConverter"/>
-            
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Styles\Base\Themes.Text.xaml" />
                 <ResourceDictionary Source="Styles\Base\Themes.Window.xaml" />
-                <ResourceDictionary Source="Styles\Base\Brush.Background.xaml" />
                 <ResourceDictionary Source="Styles\Eagles\Styles.xaml"/>
                 <ResourceDictionary Source="Styles\Base\Styles.xaml"/>
                 <ResourceDictionary Source="Styles\Individual.xaml"/>
