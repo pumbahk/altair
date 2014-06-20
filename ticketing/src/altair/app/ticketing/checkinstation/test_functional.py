@@ -524,92 +524,21 @@ class CheckinStationAPITests(BaseTests):
         for token in OrderedProductItemToken.query.all():
             self.assertNotEqual(token.refreshed_at, None)
 
+    @mock.patch("altair.app.ticketing.checkinstation.views.get_now")
+    def test_refresh_order2(self, m):
+        m.return_value = datetime(2000, 1, 1)
+        def _getTarget():
+            from .refresh.views import refresh_order_with_orderno
+            return refresh_order_with_orderno
 
-# class CheckinStationEndpointAPIWithSeat(BaseTests):
-#     TOKEN_ID = 19999
-#     DRAWING_DATA = "drawing-data-for-svg"
-#     @classmethod
-#     def setUpClass(cls):
-#         BaseTests.setUpClass()
+        order_no = self.order.order_no
+        tel = self.order.shipping_address.tel_1
+        result = do_view(
+            _getTarget(),
+            request=DummyRequest(json_body={"order_no": order_no, "tel":tel}))
 
-#         from altair.app.ticketing.models import DBSession
-#         from altair.app.ticketing.core.models import Seat
-#         operator = setup_checkin_identity()
-#         item = setup_ordered_product_item(quantity=1, quantity_only=False,
-#                                            organization=operator.organization, order_no="Demo:OrderNO:02")
-#         event = item.product_item.performance.event
-#         seat = Seat(l0_id=":l0_id", 
-#                     seat_no=":seat_no", 
-#                     name=":Seat:name", 
-#                     stock = item.product_item.stock, 
-#                     venue = item.product_item.performance.venue)
-#         item.seats.append(seat)
-#         setup_ordered_product_token(item)
-#         bundle = setup_ticket_bundle(event, drawing=cls.DRAWING_DATA)
-#         item.product_item.ticket_bundle = bundle
-#         DBSession.add(item)
-#         DBSession.add(bundle)
-#         DBSession.add(operator)
+        self.assertEqual(result["order_no"], self.order.order_no)
 
-#         seat = Seat(l0_id=":l0_id", 
-#                     seat_no=":seat_no", 
-#                     name=":Seat:name", 
-#                     stock = item.product_item.stock, 
-#                     venue = item.product_item.performance.venue)
-#         item.seats.append(seat)
-
-#         token = item.tokens[0]
-#         token.id = cls.TOKEN_ID
-
-#         cls.item = property(lambda self: DBSession.merge(item))
-#         cls.token = property(lambda self: DBSession.merge(token))
-#         cls.event = property(lambda self: DBSession.merge(self.item.product_item.performance.event))
-#         cls.order = property(lambda self: DBSession.merge(self.item.ordered_product.order))
-#         cls.budnle = property(lambda self: DBSession.merge(bundle))
-#         cls.ticket = property(lambda self: DBSession.merge(bundle).tickets[0])
-#         transaction.commit()
-
-#     def test_ticket_data(self):
-#         def _getTarget():
-#             from .views import AppletAPIView
-#             return AppletAPIView
-#         result = do_view(
-#             _getTarget(), 
-#             request=DummyRequest(json_body={"ordered_product_item_token_id": self.token.id}, 
-#                                  matchdict={"event_id": self.event.id}), 
-#             attr="ticket_data")
-#         self.assertEquals(len(result["data"]), 1)
-#         self.assertEquals(result["data"][0][u'ordered_product_item_token_id'], self.token.id)
-
-#         self.assertEquals(result["data"][0]["data"][u"席番"], u":Seat:name") #xxx!
-
-#         self.assertEquals(result["data"][0]["data"][u"イベント名"], ":Event:title")
-#         self.assertEquals(result["data"][0]["data"][u"対戦名"], ":Performance:name")
-#         self.assertEquals(result["data"][0]["data"][u"開始時刻"], u"10時 00分")
-#         self.assertEquals(result["data"][0]["data"][u"会場名"], ":Venue:name")
-#         self.assertEquals(result["data"][0]["data"][u"チケット価格"], u"14,000円")
-#         self.assertEquals(result["data"][0]["data"][u"席種名"], ":StockType:name")
-#         self.assertEquals(result["data"][0]["data"][u"商品名"], ":ProductItem:name")
-#         self.assertEquals(result["data"][0]["data"][u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
-
-#     def test_ticket_data_order(self):
-#         def _getTarget():
-#             from .views import AppletAPIView
-#             return AppletAPIView
-#         result = do_view(
-#             _getTarget(), 
-#             request=DummyRequest(json_body={"order_no": self.order.order_no}, 
-#                                  matchdict={"event_id": self.event.id}), 
-#             attr="ticket_data_order")
-#         self.assertEquals(len(result["data"]), 1)
-#         self.assertEquals(result["data"][0][u'ordered_product_item_token_id'], self.token.id)
-
-#         self.assertEquals(result["data"][0]["data"][u"イベント名"], ":Event:title")
-#         self.assertEquals(result["data"][0]["data"][u"対戦名"], ":Performance:name")
-#         self.assertEquals(result["data"][0]["data"][u"開始時刻"], u"10時 00分")
-#         self.assertEquals(result["data"][0]["data"][u"会場名"], ":Venue:name")
-#         self.assertEquals(result["data"][0]["data"][u"チケット価格"], u"14,000円")
-#         self.assertEquals(result["data"][0]["data"][u"席種名"], ":StockType:name")
-#         self.assertEquals(result["data"][0]["data"][u"商品名"], ":ProductItem:name")
-#         self.assertEquals(result["data"][0]["data"][u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
-
+        from altair.app.ticketing.orders.models import OrderedProductItemToken
+        for token in OrderedProductItemToken.query.all():
+            self.assertNotEqual(token.refreshed_at, None)
