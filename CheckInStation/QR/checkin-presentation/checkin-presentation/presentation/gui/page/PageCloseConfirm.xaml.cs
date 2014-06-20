@@ -13,9 +13,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using vkeyboard.control;
 using checkin.core.message;
 using checkin.core.models;
+
+using checkin.presentation.gui.control;
 
 namespace checkin.presentation.gui.page
 {
@@ -65,14 +66,18 @@ namespace checkin.presentation.gui.page
             return true;
         }
 
-        private bool KeyPadActionGotoQRRefreshMode(string password)
+        private bool KeyPadActionGotoRefreshMode(string password)
         {
             var ctx = this.DataContext as InputDataContext;
             if ((AppUtil.GetCurrentResource() as Resource).GetRefreshPassword() != password)
             {
                 return false;
             }
-            this.NavigationService.Navigate(new PageQRRefresh());
+            var case_ = AppUtil.GetCurrentBroker().FlowManager.Peek().Case;
+            var state = new RefreshPageState(case_);
+            state.Forward();
+            var navigator = AppUtil.GetRefreshPageNavigator();
+            navigator.NavigateToMatchedPage(state, this);
             return true;
         }
 
@@ -88,9 +93,9 @@ namespace checkin.presentation.gui.page
             AppUtil.GetNavigator().NavigateToMatchedPage(ctx.Case, this);
         }
 
-        private void OnGotoQRRefreshMode(object sender, RoutedEventArgs e)
+        private void OnGotoRefreshMode(object sender, RoutedEventArgs e)
         {
-            this.keyPadFinishCallBack = this.KeyPadActionGotoQRRefreshMode;
+            this.keyPadFinishCallBack = this.KeyPadActionGotoRefreshMode;
             this.KeyPad.RaiseVirtualkeyboardFinishEvent();
         }
     }

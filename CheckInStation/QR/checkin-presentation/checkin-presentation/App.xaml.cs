@@ -24,7 +24,7 @@ namespace checkin.presentation
         public static RequestBroker Broker;
         public static InternalApplication Internal;
         public static PageNavigator PageChoicer;
-
+        public static RefreshPageNavigator RefreshPageNavigator;
         public static void OnStartup(StartupEventArgs e)
         {
             //モデル層の処理をどこに置いたらよいのかわからないので、とりあえずここに。
@@ -32,6 +32,7 @@ namespace checkin.presentation
             AppUtil.PageChoicer = new PageNavigator();
             AppUtil.Broker = app.RequestBroker;
             AppUtil.Broker.SetStartCase(new CaseAuthInput(app.Resource));
+            AppUtil.RefreshPageNavigator = new RefreshPageNavigator(AppUtil.PageChoicer);
         }
 
         public static IResource GetCurrentResource()
@@ -52,6 +53,10 @@ namespace checkin.presentation
         public static PageNavigator GetNavigator()
         {
             return AppUtil.PageChoicer;
+        }
+        public static RefreshPageNavigator GetRefreshPageNavigator()
+        {
+            return AppUtil.RefreshPageNavigator;
         }
     }
 

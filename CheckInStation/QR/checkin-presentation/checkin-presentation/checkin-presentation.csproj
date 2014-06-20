@@ -124,6 +124,12 @@
     <Compile Include="presentation\gui\page\PageHomeMenu.xaml.cs">
       <DependentUpon>PageHomeMenu.xaml</DependentUpon>
     </Compile>
+    <Compile Include="presentation\gui\page\PageOrdernoRefreshOrdernoInput.xaml.cs">
+      <DependentUpon>PageOrdernoRefreshOrdernoInput.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="presentation\gui\page\PageOrodernoRefreshTelInput.xaml.cs">
+      <DependentUpon>PageOrodernoRefreshTelInput.xaml</DependentUpon>
+    </Compile>
     <Compile Include="presentation\gui\page\PagePrintingConfirm.xaml.cs">
       <DependentUpon>PagePrintingConfirm.xaml</DependentUpon>
     </Compile>
@@ -166,6 +172,7 @@
     <Compile Include="presentation\gui\page\PageFailure.xaml.cs">
       <DependentUpon>PageFailure.xaml</DependentUpon>
     </Compile>
+    <Compile Include="presentation\gui\RefreshPageNavigator.cs" />
     <Compile Include="presentation\gui\viewmodel\DisplayTicketData.cs" />
     <Compile Include="presentation\gui\viewmodel\InputDataContext.cs" />
     <Compile Include="presentation\gui\viewmodel\ViewModel.cs" />
@@ -266,6 +273,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="presentation\gui\page\PageInputStrategySelect.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageOrdernoRefreshOrdernoInput.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="presentation\gui\page\PageOrodernoRefreshTelInput.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
