@@ -1,4 +1,7 @@
 # -*- coding:utf-8 -*-
+import logging
+logger = logging.getLogger(__name__)
+import json
 from zope.interface import implementer
 from .interfaces import IAdImageCollector
 from collections import defaultdict
@@ -21,6 +24,7 @@ class AdImageCollector(object):
         short_name = request.context.organization.short_name
         r.extend(self.urls.get(short_name) or self.urls.get("default"))
         r.extend(request.static_url(s) for s in (self.specs.get(short_name) or self.specs.get("default")))
+        logger.info("ad images: %s", json.dumps(r))
         return r
 
 
