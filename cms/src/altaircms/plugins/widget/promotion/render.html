@@ -58,101 +58,28 @@ $(document).ready(function()
 import random
 prefix = str(random.random())[2:]
 %>
+
 <div class="promotion-widget">
   <div id="mainSlider">
     <div id="showcase" class="showcase">
-
+      % for img_info in infos:
       <div class="showcase-slide">
         <div class="showcase-content">
-          <a href="http://ticket.rakuten.co.jp/features/disney-on-ice/index.html">
-            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" />
-          </a>
+          ${show_image(prefix,img_info.main,img_info.main_link)|n}
         </div>
         <div style="display: none;" class="showcase-caption">
-          <p>ディズニー・オン・アイス「デア・トゥ・ドリーム</p>
+          <p>${img_info.message}</p>
         </div>
         <div class="showcase-thumbnail">
           <div class="showcase-thumbnail-img">
-            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" width="60px" />
+            <img src="${img_info.main}" width="60px" />
           </div>
-          <div class="showcase-thumbnail-caption">ディズニー・オン・アイス「デア・トゥ・ドリーム～絶対にあきらめないプリンセスたちの物語～
-          </div>
-        </div>
-      </div>
-
-      <div class="showcase-slide">
-        <div class="showcase-content">
-          <a href="http://ticket.rakuten.co.jp/features/disney-on-ice/index.html">
-            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" />
-          </a>
-        </div>
-        <div style="display: none;" class="showcase-caption">
-          <p>ディズニー・オン・アイス「デア・トゥ・ドリーム</p>
-        </div>
-        <div class="showcase-thumbnail">
-          <div class="showcase-thumbnail-img">
-            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" width="60px" />
-          </div>
-          <div class="showcase-thumbnail-caption">ディズニー・オン・アイス「デア・トゥ・ドリーム～絶対にあきらめないプリンセスたちの物語～
+          <div class="showcase-thumbnail-caption">
+            ${img_info.message}
           </div>
         </div>
       </div>
-
-      <div class="showcase-slide">
-        <div class="showcase-content">
-          <a href="http://ticket.rakuten.co.jp/features/disney-on-ice/index.html">
-            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" />
-          </a>
-        </div>
-        <div style="display: none;" class="showcase-caption">
-          <p>ディズニー・オン・アイス「デア・トゥ・ドリーム</p>
-        </div>
-        <div class="showcase-thumbnail">
-          <div class="showcase-thumbnail-img">
-            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" width="60px" />
-          </div>
-          <div class="showcase-thumbnail-caption">ディズニー・オン・アイス「デア・トゥ・ドリーム～絶対にあきらめないプリンセスたちの物語～
-          </div>
-        </div>
-      </div>
-
-      <div class="showcase-slide">
-        <div class="showcase-content">
-          <a href="http://ticket.rakuten.co.jp/features/disney-on-ice/index.html">
-            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" />
-          </a>
-        </div>
-        <div style="display: none;" class="showcase-caption">
-          <p>ディズニー・オン・アイス「デア・トゥ・ドリーム</p>
-        </div>
-        <div class="showcase-thumbnail">
-          <div class="showcase-thumbnail-img">
-            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" width="60px" />
-          </div>
-          <div class="showcase-thumbnail-caption">ディズニー・オン・アイス「デア・トゥ・ドリーム～絶対にあきらめないプリンセスたちの物語～
-          </div>
-        </div>
-      </div>
-
-      <div class="showcase-slide">
-        <div class="showcase-content">
-          <a href="http://ticket.rakuten.co.jp/features/disney-on-ice/index.html">
-            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" />
-          </a>
-        </div>
-        <div style="display: none;" class="showcase-caption">
-          <p>ディズニー・オン・アイス「デア・トゥ・ドリーム</p>
-        </div>
-        <div class="showcase-thumbnail">
-          <div class="showcase-thumbnail-img">
-            <img src="${request.static_url('altaircms:static/RT/img/tmp/slider/01.jpg')}" alt="01" width="60px" />
-          </div>
-          <div class="showcase-thumbnail-caption">ディズニー・オン・アイス「デア・トゥ・ドリーム～絶対にあきらめないプリンセスたちの物語～
-          </div>
-        </div>
-      </div>
-
-
+      % endfor
     </div>
   </div>
 </div>
@@ -165,15 +92,6 @@ prefix = str(random.random())[2:]
 import random
 prefix = str(random.random())[2:]
 %>
-
-
-
-
-
-
-
-
-
 <div class="promotion-widget">
   <div id="slideShow">
     <div id="slideShowLeft">
