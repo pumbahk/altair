@@ -23,8 +23,8 @@ class AdImageCollector(object):
         r = []
         organization = organization or request.context.organization
         short_name = organization.short_name
-        r.extend(self.urls.get(short_name) or self.urls.get("default"))
-        r.extend(request.static_url(s) for s in (self.specs.get(short_name) or self.specs.get("default")))
+        r.extend(self.urls.get(short_name) or self.urls.get("default", []))
+        r.extend(request.static_url(s) for s in (self.specs.get(short_name) or self.specs.get("default", [])))
         logger.info("ad images: %s", json.dumps(r))
         return r
 
