@@ -69,6 +69,7 @@
     <Compile Include="DynamicJson.cs" />
     <Compile Include="FlowDefinitionType.cs" />
     <Compile Include="IConfigurator.cs" />
+    <Compile Include="models\TicketRefreshedAtUpdater2.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ReleaseStageType.cs" />
     <Compile Include="RequestBroker.cs" />

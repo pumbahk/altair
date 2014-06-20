@@ -12,34 +12,35 @@ using checkin.core.web;
 
 namespace checkin.core.models
 {
-    public class TicketRefreshedAtUpdater
+    public class TicketRefreshedAtUpdater2
     {
-        public IResource Resource { get; set; }
+         public IResource Resource { get; set; }
 
 		private static Logger logger = LogManager.GetCurrentClassLogger ();
 
-		public TicketRefreshedAtUpdater (IResource resource)
+		public TicketRefreshedAtUpdater2 (IResource resource)
 		{
 			Resource = resource;
 		}
 
 		public virtual string GetUpdateRefreshedAtURL ()
 		{
-            return Resource.EndPoint.UpdateRefreshedAt;
+            return Resource.EndPoint.UpdateRefreshedAt2;
 		}
 
-        public class QRRequest
+        public class OrdernoRequest
         {
-            public string qrsigned { get; set; }
+            public string order_no { get; set; }
+            public string tel { get; set; }
         }
 
-        public async Task<ResultTuple<string, string>> UpdateRefreshedAtAsync(string qrcode)
+        public async Task<ResultTuple<string, string>> UpdateRefreshedAtAsync(string order_no, string tel)
         {
             IHttpWrapperFactory<HttpWrapper> factory = Resource.HttpWrapperFactory;
-            var qrdata = new QRRequest() { qrsigned = qrcode };
+            var data = new OrdernoRequest() { order_no=order_no, tel=tel};
             using (var wrapper = factory.Create(GetUpdateRefreshedAtURL()))
             {
-                HttpResponseMessage response = await wrapper.PostAsJsonAsync(qrdata).ConfigureAwait(false);
+                HttpResponseMessage response = await wrapper.PostAsJsonAsync(data).ConfigureAwait(false);
                 response.EnsureSuccessStatusCodeExtend();
                 try
                 {

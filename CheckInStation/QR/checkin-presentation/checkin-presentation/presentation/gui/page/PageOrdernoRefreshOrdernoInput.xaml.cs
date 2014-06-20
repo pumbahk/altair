@@ -54,6 +54,8 @@ namespace checkin.presentation.gui.page
                 var navigator = AppUtil.GetRefreshPageNavigator();
                 navigator.State.Forward();
                 navigator.NavigateToMatchedPage(this);
+           
+                
                 ctx.Event.Status = InternalEventStaus.success;//xxx:
             });
         }
