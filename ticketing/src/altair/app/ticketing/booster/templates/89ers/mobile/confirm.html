@@ -43,6 +43,18 @@ pm = _api.load_user_profile(request)
 <%mobile:form_header>メモリアルブックへの掲載希望</%mobile:form_header>
 <div>${u'はい' if pm['extra']['publicity'] == 'yes' else u'いいえ'}</div>
 % endif
+% if pm['extra'].get('t_shirts_size') is not None:
+<%mobile:form_header>ClubナイナーズＴシャツサイズ</%mobile:form_header>
+<div>${pm['extra']['t_shirts_size']}</div>
+% endif
+% if pm['extra'].get('official_ball') is not None:
+<%mobile:form_header>オリジナル公式球への記載希望名</%mobile:form_header>
+<div>${pm['extra']['official_ball']}</div>
+% endif
+% if pm['extra'].get('coupon') is not None:
+<%mobile:form_header>会員証以外の特典受取方法</%mobile:form_header>
+<div>${pm['extra']['coupon']}</div>
+% endif
 <%mobile:form_header>クラブナイナーズに入会しようと思ったきっかけは？</%mobile:form_header>
 <div>${pm['extra']['motivation']}</div>
 <%mobile:form_header>昨シーズンの会場での観戦回数</%mobile:form_header>

@@ -107,6 +107,30 @@
                   </td>
                 </tr>
                 % endif
+                % if pm['extra'].get('t_shirts_size') is not None:
+                <tr>
+                  <th>ClubナイナーズＴシャツサイズ</th>
+                  <td>
+                    ${pm['extra']['t_shirts_size']}
+                  </td>
+                </tr>
+                % endif
+                % if pm['extra'].get('official_ball') is not None:
+                <tr>
+                  <th> オリジナル公式球への記載希望名</th>
+                  <td>
+                    ${pm['extra']['official_ball']}
+                  </td>
+                </tr>
+                % endif
+                % if pm['extra'].get('coupon') is not None:
+                <tr>
+                  <th>会員証以外の特典受取方法</th>
+                  <td>
+                    ${pm['extra']['coupon']}
+                  </td>
+                </tr>
+                % endif
                 <tr>
                   <th>クラブナイナーズに入会しようと思ったきっかけは？</th>
                   <td>${pm['extra']['motivation']}</td>

@@ -56,12 +56,12 @@ class ExtraForm(Form):
                                        choices=[('L', u'L'),('3L', u'3L')],
                                        validators=[v.Optional()],
                                        coerce=text_type_but_none_if_not_given)
-    official_ball = fields.TextField(u"オリジナル公式球への記載希望",
+    official_ball = fields.TextField(u"オリジナル公式球への記載希望名",
                                      filters=[strip_spaces, NFKC],
-                                     validators=[v.Regexp(r'[A-Za-z]+', message=u'アルファベット大小文字可、記号不可'),
+                                     validators=[v.Regexp(r'^\S{1,10}$', message=u'最大10文字'),
                                      v.Optional()])
-    coupon = fields.SelectField(u"特典の会場受け取り希望",
-                                       choices=[(u'希望しない', u'希望しない'),(u'希望する', u'希望する')],
+    coupon = fields.SelectField(u"会員証以外の特典受取方法",
+                                       choices=[(u'会場受取', u'会場受取'),(u'配送希望', u'配送希望')],
                                        validators=[v.Optional()],
                                        coerce=text_type_but_none_if_not_given)
 
@@ -73,7 +73,7 @@ class ExtraForm(Form):
 
     def configure_for_official_ball(self):
         prepend_validator(self.official_ball, v.Required())
-        prepend_validator(self.official_ball, v.Regexp(u'^[a-zA-Z]*$', message=u'アルファベット大小文字可、記号不可'),)
+        prepend_validator(self.official_ball, v.Regexp(u'^\S{1,10}$$', message=u'最大10文字'),)
 
     def configure_coupon(self):
         prepend_validator(self.coupon, v.Required())
