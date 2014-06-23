@@ -383,11 +383,12 @@ var makeEditable = (function () {
   var editing = null;
   var prevDisplayStyleValue = null;
 
-  return function makeEditable(n, stock) {
+  return function makeEditable(n, stock, validation) {
     var editable = $('<span></span>').appendTo(n);
     var editableIcon = $('<i class="icon-pencil" style="margin-left: 4px;"></i>').appendTo(n);
     var save = function (value) { set(value); };
     var value = '';
+    var validation = validation;
 
     function beginEdit() {
       if (editing)
@@ -444,10 +445,20 @@ var makeEditable = (function () {
     }
 
     function set(_value) {
+      if(validation){
+          var rc = validation(_value);
+          if(rc){
+              value = _value;
+          }else{
+              return;
+          }
+      }else{
+          value = _value;
+      }
+
       if (editing)
         editing.val(_value)
       editable.text(_value);
-      value = _value;
 
       if (stock.get('assignable')) {
         editable.bind('click', onClick).addClass('editable');
@@ -495,7 +506,16 @@ function buildStockRow(stock) {
   if (stockType.get('isSeat') && !stockType.get('quantityOnly')) {
     makeAssignable(quantity, stock);
   } else {
-    bind(makeEditable(quantity, stock), stock, 'assigned');
+    bind(makeEditable(quantity, stock, function (value){
+        var regx = /^\d+$/; // only non negative integer.
+        var match = regx.exec(value);
+        if(match){
+            return true;
+        }else{
+            alert("不正な値です: " + value );
+            return false;
+        }
+    }), stock, 'assigned');
     stock_mover = $('<i class="fa fa-share-square-o"/>');
     stock_mover.on('click', function (){
         buildTransferStocksQuantityOnlyModal(stock.get('id'));
