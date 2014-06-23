@@ -19,6 +19,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using checkin.core.support;
+using checkin.presentation.support;
 using checkin.core.events;
 using checkin.core.models;
 using checkin.core;
@@ -36,7 +37,7 @@ namespace checkin.presentation.gui.page{
             get { return this._selectedPrinterName; }
             set { this._selectedPrinterName = value; this.OnPropertyChanged("SelectedPrinterName"); }
         }
-        
+
         private string _selectedServerUrl;
         public string SelectedServerUrl
         {

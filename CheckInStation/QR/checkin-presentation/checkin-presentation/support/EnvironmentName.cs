@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace checkin.core.support
+namespace checkin.presentation.support
 {
     public static class EnvironmentName
     {

@@ -82,6 +82,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="support\EnvironmentName.cs" />
     <Compile Include="presentation\gui\BindingErrorDialogAction.cs" />
     <Compile Include="presentation\gui\CandidateCreator.cs" />
     <Compile Include="presentation\gui\command\AppCloseCommand.cs" />
