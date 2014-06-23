@@ -393,6 +393,9 @@
       <Name>WpfKb</Name>
     </ProjectReference>
   </ItemGroup>
+  <PropertyGroup>
+    <MSBuildCommunityTasksPath>$(SolutionDir)\.build</MSBuildCommunityTasksPath>
+  </PropertyGroup>
   <Import Project="$(SolutionDir)\.build\MSBuild.Community.Tasks.targets" />
   <Target Name="Version" BeforeTargets="BeforeBuild" Condition=" '$(Configuration)' == 'Release' ">
     <Message Text="setting git commit hash" />
