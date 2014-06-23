@@ -58,7 +58,10 @@ def render_tstar_top(request, widget):
     ps = promotion_sheet(request, widget)
     info = pm.promotion_info(request, ps, limit=limit)
     infos = []
+    new_promotion_limit = 9
     for num in range(len(ps.promotion_units)):
+        if num == new_promotion_limit:
+            break;
         infos.append(pm.promotion_info(request, ps, num))
     params = {"show_image": pm.show_image, "info": info, "infos": infos, "widget": widget}
     return render(template_name, params, request=request)
