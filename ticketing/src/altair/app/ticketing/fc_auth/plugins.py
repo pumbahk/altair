@@ -55,11 +55,12 @@ class FCAuthPlugin(object):
             return
         logger.debug('authentication is required')
         request = get_current_request(environ)
+        event_id = request.matchdict['event_id']
         session = request.session.setdefault(SESSION_KEY, {})
         session['return_url'] = request.current_route_path(_query=request.GET)
         request.session.save()
         request = get_current_request(environ)
-        return HTTPFound(location=login_url(request))
+        return HTTPFound(location=login_url(request, event_id=event_id))
 
     # IMetadataProvider
     def add_metadata(self, environ, identity):
