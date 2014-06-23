@@ -50,9 +50,7 @@ class LoginView(object):
     @view_config(request_method="GET", route_name='fc_auth.detail_login', renderer='json', http_cache=60)
     def login_form(self):
         membership = self.request.matchdict['membership']
-        detail_membership = ""
-        if "detail_membership" in self.request.matchdict:
-            detail_membership = self.request.matchdict['detail_membership']
+        detail_membership = self.request.matchdict.get('detail_membership', None)
         self.select_renderer(membership, detail_membership)
         return dict(username='')
 
@@ -61,9 +59,9 @@ class LoginView(object):
     def login(self):
         who_api = get_who_api(self.request, name="fc_auth")
         authmembership = membership = self.request.matchdict['membership']
-        detail_membership = ""
-        if "detail_membership" in self.request.matchdict:
-            authmembership = detail_membership = self.request.matchdict['detail_membership']
+        detail_membership = self.request.matchdict.get('detail_membership', None)
+        if detail_membership:
+            authmembership = detail_membership
         username = self.request.params['username']
         password = self.request.params['password']
         logger.debug("authenticate for membership %s" % authmembership)
@@ -99,9 +97,9 @@ class LoginView(object):
     def guest_login(self):
         who_api = get_who_api(self.request, name="fc_auth")
         authmembership = membership = self.request.matchdict['membership']
-        detail_membership = ""
-        if "detail_membership" in self.request.matchdict:
-            authmembership = detail_membership = self.request.matchdict['detail_membership']
+        detail_membership = self.request.matchdict.get('detail_membership', None)
+        if detail_membership:
+            authmembership = detail_membership
         logger.debug("guest authenticate for membership %s" % authmembership)
 
         identity = {

@@ -55,7 +55,7 @@ class FCAuthPlugin(object):
             return
         logger.debug('authentication is required')
         request = get_current_request(environ)
-        event_id = request.matchdict['event_id']
+        event_id = request.matchdict.get('event_id', None)
         session = request.session.setdefault(SESSION_KEY, {})
         session['return_url'] = request.current_route_path(_query=request.GET)
         request.session.save()
