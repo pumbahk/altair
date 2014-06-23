@@ -256,7 +256,14 @@ if (!window.app)
     },
     bindClipboardCopy: function($el, moviePath){
       ZeroClipboard.config({"moviePath": moviePath});
-      $el.find('.copy-button').each(function(i,el){new ZeroClipboard(el);});
+      $el.find('.copy-button').each(function(i,el){
+        var zc = new ZeroClipboard(el);
+        zc.on("complete", function(_){
+          var $wrapper = $(el).parents(".label").eq(0);
+          $wrapper.addClass("label-warning");
+          setTimeout(function(){$wrapper.removeClass("label-warning");}, 500);
+        });
+      });
     },
     bindHelpPopOver: function($el){
       $el.find('[rel=popover]').popover();
