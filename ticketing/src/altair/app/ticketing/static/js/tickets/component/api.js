@@ -39,7 +39,7 @@ if (!window.component){
             }
             var close_button = $('<button>').attr("type","button").attr("class","close").attr("data-dismiss", "component").attr("aria-hidden", "true").text("×");
             if(!!this.header){
-                wrap.append($(this.tmpl_header).append(close_button).append($("<h2>").text(this.header)));
+                wrap.append($(this.tmpl_header).append(close_button).append($("<h3>").text(this.header)));
             }else{
                 wrap.append($(this.tmpl_header).append(close_button));
             }
