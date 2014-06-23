@@ -17,6 +17,8 @@ from altair.app.ticketing.orders.api import get_order_by_order_no
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.core.models import (
     MailTypeEnum,
+    Organization,
+    OrganizationSetting,
     PaymentMethod,
     PaymentDeliveryMethodPair,
     )
@@ -37,11 +39,11 @@ def get_target_order_nos():
       .with_entities(SejOrder.order_no)
 
     order_nos = DBSession.query(Order)\
+        .join(Organization)\
+        .join(OrganizationSetting)\
         .join(PaymentDeliveryMethodPair)\
         .join(PaymentMethod)\
         .join(OrderNotification)\
-        .join(Organization)\
-        .join(OrganizationSetting)\
         .filter(PaymentMethod.payment_plugin_id==SEJ_PAYMENT_PLUGIN_ID)\
         .filter(OrganizationSetting.notify_remind_mail==True)\
         .filter(Order.canceled_at==None)\
