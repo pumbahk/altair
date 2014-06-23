@@ -151,6 +151,7 @@
     <Compile Include="models\plain\UpdatePrintedAtRequestData.cs" />
     <Compile Include="support\DispatchResponse.cs" />
     <Compile Include="support\EnsureResponse.cs" />
+    <Compile Include="support\EnvironmentName.cs" />
     <Compile Include="support\ReplaceExecutableNamespaceName.cs" />
     <Compile Include="support\TransparentMessageException.cs" />
     <Compile Include="tests\GetMessageFromAppConfigTests.cs" />

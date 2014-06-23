@@ -7,24 +7,15 @@ using System.Threading.Tasks;
 
 namespace checkin.presentation.support
 {
-    public static class EnvironmentName
+    public static class ApplicationVersion
     {
-        public static string GetMachineName()
-        {
-            return System.Environment.MachineName;
-        }
-
+       
         public static string GetApplicationInformationalVersion()
         {
             var assembly = Assembly.GetExecutingAssembly();
             var attribute = assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), true).FirstOrDefault() as AssemblyInformationalVersionAttribute;
-            return "<todo fix>";
-            //return attribute.InformationalVersion.Substring(0, "0.0.0.".Length+7);
-        }
-
-        public static string WithMachineName(this string fmt)
-        {
-            return String.Format("machine={0}: {1}", EnvironmentName.GetMachineName(), fmt);
+            //return "<todo fix>";
+            return attribute.InformationalVersion.Substring(0, "0.0.0.".Length+7);
         }
     }
 }

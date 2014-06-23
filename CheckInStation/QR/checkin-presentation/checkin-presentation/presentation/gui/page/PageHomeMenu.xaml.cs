@@ -121,7 +121,7 @@ namespace checkin.presentation.gui.page{
                 SelectedServerUrl = resource.Authentication.LoginURL,
                 LoadedQRCode = "<準備中>",
                 TestStatusDescription = "<準備中>",
-                ApplicationVersion=EnvironmentName.GetApplicationInformationalVersion()
+                ApplicationVersion=ApplicationVersion.GetApplicationInformationalVersion()
             };
            
             return ctx;
