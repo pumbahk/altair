@@ -117,6 +117,7 @@ class Operators(BaseView):
         self.request.session.flash(u'オペレーターを削除しました')
         return HTTPFound(location=route_path('operators.index', self.request))
 
+
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
 class OperatorRoles(BaseView):
 
@@ -200,13 +201,14 @@ class OperatorRoles(BaseView):
 
         f = OperatorRoleForm(obj=operator_role, request=self.request)
         try:
-            if f.validate_id(f.id):
-                DBSession.delete(operator_role)
-                self.request.session.flash(u'ロールを削除しました')
+            f.validate_id(f.id)
+            DBSession.delete(operator_role)
+            self.request.session.flash(u'ロールを削除しました')
         except Exception, e:
             self.request.session.flash(e.message)
 
         return HTTPFound(location=route_path('operator_roles.index', self.request))
+
 
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
 class Permissions(BaseView):
