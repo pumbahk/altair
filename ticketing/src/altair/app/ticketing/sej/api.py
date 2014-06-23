@@ -13,7 +13,7 @@ from sqlalchemy.orm.session import make_transient
 import sqlahelper
 
 from .utils import JavaHashMap
-from .models import SejNotification, SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, SejNotificationType, ThinSejTenant, SejTicketTemplateFile
+from .models import SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, ThinSejTenant, SejTicketTemplateFile
 from .models import _session
 from .interfaces import ISejTenant
 from .exceptions import SejServerError, SejError, SejErrorBase
@@ -147,6 +147,20 @@ def get_sej_order(order_no, session=None):
         .order_by(desc(SejOrder.branch_no)) \
         .first()
     return retval
+
+def get_sej_order_by_exchange_number_or_billing_number(order_no=None, exchange_number=None, billing_number=None, session=None):
+    if session is None:
+        session = _session 
+    if order_no is None and exchange_number is None and billing_number is None:
+        raise ValueError('any of order_no, exchange_number and billing_number must be non-null value')
+    q = session.query(SejOrder)
+    if order_no is not None:
+        q = q.filter_by(order_no=order_no)
+    if exchange_number:
+        q = q.filter_by(exchange_number=exchange_number)
+    if billing_number:
+        q = q.filter_by(billing_number=billing_number)
+    return q.order_by(desc(SejOrder.branch_no)).first()
 
 def get_sej_orders(order_no, fetch_canceled=False, session=None):
     if session is None:

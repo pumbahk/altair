@@ -2,6 +2,7 @@
 
 from altair.app.ticketing.sej.notification.builder import SejNotificationRequestParamBuilder
 from altair.app.ticketing.sej import models as sej_models
+from altair.app.ticketing.sej.notification import models as sej_notification_models
 from altair.app.ticketing.sej.userside_api import lookup_sej_tenant
 from pyramid.paster import bootstrap
 from sqlalchemy.sql.expression import desc
@@ -15,7 +16,7 @@ from altair.app.ticketing.sej.userside_api import lookup_sej_tenant
 
 def generate_process_number(session, order):
     """order.idから適当に12桁の数字を生成"""
-    prev_notification = session.query(sej_models.SejNotification).filter_by(order_no=order.order_no).order_by(desc(sej_models.SejNotification.created_at)).first()
+    prev_notification = session.query(sej_notification_models.SejNotification).filter_by(order_no=order.order_no).order_by(desc(sej_notification_models.SejNotification.created_at)).first()
     if prev_notification is None:
         return "%010d%02d" % (order.id, order.branch_no)
     else:
@@ -38,8 +39,8 @@ def create_expire_notification_from_order(request, session, order_no, exchange_n
     order = get_order(session, order_no)
     sej_order = get_sej_order(session, order.order_no, exchange_number=exchange_number, billing_number=billing_number)
     tenant = lookup_sej_tenant(request, organization_id=order.organization_id)
-    return tenant, sej_models.SejNotification(
-        notification_type=sej_models.SejNotificationType.TicketingExpire.v,
+    return tenant, sej_notification_models.SejNotification(
+        notification_type=sej_notification_models.SejNotificationType.TicketingExpire.v,
         process_number=generate_process_number(session, order),
         shop_id=tenant.shop_id,
         order_no=sej_order.order_no,
@@ -54,8 +55,8 @@ def create_payment_notification_from_order(request, session, order_no, exchange_
     order = get_order(session, order_no)
     sej_order = get_sej_order(session, order.order_no, exchange_number=exchange_number, billing_number=billing_number)
     tenant = lookup_sej_tenant(request, organization_id=order.organization_id)
-    return tenant, sej_models.SejNotification(
-        notification_type=sej_models.SejNotificationType.PaymentComplete.v,
+    return tenant, sej_notification_models.SejNotification(
+        notification_type=sej_notification_models.SejNotificationType.PaymentComplete.v,
         process_number=generate_process_number(session, order),
         shop_id=tenant.shop_id,
         order_no=sej_order.order_no,
@@ -77,8 +78,8 @@ def create_cancel_notification_from_order(request, session, order_no, exchange_n
     order = get_order(session, order_no)
     sej_order = get_sej_order(session, order.order_no, exchange_number=exchange_number, billing_number=billing_number)
     tenant = lookup_sej_tenant(request, organization_id=order.organization_id)
-    return tenant, sej_models.SejNotification(
-        notification_type=sej_models.SejNotificationType.CancelFromSVC.v,
+    return tenant, sej_notification_models.SejNotification(
+        notification_type=sej_notification_models.SejNotificationType.CancelFromSVC.v,
         process_number=generate_process_number(session, order),
         shop_id=tenant.shop_id,
         order_no=sej_order.order_no,
@@ -106,8 +107,8 @@ def create_regrant_notification_from_order(request, session, order_no, exchange_
     exchange_number_new = sej_order.exchange_number and '%d' % (int(sej_order.exchange_number) + 1)
     ticketing_due_at = sej_order.ticketing_due_at or datetime.now()
     ticketing_due_at_new = ticketing_due_at.replace(year=(ticketing_due_at.year + 1))
-    return tenant, sej_models.SejNotification(
-        notification_type=sej_models.SejNotificationType.ReGrant.v,
+    return tenant, sej_notification_models.SejNotification(
+        notification_type=sej_notification_models.SejNotificationType.ReGrant.v,
         process_number=generate_process_number(session, order),
         shop_id=tenant.shop_id,
         order_no=sej_order.order_no,
@@ -135,10 +136,10 @@ def create_regrant_notification_from_order(request, session, order_no, exchange_
 
 
 actions = {
-    sej_models.SejNotificationType.PaymentComplete.v: create_payment_notification_from_order,
-    sej_models.SejNotificationType.CancelFromSVC.v:   create_cancel_notification_from_order,
-    sej_models.SejNotificationType.TicketingExpire.v: create_expire_notification_from_order,
-    sej_models.SejNotificationType.ReGrant.v:         create_regrant_notification_from_order,
+    sej_notification_models.SejNotificationType.PaymentComplete.v: create_payment_notification_from_order,
+    sej_notification_models.SejNotificationType.CancelFromSVC.v:   create_cancel_notification_from_order,
+    sej_notification_models.SejNotificationType.TicketingExpire.v: create_expire_notification_from_order,
+    sej_notification_models.SejNotificationType.ReGrant.v:         create_regrant_notification_from_order,
     }
 
 class ApplicationError(Exception):
@@ -156,11 +157,11 @@ def main(env, args):
     from altair.app.ticketing.models import DBSession as session
     try:
         action = None
-        enum_ = getattr(sej_models.SejNotificationType, _args.action, None)
+        enum_ = getattr(sej_notification_models.SejNotificationType, _args.action, None)
         if enum_ is not None:
             action = actions.get(int(enum_))
         if action is None:
-            raise ApplicationError('unknown action: possible actions are %s' % ', '.join(en.k for en in sej_models.SejNotificationType._values))
+            raise ApplicationError('unknown action: possible actions are %s' % ', '.join(en.k for en in sej_notification_models.SejNotificationType._values))
         order_no = _args.order_no
         exchange_number = _args.exchange_number
         billing_number = _args.billing_number
