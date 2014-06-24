@@ -90,6 +90,11 @@ class LinklistWidget(Widget):
             return linklist_render(self, finder, request=request)
         bsettings.add(bname, render)
 
+    def clone(self, session, page=None): #todo:refactoring model#clone
+        instance = super(LinklistWidget, self).clone(session, page=page)
+        instance.use_newstyle = self.use_newstyle or False
+        return instance
+
 class LinklistWidgetResource(HandleSessionMixin,
                                 UpdateDataMixin,
                                 HandleWidgetMixin,

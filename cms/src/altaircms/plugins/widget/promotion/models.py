@@ -37,6 +37,11 @@ class PromotionWidget(Widget):
         closure = get_rendering_function_via_page(self, bname, bsettings, self.type)
         bsettings.add(bname, closure)
 
+    def clone(self, session, page=None): #todo:refactoring model#clone
+        instance = super(PromotionWidget, self).clone(session, page=page)
+        instance.use_newstyle = self.use_newstyle or False
+        return instance
+
 
 
 class PromotionWidgetResource(HandleSessionMixin,
