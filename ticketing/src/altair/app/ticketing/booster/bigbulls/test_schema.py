@@ -30,31 +30,6 @@ class SchemaTests(unittest.TestCase):
         target.configure_for_kids(u'18歳未満')
         self.assertTrue(target.validate())
 
-    def test_validate_false_for_authentic_uniform(self):
-        target = self._makeOne(MultiDict())
-        target.configure_for_authentic_uniform()
-        self.assertFalse(target.validate())
-
-    def test_validate_true_for_authentic_uniform(self):
-        target = self._makeOne(
-            MultiDict(authentic_uniform_no=u"20", 
-                      authentic_uniform_size="4L", 
-                      authentic_uniform_name=u"NAME", 
-                      authentic_uniform_color="red", 
-                      ))
-        target.configure_for_authentic_uniform()
-        self.assertTrue(target.validate())
-
-    def test_validate_false_for_replica_uniform(self):
-        target = self._makeOne(MultiDict())
-        target.configure_for_replica_uniform()
-        self.assertFalse(target.validate())
-
-    def test_validate_true_for_replica_uniform(self):
-        target = self._makeOne(
-            MultiDict(replica_uniform_size="4L"))
-        target.configure_for_replica_uniform()
-        self.assertTrue(target.validate())
 
     def test_validate_false_for_t_shirts_size(self):
         target = self._makeOne(MultiDict())
