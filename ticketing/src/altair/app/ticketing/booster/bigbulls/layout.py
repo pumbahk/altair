@@ -8,14 +8,14 @@ class Layout(object):
         self.context = context
         self.request = request
 
-    title = u"岩手ビッグブルズ　2013-2014　クラブブルズ会員入会申込ページ"
+    title = u"岩手ビッグブルズ　2014-2015　クラブブルズ会員入会申込ページ"
     mini_title = u"岩手ビッグブルズ　クラブブルズ会員入会申込ページ"
     orderreview_title = u"岩手ビッグブルズ　クラブブルズ会員入会申込ページ"
     complete_title = u"岩手ビッグブルズ　クラブブルズ会員入会申込"
     team_name = u"岩手ビッグブルズ"
     mailaddress = u"bigbulls@tstar.jp"
     contact_name = u"(株)岩手スポーツプロモーション"
-    product_name = u"岩手ビッグブルズ 2013-2014 ブースタークラブ"
+    product_name = u"岩手ビッグブルズ 2014-2015 ブースタークラブ"
     tel = u"019-622-6811　(平日 9:30～18:30)"
     ##html
     form_class_name = u"formbigbulls"
