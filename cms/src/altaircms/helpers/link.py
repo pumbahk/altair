@@ -37,6 +37,8 @@ def get_link_from_category(request, category):
 def get_link_from_genre(request, genre):
     if genre.category_top_pageset_id is None:
         return ""
+    if genre.category_top_pageset is None:
+        return ""
     return publish_page_from_pageset(request, genre.category_top_pageset)
 
 
