@@ -409,7 +409,7 @@ class ProductItems(BaseView):
             raise HTTPFound(location=location)
         return HTTPFound(location=location)
 
-@view_config(route_name="products.sub.older.show", renderer="altair.app.ticketing:templates/products/_sub_older_show.html")
+@view_config(route_name="products.sub.older.show", permission='event_editor', renderer="altair.app.ticketing:templates/products/_sub_older_show.html")
 def subview_older(context, request):
     sales_segment = context.sales_segment
     ## todo: order
@@ -426,7 +426,7 @@ def subview_older(context, request):
         "download_form": PreviewImageDownloadForm(sales_segment=sales_segment)
     }
 
-@view_config(route_name="products.sub.newer.show", renderer="altair.app.ticketing:templates/products/_sub_newer_show.html")
+@view_config(route_name="products.sub.newer.show", permission='event_editor', renderer="altair.app.ticketing:templates/products/_sub_newer_show.html")
 def subview_newer(context, request):
     sales_segment = context.sales_segment
     event = sales_segment.event
