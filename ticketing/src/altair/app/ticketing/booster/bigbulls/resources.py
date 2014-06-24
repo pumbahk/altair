@@ -41,10 +41,6 @@ class BjbigbullsCartResource(BoosterCartResource):
 
         if "member_type" in data:
             permissions = form.permission_dict.get(data["member_type"], [])
-            if Symbols.authentic_uniform in permissions:
-                form.extra.configure_for_authentic_uniform()
-            if Symbols.replica_uniform in permissions:
-                form.extra.configure_for_replica_uniform()
             if Symbols.t_shirts_size in permissions:
                 form.extra.configure_for_t_shirts_size()
         return form
@@ -65,13 +61,6 @@ class BjbigbullsCartResource(BoosterCartResource):
         extra = data["extra"]
         permissions = permission_dict.get(k, [])
 
-        if Symbols.authentic_uniform not in permissions:
-            extra["authentic_uniform_size"] = None
-            extra["authentic_uniform_no"] = None
-            extra["authentic_uniform_color"] = None
-            extra["authentic_uniform_name"] = None
-        if Symbols.replica_uniform not in permissions:
-            extra["replica_uniform_size"] = None
         if Symbols.t_shirts_size not in permissions:
             extra["t_shirts_size"] = None
         return super(type(self), self).store_user_profile(data)
