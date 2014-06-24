@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from pyramid.threadlocal import get_current_request
-
 from wtforms import Form, ValidationError
 from wtforms import TextField, HiddenField, DateField, PasswordField, SelectMultipleField
 from wtforms.validators import Length, Optional, Regexp
@@ -17,8 +15,9 @@ from altair.app.ticketing.models import DBSession
 
 class OperatorRoleForm(Form):
 
-    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+    def __init__(self, formdata=None, obj=None, request=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
+        self.request = request
 
         if obj and obj.permissions:
             self.permissions.data = [p.category_name for p in obj.permissions]
@@ -70,15 +69,20 @@ class OperatorRoleForm(Form):
     def validate_id(form, field):
         if field.data:
             operator_role = OperatorRole.query.filter_by(id=field.data).first()
-            request = get_current_request()
-            if not operator_role.is_editable() and not request.context.has_permission('administrator'):
+            if not operator_role.is_editable() and not form.request.context.has_permission('administrator'):
                 raise ValidationError(u'このロールは変更できません')
 
+    def validate_permissions(form, field):
+        if field.data:
+            # administrator権限はadministrator権限がないと付与できない
+            if 'administrator' in form.permissions.data and not form.request.context.has_permission('administrator'):
+                raise ValidationError(u'{}を付与する権限がありません'.format(PermissionCategory.label('administrator')))
 
 class OperatorForm(Form):
 
-    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+    def __init__(self, formdata=None, obj=None, request=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
+        self.request = request
 
         if obj:
             self.login_id.data = obj.auth.login_id
@@ -152,16 +156,14 @@ class OperatorForm(Form):
 
     def validate_id(form, field):
         # administratorロールのオペレータはadministrator権限がないと編集できない
-        request = get_current_request()
-        if field.data and not request.context.has_permission('administrator'):
+        if field.data and not form.request.context.has_permission('administrator'):
             operator = Operator.get(form.organization_id.data, field.data)
             if 'administrator' in [(role.name) for role in operator.roles]:
                 raise ValidationError(u'このオペレータを編集する権限がありません')
 
     def validate_role_ids(form, field):
         # administratorロールはadministrator権限がないと付与できない
-        request = get_current_request()
-        if not request.context.has_permission('administrator'):
+        if not form.request.context.has_permission('administrator'):
             query = OperatorRole.query_all(form.organization_id.data).filter(OperatorRole.id.in_(field.data))
             if 'administrator' in [role.name for role in query.all()]:
                 raise ValidationError(u'このロールを付与する権限がありません')

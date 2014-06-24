@@ -56,7 +56,7 @@ class Operators(BaseView):
 
     @view_config(route_name='operators.new', request_method='POST', renderer='altair.app.ticketing:templates/operators/edit.html')
     def new_post(self):
-        f = OperatorForm(self.request.POST, organization_id=self.context.organization.id)
+        f = OperatorForm(self.request.POST, request=self.request, organization_id=self.context.organization.id)
         if f.validate():
             operator = merge_session_with_post(Operator(), f.data)
             operator.expire_at = datetime.today() + timedelta(days=180)
@@ -72,7 +72,7 @@ class Operators(BaseView):
 
     @view_config(route_name='operators.edit', request_method='GET', renderer='altair.app.ticketing:templates/operators/edit.html')
     def edit_get(self):
-        f = OperatorForm(obj=self.context.operator, organization_id=self.context.organization.id)
+        f = OperatorForm(obj=self.context.operator, request=self.request, organization_id=self.context.organization.id)
         try:
             f.validate_id(f.id)
         except Exception, e:
@@ -87,7 +87,7 @@ class Operators(BaseView):
     def edit_post(self):
         operator = self.context.operator
 
-        f = OperatorForm(self.request.POST, organization_id=self.context.organization.id)
+        f = OperatorForm(self.request.POST, request=self.request, organization_id=self.context.organization.id)
         f.password.data = operator.auth.password
         f.expire_at.data = operator.expire_at
         if f.validate():
@@ -106,7 +106,7 @@ class Operators(BaseView):
     def delete(self):
         operator = self.context.operator
 
-        f = OperatorForm(obj=operator, organization_id=self.context.organization.id)
+        f = OperatorForm(obj=operator, request=self.request, organization_id=self.context.organization.id)
         try:
             f.validate_id(f.id)
         except Exception, e:
@@ -116,6 +116,7 @@ class Operators(BaseView):
         operator.delete()
         self.request.session.flash(u'オペレーターを削除しました')
         return HTTPFound(location=route_path('operators.index', self.request))
+
 
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
 class OperatorRoles(BaseView):
@@ -142,12 +143,12 @@ class OperatorRoles(BaseView):
     @view_config(route_name='operator_roles.new', request_method='GET', renderer='altair.app.ticketing:templates/operator_roles/edit.html')
     def new_get(self):
         return {
-            'form':OperatorRoleForm(organization_id=self.context.organization.id),
+            'form':OperatorRoleForm(request=self.request, organization_id=self.context.organization.id),
             }
 
     @view_config(route_name='operator_roles.new', request_method='POST', renderer='altair.app.ticketing:templates/operator_roles/edit.html')
     def new_post(self):
-        f = OperatorRoleForm(self.request.POST, organization_id=self.context.organization.id)
+        f = OperatorRoleForm(self.request.POST, request=self.request, organization_id=self.context.organization.id)
         if f.validate():
             operator_role = merge_session_with_post(OperatorRole(), f.data)
             permissions = []
@@ -166,16 +167,16 @@ class OperatorRoles(BaseView):
     @view_config(route_name='operator_roles.edit', request_method='GET', renderer='altair.app.ticketing:templates/operator_roles/edit.html')
     def edit_get(self):
         return {
-            'form':OperatorRoleForm(obj=self.context.operator_role),
+            'form':OperatorRoleForm(obj=self.context.operator_role, request=self.request),
             }
 
     @view_config(route_name='operator_roles.edit', request_method='POST', renderer='altair.app.ticketing:templates/operator_roles/edit.html')
     def edit_post(self):
         operator_role = self.context.operator_role
 
-        f = OperatorRoleForm(self.request.POST, organization_id=self.context.organization.id)
+        f = OperatorRoleForm(self.request.POST, request=self.request, organization_id=self.context.organization.id)
         if f.validate():
-            operator_role = merge_session_with_post(operator_role, f.data)
+            operator_role = merge_session_with_post(operator_role, f.data, excludes={'organization_id'})
             permissions = []
             for p in operator_role.permissions:
                 if p.category_name not in f.permissions.data:
@@ -198,15 +199,16 @@ class OperatorRoles(BaseView):
     def delete(self):
         operator_role = self.context.operator_role
 
-        f = OperatorRoleForm(obj=operator_role)
+        f = OperatorRoleForm(obj=operator_role, request=self.request)
         try:
-            if f.validate_id(f.id):
-                DBSession.delete(operator_role)
-                self.request.session.flash(u'ロールを削除しました')
+            f.validate_id(f.id)
+            DBSession.delete(operator_role)
+            self.request.session.flash(u'ロールを削除しました')
         except Exception, e:
             self.request.session.flash(e.message)
 
         return HTTPFound(location=route_path('operator_roles.index', self.request))
+
 
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
 class Permissions(BaseView):
