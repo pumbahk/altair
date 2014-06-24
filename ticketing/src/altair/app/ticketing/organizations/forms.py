@@ -145,10 +145,11 @@ class SejTenantForm(OurForm):
         ]
     )
     contact_01 = OurTextField(
-        label=u'連絡先1',
+        label=u'電話番号',
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
+            Regexp(r'^[-\d]*$', message=u'半角数字および-(ハイフン)のみを入力してください'),
         ]
     )
     contact_02 = OurTextField(
