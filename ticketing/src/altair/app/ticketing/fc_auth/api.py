@@ -6,6 +6,7 @@ from altair.app.ticketing.users.models import Membership
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart import api as cart_api
 import altair.app.ticketing.users.models as u_m
+import altair.app.ticketing.core.models as c_m
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +41,22 @@ def do_authenticate(request, membership, username, password):
         return None
     return { 'user_id': user.id }
 
-def login_url(request):
+def login_url(request, event_id=None):
     organization = cart_api.get_organization(request)
     url = request.route_url('fc_auth.login', membership=organization.short_name)
+
+    # EventIDから、会員種別を辿り、それが、Organizationのショートネームと違う場合、第二の会員種別として扱う。
+    if event_id:
+        session = get_db_session(request, 'slave')
+        salessegment_group = session.query(c_m.SalesSegmentGroup) \
+            .filter(c_m.SalesSegmentGroup.event_id==event_id).first()
+
+        if salessegment_group:
+            if len(salessegment_group.membergroups) > 0:
+                membership = salessegment_group.membergroups[0].membership
+                if organization.short_name != membership.name:
+                    url = request.route_url('fc_auth.detail_login', membership=organization.short_name, detail_membership=membership.name)
+
     logger.debug("login url %s" % url)
     return url 
 
