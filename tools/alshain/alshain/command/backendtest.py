@@ -188,7 +188,7 @@ class StockTypeCreator(Part):
                 return True
         return False
 
-class TicketCreator(Part):
+class _TicketCreator(Part):
     """イベント詳細ページ 券面 作成
     """
 
@@ -264,7 +264,7 @@ class TicketCreator(Part):
         """
         tags = browser.find_elements_by_css_selector('form#tickets div.row-fluid.well div.btn-group a')
         for tag in tags:
-            if u'を追加' in tag.text:
+            if u'チケット券面追加' in tag.text:
                 tag.click()
                 time.sleep(1)
                 break
