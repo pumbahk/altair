@@ -21,15 +21,6 @@ def prepend_validator(field, x):
     field.validators = prepend_list(x, field.validators)
 
 class ExtraForm(Form):
-    publicity = fields.SelectField(
-        u"ゲームプログラムへのお名前掲載",
-        validators=[v.Optional()],
-        choices=[
-            ('yes', u'希望する'),
-            ('no', u'希望しない')
-            ],
-        coerce=text_type_but_none_if_not_given)
-
     t_shirts_size = fields.SelectField(u"Tシャツサイズ", 
                                        choices=[('L', u'L'),('3L', u'3L')], 
                                        validators=[v.Optional()], 
@@ -51,15 +42,6 @@ class ExtraForm(Form):
         prepend_validator(self.parent_last_name, v.Required(message))
         prepend_validator(self.parent_last_name_kana, v.Required(message))
         prepend_validator(self.relationship, v.Required(message))
-
-    def configure_for_authentic_uniform(self):
-        prepend_validator(self.authentic_uniform_no, v.Required())
-        prepend_validator(self.authentic_uniform_size, v.Required())
-        prepend_validator(self.authentic_uniform_name, v.Required())
-        prepend_validator(self.authentic_uniform_color, v.Required())
-
-    def configure_for_replica_uniform(self):
-        prepend_validator(self.replica_uniform_size, v.Required())
 
     def configure_for_t_shirts_size(self):
         prepend_validator(self.t_shirts_size, v.Required())
