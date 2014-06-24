@@ -204,7 +204,9 @@ class MypageLoginView(object):
     def login(self):
         who_api = get_who_api(self.request, name="fc_auth")
 
-        membership = self.context.get_membership().name
+        authmembership = membership = self.context.get_membership().name
+        if self.request.params.get('membership', None):
+            authmembership = self.request.params.get('membership', None)
         username = self.request.params['username']
         password = self.request.params['password']
 
@@ -212,14 +214,14 @@ class MypageLoginView(object):
         headers = None
         identity = None
 
-        result = do_authenticate(self.request, membership, username, password)
+        result = do_authenticate(self.request, authmembership, username, password)
         if result is not None:
             # result には user_id が含まれているが、これを identity とすべきかは
             # 議論の余地がある。user_id を identity にしてしまえば DB 負荷を
             # かなり減らすことができるだろう。
             identity = {
                 'login': True,
-                'membership': membership,
+                'membership': authmembership,
                 'username': username,
                 }
 
