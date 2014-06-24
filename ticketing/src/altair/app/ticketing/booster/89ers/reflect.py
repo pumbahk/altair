@@ -23,10 +23,10 @@ s = Symbols = SymbolPool(
     "coupon")
 
 ms = MemberTypeSymbols = SymbolPool(
-    platinum=u"プラチナ会員",
-    gold=u"ゴールド会員",
-    regular=u"レギュラー会員",
-    junior=u"ジュニア会員"
+    platinum=u"プラチナプラン",
+    gold=u"ゴールドプラン",
+    regular=u"レギュラープラン",
+    junior=u"ジュニアプラン"
     )
 
 product_reflections = {

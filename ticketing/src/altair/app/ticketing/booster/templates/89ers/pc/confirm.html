@@ -44,7 +44,7 @@
                 </tr>
                 % if pm.get('old_id_number'):
               　<tr>
-                  <th>2011-12会員番号</th>
+                  <th>2013-14会員番号</th>
                   <td>${pm.get('old_id_number')}</td>
                 </tr>
                 % endif
@@ -104,6 +104,30 @@
                   <th>メモリアルブックへの掲載希望</th>
                   <td>
                     ${u'はい' if pm['extra']['publicity'] == 'yes' else u'いいえ'}
+                  </td>
+                </tr>
+                % endif
+                % if pm['extra'].get('t_shirts_size') is not None:
+                <tr>
+                  <th>ClubナイナーズＴシャツサイズ</th>
+                  <td>
+                    ${pm['extra']['t_shirts_size']}
+                  </td>
+                </tr>
+                % endif
+                % if pm['extra'].get('official_ball') is not None:
+                <tr>
+                  <th> オリジナル公式球への記載希望名</th>
+                  <td>
+                    ${pm['extra']['official_ball']}
+                  </td>
+                </tr>
+                % endif
+                % if pm['extra'].get('coupon') is not None:
+                <tr>
+                  <th>会員証以外の特典受取方法</th>
+                  <td>
+                    ${pm['extra']['coupon']}
                   </td>
                 </tr>
                 % endif
