@@ -28,11 +28,23 @@ def linklist_render(widget, finder, request=None):
     if widget.max_items:
         qs = qs.limit(widget.max_items)
     qs = qs.all()
+
+    title = u"今週販売"
+    if widget.finder_kind == "nearTheEnd":
+        title = u"販売終了間近"
+
     if not qs:
+        if widget.use_newstyle:
+            return u'<h4>%s</h4><ul>%s</ul>' % (title, u"<p>現在、対象となる公演情報はありません</p>")
         return u'<div id="%s"><p>現在、対象となる公演情報はありません</p></div>' % widget.finder_kind
     candidates = [u'<a href="%s">%s</a>' % (h.link.publish_page_from_pageset(request, p), p.name) for p in qs]
     content = widget.delimiter.join(candidates)
     element = u'<p>%s</p>' % content if content else ''
+
+    if widget.use_newstyle:
+        element = u'<li>%s</li>' % content if content else ''
+        return u'<h4>%s</h4><ul>%s</ul>' % (title, element)
+
     return u'<div id="%s">%s</div>' % (widget.finder_kind, element)
 
 
@@ -67,7 +79,7 @@ class LinklistWidget(Widget):
     limit_span = sa.Column(sa.Integer, default=7)
     system_tag_id = sa.Column(sa.Integer, sa.ForeignKey("pagetag.id"))
     system_tag = orm.relationship(PageTag, uselist=False, primaryjoin="LinklistWidget.system_tag_id==PageTag.id")
-
+    use_newstyle = sa.Column(sa.Boolean)
     
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")

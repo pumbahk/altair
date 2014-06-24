@@ -31,6 +31,7 @@ class PromotionWidget(Widget):
     tag = orm.relationship("PromotionTag", uselist=False, primaryjoin="PromotionWidget.tag_id==PromotionTag.id")
     system_tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id", ondelete="SET NULL"))
     system_tag = orm.relationship("PromotionTag", uselist=False, primaryjoin="PromotionWidget.system_tag_id==PromotionTag.id")
+    use_newstyle = sa.Column(sa.Boolean)
 
     def merge_settings(self, bname, bsettings):
         closure = get_rendering_function_via_page(self, bname, bsettings, self.type)
