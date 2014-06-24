@@ -8,7 +8,7 @@ from pyramid.renderers import render_to_response
 from pyramid.url import route_path
 
 from altair.app.ticketing.views import BaseView
-from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
+from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import DeliveryMethod
 from altair.app.ticketing.delivery_methods.forms import DeliveryMethodForm
@@ -38,6 +38,12 @@ class DeliveryMethods(BaseView):
             'delivery_methods':delivery_methods,
         }
 
+    @view_config(route_name='delivery_methods.new', request_method='GET', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
+    def new(self):
+        return {
+            'form': DeliveryMethodForm(),
+        }
+
     @view_config(route_name='delivery_methods.new', request_method='POST', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
     def new_post(self):
         f = DeliveryMethodForm(self.request.POST)
@@ -52,6 +58,13 @@ class DeliveryMethods(BaseView):
             return {
                 'form':f,
             }
+
+    @view_config(route_name='delivery_methods.edit', request_method='GET', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
+    def edit(self):
+        delivery_method_id = long(self.request.matchdict.get('delivery_method_id', 0))
+        return {
+            'form': DeliveryMethodForm(obj=DeliveryMethod.query.filter_by(id=delivery_method_id).one()),
+        }
 
     @view_config(route_name='delivery_methods.edit', request_method='POST', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
     def edit_post(self):
