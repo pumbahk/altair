@@ -264,7 +264,7 @@ display: none;
 /* Clear (used for horizontal thumbnails)
 -------------------------------------------
 
-.clearS{
+#showcase .clear{
 clear: both;
 display: block;
 overflow: hidden;
