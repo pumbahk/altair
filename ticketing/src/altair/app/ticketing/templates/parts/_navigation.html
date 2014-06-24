@@ -39,7 +39,7 @@
     </li>
   % endif
 
-  % if HH.has_permission('master_viewer') or request.context.organization.point_feature_enabled:
+  % if HH.has_permission('master_viewer') or (request.context.organization and request.context.organization.point_feature_enabled):
     <li class="dropdown">
       <a class="dropdown-toggle" data-toggle="dropdown">マスタ管理</a>
       <ul class="dropdown-menu">
