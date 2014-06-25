@@ -25,7 +25,7 @@ from altair.app.ticketing.events.sales_reports.reports import SalesTotalReporter
 logger = logging.getLogger(__name__)
 
 
-@view_defaults(decorator=with_bootstrap, permission='sales_editor')
+@view_defaults(decorator=with_bootstrap, permission='sales_viewer')
 class SalesReports(BaseView):
 
     @view_config(route_name='sales_reports.index', request_method='GET', renderer='altair.app.ticketing:templates/sales_reports/index.html')

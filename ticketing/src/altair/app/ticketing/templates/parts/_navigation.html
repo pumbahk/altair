@@ -5,7 +5,7 @@
 <div class="nav-collapse">
   <ul class="nav">
 
-  % if HH.has_permission('event_editor'):
+  % if HH.has_permission('event_viewer'):
     <li class="dropdown">
       <a class="dropdown-toggle" data-toggle="dropdown">公演</a>
       <ul class="dropdown-menu">
@@ -13,61 +13,19 @@
         % if event:
         <li class="divider"></li>
         <li><a href="${request.route_path('events.show', event_id=event.id)}">${event.abbreviated_title[0:10]}</a></li>
+        <li class="sub-menu"><a href="${request.route_path('performances.index', event_id=event.id)}">公演</a></li>
+        <li class="sub-menu"><a href="${request.route_path('lots.index', event_id=event.id)}">抽選</a></li>
+          % if HH.has_permission('event_editor'):
         <li class="sub-menu"><a href="${request.route_path('stock_types.index', event_id=event.id)}">席種</a></li>
         <li class="sub-menu"><a href="${request.route_path('stock_holders.index', event_id=event.id)}">配券先</a></li>
         <li class="sub-menu"><a href="${request.route_path('sales_segment_groups.index', event_id=event.id)}">販売区分グループ</a></li>
-        <li class="sub-menu"><a href="${request.route_path('performances.index', event_id=event.id)}">公演</a></li>
         <li class="sub-menu"><a href="${request.route_path('reports.index', event_id=event.id)}">帳票</a></li>
         <li class="sub-menu"><a href="${request.route_path('events.tickets.index', event_id=event.id)}">券面</a></li>
         <li class="sub-menu"><a href="${request.route_path('events.mailinfo.index', event_id=event.id)}">メール</a></li>
         <li class="sub-menu"><a href="${request.route_path('orders.index', _query=dict(event_id=event.id))}">予約情報</a></li>
-        <li class="sub-menu"><a href="${request.route_path('lots.index', event_id=event.id)}">抽選</a></li>
         <li class="sub-menu"><a href="${request.route_path('sales_reports.event', event_id=event.id)}">売上レポート</a></li>
         <li class="sub-menu"><a href="${request.route_path('events.print_progress.show', event_id=event.id)}">発券進捗状況</a></li>
-        % endif
-      </ul>
-    </li>
-  % endif
-
-  % if HH.has_permission('member_editor'):
-    <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown">会員</a>
-      <ul class="dropdown-menu">
-        <li><a href="${request.route_path('memberships',action="index",membership_id="*")}">会員種別マスタ</a></li>
-        <li><a href="${request.route_path('members.membership.index')}">会員アカウント</a></li>
-      </ul>
-    </li>
-  % endif
-
-  % if HH.has_permission('master_viewer') or (request.context.organization and request.context.organization.point_feature_enabled):
-    <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown">マスタ管理</a>
-      <ul class="dropdown-menu">
-        % if HH.has_permission('master_viewer'):
-        <li><a href="${request.route_path('operators.index')}">オペレーター</a></li>
-        <li><a href="${request.route_path('accounts.index')}">取引先</a></li>
-        <li><a href="${request.route_path('payment_methods.index')}">決済方法</a></li>
-        <li><a href="${request.route_path('delivery_methods.index')}">引取方法</a></li>
-        <li><a href="${request.route_path('service_fee_methods.index')}">手数料</a></li>
-        <li><a href="${request.route_path('tickets.index')}">チケット券面</a></li>
-        % endif
-        % if request.context.organization.point_feature_enabled:
-        <li><a href="${request.route_path('point_grant_settings.index')}">ポイント付与</a></li>
-        % endif
-      </ul>
-    </li>
-  % endif
-
-  % if HH.has_permission('sales_counter') or HH.has_permission('sales_editor'):
-    <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown">予約</a>
-      <ul class="dropdown-menu">
-        % if HH.has_permission('sales_counter'):
-        <li><a href="${request.route_path('orders.index')}">予約検索</a></li>
-        % endif
-        % if HH.has_permission('sales_editor'):
-        <li><a href="${request.route_path('orders.refund.index')}">払戻一覧</a></li>
-        <li><a href="${request.route_path('orders.refund.new')}">払戻予約</a></li>
+          % endif
         % endif
       </ul>
     </li>
@@ -83,15 +41,57 @@
     </li>
   % endif
 
-  % if HH.has_permission('sales_editor') or HH.has_permission('event_editor'):
+  % if HH.has_permission('member_editor'):
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown">会員</a>
+      <ul class="dropdown-menu">
+        <li><a href="${request.route_path('memberships',action="index",membership_id="*")}">会員種別マスタ</a></li>
+        <li><a href="${request.route_path('members.membership.index')}">会員アカウント</a></li>
+      </ul>
+    </li>
+  % endif
+
+  % if HH.has_permission('sales_counter') or HH.has_permission('event_editor'):
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown">予約</a>
+      <ul class="dropdown-menu">
+        % if HH.has_permission('sales_counter'):
+        <li><a href="${request.route_path('orders.index')}">予約検索</a></li>
+        % endif
+        % if HH.has_permission('event_editor'):
+        <li><a href="${request.route_path('orders.refund.index')}">払戻一覧</a></li>
+        <li><a href="${request.route_path('orders.refund.new')}">払戻予約</a></li>
+        % endif
+      </ul>
+    </li>
+  % endif
+
+  % if HH.has_permission('sales_viewer') or HH.has_permission('event_editor'):
     <li class="dropdown">
       <a class="dropdown-toggle" data-toggle="dropdown">営業</a>
       <ul class="dropdown-menu">
-        % if HH.has_permission('sales_editor'):
+        % if HH.has_permission('sales_viewer'):
         <li><a href="${request.route_path('sales_reports.index')}">売上レポート</a></li>
         % endif
         % if HH.has_permission('event_editor'):
         <li><a href="${request.route_path('mailmags.index')}">メールマガジン</a></li>
+        % endif
+      </ul>
+    </li>
+  % endif
+
+  % if HH.has_permission('master_viewer'):
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown">マスタ管理</a>
+      <ul class="dropdown-menu">
+        <li><a href="${request.route_path('operators.index')}">オペレーター</a></li>
+        <li><a href="${request.route_path('accounts.index')}">取引先</a></li>
+        <li><a href="${request.route_path('payment_methods.index')}">決済方法</a></li>
+        <li><a href="${request.route_path('delivery_methods.index')}">引取方法</a></li>
+        <li><a href="${request.route_path('service_fee_methods.index')}">手数料</a></li>
+        <li><a href="${request.route_path('tickets.index')}">チケット券面</a></li>
+        % if request.context.organization.point_feature_enabled:
+        <li><a href="${request.route_path('point_grant_settings.index')}">ポイント付与</a></li>
         % endif
       </ul>
     </li>
@@ -102,11 +102,11 @@
       <a class="dropdown-toggle" data-toggle="dropdown">ALTAIR管理</a>
       <ul class="dropdown-menu">
         % if HH.has_permission('administrator'):
-          <li><a href="${request.route_path('venues.index')}">会場</a></li>
-          <li><a href="${request.route_path('organizations.index')}">オーガニゼーション</a></li>
+        <li><a href="${request.route_path('venues.index')}">会場</a></li>
+        <li><a href="${request.route_path('organizations.index')}">取引先マスタ一覧</a></li>
         % endif
         % if HH.has_permission('organization_editor'):
-          <li><a href="${request.route_path('organizations.settings.edit.simple', organization_id=request.context.organization.id, organization_setting_id=request.context.organization.setting.id)}">オーガニゼーション設定簡易編集</a></li>
+        <li><a href="${request.route_path('organizations.settings.edit.simple', organization_id=request.context.organization.id, organization_setting_id=request.context.organization.setting.id)}">取引先マスタ簡易編集</a></li>
         % endif
       </ul>
     </li>
