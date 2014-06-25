@@ -15,22 +15,24 @@
   genre = ""
   link = ""
   style = "musicList"
-  if widget.system_tag.label == u'音楽':
-    genre = u"音楽"
-    link = "/music"
-    style = "musicList"
-  elif widget.system_tag.label == u'演劇・ステージ・舞台':
-    genre = u"演劇･ステージ"
-    link = "/stage"
-    style = "stageList"
-  elif widget.system_tag.label == u'スポーツ':
-    genre = u"スポーツ"
-    link = "/sports"
-    style = "sportsList"
-  elif widget.system_tag.label == u'イベント・その他':
-    genre = u"イベント"
-    link = "/event"
-    style = "eventList"
+  if widget.system_tag:
+      if widget.system_tag.label == u'音楽':
+        genre = u"音楽"
+        link = "/music"
+        style = "musicList"
+      elif widget.system_tag.label == u'演劇・ステージ・舞台':
+        genre = u"演劇･ステージ"
+        link = "/stage"
+        style = "stageList"
+      elif widget.system_tag.label == u'スポーツ':
+        genre = u"スポーツ"
+        link = "/sports"
+        style = "sportsList"
+      elif widget.system_tag.label == u'イベント・その他':
+        genre = u"イベント"
+        link = "/event"
+        style = "eventList"
+      endif
   endif
 %>
 
@@ -48,7 +50,7 @@
         <dl>
           <dt class="tileImg">
             <a href="${h.link.get_link_from_topcontent(request, content[0])}">
-              <img src="${getattr(h.asset.rendering_object(request, content[0].image_asset), widget.rendering_image_attribute)}" alt="${content[0].title}" width="150" height="150" />
+              <img src="${getattr(h.asset.rendering_object(request, content[0].image_asset), widget.rendering_image_attribute)}" alt="${content[0].title}" width="150" height="150" style="border:solid 1px #ccc;padding:0px;"/>
             </a>
           </dt>
           <dd>
