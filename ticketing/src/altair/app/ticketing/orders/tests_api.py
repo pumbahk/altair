@@ -556,6 +556,145 @@ class SaveOrderModificationNewTest(SaveOrderModificationTestBase):
                 ]
             )
 
+    def test_appending_with_insufficient_stock(self):
+        from altair.app.ticketing.core.models import SeatStatusEnum
+        from altair.app.ticketing.orders.models import Order
+        from altair.app.ticketing.orders.exceptions import OrderCreationError
+        order = self._create_order([
+            (self.products[0], 2),
+            ],
+            self.sales_segment,
+            self.payment_delivery_method_pairs[0]
+            )
+        self.session.add(order)
+        self.session.flush()
+        self.assertEqual(len(order.items), 1)
+        self.assertEqual(order.items[0].quantity, 2)
+        self.assertEqual(len(order.items[0].elements), 1)
+        self.assertEqual(order.items[0].elements[0].quantity, 2)
+        self.assertEqual(len(order.items[0].elements[0].seats), 2)
+        prev_product_1_stock_status_quantity = self.products[3].items[0].stock.stock_status.quantity
+        modify_data = {
+            'performance_id': self.performance.id,
+            'sales_segment_id': self.sales_segment.id,
+            'transaction_fee': 0,
+            'delivery_fee': 0,
+            'system_fee': 0,
+            'special_fee': None,
+            'total_amount': self.products[0].price * 2 + self.products[3].price * 1,
+            'items': [
+                {
+                    'id': order.items[0].id,
+                    'product_id': self.products[0].id,
+                    'quantity': order.items[0].quantity,
+                    'price': self.products[0].price,
+                    'elements': [
+                        {
+                            'id': order.items[0].elements[0].id,
+                            'product_item_id': self.products[0].items[0].id,
+                            'quantity': order.items[0].elements[0].quantity,
+                            'price': self.products[0].items[0].price,
+                            'seats': [
+                                {
+                                    'id': order.items[0].elements[0].seats[0].l0_id
+                                    },
+                                {
+                                    'id': order.items[0].elements[0].seats[1].l0_id
+                                    }
+                                ],
+                            }
+                        ]
+                    },
+                {
+                    'id': None,
+                    'product_id': self.products[1].id,
+                    'quantity': 100,
+                    'price': self.products[1].price * 1,
+                    'elements': [
+                        {
+                            'id': None,
+                            'product_item_id': self.products[1].items[0].id,
+                            'quantity': 100,
+                            'price': self.products[1].items[0].price,
+                            }
+                        ]
+                    }
+                ]
+            }
+        with self.assertRaises(OrderCreationError) as c:
+            modified_order, warnings = self._callFUT(self.request, order, modify_data)
+
+        self.assertEqual(c.exception.message, u'在庫がありません (席種: B, 個数: 100)')
+
+    def test_appending_with_insufficient_adjacency(self):
+        from altair.app.ticketing.core.models import SeatStatusEnum
+        from altair.app.ticketing.orders.models import Order
+        from altair.app.ticketing.orders.exceptions import OrderCreationError
+        order = self._create_order([
+            (self.products[0], 2),
+            ],
+            self.sales_segment,
+            self.payment_delivery_method_pairs[0]
+            )
+        self.session.add(order)
+        self.session.flush()
+        self.assertEqual(len(order.items), 1)
+        self.assertEqual(order.items[0].quantity, 2)
+        self.assertEqual(len(order.items[0].elements), 1)
+        self.assertEqual(order.items[0].elements[0].quantity, 2)
+        self.assertEqual(len(order.items[0].elements[0].seats), 2)
+        prev_product_1_stock_status_quantity = self.products[3].items[0].stock.stock_status.quantity
+        modify_data = {
+            'performance_id': self.performance.id,
+            'sales_segment_id': self.sales_segment.id,
+            'transaction_fee': 0,
+            'delivery_fee': 0,
+            'system_fee': 0,
+            'special_fee': None,
+            'total_amount': self.products[0].price * 2 + self.products[3].price * 1,
+            'items': [
+                {
+                    'id': order.items[0].id,
+                    'product_id': self.products[0].id,
+                    'quantity': order.items[0].quantity,
+                    'price': self.products[0].price,
+                    'elements': [
+                        {
+                            'id': order.items[0].elements[0].id,
+                            'product_item_id': self.products[0].items[0].id,
+                            'quantity': order.items[0].elements[0].quantity,
+                            'price': self.products[0].items[0].price,
+                            'seats': [
+                                {
+                                    'id': order.items[0].elements[0].seats[0].l0_id
+                                    },
+                                {
+                                    'id': order.items[0].elements[0].seats[1].l0_id
+                                    }
+                                ],
+                            }
+                        ]
+                    },
+                {
+                    'id': None,
+                    'product_id': self.products[3].id,
+                    'quantity': 5,
+                    'price': self.products[3].price * 1,
+                    'elements': [
+                        {
+                            'id': None,
+                            'product_item_id': self.products[3].items[0].id,
+                            'quantity': 5,
+                            'price': self.products[3].items[0].price,
+                            }
+                        ]
+                    }
+                ]
+            }
+        with self.assertRaises(OrderCreationError) as c:
+            modified_order, warnings = self._callFUT(self.request, order, modify_data)
+
+        self.assertEqual(c.exception.message, u'配席可能な座席がありません (席種: D, 個数: 5)')
 
 class GetRefundPerOrderFeeTest(unittest.TestCase):
     def _getTarget(self):
