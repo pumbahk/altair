@@ -1,18 +1,19 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch" />
-<%include file="/memberships/_detail.html" args="form=form, membership=membership" />
-
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'トップ', u'membership'],
+      names=[u'トップ', u'会員種別', u'詳細'],
       urls=[request.route_path('index'), request.route_path('memberships',action="index",membership_id="*")]
   )}
 </%block>
 
 <div class="page-header">
-  <h3>会員種別詳細</h3>
+  <h1>会員種別詳細</h1>
 </div>
+
+<%include file="/memberships/_detail.html" args="form=form, membership=membership" />
+
 <div>
   <a href="${request.route_path('memberships',action="edit", membership_id=membership.id)}" class="btn">編集</a>
   <a id="delete_link" href="javascript:popup_delete_modal(${membership.id})" class="btn">削除</a>
@@ -20,9 +21,7 @@
 
 <hr />
 
-<div class="page-header">
-<h3>会員種別に結びついている会員区分</h3>
-</div>
+<h3>結びついている会員区分</h3>
 
 <div class="row-fluid">
   <div class="span12">
