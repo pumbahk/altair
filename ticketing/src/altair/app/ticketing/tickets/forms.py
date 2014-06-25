@@ -13,7 +13,8 @@ from altair.formhelpers.form import OurForm
 from altair.formhelpers.fields import OurBooleanField
 from altair.app.ticketing.core.models import (
     DeliveryMethod,
-    TicketFormat
+    TicketFormat,
+    Ticket
 )
 from altair.svg.geometry import as_user_unit
 from altair.app.ticketing.tickets.constants import PAPERS, ORIENTATIONS
@@ -133,7 +134,7 @@ class TicketCoverForm(OurForm):
         super(TicketCoverForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
         if 'organization_id' in kwargs:
             self.ticket.choices = [
-                (ticket.id, ticket.name) for ticket in Ticket.filter_by(organization_id=kwargs['organization_id'], event_id=None)
+                (ticket.id, ticket.name) for ticket in Ticket.query.filter_by(organization_id=kwargs['organization_id'], event_id=None)
             ]
 
     name = TextField(
