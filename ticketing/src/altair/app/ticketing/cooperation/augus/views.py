@@ -466,12 +466,13 @@ class AugusEventView(_AugusBaseView):
     @view_config(route_name='augus.events.index', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/index.html')
     def index(self):
-        augus_performances = AugusPerformance.query.all()
-        return {
-            'augus_performances': augus_performances,
+        res = {
+            'augus_performances': [],
             }
-
-        return dict(event=self.context.event)
+        if self.request.context.organization.setting.augus_use:
+            augus_performances = AugusPerformance.query.all() # WA: refs #8818 対応したら修正が必要
+            res['augus_performances'] = augus_performances
+        return res
 
     @view_config(route_name='augus.events.show', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/show.html')
