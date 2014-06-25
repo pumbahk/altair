@@ -298,9 +298,10 @@ def get_cart_user_identifiers(request):
 
     retval = []
 
-    user_id = authenticated_userid(request)
-    if user_id is not None:
-        retval.append((user_id, 'strong'))
+    auth_info = get_auth_info(request)
+    # is_guest は None である場合があり、その場合は guest であるとみなす
+    if auth_info['is_guest'] is not None and not auth_info['is_guest']:
+        retval.append((auth_info['user_id'], 'strong'))
 
     # browserid is decent
     browserid = get_browserid(request)
@@ -404,9 +405,10 @@ def get_auth_info(request):
             retval['claimed_id'] = user_id
         else:
             retval['username'] = user_id
-        retval['is_guest'] = False
+        retval['user_id'] = user_id
     else:
         retval['is_guest'] = True
+        retval['user_id'] = None
     retval['organization_id'] = get_organization(request).id
     return retval
 
@@ -421,7 +423,7 @@ def get_auth_identifier_membership(info):
         auth_identifier = None
         membership_name = None
     else:
-        raise ValueError('clamed_id, username not in %s' % info)
+        raise ValueError('claimed_id, username not in %s' % info)
     return dict(
         organization_id=info['organization_id'],
         auth_identifier=auth_identifier,
