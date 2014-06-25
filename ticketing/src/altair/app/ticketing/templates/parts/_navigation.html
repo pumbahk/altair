@@ -31,31 +31,6 @@
     </li>
   % endif
 
-  % if HH.has_permission('member_editor'):
-    <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown">会員</a>
-      <ul class="dropdown-menu">
-        <li><a href="${request.route_path('memberships',action="index",membership_id="*")}">会員種別マスタ</a></li>
-        <li><a href="${request.route_path('members.membership.index')}">会員アカウント</a></li>
-      </ul>
-    </li>
-  % endif
-
-  % if HH.has_permission('sales_counter') or HH.has_permission('sales_editor'):
-    <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown">予約</a>
-      <ul class="dropdown-menu">
-        % if HH.has_permission('sales_counter'):
-        <li><a href="${request.route_path('orders.index')}">予約検索</a></li>
-        % endif
-        % if HH.has_permission('sales_editor'):
-        <li><a href="${request.route_path('orders.refund.index')}">払戻一覧</a></li>
-        <li><a href="${request.route_path('orders.refund.new')}">払戻予約</a></li>
-        % endif
-      </ul>
-    </li>
-  % endif
-
   % if HH.has_permission('event_editor'):
     <li class="dropdown">
       <a class="dropdown-toggle" data-toggle="dropdown">抽選</a>
@@ -66,11 +41,36 @@
     </li>
   % endif
 
-  % if HH.has_permission('sales_editor') or HH.has_permission('event_editor'):
+  % if HH.has_permission('member_editor'):
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown">会員</a>
+      <ul class="dropdown-menu">
+        <li><a href="${request.route_path('memberships',action="index",membership_id="*")}">会員種別マスタ</a></li>
+        <li><a href="${request.route_path('members.membership.index')}">会員アカウント</a></li>
+      </ul>
+    </li>
+  % endif
+
+  % if HH.has_permission('sales_counter') or HH.has_permission('event_editor'):
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown">予約</a>
+      <ul class="dropdown-menu">
+        % if HH.has_permission('sales_counter'):
+        <li><a href="${request.route_path('orders.index')}">予約検索</a></li>
+        % endif
+        % if HH.has_permission('event_editor'):
+        <li><a href="${request.route_path('orders.refund.index')}">払戻一覧</a></li>
+        <li><a href="${request.route_path('orders.refund.new')}">払戻予約</a></li>
+        % endif
+      </ul>
+    </li>
+  % endif
+
+  % if HH.has_permission('sales_viewer') or HH.has_permission('event_editor'):
     <li class="dropdown">
       <a class="dropdown-toggle" data-toggle="dropdown">営業</a>
       <ul class="dropdown-menu">
-        % if HH.has_permission('sales_editor'):
+        % if HH.has_permission('sales_viewer'):
         <li><a href="${request.route_path('sales_reports.index')}">売上レポート</a></li>
         % endif
         % if HH.has_permission('event_editor'):
@@ -103,10 +103,10 @@
       <ul class="dropdown-menu">
         % if HH.has_permission('administrator'):
         <li><a href="${request.route_path('venues.index')}">会場</a></li>
-        <li><a href="${request.route_path('organizations.index')}">オーガニゼーション一覧</a></li>
+        <li><a href="${request.route_path('organizations.index')}">取引先マスタ一覧</a></li>
         % endif
         % if HH.has_permission('organization_editor'):
-        <li><a href="${request.route_path('organizations.settings.edit.simple', organization_id=request.context.organization.id, organization_setting_id=request.context.organization.setting.id)}">オーガニゼーション設定簡易編集</a></li>
+        <li><a href="${request.route_path('organizations.settings.edit.simple', organization_id=request.context.organization.id, organization_setting_id=request.context.organization.setting.id)}">取引先マスタ簡易編集</a></li>
         % endif
       </ul>
     </li>

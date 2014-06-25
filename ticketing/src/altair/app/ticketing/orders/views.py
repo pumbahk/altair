@@ -678,7 +678,7 @@ class OrderDownloadView(BaseView):
         return response
 
 
-@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/index.html')
+@view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/index.html')
 class OrdersRefundIndexView(BaseView):
 
     @view_config(route_name='orders.refund.index')
@@ -723,7 +723,7 @@ class OrdersRefundIndexView(BaseView):
         return HTTPFound(location=self.request.route_path('orders.refund.index'))
 
 
-@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/edit.html')
+@view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/edit.html')
 class OrdersRefundEditView(BaseView):
 
     @view_config(route_name='orders.refund.edit', request_method='GET')
@@ -757,7 +757,7 @@ class OrdersRefundEditView(BaseView):
             return dict(form=f, refund=refund)
 
 
-@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/show.html')
+@view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/show.html')
 class OrdersRefundDetailView(BaseView):
 
     @view_config(route_name='orders.refund.show')
@@ -775,7 +775,7 @@ class OrdersRefundDetailView(BaseView):
             )
 
 
-@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/new.html')
+@view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/new.html')
 class OrdersRefundCreateView(BaseView):
 
     def __init__(self, *args, **kwargs):
@@ -878,7 +878,7 @@ class OrdersRefundCreateView(BaseView):
         }
 
 
-@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/confirm.html')
+@view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/confirm.html')
 class OrdersRefundConfirmView(BaseView):
 
     def __init__(self, *args, **kwargs):
