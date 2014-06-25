@@ -7,6 +7,7 @@ from pyramid.interfaces import IView, IRoutesMapper, IRouteRequest, IViewClassif
 class PermissionCategory(object):
     permissions = {
         'administrator'   : u'オーガニゼーション管理',
+        'organization_editor': u'オーガニゼーション編集',
         'event_viewer'    : u'公演管理閲覧',
         'event_editor'    : u'公演管理編集',
         'master_viewer'   : u'マスタ管理閲覧',
@@ -267,6 +268,7 @@ class RouteConfig(object):
         'organizations.sej_tenant.edit'     : u'オーガニゼーション SEJ店舗編集',
         'organizations.sej_tenant.new'      : u'オーガニゼーション SEJ店舗作成',
         'organizations.settings.edit'       : u'オーガニゼーション 設定編集',
+        'organizations.settings.edit.simple': u'オーガニゼーション 簡易設定編集',
         'organizations.show'        : u'オーガニゼーション 詳細',
         'payment.checkout.callback.error'   : None,
         'payment.checkout.callback.success' : None,

@@ -97,12 +97,17 @@
     </li>
   % endif
 
-  % if HH.has_permission('administrator'):
+  % if HH.has_permission('administrator') or HH.has_permission('organization_editor'):
     <li class="dropdown">
       <a class="dropdown-toggle" data-toggle="dropdown">ALTAIR管理</a>
       <ul class="dropdown-menu">
-        <li><a href="${request.route_path('organizations.index')}">オーガニゼーション</a></li>
-        <li><a href="${request.route_path('venues.index')}">会場</a></li>
+        % if HH.has_permission('administrator'):
+          <li><a href="${request.route_path('venues.index')}">会場</a></li>
+          <li><a href="${request.route_path('organizations.index')}">オーガニゼーション</a></li>
+        % endif
+        % if HH.has_permission('organization_editor'):
+          <li><a href="${request.route_path('organizations.settings.edit.simple', organization_id=request.context.organization.id, organization_setting_id=request.context.organization.setting.id)}">オーガニゼーション設定簡易編集</a></li>
+        % endif
       </ul>
     </li>
   % endif

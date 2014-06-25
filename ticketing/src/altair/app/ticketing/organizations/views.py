@@ -19,7 +19,14 @@ from altair.app.ticketing.mails.forms import MailInfoTemplate
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.operators import api as o_api
-from .forms import OrganizationForm, NewOrganizationForm, SejTenantForm, OrganizationSettingForm, HostForm
+from .forms import (
+    OrganizationForm,
+    NewOrganizationForm,
+    SejTenantForm,
+    OrganizationSettingForm,
+    OrganizationSettingSimpleForm,
+    HostForm,
+    )
 
 import logging
 logger = logging.getLogger(__name__)
@@ -227,6 +234,91 @@ class OrganizationSettings(BaseView):
 
         self.request.session.flash(u'その他の設定を保存しました')
         return HTTPFound(location=route_path('organizations.show', self.request, organization_id=organization_id))
+
+@view_defaults(decorator=with_bootstrap, permission="organization_editor")
+class OrganizationSettingSimples(BaseView):
+
+
+
+    @view_config(route_name='organizations.settings.edit.simple', request_method='GET',
+                 renderer='altair.app.ticketing:templates/organizations/organization_setting/edit_simple.html')
+    def edit_get(self):
+        organization_id = self.request.matchdict.get('organization_id', 0)
+        organization_setting_id = self.request.matchdict.get('organization_setting_id', 0)
+
+        not_found = HTTPNotFound(
+            'OrganizationSetting is not found: Organization.id={} OrganizationSetting.id={}'.format(
+                organization_id, organization_setting_id))
+
+        try:
+            organization_id = long(organization_id)
+            organization_setting_id = long(organization_setting_id)
+        except TypeError:
+            raise not_found
+
+        if self.request.context.organization:
+            organization = Organization.query.filter_by(id=organization_id).first()
+            organization_setting = OrganizationSetting\
+              .query\
+              .filter(OrganizationSetting.organization_id==organization_id)\
+              .filter(OrganizationSetting.id==organization_setting_id)\
+              .first()
+            if self.context.organization \
+              and organization and organization_setting\
+              and organization.id == self.context.organization.id:
+                f = OrganizationSettingSimpleForm(self.request.POST, obj=organization_setting)
+                return {
+                    'organization': organization,
+                    'form':f,
+                    'route_name': u'編集',
+                    'route_path': self.request.path,
+                    }
+        raise not_found
+
+
+    @view_config(route_name='organizations.settings.edit.simple', request_method='POST',
+                  renderer='altair.app.ticketing:templates/organizations/organization_setting/edit_simple.html')
+    def edit_post(self):
+
+        organization_id = self.request.matchdict.get('organization_id', 0)
+        organization_setting_id = self.request.matchdict.get('organization_setting_id', 0)
+
+        not_found = HTTPNotFound(
+            'OrganizationSetting is not found: Organization.id={} OrganizationSetting.id={}'.format(
+                organization_id, organization_setting_id))
+
+        try:
+            organization_id = long(organization_id)
+            organization_setting_id = long(organization_setting_id)
+        except TypeError:
+            raise not_found
+
+        if self.request.context.organization:
+            organization = Organization.query.filter_by(id=organization_id).first()
+            organization_setting = OrganizationSetting\
+              .query\
+              .filter(OrganizationSetting.organization_id==organization_id)\
+              .filter(OrganizationSetting.id==organization_setting_id)\
+              .first()
+            if self.context.organization \
+              and organization and organization_setting\
+              and organization.id == self.context.organization.id:
+                f = OrganizationSettingSimpleForm(self.request.POST, obj=organization_setting)
+                if not f.validate():
+                    return {
+                        'organization': organization,
+                        'form':f,
+                        'route_name': u'編集',
+                        'route_path': self.request.path,
+                        }
+                else:
+                    organization_setting.notify_remind_mail = f.notify_remind_mail.data
+                    self.request.session.flash(u'その他の設定を保存しました')
+                    return HTTPFound(location=route_path(
+                        'organizations.settings.edit.simple',
+                        self.request, organization_id=organization_id,
+                        organization_setting_id=organization_setting_id))
+        raise not_found
 
 @view_defaults(decorator=with_bootstrap, permission="administrator")
 class SejTenants(BaseView):

@@ -185,7 +185,17 @@ class SejTenantForm(OurForm):
 def encoder(x):
     return x or u''
 
-class OrganizationSettingForm(OurForm):
+class OrganizationSettingSimpleForm(OurForm):
+    id = HiddenField(
+        label=u'ID',
+        validators=[Optional()],
+    )
+
+    notify_remind_mail = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.notify_remind_mail)['label']
+        )
+
+class OrganizationSettingForm(OrganizationSettingSimpleForm):
     id = HiddenField(
         label=u'ID',
         validators=[Optional()],
@@ -266,9 +276,6 @@ class OrganizationSettingForm(OurForm):
         )
     notify_point_granting_failure = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.notify_point_granting_failure)['label']
-        )
-    notify_remind_mail = OurBooleanField(
-        label=get_annotations_for(c_models.OrganizationSetting.notify_remind_mail)['label']
         )
     bcc_recipient = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.bcc_recipient)['label']
