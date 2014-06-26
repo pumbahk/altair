@@ -54,6 +54,8 @@ if (!window.app)
       preview_type: {value: "default", writable:true, enumerable:true},
       template_kind: {value: "default", writable:true, enumerable:true},
       cover_print: {value: false, writable:true, enumerable:true},
+      priced: {value: false, writable:true, enumerable:true},
+      always_reissueable: {value: false, writable:true, enumerable:true},
       base_template_id: {value: null, writable:true, enumerable:true},
       drawing: {value: "", writable:true, enumerable:true},
       fill_mapping: {value: "{}", writable:true, enumerable:true},
@@ -184,6 +186,14 @@ if (!window.app)
     onChangeIsPrintConver: function($el){
       var v = $el.attr("checked") ? "y" : null;
       this.broker.models.submit.sync("cover_print", v);
+    },
+    onChangeIsAlwaysReissueable: function($el){
+      var v = $el.attr("checked") ? "y" : null;
+      this.broker.models.submit.sync("always_reissueable", v);
+    },
+    onChangeIsPriced: function($el){
+      var v = $el.attr("checked") ? "y" : null;
+      this.broker.models.submit.sync("priced", v);
     },
     receiveChangeToEventTicket: function(){
       this.$el.find('input[name="update"]').show();
