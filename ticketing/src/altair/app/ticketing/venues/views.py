@@ -92,7 +92,7 @@ class VenueSiteDrawingHandler(object):
 def get_site_drawing(context, request):
     return request.registry.getUtility(IVenueSiteDrawingHandler)(context, request)
 
- 
+
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):
     venue = request.context.venue
@@ -328,7 +328,7 @@ def show(request):
     items = []
     for seat, venuearea, attr, status, type in seats:
         items.append(SeatInfo(seat, venuearea, attr, status, type))
-    
+
     class SeatAdjacencyInfo:
         def __init__(self, adj, count):
             self.adj = adj
@@ -451,13 +451,14 @@ def edit_post(request):
         return HTTPFound(location=route_path('venues.show', request, venue_id=venue.id))
     else:
         return {
-            'form':f,
-            'venue':venue,
-            'site':venue.site,
+            'form': f,
+            'venue': venue,
+            'site': venue.site,
             'drawing': get_venue_site_adapter(request, venue.site),
             'route_name': u'編集',
             'route_path': request.path,
-        }
+            }
+
 
 def includeme(config):
     config.registry.registerUtility(
