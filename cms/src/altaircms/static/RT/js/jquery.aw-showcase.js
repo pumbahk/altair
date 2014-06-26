@@ -246,7 +246,7 @@
 				else
 				{
 					/* outside & horizontal */
-					jQuery(thumb_wrapper).find('.showcase-thumbnail').css('float', 'left');
+					jQuery(thumb_wrapper).find('.showcase-thumbnail').css('float', 'right');
 					//jQuery(thumb_wrapper).append(jQuery('<div />').addClass('clear'));
 				}
 				
@@ -398,12 +398,14 @@
 		}
 		
 		// Set showcase width and height
+        /*
 		if (options.thumbnails && options.thumbnails_position.indexOf("outside") !== -1 && options.thumbnails_direction !== 'horizontal' && !options.viewline)
 		{
 			showcase.css('width', showcase_width + getElementWidth(thumb_wrapper, true, false));
 		}
 		else if  (!options.fit_to_parent) { showcase.css('width', showcase_width); }
-		
+        */
+
 		// Turn on/off auto slide
 		if (content_count > 1 && options.auto) { myInterval = window.setInterval(autoChange, options.interval); }
 		
