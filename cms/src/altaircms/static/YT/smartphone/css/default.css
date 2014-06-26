@@ -767,10 +767,13 @@ h2.glitter {
   overflow: hidden;
   vertical-align: middle;
   padding: 0px 0px 0px 20px;
-  background-image: linear-gradient(top, #9ea398 0%, #898f83 48%, #767d70 50%, #878d81);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#9ea398), color-stop(0.48, #898f83), color-stop(0.5, #767d70), to(#878d81));
-  background-image: -webkit-linear-gradient(top, #9ea398 0%, #898f83 48%, #767d70 50%, #878d81);
-  background-image: -moz-linear-gradient(top, #9ea398 0%, #898f83 48%, #767d70 50%, #878d81);
+  background: #cc484c;
+  background: -moz-linear-gradient(top, #cc484c 0%, #cc484c 0%, #c62e33 50%, #c01a21 51%, #c42a30 100%); / FF3.6+ /
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#cc484c), color-stop(0%,#cc484c), color-stop(50%,#c62e33), color-stop(51%,#c01a21), color-stop(100%,#c42a30)); / Chrome,Safari4+ /
+  background: -webkit-linear-gradient(top, #cc484c 0%,#cc484c 0%,#c62e33 50%,#c01a21 51%,#c42a30 100%); / Chrome10+,Safari5.1+ /
+  background: -ms-linear-gradient(top, #cc484c 0%,#cc484c 0%,#c62e33 50%,#c01a21 51%,#c42a30 100%); / IE10+ /
+  background: linear-gradient(to bottom, #cc484c 0%,#cc484c 0%,#c62e33 50%,#c01a21 51%,#c42a30 100%); / W3C /
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cc484c', endColorstr='#c42a30',GradientType=0 ); / IE6-9 */
   box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, .4);
   user-select: none;
