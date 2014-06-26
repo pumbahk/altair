@@ -22,6 +22,10 @@ ${ch.breadcrumbs(
   <h1>チケットテンプレート</h1>
 </div>
 
+%if template.fill_mapping:
+<a href="${request.route_path("events.tickets.easycreate", event_id=event.id, _query=dict(template_id=template.id))}"}>簡易券面作成に</a>
+%endif
+
 <div class="row-fluid">
   <div class="span6">
     <h3>詳細</h3>

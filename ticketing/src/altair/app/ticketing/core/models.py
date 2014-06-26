@@ -2586,6 +2586,13 @@ class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     delivery_methods = relationship('DeliveryMethod', secondary=TicketFormat_DeliveryMethod.__table__, backref='ticket_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
 
+    def detect_preview_type(self):
+        for dm in self.delivery_methods:
+            if unicode(dm.delivery_plugin_id) == unicode(plugins.SEJ_DELIVERY_PLUGIN_ID):
+                return "sej"
+        return "default"
+
+
 class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     Ticket.event_idがNULLのものはマスターデータ。これを雛形として実際にeventとひもづけるTicketオブジェクトを作成する。

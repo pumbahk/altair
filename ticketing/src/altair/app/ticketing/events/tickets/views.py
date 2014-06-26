@@ -378,9 +378,21 @@ def create_ticket_from_form(form, base_ticket):  # xxx: todo: move to anywhere
 def easycreate(context, request):
     event = context.event
 
-    choice_form = forms.EasyCreateKindsChoiceForm().configure(event)
-    template_form = forms.EasyCreateTemplateChoiceForm()
-    upload_form = forms.EasyCreateTemplateUploadForm()
+    template_id = request.GET.get("template_id")
+    if template_id:
+        ticket_template = context.ticket_alls.filter_by(id=template_id).first()
+    else:
+        ticket_template = None
+
+    if ticket_template is not None:
+        preview_type = ticket_template.ticket_format.detect_preview_type()
+        choice_form = forms.EasyCreateKindsChoiceForm(event_id=event.id, preview_type=preview_type).configure(event)
+        template_form = forms.EasyCreateTemplateChoiceForm(templates=unicode(template_id))
+        upload_form = forms.EasyCreateTemplateUploadForm(name=ticket_template.name)
+    else:
+        choice_form = forms.EasyCreateKindsChoiceForm().configure(event)
+        template_form = forms.EasyCreateTemplateChoiceForm()
+        upload_form = forms.EasyCreateTemplateUploadForm()
 
     event_ticket_genurl = lambda t: request.route_path("events.tickets.boundtickets.show", event_id=context.event.id, id=t.id)
     event_tickets =  [{"pk": t.id, "name": t.name, "url": event_ticket_genurl(t)} for t in context.tickets]
