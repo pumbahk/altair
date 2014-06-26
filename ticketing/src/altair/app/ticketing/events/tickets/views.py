@@ -424,7 +424,8 @@ def easycreate(context, request):
             "upload_form": upload_form,
             "event": event,
             "event_tickets": event_tickets,
-            "base_tickets": base_tickets
+            "base_tickets": base_tickets,
+            "ticket_template": ticket_template
            }
 
 

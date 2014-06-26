@@ -255,11 +255,14 @@ $(function(){
   app.submit.$el.find('input[name="update"]').on('click', function(){app.submit.onSubmitUpdate($(this)); return false;})
 
   // template_id query string is found in url, then autoload component.
+%if ticket_template:
+  app.choose.pseudoNewTicket("${ticket_template.id}");
+%endif
   if(!!radio_btn_kind.parent().find(":checked").val()){
-    app.choose.onChangeTemplateKind(radio_btn_kind);
+    app.choose.onChangeTemplateKind(radio_btn_kind.parent().find(":checked"));
   }
   if(!!radio_btn_preview_type.parent().find(":checked").val()){
-    app.choose.onChangePreviewType(radio_btn_preview_type)
+    app.choose.onChangePreviewType(radio_btn_preview_type.parent().find(":checked"))
   }
 });
 

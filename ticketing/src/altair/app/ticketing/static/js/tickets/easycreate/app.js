@@ -269,6 +269,10 @@ if (!window.app)
   };
 
   var ChooseAreaModule = {
+    pseudoNewTicket: function(ticket_id){
+      this.broker.models.source.sync("isAfterCreatedFirst", true);
+      this.broker.models.source.sync("createdTemplateId", ticket_id);
+    },
     onChangePreviewType: function($el){
       var m = this.broker.models.source;
       m.sync("previewType",$el.val());
