@@ -3,7 +3,7 @@
 import json
 from altair.app.ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
+from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPNotFound
 from altair.app.ticketing.models import DBSession, record_to_appstruct
 from altair.app.ticketing.core.models import ProductItem, Performance
 from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute
@@ -58,6 +58,24 @@ def bind_ticket(request):
     return HTTPFound(request.route_path("events.tickets.index", event_id=event.id))
 
 
+@view_config(route_name='events.tickets.boundtickets.show', 
+             renderer='altair.app.ticketing:templates/tickets/events/tickets/show.html', 
+             decorator=with_bootstrap, permission="event_editor")
+def show(context, request):
+    qs = context.tickets_query().filter_by(id=request.matchdict['id'])
+    template = qs.filter_by(organization_id=context.organization.id).first()
+    if template is None:
+        raise HTTPNotFound("this is not found")
+    mapping_choices = [(template.id, template.name)]
+    base_template_choices = [(t.id, t.name) for t in context.ticket_templates]
+    transcribe_form = forms.EasyCreateTranscribeForm(mapping_id=template.id).configure(
+        base_template_choices, mapping_choices)
+    return dict(template=template,
+                event=context.event,
+                transcribe_form=transcribe_form, 
+                ticket_format_id=template.ticket_format_id)
+
+    
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class BundleView(BaseView):
     """ チケット券面構成(TicketBundle)
@@ -337,7 +355,7 @@ def easycreate_transcribe_ticket(context, request):
     except KeyError as e:
         raise HTTPBadRequest(repr(e))
 
-    base_ticket = context.tickets.filter_by(id=base_template_id).first()
+    base_ticket = context.ticket_alls.filter_by(id=base_template_id).first()
     if base_ticket is None:
         raise HTTPBadRequest("base ticket is not found")
     mapping_ticket = context.tickets.filter_by(id=mapping_id).first()
@@ -348,10 +366,12 @@ def easycreate_transcribe_ticket(context, request):
     del data["id"]
     ticket = Ticket(**data)
     ticket.data["drawing"] = emit_to_another_template(base_ticket, mapping_ticket)
+    ticket.data["fill_mapping"] = mapping_ticket.fill_mapping
+    ticket.base_template = base_ticket
     ticket.event = context.event
     ticket.name = request.POST["name"]
     ticket.save()  # flush and DBSession.add(o)
-    return dict(status="ok", ticket_id=ticket.id)
+    return HTTPFound(location=request.route_path("events.tickets.index", event_id=context.event_id))
 
 
 def create_ticket_from_form(form, base_ticket):  # xxx: todo: move to anywhere
@@ -388,7 +408,7 @@ def easycreate(context, request):
         preview_type = ticket_template.ticket_format.detect_preview_type()
         choice_form = forms.EasyCreateKindsChoiceForm(event_id=event.id, preview_type=preview_type).configure(event)
         template_form = forms.EasyCreateTemplateChoiceForm(templates=unicode(template_id))
-        upload_form = forms.EasyCreateTemplateUploadForm(name=ticket_template.name)
+        upload_form = forms.EasyCreateTemplateUploadForm()
     else:
         choice_form = forms.EasyCreateKindsChoiceForm().configure(event)
         template_form = forms.EasyCreateTemplateChoiceForm()
