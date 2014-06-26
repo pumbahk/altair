@@ -25,7 +25,11 @@ from altair.sqlahelper import get_db_session
 from altair.pyramid_assets import get_resolver
 from altair.pyramid_assets.data import DataSchemeAssetDescriptor
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
-
+from altair.app.ticketing.orders.models import (
+    OrderedProductItem,
+    OrderedProduct,
+    Order,
+    )
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.core.models import (
@@ -229,12 +233,12 @@ def download(request):
 
     headers = [
         ('Content-Type', 'application/octet-stream; charset=cp932'),
-        ('Content-Disposition', 'attachment; filename=seats_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
+        ('Content-Disposition', 'attachment; filename=seats_{date}.csv'.format(
+            date=datetime.now().strftime('%Y%m%d%H%M%S')))
     ]
     response = Response(headers=headers)
 
     slave_session = get_db_session(request, 'slave')
-    from altair.app.ticketing.orders.models import OrderedProductItem, OrderedProduct, Order
     seats_q = slave_session.query(Seat, Order, include_deleted=True) \
         .outerjoin(Seat.status_) \
         .outerjoin(Seat.attributes_) \
@@ -252,10 +256,10 @@ def download(request):
         .order_by(asc(Seat.id), desc(Order.id))
     seats_csv = SeatCSV(seats_q)
 
-    writer = csv.DictWriter(response, seats_csv.header, delimiter=',', quoting=csv.QUOTE_ALL)
+    writer = csv.DictWriter(response, seats_csv.header,
+                             delimiter=',', quoting=csv.QUOTE_ALL)
     writer.writeheader()
     writer.writerows(seats_csv.rows)
-
     return response
 
 @view_config(route_name='venues.index', renderer='altair.app.ticketing:templates/venues/index.html',
