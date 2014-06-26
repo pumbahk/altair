@@ -1,8 +1,11 @@
 # coding: utf-8
 
+import sys
 import logging
+import traceback
 
 from zope.interface import implementer
+from sqlalchemy.orm.session import object_session
 
 from altair.app.ticketing.orders.events import notify_order_canceled
 
@@ -19,7 +22,32 @@ __all__ = [
     ]
 
 class SejNotificationProcessorError(Exception):
-    pass
+    def __init__(self, message, nested_exc_info=None):
+        super(SejNotificationProcessorError, self).__init__(message, nested_exc_info)
+
+    @property
+    def message(self):
+        return self.args[0]
+
+    @property
+    def nested_exc_info(self):
+        return self.args[1]
+
+    def __str__(self):
+        return self.__unicode__()
+
+    def __unicode__(self):
+        buf = []
+        buf.append(u'SejNotificationProcessorError: %s\n' % self.message)
+        if self.nested_exc_info:
+            buf.append('\n  -- nested exception --\n')
+            for line in traceback.format_exception(*self.nested_exc_info):
+                for _line in line.rstrip().split('\n'):
+                    buf.append('  ')
+                    buf.append(_line)
+                    buf.append('\n')
+        return ''.join(buf)
+
 
 @implementer(ISejNotificationProcessor)
 class SejNotificationProcessor(object):
@@ -78,20 +106,22 @@ class SejNotificationProcessor(object):
 
     @__order_required
     def reflect_cancel_from_svc(self, sej_order, order, notification):
+        _session = object_session(sej_order)
         sej_order.mark_canceled(notification.processed_at)
         sej_order.processed_at = notification.processed_at
         notification.reflected_at = self.now
-        self.cancel_order_if_necessary(order, notification.processed_at)
+        self.cancel_order_if_necessary(order, notification.processed_at, _session)
 
     def reflect_expire(self, sej_order, order, notification):
         from ..models import SejPaymentType
+        _session = object_session(sej_order)
         if order is not None:
             # 対応するOrderがない場合はスキップする (see #5610)
             # 代済発券はキャンセルしない
             if int(notification.payment_type) != int(SejPaymentType.Paid):
                 sej_order.canceled_at = notification.processed_at
                 sej_order.mark_canceled(notification.processed_at)
-                self.cancel_order_if_necessary(order, notification.processed_at)
+                self.cancel_order_if_necessary(order, notification.processed_at, _session)
             sej_order.processed_at = notification.processed_at
         else:
             logger.warning("Order Not found: order_no=%s, exchange_number=%s, billing_number=%s" % (
@@ -103,6 +133,7 @@ class SejNotificationProcessor(object):
     @__order_required
     def reflect_re_grant(self, sej_order, order, notification):
         from ..models import SejTicket
+        _session = object_session(sej_order)
         branch = sej_order.new_branch(
             payment_type=notification.payment_type_new,
             exchange_number=notification.exchange_number_new,
@@ -110,10 +141,10 @@ class SejNotificationProcessor(object):
             ticketing_due_at=notification.ticketing_due_at,
             processed_at = notification.processed_at
             )
-        self.session.add(branch)
-        for sej_ticket in self.session.query(SejTicket).filter_by(order_no=sej_order.order_no):
+        _session.add(branch)
+        for sej_ticket in _session.query(SejTicket).filter_by(order_no=sej_order.order_no):
             barcode_number = notification.barcode_numbers.get(str(sej_ticket.ticket_idx), sej_ticket.barcode_number)
-            self.session.add(sej_ticket.new_branch(order=branch, barcode_number=barcode_number))
+            _session.add(sej_ticket.new_branch(order=branch, barcode_number=barcode_number))
 
         notification.reflected_at = self.now
 
@@ -124,8 +155,8 @@ class SejNotificationProcessor(object):
         SejNotificationType.TicketingExpire.v  : reflect_expire
         }
 
-    def cancel_order_if_necessary(self, order, processed_at):
-        sej_orders = get_sej_orders(order.order_no, fetch_canceled=False, session=self.session)
+    def cancel_order_if_necessary(self, order, processed_at, _session):
+        sej_orders = get_sej_orders(order.order_no, fetch_canceled=False, session=_session)
         # もしすべての枝番がキャンセルされているようであれば、本注文をキャンセルする refs #6525
         if len(sej_orders) == 0:
             order.release()
@@ -133,15 +164,20 @@ class SejNotificationProcessor(object):
             order.updated_at = self.now
             notify_order_canceled(self.request, order)
 
-    def __init__(self, request, now, session=None):
-        from altair.app.ticketing.models import DBSession
+    def __init__(self, request, now):
         self.request = request
         self.now = now
-        self.session = session or DBSession
 
     def __call__(self, sej_order, order, notification):
         action = self.actions.get(int(notification.notification_type), None)
         if action is None:
             raise SejNotificationProcessorError('unsupported notification type: %s' % notification.notification_type)
         else:
-            action(self, sej_order, order, notification)
+            _session = object_session(sej_order)
+            sys.exc_clear()
+            try:
+                action(self, sej_order, order, notification)
+            except:
+                raise SejNotificationProcessorError('error occurred during processing notification %s' % notification.process_number, nested_exc_info=sys.exc_info())
+            finally:
+                _session.commit()

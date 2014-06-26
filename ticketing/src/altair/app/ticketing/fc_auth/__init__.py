@@ -7,6 +7,10 @@ def includeme(config):
         factory='.resources.FCAuthResource')
     config.add_route('fc_auth.guest', '/fc/{membership}/guest',
         factory='.resources.FCAuthResource')
+    config.add_route('fc_auth.detail_login', '/fc/{membership}/{detail_membership}/login',
+        factory='.resources.FCAuthResource')
+    config.add_route('fc_auth.detail_guest', '/fc/{membership}/{detail_membership}/guest',
+        factory='.resources.FCAuthResource')
 
     #config.add_tween('.tweens.FCAuthTween', under=pyramid.tweens.EXCVIEW)
     config.add_static_view('fc_auth/static', 'altair.app.ticketing.fc_auth:static')

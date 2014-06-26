@@ -9,7 +9,7 @@
 ${h.error('cont')}
 </div>
 <div>
-[継続]を選択した方は2012-13年の会員番号をご入力ください:<br />
+[継続]を選択した方は2013-14年の会員番号をご入力ください:<br />
 (半角数字8ケタ)<br />
 ${form.old_id_number(istyle="4")}<br />
 ${h.error(['cont','old_id_number'])}
@@ -113,13 +113,13 @@ ${h.error('extra.publicity')}
   ${form.extra.t_shirts_size}<br />
 ${h.error('extra.t_shirts_size')}
 </div>
-<%mobile:form_header>オリジナル公式球への記載希望（プラチナ会員のみ）</%mobile:form_header>
-<div><font color="red">（アルファベット大小文字可、記号不可）</font></div>
+<%mobile:form_header>オリジナル公式球への記載希望名（プラチナ会員のみ）</%mobile:form_header>
+<div><font color="red">（最大10文字）</font></div>
 <div>
   ${form.extra.official_ball}<br />
 ${h.error('extra.official_ball')}
 </div>
-<%mobile:form_header>特典の会場受け取り希望（レギュラー・ゴールド・プラチナ会員のみ）</%mobile:form_header>
+<%mobile:form_header>会員証以外の特典受取方法（レギュラー・ゴールド・プラチナ会員のみ）</%mobile:form_header>
 <div><font color="red">会場受渡をお選びいただいた方には500円分のグッズクーポンをプレゼントいたします。</font></div>
 <div>
   ${form.extra.coupon}<br />

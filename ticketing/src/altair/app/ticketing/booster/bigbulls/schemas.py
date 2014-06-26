@@ -21,33 +21,10 @@ def prepend_validator(field, x):
     field.validators = prepend_list(x, field.validators)
 
 class ExtraForm(Form):
-    publicity = fields.SelectField(
-        u"ゲームプログラムへのお名前掲載",
-        validators=[v.Optional()],
-        choices=[
-            ('yes', u'希望する'),
-            ('no', u'希望しない')
-            ],
-        coerce=text_type_but_none_if_not_given)
-
     t_shirts_size = fields.SelectField(u"Tシャツサイズ", 
                                        choices=[('L', u'L'),('3L', u'3L')], 
                                        validators=[v.Optional()], 
                                        coerce=text_type_but_none_if_not_given)
-    replica_uniform_size = fields.SelectField(u'レプリカユニフォームサイズ', 
-                                              choices=[('S', u'S'), ('M', u'M'), ('L', u'L'),('LL', u'LL'), ('3L', u'3L'), ('4L', u'4L')],
-                                              validators=[v.Optional()],
-                                              coerce=text_type_but_none_if_not_given)
-    authentic_uniform_size = fields.SelectField(u'オーセンティックユニフォームサイズ',
-                                                choices=[('S', u'S'), ('M', u'M'), ('L', u'L'),('LL', u'LL'), ('3L', u'3L'), ('4L', u'4L')],
-                                                validators=[v.Optional()], 
-                                                coerce=text_type_but_none_if_not_given)
-    authentic_uniform_no = fields.TextField(u"オーセンティックユニフォーム背番号", validators=[v.Optional(), v.Length(max=2)])
-    authentic_uniform_name = fields.TextField(u"オーセンティックユニフォーム名前", filters=[strip_spaces, NFKC], validators=[v.Optional(), v.Regexp(r"^[A-Z ]+$", message=u"アルファベット大文字のみで入力してください")])
-    authentic_uniform_color = fields.SelectField(u'オーセンティックユニフォーム色',
-                                                choices=[('red', u"赤"), ("white", u"白")],
-                                                validators=[v.Optional()], 
-                                                coerce=text_type_but_none_if_not_given)
 
     parent_first_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Optional(), Zenkaku, length_limit_for_sej])
     parent_last_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Optional(),Zenkaku, length_limit_for_sej])
@@ -65,15 +42,6 @@ class ExtraForm(Form):
         prepend_validator(self.parent_last_name, v.Required(message))
         prepend_validator(self.parent_last_name_kana, v.Required(message))
         prepend_validator(self.relationship, v.Required(message))
-
-    def configure_for_authentic_uniform(self):
-        prepend_validator(self.authentic_uniform_no, v.Required())
-        prepend_validator(self.authentic_uniform_size, v.Required())
-        prepend_validator(self.authentic_uniform_name, v.Required())
-        prepend_validator(self.authentic_uniform_color, v.Required())
-
-    def configure_for_replica_uniform(self):
-        prepend_validator(self.replica_uniform_size, v.Required())
 
     def configure_for_t_shirts_size(self):
         prepend_validator(self.t_shirts_size, v.Required())

@@ -15,6 +15,7 @@ class PromotionWidgetForm(Form):
         dynamic_query=lambda model, request, query: query.filter_by(organization_id=None), 
         get_label=lambda obj: obj.label)
     display_type = fields.SelectField(label=u"プロモーション表示の種類", id="display_type", choices=[])
+    use_newstyle = fields.BooleanField(label=u"新スタイルを使用する", id="use_newstyle")
 
     def configure(self, request, page):
         utility = get_widget_utility(request, page, models.PromotionWidget.type)

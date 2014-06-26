@@ -23,28 +23,28 @@ def main(argv=sys.argv):
     settings = registry.settings
 
     import transaction
-    trans = transaction.begin()
+    from altair.app.ticketing.orders.api import get_order_by_order_no
     from ..notification.api import fetch_notifications
     from ..notification.processor import SejNotificationProcessor, SejNotificationProcessorError
     now = datetime.now()
     processor = SejNotificationProcessor(request, now)
-    for sej_order, order, notification in fetch_notifications(session=sqlahelper.get_session()):
+    for sej_order, notification in fetch_notifications():
         logger.info("Processing notification: process_number=%s, order_no=%s, exchange_number=%s, billing_number=%s" % (
             notification.process_number,
             sej_order.order_no,
             notification.exchange_number,
             notification.billing_number))
+        trans = transaction.begin()
+        order = get_order_by_order_no(request, sej_order.order_no)
         try:
             processor(sej_order, order, notification)
+            trans.commit()
         except SejNotificationProcessorError as e:
-            logger.error("%s: process_number=%s, order_no=%s, exchange_number=%s, billing_number=%s" % (
-                str(e), 
+            logger.exception("process_number=%s, order_no=%s, exchange_number=%s, billing_number=%s" % (
                 notification.process_number,
                 sej_order.order_no,
                 notification.exchange_number,
                 notification.billing_number))
-
-    trans.commit()
 
 if __name__ == u"__main__":
     main(sys.argv)

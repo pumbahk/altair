@@ -9,7 +9,7 @@ HH.json(dict(
   delete=request.route_path('payment_methods.delete', payment_method_id='__id__')))|n
 };
 
-var new_payment_method, edit_payment_method, delete_payment_method, save_payment_method, get_selected_payment_method_id;
+var new_payment_method, edit_payment_method, delete_payment_method, get_selected_payment_method_id;
 
 (function (modal_sel, modal_delete_sel) {
   var modal, modal_delete;
@@ -30,12 +30,6 @@ var new_payment_method, edit_payment_method, delete_payment_method, save_payment
     modal_delete.find('#delete').attr('href', endpoints['delete'].replace('__id__', id));
     modal_delete.find('#message').text('選択した決済方法を削除します。よろしいですか？');
     modal_delete.modal('toggle');
-  }
-  save_payment_method = function save_payment_method() {
-    var form = '#payment_methods-form';
-    var id = $(modal + ' #id').val();
-    var url = id ? '/payment_methods/edit/' + id : '/payment_methods/new';
-    post_modal_form(modal, form, url);
   }
 })('#modal-payment_method', '#modal-delete');
 </script>

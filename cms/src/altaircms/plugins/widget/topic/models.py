@@ -31,13 +31,19 @@ class TopicWidget(Widget):
     tag = orm.relationship("TopicTag", uselist=False, primaryjoin="TopicWidget.tag_id==TopicTag.id")
     system_tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
     system_tag = orm.relationship("TopicTag", uselist=False, primaryjoin="TopicWidget.system_tag_id==TopicTag.id")
+    use_newstyle = sa.Column(sa.Boolean)
 
     def merge_settings(self, bname, bsettings):
         ## lookup utilities.py
         closure = get_rendering_function_via_page(self, bname, bsettings, self.type)
         bsettings.add(bname, closure)
 
-        
+    def clone(self, session, page=None): #todo:refactoring model#clone
+        instance = super(TopicWidget, self).clone(session, page=page)
+        instance.use_newstyle = self.use_newstyle or False
+        return instance
+
+
 class TopicWidgetResource(HandleSessionMixin,
                           UpdateDataMixin,
                           HandleWidgetMixin,
