@@ -35,7 +35,7 @@ from altair.formhelpers import OurDateWidget
     $('#modal-download_orders').modal('hide');
   }
 </script>
-<div id="detail_search">
+<div id="detail_search" style="display: none;">
   <div>
     <h3>検索条件設定</h3>
   </div>
@@ -44,7 +44,17 @@ from altair.formhelpers import OurDateWidget
       <tbody>
         <tr>
           <th><label for="order_no">${form.order_no.label.text}</label></th>
-          <td>${form.order_no(minlength=12)}</td>
+          <td style="width:200px;">
+            ${form.order_no(minlength=12)}
+          </td>
+          <td style="vertical-align:top;">
+            <a class="plusone btn btn-small"><i class="icon-plus"></i></a>
+            <script>
+              var target = $('input[name="order_no"]');
+              var target_parent = target.parent();
+              $('.plusone').click(function(){ target_parent.append(target.clone().val(""));});
+            </script>
+          </td>
           <th><label for="seat_number">${form.seat_number.label.text}</label></th>
           <td>${form.seat_number()}</td>
           <th><label for="tel">${form.tel.label.text}</label></th>
@@ -53,6 +63,7 @@ from altair.formhelpers import OurDateWidget
         <tr>
           <th><label for="name">${form.name.label.text}</label></th>
           <td>${form.name()}</td>
+          <td></td>
           <th><label for="email">${form.email.label.text}</label></th>
           <td>${form.email()}</td>
           <th><label for="member_id">${form.member_id.label.text}</label></th>
@@ -60,10 +71,24 @@ from altair.formhelpers import OurDateWidget
         </tr>
         <tr>
           <th><label>${form.ordered_from.label.text}</label></th>
-          <td colspan="3">
+          <td colspan="4">
             ${form.ordered_from()} 〜
             ${form.ordered_to()}
+            <a class="show-ordered-time-btn btn btn-small" style="margin-left: 10px;"><i class="icon-plus"></i> 時間</a>
           </td>
+          <script>
+            $('.show-ordered-time-btn').click(function(){
+              var status = $(this).data('status');
+              var el = $('input[name="ordered_from.hour"],input[name="ordered_from.minute"],input[name="ordered_to.hour"],input[name="ordered_to.minute"]').parent();
+              if (status == 'off') {
+                el.show();
+                $(this).data('status', 'on');
+              } else {
+                el.hide();
+                $(this).data('status', 'off');
+              }
+            }).click();
+          </script>
           <th><label>${form.billing_or_exchange_number.label.text}</label></th>
           <td>${form.billing_or_exchange_number}</td>
         </tr>
@@ -169,8 +194,10 @@ from altair.formhelpers import OurDateWidget
           }
         };
         $("#search select[name='event_id']").change(update_performances_and_ssgroups).chosen();
-
         $("#search select[name='performance_id']").chosen();
+
+        // フォームの描画中は見えなくしている
+        $("#detail_search").show();
       });
     </script>
     ${ch.form_item(form.sort)}

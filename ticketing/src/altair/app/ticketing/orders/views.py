@@ -365,9 +365,9 @@ class OrderIndexView(OrderBaseView):
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor') # sales_counter ではない!
 class OrderDownloadView(BaseView):
-    # downloadに関しては新しいコードがイキ
+    # downloadに関しては古いコードがイキ
     @view_config(route_name='orders.download')
-    def download_new(self):
+    def download_old(self):
         slave_session = get_db_session(self.request, name="slave")
 
         organization_id = self.context.organization.id
@@ -436,8 +436,8 @@ class OrderDownloadView(BaseView):
 
         return response
 
-    # 古いコードも参照用にとっておいてある
-    def download_old(self):
+    # 新しいコードも参照用にとっておいてある
+    def download_new(self):
         request = self.request
         slave_session = get_db_session(request, name="slave")
 
