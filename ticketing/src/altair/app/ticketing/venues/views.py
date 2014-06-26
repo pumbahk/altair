@@ -254,8 +254,9 @@ def download(request):
         .filter(StockHolder.deleted_at == None) \
         .filter(StockType.deleted_at == None) \
         .order_by(asc(Seat.id), desc(Order.id))
-    seats_csv = SeatCSV(seats_q)
 
+
+    seats_csv = SeatCSV(seats_q)
     writer = csv.DictWriter(response, seats_csv.header,
                              delimiter=',', quoting=csv.QUOTE_ALL)
     writer.writeheader()
