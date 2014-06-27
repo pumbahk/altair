@@ -11,6 +11,8 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPOk, HTTPFound, HTTPBadRequest
 from webhelpers.html.builder import literal
+from altair.mobile.interfaces import IMobileRequest
+from altair.mobile.session import HybridHTTPBackend, unmerge_session_restorer_from_url
 
 from altair.app.ticketing.utils import clear_exc
 from altair.app.ticketing.models import DBSession
@@ -190,7 +192,7 @@ class CheckoutView(object):
     @clear_exc
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.checkout.login', renderer='altair.app.ticketing.payments.plugins:templates/checkout_login.html', request_method='POST')
-    @view_config(route_name='payment.checkout.login', renderer=selectable_renderer("%(membership)s/mobile/checkout_login_mobile.html"), request_method='POST', request_type='altair.mobile.interfaces.IMobileRequest')
+    @view_config(route_name='payment.checkout.login', renderer=selectable_renderer("%(membership)s/mobile/checkout_login_mobile.html"), request_method='POST', request_type=IMobileRequest)
     def login(self):
         cart = cart_api.get_cart_safe(self.request, for_update=False)
         try:
@@ -200,10 +202,17 @@ class CheckoutView(object):
         logger.debug(u'mailmagazine = %s' % self.request.session['altair.app.ticketing.cart.magazine_ids'])
         channel = get_channel(cart.channel)
         service = api.get_checkout_service(self.request, cart.performance.event.organization, channel)
+        success_url = self.request.route_url('payment.checkout.callback.success')
+        fail_url = self.request.route_url('payment.checkout.callback.error')
+        if IMobileRequest.providedBy(self.request):
+            query_string_key = self.request.environ[HybridHTTPBackend.ENV_QUERY_STRING_KEY_KEY]
+            success_url = unmerge_session_restorer_from_url(success_url, query_string_key)
+            fail_url = unmerge_session_restorer_from_url(fail_url, query_string_key)
+
         _, form = service.build_checkout_request_form(
             cart,
-            success_url=self.request.route_url('payment.checkout.callback.success'),
-            fail_url=self.request.route_url('payment.checkout.callback.error')
+            success_url=success_url,
+            fail_url=fail_url
             )
         return dict(
             form=literal(form)
@@ -277,7 +286,7 @@ class CheckoutCallbackView(object):
     @clear_exc
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.checkout.callback.success', renderer=selectable_renderer("%(membership)s/pc/completion.html"), request_method='GET')
-    @view_config(route_name='payment.checkout.callback.success', request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"), request_method='GET')
+    @view_config(route_name='payment.checkout.callback.success', request_type=IMobileRequest, renderer=selectable_renderer("%(membership)s/mobile/completion.html"), request_method='GET')
     def success(self):
         cart = cart_api.get_cart(self.request)
         if not cart:

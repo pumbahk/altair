@@ -23,20 +23,12 @@ def get_cookie_factory(secret):
         cookie_factory = PlainCookie
     return cookie_factory
 
-
 def pop_session_restorer(environ, query_string_key):
-    session_restorer = None
-    new_params = []
     query_string = environ.get('QUERY_STRING')
-    import sys
     if query_string is not None:
-        for k, _, v in parse_query_string(query_string):
-            if k == query_string_key:
-                session_restorer = v
-            else:
-                new_params.append((k, v))
+        new_query_string, session_restorer = strip_session_restorer(query_string, query_string_key)
         if session_restorer is not None:
-            environ['QUERY_STRING'] = urllib.urlencode(new_params)
+            environ['QUERY_STRING'] = new_query_string
             return session_restorer
     return None
 
@@ -51,9 +43,24 @@ def append_session_restorer(query_string, query_string_key, session_restorer):
         )
     return query_string + x
 
+def strip_session_restorer(query_string, query_string_key):
+    session_restorer = None
+    new_params = []
+    for k, _, v in parse_query_string(query_string):
+        if k == query_string_key:
+            session_restorer = v
+        else:
+            new_params.append((k, v))
+    return urllib.urlencode(new_params), session_restorer
+
 def merge_session_restorer_to_url(url, query_string_key, session_restorer):
     parsed_url = urlparse(url)
     query_string = append_session_restorer(parsed_url[4], query_string_key, session_restorer)
+    return urlunparse((parsed_url[0], parsed_url[1], parsed_url[2], parsed_url[3], query_string, parsed_url[5]))
+
+def unmerge_session_restorer_from_url(url, query_string_key):
+    parsed_url = urlparse(url)
+    query_string, _ = strip_session_restorer(parsed_url[4], query_string_key)
     return urlunparse((parsed_url[0], parsed_url[1], parsed_url[2], parsed_url[3], query_string, parsed_url[5]))
 
 class HybridHTTPBackend(object):
