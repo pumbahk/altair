@@ -37,7 +37,7 @@ EXCLUDE_EXT_LIST = (".ico", ".js", ".css")
 def not_static_path(info, request):
     return not request.path.startswith("static")
 
-@usersite_view_config(route_name="front", decorator=with_jquery)
+@usersite_view_config(route_name="front")
 def rendering_page(context, request):
     # logger.debug("req2:"+request.path)
     url = request.matchdict["page_name"]
