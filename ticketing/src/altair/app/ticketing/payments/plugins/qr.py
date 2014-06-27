@@ -108,3 +108,10 @@ class QRTicketDeliveryPlugin(object):
     def refresh(self, request, order):
         # XXX: 座席番号などが変わっている可能性があるので、何かすべきような...
         pass
+
+    def cancel(self, request, order):
+        # キャンセルフラグを立てるべきだと思うけど...
+        pass
+
+    def refund(self, request, order, refund_record):
+        pass

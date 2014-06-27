@@ -59,13 +59,11 @@ from altair.app.ticketing.lots.models import (
     Lot,
     LotEntry,
     )
-from altair.app.ticketing.sej import api as sej_api
-from altair.app.ticketing.sej.exceptions import SejError
-from altair.app.ticketing.sej import userside_api
 from altair.app.ticketing.models import (
     Base,
 )
 from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.sej import api as sej_api
 
 logger = logging.getLogger(__name__)
 
@@ -470,178 +468,15 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return (self.status == 'ordered' and self.payment_status == 'refunded' and self.released_at is None)
 
     def cancel(self, request, payment_method=None, now=None):
-        now = now or datetime.now()
-        if not self.can_refund() and not self.can_cancel():
-            logger.info('order (%s) cannot cancel status (%s, %s)' % (self.id, self.status, self.payment_status))
-            return False
-
-        '''
-        決済方法ごとに払戻処理
-        '''
-        if payment_method:
-            ppid = payment_method.payment_plugin_id
-        else:
-            ppid = self.payment_delivery_pair.payment_method.payment_plugin_id
-        if not ppid:
-            return False
-
-        tenant = userside_api.lookup_sej_tenant(request, self.organization_id)
-
-        # インナー予約の場合はAPI決済していないのでスキップ
-        # ただしコンビニ決済はインナー予約でもAPIで通知しているので処理する
-        if self.is_inner_channel and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
-            logger.info(u'インナー予約のキャンセルなので決済払戻処理をスキップ %s' % self.order_no)
-
-        # クレジットカード決済
-        elif ppid == plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID:
-            # 入金済みなら決済をキャンセル
-            if self.payment_status in ['paid', 'refunding']:
-                # 売り上げキャンセル
-                from altair.multicheckout.api import get_multicheckout_3d_api
-                organization = Organization.get(self.organization_id)
-                multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
-
-                order_no = self.order_no
-                if request.registry.settings.get('multicheckout.testing', False):
-                    order_no = self.order_no + "00"
-
-                # キャンセルAPIでなく売上一部取消APIを使う
-                # - 払戻期限を越えてもキャンセルできる為
-                # - 売上一部取消で減額したあと、キャンセルAPIをつかうことはできない為
-                # - ただし、売上一部取消APIを有効にする以前に予約があったものはキャンセルAPIをつかう
-                if self.payment_status in ['refunding']:
-                    logger.info(u'売上一部取消APIで払戻 %s' % self.order_no)
-                    multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(order_no, self.refund_total_amount, 0)
-                else:
-                    sales_part_cancel_enabled_from = '2012-12-03 08:00'
-                    if self.created_at < datetime.strptime(sales_part_cancel_enabled_from, "%Y-%m-%d %H:%M"):
-                        logger.info(u'キャンセルAPIでキャンセル %s' % self.order_no)
-                        multi_checkout_result = multicheckout_api.checkout_sales_cancel(order_no)
-                    else:
-                        logger.info(u'売上一部取消APIで全額取消 %s' % self.order_no)
-                        multi_checkout_result = multicheckout_api.checkout_sales_part_cancel(order_no, self.total_amount, 0)
-
-                error_code = ''
-                if multi_checkout_result.CmnErrorCd and multi_checkout_result.CmnErrorCd != '000000':
-                    error_code = multi_checkout_result.CmnErrorCd
-                elif multi_checkout_result.CardErrorCd and multi_checkout_result.CardErrorCd != '000000':
-                    error_code = multi_checkout_result.CardErrorCd
-
-                if error_code:
-                    logger.error(u'クレジットカード決済のキャンセルに失敗しました。 %s' % error_code)
-                    return False
-
-                self.multi_checkout_approval_no = multi_checkout_result.ApprovalNo
-
-        # 楽天あんしん支払いサービス
-        elif ppid == plugins.CHECKOUT_PAYMENT_PLUGIN_ID:
-            # 入金済みなら決済をキャンセル
-            if self.payment_status in ['paid', 'refunding']:
-                from altair.app.ticketing.checkout import api as checkout_api
-                from altair.app.ticketing.checkout.exceptions import AnshinCheckoutAPIError
-                from altair.app.ticketing.core import api as core_api
-                service = checkout_api.get_checkout_service(request, self.ordered_from, core_api.get_channel(self.channel))
-                if self.payment_status == 'refunding':
-                    # 払戻(合計100円以上なら注文金額変更API、0円なら注文キャンセルAPIを使う)
-                    remaining_amount = self.total_amount - self.refund_total_amount
-                    if remaining_amount > 0 and remaining_amount < 100:
-                        logger.error(u'0円以上100円未満の注文は払戻できません (order_no=%s)' % self.order_no)
-                        return False
-                    try:
-                        if remaining_amount == 0:
-                            result = service.request_cancel_order([self])
-                        else:
-                            result = service.request_change_order([(self, self)])
-                    except AnshinCheckoutAPIError as e:
-                        logger.error(u'あんしん決済を払戻できませんでした %s' % e)
-                        return False
-                else:
-                    # 売り上げキャンセル
-                    logger.debug(u'売り上げキャンセル')
-                    try:
-                        result = service.request_cancel_order([self])
-                    except AnshinCheckoutAPIError as e:
-                        logger.error(u'あんしん決済をキャンセルできませんでした %s' % e)
-                        return False
-
-        # コンビニ決済 (セブン-イレブン)
-        elif ppid == plugins.SEJ_PAYMENT_PLUGIN_ID:
-            sej_order = self.sej_order
-
-            # 未入金ならコンビニ決済のキャンセル通知
-            if self.payment_status == 'unpaid':
-                try:
-                    sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, now=now)
-                except SejError:
-                    logger.exception(u'cancel could not be processed')
-                    return False
-
-            # 入金済み、払戻予約ならコンビニ決済の払戻通知
-            elif self.payment_status in ['paid', 'refunding']:
-                from altair.app.ticketing.orders.api import (
-                    get_refund_per_order_fee,
-                    get_refund_per_ticket_fee,
-                    get_refund_ticket_price,
-                    )
-                try:
-                    sej_api.refund_sej_order(
-                        request,
-                        tenant=tenant,
-                        sej_order=sej_order,
-                        performance_name=self.performance.name,
-                        performance_code=self.performance.code,
-                        performance_start_on=self.performance.start_on,
-                        per_order_fee=get_refund_per_order_fee(self.refund, self),
-                        per_ticket_fee=get_refund_per_ticket_fee(self.refund, self),
-                        refund_start_at=self.refund.start_at,
-                        refund_end_at=self.refund.end_at,
-                        need_stub=self.refund.need_stub,
-                        ticket_expire_at=self.refund.end_at + timedelta(days=+7),
-                        ticket_price_getter=lambda sej_ticket: \
-                            get_refund_ticket_price(
-                                self.refund,
-                                self,
-                                sej_ticket.product_item_id
-                                ),
-                        refund_total_amount=self.refund_total_amount,
-                        now=now
-                        )
-                except SejError:
-                    logger.exception(u'refund could not be processed')
-                    return False
-
-        # 窓口支払
-        elif ppid == plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID:
-            pass
-
-        '''
-        配送方法ごとに取消処理
-        '''
-        # コンビニ受取
-        dpid = self.payment_delivery_pair.delivery_method.delivery_plugin_id
-        if dpid == plugins.SEJ_DELIVERY_PLUGIN_ID and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
-            sej_order = self.sej_order
-            # SejAPIでエラーのケースではSejOrderはつくられないのでスキップ
-            if sej_order:
-                try:
-                    sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, now=now)
-                except SejError:
-                    logger.exception('SejOrder (order_no=%s) cancel error' % self.order_no)
-                    return False
+        from .api import refund_order, cancel_order
+        try:
+            if self.payment_status == 'refunding':
+                refund_order(request, self, payment_method=payment_method, now=now)
             else:
-                logger.info('skip cancel delivery method. SejOrder not found (order_no=%s)' % self.order_no)
-
-        # 在庫を戻す
-        if self.payment_status != 'refunding':
-            logger.info('try release stock (order_no=%s)' % self.order_no)
-            self.release()
-            self.mark_canceled()
-        if self.payment_status in ['paid', 'refunding']:
-            self.mark_refunded()
-
-        self.save()
-        logger.info('success order cancel (order_no=%s)' % self.order_no)
-
+                cancel_order(request, self, now=now)
+        except Exception as e:
+            logger.exception(u'キャンセルに失敗しました')
+            return False
         return True
 
     def mark_canceled(self, now=None):

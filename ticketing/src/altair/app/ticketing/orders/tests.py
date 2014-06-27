@@ -106,14 +106,17 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
         return 'XX%010d' % self.order_no_seq
 
     def setUp(self):
-        from altair.app.ticketing.sej.models import ThinSejTenant
+        from altair.app.ticketing.sej import models as sej_models
+        from altair.app.ticketing.sej.api import remove_default_session
         from altair.app.ticketing.sej.userside_interfaces import ISejTenantLookup
+        remove_default_session()
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
             'altair.app.ticketing.orders.models',
             'altair.app.ticketing.sej.models',
             'altair.app.ticketing.checkout.models',
             ])
+        self.sej_session = sej_models._session
         from altair.app.ticketing.core.models import SalesSegmentGroup, OrganizationSetting
 
         self.config = testing.setUp(settings={
@@ -122,7 +125,7 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
         self.config.include('altair.app.ticketing.renderers')
         self.config.include('altair.app.ticketing.payments')
         self.config.include('altair.app.ticketing.payments.plugins')
-        self.config.registry.registerUtility(lambda request, organization_id: ThinSejTenant(), ISejTenantLookup) # 強引に上書きしている
+        self.config.registry.registerUtility(lambda request, organization_id: sej_models.ThinSejTenant(), ISejTenantLookup) # 強引に上書きしている
         CoreTestMixin.setUp(self)
         self.stock_types = self._create_stock_types(1)
         self.stocks = self._create_stocks(self.stock_types)
@@ -143,7 +146,7 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
         patch = mock.patch('altair.app.ticketing.sej.api.refund_sej_order')
         patches.append(patch)
         self.sej_refund_sej_order = patch.start()
-        patch = mock.patch('altair.multicheckout.api.get_multicheckout_3d_api')
+        patch = mock.patch('altair.app.ticketing.payments.plugins.multicheckout.get_multicheckout_3d_api')
         patches.append(patch)
         self.multicheckout_get_multicheckout_3d_api = patch.start()
         self.multicheckout_get_multicheckout_3d_api.return_value.checkout_sales_part_cancel.return_value.CmnErrorCd = '000000'
@@ -157,6 +160,8 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
     def tearDown(self):
         for patch in self.patches:
             patch.stop()
+        from altair.app.ticketing.sej.api import remove_default_session
+        remove_default_session()
         _teardown_db()
         testing.tearDown()
 
@@ -197,27 +202,47 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
             from altair.app.ticketing.checkout.models import Checkout
             self.session.flush()
             self.session.add(Checkout(orderId=retval.order_no, orderCartId=cart.id, orderControlId='0123456'))
-        if retval.payment_delivery_pair.payment_method.payment_plugin_id == p.SEJ_PAYMENT_PLUGIN_ID or \
-           retval.payment_delivery_pair.delivery_method.delivery_plugin_id == p.SEJ_DELIVERY_PLUGIN_ID:
-            from altair.app.ticketing.sej.models import SejOrder, SejTicket
+        payment_plugin_is_sej = retval.payment_delivery_pair.payment_method.payment_plugin_id == p.SEJ_PAYMENT_PLUGIN_ID
+        delivery_plugin_is_sej = retval.payment_delivery_pair.delivery_method.delivery_plugin_id == p.SEJ_DELIVERY_PLUGIN_ID
+        if payment_plugin_is_sej or delivery_plugin_is_sej:
+            from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejPaymentType
+            if payment_plugin_is_sej:
+                if delivery_plugin_is_sej:
+                    payment_type = SejPaymentType.CashOnDelivery.v
+                else:
+                    payment_type = SejPaymentType.PrepaymentOnly.v
+            else:
+                payment_type = SejPaymentType.Paid.v
+
             ticket = SejTicket(order_no=retval.order_no)
-            self.session.add(ticket)
-            sej_order = SejOrder(order_no=retval.order_no, tickets=[ticket])
+            self.sej_session.add(ticket)
+            sej_order = SejOrder(order_no=retval.order_no, payment_type=payment_type, tickets=[ticket])
             ticket.order = sej_order
-            self.session.add(sej_order)
+            self.sej_session.add(sej_order)
+        self.sej_session.commit()
         self.session.flush()
         return retval
 
     def _create_payment_delivery_method_pair(self, payment_plugin_id, delivery_plugin_id):
-        from .models import PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod
+        from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, DateCalculationBase
         retval = PaymentDeliveryMethodPair(
             sales_segment_group=self.sales_segment_group,
             system_fee=0,
-            delivery_fee=0,
+            delivery_fee_per_order=0,
+            delivery_fee_per_principal_ticket=0,
+            delivery_fee_per_subticket=0,
             transaction_fee=0,
             discount=0,
+            payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
+            payment_start_in_days=0,
+            payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
+            payment_period_days=3,
+            issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
+            issuing_interval_days=5,
+            issuing_end_day_calculation_base=DateCalculationBase.OrderDate.v,
+            issuing_end_in_days=364,
             payment_method=PaymentMethod(payment_plugin_id=payment_plugin_id, fee=0),
-            delivery_method=DeliveryMethod(delivery_plugin_id=delivery_plugin_id, fee=0)
+            delivery_method=DeliveryMethod(delivery_plugin_id=delivery_plugin_id, fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0)
             )
         self.session.add(retval)
         return retval
@@ -269,9 +294,9 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
                     self.session.add(target)
                     self.session.flush()
                 target.cancel(request)
+                self.assertEqual(target.payment_status, 'refunded', description)
                 if payment_plugin_id == p.SEJ_PAYMENT_PLUGIN_ID:
                     self.assertTrue(self.sej_refund_sej_order.called)
-                    self.assertEqual(target.payment_status, 'refunded', description)
                 else:
                     self.assertTrue(target.is_canceled(), description)
 
@@ -586,7 +611,7 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
         seat = ordered_product_item.seats[0]
         self.assertEqual(seat.id, seats[0].id)
 
-    def test_cancel_refund_anshin_checkout(self):
+    def test_cancel_refund_anshin_checkout_not_marked_as_refunding(self):
         from datetime import datetime
         from altair.app.ticketing.payments import plugins as p
         from .models import Refund
@@ -603,7 +628,34 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
                 system_fee=200,
                 transaction_fee=0,
                 delivery_fee=200,
-                refund = Refund(
+                refund_total_amount=300,
+                refund_system_fee=100,
+                refund_delivery_fee=100,
+                paid_at=datetime(2014, 1, 1)
+                )
+            target.cancel(request)
+            self.assertFalse(self.checkout_get_checkout_service.return_value.request_change_order.called)
+            self.assertTrue(self.checkout_get_checkout_service.return_value.request_cancel_order.called)
+            self.assertEqual(target.payment_status, 'refunded', '%s: %s' % (description, target.payment_status))
+
+    def test_cancel_refund_anshin_checkout_marked_as_refunding(self):
+        from datetime import datetime
+        from altair.app.ticketing.payments import plugins as p
+        from .models import Refund
+        request = testing.DummyRequest()
+        pn = 'checkout'
+        payment_plugin_id = self.payment_plugins[pn]
+        for dn, delivery_plugin_id in self.delivery_plugins.items():
+            description = 'payment_plugin=%s, delivery_plugin=%s' % (pn, dn)
+            payment_delivery_method_pair = self._create_payment_delivery_method_pair(payment_plugin_id, delivery_plugin_id)
+            target = self._makeOne(
+                organization_id=self.organization.id,
+                payment_delivery_pair=payment_delivery_method_pair,
+                total_amount=500,
+                system_fee=200,
+                transaction_fee=0,
+                delivery_fee=200,
+                refund=Refund(
                     start_at=datetime(2014, 1, 1),
                     end_at=datetime(2014, 2, 1)
                     ),
@@ -612,36 +664,36 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
                 refund_delivery_fee=100,
                 paid_at=datetime(2014, 1, 1)
                 )
+            self.session.add(target)
+            self.session.flush()
             target.cancel(request)
             self.assertTrue(self.checkout_get_checkout_service.return_value.request_change_order.called)
+            self.assertFalse(self.checkout_get_checkout_service.return_value.request_cancel_order.called)
             self.assertEqual(target.payment_status, 'refunded', description)
 
 
-class OrderTests(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls.session = _setup_db(
-            modules=[
-                'altair.app.ticketing.core.models',
-                'altair.app.ticketing.orders.models',
-            ],
-        )
-
-    @classmethod
-    def tearDownClass(cls):
-        _teardown_db()
-
-    def tearDown(self):
-        import transaction
-        transaction.abort()
-
-    def _getTarget(self):
-        from .models import Order
-        return Order
-
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
+    def test_cancel_sej_cancel_unpaid(self):
+        from datetime import datetime
+        from altair.app.ticketing.payments import plugins as p
+        from .models import Refund
+        request = testing.DummyRequest()
+        pn = 'sej'
+        payment_plugin_id = self.payment_plugins[pn]
+        for dn, delivery_plugin_id in self.delivery_plugins.items():
+            description = 'payment_plugin=%s, delivery_plugin=%s' % (pn, dn)
+            payment_delivery_method_pair = self._create_payment_delivery_method_pair(payment_plugin_id, delivery_plugin_id)
+            target = self._makeOne(
+                organization_id=self.organization.id,
+                payment_delivery_pair=payment_delivery_method_pair,
+                total_amount=500,
+                system_fee=200,
+                transaction_fee=0,
+                delivery_fee=200,
+                paid_at=None
+                )
+            target.cancel(request)
+            self.assertTrue(self.sej_cancel_sej_order.called)
+            self.assertEqual(target.payment_status, 'unpaid', description)
 
     def _make_order(self, order_no, branch_no, id=None, **kwargs):
         from altair.app.ticketing.orders.models import  Order
