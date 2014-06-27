@@ -23,7 +23,8 @@ if (!window.app)
       templateId: {value: null, writable: true},
       createdTemplateId: {value: null, writable: true},
       isAfterCreatedFirst: {value: false, writable: true},
-      callback: {value: null, writable: true}
+      callback: {value: null, writable: true},
+      ticketMapping: {value: [], writable: true}
     });
 
   var selectContentTemplate = _.template('<% _.each(iterable, function(d){%><option value="<%= d.pk %>"><%= d.name %></option> <%});%>');
@@ -62,6 +63,7 @@ if (!window.app)
     }
   );
 
+
   // これはtranscribeする際の状態
   var transcribeParamatersModel = Object.create(
     {
@@ -98,8 +100,10 @@ if (!window.app)
       this.submit.receiveChangeToTicketTemplate();
     },
     onChangeTicketTemplate: function($el){
+      var ticket = this.models.source.ticketMapping[$el.val()];
       var text = $el.find("option:selected").text();
       this.submit.receiveDefaultTicketName(text);
+      this.submit.receiveUpdateTicketCheckbox(ticket);
       return this.component.receiveSVGRequest($el.val());
     },
     onTicketFormatSelectElementUpdate: function(html){
@@ -180,6 +184,11 @@ if (!window.app)
       this.$el.find('input[name="name"]').val(name);
       this.broker.models.submit.sync("name", name);
     },
+    receiveUpdateTicketCheckbox: function(ticket){
+      this.$el.find('input[name="cover_print"]').attr("checked", ticket.cover_print);
+      this.$el.find('input[name="always_reissueable"]').attr("checked", ticket.always_reissueable);
+      this.$el.find('input[name="priced"]').attr("checked", ticket.priced);
+    },
     onChangeTicketName: function($el){
       this.broker.models.submit.sync("name", $el.val());
     },
@@ -249,8 +258,9 @@ if (!window.app)
       this.$el.find("#templates").parents(".control-group").find("label").text("券面テンプレート");
     },
     onChangeTicketTemplate: function($el){
-      this.broker.models.source.sync("templateId", $el.val());
-      this.broker.models.submit.sync("base_template_id", $el.val());
+      var m = this.broker.models;
+      m.source.sync("templateId", $el.val());
+      m.submit.sync("base_template_id", $el.val());
       return this.broker.onChangeTicketTemplate($el);
     },
     onClickStickyButton: function($el){
@@ -356,7 +366,8 @@ if (!window.app)
       return $.post(url, params).fail(
         function(){ this.broker.message.errorMessage("error: url="+url);}.bind(this)
       ).done(
-        function(data){ 
+        function(data){
+          this.broker.models.source.sync("ticketMapping", data.tickets);
           this.broker.onTicketTemplateSelectElementUpdate(selectContentTemplate({"iterable": data.iterable}));
           this.broker.onNewTicketsList(data);
         }.bind(this)
