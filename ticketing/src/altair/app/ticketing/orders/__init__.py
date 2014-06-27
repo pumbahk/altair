@@ -66,6 +66,8 @@ def includeme(config):
     config.add_route("orders.mailinfo"                  , "/orders/{order_id}/mailinfo/{action}")
     config.add_route("cart.search",                       "/carts/")
     config.add_route("cart.show",                       "/carts/{order_no}")
+    config.add_route('orders.beta'                      , '/beta/')
+    config.add_route('orders.beta.download'             , '/beta/download/')
     config.scan(".")
 
     # 団体予約、インナー予約でcartパッケージを使う為の設定
@@ -90,6 +92,3 @@ def includeme(config):
     order_attrs_registry.registerProvider(order_metadata_provider)
     config.set_model_metadata_provider_registry(order_attrs_registry,
                                                 name=METADATA_NAME_ORDER)
-
-
-

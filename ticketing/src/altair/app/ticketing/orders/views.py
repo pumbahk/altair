@@ -293,6 +293,7 @@ class OrderBaseView(BaseView):
             }
 
 
+
 @view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/index.html', permission='sales_counter')
 class OrderIndexView(OrderBaseView):
     SHOW_TOTAL_KEY = 'orders.index.show_total'
@@ -362,6 +363,76 @@ class OrderIndexView(OrderBaseView):
         self.show_total_flag = not self.show_total_flag
         return HTTPFound(location=self.request.route_path('orders.index', _query=self.request.params))
 
+
+class DownloadParamValidationError(Exception):
+    u"""購入情報DL(beta)のパラメータエラー
+    """
+    pass
+
+@view_defaults(decorator=with_bootstrap, permission='sales_editor')
+class OrderBetaDownloadView(BaseView):
+    """The Order download beta.
+    """
+
+    @view_config(route_name='orders.beta', request_method='GET',
+                 renderer='altair.app.ticketing:templates/orders/beta.html')
+    def index(self):
+        """The Order search page.
+        """
+        import altair.app.ticketing.orders.dump as altair_order_dump
+        from altair.app.ticketing.core.models import (
+            Event,
+            PaymentMethod,
+            DeliveryMethod,
+            )
+        organization_id = self.context.organization.id
+        events = Event.query\
+          .filter(Event.organization_id==organization_id)\
+          .order_by(Event.display_order)
+        payment_methods = PaymentMethod.query\
+          .filter(PaymentMethod.organization_id==organization_id)
+        delivery_methods = DeliveryMethod.query\
+          .filter(DeliveryMethod.organization_id==organization_id)
+        return {'column_compiler': altair_order_dump.column_compiler,
+                'name_filter': altair_order_dump.name_filter,
+                'events': events,
+                'payment_methods': payment_methods,
+                'delivery_methods': delivery_methods,
+                }
+
+    @view_config(route_name='orders.beta.download', request_method='GET')
+    def download(self):
+        """The Order Download API.
+
+        request format:
+        type: 'CSV' or 'JSON'
+        count: 100, 200
+        filters: [['Column.name': [CONDITION, ... ], ... ]
+        options: ['Column.name', ...]
+
+        response format:
+        """
+
+        import json
+        import altair.app.ticketing.orders.dump as altair_order_dump
+        session = get_db_session(self.request, name="slave")
+        json_str = self.request.params.get('json', None)
+        if not json_str:
+            raise DownloadParamValidationError(
+                'Order dowload parameter error: {}'.format(
+                    repr(self.request.params)))
+        data = json.loads(json_str)
+        filters = data['filters']
+        options = data['options']
+        limit = data['limit']
+        res = Response()
+        res.headers = [
+            ('Content-Type', 'application/octet-stream; charset=cp932'),
+            ('Content-Disposition', 'attachment; filename={0}'.format('test.csv')),
+            ]
+        exporter = altair_order_dump.OrderExporter(session, self.context.organization.id)
+        exporter.exportfp(res, filters=filters, options=options, limit=limit)
+        return res
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor') # sales_counter ではない!
 class OrderDownloadView(BaseView):
