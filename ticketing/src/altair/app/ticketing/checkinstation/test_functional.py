@@ -334,17 +334,21 @@ class CheckinStationAPITests(BaseTests):
         cls.ticket = property(lambda self: DBSession.merge(bundle).tickets[0])
         transaction.commit()
 
-    def test_get_endpoints(self):
-        """endpointが取得できればok"""
+    def test_get_ad_images(self):
+        """広告用の画像が取得できればok"""
         from altair.app.ticketing.checkinstation.interfaces import IAdImageCollector
         collector = self.config.registry.getUtility(IAdImageCollector)
         request = DummyRequest(registry=self.config.registry)
+        class context:
+            class organization:
+                short_name = "eagles"
+        request.context = context
         result = collector.get_images(request)
 
         self.assertNotEqual(result, [])
 
-    def test_get_ad_images(self):
-        """広告用の画像が取得できればok"""
+    def test_get_endpoints(self):
+        """endpointが取得できればok"""
         from altair.app.ticketing.checkinstation.interfaces import IAPIEndpointCollector
         collector = self.config.registry.getUtility(IAPIEndpointCollector)
         request = DummyRequest(registry=self.config.registry)
