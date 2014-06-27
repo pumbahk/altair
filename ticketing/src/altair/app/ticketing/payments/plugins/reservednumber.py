@@ -113,7 +113,14 @@ class ReservedNumberDeliveryPlugin(object):
         if order.delivered_at is not None:
             raise Exception('order %s is already delivered' % order.order_no)
         # 引換番号を再発行するべきだと思うけど...
- 
+
+    def cancel(self, request, order):
+        # キャンセルフラグを立てるべきだと思うけど...
+        pass
+
+    def refund(self, request, order, refund_record):
+        pass
+
 @view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment("reserved_number_payment_mail_complete.html"))
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer=_overridable_delivery("reserved_number_mail_complete.html"))
 def completion_delivery_mail_viewlet(context, request):
@@ -178,3 +185,9 @@ class ReservedNumberPaymentPlugin(object):
             raise Exception('order %s is already delivered' % order.order_no)
         # 支払番号を再発行すべきだと思うけど...
 
+    def cancel(self, request, order):
+        # キャンセルフラグを立てるべきだと思うけど...
+        pass
+
+    def refund(self, request, order, refund_record):
+        pass
