@@ -88,6 +88,7 @@ ${getattr(form,attrname).label(class_="required control-label")}
     <a href="#" id="wizard-nav0" class="wizard-nav current" data-toggle="#userhandle0"><span class="badge">1.</span> 作成方法の選択</a>
     <a href="#" id="wizard-nav1" class="wizard-nav" data-toggle="#userhandle1"><span class="badge">2.</span> テンプレートの選択</a>
     <a href="#" id="wizard-nav2" class="wizard-nav" data-toggle="#userhandle2"><span class="badge">3.</span> 登録データ設定</a>
+    <a href="#" id="wizard-nav3" class="wizard-nav" data-toggle="#userhandle3"><span class="badge">4.</span> チケット券面登録完了</a>
   </div>
 
   <div class="row-fluid">
@@ -161,6 +162,31 @@ ${getattr(form,attrname).label(class_="required control-label")}
           <div class="userhandle-box">
             <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav1">戻る</a>
             <a class="btn js-handle-btn js-next-btn" href="#" data-toggle="#wizard-nav3">次へ</a>
+          </div>
+        </div>
+    </div>
+    <div id="userhandle3" class="userhandle" style="display:none">
+      <div class="last-area span5 hero-unit">
+          <h4> チケット券面登録完了</h4>
+          <p>チケット券面の登録が完了しました。次はどうしますか？</p>
+           <ul>
+           <li><a href="${request.route_path("events.tickets.index", event_id=event.id)}">一覧画面へ戻る</a></li>
+           <li><a class="js-handle-btn js-next-btn" href="#" data-toggle="#wizard-nav0">続けて登録する</a></li>
+           </ul>
+      </div>
+        <div class="last-box span5">
+          <h4>6. チケット券面登録完了</h4>
+          <dl>
+            <dt>一覧画面へ戻る</dt>
+            <dd>チケット券面の一覧画面に戻ります<dd>
+          </dl>
+          <dl>
+            <dt>続けて登録する</dt>
+            <dd>登録ウイザードの最初に戻ります<dd>
+          </dl>
+
+          <div class="userhandle-box">
+            <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav2">戻る</a>
           </div>
         </div>
     </div>
