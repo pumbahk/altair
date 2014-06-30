@@ -325,7 +325,7 @@ class SalesSegmentGroupForm(OurForm):
             from altair.app.ticketing.events.sales_segments.exceptions import IssuingStartAtOutTermException
             ssg = SalesSegmentGroup.query.filter_by(id=self.id.data).one()
             for ss in ssg.sales_segments:
-                if not ss.use_default_end_at:
+                if not ss.performance or not ss.use_default_end_at:
                     continue
                 performance_end_on = ss.performance.end_on or ss.performance.start_on
                 end_at = self.end_at.data or ssg.end_for_performance(ss.performance)
