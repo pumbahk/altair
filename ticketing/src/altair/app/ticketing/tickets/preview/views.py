@@ -5,6 +5,7 @@ import sqlalchemy.orm as orm
 import json
 import base64
 import os.path
+import sqlalchemy as sa
 from StringIO import StringIO
 from collections import OrderedDict
 from pyramid.view import view_config, view_defaults
@@ -675,11 +676,12 @@ class DownloadListOfPreviewImage(object):
 
     def model_query(self, performance_id, sales_segment_id):
         return (c_models.ProductItem.query
-         .filter(c_models.Product.id==c_models.ProductItem.product_id)
-         .filter(c_models.Product.sales_segment_id==sales_segment_id)
-         .filter(c_models.Product.performance_id==performance_id)
-         .filter(c_models.ProductItem.performance_id==performance_id)
-         .all())
+                .filter(c_models.Product.id==c_models.ProductItem.product_id)
+                .filter(c_models.Product.sales_segment_id==sales_segment_id)
+                .filter(c_models.Product.performance_id==performance_id)
+                .filter(c_models.ProductItem.performance_id==performance_id)
+                .order_by(sa.asc(c_models.Product.display_order))
+                .all())
 
     def fetch_data_list(self, q, organization, delivery_method_id):
         svg_string_list = []
