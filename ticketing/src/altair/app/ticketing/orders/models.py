@@ -690,7 +690,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def refund_per_ticket_fee(self):
         from altair.app.ticketing.orders.api import get_refund_per_ticket_fee
-        return get_refund_per_ticket_fee(self.refund, self),
+        return get_refund_per_ticket_fee(self.refund, self)
 
     def get_refund_ticket_price(self, product_item_id):
         from altair.app.ticketing.orders.api import get_refund_ticket_price
