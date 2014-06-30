@@ -372,7 +372,7 @@ def easycreate_transcribe_ticket(context, request):
     ticket.name = request.POST["name"]
     ticket.save()  # flush and DBSession.add(o)
     request.session.flash(u"チケット券面を１つ転写しました")
-    return HTTPFound(location=request.route_path("events.tickets.index", event_id=context.event_id))
+    return HTTPFound(location=request.route_path("events.tickets.index", event_id=context.event.id))
 
 
 def create_ticket_from_form(form, base_ticket):  # xxx: todo: move to anywhere
