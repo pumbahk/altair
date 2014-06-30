@@ -245,6 +245,3 @@ def format_name(request, event=None, performance=None, sales_segment=None):
 
 def json_encode(value):
     return _json.dumps(value)
-
-def get_nickname(request):
-    return None
