@@ -457,14 +457,26 @@ def get_or_create_user(info):
         # ゲストのときはユーザを作らない
         return None
 
+    logger.info('creating user account for %r' % d)
+
     user = u_models.User()
-    # TODO: 楽天OpenID以外にも対応できるフレームワークを...
     membership = u_models.Membership.query.filter(
         u_models.Membership.organization_id == d['organization_id'],
-        u_models.Membership.name == 'rakuten').first()
+        u_models.Membership.name == d['membership_name']) \
+        .order_by(u_models.Membership.id.desc()) \
+        .first()
+    # [暫定] 楽天OpenID認証の場合は、oragnization_id の条件を外したものでも調べる
+    # TODO: あとでちゃんとデータ移行する
+    if membership is None and info['auth_type'] == 'rakuten':
+        membership = u_models.Membership.query.filter(
+            u_models.Membership.name == d['membership_name']) \
+            .order_by(u_models.Membership.id.desc()) \
+            .first()
+
     if membership is None:
-        membership = u_models.Membership(name='rakuten')
-        DBSession.add(membership)
+        logger.error("could not found membership %s" % d['membership_name'])
+        return None
+
     credential = u_models.UserCredential(
         user=user,
         auth_identifier=d['auth_identifier'],
