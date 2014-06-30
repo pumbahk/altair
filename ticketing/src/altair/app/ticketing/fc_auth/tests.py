@@ -93,7 +93,7 @@ class FCAuthPluginTests(unittest.TestCase):
 
 class TestIt(unittest.TestCase):
     def setUp(self):
-        self.request = testing.DummyRequest(matched_route=testing.DummyModel(name='dummy'))
+        self.request = testing.DummyRequest(matched_route=testing.DummyModel(name='dummy'), params={'event_id': 58})
         self.config = testing.setUp(request=self.request)
         self.config.add_route('dummy', '/dummy')
         self.session = _setup_db(modules=[
@@ -225,7 +225,7 @@ class TestIt(unittest.TestCase):
         result = api.challenge()
 
         self.assertEqual(result.location, 'http://example.com/membership/fc/login')
-        self.assertEqual(session[SESSION_KEY]['return_url'], '/dummy?')
+        self.assertEqual(session[SESSION_KEY]['return_url'], '/dummy?event_id=58')
 
 
 class guest_authenticateTests(unittest.TestCase):

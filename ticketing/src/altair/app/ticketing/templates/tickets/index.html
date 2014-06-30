@@ -31,11 +31,15 @@ ${ch.breadcrumbs(
   });
 </script>
 
-<div style="margin-bottom:30px;">
-  <a href="${request.route_path("tickets.preview")}">preview pageへ</a>
+<div class="page-header">
+  <h1>チケット券面</h1>
 </div>
 
-<h2>出力形式</h2>
+<div style="margin-bottom:30px;">
+  <a href="${request.route_path("tickets.preview")}">プレビューページへ</a>
+</div>
+
+<h3>出力形式</h3>
 <div id="pageformat_menu" class="btn-group">
   <a href="${request.route_path("tickets.pageformats.new")}" class="btn">
     <i class="icon-plus"></i> 新規
@@ -113,7 +117,9 @@ ${ch.breadcrumbs(
   });
 </script>
 
-<h2>チケット様式</h2>
+<hr/>
+
+<h3>チケット様式</h3>
 <div id="ticketformat_menu" class="btn-group">
   <a href="${request.route_path("tickets.ticketformats.new")}" class="btn">
     <i class="icon-plus"></i> 新規
@@ -195,7 +201,9 @@ ${ch.breadcrumbs(
   });
 </script>
 
-<h2>テンプレート</h2>
+<hr/>
+
+<h3>テンプレート</h3>
 <div class="btn-group" id="template_menu">
   <a href="${request.route_path("tickets.templates.new")}" class="btn">
     <i class="icon-plus"></i> 新規
@@ -260,8 +268,9 @@ ${ch.breadcrumbs(
   </tbody>
 </table>
 
+<hr/>
 
-<h2>表紙</h2>
+<h3>表紙</h3>
 <div class="btn-group" id="cover_menu">
   <a href="${request.route_path("tickets.covers.new")}" class="btn">
     <i class="icon-plus"></i> 新規

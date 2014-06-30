@@ -15,8 +15,6 @@ from .models import (
     need_ticketing,
     SejOrder,
     SejTicket,
-    SejNotification,
-    SejNotificationType,
     SejOrderUpdateReason,
     SejPaymentType,
     SejTicketType,

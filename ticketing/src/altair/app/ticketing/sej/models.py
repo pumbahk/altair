@@ -4,7 +4,7 @@ from altair.models import LogicallyDeleted, WithTimestamp, Identifier
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Date, ForeignKey, Enum, DECIMAL, Binary, UniqueConstraint
 from sqlalchemy.orm import relationship, join, column_property, mapper, backref, scoped_session, sessionmaker
 from sqlalchemy.orm.session import object_session
-from sqlalchemy.sql.expression import asc
+from sqlalchemy.sql.expression import asc, desc
 from zope.interface import implementer
 import sqlahelper
 from datetime import datetime
@@ -210,6 +210,15 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
         if ticketing_start_at is None:
             ticketing_start_at = self.ticketing_start_at
 
+        # 最新の branch_no を取得する
+        newest_one = object_session(self).query(self.__class__) \
+            .filter_by(order_no=self.order_no) \
+            .order_by(desc(self.__class__.branch_no)) \
+            .first()
+
+        assert newest_one is not None
+        branch_no = newest_one.branch_no
+
         # payment_type は文字列になり得る (MySQLのENUM型をDBAPIは文字列として扱う)
         if int(payment_type) == int(SejPaymentType.Paid):
             # 再付番の際、代済に変更になるということは、必ず支払済のはずのため
@@ -237,7 +246,7 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
             zip_code=self.zip_code,
             email=self.email,
             order_no=self.order_no,
-            branch_no=(self.branch_no + 1),
+            branch_no=(branch_no + 1),
             exchange_sheet_url=self.exchange_sheet_url,
             exchange_sheet_number=self.exchange_sheet_number,
             total_price=self.total_price,
@@ -349,6 +358,3 @@ class ThinSejTenant(object):
         self._contact_02 = contact_02 if contact_02 is not None else (original and original.contact_02)
         self._api_key = api_key if api_key is not None else (original and original.api_key)
         self._inticket_api_url = inticket_api_url if inticket_api_url is not None else (original and original.inticket_api_url)
-
-
-from .notification.models import *

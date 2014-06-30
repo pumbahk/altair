@@ -185,7 +185,17 @@ class SejTenantForm(OurForm):
 def encoder(x):
     return x or u''
 
-class OrganizationSettingForm(OurForm):
+class OrganizationSettingSimpleForm(OurForm):
+    id = HiddenField(
+        label=u'ID',
+        validators=[Optional()],
+    )
+
+    notify_remind_mail = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.notify_remind_mail)['label']
+        )
+
+class OrganizationSettingForm(OrganizationSettingSimpleForm):
     id = HiddenField(
         label=u'ID',
         validators=[Optional()],
@@ -281,6 +291,12 @@ class OrganizationSettingForm(OurForm):
         coerce=lambda x: int(x) if x else None,
         choices=[(int(e.v), e.k) for e in c_models.SalesReportTypeEnum]
         )
+    enable_smartphone_cart = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_smartphone_cart)['label']
+        )
+    enable_mypage = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_mypage)['label']
+    )
     augus_use = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.augus_use)['label']
         )

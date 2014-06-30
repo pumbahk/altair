@@ -3,13 +3,13 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'イベント', event.title, u'パフォーマンス'],
+      names=[u'イベント', event.title, u'公演'],
       urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
   )}
 </%block>
 
 <div class="page-header">
-  <h1>パフォーマンス</h1>
+  <h1>公演</h1>
 </div>
 <%include file="/performances/_list.html" args="form=form, performances=performances" />
 <%include file="/performances/_action_button.html" args="event=event" />

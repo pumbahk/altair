@@ -404,7 +404,7 @@ class OrderSearchForm(SearchFormBase):
         label=u'予約日時',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
-        widget=OurDateWidget()
+        widget=OurDateTimeWidget()
     )
     ordered_to = DateTimeField(
         label=u'予約日時',
@@ -418,7 +418,7 @@ class OrderSearchForm(SearchFormBase):
             minute=Max,
             second=Max
             ),
-        widget=OurDateWidget()
+        widget=OurDateTimeWidget()
     )
     status = BugFreeSelectMultipleField(
         label=u'ステータス',

@@ -14,7 +14,7 @@ from altair.formhelpers import (
     after1900, CheckboxMultipleSelect, BugFreeSelectMultipleField,
     NFKC, Zenkaku, Katakana, strip_spaces, ignore_space_hyphen,
     LazySelectMultipleField,
-    OurBooleanField,
+    OurBooleanField, OurDecimalField
 )
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator
@@ -225,11 +225,11 @@ class ProductForm(Form):
         ],
     )
 
-    price = TextField(
+    price = OurDecimalField(
         label=u'金額',
+        places=0,
         validators=[
             Required(),
-            Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )
 

@@ -1,7 +1,7 @@
 <%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
 <%mobile:header>チケット購入</%mobile:header>
-<form method="post" action="${request.url}">
+<form method="post" action="${request.current_route_path()}">
 <div>
 購入者情報を入力して下さい。
 </div>
@@ -22,7 +22,7 @@
   <div style="color:#ff0000">
     ${h.error_list(request, form, 'first_name')}
   </div>
-<div color="#ff0000">
+</div>
 
 <div>
 <%mobile:form_header>購入者氏名(カナ)</%mobile:form_header>

@@ -57,12 +57,15 @@ class AnshinCheckoutCommunicator(object):
 
     def send_order_fixation_request(self, xml):
         message = etree.tostring(xml, xml_declaration=True, encoding=self.encoding)
+        logger.debug('message=%s' % message)
         return self._send_request(self.fixation_order_url, 'rparam=%s' % urllib.quote(b64encode(message)))
 
     def send_order_change_request(self, xml):
         message = etree.tostring(xml, xml_declaration=True, encoding=self.encoding)
+        logger.debug('message=%s' % message)
         return self._send_request(self.change_order_url, 'rparam=%s' % urllib.quote(b64encode(message)))
 
     def send_order_cancel_request(self, xml):
         message = etree.tostring(xml, xml_declaration=True, encoding=self.encoding)
+        logger.debug('message=%s' % message)
         return self._send_request(self.cancel_order_url, 'rparam=%s' % urllib.quote(b64encode(message)))

@@ -38,7 +38,7 @@ class PromotionSheet(object):
             height= selected.main_image.height, 
             main_link=h.link.get_link_from_promotion(request, selected), 
             links=[h.link.get_link_from_promotion(request, pu) for pu in punits], 
-            messages=[pu.text for pu in punits], 
+            messages=[pu.text for pu in punits],
             interval_time = get_interval_time(), 
             unit_candidates = [int(pu.id) for pu in punits]
             )
@@ -55,8 +55,15 @@ def render_tstar_top(request, widget):
     limit = 15
     template_name = "altaircms.plugins.widget:promotion/render.html"
     pm = get_promotion_manager(request)
-    info = pm.promotion_info(request, promotion_sheet(request, widget), limit=limit)
-    params = {"show_image": pm.show_image, "info": info}
+    ps = promotion_sheet(request, widget)
+    info = pm.promotion_info(request, ps, limit=limit)
+    infos = []
+    new_promotion_limit = 9
+    for num in range(len(ps.promotion_units)):
+        if num == new_promotion_limit:
+            break;
+        infos.append(pm.promotion_info(request, ps, num))
+    params = {"show_image": pm.show_image, "info": info, "infos": infos, "widget": widget}
     return render(template_name, params, request=request)
 
 def render_tstar_category_top(request, widget):
@@ -64,7 +71,7 @@ def render_tstar_category_top(request, widget):
     template_name = "altaircms.plugins.widget:promotion/category_render.html"
     pm = get_promotion_manager(request)
     info = pm.promotion_info(request, promotion_sheet(request, widget), limit=limit)
-    params = {"show_image": pm.show_image, "info": info}
+    params = {"show_image": pm.show_image, "info": info, "widget": widget}
     return render(template_name, params, request=request)
 
 @implementer(IWidgetUtility)

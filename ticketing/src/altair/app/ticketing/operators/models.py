@@ -41,7 +41,7 @@ class Permission(Base):
             .filter(Permission.category_name.in_(category_names)).all()
 
 
-COMMON_DEFAULT_ROLES = ['administrator', 'superuser', 'operator']
+COMMON_DEFAULT_ROLES = ['administrator', 'superuser', 'operator', 'superoperator']
 
 class OperatorRole(Base, BaseModel, WithTimestamp):
     __tablename__ = 'OperatorRole'

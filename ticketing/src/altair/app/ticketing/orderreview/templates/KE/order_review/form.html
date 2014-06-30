@@ -1,38 +1,107 @@
 <%inherit file="../commons/layout.html" />
 <h2>購入履歴の確認</h2>
-<form id="form1" name="form1" action="${request.route_path('order_review.show')}" method="post">
-  <!-- wrapper -->
-  <div class="formWrapper">
-    <table cellpadding="0" cellspacing="0" class="formeagles">
-      <colgroup>
-        <col style="width:180px;">
-        <col style="width:310px;">
-      </colgroup>
-      <tbody>
+<table class="nobdr">
+  <tr>
+    <td>
+      <table class="loginbox">
+        <thead>
+          <tr>
+            <th>一般の方のチケット確認<small> はこちらから</small></th>
+          </tr>
+        </thead>
         <tr>
-          <th>受付番号 <span class="red">*</span></th>
           <td>
-            ${form.order_no}
-            (例: KE00000000AB)
-            <span class="red">${h.error('order_no')}</span>
+          <form id="form1" name="form1" action="${request.route_path('guest.order_review.form')}" method="get">
+            <table width="323" border="0" cellpadding="0" cellspacing="0" class="nobdr" align="center">
+              <tbody>
+              <tr>
+                <td colspan="2" id="btn_login" align="center">
+                  <input type="submit" value="次に進む" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </form>
           </td>
         </tr>
+      </table>
+    </td>
+    <td>
+      <form action="${request.url}" method="post">
+      <table class="loginbox">
+        <thead>
+          <tr>
+            <th>ファンクラブ会員の方<small> はこちらから</small></th>
+          </tr>
+        </thead>
         <tr>
-          <th>電話番号 <span class="red">*</span></th>
           <td>
-            ${form.tel}
-            (例: 080xxxxyyyy)
-            <span class="red">${h.error('tel')}</span><br/>
-            ご予約時に登録した電話番号をご入力してください。
-            </ul>
+            <table width="323" border="0" cellpadding="0" cellspacing="0" class="member " align="center">
+              <tbody>
+              <tr>
+                <th colspan="2" style="text-align:left">
+                  ログインするファンクラブ
+                </th>
+              </tr>
+              <tr>
+                <td colspan="2" align="left">
+                <div class="tal">
+                  <select name="membership" style="width: 100%">
+                    <option value="KE">SECRET</option>
+                    <option value="KE001">Block.B</option>
+                  </select>
+                </div>
+                </td>
+              </tr>
+              <tr>
+                <th colspan="2" style="text-align:left">
+                  会員番号(半角英数字)<br/>
+                  ※FC会員番号orユーザーID(Block.Bのみ)<br/>
+                </th>
+              </tr>
+              <tr>
+                <td colspan="2" align="left">
+                <div class="tal">
+                  <input type="text" class="text" name="username">
+                  %if message:
+                  <br/><span class="small red">IDまたはパスワードが一致しません</span>
+                  %endif
+                </div>
+                </td>
+              </tr>
+              <tr>
+                <th colspan="2" style="text-align:left">
+                  パスワード(半角英数字)<br/>
+                  ※ファンクラブにご登録のお電話番号下4ケタ
+                </th>
+              </tr>
+              <tr>
+                <td colspan="2" style="text-align:left">
+                <div class="tal">
+                  <input type="password" name="password">
+                </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+            <br/>
+            <div style="text-align: center;">
+              <input type="submit" value="ログイン" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
+            </div>
           </td>
         </tr>
-        <tr>
-          <td colspan="2" style="text-align:center">
-            <input type="submit" value="次に進む" class="submit btnLogin" style="width:400px;height:50px;" />
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</form>
+      </table>
+      </form>
+    </td>
+  </tr>
+</table>
+<h3>注意事項</h3>
+<ul class="notes">
+    <li>携帯電話､スマートフォンの各キャリアの受信拒否設定から、購入確認メールが受け取れない場合がございますので、
+<span style="color:#f00;">kissent@tstar.jpのドメイン指定受信許可設定を行ってください</span>。</li>
+    <li>発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。</li>
+    <li>本サイトで使用する会員番号は、各ファンクラブの会員番号となります。なお、Block.Bの会員番号は、BBC JAPANにご登録頂いたユーザーIDとなります。</li>
+    <li>パスワードは、ファンクラブにご登録のお電話番号下4ケタとなります（全アーティスト共通）。</li>
+    <li>会員番号・パスワードをお忘れの方は各ファンクラブ事務局へお問い合わせください。</li>
+</ul>
+    <!-- wrapperおわり -->

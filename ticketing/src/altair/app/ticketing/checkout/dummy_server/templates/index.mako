@@ -99,11 +99,11 @@ body {
         <label class="control-label" for="openid_claimed_id">OpenID Claimed ID</label>
         ${form.openid_claimed_id()}
         ${h.errors_for(form.openid_claimed_id)}
-        <label class="control-label" for="used_point">利用ポイント数</label>
-        ${form.used_point()}
-        ${h.errors_for(form.used_point)}
+        <label class="control-label" for="used_points">利用ポイント数</label>
+        ${form.used_points()}
+        ${h.errors_for(form.used_points)}
         <div class="form-actions">
-          <input type="submit" name="doAuthorize" class="btn" value="オーソリする" />
+          <input type="submit" name="doAuthorize" class="btn" value="オーソリする (確認画面へ)" />
           <input type="submit" name="doAuthorizeFailure" class="btn" value="オーソリ失敗にする" />
         </div>
       </fieldset>

@@ -5,8 +5,9 @@ import urlparse
 from lxml import etree
 from base64 import b64encode
 from datetime import datetime
+import warnings
 from collections import OrderedDict
-
+from sqlalchemy.orm.exc import NoResultFound
 from altair.app.ticketing.core.models import ChannelEnum
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart.models import Cart
@@ -25,7 +26,7 @@ from .exceptions import AnshinCheckoutAPIError
 logger = logging.getLogger(__name__)
 
 
-def get_checkout_service(request, organization=None, channel=None):
+def get_checkout_service(request, organization_or_organization_id=None, channel=None):
     settings = request.registry.settings
 
     success_url = settings.get('altair_checkout.success_url')
@@ -49,13 +50,19 @@ def get_checkout_service(request, organization=None, channel=None):
         secret=None
     )
 
-    if organization and channel:
+    if organization_or_organization_id and channel:
+        from altair.app.ticketing.core.models import Organization
+        if isinstance(organization_or_organization_id, Organization):
+            organization_id = organization_or_organization_id.id
+            warnings.warn("organization_id should be passed to get_checkout_service() instead of an organization object", DeprecationWarning)
+        else:
+            organization_id = organization_or_organization_id
         shop_settings = m._session.query(m.RakutenCheckoutSetting).filter_by(
-            organization_id=organization.id,
+            organization_id=organization_id,
             channel=channel.v
         ).first()
         if not shop_settings:
-            raise Exception('RakutenCheckoutSetting not found (organization_id=%s, channel=%s)' % (organization.id, channel.v))
+            raise Exception('RakutenCheckoutSetting not found (organization_id=%s, channel=%s)' % (organization_id, channel.v))
 
         params.update(dict(
             service_id=shop_settings.service_id,
@@ -96,11 +103,6 @@ def anshin_checkout_session(func):
 def remove_default_session():
     m._session.remove()
 
-def get_cart_id_by_order_no(request, order_no):
-    from altair.app.ticketing.models import DBSession as session
-    from altair.app.ticketing.cart.models import Cart
-    return session.query(Cart).filter_by(order_no=order_no).one().id
-
 BASIC_FEE_ITEMS = [
     ('delivery_fee', 'refund_delivery_fee', u'引取手数料'),
     ('system_fee', 'refund_system_fee', u'システム利用料'),
@@ -132,15 +134,24 @@ def build_checkout_object_from_order_like(request, order_like):
             )
     # 手数料も商品として登録する
     for item_id, (attr_name, _, name) in get_fee_items_dict(request, order_like).items():
-        checkout_object.items.append(
-            m.CheckoutItem(
-                itemId=item_id,
-                itemName=name,
-                itemNumbers=1,
-                itemFee=int(getattr(order_like, attr_name))
-                )
-            )
+        fee = getattr(order_like, attr_name)
+        if fee is not None:
+            fee = int(fee)
+            if fee > 0:
+                checkout_object.items.append(
+                    m.CheckoutItem(
+                        itemId=item_id,
+                        itemName=name,
+                        itemNumbers=1,
+                        itemFee=fee
+                        )
+                    )
     return checkout_object
+
+def get_cart_id_by_order_no(request, order_no):
+    from altair.app.ticketing.models import DBSession as session
+    from altair.app.ticketing.cart.models import Cart
+    return session.query(Cart).filter_by(order_no=order_no).one().id
 
 def get_checkout_object(request, session, order_no):
     from altair.app.ticketing.cart.models import Cart
@@ -221,20 +232,23 @@ def update_checkout_object_by_order_like(request, session, checkout_object, orde
 
     for k, (attr_name, refund_attr_name, item_name) in fee_items_dict.items():
         checkout_item = checkout_object_fee_item_map.get(k)
-        if checkout_item is None:
-            fee = getattr(order_like, attr_name)
+        fee = getattr(order_like, attr_name, None)
+        if fee is not None:
             if refund_record is not None:
                 fee -= getattr(refund_record, refund_attr_name)
-            added_checkout_items[k] = m.CheckoutItem(
-                itemId=k,
-                itemName=item_name,
-                itemNumbers=1,
-                itemFee=int(fee)
-                )
+            fee = int(fee)
+        if checkout_item is None:
+            if fee > 0:
+                added_checkout_items[k] = m.CheckoutItem(
+                    itemId=k,
+                    itemName=item_name,
+                    itemNumbers=1,
+                    itemFee=fee
+                    )
         else:
             checkout_item.itemName = item_name
             checkout_item.itemNumbers = 1
-            checkout_item.itemFee = int(getattr(order_like, k))
+            checkout_item.itemFee = fee
             updated_checkout_items[checkout_item.itemId] = checkout_item
 
     for k, checkout_item in checkout_object_fee_item_map.items():
@@ -283,10 +297,16 @@ class AnshinCheckoutAPI(object):
         return self.get_checkout_object_by_order_no(order_like.order_no).authorized_at
 
     def get_checkout_object_by_order_no(self, order_no):
-        return get_checkout_object(self.request, self.session, order_no)
+        try:
+            return get_checkout_object(self.request, self.session, order_no)
+        except NoResultFound:
+            return None
 
     def get_checkout_object_by_id(self, id):
-        return get_checkout_object_by_id(self.request, self.session, id)
+        try:
+            return get_checkout_object_by_id(self.request, self.session, id)
+        except NoResultFound:
+            return None
 
     def mark_authorized(self, order_no):
         checkout_object = self.get_checkout_object_by_order_no(order_no)
@@ -295,7 +315,7 @@ class AnshinCheckoutAPI(object):
         self.session.commit()
 
     def request_fixation_order(self, order_like_list):
-        checkout_object_list = [self.get_checkout_object_by_order_no(order_like.order_no) for order_like in order_like_list]
+        checkout_object_list = [get_checkout_object(self.request, self.session, order_like.order_no) for order_like in order_like_list]
         xml = self.pb.create_order_control_request_xml(checkout_object_list)
         try:
             res = self.comm.send_order_fixation_request(xml)
@@ -315,7 +335,7 @@ class AnshinCheckoutAPI(object):
         return result
 
     def request_cancel_order(self, order_like_list):
-        checkout_object_list = [self.get_checkout_object_by_order_no(order_like.order_no) for order_like in order_like_list]
+        checkout_object_list = [get_checkout_object(self.request, self.session, order_like.order_no) for order_like in order_like_list]
         xml = self.pb.create_order_control_request_xml(checkout_object_list)
         try:
             res = self.comm.send_order_cancel_request(xml)
@@ -336,7 +356,7 @@ class AnshinCheckoutAPI(object):
         checkout_object_list = [
             update_checkout_object_by_order_like(
                 self.request, self.session,
-                self.get_checkout_object_by_order_no(order_like.order_no),
+                get_checkout_object(self.request, self.session, order_like.order_no),
                 order_like,
                 refund_record
                 )
@@ -352,8 +372,6 @@ class AnshinCheckoutAPI(object):
                     u'あんしん決済の金額変更に失敗しました',
                     error_code
                     )
-            for checkout in checkout_object_list:
-                checkout.sales_at = None
             self.session.commit()
         except:
             self.session.rollback()
@@ -375,10 +393,14 @@ class AnshinCheckoutAPI(object):
     def create_order_complete_response_xml(self, result, complete_time):
         return etree.tostring(self.pb.create_order_complete_response_xml(result, complete_time), xml_declaration=True, encoding='utf-8')
 
-    def build_checkout_request_form(self, order_like):
+    def build_checkout_request_form(self, order_like, success_url=None, fail_url=None):
         # checkoutをXMLに変換
         checkout_object = build_checkout_object_from_order_like(self.request, order_like)
         self.session.add(checkout_object)
         self.session.commit()
 
-        return checkout_object, self.hfb.build_checkout_request_form(checkout_object)
+        return checkout_object, self.hfb.build_checkout_request_form(
+            checkout_object,
+            success_url=success_url,
+            fail_url=fail_url
+            )

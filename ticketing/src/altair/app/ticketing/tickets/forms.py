@@ -11,12 +11,14 @@ from sqlalchemy.orm.exc import NoResultFound
 from altair.formhelpers import DateTimeField, Translations, Required
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.fields import OurBooleanField
-from altair.app.ticketing.core.models import Event, Account, DeliveryMethod, TicketFormat
-from altair.app.ticketing.core.models import TicketFormat, Ticket
+from altair.app.ticketing.core.models import (
+    DeliveryMethod,
+    TicketFormat,
+    Ticket
+)
 from altair.svg.geometry import as_user_unit
-from .convert import to_opcodes
-from .constants import PAPERS, ORIENTATIONS
-from .cleaner.api import get_validated_svg_cleaner
+from altair.app.ticketing.tickets.constants import PAPERS, ORIENTATIONS
+from altair.app.ticketing.tickets.cleaner.api import get_validated_svg_cleaner
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 
 def filestorage_has_file(storage):
@@ -132,7 +134,7 @@ class TicketCoverForm(OurForm):
         super(TicketCoverForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
         if 'organization_id' in kwargs:
             self.ticket.choices = [
-                (ticket.id, ticket.name) for ticket in Ticket.filter_by(organization_id=kwargs['organization_id'], event_id=None)
+                (ticket.id, ticket.name) for ticket in Ticket.query.filter_by(organization_id=kwargs['organization_id'], event_id=None)
             ]
 
     name = TextField(

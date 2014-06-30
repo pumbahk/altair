@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import unittest
+import mock
 from datetime import datetime
 
 from pyramid import testing
@@ -1099,9 +1100,9 @@ class AnshinCheckoutAPITest(unittest.TestCase):
     def test_request_change_order_normal(self):
         from lxml import etree
         from altair.multicheckout.testing import DummyHTTPLib
-        from altair.app.ticketing.orders.models import Order
-        from altair.app.ticketing.core.models import SalesSegment, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, FeeTypeEnum
-        from .models import Checkout
+        from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
+        from altair.app.ticketing.core.models import SalesSegment, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, FeeTypeEnum, Product
+        from .models import Checkout, CheckoutItem
 
         self.create_order_test_data()
 
@@ -1124,7 +1125,33 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         self.session.add(
             Checkout(
                 orderCartId='XX0000000000',
-                orderControlId='dc-1234567890-110415-0000022222'
+                orderControlId='dc-1234567890-110415-0000022222',
+                items=[
+                    CheckoutItem(
+                        itemId='1',
+                        itemName='dummy1',
+                        itemNumbers=1,
+                        itemFee=1000
+                        ),
+                    CheckoutItem(
+                        itemId='2',
+                        itemName='dummy2',
+                        itemNumbers=2,
+                        itemFee=2000
+                        ),
+                    CheckoutItem(
+                        itemId='system_fee',
+                        itemName='system_fee',
+                        itemNumbers=1,
+                        itemFee=100
+                        ),
+                    CheckoutItem(
+                        itemId='delivery_fee',
+                        itemName='delivery_fee',
+                        itemNumbers=1,
+                        itemFee=100
+                        ),
+                    ],
                 )
             )
         self.session.flush()
@@ -1133,9 +1160,11 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             order_no='XX0000000000',
             sales_segment=SalesSegment(),
             total_amount=0,
-            system_fee=0,
+            system_fee=200,
             transaction_fee=0,
             delivery_fee=0,
+            special_fee_name='special',
+            special_fee=100,
             payment_delivery_pair=PaymentDeliveryMethodPair(
                 system_fee=0,
                 delivery_fee=0,
@@ -1149,7 +1178,14 @@ class AnshinCheckoutAPITest(unittest.TestCase):
                     fee=0,
                     fee_type=FeeTypeEnum.Once.v[0]
                     )
-                )
+                ),
+            items=[
+                OrderedProduct(
+                    product=Product(id=1, name='dummy1', price=500),
+                    price=500,
+                    quantity=2
+                    ),
+                ]
             )
         self._session.add(order)
         self._session.flush()
@@ -1164,7 +1200,8 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         self.assertEqual(len(result['orders']), 1)
         self.assertEqual(result['orders'][0]['orderControlId'], 'dc-1234567890-110415-0000022222')
 
-    def test_request_change_order_refunding(self):
+    @mock.patch('altair.app.ticketing.checkout.api.get_cart_id_by_order_no')
+    def test_request_change_order_refunding(self, get_cart_id_by_order_no):
         from lxml import etree
         from urlparse import parse_qs
         from base64 import b64decode
@@ -1172,6 +1209,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         from altair.app.ticketing.orders.models import Order, OrderedProduct
         from altair.app.ticketing.core.models import SalesSegment, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, FeeTypeEnum, Product
         from .models import Checkout
+        from .api import build_checkout_object_from_order_like
 
         self.create_order_test_data()
 
@@ -1190,14 +1228,6 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         )
         target = self._buildTarget()
         target.comm._httplib = DummyHTTPLib(etree.tostring(res_data))
-
-        self.session.add(
-            Checkout(
-                orderCartId='XX0000000000',
-                orderControlId='dc-1234567890-110415-0000022222'
-                )
-            )
-        self.session.flush()
 
         order = Order(
             order_no='XX0000000000',
@@ -1238,6 +1268,10 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         self._session.add(order)
         self._session.flush()
 
+        get_cart_id_by_order_no.return_value = 1
+        checkout_object = build_checkout_object_from_order_like(self.request, order)
+        self.session.add(checkout_object)
+
         result = target.request_change_order([(order, order)])
 
         self.assertEqual(target.comm._httplib.path, '/api_url/odrctla/changepayment/1.0/')
@@ -1257,10 +1291,10 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         self.assertEqual(item_n_list[0].find(u'itemId').text, u'1')
         self.assertEqual(item_n_list[0].find(u'itemNumbers').text, u'1')
         self.assertEqual(item_n_list[0].find(u'itemFee').text, u'50')
-        self.assertEqual(item_n_list[1].find(u'itemId').text, u'system_fee')
+        self.assertEqual(item_n_list[1].find(u'itemId').text, u'delivery_fee')
         self.assertEqual(item_n_list[1].find(u'itemNumbers').text, u'1')
         self.assertEqual(item_n_list[1].find(u'itemFee').text, u'20')
-        self.assertEqual(item_n_list[2].find(u'itemId').text, u'delivery_fee')
+        self.assertEqual(item_n_list[2].find(u'itemId').text, u'system_fee')
         self.assertEqual(item_n_list[2].find(u'itemNumbers').text, u'1')
         self.assertEqual(item_n_list[2].find(u'itemFee').text, u'20')
         self.assertEqual(item_n_list[3].find(u'itemId').text, u'special_fee')

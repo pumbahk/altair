@@ -14,7 +14,7 @@ def generate_process_number():
     return last_process_number
 
 def create_expire_notification_from_order(shop_id, sej_order):
-    from ..models import SejNotification, SejNotificationType
+    from .models import SejNotification, SejNotificationType
     return SejNotification(
         notification_type=SejNotificationType.TicketingExpire.v,
         process_number=generate_process_number(),
@@ -28,7 +28,7 @@ def create_expire_notification_from_order(shop_id, sej_order):
         )
 
 def create_payment_notification_from_order(shop_id, sej_order):
-    from ..models import SejNotification, SejNotificationType
+    from .models import SejNotification, SejNotificationType
     return SejNotification(
         notification_type=SejNotificationType.PaymentComplete.v,
         process_number=generate_process_number(),
@@ -56,6 +56,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             'altair.app.ticketing.lots.models',
             'altair.app.ticketing.sej.models',
             ])
+        from altair.app.ticketing.sej.models import _session
+        self._session =  _session
         CoreTestMixin.setUp(self)
         self.products = self._create_products(self._create_stocks(self._create_stock_types(5)))
 
@@ -71,8 +73,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         return self._getTarget()(*args, **kwargs)
 
     def last_notification(self):
-        from ..models import SejNotification
-        return self.session.query(SejNotification).order_by('created_at DESC').first()
+        from .models import SejNotification
+        return self._session.query(SejNotification).order_by('created_at DESC').first()
 
     def test_payment_complete_cash_on_delivery(self):
         from ..models import SejOrder, SejPaymentType
@@ -100,6 +102,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             billing_number='000000000000',
             payment_type=SejPaymentType.CashOnDelivery.v
             )
+        self._session.add(sej_order)
         notification = create_payment_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
@@ -142,6 +145,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             billing_number='000000000000',
             payment_type=SejPaymentType.Prepayment.v
             )
+        self._session.add(sej_order)
         # 支払
         notification = create_payment_notification_from_order('000000', sej_order)
 
@@ -185,6 +189,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             billing_number='000000000000',
             payment_type=SejPaymentType.Prepayment.v
             )
+        self._session.add(sej_order)
 
         # 発券
         notification = create_payment_notification_from_order('000000', sej_order)
@@ -228,6 +233,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             billing_number='000000000000',
             payment_type=SejPaymentType.Paid.v
             )
+        self._session.add(sej_order)
         notification = create_payment_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
@@ -268,6 +274,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             billing_number='000000000000',
             payment_type=SejPaymentType.PrepaymentOnly.v
             )
+        self._session.add(sej_order)
         notification = create_payment_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
@@ -312,6 +319,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             billing_number='000000000000',
             payment_type=SejPaymentType.CashOnDelivery.v
             )
+        self._session.add(sej_order)
         notification = create_expire_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
@@ -361,7 +369,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
                 )
             ]
         for sej_order in sej_orders:
-            self.session.add(sej_order)
+            self._session.add(sej_order)
 
         notification1 = create_expire_notification_from_order('000000', sej_orders[0])
 
@@ -412,6 +420,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             billing_number='000000000000',
             payment_type=SejPaymentType.Paid.v
             )
+        self._session.add(sej_order)
         notification = create_expire_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)

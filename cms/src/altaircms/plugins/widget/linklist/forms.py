@@ -21,3 +21,4 @@ class LinklistForm(Form):
         PageTag, allow_blank=True, label=u"ジャンル", break_separate=True, 
         dynamic_query=system_tag_dynamic_query, 
         get_label=lambda obj: obj.label)
+    use_newstyle = fields.BooleanField(label=u"新スタイルを使用する", id="use_newstyle")

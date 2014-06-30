@@ -1,10 +1,15 @@
-# encoding: utf-8
+#-*- encoding: utf-8 -*-
 import logging
 import itertools
 from datetime import datetime, timedelta
 import sqlalchemy as sa
-import sqlalchemy.orm.collections 
+import sqlalchemy.event
+import sqlalchemy.orm.collections
 import sqlalchemy.orm as orm
+from sqlalchemy.orm.exc import (
+    MultipleResultsFound,
+    NoResultFound,
+    )
 from sqlalchemy.sql import and_
 from sqlalchemy.sql.expression import exists, desc, select, case
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -219,7 +224,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __table_args__= (
         sa.UniqueConstraint('order_no', 'branch_no', name="ix_Order_order_no_branch_no"),
         )
-    __clone_excluded__ = ['cart', 'ordered_from', 'payment_delivery_pair', 'performance', 'user', '_attributes', 'refund', 'operator', 'lot_entries', 'lot_wishes', 'point_grant_history_entries', 'sales_segment']
+    __clone_excluded__ = ['cart', 'ordered_from', 'payment_delivery_pair', 'performance', 'user', '_attributes', 'refund', 'operator', 'lot_entries', 'lot_wishes', 'point_grant_history_entries', 'sales_segment', 'order_notification']
 
     id = sa.Column(Identifier, primary_key=True)
     user_id = sa.Column(Identifier, sa.ForeignKey("User.id"))
@@ -400,10 +405,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return DBSession.query(Order, include_deleted=True).filter_by(order_no=self.order_no).filter_by(branch_no=self.branch_no-1).one()
 
     @property
+    @deprecation.deprecate(u"altair.app.ticketing.orders.api.get_anshin_checkout_object()を使ってほしい")
     def checkout(self):
-        from altair.app.ticketing.checkout import api as checkout_api
-        service = checkout_api.get_checkout_service(request, self.ordered_from, core_api.get_channel(self.channel))
-        return service.get_checkout_object_by_order_no(self.order_no)
+        request = get_current_request()
+        from .api import get_anshin_checkout_object
+        return get_anshin_checkout_object(request, self)
 
     @property
     def is_inner_channel(self):
@@ -874,6 +880,39 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return session.query(cls).filter_by(order_no=order_no).one()
 
 
+class OrderNotification(Base, BaseModel):
+    __tablename__ = 'OrderNotification'
+    __clone_excluded__ = ['id', 'order_id', 'order']
+
+    id = sa.Column(Identifier, primary_key=True)
+    order_id = sa.Column(Identifier, sa.ForeignKey("Order.id", ondelete='CASCADE'), nullable=False, unique=True)
+    sej_remind_at = sa.Column(sa.DateTime(), nullable=True) # SEJ 支払い期限リマインドメール送信日時
+
+    order = orm.relationship('Order', backref=orm.backref('order_notification', uselist=False))
+
+@sqlalchemy.event.listens_for(Order, 'after_insert')
+def create_order_notification(mapper, connection, order):
+    """Orderが作成されたタイミングでOrderNotificationも作成する
+    """
+    from altair.app.ticketing.models import DBSession
+    order_notification = None
+    before_order = None
+
+    # branch_noが1っこ前のorderがあればそれの通知状態を引き継ぐ
+    try:
+        before_order = order.prev
+    except NoResultFound as err:
+        pass
+    except MultipleResultsFound as err:
+        assert False, '!? multiple order'
+
+    if before_order and before_order.order_notification:
+        order_notification = OrderNotification.clone(before_order.order_notification, deep=True)
+    else:
+        order_notification = OrderNotification()
+
+    order_notification.order_id = order.id
+    DBSession.add(order_notification)
 
 @implementer(IOrderedProductLike)
 class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1115,7 +1154,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     total_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=True)
     system_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=True)
- 
+
     special_fee_name = sa.Column(sa.Unicode(255), nullable=True)
     special_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=True)
     transaction_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=True)

@@ -6,37 +6,60 @@ import json
 import base64
 import os.path
 from StringIO import StringIO
+from collections import OrderedDict
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from jsonrpclib import jsonrpc
 from pyramid.httpexceptions import HTTPBadRequest
-from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import(
+    SEJ_DELIVERY_PLUGIN_ID,
+    QR_DELIVERY_PLUGIN_ID,
+    ORION_DELIVERY_PLUGIN_ID,
+    RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
+    SHIPPING_DELIVERY_PLUGIN_ID
+)
+INENR_DELIVERY_PLUGIN_ID_LIST = [
+    SHIPPING_DELIVERY_PLUGIN_ID,
+    RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
+    QR_DELIVERY_PLUGIN_ID,
+    ORION_DELIVERY_PLUGIN_ID,
+]
+
+from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
 import logging
 logger = logging.getLogger(__name__)
 
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core import models as c_models
-from altair.app.ticketing.tickets.utils import transform_matrix_from_ticket_format
-from altair.app.ticketing.tickets.utils import build_dict_from_product
-from altair.app.ticketing.tickets.utils import build_dict_from_venue
-from altair.app.ticketing.tickets.utils import build_dict_from_event
-from altair.app.ticketing.tickets.utils import build_dict_from_organization
+from altair.app.ticketing.tickets.utils import (
+    transform_matrix_from_ticket_format,
+    build_dict_from_product,
+    build_dict_from_venue,
+    build_dict_from_event,
+    build_dict_from_organization,
+)
 
-from .api import SVGPreviewCommunication
-from .api import SEJPreviewCommunication
-from .api import as_filelike_response
+from .api import (
+    SVGPreviewCommunication,
+    SEJPreviewCommunication,
+    as_filelike_response
+)
+from .transform import (
+    SVGTransformer,
+    FillvaluesTransformer,
+    SEJTemplateTransformer
+)
 
-from .transform import SVGTransformer
-from .transform import FillvaluesTransformer
-from .transform import SEJTemplateTransformer
-
-from .fillvalues import template_collect_vars
-from .fillvalues import template_fillvalues
+from .fillvalues import (
+    template_collect_vars,
+    template_fillvalues,
+    natural_order
+)
 from .fetchsvg import fetch_svg_from_postdata
 from ..cleaner.api import get_validated_svg_cleaner
 from altair.response import (
-    FileLikeResponse, 
-    ZipFileResponse, 
+    FileLikeResponse,
+    ZipFileResponse,
     ZipFileCreateRecursiveWalk
 )
 
@@ -78,23 +101,37 @@ def route_path_with_params(request, url, _query=None, **kwargs):
                 del _query[k]
     return request.route_path(url, _query=_query, **kwargs)
 
-def _build_ticket_format_dicts(ticket_format_qs):
+def _build_selectitem_candidates_from_ticket_format_query(ticket_format_qs):
     sej_qs = ticket_format_qs.filter(
         c_models.TicketFormat.id==c_models.TicketFormat_DeliveryMethod.ticket_format_id,
         c_models.TicketFormat_DeliveryMethod.delivery_method_id==c_models.DeliveryMethod.id, 
         c_models.DeliveryMethod.delivery_plugin_id==SEJ_DELIVERY_PLUGIN_ID)
+    qs = ticket_format_qs.filter(
+        c_models.TicketFormat.id==c_models.TicketFormat_DeliveryMethod.ticket_format_id,
+        c_models.TicketFormat_DeliveryMethod.delivery_method_id==c_models.DeliveryMethod.id, 
+        c_models.DeliveryMethod.delivery_plugin_id!=SEJ_DELIVERY_PLUGIN_ID).distinct(c_models.TicketFormat.id)
 
     D = {}
-    for t in ticket_format_qs:
-        D[t.id] = {"name": t.name, "type": ""}
+    for t in qs:
+        D[(t.id, "")] = {"name": t.name, "type": ""}
     for t in sej_qs:
-        D[t.id] = {"name": t.name, "type": ":sej"}
-    return [dict(pk=k, **vs) for k, vs in D.iteritems()]
+        D[(t.id, "sej")] = {"name": t.name, "type": "sej"}
+    return [dict(pk=k, **vs) 
+            for (k, _), vs in D.iteritems()]
 
-def _build_ticket_format_dict(ticket_format):
-    has_sej = any(dm.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for dm in ticket_format.delivery_methods)
-    ticket_format_type =  ":sej" if has_sej else ""
-    return {"pk": ticket_format.id, "name": ticket_format.name, "type": ticket_format_type}
+def _build_selectitem_candidates_from_ticket_format_unit(ticket_format, is_sej):
+    sej_value = None
+    normal_value = None
+    for dm in ticket_format.delivery_methods:
+        if int(dm.delivery_plugin_id) == int(SEJ_DELIVERY_PLUGIN_ID):
+            sej_value = {"pk": ticket_format.id, "name": ticket_format.name, "type": "sej"}
+        else:
+            normal_value = {"pk": ticket_format.id, "name": ticket_format.name, "type": ""}
+    if is_sej:
+        return [e for e in [sej_value, normal_value] if e is not None]
+    else:
+        return [e for e in [normal_value, sej_value] if e is not None]
+
 
 @view_config(route_name="tickets.preview", request_method="GET", renderer="altair.app.ticketing:templates/tickets/preview.html", 
              decorator=with_bootstrap, permission="event_editor")
@@ -108,7 +145,7 @@ def preview_ticket(context, request):
         "combobox": request.route_path("tickets.preview.combobox")
         }
     ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=context.organization.id)
-    ticket_formats = _build_ticket_format_dicts(ticket_formats)
+    ticket_formats = _build_selectitem_candidates_from_ticket_format_query(ticket_formats)
     return {"apis": apis, "ticket_formats": ticket_formats}
 
 
@@ -228,7 +265,7 @@ class PreviewApiView(object):
     @view_config(match_param="action=normalize", request_param="svg")
     def preview_api_normalize(self):
         try:
-            svgio = StringIO(unicode(self.request.POST["svg"]).encode("utf-8")) #unicode only
+            svgio = StringIO(unicode(self.request.POST["svg"]).encode("utf-8"))  # unicode only
             cleaner = get_validated_svg_cleaner(svgio, exc_class=Exception)
             svgio = cleaner.get_cleaned_svgio()
             return {"status": True, "data": svgio.getvalue()}
@@ -238,6 +275,9 @@ class PreviewApiView(object):
             logger.exception(e)
             return {"status": False, "message": "%s: %s" % (e.__class__.__name__, str(e))}
 
+    @view_config(match_param="action=identity", request_param="svg")
+    def preview_api_identity(self):
+        return {"status": True, "data": self.request.POST["svg"]}
 
     @view_config(match_param="action=preview.base64")
     def preview_ticket_post64(self):
@@ -338,7 +378,7 @@ class PreviewApiView(object):
     def preview_collectvars(self):
         svg = self.request.POST["svg"]
         try:
-            return {"status": True, "data": list(sorted(template_collect_vars(svg)))}
+            return {"status": True, "data": natural_order(template_collect_vars(svg))}
         except TicketPreviewFillValuesException, e:
             return {"status": False, "message": "%s" % e.message}
         except Exception, e:
@@ -450,9 +490,10 @@ class LoadSVGFromModelApiView(object):
         try:
             data = json.loads(self.request.GET["data"])
             ticket_id = data["fillvalues_resource"]["model"]
+            current_preview_type = data["svg_resource"].get("type")
             organization = self.context.organization
             ticket = c_models.Ticket.query.filter_by(id=ticket_id, organization_id=organization.id).first()
-            ticket_formats = [_build_ticket_format_dict(ticket.ticket_format)]
+            ticket_formats = _build_selectitem_candidates_from_ticket_format_unit(ticket.ticket_format, current_preview_type == "sej")
             return {"status": True, "data": ticket.drawing, "ticket_formats": ticket_formats}
         except KeyError, e:
             logger.exception(e)
@@ -542,9 +583,21 @@ class PreviewWithDefaultParameterDialogView(object):
             apis = self._apis_defaults()
             apis["loadsvg"]  =  self.request.route_path("tickets.preview.loadsvg.api", model="ProductItem"), 
             apis["combobox"] =  self.request.route_path("tickets.preview.combobox", _query=combobox_params)
-
-            ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
-            ticket_formats = _build_ticket_format_dicts(ticket_formats)
+            if "event_id" in self.request.GET:
+                bundles = c_models.TicketBundle.query.filter(c_models.TicketBundle.event_id == self.request.GET.get("event_id")).all()
+                D = OrderedDict()
+                for b in bundles:
+                    for t in ApplicableTicketsProducer(b).will_issued_by_own_tickets(delivery_plugin_ids=INENR_DELIVERY_PLUGIN_ID_LIST): #xxx: ApplicableTicketsProducer.will_issued_by_own_ticketsはsejと紐つくとダメ。
+                        tf = t.ticket_format
+                        D[(tf.id, "")] = {"pk": tf.id, "name": tf.name, "type": ""}
+                for b in bundles:
+                    for t in ApplicableTicketsProducer(b).sej_only_tickets():
+                        tf = t.ticket_format
+                        D[(tf.id, "sej")] = {"pk": tf.id, "name": tf.name, "type": "sej"}
+                ticket_formats = D.values()
+            else:
+                ticket_formats = c_models.TicketFormat.query.filter_by(organization_id=self.context.user.organization_id)
+                ticket_formats = _build_selectitem_candidates_from_ticket_format_query(ticket_formats)
             return {"apis": apis, "ticket_formats": ticket_formats}
         except Exception, e:
             logger.exception(e)
@@ -555,6 +608,7 @@ class PreviewWithDefaultParameterDialogView(object):
         try:
             combobox_params = self._combobox_defaults()
             apis = self._apis_defaults()
+
             apis["loadsvg"]  =  self.request.route_path("tickets.preview.loadsvg.api", model="Ticket"), 
             apis["combobox"] =  self.request.route_path("tickets.preview.combobox", _query=combobox_params)
 
@@ -563,7 +617,7 @@ class PreviewWithDefaultParameterDialogView(object):
             if self.request.GET.get("ticket_id"):
                 ticket_formats = ticket_formats.filter(c_models.TicketFormat.id==c_models.Ticket.ticket_format_id,
                                                        c_models.Ticket.id==self.request.GET.get("ticket_id"))
-            ticket_formats = _build_ticket_format_dicts(ticket_formats)
+            ticket_formats = _build_selectitem_candidates_from_ticket_format_query(ticket_formats)
             return {"apis": apis, "ticket_formats": ticket_formats}
         except Exception, e:
             logger.exception(e)

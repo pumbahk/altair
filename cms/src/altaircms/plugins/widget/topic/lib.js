@@ -59,7 +59,8 @@ widget.configure({
         return {"display_type": root.find("#display_type").val(), 
                 "display_count": root.find("#display_count").val(), 
                 "tag": root.find("#tag").val(), 
-                "system_tag": root.find("#system_tag").val()};
+                "system_tag": root.find("#system_tag").val(),
+                "use_newstyle": root.find("#use_newstyle").attr("checked")};
     };
     return widget.include("topic", {
         load_page: load_page, 

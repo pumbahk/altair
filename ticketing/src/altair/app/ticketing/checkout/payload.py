@@ -9,7 +9,6 @@ import functools
 from datetime import datetime
 from lxml import etree
 from base64 import b64encode
-from altair.app.ticketing.core.models import ChannelEnum
 
 logger = logging.getLogger(__name__)
 
@@ -64,12 +63,12 @@ class AnshinCheckoutPayloadBuilder(object):
         signer = get_signer(self.auth_method, self.secret)
         return signer(xml_str)
 
-    def create_checkout_request_xml(self, checkout_object):
+    def create_checkout_request_xml(self, checkout_object, success_url=None, fail_url=None):
         root = etree.Element('orderItemsInfo')
 
         etree.SubElement(root, 'serviceId').text = self.service_id
-        etree.SubElement(root, 'orderCompleteUrl').text = self.success_url
-        etree.SubElement(root, 'orderFailedUrl').text = self.fail_url
+        etree.SubElement(root, 'orderCompleteUrl').text = success_url or self.success_url
+        etree.SubElement(root, 'orderFailedUrl').text = fail_url or self.fail_url
         etree.SubElement(root, 'authMethod').text = AUTH_METHOD_TYPE.get(self.auth_method)
         if self.is_test is not None:
             etree.SubElement(root, 'isTMode').text = self.is_test
@@ -222,8 +221,16 @@ class AnshinCheckoutHTMLFormBuilder(object):
         self.mobile_checkin_url = mobile_checkin_url
         self.nonmobile_checkin_url = nonmobile_checkin_url
 
-    def build_checkout_request_form(self, checkout_object):
-        xml_str = etree.tostring(self.pb.create_checkout_request_xml(checkout_object), encoding='utf-8')
+    def build_checkout_request_form(self, checkout_object, success_url=None, fail_url=None):
+        from altair.app.ticketing.core.models import ChannelEnum
+        xml_str = etree.tostring(
+            self.pb.create_checkout_request_xml(
+                checkout_object,
+                success_url=success_url,
+                fail_url=fail_url
+                ),
+            encoding='utf-8'
+            )
         # 署名作成する
         sig = self.pb.sign_to_xml(xml_str)
 

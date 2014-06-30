@@ -31,5 +31,13 @@
   </tbody>
 </table>
 % endif
-
+<script type="text/javascript">
+var get_selected_delivery_method_id;
+(function (form) {
+get_selected_delivery_method_id = function get_selected_delivery_method_id() {
+  return $(form).find('input[name="delivery_method_id"]:checked').val();
+}
+})($('script:last').parent());
+</script>
+</form>
 ${ch.pager(delivery_methods)}

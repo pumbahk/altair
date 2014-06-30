@@ -60,7 +60,9 @@ widget.configure({
                 "display_count": root.find("#display_count").val(), 
                 "rendering_image_attribute": root.find("#rendering_image_attribute").val(), 
                 "tag": root.find("#tag").val(), 
-                "system_tag": root.find("#system_tag").val()};};
+                "system_tag": root.find("#system_tag").val(),
+                "use_newstyle": root.find("#use_newstyle").attr("checked")};
+    };
     return widget.include("topcontent", {
         load_page: load_page, 
         on_dialog: on_dialog, 

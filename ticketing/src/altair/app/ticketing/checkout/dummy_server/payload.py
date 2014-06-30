@@ -11,7 +11,7 @@ def must_find(n, path):
         raise PayloadParseError(u'%s does not exist' % path)
     return retval
 
-def retrieve_item_from_tree(item_n, no_item_name=False):
+def retrieve_item_from_tree(item_n, no_item_name=False, confirming=False):
     if item_n.tag != u'item':
         raise PayloadParseError(u'unexpected element %s within itemsInfo element' % item_n.tag)
     item_id_n = must_find(item_n, u'itemId')
@@ -46,12 +46,36 @@ def retrieve_item_from_tree(item_n, no_item_name=False):
         price = Decimal(item_fee_str)
     except TypeError:
         raise PayloadParseError(u'invalid value for itemFee: %s' % item_fee_str)
+
     item = {
         'id': item_id_str,
         'name': item_name_str,
         'quantity': quantity,
         'price': price,
         }
+
+    if confirming:
+        item_confirmation_result_n = must_find(item_n, 'itemConfirmationResult')
+        try:
+            item_confirmation_result_str = item_confirmation_result_n.text.strip()
+        except AttributeError:
+            raise PayloadParseError(u'empty itemConfirmationResult')
+        try:
+            item_confirmation_result = int(item_confirmation_result_str)
+        except (TypeError, ValueError):
+            raise PayloadParseError(u'invalid value for itemConfirmationResult: %s' % item_confirmation_result_str)
+
+        item_numbers_message = None
+        item_fee_message = None
+        item_numbers_message_n = item_n.find('itemNumbersMessage')
+        item_fee_message_n = item_n.find('itemFeeMessage')
+        if item_numbers_message_n is not None:
+            item_numbers_message = item_numbers_message_n.text
+        if item_fee_message_n is not None:
+            item_fee_message = item_fee_message_n.text
+        item['confirmation_result'] = item_confirmation_result
+        item['quantity_change_note'] = item_numbers_message
+        item['price_change_note'] = item_fee_message
     return item
 
 def parse_order(root):
@@ -170,14 +194,14 @@ def parse_cart_confirming_callback_response(xml):
         'carts': carts,
         }
         
-def build_payload_for_completion_notification(order, order_id, order_control_id, order_date, used_point, openid_claimed_id):
+def build_payload_for_completion_notification(order, order_id, order_control_id, order_date, used_points, openid_claimed_id):
     E = lxml.builder.E
     payload = E.orderCompleteRequest(
         E.orderId(order_id),
         E.orderControlId(order_control_id),
         E.openId(openid_claimed_id),
         E.orderCartId(order['order_cart_id']),
-        E.usedPoint(unicode(used_point.quantize(0))),
+        E.usedPoint(unicode(used_points.quantize(0))),
         E.orderDate(order_date.strftime('%Y-%m-%d %H:%M:%S').decode('utf-8')),
         E.orderTotalFee(unicode(order['total_amount'].quantize(0))),
         E.items(*[

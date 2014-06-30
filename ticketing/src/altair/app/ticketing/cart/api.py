@@ -265,7 +265,6 @@ def get_valid_sales_url(request, event):
                 return request.route_url('cart.index.sales', event_id=event.id, sales_segment_group_id=sales_segment_group.id)
 
 def logout(request, response=None):
-    request.session.invalidate()
     headers = forget(request)
     if response is None:
         response = request.response
@@ -299,8 +298,10 @@ def get_cart_user_identifiers(request):
 
     retval = []
 
-    user_id = authenticated_userid(request)
-    retval.append((user_id, 'strong'))
+    auth_info = get_auth_info(request)
+    # is_guest は None である場合があり、その場合は guest であるとみなす
+    if auth_info['is_guest'] is not None and not auth_info['is_guest']:
+        retval.append((auth_info['user_id'], 'strong'))
 
     # browserid is decent
     browserid = get_browserid(request)
@@ -404,9 +405,10 @@ def get_auth_info(request):
             retval['claimed_id'] = user_id
         else:
             retval['username'] = user_id
-        retval['is_guest'] = False
+        retval['user_id'] = user_id
     else:
         retval['is_guest'] = True
+        retval['user_id'] = None
     retval['organization_id'] = get_organization(request).id
     return retval
 
@@ -421,7 +423,7 @@ def get_auth_identifier_membership(info):
         auth_identifier = None
         membership_name = None
     else:
-        raise ValueError('clamed_id, username not in %s' % info)
+        raise ValueError('claimed_id, username not in %s' % info)
     return dict(
         organization_id=info['organization_id'],
         auth_identifier=auth_identifier,
@@ -429,12 +431,13 @@ def get_auth_identifier_membership(info):
         )
 
 def lookup_user_credential(d):
-    credential = u_models.UserCredential.query \
+    q = u_models.UserCredential.query \
         .filter(u_models.UserCredential.auth_identifier==d['auth_identifier']) \
         .filter(u_models.UserCredential.membership_id==u_models.Membership.id) \
-        .filter(u_models.Membership.name==d['membership_name']) \
-        .filter(u_models.Membership.organization_id == d['organization_id']) \
-        .first()
+        .filter(u_models.Membership.name==d['membership_name'])
+    if d['membership_name'] != 'rakuten':
+        q = q.filter(u_models.Membership.organization_id == d['organization_id'])
+    credential = q.first()
     if credential:
         return credential.user
     else:

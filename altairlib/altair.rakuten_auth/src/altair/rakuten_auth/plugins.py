@@ -6,11 +6,11 @@ from datetime import datetime
 from webob.exc import HTTPFound
 from zope.interface import implementer
 from repoze.who.api import get_api as get_who_api
-from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator, IMetadataProvider
-from repoze.who.plugins.auth_tkt import AuthTktCookiePlugin
+from repoze.who.interfaces import IChallenger, IAuthenticator, IMetadataProvider
 from altair.auth.api import get_current_request
 from altair.browserid import get_browserid
 from beaker.cache import Cache, CacheManager, cache_regions
+from pyramid.request import Request
 from .api import get_rakuten_oauth, get_rakuten_id_api_factory
 from .interfaces import IRakutenOpenID
 
@@ -62,7 +62,7 @@ class RemembererWrapper(object):
         return retval
 
 
-@implementer(IIdentifier, IAuthenticator, IChallenger, IMetadataProvider)
+@implementer(IAuthenticator, IChallenger, IMetadataProvider)
 class RakutenOpenIDPlugin(object):
     cache_manager = cache_manager
     AUTHENTICATED_KEY = __name__ + '.authenticated'
@@ -72,7 +72,6 @@ class RakutenOpenIDPlugin(object):
         if cache_region is None:
             cache_region = __name__ + '.metadata'
         self.cache_region = cache_region
-        self.rememberer = RemembererWrapper(AuthTktCookiePlugin(**kwargs))
 
     def _get_cache(self):
         return self.cache_manager.get_cache_region(
@@ -115,18 +114,6 @@ class RakutenOpenIDPlugin(object):
             rakuten_point_account=point_account.get('pointAccount')
             )
 
-    # IIdentifier
-    def identify(self, environ):
-        impl = self._get_impl(environ)
-        req = get_current_request(environ)
-        logger.debug('identify (req.path_url=%s)' % req.path_url)
-        identity = environ.get(self.AUTHENTICATED_KEY)
-        if not identity:
-            # backwards compatibility
-            identity = self.rememberer.get_identity(req.environ)
-            logging.debug('got identity from rememberer: %s' % identity)
-        return identity
-
     # IAuthenticator
     def authenticate(self, environ, identity):
         req = get_current_request(environ)
@@ -138,13 +125,14 @@ class RakutenOpenIDPlugin(object):
         if openid_params is not None:
             if not environ.get(self.AUTHENTICATED_KEY):
                 # not verified yet
-                self._flush_cache(identity)
-                if not impl.verify_authentication(req, identity[impl.IDENT_OPENID_PARAMS_KEY]):
+                claimed_id = openid_params['claimed_id']
+                self._flush_cache(claimed_id)
+                if not impl.verify_authentication(req, openid_params):
                     logger.debug('authentication failed')
                     return None
                 # claimed_id と oauth_request_token は、validate に成功した時のみ入る
-                identity['claimed_id'] = identity[impl.IDENT_OPENID_PARAMS_KEY]['claimed_id']
-                identity['oauth_request_token'] = identity[impl.IDENT_OPENID_PARAMS_KEY]['oauth_request_token']
+                identity['claimed_id'] = claimed_id
+                identity['oauth_request_token'] = openid_params['oauth_request_token']
                 # temporary session や rememberer には OpenID parameters は渡さない
                 del identity[impl.IDENT_OPENID_PARAMS_KEY]
 
@@ -184,24 +172,12 @@ class RakutenOpenIDPlugin(object):
         environ[self.AUTHENTICATED_KEY] = identity
         return identity['claimed_id']
 
-    # IIdentifier
-    def remember(self, environ, identity):
-        req = get_current_request(environ)
-        logger.debug('remember identity (req.path_url=%s): %s' % (req.path_url, identity))
-        return self.rememberer.remember(environ, identity)
-
-    # IIdentifier
-    def forget(self, environ, identity):
-        req = get_current_request(environ)
-        logger.debug('forget identity')
-        self._flush_cache(identity)
-        return self.rememberer.forget(environ)
-
-    def _flush_cache(self, identity):
+    def _flush_cache(self, claimed_id):
         try:
-            self._get_cache().remove_value(identity['claimed_id'])
+            self._get_cache().remove_value(claimed_id)
         except:
-            logger.warning("failed to flush metadata cache for %s" % identity)
+            import sys
+            logger.warning("failed to flush metadata cache for %s" % identity, exc_info=sys.exc_info())
 
     # IMetadataProvider
     def add_metadata(self, environ, identity):

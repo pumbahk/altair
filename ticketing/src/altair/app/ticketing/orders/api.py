@@ -34,6 +34,7 @@ from altair.app.ticketing.core.models import (
     )
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
+from altair.app.ticketing.checkout import api as checkout_api
 from altair.app.ticketing.cart.stocker import (
     NotEnoughStockException,
     InvalidProductSelectionException,
@@ -72,7 +73,7 @@ from .models import (
 ## backward compatibility
 from altair.metadata.api import get_metadata_provider_registry
 from .metadata import (
-    METADATA_NAME_ORDERED_PRODUCT, 
+    METADATA_NAME_ORDERED_PRODUCT,
     METADATA_NAME_ORDER
 )
 from .exceptions import OrderCreationError, MassOrderCreationError
@@ -187,7 +188,7 @@ class BaseSearchQueryBuilderMixin(object):
                 )
         return query
 
-    def _email(self, query, value): 
+    def _email(self, query, value):
         query = query.join(self.targets['subject'].shipping_address)
         # 完全一致です
         return query \
@@ -279,7 +280,7 @@ class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixi
         'PaymentMethod': PaymentMethod,
         'DeliveryMethod': DeliveryMethod,
         }
-    
+
     def _ordered_from(self, query, value):
         return query.filter(self.targets['subject'].created_at >= value)
 
@@ -451,7 +452,7 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
                 )
         return query
 
-    def _email(self, query, value): 
+    def _email(self, query, value):
         # 完全一致です
         return query \
             .filter(or_(self.targets['subject'].email_1 == value,
@@ -734,7 +735,7 @@ def get_order_by_id(request, order_id, session=None, include_deleted=False):
     if session is None:
         from altair.app.ticketing.models import DBSession
         session = DBSession
-    _Order = orm.aliased(Order) 
+    _Order = orm.aliased(Order)
     q = session.query(Order, include_deleted=True) \
         .outerjoin(_Order, Order.order_no == _Order.order_no) \
         .filter(Order.id == order_id) \
@@ -1075,10 +1076,63 @@ def save_order_modifications_from_proto_orders(request, order_proto_order_pairs,
     retval = []
     errors_map = {}
     for prev_order, proto_order in order_proto_order_pairs:
-        # 次に ProtoOrder から Order を生成して
-        new_order = create_order_from_proto_order(request, reserving, stocker, proto_order, prev_order)
-        # 在庫の状態など正しいか判定する
-        errors = validate_order(request, new_order, proto_order.ref)
+        errors = []
+        try:
+            # 次に ProtoOrder から Order を生成して
+            new_order = create_order_from_proto_order(request, reserving, stocker, proto_order, prev_order)
+            # 在庫の状態など正しいか判定する
+            errors.extend(validate_order(request, new_order, proto_order.ref))
+        except NotEnoughStockException as e:
+            import sys
+            logger.info('cannot reserve stock (stock_id=%s, required=%d, available=%d)' % (e.stock.id, e.required, e.actualy), exc_info=sys.exc_info())
+            errors.append(
+                OrderCreationError(
+                    proto_order.ref,
+                    proto_order.order_no,
+                    u'在庫がありません (席種: ${stock_type_name}, 個数: ${required})',
+                    dict(
+                        stock_type_name=e.stock.stock_type.name,
+                        required=e.required
+                        )
+                    )
+                )
+        except NotEnoughAdjacencyException as e:
+            import sys
+            logger.info('cannot allocate seat (stock_id=%s, quantity=%d)' % (e.stock_id, e.quantity), exc_info=sys.exc_info())
+            stock = DBSession.query(Stock).filter_by(id=e.stock_id).one()
+            errors.append(
+                OrderCreationError(
+                    proto_order.ref,
+                    proto_order.order_no,
+                    u'配席可能な座席がありません (席種: ${stock_type_name}, 個数: ${quantity})',
+                    dict(
+                        stock_type_name=stock.stock_type.name,
+                        quantity=e.quantity
+                        )
+                    )
+                )
+        except InvalidProductSelectionException as e:
+            import sys
+            logger.info('cannot take stocks', exc_info=sys.exc_info())
+            errors.append(
+                OrderCreationError(
+                    proto_order.ref,
+                    proto_order.order_no,
+                    u'バグが発生しています (商品/商品明細に紐づいている公演とorderのperformanceが違うとかそのような理由だけどバリデーションできていない)',
+                    {}
+                    )
+                )
+        except InvalidSeatSelectionException as e:
+            import sys
+            logger.info('cannot allocate selected seats', exc_info=sys.exc_info())
+            errors.append(
+                OrderCreationError(
+                    proto_order.ref,
+                    proto_order.order_no,
+                    u'既に予約済か選択できない座席です。',
+                    {}
+                    )
+                )
         if len(errors) > 0:
             errors_map[proto_order.order_no] = errors
             continue
@@ -1330,7 +1384,7 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
                 )
             new_item.elements.append(new_element)
             element_total += element_price * element_quantity
-        item_total = new_item.price * new_item.quantity 
+        item_total = new_item.price * new_item.quantity
         if element_total != item_total:
             warnings.append(_(u'商品「${product_name}」の商品明細の価格の合計が商品の価格と一致しません (${element_total} ≠ ${item_total})') % dict(product_name=product.name, product_item_name=product_item.name, element_total=element_total, item_total=item_total))
 
@@ -1649,3 +1703,9 @@ def get_refund_ticket_price(refund, order, product_item_id):
             if opi.product_item_id == product_item_id:
                 return opi.refund_price
     return 0
+
+def get_anshin_checkout_object(request, order):
+    service = checkout_api.get_checkout_service(request, order.ordered_from, core_api.get_channel(order.channel))
+    return service.get_checkout_object_by_order_no(order.order_no)
+
+    

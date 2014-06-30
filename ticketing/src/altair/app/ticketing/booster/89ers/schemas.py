@@ -12,6 +12,14 @@ from datetime import date
 from ..schemas import length_limit_for_sej, length_limit_long
 from ..widgets import ymd_widget, radio_list_widget, get_year_choices, get_year_months, get_year_days
 
+def prepend_list(x, xs):
+    r = [x]
+    r.extend(xs)
+    return r
+
+def prepend_validator(field, x):
+    field.validators = prepend_list(x, field.validators)
+
 class ExtraForm(Form):
     publicity = fields.SelectField(
         u"媒体への掲載希望",
@@ -25,7 +33,7 @@ class ExtraForm(Form):
         u"メルマガ配信",
         default=True)
     motivation = fields.SelectField(
-        u"ブースタークラブに入会しようと思ったきっかけは？",
+        u"クラブナイナーズに入会しようと思ったきっかけは？",
         choices=[
             (u"", u"お選びください"),
             (u"継続で入会", u"継続で入会"),
@@ -44,6 +52,32 @@ class ExtraForm(Form):
         u"昨シーズンの会場での観戦回数",
         validators=[v.Optional()]
         )
+    t_shirts_size = fields.SelectField(u"Tシャツサイズ",
+                                       choices=[('L', u'L'),('3L', u'3L')],
+                                       validators=[v.Optional()],
+                                       coerce=text_type_but_none_if_not_given)
+    official_ball = fields.TextField(u"オリジナル公式球への記載希望名",
+                                     filters=[strip_spaces, NFKC],
+                                     validators=[v.Regexp(r'^\S{1,10}$', message=u'最大10文字'),
+                                     v.Optional()])
+    coupon = fields.SelectField(u"会員証以外の特典受取方法",
+                                       choices=[(u'会場受取', u'会場受取'),(u'配送希望', u'配送希望')],
+                                       validators=[v.Optional()],
+                                       coerce=text_type_but_none_if_not_given)
+
+    def configure_for_publicity(self):
+        prepend_validator(self.publicity, v.Required())
+
+    def configure_for_t_shirts_size(self):
+        prepend_validator(self.t_shirts_size, v.Required())
+
+    def configure_for_official_ball(self):
+        prepend_validator(self.official_ball, v.Required())
+        prepend_validator(self.official_ball, v.Regexp(u'^\S{1,10}$$', message=u'最大10文字'),)
+
+    def configure_coupon(self):
+        prepend_validator(self.coupon, v.Required())
+
 
 class OrderFormSchema(Form):
     def validate_day(self, field):

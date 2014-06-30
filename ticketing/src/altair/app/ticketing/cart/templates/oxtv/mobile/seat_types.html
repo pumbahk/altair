@@ -6,19 +6,19 @@
 <%mobile:form_header>席種をお選びください</%mobile:form_header>
   % for seat_type in seat_types:
   % if seat_type["availability"]:
-    <a href="${request.current_route_url(_query={'stid': seat_type['id']})}">${seat_type['name']}</a>
+    <a href="${request.current_route_path(_query={'stid': seat_type['id']})}">${seat_type['name']}</a>
   % else:
     ${seat_type['name']}
   % endif
   ${seat_type["availability_text"]}<br />
   % endfor
 % if not isinstance(request.context, PerformanceOrientedTicketingCartResource):
-<form action="${request.route_url('cart.index', event_id=event.id)}" method="get">
+<%mobile:form_get action="${request.route_path('cart.index', event_id=event.id)}">
   <div style="text-align:center;">
   <input type="hidden" name="key" value="${return_value}" />
   <input type="submit" value="戻る">
   </div>
-</form>
+</%mobile:form_get>
 % endif
 <%mobile:header>選択内容</%mobile:header>
 <%mobile:form_header>会場</%mobile:form_header>

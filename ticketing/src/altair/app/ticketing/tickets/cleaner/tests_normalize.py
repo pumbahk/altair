@@ -156,12 +156,9 @@ class EliminatedTagNormalizeUnitTests(NormalizerTestCase):
     ## todo: move
     def test_double(self):
         """<doc><a>{{xxx}}{{yyy}}</a></doc>
-        {{{xxx}}{{yyy}}} => {{placeholder}} # placeholder={xxx}}{{yyy}
-
-        so. if you want to get {{xxx}}{{yyy}} from {{xxx}}. input {{{xxx}}{{yyy}}} at preview page.
         """
         from altair.app.ticketing.tickets.preview.fillvalues import template_fillvalues
-        result = template_fillvalues("<doc><a>{{xxx}}</a></doc>", {"xxx": "{{{xxx}}{{yyy}}}"})
+        result = template_fillvalues("<doc><a>{{xxx}}</a></doc>", {"xxx": "{{xxx}}{{yyy}}"})
         self.assertEquals("<doc><a>{{xxx}}{{yyy}}</a></doc>", result)
 
 

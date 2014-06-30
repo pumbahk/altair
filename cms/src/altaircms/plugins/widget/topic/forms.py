@@ -19,6 +19,7 @@ class TopicChoiceForm(Form):
         get_label=lambda obj: obj.label)
     display_type = fields.SelectField(id="display_type", label=u"トピックの表示方法", choices=[])
     display_count = fields.IntegerField(id="display_count", label=u"表示件数", default=5, validators=[validators.Required()])
+    use_newstyle = fields.BooleanField(label=u"新スタイルを使用する", id="use_newstyle")
 
     def configure(self, request, page):
         utility = get_widget_utility(request, page, TopicWidget.type)

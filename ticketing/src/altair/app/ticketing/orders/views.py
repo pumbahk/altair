@@ -114,6 +114,7 @@ from .api import (
     get_order_metadata_provider_registry,
     save_order_modifications_from_proto_orders,
     recalculate_total_amount_for_order,
+    get_anshin_checkout_object
 )
 from .exceptions import OrderCreationError, MassOrderCreationError
 from .utils import NumberIssuer
@@ -364,9 +365,9 @@ class OrderIndexView(OrderBaseView):
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor') # sales_counter ではない!
 class OrderDownloadView(BaseView):
-    # downloadに関しては新しいコードがイキ
+    # downloadに関しては古いコードがイキ
     @view_config(route_name='orders.download')
-    def download_new(self):
+    def download_old(self):
         slave_session = get_db_session(self.request, name="slave")
 
         organization_id = self.context.organization.id
@@ -435,8 +436,8 @@ class OrderDownloadView(BaseView):
 
         return response
 
-    # 古いコードも参照用にとっておいてある
-    def download_old(self):
+    # 新しいコードも参照用にとっておいてある
+    def download_new(self):
         request = self.request
         slave_session = get_db_session(request, name="slave")
 
@@ -677,7 +678,7 @@ class OrderDownloadView(BaseView):
         return response
 
 
-@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/index.html')
+@view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/index.html')
 class OrdersRefundIndexView(BaseView):
 
     @view_config(route_name='orders.refund.index')
@@ -722,7 +723,7 @@ class OrdersRefundIndexView(BaseView):
         return HTTPFound(location=self.request.route_path('orders.refund.index'))
 
 
-@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/edit.html')
+@view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/edit.html')
 class OrdersRefundEditView(BaseView):
 
     @view_config(route_name='orders.refund.edit', request_method='GET')
@@ -756,7 +757,7 @@ class OrdersRefundEditView(BaseView):
             return dict(form=f, refund=refund)
 
 
-@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/show.html')
+@view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/show.html')
 class OrdersRefundDetailView(BaseView):
 
     @view_config(route_name='orders.refund.show')
@@ -774,7 +775,7 @@ class OrdersRefundDetailView(BaseView):
             )
 
 
-@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/new.html')
+@view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/new.html')
 class OrdersRefundCreateView(BaseView):
 
     def __init__(self, *args, **kwargs):
@@ -877,7 +878,7 @@ class OrdersRefundCreateView(BaseView):
         }
 
 
-@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='altair.app.ticketing:templates/orders/refund/confirm.html')
+@view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/confirm.html')
 class OrdersRefundConfirmView(BaseView):
 
     def __init__(self, *args, **kwargs):
@@ -984,6 +985,11 @@ class OrderDetailView(BaseView):
         form_refund = forms.get_order_refund_form()
         form_each_print = forms.get_each_print_form(default_ticket_format_id)
 
+        checkout_object = None
+        try:
+            checkout_object = get_anshin_checkout_object(self.request, order)
+        except Exception as e:
+            pass
         return {
             'is_current_order': order.deleted_at is None,
             'order':order,
@@ -992,6 +998,7 @@ class OrderDetailView(BaseView):
             'order_history':order_history,
             'point_grant_settings': loyalty_api.applicable_point_grant_settings_for_order(order),
             'sej_order':get_sej_order(order.order_no),
+            'checkout': checkout_object,
             'mail_magazines':mail_magazines,
             'form_shipping_address':form_shipping_address,
             'form_order':form_order,
@@ -2122,7 +2129,7 @@ class OrdersEditAPIView(BaseView):
             modiry_order, warnings = save_order_modification(self.request, order, order_data)
         except OrderCreationError as e:
             logger.exception(u'save error (%s)' % unicode(e))
-            raise HTTPBadRequest(body=json.dumps(dict(message=unicode(e))))
+            raise HTTPBadRequest(body=json.dumps(dict(message=unicode(e.message))))
         except Exception as e:
             logger.exception('save error (%s)' % e.message)
             raise HTTPBadRequest(body=json.dumps(dict(message=u'システムエラーが発生しました。')))

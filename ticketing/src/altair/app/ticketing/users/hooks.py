@@ -39,3 +39,4 @@ def hook(event):
         user_point_account.account_number = rakuten_point_account
         user_point_account.status = UserPointAccountStatusEnum.Valid.v
         DBSession.add(user_point_account)
+    DBSession.add(user)

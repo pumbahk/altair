@@ -6,7 +6,7 @@ import wsgiref.util
 from webob.exc import HTTPFound
 from zope.interface import implementer
 from repoze.who.api import get_api as get_who_api
-from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator
+from repoze.who.interfaces import IChallenger, IAuthenticator
 from altair.auth.api import get_current_request
 from altair.sqlahelper import get_db_session
 from .api import login_url, get_memberships
@@ -55,11 +55,12 @@ class FCAuthPlugin(object):
             return
         logger.debug('authentication is required')
         request = get_current_request(environ)
+        event_id = request.matchdict.get('event_id', None)
         session = request.session.setdefault(SESSION_KEY, {})
         session['return_url'] = request.current_route_path(_query=request.GET)
         request.session.save()
         request = get_current_request(environ)
-        return HTTPFound(location=login_url(request))
+        return HTTPFound(location=login_url(request, event_id=event_id))
 
     # IMetadataProvider
     def add_metadata(self, environ, identity):

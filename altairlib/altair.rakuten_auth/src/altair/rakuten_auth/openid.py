@@ -19,6 +19,8 @@ from pyramid.path import DottedNameResolver
 from pyramid import security
 
 from altair.auth import who_api as get_who_api
+from altair.mobile.interfaces import IMobileRequest
+from altair.mobile.session import HybridHTTPBackend, merge_session_restorer_to_url
 
 from .interfaces import IRakutenOpenID
 from .events import Authenticated
@@ -105,13 +107,20 @@ class RakutenOpenID(object):
     def get_who_api(self, request):
         return get_who_api(request, name='rakuten')
 
-    def combine_session_id(self, url, session):
-        return urljoin(url, '?ak=' + urllib.quote(session.id))
+    def combine_session_id(self, request, session, url):
+        q = '?ak=' + urllib.quote(session.id)
+        if IMobileRequest.providedBy(request):
+            key = request.environ.get(HybridHTTPBackend.ENV_QUERY_STRING_KEY_KEY)
+            session_restorer = request.environ.get(HybridHTTPBackend.ENV_SESSION_RESTORER_KEY)
+            if key and session_restorer:
+                # webobは"&"の他に";"文字もデリミタと見なしてくれる
+                q += ';%s=%s' % (urllib.quote(key), urllib.quote(session_restorer))
+        return urljoin(url, q)
 
-    def get_redirect_url(self, session):
+    def get_redirect_url(self, request, session):
         return self.endpoint + "?" + urllib.urlencode([
             ('openid.ns', 'http://specs.openid.net/auth/2.0'),
-            ('openid.return_to', self.combine_session_id(self.return_to, session)),
+            ('openid.return_to', self.combine_session_id(request, session, self.return_to)),
             ('openid.claimed_id', 'http://specs.openid.net/auth/2.0/identifier_select'),
             ('openid.identity', 'http://specs.openid.net/auth/2.0/identifier_select'),
             ('openid.mode', 'checkid_setup'),
@@ -196,24 +205,34 @@ class RakutenOpenID(object):
 
     def on_challenge(self, request):
         session = self.new_session(request)
-        self.set_return_url(session, request.url)
+        return_url = request.url
+        _session = request.session # Session gets created here!
+        if _session is not None and IMobileRequest.providedBy(request):
+            key = request.environ.get(HybridHTTPBackend.ENV_QUERY_STRING_KEY_KEY)
+            session_restorer = request.environ.get(HybridHTTPBackend.ENV_SESSION_RESTORER_KEY)
+            return_url = merge_session_restorer_to_url(return_url, key, session_restorer)
+        self.set_return_url(session, return_url)
         session.save()
-        logger.debug('redirect from %s' % request.url)
-        return HTTPFound(location=self.get_redirect_url(session))
+        redirect_to = self.get_redirect_url(request, session)
+        logger.debug('redirect from %s to %s' % (request.url, redirect_to))
+        return HTTPFound(location=redirect_to)
 
     def on_verify(self, request):
-        who_api = self.get_who_api(request)
         params = self.openid_params(request)
+        session = self.get_session(request)
+        if session is None:
+            logging.info('could not retrieve the temporary session')
+            return HTTPFound(location=self.error_to)
+        who_api = self.get_who_api(request)
         identity, headers = who_api.login({ self.IDENT_OPENID_PARAMS_KEY: params })
         if identity:
-            session = self.get_session(request)
             if self.extra_verification_phase_exists(request):
                 session[self.SESSION_IDENT_KEY] = identity
                 session.save()
                 return HTTPFound(
                     self.combine_session_id(
-                        self.extra_verify_url,
-                        session))
+                        request, session,
+                        self.extra_verify_url))
             else:
                 return self._on_success(request, session, identity, headers)
         else:
@@ -228,12 +247,10 @@ class RakutenOpenID(object):
         if session is None:
             logging.info('could not retrieve the temporary session')
             return HTTPFound(location=self.error_to)
-
         identity = session.get(self.SESSION_IDENT_KEY)
         if identity is None:
             logging.info('no identity stored in the temporary session')
             return HTTPFound(location=self.error_to)
-
         who_api = self.get_who_api(request)
         identity, headers = who_api.login(identity)
         if identity is not None:

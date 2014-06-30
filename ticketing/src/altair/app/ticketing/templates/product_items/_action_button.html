@@ -4,24 +4,21 @@
   if product:
     if product_item:
       action_dict.update({
-        'edit':dict(
+        'edit_all':dict(
           label=u'編集',
           url='javascript:edit_product({0}, {1});'.format(product.id, product_item.id),
           icon='icon-pencil',
         ),
       })
-    else:
-      action_dict.update({
-        'edit':dict(
-          label=u'編集',
-          url='javascript:edit_product({});'.format(product.id),
-          icon='icon-pencil',
-        ),
-      })
 
     action_dict.update({
+      'edit':dict(
+        label=u'商品編集',
+        url='javascript:edit_product({});'.format(product.id),
+        icon='icon-pencil',
+      ),
       'delete':dict(
-        label=u'削除',
+        label=u'商品削除',
         url='javascript:delete_product({});'.format(product.id),
         icon='icon-minus',
       ),

@@ -4,6 +4,7 @@ import json
 import logging
 import webhelpers.paginate as paginate
 import sqlalchemy.orm as orm
+from sqlalchemy import func
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.renderers import render_to_response
@@ -28,14 +29,19 @@ class ProductAndProductItem(BaseView):
     def new_xhr(self):
         # 商品、商品明細一括登録画面
         sales_segment = self.context.sales_segment
-        f = ProductAndProductItemForm(sales_segment=sales_segment)
+        f = ProductAndProductItemForm(sales_segment=sales_segment, new_form=True)
+
+        ticket_bundles = TicketBundle.query.filter_by(event_id=sales_segment.sales_segment_group.event_id).all()
+        if len(ticket_bundles) == 1:
+            f.ticket_bundle_id.data = ticket_bundles[0].id
+
         return dict(form=f)
 
     @view_config(route_name='products.new', request_method='POST', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
     def new_post_xhr(self):
         # 商品、商品明細一括登録画面
         sales_segment = self.context.sales_segment
-        f = ProductAndProductItemForm(self.request.POST, sales_segment=sales_segment)
+        f = ProductAndProductItemForm(self.request.POST, sales_segment=sales_segment, new_form=True)
         if f.validate():
             point_grant_settings = [
                 PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one()
@@ -50,6 +56,12 @@ class ProductAndProductItem(BaseView):
 
             for sales_segment_for_product in query:
                 product = merge_session_with_post(Product(), f.data, excludes={'id'})
+                max_display_order = Product.query.filter(
+                        Product.sales_segment_id==sales_segment_for_product.id
+                    ).with_entities(
+                        func.max(Product.display_order)
+                    ).scalar()
+                product.display_order = (max_display_order or 1) + 1
                 product.sales_segment = sales_segment_for_product
                 product.performance = sales_segment_for_product.performance
                 product.point_grant_settings.extend(point_grant_settings)
@@ -146,6 +158,7 @@ class ProductAndProductItem(BaseView):
                     display_order=product.display_order,
                     public=product.public,
                     performance_id=product.performance_id,
+                    amount_mismatching=product.is_amount_mismatching(),
                 ),
                 stock_type=dict(
                     id=product.seat_stock_type.id
@@ -198,6 +211,8 @@ class ProductAndProductItem(BaseView):
                             product=dict(
                                 id=product.id,
                                 name=u'(複数在庫商品)',
+                                performance_id=product.performance_id,
+                                amount_mismatching=product.is_amount_mismatching(),
                             ),
                         )
                 row2.update(row_id=len(rows) + 1)
@@ -261,7 +276,7 @@ class ProductAndProductItem(BaseView):
                     product.price = f.price.data
                     product.display_order = f.display_order.data
                     product.public = f.public.data
-                    product.seat_stock_type_id = f.stock_type_id.data
+                    product.seat_stock_type_id = f.seat_stock_type_id.data
                     product.sales_segment = sales_segment
                     product.performance_id = f.performance_id.data
                     product.save()
@@ -394,7 +409,7 @@ class ProductItems(BaseView):
             raise HTTPFound(location=location)
         return HTTPFound(location=location)
 
-@view_config(route_name="products.sub.older.show", renderer="altair.app.ticketing:templates/products/_sub_older_show.html")
+@view_config(route_name="products.sub.older.show", permission='event_editor', renderer="altair.app.ticketing:templates/products/_sub_older_show.html")
 def subview_older(context, request):
     sales_segment = context.sales_segment
     ## todo: order
@@ -411,7 +426,7 @@ def subview_older(context, request):
         "download_form": PreviewImageDownloadForm(sales_segment=sales_segment)
     }
 
-@view_config(route_name="products.sub.newer.show", renderer="altair.app.ticketing:templates/products/_sub_newer_show.html")
+@view_config(route_name="products.sub.newer.show", permission='event_editor', renderer="altair.app.ticketing:templates/products/_sub_newer_show.html")
 def subview_newer(context, request):
     sales_segment = context.sales_segment
     event = sales_segment.event

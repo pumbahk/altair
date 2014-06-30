@@ -18,23 +18,18 @@ class SymbolPool(object):
 
 s = Symbols = SymbolPool(
     "t_shirts_size", 
-    "replica_uniform", 
-    "authentic_uniform", 
     "for_kids")
 
 ms = MemberTypeSymbols = SymbolPool(
-    gold=u"ゴールド会員", 
-    silver_with_authentic_uniform=u"シルバー会員（オーセンティックユニフォーム購入希望）", 
-    silver=u"シルバー会員", 
-    red=u"レッド会員", 
+    gold=u"ゴールド会員",
+    red=u"レッド会員",
+    bulls=u"ブルズ会員",
     kids=u"キッズ会員"
     )
 
 product_reflections = {
-    ms.gold: [s.authentic_uniform], 
-    ms.silver_with_authentic_uniform: [s.authentic_uniform, s.replica_uniform], 
-    ms.silver: [s.replica_uniform], 
-    ms.red: [s.t_shirts_size], 
+    ms.gold: [s.t_shirts_size],
+    ms.red: [],
     ms.kids: [s.for_kids]
     ## 年齢がN歳以下をどうしようか
 }

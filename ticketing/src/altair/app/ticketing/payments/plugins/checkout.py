@@ -11,6 +11,8 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPOk, HTTPFound, HTTPBadRequest
 from webhelpers.html.builder import literal
+from altair.mobile.interfaces import IMobileRequest
+from altair.mobile.session import HybridHTTPBackend, unmerge_session_restorer_from_url
 
 from altair.app.ticketing.utils import clear_exc
 from altair.app.ticketing.models import DBSession
@@ -20,7 +22,6 @@ from altair.app.ticketing.mails.interfaces import ILotsAcceptedMailPayment
 from altair.app.ticketing.mails.interfaces import ILotsElectedMailPayment
 from altair.app.ticketing.mails.interfaces import ILotsRejectedMailPayment
 
-from altair.app.ticketing.cart import helpers as h
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.models import Cart, CartedProduct
 from altair.app.ticketing.core.api import get_channel
@@ -33,7 +34,6 @@ from altair.app.ticketing.cart.interfaces import ICartPayment
 from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
 from altair.app.ticketing.cart.views import back, back_to_top, back_to_product_list_for_mobile
 from altair.app.ticketing.checkout import api
-from altair.app.ticketing.checkout import helpers
 from altair.app.ticketing.checkout.exceptions import AnshinCheckoutAPIError
 from altair.app.ticketing.mailmags.api import multi_subscribe
 
@@ -55,7 +55,10 @@ def includeme(config):
     config.scan(__name__)
 
 def back_url(request):
-    return request.route_url('payment.confirm')
+    try:
+        return request.route_url('payment.confirm')
+    except:
+        return None
 
 class CheckoutSettlementFailure(PaymentPluginException):
     def __init__(self, message, order_no, back_url, ignorable=False, error_code=None, return_code=None):
@@ -79,9 +82,9 @@ class CheckoutPlugin(object):
         for item in order_like.items:
             if item.price < ANSHIN_CHECKOUT_MINIMUM_AMOUNT:
                 raise OrderLikeValidationFailure(u'product price too low', 'ordered_product.price')
-        if order_like.delivery_fee < ANSHIN_CHECKOUT_MINIMUM_AMOUNT:
+        if order_like.delivery_fee != 0 and order_like.delivery_fee < ANSHIN_CHECKOUT_MINIMUM_AMOUNT:
             raise OrderLikeValidationFailure(u'delivery_fee too low', 'order.delivery_fee')
-        if order_like.system_fee < ANSHIN_CHECKOUT_MINIMUM_AMOUNT:
+        if order_like.system_fee != 0 and order_like.system_fee < ANSHIN_CHECKOUT_MINIMUM_AMOUNT:
             raise OrderLikeValidationFailure(u'delivery_fee too low', 'order.system_fee')
         if order_like.special_fee and \
            order_like.special_fee < ANSHIN_CHECKOUT_MINIMUM_AMOUNT:
@@ -123,7 +126,7 @@ class CheckoutPlugin(object):
     @clear_exc
     def sales(self, request, order):
         """ 売り上げ確定 """
-        service = api.get_checkout_service(request, order.performance.event.organization, get_channel(order.channel))
+        service = api.get_checkout_service(request, order.organization_id, get_channel(order.channel))
         try:
             result = service.request_fixation_order([order])
         except AnshinCheckoutAPIError as e:
@@ -138,7 +141,7 @@ class CheckoutPlugin(object):
 
     def finished(self, request, order):
         """ 売上確定済か判定 """
-        service = api.get_checkout_service(request, order.performance.event.organization, get_channel(order.channel))
+        service = api.get_checkout_service(request, order.organization_id, get_channel(order.channel))
         return bool(service.get_order_settled_at(order))
 
     def refresh(self, request, order_like):
@@ -148,7 +151,8 @@ class CheckoutPlugin(object):
             logger.info('order %s is inner order' % order_like.order_no)
             return
 
-        raise NotImplementedError()
+        service = api.get_checkout_service(request, order_like.organization_id, get_channel(order_like.channel))
+        service.request_change_order([(order_like, order_like)])
 
 @view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def confirm_viewlet(context, request):
@@ -188,7 +192,7 @@ class CheckoutView(object):
     @clear_exc
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.checkout.login', renderer='altair.app.ticketing.payments.plugins:templates/checkout_login.html', request_method='POST')
-    @view_config(route_name='payment.checkout.login', renderer=selectable_renderer("%(membership)s/mobile/checkout_login_mobile.html"), request_method='POST', request_type='altair.mobile.interfaces.IMobileRequest')
+    @view_config(route_name='payment.checkout.login', renderer=selectable_renderer("%(membership)s/mobile/checkout_login_mobile.html"), request_method='POST', request_type=IMobileRequest)
     def login(self):
         cart = cart_api.get_cart_safe(self.request, for_update=False)
         try:
@@ -198,7 +202,18 @@ class CheckoutView(object):
         logger.debug(u'mailmagazine = %s' % self.request.session['altair.app.ticketing.cart.magazine_ids'])
         channel = get_channel(cart.channel)
         service = api.get_checkout_service(self.request, cart.performance.event.organization, channel)
-        _, form = service.build_checkout_request_form(cart)
+        success_url = self.request.route_url('payment.checkout.callback.success')
+        fail_url = self.request.route_url('payment.checkout.callback.error')
+        if IMobileRequest.providedBy(self.request):
+            query_string_key = self.request.environ[HybridHTTPBackend.ENV_QUERY_STRING_KEY_KEY]
+            success_url = unmerge_session_restorer_from_url(success_url, query_string_key)
+            fail_url = unmerge_session_restorer_from_url(fail_url, query_string_key)
+
+        _, form = service.build_checkout_request_form(
+            cart,
+            success_url=success_url,
+            fail_url=fail_url
+            )
         return dict(
             form=literal(form)
             )
@@ -271,7 +286,7 @@ class CheckoutCallbackView(object):
     @clear_exc
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.checkout.callback.success', renderer=selectable_renderer("%(membership)s/pc/completion.html"), request_method='GET')
-    @view_config(route_name='payment.checkout.callback.success', request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"), request_method='GET')
+    @view_config(route_name='payment.checkout.callback.success', request_type=IMobileRequest, renderer=selectable_renderer("%(membership)s/mobile/completion.html"), request_method='GET')
     def success(self):
         cart = cart_api.get_cart(self.request)
         if not cart:
