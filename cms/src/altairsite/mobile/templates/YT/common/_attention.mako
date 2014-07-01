@@ -3,7 +3,7 @@
 <% attentions = [(event, attention) for event, attention in ((helper.get_event_from_linked_page_id(request, attention.linked_page_id), attention) for attention in attentions)] %>
 
 % if attentions:
-<%m:header>注目のイベント</%m:header>
+<%m:header>販売中公演</%m:header>
 <div>
     % for event, attention in attentions:
         <%

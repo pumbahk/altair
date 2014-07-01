@@ -15,7 +15,6 @@
         promotions = [(event, promo) for event, promo in ((helper.get_event_from_linked_page_id(request, promo.linked_page_id), promo) for promo in form.promotions.data)]
 %>
 
-<%m:header>注目公演</%m:header>
 % if form.promotions.data:
     % for event, promo in promotions:
         <%
@@ -36,5 +35,4 @@
         % endif
     % endfor
 % endif
-
 <%include file="../common/_attention.mako" args="attentions=form.attentions.data, genre=0, sub_genre=0, helper=helper"/>
