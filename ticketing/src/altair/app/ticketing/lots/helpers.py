@@ -25,7 +25,6 @@ from altair.app.ticketing.cart.helpers import (
     fee_type,
     format_number,
     format_currency,
-    get_nickname,
     error_list,
 )
 
