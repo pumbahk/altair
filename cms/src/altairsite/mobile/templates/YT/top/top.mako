@@ -1,6 +1,6 @@
 <%inherit file="../common/_base.mako" />
 <%namespace file="../common/tags_mobile.mako" name="m" />
-<%block name="title">チケットトップ</%block>
+<%block name="title">チケットTOP</%block>
 
 <div>
 ├<a href="/howto">購入方法</a><br>
