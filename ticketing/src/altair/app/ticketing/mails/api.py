@@ -181,7 +181,7 @@ class MailUtility(object):
 
         mailer = get_mailer(request)
         mailer.send(message)
-        logger.info("send complete mail to %s" % message.recipients)
+        logger.info("send mail(s) to %s" % message.recipients)
         return message
 
     def preview_text(self, request, subject, limit=100):
