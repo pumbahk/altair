@@ -325,7 +325,6 @@ class RouteConfig(object):
         'reports.stocks_by_stockholder' : u'帳票ダウンロード 各種明細(枠別)',
         'sales_reports.event'       : u'売上レポート イベント',
         'sales_reports.index'       : u'売上レポート 一覧',
-        'sales_reports.index_all'   : u'売上レポート 一覧(全期間)',
         'sales_reports.mail_body'   : None,
         'sales_reports.performance' : u'売上レポート 公演',
         'sales_reports.preview'     : u'売上レポート プレビュー',
