@@ -8,6 +8,7 @@ import re
 import logging
 from urlparse import urlparse
 from zope.interface import implementer
+import webhelpers.paginate as paginate
 
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -26,6 +27,7 @@ from altair.pyramid_assets import get_resolver
 from altair.pyramid_assets.data import DataSchemeAssetDescriptor
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
 
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.core.models import (
@@ -269,9 +271,12 @@ def index(request):
     query = query.group_by(Venue.id)
     query = query.order_by(asc(Venue.site_id), asc(-Venue.performance_id))
 
-    items = []
-    for venue, site, performance in query:
-        items.append(dict(venue=venue, site=site, performance=performance))
+    items = paginate.Page(
+        query,
+        page=int(request.params.get('page', 0)),
+        items_per_page=200,
+        url=PageURL_WebOb_Ex(request)
+    )
 
     return dict(items=items)
 
