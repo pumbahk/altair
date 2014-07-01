@@ -35,7 +35,7 @@ from altair.app.ticketing.core.models import (
     SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType,
     ProductItem, Product, Performance, Event, SeatIndexType, SeatIndex
 )
-from altair.app.ticketing.venues.forms import SiteForm
+from altair.app.ticketing.venues.forms import SiteForm, VenueSearchForm
 from altair.app.ticketing.venues.export import SeatCSV
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -269,7 +269,16 @@ def index(request):
     query = query.outerjoin((Performance, and_(Performance.id==Venue.performance_id, Performance.deleted_at==None)))
     query = query.options(undefer(Site.created_at), undefer(Performance.created_at))
     query = query.group_by(Venue.id)
-    query = query.order_by(asc(Venue.site_id), asc(-Venue.performance_id))
+    query = query.order_by(desc(Venue.site_id), asc(-Venue.performance_id))
+
+    form = VenueSearchForm(request.params)
+    if request.params:
+        if form.validate():
+            if form.venue_name.data:
+                pattern = u'%{}%'.format(form.venue_name.data)
+                query = query.filter(Venue.name.like(pattern))
+            if form.prefecture.data:
+                query = query.filter(Site.prefecture==form.prefecture.data)
 
     items = paginate.Page(
         query,
@@ -278,7 +287,7 @@ def index(request):
         url=PageURL_WebOb_Ex(request)
     )
 
-    return dict(items=items)
+    return dict(items=items, form=form)
 
 @view_config(route_name="api.get_frontend", request_method="GET", permission='event_viewer')
 def frontend_drawing(request):

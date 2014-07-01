@@ -1,14 +1,34 @@
 # -*- coding:utf-8 -*-
 import logging
+
 from wtforms import Form
 from wtforms import fields
 from wtforms import TextField
 from wtforms.validators import Regexp, Length
+
+from altair.formhelpers import Translations, Required, JISX0208, strip_spaces, NFKC
 from altair.formhelpers.filters import NFKC, replace_ambiguous
-from altair.formhelpers import Translations, Required, JISX0208
+from altair.formhelpers.form import OurForm
+from altair.formhelpers.fields import OurTextField, OurSelectField
 from altair.app.ticketing.core.models import Site, Venue
+from altair.app.ticketing.master.models import Prefecture
 
 logger = logging.getLogger(__name__)
+
+
+class VenueSearchForm(OurForm):
+    def _get_translations(self):
+        return Translations()
+
+    venue_name = OurTextField(
+        label=u'会場名',
+        filters=[strip_spaces, NFKC],
+        )
+    prefecture = OurSelectField(
+        label=u'都道府県',
+        choices=[(p.name, p.name)for p in Prefecture.all()]
+        )
+
 
 class SiteForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
