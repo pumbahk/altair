@@ -36,10 +36,10 @@ class Layout(object):
 
     @property
     def form_html_extra_info(self):
-        return Markup(u'<a href="http://bigbulls.jp/blog/2013/06/cb2013-2014club-bulls.html" target=”_blank”><span><small>会員種別についてはこちら</small></span></a>')
+        return Markup(u'<a href="http://www.bigbulls.jp/clubbulls.html" target=”_blank”><span><small>会員種別についてはこちら</small></span></a>')
     @property
     def mobile_form_html_extra_info(self):
-        return Markup(u'<a href="http://www.bigbulls.jp/booster/index.html">※会員種別についてはこちら</a><br/>')
+        return Markup(u'<a href="http://www.bigbulls.jp/clubbulls.html">※会員種別についてはこちら</a><br/>')
 
     @property
     def orderreview_url(self):
