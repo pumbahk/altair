@@ -3,7 +3,7 @@
 import json
 from altair.app.ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
+from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPNotFound
 from altair.app.ticketing.models import DBSession, record_to_appstruct
 from altair.app.ticketing.core.models import ProductItem, Performance
 from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute
@@ -58,6 +58,24 @@ def bind_ticket(request):
     return HTTPFound(request.route_path("events.tickets.index", event_id=event.id))
 
 
+@view_config(route_name='events.tickets.boundtickets.show', 
+             renderer='altair.app.ticketing:templates/tickets/events/tickets/show.html', 
+             decorator=with_bootstrap, permission="event_editor")
+def show(context, request):
+    qs = context.tickets_query().filter_by(id=request.matchdict['id'])
+    template = qs.filter_by(organization_id=context.organization.id).first()
+    if template is None:
+        raise HTTPNotFound("this is not found")
+    mapping_choices = [(template.id, template.name)]
+    base_template_choices = [(t.id, t.name) for t in context.ticket_templates]
+    transcribe_form = forms.EasyCreateTranscribeForm(mapping_id=template.id).configure(
+        base_template_choices, mapping_choices)
+    return dict(template=template,
+                event=context.event,
+                transcribe_form=transcribe_form, 
+                ticket_format_id=template.ticket_format_id)
+
+    
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class BundleView(BaseView):
     """ チケット券面構成(TicketBundle)
@@ -337,7 +355,7 @@ def easycreate_transcribe_ticket(context, request):
     except KeyError as e:
         raise HTTPBadRequest(repr(e))
 
-    base_ticket = context.tickets.filter_by(id=base_template_id).first()
+    base_ticket = context.ticket_alls.filter_by(id=base_template_id).first()
     if base_ticket is None:
         raise HTTPBadRequest("base ticket is not found")
     mapping_ticket = context.tickets.filter_by(id=mapping_id).first()
@@ -348,10 +366,13 @@ def easycreate_transcribe_ticket(context, request):
     del data["id"]
     ticket = Ticket(**data)
     ticket.data["drawing"] = emit_to_another_template(base_ticket, mapping_ticket)
+    ticket.data["fill_mapping"] = mapping_ticket.fill_mapping
+    ticket.base_template = base_ticket
     ticket.event = context.event
     ticket.name = request.POST["name"]
     ticket.save()  # flush and DBSession.add(o)
-    return dict(status="ok", ticket_id=ticket.id)
+    request.session.flash(u"チケット券面を１つ転写しました")
+    return HTTPFound(location=request.route_path("events.tickets.index", event_id=context.event.id))
 
 
 def create_ticket_from_form(form, base_ticket):  # xxx: todo: move to anywhere
@@ -378,9 +399,21 @@ def create_ticket_from_form(form, base_ticket):  # xxx: todo: move to anywhere
 def easycreate(context, request):
     event = context.event
 
-    choice_form = forms.EasyCreateKindsChoiceForm().configure(event)
-    template_form = forms.EasyCreateTemplateChoiceForm()
-    upload_form = forms.EasyCreateTemplateUploadForm()
+    template_id = request.GET.get("template_id")
+    if template_id:
+        ticket_template = context.ticket_alls.filter_by(id=template_id).first()
+    else:
+        ticket_template = None
+
+    if ticket_template is not None:
+        preview_type = ticket_template.ticket_format.detect_preview_type()
+        choice_form = forms.EasyCreateKindsChoiceForm(event_id=event.id, preview_type=preview_type).configure(event)
+        template_form = forms.EasyCreateTemplateChoiceForm(templates=unicode(template_id))
+        upload_form = forms.EasyCreateTemplateUploadForm()
+    else:
+        choice_form = forms.EasyCreateKindsChoiceForm().configure(event)
+        template_form = forms.EasyCreateTemplateChoiceForm()
+        upload_form = forms.EasyCreateTemplateUploadForm()
 
     event_ticket_genurl = lambda t: request.route_path("events.tickets.boundtickets.show", event_id=context.event.id, id=t.id)
     event_tickets =  [{"pk": t.id, "name": t.name, "url": event_ticket_genurl(t)} for t in context.tickets]
@@ -391,7 +424,8 @@ def easycreate(context, request):
             "upload_form": upload_form,
             "event": event,
             "event_tickets": event_tickets,
-            "base_tickets": base_tickets
+            "base_tickets": base_tickets,
+            "ticket_template": ticket_template
            }
 
 
@@ -444,10 +478,9 @@ def getting_ticket_template_data(context, request):
     if event_id:
         assert unicode(context.event.id) == unicode(event_id)
         tickets = context.tickets
-        genurl = lambda t: request.route_path("events.tickets.boundtickets.show", event_id=context.event.id, id=t.id)
     else:
         tickets = context.ticket_templates
-        genurl = lambda t: request.route_path("tickets.templates.show", id=t.id)
+
     if preview_type == "sej":
         tickets = list(context.filter_sej_ticket_templates(tickets))
     else:
@@ -466,7 +499,7 @@ def getting_ticket_template_data(context, request):
 
     return {
         "iterable": [{"pk": t.id, "name": t.name, "checked": False} for t in tickets],
-        "tickets": [{"pk": t.id, "name": t.name, "url": genurl(t)} for t in tickets]
+        "tickets": {t.id:{"pk": t.id, "name": t.name, "cover_print":t.cover_print, "priced":t.priced, "always_reissueable": t.always_reissueable} for t in tickets}
     }
 
 
