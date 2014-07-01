@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from datetime import datetime, timedelta
 
 from wtforms import Form, TextField, SelectField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
@@ -56,11 +57,13 @@ class SalesReportForm(OurForm):
         label=u'公演期間',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
+        default=(datetime.now() + timedelta(days=-31)).replace(hour=0, minute=0, second=0)
     )
     event_to = OurDateTimeField(
         label=u'公演期間',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
+        default=(datetime.now()).replace(hour=23, minute=59, second=59)
     )
     event_start_from = OurDateTimeField(
         label=u'公演開始日',
@@ -103,10 +106,6 @@ class SalesReportForm(OurForm):
     need_total = OurBooleanField(
         validators=[Optional()],
         default=True,
-    )
-    recent_report = OurBooleanField(
-        validators=[Optional()],
-        default=False,
     )
     report_type = HiddenField(
         validators=[Optional()],
