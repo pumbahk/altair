@@ -164,20 +164,9 @@ def _elect_lots_task(context, message, lot, work, history):
     request.altair_checkout3d_override_shop_name = lot.event.organization.setting.multicheckout_shop_name
     wish = work.wish
     wish_id = wish.id
-    pdmp = wish.lot_entry.payment_delivery_method_pair
 
-    order = wish.lot_entry.order
-    if order:
-        payment_finished = is_finished_payment(request, pdmp, order)
-        delivery_finished = is_finished_delivery(request, pdmp, order)
-
-        if payment_finished and delivery_finished:
-            lot_entry = wish.lot_entry
-            logger.warning("lot entry {0} is already ordered.".format(lot_entry.entry_no))
-            event = LotElectedEvent(request, wish)
-            request.registry.notify(event)
-            return
     try:
+        order = wish.lot_entry.order
         order = elect_lot_wish(request, wish, order)
         if order:
             logger.info("ordered: order_no = {0.order_no}".format(order))
@@ -188,10 +177,8 @@ def _elect_lots_task(context, message, lot, work, history):
             wish.lot_entry.elect(wish)
             wish.order_id = order.id
             wish.lot_entry.order_id = order.id
-            wish = LotEntryWish.query.filter(LotEntryWish.id==wish_id).one()
             event = LotElectedEvent(request, wish)
             request.registry.notify(event)
-
 
     except Exception as e:
         transaction.abort()
@@ -201,27 +188,36 @@ def _elect_lots_task(context, message, lot, work, history):
         transaction.commit()
 
 
-
 def elect_lot_wish(request, wish, order=None):
     from altair.app.ticketing.models import DBSession
-    cart = lot_wish_cart(wish)
-    payment = Payment(cart, request)
     stocker = Stocker(request, DBSession)
 
     try:
-        # 在庫処理
-        performance = cart.performance
-        product_requires = [(p.product, p.quantity)
-                    for p in cart.items]
         if order is None:
             order = Order.query.filter(Order.order_no==wish.lot_entry.entry_no).first()
+
+        # 在庫処理
         if order is None:
-            stocked = stocker.take_stock(performance.id,
-                                         product_requires)
+            cart = lot_wish_cart(wish)
+            payment = Payment(cart, request)
+            performance = cart.performance
+            product_requires = [(p.product, p.quantity) for p in cart.items]
+            stocked = stocker.take_stock(performance.id, product_requires)
             order = payment.call_payment()
 
         else:
-            payment.call_delivery(order)
+            pdmp = wish.lot_entry.payment_delivery_method_pair
+            payment_finished = is_finished_payment(request, pdmp, order)
+            delivery_finished = is_finished_delivery(request, pdmp, order)
+
+            if payment_finished and delivery_finished:
+                logger.warning("lot entry {0} is already ordered.".format(wish.lot_entry.entry_no))
+            elif payment_finished and not delivery_finished:
+                payment = Payment(order.cart, request)
+                payment.call_delivery(order)
+            else:
+                # 決済エラーでOrderが残ることはない
+                logger.error("lot entry {0} cannot elect. please recover payment status.".format(wish.lot_entry.entry_no))
         # TODO: 確保数確認
 
         return order
