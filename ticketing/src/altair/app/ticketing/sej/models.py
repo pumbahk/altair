@@ -106,7 +106,9 @@ class SejRefundTicket(Base, WithTimestamp, LogicallyDeleted):
     ticket_barcode_number       = Column(String(13))
     refund_ticket_amount        = Column(DECIMAL)
     refund_other_amount         = Column(DECIMAL)
-    sent_at = Column(DateTime, nullable=True)
+    sent_at                     = Column(DateTime, nullable=True)
+    refunded_at                 = Column(DateTime, nullable=True)
+    status                      = Column(Integer)
 
 
 class SejFile(Base, WithTimestamp, LogicallyDeleted):
