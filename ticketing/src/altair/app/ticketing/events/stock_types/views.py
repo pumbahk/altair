@@ -74,6 +74,8 @@ class StockTypes(BaseView):
 
         f = StockTypeForm(self.request.POST)
         if f.validate():
+            if not 'disp_reports' in self.request.POST:
+                f.disp_reports.data = False
             old_display_order = stock_type.display_order
             stock_type = merge_session_with_post(stock_type, f.data)
             stock_type.set_style(f.data)
