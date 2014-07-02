@@ -4,7 +4,7 @@ import logging
 from wtforms import Form
 from wtforms import fields
 from wtforms import TextField
-from wtforms.validators import Regexp, Length
+from wtforms.validators import Regexp, Length, Optional
 
 from altair.formhelpers import Translations, Required, JISX0208, strip_spaces, NFKC
 from altair.formhelpers.filters import NFKC, replace_ambiguous
@@ -26,7 +26,9 @@ class VenueSearchForm(OurForm):
         )
     prefecture = OurSelectField(
         label=u'都道府県',
-        choices=[(p.name, p.name)for p in Prefecture.all()]
+        validators=[Optional()],
+        choices=[(u'', u'')] + [(p.name, p.name)for p in Prefecture.all()],
+        coerce=lambda x : x if x else u''
         )
 
 
