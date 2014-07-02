@@ -37,6 +37,12 @@ class SalesReportForm(OurForm):
         if formdata and 'recipient' in formdata:
             self.recipient.data = ','.join([email.strip() for email in self.recipient.data.split(',')])
 
+        now = datetime.now()
+        if not self.event_from.data:
+            self.event_from.process_data(now.replace(hour=0, minute=0, second=0) + timedelta(days=-31))
+        if not self.event_to.data:
+            self.event_to.process_data(now.replace(hour=23, minute=59, second=59))
+
     def _get_translations(self):
         return Translations()
 
@@ -57,13 +63,11 @@ class SalesReportForm(OurForm):
         label=u'公演期間',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
-        default=(datetime.now() + timedelta(days=-31)).replace(hour=0, minute=0, second=0)
     )
     event_to = OurDateTimeField(
         label=u'公演期間',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
-        default=(datetime.now()).replace(hour=23, minute=59, second=59)
     )
     event_start_from = OurDateTimeField(
         label=u'公演開始日',
