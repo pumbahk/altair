@@ -5,21 +5,20 @@
 <table class="table table-striped table-bordered">
   <thead>
     <tr>
-      <th class="span1">site</th>
-      <th>都道府県</th>
-      <th>名称</th>
-      <th>FRONT</th>
-      <th class="span1">venue</th>
-      <th>席数</th>
-      <th>詳細</th>
-      <th>パフォーマンス</th>
-      <th>作成日時</th>
+      <th class="span1">SITE</th>
+      <th class="span1">都道府県</th>
+      <th class="span2">名称</th>
+      <th class="span1">FRONT</th>
+      <th class="span1">会場ID</th>
+      <th class="span1">詳細</th>
+      <th class="span3">公演</th>
+      <th class="span2">作成日時</th>
     </tr>
   </thead>
   <tbody>
-  % for venue, site, performance in items:
+  % for i, (venue, site, performance) in enumerate(items):
     <tr id="venue-${venue.id}">
-    % if performance:
+    % if i > 0 and performance:
       <td colspan="4"></td>
     % else:
       <td><span class="id">${site.id}</span></td>
@@ -42,9 +41,8 @@
       </td>
     % endif
       <td><span class="id">${venue.id}</span></td>
-    	<td></td>
       <td><a href="${request.route_path('venues.show', venue_id=venue.id)}">詳細</a></td>
-    	<td>
+      <td>
     % if performance:
         <a href="${request.route_path('performances.show', performance_id=performance.id)}">
       % if performance.start_on:
