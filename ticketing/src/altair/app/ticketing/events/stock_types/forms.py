@@ -34,6 +34,12 @@ class StockTypeForm(OurForm):
         default=0,
         widget=CheckboxInput(),
     )
+    disp_reports = OurIntegerField(
+        label=u'帳票への表示',
+        default=1,
+        widget=CheckboxInput(),
+        hide_on_new=True
+    )
     min_quantity = NullableIntegerField(
         label=u'席種毎の最小購入数',
         default=None,
@@ -60,7 +66,7 @@ class StockTypeForm(OurForm):
         widget=CheckboxInput(),
     )
     display = OurBooleanField(
-        label=u'表示(カートに表示して選択可とする)',
+        label=u'カート表示(カートに表示して選択可とする)',
         default=True,
         hide_on_new=True
     )

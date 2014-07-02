@@ -1844,6 +1844,7 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     display_order = Column(Integer, nullable=False, default=1)
     event_id = Column(Identifier, ForeignKey("Event.id"))
     quantity_only = Column(Boolean, default=False)
+    disp_reports = Column(Boolean, default=True)
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
     description=Column(Unicode(2000), nullable=True, default=None)
     stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.display_order'))

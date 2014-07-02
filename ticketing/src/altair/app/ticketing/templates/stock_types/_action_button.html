@@ -25,7 +25,11 @@
     if ($(el).attr('quantity_only') == '1') {
       modal.find('#quantity_only').attr('checked', 'checked');
     }
+    if ($(el).attr('disp_reports') == '1') {
+      modal.find('#disp_reports').attr('checked', 'checked');
+    }
     modal.find('#quantity_only').change();
+    modal.find('#disp_reports').change();
     var min_quantity = $(el).attr('min_quantity'),
         max_quantity = $(el).attr('max_quantity'),
         min_product_quantity = $(el).attr('min_product_quantity'),
