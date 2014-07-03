@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from datetime import datetime, timedelta
 
 from wtforms import Form, TextField, SelectField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
@@ -36,12 +35,6 @@ class SalesReportForm(OurForm):
             self.need_total.data = True
         if formdata and 'recipient' in formdata:
             self.recipient.data = ','.join([email.strip() for email in self.recipient.data.split(',')])
-
-        now = datetime.now()
-        if not self.event_from.data:
-            self.event_from.process_data(now.replace(hour=0, minute=0, second=0) + timedelta(days=-31))
-        if not self.event_to.data:
-            self.event_to.process_data(now.replace(hour=23, minute=59, second=59))
 
     def _get_translations(self):
         return Translations()

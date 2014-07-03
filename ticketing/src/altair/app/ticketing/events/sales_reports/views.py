@@ -2,6 +2,7 @@
 
 import json
 import logging
+from datetime import datetime, timedelta
 
 import webhelpers.paginate as paginate
 from webob.multidict import MultiDict
@@ -30,6 +31,12 @@ class SalesReports(BaseView):
     @view_config(route_name='sales_reports.index', request_method='GET', renderer='altair.app.ticketing:templates/sales_reports/index.html')
     def index(self):
         form = SalesReportForm()
+        now = datetime.now()
+        if not form.event_from.data:
+            form.event_from.process_data(now.replace(hour=0, minute=0, second=0) + timedelta(days=-31))
+        if not form.event_to.data:
+            form.event_to.process_data(now.replace(hour=23, minute=59, second=59))
+
         return {
             'form':form,
             }
