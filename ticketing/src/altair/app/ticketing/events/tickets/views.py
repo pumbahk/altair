@@ -67,7 +67,7 @@ def show(context, request):
     if template is None:
         raise HTTPNotFound("this is not found")
     mapping_choices = [(template.id, template.name)]
-    base_template_choices = [(t.id, t.name) for t in context.ticket_templates]
+    base_template_choices = [(t.id, t.name) for t in context.ticket_alls]
     transcribe_form = forms.EasyCreateTranscribeForm(mapping_id=template.id).configure(
         base_template_choices, mapping_choices)
     return dict(template=template,
