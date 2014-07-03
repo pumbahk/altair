@@ -4,7 +4,7 @@ import sqlalchemy as sa
 _engine = None
 
 def setUpSwappedDB():
-    from altair.app.ticketing.core.models import Base
+    from altair.app.ticketing.models import Base
     import sqlahelper
     try:
         engine__ = sqlahelper.get_engine()
@@ -32,7 +32,7 @@ def set_default_engine(engine, name="default"):
 
 def swap_engine(engine):
     import sqlahelper
-    from altair.app.ticketing.core.models import DBSession
+    from altair.app.ticketing.models import DBSession
     base = sqlahelper.get_base()
     old_engine = sqlahelper.get_engine()
 
