@@ -1844,6 +1844,7 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     display_order = Column(Integer, nullable=False, default=1)
     event_id = Column(Identifier, ForeignKey("Event.id"))
     quantity_only = Column(Boolean, default=False)
+    disp_reports = Column(Boolean, default=True)
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
     description=Column(Unicode(2000), nullable=True, default=None)
     stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.display_order'))
@@ -2585,6 +2586,13 @@ class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', uselist=False, backref='ticket_formats')
     delivery_methods = relationship('DeliveryMethod', secondary=TicketFormat_DeliveryMethod.__table__, backref='ticket_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+
+    def detect_preview_type(self):
+        for dm in self.delivery_methods:
+            if unicode(dm.delivery_plugin_id) == unicode(plugins.SEJ_DELIVERY_PLUGIN_ID):
+                return "sej"
+        return "default"
+
 
 class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """

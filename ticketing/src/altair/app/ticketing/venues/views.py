@@ -8,6 +8,7 @@ import re
 import logging
 from urlparse import urlparse
 from zope.interface import implementer
+import webhelpers.paginate as paginate
 
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -25,7 +26,13 @@ from altair.sqlahelper import get_db_session
 from altair.pyramid_assets import get_resolver
 from altair.pyramid_assets.data import DataSchemeAssetDescriptor
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
+from altair.app.ticketing.orders.models import (
+    OrderedProductItem,
+    OrderedProduct,
+    Order,
+    )
 
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.core.models import (
@@ -33,7 +40,7 @@ from altair.app.ticketing.core.models import (
     SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType,
     ProductItem, Product, Performance, Event, SeatIndexType, SeatIndex
 )
-from altair.app.ticketing.venues.forms import SiteForm
+from altair.app.ticketing.venues.forms import SiteForm, VenueSearchForm
 from altair.app.ticketing.venues.export import SeatCSV
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -92,7 +99,7 @@ class VenueSiteDrawingHandler(object):
 def get_site_drawing(context, request):
     return request.registry.getUtility(IVenueSiteDrawingHandler)(context, request)
 
- 
+
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):
     venue = request.context.venue
@@ -229,12 +236,12 @@ def download(request):
 
     headers = [
         ('Content-Type', 'application/octet-stream; charset=cp932'),
-        ('Content-Disposition', 'attachment; filename=seats_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
+        ('Content-Disposition', 'attachment; filename=seats_{date}.csv'.format(
+            date=datetime.now().strftime('%Y%m%d%H%M%S')))
     ]
     response = Response(headers=headers)
 
     slave_session = get_db_session(request, 'slave')
-    from altair.app.ticketing.orders.models import OrderedProductItem, OrderedProduct, Order
     seats_q = slave_session.query(Seat, Order, include_deleted=True) \
         .outerjoin(Seat.status_) \
         .outerjoin(Seat.attributes_) \
@@ -250,12 +257,13 @@ def download(request):
         .filter(StockHolder.deleted_at == None) \
         .filter(StockType.deleted_at == None) \
         .order_by(asc(Seat.id), desc(Order.id))
-    seats_csv = SeatCSV(seats_q)
 
-    writer = csv.DictWriter(response, seats_csv.header, delimiter=',', quoting=csv.QUOTE_ALL)
+
+    seats_csv = SeatCSV(seats_q)
+    writer = csv.DictWriter(response, seats_csv.header,
+                             delimiter=',', quoting=csv.QUOTE_ALL)
     writer.writeheader()
     writer.writerows(seats_csv.rows)
-
     return response
 
 @view_config(route_name='venues.index', renderer='altair.app.ticketing:templates/venues/index.html',
@@ -267,13 +275,25 @@ def index(request):
     query = query.outerjoin((Performance, and_(Performance.id==Venue.performance_id, Performance.deleted_at==None)))
     query = query.options(undefer(Site.created_at), undefer(Performance.created_at))
     query = query.group_by(Venue.id)
-    query = query.order_by(asc(Venue.site_id), asc(-Venue.performance_id))
+    query = query.order_by(desc(Venue.site_id), asc(-Venue.performance_id))
 
-    items = []
-    for venue, site, performance in query:
-        items.append(dict(venue=venue, site=site, performance=performance))
+    form = VenueSearchForm(request.params)
+    if request.params:
+        if form.validate():
+            if form.venue_name.data:
+                pattern = u'%{}%'.format(form.venue_name.data)
+                query = query.filter(Venue.name.like(pattern))
+            if form.prefecture.data:
+                query = query.filter(Site.prefecture==form.prefecture.data)
 
-    return dict(items=items)
+    items = paginate.Page(
+        query,
+        page=int(request.params.get('page', 0)),
+        items_per_page=200,
+        url=PageURL_WebOb_Ex(request)
+    )
+
+    return dict(items=items, form=form)
 
 @view_config(route_name="api.get_frontend", request_method="GET", permission='event_viewer')
 def frontend_drawing(request):
@@ -328,7 +348,7 @@ def show(request):
     items = []
     for seat, venuearea, attr, status, type in seats:
         items.append(SeatInfo(seat, venuearea, attr, status, type))
-    
+
     class SeatAdjacencyInfo:
         def __init__(self, adj, count):
             self.adj = adj
@@ -451,13 +471,14 @@ def edit_post(request):
         return HTTPFound(location=route_path('venues.show', request, venue_id=venue.id))
     else:
         return {
-            'form':f,
-            'venue':venue,
-            'site':venue.site,
+            'form': f,
+            'venue': venue,
+            'site': venue.site,
             'drawing': get_venue_site_adapter(request, venue.site),
             'route_name': u'編集',
             'route_path': request.path,
-        }
+            }
+
 
 def includeme(config):
     config.registry.registerUtility(

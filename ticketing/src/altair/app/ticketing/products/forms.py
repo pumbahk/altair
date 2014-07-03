@@ -512,8 +512,7 @@ class PreviewImageDownloadForm(OurForm):
     def delivery_methods(field):
         return set(
             (pdmp.delivery_method_id, pdmp.delivery_method.name)
-            for pdmp in field.form.sales_segment.payment_delivery_method_pairs
-            if pdmp.delivery_method.delivery_plugin_id != SEJ_DELIVERY_PLUGIN_ID)
+            for pdmp in field.form.sales_segment.payment_delivery_method_pairs)
 
     def ticket_formats(field):
         tickets = object_session(field.form.sales_segment) \
@@ -524,8 +523,7 @@ class PreviewImageDownloadForm(OurForm):
             .join(Event.sales_segment_groups) \
             .join(SalesSegmentGroup.sales_segments) \
             .filter(SalesSegment.id == field.form.sales_segment.id) \
-            .group_by(TicketFormat.id) \
-            .having(func.sum(DeliveryMethod.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID) == 0)
+            .group_by(TicketFormat.id)
         return tickets
  
     delivery_method_id = OurSelectField(

@@ -1,6 +1,10 @@
 <%page args="attentions, genre, sub_genre, helper" />
 <%namespace file="../common/tags_mobile.mako" name="m" />
-<% attentions = [(event, attention) for event, attention in ((helper.get_event_from_linked_page_id(request, attention.linked_page_id), attention) for attention in attentions)] %>
+
+<%
+    if attentions:
+        attentions = [(event, attention) for event, attention in ((helper.get_event_from_linked_page_id(request, attention.linked_page_id), attention) for attention in attentions)]
+%>
 
 % if attentions:
 <%m:header>販売中公演</%m:header>

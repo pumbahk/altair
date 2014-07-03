@@ -1,3 +1,4 @@
+
 # -*- coding:utf-8 -*-
 
 from decimal import Decimal
@@ -5,6 +6,7 @@ import sqlalchemy.orm as orm
 import json
 import base64
 import os.path
+import sqlalchemy as sa
 from StringIO import StringIO
 from collections import OrderedDict
 from pyramid.view import view_config, view_defaults
@@ -647,7 +649,7 @@ class DownloadListOfPreviewImage(object):
         q = self.model_query(performance_id, sales_segment_id)
 
         ## ProductItem list -> svg list
-        svg_string_list = self.fetch_data_list(q, self.context.organization, unicode(delivery_method_id))
+        svg_string_list = self.fetch_data_list(q, self.context.organization, unicode(delivery_method_id), ticket_format)
 
         source_dir = tempfile.mkdtemp()
         try:
@@ -675,40 +677,56 @@ class DownloadListOfPreviewImage(object):
 
     def model_query(self, performance_id, sales_segment_id):
         return (c_models.ProductItem.query
-         .filter(c_models.Product.id==c_models.ProductItem.product_id)
-         .filter(c_models.Product.sales_segment_id==sales_segment_id)
-         .filter(c_models.Product.performance_id==performance_id)
-         .filter(c_models.ProductItem.performance_id==performance_id)
-         .all())
+                .filter(c_models.Product.id==c_models.ProductItem.product_id)
+                .filter(c_models.Product.sales_segment_id==sales_segment_id)
+                .filter(c_models.Product.performance_id==performance_id)
+                .filter(c_models.ProductItem.performance_id==performance_id)
+                .order_by(sa.asc(c_models.Product.display_order))
+                .all())
 
-    def fetch_data_list(self, q, organization, delivery_method_id):
+    def fetch_data_list(self, q, organization, delivery_method_id, ticket_format):
         svg_string_list = []
+        dm = c_models.DeliveryMethod.query.filter_by(id=delivery_method_id).one()
         for product_item in q:
             ticket_q = (c_models.Ticket.query
-                        .filter(c_models.TicketBundle.id==product_item.ticket_bundle_id, 
-                                c_models.Ticket_TicketBundle.ticket_bundle_id==product_item.ticket_bundle_id, 
-                                c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id, 
+                        .filter(c_models.TicketBundle.id==product_item.ticket_bundle_id,
+                                c_models.Ticket_TicketBundle.ticket_bundle_id==product_item.ticket_bundle_id,
+                                c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id,
+                                c_models.Ticket.ticket_format==ticket_format,
                                 c_models.Ticket.organization_id==organization.id)
                         .all())
             for ticket in ticket_q:
                 if not any(unicode(dm.id) == delivery_method_id for dm in ticket.ticket_format.delivery_methods):
                     continue
                 svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
-                transformer = SVGTransformer(svg)
-                transformer.data["ticket_format"] = ticket.ticket_format
-                svg = transformer.transform()
-                svg_string_list.append((svg, product_item, ticket))
+                if str(dm.delivery_plugin_id) == str(SEJ_DELIVERY_PLUGIN_ID):
+                    global_transform = transform_matrix_from_ticket_format(ticket.ticket_format)
+                    transformer = SEJTemplateTransformer(svgio=StringIO(svg), global_transform=global_transform)
+                    svg = transformer.transform()
+                    svg_string_list.append((svg, product_item, ticket, "sej"))
+                else:
+                    transformer = SVGTransformer(svg)
+                    transformer.data["ticket_format"] = ticket.ticket_format
+                    svg = transformer.transform()
+                    svg_string_list.append((svg, product_item, ticket, "default"))
         return svg_string_list
 
     def store_image(self, svg_string_list, source_dir, ticket_format):
-        preview = SVGPreviewCommunication.get_instance(self.request)
+        preview_default = SVGPreviewCommunication.get_instance(self.request)
+        preview_sej = SEJPreviewCommunication.get_instance(self.request)
         ## 画像取得
         with open(os.path.join(source_dir, "memo.txt"), "w") as wf0:
-            for i, (svg_string, product_item, ticket) in enumerate(svg_string_list):
+            for i, (svg_string, product_item, ticket, preview_type) in enumerate(svg_string_list):
                 wf0.write(u"* preview{0}.png -- 商品:{1}\n".format(i, product_item.name).encode("utf-8"))
-
-                imgdata_base64 = preview.communicate(self.request, svg_string, ticket_format)
-                fname = os.path.join(source_dir, "preview{0}.png".format(i))
-                logger.info("writing ... %s", fname)
-                with open(fname, "wb") as wf:
-                    wf.write(base64.b64decode(imgdata_base64))
+                if preview_type == "sej":
+                    imgdata = preview_sej.communicate(self.request, svg_string, ticket_format)
+                    fname = os.path.join(source_dir, "preview{0}.png".format(i))
+                    logger.info("writing .. preview_type=sej ... %s", fname)
+                    with open(fname, "wb") as wf:
+                        wf.write(imgdata)
+                else:
+                    imgdata_base64 = preview_default.communicate(self.request, svg_string, ticket_format)
+                    fname = os.path.join(source_dir, "preview{0}.png".format(i))
+                    logger.info("writing .. preview_type=default ... %s", fname)
+                    with open(fname, "wb") as wf:
+                        wf.write(base64.b64decode(imgdata_base64))

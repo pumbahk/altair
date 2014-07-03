@@ -1,13 +1,16 @@
+# encoding: utf-8
+
 import sys
 import re
 import cssutils
 import logging
 from lxml import etree
 import numpy
+import numpy.linalg
 from altair.svg.constants import SVG_NAMESPACE
 from altair.app.ticketing.tickets.constants import *
-from altair.svg.geometry import parse_transform, I
-from altair.svg.path import tokenize_path_data, parse_poly_data, PathDataScanner
+from altair.svg.geometry import parse_transform, I, to_matrix_string
+from altair.svg.path import tokenize_path_data, parse_poly_data, PathDataScanner, PathDataEmitter
 
 
 __all__ = (
@@ -173,17 +176,104 @@ class IDStripper(object):
         for child_elem in elem:
             self(child_elem)
 
+class PathTransformer(object):
+    def __init__(self, handler, rotate, scale, translate):
+        self.handler = handler
+        self.rotate = rotate
+        self.scale = scale
+        self.translate = translate
+        self.trans = self.rotate * self.translate * self.scale
+
+    def close_path(self):
+        return self.handler.close_path()
+
+    def move_to(self, x, y):
+        p = self.trans * numpy.matrix([x, y, 1.]).transpose()
+        return self.handler.move_to(p[0, 0], p[1, 0])
+
+    def line_to(self, x, y):
+        p = self.trans * numpy.matrix([x, y, 1.]).transpose()
+        return self.handler.line_to(p[0, 0], p[1, 0])
+
+    def curve_to(self, x1, y1, x2, y2, x, y):
+        p1 = self.trans * numpy.matrix([x1, y1, 1.]).transpose()
+        p2 = self.trans * numpy.matrix([x2, y2, 1.]).transpose()
+        p3 = self.trans * numpy.matrix([x,   y, 1.]).transpose()
+        return self.handler.curve_to(p1[0, 0], p1[1, 0], p2[0, 0], p2[1, 0], p3[0, 0], p3[1, 0])
+
+    def curve_to_qb(self, x1, y1, x, y):
+        p1 = self.trans * numpy.matrix([x1, y1, 1.]).transpose()
+        p2 = self.trans * numpy.matrix([x, y, 1.]).transpose()
+        return self.handler.curve_to_qb(p1[0, 0], p1[1, 0], p2[0, 0], p2[1, 0])
+
+    def arc(self, rx, ry, phi, largearc, sweep, x, y):
+        p1 = self.scale * numpy.matrix([rx, ry, 1.]).transpose()
+        p2 = self.trans * numpy.matrix([x, y]).transpose()
+        phi_delta = numpy.arccos(self.rotate[0, 0])
+        if numpy.arcsin(self.rotate[0, 1]) < 0:
+            phi_delta = numpy.pi - phi_delta
+        phi += phi_delta
+        return self.handler.arc(p1[0, 0], p1[1, 0], phi, largearc, sweep, p2[0, 0], p2[1, 0])
+
+ROTATE_180 = numpy.matrix([
+    [-1.,  0., 0.],
+    [ 0., -1., 0.],
+    [ 0.,  0., 1.],
+    ])
+
+FLIP_Y = numpy.matrix([
+    [1.,  0., 0.],
+    [0., -1., 0.],
+    [0.,  0., 1.],
+    ])
+
 class TransformApplier(object):
     def __init__(self):
         self.trans_stack = []
         self.trans = I
+        self._rotate = I
+        self._scale = I
+        self._skew = I
+        self._translate = I
 
     def push_transform(self, mat):
         self.trans_stack.append(self.trans)
         self.trans = self.trans * mat
+        self._populate_rotate_scale_skew_translate()
 
     def pop_transform(self):
         self.trans = self.trans_stack.pop()
+        self._populate_rotate_scale_skew_translate()
+
+    def _populate_rotate_scale_skew_translate(self):
+        _translate = self.trans[..., 2].copy()
+        _rotate, m2 = numpy.linalg.qr(self.trans)
+
+        if numpy.sign(_rotate[0, 1] * _rotate[1, 0]) > 0.:
+            _rotate *= FLIP_Y
+            m2 = FLIP_Y * m2
+        if m2[0, 0] < 0. and m2[1, 1] < 0.:
+            _rotate *= ROTATE_180
+            m2 = ROTATE_180 * m2
+        s1 = numpy.sign(m2[0, 0])
+        s2 = numpy.sign(m2[1, 1])
+        assert numpy.abs(s1) > 0 and numpy.abs(s2) > 0, repr(self.trans) + "\n" + repr(m2)
+        self._rotate = _rotate
+        self._scale = numpy.matrix([
+            [ m2[0, 0] / s1,             0.,        0.],
+            [             0., m2[1, 1] / s2,        0.],
+            [             0.,            0.,        1.],
+            ])
+        self._skew = numpy.matrix([
+            [       s1, m2[0, 1] / m2[1, 1] ,       0.],
+            [       0.,                   s2,       0.],
+            [       0.,                   0.,       1.],
+            ])
+        self._translate = numpy.matrix([
+            [       1.,        0.,  m2[0, 2]],
+            [       0.,        1.,  m2[1, 2]],
+            [       0.,        0.,        1.]
+            ])
 
     def __call__(self, elem):
         trans = I
@@ -193,19 +283,60 @@ class TransformApplier(object):
         self.push_transform(trans)
 
         if elem.tag == u'{%s}rect' % SVG_NAMESPACE:
-            p1 = numpy.matrix([float(elem.get(u'x')), float(elem.get(u'y')), 1.]).transpose()
-            p2 = p1 + numpy.matrix([float(elem.get(u'width')), float(elem.get(u'height')), 0.]).transpose()
-            p1 = self.trans * p1
-            p2 = self.trans * p2
-            elem.set(u'x', unicode(p1[0, 0]))
-            elem.set(u'y', unicode(p1[1, 0]))
-            elem.set(u'width', unicode(p2[0, 0] - p1[0, 0]))
-            elem.set(u'height', unicode(p2[1, 0] - p1[1, 0]))
+            _rotate_and_skew = self._rotate * self._skew
+            if numpy.allclose(_rotate_and_skew, I):
+                _translate_and_scale = self._translate * self._scale
+                p1 = numpy.matrix([float(elem.get(u'x')), float(elem.get(u'y')), 1.]).transpose()
+                p2 = p1 + numpy.matrix([float(elem.get(u'width')), float(elem.get(u'height')), 0.]).transpose()
+                p1 = _translate_and_scale * p1
+                p2 = _translate_and_scale * p2
+                elem.set(u'x', unicode(p1[0, 0]))
+                elem.set(u'y', unicode(p1[1, 0]))
+                elem.set(u'width', unicode(p2[0, 0] - p1[0, 0]))
+                elem.set(u'height', unicode(p2[1, 0] - p1[1, 0]))
+            else:
+                elem.set(u'transform', to_matrix_string(self.trans))
         elif elem.tag == u'{%s}circle' % SVG_NAMESPACE:
-            p1 = numpy.matrix([float(elem.get(u'cx')), float(elem.get(u'cy')), 1.]).transpose()
-            p1 = self.trans * p1
-            elem.set(u'cx', unicode(p1[0, 0]))
-            elem.set(u'cy', unicode(p1[1, 0]))
+            _scale = self._scale
+            rm = _scale[1, 1]
+            _deformation = numpy.matrix([
+                [_scale[0, 0] / rm, 0., 0.],
+                [               0., 1., 0.],
+                [               0., 0., 1.],
+                ])
+            no_deformation = numpy.allclose(_deformation[0, 0], 1.)
+            if numpy.allclose(self._skew, I) and (no_deformation or numpy.allclose(self._rotate, I)):
+                r = float(elem.get(u'r')) * rm
+                p1 = numpy.matrix([float(elem.get(u'cx')), float(elem.get(u'cy')), 1.]).transpose()
+                p1 = self._rotate * self._translate * _scale * p1
+                if no_deformation:
+                    elem.set(u'cx', unicode(p1[0, 0]))
+                    elem.set(u'cy', unicode(p1[1, 0]))
+                    elem.set(u'r', unicode(r))
+                else:
+                    elem.tag = 'ellipse'
+                    elem.set(u'cx', unicode(p1[0, 0]))
+                    elem.set(u'cy', unicode(p1[1, 0]))
+                    p2 = numpy.matrix([r, r, 1.]).transpose()
+                    p2 = _deformation * p2
+                    elem.set(u'rx', unicode(p2[0, 0]))
+                    elem.set(u'ry', unicode(p2[1, 0]))
+            else:
+                elem.set(u'transform', to_matrix_string(self.trans))
+        elif elem.tag == u'{%s}ellipse' % SVG_NAMESPACE:
+            _rotate_and_skew = self._rotate * self._skew
+            if numpy.allclose(_rotate_and_skew, I):
+                _translate_and_scale = self._translate * self._scale
+                p1 = numpy.matrix([float(elem.get(u'cx')), float(elem.get(u'cy')), 1.]).transpose()
+                p1 = _translate_and_scale * p1
+                p2 = numpy.matrix([float(elem.get(u'rx')), float(elem.get(u'ry')), 1.]).transpose()
+                p2 = _translate_and_scale * p2
+                elem.set(u'cx', unicode(p1[0, 0]))
+                elem.set(u'cy', unicode(p1[1, 0]))
+                elem.set(u'rx', unicode(p2[0, 0]))
+                elem.set(u'ry', unicode(p2[1, 0]))
+            else:
+                elem.set(u'transform', to_matrix_string(self.trans))
         elif elem.tag == u'{%s}line' % SVG_NAMESPACE:
             p1 = numpy.matrix([float(elem.get(u'x1')), float(elem.get(u'y1')), 1.]).transpose()
             p2 = numpy.matrix([float(elem.get(u'x2')), float(elem.get(u'y2')), 1.]).transpose()
@@ -223,6 +354,29 @@ class TransformApplier(object):
 
             points = self.trans * points
             elem.set(u'points', u' '.join(u"%g,%g" % (x, y) for x, y, _ in points.transpose().getA()))
+        elif elem.tag == u'{%s}path' % SVG_NAMESPACE:
+            emitter = PathDataEmitter()
+            handler = PathTransformer(emitter, self._rotate, self._scale, self._translate)
+            PathDataScanner(tokenize_path_data(elem.get('d')), handler)()
+            elem.set(u'd', emitter.get_result())
+            if not numpy.allclose(self._skew, I):
+                elem.set(u'transform', to_matrix_string(self._skew))
+        elif elem.tag in (u'{%s}text' % SVG_NAMESPACE, u'{%s}tspan' % SVG_NAMESPACE):
+            _rotate_scale_and_skew = self._rotate * self._scale * self._skew
+            transform_needed = not numpy.allclose(_rotate_scale_and_skew, I)
+            _translate = self._translate
+            if transform_needed:
+                inv = numpy.linalg.inv(_rotate_scale_and_skew)
+                self.trans = _translate = inv * _translate * _rotate_scale_and_skew
+                elem.set(u'transform', to_matrix_string(_rotate_scale_and_skew))
+            p1 = _translate * numpy.matrix([float(elem.get(u'x')), float(elem.get(u'y')), 1.]).transpose()
+            elem.set(u'x', unicode(p1[0, 0]))
+            elem.set(u'y', unicode(p1[1, 0]))
+        elif elem.tag == '{%s}flowRoot' % SVG_NAMESPACE:
+            _rotate_scale_and_skew = self._rotate * self._scale * self._skew
+            if not numpy.allclose(_rotate_scale_and_skew, I):
+                elem.set(u'transform', to_matrix_string(_rotate_scale_and_skew))
+                self.trans = numpy.linalg.inv(_rotate_scale_and_skew) * self._translate * _rotate_scale_and_skew
 
         for child_elem in elem:
             self(child_elem)

@@ -1,0 +1,37 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
+
+${ch.alert_message(form)}
+
+<h3>検索条件設定</h3>
+<div class="pull-left">
+  <form id="search" action="${request.url}" method="get">
+    <fieldset>
+      <table>
+        <tbody>
+          <tr>
+            <th><label for="prefecture">${form.prefecture.label.text}</label></th>
+            <td>${form.prefecture}</td>
+            <th><label for="venue_name">${form.venue_name.label.text}</label></th>
+            <td>${form.venue_name}</td>
+          </tr>
+        </tbody>
+      </table>
+    </fieldset>
+    <div style="margin-top: 20px;">
+      <button type="submit" name="search" class="btn">
+        <i class="icon-search"></i> 検索
+      </button>
+    </div>
+  </form>
+</div>
+<div class="clearfix"></div>
+
+<script type="text/javascript">
+  $(function(){
+    $("#search select[name='prefecture']").chosen();
+  });
+</script>

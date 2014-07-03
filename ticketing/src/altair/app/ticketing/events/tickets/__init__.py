@@ -45,10 +45,10 @@ def includeme(config):
     config.add_view("altair.app.ticketing.tickets.views.TicketTemplates",
                     attr="delete_post", request_method="POST", 
                     route_name="events.tickets.boundtickets.delete")
-    config.add_view("altair.app.ticketing.tickets.views.TicketTemplates",
-                    attr="show", request_method="GET", 
-                    route_name="events.tickets.boundtickets.show", 
-                    renderer='altair.app.ticketing:templates/tickets/events/tickets/show.html')
+    # config.add_view("altair.app.ticketing.tickets.views.TicketTemplates",
+    #                 attr="show", request_method="GET", 
+    #                 route_name="events.tickets.boundtickets.show", 
+    #                 renderer='altair.app.ticketing:templates/tickets/events/tickets/show.html')
     config.add_view("altair.app.ticketing.tickets.views.TicketTemplates",
                     attr="download", request_method="GET", 
                     route_name="events.tickets.boundtickets.download")

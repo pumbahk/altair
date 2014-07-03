@@ -122,12 +122,6 @@ class SalesTotalReporter(object):
         query = self.slave_session.query(Event).filter(Event.organization_id==self.organization.id)\
             .join(Performance).filter(Performance.deleted_at==None)
 
-        if self.form.recent_report.data:
-            today = date.today()
-            query = query.filter(
-                or_(and_(Performance.end_on==None, Performance.start_on > today + timedelta(days=-31)), Performance.end_on > today + timedelta(days=-31))
-            )
-
         if self.form.event_title.data:
             query = query.filter(Event.title.like('%' + self.form.event_title.data + '%'))
 

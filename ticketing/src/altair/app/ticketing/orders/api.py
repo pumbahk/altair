@@ -31,6 +31,7 @@ from altair.app.ticketing.core.models import (
     Stock,
     Performance,
     SeatStatusEnum,
+    ChannelEnum,
     )
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
@@ -755,7 +756,7 @@ def get_order_by_order_no(request, order_no, session=None, include_deleted=False
     except orm.exc.NoResultFound:
         return None
 
-def create_order_from_proto_order(request, reserving, stocker, proto_order, prev_order=None, entrust_separate_seats=False):
+def create_order_from_proto_order(request, reserving, stocker, proto_order, prev_order=None, entrust_separate_seats=False, default_channel=ChannelEnum.INNER.v):
     if prev_order is not None:
         # バリデーションは最初にやる
         # そうでないと、select が走るタイミングで flush されてしまって
@@ -825,6 +826,7 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
 
     order = Order(
         order_no=proto_order.order_no,
+        channel=default_channel,
         total_amount=proto_order.total_amount,
         shipping_address=proto_order.shipping_address,
         payment_delivery_pair=proto_order.payment_delivery_pair,
@@ -883,7 +885,7 @@ def get_relevant_object(request, order_no, session=None, include_deleted=False):
         return cart
     return None
 
-def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto_orders, import_type, allocation_mode, entrust_separate_seats, order_modifier=None, now=None):
+def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto_orders, import_type, allocation_mode, entrust_separate_seats, order_modifier=None, now=None, channel_for_new_orders=ChannelEnum.INNER.v):
     from altair.app.ticketing.models import DBSession
     errors_map = {}
 
@@ -936,7 +938,8 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
                 stocker=stocker,
                 proto_order=proto_order,
                 prev_order=proto_order.original_order,
-                entrust_separate_seats=entrust_separate_seats
+                entrust_separate_seats=entrust_separate_seats,
+                default_channel=channel_for_new_orders
                 )
             errors_for_proto_order.extend(validate_order(request, new_order, proto_order.ref))
         except NotEnoughStockException as e:

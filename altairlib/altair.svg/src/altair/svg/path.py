@@ -345,6 +345,52 @@ class PathDataScanner(object):
         if fn is not None:
             fn(operand)
 
+class PathDataEmitter(object):
+    def __init__(self):
+        self.buf = []
+
+    def close_path(self):
+        self.buf.append(u'z')
+
+    def move_to(self, x, y):
+        self.buf.append(u'M')
+        self.buf.append(unicode(x))
+        self.buf.append(unicode(y))
+
+    def line_to(self, x, y):
+        self.buf.append(u'L')
+        self.buf.append(unicode(x))
+        self.buf.append(unicode(y))
+
+    def curve_to(self, x1, y1, x2, y2, x, y):
+        self.buf.append(u'C')
+        self.buf.append(unicode(x1))
+        self.buf.append(unicode(y1))
+        self.buf.append(unicode(x2))
+        self.buf.append(unicode(y2))
+        self.buf.append(unicode(x))
+        self.buf.append(unicode(y))
+
+    def curve_to_qb(self, x1, y1, x, y):
+        self.buf.append(u'Q')
+        self.buf.append(unicode(x1))
+        self.buf.append(unicode(y1))
+        self.buf.append(unicode(x))
+        self.buf.append(unicode(y))
+
+    def arc(self, rx, ry, phi, largearc, sweep, x, y):
+        self.buf.append(u'A')
+        self.buf.append(unicode(rx))
+        self.buf.append(unicode(ry))
+        self.buf.append(unicode(phi))
+        self.buf.append(u'1' if largearc else u'0')
+        self.buf.append(u'1' if sweep else u'0')
+        self.buf.append(unicode(x))
+        self.buf.append(unicode(y))
+
+    def get_result(self):
+        return u' '.join(self.buf)
+
 NUM_REGEX = ur'(-?(?:(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?))'
 
 def tokenize_path_data(path):

@@ -61,53 +61,67 @@ class SeatCSV(object):
         self.seat_order_pairs = seat_order_pairs
         self.seat_rendered = set()
 
+
+        self._seat_status_enum_dict = dict(
+            (status.v, status.k) for status in SeatStatusEnum)
+
+
     def _convert_to_csv(self, seat_order_pair):
         seat, order = seat_order_pair
-
         valid_order = order and (order.deleted_at is None) and order.status not in self.excluded_order_statuses
         if (not valid_order) and (seat.id in self.seat_rendered):
             return None
 
-        row_data = []
-        def get_row_data(header, data):
-            data = record_to_multidict(data)
-            return [(label, data.get(column)) for column, label in header.items()]
+        seat_data = (
+            (u'座席ID', seat.id),
+            (u'l0_id', seat.l0_id),
+            (u'座席番号', seat.seat_no),
+            (u'座席名', seat.name),
+            (u'フロア', seat.attributes.get('floor', '')),
+            (u'ゲート', seat.attributes.get('gate', '')),
+            (u'列番号', seat.attributes.get('row', '')),
+            (u'座席ステータス', self._seat_status_enum_dict.get(seat.status, '')),
+            )
 
-        def add_row_data(header, data):
-            row_data.extend(get_row_data(header, data))
-
-        add_row_data(self.seat_header, seat)
+        stock_type_data = ()
         if seat.stock.stock_type:
-            add_row_data(self.stock_type_header, seat.stock.stock_type)
+            stock_type_data = (
+                (u'席種ID', seat.stock.stock_type.id),
+                (u'席種名', seat.stock.stock_type.name),
+                )
+
+        stock_holder_data = ()
+        account_data = ()
         if seat.stock.stock_holder:
-            add_row_data(self.stock_holder_header, seat.stock.stock_holder)
+            stock_holder_data = (
+                (u'枠ID', seat.stock.stock_holder.id),
+                (u'枠名', seat.stock.stock_holder.name),
+                )
+
             if seat.stock.stock_holder.account:
-                add_row_data(self.account_header, seat.stock.stock_holder.account)
+                account_data = (
+                    (u'配券先ID', seat.stock.stock_holder.account.id),
+                    (u'配券先名', seat.stock.stock_holder.account.name),
+                    )
 
-        for k, v in seat.attributes.items():
-            if k in self.stock_attribute_header:
-                label = self.stock_attribute_header.get(k)
-                row_data.append((label, v))
-
-        for status in SeatStatusEnum:
-            if status.v == seat.status:
-                label = self.seat_status_header.get('status')
-                row_data.append((label, status.k))
-                break
-
+        order_data = ()
         if valid_order:
-            label = self.seat_status_header.get('order_no')
-            row_data.append((label, order.order_no))
+            order_data = (
+                (u'予約番号', order.order_no if order else ''),
+                )
 
-        self.seat_rendered.add(seat.id)
-
-        # encoding
-        row = dict(row_data)
+        row =  dict(
+            seat_data + \
+            stock_type_data + \
+            stock_holder_data + \
+            account_data + \
+            order_data)
         return encode_to_cp932(row)
 
     @property
     def rows(self):
         for seat_order_pair in self.seat_order_pairs:
+
             retval = self._convert_to_csv(seat_order_pair)
             if retval is not None:
                 yield retval
