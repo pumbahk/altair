@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import sqlalchemy as sa
 from altair.app.ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPNotFound
@@ -67,7 +68,7 @@ def show(context, request):
     if template is None:
         raise HTTPNotFound("this is not found")
     mapping_choices = [(template.id, template.name)]
-    base_template_choices = [(t.id, t.name) for t in context.ticket_alls]
+    base_template_choices = [(t.id, t.name) for t in context.ticket_alls.filter(sa.or_(Ticket.event_id==None, Ticket.event_id==context.event.id))]
     transcribe_form = forms.EasyCreateTranscribeForm(mapping_id=template.id).configure(
         base_template_choices, mapping_choices)
     return dict(template=template,
