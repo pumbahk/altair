@@ -15,10 +15,9 @@ from os.path import abspath, dirname
 from pyramid.paster import bootstrap
 from ..payment import request_fileget
 from ..models import (
-    SejNotificationType,
     ThinSejTenant,
-    code_from_notification_type
     )
+from ..notification.models import SejNotificationType, code_from_notification_type
 from ..api import validate_sej_tenant, get_default_sej_tenant
 from ...core.models import SejTenant
 from ..exceptions import SejServerError
