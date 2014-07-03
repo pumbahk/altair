@@ -1140,7 +1140,8 @@ def run_import_task(request, task):
             import_type=task.import_type,
             allocation_mode=task.allocation_mode,
             entrust_separate_seats=task.entrust_separate_seats,
-            order_modifier=add_note
+            order_modifier=add_note,
+            channel_for_new_orders=ChannelEnum.IMPORT.v
             )
     except MassOrderCreationError as e:
         return e.errors

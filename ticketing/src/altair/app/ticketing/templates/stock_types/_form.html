@@ -26,6 +26,14 @@
       }
     });
 
+    $('#modal-stock_type #disp_reports').change(function() {
+      if ($(this).attr('checked')) {
+        $(this).val(1);
+      } else {
+        $(this).val(0);
+      }
+    });
+
     $("#modal-stock_type #fill_color").decentcolorpicker();
   });
 </script>
@@ -42,6 +50,7 @@
       ${ch.form_item(form.event_id)}
       ${ch.form_item(form.name, style='display: block;', maxlength=255)}
       ${ch.form_item(form.quantity_only, style='display: inline;')}
+      ${ch.form_item(form.disp_reports, style='display: inline;')}
       ${ch.form_item(form.min_quantity)}
       ${ch.form_item(form.max_quantity)}
       ${ch.form_item(form.min_product_quantity)}

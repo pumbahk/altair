@@ -142,6 +142,36 @@ class EasyCreateTemplateChoiceForm(OurForm):
 
 from altair.app.ticketing.tickets.cleaner.api import get_validated_svg_cleaner
 
+class EasyCreateTranscribeForm(OurForm):
+    def _get_translations(self):
+        return Translations()
+
+    name = TextField(
+        label = u'名前',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+
+    base_template_id = SelectField(
+        label=u"template側",
+        choices=[],
+        coerce=long,
+        validators=[Required()]
+    )
+
+    mapping_id = SelectField(
+        label=u"mapping側",
+        choices=[],
+        coerce=long,
+        validators=[Required()]
+    )
+
+    def configure(self, base_template_choices, mapping_choices):
+        self.base_template_id.choices = base_template_choices
+        self.mapping_id.choices = mapping_choices
+        return self
 
 class EasyCreateTemplateUploadForm(OurForm):
     def _get_translations(self):

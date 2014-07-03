@@ -483,8 +483,8 @@ class SoldTableCreator(object):
     def create_sources_quantity_only(self, ordered_product_items):
         return [self.seat_source(product_item=opitem.product_item.name,
                                  quantity=opitem.quantity)
-                for opitem in ordered_product_items]
-        
+                for opitem in ordered_product_items if opitem.product_item.product.seat_stock_type.disp_reports]
+
     def create_seatsources_quantitysources(self):
         is_sold = lambda _seat: _seat.status == SeatStatusEnum.Ordered.v
         seat_sources = []

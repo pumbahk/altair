@@ -3,7 +3,6 @@
 def includeme(config):
     from .resources import SalesReportAdminResource
     config.add_route('sales_reports.index', '/', factory=SalesReportAdminResource)
-    config.add_route('sales_reports.index_all', '/all', factory=SalesReportAdminResource)
     config.add_route('sales_reports.event','/event/{event_id}', factory=SalesReportAdminResource)
     config.add_route('sales_reports.performance', '/performance/{performance_id}', factory=SalesReportAdminResource)
     config.add_route('sales_reports.preview','/preview/', factory=SalesReportAdminResource)

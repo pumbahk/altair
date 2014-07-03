@@ -9,4 +9,3 @@ def main(argv):
     cmd = altairpy + ' ' + jumon.escape_join(argv)
     child = jumon.call(cmd)
     return child.wait()
-    

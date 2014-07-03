@@ -116,6 +116,9 @@ def export_for_stock_holder(event, stock_holder, report_type, performanceids=Non
         # 席種ごとのオブジェクトを作成
         for stock in stocks:
             stock_type = stock.stock_type
+            if not stock_type.disp_reports:
+                continue
+
             # Stock
             params = dict(seat_type=stock_type.name)
             if report_type == 'unsold':
@@ -191,6 +194,10 @@ def export_for_sales(event):
             price_records = dict()  # (Product.display_order, StockType.name, TicketBundle.name, Product.price) = [SalesSegmentGroup.name,]
             for sales_segment in sales_segments:
                 for product in sales_segment.products:
+
+                    if not product.seat_stock_type.disp_reports:
+                        continue
+
                     ticket_type = None
                     if product.items and product.items[0].ticket_bundle:
                         ticket_type = product.items[0].ticket_bundle.name

@@ -15,12 +15,17 @@ ${ch.breadcrumbs(
 <%block name="style">
 <style type="text/css">
   .message { display: block; margin-left: 30px;}
+  .pseudo-input {background:#eee; foreground:#fff; border-style: solid; border-width:1px; border-color:#aaa; padding:2px}
 </style>
 </%block>
 
 <div class="page-header">
   <h1>チケットテンプレート</h1>
 </div>
+
+%if template.fill_mapping:
+<a href="${request.route_path("events.tickets.easycreate", event_id=event.id, _query=dict(template_id=template.id))}"}>簡易券面作成に</a>
+%endif
 
 <div class="row-fluid">
   <div class="span6">
@@ -68,7 +73,25 @@ ${ch.breadcrumbs(
     </table>
   </div>
 
-  <div class="span6"></div>
+  <div class="span6" id="rightside">
+    <h3>転写</h3>
+    <p><span class="selected-template pseudo-input"></span>を<span class="selected-mapping pseudo-input">${template.name}</span>の箱の内容で転写</p>
+    <form  method="POST" action="${request.route_path("events.tickets.easycreate.transcribe",event_id=event.id)}">
+      ${ch.form_item(transcribe_form.name)}
+      ${ch.form_item(transcribe_form.base_template_id)}
+      ${ch.form_item(transcribe_form.mapping_id)}
+      <input type="submit" name="transcribe" class="btn btn-primary" value="転写">
+    </form>
+  </div>
+  <div class="userhandle-box">
+    <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav2">戻る</a>
+  </div>
+  <script type="text/javascript">
+    $(function(){
+      $("#rightside select[name='base_template_id']").change(function(){ $("#rightside .selected-template").text($(this).find("option:selected").text());})
+    })
+  </script>
+  </div>
 </div>
 
 <div class="row-fluid">

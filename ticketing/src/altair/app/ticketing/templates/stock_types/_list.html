@@ -27,7 +27,9 @@
           <th style="width:20px"></th>
           <th style="width: 60px">名称</th>
           <th>席数</th>
-          <th style="width:40px">表示</th>
+          <th>数受け</th>
+          <th>帳票表示</th>
+          <th style="width:40px">カート表示</th>
           <th style="width:40px">表示順</th>
           <th>説明</th>
         </tr>
@@ -52,6 +54,7 @@
                name="${stock_type.name}"
                type="${stock_type.type}"
                quantity_only="${1 if stock_type.quantity_only else 0}"
+               disp_reports="${1 if stock_type.disp_reports else 0}"
                min_quantity="${stock_type.min_quantity if stock_type.min_quantity is not None else u''}"
                max_quantity="${stock_type.max_quantity if stock_type.max_quantity is not None else u''}"
                min_product_quantity="${stock_type.min_product_quantity if stock_type.min_product_quantity is not None else u''}"
@@ -68,7 +71,13 @@
             ${quantity}
           </td>
           <td>
-            ${u'する' if stock_type.display else u'しない'}
+            ${u'◯' if stock_type.quantity_only else u''}
+          </td>
+          <td>
+            ${u'◯' if stock_type.disp_reports else u''}
+          </td>
+          <td>
+            ${u'◯' if stock_type.display else u''}
           </td>
           <td>
             ${stock_type.display_order}
@@ -121,6 +130,7 @@
                name="${stock_type.name}"
                type="${stock_type.type}"
                quantity_only="${1 if stock_type.quantity_only else 0}"
+               disp_reports="${1 if stock_type.disp_reports else 0}"
                min_quantity="${stock_type.min_quantity if stock_type.min_quantity is not None else u''}"
                max_quantity="${stock_type.max_quantity if stock_type.max_quantity is not None else u''}"
                quantity="${quantity}"

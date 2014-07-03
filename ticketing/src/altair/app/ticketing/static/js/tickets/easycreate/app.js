@@ -23,7 +23,8 @@ if (!window.app)
       templateId: {value: null, writable: true},
       createdTemplateId: {value: null, writable: true},
       isAfterCreatedFirst: {value: false, writable: true},
-      callback: {value: null, writable: true}
+      callback: {value: null, writable: true},
+      ticketMapping: {value: [], writable: true}
     });
 
   var selectContentTemplate = _.template('<% _.each(iterable, function(d){%><option value="<%= d.pk %>"><%= d.name %></option> <%});%>');
@@ -54,11 +55,14 @@ if (!window.app)
       preview_type: {value: "default", writable:true, enumerable:true},
       template_kind: {value: "default", writable:true, enumerable:true},
       cover_print: {value: false, writable:true, enumerable:true},
+      priced: {value: false, writable:true, enumerable:true},
+      always_reissueable: {value: false, writable:true, enumerable:true},
       base_template_id: {value: null, writable:true, enumerable:true},
       drawing: {value: "", writable:true, enumerable:true},
       fill_mapping: {value: "{}", writable:true, enumerable:true},
     }
   );
+
 
   // これはtranscribeする際の状態
   var transcribeParamatersModel = Object.create(
@@ -96,9 +100,10 @@ if (!window.app)
       this.submit.receiveChangeToTicketTemplate();
     },
     onChangeTicketTemplate: function($el){
+      var ticket = this.models.source.ticketMapping[$el.val()];
       var text = $el.find("option:selected").text();
       this.submit.receiveDefaultTicketName(text);
-      this.listing.receiveChangeSelectedMapping(text, $el.val());
+      this.submit.receiveUpdateTicketCheckbox(ticket);
       return this.component.receiveSVGRequest($el.val());
     },
     onTicketFormatSelectElementUpdate: function(html){
@@ -115,7 +120,6 @@ if (!window.app)
       $select.html(html);
     },
     onNewTicketsList: function(data){
-      this.listing.receiveNewTicketsList(data);
     },
     onNewSVGData: function(data){
       var self = this;
@@ -180,12 +184,25 @@ if (!window.app)
       this.$el.find('input[name="name"]').val(name);
       this.broker.models.submit.sync("name", name);
     },
+    receiveUpdateTicketCheckbox: function(ticket){
+      this.$el.find('input[name="cover_print"]').attr("checked", ticket.cover_print);
+      this.$el.find('input[name="always_reissueable"]').attr("checked", ticket.always_reissueable);
+      this.$el.find('input[name="priced"]').attr("checked", ticket.priced);
+    },
     onChangeTicketName: function($el){
       this.broker.models.submit.sync("name", $el.val());
     },
     onChangeIsPrintConver: function($el){
       var v = $el.attr("checked") ? "y" : null;
       this.broker.models.submit.sync("cover_print", v);
+    },
+    onChangeIsAlwaysReissueable: function($el){
+      var v = $el.attr("checked") ? "y" : null;
+      this.broker.models.submit.sync("always_reissueable", v);
+    },
+    onChangeIsPriced: function($el){
+      var v = $el.attr("checked") ? "y" : null;
+      this.broker.models.submit.sync("priced", v);
     },
     receiveChangeToEventTicket: function(){
       this.$el.find('input[name="update"]').show();
@@ -241,8 +258,9 @@ if (!window.app)
       this.$el.find("#templates").parents(".control-group").find("label").text("券面テンプレート");
     },
     onChangeTicketTemplate: function($el){
-      this.broker.models.source.sync("templateId", $el.val());
-      this.broker.models.submit.sync("base_template_id", $el.val());
+      var m = this.broker.models;
+      m.source.sync("templateId", $el.val());
+      m.submit.sync("base_template_id", $el.val());
       return this.broker.onChangeTicketTemplate($el);
     },
     onClickStickyButton: function($el){
@@ -271,6 +289,10 @@ if (!window.app)
   };
 
   var ChooseAreaModule = {
+    pseudoNewTicket: function(ticket_id){
+      this.broker.models.source.sync("isAfterCreatedFirst", true);
+      this.broker.models.source.sync("createdTemplateId", ticket_id);
+    },
     onChangePreviewType: function($el){
       var m = this.broker.models.source;
       m.sync("previewType",$el.val());
@@ -298,48 +320,6 @@ if (!window.app)
       var e = _.find($select, function(e){ return !!$(e).val();});  //xxx:
       $(e).attr("checked","checked");
       return this.onChangeTemplateKind($(e));
-    }
-  };
-
-  var ListingAreaModule = {
-    receiveNewTicketsList: function(data){
-      var $wrapper;
-      if(this.broker.models.source.templateKind === "event"){
-          $wrapper = this.$el.find("ul#listing-ticket");
-      }else {
-          $wrapper = this.$el.find("ul#listing-template");
-      }
-      var html = listingTicketTemplate({"tickets": data.tickets});
-      $wrapper.html(html);
-    },
-    receiveChangeSelectedTemplate: function(name){
-      this.$el.find(".selected-template").text(name);
-    },
-    receiveChangeSelectedMapping: function(name, templateId){
-      this.broker.models.transcribe.sync("name", name);
-      this.broker.models.transcribe.sync("mapping_id", templateId);
-      this.$el.find(".selected-mapping").text(name);
-    },
-    onChangeSelectTemplate: function($el){
-      var text = $el.parent("li").find("a").text();
-      this.broker.models.transcribe.sync("base_template_id",$el.val());
-      this.receiveChangeSelectedTemplate(text);
-    },
-    onChangeTicketName: function($el){
-      this.broker.models.transcribe.sync("name", $el.val());
-    },
-    onSubmitTranscribe: function($form){
-      var url = $form.attr("action");
-      var params = this.broker.models.transcribe.collect();
-      return $.post(url, params)
-        .fail(
-          function(){ this.broker.message.errorMessage("error: url="+url);}.bind(this)
-        ).done(
-          function(data){
-            this.broker.message.successMessage("チケット券面を１つ転写しました");
-            this.broker.onAfterSubmitSuccess(data);
-          }.bind(this)
-        );
     }
   };
 
@@ -386,7 +366,8 @@ if (!window.app)
       return $.post(url, params).fail(
         function(){ this.broker.message.errorMessage("error: url="+url);}.bind(this)
       ).done(
-        function(data){ 
+        function(data){
+          this.broker.models.source.sync("ticketMapping", data.tickets);
           this.broker.onTicketTemplateSelectElementUpdate(selectContentTemplate({"iterable": data.iterable}));
           this.broker.onNewTicketsList(data);
         }.bind(this)
@@ -488,7 +469,6 @@ if (!window.app)
   app.ComponentAreaModule = ComponentAreaModule;
   app.SettingAreaModule = SettingAreaModule;
   app.SubmitAreaModule = SubmitAreaModule;
-  app.ListingAreaModule = ListingAreaModule;
   app.BrokerModule = BrokerModule;
 })(window.app);
 
