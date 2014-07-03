@@ -401,11 +401,14 @@ def get_auth_info(request):
     if principals:
         extra = get_extra_auth_info_from_principals(principals)
         retval.update(extra)
+        retval['user_id'] = user_id
         if extra['auth_type'] == 'rakuten':
             retval['claimed_id'] = user_id
-        else:
+        elif extra['auth_type']:
             retval['username'] = user_id
-        retval['user_id'] = user_id
+        else:
+            # auth_type が無いときは guest と見なす
+            retval['is_guest'] = True
     else:
         retval['is_guest'] = True
         retval['user_id'] = None
@@ -457,7 +460,7 @@ def get_or_create_user(info):
         # ゲストのときはユーザを作らない
         return None
 
-    logger.info('creating user account for %r' % d)
+    logger.info('creating user account for %r %r' % (d, info))
 
     user = u_models.User()
     membership = u_models.Membership.query.filter(
