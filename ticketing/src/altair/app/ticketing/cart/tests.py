@@ -1430,7 +1430,7 @@ class PaymentViewTests(unittest.TestCase):
         payment_delivery_method.payment_method = payment_method
         
         request.context.available_payment_delivery_method_pairs = lambda sales_segment: [payment_delivery_method]
-        request.context.authenticated_user = lambda: { 'claimed_id': 'http://ticketstar.example.com/user/1', 'organization_id': 1 }
+        request.context.authenticated_user = lambda: { 'auth_type': 'rakuten', 'claimed_id': 'http://ticketstar.example.com/user/1', 'organization_id': 1 }
         request.context.get_payment_delivery_method_pair = lambda: None
         request.context.sales_segment = testing.DummyModel()
         target = self._makeOne(request)
