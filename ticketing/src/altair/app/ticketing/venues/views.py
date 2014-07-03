@@ -2,6 +2,7 @@
 
 import os
 import csv
+from lxml import etree
 from datetime import datetime
 from urllib2 import urlopen
 import re
@@ -99,6 +100,79 @@ class VenueSiteDrawingHandler(object):
 def get_site_drawing(context, request):
     return request.registry.getUtility(IVenueSiteDrawingHandler)(context, request)
 
+@view_config(route_name="api.seat_info", request_method="GET", renderer="lxml", permission="event_viewer")
+def get_seat_info(context,request):
+    x_result = etree.Element("result")
+    
+    def c(parent, name, text):
+        e = etree.SubElement(parent, name)
+        e.text = text
+    
+    venue = request.context.venue
+    
+    x_venue = etree.Element("venue")
+    c(x_venue, "id", str(venue.id))
+    c(x_venue, "name", venue.name)
+    x_result.append(x_venue)
+    
+    row = aliased(SeatAttribute)
+    floor = aliased(SeatAttribute)
+    gate = aliased(SeatAttribute)
+    seats = DBSession.query(Seat, VenueArea, row.value, floor.value, gate.value)\
+        .filter_by(venue_id=venue.id)\
+        .join(VenueArea, Seat.areas)\
+        .outerjoin(row, and_(row.name=="row", row.seat_id==Seat.id))\
+        .outerjoin(floor, and_(floor.name=="floor", floor.seat_id==Seat.id))\
+        .outerjoin(gate, and_(gate.name=="gate", gate.seat_id==Seat.id))
+    
+    x_seats = etree.Element("seats")
+    x_result.append(x_seats)
+    for seat, venuearea, sa_row, sa_floor, sa_gate in seats:
+        x_seat = etree.Element("seat")
+        c(x_seat, "l0_id", seat.l0_id)
+        c(x_seat, "group_l0_id", seat.group_l0_id)
+        c(x_seat, "venue_area_name", venuearea.name)
+        c(x_seat, "row_l0_id", seat.row_l0_id)
+        c(x_seat, "seat_no", seat.seat_no)
+        c(x_seat, "name", seat.name)
+        c(x_seat, "sa_row", sa_row)
+        if sa_floor is not None:
+            c(x_seat, "sa_floor", sa_floor)
+        if sa_gate is not None:
+            c(x_seat, "sa_gate", sa_gate)
+        x_seats.append(x_seat)
+
+    return x_result
+
+@view_config(route_name="api.seat_priority", request_method="GET", renderer="lxml", permission="event_viewer")
+def get_seat_priority(context,request):
+    x_result = etree.Element("result")
+    
+    def c(parent, name, text):
+        e = etree.SubElement(parent, name)
+        e.text = text
+    
+    venue = request.context.venue
+    
+    x_venue = etree.Element("venue")
+    c(x_venue, "id", str(venue.id))
+    c(x_venue, "name", venue.name)
+    x_result.append(x_venue)
+    
+    seats = DBSession.query(Seat, SeatIndex.index)\
+        .filter_by(venue_id=venue.id)\
+        .join(SeatIndex.seat)
+
+    x_seats = etree.Element("seats")
+    x_result.append(x_seats)
+    for seat, index in seats:
+        x_seat = etree.Element("seat")
+        c(x_seat, "l0_id", seat.l0_id)
+        c(x_seat, "index", str(index))
+        c(x_seat, "name", seat.name)
+        x_seats.append(x_seat)
+
+    return x_result
 
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):
