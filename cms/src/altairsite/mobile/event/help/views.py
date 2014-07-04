@@ -17,7 +17,7 @@ def move_help(request):
     form = HelpForm()
 
     topic_searcher = get_topic_searcher(request, "topic")
-    tag = TopicTag.query.filter_by(label=u"質問").first()
+    tag = request.allowable(TopicTag).filter_by(label=u"質問").first()
 
     if tag is not None:
         form.helps.data = topic_searcher.query_publishing_topics(get_now(request), tag).all()
