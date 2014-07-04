@@ -16,7 +16,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from altair.app.ticketing.sej.scripts.sej_file_download import download, get_download_filename
 from altair.app.ticketing.sej.scripts.sej_parse_file import process_files
-from altair.app.ticketing.sej.models import _session, SejRefundEvent
+from altair.app.ticketing.sej.models import _session, SejRefundEvent, SejRefundTicket
 from altair.app.ticketing.sej.file import parsers, SejFileReader, SejRefundFileParser
 from altair.app.ticketing.sej.notification.models import SejNotificationType
 
@@ -41,9 +41,9 @@ def update_refund_status(in_filename, in_encoding='CP932'):
                     received_at
                     ))
                 try:
-                    refund_ticket = _session.query(SejRefundEvent).filter(
-                        SejRefundEvent.order_no==order_no,
-                        SejRefundEvent.ticket_barcode_number==ticket_barcode_number
+                    refund_ticket = _session.query(SejRefundTicket).filter(
+                        SejRefundTicket.order_no==order_no,
+                        SejRefundTicket.ticket_barcode_number==ticket_barcode_number
                         ).one()
                     refund_ticket.refunded_at = received_at
                     refund_ticket.status = refund_status
@@ -63,10 +63,15 @@ def main(argv=sys.argv):
     settings = env['registry'].settings
 
     logger.info(u'start sej_update_refund_status')
-    logger.info(u'dates={}'.format(args.date))
+    logger.info(u'date={}'.format(args.date))
+
+    try:
+        target_date = parsedate(args.date)
+    except ValueError as e:
+        logger.error(e.message)
+        return
 
     # 対象となる払戻イベントがあるならダウンロード
-    target_date = parsedate(args.date)
     refund_events = _session.query(SejRefundEvent).filter(SejRefundEvent.start_at<=target_date, target_date<=SejRefundEvent.end_at).all()
     logger.info(u'SejRefundEvent start_at<={0}<=and end_at -> {1} records'.format(target_date, len(refund_events)))
 
@@ -84,7 +89,7 @@ def main(argv=sys.argv):
                          settings.get('sej.api_key'),
                          settings.get('sej.inticket_api_url'),
                          SejNotificationType.FileInstantRefundInfo.v,
-                         args.date,
+                         [args.date],
                          settings.get('altair.sej.refund_result.data_dir'))
         logger.info(u'download file={}'.format(files))
 

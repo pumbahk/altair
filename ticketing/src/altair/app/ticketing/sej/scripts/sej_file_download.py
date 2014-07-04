@@ -6,6 +6,7 @@
 
 import os
 import sys
+import time
 import codecs
 import sqlahelper
 import logging
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_download_filename(date):
-    return '{}.dat'.format(date)
+    return '{0}_{1}.dat'.format(date, int(time.time()))
 
 def download(request, organization, shop_id, apikey, endpoint, type, dates, out_dir=None):
     if organization:
