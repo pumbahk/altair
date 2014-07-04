@@ -14,6 +14,7 @@ from altaircms.tag.models import HotWord
 from altaircms.topic.api import get_topic_searcher
 from altaircms.genre.searcher import GenreSearcher
 from altaircms.topic.models import TopicTag, PromotionTag, TopcontentTag
+from altairsite.separation import get_organization_from_request
 
 class GenreNode(object):
     def __init__(self, genre, children):
@@ -25,12 +26,21 @@ class CommonResource(object):
         self.request = request
 
     def get_top_render_param(self):
-        promotions = self.getInfo(kind="promotion", system_tag_id=None)[0:15]
-        topcontents = self.getInfo(kind="topcontent", system_tag_id=None)[0:5]
-        topics = self.getInfo(kind="topic", system_tag_id=None)[0:5]
-        hotwords = self.get_hotword()[0:5]
-        genretree = self.get_genre_tree(parent=None)
-        areas = self.get_area()
+        org = get_organization_from_request(self.request)
+        if org.short_name == 'RT':
+            promotions = self.getInfo(kind="promotion", system_tag_id=None)[0:15]
+            topcontents = self.getInfo(kind="topcontent", system_tag_id=None)[0:5]
+            topics = self.getInfo(kind="topic", system_tag_id=None)[0:5]
+            hotwords = self.get_hotword()[0:5]
+            genretree = self.get_genre_tree(parent=None)
+            areas = self.get_area()
+        else:
+            promotions = self.getInfo(kind="promotion", system_tag_id=None)
+            topcontents = self.getInfo(kind="topcontent", system_tag_id=None)
+            topics = self.getInfo(kind="topic", system_tag_id=None)
+            hotwords = self.get_hotword()
+            genretree = self.get_genre_tree(parent=None)
+            areas = self.get_area()
 
         return {
              'promotions':promotions
