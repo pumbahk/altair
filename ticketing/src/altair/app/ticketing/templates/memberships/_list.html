@@ -27,7 +27,7 @@
       %else:
       <td></td>
       %endif
-      <td>${membership.id}</a></td>
+      <td>${membership.memo if membership.memo else ''}</a></td>
       <td>
         <a class="btn btn-small" href="${request.route_path('memberships', action="edit",membership_id=membership.id)}">編集</a>
         <a class="btn btn-small btn-danger" href="javascript:popup_delete_modal(${membership.id});">削除</a>
