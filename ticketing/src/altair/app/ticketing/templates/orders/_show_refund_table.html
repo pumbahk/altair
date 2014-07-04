@@ -57,7 +57,7 @@
     <% refunded_tickets = sej_order.refunded_tickets %>
     <tr>
       <td colspan="2"><strong>コンビニ払戻実績合計</strong></td>
-      <td style="text-align: right;"><strong>${len(refunded_tickets)}</strong></td>
+      <td style="text-align: right;"><strong>${len(refunded_tickets)} 枚</strong></td>
       <td style="text-align: right;"><strong>${vh.price(sum([rt.refund_ticket_amount + rt.refund_other_amount for rt in refunded_tickets]))}</strong></td>
     </tr>
   </table>
