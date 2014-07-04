@@ -204,6 +204,14 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
             .filter_by(order_no=self.order_no, branch_no=(self.branch_no + 1)) \
             .one()
 
+    @property
+    def refund_tickets(self):
+        return object_session(self).query(SejRefundTicket).filter_by(order_no=self.order_no).all()
+
+    @property
+    def refunded_tickets(self):
+        return object_session(self).query(SejRefundTicket).filter(SejRefundTicket.order_no==self.order_no, SejRefundTicket.refunded_at!=None).all()
+
     def new_branch(self, payment_type=None, ticketing_start_at=None, ticketing_due_at=None, exchange_number=None, billing_number=None, processed_at=None):
         if payment_type is None: 
             payment_type = int(self.payment_type)
@@ -282,6 +290,7 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
     @classmethod
     def branches(cls, order_no, session=_session):
         return session.query(cls).filter_by(order_no=order_no).order_by(asc(cls.branch_no)).all()
+
 
 class SejTicket(Base, WithTimestamp, LogicallyDeleted):
     __tablename__           = 'SejTicket'
