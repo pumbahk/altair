@@ -194,13 +194,13 @@ def is_same_sej_order(sej_order, sej_args, ticket_dicts):
 def refresh_order(request, tenant, order, update_reason):
     sej_order = get_sej_order(order.order_no)
     if sej_order is None:
-        raise SejPluginFailure('no corresponding SejOrder found for order %s' % order.order_no)
+        raise SejPluginFailure('no corresponding SejOrder found', order_no=order.order_no, back_url=None)
 
     if int(sej_order.payment_type) == SejPaymentType.PrepaymentOnly.v and order.paid_at is not None:
-        raise SejPluginFailure('order %s is already paid' % order.order_no)
+        raise SejPluginFailure('already paid', order_no=order.order_no, back_url=None)
 
     if order.delivered_at is not None:
-        raise SejPluginFailure('order %s is already delivered' % order.order_no)
+        raise SejPluginFailure('already delivered', order_no=order.order_no, back_url=None)
 
     sej_args = build_sej_args(sej_order.payment_type, order, order.created_at)
     ticket_dicts = get_tickets(order)
@@ -283,7 +283,7 @@ def build_sej_args(payment_type, order_like, now):
         ticketing_fee       = order_like.delivery_fee
         payment_due_at      = get_payment_due_at(now, order_like)
     else:
-        raise SejPluginFailure('unknown payment type %s' % payment_type, order_link.order_no, None)
+        raise SejPluginFailure('unknown payment type %s' % payment_type, order_no=order_link.order_no, back_url=None)
 
     regrant_number_due_at = None
     performance = order_like.sales_segment.performance
@@ -434,7 +434,7 @@ class SejPaymentPlugin(object):
     @clear_exc
     def refresh(self, request, order):
         if order.paid_at is not None:
-            raise SejPluginFailure('order %s is already paid' % order.order_no)
+            raise SejPluginFailure('already paid', order_no=order.order_no, back_url=None)
 
         settings = request.registry.settings
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
@@ -448,7 +448,7 @@ class SejPaymentPlugin(object):
     @clear_exc
     def refund(self, request, order, refund_record):
         if order.paid_at is None:
-            raise SejPluginFailure(u'cannot refund an order that is not paid yet')
+            raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refund_order(
             request,
@@ -512,7 +512,7 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
     @clear_exc
     def refresh(self, request, order):
         if order.delivered_at is not None:
-            raise SejPluginFailure('order %s is already delivered' % order.order_no)
+            raise SejPluginFailure('already delivered', order_no=order.order_no, back_url=None)
 
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
@@ -525,7 +525,7 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
     @clear_exc
     def refund(self, request, order, refund_record):
         if order.paid_at is None:
-            raise SejPluginFailure(u'cannot refund an order that is not paid yet')
+            raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refund_order(
             request,
@@ -592,7 +592,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
     @clear_exc
     def refund(self, request, order, refund_record):
         if order.paid_at is None:
-            raise SejPluginFailure(u'cannot refund an order that is not paid yet')
+            raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refund_order(
             request,
