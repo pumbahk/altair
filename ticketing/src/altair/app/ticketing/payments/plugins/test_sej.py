@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import unittest
+import mock
 from pyramid import testing
 from decimal import Decimal
 from altair.app.ticketing.testing import _setup_db, _teardown_db
@@ -2046,10 +2047,14 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
             exchange_sheet_number=u'11111111',
             exchange_number=u'22222222',
             order_at=order.created_at,
-            ticketing_due_at=(order.created_at + timedelta(days=10)),
             regrant_number_due_at=(order.created_at + timedelta(days=5)),
             tickets=tickets
             )
+        if int(payment_type) != SejPaymentType.Prepayment.v:
+            retval.payment_due_at = order.created_at + timedelta(days=10)
+        if int(payment_type) != SejPaymentType.PrepaymentOnly.v:
+            retval.ticketing_start_at = order.created_at
+            retval.ticketing_due_at = order.created_at + timedelta(days=10)
         _session.add(retval)
         _session.commit()
         return retval
@@ -2120,19 +2125,49 @@ class PaymentPluginTest(PluginTestBase):
         order = Order(
             order_no='XX0000000000',
             organization_id=self.organization.id,
+            shipping_address=self._create_shipping_address(),
+            sales_segment=self.sales_segment,
             total_amount=100,
             system_fee=0,
             transaction_fee=0,
             delivery_fee=0,
+            special_fee=0,
             created_at=datetime.now(),
             paid_at=datetime.now()
             )
         sej_order = self._create_sej_order(order, SejPaymentType.PrepaymentOnly.v)
+        order.total_amount = 200
         with self.assertRaises(SejPluginFailure) as c:
             plugin.refresh(self.request, order)
         self.assertEqual(c.exception.message, 'already paid')
         self.assertEqual(c.exception.order_no, order.order_no)
 
+    @mock.patch('altair.app.ticketing.payments.plugins.sej.is_same_sej_order')
+    def test_refresh_success_already_paid_same_amount(self, is_same_sej_order):
+        from altair.app.ticketing.orders.models import Order
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from .sej import SejPluginFailure
+        plugin = self._makeOne()
+        order = Order(
+            order_no='XX0000000000',
+            organization_id=self.organization.id,
+            shipping_address=self._create_shipping_address(),
+            sales_segment=self.sales_segment,
+            total_amount=100,
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            special_fee=0,
+            created_at=datetime.now(),
+            paid_at=datetime.now()
+            )
+        sej_order = self._create_sej_order(order, SejPaymentType.PrepaymentOnly.v)
+        is_same_sej_order.return_value = True
+        try:
+            plugin.refresh(self.request, order)
+            self.assertTrue(True)
+        except Exception as e:
+            self.fail(e)
 
 
 class DeliveryPluginTest(PluginTestBase):
@@ -2207,6 +2242,8 @@ class DeliveryPluginTest(PluginTestBase):
         order = Order(
             order_no='XX0000000000',
             organization_id=self.organization.id,
+            shipping_address=self._create_shipping_address(),
+            sales_segment=self.sales_segment,
             total_amount=100,
             system_fee=0,
             transaction_fee=0,
@@ -2215,7 +2252,7 @@ class DeliveryPluginTest(PluginTestBase):
             created_at=datetime.now(),
             delivered_at=datetime.now()
             )
-        sej_order = self._create_sej_order(order, SejPaymentType.PrepaymentOnly.v)
+        sej_order = self._create_sej_order(order, SejPaymentType.Prepayment.v)
         with self.assertRaises(SejPluginFailure) as c:
             plugin.refresh(self.request, order)
         self.assertEqual(c.exception.message, 'already delivered')
