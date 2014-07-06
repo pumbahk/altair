@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from sqlalchemy.sql import func
 from altair.models import LogicallyDeleted, WithTimestamp, Identifier
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Date, ForeignKey, Enum, DECIMAL, Binary, UniqueConstraint
 from sqlalchemy.orm import relationship, join, column_property, mapper, backref, scoped_session, sessionmaker
@@ -106,7 +107,9 @@ class SejRefundTicket(Base, WithTimestamp, LogicallyDeleted):
     ticket_barcode_number       = Column(String(13))
     refund_ticket_amount        = Column(DECIMAL)
     refund_other_amount         = Column(DECIMAL)
-    sent_at = Column(DateTime, nullable=True)
+    sent_at                     = Column(DateTime, nullable=True)
+    refunded_at                 = Column(DateTime, nullable=True)
+    status                      = Column(Integer)
 
 
 class SejFile(Base, WithTimestamp, LogicallyDeleted):
@@ -202,6 +205,22 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
             .filter_by(order_no=self.order_no, branch_no=(self.branch_no + 1)) \
             .one()
 
+    @property
+    def refund_tickets(self):
+        return object_session(self).query(SejRefundTicket).filter_by(order_no=self.order_no).all()
+
+    @property
+    def refunded_tickets(self):
+        return object_session(self).query(SejRefundTicket).filter(SejRefundTicket.order_no==self.order_no, SejRefundTicket.refunded_at!=None).all()
+
+    @property
+    def refunded_total_amount(self):
+        return object_session(self).query(SejRefundTicket).filter(
+            SejRefundTicket.order_no==self.order_no,
+            SejRefundTicket.refunded_at!=None,
+            SejRefundTicket.status==1
+            ).with_entities(func.sum(SejRefundTicket.refund_ticket_amount + SejRefundTicket.refund_other_amount)).scalar() or 0
+
     def new_branch(self, payment_type=None, ticketing_start_at=None, ticketing_due_at=None, exchange_number=None, billing_number=None, processed_at=None):
         if payment_type is None: 
             payment_type = int(self.payment_type)
@@ -280,6 +299,7 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
     @classmethod
     def branches(cls, order_no, session=_session):
         return session.query(cls).filter_by(order_no=order_no).order_by(asc(cls.branch_no)).all()
+
 
 class SejTicket(Base, WithTimestamp, LogicallyDeleted):
     __tablename__           = 'SejTicket'
