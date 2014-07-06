@@ -27,7 +27,7 @@ class EasyCreateTicketTests(unittest.TestCase):
         from altair.app.ticketing.core.models import Ticket, TicketFormat
         return Ticket(
             id=base_template_id,
-            priced=True,
+            principal=True,
             always_reissueable=True,
             ticket_format_id=ticket_format_id,
             ticket_format=TicketFormat(id=ticket_format_id),
@@ -40,15 +40,17 @@ class EasyCreateTicketTests(unittest.TestCase):
 
     def _makeRequest(self, base_template_id, name="anything name", drawing="", fill_mapping="{}", cover_print=False):
         from altair.app.ticketing.testing import DummyRequest
-        return DummyRequest(POST=dict(
+        post = dict(
             base_template_id=base_template_id,
-            cover_print=cover_print,
             name=name,
             preview_type="default",
             template_kind="base",
             drawing=drawing,
             fill_mapping=fill_mapping
-        ))
+            )
+        if cover_print:
+            post['cover_print'] = 'y'
+        return DummyRequest(POST=post)
 
     def test_defaults_values__are_set__after_callFUT(self):
         template_id = 10
@@ -63,7 +65,7 @@ class EasyCreateTicketTests(unittest.TestCase):
         result = self._callFUT(form, base_ticket)
 
         self.assertTrue(result.always_reissueable)
-        self.assertTrue(result.priced)
+        self.assertTrue(result.principal)
         self.assertEqual(result.organization, event.organization)
 
     def test_form_values__are_set__after_callFUT(self):

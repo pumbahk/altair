@@ -87,11 +87,11 @@ def get_ticketing_start_at(current_date, order_like):
 def get_ticketing_due_at(current_date, order_like):
     return order_like.issuing_end_at
 
-def get_sej_ticket_data(product_item, svg, ticket_template_id=None):
+def get_sej_ticket_data(product_item, ticket_type, svg, ticket_template_id=None):
     assert ticket_template_id is not None
     performance = product_item.performance
     return dict(
-        ticket_type         = SejTicketType.TicketWithBarcode,
+        ticket_type         = ticket_type,
         event_name          = re.sub('[ \-\.,;\'\"]', '', han2zen(performance.event.title)[:20]),
         performance_name    = re.sub('[ \-\.,;\'\"]', '', han2zen(performance.name)[:20]),
         ticket_template_id  = ticket_template_id,
@@ -121,11 +121,15 @@ def get_tickets(order, ticket_template_id=None):
             bundle = ordered_product_item.product_item.ticket_bundle
             for seat, dict_ in dicts:
                 for ticket in applicable_tickets_iter(bundle):
+                    if ticket.principal:
+                        ticket_type = SejTicketType.TicketWithBarcode
+                    else:
+                        ticket_type = SejTicketType.ExtraTicket
                     ticket_format = ticket.ticket_format
                     transform = transform_matrix_from_ticket_format(ticket_format)
                     svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
                     ticket_template_id = get_ticket_template_id_from_ticket_format(ticket.ticket_format)
-                    ticket = get_sej_ticket_data(ordered_product_item.product_item, svg, ticket_template_id)
+                    ticket = get_sej_ticket_data(ordered_product_item.product_item, ticket_type, svg, ticket_template_id)
                     tickets.append(ticket)
     return tickets
 
@@ -138,11 +142,15 @@ def get_tickets_from_cart(cart, now):
             dicts = build_dicts_from_carted_product_item(carted_product_item, now=now, ticket_number_issuer=issuer)
             for (seat, dict_) in dicts:
                 for ticket in applicable_tickets_iter(bundle):
+                    if ticket.principal:
+                        ticket_type = SejTicketType.TicketWithBarcode
+                    else:
+                        ticket_type = SejTicketType.ExtraTicket
                     ticket_format = ticket.ticket_format
                     transform = transform_matrix_from_ticket_format(ticket_format)
                     svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
                     ticket_template_id = get_ticket_template_id_from_ticket_format(ticket.ticket_format)
-                    ticket = get_sej_ticket_data(carted_product_item.product_item, svg, ticket_template_id)
+                    ticket = get_sej_ticket_data(carted_product_item.product_item, ticket_type, svg, ticket_template_id)
                     tickets.append(ticket)
     return tickets
 

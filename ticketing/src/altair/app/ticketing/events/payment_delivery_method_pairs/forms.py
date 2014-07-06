@@ -1,141 +1,165 @@
 # -*- coding: utf-8 -*-
 
-from wtforms import Form
-from wtforms import TextField, SelectField, DecimalField, IntegerField, HiddenField
+from altair.formhelpers.form import OurForm
+from altair.formhelpers.fields import OurTextField, OurIntegerField, OurDecimalField, OurSelectField, OurBooleanField
+from wtforms import HiddenField
 from wtforms.validators import NumberRange, Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
 from altair.formhelpers import DateTimeField, Translations, Required, after1900
 from altair.app.ticketing.core.models import SalesSegment, PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair, FeeTypeEnum
 from altair.app.ticketing.payments.plugins import CHECKOUT_PAYMENT_PLUGIN_ID
+from altair.saannotation import get_annotations_for
 
-
-class PaymentDeliveryMethodPairForm(Form):
-
+class PaymentDeliveryMethodPairForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        self.organization_id = kwargs.pop('organization_id', None)
         super(PaymentDeliveryMethodPairForm, self).__init__(formdata, obj, prefix, **kwargs)
-        if 'organization_id' in kwargs:
-            self.payment_method_id.choices = [
-                (pm.id, pm.name) for pm in PaymentMethod.filter_by_organization_id(kwargs['organization_id'])
-            ]
-            self.delivery_method_id.choices = [
-                (dm.id, dm.name) for dm in DeliveryMethod.filter_by_organization_id(kwargs['organization_id'])
-            ]
 
     def _get_translations(self):
         return Translations()
 
     id = HiddenField(
         validators=[]
-    )
+        )
     sales_segment_group_id = HiddenField(
         validators=[Optional()]
-    )
-    system_fee = DecimalField(
-        label=u'システム利用料',
+        )
+    system_fee = OurDecimalField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.system_fee)['label'],
         places=2,
         default=0,
-        validators=[Required()],
-    )
-    system_fee_type = SelectField(
-        label=u'システム利用料計算単位',
+        validators=[Required()]
+        )
+    system_fee_type = OurSelectField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.system_fee_type)['label'],
         default=FeeTypeEnum.Once.v[0],
         validators=[Required(u'選択してください')],
         choices=[fee_type.v for fee_type in FeeTypeEnum],
         coerce=int
-    )
-    special_fee_name = TextField(
-        label=u'特別手数料名',
+        )
+    special_fee_name = OurTextField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.special_fee_name)['label'],
         validators=[
             Length(max=255, message=u'255文字以内で入力してください'),
-        ]
-    )
-    special_fee = DecimalField(
-        label=u'特別手数料',
+            ]
+        )
+    special_fee = OurDecimalField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.special_fee)['label'],
         places=2,
         default=0,
-        validators=[Required()],
-    )
-    special_fee_type = SelectField(
-        label=u'特別手数料計算単位',
+        validators=[Required()]
+        )
+    special_fee_type = OurSelectField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.special_fee_type)['label'],
         default=FeeTypeEnum.Once.v[0],
         validators=[Required(u'選択してください')],
         choices=[fee_type.v for fee_type in FeeTypeEnum],
         coerce=int
-    )
-    transaction_fee = DecimalField(
-        label=u'決済手数料',
+        )
+    transaction_fee = OurDecimalField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.transaction_fee)['label'],
         places=2,
         default=0,
-        validators=[Required()],
-    )
-    delivery_fee = DecimalField(
-        label=u'引取手数料',
+        validators=[Required()]
+        )
+    delivery_fee_per_order = OurDecimalField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.delivery_fee_per_order)['label'],
         places=2,
         default=0,
-        validators=[Required()],
-    )
-    discount = DecimalField(
-        label=u'割引額',
+        validators=[Required()]
+        )
+    delivery_fee_per_principal_ticket = OurDecimalField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.delivery_fee_per_principal_ticket)['label'],
         places=2,
         default=0,
-        validators=[Required()],
-    )
-    discount_unit = IntegerField(
-        label=u'割引数',
+        validators=[Required()]
+        )
+    delivery_fee_per_subticket = OurDecimalField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.delivery_fee_per_subticket)['label'],
+        places=2,
+        default=0,
+        validators=[Required()]
+        )
+    discount = OurDecimalField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.discount)['label'],
+        places=2,
+        default=0,
+        validators=[Required()]
+        )
+    discount_unit = OurIntegerField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.discount_unit)['label'],
         validators=[Optional()]
-    )
-    payment_method_id = SelectField(
-        label=u'決済方法',
+        )
+
+    def _payment_methods(field):
+        return [
+            (pm.id, pm.name)
+            for pm in PaymentMethod.filter_by_organization_id(field.form.organization_id)
+            ]
+    payment_method_id = OurSelectField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.payment_method_id)['label'],
         validators=[Required(u'選択してください')],
-        choices=[],
+        choices=_payment_methods,
         coerce=int
-    )
-    delivery_method_id = SelectField(
-        label=u'引取方法',
+        )
+
+    def _delivery_methods(field):
+        return [
+            (dm.id, dm.name)
+            for dm in DeliveryMethod.filter_by_organization_id(field.form.organization_id)
+            ]
+    delivery_method_id = OurSelectField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.delivery_method_id)['label'],
         validators=[Required(u'選択してください')],
-        choices=[],
+        choices=_delivery_methods,
         coerce=int
-    )
-    unavailable_period_days = IntegerField(
-        label=u'選択不可期間',
+        )
+
+    unavailable_period_days = OurIntegerField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.unavailable_period_days)['label'],
         validators=[
             Required(),
             NumberRange(min=0, message=u'有効な値を入力してください'),
         ],
         default=0,
     )
-    public = IntegerField(
-        label=u'一般公開',
-        default=0,
+
+    public = OurBooleanField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.public)['label'],
+        default=False,
         widget=CheckboxInput(),
-    )
-    payment_period_days = IntegerField(
-        label=u'コンビニ窓口での支払期限日数',
+        )
+
+    payment_period_days = OurIntegerField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.payment_period_days)['label'],
         validators=[
             Required(),
             NumberRange(min=1, max=364, message=u'有効な値を入力してください(1〜364)'),
-        ],
-        default=3,
-    )
-    issuing_interval_days = IntegerField(
-        label=u'コンビニ窓口での発券が可能となるまでの日数',
+            ],
+        default=3
+        )
+
+    issuing_interval_days = OurIntegerField(
+        label=get_annotations_for(PaymentDeliveryMethodPair.issuing_interval_days)['label'],
         validators=[
             Required(),
             NumberRange(min=0, message=u'有効な値を入力してください'),
-        ],
-        default=0,
-    )
+            ],
+        default=0
+        )
+
     issuing_start_at = DateTimeField(
-        label=u'コンビニ発券開始日時',
+        label=get_annotations_for(PaymentDeliveryMethodPair.issuing_start_at)['label'],
         validators=[Optional(), after1900],
-        format='%Y-%m-%d %H:%M',
-    )
+        format='%Y-%m-%d %H:%M'
+        )
+
     issuing_end_at = DateTimeField(
-        label=u'コンビニ発券期限日時',
+        label=get_annotations_for(PaymentDeliveryMethodPair.issuing_end_at)['label'],
         validators=[Optional(), after1900],
-        format='%Y-%m-%d %H:%M',
-    )
+        format='%Y-%m-%d %H:%M'
+        )
 
     def validate_payment_method_id(form, field):
         if field.data is None or form.delivery_method_id.data is None:

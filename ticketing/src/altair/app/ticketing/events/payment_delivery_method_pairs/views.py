@@ -81,10 +81,7 @@ class PaymentDeliveryMethodPairs(BaseView):
         if pdmp is None:
             return HTTPNotFound('payment_delivery_method_pair id %d is not found' % id)
 
-        f = PaymentDeliveryMethodPairForm(organization_id=self.context.user.organization_id)
-        f.process(record_to_multidict(pdmp))
-        f.payment_method_id.data = pdmp.payment_method_id
-        f.delivery_method_id.data = pdmp.delivery_method_id
+        f = PaymentDeliveryMethodPairForm(organization_id=self.context.user.organization_id, obj=pdmp)
         return {
             'form':f,
             'sales_segment_group':pdmp.sales_segment_group,

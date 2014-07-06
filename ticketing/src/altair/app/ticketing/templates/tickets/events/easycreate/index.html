@@ -141,7 +141,7 @@ ${getattr(form,attrname).label(class_="required control-label")}
       <div class="submit-area span5 hero-unit">
         <form method="POST" action="${request.route_path("events.tickets.easycreate",event_id=event.id)}">
         ${ch.form_item(upload_form.name)}
-        ${checkbox_group_list(upload_form, ["cover_print","priced","always_reissueable"])}
+        ${checkbox_group_list(upload_form, ["cover_print","principal","always_reissueable"])}
         ${ch.form_item(upload_form.drawing)}
         <input class="btn btn-success" type="submit" name="create" value="券面を作成"/>
         <input class="btn btn-primary" type="submit" name="update" value="券面を更新"/>
@@ -280,7 +280,7 @@ $(function(){
 
   app.submit.$el.find('input[name="name"]').on("change", function(e){app.submit.onChangeTicketName($(this));});
   app.submit.$el.find('input[name="cover_print"]').on("change", function(e){app.submit.onChangeIsPrintConver($(this));});
-  app.submit.$el.find('input[name="priced"]').on("change", function(e){app.submit.onChangeIsPriced($(this));});
+  app.submit.$el.find('input[name="principal"]').on("change", function(e){app.submit.onChangeIsPriced($(this));});
   app.submit.$el.find('input[name="always_reissueable"]').on("change", function(e){app.submit.onChangeIsAlwaysReissueable($(this));});
   app.submit.$el.find('input[name="create"]').on('click', function(){app.submit.onSubmitCreate($(this)); return false;})
   app.submit.$el.find('input[name="update"]').on('click', function(){app.submit.onSubmitUpdate($(this)); return false;})

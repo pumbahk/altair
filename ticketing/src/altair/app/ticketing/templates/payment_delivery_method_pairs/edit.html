@@ -24,12 +24,17 @@
 <script type="text/javascript">
   $(function() {
     <% from altair.app.ticketing.payments import plugins %>
-    var sej_payment_method_ids = ${[int(pm.id) for pm in payment_methods if pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID]};
-    var sej_delivery_method_ids = ${[int(dm.id) for dm in delivery_methods if dm.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID]};
+    var sej_payment_method_ids = ${HH.json([int(pm.id) for pm in payment_methods if pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID])|n};
+    var sej_delivery_method_ids = ${HH.json([int(dm.id) for dm in delivery_methods if dm.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID])|n};
     var sej_field = $('form').find('#sej_field');
     var issuing_interval_days = sej_field.find('input[id="issuing_interval_days"]');
     var issuing_interval_days_default = issuing_interval_days.val();
     var issuing_interval_days_changed = false;
+    var is_edit = ${HH.json(is_edit)|n};
+    var default_sytem_fee = ${system_fee or 0};
+    var sytem_fee_type = ${HH.json(system_fee_type or 0)|n};
+    var payment_method_data = ${HH.json(dict((int(pm.id), {'fee': unicode(pm.fee.quantize(0)), 'fee_type': pm.fee_type}) for pm in payment_methods))|n};
+    var delivery_method_data = ${HH.json(dict((int(dm.id), {'fee_per_order': unicode(dm.fee_per_order.quantize(0)), 'fee_per_principal_ticket': unicode(dm.fee_per_principal_ticket.quantize(0)), 'fee_per_subticket': unicode(dm.fee_per_subticket.quantize(0))}) for dm in delivery_methods))|n};
 
     issuing_interval_days.on('change', function () {
       issuing_interval_days_changed = true;
@@ -43,53 +48,53 @@
       if (payment_method_is_sej || delivery_method_id_sej) {
         sej_field.css('display', 'block');
         sej_field.find('input').removeAttr('disabled');
-% if not is_edit:
-        if (!payment_method_is_sej) {
-          if (!issuing_interval_days_changed) {
-            issuing_interval_days.val('1');
-          }
-        } else {
-          if (!issuing_interval_days_changed) {
-            issuing_interval_days.val(issuing_interval_days_default);
+        if (!is_edit) {
+          if (!payment_method_is_sej) {
+            if (!issuing_interval_days_changed) {
+              issuing_interval_days.val('1');
+            }
+          } else {
+            if (!issuing_interval_days_changed) {
+              issuing_interval_days.val(issuing_interval_days_default);
+            }
           }
         }
-% endif
       } else {
         sej_field.css('display', 'none');
         sej_field.find('input').attr('disabled', 'disabled');
       }
     };
 
-    var payment_method_data = ${dict([(int(pm.id), int(pm.fee)) for pm in payment_methods])};
-    var delivery_method_data = ${dict([(int(dm.id), int(dm.fee)) for dm in delivery_methods])};
 
     $('#payment_method_id').change(function() {
-      % if not is_edit:
-      var default_fee = payment_method_data[parseInt($(this).val())];
-      $('#transaction_fee').val(default_fee);
-      % endif
-      display_sej_field.call()
+      if (!is_edit) {
+        var pm = payment_method_data[parseInt($(this).val())];
+        $('#transaction_fee').val(pm['fee']);
+      }
+      display_sej_field.call();
     }).change();
     $('#delivery_method_id').change(function() {
-      % if not is_edit:
-      var default_fee = delivery_method_data[parseInt($(this).val())];
-      $('#delivery_fee').val(default_fee);
-      % endif
-      display_sej_field.call()
+      if (!is_edit) {
+        var dm = delivery_method_data[parseInt($(this).val())];
+        $('#delivery_fee_per_order').val(dm['fee_per_order']);
+        $('#delivery_fee_per_principal_ticket').val(dm['fee_per_principal_ticket']);
+        $('#delivery_fee_per_subticket').val(dm['fee_per_subticket']);
+      }
+      display_sej_field.call();
     }).change();
 
     $('#system_fee, #transaction_fee, #delivery_fee, #discount').load(function(){
-      % if not is_edit:
-        $('#system_fee').val(${system_fee});
+      if (!is_edit) {
+        $('#system_fee').val(default_system_fee);
         options = $('#system_fee_type option');
         for(ii=0; ii<options.length; ii++){
-            if(options[ii].value == "${system_fee_type}"){
+            if(options[ii].value == system_fee_type){
                 options[ii].selected = true;
             }else{ 
                 options[ii].selected = false;
            }
         }
-      % endif
+      }
       $(this).val(Math.floor($(this).val()));
     }).load();
 
@@ -139,7 +144,9 @@
       ${ch.form_item(form.special_fee_type, class_='span2')}
 
       ${ch.form_item(form.transaction_fee, class_='span2')}
-      ${ch.form_item(form.delivery_fee, class_='span2')}
+      ${ch.form_item(form.delivery_fee_per_order, class_='span2')}
+      ${ch.form_item(form.delivery_fee_per_principal_ticket, class_='span2')}
+      ${ch.form_item(form.delivery_fee_per_subticket, class_='span2')}
       ${ch.form_item(form.discount, class_='span2')}
       ${ch.form_item(form.discount_unit, class_='span2')}
       ${ch.form_item(form.public)}
