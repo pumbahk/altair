@@ -20,7 +20,7 @@ def move_information(request):
 
     #公演中止情報
     topic_searcher = get_topic_searcher(request, "topic")
-    tag = TopicTag.query.filter_by(label=u"公演中止情報").first()
+    tag = request.allowable(TopicTag).filter_by(label=u"公演中止情報").first()
     if tag is not None:
         form.informations.data = topic_searcher.query_publishing_topics(get_now(request), tag).all()
         log_info("move_information", "information get")
