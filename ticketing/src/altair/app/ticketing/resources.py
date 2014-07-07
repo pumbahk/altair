@@ -48,7 +48,10 @@ class TicketingAdminResource(object):
 
     @reify
     def organization(self):
-        return self.user and self.user.organization
+        if self.user:
+            self.user = DBSession.merge(self.user, load=False)
+            return self.user.organization
+        return None
 
     def __init__(self, request):
         self.request = request
