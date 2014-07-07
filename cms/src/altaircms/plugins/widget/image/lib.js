@@ -499,7 +499,8 @@ if(!widget){
                 width: root.find("#width").val() || "", 
                 height: root.find("#height").val() || "", 
                 alt: root.find("#alt").val() || "", 
-                align: root.find("#align").val() || ""
+                align: root.find("#align").val() || "",
+                disable_right_click: root.find("#disable_right_click").attr("checked")
                };
     };
 

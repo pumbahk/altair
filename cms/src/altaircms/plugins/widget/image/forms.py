@@ -24,6 +24,7 @@ class ImageInfoForm(Form):
     height = MaybeIntegerField(id="height", label=u"レンダリング時のheight", validators=[validators.Optional()])
     alt = fields.TextField(id="alt", label=u"レンダリング時のalt")
     align = AlignChoiceField(id="align", label="align")
+    disable_right_click = fields.BooleanField(label=u"右クリック禁止", id="disable_right_click")
 
     asset_id = fields.IntegerField(id="asset_id")
     attributes = fields.HiddenField()

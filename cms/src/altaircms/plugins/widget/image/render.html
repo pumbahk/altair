@@ -1,13 +1,21 @@
 ## 画像ウィジェット
+<%def name="render_image(request,widget)">
+  % if widget.disable_right_click:
+    <img ${widget.html_attributes|n}
+      src="${h.asset.rendering_object(request,widget.asset).filepath}" oncontextmenu='return false;'/>
+  % else:
+    <img ${widget.html_attributes|n}
+      src="${h.asset.rendering_object(request,widget.asset).filepath}" />
+  % endif
+</%def>
+
 <%def name="render(request,widget)">
 %if widget.href:
 <a href="${widget.href}">
-  <img ${widget.html_attributes|n}
-	 src="${h.asset.rendering_object(request,widget.asset).filepath}"/>
+  ${render_image(request, widget)}
 </a>
 %else:
-  <img ${widget.html_attributes|n}
-	 src="${h.asset.rendering_object(request,widget.asset).filepath}"/>
+  ${render_image(request, widget)}
 %endif
 ${widget.html_suffix}
 </%def>
