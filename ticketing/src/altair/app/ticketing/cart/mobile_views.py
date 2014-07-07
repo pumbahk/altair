@@ -47,6 +47,7 @@ class MobileIndexView(IndexViewMixin):
     """モバイルのパフォーマンス選択
     """
     def __init__(self, request):
+        IndexViewMixin.__init__(self)
         self.request = request
         self.context = request.context
         self.prepare()
