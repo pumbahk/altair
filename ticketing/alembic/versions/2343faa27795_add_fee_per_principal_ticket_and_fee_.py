@@ -1,14 +1,14 @@
 """add_fee_per_principal_ticket_and_fee_per_subticket_to_delivery_method_and_pdmp
 
 Revision ID: 2343faa27795
-Revises: 12b52292a9c0
+Revises: 48b361955fed
 Create Date: 2014-07-03 22:42:24.528955
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '2343faa27795'
-down_revision = '12b52292a9c0'
+down_revision = '48b361955fed'
 
 from alembic import op
 import sqlalchemy as sa
