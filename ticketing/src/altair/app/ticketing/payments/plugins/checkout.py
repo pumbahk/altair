@@ -239,7 +239,7 @@ class CheckoutCompleteView(object):
         service = api.get_checkout_service(self.request)
         checkout = service.save_order_complete(self.request.params)
 
-        cart = Cart.query.filter(Cart.id==checkout.orderCartId_old).first()
+        cart = Cart.query.filter(Cart.order_no == checkout.orderCartId).first()
         if self._validate(cart):
             logger.debug(u'checkout order_complete success (cart_id=%s)' % cart.id)
             result = api.RESULT_FLG_SUCCESS

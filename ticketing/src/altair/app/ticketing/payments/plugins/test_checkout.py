@@ -130,8 +130,7 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
         with mock.patch('altair.app.ticketing.checkout.api.datetime', new_callable=lambda:dummy_datetime):
             with mock.patch('altair.app.ticketing.payments.plugins.checkout.datetime', new_callable=lambda:dummy_datetime):
                 checkout = testing.DummyModel(
-                    orderCartId=u'XX0000000000',
-                    orderCartId_old=10
+                    orderCartId=u'XX0000000000'
                     )
                 dummy_response = '<dummy-response></dummy-response>'
                 checkout_class.return_value.create_order_complete_response_xml.return_value = dummy_response
