@@ -377,6 +377,12 @@ class TransformApplier(object):
                 elem.set(u'y', unicode(p1[1, 0]))
             else:
                 elem.set(u'transform', to_matrix_string(self.trans))
+                # ネストした要素には既にここで transform がかかっているはずなので適用したくない
+                self.trans = I
+                self._rotate = I
+                self._scale = I
+                self._skew = I
+                self._translate = I
         elif elem.tag == '{%s}flowRoot' % SVG_NAMESPACE:
             _rotate_scale_and_skew = self._rotate * self._scale * self._skew
             if not numpy.allclose(_rotate_scale_and_skew, I):
