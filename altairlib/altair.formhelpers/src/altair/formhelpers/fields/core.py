@@ -103,7 +103,15 @@ class OurFloatField(fields.FloatField, RendererMixin):
 @_gen_field_init
 class OurBooleanField(fields.BooleanField, RendererMixin):
     def process_formdata(self, valuelist):
-        self.data = any(len(v) > 0 for v in valuelist)
+        def b(v):
+            if isinstance(v, bool):
+                return v
+            else:
+                try:
+                    return len(v) > 0
+                except TypeError as e:
+                    return False
+        self.data = any(b(v) for v in valuelist)
 
 @_gen_field_init
 class OurDecimalField(fields.DecimalField, RendererMixin):
