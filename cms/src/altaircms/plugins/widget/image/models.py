@@ -63,3 +63,7 @@ class ImageWidget(Widget):
                     "request": bsettings.extra["request"]})
         bsettings.add(bname, renderHTML)
 
+    def clone(self, session, page=None): #todo:refactoring model#clone
+        instance = super(ImageWidget, self).clone(session, page=page)
+        instance.disable_right_click = self.disable_right_click or False
+        return instance
