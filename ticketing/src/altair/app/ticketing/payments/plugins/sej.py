@@ -124,7 +124,7 @@ def get_tickets(order, ticket_template_id=None):
                     if ticket.principal:
                         ticket_type = SejTicketType.TicketWithBarcode
                     else:
-                        ticket_type = SejTicketType.ExtraTicket
+                        ticket_type = SejTicketType.Ticket
                     ticket_format = ticket.ticket_format
                     transform = transform_matrix_from_ticket_format(ticket_format)
                     svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
@@ -145,7 +145,7 @@ def get_tickets_from_cart(cart, now):
                     if ticket.principal:
                         ticket_type = SejTicketType.TicketWithBarcode
                     else:
-                        ticket_type = SejTicketType.ExtraTicket
+                        ticket_type = SejTicketType.Ticket
                     ticket_format = ticket.ticket_format
                     transform = transform_matrix_from_ticket_format(ticket_format)
                     svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
