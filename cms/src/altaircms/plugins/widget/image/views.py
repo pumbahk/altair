@@ -30,6 +30,13 @@ class ImageWidgetView(object):
             params = form.data
             widget = self.context.get_widget(self.request.json_body.get("pk"))
             params["asset_id"] = form.data.get("asset_id")
+
+            disable_right_click = bool(self.request.json_body["data"].get("disable_right_click"))
+            if disable_right_click:
+                form.disable_right_click.data = 1
+            else:
+                form.disable_right_click.data = 0
+
             if widget and params.get("asset_id") is None:
                 params["asset_id"] = widget.asset_id
             widget = self.context.update_data(widget, **params)
