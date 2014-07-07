@@ -8,7 +8,7 @@ import os
 import sys
 import logging
 import argparse
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from dateutil.parser import parse as parsedate
 
 from pyramid.paster import bootstrap, setup_logging
@@ -53,7 +53,7 @@ def update_refund_status(in_filename, in_encoding='CP932'):
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('config', metavar='config', type=str, help='config file')
-    parser.add_argument('date', metavar='YYYYMMDD', type=str, help="target date")
+    parser.add_argument('-d', '--date', metavar='YYYYMMDD', type=str, help='target date')
 
     args = parser.parse_args()
 
@@ -63,10 +63,16 @@ def main(argv=sys.argv):
     settings = env['registry'].settings
 
     logger.info(u'start sej_update_refund_status')
-    logger.info(u'date={}'.format(args.date))
+
+    if args.date:
+        arg_date = args.date
+    else:
+        yesterday = date.today() - timedelta(1)
+        arg_date = yesterday.strftime('%Y%m%d')
+    logger.info(u'date={}'.format(arg_date))
 
     try:
-        target_date = parsedate(args.date)
+        target_date = parsedate(arg_date)
     except ValueError as e:
         logger.error(e.message)
         return
@@ -89,7 +95,7 @@ def main(argv=sys.argv):
                          settings.get('sej.api_key'),
                          settings.get('sej.inticket_api_url'),
                          SejNotificationType.FileInstantRefundInfo.v,
-                         [args.date],
+                         [arg_date],
                          settings.get('altair.sej.refund_result.data_dir'))
         logger.info(u'download file={}'.format(files))
 
