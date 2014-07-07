@@ -312,7 +312,7 @@ class ProductItems(BaseView):
         return {
             'form':f,
             'form_product':ProductAndProductItemForm(
-                record_to_multidict(product),
+                obj=product,
                 sales_segment=product.sales_segment),
             }
 
@@ -343,7 +343,7 @@ class ProductItems(BaseView):
             return {
                 'form':f,
                 'form_product':ProductAndProductItemForm(
-                    record_to_multidict(product),
+                    obj=product,
                     sales_segment=product.sales_segment),
             }
 
@@ -363,7 +363,7 @@ class ProductItems(BaseView):
         return {
             'form': f,
             'form_product':ProductAndProductItemForm(
-                record_to_multidict(product_item.product),
+                obj=product_item.product,
                 sales_segment=product_item.product.sales_segment),
         }
 
@@ -393,7 +393,7 @@ class ProductItems(BaseView):
             return {
                 'form':f,
                 'form_product':ProductAndProductItemForm(
-                    record_to_multidict(product_item.product),
+                    obj=product_item.product,
                     sales_segment=product_item.product.sales_segment),
             }
 
