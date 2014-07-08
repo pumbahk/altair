@@ -28,3 +28,19 @@ def with_provided_values_iterator(metadata_provider_registry, itr, locale="ja_JP
     attributes = sorted(attributes, key=lambda x: x[0])
     return attributes
 
+def with_provided_value(metadata_provider_registry, ordered_product_item_id, key, value, locale="ja_JP"):
+
+    try:
+        metadata = metadata_provider_registry.queryProviderByKey(key)[key]
+    except:
+        metadata = None
+    if metadata is not None:
+        display_name = metadata.get_display_name(locale)
+        coerced_value = metadata.get_coercer()(value)
+        show_only = True
+    else:
+        display_name = key
+        coerced_value = value
+        show_only = False
+    return (ordered_product_item_id, display_name, key, coerced_value, show_only)
+
