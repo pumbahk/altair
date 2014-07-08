@@ -185,8 +185,6 @@ def is_same_sej_order(sej_order, sej_args, ticket_dicts):
                 return False
             if ticket.ticket_template_id != d['ticket_template_id']:
                 return False
-            if ticket.ticket_template_id != d['ticket_template_id']:
-                return False
             if ticket.product_item_id != d['product_item_id']:
                 return False
             if ticket.ticket_data_xml != d['xml']:
