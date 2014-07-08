@@ -1313,7 +1313,7 @@ class OrderDetailView(BaseView):
 
     @view_config(route_name="orders.ordered_product_attribute_edit", request_method="POST")
     def edit_ordered_product_attribute(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
+        order_no = self.request.matchdict.get('order_no', None)
         ordered_product_item_id = self.request.POST.get('order_product_item_id', None)
         name = self.request.POST.get('name', None)
         value = self.request.POST.get('value', None)
@@ -1321,7 +1321,7 @@ class OrderDetailView(BaseView):
         if not ordered_product_item_id or not name or not value:
             return HTTPNotFound("ordered_product_attribute_edit failed.")
 
-        order = Order.query.filter(Order.id==order_id).first()
+        order = Order.query.filter(Order.order_no==order_no).first()
         new_order = Order.clone(order, deep=True)
 
         new_order_dict = {}
@@ -1339,7 +1339,7 @@ class OrderDetailView(BaseView):
         target_ordered_product_item.attributes[name] = value
 
         self.request.session.flash(u'購入商品属性を変更しました')
-        return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order_id) + "#ordered_product_attributes")
+        return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order.id) + "#ordered_product_attributes")
 
 
 
