@@ -143,7 +143,7 @@ ${ch.breadcrumbs(
             <tr>
               <th class="span3">${label} (${key})</th>
               <td class="span2">
-                <form action="${request.route_path('orders.ordered_product_attribute_edit', order_id=order.id)}" method="POST" style="display: inline">
+                <form action="${request.route_path('orders.ordered_product_attribute_edit', order_no=order.order_no)}" method="POST" style="display: inline">
                   <input type="hidden" id="order_product_item_id" name="order_product_item_id" value="${id}" />
                   <input type="hidden" id="name" name="name" value="${key}" />
                   <input type="text" id="value" name="value" value="${value}" />
