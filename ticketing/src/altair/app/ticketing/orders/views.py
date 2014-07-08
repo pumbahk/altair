@@ -711,7 +711,7 @@ class OrdersRefundIndexView(BaseView):
         refund_id = int(self.request.matchdict.get('refund_id', 0))
         refund = Refund.get(refund_id, organization_id=self.context.organization.id)
         if refund is None:
-            return HTTPNotFound()
+            return HTTPNotFound("")
 
         try:
             refund.delete()
@@ -1310,6 +1310,38 @@ class OrderDetailView(BaseView):
         order.save()
         self.request.session.flash(u'属性を変更しました')
         return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order_id)+"#order_attributes")
+
+    @view_config(route_name="orders.ordered_product_attribute_edit", request_method="POST")
+    def edit_ordered_product_attribute(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        ordered_product_item_id = self.request.POST.get('order_product_item_id', None)
+        name = self.request.POST.get('name', None)
+        value = self.request.POST.get('value', None)
+
+        if not ordered_product_item_id or not name or not value:
+            return HTTPNotFound("ordered_product_attribute_edit failed.")
+
+        order = Order.query.filter(Order.id==order_id).first()
+        new_order = Order.clone(order, deep=True)
+
+        new_order_dict = {}
+        for product in new_order.items:
+            for item in product.elements:
+                new_order_dict.update({(product.product_id, item.product_item_id) : item})
+
+        target_ordered_product_item = None
+        for product in order.items:
+            for item in product.elements:
+                if (product.product_id, item.product_item_id) in new_order_dict:
+                    target_ordered_product_item = new_order_dict[(product.product_id, item.product_item_id)]
+
+        assert target_ordered_product_item is not None
+        target_ordered_product_item.attributes[name] = value
+
+        self.request.session.flash(u'購入商品属性を変更しました')
+        return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order_id) + "#ordered_product_attributes")
+
+
 
     @view_config(route_name="orders.memo_on_order", request_method="POST", renderer="json")
     def edit_memo_on_order(self):
