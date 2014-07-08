@@ -1325,18 +1325,21 @@ class OrderDetailView(BaseView):
         new_order = Order.clone(order, deep=True)
 
         new_order_dict = {}
-        for product in new_order.ordered_products:
-            for item in product.ordered_product_items:
-                new_order_dict.update({item.product_item_id : item})
+        for product in new_order.items:
+            for item in product.elements:
+                key = "product-" + str(product.product_id) + "product-item-" + str(item.product_item_id)
+                new_order_dict.update({key : item})
 
-        old_attribute = OrderedProductAttribute.query.\
-            filter(OrderedProductAttribute.ordered_product_item_id==ordered_product_item_id). \
-            filter(OrderedProductAttribute.name==name).first()
+        target_ordered_product_item = None
+        for product in order.items:
+            for item in product.elements:
+                key = "product-" + str(product.product_id) + "product-item-" + str(item.product_item_id)
+                if key in new_order_dict:
+                    target_ordered_product_item = new_order_dict[key]
 
-        if not old_attribute.ordered_product_item.product_item_id in new_order_dict:
+        if not target_ordered_product_item:
             return HTTPNotFound("ordered_product_attribute_edit failed.can't find new_ordered_product_item")
 
-        target_ordered_product_item = new_order_dict[old_attribute.ordered_product_item.product_item_id]
         target_ordered_product_item.attributes[name] = value
 
         self.request.session.flash(u'購入商品属性を変更しました')
