@@ -1879,6 +1879,201 @@ class BuildSejArgsTest(unittest.TestCase):
                 else:
                     self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
 
+
+class IsSameSejOrderTest(unittest.TestCase):
+    def _callFUT(self, *args, **kwargs):
+        from .sej import is_same_sej_order
+        return is_same_sej_order(*args, **kwargs)
+
+    def test_same_cash_on_delivery(self):
+        from altair.app.ticketing.sej.models import SejPaymentType, SejTicketType
+        sej_order = testing.DummyModel(
+            payment_type=SejPaymentType.CashOnDelivery.v,
+            order_no='XX0000000000',
+            user_name='user_name',
+            user_name_kana='user_name_kana',
+            tel='0300000000',
+            zip_code='0000000',
+            email='test@example.com',
+            total_price=12000,
+            ticket_price=10000,
+            commission_fee=1000,
+            ticketing_fee=1000,
+            payment_due_at=None,
+            ticketing_start_at=datetime(2014, 1, 1, 0, 0, 0),
+            ticketing_due_at=datetime(2014, 1, 8, 0, 0, 0),
+            regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0),
+            tickets=[
+                testing.DummyModel(
+                    ticket_idx=0,
+                    ticket_type=SejTicketType.TicketWithBarcode.v,
+                    event_name='event_name',
+                    performance_name='performance_name',
+                    performance_datetime=datetime(2014, 8, 1, 0, 0, 0),
+                    ticket_template_id=1,
+                    product_item_id=1,
+                    ticket_data_xml='<xml />'
+                    )
+                ]
+            )
+        args_dict = dict(
+            payment_type=SejPaymentType.CashOnDelivery.v,
+            order_no='XX0000000000',
+            user_name='user_name',
+            user_name_kana='user_name_kana',
+            tel='0300000000',
+            zip_code='0000000',
+            email='test@example.com',
+            total_price=12000,
+            ticket_price=10000,
+            commission_fee=1000,
+            ticketing_fee=1000,
+            payment_due_at=None,
+            ticketing_start_at=datetime(2014, 1, 1, 0, 0, 0),
+            ticketing_due_at=datetime(2014, 1, 8, 0, 0, 0),
+            regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0)
+            )
+        ticket_dicts = [
+            dict(
+                ticket_idx=0,
+                ticket_type=SejTicketType.TicketWithBarcode.v,
+                event_name='event_name',
+                performance_name='performance_name',
+                performance_datetime=datetime(2014, 8, 1, 0, 0, 0),
+                ticket_template_id=1,
+                product_item_id=1,
+                xml='<xml />'
+                )
+            ]
+        self.assertTrue(self._callFUT(sej_order, args_dict, ticket_dicts))
+
+    def test_different_cash_on_delivery(self):
+        from altair.app.ticketing.sej.models import SejPaymentType, SejTicketType
+
+        for k in ['payment_type', 'order_no', 'user_name', 'user_name_kana', 'tel', 'zip_code', 'email', 'total_price', 'ticket_price', 'commission_fee', 'ticketing_fee', 'payment_due_at', 'ticketing_start_at', 'ticketing_due_at', 'regrant_number_due_at']:
+            sej_order = testing.DummyModel(
+                payment_type=SejPaymentType.CashOnDelivery.v,
+                order_no='XX0000000000',
+                user_name='user_name',
+                user_name_kana='user_name_kana',
+                tel='0300000000',
+                zip_code='0000000',
+                email='test@example.com',
+                total_price=12000,
+                ticket_price=10000,
+                commission_fee=1000,
+                ticketing_fee=1000,
+                payment_due_at=datetime(2014, 1, 2, 0, 0, 0),
+                ticketing_start_at=datetime(2014, 1, 1, 0, 0, 0),
+                ticketing_due_at=datetime(2014, 1, 8, 0, 0, 0),
+                regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0),
+                tickets=[
+                    testing.DummyModel(
+                        ticket_idx=0,
+                        ticket_type=SejTicketType.TicketWithBarcode.v,
+                        event_name='event_name',
+                        performance_name='performance_name',
+                        performance_datetime=datetime(2014, 8, 1, 0, 0, 0),
+                        ticket_template_id=1,
+                        product_item_id=1,
+                        ticket_data_xml='<xml />'
+                        )
+                    ]
+                )
+            args_dict = dict(
+                payment_type=SejPaymentType.CashOnDelivery.v,
+                order_no='XX0000000000',
+                user_name='user_name',
+                user_name_kana='user_name_kana',
+                tel='0300000000',
+                zip_code='0000000',
+                email='test@example.com',
+                total_price=12000,
+                ticket_price=10000,
+                commission_fee=1000,
+                ticketing_fee=1000,
+                payment_due_at=datetime(2014, 1, 2, 0, 0, 0),
+                ticketing_start_at=datetime(2014, 1, 1, 0, 0, 0),
+                ticketing_due_at=datetime(2014, 1, 8, 0, 0, 0),
+                regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0)
+                )
+            ticket_dicts = [
+                dict(
+                    ticket_idx=0,
+                    ticket_type=SejTicketType.TicketWithBarcode.v,
+                    event_name='event_name',
+                    performance_name='performance_name',
+                    performance_datetime=datetime(2014, 8, 1, 0, 0, 0),
+                    ticket_template_id=1,
+                    product_item_id=1,
+                    xml='<xml />'
+                    )
+                ]
+            v = getattr(sej_order, k)
+            if v is None:
+                continue
+            elif isinstance(v, basestring):
+                v += '*'
+            elif isinstance(v, datetime):
+                v += timedelta(days=1)
+            elif isinstance(v, (int, long, Decimal)):
+                v += 1
+            setattr(sej_order, k, v)
+            self.assertFalse(self._callFUT(sej_order, args_dict, ticket_dicts))
+
+
+    def test_same_prepayment_only(self):
+        from altair.app.ticketing.sej.models import SejPaymentType, SejTicketType
+        sej_order = testing.DummyModel(
+            payment_type=SejPaymentType.PrepaymentOnly.v,
+            order_no='XX0000000000',
+            user_name='user_name',
+            user_name_kana='user_name_kana',
+            tel='0300000000',
+            zip_code='0000000',
+            email='test@example.com',
+            total_price=12000,
+            ticket_price=10000,
+            commission_fee=1000,
+            ticketing_fee=1000,
+            payment_due_at=datetime(2014, 1, 1, 0, 0, 0),
+            ticketing_start_at=None,
+            ticketing_due_at=None,
+            regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0),
+            tickets=[]
+            )
+        args_dict = dict(
+            payment_type=SejPaymentType.PrepaymentOnly.v,
+            order_no='XX0000000000',
+            user_name='user_name',
+            user_name_kana='user_name_kana',
+            tel='0300000000',
+            zip_code='0000000',
+            email='test@example.com',
+            total_price=12000,
+            ticket_price=10000,
+            commission_fee=1000,
+            ticketing_fee=1000,
+            payment_due_at=datetime(2014, 1, 1, 0, 0, 0),
+            ticketing_start_at=None,
+            ticketing_due_at=None,
+            regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0)
+            )
+        ticket_dicts = [
+            dict(
+                ticket_idx=0,
+                ticket_type=SejTicketType.TicketWithBarcode.v,
+                event_name='event_name',
+                performance_name='performance_name',
+                performance_datetime=datetime(2014, 8, 1, 0, 0, 0),
+                ticket_template_id=1,
+                product_item_id=1,
+                xml='<xml />'
+                )
+            ]
+        self.assertTrue(self._callFUT(sej_order, args_dict, ticket_dicts))
+
+
 class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
     def setUp(self):
         from datetime import datetime
