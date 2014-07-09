@@ -19,8 +19,8 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    op.add_column('SejTicketTemplate', sa.Column('notation_version', sa.Integer(), nullable=False))
-    op.execute('''UPDATE SejTicketTemplate SET version=1 WHERE SejTicketTemplate.template_id='TTTS000001';''')
+    op.add_column('SejTicketTemplateFile', sa.Column('notation_version', sa.Integer(), nullable=False))
+    op.execute('''UPDATE SejTicketTemplateFile SET notation_version=1 WHERE SejTicketTemplateFile.template_id='TTTS000001';''')
 
 def downgrade():
     op.drop_column('SejTicketTemplate', 'notation_version')

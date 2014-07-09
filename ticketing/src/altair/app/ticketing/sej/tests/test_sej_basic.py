@@ -499,7 +499,7 @@ class SejTest(unittest.TestCase):
         from altair.app.ticketing.sej.ticket import package_ticket_template_to_zip
         import sqlahelper
 
-        st = SejTicketTemplateFile()
+        st = SejTicketTemplateFile(notation_version=1)
 
         st.status = '1'
         st.template_id = u'TTTS000001'
@@ -526,7 +526,7 @@ class SejTest(unittest.TestCase):
         from altair.app.ticketing.sej.ticket import package_ticket_template_to_zip
         import sqlahelper
 
-        st = SejTicketTemplateFile()
+        st = SejTicketTemplateFile(notation_version=1)
 
         st.status = '1'
         st.template_id = u'TTTS000001'

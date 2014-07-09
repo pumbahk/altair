@@ -2158,8 +2158,10 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
 
     def _setup_fixture(self):
         from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment
-        from altair.app.ticketing.sej.models import SejPaymentType
+        from altair.app.ticketing.sej.models import SejPaymentType, SejTicketTemplateFile, _session
         from altair.app.ticketing.core.models import SejTenant
+        _session.add(SejTicketTemplateFile(template_id='TTTS000001', notation_version=2))
+        _session.commit()
         self.session.add(SejTenant(organization_id=1L))
         self.stock_types = self._create_stock_types(1)
         self.stock_types[0].quantity_only = False

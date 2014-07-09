@@ -145,9 +145,10 @@ from altair.app.ticketing.tickets.cleaner import cleanup_svg
 from altair.app.ticketing.tickets.convert import convert_svg
 
 class SEJTemplateTransformer(object):
-    def __init__(self, svgio=None, global_transform=None, encoding="Shift_JIS"):
+    def __init__(self, svgio=None, global_transform=None, notation_version=1, encoding="Shift_JIS"):
         self.svgio = svgio
         self.global_transform = global_transform
+        self.notation_version = notation_version
         self.encoding = encoding
 
         self.height = None #uggg
@@ -168,7 +169,7 @@ class SEJTemplateTransformer(object):
             self._detect_size(xmltree.getroot())
 
             cleanup_svg(xmltree)
-            converted = convert_svg(xmltree, self.global_transform)
+            converted = convert_svg(xmltree, global_transform=self.global_transform, notation_version=self.notation_version)
 
             pat = r'''encoding=(["'])Windows-31J\1'''
             rep = 'encoding="%s"'% self.encoding
