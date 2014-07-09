@@ -11,6 +11,7 @@ def setUpModule():
     from altair.app.ticketing.testing import _setup_db
     _setup_db(modules=[
             "altair.app.ticketing.models",
+            "altair.app.ticketing.orders.models",
             "altair.app.ticketing.core.models",
             "altair.app.ticketing.cart.models",
             ])
@@ -140,17 +141,18 @@ class CreateMailFromFakeOrderTests(unittest.TestCase):
         mutil.build_message(request, order).body
 
     def test_lot_entry(self):
-        from altair.app.ticketing.core.models import Organization, MailTypeEnum, OrganizationSetting
+        from altair.app.ticketing.core.models import Organization, MailTypeEnum, OrganizationSetting, Performance, Event, Venue
         from altair.app.ticketing.mails.fake import FakeLotEntryElectedWishPairFactory
         from altair.app.ticketing.mails.api import get_mail_utility
 
         org = Organization()
         org.settings.append(OrganizationSetting(name="default"))
         org.extra_mail_info=None
+        performance = Performance(event=Event(title=u"example"), start_on=datetime(2014, 1, 1, 0, 0, 0), end_on=datetime(2014, 1, 2, 23, 59, 59), venue=Venue(name=u'テスト会場'))
         request = testing.DummyRequest()
         request.context = testing.DummyResource(organization=org)
 
-        subject = FakeLotEntryElectedWishPairFactory(object())(request, { "organization": org })
+        subject = FakeLotEntryElectedWishPairFactory(object())(request, { "organization": org, "performance": performance })
 
         mutil = get_mail_utility(request, MailTypeEnum.LotsAcceptedMail)
         mutil.build_message(request, subject).body
