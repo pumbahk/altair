@@ -46,7 +46,7 @@ ${get("order_datetime").body}
 %for wish in lot_entry.wishes:
 
 【第${wish.wish_order+1}希望】
-公演日：${h.performance_date(wish.performance)}
+公演日：${h.performance_datetime(wish.performance)}
 会場：${wish.performance.venue.name}
 申込内容
 %for product in wish.products:
