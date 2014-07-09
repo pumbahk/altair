@@ -2108,8 +2108,8 @@ class OrdersEditAPIView(BaseView):
         try:
             order_data['transaction_fee'] = int(sales_segment.get_transaction_fee(order.payment_delivery_pair, products_for_fee_calculator))
             order_data['delivery_fee'] = int(sales_segment.get_delivery_fee(order.payment_delivery_pair, products_for_fee_calculator))
-            order_data['system_fee'] = int(order.payment_delivery_pair.system_fee)
-            order_data['special_fee'] = int(order.payment_delivery_pair.special_fee)
+            order_data['system_fee'] = int(sales_segment.get_system_fee(order.payment_delivery_pair, products_for_fee_calculator))
+            order_data['special_fee'] = int(sales_segment.get_special_fee(order.payment_delivery_pair, products_for_fee_calculator))
             order_data['total_amount'] = int(sales_segment.get_amount(order.payment_delivery_pair, products_for_get_amount))
         except Exception:
             logger.exception('fee calculation error')

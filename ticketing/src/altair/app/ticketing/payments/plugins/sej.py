@@ -165,42 +165,40 @@ SEJ_ORDER_ATTRS = [
     ]
 
 def is_same_sej_order(sej_order, sej_args, ticket_dicts):
-    if not all(getattr(sej_order, k) == sej_args[k] for k in SEJ_ORDER_ATTRS):
-        return False
+    for k in SEJ_ORDER_ATTRS:
+        v1 = getattr(sej_order, k)
+        v2 = sej_args[k]
+        if v1 != v2:
+            logger.debug('%s differs (%r != %r)' % (k, v1, v2))
+            return False
 
-    tickets = sej_order.tickets
-    if len(ticket_dicts) != len(tickets):
-        return False 
+    if int(sej_order.payment_type) != SejPaymentType.PrepaymentOnly.v:
+        # 発券が伴う場合は ticket も比較する
+        tickets = sej_order.tickets
+        if len(ticket_dicts) != len(tickets):
+            return False 
 
-    for ticket, d in zip(sorted(tickets, key=lambda ticket: ticket.ticket_idx), ticket_dicts):
-        if int(ticket.ticket_type) != int(d['ticket_type']):
-            return False
-        if ticket.event_name != d['event_name']:
-            return False
-        if ticket.performance_name != d['performance_name']:
-            return False
-        if ticket.performance_datetime != d['performance_datetime']:
-            return False
-        if ticket.ticket_template_id != d['ticket_template_id']:
-            return False
-        if ticket.ticket_template_id != d['ticket_template_id']:
-            return False
-        if ticket.product_item_id != d['product_item_id']:
-            return False
-        if ticket.ticket_data_xml != d['xml']:
-            return False
+        for ticket, d in zip(sorted(tickets, key=lambda ticket: ticket.ticket_idx), ticket_dicts):
+            if int(ticket.ticket_type) != int(d['ticket_type']):
+                return False
+            if ticket.event_name != d['event_name']:
+                return False
+            if ticket.performance_name != d['performance_name']:
+                return False
+            if ticket.performance_datetime != d['performance_datetime']:
+                return False
+            if ticket.ticket_template_id != d['ticket_template_id']:
+                return False
+            if ticket.product_item_id != d['product_item_id']:
+                return False
+            if ticket.ticket_data_xml != d['xml']:
+                return False
     return True
 
 def refresh_order(request, tenant, order, update_reason):
     sej_order = get_sej_order(order.order_no)
     if sej_order is None:
-        raise SejPluginFailure('no corresponding SejOrder found for order %s' % order.order_no)
-
-    if int(sej_order.payment_type) == SejPaymentType.PrepaymentOnly.v and order.paid_at is not None:
-        raise SejPluginFailure('order %s is already paid' % order.order_no)
-
-    if order.delivered_at is not None:
-        raise SejPluginFailure('order %s is already delivered' % order.order_no)
+        raise SejPluginFailure('no corresponding SejOrder found', order_no=order.order_no, back_url=None)
 
     sej_args = build_sej_args(sej_order.payment_type, order, order.created_at)
     ticket_dicts = get_tickets(order)
@@ -208,6 +206,13 @@ def refresh_order(request, tenant, order, update_reason):
     if is_same_sej_order(sej_order, sej_args, ticket_dicts):
         logger.info('the resulting order is the same as the old one; will do nothing')
         return
+
+    if int(sej_order.payment_type) == SejPaymentType.PrepaymentOnly.v:
+        if order.paid_at is not None:
+            raise SejPluginFailure('already paid', order_no=order.order_no, back_url=None)
+    else:
+        if order.delivered_at is not None:
+            raise SejPluginFailure('already delivered', order_no=order.order_no, back_url=None)
 
     new_sej_order = sej_order.new_branch()
     new_sej_order.tickets = build_sej_tickets_from_dicts(
@@ -283,7 +288,7 @@ def build_sej_args(payment_type, order_like, now):
         ticketing_fee       = order_like.delivery_fee
         payment_due_at      = get_payment_due_at(now, order_like)
     else:
-        raise SejPluginFailure('unknown payment type %s' % payment_type, order_link.order_no, None)
+        raise SejPluginFailure('unknown payment type %s' % payment_type, order_no=order_link.order_no, back_url=None)
 
     regrant_number_due_at = None
     performance = order_like.sales_segment.performance
@@ -433,9 +438,6 @@ class SejPaymentPlugin(object):
 
     @clear_exc
     def refresh(self, request, order):
-        if order.paid_at is not None:
-            raise SejPluginFailure('order %s is already paid' % order.order_no)
-
         settings = request.registry.settings
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
@@ -448,7 +450,7 @@ class SejPaymentPlugin(object):
     @clear_exc
     def refund(self, request, order, refund_record):
         if order.paid_at is None:
-            raise SejPluginFailure(u'cannot refund an order that is not paid yet')
+            raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refund_order(
             request,
@@ -511,9 +513,6 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
 
     @clear_exc
     def refresh(self, request, order):
-        if order.delivered_at is not None:
-            raise SejPluginFailure('order %s is already delivered' % order.order_no)
-
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
             request,
@@ -525,7 +524,7 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
     @clear_exc
     def refund(self, request, order, refund_record):
         if order.paid_at is None:
-            raise SejPluginFailure(u'cannot refund an order that is not paid yet')
+            raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refund_order(
             request,
@@ -592,7 +591,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
     @clear_exc
     def refund(self, request, order, refund_record):
         if order.paid_at is None:
-            raise SejPluginFailure(u'cannot refund an order that is not paid yet')
+            raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refund_order(
             request,
