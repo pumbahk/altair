@@ -1890,6 +1890,7 @@ class OrdersEditAPIView(BaseView):
         return Order.filter_by(organization_id=self.context.organization.id)\
             .filter(Order.performance_id==performance_id)\
             .filter(Order.canceled_at==None)\
+            .filter(Order.released_at==None)\
             .join(Order.items)\
             .join(OrderedProduct.elements)\
             .join(OrderedProductItem.seats)\
