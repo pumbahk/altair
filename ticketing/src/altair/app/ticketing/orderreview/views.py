@@ -192,19 +192,19 @@ class MypageLoginView(object):
     @view_config(request_method="GET", route_name='order_review.form', renderer='json', http_cache=60,
                  custom_predicates=(is_mypage_organization, ))
     def login_form(self):
-        membership = self.context.get_membership().name
+        membership = self.context.membership.name
         self.select_renderer(membership)
+        memberships = self.context.memberships
 
         # このformは、モバイルのためだけに必要
         form = schemas.OrderReviewSchema(self.request.params)
-        return dict(username='', form=form)
+        return dict(username='', form=form, memberships=memberships)
 
     @view_config(request_method="POST", route_name='order_review.form', renderer='string',
                  custom_predicates=(is_mypage_organization, ))
     def login(self):
         who_api = get_who_api(self.request, name="fc_auth")
-
-        authmembership = membership = self.context.get_membership().name
+        authmembership = membership = self.context.membership.name
         if self.request.params.get('membership', None):
             authmembership = self.request.params.get('membership', None)
         username = self.request.params['username']
@@ -231,7 +231,8 @@ class MypageLoginView(object):
         if authenticated is None:
             self.select_renderer(membership)
             return {'username': username,
-                    'message': u'IDまたはパスワードが一致しません'}
+                    'message': u'IDまたはパスワードが一致しません',
+                    'memberships': self.context.memberships}
 
         res = HTTPFound(location=self.request.route_path("mypage.show"), headers=headers)
         return res

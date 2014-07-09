@@ -211,7 +211,7 @@ class Membership(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     #sales_segments = lambda:relationship('SalesSegment', secondary=Membership_SalesSegment.__table__, backref='memberships')
     status = Column(Integer)
 
-    memo = Column(Text, default="{}")
+    memo = Column(Text)
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref='memberships')
 
