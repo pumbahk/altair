@@ -49,9 +49,12 @@
       </table>
 
       <input type="submit" class="btn" value="検索" >
-      <a href="${request.route_path('sales_reports.index')}">
-          <input type="button" class="btn" value="クリア" />
-      </a>
+      <input type="button" class="btn limitation-form-clear" value="クリア" />
+      <script type="text/javascript">
+        $('.limitation-form-clear').click(function(){
+          reset_form($('form#limitation'));
+        });
+      </script>
     </div>
     <input name="event_id" type="hidden" value="${event_id}">
     <input name="performance_id" type="hidden" value="${performance_id}">

@@ -606,7 +606,9 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
             special_fee_name=u'特別手数料',
             special_fee_type=FeeTypeEnum.PerUnit.v[0],            
             transaction_fee=200, 
-            delivery_fee=300, 
+            delivery_fee_per_order=0,
+            delivery_fee_per_principal_ticket=300,
+            delivery_fee_per_subticket=0
             )
         data = {}
         with nested(mock.patch.object(target, "build_dict_from_payment_method"), 
@@ -652,10 +654,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
     def test_build_delivery_method(self):
         from altair.app.ticketing.core.models import DeliveryMethod
         target = self._makeOne()
-        model = DeliveryMethod(name=":name", 
-                              fee=300, 
-                              fee_type=1, 
-                              delivery_plugin_id=2)
+        model = DeliveryMethod(name=":name", fee_per_order=0, fee_per_principal_ticket=300, fee_per_subticket=0, delivery_plugin_id=2)
         data = {}
         result = target.build_dict_from_delivery_method(model, retval=data)
         
@@ -751,7 +750,9 @@ def setup_product_item(quantity, quantity_only, organization):
     payment_delivery_method_pair = PaymentDeliveryMethodPair(
         system_fee=100,
         transaction_fee=200,
-        delivery_fee=300,
+        delivery_fee_per_order=0,
+        delivery_fee_per_principal_ticket=300,
+        delivery_fee_per_subticket=0,
         discount=0,
         payment_method=PaymentMethod(
             name=":PaymentMethod:name",
@@ -760,8 +761,9 @@ def setup_product_item(quantity, quantity_only, organization):
             payment_plugin_id=2),
         delivery_method=DeliveryMethod(
             name=":DeliveryMethod:name",
-            fee=300,
-            fee_type=1,
+            fee_per_principal_ticket=300,
+            fee_per_order=0,
+            fee_per_subticket=0,
             delivery_plugin_id=2)
     )
 
@@ -791,9 +793,10 @@ def setup_product_item(quantity, quantity_only, organization):
                           fee=300, 
                           fee_type=1, 
                           payment_plugin_id=2)
-    delivery_method = payment_delivery_method_pair.delivery_method = DeliveryMethod(name=":DeliveryMethod:name", 
-                          fee=300, 
-                          fee_type=1, 
+    delivery_method = payment_delivery_method_pair.delivery_method = DeliveryMethod(name=":DeliveryMethod:name",
+                          fee_per_order=0,
+                          fee_per_principal_ticket=300, 
+                          fee_per_subticket=0,
                           delivery_plugin_id=2)
     performance.setting = PerformanceSetting()
 
@@ -1125,7 +1128,9 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
         target = self._makeOne()
         carted_product_item = get_carted_product_item__full_relation(quantity=2, quantity_only=True)
         payment_delivery_method_pair = PaymentDeliveryMethodPair(
-            delivery_fee=300, 
+            delivery_fee_per_order=0,
+            delivery_fee_per_principal_ticket=300,
+            delivery_fee_per_subticket=0,
             transaction_fee=200, 
             system_fee=100,
             special_fee=300,
@@ -1136,14 +1141,15 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
                                            fee_type=1, 
                                            payment_plugin_id=2), 
             delivery_method = DeliveryMethod(name=":DeliveryMethod:name", 
-                                             fee=300, 
-                                             fee_type=1, 
-                              delivery_plugin_id=2)
+                                             fee_per_order=0,
+                                             fee_per_principal_ticket=300, 
+                                             fee_per_subticket=0,
+                                             delivery_plugin_id=2)
             )
         #hmm
         carted_product_item.carted_product.cart.payment_delivery_pair = payment_delivery_method_pair
         model = carted_product_item
-        with mock.patch("altair.app.ticketing.core.models.Product.num_priced_tickets") as m: #xxx
+        with mock.patch("altair.app.ticketing.core.models.Product.num_principal_tickets") as m: #xxx
             m.return_value = 0
             result = target.build_dicts_from_carted_product_item(model, 
                                                                  payment_delivery_method_pair=payment_delivery_method_pair, 
@@ -1178,7 +1184,9 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
         carted_product_item = get_carted_product_item__full_relation(quantity=2, quantity_only=False)
         setup_seat_from_ordered_product_item(carted_product_item)
         payment_delivery_method_pair = PaymentDeliveryMethodPair(
-            delivery_fee=300, 
+            delivery_fee_per_order=0,
+            delivery_fee_per_principal_ticket=300,
+            delivery_fee_per_subticket=0,
             transaction_fee=200, 
             system_fee=100,
             special_fee=400,
@@ -1189,14 +1197,15 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
                                            fee_type=1, 
                                            payment_plugin_id=2), 
             delivery_method = DeliveryMethod(name=":DeliveryMethod:name", 
-                                             fee=300, 
-                                             fee_type=1, 
-                              delivery_plugin_id=2)
+                                             fee_per_order=0,
+                                             fee_per_principal_ticket=300, 
+                                             fee_per_subticket=0,
+                                             delivery_plugin_id=2)
             )
         #hmm
         carted_product_item.carted_product.cart.payment_delivery_pair = payment_delivery_method_pair
         model = carted_product_item
-        with mock.patch("altair.app.ticketing.core.models.Product.num_priced_tickets") as m: #xxx
+        with mock.patch("altair.app.ticketing.core.models.Product.num_principal_tickets") as m: #xxx
             m.return_value = 0
             result = target.build_dicts_from_carted_product_item(model, 
                                                                  payment_delivery_method_pair=payment_delivery_method_pair, 

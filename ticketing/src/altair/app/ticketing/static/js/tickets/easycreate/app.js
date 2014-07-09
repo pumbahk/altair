@@ -55,7 +55,7 @@ if (!window.app)
       preview_type: {value: "default", writable:true, enumerable:true},
       template_kind: {value: "default", writable:true, enumerable:true},
       cover_print: {value: false, writable:true, enumerable:true},
-      priced: {value: false, writable:true, enumerable:true},
+      principal: {value: false, writable:true, enumerable:true},
       always_reissueable: {value: false, writable:true, enumerable:true},
       base_template_id: {value: null, writable:true, enumerable:true},
       drawing: {value: "", writable:true, enumerable:true},
@@ -187,7 +187,7 @@ if (!window.app)
     receiveUpdateTicketCheckbox: function(ticket){
       this.$el.find('input[name="cover_print"]').attr("checked", ticket.cover_print);
       this.$el.find('input[name="always_reissueable"]').attr("checked", ticket.always_reissueable);
-      this.$el.find('input[name="priced"]').attr("checked", ticket.priced);
+      this.$el.find('input[name="principal"]').attr("checked", ticket.principal);
     },
     onChangeTicketName: function($el){
       this.broker.models.submit.sync("name", $el.val());
@@ -202,7 +202,7 @@ if (!window.app)
     },
     onChangeIsPriced: function($el){
       var v = $el.attr("checked") ? "y" : null;
-      this.broker.models.submit.sync("priced", v);
+      this.broker.models.submit.sync("principal", v);
     },
     receiveChangeToEventTicket: function(){
       this.$el.find('input[name="update"]').show();

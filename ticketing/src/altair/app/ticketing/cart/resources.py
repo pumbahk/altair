@@ -22,6 +22,7 @@ from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.core.interfaces import IOrderQueryable
 from altair.app.ticketing.users import models as u_models
+from altair.app.ticketing.utils import memoize
 from . import models as m
 from . import api as cart_api
 from .exceptions import NoCartError
@@ -39,28 +40,6 @@ from altair.now import get_now
 import functools
 
 logger = logging.getLogger(__name__)
-
-# https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
-class memoize(object):
-    def __init__(self, cache_attr_name=None):
-        self.cache_attr_name = cache_attr_name
-
-    def __call__(self, fn):
-        if self.cache_attr_name is None:
-            cache_attr_name = '_cache_%s' % fn.__name__
-        else:
-            cache_attr_name = self.cache_attr_name
-        @functools.wraps(fn)
-        def memoizer(_self, *args, **kwargs):
-            cache = getattr(_self, cache_attr_name, None)
-            if cache is None:
-                cache = {}
-                setattr(_self, cache_attr_name, cache)
-            key = (args, tuple(kwargs.items()))
-            if key not in cache:
-                cache[key] = fn(_self, *args, **kwargs)
-            return cache[key]
-        return memoizer
 
 @implementer(ICartContext)
 class TicketingCartResourceBase(object):
