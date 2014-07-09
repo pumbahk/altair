@@ -167,19 +167,34 @@ class FakeLotEntryElectedWishPairFactory(object):
             lot_entry.lot.event = performance.event #lot_entry
         return lot_entry
 
+    def create_fake_lot_entry_product(self, request, args):
+        fake_lot_entry_product = FakeObject("LotEntryProduct")
+        fake_lot_entry_product.product = FakeObject("product")
+        fake_lot_entry_product.quantity = 1
+        return fake_lot_entry_product
+
     def create_fake_elected_wish(self, request, args):
         performance = args.get('performance')
 
         elected_wish = FakeObject("ElectedWish")
+        elected_wish.wish_order = 0
+        elected_wish.tickets_amount = 0
+        elected_wish.system_fee = 0
+        elected_wish.transaction_fee = 0
+        elected_wish.delivery_fee = 0
+        elected_wish.special_fee = 0
         if performance:
             elected_wish.performance = performance
+        elected_wish.products = [
+            self.create_fake_lot_entry_product(request, args)
+            ]
         return elected_wish
 
     def __call__(self, request, args):
-        return (
-            self.create_fake_lot_entry(request, args),
-            self.create_fake_elected_wish(request, args),
-            )
+        elected_wish = self.create_fake_elected_wish(request, args)
+        lot_entry = self.create_fake_lot_entry(request, args)
+        lot_entry.wishes = [elected_wish]
+        return lot_entry, elected_wish
 
 @implementer(IFakeObjectFactory)
 class FakePointGrantHistoryEntryFactory(object):
