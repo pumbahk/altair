@@ -267,7 +267,10 @@ def remove_default_session():
 def get_ticket_template_record(request, template_id, session=None):
     if session is None:
         session = _session
-    template_file_rec = session.query(SejTicketTemplateFile) \
-        .filter(SejTicketTemplateFile.template_id == template_id) \
-        .one()
-    return template_file_rec
+    try:
+        template_file_rec = session.query(SejTicketTemplateFile) \
+            .filter(SejTicketTemplateFile.template_id == template_id) \
+            .one()
+        return template_file_rec
+    except NoResultFound:
+        return None
