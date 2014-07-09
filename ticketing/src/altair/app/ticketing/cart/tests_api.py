@@ -785,8 +785,6 @@ class UserApiTest(unittest.TestCase):
         self.config = testing.setUp(settings=self._settings)
         self.config.include('altair.app.ticketing.cart')
         self.session = _setup_db()
-        from altair.app.ticketing.users.models import Membership
-        self.session.add(Membership(name='rakuten', organization_id=None))
 
     def tearDown(self):
         testing.tearDown()
@@ -803,7 +801,7 @@ class UserApiTest(unittest.TestCase):
 
     def test_get_or_create_user_create(self):
         from . import api as a
-        result = a.get_or_create_user({ 'auth_type': 'rakuten', 'membership': 'raluten', 'claimed_id': 'http://example.com/claimed_id', 'organization_id': 1 })
+        result = a.get_or_create_user({ 'claimed_id': 'http://example.com/claimed_id', 'organization_id': 1 })
         self.assertIsNone(result.id)
         self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/claimed_id')
         self.assertEqual(result.user_credential[0].membership.name, 'rakuten')
@@ -812,7 +810,7 @@ class UserApiTest(unittest.TestCase):
         from . import api as a
         
         user = self._add_user('http://example.com/claimed_id')
-        result = a.get_or_create_user({ 'auth_type': 'rakuten', 'claimed_id': 'http://example.com/claimed_id', 'organization_id': 1 })
+        result = a.get_or_create_user({ 'claimed_id': 'http://example.com/claimed_id', 'organization_id': 1 })
         self.assertEqual(result.id, user.id)
         self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/claimed_id')
         self.assertEqual(result.user_credential[0].membership.name, 'rakuten')

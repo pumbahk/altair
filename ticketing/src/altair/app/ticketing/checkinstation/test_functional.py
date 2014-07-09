@@ -55,7 +55,7 @@ def setup_ticket_bundle(event, drawing):
         ticket_format = TicketFormat(name=":TicketFormat:name",
                                      organization=event.organization,
                                      data={})
-        ticket_format.delivery_methods.append(DeliveryMethod(fee_per_order=100, fee_per_principal_ticket=0, fee_per_subticket=0, delivery_plugin_id=4))
+        ticket_format.delivery_methods.append(DeliveryMethod(fee=100,delivery_plugin_id=4))
     ticket_template = Ticket(name=":TicketTemplate:name",
                              ticket_format=ticket_format,
                              organization=event.organization,
@@ -128,9 +128,7 @@ def setup_product_item(quantity, quantity_only, organization):
     payment_delivery_method_pair = PaymentDeliveryMethodPair(
         system_fee=100, 
         transaction_fee=200, 
-        delivery_fee_per_order=0, 
-        delivery_fee_per_principal_ticket=300, 
-        delivery_fee_per_subticket=0, 
+        delivery_fee=300, 
         discount=0, 
         payment_method=PaymentMethod(
             name=":PaymentMethod:name", 
@@ -139,9 +137,8 @@ def setup_product_item(quantity, quantity_only, organization):
             payment_plugin_id=2), 
         delivery_method=DeliveryMethod(
             name=":DeliveryMethod:name", 
-            fee_per_order=0,
-            fee_per_principal_ticket=300, 
-            fee_per_subticket=0,
+            fee=300, 
+            fee_type=1, 
             delivery_plugin_id=2)
     )
 

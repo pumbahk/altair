@@ -101,9 +101,6 @@ class TicketsUtilsTest(TestCase):
                 )
             delivery_method_shipping = DeliveryMethod(
                 organization=organization,
-                fee_per_order=0,
-                fee_per_principal_ticket=0,
-                fee_per_subticket=0,
                 _delivery_plugin=DeliveryMethodPlugin(
                     id=SHIPPING_DELIVERY_PLUGIN_ID,
                     name=u'郵送'
@@ -111,9 +108,6 @@ class TicketsUtilsTest(TestCase):
                 )
             delivery_method_qr = DeliveryMethod(
                 organization=organization,
-                fee_per_order=0,
-                fee_per_principal_ticket=0,
-                fee_per_subticket=0,
                 _delivery_plugin=DeliveryMethodPlugin(
                     id=QR_DELIVERY_PLUGIN_ID,
                     name=u'QRコード'
@@ -121,9 +115,6 @@ class TicketsUtilsTest(TestCase):
                 )
             delivery_method_cvs = DeliveryMethod(
                 organization=organization,
-                fee_per_order=0,
-                fee_per_principal_ticket=0,
-                fee_per_subticket=0,
                 _delivery_plugin=DeliveryMethodPlugin(
                     id=SEJ_DELIVERY_PLUGIN_ID,
                     name=u'コンビニ受取'
@@ -144,50 +135,32 @@ class TicketsUtilsTest(TestCase):
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_multicheckout,
                         delivery_method=delivery_method_shipping,
-                        system_fee=0,
-                        delivery_fee_per_order=0,
-                        delivery_fee_per_principal_ticket=0,
-                        delivery_fee_per_subticket=0
+                        system_fee=0
                         ),
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_multicheckout,
                         delivery_method=delivery_method_qr,
-                        system_fee=0,
-                        delivery_fee_per_order=0,
-                        delivery_fee_per_principal_ticket=0,
-                        delivery_fee_per_subticket=0
+                        system_fee=0
                         ),
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_multicheckout,
                         delivery_method=delivery_method_cvs,
-                        system_fee=0,
-                        delivery_fee_per_order=0,
-                        delivery_fee_per_principal_ticket=0,
-                        delivery_fee_per_subticket=0
+                        system_fee=0
                         ),
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_cvs,
                         delivery_method=delivery_method_shipping,
-                        system_fee=0,
-                        delivery_fee_per_order=0,
-                        delivery_fee_per_principal_ticket=0,
-                        delivery_fee_per_subticket=0
+                        system_fee=0
                         ),
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_cvs,
                         delivery_method=delivery_method_qr,
-                        system_fee=0,
-                        delivery_fee_per_order=0,
-                        delivery_fee_per_principal_ticket=0,
-                        delivery_fee_per_subticket=0
+                        system_fee=0
                         ),
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_cvs,
                         delivery_method=delivery_method_cvs,
-                        system_fee=0,
-                        delivery_fee_per_order=0,
-                        delivery_fee_per_principal_ticket=0,
-                        delivery_fee_per_subticket=0
+                        system_fee=0
                         ),
                     ]
                 )

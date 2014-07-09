@@ -4,7 +4,6 @@
 """
 import logging
 from pyramid.httpexceptions import HTTPFound
-from pyramid.decorator import reify
 from sqlalchemy.sql.expression import desc, asc
 from sqlalchemy.orm import joinedload, aliased
 from altair.app.ticketing.core import models as c_models
@@ -26,24 +25,18 @@ from .interfaces import ICartContext
 logger = logging.getLogger(__name__)
 
 class IndexViewMixin(object):
-    def __init__(self):
-        self._event_extra_info = None
-
     def prepare(self):
+        self._fetch_event_info()
         self._clear_temporary_store()
         self._check_redirect()
 
     def _fetch_event_info(self):
-        if self._event_extra_info is None:
-            if self.context.event is None:
-                event_extra_info = {}
-            else:
-                from .api import get_event_info_from_cms
-                event_extra_info = get_event_info_from_cms(self.request, self.context.event.id)
-                if not event_extra_info:
-                    event_extra_info = {}
-            self._event_extra_info = event_extra_info
-            logger.info(self._event_extra_info)
+        if self.context.event is None:
+            raise NoEventError()
+
+        from .api import get_event_info_from_cms
+        self.event_extra_info = get_event_info_from_cms(self.request, self.context.event.id)
+        logger.info(self.event_extra_info)
 
     def _clear_temporary_store(self):
         from .api import get_temporary_store
@@ -64,12 +57,6 @@ class IndexViewMixin(object):
             else:
                 if specified is not None and specified.redirect_url_pc:
                     raise HTTPFound(specified.redirect_url_pc)
-
-    @reify
-    def event_extra_info(self):
-        self._fetch_event_info()
-        return self._event_extra_info
-
 
 def get_amount_without_pdmp(cart):
     return sum([cp.product.price * cp.quantity for cp in cart.items])

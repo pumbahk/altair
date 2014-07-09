@@ -4,14 +4,13 @@ import json
 import os.path
 #import xml.etree.ElementTree as etree
 from wtforms import Form
-from wtforms import TextField, IntegerField, HiddenField, SelectMultipleField, FileField
+from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMultipleField, FileField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
 from wtforms.widgets import TextArea
 from sqlalchemy.orm.exc import NoResultFound
 from altair.formhelpers import DateTimeField, Translations, Required
 from altair.formhelpers.form import OurForm
-from altair.formhelpers.fields import OurSelectField, OurBooleanField
-from altair.formhelpers.widgets.select import BooleanSelect
+from altair.formhelpers.fields import OurBooleanField
 from altair.app.ticketing.core.models import (
     DeliveryMethod,
     TicketFormat,
@@ -146,7 +145,7 @@ class TicketCoverForm(OurForm):
         ]
     )
 
-    ticket = OurSelectField(
+    ticket = SelectField(
         label=u"チケットテンプレート",
         choices=[], 
         coerce=long , 
@@ -164,7 +163,7 @@ class TicketTemplateForm(OurForm):
             (format.id, format.name) for format in TicketFormat.filter_by(organization_id=context.organization.id)
             ]
         if not formdata and not obj:
-            self.principal.data = True
+            self.priced.data = True
 
     name = TextField(
         label = u'名前',
@@ -174,7 +173,7 @@ class TicketTemplateForm(OurForm):
         ]
     )
 
-    ticket_format_id = OurSelectField(
+    ticket_format_id = SelectField(
         label=u"チケット様式",
         choices=[], 
         coerce=long , 
@@ -192,9 +191,8 @@ class TicketTemplateForm(OurForm):
         label=u"常に再発券可能"
         )
 
-    principal = OurBooleanField(
-        label=u"主券",
-        widget=BooleanSelect(choices=[u'副券', u'主券'])
+    priced = OurBooleanField(
+        label=u"手数料計算に含める"
         )
 
     cover_print = OurBooleanField(
@@ -246,7 +244,7 @@ class TicketTemplateEditForm(OurForm):
         ]
     )
 
-    ticket_format_id = OurSelectField(
+    ticket_format_id = SelectField(
         label=u"チケット様式",
         choices=[], 
         coerce=long , 
@@ -257,9 +255,8 @@ class TicketTemplateEditForm(OurForm):
         label=u"常に再発券可能"
         )
 
-    principal = OurBooleanField(
-        label=u"主券",
-        widget=BooleanSelect(choices=[u'副券', u'主券'])
+    priced = OurBooleanField(
+        label=u"手数料計算に含める"
         )
 
     drawing = FileField(

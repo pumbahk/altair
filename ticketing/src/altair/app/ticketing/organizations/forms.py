@@ -13,7 +13,6 @@ from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.login.main.forms import OperatorForm
 from altair.saannotation import get_annotations_for
-from altair.app.ticketing.core.models import OrganizationSetting
 
 class OrganizationForm(OurForm):
 
@@ -317,12 +316,6 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
         label=get_annotations_for(c_models.OrganizationSetting.augus_password)['label']
         )
 
-    def validate_multicheckout_shop_name(form, field):
-        org_setting = OrganizationSetting.query.\
-            filter(OrganizationSetting.multicheckout_shop_name==field.data).\
-            filter(OrganizationSetting.id!=form.id.data).all()
-        if org_setting:
-            raise ValueError(u'既に同じ名前の店舗名称があります。')
 
 class HostForm(OurForm):
     host_name = OurTextField(

@@ -21,7 +21,7 @@ class SalesSegmentFormTests(unittest.TestCase):
     def test_validate_start_at_use_default(self):
         formdata = MultiDict(
             dict(
-                use_default_start_at="y",
+                use_default_start_at=True,
                 end_at="",
             )
         )
@@ -59,6 +59,7 @@ class SalesSegmentFormTests(unittest.TestCase):
         formdata = MultiDict(
             dict(
                 start_at="2013-08-31 23:59",
+                use_default_start_at=False,
                 end_at="",
             )
         )

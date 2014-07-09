@@ -1,4 +1,4 @@
-<%page args="order, sej_order"/>
+<%page args="order"/>
 <%namespace file="/common/helpers.html" name="ch" />
 
 % if order.status == 'ordered' and order.payment_status == 'refunded':
@@ -36,31 +36,4 @@
     </tr>
   </table>
 </div>
-
-  % if sej_order:
-<div>
-  <table class="table table-striped table-bordered">
-    <tr>
-      <th class="span8">コンビニ払戻実績(バーコードNO)</th>
-      <th class="span2">コンビニへの送信日時</th>
-      <th class="span2">コンビニでの払戻日時</th>
-      <th class="span2">小計</th>
-    </tr>
-    % for refund_ticket in sej_order.refund_tickets:
-    <tr>
-      <td>${refund_ticket.ticket_barcode_number}</td>
-      <td>${refund_ticket.sent_at or u'まだ送信されていません'}</td>
-      <td>${refund_ticket.refunded_at or u'まだ払戻されていません'}</td>
-      <td style="text-align: right;">${refund_ticket.refund_ticket_amount + refund_ticket.refund_other_amount}</td>
-    </tr>
-    % endfor
-    <% refunded_tickets = sej_order.refunded_tickets %>
-    <tr>
-      <td colspan="2"><strong>コンビニ払戻実績合計</strong></td>
-      <td style="text-align: right;"><strong>${len(refunded_tickets)} 枚</strong></td>
-      <td style="text-align: right;"><strong>${vh.price(sum([rt.refund_ticket_amount + rt.refund_other_amount for rt in refunded_tickets]))}</strong></td>
-    </tr>
-  </table>
-</div>
-  % endif
 % endif

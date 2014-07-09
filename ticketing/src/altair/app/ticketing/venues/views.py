@@ -2,7 +2,6 @@
 
 import os
 import csv
-from lxml import etree
 from datetime import datetime
 from urllib2 import urlopen
 import re
@@ -37,7 +36,7 @@ from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.core.models import (
-    Site, Venue, VenueArea, VenueArea_group_l0_id, Seat, SeatAttribute, SeatStatus, SeatStatusEnum, SalesSegment, SalesSegmentSetting,
+    Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SeatStatusEnum, SalesSegment, SalesSegmentSetting,
     SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType,
     ProductItem, Product, Performance, Event, SeatIndexType, SeatIndex
 )
@@ -100,174 +99,6 @@ class VenueSiteDrawingHandler(object):
 def get_site_drawing(context, request):
     return request.registry.getUtility(IVenueSiteDrawingHandler)(context, request)
 
-def lxml_result(child_element, message):
-    result = etree.Element("result")
-    child = etree.SubElement(result, child_element)
-    child.text = message
-    return result
-
-def create_text_element(parent, name, text):
-    e = etree.SubElement(parent, name)
-    e.text = text
-
-@view_config(route_name="api.seat_info", request_method="GET", renderer="lxml", permission="event_viewer")
-def get_seat_info(context, request):
-    x_result = etree.Element("result")
-
-    venue = request.context.venue
-
-    x_venue = etree.Element("venue")
-    create_text_element(x_venue, "id", str(venue.id))
-    create_text_element(x_venue, "name", venue.name)
-    x_result.append(x_venue)
-
-    row = aliased(SeatAttribute)
-    floor = aliased(SeatAttribute)
-    gate = aliased(SeatAttribute)
-    seats = DBSession.query(Seat, VenueArea, row.value, floor.value, gate.value)\
-        .filter_by(venue_id=venue.id)\
-        .join(VenueArea, Seat.areas)\
-        .outerjoin(row, and_(row.name=="row", row.seat_id==Seat.id))\
-        .outerjoin(floor, and_(floor.name=="floor", floor.seat_id==Seat.id))\
-        .outerjoin(gate, and_(gate.name=="gate", gate.seat_id==Seat.id))
-
-    x_seats = etree.Element("seats")
-    x_result.append(x_seats)
-    for seat, venuearea, sa_row, sa_floor, sa_gate in seats:
-        x_seat = etree.Element("seat")
-        create_text_element(x_seat, "l0_id", seat.l0_id)
-        create_text_element(x_seat, "group_l0_id", seat.group_l0_id)
-        create_text_element(x_seat, "venue_area_name", venuearea.name)
-        create_text_element(x_seat, "row_l0_id", seat.row_l0_id)
-        create_text_element(x_seat, "seat_no", seat.seat_no)
-        create_text_element(x_seat, "name", seat.name)
-        create_text_element(x_seat, "sa_row", sa_row)
-        if sa_floor is not None:
-            create_text_element(x_seat, "sa_floor", sa_floor)
-        if sa_gate is not None:
-            create_text_element(x_seat, "sa_gate", sa_gate)
-        x_seats.append(x_seat)
-
-    return x_result
-
-@view_config(route_name="api.seat_info", request_method="POST", renderer="lxml", permission="event_editor")
-def update_seat_info(context, request):
-    venue = request.context.venue
-    if venue.id != long(request.POST['venue']):
-        return lxml_result("error", "wrong parameter")
-
-    updated = 0
-
-    name_by_gid = dict(zip(request.POST['group_l0_id'].split("\t"), request.POST['group_name'].split("\t")))
-
-    l0_id_list = request.POST['l0_id'].split("\t")
-    seat_no_list = request.POST['seat_no'].split("\t")
-    name_list = request.POST['name'].split("\t")
-    sa_row_list = request.POST['sa_row'].split("\t")
-    sa_floor_list = request.POST['sa_floor'].split("\t")
-    sa_gate_list = request.POST['sa_gate'].split("\t")
-    
-    info_by_id = dict()
-    for idx, l0_id in enumerate(l0_id_list):
-        info_by_id[l0_id] = (seat_no_list[idx], name_list[idx], sa_row_list[idx], sa_floor_list[idx], sa_gate_list[idx])
-
-    areas = DBSession.query(VenueArea_group_l0_id, VenueArea)\
-        .filter_by(venue_id=venue.id)\
-        .join(VenueArea, VenueArea.id==VenueArea_group_l0_id.venue_area_id)
-
-    for group, area in areas:
-        if group.group_l0_id in name_by_gid:
-            if area.name != name_by_gid[group.group_l0_id]:
-                area.name = name_by_gid[group.group_l0_id]
-                area.save()
-                updated = updated + 1
-
-    row = aliased(SeatAttribute)
-    floor = aliased(SeatAttribute)
-    gate = aliased(SeatAttribute)
-    seats = DBSession.query(Seat, VenueArea, row.value, floor.value, gate.value)\
-        .filter_by(venue_id=venue.id)\
-        .join(VenueArea, Seat.areas)\
-        .outerjoin(row, and_(row.name=="row", row.seat_id==Seat.id))\
-        .outerjoin(floor, and_(floor.name=="floor", floor.seat_id==Seat.id))\
-        .outerjoin(gate, and_(gate.name=="gate", gate.seat_id==Seat.id))
-
-    for seat, venuearea, _row, _floor, _gate in seats:
-        if seat.l0_id in info_by_id:
-            if seat.seat_no != info_by_id[seat.l0_id][0] or seat.name != info_by_id[seat.l0_id][1]:
-                seat.seat_no = info_by_id[seat.l0_id][0]
-                seat.name = info_by_id[seat.l0_id][1]
-                seat.save()
-                updated = updated + 1
-            if info_by_id[seat.l0_id][2] != _row:
-                row = SeatAttribute.query.filter(and_(SeatAttribute.seat_id==seat.id, SeatAttribute.name=="row")).first()
-                if row is not None:
-                    row.value = info_by_id[seat.l0_id][2]
-                    row.save()
-                    updated = updated + 1
-            if info_by_id[seat.l0_id][3] != _floor:
-                floor = SeatAttribute.query.filter(and_(SeatAttribute.seat_id==seat.id, SeatAttribute.name=="floor")).first()
-                if floor is not None:
-                    floor.value = info_by_id[seat.l0_id][3]
-                    floor.save()
-                    updated = updated + 1
-            if info_by_id[seat.l0_id][4] != _gate:
-                gate = SeatAttribute.query.filter(and_(SeatAttribute.seat_id==seat.id, SeatAttribute.name=="gate")).first()
-                if gate is not None:
-                    gate.value = info_by_id[seat.l0_id][4]
-                    gate.save()
-                    updated = updated + 1
-
-    return lxml_result("success", "ok, %u records updated." % updated)
-
-@view_config(route_name="api.seat_priority", request_method="GET", renderer="lxml", permission="event_viewer")
-def get_seat_priority(context, request):
-    x_result = etree.Element("result")
-
-    venue = request.context.venue
-
-    x_venue = etree.Element("venue")
-    create_text_element(x_venue, "id", str(venue.id))
-    create_text_element(x_venue, "name", venue.name)
-    x_result.append(x_venue)
-
-    seats = DBSession.query(Seat, SeatIndex.index)\
-        .filter_by(venue_id=venue.id)\
-        .join(SeatIndex.seat)
-
-    x_seats = etree.Element("seats")
-    x_result.append(x_seats)
-    for seat, index in seats:
-        x_seat = etree.Element("seat")
-        create_text_element(x_seat, "l0_id", seat.l0_id)
-        create_text_element(x_seat, "index", str(index))
-        create_text_element(x_seat, "name", seat.name)
-        x_seats.append(x_seat)
-
-    return x_result
-
-@view_config(route_name="api.seat_priority", request_method="POST", renderer="lxml", permission="event_editor")
-def update_seat_priority(context, request):
-    venue = request.context.venue
-    if venue.id != long(request.POST['venue']):
-        return lxml_result("error", "wrong parameter")
-
-    updated = 0
-
-    index_by_id = dict(zip(request.POST['l0_id'].split("\t"), request.POST['index'].split("\t")))
-
-    seats = DBSession.query(Seat, SeatIndex)\
-        .filter_by(venue_id=venue.id)\
-        .join(SeatIndex.seat)
-    
-    for seat, index in seats:
-        if seat.l0_id in index_by_id:
-            if index.index != long(index_by_id[seat.l0_id]):
-                index.index = long(index_by_id[seat.l0_id])
-                index.save()
-                updated = updated + 1
-    
-    return lxml_result("success", "ok, %u records updated." % updated)
 
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):

@@ -35,9 +35,7 @@ class SalesSegmentTests(unittest.TestCase):
         pdmp = PaymentDeliveryMethodPair(
             system_fee=0,
             transaction_fee=0,
-            delivery_fee_per_order=0,
-            delivery_fee_per_principal_ticket=0,
-            delivery_fee_per_subticket=0,
+            delivery_fee=0,
             discount=0,
             special_fee=0
             )

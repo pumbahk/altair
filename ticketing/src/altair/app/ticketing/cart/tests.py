@@ -90,12 +90,10 @@ class CartTests(unittest.TestCase):
         target = self._makeOne(
             payment_delivery_pair=PaymentDeliveryMethodPair(
                 transaction_fee=0,
-                delivery_fee_per_order=0,
-                delivery_fee_per_principal_ticket=0,
-                delivery_fee_per_subticket=0,
+                delivery_fee=0,
                 system_fee=0,
                 payment_method=PaymentMethod(fee_type=0, fee=0),
-                delivery_method=DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0),
+                delivery_method=DeliveryMethod(fee_type=0, fee=0),
                 discount=0
                 ),
             sales_segment=SalesSegment(setting=SalesSegmentSetting())
@@ -116,12 +114,10 @@ class CartTests(unittest.TestCase):
         target = self._makeOne(
             payment_delivery_pair=PaymentDeliveryMethodPair(
                 transaction_fee=0,
-                delivery_fee_per_order=0,
-                delivery_fee_per_principal_ticket=0,
-                delivery_fee_per_subticket=0,
+                delivery_fee=0,
                 system_fee=0,
                 payment_method=PaymentMethod(fee_type=0, fee=0),
-                delivery_method=DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0),
+                delivery_method=DeliveryMethod(fee_type=0, fee=0),
                 discount=0
                 ),
             sales_segment=SalesSegment(),
@@ -402,12 +398,10 @@ class TicketingCartResourceTestBase(object):
             payment_delivery_method_pairs=[
                 models.PaymentDeliveryMethodPair(
                     transaction_fee=0,
-                    delivery_fee_per_order=0,
-                    delivery_fee_per_principal_ticket=0,
-                    delivery_fee_per_subticket=0,
+                    delivery_fee=0,
                     system_fee=0,
                     payment_method=models.PaymentMethod(fee_type=0, fee=0),
-                    delivery_method=models.DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0),
+                    delivery_method=models.DeliveryMethod(fee_type=0, fee=0),
                     discount=0
                     ),
                 ]
@@ -1140,7 +1134,7 @@ class ReserveViewTests(unittest.TestCase):
             id=sales_segment_id, performance=performance, sales_segment_group=sales_segment_group,
             start_at=now - timedelta(days=1), end_at=now + timedelta(days=1), public=True, max_quantity=10,
             payment_delivery_method_pairs=[
-                PaymentDeliveryMethodPair(system_fee=0, transaction_fee=0, delivery_fee_per_order=0, delivery_fee_per_principal_ticket=0, delivery_fee_per_subticket=0, discount=0)
+                PaymentDeliveryMethodPair(system_fee=0, transaction_fee=0, delivery_fee=0, discount=0)
                 ],
             seat_choice=True,
             setting=SalesSegmentSetting(
@@ -1292,7 +1286,7 @@ class ReserveViewTests(unittest.TestCase):
             id=sales_segment_id, performance_id=performance_id, sales_segment_group=sales_segment_group,
             start_at=now - timedelta(days=1), end_at=now + timedelta(days=1), public=True, max_quantity=10,
             payment_delivery_method_pairs=[
-                PaymentDeliveryMethodPair(system_fee=0, transaction_fee=0, delivery_fee_per_order=0, delivery_fee_per_principal_ticket=0, delivery_fee_per_subticket=0, discount=0)
+                PaymentDeliveryMethodPair(system_fee=0, transaction_fee=0, delivery_fee=0, discount=0)
                 ],
             setting=SalesSegmentSetting(
                 display_seat_no=True
@@ -1436,7 +1430,7 @@ class PaymentViewTests(unittest.TestCase):
         payment_delivery_method.payment_method = payment_method
         
         request.context.available_payment_delivery_method_pairs = lambda sales_segment: [payment_delivery_method]
-        request.context.authenticated_user = lambda: { 'auth_type': 'rakuten', 'claimed_id': 'http://ticketstar.example.com/user/1', 'organization_id': 1 }
+        request.context.authenticated_user = lambda: { 'claimed_id': 'http://ticketstar.example.com/user/1', 'organization_id': 1 }
         request.context.get_payment_delivery_method_pair = lambda: None
         request.context.sales_segment = testing.DummyModel()
         target = self._makeOne(request)

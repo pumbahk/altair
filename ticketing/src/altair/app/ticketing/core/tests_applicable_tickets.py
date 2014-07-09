@@ -34,12 +34,12 @@ class IssuedPrintedSetterTests(unittest.TestCase):
         from altair.app.ticketing.core.models import TicketBundle, Ticket, TicketFormat, DeliveryMethod
 
         sej_ticket_fmt = TicketFormat(name="", )
-        sej_ticket_fmt.delivery_methods.append(DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, delivery_plugin_id=DELIVERY_PLUGIN_ID_SEJ))
+        sej_ticket_fmt.delivery_methods.append(DeliveryMethod(fee=0, delivery_plugin_id=DELIVERY_PLUGIN_ID_SEJ))
 
         other_ticket_fmt1 = TicketFormat(name="", )
-        other_ticket_fmt1.delivery_methods.append(DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, delivery_plugin_id=-1))
+        other_ticket_fmt1.delivery_methods.append(DeliveryMethod(fee=0, delivery_plugin_id=-1))
         other_ticket_fmt2 = TicketFormat(name="", )
-        other_ticket_fmt2.delivery_methods.append(DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, delivery_plugin_id=-2))
+        other_ticket_fmt2.delivery_methods.append(DeliveryMethod(fee=0, delivery_plugin_id=-2))
 
         bundle = TicketBundle()
         bundle.tickets.append(Ticket(ticket_format=sej_ticket_fmt))
@@ -60,13 +60,13 @@ class IssuedPrintedSetterTests(unittest.TestCase):
         from altair.app.ticketing.core.models import TicketBundle, Ticket, TicketFormat, DeliveryMethod
 
         sej_ticket_fmt1 = TicketFormat(name="", )
-        sej_ticket_fmt1.delivery_methods.append(DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, delivery_plugin_id=DELIVERY_PLUGIN_ID_SEJ))
+        sej_ticket_fmt1.delivery_methods.append(DeliveryMethod(fee=0, delivery_plugin_id=DELIVERY_PLUGIN_ID_SEJ))
 
         sej_ticket_fmt2 = TicketFormat(name="", )
-        sej_ticket_fmt2.delivery_methods.append(DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, delivery_plugin_id=DELIVERY_PLUGIN_ID_SEJ))
+        sej_ticket_fmt2.delivery_methods.append(DeliveryMethod(fee=0, delivery_plugin_id=DELIVERY_PLUGIN_ID_SEJ))
 
         other_ticket_fmt = TicketFormat(name="", )
-        other_ticket_fmt.delivery_methods.append(DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, delivery_plugin_id=-1))
+        other_ticket_fmt.delivery_methods.append(DeliveryMethod(fee=0, delivery_plugin_id=-1))
 
         bundle = TicketBundle()
         bundle.tickets.append(Ticket(ticket_format=sej_ticket_fmt1))
@@ -88,13 +88,13 @@ class IssuedPrintedSetterTests(unittest.TestCase):
         from altair.app.ticketing.core.models import TicketBundle, Ticket, TicketFormat, DeliveryMethod
 
         sej_ticket_fmt1 = TicketFormat(name="", )
-        sej_ticket_fmt1.delivery_methods.append(DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, delivery_plugin_id=DELIVERY_PLUGIN_ID_SEJ))
+        sej_ticket_fmt1.delivery_methods.append(DeliveryMethod(fee=0, delivery_plugin_id=DELIVERY_PLUGIN_ID_SEJ))
 
         sej_ticket_fmt2 = TicketFormat(name="", )
-        sej_ticket_fmt2.delivery_methods.append(DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, delivery_plugin_id=DELIVERY_PLUGIN_ID_SEJ))
+        sej_ticket_fmt2.delivery_methods.append(DeliveryMethod(fee=0, delivery_plugin_id=DELIVERY_PLUGIN_ID_SEJ))
 
         other_ticket_fmt = TicketFormat(name="", )
-        other_ticket_fmt.delivery_methods.append(DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, delivery_plugin_id=-1))
+        other_ticket_fmt.delivery_methods.append(DeliveryMethod(fee=0, delivery_plugin_id=-1))
 
         bundle = TicketBundle()
         bundle.tickets.append(Ticket(ticket_format=sej_ticket_fmt1))
@@ -115,8 +115,8 @@ class IssuedPrintedSetterTests(unittest.TestCase):
         from altair.app.ticketing.core.models import TicketBundle, Ticket, TicketFormat, DeliveryMethod
 
         sej_ticket_fmt1 = TicketFormat(name="", )
-        sej_ticket_fmt1.delivery_methods.append(DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, delivery_plugin_id=DELIVERY_PLUGIN_ID_SEJ))
-        sej_ticket_fmt1.delivery_methods.append(DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, delivery_plugin_id=-1))
+        sej_ticket_fmt1.delivery_methods.append(DeliveryMethod(fee=0, delivery_plugin_id=DELIVERY_PLUGIN_ID_SEJ))
+        sej_ticket_fmt1.delivery_methods.append(DeliveryMethod(fee=0, delivery_plugin_id=-1))
 
         bundle = TicketBundle()
         bundle.tickets.append(Ticket(ticket_format=sej_ticket_fmt1))

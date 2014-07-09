@@ -266,6 +266,7 @@ def request_order(request_or_registry, tenant, sej_order):
     for idx in range(1, 21):
         ticket = ticket_dict.get(idx)
         barcode_number = ret.get('X_barcode_no_%02d' % idx)
+        assert (not barcode_number and not ticket) or (barcode_number and ticket), '%d: %r / %r' % (idx, ret, ticket_dict)
         if not ticket:
             continue
         ticket.barcode_number = barcode_number

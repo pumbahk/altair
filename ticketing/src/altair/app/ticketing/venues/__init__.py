@@ -46,8 +46,6 @@ def includeme(config):
     config.add_route("venues.show", "/show/{venue_id}", factory=factory)
     config.add_route("venues.checker", "/{venue_id}/checker", factory=factory)
     config.add_route("api.get_site_drawing", "/api/drawing/{site_id}", factory=factory)
-    config.add_route("api.seat_info", "/{venue_id}/seat_info/", factory=factory)
-    config.add_route("api.seat_priority", "/{venue_id}/seat_priority/", factory=factory)
     config.add_route("api.get_seats", "/{venue_id}/seats/", factory=factory)
     config.add_route("api.get_frontend", "/{venue_id}/frontend/{part}", factory=factory)
     config.add_route("seats.download", "/download/{venue_id}", factory=factory)

@@ -3,7 +3,6 @@ import unittest
 from select import select
 from socket import *
 from socket import error as SocketError
-from cStringIO import StringIO
 
 EAGAIN = 35
 
@@ -23,7 +22,7 @@ def poll(s, event, timeout):
 class RingBufferedIO(object):
     poller = staticmethod(poll)
 
-    def __init__(self, s, recv_timeout=20, send_timeout=20, recv_buffer_size=4096):
+    def __init__(self, s, recv_timeout=10, send_timeout=10, recv_buffer_size=4096):
         self.s = s
         self.recv_timeout = recv_timeout
         self.send_timeout = send_timeout
@@ -219,11 +218,10 @@ class RingBufferedIO(object):
             return retval
 
 class TR310Protocol(object):
-    def __init__(self, io, image, now):
+    def __init__(self, io, image):
         self.io = io
         self.state = self.initial
         self.image = image
-        self.now = now
 
     def initial(self):
         assert self.io.recv_until(b'\0') == b'READY\0'
@@ -231,27 +229,22 @@ class TR310Protocol(object):
 
     def send_WS(self):
         self.io.send('{WS|}')
-        self.io.recv_until(b'\x0d\x0a')
+        print self.io.recv_until(b'\x0d\x0a')
         self.state = self.send_JT
 
     def send_JT(self):
-        self.io.send('{JT;%02d%02d%02d%02d%02d%02d|}{D1651,0630,1445|}{Y|}' % (
-            self.now.year % 100,
-            self.now.month,
-            self.now.day,
-            self.now.hour,
-            self.now.minute,
-            self.now.second))
-        self.io.recv_until(b'\x0d\x0a')
+        self.io.send('{JT;131022131946|}{D1651,0630,1445|}{Y|}')
+        print self.io.recv_until(b'\x0d\x0a')
         self.state = self.send_HD
 
     def send_HD(self):
         self.io.send('{HD001|}{WS|}')
-        self.io.recv_until(b'\x0d\x0a')
+        print self.io.recv_until(b'\x0d\x0a')
         self.state = self.send_C
 
     def send_C(self):
         self.io.send('{C|}')
+        print self.io.recv_until('\x0d\x0a')
         self.state = self.send_SG
 
     def send_SG(self):
@@ -259,18 +252,20 @@ class TR310Protocol(object):
         im = self.image.rotate(-90).convert('1')
         out = StringIO()
         im.save(out, 'bmp')
+        print 'len=%d, prologue=%s' % (len(out.getvalue()), out.getvalue()[0:2])
         self.io.send(out.getvalue())
         self.io.send('|}')
+        print self.io.recv_until(b'\x0d\x0a')
         self.state = self.send_WS2
 
     def send_WS2(self):
         self.io.send('{WS|}')
-        self.io.recv_until(b'\x0d\x0a')
+        print self.io.recv_until(b'\x0d\x0a')
         self.state = self.send_XS_IB
 
     def send_XS_IB(self):
         self.io.send('{XS;I,0001,0001C5010|}{IB|}')
-        self.io.recv_until(b'\x0d\x0a')
+        print self.io.recv_until(b'\x0d\x0a')
         self.state = None
 
     def next(self):
@@ -282,19 +277,14 @@ class TR310Protocol(object):
         return self
 
 def main():
-    from PIL import Image
-    from datetime import datetime
     s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
     s.connect((sys.argv[1], int(sys.argv[2])))
     s.setblocking(0)
-    x = TR310Protocol(RingBufferedIO(s), image=Image.open(sys.argv[3]), now=datetime.now())
+    x = TR310Protocol(RingBufferedIO(s), image=Image.open('test.png'))
     for _ in x:
         pass
 
 if __name__ == '__main__':
-    main()
-    sys.exit(0)
-
     class PollerTest(unittest.TestCase):
         def _callFUT(self, *args, **kwargs):
             return poll(*args, **kwargs)

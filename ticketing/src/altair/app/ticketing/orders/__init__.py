@@ -26,7 +26,6 @@ def includeme(config):
     config.add_route('orders.reserve.reselect'          , '/reserve/reselect/')
     config.add_route('orders.memo_on_order'             , '/memo_on_order/{order_id}')
     config.add_route('orders.attributes_edit'           , '/attributes/edit/{order_id}')
-    config.add_route('orders.ordered_product_attribute_edit', '/ordered_product_item/attributes/edit/{order_no}')
     config.add_route('orders.note'                      , '/note/{order_id}')
     config.add_route('orders.issue_status'              , '/issue_status/{order_id}')
     config.add_route('orders.release_stocks'            , '/release_stocks/{order_id}')

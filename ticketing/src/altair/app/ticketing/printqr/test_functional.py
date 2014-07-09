@@ -12,10 +12,6 @@ from .testing import (
 )
 
 def setUpModule():
-    import altair.app.ticketing.core.models
-    import altair.app.ticketing.cart.models
-    import altair.app.ticketing.orders.models
-    import altair.app.ticketing.users.models
     setUpSwappedDB()
 
 def tearDownModule():
@@ -108,10 +104,8 @@ def setup_product_item(quantity, quantity_only, organization):
 
     payment_delivery_method_pair = PaymentDeliveryMethodPair(
         system_fee=100, 
-        transaction_fee=200,
-        delivery_fee_per_order=0,
-        delivery_fee_per_principal_ticket=300, 
-        delivery_fee_per_subticket=0,
+        transaction_fee=200, 
+        delivery_fee=300, 
         discount=0, 
         payment_method=PaymentMethod(
             name=":PaymentMethod:name", 
@@ -120,9 +114,8 @@ def setup_product_item(quantity, quantity_only, organization):
             payment_plugin_id=2), 
         delivery_method=DeliveryMethod(
             name=":DeliveryMethod:name", 
-            fee_per_order=0,
-            fee_per_principal_ticket=300, 
-            fee_per_subticket=0,
+            fee=300, 
+            fee_type=1, 
             delivery_plugin_id=2)
     )
 

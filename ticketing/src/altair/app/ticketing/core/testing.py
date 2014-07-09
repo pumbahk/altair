@@ -47,10 +47,7 @@ class CoreTestMixin(object):
                     name = g.group(1)
                     delivery_methods[id] = \
                         DeliveryMethod(
-                            name=name,
-                            fee_per_order=Decimal(0.),
-                            fee_per_principal_ticket=Decimal(0.),
-                            fee_per_subticket=Decimal(0.),
+                            name=name, fee=Decimal(0.),
                             organization=self.organization,
                             delivery_plugin_id=id,
                             _delivery_plugin=DeliveryMethodPlugin(id=id, name=name)
@@ -120,7 +117,7 @@ class CoreTestMixin(object):
         from altair.app.ticketing.core.models import TicketBundle, Ticket
         return TicketBundle(
             tickets=[
-                Ticket(ticket_format=ticket_format, flags=Ticket.FLAG_PRINCIPAL)
+                Ticket(ticket_format=ticket_format, flags=Ticket.FLAG_PRICED)
                 for ticket_format in self._generate_ticket_formats()
                 ]
             )
@@ -148,7 +145,7 @@ class CoreTestMixin(object):
             for stock in stocks
             ]
 
-    def _create_payment_delivery_method_pairs(self, sales_segment_group, system_fee=0., system_fee_type=0, transaction_fee=0., delivery_fee_per_order=0., delivery_fee_per_principal_ticket=0., delivery_fee_per_subticket=0., special_fee=0, special_fee_type=0, discount=0., discount_unit=0):
+    def _create_payment_delivery_method_pairs(self, sales_segment_group, system_fee=0., system_fee_type=0, transaction_fee=0., delivery_fee=0., special_fee=0, special_fee_type=0, discount=0., discount_unit=0):
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
         return [
             PaymentDeliveryMethodPair(
@@ -156,9 +153,7 @@ class CoreTestMixin(object):
                 system_fee=Decimal(system_fee),
                 system_fee_type=system_fee_type,
                 transaction_fee=Decimal(transaction_fee),
-                delivery_fee_per_order=Decimal(delivery_fee_per_order),
-                delivery_fee_per_principal_ticket=Decimal(delivery_fee_per_principal_ticket),
-                delivery_fee_per_subticket=Decimal(delivery_fee_per_subticket),
+                delivery_fee=Decimal(delivery_fee),
                 special_fee=Decimal(special_fee),
                 special_fee_type=special_fee_type,
                 discount=Decimal(discount),
@@ -263,7 +258,7 @@ class CoreTestMixin(object):
         if pdmp:
             num_tickets = sum(
                 ordered_product_item.quantity * sum(
-                    int((ticket.flags & Ticket.FLAG_PRINCIPAL) and (pdmp.delivery_method in ticket.ticket_format.delivery_methods))
+                    int((ticket.flags & Ticket.FLAG_PRICED) and (pdmp.delivery_method in ticket.ticket_format.delivery_methods))
                     for ticket in ordered_product_item.product_item.ticket_bundle.tickets
                     )
                 for ordered_product in items

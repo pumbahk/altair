@@ -7,7 +7,6 @@ from wtforms.validators import ValidationError
 from wtforms.widgets import HTMLString, html_params
 from cgi import escape
 from wtforms.widgets import Select as BaseSelectWidget
-from wtforms.compat import text_type
 from zope.deprecation import deprecate
 
 __all__ = [
@@ -111,26 +110,3 @@ class SelectField(BaseSelectField):
             return False
 
         raise ValidationError(self.gettext(u'Not a valid choice'))
-
-class BooleanSelect(object):
-    def __init__(self, choices):
-        if len(choices) != 2:
-            raise ValueError('len(choices) must be 2')
-        self.choices = choices
-
-    def __call__(self, field, **kwargs):
-        kwargs.setdefault('id', field.id)
-        html = ['<select %s>' % html_params(name=field.name, **kwargs)]
-        for v, label in enumerate(self.choices):
-            v = bool(v)
-            sv = u'1' if v else u''
-            html.append(self.render_option(sv, label, v == bool(field.data)))
-        html.append('</select>')
-        return HTMLString(''.join(html))
-
-    @classmethod
-    def render_option(cls, value, label, selected, **kwargs):
-        options = dict(kwargs, value=value)
-        if selected:
-            options['selected'] = True
-        return HTMLString('<option %s>%s</option>' % (html_params(**options), escape(text_type(label))))

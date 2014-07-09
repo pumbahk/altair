@@ -105,15 +105,11 @@ class OrderRefundFormTests(unittest.TestCase):
                 ),
                 delivery_method=DeliveryMethod(
                     delivery_plugin_id=delivery_plugin_id,
-                    fee_per_order=50,
-                    fee_per_principal_ticket=0,
-                    fee_per_subticket=0
+                    fee=50,
                 ),
                 system_fee=0,
                 transaction_fee=100,
-                delivery_fee_per_order=50,
-                delivery_fee_per_principal_ticket=0,
-                delivery_fee_per_subticket=0,
+                delivery_fee=50,
                 discount=0,
             ),
             items=[OrderedProduct(

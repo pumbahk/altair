@@ -35,7 +35,7 @@ class SalesReports(BaseView):
         if not form.event_from.data:
             form.event_from.process_data(now.replace(hour=0, minute=0, second=0) + timedelta(days=-31))
         if not form.event_to.data:
-            form.event_to.process_data(now.replace(hour=23, minute=59, second=59) + timedelta(days=365))
+            form.event_to.process_data(now.replace(hour=23, minute=59, second=59))
 
         return {
             'form':form,

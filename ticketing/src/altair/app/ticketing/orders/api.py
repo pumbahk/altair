@@ -1392,26 +1392,26 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
             warnings.append(_(u'商品「${product_name}」の商品明細の価格の合計が商品の価格と一致しません (${element_total} ≠ ${item_total})') % dict(product_name=product.name, product_item_name=product_item.name, element_total=element_total, item_total=item_total))
 
         calculated_total_amount += item_total
-        num_principal_tickets = new_item.product.num_principal_tickets(payment_delivery_pair)
+        num_priced_tickets = new_item.product.num_priced_tickets(payment_delivery_pair)
         calculated_transaction_fee += \
             (
                 payment_delivery_pair.transaction_fee_per_product + \
-                payment_delivery_pair.transaction_fee_per_ticket * num_principal_tickets
+                payment_delivery_pair.transaction_fee_per_ticket * num_priced_tickets
                 ) * new_item.quantity
         calculated_delivery_fee += \
             (
                 payment_delivery_pair.delivery_fee_per_product + \
-                payment_delivery_pair.delivery_fee_per_ticket * num_principal_tickets
+                payment_delivery_pair.delivery_fee_per_ticket * num_priced_tickets
                 ) * new_item.quantity
         calculated_system_fee += \
             (
                 payment_delivery_pair.system_fee_per_product + \
-                payment_delivery_pair.system_fee_per_ticket * num_principal_tickets
+                payment_delivery_pair.system_fee_per_ticket * num_priced_tickets
                 ) * new_item.quantity
         calculated_special_fee += \
             (
                 payment_delivery_pair.special_fee_per_product + \
-                payment_delivery_pair.special_fee_per_ticket * num_principal_tickets
+                payment_delivery_pair.special_fee_per_ticket * num_priced_tickets
                 ) * new_item.quantity
         proto_order.items.append(new_item)
 

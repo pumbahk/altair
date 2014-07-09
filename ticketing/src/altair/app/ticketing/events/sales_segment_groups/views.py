@@ -242,13 +242,6 @@ class SalesSegmentGroups(BaseView):
         sales_segment_group = self.context.sales_segment_group
         candidates_membergroups = MemberGroup.query
         will_bounds = candidates_membergroups.filter(MemberGroup.id.in_(self.request.POST.getall("membergroups")))
-        membership = Membership.query.join(MemberGroup, MemberGroup.membership_id == Membership.id).\
-            filter(MemberGroup.id.in_(self.request.POST.getall("membergroups"))).all()
-
-        if membership:
-            if len(membership) > 1:
-                self.request.session.flash(u'会員種別が同じものしか同時に登録できません。')
-                return HTTPFound(self.request.POST["redirect_to"])
 
         will_removes = {}
         for mg in sales_segment_group.membergroups:
