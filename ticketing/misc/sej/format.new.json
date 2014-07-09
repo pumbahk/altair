@@ -1,0 +1,1 @@
+{"printable_areas": [{"y": "3mm", "x": "31.1mm", "width": "93mm", "height": "70mm"}, {"y": "3mm", "x": "132.1mm", "width": "30mm", "height": "70mm"}], "size": {"width": "165.1mm", "height": "76mm"}, "perforations": {"horizontal": [], "vertical": ["30.65mm", "128.1mm"]}, "print_offset": {"y": "6mm", "x": "19.75mm"}, "aux": {"sej_ticket_template_id": "NTTS000002"}}

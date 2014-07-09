@@ -1,6 +1,25 @@
 <%page args="form, route_name, route_path, redirect_to" />
 <%namespace file="/common/helpers.html" name="ch" />
 
+<script>
+// ゲストの場合、自動入力は動作しないが、安全を二重に
+function changeCheck() {
+  if ($('#is_guest').attr("checked")) {
+    $('#enable_auto_input_form').attr("checked", false );
+    $('#enable_auto_input_form').attr("disabled", "disabled");
+  } else {
+    $('#enable_auto_input_form').removeAttr("disabled");
+  }
+}
+
+$(document).ready(function(){
+  changeCheck();
+  $("#is_guest").click(function() {
+    changeCheck();
+  });
+});
+</script>
+
 <div class="well">
   <form class="form-horizontal" action="${route_path}" method="POST">
     ${form.membership_id}

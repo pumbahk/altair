@@ -104,13 +104,16 @@ class FixtureFactory(object):
                                        fee_type=1, 
                                    )
         delivery_method = DeliveryMethod(delivery_plugin_id=delivery_plugin_id, 
-                                         fee=300, 
-                                         fee_type=1, 
+                                         fee_per_order=0,
+                                         fee_per_principal_ticket=300,
+                                         fee_per_subticket=0
                                      )
         return PaymentDeliveryMethodPair(
             system_fee=100, 
             transaction_fee=200, 
-            delivery_fee=300, 
+            delivery_fee_per_order=0,
+            delivery_fee_per_principal_ticket=300, 
+            delivery_fee_per_subticket=0,
             discount=0, 
             payment_method=payment_method, 
             delivery_method=delivery_method

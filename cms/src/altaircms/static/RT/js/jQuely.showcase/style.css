@@ -77,15 +77,22 @@ color: #444444;
 	background-color: #FFF;
 	text-align: center;
 	margin: 5px;
+	display:table;
+	width: 375px;
+	height: 230px;
+}
+.showcase-content a {
+    display:table-cell;
+    vertical-align: middle;
 }
 .showcase-content img {
 	max-width: 300px;
 	max-height: 230px;
 }
 .showcase-content-wrapper {
-text-align: center;
-display: table-cell;
-vertical-align: middle;
+	text-align: center;
+	display: table-cell;
+	vertical-align: middle;
 }
 
 /* Styling the tooltips 

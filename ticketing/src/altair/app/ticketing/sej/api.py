@@ -13,7 +13,7 @@ from sqlalchemy.orm.session import make_transient
 import sqlahelper
 
 from .utils import JavaHashMap
-from .models import SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, ThinSejTenant, SejTicketTemplateFile
+from .models import SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, ThinSejTenant, SejTicketTemplateFile, SejTicketType
 from .models import _session
 from .interfaces import ISejTenant
 from .exceptions import SejServerError, SejError, SejErrorBase
@@ -109,27 +109,35 @@ def refund_sej_order(request, tenant, sej_order, performance_name, performance_c
             re = session.merge(re)
 
             # create SejRefundTicket
-            for i, sej_ticket in enumerate(sej_tickets):
-                rt = session.query(SejRefundTicket).filter(and_(
-                    SejRefundTicket.order_no==sej_order.order_no,
-                    SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
-                )).first()
-                if not rt:
-                    rt = SejRefundTicket()
-                    session.add(rt)
+            i = 0
+            for sej_ticket in sej_tickets:
+                if sej_ticket.barcode_number is not None and \
+                   int(sej_ticket.ticket_type) in (SejTicketType.Ticket.v, SejTicketType.TicketWithBarcode.v):
+                    # 主券でかつバーコードがあるものだけ払戻する
+                    rt = session.query(SejRefundTicket).filter(and_(
+                        SejRefundTicket.order_no==sej_order.order_no,
+                        SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
+                    )).first()
+                    if not rt:
+                        rt = SejRefundTicket()
+                        session.add(rt)
 
-                rt.available = 1
-                rt.refund_event_id = re.id
-                rt.event_code_01 = performance_code
-                rt.order_no = sej_order.order_no
-                rt.ticket_barcode_number = sej_ticket.barcode_number
-                rt.refund_ticket_amount = ticket_price_getter(sej_ticket)
-                rt.refund_other_amount = per_ticket_fee
-                # 手数料などの払戻があったら1件目に含める
-                if per_order_fee > 0 and i == 0:
-                    rt.refund_other_amount += per_order_fee
+                    rt.available = 1
+                    rt.refund_event_id = re.id
+                    rt.event_code_01 = performance_code
+                    rt.order_no = sej_order.order_no
+                    rt.ticket_barcode_number = sej_ticket.barcode_number
+                    rt.refund_ticket_amount = ticket_price_getter(sej_ticket)
+                    rt.refund_other_amount = per_ticket_fee
+                    # 手数料などの払戻があったら1件目に含める
+                    if per_order_fee > 0 and i == 0:
+                        rt.refund_other_amount += per_order_fee
 
-                session.merge(rt)
+                    session.merge(rt)
+                    i += 1
+            if i == 0:
+                raise SejError(u'No refundable tickets found', sej_order.order_no)
+
             return re
         finally:
             session.commit()

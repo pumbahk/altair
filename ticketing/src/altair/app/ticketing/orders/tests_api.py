@@ -476,7 +476,7 @@ class SaveOrderModificationNewTest(SaveOrderModificationTestBase):
         return save_order_modification_new
 
     @mock.patch('altair.app.ticketing.orders.api.logger')
-    def test_zero_priced_product(self, logger):
+    def test_zero_principal_product(self, logger):
         from altair.app.ticketing.orders.exceptions import OrderCreationError
         from altair.app.ticketing.orders.models import Order
         order = self._create_order([
