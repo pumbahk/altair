@@ -76,7 +76,9 @@ ${entry.lot.name}<br/>
 <form name="" action="/lots/review" method="POST">
   <input type="hidden" name="entry_no" value="${entry.entry_no}"/>
   <input type="hidden" name="tel_no" value="${entry.shipping_address.tel_1}"/>
+  % if not h.is_disabled_order(entry):
   <input type="submit" value="抽選申込み内容詳細">
+  % endif
 </form>
 <hr/>
   % endfor
