@@ -362,16 +362,27 @@ class TransformApplier(object):
             if not numpy.allclose(self._skew, I):
                 elem.set(u'transform', to_matrix_string(self._skew))
         elif elem.tag in (u'{%s}text' % SVG_NAMESPACE, u'{%s}tspan' % SVG_NAMESPACE):
-            _rotate_scale_and_skew = self._rotate * self._scale * self._skew
-            transform_needed = not numpy.allclose(_rotate_scale_and_skew, I)
-            _translate = self._translate
-            if transform_needed:
-                inv = numpy.linalg.inv(_rotate_scale_and_skew)
-                self.trans = _translate = inv * _translate * _rotate_scale_and_skew
-                elem.set(u'transform', to_matrix_string(_rotate_scale_and_skew))
-            p1 = _translate * numpy.matrix([float(elem.get(u'x')), float(elem.get(u'y')), 1.]).transpose()
-            elem.set(u'x', unicode(p1[0, 0]))
-            elem.set(u'y', unicode(p1[1, 0]))
+            x_str = elem.get(u'x')
+            y_str = elem.get(u'y')
+            if x_str is not None and y_str is not None:
+                _rotate_scale_and_skew = self._rotate * self._scale * self._skew
+                transform_needed = not numpy.allclose(_rotate_scale_and_skew, I)
+                _translate = self._translate
+                if transform_needed:
+                    inv = numpy.linalg.inv(_rotate_scale_and_skew)
+                    self.trans = _translate = inv * _translate * _rotate_scale_and_skew
+                    elem.set(u'transform', to_matrix_string(_rotate_scale_and_skew))
+                p1 = _translate * numpy.matrix([float(x_str), float(y_str), 1.]).transpose()
+                elem.set(u'x', unicode(p1[0, 0]))
+                elem.set(u'y', unicode(p1[1, 0]))
+            else:
+                elem.set(u'transform', to_matrix_string(self.trans))
+                # ネストした要素には既にここで transform がかかっているはずなので適用したくない
+                self.trans = I
+                self._rotate = I
+                self._scale = I
+                self._skew = I
+                self._translate = I
         elif elem.tag == '{%s}flowRoot' % SVG_NAMESPACE:
             _rotate_scale_and_skew = self._rotate * self._scale * self._skew
             if not numpy.allclose(_rotate_scale_and_skew, I):

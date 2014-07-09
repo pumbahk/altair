@@ -653,3 +653,14 @@ class TicketsCleanerTest(TestCase):
         self.assertEqual(20, float(elem.get(u'width')))
         self.assertEqual(20, float(elem.get(u'height')))
 
+    def testTransformApplierTextNested(self):
+        from altair.app.ticketing.tickets.cleaner import TransformApplier
+        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10, 20)"><g transform="matrix(2, 0, 0, 2, 0, 0)"><text transform="matrix(1, 0, 0, 1, 10, 20)"><tspan transform="matrix(1, 0, 0, 1, 20, 30)">AAA</tspan></text></g></g></svg>''')
+        TransformApplier()(svg)
+        elem = svg[0][0][0]
+        self.assertEqual(None, elem.get(u'x'))
+        self.assertEqual(None, elem.get(u'x'))
+        self.assertEqual(u'matrix(2,0,0,2,30,60)', elem.get(u'transform'))
+        elem = svg[0][0][0][0]
+        self.assertEqual(u'matrix(1,0,0,1,20,30)', elem.get(u'transform'))
+

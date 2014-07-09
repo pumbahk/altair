@@ -15,7 +15,7 @@
         color: red;
     }
 </style>
-<form id="form1" name="form1" method="post" action="${request.url}">
+<form id="form1" name="form1" method="post" action="${request.current_route_path()}">
   % if event_id:
     <input type="hidden" name="event_id" value=${event_id} />
   % endif

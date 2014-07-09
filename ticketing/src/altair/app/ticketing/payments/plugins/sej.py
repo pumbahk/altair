@@ -173,8 +173,12 @@ SEJ_ORDER_ATTRS = [
     ]
 
 def is_same_sej_order(sej_order, sej_args, ticket_dicts):
-    if not all(getattr(sej_order, k) == sej_args[k] for k in SEJ_ORDER_ATTRS):
-        return False
+    for k in SEJ_ORDER_ATTRS:
+        v1 = getattr(sej_order, k)
+        v2 = sej_args[k]
+        if v1 != v2:
+            logger.debug('%s differs (%r != %r)' % (k, v1, v2))
+            return False
 
     if int(sej_order.payment_type) != SejPaymentType.PrepaymentOnly.v:
         # 発券が伴う場合は ticket も比較する
@@ -190,8 +194,6 @@ def is_same_sej_order(sej_order, sej_args, ticket_dicts):
             if ticket.performance_name != d['performance_name']:
                 return False
             if ticket.performance_datetime != d['performance_datetime']:
-                return False
-            if ticket.ticket_template_id != d['ticket_template_id']:
                 return False
             if ticket.ticket_template_id != d['ticket_template_id']:
                 return False
