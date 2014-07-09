@@ -12,6 +12,8 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from jsonrpclib import jsonrpc
 from pyramid.httpexceptions import HTTPBadRequest
+from altair.app.ticketing.payments.api import get_delivery_plugin
+from altair.app.ticketing.payments.interfaces import ISejDeliveryPlugin
 from altair.app.ticketing.payments.plugins import(
     SEJ_DELIVERY_PLUGIN_ID,
     QR_DELIVERY_PLUGIN_ID,
@@ -190,8 +192,16 @@ def preview_ticket_post_sej(context, request):
         .filter(c_models.TicketFormat.id == request.POST["ticket_format"]) \
         .one()
 
-    ptct = SEJTemplateTransformer(svgio=svgio, transform=transform).transform()
-    imgdata = preview.communicate(request, ptct, ticket_format)
+    delivery_plugin = get_delivery_plugin(request, SEJ_DELIVERY_PLUGIN_ID)
+    assert ISejDeliveryPlugin.providedBy(delivery_plugin)
+    template_record = delivery_plugin.template_record_for_ticket_format(request, ticket_format)
+    transformer = SEJTemplateTransformer(
+        svgio=svgio,
+        global_transform=transform,
+        notation_version=template_record.notation_version
+        )
+    ptct = transformer.transform()
+    imgdata = preview.communicate(request, (ptct, template_record), ticket_format)
     return as_filelike_response(request, imgdata)
 
 
@@ -312,9 +322,16 @@ class PreviewApiView(object):
                 .one()
             preview = SEJPreviewCommunication.get_instance(self.request)
             global_transform = transform_matrix_from_ticket_format(ticket_format)
-            transformer = SEJTemplateTransformer(svgio=StringIO(self.request.POST["svg"]), global_transform=global_transform)
+            delivery_plugin = get_delivery_plugin(self.request, SEJ_DELIVERY_PLUGIN_ID)
+            assert ISejDeliveryPlugin.providedBy(delivery_plugin)
+            template_record = delivery_plugin.template_record_for_ticket_format(self.request, ticket_format)
+            transformer = SEJTemplateTransformer(
+                svgio=StringIO(self.request.POST["svg"]),
+                global_transform=global_transform,
+                notation_version=template_record.notation_version
+                )
             ptct = transformer.transform()
-            imgdata = preview.communicate(self.request, ptct, ticket_format)
+            imgdata = preview.communicate(self.request, (ptct, template_record), ticket_format)
             return {"status": True, "data":base64.b64encode(imgdata), 
                     "width": transformer.width, "height": transformer.height} #original size
         except TicketPreviewFillValuesException, e:
@@ -362,9 +379,16 @@ class PreviewApiView(object):
                 .one()
             global_transform = transform_matrix_from_ticket_format(ticket_format)
             svg = FillvaluesTransformer(svg, self.request.POST).transform()
-            transformer = SEJTemplateTransformer(svgio=StringIO(svg), global_transform=global_transform)
+            delivery_plugin = get_delivery_plugin(self.request, SEJ_DELIVERY_PLUGIN_ID)
+            assert ISejDeliveryPlugin.providedBy(delivery_plugin)
+            template_record = delivery_plugin.template_record_for_ticket_format(self.request, ticket_format)
+            transformer = SEJTemplateTransformer(
+                svgio=StringIO(svg),
+                global_transform=global_transform,
+                notation_version=template_record.notation_version
+                )
             ptct = transformer.transform()
-            imgdata = preview.communicate(self.request, ptct)
+            imgdata = preview.communicate(self.request, (ptct, template_record), ticket_format)
             return {"status": True, "data":base64.b64encode(imgdata), 
                     "width": transformer.width, "height": transformer.height} #original size}
         except TicketPreviewTransformException, e:
@@ -700,9 +724,16 @@ class DownloadListOfPreviewImage(object):
                 svg = template_fillvalues(ticket.drawing, build_dict_from_product_item(product_item))
                 if str(dm.delivery_plugin_id) == str(SEJ_DELIVERY_PLUGIN_ID):
                     global_transform = transform_matrix_from_ticket_format(ticket.ticket_format)
-                    transformer = SEJTemplateTransformer(svgio=StringIO(svg), global_transform=global_transform)
-                    svg = transformer.transform()
-                    svg_string_list.append((svg, product_item, ticket, "sej"))
+                    delivery_plugin = get_delivery_plugin(self.request, SEJ_DELIVERY_PLUGIN_ID)
+                    assert ISejDeliveryPlugin.providedBy(delivery_plugin)
+                    template_record = delivery_plugin.template_record_for_ticket_format(self.request, ticket_format)
+                    transformer = SEJTemplateTransformer(
+                        svgio=StringIO(svg),
+                        global_transform=global_transform,
+                        notation_version=template_record.notation_version
+                        )
+                    ptct = transformer.transform()
+                    svg_string_list.append(((ptct, template_record), product_item, ticket, "sej"))
                 else:
                     transformer = SVGTransformer(svg)
                     transformer.data["ticket_format"] = ticket.ticket_format

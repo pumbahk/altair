@@ -3,7 +3,8 @@ INSERT INTO SejTicketTemplateFile (
     template_id,
     template_name,
     ticket_html,
-    ticket_css
+    ticket_css,
+    notation_version
 ) VALUES (
     '4',
     'NTTS000002',
@@ -928,5 +929,6 @@ window.onload = function() {
   </div>
 </body>
 </html>',
-    ''
+    '',
+    2
 );

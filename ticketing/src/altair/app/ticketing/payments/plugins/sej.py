@@ -112,7 +112,7 @@ def get_ticket_template_id_from_ticket_format(ticket_format):
         retval = u'TTTS000001' # XXX: デフォルト
     return retval
 
-def get_tickets(order, ticket_template_id=None):
+def get_tickets(request, order, ticket_template_id=None):
     tickets = []
     issuer = NumberIssuer()
     for ordered_product in order.items:
@@ -126,14 +126,25 @@ def get_tickets(order, ticket_template_id=None):
                     else:
                         ticket_type = SejTicketType.Ticket
                     ticket_format = ticket.ticket_format
+                    ticket_template_id = get_ticket_template_id_from_ticket_format(ticket_format)
                     transform = transform_matrix_from_ticket_format(ticket_format)
-                    svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
-                    ticket_template_id = get_ticket_template_id_from_ticket_format(ticket.ticket_format)
+                    template_record = get_ticket_template_record(request, ticket_template_id)
+                    notation_version = template_record.notation_version if template_record is not None else 1
+                    svg = etree.tostring(
+                        convert_svg(
+                            etree.ElementTree(
+                                etree.fromstring(pystache.render(ticket.data['drawing'], dict_))
+                                ),
+                            global_transform=transform,
+                            notation_version=notation_version
+                            ),
+                        encoding=unicode
+                        )
                     ticket = get_sej_ticket_data(ordered_product_item.product_item, ticket_type, svg, ticket_template_id)
                     tickets.append(ticket)
     return tickets
 
-def get_tickets_from_cart(cart, now):
+def get_tickets_from_cart(request, cart, now):
     tickets = []
     issuer = NumberIssuer()
     for carted_product in cart.items:
@@ -147,9 +158,20 @@ def get_tickets_from_cart(cart, now):
                     else:
                         ticket_type = SejTicketType.Ticket
                     ticket_format = ticket.ticket_format
+                    ticket_template_id = get_ticket_template_id_from_ticket_format(ticket_format)
                     transform = transform_matrix_from_ticket_format(ticket_format)
-                    svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
-                    ticket_template_id = get_ticket_template_id_from_ticket_format(ticket.ticket_format)
+                    template_record = get_ticket_template_record(request, ticket_template_id)
+                    notation_version = template_record.notation_version if template_record is not None else 1
+                    svg = etree.tostring(
+                        convert_svg(
+                            etree.ElementTree(
+                                etree.fromstring(pystache.render(ticket.data['drawing'], dict_))
+                                ),
+                            global_transform=transform,
+                            notation_version=notation_version
+                            ),
+                        encoding=unicode
+                        )
                     ticket = get_sej_ticket_data(carted_product_item.product_item, ticket_type, svg, ticket_template_id)
                     tickets.append(ticket)
     return tickets
@@ -209,7 +231,7 @@ def refresh_order(request, tenant, order, update_reason):
         raise SejPluginFailure('no corresponding SejOrder found', order_no=order.order_no, back_url=None)
 
     sej_args = build_sej_args(sej_order.payment_type, order, order.created_at)
-    ticket_dicts = get_tickets(order)
+    ticket_dicts = get_tickets(request, order)
 
     if is_same_sej_order(sej_order, sej_args, ticket_dicts):
         logger.info('the resulting order is the same as the old one; will do nothing')
@@ -495,9 +517,9 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         try:
             if isinstance(order_like, Cart):
-                tickets = get_tickets_from_cart(order_like, current_date)
+                tickets = get_tickets_from_cart(request, order_like, current_date)
             else:
-                tickets = get_tickets(order_like)
+                tickets = get_tickets(request, order_like)
             sej_order = create_sej_order(
                 request,
                 tickets=tickets,
@@ -564,7 +586,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         payment_type = determine_payment_type(current_date, order_like)
         try:
-            tickets = get_tickets(order_like)
+            tickets = get_tickets(request, order_like)
             sej_order = create_sej_order(
                 request,
                 tickets=tickets,

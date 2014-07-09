@@ -67,6 +67,7 @@ class SejTicketTemplateFile(Base, WithTimestamp, LogicallyDeleted):
     publish_start_date      = Column(Date)
     publish_end_date        = Column(Date)
     sent_at                 = Column(DateTime)
+    notation_version        = Column(Integer, nullable=False)
 
 
 class SejRefundEvent(Base, WithTimestamp, LogicallyDeleted):
