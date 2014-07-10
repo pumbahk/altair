@@ -77,7 +77,9 @@ def setup_product_item(quantity, quantity_only, organization, stock_type=None):
     payment_delivery_method_pair = PaymentDeliveryMethodPair(
         system_fee=100, 
         transaction_fee=200, 
-        delivery_fee=300, 
+        delivery_fee_per_order=0,
+        delivery_fee_per_principal_ticket=300,
+        delivery_fee_per_subticket=0,
         discount=0, 
         payment_method=PaymentMethod(
             name=":PaymentMethod:name", 
@@ -86,8 +88,9 @@ def setup_product_item(quantity, quantity_only, organization, stock_type=None):
             payment_plugin_id=2), 
         delivery_method=DeliveryMethod(
             name=":DeliveryMethod:name", 
-            fee=300, 
-            fee_type=1, 
+            fee_per_order=0,
+            fee_per_principal_ticket=300,
+            fee_per_subticket=0,
             delivery_plugin_id=2)
     )
 

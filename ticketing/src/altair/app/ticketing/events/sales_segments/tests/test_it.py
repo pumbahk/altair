@@ -63,14 +63,15 @@ class SalesSegmentsTests(unittest.TestCase):
         organization = Organization(short_name='testing')
         account = Account(organization=organization)
         event = Event(organization=organization)
-        pdmp = PaymentDeliveryMethodPair(system_fee=0,
-                                         transaction_fee=0,
-                                         delivery_fee=0,
-                                         discount=0,
-                                         payment_method=PaymentMethod(fee=0,
-                                                                      name="testing-payment"),
-                                         delivery_method=DeliveryMethod(fee=0,
-                                                                        name="testing-delivery"))
+        pdmp = PaymentDeliveryMethodPair(
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee_per_order=0,
+            delivery_fee_per_principal_ticket=0,
+            delivery_fee_per_subticket=0,
+            discount=0,
+            payment_method=PaymentMethod(fee=0, name="testing-payment"),
+            delivery_method=DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, name="testing-delivery"))
         membergroup = MemberGroup()
         sales_segment_group=SalesSegmentGroup(event=event,
                                               organization=organization,
@@ -144,10 +145,12 @@ class SalesSegmentsTests(unittest.TestCase):
         pdmp = PaymentDeliveryMethodPair(
             system_fee=0,
             transaction_fee=0,
-            delivery_fee=0,
+            delivery_fee_per_order=0,
+            delivery_fee_per_principal_ticket=0,
+            delivery_fee_per_subticket=0,
             discount=0,
             payment_method=PaymentMethod(fee=0, name="testing-payment"),
-            delivery_method=DeliveryMethod(fee=0, name="testing-delivery")
+            delivery_method=DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0, name="testing-delivery")
             )
         membergroup = MemberGroup()
         sales_segment_group=SalesSegmentGroup(
@@ -279,18 +282,22 @@ class EditSalesSegmentTests(unittest.TestCase):
                 PaymentDeliveryMethodPair(
                     system_fee=0,
                     transaction_fee=0,
-                    delivery_fee=0,
+                    delivery_fee_per_order=0,
+                    delivery_fee_per_principal_ticket=0,
+                    delivery_fee_per_subticket=0,
                     discount=0,
                     payment_method=PaymentMethod(name='testing-payment', fee=0),
-                    delivery_method=DeliveryMethod(name='testing-delivery', fee=0)
+                    delivery_method=DeliveryMethod(name='testing-delivery', fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0)
                 ),
                 PaymentDeliveryMethodPair(
                     system_fee=0,
                     transaction_fee=0,
-                    delivery_fee=0,
+                    delivery_fee_per_order=0,
+                    delivery_fee_per_principal_ticket=0,
+                    delivery_fee_per_subticket=0,
                     discount=0,
                     payment_method=PaymentMethod(name='testing-payment', fee=0),
-                    delivery_method=DeliveryMethod(name='testing-delivery', fee=0)
+                    delivery_method=DeliveryMethod(name='testing-delivery', fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0)
                     ),
                 ]
             )

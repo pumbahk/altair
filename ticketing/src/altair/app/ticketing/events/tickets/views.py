@@ -379,7 +379,7 @@ def easycreate_transcribe_ticket(context, request):
 def create_ticket_from_form(form, base_ticket):  # xxx: todo: move to anywhere
     ticket = Ticket(
         always_reissueable=base_ticket.always_reissueable, 
-        priced=base_ticket.priced, 
+        principal=base_ticket.principal, 
         filename="uploaded.svg", 
         organization=base_ticket.organization, 
     )
@@ -500,7 +500,7 @@ def getting_ticket_template_data(context, request):
 
     return {
         "iterable": [{"pk": t.id, "name": t.name, "checked": False} for t in tickets],
-        "tickets": {t.id:{"pk": t.id, "name": t.name, "cover_print":t.cover_print, "priced":t.priced, "always_reissueable": t.always_reissueable} for t in tickets}
+        "tickets": {t.id:{"pk": t.id, "name": t.name, "cover_print":t.cover_print, "principal":t.principal, "always_reissueable": t.always_reissueable} for t in tickets}
     }
 
 

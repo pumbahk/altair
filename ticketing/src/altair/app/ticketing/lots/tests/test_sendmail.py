@@ -69,10 +69,14 @@ class send_accepted_mailTests(unittest.TestCase, MailTestMixin):
                     fee_type=0,
                 ),
                 delivery_method=core_models.DeliveryMethod(
-                    fee_type=1,
+                    fee_per_order=0,
+                    fee_per_principal_ticket=0,
+                    fee_per_subticket=0
                 ),
                 transaction_fee=0,
-                delivery_fee=115,
+                delivery_fee_per_order=0,
+                delivery_fee_per_principal_ticket=115,
+                delivery_fee_per_subticket=0
             ),
             wishes=[lots_models.LotEntryWish(wish_order=1,
                                              performance=core_models.Performance(

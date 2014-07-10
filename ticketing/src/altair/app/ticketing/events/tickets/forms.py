@@ -204,7 +204,7 @@ class EasyCreateTemplateUploadForm(OurForm):
         label=u"常に再発券可能"
         )
 
-    priced = OurBooleanField(
+    principal = OurBooleanField(
         label=u"手数料計算に含める"
         )
 
