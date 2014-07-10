@@ -442,16 +442,16 @@ class OrderCSV(object):
 
 class RefundResultCSVExporter(object):
     csv_header = [
-        (u'order_no'            , u'予約番号'),
-        (u'stock_type_name'     , u'席種'),
-        (u'product_name'        , u'商品名'),
-        (u'product_item_name'   , u'商品明細名'),
-        (u'sent_at'             , u'データ送信日時'),
-        (u'refunded_at'         , u'コンビニ払戻日時'),
-        (u'barcode_number'      , u'バーコード番号'),
-        (u'refund_ticket_amount', u'払戻金額(チケット分)'),
-        (u'refund_other_amount' , u'払戻金額(手数料分)'),
-        (u'status'              , u'払戻状態)'
+        ('order_no'            , u'予約番号'),
+        ('stock_type_name'     , u'席種'),
+        ('product_name'        , u'商品名'),
+        ('product_item_name'   , u'商品明細名'),
+        ('sent_at'             , u'データ送信日時'),
+        ('refunded_at'         , u'コンビニ払戻日時'),
+        ('barcode_number'      , u'バーコード番号'),
+        ('refund_ticket_amount', u'払戻金額(チケット分)'),
+        ('refund_other_amount' , u'払戻金額(手数料分)'),
+        ('status'              , u'払戻状態')
         ]
 
     def __init__(self, session, refund):
@@ -487,8 +487,8 @@ class RefundResultCSVExporter(object):
             )
         for row in query:
             yield OrderedDict([
-                (c, row[c] if row[c] is not None else u'')
-                for c in self.csv_header
+                (name, getattr(row, k) if getattr(row, k) is not None else u'')
+                for (k, name) in self.csv_header
                 ])
 
     def all(self):
