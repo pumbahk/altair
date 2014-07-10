@@ -1,15 +1,22 @@
 # -*- coding: utf-8 -*-
 
+import logging
 from collections import OrderedDict
 
 from paste.util.multidict import MultiDict
-from sqlalchemy.sql.expression import or_
+from sqlalchemy.sql.expression import and_, or_
 
 from altair.app.ticketing.cart.helpers import format_number as _format_number
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from altair.app.ticketing.utils import dereference
 from altair.app.ticketing.csvutils import CSVRenderer, PlainTextRenderer, CollectionRenderer, AttributeRenderer, SimpleRenderer
+from altair.app.ticketing.core.models import StockType, Stock, Product, ProductItem
+from altair.app.ticketing.sej.models import SejRefundTicket, SejTicket
+from altair.app.ticketing.orders.models import Order
 from .api import get_ordered_product_metadata_provider_registry
+
+logger = logging.getLogger(__name__)
+
 
 def format_number(value):
     return _format_number(float(value))
@@ -431,3 +438,58 @@ class OrderCSV(object):
             for record in self.iter_records(order):
                 renderer.append(record)
         return renderer(localized_columns=self.localized_columns)
+
+
+class RefundResultCSVExporter(object):
+    csv_header = [
+        (u'order_no'            , u'予約番号'),
+        (u'stock_type_name'     , u'席種'),
+        (u'product_name'        , u'商品名'),
+        (u'product_item_name'   , u'商品明細名'),
+        (u'sent_at'             , u'データ送信日時'),
+        (u'refunded_at'         , u'コンビニ払戻日時'),
+        (u'barcode_number'      , u'バーコード番号'),
+        (u'refund_ticket_amount', u'払戻金額(チケット分)'),
+        (u'refund_other_amount' , u'払戻金額(手数料分)'),
+        (u'status'              , u'払戻状態)'
+        ]
+
+    def __init__(self, session, refund):
+        self.session = session
+        self.refund = refund
+
+    def __iter__(self):
+        query = self.session.query(Order).join(
+                SejRefundTicket, and_(SejRefundTicket.order_no==Order.order_no, SejRefundTicket.deleted_at==None)
+            ).join(
+                SejTicket, and_(SejTicket.barcode_number==SejRefundTicket.ticket_barcode_number, SejTicket.deleted_at==None)
+            ).join(
+                ProductItem, and_(ProductItem.id==SejTicket.product_item_id, ProductItem.deleted_at==None)
+            ).join(
+                Product, and_(Product.id==ProductItem.product_id, Product.deleted_at==None)
+            ).join(
+                Stock, and_(Stock.id==ProductItem.stock_id, Stock.deleted_at==None)
+            ).join(
+                StockType, and_(StockType.id==Stock.stock_type_id, StockType.deleted_at==None)
+            ).filter(
+                Order.refund_id==self.refund.id
+            ).with_entities(
+                SejRefundTicket.order_no.label('order_no'),
+                StockType.name.label('stock_type_name'),
+                Product.name.label('product_name'),
+                ProductItem.name.label('product_item_name'),
+                SejRefundTicket.sent_at.label('sent_at'),
+                SejRefundTicket.refunded_at.label('refunded_at'),
+                SejRefundTicket.ticket_barcode_number.label('barcode_number'),
+                SejRefundTicket.refund_ticket_amount.label('refund_ticket_amount'),
+                SejRefundTicket.refund_other_amount.label('refund_other_amount'),
+                SejRefundTicket.status.label('status'),
+            )
+        for row in query:
+            yield OrderedDict([
+                (c, row[c] if row[c] is not None else u'')
+                for c in self.csv_header
+                ])
+
+    def all(self):
+        return list(self)

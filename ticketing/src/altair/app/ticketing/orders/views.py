@@ -63,7 +63,7 @@ from altair.app.ticketing.orders.models import (
     )
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
-from altair.app.ticketing.orders.export import OrderCSV, get_japanese_columns
+from altair.app.ticketing.orders.export import OrderCSV, get_japanese_columns, RefundResultCSVExporter
 from altair.app.ticketing.orders.forms import (
     OrderForm,
     OrderSearchForm,
@@ -773,6 +773,24 @@ class OrdersRefundDetailView(BaseView):
             refund=refund,
             core_helpers=core_helpers
             )
+
+
+@view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='csv')
+class OrdersRefundExportView(BaseView):
+
+    @view_config(route_name='orders.refund.export_result')
+    def export_result(self):
+        refund_id = long(self.request.matchdict.get('refund_id', 0))
+        refund = Refund.get(refund_id, organization_id=self.context.organization.id)
+        if refund is None:
+            return HTTPNotFound()
+
+        slave_session = get_db_session(self.request, name='slave')
+        refund_tickets = RefundResultCSVExporter(slave_session, refund).all()
+        filename='refund_result-{}.csv'.format(refund_id)
+        self.request.response.content_type = 'text/plain;charset=Shift_JIS'
+        self.request.response.content_disposition = 'attachment; filename=' + filename
+        return dict(data=list(refund_tickets), encoding='sjis', filename=filename)
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/new.html')
