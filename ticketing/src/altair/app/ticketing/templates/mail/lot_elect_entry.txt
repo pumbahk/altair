@@ -41,7 +41,7 @@ ${get("order_datetime").body}
 
 <第${elected_wish.wish_order + 1}希望>
 公演名：${elected_wish.performance.name}
-公演日：${h.performance_date(elected_wish.performance)}
+公演日：${h.performance_datetime(elected_wish.performance)}
 会場：${elected_wish.performance.venue.name}
 申込内容
 %for product in elected_wish.products:

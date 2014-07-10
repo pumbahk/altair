@@ -79,8 +79,9 @@ def singletons(elem):
         return None
 
 class TicketNotationEmitter(object):
-    def __init__(self, result):
+    def __init__(self, result, notation_version):
         self.result = result
+        self.notation_version = notation_version
 
     def emit_scalar_value(self, value, string_as_symbol=False):
         if isinstance(value, basestring):
@@ -146,16 +147,18 @@ class TicketNotationEmitter(object):
         self.result.append(u'U')
 
     def emit_show_text(self, anchor, text):
-        self.emit_symbol(unicode(anchor))
-        self.emit_scalar_value(unicode(text))
-        self.result.append(u'x')
+        if self.notation_version >= 2:
+            self.emit_symbol(unicode(anchor))
+            self.emit_scalar_value(unicode(text))
+            self.result.append(u'x')
 
     def emit_show_dom_node_text(self, anchor, path):
-        self.emit_symbol(unicode(anchor))
-        self.emit_scalar_value(unicode(path))
-        self.result.append(u'xn')
-        self.result.append(u'sxn')
-        self.result.append(u'x')
+        if self.notation_version >= 2:
+            self.emit_symbol(unicode(anchor))
+            self.emit_scalar_value(unicode(path))
+            self.result.append(u'xn')
+            self.result.append(u'sxn')
+            self.result.append(u'x')
 
     def emit_show_text_block(self, width, height, text):
         self.emit_scalar_value(float(width))
@@ -1243,19 +1246,21 @@ def handle_qrcode(retval, qrcode):
     retval.append(E.QR_VER(u'%02d' % (level + 1)))
     retval.append(E.QR_CELL('%d' % cell_size))
 
-def to_opcodes(doc, global_transform=None):
+def to_opcodes(doc, global_transform=None, notation_version=1):
     opcodes = []
     emitter = ScaleFilter(Assembler(opcodes), .1)
     emitter.emit_unit('px')
     Scanner(Visitor(emitter, global_transform))([doc.getroot()])
     opcodes = Optimizer()(opcodes)
     result = []
-    emit_opcodes(TicketNotationEmitter(result), opcodes)
+    emit_opcodes(TicketNotationEmitter(result, notation_version), opcodes)
     return result
 
-def convert_svg(doc, global_transform=None):
+def convert_svg(doc, global_transform=None, notation_version=None):
+    if notation_version is None:
+        notation_version = 1
     retval = E.TICKET(
-        E.b(u' '.join(to_opcodes(doc, global_transform))), 
+        E.b(u' '.join(to_opcodes(doc, global_transform, notation_version))), 
         E.FIXTAG01(),
         E.FIXTAG02(),
         E.FIXTAG03(),
