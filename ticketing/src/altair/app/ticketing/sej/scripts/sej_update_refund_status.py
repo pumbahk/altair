@@ -8,15 +8,17 @@ import os
 import sys
 import logging
 import argparse
+import transaction
 from datetime import date, datetime, timedelta
 from dateutil.parser import parse as parsedate
 
 from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.orm.exc import NoResultFound
 
+from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.sej.scripts.sej_file_download import download, get_download_filename
 from altair.app.ticketing.sej.scripts.sej_parse_file import process_files
-from altair.app.ticketing.sej.models import _session, SejRefundEvent, SejRefundTicket
+from altair.app.ticketing.sej.models import SejRefundEvent, SejRefundTicket
 from altair.app.ticketing.sej.file import parsers, SejFileReader, SejRefundFileParser
 from altair.app.ticketing.sej.notification.models import SejNotificationType
 
@@ -41,12 +43,15 @@ def update_refund_status(in_filename, in_encoding='CP932'):
                     received_at
                     ))
                 try:
-                    refund_ticket = _session.query(SejRefundTicket).filter(
+                    trans = transaction.begin()
+                    refund_ticket = DBSession.query(SejRefundTicket).filter(
                         SejRefundTicket.order_no==order_no,
                         SejRefundTicket.ticket_barcode_number==ticket_barcode_number
                         ).one()
                     refund_ticket.refunded_at = received_at
                     refund_ticket.status = refund_status
+                    DBSession.merge(refund_ticket)
+                    trans.commit()
                 except NoResultFound as e:
                     logger.error(e.message)
 
@@ -78,7 +83,7 @@ def main(argv=sys.argv):
         return
 
     # 対象となる払戻イベントがあるならダウンロード
-    refund_events = _session.query(SejRefundEvent).filter(SejRefundEvent.start_at<=target_date, target_date<=SejRefundEvent.end_at).all()
+    refund_events = DBSession.query(SejRefundEvent).filter(SejRefundEvent.start_at<=target_date, target_date<=SejRefundEvent.end_at).all()
     logger.info(u'SejRefundEvent start_at<={0}<=and end_at -> {1} records'.format(target_date, len(refund_events)))
 
     processed_shops = set()
