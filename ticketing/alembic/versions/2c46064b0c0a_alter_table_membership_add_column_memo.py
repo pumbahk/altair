@@ -1,14 +1,14 @@
 """alter table Membership add column memo
 
 Revision ID: 2c46064b0c0a
-Revises: 12b52292a9c0
+Revises: cba5b2d872c
 Create Date: 2014-07-04 16:38:08.812527
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '2c46064b0c0a'
-down_revision = '48b361955fed'
+down_revision = 'cba5b2d872c'
 
 from alembic import op
 import sqlalchemy as sa
