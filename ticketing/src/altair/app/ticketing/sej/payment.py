@@ -396,6 +396,7 @@ def request_update_order(request_or_registry, tenant, sej_order, update_reason):
             if not ticket:
                 continue
             ticket.barcode_number = barcode_number
+    return sej_order
 
 def request_fileget(request_or_registry, tenant, notification_type, date):
     """ファイル取得先 https://inticket.sej.co.jp/order/getfile.do"""
