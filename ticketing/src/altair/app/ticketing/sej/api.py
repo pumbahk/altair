@@ -16,7 +16,7 @@ from .utils import JavaHashMap
 from .models import SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, ThinSejTenant, SejTicketTemplateFile, SejTicketType
 from .models import _session
 from .interfaces import ISejTenant
-from .exceptions import SejServerError, SejError, SejErrorBase
+from .exceptions import SejServerError, SejError, SejErrorBase, RefundTotalAmountOverError
 from .payment import request_cancel_order, request_order, request_update_order
 from pyramid.threadlocal import get_current_registry
 from pyramid.interfaces import IRequest
@@ -75,7 +75,22 @@ def cancel_sej_order(request, tenant, sej_order, now=None, session=None):
         logger.exception(u'unhandled exception')
         raise SejError(u'generic failure (reason: %s)' % unicode(e), sej_order.order_no)
 
-def refund_sej_order(request, tenant, sej_order, performance_name, performance_code, performance_start_on, per_order_fee, per_ticket_fee, ticket_price_getter, refund_start_at, refund_end_at, need_stub, ticket_expire_at, now, session=None):
+def refund_sej_order(request,
+                     tenant,
+                     sej_order,
+                     performance_name,
+                     performance_code,
+                     performance_start_on,
+                     per_order_fee,
+                     per_ticket_fee,
+                     ticket_price_getter,
+                     refund_start_at,
+                     refund_end_at,
+                     need_stub,
+                     ticket_expire_at,
+                     refund_total_amount,
+                     now,
+                     session=None):
     if session is None:
         session = _session
     if sej_order.cancel_at:
@@ -110,6 +125,7 @@ def refund_sej_order(request, tenant, sej_order, performance_name, performance_c
 
             # create SejRefundTicket
             i = 0
+            sum_amount = 0
             for sej_ticket in sej_tickets:
                 if sej_ticket.barcode_number is not None and \
                    int(sej_ticket.ticket_type) in (SejTicketType.Ticket.v, SejTicketType.TicketWithBarcode.v):
@@ -133,6 +149,12 @@ def refund_sej_order(request, tenant, sej_order, performance_name, performance_c
                     if per_order_fee > 0 and i == 0:
                         rt.refund_other_amount += per_order_fee
 
+                    # チケットデータの状態不正などにより払戻データの合計額が予約金額を超える場合はエラーにする
+                    sum_amount += rt.refund_ticket_amount + rt.refund_other_amount
+                    if refund_total_amount < sum_amount:
+                        logger.error(u'check over amount {0} < {1}'.format(refund_total_amount, sum_amount))
+                        raise RefundTotalAmountOverError(u'refund total amount over: {0} < {1}'.format(refund_total_amount, sum_amount))
+
                     session.merge(rt)
                     i += 1
             if i == 0:
@@ -141,7 +163,7 @@ def refund_sej_order(request, tenant, sej_order, performance_name, performance_c
             return re
         finally:
             session.commit()
-    except SejErrorBase:
+    except (RefundTotalAmountOverError, SejErrorBase):
         raise
     except Exception as e:
         logger.exception(u'unhandled exception')

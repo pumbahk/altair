@@ -594,6 +594,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                 self,
                                 sej_ticket.product_item_id
                                 ),
+                        refund_total_amount=self.refund_total_amount,
                         now=now
                         )
                 except SejError:

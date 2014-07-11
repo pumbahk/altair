@@ -36,3 +36,6 @@ class SejServerError(SejErrorBase):
 
     def __str__(self):
         return "status_code=%d&reason=%s: body: %s" % (self.status_code, self.reason, self.body)
+
+class RefundTotalAmountOverError(Exception):
+    pass
