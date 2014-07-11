@@ -368,6 +368,8 @@ def toutc(dt, default_tz=None):
     return dt.astimezone(pytz.utc)
 
 def todatetime(d):
+    if isinstance(d, datetime):
+        return d
     if not isinstance(d, date):
         raise TypeError()
     return datetime.fromordinal(d.toordinal())
