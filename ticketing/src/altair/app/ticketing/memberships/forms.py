@@ -35,6 +35,12 @@ class MembershipForm(Form):
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ])
+    memo = TextField(
+        label=u'種別情報',
+        validators=[
+            Optional(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ])
     membership_id = HiddenField(
         label=u'ID',
         validators=[Optional()],

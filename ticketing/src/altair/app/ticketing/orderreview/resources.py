@@ -43,6 +43,15 @@ class OrderReviewResource(object):
                 ) \
             .first()
 
+    @reify
+    def memberships(self):
+        return self.session.query(Membership) \
+            .filter_by(
+                deleted_at=None,
+                organization_id=self.organization_id
+                ) \
+            .all()
+
     @property
     def membership_name(self):
         return self.membership.name
@@ -71,11 +80,6 @@ class OrderReviewResource(object):
                 sej_order = get_sej_order(order_no, self.session)
 
         return order, sej_order
-
-    def get_membership(self):
-        org = cart_api.get_organization(self.request)
-        membership = Membership.query.filter(Membership.organization_id==org.id).first()
-        return membership
 
     def get_shipping_address(self, user):
         shipping_address = ShippingAddress.query.filter(
