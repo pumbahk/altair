@@ -226,7 +226,8 @@ def is_same_sej_order(sej_order, sej_args, ticket_dicts):
     return True
 
 def refresh_order(request, tenant, order, update_reason):
-    sej_order = get_sej_order(order.order_no)
+    from altair.app.ticketing.sej.models import _session
+    sej_order = get_sej_order(order.order_no, session=_session)
     if sej_order is None:
         raise SejPluginFailure('no corresponding SejOrder found', order_no=order.order_no, back_url=None)
 
@@ -255,12 +256,16 @@ def refresh_order(request, tenant, order, update_reason):
     new_sej_order.total_ticket_count = new_sej_order.ticket_count = len(new_sej_order.tickets)
 
     try:
-        refresh_sej_order(
+        new_sej_order = refresh_sej_order(
             request,
             tenant=tenant,
             sej_order=new_sej_order,
-            update_reason=update_reason
+            update_reason=update_reason,
+            session=_session
             )
+        sej_order.cancel_at = new_sej_order.created_at
+        _session.add(sej_order)
+        _session.commit()
     except SejErrorBase:
         raise SejPluginFailure('refresh_order', order_no=order.order_no, back_url=None)
 

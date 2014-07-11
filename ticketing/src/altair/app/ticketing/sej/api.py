@@ -26,30 +26,32 @@ def do_sej_order(request, tenant, sej_order, now=None, session=None):
         session = _session
     try:
         try:
-            return request_order(request, tenant, sej_order)
+            sej_order = request_order(request, tenant, sej_order)
         finally:
-            session.merge(sej_order)
+            sej_order = session.merge(sej_order)
             session.commit()
     except SejErrorBase:
         raise
     except Exception as e:
         logger.exception(u'unhandled exception')
         raise SejError(u'generic failure (reason: %s)' % unicode(e), sej_order.order_no)
+    return sej_order
 
 def refresh_sej_order(request, tenant, sej_order, update_reason, now=None, session=None):
     if session is None:
         session = _session
     try:
         try:
-            return request_update_order(request, tenant, sej_order, update_reason)
+            sej_order = request_update_order(request, tenant, sej_order, update_reason)
         finally:
-            session.merge(sej_order)
+            sej_order = session.merge(sej_order)
             session.commit()
     except SejErrorBase:
         raise
     except Exception as e:
         logger.exception(u'unhandled exception')
         raise SejError(u'generic failure (reason: %s)' % unicode(e), sej_order.order_no)
+    return sej_order
 
 def cancel_sej_order(request, tenant, sej_order, now=None, session=None):
     if session is None:
@@ -67,13 +69,14 @@ def cancel_sej_order(request, tenant, sej_order, now=None, session=None):
                 now=now
             )
         finally:
-            session.merge(sej_order)
+            sej_order = session.merge(sej_order)
             session.commit()
     except SejErrorBase:
         raise
     except Exception as e:
         logger.exception(u'unhandled exception')
         raise SejError(u'generic failure (reason: %s)' % unicode(e), sej_order.order_no)
+    return sej_order
 
 def refund_sej_order(request, tenant, sej_order, performance_name, performance_code, performance_start_on, per_order_fee, per_ticket_fee, ticket_price_getter, refund_start_at, refund_end_at, need_stub, ticket_expire_at, now, session=None):
     if session is None:
