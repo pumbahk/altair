@@ -47,9 +47,9 @@
                 <td colspan="2" align="left">
                 <div class="tal">
                   <select name="membership" style="width: 100%">
-                    <option value="KE">SECRET</option>
-                    <option value="KE001">Block.B</option>
-                    <option value="KE002">No min woo</option>
+                    % for membership in memberships:
+                      <option value="${membership.name}">${membership.memo}</option>
+                    % endfor
                   </select>
                 </div>
                 </td>
