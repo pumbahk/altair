@@ -51,7 +51,8 @@ class MembershipView(BaseView):
         if not form.validate():
             return {"form":form}
         membership = umodels.Membership(name=form.data["name"], 
-                                        organization_id=form.data["organization_id"])
+                                        organization_id=form.data["organization_id"],
+                                        memo=form.data['memo'])
         DBSession.add(membership)
         self.request.session.flash(u"membershipを保存しました")
         return HTTPFound(self.request.route_url("memberships", action="index", membership_id="*"))
@@ -75,6 +76,7 @@ class MembershipView(BaseView):
         membership = umodels.Membership.query.filter_by(id=self.request.matchdict["membership_id"]).first()
         membership.name=form.data["name"]
         membership.organization_id=form.data["organization_id"]
+        membership.memo=form.data['memo']
 
         DBSession.add(membership)
         self.request.session.flash(u"membershipを編集しました")
