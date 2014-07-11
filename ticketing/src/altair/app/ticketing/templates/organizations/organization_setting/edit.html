@@ -28,6 +28,7 @@
 <div class="well">
   <form class="form-horizontal" action="${route_path}" method="POST">
     <fieldset>
+      ${ch.form_item(form.id)}
       ${ch.form_item(form.name)}
       ${ch.form_item(form.auth_type)}
       ${ch.form_item(form.performance_selector)}
