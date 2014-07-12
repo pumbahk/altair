@@ -22,6 +22,7 @@ from .utils import (
     enqueue_token
     )
 from altair.metadata.api import with_provided_value
+from altair.app.ticketing.orders.models import OrderedProductAttribute
 
 def get_enqueue_each_print_action(order, ticket_format_id, candidate_id_list):
     #token@seat@ordered_product_item.id@ticket.id
@@ -207,6 +208,47 @@ class JoinedObjectsForProductItemDependentsProvider(object):
                 attr_list.append(with_provided_value(metadata_provider_registry, ordered_product_item.id, pair[0], pair[1]))
         attr_list = sorted(attr_list, key=lambda x: x[1])
         return attr_list
+
+    def add_product_item_attributes(self, metadata_provider_registry):
+        target_ordered_product_item = None
+        ordered_product_items = self.ordered_product_item_list
+
+        if not ordered_product_items:
+            return
+
+        for ordered_product_item in ordered_product_items:
+            for pair in ordered_product_item.attributes.items():
+                target_ordered_product_item = ordered_product_item
+                break;
+
+        if not target_ordered_product_item:
+            target_ordered_product_item = ordered_product_items[0]
+
+        event_id = target_ordered_product_item.ordered_product.order.performance.event.id
+        meta_data = None
+        if event_id == 1:
+            meta_data = metadata_provider_registry.queryProviderByName('booster.89ers').metadata
+        if event_id == 543:
+            meta_data = metadata_provider_registry.queryProviderByName('booster.bigbulls').metadata
+        if event_id == 1567:
+            meta_data = metadata_provider_registry.queryProviderByName('booster.bambitious').metadata
+
+        if not meta_data:
+            return
+
+        attrs = self.get_product_item_attributes(metadata_provider_registry)
+
+        add_attrs = meta_data.keys()
+        for id, label, key, value, show_only in attrs:
+            if key in add_attrs:
+                add_attrs.remove(key)
+
+        for key in add_attrs:
+            attribute = OrderedProductAttribute()
+            attribute.ordered_product_item_id = target_ordered_product_item.id
+            attribute.name = key
+            attribute.value = u""
+            attribute.save()
 
     def objects_for_product_item_with_token(self):
         "[(ordered_product, [(OrderedproductItem, ((seat , token_id), [ticket, ...]), ...), ...])]"

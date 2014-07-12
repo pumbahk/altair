@@ -971,13 +971,15 @@ class OrderDetailView(BaseView):
         default_ticket_format_id = self.context.default_ticket_format.id if self.context.default_ticket_format is not None else None
 
         joined_objects_for_product_item = dependents.describe_objects_for_product_item_provider(ticket_format_id=default_ticket_format_id)
+        joined_objects_for_product_item.add_product_item_attributes(
+            get_ordered_product_metadata_provider_registry(self.request)
+        )
         ordered_product_attributes = joined_objects_for_product_item.get_product_item_attributes(
             get_ordered_product_metadata_provider_registry(self.request)
         )
         order_attributes = dependents.get_order_attributes(
             get_order_metadata_provider_registry(self.request)
         )
-
         forms = self.context.get_dependents_forms()
         form_shipping_address = forms.get_shipping_address_form()
         form_order = forms.get_order_form()
