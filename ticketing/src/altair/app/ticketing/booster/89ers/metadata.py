@@ -10,7 +10,7 @@ metadata_provider = DefaultModelAttributeMetadataProvider(
                 'ja_JP': u'メールマガジン',
                 },
             'type': bool,
-            'coercer': lambda x: bool(int(x)) if x else u"",
+            'coercer': lambda x: bool(int(x)) if isinstance(x, int) else x,
             },
         'extra.publicity': {
             'display_name': {
