@@ -61,7 +61,7 @@ class ProductAndProductItem(BaseView):
                     ).with_entities(
                         func.max(Product.display_order)
                     ).scalar()
-                product.display_order = (max_display_order or 1) + 1
+                product.display_order = (max_display_order or 0) + 1
                 product.sales_segment = sales_segment_for_product
                 product.performance = sales_segment_for_product.performance
                 product.point_grant_settings.extend(point_grant_settings)
