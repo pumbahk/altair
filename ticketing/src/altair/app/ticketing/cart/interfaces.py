@@ -76,3 +76,15 @@ class ICartContext(Interface):
     total_orders_and_quantities_per_user = Attribute(u"ユーザごとのこれまでの注文数や購入数")
     def check_order_limit():
         pass
+
+class IPageFlowPredicate(Interface):
+    def __call__(pe, flow_context, context, request):
+        '''合致するならTrueを返す'''
+
+class IPageFlowPredicateUnaryOp(IPageFlowPredicate):
+    predicate = Attribute('''''')
+
+class IPageFlowAction(Interface):
+    predicates = Attribute(u'遷移条件')
+    def __call__(flow_context, context, request):
+        pass

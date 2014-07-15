@@ -62,7 +62,8 @@ class ISetting(Interface):
     container       = Attribute(u"")
 
 class IAllAppliedSetting(Interface):
-    order_limit     = Attribute(u"")
+    order_limit           = Attribute(u"")
+    max_quantity_per_user = Attribute(u"")
 
 class IOrderQueryable(Interface):
     def query_orders_by_user(user, filter_canceled, query=None):

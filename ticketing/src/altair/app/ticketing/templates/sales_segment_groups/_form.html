@@ -27,8 +27,9 @@
   ${ch.form_item(form.disp_agreement)}
   ${ch.form_item(form.reporting)}
   ${ch.form_item(form.sales_counter_selectable, help=ch.help(form.sales_counter_selectable))}
-  ${ch.form_item(form.auth3d_notice)}
-  ${ch.form_item(form.agreement_body, style="width:800px; height:150px")}
+  ${ch.form_item(form.auth3d_notice, style="width:80%; height:10em")}
+  ${ch.form_item(form.agreement_body, style="width:80%; height:10em")}
+  ${ch.form_item(form.extra_form_fields, class_="btn")}
   <div class="copy-fields">
     <hr />
     ${ch.form_item(form.copy, style="display: none;")}
@@ -38,7 +39,6 @@
       ${ch.form_item(form.copy_to_stock_holder)}
     </span>
   </div>
-  <p>※セブン-イレブン発券では発券日を指定した場合「前払い後日発券」になります。</p>
 
   <script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
   <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
@@ -89,3 +89,4 @@
     })($('script:last').parent());
   </script>
 </form>
+<%include file="../sales_segments/_extra_form_editor_button.html" />

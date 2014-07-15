@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
 
+import re
 import logging
 from datetime import timedelta
 
 from wtforms import Form
-from wtforms import TextField, TextAreaField, SelectField, HiddenField, IntegerField, BooleanField, SelectMultipleField
+from wtforms import HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, NumberRange
-from wtforms.widgets import CheckboxInput
+from wtforms.widgets import CheckboxInput, Input, HTMLString
+from markupsafe import escape
 from sqlalchemy.sql import or_, and_, select
 
 from altair.formhelpers import (
     Translations,
     DateTimeFormat,
+    OurTextAreaField,
     OurDateTimeField,
     OurIntegerField,
     OurBooleanField,
@@ -20,11 +23,12 @@ from altair.formhelpers import (
     BugFreeSelectField,
     PHPCompatibleSelectMultipleField,
     BugFreeSelectMultipleField,
+    JSONField
     )
 from altair.formhelpers.widgets import CheckboxMultipleSelect
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.validators import Required, RequiredOnUpdate, SwitchOptional
-from altair.formhelpers.filters import zero_as_none
+from altair.formhelpers.filters import zero_as_none, blank_as_none
 from altair.app.ticketing.helpers import label_text_for
 from altair.app.ticketing.core.models import (
     SalesSegmentGroup,
@@ -34,7 +38,6 @@ from altair.app.ticketing.core.models import (
     Performance
     )
 from altair.app.ticketing.loyalty.models import PointGrantSetting, SalesSegment_PointGrantSetting
-from altair.app.ticketing.events.sales_segment_groups.forms import UPPER_LIMIT_OF_MAX_QUANTITY
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 
 from .resources import ISalesSegmentAdminResource
@@ -45,6 +48,7 @@ propagation_attrs = ('margin_ratio', 'refund_ratio', 'printing_fee', 'registrati
 
 logger = logging.getLogger(__name__)
 
+UPPER_LIMIT_OF_MAX_QUANTITY = 99 # 購入数が大きすぎるとcartやlotでプルダウンが表示出来なくなる事があるため上限数を制限する
 
 def validate_issuing_start_at(performance_end_on, sales_segment_end_at, pdmp, issuing_start_at=None, issuing_interval_days=None):
     # 公演終了日 < コンビニ発券開始日時 とならないこと
@@ -62,6 +66,23 @@ def validate_issuing_start_at(performance_end_on, sales_segment_end_at, pdmp, is
         pdmp_name = u'{0} - {1}'.format(pdmp.payment_method.name, pdmp.delivery_method.name)
         message = u'決済引取方法「{}」のコンビニ発券開始日時が公演終了日時より後になる可能性があります'.format(pdmp_name)
         raise IssuingStartAtOutTermException(message)
+
+class ExtraFormEditorWidget(Input):
+    input_type = 'hidden'
+
+    def __call__(self, field, **kwargs):
+        class_ = kwargs.pop('class_', None)
+        classes = ['action-open_extra_form_editor']
+        if class_ is not None:
+            classes.extend(re.split(ur'\s+', class_))
+        html = [super(ExtraFormEditorWidget, self).__call__(field, **kwargs)]
+        html.append('<ul data-for="{name}">'.format(name=escape(field.name)))
+        if field.data is not None:
+            for f in field.data:
+                html.append(u'<li>{display_name} ({name})</li>'.format(display_name=escape(f['display_name']), name=escape(f['name'])))
+        html.append('</ul>')
+        html.append(u'<button class="{classes}" data-for="{name}">編集</button>'.format(classes=u' '.join(escape(class_) for class_ in classes), name=escape(field.name)))
+        return HTMLString(u''.join(html))
 
 
 class SalesSegmentForm(OurForm):
@@ -94,11 +115,13 @@ class SalesSegmentForm(OurForm):
     )
     display_seat_no = OurBooleanField(
         label=label_text_for(SalesSegmentSetting.display_seat_no),
+        hide_on_new=True,
         default=True,
         widget=CheckboxInput()
     )
     use_default_display_seat_no = OurBooleanField(
         label=u'グループの値を利用',
+        hide_on_new=True,
         default=True,
         widget=CheckboxInput()
     )
@@ -114,6 +137,13 @@ class SalesSegmentForm(OurForm):
     )
     disp_orderreview = OurBooleanField(
         label=u'マイページへの購入履歴表示/非表示',
+        hide_on_new=True,
+        default=True,
+        widget=CheckboxInput()
+    )
+    use_default_disp_orderreview = OurBooleanField(
+        label=u'グループの値を利用',
+        hide_on_new=True,
         default=True,
         widget=CheckboxInput()
     )
@@ -121,37 +151,38 @@ class SalesSegmentForm(OurForm):
         label=u'規約の表示/非表示',
         hide_on_new=True
     )
-    agreement_body = TextAreaField(
-        label=u'規約内容',
-        validators=[Optional()],
-    )
-    use_default_disp_orderreview = OurBooleanField(
-        label=u'グループの値を利用',
-        default=True,
-        widget=CheckboxInput()
-    )
     use_default_disp_agreement = OurBooleanField(
         label=u'グループの値を利用',
+        hide_on_new=True,
         default=True,
         widget=CheckboxInput()
+    )
+    agreement_body = OurTextAreaField(
+        label=u'規約内容',
+        hide_on_new=True,
+        validators=[Optional()],
     )
     use_default_agreement_body = OurBooleanField(
         label=u'グループの値を利用',
+        hide_on_new=True,
         default=True,
         widget=CheckboxInput()
     )
     reporting = OurBooleanField(
         label=u'レポート対象',
+        hide_on_new=True,
         default=True,
         widget=CheckboxInput()
     )
     use_default_reporting = OurBooleanField(
         label=u'グループの値を利用',
+        hide_on_new=True,
         default=True,
         widget=CheckboxInput()
     )
     sales_counter_selectable = OurBooleanField(
         label=label_text_for(SalesSegmentSetting.sales_counter_selectable),
+        hide_on_new=True,
         default=True,
         widget=CheckboxInput(),
         help=u'''
@@ -161,6 +192,7 @@ class SalesSegmentForm(OurForm):
     )
     use_default_sales_counter_selectable = OurBooleanField(
         label=u'グループの値を利用',
+        hide_on_new=True,
         default=True,
         widget=CheckboxInput()
     )
@@ -209,46 +241,52 @@ class SalesSegmentForm(OurForm):
     )
     max_quantity = OurIntegerField(
         label=label_text_for(SalesSegment.max_quantity),
+        hide_on_new=True,
         default=10,
         validators=[SwitchOptional('use_default_max_quantity'),
                     Required(),
                     NumberRange(min=0, max=UPPER_LIMIT_OF_MAX_QUANTITY, message=u'範囲外です'),
-                    ],
-        hide_on_new=True
+                    ]
     )
     use_default_max_quantity = OurBooleanField(
         label=u'グループの値を利用',
+        hide_on_new=True,
         widget=CheckboxInput()
     )
     max_quantity_per_user = OurIntegerField(
         label=label_text_for(SalesSegmentSetting.max_quantity_per_user),
+        hide_on_new=True,
         default=0,
         filters=[zero_as_none],
-        validators=[Optional()],
-        hide_on_new=True
+        validators=[Optional()]
     )
     use_default_max_quantity_per_user = OurBooleanField(
         label=u'グループの値を利用',
+        hide_on_new=True,
         widget=CheckboxInput()
     )
     max_product_quatity = OurIntegerField(
         label=u'商品購入上限数',
+        hide_on_new=True,
         default=None,
         filters=[zero_as_none],
         validators=[Optional()]
     )
     use_default_max_product_quatity = OurBooleanField(
         label=u'グループの値を利用',
+        hide_on_new=True,
         widget=CheckboxInput()
     )
     order_limit = OurIntegerField(
         label=u'購入回数制限',
+        hide_on_new=True,
         default=None,
         filters=[zero_as_none],
         validators=[Optional()]
     )
     use_default_order_limit = OurBooleanField(
         label=u'グループの値を利用',
+        hide_on_new=True,
         widget=CheckboxInput()
     )
 
@@ -266,6 +304,7 @@ class SalesSegmentForm(OurForm):
 
     margin_ratio = OurDecimalField(
         label=u'販売手数料率(%)',
+        hide_on_new=True,
         places=2,
         default=0,
         validators=[SwitchOptional('use_default_margin_ratio'),
@@ -273,11 +312,13 @@ class SalesSegmentForm(OurForm):
     )
     use_default_margin_ratio = OurBooleanField(
         label=u'グループの値を利用',
+        hide_on_new=True,
         widget=CheckboxInput()
     )
 
     refund_ratio = OurDecimalField(
         label=u'払戻手数料率(%)',
+        hide_on_new=True,
         places=2,
         default=0,
         validators=[SwitchOptional('use_default_refund_ratio'),
@@ -285,11 +326,13 @@ class SalesSegmentForm(OurForm):
     )
     use_default_refund_ratio = OurBooleanField(
         label=u'グループの値を利用',
+        hide_on_new=True,
         widget=CheckboxInput()
     )
 
     printing_fee = OurDecimalField(
         label=u'印刷代金(円/枚)',
+        hide_on_new=True,
         places=2,
         default=0,
         validators=[SwitchOptional('use_default_printing_fee'),
@@ -297,11 +340,13 @@ class SalesSegmentForm(OurForm):
     )
     use_default_printing_fee = OurBooleanField(
         label=u'グループの値を利用',
+        hide_on_new=True,
         widget=CheckboxInput()
     )
 
     registration_fee = OurDecimalField(
         label=u'登録手数料(円/公演)',
+        hide_on_new=True,
         places=2,
         default=0,
         validators=[SwitchOptional('use_default_registration_fee'),
@@ -309,15 +354,18 @@ class SalesSegmentForm(OurForm):
     )
     use_default_registration_fee = OurBooleanField(
         label=u'グループの値を利用',
+        hide_on_new=True,
         widget=CheckboxInput()
     )
 
-    auth3d_notice = TextAreaField(
+    auth3d_notice = OurTextAreaField(
         label=u'クレジットカード 3D認証フォーム 注記事項',
+        hide_on_new=True,
         validators=[Optional()],
     )
     use_default_auth3d_notice = OurBooleanField(
         label=u'グループの値を利用',
+        hide_on_new=True,
         widget=CheckboxInput()
     )
 
@@ -334,6 +382,18 @@ class SalesSegmentForm(OurForm):
         default=True,
         widget=CheckboxInput()
     )
+
+    extra_form_fields = JSONField(
+        label=u'追加フィールド',
+        filters=[blank_as_none],
+        validators=[Optional()],
+        widget=ExtraFormEditorWidget()
+        )
+    use_default_extra_form_fields = OurBooleanField(
+        label=u'グループの値を利用',
+        hide_on_new=True,
+        widget=CheckboxInput()
+        )
 
     def _validate_terms(self):
         ssg = SalesSegmentGroup.query.filter_by(id=self.sales_segment_group_id.data).one()

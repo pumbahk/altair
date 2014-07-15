@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
 import os
 
 version = '0.0'
@@ -39,6 +39,10 @@ setup(name='altair.models',
       namespace_packages=['altair'],
       include_package_data=True,
       zip_safe=False,
+      ext_modules = [
+        Extension('altair.models._json_scanner',
+                  ['src/altair/models/_json_scanner.c']),
+        ],
       install_requires=requires,
       entry_points="""
       # -*- Entry points: -*-

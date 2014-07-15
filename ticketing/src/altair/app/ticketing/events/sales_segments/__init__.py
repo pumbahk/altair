@@ -5,6 +5,10 @@ from .resources import SalesSegmentAdminResource
 
 def includeme(config):
     factory = newRootFactory(SalesSegmentAdminResource)
+
+    from ...resources import TicketingAdminResource
+    config.add_route('sales_segments.test_views.1', '/test', factory=TicketingAdminResource)
+
     config.add_route('sales_segments.new', '/new', factory=factory)
     config.add_route('sales_segments.index', '/{event_id}', factory=factory)
     config.add_route('sales_segments.show', '/show/{sales_segment_id}', factory=factory)
