@@ -1348,7 +1348,6 @@ class OrderDetailView(BaseView):
     def create_update_ordered_product_item_list(self, formitems):
         max = len(formitems)/3
         update_list = []
-        import ipdb;ipdb.set_trace()
         for num in range(0, max):
             update_dict = {'order_product_item_id': formitems[num*3][1],
                            'name': formitems[num*3+1][1],
