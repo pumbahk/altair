@@ -21,6 +21,13 @@
 ※携帯電話等の受信設定でドメイン指定受信を設定している方は、「@ticket.rakuten.co.jp」からのメールを受信できるように設定してください。<br/>
 <br/>
 
+［ご注意］<br/>
+公演の内容、発売の時期や方法については、各公演ページをご覧ください。<br/>
+お申込み手続きの依頼や、購入されたチケットの変更・キャンセルの依頼についてはお受けできません。<br/>
+システムに関する問合せはお受けできません。<br/>
+「<a href="http://ticket.rakuten.co.jp/faq">よくある質問</a>」に掲載している内容については、お返事をお送りできない場合があります。<br/>
+問合せの前によくご確認ください。<br/><br/>
+
 % if form.send.data == "Success":
     <div class="line" style="background:#FFFFFF"><img src="${request.mobile_static_url("altaircms:static/RT/mobile/clear.gif")}" alt="" width="1" height="1" /></div>
     <div style="color:#FF0000;">
@@ -47,7 +54,7 @@
     ${disp_error(form.category.errors)}
     ${form.title.label}<br/>${form.title}<br/>
     ${disp_error(form.title.errors)}
-    ${form.body.label}<br/>${form.body}<br/>
+    ${form.body.label}(具体的に記載してください)<br/>${form.body}<br/>
     ${disp_error(form.body.errors)}
     ※は必ず入力してください。
     % if form.send.data != "Success":

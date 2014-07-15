@@ -64,12 +64,25 @@
 <%def name="disp_explanation()">
     <div class="sectionbox">
         <div class="sectionbox-inner">
-            下記に、お客様情報や、お問合せ内容をご記入の上、送信ください<br/>
-            (※は入力必須項目となります)<br/><br/>
+        お預かりするお客様の個人情報は、『個人情報保護方針』に基いて厳重に管理し、お客様の同意がない限りお問い合わせ・ご相談への対応以外には使用いたしません。<br/>
+        <br/>
+        個人情報保護方針は<a href="${request.route_path('smartphone.page', kind='privacy')}">こちら</a>をご確認ください。<br/>
+        フォームでお問い合わせ頂いたお客様には、基本的に返信メールにて、3営業日内に回答させて頂いております。<br/>
+        (土日祝は原則対応いたしかねます)<br/>
+        <br/>
 
-            <font color=red>
-                ※携帯電話等の受信設定でドメイン指定受信を設定している方は、「@ticket.rakuten.co.jp」からのメールを受信できるように設定してください。
-            </font>
+        <font color=red>
+            ※携帯電話等の受信設定でドメイン指定受信を設定している方は、「@ticket.rakuten.co.jp」からのメールを受信できるように設定してください。
+        </font>
+        <br/><br/>
+
+        ［ご注意］<br/>
+        公演の内容、発売の時期や方法については、各公演ページをご覧ください。<br/>
+        お申込み手続きの依頼や、購入されたチケットの変更・キャンセルの依頼についてはお受けできません。<br/>
+        システムに関する問合せはお受けできません。<br/>
+        「<a href="http://ticket.rakuten.co.jp/faq">よくある質問</a>」に掲載している内容については、お返事をお送りできない場合があります。<br/>
+        問合せの前によくご確認ください。<br/><br/>
+
         </div>
     </div>
 </%def>
@@ -114,7 +127,7 @@
         ${disp_error(form.category.errors)}<br/>
         タイトル<font color="red">※</font><br/>${form.title}
         ${disp_error(form.title.errors)}
-        内容<font color="red">※</font><br/>${form.body}
+        内容<font color="red">※</font>(具体的に記載してください)${form.body}<br/>
         ${disp_error(form.body.errors)}
         ※は必ず入力してください。<br/>
         % if not result:
@@ -124,13 +137,3 @@
 </form>
 </div>
 
-<div class="sectionbox">
-    <div class="sectionbox-inner">
-        お預かりするお客様の個人情報は、『個人情報保護方針』に基いて厳重に管理し、お客様の同意がない限りお問い合わせ・ご相談への対応以外には使用いたしません。<br/>
-        <br/>
-        個人情報保護方針は<a href="${request.route_path('smartphone.page', kind='privacy')}">こちら</a>をご確認ください。<br/>
-        フォームでお問い合わせ頂いたお客様には、基本的に返信メールにて、3営業日内に回答させて頂いております。<br/>
-        (土日祝は原則対応いたしかねます)<br/>
-        <br/>
-    </div>
-</div>
