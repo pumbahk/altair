@@ -636,9 +636,9 @@ def add_booster_product_item_attributes(order, metadata_provider_registry):
         meta_data = metadata_provider_registry.queryProviderByName('booster.bambitious').metadata
 
     target_ordered_product_item = None
-    for item in order.items:
-        for element in item.elements:
-            target_ordered_product_item = element
+    for element in (element for item in order.items for element in item.elements):
+        target_ordered_product_item = element
+        break
 
     if not meta_data or not target_ordered_product_item:
         return
@@ -1738,5 +1738,3 @@ def get_refund_ticket_price(refund, order, product_item_id):
 def get_anshin_checkout_object(request, order):
     service = checkout_api.get_checkout_service(request, order.ordered_from, core_api.get_channel(order.channel))
     return service.get_checkout_object_by_order_no(order.order_no)
-
-    
