@@ -95,10 +95,12 @@ class StockStatus(BaseView):
         qs = c_models.Stock.query
         qs = qs.join(c_models.ProductItem, c_models.ProductItem.stock_id==c_models.Stock.id)
         qs = qs.join(c_models.Performance, c_models.ProductItem.performance_id==c_models.Performance.id)
+        qs = qs.join(c_models.Product, c_models.ProductItem.product_id==c_models.Product.id)
         qs = qs.filter(c_models.Performance.event_id==event_id)
 
         qs = qs.options(orm.joinedload(c_models.Stock.stock_status))
         qs = qs.distinct(c_models.Stock.id)
+        qs = qs.filter(c_models.Product.public==True)
         qs = qs.order_by(c_models.Stock.id)
         stocks = qs.all()
         return dict(
