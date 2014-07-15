@@ -10,7 +10,7 @@ metadata_provider = DefaultModelAttributeMetadataProvider(
                 'ja_JP': u'メールマガジン',
                 },
             'type': bool,
-            'coercer': lambda x: bool(int(x)),
+            'coercer': lambda x: bool(int(x)) if isinstance(x, int) else x,
             },
         'extra.publicity': {
             'display_name': {
@@ -47,7 +47,7 @@ metadata_provider = DefaultModelAttributeMetadataProvider(
                 'ja_JP': u'昨シーズンの会場での観戦回数',
                 },
             'type': int,
-            'coercer': lambda x: int(x) if x is not None else 0,
+            'coercer': lambda x: int(x) if x else 0,
             },
         }
     )

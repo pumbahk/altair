@@ -989,13 +989,15 @@ class OrderDetailView(BaseView):
         default_ticket_format_id = self.context.default_ticket_format.id if self.context.default_ticket_format is not None else None
 
         joined_objects_for_product_item = dependents.describe_objects_for_product_item_provider(ticket_format_id=default_ticket_format_id)
+        joined_objects_for_product_item.add_product_item_attributes(
+            get_ordered_product_metadata_provider_registry(self.request)
+        )
         ordered_product_attributes = joined_objects_for_product_item.get_product_item_attributes(
             get_ordered_product_metadata_provider_registry(self.request)
         )
         order_attributes = dependents.get_order_attributes(
             get_order_metadata_provider_registry(self.request)
         )
-
         forms = self.context.get_dependents_forms()
         form_shipping_address = forms.get_shipping_address_form()
         form_order = forms.get_order_form()
@@ -1332,16 +1334,30 @@ class OrderDetailView(BaseView):
     @view_config(route_name="orders.ordered_product_attribute_edit", request_method="POST")
     def edit_ordered_product_attribute(self):
         order_no = self.request.matchdict.get('order_no', None)
-        ordered_product_item_id = self.request.POST.get('order_product_item_id', None)
-        name = self.request.POST.get('name', None)
-        value = self.request.POST.get('value', None)
-
-        if not ordered_product_item_id or not name or not value:
-            return HTTPNotFound("ordered_product_attribute_edit failed.")
+        update_list = self.create_update_ordered_product_item_list(self.request.POST.items())
 
         order = Order.query.filter(Order.order_no==order_no).first()
         new_order = Order.clone(order, deep=True)
 
+        for target_data in update_list:
+            self.update_ordered_product_item_attribute(target_data['name'], target_data['value'], order, new_order)
+
+        self.request.session.flash(u'購入商品属性を変更しました')
+        return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order.id) + "#ordered_product_attributes")
+
+    def create_update_ordered_product_item_list(self, formitems):
+        max = len(formitems)/3
+        update_list = []
+        import ipdb;ipdb.set_trace()
+        for num in range(0, max):
+            update_dict = {'order_product_item_id': formitems[num*3][1],
+                           'name': formitems[num*3+1][1],
+                           'value': formitems[num*3+2][1]
+            }
+            update_list.append(update_dict)
+        return update_list
+
+    def update_ordered_product_item_attribute(self, name, value, order, new_order):
         new_order_dict = {}
         for product in new_order.items:
             for item in product.elements:
@@ -1355,11 +1371,6 @@ class OrderDetailView(BaseView):
 
         assert target_ordered_product_item is not None
         target_ordered_product_item.attributes[name] = value
-
-        self.request.session.flash(u'購入商品属性を変更しました')
-        return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order.id) + "#ordered_product_attributes")
-
-
 
     @view_config(route_name="orders.memo_on_order", request_method="POST", renderer="json")
     def edit_memo_on_order(self):
