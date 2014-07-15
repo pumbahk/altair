@@ -84,6 +84,7 @@ class TicketDictListBuilder(object):
         else: #BC
             for seat in ordered_product_item.seats:
                 d = builder.build_dict_from_seat(seat, ticket_number_issuer=ticket_number_issuer)
+                d = builder.build_dict_from_stock(ordered_product_item.product_item.stock, d)
                 d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
                 d.update(extra)
                 retval.append((seat, d))
@@ -108,6 +109,7 @@ class TicketDictListBuilder(object):
         else:
             for seat in carted_product_item.seats:
                 d = builder.build_dict_from_seat(seat, ticket_number_issuer=ticket_number_issuer)
+                builder.build_dict_from_stock(carted_product_item.product_item.stock, d)
                 d[u'発券番号'] = ticket_number_issuer(carted_product_item.product_item.id) if ticket_number_issuer else ""
                 d.update(extra)
                 retval.append((seat, d))
@@ -306,7 +308,6 @@ class TicketDictBuilder(object):
             retval["seat"] = {}
             retval[u"席番"] = self.empty_text
             return retval
-        retval = self.build_dict_from_stock(seat.stock, retval=retval)
         retval = self.build_dict_from_venue(seat.venue, retval=retval)
         retval.update({
             u'seat': {
@@ -531,10 +532,10 @@ class TicketDictBuilder(object):
         d[u'発券時ユニークID'] = get_unique_string_for_qr_from_token(ordered_product_item_token)
         d[u'serial'] = ordered_product_item_token.serial
         d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
+        d = self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
         if ordered_product_item_token.seat is not None:
             d = self.build_dict_from_seat(ordered_product_item_token.seat, retval=d, ticket_number_issuer=ticket_number_issuer)
         else:
-            d = self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
             d = self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
         d.update(extra)
         return d
