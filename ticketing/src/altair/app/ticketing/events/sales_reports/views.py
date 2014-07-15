@@ -17,7 +17,7 @@ from wtforms.validators import Optional
 from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.core.models import Event, ReportSetting
+from altair.app.ticketing.core.models import Event, ReportSetting, ReportRecipient
 from altair.app.ticketing.core.models import Performance
 from altair.app.ticketing.events.sales_reports.forms import SalesReportForm, ReportSettingForm
 from altair.app.ticketing.events.sales_reports.reports import SalesTotalReporter, PerformanceReporter, EventReporter, sendmail
@@ -207,21 +207,22 @@ class ReportSettings(BaseView):
             'action': self.request.path,
             }
 
-    def _edit_post(self):
-        f = ReportSettingForm(self.request.POST, context=self.context)
-        if not f.validate():
-            return f
-        report_setting = self.context.report_setting
-        report_setting = merge_session_with_post(report_setting, f.data)
-        report_setting.save()
-
-        self.request.session.flash(u'レポート送信設定を保存しました')
-        return None
-
-    @view_config(route_name='report_settings.edit', request_method='POST', renderer='altair.app.ticketing:templates/sales_reports/_form.html')
+    @view_config(route_name='report_settings.edit', request_method='POST', renderer='altair.app.ticketing:templates/sales_reports/_form.html', xhr=True)
     def edit_post_xhr(self):
-        f = self._edit_post()
-        if f is None:
+        f = ReportSettingForm(self.request.POST, context=self.context)
+        if f.validate():
+            recipients = [
+                ReportRecipient.query.filter_by(id=report_recipient_id, organization_id=self.context.organization.id).one()
+                for report_recipient_id in f.recipients.data
+                ]
+            if f.email.data:
+                recipients.append(ReportRecipient(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id))
+            report_setting = self.context.report_setting
+            report_setting = merge_session_with_post(report_setting, f.data)
+            report_setting.recipients[:] = []
+            report_setting.recipients.extend(recipients)
+            report_setting.save()
+            self.request.session.flash(u'レポート送信設定を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {

@@ -14,7 +14,7 @@ from datetime import date, timedelta
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import Account, Event, Mailer
 from altair.app.ticketing.core.models import StockType, StockHolder, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
-from altair.app.ticketing.core.models import ReportTypeEnum, ReportSetting, SalesReportTypeEnum
+from altair.app.ticketing.core.models import ReportTypeEnum, ReportSetting, ReportRecipient, ReportSetting_ReportRecipient, SalesReportTypeEnum
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
 from altair.app.ticketing.events.sales_reports.forms import SalesReportForm
 
@@ -126,18 +126,37 @@ class SalesTotalReporter(object):
             query = query.filter(Event.title.like('%' + self.form.event_title.data + '%'))
 
         if self.form.recipient.data:
-            email_pattern = '%{}%'.format(self.form.recipient.data)
+            email_pattern = u'%{}%'.format(self.form.recipient.data)
+
             event_rs = aliased(ReportSetting, name='ReportSetting_event')
-            performance_rs = aliased(ReportSetting, name='ReportSetting_performance')
+            event_rs_rr = aliased(ReportSetting_ReportRecipient, name='ReportSetting_ReportRecipient_event')
+            event_rr = aliased(ReportRecipient, name='ReportRecipient_event')
             query = query.outerjoin(event_rs, and_(
                 event_rs.event_id==Event.id,
-                event_rs.email.like(email_pattern),
                 event_rs.deleted_at==None
-            )).outerjoin(performance_rs, and_(
+            )).join(event_rs_rr,
+                event_rs_rr.report_setting_id==event_rs.id,
+            ).join(event_rr, and_(
+                event_rs_rr.report_recipient_id==event_rr.id,
+                event_rr.email.like(email_pattern),
+                event_rr.deleted_at==None
+            ))
+
+            performance_rs = aliased(ReportSetting, name='ReportSetting_performance')
+            performance_rs_rr = aliased(ReportSetting_ReportRecipient, name='ReportSetting_ReportRecipient_performance')
+            performance_rr = aliased(ReportRecipient, name='ReportRecipient_performance')
+            query = query.outerjoin(performance_rs, and_(
                 performance_rs.performance_id==Performance.id,
-                performance_rs.email.like(email_pattern),
                 performance_rs.deleted_at==None
-            )).filter(
+            )).join(performance_rs_rr,
+                performance_rs_rr.report_setting_id==performance_rs.id,
+            ).join(performance_rr, and_(
+                performance_rs_rr.report_recipient_id==performance_rr.id,
+                performance_rr.email.like(email_pattern),
+                performance_rr.deleted_at==None
+            ))
+
+            query = query.filter(
                 or_(event_rs.id!=None, performance_rs.id!=None)
             )
 
