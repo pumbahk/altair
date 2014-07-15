@@ -387,10 +387,16 @@ def request_update_order(request_or_registry, tenant, sej_order, update_reason):
         if int(sej_order.payment_type) == int(SejPaymentType.PrepaymentOnly):
             assert not barcode_number, '%d: %r' % (idx, ret)
         else:
-            assert (not barcode_number and not ticket) or (barcode_number and ticket), '%d: %r / %r' % (idx, ret, ticket_dict)
+            assert (
+                (not barcode_number and (
+                    (not ticket) \
+                    or int(ticket.ticket_type) in (SejTicketType.Ticket.v, SejTicketType.ExtraTicket.v))) \
+                or (barcode_number and ticket)), \
+                '%d: %r / %r' % (idx, ret, ticket_dict)
             if not ticket:
                 continue
             ticket.barcode_number = barcode_number
+    return sej_order
 
 def request_fileget(request_or_registry, tenant, notification_type, date):
     """ファイル取得先 https://inticket.sej.co.jp/order/getfile.do"""
