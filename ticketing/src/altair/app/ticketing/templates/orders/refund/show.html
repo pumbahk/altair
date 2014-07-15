@@ -1,5 +1,9 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch" />
+<%!
+  from altair.app.ticketing.orders.models import OrderCancelReasonEnum
+  from altair.app.ticketing.payments import plugins
+%>
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
@@ -15,7 +19,6 @@
   <h1>払戻詳細</h1>
 </div>
 
-<%! from altair.app.ticketing.orders.models import OrderCancelReasonEnum %>
 <div>
   <table class="table table-bordered table-condensed">
     <thead>
@@ -74,12 +77,15 @@
         <td>${refund.updated_at}</td>
         <td>
           <div class="btn-group">
-            <a class="btn btn-small" href="${request.route_path('orders.download', _query=dict(refund_id=refund.id))}"><i class="icon-file"></i> 払戻対象をダウンロード</a>
+            <a class="btn btn-small" href="${request.route_path('orders.download', _query=dict(refund_id=refund.id))}"><i class="icon-file"></i> 払戻予約ダウンロード</a>
         % if refund.editable():
             <a class="btn btn-small" href="${request.route_path('orders.refund.edit', refund_id=refund.id)}"><i class="icon-pencil"></i> 編集</a>
             <a class="btn btn-small" href="javascript:delete_refund(${refund.id});"><i class="icon-remove"></i> 削除</a>
         % endif
+        % if refund.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
+            <a class="btn btn-small" href="${request.route_path('orders.refund.export_result', refund_id=refund.id)}"><i class="icon-file"></i> コンビニ払戻実績ダウンロード</a>
           </div>
+        % endif
         </td>
       </tr>
     </tbody>
