@@ -34,7 +34,7 @@ metadata_provider = DefaultModelAttributeMetadataProvider(
                 'ja_JP': u'オーセンティックユニフォーム色',
                 },
             'type': unicode,
-            'coercer': (lambda x: {"red": u"赤", "white": u"白"}.get(x)), 
+            'coercer': (lambda x: {"red": u"赤", "white": u"白", "":u""}.get(x)),
             },
         'extra.parent_first_name': {
             'display_name': {

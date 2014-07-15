@@ -73,6 +73,7 @@ from .models import (
 
 ## backward compatibility
 from altair.metadata.api import get_metadata_provider_registry
+from altair.app.ticketing.orders.models import OrderedProductAttribute
 from .metadata import (
     METADATA_NAME_ORDERED_PRODUCT,
     METADATA_NAME_ORDER
@@ -620,7 +621,34 @@ def create_inner_order(request, order_like, note, session=None):
             order_like.finish()
 
     order.note = note
+    add_booster_product_item_attributes(order, get_ordered_product_metadata_provider_registry(request))
     return order
+
+def add_booster_product_item_attributes(order, metadata_provider_registry):
+
+    event_id = order.performance.event.id
+    meta_data = None
+    if event_id == 1:
+        meta_data = metadata_provider_registry.queryProviderByName('booster.89ers').metadata
+    if event_id == 543:
+        meta_data = metadata_provider_registry.queryProviderByName('booster.bigbulls').metadata
+    if event_id == 1567:
+        meta_data = metadata_provider_registry.queryProviderByName('booster.bambitious').metadata
+
+    target_ordered_product_item = None
+    for item in order.items:
+        for element in item.elements:
+            target_ordered_product_item = element
+
+    if not meta_data or not target_ordered_product_item:
+        return
+
+    for key in meta_data.keys():
+        attribute = OrderedProductAttribute()
+        attribute.ordered_product_item_id = target_ordered_product_item.id
+        attribute.name = key
+        attribute.value = u""
+        attribute.save()
 
 def refresh_order(request, session, order):
     logger.info('Trying to refresh order %s (id=%d, payment_delivery_pair={ payment_method=%s, delivery_method=%s })...'
