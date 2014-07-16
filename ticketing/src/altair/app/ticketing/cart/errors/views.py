@@ -43,6 +43,7 @@ def notfound(request):
     event = getattr(request.context, 'event', None)
     if event is not None:
         logger.debug("404 on event_id=%s" % event.id)
+    api.logout(request, request.response)
     request.response.status = 404
     return {}
 
