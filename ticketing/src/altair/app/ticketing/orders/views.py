@@ -787,6 +787,10 @@ class OrdersRefundExportView(BaseView):
 
         slave_session = get_db_session(self.request, name='slave')
         refund_tickets = RefundResultCSVExporter(slave_session, refund).all()
+        if len(refund_tickets) == 0:
+            self.request.session.flash(u'コンビニ払戻実績がありません')
+            return HTTPFound(location=route_path('orders.refund.show', self.request, refund_id=refund_id))
+
         filename='refund_result-{}.csv'.format(refund_id)
         self.request.response.content_type = 'text/plain;charset=Shift_JIS'
         self.request.response.content_disposition = 'attachment; filename=' + filename
