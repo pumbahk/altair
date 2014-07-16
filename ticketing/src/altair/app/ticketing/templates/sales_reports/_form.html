@@ -17,10 +17,20 @@
   </script>
   <div class="control-group">
     <label class="control-label">送信先追加</label>
-    <div class="controls">
-      ${form.name(style="width:140px", placeholder=form.name.label.text)}
+    <a class="plusone btn btn-small pull-right"><i class="icon-plus"></i></a>
+    <div class="controls new_recipient">
+      ${form.name(style="width:120px", placeholder=form.name.label.text)}
       ${form.email(style="width:140px", placeholder=form.email.label.text)}
     </div>
+    <script>
+      var target = $('.new_recipient');
+      var target_parent = target.parent();
+      $('.plusone').click(function(){
+        var target_clone = target.clone();
+        target_clone.find('input').val('');
+        target_parent.append(target_clone);
+      });
+    </script>
   </div>
   ${ch.form_item(form.frequency)}
   <div class="frequency-weekly">
