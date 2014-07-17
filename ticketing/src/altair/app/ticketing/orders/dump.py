@@ -574,14 +574,14 @@ class QBuilder(object):
 class QBuilderIn(QBuilder):
     def filter(self, qs):
         if self._values and self._targets:
-            qs = qs.filter(sa.or_(target.in_(self._values) for target in self._targets))
+            qs = qs.filter(sa.or_(*[target.in_(self._values) for target in self._targets]))
         return qs
 
 
 class QBuilderBetween(QBuilder):
     def filter(self, qs):
         if self._values and self._targets:
-            qs = qs.filter(sa.or_(target.between(*self._values) for target in self._targets))
+            qs = qs.filter(sa.or_(*[target.between(*self._values) for target in self._targets]))
         return qs
 
 
@@ -590,7 +590,7 @@ class QBuilderSearch(QBuilder):
         if self._values:
             for value in self._values and self._targets:
                 pattern = '%{}%'.format(value)
-                qs = qs.filter(sa.or_(target.like(pattern) for target in self._targets))
+                qs = qs.filter(sa.or_(*[target.like(pattern) for target in self._targets]))
         return qs
 
 
