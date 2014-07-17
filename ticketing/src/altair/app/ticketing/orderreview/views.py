@@ -246,11 +246,11 @@ class OrderReviewView(object):
         return dict()
 
     @mobile_view_config(route_name='order_review.form',
-                        request_method="GET", renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile/form.html"))
+                        request_method="GET", renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile_guest/form.html"))
     @mobile_view_config(route_name='guest.order_review.form',
                         request_method="GET", renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile_guest/form.html"))
     @view_config(route_name='order_review.form', request_method="GET",
-                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/form.html"))
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/form.html"))
     @view_config(route_name='guest.order_review.form', request_method="GET",
                  renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/form.html"))
     def get(self):
@@ -258,9 +258,9 @@ class OrderReviewView(object):
         return {"form": form}
 
     @mobile_view_config(route_name='order_review.show', request_method="POST", 
-                        renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile/show.html"))
+                        renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_mobile_guest/show.html"))
     @view_config(route_name='order_review.show', request_method="POST",
-                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review/show.html"))
+                 renderer=selectable_renderer("altair.app.ticketing.orderreview:templates/%(membership)s/order_review_guest/show.html"))
     def post(self):
         form = schemas.OrderReviewSchema(self.request.params)
         if not form.validate():
