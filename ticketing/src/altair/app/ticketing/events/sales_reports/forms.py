@@ -257,14 +257,17 @@ class ReportSettingForm(OurForm):
             if form.day_of_week.data == ReportFrequencyEnum.Weekly.v[0]:
                 query = query.filter(ReportSetting.day_of_week==form.day_of_week.data)
             if query.count() > 0:
-                raise ValidationError(u'既に登録済みのオペレーターです')
+                raise ValidationError(u'既にレポート送信設定済みの送信先です')
 
     def validate_email(form, field):
         if field.data:
             query = ReportSetting.query.filter(
                 ReportSetting.frequency==form.frequency.data,
                 ReportSetting.time==form.format_report_time(),
-                ReportSetting.email==form.email.data
+            ).join(
+                ReportSetting.recipients
+            ).filter(
+                ReportRecipient.email==field.data
             )
             if form.id.data:
                 query = query.filter(ReportSetting.id!=form.id.data)
@@ -275,7 +278,7 @@ class ReportSettingForm(OurForm):
             if form.frequency.data == ReportFrequencyEnum.Weekly.v[0]:
                 query = query.filter(ReportSetting.day_of_week==form.day_of_week.data)
             if query.count() > 0:
-                raise ValidationError(u'既に登録済みのメールアドレスです')
+                raise ValidationError(u'既にレポート送信設定済みの送信先です')
 
     def validate_frequency(form, field):
         if field.data:
