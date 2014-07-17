@@ -195,7 +195,7 @@ class ReportSettings(BaseView):
 
         remove_candidates = set(report_setting.recipients) - set(new_recipients)
         for c in remove_candidates:
-            if len([s for s in c.settings if s.id != report_setting.id]) == 0:
+            if len(c.lot_entry_report_settings) == 0 and len([s for s in c.settings if s.id != report_setting.id]) == 0:
                 logger.info(u'remove no reference recipient id={} name={} email={}'.format(c.id, c.name, c.email))
                 c.delete()
 

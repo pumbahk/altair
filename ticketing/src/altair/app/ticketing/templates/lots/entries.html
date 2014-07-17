@@ -46,8 +46,7 @@ ${tabs.tabs(request)}
 <table class="table table-striped table-bordered table-condensed">
   <tbody>
     <tr>
-      <th>名前</th>
-      <th>メールアドレス</th>
+      <th>送信先</th>
       <th>メール通知頻度</th>
       <th>送信曜日</th>
       <th>送信時刻</th>
@@ -57,13 +56,12 @@ ${tabs.tabs(request)}
       <th></th>
     </tr>
     %for rs in report_settings:
-    <%
-      name = rs.operator.name if rs.operator else rs.name
-      email = rs.operator.email if rs.operator else rs.email
-    %>
     <tr>
-      <td>${name or ''}</td>
-      <td>${email}</td>
+      <td>
+      % for recipient in rs.recipients:
+        ${recipient.format_recipient()}<br>
+      % endfor
+      </td>
       <td>${''.join([enum.v[1] for enum in ReportFrequencyEnum if enum.v[0] == rs.frequency])}</td>
       <td>${formatter.format_weekday(rs.day_of_week - 1) if rs.day_of_week else ''}</td>
       <td>${"{0:0>2}:{1:0>2}".format(rs.time[0:2], rs.time[2:4])}</td>

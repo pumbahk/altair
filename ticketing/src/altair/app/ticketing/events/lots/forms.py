@@ -17,7 +17,7 @@ from altair.formhelpers import (
     OurBooleanField, OurDecimalField
 )
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
-from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator
+from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator, ReportRecipient
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
 from altair.app.ticketing.events.sales_segment_groups.forms import UPPER_LIMIT_OF_MAX_QUANTITY
 from altair.app.ticketing.lots.models import Lot
@@ -458,7 +458,7 @@ class LotEntryReportSettingForm(ReportSettingForm):
         validators=[Optional()],
     )
 
-    def validate_operator_id(form, field):
+    def validate_recipients(form, field):
         if field.data:
             q = LotEntryReportSetting.query_reporting_about(
                 id=form.id.data,
@@ -467,9 +467,13 @@ class LotEntryReportSettingForm(ReportSettingForm):
                 time=form.format_report_time(),
                 frequency=form.frequency.data,
                 day_of_week=form.day_of_week.data,
-            ).filter(LotEntryReportSetting.operator_id==form.operator_id.data)
+            ).join(
+                LotEntryReportSetting.recipients
+            ).filter(
+                ReportRecipient.id.in_(field.data)
+            )
             if q.count() > 0:
-                raise ValidationError(u'既に登録済みのオペレーターです')
+                raise ValidationError(u'既にレポート送信設定済みの送信先です')
 
     def validate_email(form, field):
         if field.data:
@@ -480,10 +484,13 @@ class LotEntryReportSettingForm(ReportSettingForm):
                 time=form.format_report_time(),
                 frequency=form.frequency.data,
                 day_of_week=form.day_of_week.data,
-            ).filter(LotEntryReportSetting.email==form.email.data)
-
+            ).join(
+                LotEntryReportSetting.recipients
+            ).filter(
+                ReportRecipient.email==field.data
+            )
             if q.count() > 0:
-                raise ValidationError(u'既に登録済みのメールアドレスです')
+                raise ValidationError(u'既にレポート送信設定済みの送信先です')
 
     def validate_event_id(form, field):
         pass
@@ -494,16 +501,3 @@ class LotEntryReportSettingForm(ReportSettingForm):
             self.event_id.data = None
         if not self.lot_id.data:
             self.lot_id.data = None
-
-    def sync(self, obj):
-        obj.lot_id = self.lot_id.data or None
-        obj.event_id = self.event_id.data or None
-        obj.operator_id = self.operator_id.data
-        obj.name = self.name.data
-        obj.email = self.email.data
-        obj.frequency = self.frequency.data
-        obj.day_of_week = self.day_of_week.data
-        obj.time = self.time.data
-        obj.start_on = self.start_on.data
-        obj.end_on = self.end_on.data
-        obj.period = self.period.data

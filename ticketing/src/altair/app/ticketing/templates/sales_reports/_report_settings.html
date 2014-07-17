@@ -69,7 +69,7 @@
     <td><input type="radio" name="sales_reports_mail_id" value=${rs.id}></td>
     <td>
     % for recipient in rs.recipients:
-      ${recipient.name or ''} ${u'<{}>'.format(recipient.email)}<br>
+      ${recipient.format_recipient()}<br>
     % endfor
     </td>
     <td>${''.join([enum.v[1] for enum in ReportFrequencyEnum if enum.v[0] == rs.frequency])}</td>
