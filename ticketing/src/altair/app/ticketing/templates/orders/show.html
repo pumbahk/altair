@@ -137,22 +137,22 @@ ${ch.breadcrumbs(
 
       <div class="row-fluid" id="ordered_product_attributes">
         <div class="span6">
+          <form action="${request.route_path('orders.ordered_product_attribute_edit', order_no=order.order_no)}" method="POST" style="display: inline">
           <h3>購入商品属性</h3>
           <table class="table table-striped table-bordered">
             % for id, label, key, value, show_only in ordered_product_attributes:
             <tr>
               <th class="span3">${label} (${key})</th>
               <td class="span2">
-                <form action="${request.route_path('orders.ordered_product_attribute_edit', order_no=order.order_no)}" method="POST" style="display: inline">
                   <input type="hidden" id="order_product_item_id" name="order_product_item_id" value="${id}" />
                   <input type="hidden" id="name" name="name" value="${key}" />
                   <input type="text" id="value" name="value" value="${value}" />
-                  <input type="submit" value="更新" />
-                </form>
               </td>
             </tr>
             % endfor
           </table>
+          <input type="submit" value="購入商品属性更新" />
+          </form>
         </div>
       </div>
 

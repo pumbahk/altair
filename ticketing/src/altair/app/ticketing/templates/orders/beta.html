@@ -1,0 +1,658 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+
+<!-- font-awesome -->
+<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet"></link>
+
+<!-- select2 -->
+<link rel="stylesheet" href="//cdn.jsdelivr.net/select2/3.4.8/select2.css">
+<script src="//cdn.jsdelivr.net/select2/3.4.8/select2.js"></script>
+<script src="//cdn.jsdelivr.net/select2/3.4.8/select2.min.js"></script>
+
+<style>
+
+.condition-table-cel{
+    aligh: left;
+    vertical-align: top;
+}
+
+label {
+    display: block;
+    // float: left;
+    width: 100px;
+}
+
+input.datetime-month,  input.datetime-day, input.datetime-hour, input.datetime-minute{
+    width: 20px;
+}
+
+input.datetime-year{
+    width: 40px;
+}
+
+.condition-use {
+    //display: block;
+  float: left;
+}
+
+.condition-label{
+    width: 100px;:
+}
+
+.conditions {
+    padding: 4px;
+    display: none;
+}
+
+#available-columns, #selected-columns {
+    width: 200px;
+    height: 500px;
+}
+
+
+
+</style>
+<script>
+    $(document).ready(function() {
+        /** filter条件の検索処理
+         */
+        $('#conditions-selector')\
+            .select2()\
+            .on('select2-selecting', function (event){
+                var option = event.object;
+                var id_ = option.id;
+                var tag = $(document.getElementById(id_));
+                tag.css({'display': 'block'});
+                tag.find('input.condition-use').attr('checked', true);
+            })\
+            .on('select2-removing', function (event){
+                var option = event.choice;
+                var id_ = option.id;
+                var tag = $(document.getElementById(id_));
+                tag.css({'display': 'none'});
+                tag.find('input.condition-use').attr('checked', false);
+            });
+
+        /** イベントを指定した場合公演と販売区分の選択項目を変更する
+         */
+        $('#event_search')\
+            .select2()\
+            .on('select2-selecting', function (event){
+                var option = event.object;
+                var event_id = option.id;
+                var params = {'event_id': event_id};
+                var performance_search = $('#performance_search');
+                var sales_segment_group_search = $('#sales_segment_group_search');
+
+                // performance
+                $.ajax({
+                    type: "GET",
+                    url: "${request.route_url('orders.api.performances')}",
+                    data: params,
+                    dataType: 'JSON',
+                    complete: function(xhr, status, response){
+                        performance_search.empty();
+                        var data = JSON.parse(xhr.responseText);
+                        $(data['result']).each(function (index, elm){
+                            var pk = elm['pk'];
+                            var name = elm['name'];
+                            var option = $('<option></option>');
+                            option.attr('value', pk)\
+                                  .text(name);
+                            performance_search.append(option);
+                        });
+                    }
+                });
+
+                // sales segment group
+                $.ajax({
+                    type: "GET",
+                    url: "${request.route_url('orders.api.sales_segment_groups')}",
+                    data: params,
+                    dataType: 'json',
+                    complete: function(xhr, status, response){
+                        sales_segment_group_search.empty();
+                        var data = JSON.parse(xhr.responseText);
+                        $(data['result']).each(function (index, elm){
+                            var pk = elm['pk'];
+                            var name = elm['name'];
+                            var option = $('<option></option>');
+                            option.attr('value', pk)\
+                                  .text(name);
+                            sales_segment_group_search.append(option);
+                        });
+                    }
+                });
+            });
+
+        /** columnの出力をする/しないを変更
+         */
+        function move_columns(src_selector, dst_selector){
+            var src_columns = $(src_selector);
+            var dst_columns = $(dst_selector);
+
+            var src_options = src_columns.find('option:selected');
+            src_options.each(function (ii, src_option){
+                var new_option = $('<option value=""></option>');
+                new_option\
+                    .attr('value', src_option.value)\
+                    .text(src_option.text)\
+                    .appendTo(dst_columns);
+                src_option.remove();
+            });
+        }
+
+        /** columnの出力順序を変更
+         */
+        function move_column_order(selector, direction){
+            var columns = $(selector);
+            var options = columns.find('option:selected');
+
+            var move = function(option){
+                if (direction == 'up'){
+                    $(option).prev().before(option);
+                }else if(direction == 'down'){
+                    $(option).next().after(option);
+                }else{
+                    console.log('ValueError: unexpected argument value(direction): ' + direction);
+                }
+            }
+
+            options.each(function (ii, option){
+                move(option);
+            });
+        }
+
+        /** columnの追加
+         */
+        $('#insert-column').on('click', function(event){
+            move_columns('#available-columns', '#selected-columns');
+        });
+
+
+        /** columnの削除
+         */
+        $('#delete-column').on('click', function(event){
+            move_columns('#selected-columns', '#available-columns');
+        });
+
+        /** columnの順序を1つ前にする
+         */
+        $('#up-column').on('click', function(event){
+            move_column_order('#selected-columns', 'up');
+        });
+
+        /** columnの順序を1つ後ろにする
+         */
+        $('#down-column').on('click', function(event){
+            move_column_order('#selected-columns', 'down');
+        });
+
+        /** フィルター条件のリクエストデータを作成
+         */
+        function create_request_data_for_filters(){
+            var data = {};
+            var conditions = $('.conditions');
+            conditions.each(function (ii, condition){
+                condition = $(condition);
+                var condition_use = condition.find('.condition-use').first()[0];
+                if (condition_use.checked){
+                    var name = '';
+                    var values = [];
+
+                    var condition_values = condition.find('.condition-value:not(".select2-container")');
+                    condition_values.each(function(jj, condition_value){
+                        condition_value = $(condition_value);
+                        if(condition_value.hasClass('datetime')){// datetime-from, datetime-to
+                            var value = {}
+                            var elms = condition_value.find('.datetime-from');
+                            name = elms.find('input:first').attr('name');
+
+                            var from_year = elms.find('.datetime-year:first').val();
+                            var from_month = elms.find('.datetime-month:first').val();
+                            var from_day = elms.find('.datetime-day:first').val();
+                            var from_hour = elms.find('.datetime-hour:first').val();
+                            var from_minute = elms.find('.datetime-minute:first').val();
+
+                            var elms = condition_value.find('.datetime-to');
+                            var to_year = elms.find('.datetime-year:first').val();
+                            var to_month = elms.find('.datetime-month:first').val();
+                            var to_day = elms.find('.datetime-day:first').val();
+                            var to_hour = elms.find('.datetime-hour:first').val();
+                            var to_minute = elms.find('.datetime-minute:first').val();
+
+                            values.push({
+                                'year': from_year,
+                                'month': from_month,
+                                'day': from_day,
+                                'hour': from_hour,
+                                'minute': from_minute
+                            });
+                            values.push({
+                                'year': to_year,
+                                'month': to_month,
+                                'day': to_day,
+                                'hour': to_hour,
+                                'minute': to_minute
+                            });
+                        }else{// other
+                            var elms = $(condition_values.find('input, select'));
+                            elms.each(function(jj, elm){
+                                elm = $(elm);
+                                name = elm.attr('name');
+                                var vals = elm.val();
+                                if(vals instanceof Array){
+                                    $(vals).each(function (idx, val){
+                                        if(val != ""){
+                                            values.push(val);
+                                        }
+                                    });
+                                }else{// no array => value
+                                    var val = vals;
+                                    if(val != ""){
+                                        values.push(val);
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+
+                    data[name] = values;
+                }
+            });
+            return data;
+        }
+
+        /** optionのリクエストデータを作成
+         */
+        function create_request_data_for_options(){
+            var columns = [];
+            var options = $('#selected-columns option')
+            options.each(function (ii, option){
+                var value = $(option).val();
+                columns.push(value);
+            });
+            return columns;
+        }
+
+        /** リクエストデータを作成
+         */
+        function create_request_data(){
+            var data =  {
+                'options': create_request_data_for_options(),
+                'filters': create_request_data_for_filters(),
+                'limit': 10000,
+                'page': 1
+            };
+            return data;
+        }
+
+        /** ダウンロードダイアログを表示
+         */
+        $('#download').on('click', function(event){
+            var modal = $('#download-confirm-modal');
+            var json_input = modal.find('#download-confirm-modal-json');
+            var data = create_request_data();
+            var req = JSON.stringify(data);
+            json_input.attr('value', req);
+            modal.modal('show');
+        });
+
+        /** 検索条件の項目に複数入力出来るものに関して入力エントリーを追加する処理
+         */
+        $('.btn.fa.fa-plus').on('click', function(event){
+            var elm = $(event.target).prev();
+            var new_elm = elm.clone();
+            new_elm.find('input').attr('value', ""); // そのままコピーすると値までコピーしてしまうので消す
+            elm.after(new_elm);
+        });
+
+
+    });
+</script>
+
+
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+names=[u'トップ', u'予約検索'],
+urls=[request.route_path('index')]
+)}
+</%block>
+
+<div class="page-header">
+  <h1>
+    <img src="/static/danger.jpeg" height="50" width="50" align="left">
+    <span>購入情報検索 (ベータ版)</span>
+    <img src="/static/danger.jpeg" height="50" width="50">
+  </h1>
+
+  <h3 style="color: red; float='left'">使用上の注意</h3>
+  <div>この購入情報検索機能は<b style="color: red; ">ベータ版</b>で、<b style="color: red;">試験段階</b>です。</div>
+  <div>そのため<b style="color: red;">仕様が変更になる事もあります</b>し、
+    <b style="color: red;">正しく動作しない事もあります</b>。
+    ご注意ください。</div>
+  <div>安定した機能をご希望の方は
+    <b style="color: red;">既存の購入情報検索機能をお使いください</b>。
+  </div>
+</div>
+
+<table class="condition-table">
+  <tbody>
+    <tr>
+      <td class="condition-table-cel">
+        <div id="options">
+          <span>オプション</span>
+          <table>
+            <tbody>
+              <tr>
+                <td>
+                  <select id="available-columns" multiple="multiple">
+                    % for column, compiler in column_compiler.items():
+                    <option value="${column}">${compiler.name}</option>
+                    % endfor
+                  </select>
+                </td>
+                <td>
+                  <a class="btn fa fa-arrow-circle-right" id="insert-column"></a><br />
+                  <a class="btn fa fa-arrow-circle-left" id="delete-column"></a>
+                </td>
+                <td>
+                  <select id="selected-columns" multiple="multiple">
+                  </select>
+                </td>
+                <td>
+                  <a class="btn fa fa-arrow-circle-up" id="up-column"></a><br />
+                  <a class="btn fa fa-arrow-circle-down" id="down-column"></a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </td>
+
+      <td class="condition-table-cel">
+        <div id="conditions-selector-block">
+          <label>条件</label>
+          <select id="conditions-selector" style="width:300px;" multiple="multiple">
+            % for column, filter_ in name_filter.items():
+            <option class="condition-filter" value="condition-${column}">${filter_.name}</option>
+            % endfor
+          </select>
+        </div>
+
+
+        <div id="conditions">
+
+          <!--
+          % for column, compiler in column_compiler.items():
+          <div class="conditions" id="condition-${column}">
+            <div class="condition-header">
+              <input class="condition-use" type="checkbox">
+              <label class="condition-label">${compiler.name}</label>
+            </div>
+            <div>
+              <input class="condition-value" name="${column}" type="text">
+            </div>
+            <a class="btn fa fa-plus"></a>
+          </div>
+          % endfor
+          -->
+
+          <div class="conditions" id="condition-order-no">
+            <div class="condition-header">
+              <input class="condition-use" type="checkbox">
+              <label class="condition-label">予約番号</label>
+            </div>
+            <div>
+              <input name="order-no" type="text" class="condition-value">
+            </div>
+            <a class="btn fa fa-plus"></a>
+          </div>
+
+          <div class="conditions" id="condition-seat-no">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">座席番号</label>
+            <div class="condition-value">
+              <input name="seat-no" type="text">
+            </div>
+          </div>
+
+          <div class="conditions" id="condition-name">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">名前</label>
+            <div class="condition-value">
+              <input name="name" type="text">
+            </div>
+          </div>
+
+
+          <div class="conditions" id="condition-telephone">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">電話番号</label>
+            <div class="condition-value">
+              <input name="telephone" type="text">
+            </div>
+          </div>
+
+          <div class="conditions" id="condition-email">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">メールアドレス</label>
+            <div class="condition-value">
+              <input name="email" type="text">
+            </div>
+          </div>
+
+          <div class="conditions" id="condition-member">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">会員番号</label>
+            <div class="condition-value">
+              <input name="member" type="text">
+            </div>
+          </div>
+
+          <div class="conditions" id="condition-Order.created_at">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">予約日時</label>
+            <div class="condition-value">
+              <input class="datetimewidget">
+              <a href="#"><i class="fa fa-calendar"></i></a>
+              〜
+              <input class="datetimewidget">
+              <a href="#"><i class="fa fa-calendar"></i></a>
+            </div>
+          </div>
+          <div class="conditions" id="condition-SejOrder.billing_number">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">払込票番号</label>
+            <div class="condition-value">
+              <input name="Order.created_at" type="text">
+            </div>
+            <a class="btn fa fa-plus"></a>
+          </div>
+          <div class="conditions" id="condition-SejOrder.exchange_number">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">引換票番号</label>
+            <div class="condition-value">
+              <input name="Order.created_at" type="text">
+            </div>
+            <a class="btn fa fa-plus"></a>
+          </div>
+          <div class="conditions" id="condition-event">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">イベント名</label>
+            <div class="condition-value">
+              <select name="event" id="event_search" style="width: 300px;">
+                <option>(全て)</option>
+                % for event in events:
+                <option name="event" value="${event.id}">${event.title}</option>
+                % endfor
+              </select>
+            </div>
+          </div>
+
+          <div class="conditions" id="condition-performance">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">公演名</label>
+            <div class="condition-value">
+              <select name="performance" multiple="multiple" id="performance_search">
+                <option>(全て)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="conditions" id="condition-salessegmentgroup">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">販売区分</label>
+            <div class="condition-value">
+              <select name="salessegmentgroup" id="sales_segment_group_search" multiple="multiple">
+                <option>(全て)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="conditions" id="condition-payment-method">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">決済方法</label>
+            <div class="condition-value">
+              <select name="payment-method" multiple="multiple">
+                <option>(全て)</option>
+                % for entry in payment_methods:
+                <option value="${entry.id}">${entry.name}</option>
+                % endfor
+              </select>
+            </div>
+          </div>
+
+          <div class="conditions" id="condition-delivery">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">引取方法</label>
+            <div class="condition-value">
+              <select name="delivery-method" multiple="multiple">
+                <option>(全て)</option>
+                % for entry in delivery_methods:
+                <option value="${entry.id}">${entry.name}</option>
+                % endfor
+              </select>
+            </div>
+          </div>
+
+          <div class="conditions" id="condition-performance-start-on">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">公演日</label>
+            <div class="condition-value datetime">
+              <p class="datetime-from">
+                <input name="performance-start-on" class="datetime-year">年
+                <input name="performance-start-on" class="datetime-month">月
+                <input name="performance-start-on" class="datetime-day">日
+                <input name="performance-start-on" class="datetime-hour">時
+                <input name="performance-start-on" class="datetime-minute">分
+                <a href="#"><i class="fa fa-calendar"></i></a>
+              </p>
+              〜
+              <p class="datetime-to">
+                <input name="performance-start-on" class="datetime-year">年
+                <input name="performance-start-on" class="datetime-month">月
+                <input name="performance-start-on" class="datetime-day">日
+                <input name="performance-start-on" class="datetime-hour">時
+                <input name="performance-start-on" class="datetime-minute">分
+                <a href="#"><i class="fa fa-calendar"></i></a>
+              </p>
+            </div>
+          </div>
+
+          <div class="conditions" id="condition-ordered-at">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">公演日</label>
+            <div class="condition-value datetime">
+              <p class="datetime-from">
+                <input name="performance-start-on" class="datetime-year">年
+                <input name="performance-start-on" class="datetime-month">月
+                <input name="performance-start-on" class="datetime-day">日
+                <input name="performance-start-on" class="datetime-hour">時
+                <input name="performance-start-on" class="datetime-minute">分
+                <a href="#"><i class="fa fa-calendar"></i></a>
+              </p>
+              〜
+              <p class="datetime-to">
+                <input name="performance-start-on" class="datetime-year">年
+                <input name="performance-start-on" class="datetime-month">月
+                <input name="performance-start-on" class="datetime-day">日
+                <input name="performance-start-on" class="datetime-hour">時
+                <input name="performance-start-on" class="datetime-minute">分
+                <a href="#"><i class="fa fa-calendar"></i></a>
+              </p>
+            </div>
+          </div>
+
+          <div class="conditions" id="condition-order-status">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">予約ステータス</label>
+            <div class="condition-value">
+              <select name="order-status" multiple="multiple">
+                <option>(全て)</option>
+                <option value="ordered">受付済み</option>
+                <option value="delivered">配送済み</option>
+                <option value="canceled">キャンセル</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="conditions" id="condition-print-status">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">発券ステータス</label>
+            <div class="condition-value">
+              <select name="print-status" multiple="multiple">
+                <option>(全て)</option>
+                <option value="no-printed">未発券</option>
+                <option value="printed">発券済み</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="conditions" id="condition-payment-status">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">決済ステータス</label>
+            <div class="condition-value">
+              <select name="payment-status" multiple="multiple">
+                <option>(全て)</option>
+                <option value="unpaid">未入金</option>
+                <option value="paid">入金済み</option>
+                <option value="refuning">払戻予約</option>
+                <option value="refunded">払戻済み</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="conditions" id="condition-count">
+            <input class="condition-use" type="checkbox">
+            <label class="condition-label">購入枚数</label>
+            <div class="condition-value">
+              <input name="count" type="text">
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<a class="btn entry" id="download">ダウンロード</a>
+
+<form id="download-confirm" class="form-horizontal" action="${request.route_path('orders.beta.download')}" method="GET">
+  <div id="download-confirm-modal"class="modal hide">
+    <div class="modal-header">
+      購入情報ダウンロード
+    </div>
+
+    <div class="modal-body">
+    ダウンロードしますか?
+    <input id="download-confirm-modal-json" type="hidden" name="json" value="">
+    </div>
+
+    <div class="modal-footer">
+      <a href="javascript:void(0);" onclick="$('#download-confirm-modal').modal('hide');" class="btn secondary">キャンセル</a>
+      <input class="btn entry" type="submit" value="ダウンロード" onclick="$('#download-confirm-modal').modal('hide');">
+    </div>
+  </div>
+</form>

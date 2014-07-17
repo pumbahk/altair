@@ -51,6 +51,7 @@ class RefundSejOrderTest(unittest.TestCase):
                 refund_end_at=datetime(2014, 2, 1, 0, 0, 0),
                 need_stub=0,
                 ticket_expire_at=datetime(2014, 2, 1, 0, 0, 0),
+                refund_total_amount=10,
                 now=datetime(2014, 1, 1, 0, 0, 0)
                 )
 
@@ -79,6 +80,7 @@ class RefundSejOrderTest(unittest.TestCase):
                 refund_end_at=datetime(2014, 2, 1, 0, 0, 0),
                 need_stub=0,
                 ticket_expire_at=datetime(2014, 2, 1, 0, 0, 0),
+                refund_total_amount=10,
                 now=datetime(2014, 1, 1, 0, 0, 0)
                 )
 
@@ -89,7 +91,10 @@ class RefundSejOrderTest(unittest.TestCase):
         tenant = ThinSejTenant()
         sej_order = SejOrder(
             order_no='XX0000000000',
-            tickets=[SejTicket(ticket_type=SejTicketType.TicketWithBarcode.v, barcode_number=u'000000000000')]
+            tickets=[
+                SejTicket(ticket_type=SejTicketType.TicketWithBarcode.v, barcode_number=u'000000000000'),
+                SejTicket(ticket_type=SejTicketType.TicketWithBarcode.v, barcode_number=u'111111111111')
+                ]
             )
         ticket_price_getter = mock.Mock(return_value=10.)
         refund_event = self._callFUT(
@@ -106,10 +111,11 @@ class RefundSejOrderTest(unittest.TestCase):
             refund_end_at=datetime(2014, 2, 1, 0, 0, 0),
             need_stub=0,
             ticket_expire_at=datetime(2014, 2, 1, 0, 0, 0),
+            refund_total_amount=20,
             now=datetime(2014, 1, 1, 0, 0, 0)
             )
         self.assertTrue(refund_event.id is not None)
-        self.assertEqual(self.session.query(SejRefundTicket).filter_by(refund_event_id=refund_event.id).count(), 1)
+        self.assertEqual(self.session.query(SejRefundTicket).filter_by(refund_event_id=refund_event.id).count(), 2)
 
     def test_with_tickets_without_barcodes(self):
         from ..models import ThinSejTenant, SejOrder, SejTicket, SejRefundTicket, SejTicketType
@@ -139,7 +145,40 @@ class RefundSejOrderTest(unittest.TestCase):
             refund_end_at=datetime(2014, 2, 1, 0, 0, 0),
             need_stub=0,
             ticket_expire_at=datetime(2014, 2, 1, 0, 0, 0),
+            refund_total_amount=10,
             now=datetime(2014, 1, 1, 0, 0, 0)
             )
         self.assertTrue(refund_event.id is not None)
         self.assertEqual(self.session.query(SejRefundTicket).filter_by(refund_event_id=refund_event.id).count(), 1)
+
+    def test_total_amount_over(self):
+        from ..models import ThinSejTenant, SejOrder, SejTicket, SejRefundTicket, SejTicketType
+        from datetime import datetime
+        from ..exceptions import SejError, RefundTotalAmountOverError
+        tenant = ThinSejTenant()
+        sej_order = SejOrder(
+            order_no='XX0000000000',
+            tickets=[
+                SejTicket(ticket_type=SejTicketType.TicketWithBarcode.v, barcode_number=u'000000000000'),
+                SejTicket(ticket_type=SejTicketType.TicketWithBarcode.v, barcode_number=u'111111111111'),
+                ]
+            )
+        ticket_price_getter = mock.Mock(return_value=10.)
+        with self.assertRaises(RefundTotalAmountOverError):
+            refund_event = self._callFUT(
+                self.request,
+                tenant=tenant,
+                sej_order=sej_order,
+                performance_name=u'パフォーマンス名',
+                performance_code=u'000000',
+                performance_start_on=datetime(2014, 3, 1, 0, 0, 0),
+                per_order_fee=0.,
+                per_ticket_fee=0.,
+                ticket_price_getter=ticket_price_getter,
+                refund_start_at=datetime(2014, 1, 1, 0, 0, 0),
+                refund_end_at=datetime(2014, 2, 1, 0, 0, 0),
+                need_stub=0,
+                ticket_expire_at=datetime(2014, 2, 1, 0, 0, 0),
+                refund_total_amount=10,
+                now=datetime(2014, 1, 1, 0, 0, 0)
+                )

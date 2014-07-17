@@ -63,7 +63,7 @@ from altair.app.ticketing.orders.models import (
     )
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
-from altair.app.ticketing.orders.export import OrderCSV, get_japanese_columns
+from altair.app.ticketing.orders.export import OrderCSV, get_japanese_columns, RefundResultCSVExporter
 from altair.app.ticketing.orders.forms import (
     OrderForm,
     OrderSearchForm,
@@ -293,6 +293,7 @@ class OrderBaseView(BaseView):
             }
 
 
+
 @view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/index.html', permission='sales_counter')
 class OrderIndexView(OrderBaseView):
     SHOW_TOTAL_KEY = 'orders.index.show_total'
@@ -362,6 +363,76 @@ class OrderIndexView(OrderBaseView):
         self.show_total_flag = not self.show_total_flag
         return HTTPFound(location=self.request.route_path('orders.index', _query=self.request.params))
 
+
+class DownloadParamValidationError(Exception):
+    u"""購入情報DL(beta)のパラメータエラー
+    """
+    pass
+
+@view_defaults(decorator=with_bootstrap, permission='sales_editor')
+class OrderBetaDownloadView(BaseView):
+    """The Order download beta.
+    """
+
+    @view_config(route_name='orders.beta', request_method='GET',
+                 renderer='altair.app.ticketing:templates/orders/beta.html')
+    def index(self):
+        """The Order search page.
+        """
+        import altair.app.ticketing.orders.dump as altair_order_dump
+        from altair.app.ticketing.core.models import (
+            Event,
+            PaymentMethod,
+            DeliveryMethod,
+            )
+        organization_id = self.context.organization.id
+        events = Event.query\
+          .filter(Event.organization_id==organization_id)\
+          .order_by(Event.display_order)
+        payment_methods = PaymentMethod.query\
+          .filter(PaymentMethod.organization_id==organization_id)
+        delivery_methods = DeliveryMethod.query\
+          .filter(DeliveryMethod.organization_id==organization_id)
+        return {'column_compiler': altair_order_dump.column_compiler,
+                'name_filter': altair_order_dump.name_filter,
+                'events': events,
+                'payment_methods': payment_methods,
+                'delivery_methods': delivery_methods,
+                }
+
+    @view_config(route_name='orders.beta.download', request_method='GET')
+    def download(self):
+        """The Order Download API.
+
+        request format:
+        type: 'CSV' or 'JSON'
+        count: 100, 200
+        filters: [['Column.name': [CONDITION, ... ], ... ]
+        options: ['Column.name', ...]
+
+        response format:
+        """
+
+        import json
+        import altair.app.ticketing.orders.dump as altair_order_dump
+        session = get_db_session(self.request, name="slave")
+        json_str = self.request.params.get('json', None)
+        if not json_str:
+            raise DownloadParamValidationError(
+                'Order dowload parameter error: {}'.format(
+                    repr(self.request.params)))
+        data = json.loads(json_str)
+        filters = data['filters']
+        options = data['options']
+        limit = data['limit']
+        res = Response()
+        res.headers = [
+            ('Content-Type', 'application/octet-stream; charset=cp932'),
+            ('Content-Disposition', 'attachment; filename={0}'.format('test.csv')),
+            ]
+        exporter = altair_order_dump.OrderExporter(session, self.context.organization.id)
+        exporter.exportfp(res, filters=filters, options=options, limit=limit)
+        return res
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor') # sales_counter ではない!
 class OrderDownloadView(BaseView):
@@ -775,6 +846,28 @@ class OrdersRefundDetailView(BaseView):
             )
 
 
+@view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='csv')
+class OrdersRefundExportView(BaseView):
+
+    @view_config(route_name='orders.refund.export_result')
+    def export_result(self):
+        refund_id = long(self.request.matchdict.get('refund_id', 0))
+        refund = Refund.get(refund_id, organization_id=self.context.organization.id)
+        if refund is None:
+            return HTTPNotFound()
+
+        slave_session = get_db_session(self.request, name='slave')
+        refund_tickets = RefundResultCSVExporter(slave_session, refund).all()
+        if len(refund_tickets) == 0:
+            self.request.session.flash(u'コンビニ払戻実績がありません')
+            return HTTPFound(location=route_path('orders.refund.show', self.request, refund_id=refund_id))
+
+        filename='refund_result-{}.csv'.format(refund_id)
+        self.request.response.content_type = 'text/plain;charset=Shift_JIS'
+        self.request.response.content_disposition = 'attachment; filename=' + filename
+        return dict(data=list(refund_tickets), encoding='sjis', filename=filename)
+
+
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/new.html')
 class OrdersRefundCreateView(BaseView):
 
@@ -977,7 +1070,6 @@ class OrderDetailView(BaseView):
         order_attributes = dependents.get_order_attributes(
             get_order_metadata_provider_registry(self.request)
         )
-
         forms = self.context.get_dependents_forms()
         form_shipping_address = forms.get_shipping_address_form()
         form_order = forms.get_order_form()
@@ -1314,16 +1406,29 @@ class OrderDetailView(BaseView):
     @view_config(route_name="orders.ordered_product_attribute_edit", request_method="POST")
     def edit_ordered_product_attribute(self):
         order_no = self.request.matchdict.get('order_no', None)
-        ordered_product_item_id = self.request.POST.get('order_product_item_id', None)
-        name = self.request.POST.get('name', None)
-        value = self.request.POST.get('value', None)
-
-        if not ordered_product_item_id or not name or not value:
-            return HTTPNotFound("ordered_product_attribute_edit failed.")
+        update_list = self.create_update_ordered_product_item_list(self.request.POST.items())
 
         order = Order.query.filter(Order.order_no==order_no).first()
         new_order = Order.clone(order, deep=True)
 
+        for target_data in update_list:
+            self.update_ordered_product_item_attribute(target_data['name'], target_data['value'], order, new_order)
+
+        self.request.session.flash(u'購入商品属性を変更しました')
+        return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order.id) + "#ordered_product_attributes")
+
+    def create_update_ordered_product_item_list(self, formitems):
+        max = len(formitems)/3
+        update_list = []
+        for num in range(0, max):
+            update_dict = {'order_product_item_id': formitems[num*3][1],
+                           'name': formitems[num*3+1][1],
+                           'value': formitems[num*3+2][1]
+            }
+            update_list.append(update_dict)
+        return update_list
+
+    def update_ordered_product_item_attribute(self, name, value, order, new_order):
         new_order_dict = {}
         for product in new_order.items:
             for item in product.elements:
@@ -1337,11 +1442,6 @@ class OrderDetailView(BaseView):
 
         assert target_ordered_product_item is not None
         target_ordered_product_item.attributes[name] = value
-
-        self.request.session.flash(u'購入商品属性を変更しました')
-        return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order.id) + "#ordered_product_attributes")
-
-
 
     @view_config(route_name="orders.memo_on_order", request_method="POST", renderer="json")
     def edit_memo_on_order(self):

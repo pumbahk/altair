@@ -45,6 +45,7 @@ def includeme(config):
     config.add_route('orders.refund.edit'               , '/refund/edit/{refund_id}')
     config.add_route('orders.refund.delete'             , '/refund/delete/{refund_id}')
     config.add_route('orders.refund.show'               , '/refund/show/{refund_id}')
+    config.add_route('orders.refund.export_result'      , '/refund/export_result/{refund_id}')
     config.add_route('orders.refund.search'             , '/refund/search/')
     config.add_route('orders.refund.checked'            , '/refund/checked/')
     config.add_route('orders.refund.confirm'            , '/refund/confirm/')
@@ -65,6 +66,8 @@ def includeme(config):
     config.add_route("orders.mailinfo"                  , "/orders/{order_id}/mailinfo/{action}")
     config.add_route("cart.search",                       "/carts/")
     config.add_route("cart.show",                       "/carts/{order_no}")
+    config.add_route('orders.beta'                      , '/beta/')
+    config.add_route('orders.beta.download'             , '/beta/download/')
     config.scan(".")
 
     # 団体予約、インナー予約でcartパッケージを使う為の設定
@@ -89,6 +92,3 @@ def includeme(config):
     order_attrs_registry.registerProvider(order_metadata_provider)
     config.set_model_metadata_provider_registry(order_attrs_registry,
                                                 name=METADATA_NAME_ORDER)
-
-
-
