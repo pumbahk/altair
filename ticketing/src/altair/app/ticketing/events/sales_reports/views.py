@@ -190,7 +190,14 @@ class ReportSettings(BaseView):
     def new_post(self):
         f = ReportSettingForm(self.request.POST, context=self.context)
         if f.validate():
+            recipients = [
+                ReportRecipient.query.filter_by(id=report_recipient_id, organization_id=self.context.organization.id).one()
+                for report_recipient_id in f.recipients.data
+                ]
+            if f.email.data:
+                recipients.append(ReportRecipient(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id))
             report_mail = merge_session_with_post(ReportSetting(), f.data)
+            report_setting.recipients.extend(recipients)
             report_mail.save()
             self.request.session.flash(u'レポート送信設定を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
