@@ -35,7 +35,7 @@ def upgrade():
         sa.Column('report_recipient_id', Identifier(), nullable=False),
         sa.PrimaryKeyConstraint('report_setting_id', 'report_recipient_id'),
         sa.ForeignKeyConstraint(['report_setting_id'], ['ReportSetting.id'], 'ReportSetting_ReportRecipient_ibfk_1', ondelete='cascade'),
-        sa.ForeignKeyConstraint(['report_recipient_id'], ['ReportRecipient.id'], 'ReportSetting_ReportRecipient_ibfk_1', ondelete='cascade')
+        sa.ForeignKeyConstraint(['report_recipient_id'], ['ReportRecipient.id'], 'ReportSetting_ReportRecipient_ibfk_2', ondelete='cascade')
         )
 
 def downgrade():

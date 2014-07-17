@@ -15,7 +15,7 @@ from altair.app.ticketing.operators.models import Operator
 logger = logging.getLogger(__name__)
 
 
-def report_recipient_migration():
+def execute():
     ''' Operator/ReportSetting から ReportRecipient へname/emailをデータ移行
     '''
 
@@ -70,5 +70,5 @@ def main():
     env = bootstrap(args.config)
 
     logger.info('start migration')
-    report_recipient_migration()
+    execute()
     logger.info('end migration')

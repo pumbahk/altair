@@ -824,6 +824,8 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance = relationship('Performance', backref='report_settings')
     operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=True)
     operator = relationship('Operator', backref='report_setting')
+    name = Column(String(255), nullable=True)
+    email = Column(String(255), nullable=True)
     frequency = Column(Integer, nullable=False)
     period = Column(Integer, nullable=False)
     time = Column(String(4), nullable=False)
