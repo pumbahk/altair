@@ -81,7 +81,7 @@
     <td>${u'公演' if rs.performance_id else u'イベント'}</td>
     <td>${''.join([enum.v[1] for enum in ReportPeriodEnum if enum.v[0] == rs.period])}</td>
     <td>${''.join([enum.v[1] for enum in ReportTypeEnum if enum.v[0] == rs.report_type])}</td>
-    <td><input class="btn btn-mini" type="button" value="レポートプレビュー" onclick="javascript:preview('${rs.format_recipient()}', ${rs.report_type});"></td>
+    <td><input class="btn btn-mini" type="button" value="レポートプレビュー" onclick="javascript:preview('${rs.format_recipients()}', ${rs.report_type});"></td>
   </tr>
   % endfor
 </table>

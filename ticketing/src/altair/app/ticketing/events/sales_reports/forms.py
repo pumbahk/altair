@@ -34,7 +34,7 @@ class SalesReportForm(OurForm):
         if formdata and not 'need_total' in formdata:
             self.need_total.data = True
         if formdata and 'recipient' in formdata:
-            self.recipient.data = ','.join([email.strip() for email in self.recipient.data.split(',')])
+            self.recipient.data = ', '.join([email.strip() for email in self.recipient.data.split(',')])
 
     def _get_translations(self):
         return Translations()

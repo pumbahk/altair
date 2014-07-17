@@ -812,6 +812,9 @@ class ReportRecipient(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     email = Column(String(255), nullable=False)
     organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=False)
 
+    def format_recipient(self):
+        return u'{0} <{1}>'.format(self.name, self.email)
+
 class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = 'ReportSetting'
     id = Column(Identifier, primary_key=True)
@@ -830,8 +833,8 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     report_type = Column(Integer, nullable=False, default=1, server_default='1')
     recipients = relationship('ReportRecipient', secondary=ReportSetting_ReportRecipient.__table__, backref='settings')
 
-    def format_recipient(self):
-        return u','.join([u'{0} <{1}>'.format(r.name, r.email) for r in self.recipients])
+    def format_recipients(self):
+        return u', '.join([r.format_recipient() for r in self.recipients])
 
 def build_sales_segment_query(event_id=None, performance_id=None, sales_segment_group_id=None, sales_segment_id=None, user=None, now=None, type='available'):
     if all(not x for x in [event_id, performance_id, sales_segment_group_id, sales_segment_id]):
