@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 import re
+import copy
 from wtforms import validators
 from wtforms.compat import string_types
 from datetime import date, datetime
@@ -130,15 +131,21 @@ class Email(validators.Regexp):
 
         super(Email, self).__call__(form, field)
 
-class MultipleEmail(validators.Regexp):
-    def __init__(self, message=None):
-        super(MultipleEmail, self).__init__(r'^([,]*[a-zA-Z0-9_+\-*/=.]+@[^.][a-zA-Z0-9_\-.]*\.[a-z]{2,10})+$', re.IGNORECASE, message)
-
+class MultipleEmail(Email):
     def __call__(self, form, field):
         if self.message is None:
             self.message = field.gettext(u'不正な文字が含まれています')
 
-        super(MultipleEmail, self).__call__(form, field)
+        if field.data:
+            if not isinstance(field.data, string_types):
+                raise validators.ValidationError(self.message)
+
+            f = copy.copy(field)
+            for email in field.data.split(u','):
+                email = email.strip()
+                match_obj = re.search(r'<(.*)>', email or '', re.IGNORECASE)
+                f.data = email if match_obj is None else match_obj.group(1)
+                super(MultipleEmail, self).__call__(form, f)
 
 class SejCompliantEmail(validators.Regexp):
     def __init__(self, message=None):
