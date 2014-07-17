@@ -35,8 +35,9 @@ class LotSessionCartTest(unittest.TestCase):
             )
         self.session.add(self.lot)
         self.delivery_method = DeliveryMethod(
-            fee_type=FeeTypeEnum.PerUnit.v[0],
-            fee=20
+            fee_per_order=0,
+            fee_per_principal_ticket=20,
+            fee_per_subticket=0
             )
         self.session.add(self.delivery_method)
         self.session.add(
@@ -49,7 +50,7 @@ class LotSessionCartTest(unittest.TestCase):
                         ticket_bundle=TicketBundle(
                             tickets=[
                                 Ticket(
-                                    priced=True,
+                                    principal=True,
                                     ticket_format=TicketFormat(
                                         name='X',
                                         delivery_methods=[
@@ -73,14 +74,14 @@ class LotSessionCartTest(unittest.TestCase):
                         ticket_bundle=TicketBundle(
                             tickets=[
                                 Ticket(
-                                    priced=True,
+                                    principal=True,
                                     ticket_format=TicketFormat(
                                         name='Y',
                                         delivery_methods=[]
                                         )
                                     ),
                                 Ticket(
-                                    priced=False,
+                                    principal=False,
                                     ticket_format=TicketFormat(
                                         name='Z',
                                         delivery_methods=[
@@ -97,7 +98,9 @@ class LotSessionCartTest(unittest.TestCase):
         self.payment_delivery_method_pair = PaymentDeliveryMethodPair(
             id=1,
             system_fee=3,
-            delivery_fee=4,
+            delivery_fee_per_order=0,
+            delivery_fee_per_principal_ticket=4,
+            delivery_fee_per_subticket=0,
             transaction_fee=5,
             discount=6,
             payment_method=PaymentMethod(

@@ -1,0 +1,75 @@
+<h4>データ登録時に設定されるもの</h4>
+<%!
+on_settings_help_list = [
+{"name": u"イベント名", "description": u"イベントの名前 (例: 2014FIFAワールドカップ ブラジル パブリックビューイング)"},
+{"name": u"イベント名略称", "description": u"イベントの略称 (例: W杯パブリックビューイング)"},
+{"name": u"チケット価格", "description": u"指定した商品の価格 (例: 2,900円)"},
+{"name": u"パフォーマンス名", "description": u"公演名 (例: コートジボワールvs日本)"},
+{"name": u"公演コード", "description": u"1公演に対し一意のコード (例: RTKTWCJ0615Z)"},
+{"name": u"公演名備考", "description": u"フリーワード。公演に対する説明(例: (フリーワード))"},
+{"name": u"公演名副題", "description": u"フリーワード。公演に対する説明例: (フリーワード))"},
+{"name": u"公演名略称", "description": u"フリーワード。公演に対する説明(例: (フリーワード))"},
+{"name": u"会場名", "description": u"会場名(例: 東京ドーム)"},
+{"name": u"商品価格", "description": u"チケット１枚に対する価格(例: 2,900円)"},
+{"name": u"商品名", "description": u"商品名称。券種名称。(例: スタンド指定)"},
+{"name": u"対戦名", "description": u"パフォーマンス名と同様 (例: コートジボワールvs日本)"},
+{"name": u"席番", "description": u"購入時の座席の情報をフルで表示 (例: グランド1塁側 21ゲート G11ブロック 12通路 B列 21番)"},
+{"name": u"席種名", "description": u"購入時に選択する席名(例: スタンド指定)"},
+{"name": u"終了時刻", "description": u"試合終了時刻あるいは閉演時刻(例: 10時 00分)"},
+{"name": u"終了時刻s", "description": u"試合終了時刻あるいは閉演時刻短い版(例: 10:00)"},
+{"name": u"開催日", "description": u"公演日あるいは試合日(例: 2014年 06月 15日 (日))"},
+{"name": u"開催日s", "description": u"公演日あるいは試合日短い版(例: 2014/06/15 (日))"},
+{"name": u"開場時刻", "description": u"試合会場の開場時刻あるいは入場可能時刻(例: 08時 00分)"},
+{"name": u"開場時刻s", "description": u"試合会場の開場時刻あるいは入場可能時刻短い版(例: 08:00)"},
+{"name": u"開始時刻", "description": u"試合開始時刻あるいは開演時刻(例: 10時 00分)"},
+{"name": u"開始時刻s", "description": u"試合開始時刻あるいは開演時刻短い版(例: 10:00)"},
+]
+%>
+%for d in on_settings_help_list:
+<div class="label">
+<span class="copy-button" data-clipboard-text="{{${d['name']}}}">${d["name"]}</span>
+<span class="help-inline">
+          <a rel="popover" 
+             data-tigger="hover"
+             data-original-title="${d['name']}"
+             data-animation="false"
+             data-placement="top"
+             data-content="${d['description']}">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+</div>
+%endfor
+<h4>購入時に設定されるもの</h4>
+<%!
+on_buy_help_list = [
+{"name": u"予約番号", "description":u"予約時に生成される注文毎にユニークな番号。受付番号と同じ(例: XX000002W262)"},
+{"name": u"住所", "description":u"郵便番号+住所(例: 1760005東京都練馬区練馬市xxxxx)"},
+{"name": u"メールアドレス", "description":u"(例: test@example.ne.jp)"},
+{"name": u"予約時補助文言1", "description":u"フリーワード。注文時に入力できる(例: 招待用の注文)"},
+{"name": u"予約時補助文言2", "description":u"フリーワード。注文時に入力できる(例: キャンペーン適用に付き手動で割引)"},
+{"name": u"予約時補助文言3", "description":u"フリーワード。注文時に入力できる(例: テスト用注文)"},
+{"name": u"受付日時", "description":u"注文を受付た日時。注文日時と同じ(例: 2014年 06月 11日 (水) 10時 50分)"},
+{"name": u"受付日時s", "description":u"注文した日時。受付日時と同じ。短い版(例: 2014/06/11 (水) 10:50)"},
+{"name": u"受付番号", "description":u"注文時に生成される注文毎にユニークな番号。予約番号とおなじ(例: RT000002W262)"},
+{"name": u"氏名", "description":u"氏名(例: 苗字 名前)"},
+{"name": u"氏名カナ", "description":u"氏名をカナ表記にしたもの(例: ミョウジ ナマエ)"},
+{"name": u"電話番号", "description":u"購入者が購入した際に入力した電話番号(もしあれば)(例: 08012341234)"},
+]
+%>
+%for d in on_buy_help_list:
+<div class="label">
+<span class="copy-button" data-clipboard-text="{{${d['name']}}}">${d["name"]}</span>
+<span class="help-inline">
+          <a rel="popover" 
+             data-tigger="hover"
+             data-original-title="${d['name']}"
+             data-animation="false"
+             data-placement="top"
+             data-content="${d['description']}">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+</div>
+%endfor
+

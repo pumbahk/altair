@@ -89,30 +89,25 @@ ${ch.breadcrumbs(
       <a href="${request.route_path("events.tickets.api.ticketform",event_id=event.id)}" 
        data-toggle="modal" data-target="#AjaxModal"
        class="btn ajax-modal">
-        <i class="icon-plus"></i> ${event.title}にチケット券面を追加
+        <i class="icon-plus"></i> チケット券面追加
       </a>
-      <button class="btn dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button>
-      <ul class="dropdown-menu">
-        <li>
-          <a data-base-url="${request.route_path("events.tickets.boundtickets.edit",event_id=event.id, id="__id__")}"
-           href="#" class="id-action">
-          <i class="icon-pencil"></i> 編集
-          </a>
-        </li>
-        <li>
-          <a href="#" class="id-action ajax-modal"
-           data-base-url="${request.route_path("events.tickets.boundtickets.delete", id="__id__", event_id=event.id)}" 
-           data-toggle="modal" data-target="#AjaxModal">
-          <i class="icon-minus"></i> 削除
-          </a>
-        </li>
-        <li>
-          <a data-base-url="${request.route_path("events.tickets.boundtickets.download", id="__id__", event_id=event.id)}"
-            href="#" class="id-action">
-            <i class="icon-minus"></i> 登録されている内容をdownload
-          </a>
-        </li>
-      </ul>
+      <a href="${request.route_path("events.tickets.easycreate",event_id=event.id)}"
+         class="btn">
+        <i class="icon-plus"></i> チケット券面簡易作成
+      </a>
+      <a data-base-url="${request.route_path("events.tickets.boundtickets.edit",event_id=event.id, id="__id__")}"
+         href="#" class="btn id-action">
+        <i class="icon-pencil"></i> 編集
+      </a>
+      <a href="#" class="btn id-action ajax-modal"
+         data-base-url="${request.route_path("events.tickets.boundtickets.delete", id="__id__", event_id=event.id)}" 
+         data-toggle="modal" data-target="#AjaxModal">
+        <i class="icon-minus"></i> 削除
+      </a>
+      <a data-base-url="${request.route_path("events.tickets.boundtickets.download", id="__id__", event_id=event.id)}"
+         href="#" class="btn id-action">
+        <i class="icon-minus"></i> 登録されている内容をdownload
+      </a>
     </div>
   </div>
 </form>

@@ -11,13 +11,12 @@ from . import schemas
 from . import api
 from altair.mobile import mobile_view_config
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
-from altair.app.ticketing.core.api import get_organization
+from altair.app.ticketing.cart import api as cart_api
 from datetime import datetime
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe, multi_unsubscribe
 from altair.app.ticketing.payments import plugins
 
 import helpers as h
-from ..users.api import get_user
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.qr.utils import build_qr_by_history_id
 from altair.app.ticketing.qr.utils import build_qr_by_token_id, build_qr_by_orion, get_matched_token_from_token_id
@@ -56,7 +55,7 @@ class MypageView(object):
     def show(self):
 
         authenticated_user = self.context.authenticated_user()
-        user = get_user(authenticated_user)
+        user = cart_api.get_user(authenticated_user)
         per = 10
 
         if not user:
@@ -69,7 +68,10 @@ class MypageView(object):
 
         magazines_to_subscribe = None
         if shipping_address:
-            magazines_to_subscribe = get_magazines_to_subscribe(get_organization(self.request), shipping_address.emails)
+            magazines_to_subscribe = get_magazines_to_subscribe(
+                cart_api.get_organization(self.request),
+                shipping_address.emails
+                )
 
         return dict(
             shipping_address=shipping_address,
@@ -90,7 +92,7 @@ class MypageView(object):
     def order_show(self):
 
         authenticated_user = self.context.authenticated_user()
-        user = get_user(authenticated_user)
+        user = cart_api.get_user(authenticated_user)
 
         if not user:
             raise HTTPNotFound()
@@ -113,13 +115,16 @@ class MypageView(object):
     def mailmag_confirm(self):
 
         authenticated_user = self.context.authenticated_user()
-        user = get_user(authenticated_user)
+        user = cart_api.get_user(authenticated_user)
 
         if not user:
             raise HTTPNotFound()
 
         shipping_address = self.context.get_shipping_address(user)
-        magazines_to_subscribe = get_magazines_to_subscribe(get_organization(self.request), shipping_address.emails)
+        magazines_to_subscribe = get_magazines_to_subscribe(
+            cart_api.get_organization(self.request),
+            shipping_address.emails
+            )
         subscribe_ids = self.request.params.getall('mailmagazine')
 
         return dict(
@@ -140,13 +145,16 @@ class MypageView(object):
     def mailmag_complete(self):
 
         authenticated_user = self.context.authenticated_user()
-        user = get_user(authenticated_user)
+        user = cart_api.get_user(authenticated_user)
 
         if not user:
             raise HTTPNotFound()
 
         shipping_address = self.context.get_shipping_address(user)
-        magazines_to_subscribe = get_magazines_to_subscribe(get_organization(self.request), shipping_address.emails)
+        magazines_to_subscribe = get_magazines_to_subscribe(
+            cart_api.get_organization(self.request),
+            shipping_address.emails
+            )
         emails = shipping_address.emails
         subscribe_ids = self.request.params.getall('mailmagazine')
 
@@ -184,19 +192,21 @@ class MypageLoginView(object):
     @view_config(request_method="GET", route_name='order_review.form', renderer='json', http_cache=60,
                  custom_predicates=(is_mypage_organization, ))
     def login_form(self):
-        membership = self.context.get_membership().name
+        membership = self.context.membership.name
         self.select_renderer(membership)
+        memberships = self.context.memberships
 
         # このformは、モバイルのためだけに必要
         form = schemas.OrderReviewSchema(self.request.params)
-        return dict(username='', form=form)
+        return dict(username='', form=form, memberships=memberships)
 
     @view_config(request_method="POST", route_name='order_review.form', renderer='string',
                  custom_predicates=(is_mypage_organization, ))
     def login(self):
         who_api = get_who_api(self.request, name="fc_auth")
-
-        membership = self.context.get_membership().name
+        authmembership = membership = self.context.membership.name
+        if self.request.params.get('membership', None):
+            authmembership = self.request.params.get('membership', None)
         username = self.request.params['username']
         password = self.request.params['password']
 
@@ -204,14 +214,14 @@ class MypageLoginView(object):
         headers = None
         identity = None
 
-        result = do_authenticate(self.request, membership, username, password)
+        result = do_authenticate(self.request, authmembership, username, password)
         if result is not None:
             # result には user_id が含まれているが、これを identity とすべきかは
             # 議論の余地がある。user_id を identity にしてしまえば DB 負荷を
             # かなり減らすことができるだろう。
             identity = {
                 'login': True,
-                'membership': membership,
+                'membership': authmembership,
                 'username': username,
                 }
 
@@ -221,7 +231,8 @@ class MypageLoginView(object):
         if authenticated is None:
             self.select_renderer(membership)
             return {'username': username,
-                    'message': u'IDまたはパスワードが一致しません'}
+                    'message': u'IDまたはパスワードが一致しません',
+                    'memberships': self.context.memberships}
 
         res = HTTPFound(location=self.request.route_path("mypage.show"), headers=headers)
         return res

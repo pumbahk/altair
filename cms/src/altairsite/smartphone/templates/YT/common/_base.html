@@ -1,0 +1,34 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-title" content="ユースシアタージャパン" />
+<link rel="apple-touch-icon-precomposed" href="apple-touch-icon-precomposed.png">
+<script src=${request.static_url('altaircms:static/PC/smartphone/js/jquery-1.9.1.min.js')}></script>
+<script src=${request.static_url('altaircms:static/PC/smartphone/js/jquery-ui-1.9.2.custom.min.js')}></script>
+<script src=${request.static_url('altaircms:static/PC/smartphone/js/flipsnap.min.js')}></script>
+<link rel="stylesheet" type="text/css" href=${request.static_url('altaircms:static/YT/smartphone/css/jquery-ui-1.9.2.custom.min.css')} />
+<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/YT/smartphone/css/default.css')}" />
+<title>ユースシアタージャパン-<%block name="title"/></title>
+</head>
+<body>
+
+
+<div class="header-navigation">
+  <a class="goto-link btn-primary" style="float: right" href="${request.route_path('smartphone.goto_pc_page')}">PC版へ</a>
+  <a href="/"><img src="${request.static_url('altaircms:static/YT/smartphone/img/logo.png')}" width="200px" /></a>
+</div>
+
+<div id="fb-root"></div>
+
+<%
+    sns_url = u"http://ticket.rakuten.co.jp/"
+    sns_title = u"ユースシアタージャパン-トップ"
+    if sns:
+        sns_url = sns['url']
+        sns_title = sns['title']
+%>
+
+${self.body()}
+<%block name="fnavi" />
+<%include file="_footer.html"/>

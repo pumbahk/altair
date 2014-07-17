@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import unittest
+import mock
 from pyramid import testing
 from decimal import Decimal
 from altair.app.ticketing.testing import _setup_db, _teardown_db
@@ -1878,6 +1879,201 @@ class BuildSejArgsTest(unittest.TestCase):
                 else:
                     self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
 
+
+class IsSameSejOrderTest(unittest.TestCase):
+    def _callFUT(self, *args, **kwargs):
+        from .sej import is_same_sej_order
+        return is_same_sej_order(*args, **kwargs)
+
+    def test_same_cash_on_delivery(self):
+        from altair.app.ticketing.sej.models import SejPaymentType, SejTicketType
+        sej_order = testing.DummyModel(
+            payment_type=SejPaymentType.CashOnDelivery.v,
+            order_no='XX0000000000',
+            user_name='user_name',
+            user_name_kana='user_name_kana',
+            tel='0300000000',
+            zip_code='0000000',
+            email='test@example.com',
+            total_price=12000,
+            ticket_price=10000,
+            commission_fee=1000,
+            ticketing_fee=1000,
+            payment_due_at=None,
+            ticketing_start_at=datetime(2014, 1, 1, 0, 0, 0),
+            ticketing_due_at=datetime(2014, 1, 8, 0, 0, 0),
+            regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0),
+            tickets=[
+                testing.DummyModel(
+                    ticket_idx=0,
+                    ticket_type=SejTicketType.TicketWithBarcode.v,
+                    event_name='event_name',
+                    performance_name='performance_name',
+                    performance_datetime=datetime(2014, 8, 1, 0, 0, 0),
+                    ticket_template_id=1,
+                    product_item_id=1,
+                    ticket_data_xml='<xml />'
+                    )
+                ]
+            )
+        args_dict = dict(
+            payment_type=SejPaymentType.CashOnDelivery.v,
+            order_no='XX0000000000',
+            user_name='user_name',
+            user_name_kana='user_name_kana',
+            tel='0300000000',
+            zip_code='0000000',
+            email='test@example.com',
+            total_price=12000,
+            ticket_price=10000,
+            commission_fee=1000,
+            ticketing_fee=1000,
+            payment_due_at=None,
+            ticketing_start_at=datetime(2014, 1, 1, 0, 0, 0),
+            ticketing_due_at=datetime(2014, 1, 8, 0, 0, 0),
+            regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0)
+            )
+        ticket_dicts = [
+            dict(
+                ticket_idx=0,
+                ticket_type=SejTicketType.TicketWithBarcode.v,
+                event_name='event_name',
+                performance_name='performance_name',
+                performance_datetime=datetime(2014, 8, 1, 0, 0, 0),
+                ticket_template_id=1,
+                product_item_id=1,
+                xml='<xml />'
+                )
+            ]
+        self.assertTrue(self._callFUT(sej_order, args_dict, ticket_dicts))
+
+    def test_different_cash_on_delivery(self):
+        from altair.app.ticketing.sej.models import SejPaymentType, SejTicketType
+
+        for k in ['payment_type', 'order_no', 'user_name', 'user_name_kana', 'tel', 'zip_code', 'email', 'total_price', 'ticket_price', 'commission_fee', 'ticketing_fee', 'payment_due_at', 'ticketing_start_at', 'ticketing_due_at', 'regrant_number_due_at']:
+            sej_order = testing.DummyModel(
+                payment_type=SejPaymentType.CashOnDelivery.v,
+                order_no='XX0000000000',
+                user_name='user_name',
+                user_name_kana='user_name_kana',
+                tel='0300000000',
+                zip_code='0000000',
+                email='test@example.com',
+                total_price=12000,
+                ticket_price=10000,
+                commission_fee=1000,
+                ticketing_fee=1000,
+                payment_due_at=datetime(2014, 1, 2, 0, 0, 0),
+                ticketing_start_at=datetime(2014, 1, 1, 0, 0, 0),
+                ticketing_due_at=datetime(2014, 1, 8, 0, 0, 0),
+                regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0),
+                tickets=[
+                    testing.DummyModel(
+                        ticket_idx=0,
+                        ticket_type=SejTicketType.TicketWithBarcode.v,
+                        event_name='event_name',
+                        performance_name='performance_name',
+                        performance_datetime=datetime(2014, 8, 1, 0, 0, 0),
+                        ticket_template_id=1,
+                        product_item_id=1,
+                        ticket_data_xml='<xml />'
+                        )
+                    ]
+                )
+            args_dict = dict(
+                payment_type=SejPaymentType.CashOnDelivery.v,
+                order_no='XX0000000000',
+                user_name='user_name',
+                user_name_kana='user_name_kana',
+                tel='0300000000',
+                zip_code='0000000',
+                email='test@example.com',
+                total_price=12000,
+                ticket_price=10000,
+                commission_fee=1000,
+                ticketing_fee=1000,
+                payment_due_at=datetime(2014, 1, 2, 0, 0, 0),
+                ticketing_start_at=datetime(2014, 1, 1, 0, 0, 0),
+                ticketing_due_at=datetime(2014, 1, 8, 0, 0, 0),
+                regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0)
+                )
+            ticket_dicts = [
+                dict(
+                    ticket_idx=0,
+                    ticket_type=SejTicketType.TicketWithBarcode.v,
+                    event_name='event_name',
+                    performance_name='performance_name',
+                    performance_datetime=datetime(2014, 8, 1, 0, 0, 0),
+                    ticket_template_id=1,
+                    product_item_id=1,
+                    xml='<xml />'
+                    )
+                ]
+            v = getattr(sej_order, k)
+            if v is None:
+                continue
+            elif isinstance(v, basestring):
+                v += '*'
+            elif isinstance(v, datetime):
+                v += timedelta(days=1)
+            elif isinstance(v, (int, long, Decimal)):
+                v += 1
+            setattr(sej_order, k, v)
+            self.assertFalse(self._callFUT(sej_order, args_dict, ticket_dicts))
+
+
+    def test_same_prepayment_only(self):
+        from altair.app.ticketing.sej.models import SejPaymentType, SejTicketType
+        sej_order = testing.DummyModel(
+            payment_type=SejPaymentType.PrepaymentOnly.v,
+            order_no='XX0000000000',
+            user_name='user_name',
+            user_name_kana='user_name_kana',
+            tel='0300000000',
+            zip_code='0000000',
+            email='test@example.com',
+            total_price=12000,
+            ticket_price=10000,
+            commission_fee=1000,
+            ticketing_fee=1000,
+            payment_due_at=datetime(2014, 1, 1, 0, 0, 0),
+            ticketing_start_at=None,
+            ticketing_due_at=None,
+            regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0),
+            tickets=[]
+            )
+        args_dict = dict(
+            payment_type=SejPaymentType.PrepaymentOnly.v,
+            order_no='XX0000000000',
+            user_name='user_name',
+            user_name_kana='user_name_kana',
+            tel='0300000000',
+            zip_code='0000000',
+            email='test@example.com',
+            total_price=12000,
+            ticket_price=10000,
+            commission_fee=1000,
+            ticketing_fee=1000,
+            payment_due_at=datetime(2014, 1, 1, 0, 0, 0),
+            ticketing_start_at=None,
+            ticketing_due_at=None,
+            regrant_number_due_at=datetime(2015, 12, 31, 0, 0, 0)
+            )
+        ticket_dicts = [
+            dict(
+                ticket_idx=0,
+                ticket_type=SejTicketType.TicketWithBarcode.v,
+                event_name='event_name',
+                performance_name='performance_name',
+                performance_datetime=datetime(2014, 8, 1, 0, 0, 0),
+                ticket_template_id=1,
+                product_item_id=1,
+                xml='<xml />'
+                )
+            ]
+        self.assertTrue(self._callFUT(sej_order, args_dict, ticket_dicts))
+
+
 class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
     def setUp(self):
         from datetime import datetime
@@ -1962,8 +2158,10 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
 
     def _setup_fixture(self):
         from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment
-        from altair.app.ticketing.sej.models import SejPaymentType
+        from altair.app.ticketing.sej.models import SejPaymentType, SejTicketTemplateFile, _session
         from altair.app.ticketing.core.models import SejTenant
+        _session.add(SejTicketTemplateFile(template_id='TTTS000001', notation_version=2))
+        _session.commit()
         self.session.add(SejTenant(organization_id=1L))
         self.stock_types = self._create_stock_types(1)
         self.stock_types[0].quantity_only = False
@@ -1993,7 +2191,6 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
             order.created_at = datetime(2012, 1, 1, 0, 0, 0)
             sej_order = self._create_sej_order(order, payment_type)
             self.session.add(order)
-            self.session.add(sej_order)
             order_pairs[payment_type] = (order, sej_order)
         return order_pairs
 
@@ -2014,6 +2211,7 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
 
     def _create_sej_order(self, order, payment_type):
         from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejTicketType, SejPaymentType
+        from altair.app.ticketing.sej.models import _session
         from datetime import datetime, timedelta
         tickets = [
             SejTicket(
@@ -2031,7 +2229,7 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
             for i, ordered_product_item in enumerate(ordered_product.elements)
             ]
 
-        return SejOrder(
+        retval = SejOrder(
             payment_type='%d' % int(payment_type),
             order_no=order.order_no,
             billing_number=u'00000001',
@@ -2046,10 +2244,17 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
             exchange_sheet_number=u'11111111',
             exchange_number=u'22222222',
             order_at=order.created_at,
-            ticketing_due_at=(order.created_at + timedelta(days=10)),
             regrant_number_due_at=(order.created_at + timedelta(days=5)),
             tickets=tickets
             )
+        if int(payment_type) != SejPaymentType.Prepayment.v:
+            retval.payment_due_at = order.created_at + timedelta(days=10)
+        if int(payment_type) != SejPaymentType.PrepaymentOnly.v:
+            retval.ticketing_start_at = order.created_at
+            retval.ticketing_due_at = order.created_at + timedelta(days=10)
+        _session.add(retval)
+        _session.commit()
+        return retval
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
@@ -2098,6 +2303,69 @@ class PaymentPluginTest(PluginTestBase):
                 }
             plugin.refresh(self.request, order)
             self.assertTrue(self.dummy_communicator_called)
+
+    def test_refresh_fail_without_sej_order(self):
+        from altair.app.ticketing.orders.models import Order
+        from .sej import SejPluginFailure
+        plugin = self._makeOne()
+        order = Order(order_no='XX0000000000', organization_id=self.organization.id)
+        with self.assertRaises(SejPluginFailure) as c:
+            plugin.refresh(self.request, order)
+        self.assertEqual(c.exception.message, 'no corresponding SejOrder found')
+        self.assertEqual(c.exception.order_no, order.order_no)
+
+    def test_refresh_fail_already_paid(self):
+        from altair.app.ticketing.orders.models import Order
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from .sej import SejPluginFailure
+        plugin = self._makeOne()
+        order = Order(
+            order_no='XX0000000000',
+            organization_id=self.organization.id,
+            shipping_address=self._create_shipping_address(),
+            sales_segment=self.sales_segment,
+            total_amount=100,
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            special_fee=0,
+            created_at=datetime.now(),
+            paid_at=datetime.now()
+            )
+        sej_order = self._create_sej_order(order, SejPaymentType.PrepaymentOnly.v)
+        order.total_amount = 200
+        with self.assertRaises(SejPluginFailure) as c:
+            plugin.refresh(self.request, order)
+        self.assertEqual(c.exception.message, 'already paid')
+        self.assertEqual(c.exception.order_no, order.order_no)
+
+    @mock.patch('altair.app.ticketing.payments.plugins.sej.is_same_sej_order')
+    def test_refresh_success_already_paid_same_amount(self, is_same_sej_order):
+        from altair.app.ticketing.orders.models import Order
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from .sej import SejPluginFailure
+        plugin = self._makeOne()
+        order = Order(
+            order_no='XX0000000000',
+            organization_id=self.organization.id,
+            shipping_address=self._create_shipping_address(),
+            sales_segment=self.sales_segment,
+            total_amount=100,
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            special_fee=0,
+            created_at=datetime.now(),
+            paid_at=datetime.now()
+            )
+        sej_order = self._create_sej_order(order, SejPaymentType.PrepaymentOnly.v)
+        is_same_sej_order.return_value = True
+        try:
+            plugin.refresh(self.request, order)
+            self.assertTrue(True)
+        except Exception as e:
+            self.fail(e)
+
 
 class DeliveryPluginTest(PluginTestBase):
     def _getTarget(self):
@@ -2162,6 +2430,30 @@ class DeliveryPluginTest(PluginTestBase):
             plugin.refresh(self.request, order)
             self.assertTrue(self.dummy_communicator_called)
             self.assertTrue(sej_order.tickets[0].barcode_number, '00000002')
+
+    def test_refresh_fail_already_delivered(self):
+        from altair.app.ticketing.orders.models import Order
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from .sej import SejPluginFailure
+        plugin = self._makeOne()
+        order = Order(
+            order_no='XX0000000000',
+            organization_id=self.organization.id,
+            shipping_address=self._create_shipping_address(),
+            sales_segment=self.sales_segment,
+            total_amount=100,
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            special_fee=0,
+            created_at=datetime.now(),
+            delivered_at=datetime.now()
+            )
+        sej_order = self._create_sej_order(order, SejPaymentType.Prepayment.v)
+        with self.assertRaises(SejPluginFailure) as c:
+            plugin.refresh(self.request, order)
+        self.assertEqual(c.exception.message, 'already delivered')
+        self.assertEqual(c.exception.order_no, order.order_no)
 
 class PaymentDeliveryPluginTest(PluginTestBase):
     def _getTarget(self):
@@ -2228,6 +2520,69 @@ class PaymentDeliveryPluginTest(PluginTestBase):
             plugin.refresh(self.request, order)
             self.assertTrue(self.dummy_communicator_called)
             self.assertTrue(sej_order.tickets[0].barcode_number, '00000002')
+
+    def test_refresh_success_already_paid(self):
+        from altair.app.ticketing.orders.models import Order
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from .sej import SejPluginFailure
+        plugin = self._makeOne()
+        order = Order(
+            order_no='XX0000000000',
+            organization_id=self.organization.id,
+            shipping_address=self._create_shipping_address(),
+            sales_segment=self.sales_segment,
+            total_amount=100,
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            special_fee=0,
+            created_at=datetime.now(),
+            paid_at=datetime.now()
+            )
+        sej_order = self._create_sej_order(order, SejPaymentType.Prepayment.v)
+        self.result = {
+            'X_shop_order_id': sej_order.order_no,
+            'X_haraikomi_no': sej_order.billing_number,
+            'X_hikikae_no': sej_order.exchange_number,
+            'X_url_info': sej_order.exchange_sheet_url,
+            'iraihyo_id_00': sej_order.exchange_sheet_number,
+            'X_ticket_cnt': sej_order.total_ticket_count,
+            'X_ticket_hon_cnt': sej_order.ticket_count,
+            'X_goukei_kingaku': sej_order.total_price,
+            'X_ticket_daikin': sej_order.ticket_price,
+            'X_ticket_kounyu_daikin': sej_order.commission_fee,
+            'X_hakken_daikin': sej_order.ticketing_fee,
+            }
+        try:
+            plugin.refresh(self.request, order)
+            self.assertTrue(True)
+        except Exception as e:
+            raise
+            self.fail() 
+
+    def test_refresh_fail_already_delivered(self):
+        from altair.app.ticketing.orders.models import Order
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from .sej import SejPluginFailure
+        plugin = self._makeOne()
+        order = Order(
+            order_no='XX0000000000',
+            organization_id=self.organization.id,
+            shipping_address=self._create_shipping_address(),
+            sales_segment=self.sales_segment,
+            total_amount=100,
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            special_fee=0,
+            created_at=datetime.now(),
+            delivered_at=datetime.now()
+            )
+        sej_order = self._create_sej_order(order, SejPaymentType.Prepayment.v)
+        with self.assertRaises(SejPluginFailure) as c:
+            plugin.refresh(self.request, order)
+        self.assertEqual(c.exception.message, 'already delivered')
+        self.assertEqual(c.exception.order_no, order.order_no)
 
 if __name__ == "__main__":
     # setUpModule()

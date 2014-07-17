@@ -56,7 +56,7 @@ from altair.app.ticketing.models import (
 
 from standardenum import StandardEnum
 from altair.app.ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
-from altair.app.ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode, todate, todatetime
+from altair.app.ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode, todate, todatetime, memoize
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.sej import userside_api
@@ -130,7 +130,7 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     site_id = Column(Identifier, ForeignKey("Site.id"), nullable=False)
     performance_id = Column(Identifier, ForeignKey("Performance.id", ondelete='CASCADE'), nullable=True)
     organization_id = Column(Identifier, ForeignKey("Organization.id", ondelete='CASCADE'), nullable=False)
-    name = AnnotatedColumn(String(255), _a_label=(u"会場名"))
+    name = AnnotatedColumn(String(255), _a_label=_(u"会場名"))
     sub_name = Column(String(255))
 
     original_venue_id = Column(Identifier, ForeignKey("Venue.id"), nullable=True)
@@ -484,7 +484,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Performance'
 
     id = Column(Identifier, primary_key=True)
-    name = AnnotatedColumn(String(255), _a_label=(u'名称'))
+    name = AnnotatedColumn(String(255), _a_label=_(u'名称'))
     # see #2042
     # 旧仕様: Event.code(5桁) + 7桁(デフォルトはstart.onのYYMMDD+ランダム1桁)
     # 新仕様: Event.code(7桁) + 5桁(デフォルトはstart.onのMMDD+ランダム1桁)
@@ -493,9 +493,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     subtitle = Column(Unicode(255), doc=u"公演名副題", default=u"")
     note = Column(UnicodeText, doc=u"公演名備考", default=u"")
 
-    open_on = AnnotatedColumn(DateTime, _a_label=(u"開場"))
-    start_on = AnnotatedColumn(DateTime, _a_label=(u"開演")) # 必須
-    end_on = AnnotatedColumn(DateTime, _a_label=(u"終了"))
+    open_on = AnnotatedColumn(DateTime, _a_label=_(u"開場"))
+    start_on = AnnotatedColumn(DateTime, _a_label=_(u"開演")) # 必須
+    end_on = AnnotatedColumn(DateTime, _a_label=_(u"終了"))
     public = Column(Boolean, nullable=False, default=False)  # 一般公開するか
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
@@ -862,7 +862,7 @@ def build_sales_segment_query(event_id=None, performance_id=None, sales_segment_
     elif type == 'before':
         q = q.filter(SalesSegment.end_at < now)
 
-    if user and user.get('is_guest'):
+    if user and (user.get('is_guest') or user.get('membership') == 'rakuten'):
         q = q \
             .outerjoin(MemberGroup,
                        SalesSegmentGroup.membergroups) \
@@ -890,10 +890,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     # 旧仕様: Organization.code(2桁) + 3桁の英数字
     # 新仕様: Organization.code(2桁) + 5桁の英数字
     code = Column(String(12))
-    title = AnnotatedColumn(String(1024), _a_label=(u'イベント名称'))
-    abbreviated_title = AnnotatedColumn(String(1024), _a_label=(u'イベント略称'))
+    title = AnnotatedColumn(String(1024), _a_label=_(u'イベント名称'))
+    abbreviated_title = AnnotatedColumn(String(1024), _a_label=_(u'イベント略称'))
 
-    account_id = AnnotatedColumn(Identifier, ForeignKey('Account.id'), _a_label=(u'配券元'))
+    account_id = AnnotatedColumn(Identifier, ForeignKey('Account.id'), _a_label=_(u'配券元'))
     account = relationship('Account', backref='events')
 
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
@@ -1464,19 +1464,22 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
 
     system_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'システム利用料'))
-    system_fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
+    system_fee_type = AnnotatedColumn(Integer, nullable=False, default=FeeTypeEnum.Once.v[0], _a_label=_(u'システム利用料計算単位'))
 
     transaction_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'決済手数料'))
-    delivery_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'引取手数料'))
+    _delivery_fee = AnnotatedColumn('delivery_fee', Numeric(precision=16, scale=2), nullable=True, _a_label=_(u'引取手数料'))
+    delivery_fee_per_order = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'引取手数料 (予約ごと)'))
+    delivery_fee_per_principal_ticket = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'引取手数料 (主券)'))
+    delivery_fee_per_subticket = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'引取手数料 (副券)'))
     discount = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'割引額'))
     discount_unit = AnnotatedColumn(Integer, _a_label=_(u'割引数'))
 
     # 申込日から計算して入金できる期限、日数指定
-    payment_period_days = Column(Integer, default=3)
+    payment_period_days = AnnotatedColumn(Integer, default=3, _a_label=_(u'コンビニ窓口での支払期限日数'))
     # 入金から発券できるまでの時間
-    issuing_interval_days = Column(Integer, default=1)
-    issuing_start_at = Column(DateTime, nullable=True)
-    issuing_end_at = Column(DateTime, nullable=True)
+    issuing_interval_days = AnnotatedColumn(Integer, default=1, _a_label=_(u'コンビニ窓口での発券が可能となるまでの日数'))
+    issuing_start_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'コンビニ発券開始日時'))
+    issuing_end_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'コンビニ発券期限日時'))
     # 選択不可期間 (SalesSegment.start_atの何日前から利用できないか、日数指定)
     unavailable_period_days = AnnotatedColumn(Integer, nullable=False, default=0, _a_label=_(u'選択不可期間'))
     # 一般公開するか
@@ -1492,7 +1495,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     special_fee_name = AnnotatedColumn(String(255), nullable=False, _a_label=_(u'特別手数料名'), default="")
     special_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False,
                                   _a_label=_(u'特別手数料'), default=FeeTypeEnum.Once.v[0])
-    special_fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
+    special_fee_type = AnnotatedColumn(Integer, nullable=False, default=FeeTypeEnum.Once.v[0], _a_label=_(u'特別手数料計算単位'))
 
     @property
     def delivery_fee_per_product(self):
@@ -1500,20 +1503,20 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
         return Decimal()
 
     @property
-    def delivery_fee_per_ticket(self):
-        """発券ごとの引取手数料"""
-        if self.delivery_method.fee_type == FeeTypeEnum.PerUnit.v[0]:
-            return self.delivery_fee
+    def delivery_fee(self):
+        warn_deprecated("deprecated attribute `delivery_fee' is accessed")
+        if self.delivery_fee_per_order:
+            if self.delivery_fee_per_principal_ticket:
+                raise Exception('both delivery_fee_per_order and delivery_fee_per_ticket are non-zero')
+            else:
+                return self.delivery_fee_per_order
         else:
-            return Decimal()
+            return self.delivery_fee_per_principal_ticket
 
     @property
-    def delivery_fee_per_order(self):
-        """注文ごとの引取手数料"""
-        if self.delivery_method.fee_type == FeeTypeEnum.Once.v[0]:
-            return self.delivery_fee
-        else:
-            return Decimal()
+    def delivery_fee_per_ticket(self):
+        warn_deprecated("deprecated attribute `delivery_fee_per_ticket' is accessed")
+        return self.delivery_fee_per_principal_ticket
 
     @property
     def transaction_fee_per_product(self):
@@ -1588,7 +1591,12 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
         return self.system_fee_per_product + self.special_fee_per_product + self.delivery_fee_per_product + self.transaction_fee_per_product
 
     @property
+    def per_ticket_fee_excluding_delivery_fee(self):
+        return self.system_fee_per_ticket + self.special_fee_per_ticket + self.transaction_fee_per_ticket
+
+    @property
     def per_ticket_fee(self):
+        warn_deprecated("deprecated attribute `per_ticket_fee' is accessed")
         return self.system_fee_per_ticket + self.special_fee_per_ticket + self.delivery_fee_per_ticket + self.transaction_fee_per_ticket
 
     def is_available_for(self, sales_segment, on_day):
@@ -1645,8 +1653,8 @@ class ServiceFeeMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethod'
     id = Column(Identifier, primary_key=True)
-    name = Column(String(255))
-    description = Column(String(2000))
+    name = Column(Unicode(255))
+    description = Column(Unicode(2000))
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
     fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
     public = Column(Boolean, nullable=False, default=True)
@@ -1683,22 +1691,66 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DeliveryMethod'
-    id = Column(Identifier, primary_key=True)
-    name = Column(String(255))
-    description = Column(String(2000))
-    fee = Column(Numeric(precision=16, scale=2), nullable=False)
-    fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
+    id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
+    name = AnnotatedColumn(Unicode(255), _a_label=_(u'表示名称'))
+    description = AnnotatedColumn(Unicode(2000), _a_label=_(u'説明文 (HTML)'))
+    _fee = Column('fee', Numeric(precision=16, scale=2), nullable=True)
+    _fee_type = Column('fee_type', Integer, nullable=True, default=FeeTypeEnum.Once.v[0])
 
-    organization_id = Column(Identifier, ForeignKey('Organization.id'))
+    fee_per_order = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (予約ごと)'))
+    fee_per_principal_ticket = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (主券)'))
+    fee_per_subticket = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (副券)'))
+
+    organization_id = AnnotatedColumn(Identifier, ForeignKey('Organization.id'), _a_label=_(u'オーガニゼーション'))
     organization = relationship('Organization', uselist=False , backref='delivery_method_list')
 
 
-    delivery_plugin_id = Column(Identifier, ForeignKey('DeliveryMethodPlugin.id'))
+    delivery_plugin_id = AnnotatedColumn(Identifier, ForeignKey('DeliveryMethodPlugin.id'), _a_label=_(u'決済方法'))
     _delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
 
 
     # 引換票を表示しないオプション（SEJ専用）
-    hide_voucher = Column(Boolean, default=False)
+    hide_voucher = AnnotatedColumn(Boolean, default=False, _a_label=_(u'引換票を表示しない'))
+
+    @property
+    def fee(self):
+        if self.fee_per_order:
+            if self.fee_per_principal_ticket:
+                raise Exception('both fee_per_order and fee_per_ticket are non-zero')
+            else:
+                return self.fee_per_order
+        else:
+            return self.fee_per_principal_ticket
+
+    @property
+    def fee_type(self):
+        if self.fee_per_order:
+            if self.fee_per_principal_ticket:
+                raise Exception('both fee_per_order and fee_per_ticket are non-zero')
+            else:
+                return FeeTypeEnum.Once.v[0]
+        else:
+            return FeeTypeEnum.PerUnit.v[0]
+
+    @property
+    def fee(self):
+        if self.fee_per_order:
+            if self.fee_per_principal_ticket:
+                raise Exception('both fee_per_order and fee_per_ticket are non-zero')
+            else:
+                return self.fee_per_order
+        else:
+            return self.fee_per_principal_ticket
+
+    @property
+    def fee_type(self):
+        if self.fee_per_order:
+            if self.fee_per_principal_ticket:
+                raise Exception('both fee_per_order and fee_per_ticket are non-zero')
+            else:
+                return FeeTypeEnum.Once.v[0]
+        else:
+            return FeeTypeEnum.PerUnit.v[0]
 
     @hybrid_property
     def delivery_plugin(self):
@@ -1844,6 +1896,7 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     display_order = Column(Integer, nullable=False, default=1)
     event_id = Column(Identifier, ForeignKey("Event.id"))
     quantity_only = Column(Boolean, default=False)
+    disp_reports = Column(Boolean, default=True)
     style = Column(MutationDict.as_mutable(JSONEncodedDict(1024)))
     description=Column(Unicode(2000), nullable=True, default=None)
     stocks = relationship('Stock', backref=backref('stock_type', order_by='StockType.display_order'))
@@ -2382,6 +2435,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return {template.id:product.id}
 
+    @memoize()
     def num_tickets(self, pdmp):
         '''この Product に関わるすべての Ticket の数'''
         return DBSession.query(func.sum(ProductItem.quantity)) \
@@ -2393,8 +2447,9 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(TicketFormat_DeliveryMethod.delivery_method_id == pdmp.delivery_method_id) \
             .scalar() or 0
 
-    def num_priced_tickets(self, pdmp):
-        '''この Product に関わるTicketのうち、発券手数料を取るもの (額面があるもの)'''
+    @memoize()
+    def num_principal_tickets(self, pdmp):
+        '''この Product に関わるTicketのうち、手数料を取るもの (額面があるもの)'''
         return DBSession.query(func.sum(ProductItem.quantity)) \
             .filter(Ticket_TicketBundle.ticket_bundle_id == ProductItem.ticket_bundle_id) \
             .filter((Ticket.id == Ticket_TicketBundle.ticket_id) & (Ticket.deleted_at == None)) \
@@ -2402,7 +2457,20 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter((Ticket.ticket_format_id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat_DeliveryMethod.deleted_at == None)) \
             .filter((TicketFormat.id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat.deleted_at == None)) \
             .filter(TicketFormat_DeliveryMethod.delivery_method_id == pdmp.delivery_method_id) \
-            .filter(Ticket.priced == True) \
+            .filter(Ticket.principal == True) \
+            .scalar() or 0
+
+    @memoize()
+    def num_subtickets(self, pdmp):
+        '''この Product に関わるTicketのうち、手数料を基本的に取らないもの (額面がないもの)'''
+        return DBSession.query(func.sum(ProductItem.quantity)) \
+            .filter(Ticket_TicketBundle.ticket_bundle_id == ProductItem.ticket_bundle_id) \
+            .filter((Ticket.id == Ticket_TicketBundle.ticket_id) & (Ticket.deleted_at == None)) \
+            .filter((ProductItem.product_id == self.id) & (ProductItem.deleted_at == None)) \
+            .filter((Ticket.ticket_format_id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat_DeliveryMethod.deleted_at == None)) \
+            .filter((TicketFormat.id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat.deleted_at == None)) \
+            .filter(TicketFormat_DeliveryMethod.delivery_method_id == pdmp.delivery_method_id) \
+            .filter(Ticket.principal == False) \
             .scalar() or 0
 
     def has_lot_entry_products(self):
@@ -2461,15 +2529,28 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     user_id = Column(Identifier, ForeignKey("User.id"), nullable=True)
     user = relationship("User", uselist=False, backref=backref('organization', uselist=False))
 
+    _setting = None
+
     def get_setting(self, name):
-        for setting in self.settings:
-            if setting.name == name:
-                return setting
-        raise Exception, "organization; id={0} does'nt have {1} setting".format(self.id, name)
+        settings = getattr(self, 'settings', None)
+        if settings is not None:
+            for setting in settings:
+                if setting.name == name:
+                    break
+            else:
+                setting = None
+        else:
+            setting = object_session(self).query(OrganizationSetting).filter_by(organization_id=self.id, name=name).first()
+        if setting is None:
+            raise Exception("organization; id={0} does not have {1} setting".format(self.id, name))
+        return setting
 
     @property
     def setting(self):
-        return self.get_setting(u'default')
+        if self._setting is not None:
+            return self._setting
+        self._setting = setting = self.get_setting(u'default')
+        return self._setting
 
     @property
     def point_feature_enabled(self):
@@ -2573,6 +2654,13 @@ class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     delivery_methods = relationship('DeliveryMethod', secondary=TicketFormat_DeliveryMethod.__table__, backref='ticket_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
 
+    def detect_preview_type(self):
+        for dm in self.delivery_methods:
+            if unicode(dm.delivery_plugin_id) == unicode(plugins.SEJ_DELIVERY_PLUGIN_ID):
+                return "sej"
+        return "default"
+
+
 class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     Ticket.event_idがNULLのものはマスターデータ。これを雛形として実際にeventとひもづけるTicketオブジェクトを作成する。
@@ -2580,7 +2668,7 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Ticket"
 
     FLAG_ALWAYS_REISSUEABLE = 1
-    FLAG_PRICED = 2
+    FLAG_PRINCIPAL = 2
 
     id = Column(Identifier, primary_key=True)
     organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=True)
@@ -2590,9 +2678,13 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id', ondelete='CASCADE'), nullable=False)
     ticket_format = relationship('TicketFormat', uselist=False, backref='tickets')
     name = Column(Unicode(255), nullable=False, default=u'')
-    flags = Column(Integer, nullable=False, default=FLAG_PRICED)
+    flags = Column(Integer, nullable=False, default=FLAG_PRINCIPAL)
     original_ticket_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='SET NULL'), nullable=True)
-    derived_tickets = relationship('Ticket', backref=backref('original_ticket', remote_side=[id]))
+    derived_tickets = relationship('Ticket', backref=backref('original_ticket', remote_side=[id],),
+                                   foreign_keys=[original_ticket_id], primaryjoin="Ticket.id==Ticket.original_ticket_id")
+    base_template_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='SET NULL'), nullable=True)
+    base_template = relationship('Ticket', uselist=False, remote_side=[id],
+                                 foreign_keys=[base_template_id], primaryjoin="Ticket.id==Ticket.base_template_id")
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
     filename = Column(Unicode(255), nullable=False, default=u"uploaded.svg")
     cover_print = Column(Boolean, nullable=False, default=True)
@@ -2612,6 +2704,11 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def vars_defaults(self):
         return self.data.get("vars_defaults", {})
+
+    @property
+    def fill_mapping(self):
+        return self.data.get("fill_mapping", {})
+
 
     def create_event_bound(self, event):
         new_object = self.__class__.clone(self)
@@ -2634,7 +2731,7 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return (flags & self.FLAG_ALWAYS_REISSUEABLE) != 0
 
     @always_reissueable.expression
-    def priced(self):
+    def principal(self):
         return self.flags.op('&')(self.FLAG_ALWAYS_REISSUEABLE) != 0
 
     @always_reissueable.setter
@@ -2646,21 +2743,21 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             self.flags = flags & ~self.FLAG_ALWAYS_REISSUEABLE
 
     @hybrid_property
-    def priced(self):
+    def principal(self):
         flags = self.flags or 0
-        return (flags & self.FLAG_PRICED) != 0
+        return (flags & self.FLAG_PRINCIPAL) != 0
 
-    @priced.expression
-    def priced(self):
-        return self.flags.op('&')(self.FLAG_PRICED) != 0
+    @principal.expression
+    def principal(self):
+        return self.flags.op('&')(self.FLAG_PRINCIPAL) != 0
 
-    @priced.setter
-    def set_priced(self, value):
+    @principal.setter
+    def set_principal(self, value):
         flags = self.flags or 0
         if value:
-            self.flags = flags | self.FLAG_PRICED
+            self.flags = flags | self.FLAG_PRINCIPAL
         else:
-            self.flags = flags & ~self.FLAG_PRICED
+            self.flags = flags & ~self.FLAG_PRINCIPAL
 
 for event_kind in ['before_insert', 'before_update']:
     event.listen(Ticket, event_kind, lambda mapper, conn, target: target.before_insert_or_update())
@@ -2932,13 +3029,24 @@ class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class MailTypeEnum(StandardEnum):
     PurchaseCompleteMail = 1
     PurchaseCancelMail = 2
+    PurcacheSejRemindMail = 3
     LotsAcceptedMail = 11
     LotsElectedMail = 12
     LotsRejectedMail = 13
     PointGrantingFailureMail = 21
     BoosterPurchaseCompleteMail = 31
 
-MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール", u"抽選申し込み完了メール", u"抽選当選通知メール", u"抽選落選通知メール", u"ポイント付与失敗通知メール", u"ブースター購入完了メール")
+MailTypeLabels = (
+    u"購入完了メール",
+    u"購入キャンセルメール",
+    u"リマインドメール",
+    u"抽選申し込み完了メール",
+    u"抽選当選通知メール",
+    u"抽選落選通知メール",
+    u"ポイント付与失敗通知メール",
+    u"ブースター購入完了メール",
+    )
+
 assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
 MailTypeChoices = [(str(e) , label) for e, label in zip([enum.v for enum in sorted(iter(MailTypeEnum), key=lambda e: e.v)], MailTypeLabels)]
 MailTypeEnum.dict = dict(MailTypeChoices)
@@ -3334,32 +3442,34 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     def get_transaction_fee(self, pdmp, product_quantities):
         return pdmp.transaction_fee_per_order + sum([
             (pdmp.transaction_fee_per_product + \
-             pdmp.transaction_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
+             pdmp.transaction_fee_per_ticket * product.num_principal_tickets(pdmp)) * quantity
             for product, quantity in product_quantities])
 
     def get_delivery_fee(self, pdmp, product_quantities):
         return pdmp.delivery_fee_per_order + sum([
             (pdmp.delivery_fee_per_product + \
-             pdmp.delivery_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
+             pdmp.delivery_fee_per_principal_ticket * product.num_principal_tickets(pdmp) + \
+             pdmp.delivery_fee_per_subticket * product.num_subtickets(pdmp)) * quantity
             for product, quantity in product_quantities])
 
     def get_system_fee(self, pdmp, product_quantities):
         return pdmp.system_fee_per_order + sum([
             (pdmp.system_fee_per_product + \
-             pdmp.system_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
+             pdmp.system_fee_per_ticket * product.num_principal_tickets(pdmp)) * quantity
             for product, quantity in product_quantities])
 
     def get_special_fee(self, pdmp, product_quantities):
         return pdmp.special_fee_per_order + sum([
             (pdmp.special_fee_per_product + \
-             pdmp.special_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
+             pdmp.special_fee_per_ticket * product.num_principal_tickets(pdmp)) * quantity
             for product, quantity in product_quantities])
 
     def get_products_amount(self, pdmp, product_price_quantity_triplets):
         return sum([
             (price + \
              pdmp.per_product_fee + \
-             pdmp.per_ticket_fee * product.num_priced_tickets(pdmp)) * quantity
+             (pdmp.per_ticket_fee_excluding_delivery_fee + pdmp.delivery_fee_per_principal_ticket) * product.num_principal_tickets(pdmp) + \
+             pdmp.delivery_fee_per_subticket * product.num_subtickets(pdmp)) * quantity
             for product, price, quantity in product_price_quantity_triplets])
 
     def get_products_amount_without_fee(self, pdmp, product_price_quantity_triplets):
@@ -3417,8 +3527,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     default_mail_sender = AnnotatedColumn(Unicode(255), _a_label=u"デフォルトの送信元メールアドレス")
     entrust_separate_seats = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"バラ席のおまかせが有効", _a_label=u"おまかせ座席選択でバラ席を許可する")
     notify_point_granting_failure = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"ポイント付与失敗時のメール通知on/off", _a_label=u"ポイント付与失敗時のメール通知を有効にする")
+    notify_remind_mail = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"コンビニ入金期限前リマインドメールのメール通知on/off", _a_label=u"コンビニ入金期限前リマインドメールのメール通知を有効にする")
     sales_report_type = AnnotatedColumn(Integer, nullable=False, default=1, server_default='1', _a_label=u"売上レポートタイプ")
-    enable_smartphone_cart = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"スマホカートの使用", _a_label=u"スマホカートの使用")
 
     # augus
     augus_use = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"オーガス連携", _a_label=u"オーガス連携")
@@ -3427,6 +3537,9 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     augus_download_url = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのダウンロードURL', _a_label=u'オーガス用サーバのダウンロードURL')
     augus_username = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのユーザ名', _a_label=u'オーガス用サーバのユーザ名')
     augus_password = AnnotatedColumn(Unicode(255), nullable=False, default=u'', doc=u'オーガス用サーバのパスワード', _a_label=u'オーガス用サーバのパスワード')
+
+    enable_smartphone_cart = AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=u'スマートフォン用のカートを有効にする')
+    enable_mypage = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"マイページの使用", _a_label=u"マイページの使用")
 
     @property
     def container(self):

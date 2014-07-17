@@ -39,10 +39,8 @@ from sqlalchemy.orm.exc import NoResultFound
 #from pyramid.interfaces import IRequest
 from webob.multidict import MultiDict
 from altair.now import get_now
-from altair.app.ticketing.core import api as c_api
-import altair.app.ticketing.cart.api as cart_api
+from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import sensible_alnum_encode
-from altair.rakuten_auth.api import authenticated_user
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core.models import (
     Event,
@@ -75,10 +73,10 @@ from .models import (
     TemporaryLotEntryWish,
     TemporaryLotEntryProduct,
 )
-from altair.app.ticketing.users import api as user_api
 from altair.app.ticketing.payments.api import set_confirm_url
 from altair.app.ticketing.payments.payment import Payment
-from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID
+from altair.multicheckout.api import get_multicheckout_3d_api
 
 from . import sendmail
 from .events import LotEntriedEvent
@@ -94,13 +92,10 @@ def get_event(request):
     return Event.query.filter(Event.id==event_id).one()
 
 def get_member_group(request):
-    user = authenticated_user(request)
-    if user is None:
-        return None
-
-    org = c_api.get_organization(request)
-    member_ship = user.get('membership')
-    member_group_name = user.get('membergroup')
+    org = cart_api.get_organization(request)
+    auth_info = cart_api.get_auth_info(request)
+    member_ship = auth_info.get('membership')
+    member_group_name = auth_info.get('membergroup')
     if member_ship is None or member_group_name is None:
         return None
     # TODO: membershipの条件
@@ -213,9 +208,17 @@ def prepare1_for_payment(request, entry_dict):
     return payment.call_prepare()
 
 def prepare2_for_payment(request, entry_dict):
-    # とりあえず何もしないでおく
-    # 将来的に何かしたくなったらやる
-    pass
+    # FIXME: マルチ決済のときだけ、 keep_authorization を実行する
+    cart = LotSessionCart(entry_dict, request, request.context.lot)
+    if cart.payment_delivery_pair.payment_method.payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID:
+        multicheckout_api = get_multicheckout_3d_api(
+            request,
+            override_name=cart.lot.event.organization.setting.multicheckout_shop_name
+            )
+        # FIXME
+        from altair.app.ticketing.payments.plugins.multicheckout import get_multicheckout_order_no
+        order_no = get_multicheckout_order_no(request, cart.order_no)
+        multicheckout_api.keep_authorization(order_no, u"lots")
 
 def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo):
     """
@@ -247,6 +250,7 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
     for wish in entry.wishes:
         wish.entry_wish_no = "{0}-{1}".format(entry.entry_no, wish.wish_order)
     request.session['altair.lots.entry_id'] = entry.id
+
     return entry
 
 def get_entry(request, entry_no, tel_no):
@@ -471,9 +475,7 @@ def send_rejected_mails(request):
         transaction.commit()
 
 def get_entry_user(request):
-    from altair.rakuten_auth.api import authenticated_user
-    user = authenticated_user(request)
-    return user
+    return cart_api.get_auth_info(request)
 
 def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, shipping_address_dict, gender, birthday, memo):
     request.session[LOT_ENTRY_DICT_KEY] = dict(
@@ -551,7 +553,7 @@ def get_options(request, lot_id):
     return Options(request, lot_id)
 
 def create_client_form(context, request):
-    user = user_api.get_or_create_user(context.authenticated_user())
+    user = cart_api.get_or_create_user(context.authenticated_user())
     user_profile = None
     if user is not None:
         user_profile = user.user_profile

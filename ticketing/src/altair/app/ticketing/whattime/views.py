@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
-from altair.app.ticketing.core.api import get_organization
+from altair.app.ticketing.cart import api as cart_api
 from altair.preview.api import (
     set_after_invalidate_url, 
     set_force_request_type
@@ -43,7 +43,7 @@ def has_cms_login_key(info, request):
 def form_view(context, request):
     now = get_now(request)
     form = NowSettingForm(now=now, redirect_to=request.GET.get("redirect_to", ""))
-    organization = get_organization(request)
+    organization = cart_api.get_organization(request)
     candidates_url_dict = CandidatesURLDictBuilder(request).build(request.GET.get("event_id"), request.GET.get("backend_event_id"))
     return {"form": form, "now": now, "now_found": has_session_key(request), "organization": organization, 
             "description_itr": description_iterate(request, HTTPBadRequest), "candidates_url_dict": candidates_url_dict}
@@ -65,7 +65,7 @@ def now_set_view(context, request):
     form = NowSettingForm(request.POST)
     if not form.validate():
         now = get_now(request)
-        organization = get_organization(request)
+        organization = cart_api.get_organization(request)
         candidates_url_dict = CandidatesURLDictBuilder(request).build(request.GET.get("event_id"), request.GET.get("backend_event_id"))
         return {"form": form, "now": now, "has_key": has_session_key(request), "organization": organization, 
                 "description_itr": description_iterate(request, HTTPBadRequest), "candidates_url_dict": candidates_url_dict}

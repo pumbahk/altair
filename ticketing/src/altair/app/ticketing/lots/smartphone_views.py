@@ -14,11 +14,10 @@ from altair.pyramid_tz.api import get_timezone
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
-from altair.app.ticketing.users import api as user_api
 from altair.app.ticketing.utils import toutc
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
-from altair.app.ticketing.cart.api import is_smartphone, is_smartphone_organization
+from altair.app.ticketing.cart import api as cart_api
 from altair.now import get_now
 
 from . import api
@@ -69,7 +68,7 @@ def get_nogizaka_lot_ids(request):
         return []
 
 @view_defaults(route_name='lots.entry.agreement', renderer=selectable_renderer("smartphone/%(membership)s/agreement.html"),
-            request_type='altair.mobile.interfaces.ISmartphoneRequest', custom_predicates=(is_smartphone_organization), permission="lots")
+            request_type='altair.mobile.interfaces.ISmartphoneRequest', custom_predicates=(cart_api.is_smartphone_organization), permission="lots")
 class AgreementLotView(object):
 
     def __init__(self, context, request):
@@ -137,7 +136,7 @@ class AgreementLotView(object):
 
 
 @view_defaults(request_type='altair.mobile.interfaces.ISmartphoneRequest',
-               permission="lots", custom_predicates=(is_smartphone_organization))
+               permission="lots", custom_predicates=(cart_api.is_smartphone_organization))
 class EntryLotView(object):
     """
     申し込み画面
@@ -345,7 +344,7 @@ class EntryLotView(object):
         logger.debug('wishes={0}'.format(wishes))
 
         validated = True
-        user = user_api.get_user(self.context.authenticated_user())
+        user = cart_api.get_user(self.context.authenticated_user())
         # 申込回数チェック
         try:
             self.context.check_entry_limit(wishes, user=user, email=cform.email_1.data)

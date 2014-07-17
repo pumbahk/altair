@@ -1,0 +1,60 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<div class="page-header">
+  <h3>オーガス連携一覧</h3>
+</div>
+
+
+<table class="table table-striped table-bordered">
+  <thead>
+    <tr>
+      <th>事業名</th>
+      <th>事業コード</th>
+      <th>公演名</th>
+      <th>公演コード</th>
+      <th>公演日</th>
+      <th>会場名</th>
+      <th>会場コード</th>
+      <th>会場バージョン</th>
+
+      <th>連携イベント名</th>
+      <th>連携イベントコード</th>
+      <th>連携公演名</th>
+      <th>連携公演コード</th>
+      <th>連携編集</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    %for augus_performance in augus_performances:
+    <tr class="${'' if augus_performance.performance else 'error'}">
+      <td>${augus_performance.augus_event_name}</td>
+      <td>${augus_performance.augus_event_code}</td>
+      <td>${augus_performance.augus_performance_name}</td>
+      <td>${augus_performance.augus_performance_code}</td>
+      <td>${augus_performance.start_on}</td>
+      <td>${augus_performance.augus_venue_name}</td>
+      <td>${augus_performance.augus_venue_code}</td>
+      <td>${augus_performance.augus_venue_version}</td>
+
+      %if augus_performance.performance:
+      <td>${augus_performance.performance.event.title}</td>
+      <td>${augus_performance.performance.event.code}</td>
+      <td>${augus_performance.performance.name}</td>
+      <td>${augus_performance.performance.code}</td>
+      <td><a href="${request.route_path('augus.events.show', event_id=augus_performance.performance.event.id)}" class="btn btn-entry">連携編集</a></td>
+      %else:
+      <td>未連携</td>
+      <td>未連携</td>
+      <td>未連携</td>
+      <td>未連携</td>
+      <td>未連携</td>
+      %endif
+
+    </tr>
+    %endfor
+
+  </tbody>
+</table>

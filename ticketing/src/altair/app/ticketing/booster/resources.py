@@ -9,7 +9,7 @@ from altair.app.ticketing.core.models import Product
 from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.users.models import User, UserCredential, Membership
 from altair.app.ticketing.sej.models import SejOrder
-from altair.app.ticketing.core.api import get_organization
+from altair.app.ticketing.cart.api import get_organization
 from altair.app.ticketing.sej import api as sej_api
 from .api import store_user_profile
 from .api import remove_user_profile

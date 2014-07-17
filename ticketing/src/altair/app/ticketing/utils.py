@@ -28,6 +28,7 @@ __all__ = [
     'iterpairs',
     'is_sequence',
     'uniurlencode',
+    'memoize',
     ]
 
 class DigitCodec(object):
@@ -367,6 +368,8 @@ def toutc(dt, default_tz=None):
     return dt.astimezone(pytz.utc)
 
 def todatetime(d):
+    if isinstance(d, datetime):
+        return d
     if not isinstance(d, date):
         raise TypeError()
     return datetime.fromordinal(d.toordinal())
@@ -385,3 +388,25 @@ def clear_exc(fn):
         return fn(*args, **kwargs)
     functools.update_wrapper(_, fn)
     return _
+
+# https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
+class memoize(object):
+    def __init__(self, cache_attr_name=None):
+        self.cache_attr_name = cache_attr_name
+
+    def __call__(self, fn):
+        if self.cache_attr_name is None:
+            cache_attr_name = '_cache_%s' % fn.__name__
+        else:
+            cache_attr_name = self.cache_attr_name
+        @functools.wraps(fn)
+        def memoizer(_self, *args, **kwargs):
+            cache = getattr(_self, cache_attr_name, None)
+            if cache is None:
+                cache = {}
+                setattr(_self, cache_attr_name, cache)
+            key = (args, tuple(kwargs.items()))
+            if key not in cache:
+                cache[key] = fn(_self, *args, **kwargs)
+            return cache[key]
+        return memoizer

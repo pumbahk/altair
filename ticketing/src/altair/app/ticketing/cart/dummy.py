@@ -1,12 +1,13 @@
 # -*- coding:utf-8 -*-
-from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
-from altair.app.ticketing.core.api import get_organization
-from altair.app.ticketing.mailmags import models as mailmag_models
-from pyramid.response import Response
-from functools import wraps
 import logging
-logger = logging.getLogger()
+from functools import wraps
+from pyramid.response import Response
 from mako.template import Template
+from .selectable_renderer import selectable_renderer
+from altair.app.ticketing.mailmags import models as mailmag_models
+from . import api
+
+logger = logging.getLogger()
 
 def includeme(config):
     config.add_route("dummy.cart.index", "/dummy")
@@ -43,9 +44,7 @@ def overwrite_validation(fn):
         if "organization_id" in request.params:
             organization_id = request.params["organization_id"]
             logger.info("* dummy overwrite organization: organization_id = {0}".format(organization_id))
-            organization = Organization.query.filter_by(id=organization_id).first()
-            if organization:
-                request.organization = organization
+            request.environ[api.ENV_ORGANIZATION_ID_KEY] = organization_id
         return fn(context, request)
     return wrapped
 
@@ -122,7 +121,8 @@ def _get_mailmagazines_from_organization(organization):
 def confirm_view(context, request):
     import mock
     from collections import defaultdict
-    with mock.patch("altair.rakuten_auth.api.authenticated_user"):
+    from .api import get_organization
+    with mock.patch("pyramid.security.authenticated_userid"):
         form = mock.Mock()
         cart = _dummy_cart()
         request.session["order"] = defaultdict(str)
@@ -133,7 +133,7 @@ def confirm_view(context, request):
 
 def complete_view(context, request):
     import mock
-    with mock.patch("altair.rakuten_auth.api.authenticated_user"):
+    with mock.patch("pyramid.security.authenticated_userid"):
         order = _dummy_order()
         return dict(order=order)
 
@@ -141,7 +141,7 @@ def payment_view(context, request):
     import mock
     from .schemas import ClientForm
     request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
-    with mock.patch("altair.rakuten_auth.api.authenticated_user"):
+    with mock.patch("pyramid.security.authenticated_userid"):
         params=dict(form=ClientForm(),
                     payment_delivery_methods=[],
                     user=mock.Mock(),

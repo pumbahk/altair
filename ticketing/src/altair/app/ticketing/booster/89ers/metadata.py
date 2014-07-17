@@ -16,12 +16,29 @@ metadata_provider = DefaultModelAttributeMetadataProvider(
             'display_name': {
                 'ja_JP': u'メモリアルブックへの氏名掲載希望',
                 },
-            'type': bool,
-            'coercer': lambda x: (x == 'yes' if x is not None else None),
+            'type': unicode,
+            },
+        'extra.t_shirts_size': {
+            'display_name': {
+                'ja_JP': u'ClubナイナーズＴシャツサイズ',
+                },
+            'type': unicode,
+            },
+        'extra.official_ball': {
+            'display_name': {
+                'ja_JP': u'オリジナル公式球への記載希望',
+                },
+            'type': unicode,
+            },
+        'extra.coupon': {
+            'display_name': {
+                'ja_JP': u'特典の会場受け取り希望',
+                },
+            'type': unicode,
             },
         'extra.motivation': {
             'display_name': {
-                'ja_JP': u'ブースタークラブに入会しようと思ったきっかけ',
+                'ja_JP': u'クラブナイナーズに入会しようと思ったきっかけ',
                 },
             'type': unicode,
             },

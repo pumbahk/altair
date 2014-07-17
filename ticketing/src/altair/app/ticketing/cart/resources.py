@@ -5,8 +5,8 @@ import logging
 from datetime import datetime, date
 import itertools
 from sqlalchemy import sql
-from pyramid.security import Everyone, Authenticated
-from pyramid.security import Allow
+from pyramid.security import Everyone, Authenticated, Allow
+from pyramid.security import effective_principals
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm import joinedload, joinedload_all
@@ -14,17 +14,17 @@ from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
 from altair.sqlahelper import get_db_session
 from .interfaces import ICartPayment, ICartDelivery
+from .api import get_auth_info
 from altair.app.ticketing.payments.interfaces import IOrderPayment, IOrderDelivery
-from altair.app.ticketing.users import api as user_api
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.core.interfaces import IOrderQueryable
 from altair.app.ticketing.users import models as u_models
+from altair.app.ticketing.utils import memoize
 from . import models as m
 from . import api as cart_api
-from .api import get_cart_safe
 from .exceptions import NoCartError
 from .interfaces import ICartContext
 from .exceptions import (
@@ -40,28 +40,6 @@ from altair.now import get_now
 import functools
 
 logger = logging.getLogger(__name__)
-
-# https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
-class memoize(object):
-    def __init__(self, cache_attr_name=None):
-        self.cache_attr_name = cache_attr_name
-
-    def __call__(self, fn):
-        if self.cache_attr_name is None:
-            cache_attr_name = '_cache_%s' % fn.__name__
-        else:
-            cache_attr_name = self.cache_attr_name
-        @functools.wraps(fn)
-        def memoizer(_self, *args, **kwargs):
-            cache = getattr(_self, cache_attr_name, None)
-            if cache is None:
-                cache = {}
-                setattr(_self, cache_attr_name, cache)
-            key = (args, tuple(kwargs.items()))
-            if key not in cache:
-                cache[key] = fn(_self, *args, **kwargs)
-            return cache[key]
-        return memoizer
 
 @implementer(ICartContext)
 class TicketingCartResourceBase(object):
@@ -99,7 +77,7 @@ class TicketingCartResourceBase(object):
         if cart and cart.sales_segment:
             logger.info('validate sales_segment_id:%s' % cart.sales_segment_id)
             user = self.authenticated_user()
-            if not cart.sales_segment.applicable(user=self.authenticated_user(), type='all'):
+            if not cart.sales_segment.applicable(user=user, type='all'):
                 logger.warn('sales_segment_id({0}) does not permit membership({1})'.format(cart.sales_segment_id, self.membership))
                 try:
                     cart_api.release_cart(self.request, cart)
@@ -114,7 +92,7 @@ class TicketingCartResourceBase(object):
     def cart(self):
         from altair.app.ticketing.models import DBSession as session
         if self._cart is None:
-            self._cart = get_cart_safe(self.request, for_update=True)
+            self._cart = cart_api.get_cart_safe(self.request, for_update=True)
         else:
             self._cart = session.merge(self._cart)
         return self._cart
@@ -134,10 +112,12 @@ class TicketingCartResourceBase(object):
 
     @property
     def memberships(self):
-        organization = core_api.get_organization(self.request)
+        from altair.app.ticketing.models import DBSession as session
+        organization = cart_api.get_organization(self.request)
+        memberships = session.query(u_models.Membership).filter_by(organization_id=organization.id).all()
         logger.debug('organization %s' % organization.code)
-        logger.debug('memberships %s' % organization.memberships)
-        return organization.memberships
+        logger.debug('memberships %s' % memberships)
+        return memberships
 
     @reify
     def membergroups(self):
@@ -174,9 +154,7 @@ class TicketingCartResourceBase(object):
 
     def authenticated_user(self):
         """現在認証中のユーザ"""
-        from altair.rakuten_auth.api import authenticated_user
-        user = authenticated_user(self.request)
-        return user or { 'is_guest': True }
+        return get_auth_info(self.request)
 
     @reify
     def available_sales_segments(self):
@@ -253,7 +231,7 @@ class TicketingCartResourceBase(object):
         if self._sales_segment is None:
             if self._sales_segment_id is None:
                 return None
-            organization = core_api.get_organization(self.request)
+            organization = cart_api.get_organization(self.request)
             sales_segment = None
             try:
                 sales_segment = c_models.SalesSegment.query \
@@ -269,8 +247,7 @@ class TicketingCartResourceBase(object):
 
     @property
     def membership(self):
-        from altair.rakuten_auth.api import authenticated_user
-        user = authenticated_user(self.request)
+        user = self.authenticated_user()
         if user is None:
             return None
         if 'membership' not in user:
@@ -281,7 +258,7 @@ class TicketingCartResourceBase(object):
 
     @reify
     def user_object(self):
-        return user_api.get_user(self.authenticated_user())
+        return cart_api.get_user(self.authenticated_user())
 
     @reify
     def host_base_url(self):
@@ -370,7 +347,8 @@ class TicketingCartResourceBase(object):
     def login_required(self):
         if self.event is None:
             return False
-        if self.event.organization.setting.auth_type == "rakuten":
+        organization = cart_api.get_organization(self.request)
+        if organization.setting.auth_type == "rakuten":
             return True
 
         """ 指定イベントがログイン画面を必要とするか """
@@ -451,13 +429,13 @@ class EventOrientedTicketingCartResource(TicketingCartResourceBase):
             return performance.event
 
         if self._event is None:
-            organization = core_api.get_organization(self.request)
+            organization = cart_api.get_organization(self.request)
             event = None
             try:
                 event = c_models.Event.query \
                     .options(joinedload(c_models.Event.setting)) \
                     .filter(c_models.Event.id==self._event_id) \
-                    .filter(c_models.Event.organization==organization) \
+                    .filter(c_models.Event.organization_id==organization.id) \
                     .one()
             except NoResultFound:
                 pass
@@ -513,7 +491,7 @@ class PerformanceOrientedTicketingCartResource(TicketingCartResourceBase):
                 return cart.performance
         else:
             if self._performance is None:
-                organization = core_api.get_organization(self.request)
+                organization = cart_api.get_organization(self.request)
                 performance = None
                 try:
                     performance = c_models.Performance.query \

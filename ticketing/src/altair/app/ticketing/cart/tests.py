@@ -90,10 +90,12 @@ class CartTests(unittest.TestCase):
         target = self._makeOne(
             payment_delivery_pair=PaymentDeliveryMethodPair(
                 transaction_fee=0,
-                delivery_fee=0,
+                delivery_fee_per_order=0,
+                delivery_fee_per_principal_ticket=0,
+                delivery_fee_per_subticket=0,
                 system_fee=0,
                 payment_method=PaymentMethod(fee_type=0, fee=0),
-                delivery_method=DeliveryMethod(fee_type=0, fee=0),
+                delivery_method=DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0),
                 discount=0
                 ),
             sales_segment=SalesSegment(setting=SalesSegmentSetting())
@@ -114,10 +116,12 @@ class CartTests(unittest.TestCase):
         target = self._makeOne(
             payment_delivery_pair=PaymentDeliveryMethodPair(
                 transaction_fee=0,
-                delivery_fee=0,
+                delivery_fee_per_order=0,
+                delivery_fee_per_principal_ticket=0,
+                delivery_fee_per_subticket=0,
                 system_fee=0,
                 payment_method=PaymentMethod(fee_type=0, fee=0),
-                delivery_method=DeliveryMethod(fee_type=0, fee=0),
+                delivery_method=DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0),
                 discount=0
                 ),
             sales_segment=SalesSegment(),
@@ -346,6 +350,8 @@ class TicketingCartResourceTestBase(object):
             self.session.bind
             )
         self.organization = self._add_organization(1)
+        self.session.add(self.organization)
+        self.session.flush()
 
     def tearDown(self):
         testing.tearDown()
@@ -358,7 +364,17 @@ class TicketingCartResourceTestBase(object):
 
     def _add_organization(self, organization_id):
         from ..core import models
-        organization = models.Organization(id=organization_id, name='example', hosts=[models.Host(organization_id=organization_id, host_name='example.com:80')])
+        organization = models.Organization(
+            id=organization_id,
+            name='example',
+            short_name='XX',
+            hosts=[
+                models.Host(
+                    organization_id=organization_id,
+                    host_name='example.com:80'
+                    )
+                ]
+            )
         return organization
 
     def _add_stock_status(self, quantity=100):
@@ -386,10 +402,12 @@ class TicketingCartResourceTestBase(object):
             payment_delivery_method_pairs=[
                 models.PaymentDeliveryMethodPair(
                     transaction_fee=0,
-                    delivery_fee=0,
+                    delivery_fee_per_order=0,
+                    delivery_fee_per_principal_ticket=0,
+                    delivery_fee_per_subticket=0,
                     system_fee=0,
                     payment_method=models.PaymentMethod(fee_type=0, fee=0),
-                    delivery_method=models.DeliveryMethod(fee_type=0, fee=0),
+                    delivery_method=models.DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0),
                     discount=0
                     ),
                 ]
@@ -397,7 +415,7 @@ class TicketingCartResourceTestBase(object):
         self.session.add(sales_segment)
         return sales_segment
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     def test_membership_none(self, get_organization):
         from altair.app.ticketing.core.models import Performance, Event, Organization, SalesSegmentGroup
         from datetime import datetime
@@ -426,7 +444,7 @@ class TicketingCartResourceTestBase(object):
 
         self.assertEqual(result, [])
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     def test_membership(self, get_organization):
         from altair.app.ticketing.users.models import Membership, MemberGroup
         from altair.app.ticketing.core.models import Event, Performance, Organization, SalesSegmentGroup, SalesSegmentKindEnum
@@ -463,7 +481,7 @@ class TicketingCartResourceTestBase(object):
 
         self.assertEqual(result, [ms])
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     def test_event_id(self, get_organization):
         from altair.app.ticketing.core.models import Organization
         organization = get_organization.return_value = self.organization
@@ -474,7 +492,7 @@ class TicketingCartResourceTestBase(object):
         result = target.event.id
         self.assertEqual(result, event.id)
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     def test_get_sales_segment(self, get_organization):
         from altair.app.ticketing.core.models import Event, Performance, Organization, SalesSegmentGroup, SalesSegmentKindEnum
         from datetime import datetime
@@ -598,8 +616,8 @@ class TicketingCartResourceTestBase(object):
         return sales_segment, user
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
-    @mock.patch('altair.app.ticketing.cart.resources.user_api.get_user')
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch('altair.app.ticketing.cart.api.get_user')
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test_check_order_limit_noset(self, get_cart_safe, get_user, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
@@ -620,8 +638,8 @@ class TicketingCartResourceTestBase(object):
         self.assert_(True)
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
-    @mock.patch('altair.app.ticketing.cart.resources.user_api.get_user')
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch('altair.app.ticketing.cart.api.get_user')
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test_check_order_limit_user_over(self, get_cart_safe, get_user, validate_sales_segment):
         from .models import Cart
         from .exceptions import OverOrderLimitException
@@ -644,8 +662,8 @@ class TicketingCartResourceTestBase(object):
             target.check_order_limit()
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
-    @mock.patch('altair.app.ticketing.cart.resources.user_api.get_user')
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch('altair.app.ticketing.cart.api.get_user')
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test_check_order_limit_user_under(self, get_cart_safe, get_user, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
@@ -753,7 +771,7 @@ class TicketingCartResourceTestBase(object):
         return sales_segment, None
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test_check_order_limit_email_over(self, get_cart_safe, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
@@ -775,7 +793,7 @@ class TicketingCartResourceTestBase(object):
             target.check_order_limit()
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase._validate_sales_segment')
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test_check_order_limit_email_under(self, get_cart_safe, validate_sales_segment):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
@@ -799,7 +817,7 @@ class TicketingCartResourceTestBase(object):
         except:
             self.fail()
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     def test__validate_sales_segment_no_cart(self, get_organization):
         from altair.app.ticketing.core.models import Event, Performance, Organization, SalesSegmentGroup, SalesSegmentKindEnum
         from datetime import datetime
@@ -821,8 +839,8 @@ class TicketingCartResourceTestBase(object):
         request = DummyRequest(matchdict={'event_id': event_id})
         self.assertIsNotNone(self._makeOne(request))
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test__validate_sales_segment_guest_user(self, get_cart_safe, get_organization):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
@@ -874,8 +892,8 @@ class TicketingCartResourceTestBase(object):
         self.assertIsNotNone(self._makeOne(request))
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase.authenticated_user')
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test__validate_sales_segment_authenticated_user(self, get_cart_safe, get_organization, authenticated_user):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
@@ -928,8 +946,8 @@ class TicketingCartResourceTestBase(object):
         self.assertIsNotNone(self._makeOne(request))
 
     @mock.patch('altair.app.ticketing.cart.resources.TicketingCartResourceBase.authenticated_user')
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
-    @mock.patch('altair.app.ticketing.cart.resources.get_cart_safe')
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
+    @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test__validate_sales_segment_invalid_cart(self, get_cart_safe, get_organization, authenticated_user):
         from .models import Cart
         from altair.app.ticketing.core.models import ShippingAddress
@@ -1062,7 +1080,7 @@ class ReserveViewTests(unittest.TestCase):
         venue = Venue(id=venue_id, site=site, organization_id=organization.id)
         return venue
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     def test_it(self, get_organization):
         from altair.app.ticketing.core.models import (
             Seat,
@@ -1122,7 +1140,7 @@ class ReserveViewTests(unittest.TestCase):
             id=sales_segment_id, performance=performance, sales_segment_group=sales_segment_group,
             start_at=now - timedelta(days=1), end_at=now + timedelta(days=1), public=True, max_quantity=10,
             payment_delivery_method_pairs=[
-                PaymentDeliveryMethodPair(system_fee=0, transaction_fee=0, delivery_fee=0, discount=0)
+                PaymentDeliveryMethodPair(system_fee=0, transaction_fee=0, delivery_fee_per_order=0, delivery_fee_per_principal_ticket=0, delivery_fee_per_subticket=0, discount=0)
                 ],
             seat_choice=True,
             setting=SalesSegmentSetting(
@@ -1214,7 +1232,7 @@ class ReserveViewTests(unittest.TestCase):
         for stock_status in stock_statuses:
             self.assertEqual(stock_status.quantity, 98)
 
-    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    @mock.patch("altair.app.ticketing.cart.api.get_organization")
     def test_it_no_stock(self, get_organization):
         from altair.app.ticketing.core.models import (
             Seat,
@@ -1274,7 +1292,7 @@ class ReserveViewTests(unittest.TestCase):
             id=sales_segment_id, performance_id=performance_id, sales_segment_group=sales_segment_group,
             start_at=now - timedelta(days=1), end_at=now + timedelta(days=1), public=True, max_quantity=10,
             payment_delivery_method_pairs=[
-                PaymentDeliveryMethodPair(system_fee=0, transaction_fee=0, delivery_fee=0, discount=0)
+                PaymentDeliveryMethodPair(system_fee=0, transaction_fee=0, delivery_fee_per_order=0, delivery_fee_per_principal_ticket=0, delivery_fee_per_subticket=0, discount=0)
                 ],
             setting=SalesSegmentSetting(
                 display_seat_no=True
@@ -1418,7 +1436,7 @@ class PaymentViewTests(unittest.TestCase):
         payment_delivery_method.payment_method = payment_method
         
         request.context.available_payment_delivery_method_pairs = lambda sales_segment: [payment_delivery_method]
-        request.context.authenticated_user = lambda: { 'claimed_id': 'http://ticketstar.example.com/user/1' }
+        request.context.authenticated_user = lambda: { 'auth_type': 'rakuten', 'claimed_id': 'http://ticketstar.example.com/user/1', 'organization_id': 1 }
         request.context.get_payment_delivery_method_pair = lambda: None
         request.context.sales_segment = testing.DummyModel()
         target = self._makeOne(request)

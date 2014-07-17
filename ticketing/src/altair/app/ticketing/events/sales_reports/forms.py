@@ -104,10 +104,6 @@ class SalesReportForm(OurForm):
         validators=[Optional()],
         default=True,
     )
-    recent_report = OurBooleanField(
-        validators=[Optional()],
-        default=False,
-    )
     report_type = HiddenField(
         validators=[Optional()],
         default=ReportTypeEnum.Detail.v[0],

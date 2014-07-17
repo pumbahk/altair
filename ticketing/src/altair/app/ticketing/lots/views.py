@@ -14,7 +14,7 @@ from altair.pyramid_tz.api import get_timezone
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
-from altair.app.ticketing.users import api as user_api
+from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import toutc
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
@@ -316,7 +316,7 @@ class EntryLotView(object):
         logger.debug('wishes={0}'.format(wishes))
 
         validated = True
-        user = user_api.get_user(self.context.authenticated_user())
+        user = cart_api.get_user(self.context.authenticated_user())
         # 申込回数チェック
         try:
             self.context.check_entry_limit(wishes, user=user, email=cform.email_1.data)
@@ -416,7 +416,6 @@ class ConfirmLotEntryView(object):
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
 
-        DBSession.add(self.context.organization)
         magazines_to_subscribe = get_magazines_to_subscribe(self.context.organization, [entry['shipping_address']['email_1']])
 
         logger.debug('wishes={0}'.format(entry['wishes']))
@@ -473,7 +472,7 @@ class ConfirmLotEntryView(object):
         entry_no = entry['entry_no']
         shipping_address = entry['shipping_address']
         shipping_address = h.convert_shipping_address(shipping_address)
-        user = user_api.get_or_create_user(self.context.authenticated_user())
+        user = cart_api.get_or_create_user(self.context.authenticated_user())
         shipping_address.user = user
         wishes = entry['wishes']
         logger.debug('wishes={0}'.format(wishes))
@@ -544,7 +543,7 @@ class CompletionLotEntryView(object):
 
         magazine_ids = self.request.session.get('lots.magazine_ids')
         if magazine_ids:
-            user = user_api.get_or_create_user(self.context.authenticated_user())
+            user = cart_api.get_or_create_user(self.context.authenticated_user())
             multi_subscribe(user, entry.shipping_address.emails, magazine_ids)
             try:
                 del self.request.session['lots.magazine_ids']

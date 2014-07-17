@@ -2,11 +2,9 @@ apbv1.1a.vpc.altr	adminapp
 apbv1.1c.vpc.altr	adminapp
 apcs1.1c.vpc.altr	gateapp
 apcs1.1a.vpc.altr	gateapp
-apmv4.1b.vpc.altr	userapp-with-booster
 apmv4.1c.vpc.altr	userapp-with-booster
 apmv4.1a.vpc.altr	userapp-with-booster
 apmv6.1c.vpc.altr	userapp-api
-apmv2.1b.vpc.altr	userapp-usersite
 apmv2.1c.vpc.altr	userapp-usersite
 apmv2.1a.vpc.altr	userapp-usersite
 apmv3.1a.vpc.altr	userapp-cart
@@ -21,9 +19,8 @@ apmv9.1a.vpc.altr	userapp-cart
 apmv9.1c.vpc.altr	userapp-cart
 apmv10.1a.vpc.altr	userapp-cart
 apmv10.1c.vpc.altr	userapp-cart
-apmv11.1a.vpc.altr	userapp-cart
-apmv11.1c.vpc.altr	userapp-cart
 btmv2.1c.vpc.altr	batch
+btmv2.1a.vpc.altr	worker
 samv1.1c.vpc.altr	newsletter
 apcv1.1c.vpc.altr	sej
 apsv1.1b.vpc.altr	solr

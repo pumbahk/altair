@@ -7,12 +7,16 @@ import sqlahelper
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
-from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
+from altair.models import WithTimestamp, Identifier
 from altair.app.ticketing.cart.models import Cart
-from altair.app.ticketing.utils import StandardEnum
+
+Base = sqlahelper.get_base()
+
+# 内部トランザクション用
+_session = orm.scoped_session(orm.sessionmaker())
 
 
-class CheckoutItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class CheckoutItem(Base, WithTimestamp):
     """ 購入商品情報
     動的商品情報送信APIで利用
     """
@@ -26,7 +30,7 @@ class CheckoutItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     itemFee = sa.Column(sa.Integer)
 
 
-class Checkout(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class Checkout(Base, WithTimestamp):
     """ 購入情報
     動的商品情報送信APIで利用
     """
@@ -35,18 +39,19 @@ class Checkout(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = sa.Column(Identifier, primary_key=True)
     orderId = sa.Column(sa.Unicode(30))
     orderControlId = sa.Column(sa.Unicode(31))
-    orderCartId = sa.Column(Identifier, sa.ForeignKey(Cart.id))
+    orderCartId_old = sa.Column('orderCartId', Identifier, sa.ForeignKey(Cart.id))
+    orderCartId = sa.Column('_orderCartId', sa.Unicode(255))
     openId = sa.Column(sa.Unicode(128))
     isTMode = sa.Column(sa.Enum('0', '1'))
     usedPoint = sa.Column(sa.Integer)
     orderTotalFee = sa.Column(sa.Integer)
     orderDate = sa.Column(sa.DateTime)
     items = orm.relationship('CheckoutItem', backref="checkout")
-    cart = orm.relationship('Cart', backref=orm.backref('checkout', uselist=False), uselist=False)
     sales_at = sa.Column(sa.DateTime, nullable=True)
+    authorized_at = sa.Column(sa.DateTime, nullable=True)
 
 
-class RakutenCheckoutSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class RakutenCheckoutSetting(Base, WithTimestamp):
     __tablename__ = 'RakutenCheckoutSetting'
 
     id = sa.Column(Identifier, primary_key=True)

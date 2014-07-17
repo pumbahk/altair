@@ -2,10 +2,10 @@
 from altair.now import has_session_key, get_now
 from altair.app.ticketing.operators.models import Operator
 from altair.app.ticketing.core.models import DBSession
-from altair.app.ticketing.core.api import get_organization
 from altair.preview.api import get_rendered_target
 from altair.preview.redirect import Failure
 from altair.preview.data import load_preview_permission, PermissionDataNotFound
+from .. import api as cart_api
 
 class PreviewPermission(object):
     def can_preview(self, request):
@@ -30,8 +30,7 @@ class PreviewPermission(object):
         operator = Operator.query.filter_by(id=request.session["operator_id"]).first()
         if operator is None:
             return Failure(u"ログインユーザーを取得できませんでした")
-        organization = DBSession.merge(get_organization(request))
-        #DetachedInstanceError: Instance <Organization at 0x79a4190> is not bound to a Session; attribute refresh operation cannot proceed
+        organization = cart_api.get_organization(request)
 
         if operator.organization_id != organization.id:
             return Failure(u"ログインユーザーのOrganization.idが異なっています({id_0} != {id_1})".format(id_0=organization.id, id_1=operator.organization_id))

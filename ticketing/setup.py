@@ -203,6 +203,8 @@ setup(name='altair.app.ticketing',
       augus_achievement=altair.app.ticketing.cooperation.augus.scripts.augus_achievement:main
       augus_venue_sync_request=altair.app.ticketing.cooperation.augus.scripts.augus_venue_sync_request:main
       augus_venue_sync_response=altair.app.ticketing.cooperation.augus.scripts.augus_venue_sync_response:main
+      send_sej_remind_mail=altair.app.ticketing.mails.scripts.send_sej_remind_mail:main
+      sej_update_refund_status=altair.app.ticketing.sej.scripts.sej_update_refund_status:main
       """,
       paster_plugins=['pyramid'],
       )

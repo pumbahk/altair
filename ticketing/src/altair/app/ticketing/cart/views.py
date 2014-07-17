@@ -30,14 +30,6 @@ from altair.app.ticketing.payments.api import set_confirm_url, lookup_plugin
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
 from altair.app.ticketing.users.models import UserPointAccountTypeEnum
-from altair.app.ticketing.users.api import (
-    get_user,
-    get_or_create_user,
-    get_or_create_user_from_point_no,
-    create_user_point_account_from_point_no,
-    get_user_point_account,
-    get_or_create_user_profile
-    )
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
 from altair.sqlahelper import get_db_session
@@ -151,6 +143,7 @@ def gzip_preferred(request, response):
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
     def __init__(self, request):
+        IndexViewMixin.__init__(self)
         self.request = request
         self.context = request.context
         self.prepare()
@@ -434,7 +427,7 @@ class IndexAjaxView(object):
         sales_segment = self.request.context.sales_segment # XXX: matchdict から取得していることを期待
 
         order_separate_seats_url = u''
-        organization = c_api.get_organization(self.request)
+        organization = api.get_organization(self.request)
         if organization.setting.entrust_separate_seats:
             qs = {'separate_seats': 'true'}
             order_separate_seats_url = self.request.route_url('cart.order', sales_segment_id=sales_segment.id, _query=qs)
@@ -887,7 +880,7 @@ class PaymentView(object):
         if 0 == len(payment_delivery_methods):
             raise PaymentMethodEmptyError.from_resource(self.context, self.request)
 
-        user = get_or_create_user(self.context.authenticated_user())
+        user = api.get_or_create_user(self.context.authenticated_user())
         user_profile = None
         if enable_auto_input_form(user):
             user_profile = user.user_profile
@@ -964,7 +957,7 @@ class PaymentView(object):
         """ 支払い方法、引き取り方法選択
         """
         cart = self.request.context.cart
-        user = get_or_create_user(self.context.authenticated_user())
+        user = api.get_or_create_user(self.context.authenticated_user())
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
@@ -1017,7 +1010,7 @@ class PaymentView(object):
 
         if is_fc_auth_organization(context=self.context, request=self.request):
             if user:
-                get_or_create_user_profile(user, shipping_address_params)
+                api.get_or_create_user_profile(user, shipping_address_params)
 
         if is_point_input_organization(context=self.context, request=self.request):
             return HTTPFound(self.request.route_path('cart.point'))
@@ -1080,9 +1073,9 @@ class PaymentView(object):
         if accountno:
             form['accountno'].data = accountno.replace('-', '')
         else:
-            user = get_or_create_user(self.context.authenticated_user())
+            user = api.get_or_create_user(self.context.authenticated_user())
             if user:
-                acc = get_user_point_account(user.id)
+                acc = api.get_user_point_account(user.id)
                 form['accountno'].data = acc.account_number.replace('-', '') if acc else ""
 
         return dict(
@@ -1120,10 +1113,10 @@ class PaymentView(object):
             point = point_params.pop("accountno", None)
             if point:
                 if not user:
-                    user = get_or_create_user_from_point_no(point)
+                    user = api.get_or_create_user_from_point_no(point)
                     cart.shipping_address.user = user
                     DBSession.add(cart)
-                create_user_point_account_from_point_no(
+                api.create_user_point_account_from_point_no(
                     user.id,
                     type=UserPointAccountTypeEnum.Rakuten,
                     account_number=point
@@ -1155,7 +1148,7 @@ class ConfirmView(object):
         if cart.shipping_address is None:
             raise InvalidCartStatusError(cart.id)
 
-        acc = get_user_point_account(cart.shipping_address.user_id)
+        acc = api.get_user_point_account(cart.shipping_address.user_id)
 
         magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization, cart.shipping_address.emails)
 
@@ -1233,7 +1226,7 @@ class CompleteView(object):
         cart = api.get_cart(self.request) # これは get_cart でよい
 
         # メール購読
-        user = get_user(self.context.authenticated_user()) # これも読み直し
+        user = api.get_user(self.context.authenticated_user()) # これも読み直し
         emails = cart.shipping_address.emails
         magazine_ids = self.request.params.getall('mailmagazine')
         multi_subscribe(user, emails, magazine_ids)

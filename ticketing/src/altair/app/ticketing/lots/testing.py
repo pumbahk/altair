@@ -49,11 +49,15 @@ def _add_lots(session, product_data, membergroups):
     session.flush()
     return lot, products
 
-def login(config, user):
-    import pickle
-    data = pickle.dumps(user)
-    data = data.encode('base64')
-    config.testing_securitypolicy(userid=data)
+def login(config, info):
+    membership = info.get('membership')
+    membergroup = info.get('membergroup')
+    groups = []
+    if membership is not None:
+        groups.append('membership:%s' % membership)
+    if membergroup is not None:
+        groups.append('membergroup:%s' % membergroup)
+    config.testing_securitypolicy(info['username'], groups)
 
 def _create_products(session, values):
     from altair.app.ticketing.core.models import Product
@@ -77,10 +81,12 @@ def _add_lot(session, event_id, sales_segment_group_id, num_performances, member
 
     # payment_delivery_method
     payment_method = PaymentMethod(fee=0)
-    delivery_method = DeliveryMethod(fee=0)
+    delivery_method = DeliveryMethod(fee_per_order=0, fee_per_principal_ticket=0, fee_per_subticket=0)
     payment_delivery_method_pair = PaymentDeliveryMethodPair( 
         payment_method=payment_method, delivery_method=delivery_method,
-        system_fee=0, transaction_fee=0, delivery_fee=0, discount=0)
+        system_fee=0, transaction_fee=0, delivery_fee_per_order=0,
+        delivery_fee_per_principal_ticket=0, delivery_fee_per_subticket=0,
+        discount=0)
 
 
     # sales_segment

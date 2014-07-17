@@ -1,6 +1,5 @@
 <html lang="ja">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>イーグルスチケット</title>
 </head>
 <body>
@@ -14,7 +13,7 @@
 <div id="login_form">
 <font color="#9b0020">■</font>各種会員の方はこちらから<br/><br/>
 </div>
-<form action="${request.url}" method="post">
+<form action="${request.current_route_path()}" method="post">
 <input type="hidden" name="membership" value="eagles" />
 <div>
   会員ID（半角英数字）<br/>

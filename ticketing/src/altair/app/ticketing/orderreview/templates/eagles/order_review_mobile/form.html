@@ -13,6 +13,6 @@
 </form>
 
 <%mobile:header>一般の方のチケット確認</%mobile:header>
-<form method="get" action="${request.route_path('guest.order_review.form')}">
+<%mobile:form_get method="get" action="${request.route_path('guest.order_review.form')}">
 <input type="submit" value="次に進む" />
-</form>
+</%mobile:form_get>

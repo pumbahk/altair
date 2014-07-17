@@ -47,7 +47,8 @@ class SejTestFile(unittest.TestCase):
             webob.util.status_reasons[800] = 'OK'
 
             from ..payment import request_fileget
-            from ..models import SejNotificationType, ThinSejTenant
+            from ..models import ThinSejTenant
+            from ..notification.models import SejNotificationType
             from ..file import SejInstantPaymentFileParser
             tenant = ThinSejTenant(
                 shop_id=u'30520',

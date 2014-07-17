@@ -10,16 +10,16 @@
     <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/common.css')}" />
     <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/navigation.css')}" />
     <style type="text/css">
-body {
-  padding-top: 50px; /* 50px to make the container go all the way to the bottom of the topbar */
-}
+      body {
+        padding-top: 50px; /* 50px to make the container go all the way to the bottom of the topbar */
+      }
     </style>
     <script type="text/javascript" src="/static/js/ticketing.common.js"></script>
     <%block name="style"/>
     <%block name="javascript"/>
     <script type="text/javascript">
-typeof I18n == 'object' && (I18n.defaultLocale = 'ja');
-</script>
+      typeof I18n == 'object' && (I18n.defaultLocale = 'ja');
+    </script>
   </head>
   <body>
     <%
@@ -55,11 +55,7 @@ typeof I18n == 'object' && (I18n.defaultLocale = 'ja');
             </ul>
           </div><!--/.nav-collapse -->
           <!-- Navigation -->
-          <div class="nav-collapse">
-            <ul class="nav">
-              <li><a href="${request.route_path('events.index')}">イベント</a></li>
-            </ul>
-          </div>
+          <%include file="/parts/_navigation.html" />
           <!-- End Navigation -->
         </div>
       </div>

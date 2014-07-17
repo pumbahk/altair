@@ -5,11 +5,11 @@ from string import Template
 from pyramid import security
 from pyramid.config import Configurator
 from .interfaces import IRakutenOpenID
-from .api import authenticated_user
-
-CONFIG_PREFIX = 'altair.rakuten_auth.'
 
 logger = logging.getLogger(__name__)
+
+CONFIG_PREFIX = 'altair.rakuten_auth.'
+IDENT_METADATA_KEY = 'altair.rakuten_auth.metadata'
 
 def index(request):
     logger.debug("%s" % request.environ)
@@ -19,11 +19,10 @@ Logged in as ${user_id}：${nickname}
 <a href="/signout"> signout </a>
 """)
     request.response.content_type = 'text/html'
-    user = authenticated_user(request)
+    user_id = security.authenticated_userid(request)
 
     request.response.text = tmpl.substitute(login=request.route_url('rakuten_auth.login'),
-                                            user_id=user['claimed_id'] if user else '',
-                                            nickname=user['nickname'] if user else '')
+                                            user_id=user_id)
                                   
     return request.response
 

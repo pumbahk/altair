@@ -28,6 +28,7 @@ from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNo
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import InvalidProductSelectionException, NotEnoughStockException
 from .. import api
+from altair.app.ticketing.core.api import get_default_contact_url
 from altair.mobile import mobile_view_config
 from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
 import logging
@@ -42,6 +43,7 @@ def notfound(request):
     event = getattr(request.context, 'event', None)
     if event is not None:
         logger.debug("404 on event_id=%s" % event.id)
+    api.logout(request, request.response)
     request.response.status = 404
     return {}
 
@@ -92,7 +94,13 @@ def csrf(request):
 def completion_page_not_rendered(request):
     request.response.status = 404
     api.get_temporary_store(request).clear(request)
-    return {}
+    return {
+        'default_contact_url': get_default_contact_url(
+            request,
+            api.get_organization(request),
+            request.mobile_ua.carrier
+            )
+        }
 
 def _mobile(**kwargs):
     return mobile_view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'), **kwargs)

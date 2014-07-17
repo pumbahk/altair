@@ -12,7 +12,7 @@
         ${c.label}${c()}
         % endfor
         <br>
-        <small>お分かりの場合、下記に2012-13年の会員番号をご入力ください</small><br>
+        <small>お分かりの場合、下記に2013-14年の会員番号をご入力ください</small><br>
         ${form.old_id_number()}<small>(半角数字8ケタ)</small>
         ${h.error(['cont','old_id_number'])}
       </td>
@@ -91,7 +91,7 @@
         ${form.city(size=25)}
         （例：仙台市） <br>
         町名番地 ${form.address1(size=25)}
-        （例：一番町99丁目99番99号）
+        <span><small>（例：青葉区一番町99丁目99番99号）</small></span>
         <br>
         建物名等 ${form.address2(size=25)}
         （例：XXビル253号）
@@ -152,7 +152,35 @@
     </tr>
     <tr>
       <th>
-        ブースタークラブに入会しようと思ったきっかけは？<span class="red">*</span>
+        ClubナイナーズＴシャツサイズ
+      </th>
+      <td>
+        サイズ${form.extra.form.t_shirts_size(id='t_shirts_size',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.t_shirts_size]))}<span><small>（ゴールド・プラチナ会員のみ）</small></span>
+        ${h.error(['extra.t_shirts_size'])}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        オリジナル公式球への記載希望名
+      </th>
+      <td>
+        ${form.extra.form.official_ball(id='official_ball',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.official_ball]))}<span><small>（プラチナ会員のみ）</small></span>
+        ${h.error(['extra.official_ball'])}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        会員証以外の特典受取方法
+      </th>
+      <td>
+        ${form.extra.form.coupon(id='official_ball',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.coupon]))}<span><small>（レギュラー・ゴールド・プラチナ会員のみ）</small></span>
+        ${h.error(['extra.coupon'])}<br/>
+        <span style="color: red"><small>会場受取をお選びいただいた方には500円分のグッズクーポンをプレゼントいたします。</red></small></span>
+      </td>
+    </tr>
+    <tr>
+      <th>
+        クラブナイナーズに入会しようと思ったきっかけは？<span class="red">*</span>
       </th>
       <td>
         ${form.extra.form.motivation}

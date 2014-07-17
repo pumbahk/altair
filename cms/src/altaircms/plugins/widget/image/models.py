@@ -29,6 +29,7 @@ class ImageWidget(Widget):
     asset = orm.relationship(ImageAsset, backref="widget", uselist=False)
     nowrap = sa.Column(sa.Boolean, default=False)
     attributes = sa.Column(MutationDict.as_mutable(JSONEncodedDict(255)))
+    disable_right_click = sa.Column(sa.Boolean)
 
     def __init__(self, id=None, asset_id=None):
         self.id = id
@@ -62,3 +63,7 @@ class ImageWidget(Widget):
                     "request": bsettings.extra["request"]})
         bsettings.add(bname, renderHTML)
 
+    def clone(self, session, page=None): #todo:refactoring model#clone
+        instance = super(ImageWidget, self).clone(session, page=page)
+        instance.disable_right_click = self.disable_right_click or False
+        return instance

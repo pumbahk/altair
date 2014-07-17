@@ -3,6 +3,7 @@
 from unittest import TestCase
 from datetime import datetime
 from lxml import etree
+import math
 from ..testing import _setup_db, _teardown_db
 
 class TicketsUtilsTest(TestCase):
@@ -100,6 +101,9 @@ class TicketsUtilsTest(TestCase):
                 )
             delivery_method_shipping = DeliveryMethod(
                 organization=organization,
+                fee_per_order=0,
+                fee_per_principal_ticket=0,
+                fee_per_subticket=0,
                 _delivery_plugin=DeliveryMethodPlugin(
                     id=SHIPPING_DELIVERY_PLUGIN_ID,
                     name=u'郵送'
@@ -107,6 +111,9 @@ class TicketsUtilsTest(TestCase):
                 )
             delivery_method_qr = DeliveryMethod(
                 organization=organization,
+                fee_per_order=0,
+                fee_per_principal_ticket=0,
+                fee_per_subticket=0,
                 _delivery_plugin=DeliveryMethodPlugin(
                     id=QR_DELIVERY_PLUGIN_ID,
                     name=u'QRコード'
@@ -114,6 +121,9 @@ class TicketsUtilsTest(TestCase):
                 )
             delivery_method_cvs = DeliveryMethod(
                 organization=organization,
+                fee_per_order=0,
+                fee_per_principal_ticket=0,
+                fee_per_subticket=0,
                 _delivery_plugin=DeliveryMethodPlugin(
                     id=SEJ_DELIVERY_PLUGIN_ID,
                     name=u'コンビニ受取'
@@ -134,32 +144,50 @@ class TicketsUtilsTest(TestCase):
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_multicheckout,
                         delivery_method=delivery_method_shipping,
-                        system_fee=0
+                        system_fee=0,
+                        delivery_fee_per_order=0,
+                        delivery_fee_per_principal_ticket=0,
+                        delivery_fee_per_subticket=0
                         ),
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_multicheckout,
                         delivery_method=delivery_method_qr,
-                        system_fee=0
+                        system_fee=0,
+                        delivery_fee_per_order=0,
+                        delivery_fee_per_principal_ticket=0,
+                        delivery_fee_per_subticket=0
                         ),
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_multicheckout,
                         delivery_method=delivery_method_cvs,
-                        system_fee=0
+                        system_fee=0,
+                        delivery_fee_per_order=0,
+                        delivery_fee_per_principal_ticket=0,
+                        delivery_fee_per_subticket=0
                         ),
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_cvs,
                         delivery_method=delivery_method_shipping,
-                        system_fee=0
+                        system_fee=0,
+                        delivery_fee_per_order=0,
+                        delivery_fee_per_principal_ticket=0,
+                        delivery_fee_per_subticket=0
                         ),
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_cvs,
                         delivery_method=delivery_method_qr,
-                        system_fee=0
+                        system_fee=0,
+                        delivery_fee_per_order=0,
+                        delivery_fee_per_principal_ticket=0,
+                        delivery_fee_per_subticket=0
                         ),
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_cvs,
                         delivery_method=delivery_method_cvs,
-                        system_fee=0
+                        system_fee=0,
+                        delivery_fee_per_order=0,
+                        delivery_fee_per_principal_ticket=0,
+                        delivery_fee_per_subticket=0
                         ),
                     ]
                 )
@@ -272,7 +300,7 @@ class TicketsUtilsTest(TestCase):
                 sex=SexEnum.Male.v,
                 zip=u'1410022',
                 country=u'Japan',
-                prefecture='東京都',
+                prefecture=u'東京都',
                 city=u'品川区',
                 address_1=u'東五反田5-21-15',
                 address_2=u'メタリオンOSビル7F',
@@ -573,46 +601,66 @@ class TicketsUtilsTest(TestCase):
 class TicketsCleanerTest(TestCase):
     def testTransformApplier(self):
         from altair.app.ticketing.tickets.cleaner import TransformApplier
-        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="10" height="10" transform="matrix(1, 1, 1, 1, 10, 20)" /></svg>''')
+        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="10" height="10" transform="matrix(1, 0, 0, 1, 10, 20)" /></svg>''')
         TransformApplier()(svg)
         elem = svg[0]
         self.assertEqual(10, float(elem.get(u'x')))
         self.assertEqual(20, float(elem.get(u'y')))
-        self.assertEqual(20, float(elem.get(u'width')))
-        self.assertEqual(20, float(elem.get(u'height')))
+        self.assertEqual(10, float(elem.get(u'width')))
+        self.assertEqual(10, float(elem.get(u'height')))
 
-        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="10" transform="matrix(1, 1, 1, 1, 10, 20)" /></svg>''')
+        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="10" height="10" transform="matrix(1, 1, -1, 1, 10, 20)" /></svg>''')
         TransformApplier()(svg)
         elem = svg[0]
-        self.assertEqual(30, float(elem.get(u'cx')))
+        self.assertEqual(0, float(elem.get(u'x')))
+        self.assertEqual(0, float(elem.get(u'y')))
+        self.assertEqual(10, float(elem.get(u'width')))
+        self.assertEqual(10, float(elem.get(u'height')))
+        self.assertEqual("matrix(1,1,-1,1,10,20)", elem.get(u'transform'))
+
+        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="10" transform="matrix(1, 1, -1, 1, 10, 20)" /></svg>''')
+        TransformApplier()(svg)
+        elem = svg[0]
+        self.assertEqual(10, float(elem.get(u'cx')))
         self.assertEqual(40, float(elem.get(u'cy')))
-        self.assertEqual(10, float(elem.get(u'r')))
+        self.assertAlmostEqual(math.sqrt(200), float(elem.get(u'r')))
 
-        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><line x1="20" y1="10" x2="0" y2="10" transform="matrix(1, 1, 1, 1, 10, 20)" /></svg>''')
+        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><line x1="20" y1="10" x2="0" y2="10" transform="matrix(1, 1, -1, 1, 10, 20)" /></svg>''')
         TransformApplier()(svg)
         elem = svg[0]
-        self.assertEqual(40, float(elem.get(u'x1')))
-        self.assertEqual(50, float(elem.get(u'y1')))
-        self.assertEqual(20, float(elem.get(u'x2')))
-        self.assertEqual(30, float(elem.get(u'y2')))
+        self.assertEqual(20., float(elem.get(u'x1')))
+        self.assertEqual(50., float(elem.get(u'y1')))
+        self.assertEqual( 0., float(elem.get(u'x2')))
+        self.assertEqual(30., float(elem.get(u'y2')))
 
         from altair.svg.path import parse_poly_data
-        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><polyline points="1,2 3,4 5,6" transform="matrix(1, 1, 1, 1, 10, 20)" /></svg>''')
+        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><polyline points="1,2 3,4 5,6" transform="matrix(1, 1, -1, 1, 10, 20)" /></svg>''')
         TransformApplier()(svg)
         elem = svg[0]
         points = list(parse_poly_data(elem.get(u'points')))
         self.assertEqual(3, len(points))
-        self.assertEqual((13., 23.), points[0])
-        self.assertEqual((17., 27.), points[1])
-        self.assertEqual((21., 31.), points[2])
+        self.assertEqual((9., 23.), points[0])
+        self.assertEqual((9., 27.), points[1])
+        self.assertEqual((9., 31.), points[2])
 
     def testTransformApplierNested(self):
         from altair.app.ticketing.tickets.cleaner import TransformApplier
-        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10, 20)"><g transform="matrix(1, 1, 1, 1, 0, 0)"><rect x="0" y="0" width="10" height="10" transform="matrix(1, 1, 1, 1, 10, 20)" /></g></g></svg>''')
+        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10, 20)"><g transform="matrix(2, 0, 0, 2, 0, 0)"><rect x="0" y="0" width="10" height="10" transform="matrix(1, 0, 0, 1, 10, 20)" /></g></g></svg>''')
         TransformApplier()(svg)
         elem = svg[0][0][0]
-        self.assertEqual(40, float(elem.get(u'x')))
-        self.assertEqual(50, float(elem.get(u'y')))
-        self.assertEqual(40, float(elem.get(u'width')))
-        self.assertEqual(40, float(elem.get(u'height')))
+        self.assertEqual(30, float(elem.get(u'x')))
+        self.assertEqual(60, float(elem.get(u'y')))
+        self.assertEqual(20, float(elem.get(u'width')))
+        self.assertEqual(20, float(elem.get(u'height')))
+
+    def testTransformApplierTextNested(self):
+        from altair.app.ticketing.tickets.cleaner import TransformApplier
+        svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><g transform="translate(10, 20)"><g transform="matrix(2, 0, 0, 2, 0, 0)"><text transform="matrix(1, 0, 0, 1, 10, 20)"><tspan transform="matrix(1, 0, 0, 1, 20, 30)">AAA</tspan></text></g></g></svg>''')
+        TransformApplier()(svg)
+        elem = svg[0][0][0]
+        self.assertEqual(None, elem.get(u'x'))
+        self.assertEqual(None, elem.get(u'x'))
+        self.assertEqual(u'matrix(2,0,0,2,30,60)', elem.get(u'transform'))
+        elem = svg[0][0][0][0]
+        self.assertEqual(u'matrix(1,0,0,1,20,30)', elem.get(u'transform'))
 

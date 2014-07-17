@@ -158,7 +158,7 @@ class AdminHelperAdapter(object):
                     allowed = True
 
                 if not allowed:
-                    return
+                    return u''
 
                 if vertical and count == 1:
                     html.append(u'<button class="btn%s dropdown-toggle" data-toggle="dropdown">' % (u' ' + u' '.join(extra_classes) if extra_classes else u''))

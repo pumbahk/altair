@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Unicode, Date, DateTime, ForeignKey, DECIMAL, Index, UniqueConstraint
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Unicode, Date, DateTime, ForeignKey, DECIMAL, Index, UniqueConstraint, Text
 from sqlalchemy.sql.expression import case, null
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import join, backref, column_property
@@ -211,6 +211,7 @@ class Membership(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     #sales_segments = lambda:relationship('SalesSegment', secondary=Membership_SalesSegment.__table__, backref='memberships')
     status = Column(Integer)
 
+    memo = Column(Text)
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref='memberships')
 

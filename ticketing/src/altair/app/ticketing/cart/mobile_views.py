@@ -47,6 +47,7 @@ class MobileIndexView(IndexViewMixin):
     """モバイルのパフォーマンス選択
     """
     def __init__(self, request):
+        IndexViewMixin.__init__(self)
         self.request = request
         self.context = request.context
         self.prepare()
@@ -105,6 +106,7 @@ class MobileIndexView(IndexViewMixin):
         if key:
             key_to_formatted_sales_segments_map = [(k, v) for k, v in key_to_formatted_sales_segments_map if k == key]
             if not key_to_formatted_sales_segments_map:
+                logger.debug('no sales segment found for key %s' % key)
                 return HTTPFound(self.request.route_url('cart.index', event_id=self.context.event.id))
 
         return dict(
@@ -377,8 +379,6 @@ class MobileSelectProductView(object):
             api.release_cart(self.request, old_cart)
             api.remove_cart(self.request)
             transaction.commit()
-            c_api.refresh_organization(self.request)
-                
 
         # セールスセグメント必須
         sales_segment = c_models.SalesSegment.filter_by(id=sales_segment_group_id).first()
@@ -424,7 +424,7 @@ class MobileSelectProductView(object):
             logger.debug("not enough adjacency")
 
             # バラ席でのおすすめが可能なら確認画面を挟む
-            organization = c_api.get_organization(self.request)
+            organization = api.get_organization(self.request)
             if organization.setting.entrust_separate_seats:
                 data = dict(
                     form=schemas.CSRFSecureForm(csrf_context=self.request.session),

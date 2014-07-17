@@ -28,7 +28,8 @@ ROUTE_URL_RESOURCE = {
                                             AugusVenueResource),
 
     # event
-    'augus.event.show': ('/events/{event_id}', PerformanceResource),
+    'augus.events.index': ('/events/', None),
+    'augus.events.show': ('/events/{event_id}', PerformanceResource),
     # performance
     'augus.performance.index': ('/events/{event_id}/performances', PerformanceResource),
     'augus.performance.show': ('/events/{event_id}/performances/show', PerformanceResource),

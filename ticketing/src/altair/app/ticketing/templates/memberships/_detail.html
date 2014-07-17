@@ -1,9 +1,7 @@
 <%page args="form, membership" />
 <%namespace file="/common/helpers.html" name="ch" />
 
-<div class="page-header">
-  <h3>会員種別情報</h3>
-</div>
+<h3>会員種別</h3>
 
 <table class="table table-bordered fullwidth">
   <tbody>
@@ -14,6 +12,10 @@
   <tr>
     <th class="span3">${form.organization_id.label.text}</th>
     <td>${membership.organization_id}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.memo.label.text}</th>
+    <td>${membership.memo}</td>
   </tr>
   </tbody>
 </table>

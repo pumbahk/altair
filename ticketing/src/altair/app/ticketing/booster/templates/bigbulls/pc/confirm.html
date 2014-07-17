@@ -44,7 +44,7 @@
                 </tr>
                 % if pm.get('old_id_number'):
               　<tr>
-                  <th>2011-12会員番号</th>
+                  <th>2013-14会員番号</th>
                   <td>${pm.get('old_id_number')}</td>
                 </tr>
                 % endif
@@ -52,6 +52,12 @@
                   <th>会員種別</th>
                   <td>${cart.items[0].product.name}</td>
                 </tr>
+                % if pm['extra'].get('t_shirts_size'):
+              　<tr>
+                  <th>クラブブルズ限定デザインTシャツサイズ</th>
+                  <td>${pm['extra'].get('t_shirts_size')}</td>
+                </tr>
+                % endif
                 <tr>
                   <th>氏名</th>
                   <td>${pm['last_name']} ${pm['first_name']}</td>

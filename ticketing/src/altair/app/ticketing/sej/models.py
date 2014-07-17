@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from sqlalchemy.sql import func
 from altair.models import LogicallyDeleted, WithTimestamp, Identifier
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Date, ForeignKey, Enum, DECIMAL, Binary, UniqueConstraint
 from sqlalchemy.orm import relationship, join, column_property, mapper, backref, scoped_session, sessionmaker
 from sqlalchemy.orm.session import object_session
-from sqlalchemy.sql.expression import asc
+from sqlalchemy.sql.expression import asc, desc
 from zope.interface import implementer
 import sqlahelper
 from datetime import datetime
@@ -66,6 +67,7 @@ class SejTicketTemplateFile(Base, WithTimestamp, LogicallyDeleted):
     publish_start_date      = Column(Date)
     publish_end_date        = Column(Date)
     sent_at                 = Column(DateTime)
+    notation_version        = Column(Integer, nullable=False)
 
 
 class SejRefundEvent(Base, WithTimestamp, LogicallyDeleted):
@@ -106,7 +108,9 @@ class SejRefundTicket(Base, WithTimestamp, LogicallyDeleted):
     ticket_barcode_number       = Column(String(13))
     refund_ticket_amount        = Column(DECIMAL)
     refund_other_amount         = Column(DECIMAL)
-    sent_at = Column(DateTime, nullable=True)
+    sent_at                     = Column(DateTime, nullable=True)
+    refunded_at                 = Column(DateTime, nullable=True)
+    status                      = Column(Integer)
 
 
 class SejFile(Base, WithTimestamp, LogicallyDeleted):
@@ -202,6 +206,22 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
             .filter_by(order_no=self.order_no, branch_no=(self.branch_no + 1)) \
             .one()
 
+    @property
+    def refund_tickets(self):
+        return object_session(self).query(SejRefundTicket).filter_by(order_no=self.order_no).all()
+
+    @property
+    def refunded_tickets(self):
+        return object_session(self).query(SejRefundTicket).filter(SejRefundTicket.order_no==self.order_no, SejRefundTicket.refunded_at!=None).all()
+
+    @property
+    def refunded_total_amount(self):
+        return object_session(self).query(SejRefundTicket).filter(
+            SejRefundTicket.order_no==self.order_no,
+            SejRefundTicket.refunded_at!=None,
+            SejRefundTicket.status==1
+            ).with_entities(func.sum(SejRefundTicket.refund_ticket_amount + SejRefundTicket.refund_other_amount)).scalar() or 0
+
     def new_branch(self, payment_type=None, ticketing_start_at=None, ticketing_due_at=None, exchange_number=None, billing_number=None, processed_at=None):
         if payment_type is None: 
             payment_type = int(self.payment_type)
@@ -209,6 +229,15 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
             ticketing_due_at = self.ticketing_due_at
         if ticketing_start_at is None:
             ticketing_start_at = self.ticketing_start_at
+
+        # 最新の branch_no を取得する
+        newest_one = object_session(self).query(self.__class__) \
+            .filter_by(order_no=self.order_no) \
+            .order_by(desc(self.__class__.branch_no)) \
+            .first()
+
+        assert newest_one is not None
+        branch_no = newest_one.branch_no
 
         # payment_type は文字列になり得る (MySQLのENUM型をDBAPIは文字列として扱う)
         if int(payment_type) == int(SejPaymentType.Paid):
@@ -237,7 +266,7 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
             zip_code=self.zip_code,
             email=self.email,
             order_no=self.order_no,
-            branch_no=(self.branch_no + 1),
+            branch_no=(branch_no + 1),
             exchange_sheet_url=self.exchange_sheet_url,
             exchange_sheet_number=self.exchange_sheet_number,
             total_price=self.total_price,
@@ -271,6 +300,7 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
     @classmethod
     def branches(cls, order_no, session=_session):
         return session.query(cls).filter_by(order_no=order_no).order_by(asc(cls.branch_no)).all()
+
 
 class SejTicket(Base, WithTimestamp, LogicallyDeleted):
     __tablename__           = 'SejTicket'
@@ -349,6 +379,3 @@ class ThinSejTenant(object):
         self._contact_02 = contact_02 if contact_02 is not None else (original and original.contact_02)
         self._api_key = api_key if api_key is not None else (original and original.api_key)
         self._inticket_api_url = inticket_api_url if inticket_api_url is not None else (original and original.inticket_api_url)
-
-
-from .notification.models import *

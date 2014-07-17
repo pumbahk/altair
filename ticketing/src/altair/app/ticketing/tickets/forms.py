@@ -4,19 +4,22 @@ import json
 import os.path
 #import xml.etree.ElementTree as etree
 from wtforms import Form
-from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMultipleField, FileField
+from wtforms import TextField, IntegerField, HiddenField, SelectMultipleField, FileField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
 from wtforms.widgets import TextArea
 from sqlalchemy.orm.exc import NoResultFound
 from altair.formhelpers import DateTimeField, Translations, Required
 from altair.formhelpers.form import OurForm
-from altair.formhelpers.fields import OurBooleanField
-from altair.app.ticketing.core.models import Event, Account, DeliveryMethod, TicketFormat
-from altair.app.ticketing.core.models import TicketFormat, Ticket
+from altair.formhelpers.fields import OurSelectField, OurBooleanField
+from altair.formhelpers.widgets.select import BooleanSelect
+from altair.app.ticketing.core.models import (
+    DeliveryMethod,
+    TicketFormat,
+    Ticket
+)
 from altair.svg.geometry import as_user_unit
-from .convert import to_opcodes
-from .constants import PAPERS, ORIENTATIONS
-from .cleaner.api import get_validated_svg_cleaner
+from altair.app.ticketing.tickets.constants import PAPERS, ORIENTATIONS
+from altair.app.ticketing.tickets.cleaner.api import get_validated_svg_cleaner
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 
 def filestorage_has_file(storage):
@@ -132,7 +135,7 @@ class TicketCoverForm(OurForm):
         super(TicketCoverForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
         if 'organization_id' in kwargs:
             self.ticket.choices = [
-                (ticket.id, ticket.name) for ticket in Ticket.filter_by(organization_id=kwargs['organization_id'], event_id=None)
+                (ticket.id, ticket.name) for ticket in Ticket.query.filter_by(organization_id=kwargs['organization_id'], event_id=None)
             ]
 
     name = TextField(
@@ -143,7 +146,7 @@ class TicketCoverForm(OurForm):
         ]
     )
 
-    ticket = SelectField(
+    ticket = OurSelectField(
         label=u"チケットテンプレート",
         choices=[], 
         coerce=long , 
@@ -161,7 +164,7 @@ class TicketTemplateForm(OurForm):
             (format.id, format.name) for format in TicketFormat.filter_by(organization_id=context.organization.id)
             ]
         if not formdata and not obj:
-            self.priced.data = True
+            self.principal.data = True
 
     name = TextField(
         label = u'名前',
@@ -171,7 +174,7 @@ class TicketTemplateForm(OurForm):
         ]
     )
 
-    ticket_format_id = SelectField(
+    ticket_format_id = OurSelectField(
         label=u"チケット様式",
         choices=[], 
         coerce=long , 
@@ -189,8 +192,9 @@ class TicketTemplateForm(OurForm):
         label=u"常に再発券可能"
         )
 
-    priced = OurBooleanField(
-        label=u"手数料計算に含める"
+    principal = OurBooleanField(
+        label=u"主券",
+        widget=BooleanSelect(choices=[u'副券', u'主券'])
         )
 
     cover_print = OurBooleanField(
@@ -242,7 +246,7 @@ class TicketTemplateEditForm(OurForm):
         ]
     )
 
-    ticket_format_id = SelectField(
+    ticket_format_id = OurSelectField(
         label=u"チケット様式",
         choices=[], 
         coerce=long , 
@@ -253,8 +257,9 @@ class TicketTemplateEditForm(OurForm):
         label=u"常に再発券可能"
         )
 
-    priced = OurBooleanField(
-        label=u"手数料計算に含める"
+    principal = OurBooleanField(
+        label=u"主券",
+        widget=BooleanSelect(choices=[u'副券', u'主券'])
         )
 
     drawing = FileField(

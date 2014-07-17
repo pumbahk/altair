@@ -31,7 +31,7 @@ from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.sej import userside_api
 from altair.app.ticketing.sej.exceptions import SejErrorBase
 from altair.app.ticketing.sej.models import SejOrder, SejPaymentType, SejTicketType, SejOrderUpdateReason
-from altair.app.ticketing.sej.api import do_sej_order, refresh_sej_order, build_sej_tickets_from_dicts, create_sej_order, get_sej_order, get_ticket_template_record
+from altair.app.ticketing.sej.api import do_sej_order, refresh_sej_order, build_sej_tickets_from_dicts, create_sej_order, get_sej_order, get_ticket_template_record, refund_sej_order
 from altair.app.ticketing.sej.utils import han2zen
 
 from altair.app.ticketing.tickets.convert import convert_svg
@@ -87,11 +87,11 @@ def get_ticketing_start_at(current_date, order_like):
 def get_ticketing_due_at(current_date, order_like):
     return order_like.issuing_end_at
 
-def get_sej_ticket_data(product_item, svg, ticket_template_id=None):
+def get_sej_ticket_data(product_item, ticket_type, svg, ticket_template_id=None):
     assert ticket_template_id is not None
     performance = product_item.performance
     return dict(
-        ticket_type         = SejTicketType.TicketWithBarcode,
+        ticket_type         = ticket_type,
         event_name          = re.sub('[ \-\.,;\'\"]', '', han2zen(performance.event.title)[:20]),
         performance_name    = re.sub('[ \-\.,;\'\"]', '', han2zen(performance.name)[:20]),
         ticket_template_id  = ticket_template_id,
@@ -112,7 +112,7 @@ def get_ticket_template_id_from_ticket_format(ticket_format):
         retval = u'TTTS000001' # XXX: デフォルト
     return retval
 
-def get_tickets(order, ticket_template_id=None):
+def get_tickets(request, order, ticket_template_id=None):
     tickets = []
     issuer = NumberIssuer()
     for ordered_product in order.items:
@@ -121,15 +121,30 @@ def get_tickets(order, ticket_template_id=None):
             bundle = ordered_product_item.product_item.ticket_bundle
             for seat, dict_ in dicts:
                 for ticket in applicable_tickets_iter(bundle):
+                    if ticket.principal:
+                        ticket_type = SejTicketType.TicketWithBarcode
+                    else:
+                        ticket_type = SejTicketType.Ticket
                     ticket_format = ticket.ticket_format
+                    ticket_template_id = get_ticket_template_id_from_ticket_format(ticket_format)
                     transform = transform_matrix_from_ticket_format(ticket_format)
-                    svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
-                    ticket_template_id = get_ticket_template_id_from_ticket_format(ticket.ticket_format)
-                    ticket = get_sej_ticket_data(ordered_product_item.product_item, svg, ticket_template_id)
+                    template_record = get_ticket_template_record(request, ticket_template_id)
+                    notation_version = template_record.notation_version if template_record is not None else 1
+                    svg = etree.tostring(
+                        convert_svg(
+                            etree.ElementTree(
+                                etree.fromstring(pystache.render(ticket.data['drawing'], dict_))
+                                ),
+                            global_transform=transform,
+                            notation_version=notation_version
+                            ),
+                        encoding=unicode
+                        )
+                    ticket = get_sej_ticket_data(ordered_product_item.product_item, ticket_type, svg, ticket_template_id)
                     tickets.append(ticket)
     return tickets
 
-def get_tickets_from_cart(cart, now):
+def get_tickets_from_cart(request, cart, now):
     tickets = []
     issuer = NumberIssuer()
     for carted_product in cart.items:
@@ -138,11 +153,26 @@ def get_tickets_from_cart(cart, now):
             dicts = build_dicts_from_carted_product_item(carted_product_item, now=now, ticket_number_issuer=issuer)
             for (seat, dict_) in dicts:
                 for ticket in applicable_tickets_iter(bundle):
+                    if ticket.principal:
+                        ticket_type = SejTicketType.TicketWithBarcode
+                    else:
+                        ticket_type = SejTicketType.Ticket
                     ticket_format = ticket.ticket_format
+                    ticket_template_id = get_ticket_template_id_from_ticket_format(ticket_format)
                     transform = transform_matrix_from_ticket_format(ticket_format)
-                    svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
-                    ticket_template_id = get_ticket_template_id_from_ticket_format(ticket.ticket_format)
-                    ticket = get_sej_ticket_data(carted_product_item.product_item, svg, ticket_template_id)
+                    template_record = get_ticket_template_record(request, ticket_template_id)
+                    notation_version = template_record.notation_version if template_record is not None else 1
+                    svg = etree.tostring(
+                        convert_svg(
+                            etree.ElementTree(
+                                etree.fromstring(pystache.render(ticket.data['drawing'], dict_))
+                                ),
+                            global_transform=transform,
+                            notation_version=notation_version
+                            ),
+                        encoding=unicode
+                        )
+                    ticket = get_sej_ticket_data(carted_product_item.product_item, ticket_type, svg, ticket_template_id)
                     tickets.append(ticket)
     return tickets
 
@@ -165,49 +195,55 @@ SEJ_ORDER_ATTRS = [
     ]
 
 def is_same_sej_order(sej_order, sej_args, ticket_dicts):
-    if not all(getattr(sej_order, k) == sej_args[k] for k in SEJ_ORDER_ATTRS):
-        return False
+    for k in SEJ_ORDER_ATTRS:
+        v1 = getattr(sej_order, k)
+        v2 = sej_args[k]
+        if v1 != v2:
+            logger.debug('%s differs (%r != %r)' % (k, v1, v2))
+            return False
 
-    tickets = sej_order.tickets
-    if len(ticket_dicts) != len(tickets):
-        return False 
+    if int(sej_order.payment_type) != SejPaymentType.PrepaymentOnly.v:
+        # 発券が伴う場合は ticket も比較する
+        tickets = sej_order.tickets
+        if len(ticket_dicts) != len(tickets):
+            return False 
 
-    for ticket, d in zip(sorted(tickets, key=lambda ticket: ticket.ticket_idx), ticket_dicts):
-        if int(ticket.ticket_type) != int(d['ticket_type']):
-            return False
-        if ticket.event_name != d['event_name']:
-            return False
-        if ticket.performance_name != d['performance_name']:
-            return False
-        if ticket.performance_datetime != d['performance_datetime']:
-            return False
-        if ticket.ticket_template_id != d['ticket_template_id']:
-            return False
-        if ticket.ticket_template_id != d['ticket_template_id']:
-            return False
-        if ticket.product_item_id != d['product_item_id']:
-            return False
-        if ticket.ticket_data_xml != d['xml']:
-            return False
+        for ticket, d in zip(sorted(tickets, key=lambda ticket: ticket.ticket_idx), ticket_dicts):
+            if int(ticket.ticket_type) != int(d['ticket_type']):
+                return False
+            if ticket.event_name != d['event_name']:
+                return False
+            if ticket.performance_name != d['performance_name']:
+                return False
+            if ticket.performance_datetime != d['performance_datetime']:
+                return False
+            if ticket.ticket_template_id != d['ticket_template_id']:
+                return False
+            if ticket.product_item_id != d['product_item_id']:
+                return False
+            if ticket.ticket_data_xml != d['xml']:
+                return False
     return True
 
 def refresh_order(request, tenant, order, update_reason):
-    sej_order = get_sej_order(order.order_no)
+    from altair.app.ticketing.sej.models import _session
+    sej_order = get_sej_order(order.order_no, session=_session)
     if sej_order is None:
-        raise Exception('no corresponding SejOrder found for order %s' % order.order_no)
-
-    if int(sej_order.payment_type) == SejPaymentType.PrepaymentOnly.v and order.paid_at is not None:
-        raise Exception('order %s is already paid' % order.order_no)
-
-    if order.delivered_at is not None:
-        raise Exception('order %s is already delivered' % order.order_no)
+        raise SejPluginFailure('no corresponding SejOrder found', order_no=order.order_no, back_url=None)
 
     sej_args = build_sej_args(sej_order.payment_type, order, order.created_at)
-    ticket_dicts = get_tickets(order)
+    ticket_dicts = get_tickets(request, order)
 
     if is_same_sej_order(sej_order, sej_args, ticket_dicts):
         logger.info('the resulting order is the same as the old one; will do nothing')
         return
+
+    if int(sej_order.payment_type) == SejPaymentType.PrepaymentOnly.v:
+        if order.paid_at is not None:
+            raise SejPluginFailure('already paid', order_no=order.order_no, back_url=None)
+    else:
+        if order.delivered_at is not None:
+            raise SejPluginFailure('already delivered', order_no=order.order_no, back_url=None)
 
     new_sej_order = sej_order.new_branch()
     new_sej_order.tickets = build_sej_tickets_from_dicts(
@@ -220,15 +256,42 @@ def refresh_order(request, tenant, order, update_reason):
     new_sej_order.total_ticket_count = new_sej_order.ticket_count = len(new_sej_order.tickets)
 
     try:
-        refresh_sej_order(
+        new_sej_order = refresh_sej_order(
             request,
             tenant=tenant,
             sej_order=new_sej_order,
-            update_reason=update_reason
+            update_reason=update_reason,
+            session=_session
             )
+        sej_order.cancel_at = new_sej_order.created_at
+        _session.add(sej_order)
+        _session.commit()
     except SejErrorBase:
         raise SejPluginFailure('refresh_order', order_no=order.order_no, back_url=None)
 
+def refund_order(request, tenant, order, refund_record, now=None):
+    refund = refund_record.refund
+    sej_order = get_sej_order(order.order_no)
+    performance = order.performance
+    try:
+        refund_sej_order(
+            request,
+            tenant=tenant,
+            sej_order=sej_order,
+            performance_name=performance.name,
+            performance_code=performance.code,
+            performance_start_on=order.performance.start_on,
+            per_order_fee=refund_record.refund_per_order_fee,
+            per_ticket_fee=refund_record.refund_per_ticket_fee,
+            refund_start_at=refund.start_at,
+            refund_end_at=refund.end_at,
+            need_stub=refund.need_stub,
+            ticket_expire_at=refund.end_at + timedelta(days=+7),
+            ticket_price_getter=lambda sej_ticket: refund_record.get_refund_ticket_price(sej_ticket.product_item_id),
+            now=now
+            )
+    except SejErrorBase:
+        raise SejPluginFailure('refund_order', order_no=order.order_no, back_url=None)
 
 def build_sej_args(payment_type, order_like, now):
     shipping_address = order_like.shipping_address
@@ -260,7 +323,7 @@ def build_sej_args(payment_type, order_like, now):
         ticketing_fee       = order_like.delivery_fee
         payment_due_at      = get_payment_due_at(now, order_like)
     else:
-        raise SejPluginFailure('unknown payment type %s' % payment_type, order_link.order_no, None)
+        raise SejPluginFailure('unknown payment type %s' % payment_type, order_no=order_link.order_no, back_url=None)
 
     regrant_number_due_at = None
     performance = order_like.sales_segment.performance
@@ -410,9 +473,6 @@ class SejPaymentPlugin(object):
 
     @clear_exc
     def refresh(self, request, order):
-        if order.paid_at is not None:
-            raise Exception('order %s is already paid' % order.order_no)
-
         settings = request.registry.settings
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
@@ -422,6 +482,17 @@ class SejPaymentPlugin(object):
             update_reason=SejOrderUpdateReason.Change
             )
 
+    @clear_exc
+    def refund(self, request, order, refund_record):
+        if order.paid_at is None:
+            raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
+        tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
+        refund_order(
+            request,
+            tenant=tenant,
+            order=order,
+            refund_record=refund_record
+            )
 
 @implementer(ISejDeliveryPlugin)
 class SejDeliveryPluginBase(object):
@@ -451,9 +522,9 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         try:
             if isinstance(order_like, Cart):
-                tickets = get_tickets_from_cart(order_like, current_date)
+                tickets = get_tickets_from_cart(request, order_like, current_date)
             else:
-                tickets = get_tickets(order_like)
+                tickets = get_tickets(request, order_like)
             sej_order = create_sej_order(
                 request,
                 tickets=tickets,
@@ -475,16 +546,26 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
 
         return bool(sej_order.exchange_number)
 
+    @clear_exc
     def refresh(self, request, order):
-        if order.delivered_at is not None:
-            raise Exception('order %s is already delivered' % order.order_no)
-
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
             request,
             tenant=tenant,
             order=order,
             update_reason=SejOrderUpdateReason.Change
+            )
+
+    @clear_exc
+    def refund(self, request, order, refund_record):
+        if order.paid_at is None:
+            raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
+        tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
+        refund_order(
+            request,
+            tenant=tenant,
+            order=order,
+            refund_record=refund_record
             )
 
 @implementer(IDeliveryPlugin)
@@ -510,7 +591,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         payment_type = determine_payment_type(current_date, order_like)
         try:
-            tickets = get_tickets(order_like)
+            tickets = get_tickets(request, order_like)
             sej_order = create_sej_order(
                 request,
                 tickets=tickets,
@@ -532,6 +613,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
 
         return bool(sej_order.billing_number)
 
+    @clear_exc
     def refresh(self, request, order):
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
@@ -539,6 +621,18 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
             tenant=tenant,
             order=order,
             update_reason=SejOrderUpdateReason.Change
+            )
+
+    @clear_exc
+    def refund(self, request, order, refund_record):
+        if order.paid_at is None:
+            raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
+        tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
+        refund_order(
+            request,
+            tenant=tenant,
+            order=order,
+            refund_record=refund_record
             )
 
 

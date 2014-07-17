@@ -11,9 +11,9 @@ class FCAuthPluginTests(unittest.TestCase):
         self.config = testing.setUp()
         self.session = _setup_db(modules=[
                 'altair.app.ticketing.core.models',
-                #'altair.app.ticketing.tickets.models',
                 'altair.app.ticketing.operators.models',
-                #'altair.app.ticketing.users.models',
+                'altair.app.ticketing.users.models',
+                'altair.app.ticketing.orders.models',
                 ])
         register_sessionmaker_with_engine(
             self.config.registry,
@@ -44,8 +44,7 @@ class FCAuthPluginTests(unittest.TestCase):
         from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator
         from zope.interface.verify import verifyObject
 
-        target = self._makeOne('')
-        verifyObject(IIdentifier, target)
+        target = self._makeOne()
         verifyObject(IChallenger, target)
         verifyObject(IAuthenticator, target)
 
@@ -61,7 +60,7 @@ class FCAuthPluginTests(unittest.TestCase):
             }
         environ = self._makeEnv()
         
-        target = self._makeOne('')
+        target = self._makeOne()
         result = target.authenticate(environ, identity)
 
         self.assertFalse(result)
@@ -87,14 +86,14 @@ class FCAuthPluginTests(unittest.TestCase):
         environ = self._makeEnv()
 
 
-        target = self._makeOne('')
+        target = self._makeOne()
         result = target.authenticate(environ, identity)
 
         self.assertTrue(result)
 
 class TestIt(unittest.TestCase):
     def setUp(self):
-        self.request = testing.DummyRequest(matched_route=testing.DummyModel(name='dummy'))
+        self.request = testing.DummyRequest(matched_route=testing.DummyModel(name='dummy'), params={'event_id': 58})
         self.config = testing.setUp(request=self.request)
         self.config.add_route('dummy', '/dummy')
         self.session = _setup_db(modules=[
@@ -119,10 +118,9 @@ class TestIt(unittest.TestCase):
         from repoze.who.plugins.auth_tkt import AuthTktCookiePlugin
         from .plugins import FCAuthPlugin, logger
 
-        fc_auth = FCAuthPlugin(rememberer_name='auth_tkt')
+        fc_auth = FCAuthPlugin()
         auth_tkt = AuthTktCookiePlugin('secret', 'auth_tkt')
-        identifiers = [('fc_auth', fc_auth), 
-                       ('auth_tkt', auth_tkt),]
+        identifiers = [('auth_tkt', auth_tkt),]
         authenticators = [('fc_auth', fc_auth), 
                           ('auth_tkt', auth_tkt),
                           ]
@@ -175,9 +173,14 @@ class TestIt(unittest.TestCase):
         authenticated, headers = api.login(creds)
 
         import pickle
-        self.assertEqual(
-            pickle.loads(authenticated['repoze.who.userid'].decode('base64')), 
-            {'username': 'test_user', 'membership': 'fc', 'membergroup': 'fc_plutinum', "is_guest": False})
+        self.assertEqual(authenticated, {
+            'username': username,
+            'login': True,
+            'membership': membership,
+            'membergroup': membergroup,
+            'repoze.who.userid': username,
+            "is_guest": False
+            })
 
     def test_challenge_not_required(self):
         login_url = 'http://example.com/login'
@@ -222,7 +225,7 @@ class TestIt(unittest.TestCase):
         result = api.challenge()
 
         self.assertEqual(result.location, 'http://example.com/membership/fc/login')
-        self.assertEqual(session[SESSION_KEY]['return_url'], '/dummy?')
+        self.assertEqual(session[SESSION_KEY]['return_url'], '/dummy?event_id=58')
 
 
 class guest_authenticateTests(unittest.TestCase):
@@ -230,9 +233,8 @@ class guest_authenticateTests(unittest.TestCase):
         self.config = testing.setUp()
         self.session = _setup_db(modules=[
                 'altair.app.ticketing.core.models',
-                #'altair.app.ticketing.tickets.models',
                 'altair.app.ticketing.operators.models',
-                #'altair.app.ticketing.users.models',
+                'altair.app.ticketing.users.models',
                 ])
         register_sessionmaker_with_engine(
             self.config.registry,
@@ -251,16 +253,14 @@ class guest_authenticateTests(unittest.TestCase):
     def test_empty(self):
         environ = { REQUEST_KEY: testing.DummyRequest() }
         identity = {}
-        userdata = {}
-        result = self._callFUT(environ, identity, userdata)
+        result = self._callFUT(environ, identity)
 
         self.assertIsNone(result)
 
-    def test_no_geust_membergroup(self):
+    def test_no_guest_membergroup(self):
         environ = { REQUEST_KEY: testing.DummyRequest() }
-        identity = {}
-        userdata = { "membership": 'testing' }
-        result = self._callFUT(environ, identity, userdata)
+        identity = { "membership": 'testing' }
+        result = self._callFUT(environ, identity)
 
         self.assertIsNone(result)
 
@@ -276,11 +276,10 @@ class guest_authenticateTests(unittest.TestCase):
     def test_it(self):
         import pickle
         environ = { REQUEST_KEY: testing.DummyRequest() }
-        identity = {}
-        userdata = { "membership": 'testing' }
+        identity = { "membership": 'testing' }
 
-        self._create_guest(userdata['membership'])
-        result = self._callFUT(environ, identity, userdata)
+        self._create_guest(identity['membership'])
+        result = self._callFUT(environ, identity)
         self.assertEqual(result['membership'], 'testing')
         self.assertEqual(result['membergroup'], 'testing_guest')
         self.assertTrue(result['is_guest'])

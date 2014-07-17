@@ -85,10 +85,12 @@ class LimiterDecorators(object):
             try:
                 request = get_current_request()
                 for id_, strength in get_cart_user_identifiers(request):
-                    logger.debug('user_identifier=%s, strength=%s' % (id_, strength))
                     count = self.cache.get(id_, createfunc=lambda: 0) + 1
                     counts.append((id_, count))
-                    if count > limits[strength]:
+                    limit = limits[strength]
+                    logger.debug('user_identifier=%s, strength=%s, count=%d, limit=%d' % (id_, strength, count, limit))
+                    if count > limit:
+                        logger.info('limit exceeded: user_identifier=%s, strength=%s, count=%d, limit=%d' % (id_, strength, count, limit))
                         raise self.exc_class(id_)
             except self.exc_class:
                 raise

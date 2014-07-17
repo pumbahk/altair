@@ -57,8 +57,8 @@
             </td>
             <td>
               <input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />
-              % if j == 0:
-              ${HH.action_button(b.actions(product, item), order=['edit', 'delete', 'divider', 'edit_item', 'new_item', 'delete_item', 'divider', 'preview'], options='btn-small', align='right')}
+              % if product.seat_stock_type_id == item.stock.stock_type_id:
+              ${HH.action_button(b.actions(product, item), order=['edit_all', 'edit', 'delete', 'divider', 'edit_item', 'new_item', 'delete_item', 'divider', 'preview'], options='btn-small', align='right')}
               % else:
               ${HH.action_button(b.actions(product, item), order=['edit_item', 'new_item', 'delete_item', 'divider', 'preview'], options='btn-small', align='right')}
               % endif
@@ -84,6 +84,7 @@
   <h5>券面プレビューをまとめてダウンロード</h5>
   <form method="GET" action="${request.route_path("tickets.preview.download.list.zip", performance_id=performance.id, sales_segment_id=sales_segment.id)}">
     ${download_form.delivery_method_id()}
+    ${download_form.ticket_format_id()}
     <input type="submit" class="btn btn-inverse" style="margin-bottom: 8px;" value="ダウンロード"/>
     <script type="text/javascript">
       (function($form){

@@ -13,7 +13,7 @@ from sqlalchemy.orm.session import make_transient
 import sqlahelper
 
 from .utils import JavaHashMap
-from .models import SejNotification, SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, SejNotificationType, ThinSejTenant, SejTicketTemplateFile
+from .models import SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, ThinSejTenant, SejTicketTemplateFile, SejTicketType
 from .models import _session
 from .interfaces import ISejTenant
 from .exceptions import SejServerError, SejError, SejErrorBase
@@ -26,30 +26,32 @@ def do_sej_order(request, tenant, sej_order, now=None, session=None):
         session = _session
     try:
         try:
-            return request_order(request, tenant, sej_order)
+            sej_order = request_order(request, tenant, sej_order)
         finally:
-            session.merge(sej_order)
+            sej_order = session.merge(sej_order)
             session.commit()
     except SejErrorBase:
         raise
     except Exception as e:
         logger.exception(u'unhandled exception')
         raise SejError(u'generic failure (reason: %s)' % unicode(e), sej_order.order_no)
+    return sej_order
 
 def refresh_sej_order(request, tenant, sej_order, update_reason, now=None, session=None):
     if session is None:
         session = _session
     try:
         try:
-            return request_update_order(request, tenant, sej_order, update_reason)
+            sej_order = request_update_order(request, tenant, sej_order, update_reason)
         finally:
-            session.merge(sej_order)
+            sej_order = session.merge(sej_order)
             session.commit()
     except SejErrorBase:
         raise
     except Exception as e:
         logger.exception(u'unhandled exception')
         raise SejError(u'generic failure (reason: %s)' % unicode(e), sej_order.order_no)
+    return sej_order
 
 def cancel_sej_order(request, tenant, sej_order, now=None, session=None):
     if session is None:
@@ -67,13 +69,14 @@ def cancel_sej_order(request, tenant, sej_order, now=None, session=None):
                 now=now
             )
         finally:
-            session.merge(sej_order)
+            sej_order = session.merge(sej_order)
             session.commit()
     except SejErrorBase:
         raise
     except Exception as e:
         logger.exception(u'unhandled exception')
         raise SejError(u'generic failure (reason: %s)' % unicode(e), sej_order.order_no)
+    return sej_order
 
 def refund_sej_order(request, tenant, sej_order, performance_name, performance_code, performance_start_on, per_order_fee, per_ticket_fee, ticket_price_getter, refund_start_at, refund_end_at, need_stub, ticket_expire_at, now, session=None):
     if session is None:
@@ -109,27 +112,35 @@ def refund_sej_order(request, tenant, sej_order, performance_name, performance_c
             re = session.merge(re)
 
             # create SejRefundTicket
-            for i, sej_ticket in enumerate(sej_tickets):
-                rt = session.query(SejRefundTicket).filter(and_(
-                    SejRefundTicket.order_no==sej_order.order_no,
-                    SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
-                )).first()
-                if not rt:
-                    rt = SejRefundTicket()
-                    session.add(rt)
+            i = 0
+            for sej_ticket in sej_tickets:
+                if sej_ticket.barcode_number is not None and \
+                   int(sej_ticket.ticket_type) in (SejTicketType.Ticket.v, SejTicketType.TicketWithBarcode.v):
+                    # 主券でかつバーコードがあるものだけ払戻する
+                    rt = session.query(SejRefundTicket).filter(and_(
+                        SejRefundTicket.order_no==sej_order.order_no,
+                        SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
+                    )).first()
+                    if not rt:
+                        rt = SejRefundTicket()
+                        session.add(rt)
 
-                rt.available = 1
-                rt.refund_event_id = re.id
-                rt.event_code_01 = performance_code
-                rt.order_no = sej_order.order_no
-                rt.ticket_barcode_number = sej_ticket.barcode_number
-                rt.refund_ticket_amount = ticket_price_getter(sej_ticket)
-                rt.refund_other_amount = per_ticket_fee
-                # 手数料などの払戻があったら1件目に含める
-                if per_order_fee > 0 and i == 0:
-                    rt.refund_other_amount += per_order_fee
+                    rt.available = 1
+                    rt.refund_event_id = re.id
+                    rt.event_code_01 = performance_code
+                    rt.order_no = sej_order.order_no
+                    rt.ticket_barcode_number = sej_ticket.barcode_number
+                    rt.refund_ticket_amount = ticket_price_getter(sej_ticket)
+                    rt.refund_other_amount = per_ticket_fee
+                    # 手数料などの払戻があったら1件目に含める
+                    if per_order_fee > 0 and i == 0:
+                        rt.refund_other_amount += per_order_fee
 
-                session.merge(rt)
+                    session.merge(rt)
+                    i += 1
+            if i == 0:
+                raise SejError(u'No refundable tickets found', sej_order.order_no)
+
             return re
         finally:
             session.commit()
@@ -147,6 +158,20 @@ def get_sej_order(order_no, session=None):
         .order_by(desc(SejOrder.branch_no)) \
         .first()
     return retval
+
+def get_sej_order_by_exchange_number_or_billing_number(order_no=None, exchange_number=None, billing_number=None, session=None):
+    if session is None:
+        session = _session 
+    if order_no is None and exchange_number is None and billing_number is None:
+        raise ValueError('any of order_no, exchange_number and billing_number must be non-null value')
+    q = session.query(SejOrder)
+    if order_no is not None:
+        q = q.filter_by(order_no=order_no)
+    if exchange_number:
+        q = q.filter_by(exchange_number=exchange_number)
+    if billing_number:
+        q = q.filter_by(billing_number=billing_number)
+    return q.order_by(desc(SejOrder.branch_no)).first()
 
 def get_sej_orders(order_no, fetch_canceled=False, session=None):
     if session is None:
@@ -245,7 +270,10 @@ def remove_default_session():
 def get_ticket_template_record(request, template_id, session=None):
     if session is None:
         session = _session
-    template_file_rec = session.query(SejTicketTemplateFile) \
-        .filter(SejTicketTemplateFile.template_id == template_id) \
-        .one()
-    return template_file_rec
+    try:
+        template_file_rec = session.query(SejTicketTemplateFile) \
+            .filter(SejTicketTemplateFile.template_id == template_id) \
+            .one()
+        return template_file_rec
+    except NoResultFound:
+        return None

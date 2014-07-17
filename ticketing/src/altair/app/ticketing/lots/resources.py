@@ -11,11 +11,13 @@ from pyramid.decorator import reify
 from sqlalchemy.sql import or_
 
 from altair.now import get_now
+from altair.app.ticketing.cart.api import get_auth_info 
 from altair.app.ticketing.core.models import Event, Performance, Organization, ShippingAddress
 from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.cart import api as cart_api
+
 from .exceptions import OutTermException, OverEntryLimitException, OverEntryLimitPerPerformanceException
 from .models import Lot, LotEntry, LotEntryWish
-
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +42,7 @@ class LotResource(object):
     def __init__(self, request):
         self.request = request
 
-        self.organization = core_api.get_organization(self.request)
+        self.organization = cart_api.get_organization(self.request)
 
         event_id = self.request.matchdict.get('event_id')
         self.event = Event.query \
@@ -58,9 +60,7 @@ class LotResource(object):
         self.lot = lot
 
     def authenticated_user(self):
-        from altair.rakuten_auth.api import authenticated_user
-        user = authenticated_user(self.request)
-        return user or { 'is_guest': True }
+        return get_auth_info(self.request)
 
     @reify
     def host_base_url(self):

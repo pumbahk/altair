@@ -79,8 +79,9 @@ def singletons(elem):
         return None
 
 class TicketNotationEmitter(object):
-    def __init__(self, result):
+    def __init__(self, result, notation_version):
         self.result = result
+        self.notation_version = notation_version
 
     def emit_scalar_value(self, value, string_as_symbol=False):
         if isinstance(value, basestring):
@@ -145,13 +146,27 @@ class TicketNotationEmitter(object):
         self.emit_symbol(value)
         self.result.append(u'U')
 
-    def emit_show_text(self, width, height, text):
+    def emit_show_text(self, anchor, text):
+        if self.notation_version >= 2:
+            self.emit_symbol(unicode(anchor))
+            self.emit_scalar_value(unicode(text))
+            self.result.append(u'x')
+
+    def emit_show_dom_node_text(self, anchor, path):
+        if self.notation_version >= 2:
+            self.emit_symbol(unicode(anchor))
+            self.emit_scalar_value(unicode(path))
+            self.result.append(u'xn')
+            self.result.append(u'sxn')
+            self.result.append(u'x')
+
+    def emit_show_text_block(self, width, height, text):
         self.emit_scalar_value(float(width))
         self.emit_scalar_value(float(height))
         self.emit_scalar_value(unicode(text))
         self.result.append(u'X')
 
-    def emit_show_dom_node(self, width, height, path):
+    def emit_show_dom_node_text_block(self, width, height, path):
         self.emit_scalar_value(float(width))
         self.emit_scalar_value(float(height))
         self.emit_scalar_value(unicode(path))
@@ -267,11 +282,17 @@ class Assembler(object):
     def emit_unit(self, value):
         self.result.append(('unit', [value]))
 
-    def emit_show_text(self, width, height, text):
-        self.result.append(('show_text', [width, height, text]))
+    def emit_show_text(self, anchor, text):
+        self.result.append(('show_text', [anchor, text]))
 
-    def emit_show_dom_node(self, width, height, path):
-        self.result.append(('show_dom_node', [width, height, path]))
+    def emit_show_dom_node_text(self, anchor, path):
+        self.result.append(('show_dom_node_text', [anchor, path]))
+
+    def emit_show_text_block(self, width, height, text):
+        self.result.append(('show_text_block', [width, height, text]))
+
+    def emit_show_dom_node_text_block(self, width, height, path):
+        self.result.append(('show_dom_node_text_block', [width, height, path]))
 
     def emit_transform(self, a, b, c, d, e, f):
         self.result.append(('transform', [a, b, c, d, e, f]))
@@ -319,7 +340,7 @@ class Optimizer(object):
     def remove_unnecessary_modifiers(self, opcodes):
         for i in reversed(range(0, len(opcodes))):
             op, _ = opcodes[i]
-            if op in ('fill', 'stroke', 'stroke_and_fill', 'show_text', 'show_dom_node'):
+            if op in ('fill', 'stroke', 'stroke_and_fill', 'show_text', 'show_text_block', 'show_dom_node_text', 'show_dom_node_text_block'):
                 break
         return opcodes[0:i+1]
 
@@ -414,14 +435,20 @@ class ScaleFilter(object):
     def emit_unit(self, value):
         self.outer.emit_unit(value)
 
-    def emit_show_text(self, width, height, text):
-        self.outer.emit_show_text(
+    def emit_show_text(self, anchor, text):
+        self.outer.emit_show_text(anchor, text)
+
+    def emit_show_dom_node_text(self, anchor, path):
+        self.outer.emit_show_dom_node_text(anchor, path)
+
+    def emit_show_text_block(self, width, height, text):
+        self.outer.emit_show_text_block(
             int(float(width) / self.base_scale),
             int(float(height) / self.base_scale),
             text)
 
-    def emit_show_dom_node(self, width, height, path):
-        self.outer.emit_show_dom_node(
+    def emit_show_dom_node_text_block(self, width, height, path):
+        self.outer.emit_show_dom_node_text_block(
             int(float(width) / self.base_scale),
             int(float(height) / self.base_scale),
             path)
@@ -531,6 +558,7 @@ class Style(object):
         'font_family',
         'font_weight',
         'text_anchor',
+        'text_align',
         'line_height',
         ]
 
@@ -601,7 +629,8 @@ class Visitor(object):
                   stroke_width=1,
                   font_size=12,
                   line_height=StyleNone,
-                  text_anchor='start'),
+                  text_anchor='start',
+                  text_align='start'),
             {})
         self.style_stack = []
         self.current_transform = I
@@ -636,10 +665,15 @@ class Visitor(object):
             u"MS PMincho": u"f18",
             u"MS UI Gothic": u"f19",
             }
-        self.text_anchor_classes = {
+        self.text_align_classes = {
             u"start": u"l",
             u"middle": u"c",
             u"end": u"r",
+            }
+        self.text_anchor_classes = {
+            u"start": u"s",
+            u"middle": u"m",
+            u"end": u"e",
             }
         self.font_weight_classes = {
             u"900": u"b",
@@ -648,18 +682,17 @@ class Visitor(object):
             u"normal": None,
             }
         self.fixtag_placeholders = {
-            u'発券日時': u'FIXTAG04',
-            u'発券日時s': u'FIXTAG04',
+            u"発券日時": u"FIXTAG04",
+            u"発券日時s": u"FIXTAG04",
             }
-        self.text_anchor_to_text_align_map = {
-            'start': 'left',
-            'middle': 'center',
-            'end': 'right',
-            'left': 'left',
-            'center': 'center',
-            'right': 'right',
+        self.text_align_map = {
+            u"start": u"left",
+            u"middle": u"center",
+            u"end": u"right",
+            u"left": u"left",
+            u"center": u"center",
+            u"right": u"right",
             }
-
 
     @staticmethod
     def parse_color_style(color):
@@ -679,6 +712,7 @@ class Visitor(object):
         font_size = as_user_unit(css_style_decl['font-size'] or elem.get(u'font-size'), )
         font_family = css_style_decl['font-family'] or elem.get(u'font-family', None)
         font_weight = css_style_decl['font-weight'] or elem.get(u'font-weight', None)
+        text_align = css_style_decl['text-align'] or elem.get(u'text-align')
         text_anchor = css_style_decl['text-anchor'] or elem.get(u'text-anchor')
         line_height = as_user_unit(css_style_decl['line-height'] or elem.get(u'line-height'), font_size or self.current_style_ctx.style.font_size)
 
@@ -689,6 +723,7 @@ class Visitor(object):
             font_size=font_size,
             font_family=font_family,
             font_weight=font_weight,
+            text_align=text_align,
             text_anchor=text_anchor,
             line_height=line_height
             )
@@ -737,12 +772,12 @@ class Visitor(object):
                         html_styles.append((u'color', style.fill_color))
                 if self.current_style_ctx.style.font_weight != style.font_weight:
                     html_styles.append((u'font-weight', style.font_weight))
-                if self.current_style_ctx.style.text_anchor != style.text_anchor:
-                    text_align = self.text_anchor_to_text_align_map.get(style.text_anchor.lower())
+                if self.current_style_ctx.style.text_align != style.text_align:
+                    text_align = self.text_align_map.get(style.text_align.lower())
                     if text_align is not None:
                         html_styles.append((u'text-align', text_align))
                     else:
-                        logger.warning("unknown text-anchor value: %s" % style.text_anchor)
+                        logger.warning("unknown text-align value: %s" % style.text_align)
                 current_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
                 if current_font_family_class is None:
                     # silenty falls back to the default font
@@ -814,12 +849,6 @@ class Visitor(object):
                     html_styles.append((u'color', style.fill_color))
                 if self.current_style_ctx.style.font_weight != style.font_weight:
                     html_styles.append((u'font-weight', style.font_weight))
-                if self.current_style_ctx.style.text_anchor != style.text_anchor:
-                    text_align = self.text_anchor_to_text_align_map.get(style.text_anchor.lower())
-                    if text_align is not None:
-                        html_styles.append((u'text-align', text_align))
-                    else:
-                        logger.warning("unknown text-anchor value: %s" % style.text_anchor)
                 current_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
                 if current_font_family_class is None:
                     # silenty falls back to the default font
@@ -903,14 +932,14 @@ class Visitor(object):
                 if font_weight_class != old_font_weight_class:
                     classes_pushed['font_weight'] = font_weight_class
 
-        if new_style.text_anchor is not None:
-            text_anchor_class = self.text_anchor_classes.get(new_style.text_anchor)
-            old_text_anchor_class = self.text_anchor_classes.get(self.current_style_ctx.style.text_anchor)
-            if text_anchor_class is None:
-                logger.warning('Unsupported anchor type %s; falling back to left' % new_style.text_anchor)
-                text_anchor_class = u"l"
-            if text_anchor_class != old_text_anchor_class:
-                classes_pushed['text_anchor'] = text_anchor_class
+        if new_style.text_align is not None:
+            text_align_class = self.text_align_classes.get(new_style.text_align)
+            old_text_align_class = self.text_align_classes.get(self.current_style_ctx.style.text_align)
+            if text_align_class is None:
+                logger.warning('Unsupported align type %s; falling back to start' % new_style.text_align)
+                text_align_class = u"l"
+            if text_align_class != old_text_align_class:
+                classes_pushed['text_align'] = text_align_class
 
         stack_level = None
         for k, l in self.overloaded_classes.items():
@@ -1048,17 +1077,30 @@ class Visitor(object):
     def _strip_placeholders(self, text):
         return re.sub(self.placeholder_pattern, u'', text)
 
-    def _html_emitter(self, flow_bbox, html): 
+    def _text_block_html_emitter(self, flow_bbox, html): 
         emission = None
         g = re.match(self.placeholder_pattern + u'$', html)
         if g is not None:
             path = self.fixtag_placeholders.get(g.group(1))
             if path is not None:
                 def emission():
-                    self.emitter.emit_show_dom_node(flow_bbox[2], flow_bbox[3], path)
+                    self.emitter.emit_show_dom_node_text_block(flow_bbox[2], flow_bbox[3], path)
         else:
             def emission():
-                self.emitter.emit_show_text(flow_bbox[2], flow_bbox[3], self._strip_placeholders(html))
+                self.emitter.emit_show_text_block(flow_bbox[2], flow_bbox[3], self._strip_placeholders(html))
+        return emission
+
+    def _text_html_emitter(self, anchor, html): 
+        emission = None
+        g = re.match(self.placeholder_pattern + u'$', html)
+        if g is not None:
+            path = self.fixtag_placeholders.get(g.group(1))
+            if path is not None:
+                def emission():
+                    self.emitter.emit_show_dom_node_text(anchor, path)
+        else:
+            def emission():
+                self.emitter.emit_show_text(anchor, self._strip_placeholders(html))
         return emission
 
     @namespace(SVG_NAMESPACE)
@@ -1085,7 +1127,7 @@ class Visitor(object):
         if contents:
             singleton_elems = len(contents) == 1 and singletons(contents[0])
             if singleton_elems:
-                emission = self._html_emitter(self.flow_bbox, self.build_html_from_flow_elements(text_and_elements(singleton_elems[-1])))
+                emission = self._text_block_html_emitter(self.flow_bbox, self.build_html_from_flow_elements(text_and_elements(singleton_elems[-1])))
                 # Specially treat a sole container element :-p
                 if emission:
                     self.emitter.emit_move_to(self.flow_bbox[0], self.flow_bbox[1])
@@ -1095,7 +1137,7 @@ class Visitor(object):
                     for _ in singleton_elems:
                         self.unapply_styles()
             else:
-                emission = self._html_emitter(self.flow_bbox, self.build_html_from_flow_elements(contents))
+                emission = self._text_block_html_emitter(self.flow_bbox, self.build_html_from_flow_elements(contents))
                 if emission:
                     self.emitter.emit_move_to(self.flow_bbox[0], self.flow_bbox[1])
                     emission()
@@ -1104,15 +1146,18 @@ class Visitor(object):
     @stylable
     @transformable
     def visit_text(self, scanner, ns, local_name, elem):
-        bbox = (
+        pos = (
             as_user_unit(elem.get(u'x', u'0')),
             as_user_unit(elem.get(u'y', u'0')),
-            as_user_unit(elem.get(u'width', u'0')),
-            as_user_unit(elem.get(u'height', u'0')),
             )
-        emission = self._html_emitter(bbox, self.build_html_from_text_elements(text_and_elements(elem)))
+        style = self.current_style_ctx.style
+        anchor = self.text_anchor_classes.get(style.text_anchor)
+        if anchor is None:
+            logger.warning("unknown text-anchor value: %s" % style.text_anchor)
+            anchor = self.text_anchor_classes['start']
+        emission = self._text_html_emitter(anchor, self.build_html_from_text_elements(text_and_elements(elem)))
         if emission:
-            self.emitter.emit_move_to(bbox[0], bbox[1])
+            self.emitter.emit_move_to(pos[0], pos[1])
             emission()
 
     @namespace(SVG_NAMESPACE)
@@ -1201,25 +1246,28 @@ def handle_qrcode(retval, qrcode):
     retval.append(E.QR_VER(u'%02d' % (level + 1)))
     retval.append(E.QR_CELL('%d' % cell_size))
 
-def to_opcodes(doc, global_transform=None):
+def to_opcodes(doc, global_transform=None, notation_version=1):
     opcodes = []
     emitter = ScaleFilter(Assembler(opcodes), .1)
     emitter.emit_unit('px')
     Scanner(Visitor(emitter, global_transform))([doc.getroot()])
     opcodes = Optimizer()(opcodes)
     result = []
-    emit_opcodes(TicketNotationEmitter(result), opcodes)
+    emit_opcodes(TicketNotationEmitter(result, notation_version), opcodes)
     return result
 
-def convert_svg(doc, global_transform=None):
+def convert_svg(doc, global_transform=None, notation_version=None):
+    if notation_version is None:
+        notation_version = 1
     retval = E.TICKET(
-        E.b(u' '.join(to_opcodes(doc, global_transform))), 
+        E.b(u' '.join(to_opcodes(doc, global_transform, notation_version))), 
         E.FIXTAG01(),
         E.FIXTAG02(),
         E.FIXTAG03(),
         E.FIXTAG04(),
         E.FIXTAG05(),
-        E.FIXTAG06())
+        E.FIXTAG06(),
+        E.FIXTAG07())
     qrcode = doc.find('{%s}qrcode' % TS_SVG_EXT_NAMESPACE)
     if qrcode is not None:
         handle_qrcode(retval, qrcode)

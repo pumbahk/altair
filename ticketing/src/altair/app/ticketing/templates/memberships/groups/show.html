@@ -1,33 +1,28 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch" />
 
-<%doc>
-## breadcrumbs are not supported yet
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'トップ', u'membership'],
+      names=[u'トップ', u'会員種別', u'会員区分'], 
       urls=[request.route_path('index'), request.route_path('memberships',action="index",membership_id="*")]
-  )}
+  )}  
 </%block>
-</%doc>
 
 <div class="page-header">
-  <h3>会員区分詳細</h3>
+  <h1>会員区分詳細</h1>
 </div>
+
+<%include file="./_detail.html" args="form=form, membergroup=membergroup" /> 
 
 <div>
   <a href="${request.route_path('membergroups',action="edit", membergroup_id=membergroup.id, _query=dict(membership_id=membergroup.membership_id,redirect_to=redirect_to))}" class="btn">編集</a>
   <a id="delete_link" href="javascript:popup_membergroup_delete_modal(${membergroup.id});" class="btn">削除</a>
 </div>
 
-<%include file="./_detail.html" args="form=form, membergroup=membergroup" /> 
-
 <hr/>
 
-
-<div class="page-header">
 <h3>結びついている販売区分グループ</h3>
-</div>
+
 <div class="row-fluid">
   <div class="span12">
     <%include file="/sales_segment_groups/_list.html" args="sales_segment_groups=sales_segment_groups" />

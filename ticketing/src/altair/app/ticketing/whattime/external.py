@@ -2,14 +2,15 @@ import json
 import isodate
 import urllib
 import urllib2
-from altair.app.ticketing.core.api import get_organization
+import logging
 from zope.interface import implementer
 from altair.app.ticketing.api.impl import CMSCommunicationApi
-from .interfaces import IAccessKeyGetter
+from altair.app.ticketing.cart import api as cart_api
 from altair.preview.data import AccesskeyPermissionData
-import logging
-logger = logging.getLogger(__name__)
 from altair.preview.api import get_preview_secret
+from .interfaces import IAccessKeyGetter
+
+logger = logging.getLogger(__name__)
 
 @implementer(IAccessKeyGetter)
 class CMSAccessKeyGetter(object):
@@ -19,7 +20,7 @@ class CMSAccessKeyGetter(object):
 
     def __call__(self, request, k):
         api = CMSCommunicationApi.get_instance(request)
-        organization = get_organization(request)
+        organization = cart_api.get_organization(request)
         params = {"accesskey": k}
         params.update(organization.get_cms_data()) #id, source
         try:
@@ -45,7 +46,7 @@ from altair.app.ticketing.core.models import Event
 class CandidatesURLDictBuilder(object):
     def __init__(self, request):
         self.request = request
-        self.organization =  get_organization(self.request)
+        self.organization = cart_api.get_organization(self.request)
 
     def build_cms_side(self, event_id, backend_event_id):
         api = CMSCommunicationApi.get_instance(self.request)

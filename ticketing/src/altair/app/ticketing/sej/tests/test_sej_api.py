@@ -10,12 +10,17 @@ class SejApiTest(unittest.TestCase):
     api_key = 'XXX'
 
     def setUp(self):
+        from ..api import remove_default_session
+        remove_default_session()
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
             'altair.app.ticketing.orders.models',
             'altair.app.ticketing.lots.models',
-            'altair.app.ticketing.sej.models'
+            'altair.app.ticketing.sej.models',
+            'altair.app.ticketing.sej.notification.models'
             ])
+        from altair.app.ticketing.sej.models import _session
+        self._session = _session
         self.config = testing.setUp()
         self.config.include('altair.app.ticketing.sej')
 
@@ -26,8 +31,8 @@ class SejApiTest(unittest.TestCase):
         _teardown_db()
 
     def last_notification(self):
-        from ..models import SejNotification
-        return self.session.query(SejNotification).order_by('created_at DESC').first()
+        from ..notification.models import SejNotification
+        return self._session.query(SejNotification).order_by('created_at DESC').first()
 
     def _getTarget(self):
         from ..views import SejCallback 
@@ -47,8 +52,9 @@ class SejApiTest(unittest.TestCase):
         from hashlib import md5
         params['xcode'] = md5(','.join([v for _, v in sorted(((k.lower(), v) for k, v in params.items() if k.startswith('X_')), lambda a, b: cmp(a[0], b[0]))] + [self.api_key])).hexdigest()
 
-    def test_api_payment_complete(self):
-        from ..models import SejPaymentType, SejNotificationType
+    def test_api_payment_complete_1(self):
+        from ..models import SejPaymentType
+        from ..notification.models import SejNotificationType
         params = {
             'X_tuchi_type': str(SejNotificationType.PaymentComplete.v),
             'X_shori_id': '12345',
@@ -92,9 +98,7 @@ class SejApiTest(unittest.TestCase):
         assert target.pay_store_name       == u'テスト店舗'
         assert target.ticketing_store_name == u'テスト店舗'
 
-        testing.tearDown()
         request = testing.DummyRequest(post=params)
-        testing.setUp(request=request, settings={'altair.sej.api_key': self.api_key})
         target = self._makeOne(request)
         resp = self._parseResponse(target.callback())
 
@@ -132,6 +136,7 @@ class SejApiTest(unittest.TestCase):
         sejOrder.exchange_sheet_number = u'11111111'
         sejOrder.exchange_number       = u'22222222'
         sejOrder.order_at              = datetime.now()
+        self._session.add(sejOrder)
 
         params = {
             u'X_shori_id': u'000000036380',
@@ -160,8 +165,8 @@ class SejApiTest(unittest.TestCase):
         response = target.callback().body
 
         assert response == '<SENBDATA>status=800&</SENBDATA><SENBDATA>DATA=END</SENBDATA>'
-        from altair.app.ticketing.sej.models import SejNotification
-        n = self.session.query(SejNotification).filter_by(order_no=u'120607191915', billing_number=u'2329873576572').one()
+        from ..notification.models import SejNotification
+        n = self._session.query(SejNotification).filter_by(order_no=u'120607191915', billing_number=u'2329873576572').one()
 
         assert n.process_number        == '000000036380'
         assert int(n.payment_type)     == SejPaymentType.CashOnDelivery.v
@@ -184,7 +189,8 @@ class SejApiTest(unittest.TestCase):
 
 
     def test_api_ticketing_expire(self):
-        from ..models import SejPaymentType, SejNotificationType
+        from ..models import SejPaymentType
+        from ..notification.models import SejNotificationType
         params = {
             'X_tuchi_type': str(SejNotificationType.TicketingExpire.v),
             'X_shori_id': '12346',
@@ -243,8 +249,8 @@ class SejApiTest(unittest.TestCase):
         response = target.callback().body
 
         assert response == '<SENBDATA>status=800&</SENBDATA><SENBDATA>DATA=END</SENBDATA>'
-        from altair.app.ticketing.sej.models import SejNotification
-        n = self.session.query(SejNotification).filter_by(order_no=u'000000000600', billing_number=u'2343068205221').one()
+        from ..notification.models import SejNotification
+        n = self._session.query(SejNotification).filter_by(order_no=u'000000000600', billing_number=u'2343068205221').one()
 
         assert n.process_number == u'000000036605'
         assert int(n.payment_type )         == SejPaymentType.CashOnDelivery.v
@@ -285,8 +291,8 @@ class SejApiTest(unittest.TestCase):
         response = target.callback().body
 
         assert response == '<SENBDATA>status=800&</SENBDATA><SENBDATA>DATA=END</SENBDATA>'
-        from altair.app.ticketing.sej.models import SejNotification
-        n = self.session.query(SejNotification).filter_by(order_no=u'000000000605', billing_number=u'2374045665660').one()
+        from ..notification.models import SejNotification
+        n = self._session.query(SejNotification).filter_by(order_no=u'000000000605', billing_number=u'2374045665660').one()
 
         assert n.process_number         == u'000000036665'
         assert n.shop_id                == u'30520'

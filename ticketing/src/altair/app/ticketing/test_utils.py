@@ -11,6 +11,12 @@ class UtilsTest(unittest.TestCase):
                         datetime(y, m + 1, d + 1, 0, 0, 0),
                         todatetime(date(y, m + 1, d + 1)))
 
+    def test_todatetime_from_datetime(self):
+        from .utils import todatetime
+        from datetime import datetime, date
+        now = datetime.now()
+        self.assertEquals(now, todatetime(now))
+
     def test_todate(self):
         from .utils import todate
         from datetime import datetime, date

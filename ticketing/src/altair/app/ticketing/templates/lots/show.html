@@ -40,7 +40,7 @@ ${tabs.tabs(request)}
       <tbody>
         <tr>
           <th class="span3">抽選期間</th>
-          <td>${vh.datetime(lot.start_at, with_weekday=True)} ${vh.datetime(lot.end_at, with_weekday=True)}</td>
+          <td>${vh.datetime(lot.start_at, with_weekday=True)} 〜 ${vh.datetime(lot.end_at, with_weekday=True)}</td>
         </tr>
         <tr>
           <th>希望上限</th>
@@ -119,7 +119,7 @@ ${tabs.tabs(request)}
 <hr>
 
 <h3>商品明細</h3>
-<div style="overflow-x: scroll;">
+<div style="overflow-x: auto;">
   <table id="products-grid"></table>
 </div>
 <button id="sales-segment-save_button" class="btn">保存</button>
@@ -132,19 +132,9 @@ ${tabs.tabs(request)}
 $(function() {
   $.fn.linkFormatter = function(cellvalue, options, rowObject) {
     var link = '';
-    /*
-    if (!rowObject.level) {
-      link += '<a href="javascript:addRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-plus"></i></a>';
-    }
-    */
     if (rowObject.product_item) {
       link += '<a href="javascript:deleteRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-trash"></i></a>';
     }
-    /*
-    if (rowObject.ticket_bundle && rowObject.ticket_bundle.id) {
-      link += '<a href="javascript:preview_ticket(' + rowObject.product_item.id + ')"><i class="icon-eye-open"></i></a>';
-    }
-    */
     return link;
   };
 
@@ -154,13 +144,36 @@ $(function() {
   productGrid.colModel.push({
     "label": ' ',
     "name": 'link',
-    "width": 80,
+    "width": 30,
     formatter:grid.linkFormatter
   });
 
   productGrid['afterSaveCell'] = function (id, name, val, iRow, iCol){
     grid.setCell(id, name, '', {background:'#F89406'});
     grid.setRetainChanges();
+  };
+
+  productGrid['loadComplete'] = function (id, name, val, iRow, iCol){
+    var cells = grid.getRetainChanges('cell');
+    for (var i=0; i<cells.length; i++) {
+      for (var name in cells[i]) {
+        grid.setCell(cells[i].id, name, '', {background:'#F89406'});
+      }
+    }
+    var row_ids = grid.getDataIDs();
+    for (var i=0; i<row_ids.length; i++) {
+      var row_id = row_ids[i];
+      var row = grid.getRowData(row_id);
+      if (row.amount_mismatching === 'true') {
+        for (var name in row) {
+          if ($.inArray(name, ['price', 'product_item_price']) > -1 && row[name]) {
+            grid.setCell(row_id, name, '', {background:'#dd1100'});
+          } else {
+            grid.setCell(row_id, name, '', {background:'#F2DEDE'});
+          }
+        }
+      }
+    } // sort時にセルの状態を維持
   };
 
   grid.jqGrid(productGrid);
@@ -178,21 +191,6 @@ $(function() {
      var msg = '編集内容を保存しました';
      showDialog(title, msg, 'alert-success');
   };
-
-  function deleteRow(gid, rowId) {
-    var grid = $('#' + gid);
-    grid.setCell(rowId, 'stock_holder_id', '', {background:'#BD362F'});
-    grid.setCell(rowId, 'product_item_name', '', {background:'#BD362F'});
-    grid.setCell(rowId, 'product_item_price', '', {background:'#BD362F'});
-    grid.setCell(rowId, 'product_item_quantity', '', {background:'#BD362F'});
-    grid.setCell(rowId, 'stock_quantity', '', {background:'#BD362F'});
-    grid.setCell(rowId, 'stock_status_quantity', '', {background:'#BD362F'});
-    grid.setCell(rowId, 'ticket_bundle_id', '', {background:'#BD362F'});
-    grid.setCell(rowId, 'deleted', true);
-    var row = new Object();
-    row['id'] = rowId;
-    grid.setRetainChanges([row]);
-  }
 
   $('#sales-segment-clear_button').click(function(){
     grid.clearRetainChanges();

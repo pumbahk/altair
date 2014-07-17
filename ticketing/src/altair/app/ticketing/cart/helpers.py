@@ -17,7 +17,6 @@ from altair.app.ticketing.mails.helpers import render_delivery_lots_accepted_mai
 from altair.app.ticketing.mails.helpers import render_delivery_lots_elected_mail_viewlet, render_payment_lots_elected_mail_viewlet
 from altair.app.ticketing.mails.helpers import render_delivery_lots_rejected_mail_viewlet, render_payment_lots_rejected_mail_viewlet
 import logging
-from .api import get_nickname
 import json as _json
 
 logger = logging.getLogger(__name__)
@@ -104,7 +103,6 @@ def japanese_datetime(dt):
 
 def mail_date(date):
     return u'{d.year}年 {d.month}月 {d.day}日 {d.hour:02}時 {d.minute:02}分'.format(d=date)
-
 
 # TODO: requestをパラメータから排除
 def error_list(request, form, name):

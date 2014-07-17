@@ -21,7 +21,7 @@ from .utils import (
     NumberIssuer, 
     enqueue_token
     )
-from altair.metadata.api import with_provided_values_iterator
+from altair.metadata.api import with_provided_value
 
 def get_enqueue_each_print_action(order, ticket_format_id, candidate_id_list):
     #token@seat@ordered_product_item.id@ticket.id
@@ -201,10 +201,12 @@ class JoinedObjectsForProductItemDependentsProvider(object):
 
     def get_product_item_attributes(self, metadata_provider_registry):
         ordered_product_items = self.ordered_product_item_list
-        itr = (pair 
-               for ordered_product_item in ordered_product_items
-               for pair in ordered_product_item.attributes.items())
-        return with_provided_values_iterator(metadata_provider_registry, itr)
+        attr_list = []
+        for ordered_product_item in ordered_product_items:
+            for pair in ordered_product_item.attributes.items():
+                attr_list.append(with_provided_value(metadata_provider_registry, ordered_product_item.id, pair[0], pair[1]))
+        attr_list = sorted(attr_list, key=lambda x: x[1])
+        return attr_list
 
     def objects_for_product_item_with_token(self):
         "[(ordered_product, [(OrderedproductItem, ((seat , token_id), [ticket, ...]), ...), ...])]"

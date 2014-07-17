@@ -1014,7 +1014,14 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
         self.session.add(self.sales_segment_group)
         self.another_sales_segment_group = SalesSegmentGroup(name=u'存在する販売区分グループ', event=self.another_event)
         self.session.add(self.another_sales_segment_group)
-        self.payment_delivery_method_pairs = self._create_payment_delivery_method_pairs(self.sales_segment_group, transaction_fee=30, delivery_fee=20, system_fee=10, special_fee=40)
+        self.payment_delivery_method_pairs = self._create_payment_delivery_method_pairs(
+            self.sales_segment_group,
+            transaction_fee=30,
+            delivery_fee_per_order=20,
+            delivery_fee_per_principal_ticket=0,
+            delivery_fee_per_subticket=0,
+            system_fee=10,
+            special_fee=40)
         self.sales_segment = SalesSegment(
             sales_segment_group=self.sales_segment_group,
             payment_delivery_method_pairs=self.payment_delivery_method_pairs,

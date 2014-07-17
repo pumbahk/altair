@@ -1,19 +1,30 @@
 <%inherit file="../commons/layout_mobile.html" />
 <%namespace file="../commons/tags_mobile.html" name="mobile" />
 <%mobile:header>購入確認</%mobile:header>
-<form method="post" action="${request.route_path('order_review.show')}">
-<%mobile:form_header required="true">受付番号</%mobile:form_header>
-<div>
-${form.order_no(size="12", istyle="3")}<br />
-${h.error('order_no')}
-</div>
-<%mobile:form_header required="true">電話番号</%mobile:form_header>
-<div>
-<div>
-${form.tel(size="12", istyle="4")}<br>
-${h.error('tel')}
-ご予約時に登録した電話番号をご入力してください。<br />
-</div>
-</div>
+<br/>
+
+
+<%mobile:header>ファンクラブ会員の方はこちら</%mobile:header>
+<form method="post" action="${request.url}">
+ログインするファンクラブ<br/>
+<select name="membership" style="width: 100%">
+% for membership in memberships:
+  <option value="${membership.name}">${membership.memo}</option>
+% endfor
+</select>
+会員番号(半角英数字)<br/>
+※FC会員番号orユーザーID(Block.Bのみ)<br/>
+<input type="text" class="text" name="username"><br/>
+パスワード(半角英数字）<br/>
+※ファンクラブにご登録のお電話番号下4ケタ<br/>
+<input type="password" name="password"><br/>
+<input type="submit" value="次に進む" />
+%if message:
+<br/><span style="color: red">IDまたはパスワードが一致しません</span>
+%endif
+</form>
+
+<%mobile:header>一般の方のチケット確認</%mobile:header>
+<form method="get" action="${request.route_path('guest.order_review.form')}">
 <input type="submit" value="次に進む" />
 </form>

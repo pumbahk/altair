@@ -54,7 +54,28 @@ class ProductResource(TicketingAdminResource):
 
 
 class ProductAPIResource(TicketingAdminResource):
-    pass
+    def __init__(self, request):
+        super(ProductAPIResource, self).__init__(request)
+        self.sales_segment_id = None
+
+        if not self.user:
+            return
+
+        try:
+            self.sales_segment_id = long(self.request.params.get('sales_segment_id'))
+        except (TypeError, ValueError):
+            raise HTTPNotFound()
+
+    @reify
+    def sales_segment(self):
+        try:
+            s = SalesSegment.query.join(Organization).filter(
+                    SalesSegment.id==self.sales_segment_id,
+                    Organization.id==self.user.organization_id
+                    ).one()
+        except NoResultFound:
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'販売区分が存在しません')))
+        return s
 
 
 class ProductShowResource(TicketingAdminResource):
@@ -112,30 +133,15 @@ class ProductCreateResource(TicketingAdminResource):
 
     def __init__(self, request):
         super(ProductCreateResource, self).__init__(request)
-        self.performance_id = None
         self.sales_segment_id = None
 
         if not self.user:
             return
 
         try:
-            self.performance_id = long(self.request.params.get('performance_id'))
-        except (TypeError, ValueError):
-            pass
-
-        try:
             self.sales_segment_id = long(self.request.params.get('sales_segment_id'))
         except (TypeError, ValueError):
             pass
-
-    @reify
-    def performance(self):
-        p = None
-        if self.performance_id is not None:
-            p = Performance.get(self.performance_id, self.user.organization_id)
-            if not p:
-                raise HTTPNotFound()
-        return p
 
     @reify
     def sales_segment(self):

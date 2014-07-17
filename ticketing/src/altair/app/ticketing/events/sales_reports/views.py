@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import json
-from datetime import datetime
 import logging
+from datetime import datetime, timedelta
 
 import webhelpers.paginate as paginate
 from webob.multidict import MultiDict
@@ -25,37 +25,26 @@ from altair.app.ticketing.events.sales_reports.reports import SalesTotalReporter
 logger = logging.getLogger(__name__)
 
 
-@view_defaults(decorator=with_bootstrap, permission='sales_editor')
+@view_defaults(decorator=with_bootstrap, permission='sales_viewer')
 class SalesReports(BaseView):
 
     @view_config(route_name='sales_reports.index', request_method='GET', renderer='altair.app.ticketing:templates/sales_reports/index.html')
     def index(self):
         form = SalesReportForm()
-        form.recent_report.data = True
-        event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
+        now = datetime.now()
+        if not form.event_from.data:
+            form.event_from.process_data(now.replace(hour=0, minute=0, second=0) + timedelta(days=-31))
+        if not form.event_to.data:
+            form.event_to.process_data(now.replace(hour=23, minute=59, second=59) + timedelta(days=365))
 
         return {
             'form':form,
-            'event_total_reporter':event_total_reporter,
             }
 
     @view_config(route_name='sales_reports.index', request_method='POST', renderer='altair.app.ticketing:templates/sales_reports/index.html')
     def index_post(self):
         form = SalesReportForm(self.request.params)
-        form.recent_report.data = False
         event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
-
-        return {
-            'form':form,
-            'event_total_reporter':event_total_reporter,
-            }
-
-    @view_config(route_name='sales_reports.index_all', renderer='altair.app.ticketing:templates/sales_reports/index_all.html')
-    def index_all(self):
-        form = SalesReportForm(self.request.params)
-        form.recent_report.data = False
-        event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
-
         return {
             'form':form,
             'event_total_reporter':event_total_reporter,
@@ -64,7 +53,6 @@ class SalesReports(BaseView):
     @view_config(route_name='sales_reports.event', renderer='altair.app.ticketing:templates/sales_reports/event.html')
     def event(self):
         event = self.context.event
-
         form = SalesReportForm(self.request.params, event_id=event.id)
         event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
         performance_total_reporter = SalesTotalReporter(self.request, form, self.context.organization, group_by='Performance')
@@ -80,8 +68,8 @@ class SalesReports(BaseView):
     @view_config(route_name='sales_reports.performance', renderer='altair.app.ticketing:templates/sales_reports/performance.html')
     def performance(self):
         performance = self.context.performance
-
         form = SalesReportForm(self.request.params, performance_id=performance.id)
+
         return {
             'form_report_setting':ReportSettingForm(MultiDict(performance_id=performance.id), context=self.context),
             'report_settings':ReportSetting.filter_by(performance_id=performance.id).all(),

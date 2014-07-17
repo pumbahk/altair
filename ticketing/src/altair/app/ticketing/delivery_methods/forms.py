@@ -7,7 +7,8 @@ from wtforms.widgets import TextArea
 
 from altair.formhelpers import Translations, Required, OurBooleanField
 from altair.formhelpers.fields import LazySelectField
-from altair.app.ticketing.core.models import DeliveryMethodPlugin, FeeTypeEnum
+from altair.app.ticketing.core.models import DeliveryMethod, DeliveryMethodPlugin
+from altair.saannotation import get_annotations_for
 
 class DeliveryMethodForm(Form):
 
@@ -15,40 +16,45 @@ class DeliveryMethodForm(Form):
         return Translations()
 
     id = HiddenField(
-        label=u'ID',
-        validators=[Optional()],
-    )
+        label=get_annotations_for(DeliveryMethod.id)['label'],
+        validators=[Optional()]
+        )
     organization_id = HiddenField(
-        validators=[Optional()],
-    )
+        label=get_annotations_for(DeliveryMethod.organization_id)['label'],
+        validators=[Optional()]
+        )
     name = TextField(
-        label=u'引取方法名',
+        label=get_annotations_for(DeliveryMethod.name)['label'],
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
-        ]
-    )
-    fee = DecimalField(
-        label=u'発券/引取手数料',
-        places=2,
+            ]
+        )
+    fee_per_order = DecimalField(
+        label=get_annotations_for(DeliveryMethod.fee_per_order)['label'],
+        places=0,
         validators=[Required()]
-    )
-    fee_type = SelectField(
-        label=u'手数料計算単位',
-        validators=[Required(u'選択してください')],
-        choices=[fee_type.v for fee_type in FeeTypeEnum],
-        coerce=int
-    )
+        )
+    fee_per_principal_ticket = DecimalField(
+        label=get_annotations_for(DeliveryMethod.fee_per_principal_ticket)['label'],
+        places=0,
+        validators=[Required()]
+        )
+    fee_per_subticket = DecimalField(
+        label=get_annotations_for(DeliveryMethod.fee_per_subticket)['label'],
+        places=0,
+        validators=[Required()]
+        )
     delivery_plugin_id = LazySelectField(
-        label=u'引取方法',
+        label=get_annotations_for(DeliveryMethod.delivery_plugin_id)['label'],
         validators=[Required(u'選択してください')],
         choices=lambda field: [(pmp.id, pmp.name) for pmp in DeliveryMethodPlugin.all()],
         coerce=int
-    )
+        )
     description = TextField(
-        label=u"説明文(HTML)", 
+        label=get_annotations_for(DeliveryMethod.description)['label'],
         widget=TextArea()
-    )
+        )
     hide_voucher = OurBooleanField(
-        label=u'払込票を表示しない',
-    )
+        label=get_annotations_for(DeliveryMethod.hide_voucher)['label']
+        )

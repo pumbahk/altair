@@ -460,9 +460,21 @@ class AugusVenueView(_AugusBaseView):
         return HTTPFound(url)
 
 
-@view_defaults(route_name='augus.events.show', decorator=with_bootstrap, permission='event_editor')
+@view_defaults(route_name='augus.events', decorator=with_bootstrap, permission='event_editor')
 class AugusEventView(_AugusBaseView):
-    @view_config(route_name='augus.event.show', request_method='GET',
+
+    @view_config(route_name='augus.events.index', request_method='GET',
+                 renderer='altair.app.ticketing:templates/cooperation/augus/events/index.html')
+    def index(self):
+        res = {
+            'augus_performances': [],
+            }
+        if self.request.context.organization.setting.augus_use:
+            augus_performances = AugusPerformance.query.all() # WA: refs #8818 対応したら修正が必要
+            res['augus_performances'] = augus_performances
+        return res
+
+    @view_config(route_name='augus.events.show', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/show.html')
     def show(self):
         return dict(event=self.context.event)

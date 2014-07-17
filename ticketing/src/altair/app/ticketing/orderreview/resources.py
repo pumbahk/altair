@@ -4,8 +4,10 @@ import logging
 from datetime import datetime
 from dateutil import parser
 from pyramid.decorator import reify
+from pyramid.security import effective_principals
 from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
+from altair.app.ticketing.cart.api import get_auth_info
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting, ShippingAddress
@@ -13,7 +15,8 @@ from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.sej.api import get_sej_order
 import webhelpers.paginate as paginate
-import altair.app.ticketing.core.api as core_api
+from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.payments.plugins import (
     SEJ_PAYMENT_PLUGIN_ID, 
     SEJ_DELIVERY_PLUGIN_ID,
@@ -28,7 +31,7 @@ class OrderReviewResource(object):
 
     @reify
     def organization_id(self):
-        organization = core_api.get_organization(self.request)
+        organization = cart_api.get_organization(self.request)
         return organization.id if organization else None
 
     @reify
@@ -40,6 +43,15 @@ class OrderReviewResource(object):
                 ) \
             .first()
 
+    @reify
+    def memberships(self):
+        return self.session.query(Membership) \
+            .filter_by(
+                deleted_at=None,
+                organization_id=self.organization_id
+                ) \
+            .all()
+
     @property
     def membership_name(self):
         return self.membership.name
@@ -50,9 +62,7 @@ class OrderReviewResource(object):
 
     def authenticated_user(self):
         """現在認証中のユーザ"""
-        from altair.rakuten_auth.api import authenticated_user
-        user = authenticated_user(self.request)
-        return user or { 'is_guest': True }
+        return get_auth_info(self.request)
 
     def get_order(self):
         order_no = self.order_no
@@ -70,11 +80,6 @@ class OrderReviewResource(object):
                 sej_order = get_sej_order(order_no, self.session)
 
         return order, sej_order
-
-    def get_membership(self):
-        org = core_api.get_organization(self.request)
-        membership = Membership.query.filter(Membership.organization_id==org.id).first()
-        return membership
 
     def get_shipping_address(self, user):
         shipping_address = ShippingAddress.query.filter(

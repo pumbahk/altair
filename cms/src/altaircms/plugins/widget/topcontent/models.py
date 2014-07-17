@@ -39,12 +39,18 @@ class TopcontentWidget(Widget):
     system_tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
     rendering_image_attribute = sa.Column(sa.String(length=16), nullable=False, default="thumbnail_path")
     system_tag = orm.relationship("TopcontentTag", uselist=False, primaryjoin="TopcontentWidget.system_tag_id==TopcontentTag.id")
+    use_newstyle = sa.Column(sa.Boolean)
 
     def merge_settings(self, bname, bsettings):
         ## lookup utilities.py
         closure = get_rendering_function_via_page(self, bname, bsettings, self.type)
         bsettings.add(bname, closure)
-        
+
+    def clone(self, session, page=None): #todo:refactoring model#clone
+        instance = super(TopcontentWidget, self).clone(session, page=page)
+        instance.use_newstyle = self.use_newstyle or False
+        return instance
+
 class TopcontentWidgetResource(HandleSessionMixin,
                           UpdateDataMixin,
                           HandleWidgetMixin,
