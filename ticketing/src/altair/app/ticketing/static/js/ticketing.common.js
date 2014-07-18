@@ -110,7 +110,8 @@ function load_modal_form(modal, url, data, callback) {
           callback.call(this, $form, status, xhr);
       } else {
         $(this).empty().html(resp);
-        callback.call(this, null, status, xhr);
+        if (callback)
+          callback.call(this, null, status, xhr);
       }
       modal.modal('show');
     }

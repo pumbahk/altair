@@ -1,0 +1,57 @@
+<div id="modal_extra_form_editor" class="modal-extra_form_editor modal hide big" style="left:52%; top:14%;" aria-hidden="true">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>追加フィールド</h3>
+  </div>
+  <div class="modal-body">
+    <%include file="./_extra_form_editor.html" />
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+  </div>
+</div>
+<script type="text/javascript">
+$(function () {
+  (function ($extra_form_editor_modal, $extra_form_editor) {
+    $('.action-open_extra_form_editor').click(function () {
+      var $this = $(this);
+      var for_ = $this.data('for')
+      var $element = $($this.closest('form')[0].elements[for_]);
+      try {
+        var fields = extra_form_editor({
+          table: $extra_form_editor.find('> table.extra-form-fields'),
+          add_new_field_btn: $extra_form_editor.find('> table.extra-form-fields .action-add_new_field')
+        });
+        var json_str = $element.val();
+        if (json_str) {
+          fields.reset(JSON.parse(json_str));
+        }
+        $extra_form_editor_modal.on('hide', function () {
+          $extra_form_editor_modal.off('hide', arguments.callee);
+          $extra_form_editor_modal.remove();
+          $element.val(JSON.stringify(fields.toJSON()));
+          $element.siblings('ul').each(function (_, n) {
+            var $n = $(n);
+            if ($n.data('for') == for_) {
+              $n.empty();
+              fields.each(function (field) {
+                $n.append(
+                  $('<li></li>')
+                  .text(field.get('display_name') + '(' + field.get('name') + ')')
+                );
+              });
+            }
+          });
+        });
+        $extra_form_editor_modal.modal('show');
+      } catch (e) {
+        alert(e);
+      }
+      return false;
+    });
+  })(
+    $('#modal_extra_form_editor').appendTo($(document.body)),
+    $('#extra_form_editor')
+  );
+});
+</script>

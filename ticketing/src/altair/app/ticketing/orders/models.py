@@ -880,6 +880,21 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             session = DBSession
         return session.query(cls).filter_by(order_no=order_no).one()
 
+    def get_order_attribute_triplets(self):
+        if self.sales_segment is None:
+            return []
+        extra_form_fields = self.sales_segment.setting.extra_form_fields
+        if not extra_form_fields:
+            return []
+        return [
+            (
+                field_desc['name'],
+                field_desc['display_name'],
+                self.attributes.get(field_desc['name'])
+                )
+            for field_desc in extra_form_fields
+            if field_desc['kind'] != 'description_only'
+            ]
 
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'

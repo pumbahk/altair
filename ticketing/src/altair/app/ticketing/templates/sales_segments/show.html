@@ -82,6 +82,10 @@ function get_selected_sales_segment_id() {
       <th>${HH.label_text_for(SalesSegment.auth3d_notice)}</th>
       <td>${sales_segment.auth3d_notice or u'(なし)'}</td>
     </tr>
+    <tr>
+      <th>${HH.label_text_for(SalesSegmentSetting.extra_form_fields)}</th>
+      <td>${view.format_extra_form_fields(sales_segment.setting.extra_form_fields) or u'(なし)'}</td>
+    </tr>
   </tbody>
 </table>
 <div class="pull-left">
