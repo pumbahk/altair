@@ -1,7 +1,6 @@
 from wtforms import fields
 from ..fields import OurField
 from ..widgets import PercentageInput
-from .core import _gen_field_init, RendererMixin
 
 __all__ = [
     'PercentageField',

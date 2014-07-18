@@ -1,9 +1,39 @@
+import json
 from wtforms import fields
+from wtforms.fields.core import _unset_value
+from wtforms.compat import iteritems
 from .select import LazySelectField, LazySelectMultipleField, LazyGroupedSelectField, LazyGroupedSelectMultipleField, PHPCompatibleSelectMultipleField
+from .mixinutils import override, field_class_factory
+
+__all__ = [
+    'RendererMixin',
+    'OurFieldMixin',
+    'OurField',
+    'OurRadioField',
+    'OurTextField',
+    'OurTextAreaField',
+    'OurSelectField',
+    'OurSelectMultipleField',
+    'OurPHPCompatibleSelectMultipleField',
+    'OurGroupedSelectField',
+    'OurGroupedSelectMultipleField',
+    'OurDecimalField',
+    'OurIntegerField',
+    'OurFloatField',
+    'OurBooleanField',
+    'OurDecimalField',
+    'NullableTextField',
+    'NullableIntegerField',
+    'SimpleElementNameHnadler',
+    'OurFormField',
+    'JSONField',
+    ]
+
 
 class RendererMixin(object):
-    def __mixin_init__(self, *args, **kwargs):
+    def __mixin_init_pre__(self, **kwargs):
         self.widget_stack = []
+        return kwargs
 
     def _push_widget(self, widget):
         self.widget_stack.append(self.widget)
@@ -23,85 +53,96 @@ class RendererMixin(object):
             if widget_override is not None:
                 self._pop_widget()
 
-def _gen_field_init(klass):
-    prev_call = klass.__call__
 
-    def __init__(self, label=None, *args, **kwargs):
-        _form  = kwargs.pop('_form', None)
+class OurFieldMixin(object):
+    def __mixin_init_pre__(self, **kwargs):
+        _form = kwargs.get('_form', None)
         hide_on_new = kwargs.pop('hide_on_new', False)
         help = kwargs.pop('help', None)
+        name_builder = kwargs.pop('name_builder', None)
+        if name_builder is not None:
+            kwargs.pop('prefix', None)
         raw_input_filters = kwargs.pop('raw_input_filters', [])
-        if callable(label):
-            label = label()
-        super(klass, self).__init__(label, *args, **kwargs)
+        if 'label' in kwargs:
+            label = kwargs['label']
+            if callable(label):
+                label = label()
+                kwargs['label'] = label
+        self._name_builder = name_builder
         self.form = _form
         self.hide_on_new = hide_on_new
         self.help = help
         self.raw_input_filters = raw_input_filters
-        for base in self.__class__.__bases__[1:]:
-            if hasattr(base, '__mixin_init__'):
-                base.__mixin_init__(self, *args, **kwargs)
+        return kwargs
 
-    def process_formdata(self, valuelist):
+    def __mixin_init_post__(self, **kwargs):
+        self.reset_name_builder()
+
+    def reset_name_builder(self):
+        if self._name_builder is not None:
+            self.name = self._name_builder(self.short_name)
+
+    @property
+    def name_builder(self):
+        return self._name_builder
+
+    @name_builder.setter
+    def name_builder(self, value):
+        self._name_builder = value
+        self.reset_name_builder()
+
+    @override
+    def process_formdata(self, overridden, valuelist):
         for raw_input_filter in self.raw_input_filters:
             valuelist = raw_input_filter(valuelist)
-        return super(type(self), self).process_formdata(valuelist)
- 
-    def __call__(self, *args, **kwargs):
+        return overridden(self, valuelist)
+
+    @override
+    def __call__(self, overridden, *args, **kwargs):
         if hasattr(self, '_render'):
-            return self._render(__callee=prev_call, *args, **kwargs)
+            return self._render(__callee=overridden, *args, **kwargs)
         else:
-            return prev_call(self, *args, **kwargs)
-    klass.__init__ = __init__
-    klass.__call__ = __call__
-    return klass
+            return overridden(self, *args, **kwargs)
 
-@_gen_field_init
-class OurField(fields.Field, RendererMixin):
-    pass
 
-@_gen_field_init
-class OurRadioField(fields.RadioField, RendererMixin):
-    pass
+class OurField(fields.Field, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
 
-@_gen_field_init
-class OurTextField(fields.TextField, RendererMixin):
-    pass
+class OurRadioField(fields.RadioField, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
 
-@_gen_field_init
-class OurSelectField(LazySelectField, RendererMixin):
-    pass
+class OurTextField(fields.TextField, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
 
-@_gen_field_init
-class OurSelectMultipleField(LazySelectMultipleField, RendererMixin):
-    pass
+class OurTextAreaField(fields.TextAreaField, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
 
-@_gen_field_init
-class OurPHPCompatibleSelectMultipleField(PHPCompatibleSelectMultipleField, RendererMixin):
-    pass
+class OurSelectField(LazySelectField, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
 
-@_gen_field_init
-class OurGroupedSelectField(LazyGroupedSelectField, RendererMixin):
-    pass
+class OurSelectMultipleField(LazySelectMultipleField, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
 
-@_gen_field_init
-class OurGroupedSelectMultipleField(LazyGroupedSelectMultipleField, RendererMixin):
-    pass
+class OurPHPCompatibleSelectMultipleField(PHPCompatibleSelectMultipleField, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
 
-@_gen_field_init
-class OurDecimalField(fields.DecimalField, RendererMixin):
-    pass
+class OurGroupedSelectField(LazyGroupedSelectField, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
 
-@_gen_field_init
-class OurIntegerField(fields.IntegerField, RendererMixin):
-    pass
+class OurGroupedSelectMultipleField(LazyGroupedSelectMultipleField, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
 
-@_gen_field_init
-class OurFloatField(fields.FloatField, RendererMixin):
-    pass
+class OurDecimalField(fields.DecimalField, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
 
-@_gen_field_init
-class OurBooleanField(fields.BooleanField, RendererMixin):
+class OurIntegerField(fields.IntegerField, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
+
+class OurFloatField(fields.FloatField, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
+
+class OurBooleanField(fields.BooleanField, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
     def process_formdata(self, valuelist):
         def b(v):
             if isinstance(v, bool):
@@ -113,9 +154,8 @@ class OurBooleanField(fields.BooleanField, RendererMixin):
                     return False
         self.data = any(b(v) for v in valuelist)
 
-@_gen_field_init
-class OurDecimalField(fields.DecimalField, RendererMixin):
-    pass
+class OurDecimalField(fields.DecimalField, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
 
 class NullableTextField(OurTextField):
     def process_formdata(self, valuelist):
@@ -130,3 +170,101 @@ class NullableIntegerField(OurIntegerField):
             self.data = None
         else:
             super(NullableIntegerField, self).process_formdata(valuelist)
+
+
+class SimpleElementNameHnadler(object):
+    def __init__(self, separator):
+        self.separator = separator
+
+    def build(self, field_name, subfield_name):
+        return u'%s%s%s' % (field_name, self.separator, subfield_name)
+
+    def resolve(self, combined_name):
+        field_name, s, subfield_name = combined_name.partition(self.separator)
+        if subfield_name is None:
+            return None, None
+        return field_name, subfield_name
+
+    def display_name(self, field, subfield):
+        return u'%s - %s' % (field.label, subfield.label)
+
+
+class OurFormField(fields.Field, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
+
+    def __init__(self, form_factory, label=None, validators=None, name_handler='-', field_error_formatter='%(name)s: %(message)s', **kwargs):
+        super(OurFormField, self).__init__(label, validators, **kwargs)
+        self.form_factory = form_factory
+        if isinstance(name_handler, basestring):
+            name_handler = SimpleElementNameHandler(name_handler)
+
+        self.name_handler = name_handler
+        self._obj = None
+        self._form = None
+        if isinstance(field_error_formatter, basestring):
+            field_error_formatter = (
+                lambda field_error_format: \
+                    lambda self, name, message: \
+                        field_error_format % dict(name=name, message=message)
+                )(field_error_formatter)
+        self.field_error_formatter = field_error_formatter
+
+    def _build_subfield_name(self, subfield_name):
+        return self.name_handler(self.name, subfield_name)
+
+    def process(self, formdata, data=_unset_value):
+        if data is _unset_value:
+            try:
+                data = self.default()
+            except TypeError:
+                data = self.default
+            self._obj = data
+
+        self.object_data = data
+
+        if isinstance(data, dict):
+            form = self.form_factory(formdata=formdata, name_builder=self._build_subfield_name, **data)
+        else:
+            form = self.form_factory(formdata=formdata, name_builder=self._build_subfield_name, obj=data)
+        self._form = form
+
+    def post_validate(self, form, validation_stopped):
+        super(OurFormField, self).post_validate(form, validation_stopped)
+        if not validation_stopped:
+            if not self._form.validate():
+                for k, v in iteritems(self._form.errors):
+                    display_name = Noself.name_handler.display_name(self, getattr(self._form, k))
+                    if display_name is not None and self.field_error_formatter:
+                        self.errors.append(field_error_formatter(display_name, v))
+
+    def populate_obj(self, obj, name):
+        candidate = getattr(obj, name, None)
+        if candidate is None:
+            if self._obj is None:
+                raise TypeError('populate_obj: cannot find a value to populate fom the provided obj or input data/defaults')
+            candidate = self._obj
+            setattr(obj, name, candidate)
+
+        self.form.populate_obj(candidate)
+
+    @property
+    def data(self):
+        return self.form.data
+
+
+class JSONField(fields.Field, RendererMixin, OurFieldMixin):
+    def _value(self):
+        if self.raw_data:
+            return self.raw_data[0]
+        elif self.data is not None:
+            return json.dumps(self.data)
+        else:
+            return u''
+
+    def process_formdata(self, valuelist):
+        self.data = None
+        if valuelist:
+            try:
+                self.data = json.loads(valuelist[0])
+            except (TypeError, ValueError):
+                raise ValueError(self.gettext('Invalid JSON value'))

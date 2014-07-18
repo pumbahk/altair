@@ -4,12 +4,19 @@ import unittest
 from webob.multidict import MultiDict
 from pyramid.testing import DummyResource
 from mock import Mock
+from altair.app.ticketing.testing import _setup_db, _teardown_db
 
 class SalesSegmentFormTests(unittest.TestCase):
     def setUp(self):
-        import altair.app.ticketing.core.models
-        import sqlalchemy.orm
-        sqlalchemy.orm.configure_mappers()
+        self.session = _setup_db([
+            "altair.app.ticketing.orders.models",
+            "altair.app.ticketing.cart.models",
+            "altair.app.ticketing.lots.models",
+            "altair.app.ticketing.core.models",
+        ])
+
+    def tearDown(self):
+        _teardown_db()
 
     def _getTarget(self):
         from ..forms import SalesSegmentForm
@@ -79,11 +86,16 @@ class SalesSegmentFormTests(unittest.TestCase):
 
 
 class validate_issuing_start_atTests(unittest.TestCase):
-
     def setUp(self):
-        import altair.app.ticketing.core.models
-        import sqlalchemy.orm
-        sqlalchemy.orm.configure_mappers()
+        self.session = _setup_db([
+            "altair.app.ticketing.orders.models",
+            "altair.app.ticketing.cart.models",
+            "altair.app.ticketing.lots.models",
+            "altair.app.ticketing.core.models",
+        ])
+
+    def tearDown(self):
+        _teardown_db()
 
     def _getTarget(self):
         from ..forms import validate_issuing_start_at

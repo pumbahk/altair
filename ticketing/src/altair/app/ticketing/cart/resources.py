@@ -544,6 +544,28 @@ class SalesSegmentOrientedTicketingCartResource(TicketingCartResourceBase):
             raise HTTPNotFound()
         return [self.sales_segment] if self.sales_segment.applicable(user=self.authenticated_user(), type='all') else []
 
+
+class CartBoundTicketingCartResource(TicketingCartResourceBase):
+    def __init__(self, request):
+        super(CartBoundTicketingCartResource, self).__init__(request)
+
+    @property
+    def sales_segment(self):
+        return self.cart.sales_segment
+
+    @property
+    def performance(self):
+        return self.cart.sales_segment.performance
+
+    @property
+    def event(self):
+        return self.performance.event if self.performance else None
+
+    @reify
+    def sales_segments(self):
+        """現在認証済みのユーザとパフォーマンスに関連する全販売区分"""
+        return [self.sales_segment] if self.sales_segment.applicable(user=self.authenticated_user(), type='all') else []
+
 # def compat_ticketing_cart_resource_factory(request):
 #     from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource
 #     performance_id = None

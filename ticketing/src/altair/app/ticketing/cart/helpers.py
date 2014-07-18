@@ -9,6 +9,10 @@ from pyramid.compat import escape
 from markupsafe import Markup
 from webhelpers.html.tags import *
 from webhelpers.number import format_number as _format_number
+from wtforms.fields import Field
+from wtforms.widgets import ListWidget
+from altair.formhelpers.widgets.checkbox import CheckboxMultipleSelect
+from altair.formhelpers.widgets.list import OurListWidget
 from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
 from ..core.models import FeeTypeEnum, SalesSegment, StockTypeEnum
 from altair.app.ticketing.mails.helpers import render_delivery_finished_mail_viewlet, render_payment_finished_mail_viewlet
@@ -18,6 +22,7 @@ from altair.app.ticketing.mails.helpers import render_delivery_lots_elected_mail
 from altair.app.ticketing.mails.helpers import render_delivery_lots_rejected_mail_viewlet, render_payment_lots_rejected_mail_viewlet
 import logging
 import json as _json
+from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 
 logger = logging.getLogger(__name__)
 
@@ -105,8 +110,15 @@ def mail_date(date):
     return u'{d.year}年 {d.month}月 {d.day}日 {d.hour:02}時 {d.minute:02}分'.format(d=date)
 
 # TODO: requestをパラメータから排除
-def error_list(request, form, name):
-    errors = form[name].errors
+def error_list(request, form_or_field, name=None):
+    if isinstance(form_or_field, Field):
+        field = form_or_field
+    else:
+        if name is None:
+            raise TypeError('name must be specified when the second parameter is Form')
+        field = form_or_field[name]
+
+    errors = field.errors
     if not errors:
         return ""
 
@@ -245,3 +257,23 @@ def format_name(request, event=None, performance=None, sales_segment=None):
 
 def json_encode(value):
     return _json.dumps(value)
+
+def sensible_widget(request, widget):
+    if IMobileRequest.providedBy(request) or ISmartphoneRequest.providedBy(request):
+        if isinstance(widget, ListWidget):
+            return OurListWidget(outer_html_tag=None, inner_html_tag=None, inner_html_post='<br />', prefix_label=False)
+        elif isinstance(widget, CheckboxMultipleSelect):
+            return CheckboxMultipleSelect(multiple=widget.multiple, inner_html_post='<br />')
+    return widget
+
+def sensible_coerce(request, value):
+    if isinstance(value, list):
+        if IMobileRequest.providedBy(request) or ISmartphoneRequest.providedBy(request):
+            return u', '.join(value)
+        else:
+            return Markup(u''.join(
+                [u'<ul>'] \
+                + [u'<li>%s</li>' % escape(v) for v in value] \
+                + ['</ul>'])
+                )
+    return value

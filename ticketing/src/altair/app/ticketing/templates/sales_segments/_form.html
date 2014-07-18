@@ -1,7 +1,7 @@
 <%page args="form, action='#'" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%from altair.formhelpers.widgets import LabelledCheckboxInput %>
-<form class="form-horizontal" action="${action}" method="POST">
+<form id="sales_segment_form" class="form-horizontal" action="${action}" method="POST">
 % if form.context.sales_segment_group is None:
 <label for="${form.sales_segment_group_id.name}">${HH.label_text_for(form.sales_segment_group_id)}</label>
 ${form.sales_segment_group_id}
@@ -387,11 +387,33 @@ $('[rel=popover]').popover({html:true});
         % endif
       </td>
     </tr>
+    <tr class="SalesSegment_extra_form_fields">
+      <th>
+        ${form.extra_form_fields.label}
+        ${form.use_default_extra_form_fields(_widget=LabelledCheckboxInput())}
+      </th>
+      <td>
+        ${form.extra_form_fields(class_="btn")}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${view.format_extra_form_fields(form.context.sales_segment_group.setting.extra_form_fields) or u'(なし)'}
+        % endif
+      </td>
+    </tr>
   </table>
   <script type="text/javascript">
+<%
+from random import randint
+callback = 'ts-%d' % randint(0, 1000000);
+%>
 (function($) {
-  var form = $('script:last').parent();
-  var endpoint = "${request.route_path('sales_segments.api.get_sales_segment_group_info', sales_segment_group_id='__sales_segment_group_id__', _query=dict(performance_id='__performance_id__'))|n}";
+  var form = $('#sales_segment_form');
+  var endpoints = ${HH.json(
+  dict(
+    sales_segment_group_info=request.route_path('sales_segments.api.get_sales_segment_group_info', sales_segment_group_id='__sales_segment_group_id__', _query=dict(performance_id='__performance_id__')),
+    )
+  )|n};
   var cache = {};
   function load(sales_segment_group_id, performance_id, next) {
     var data = cache[sales_segment_group_id + ":" + performance_id];
@@ -403,7 +425,7 @@ $('[rel=popover]').popover({html:true});
       return;
     }
     $.ajax({
-      url: endpoint.replace('__sales_segment_group_id__', sales_segment_group_id).replace('__performance_id__', performance_id),
+      url: endpoints.sales_segment_group_info.replace('__sales_segment_group_id__', sales_segment_group_id).replace('__performance_id__', performance_id),
       dataType: 'json',
       success: function (resp) {
         var data = resp['result'];
@@ -446,7 +468,7 @@ $('[rel=popover]').popover({html:true});
     $(document.getElementById(prefix + '.second')).val(value.getSeconds());
   }
 
-  refreshers = {
+  var refreshers = {
     payment_delivery_method_pairs: function (data, n) {
       var pdmps = data.payment_delivery_method_pairs;
       var formField = n.find('#payment_delivery_method_pairs');
@@ -613,6 +635,19 @@ $('[rel=popover]').popover({html:true});
       originalValue.empty();
       if (data.max_quantity_per_user !== void(0))
         originalValue.text(data.max_quantity_per_user);
+    },
+    extra_form_fields: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data.extra_form_fields) {
+        var $ul = $('<ul></ul>');
+        $.each(data.extra_form_fields, function (_, v) {
+          $('<li></li>')
+          .text(v['display_name'] + ' (' + v['name'] + ')')
+          .appendTo($ul);
+        });
+        originalValue.append($ul);
+      }
     }
   };
 
@@ -639,7 +674,8 @@ $('[rel=popover]').popover({html:true});
         'reporting',
         'auth3d_notice',
         'order_limit',
-        'max_quantity_per_user'
+        'max_quantity_per_user',
+        'extra_form_fields'
         ], function (_, k) {
         var n = form.find('.SalesSegment_' + k);
         refreshers[k](data, n);
@@ -662,3 +698,4 @@ $('[rel=popover]').popover({html:true});
 })($);
 </script>
 </form>
+<%include file="./_extra_form_editor_button.html" />

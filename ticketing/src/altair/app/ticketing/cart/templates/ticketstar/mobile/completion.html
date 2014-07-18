@@ -55,6 +55,15 @@ ${product.product.name} ${product.seat_quantity} 枚<br/>
 ￥${h.format_number(order.total_amount)}
 </div>
 
+<% extra_form_data = order.get_order_attribute_triplets() %>
+% if extra_form_data:
+<%mobile:header>追加情報</%mobile:header>
+% for field_name, display_name, field_value in extra_form_data:
+<%mobile:form_header>${display_name}</%mobile:form_header>
+<div>${h.sensible_coerce(request, field_value)}</div>
+% endfor
+% endif
+
 <%mobile:header>お支払い</%mobile:header>
 <div>
 ${h.render_payment_finished_viewlet(request, order)}

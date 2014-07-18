@@ -81,6 +81,14 @@ ${shipping.tel_1}
 ${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
 </div>
 
+% if extra_form_data:
+<%mobile:header>追加情報</%mobile:header>
+% for field_name, display_name, field_value in extra_form_data:
+<%mobile:form_header>${display_name}</%mobile:form_header>
+<div>${h.sensible_coerce(request, field_value)}</div>
+% endfor
+% endif
+
 % if mailmagazines_to_subscribe:
 <%mobile:header>メールマガジンの配信</%mobile:header>
 ご利用いただいた方には、滋賀レイクスターズからのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br />
