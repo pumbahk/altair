@@ -16,7 +16,6 @@ from altair.app.ticketing.core.models import Account, Event, Mailer
 from altair.app.ticketing.core.models import StockType, StockHolder, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
 from altair.app.ticketing.core.models import ReportTypeEnum, ReportSetting, SalesReportTypeEnum
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
-from altair.app.ticketing.lots.models import Lot
 from altair.app.ticketing.events.sales_reports.forms import SalesReportForm
 
 logger = logging.getLogger(__name__)
@@ -102,14 +101,10 @@ class SalesTotalReporter(object):
     def add_sales_segment_filter(self, query):
         # performance_idがないSalesSegmentは[SalesSegmentGroupのデータ移行以前のレコード]なので、reportingがFalseでも含める
         # ただし、対象performance_idのSalesSegment.reportingがTrueであること
+        ss = aliased(SalesSegment, name='SalesSegment_alias')
         query = query.join(SalesSegment, SalesSegment.id==Product.sales_segment_id).filter(
             or_(SalesSegment.performance_id==None, SalesSegment.reporting==True)
         )
-        # 抽選のSalesSegmentもperformance_idがないので抽選の販売区分は除外する
-        stmt = exists().where(and_(Lot.sales_segment_id==SalesSegment.id, Lot.deleted_at==None))
-        query = query.filter(~stmt)
-
-        ss = aliased(SalesSegment, name='SalesSegment_alias')
         query = query.outerjoin(ss, and_(
             ss.sales_segment_group_id==SalesSegment.sales_segment_group_id,
             ss.performance_id==Performance.id,
@@ -414,9 +409,6 @@ class SalesDetailReporter(object):
         query = query.join(SalesSegment, SalesSegment.id==Product.sales_segment_id).filter(
             or_(SalesSegment.performance_id==None, SalesSegment.reporting==True)
         )
-        # 抽選のSalesSegmentもperformance_idがないので抽選の販売区分は除外する
-        stmt = exists().where(and_(Lot.sales_segment_id==SalesSegment.id, Lot.deleted_at==None))
-        query = query.filter(~stmt)
 
         if form.sales_segment_group_id.data:
             query = query.join(SalesSegmentGroup).filter(and_(
