@@ -1,7 +1,7 @@
 <%inherit file="../commons/layout_mobile.html" />
 <%namespace file="../commons/tags_mobile.html" name="mobile" />
 <%mobile:header>購入確認</%mobile:header>
-<form method="post" action="${request.route_path('order_review.show')}">
+<form method="post" action="${request.route_path('guest.order_review.show')}">
 <%mobile:form_header required="true">受付番号</%mobile:form_header>
 <div>
 ${form.order_no(size="12", istyle="3")}<br />
