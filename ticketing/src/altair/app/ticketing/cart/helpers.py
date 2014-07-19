@@ -267,7 +267,11 @@ def sensible_widget(request, widget):
     return widget
 
 def sensible_coerce(request, value):
-    if isinstance(value, list):
+    if value is None:
+        return u'(未回答)'
+    elif isinstance(value, list):
+        if len(value) == 0:
+            return u'(選択なし)'
         if IMobileRequest.providedBy(request) or ISmartphoneRequest.providedBy(request):
             return u', '.join(value)
         else:

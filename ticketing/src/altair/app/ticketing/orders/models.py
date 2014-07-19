@@ -880,21 +880,57 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             session = DBSession
         return session.query(cls).filter_by(order_no=order_no).one()
 
-    def get_order_attribute_triplets(self):
+    def get_order_attribute_pair_pairs(self):
         if self.sales_segment is None:
             return []
         extra_form_fields = self.sales_segment.setting.extra_form_fields
         if not extra_form_fields:
             return []
-        return [
-            (
-                field_desc['name'],
-                field_desc['display_name'],
-                self.attributes.get(field_desc['name'])
+        retval = []
+        for field_desc in extra_form_fields:
+            if field_desc['kind'] == 'description_only':
+                continue
+            field_value = self.attributes.get(field_desc['name'])
+            display_value = None
+            if field_desc['kind'] in ('text', 'textarea'):
+                display_value = field_value
+            elif field_desc['kind'] in ('select', 'radio'):
+                v = [pair for pair in field_desc['choices'] if pair['value'] == field_value]
+                if len(v) > 0:
+                    display_value = v[0]['label']
+                else:
+                    display_value = field_value
+            elif field_desc['kind'] in ('select_multiple', 'checkbox'):
+                field_value = field_value.strip()
+                if len(field_value) > 0:
+                    field_value = [c.strip() for c in field_value.split(',')]
+                else:
+                    field_value = []
+                display_value = []
+                for c in field_value:
+                    v = [pair for pair in field_desc['choices'] if pair['value'] == c]
+                    if len(v) > 0:
+                        v = v[0]['label']
+                    else:
+                        v = c
+                    display_value.append(v)
+            else:
+                logger.warning('unsupported kind: %s' % field_desc['kind'])
+                display_value = field_value
+
+            retval.append(
+                (
+                    (
+                        field_desc['name'],
+                        field_value
+                    ),
+                    (
+                        field_desc['display_name'],
+                        display_value
+                    )
+                    )
                 )
-            for field_desc in extra_form_fields
-            if field_desc['kind'] != 'description_only'
-            ]
+        return retval
 
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'

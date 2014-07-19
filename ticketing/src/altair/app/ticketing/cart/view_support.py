@@ -469,16 +469,47 @@ class DynamicFormBuilder(object):
 
 build_dynamic_form = DynamicFormBuilder()
 
-def get_extra_form_data_triplets(request, sales_segment, data):
+def get_extra_form_data_pair_pairs(request, sales_segment, data):
     extra_form_fields = sales_segment.setting.extra_form_fields
     if extra_form_fields is None:
         return []
-    return [
-        (
-            field_desc['name'],
-            field_desc['display_name'],
-            data.get(field_desc['name'])
+    retval = []
+    for field_desc in extra_form_fields:
+        if field_desc['kind'] == 'description_only':
+            continue
+        field_value = data.get(field_desc['name'])
+        display_value = None
+        if field_desc['kind'] in ('text', 'textarea'):
+            display_value = field_value
+        elif field_desc['kind'] in ('select', 'radio'):
+            v = [pair for pair in field_desc['choices'] if pair['value'] == field_value]
+            if len(v) > 0:
+                display_value = v[0]['label']
+            else:
+                display_value = field_value
+        elif field_desc['kind'] in ('select_multiple', 'checkbox'):
+            display_value = []
+            for c in field_value:
+                v = [pair for pair in field_desc['choices'] if pair['value'] == c]
+                if len(v) > 0:
+                    v = v[0]['label']
+                else:
+                    v = c
+                display_value.append(v)
+        else:
+            logger.warning('unsupported kind: %s' % field_desc['kind'])
+            display_value = field_value
+
+        retval.append(
+            (
+                (
+                    field_desc['name'],
+                    field_value
+                ),
+                (
+                    field_desc['display_name'],
+                    display_value
+                )
+                )
             )
-        for field_desc in extra_form_fields
-        if field_desc['kind'] != 'description_only'
-        ]
+    return retval
