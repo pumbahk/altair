@@ -337,6 +337,10 @@ class OrderCSV(object):
                         ),
                     ]
                 ),
+            AttributeRenderer(
+                u'order.attributes',
+                u'attribute'
+                ),
             ]
 
     per_seat_columns = \

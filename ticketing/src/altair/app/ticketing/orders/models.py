@@ -1438,6 +1438,11 @@ class OrderSummary(Base):
             )
 
     ordered_products = orm.relationship('OrderedProduct', primaryjoin=Order.id==OrderedProduct.order_id)
+    _attributes = orm.relationship('OrderAttribute', primaryjoin=((Order.id==OrderAttribute.order_id) & (OrderAttribute.deleted_at==None)))
+    @property
+    def attributes(self):
+        return dict((a.name, a.value) for a in self._attributes)
+
     items = orm.relationship('OrderedProduct', primaryjoin=Order.id==OrderedProduct.order_id)
     refund = orm.relationship('Refund', primaryjoin=Order.refund_id==Refund.id)
     created_from_lot_entry = orm.relationship('LotEntry', foreign_keys=[Order.order_no], primaryjoin=and_(LotEntry.entry_no==Order.order_no, LotEntry.deleted_at==None), uselist=False)
