@@ -13,6 +13,7 @@ from altair.mobile.interfaces import IMobileRequest
 from altair.formhelpers.form import OurDynamicForm
 from altair.formhelpers import widgets
 from altair.formhelpers import fields
+from altair.formhelpers.filters import text_type_but_none_if_not_given
 from altair.formhelpers.validators import Required
 from wtforms.validators import Optional
 from altair.formhelpers.translations import Translations
@@ -408,7 +409,8 @@ class DynamicFormBuilder(object):
         return fields.OurRadioField(
             label=field_desc['display_name'],
             validators=self._build_validators(field_desc),
-            choices=self._convert_choices(field_desc['choices'])
+            choices=self._convert_choices(field_desc['choices']),
+            coerce=text_type_but_none_if_not_given
             )
 
     def _build_checkbox(self, field_desc):
