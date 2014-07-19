@@ -24,6 +24,23 @@ ${self.widget.flow_widget(4)}
   </div>
 </div>
 
+<% extra_form_data = order.get_order_attribute_triplets() %>
+% if extra_form_data:
+<div class="confirmBox">
+	<div class="confirmBoxInner">
+    <h2>追加情報</h2>
+	  <table id="contentsOfShopping">
+    % for field_name, display_name, field_value in extra_form_data:
+      <tr>
+        <th scope="row">${display_name}</th>
+        <td>${h.sensible_coerce(request, field_value)}</td>
+      </tr>
+    % endfor
+    </table>
+  </div>
+</div>
+% endif
+
 <div class="confirmBox">
   <div class="confirmBoxInner">
     <h2><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
@@ -84,6 +101,23 @@ ${self.widget.flow_widget(4)}
     </table>
   </div>
 </div>
+
+<% extra_form_data = order.get_order_attribute_triplets() %>
+% if extra_form_data:
+<div class="confirmBox">
+	<div class="confirmBoxInner">
+    <h2>追加情報</h2>
+	  <table id="contentsOfShopping">
+    % for field_name, display_name, field_value in extra_form_data:
+      <tr>
+        <th scope="row">${display_name}</th>
+        <td>${h.sensible_coerce(request, field_value)}</td>
+      </tr>
+    % endfor
+    </table>
+  </div>
+</div>
+% endif
 
 <div class="confirmBox">
   <div class="confirmBoxInner">

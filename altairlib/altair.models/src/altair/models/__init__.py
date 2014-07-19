@@ -18,7 +18,7 @@ from sqlalchemy.orm import (
     deferred,
 )
 from sqlalchemy.ext.declarative import declared_attr
-
+from .nervous import NervousJSONDecoder, NervousDict, NervousList
 
 class Identifier(Integer):
     def __init__(self, *args, **kwargs):
@@ -77,7 +77,7 @@ class LogicallyDeleted(object):
         return deferred(Column(TIMESTAMP, nullable=True, index=True))
 
 
-class JSONEncodedDict(TypeDecorator):
+class JSONEncodedObject(TypeDecorator):
     "Represents an immutable structure as a json-encoded string."
 
     impl = VARCHAR
@@ -89,37 +89,34 @@ class JSONEncodedDict(TypeDecorator):
 
     def process_result_value(self, value, dialect):
         if value is not None:
-            value = json.loads(value)
+            value = NervousJSONDecoder().decode(value)
         return value
 
-class MutationDict(Mutable, dict):
+JSONEncodedDict = JSONEncodedObject # B/C
+
+class MutationJSONObjectBase(Mutable):
     @classmethod
     def coerce(cls, key, value):
         "Convert plain dictionaries to MutationDict."
 
         if isinstance(value, basestring):
-            return MutationDict(json.loads(value))   
-        elif not isinstance(value, MutationDict):
+            json_obj = NervousJSONDecoder(dict_class=MutationDict, list_class=MutationList).decode(value)
+        elif not isinstance(value, MutationJSONObjectBase):
             if isinstance(value, dict):
-                return MutationDict(value)
-
-            # this call will raise ValueError
-            return Mutable.coerce(key, value)
+                json_obj = MutationDict(value)
+            elif isinstance(value, (list, tuple)):
+                json_obj = MutationList(value)
+            else:
+                return Mutable.coerce(key, value)
         else:
             return value
+        return json_obj
 
-    def __setitem__(self, key, value):
-        "Detect dictionary set events and emit change events."
-
-        dict.__setitem__(self, key, value)
+class MutationDict(MutationJSONObjectBase, NervousDict):
+    def _changed(self, modified):
         self.changed()
 
-    def __delitem__(self, key):
-        "Detect dictionary del events and emit change events."
+class MutationList(MutationJSONObjectBase, NervousList):
+    def _changed(self, modified):
+        self.changed()
 
-        dict.__delitem__(self, key)
-        self.changed()
-    
-    def update(self, *args, **kwargs):
-        dict.update(self, *args, **kwargs)
-        self.changed()

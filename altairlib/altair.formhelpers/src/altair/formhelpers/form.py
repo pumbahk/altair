@@ -1,12 +1,25 @@
 from wtforms import form, fields
+from wtforms.fields.core import UnboundField
 from wtforms.compat import iteritems
 from .fields.liaison import Liaison
+
+__all__ = [
+    'OurForm',
+    'OurDynamicForm',
+    ]
 
 class OurForm(form.Form):
     def __init__(self, *args, **kwargs):
         self.new_form = kwargs.pop('new_form', False)
+        self._name_builder = kwargs.pop('name_builder', None)
         self._liaisons = fields and [name for name, unbound_field in self._unbound_fields if unbound_field.field_class == Liaison]
         super(OurForm, self).__init__(*args, **kwargs)
+        for _, field in iteritems(self._fields):
+            if hasattr(field, 'name_builder') and field.name_builder is None:
+                field.name_builder = self._name_builder
+
+    def __setitem__(self, overridden, name, value):
+        self._field[name] = value.bind(form=self, name=name, prefix=self._prefix, name_builder=self._name_builder)
 
     def process(self, formdata=None, obj=None, **kwargs):
         if not self._liaisons:
@@ -33,3 +46,34 @@ class OurForm(form.Form):
                 counterpart.data = liaison.data
                 liaison.data = None
 
+class OurDynamicForm(OurForm):
+    def __init__(self, *args, **kwargs):
+        dynamic_fields = kwargs.pop('_fields', [])
+        formdata = kwargs.pop('formdata', None)
+        obj = kwargs.pop('obj', None)
+        self._translations = kwargs.pop('_translations', None)
+        self._initializing = dynamic_fields
+        super(OurDynamicForm, self).__init__(*args, **kwargs)
+        self._initializing = False
+        super(OurDynamicForm, self).process(formdata=formdata, obj=obj, **kwargs)
+
+    def _get_translations(self):
+        if callable(self._translations):
+            return self._translations()
+        else:
+            return self._translations
+
+    def process(self, formdata=None, obj=None, **kwargs):
+        if self._initializing:
+            translations = self._get_translations()
+            unbound_fields = list(self._unbound_fields)
+            for name, unbound_field in self._initializing:
+                field = unbound_field.bind(form=self, name=name, prefix=self._prefix, translations=translations, name_builder=self._name_builder)
+                self._fields[name] = field
+                unbound_fields.append((name, unbound_field))
+            self._unbound_fields = unbound_fields
+        else:
+            return super(OurDynamicForm, self).process(formdata=formdata, obj=obj, **kwargs)
+
+    def validate(self, extra={}):
+        return super(form.Form, self).validate(extra)

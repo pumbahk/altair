@@ -19,7 +19,7 @@ from altair.formhelpers import (
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
-from altair.app.ticketing.events.sales_segment_groups.forms import UPPER_LIMIT_OF_MAX_QUANTITY
+from altair.app.ticketing.events.sales_segments.forms import UPPER_LIMIT_OF_MAX_QUANTITY
 from altair.app.ticketing.lots.models import Lot
 from altair.app.ticketing.events.sales_reports.forms import ReportSettingForm
 

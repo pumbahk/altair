@@ -155,7 +155,7 @@
       <div id="sej_field">
         ${ch.form_item(form.payment_period_days, class_='span2', help=ch.help(form.payment_period_days, u'コンビニ決済で、購入後、この日数が経過するまでの間に決済を完了させる必要があります。'))}
         ${ch.form_item(form.issuing_interval_days, class_='span2', help=ch.help(form.issuing_interval_days, u'コンビニ決済で、この日数が経過すると店舗にて発券できるようになります。(主に不正行為対策として一定日数を設けます)'))}
-        ${ch.form_item(form.issuing_start_at, class_='span2', help=ch.help(form.issuing_start_at, u'コンビニ決済で、店舗での発券を開始する日時を指定します。(通常はこの日時指定は使いません)'))}
+        ${ch.form_item(form.issuing_start_at, class_='span2', help=ch.help(form.issuing_start_at, u'コンビニ決済で、店舗での発券を開始する日時を指定します。指定した場合「前払後日発券」になります。(通常はこの日時指定は使いません)'))}
         ${ch.form_item(form.issuing_end_at, class_='span2', help=ch.help(form.issuing_end_at, u'コンビニ決済で、店舗での発券を終了する日時を指定します。(通常はこの日時指定は使いません)'))}
       </div>
     </fieldset>

@@ -10,6 +10,12 @@ from sqlalchemy.orm import joinedload, aliased
 from altair.app.ticketing.core import models as c_models
 from altair.sqlahelper import get_db_session
 from altair.mobile.interfaces import IMobileRequest
+from altair.formhelpers.form import OurDynamicForm
+from altair.formhelpers import widgets
+from altair.formhelpers import fields
+from altair.formhelpers.validators import Required
+from wtforms.validators import Optional
+from altair.formhelpers.translations import Translations
 from . import helpers as h
 from collections import OrderedDict
 from .exceptions import (
@@ -357,3 +363,122 @@ def assert_quantity_within_bounds(sales_segment, order_items):
                 stock_type.min_product_quantity,
                 stock_type.max_product_quantity
                 )
+
+
+class DynamicFormBuilder(object):
+
+    def _convert_choices(self, choice_descs):
+        return [(choice_desc['value'], choice_desc['label']) for choice_desc in choice_descs]
+
+    def _build_validators(self, field_desc):
+        validators = []
+        if field_desc['required']:
+            validators.append(Required())
+        else:
+            validators.append(Optional())
+        return validators
+
+    def _build_text(self, field_desc):
+        return fields.OurTextField(
+            label=field_desc['display_name'],
+            validators=self._build_validators(field_desc)
+            )
+
+    def _build_textarea(self, field_desc):
+        return fields.OurTextAreaField(
+            label=field_desc['display_name'],
+            validators=self._build_validators(field_desc)
+            )
+
+    def _build_select(self, field_desc):
+        return fields.OurSelectField(
+            label=field_desc['display_name'],
+            validators=self._build_validators(field_desc),
+            choices=self._convert_choices(field_desc['choices'])
+            )
+
+    def _build_select_multiple(self, field_desc):
+        return fields.OurSelectMultipleField(
+            label=field_desc['display_name'],
+            validators=self._build_validators(field_desc),
+            choices=self._convert_choices(field_desc['choices'])
+            )
+
+    def _build_radio(self, field_desc):
+        return fields.OurRadioField(
+            label=field_desc['display_name'],
+            validators=self._build_validators(field_desc),
+            choices=self._convert_choices(field_desc['choices'])
+            )
+
+    def _build_checkbox(self, field_desc):
+        return fields.OurSelectMultipleField(
+            label=field_desc['display_name'],
+            validators=self._build_validators(field_desc),
+            choices=self._convert_choices(field_desc['choices']),
+            widget=widgets.CheckboxMultipleSelect(
+                multiple=True,
+                outer_html_tag='ul',
+                inner_html_tag='li'
+                )
+            )
+
+
+    field_factories = {
+        u'text': _build_text,
+        u'textarea': _build_textarea,
+        u'select': _build_select,
+        u'select_multiple': _build_select_multiple,
+        u'radio': _build_radio,
+        u'checkbox': _build_checkbox,
+        }
+
+    def __call__(self, request, extra_form_fields, formdata=None):
+        unbound_fields = []
+        for field_desc in extra_form_fields:
+            if field_desc['kind'] != 'description_only':
+                unbound_fields.append(
+                    (
+                        field_desc['name'],
+                        self.field_factories.get(
+                            field_desc['kind'],
+                            self.__class__._build_text
+                            )(self, field_desc)
+                        )
+                    )
+        form = OurDynamicForm(
+            formdata=formdata,
+            _fields=unbound_fields,
+            _translations=Translations(),
+            name_builder=lambda name: u'extra_field[%s]' % name
+            )
+        fields = []
+        for field_desc in extra_form_fields:
+            field = None
+            try:
+                field = form[field_desc['name']]
+            except KeyError:
+                pass
+            fields.append({
+                'description': field_desc['description'],
+                'note': field_desc['note'],
+                'required': field_desc['required'],
+                'field': field,
+                })
+        return form, fields
+
+build_dynamic_form = DynamicFormBuilder()
+
+def get_extra_form_data_triplets(request, sales_segment, data):
+    extra_form_fields = sales_segment.setting.extra_form_fields
+    if extra_form_fields is None:
+        return []
+    return [
+        (
+            field_desc['name'],
+            field_desc['display_name'],
+            data.get(field_desc['name'])
+            )
+        for field_desc in extra_form_fields
+        if field_desc['kind'] != 'description_only'
+        ]

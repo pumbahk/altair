@@ -106,4 +106,8 @@
     <th>${HH.label_text_for(SalesSegmentGroup.auth3d_notice)}</th>
     <td>${sales_segment_group.auth3d_notice or u'(なし)'}</td>
   </tr>
+  <tr>
+    <th>${HH.label_text_for(SalesSegmentGroupSetting.extra_form_fields)}</th>
+    <td>${view.format_extra_form_fields(sales_segment_group.setting.extra_form_fields) or u'(なし)'}</td>
+  </tr>
 </table>
