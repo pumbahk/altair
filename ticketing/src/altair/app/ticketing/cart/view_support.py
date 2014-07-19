@@ -397,7 +397,7 @@ class DynamicFormBuilder(object):
             choices=self._convert_choices(field_desc['choices'])
             )
 
-    def _build_select_multiple(self, field_desc):
+    def _build_multiple_select(self, field_desc):
         return fields.OurSelectMultipleField(
             label=field_desc['display_name'],
             validators=self._build_validators(field_desc),
@@ -428,7 +428,7 @@ class DynamicFormBuilder(object):
         u'text': _build_text,
         u'textarea': _build_textarea,
         u'select': _build_select,
-        u'select_multiple': _build_select_multiple,
+        u'multiple_select': _build_multiple_select,
         u'radio': _build_radio,
         u'checkbox': _build_checkbox,
         }
@@ -487,7 +487,7 @@ def get_extra_form_data_pair_pairs(request, sales_segment, data):
                 display_value = v[0]['label']
             else:
                 display_value = field_value
-        elif field_desc['kind'] in ('select_multiple', 'checkbox'):
+        elif field_desc['kind'] in ('multiple_select', 'checkbox'):
             display_value = []
             for c in field_value:
                 v = [pair for pair in field_desc['choices'] if pair['value'] == c]

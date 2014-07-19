@@ -900,7 +900,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     display_value = v[0]['label']
                 else:
                     display_value = field_value
-            elif field_desc['kind'] in ('select_multiple', 'checkbox'):
+            elif field_desc['kind'] in ('multiple_select', 'checkbox'):
                 field_value = field_value.strip()
                 if len(field_value) > 0:
                     field_value = [c.strip() for c in field_value.split(',')]
