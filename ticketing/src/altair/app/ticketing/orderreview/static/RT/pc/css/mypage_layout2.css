@@ -79,11 +79,12 @@ h2 {
 	padding: 10px;
 	margin-bottom: 20px;
 }
+
 h3 {
 	border-left: 3px solid #CCC;
 	padding: 8px;
 	margin-left: 5px;
-	margin-bottom: 20px;
+	margin-bottom: 10px;
 }
 
 
@@ -397,12 +398,14 @@ h3 {
 	border-top: 1px solid #F2F2E5;
 	border-left: 1px solid #F2F2E5;
 }
+
 .memberLogin table tr th,
 .memberLogin table tr td {
 	border-bottom: 1px solid #F2F2E5;
 	border-right: 1px solid #F2F2E5;
 	padding: 10px;
 }
+
 .memberLogin table tr th {
 	background: #F9F9F2;
 }
