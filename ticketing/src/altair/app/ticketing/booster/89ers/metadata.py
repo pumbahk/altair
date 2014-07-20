@@ -20,7 +20,7 @@ metadata_provider = DefaultModelAttributeMetadataProvider(
             },
         'extra.t_shirts_size': {
             'display_name': {
-                'ja_JP': u'ClubナイナーズＴシャツサイズ',
+                'ja_JP': u'Ｔシャツサイズ',
                 },
             'type': unicode,
             },
