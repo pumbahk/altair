@@ -164,6 +164,20 @@ class EventForm(Form):
         filters=[zero_as_none],
         validators=[Optional()]
     )
+    middle_stock_threshold = OurIntegerField(
+        label=label_text_for(EventSetting.middle_stock_threshold),
+        default=None,
+        filters=[zero_as_none],
+        validators=[Optional()],
+        hide_on_new=True,
+    )
+    middle_stock_threshold_percent = OurIntegerField(
+        label=label_text_for(EventSetting.middle_stock_threshold_percent),
+        default=None,
+        filters=[zero_as_none],
+        validators=[Optional()],
+        hide_on_new=True,
+    )
     original_id = HiddenField(
         validators=[Optional()],
     )

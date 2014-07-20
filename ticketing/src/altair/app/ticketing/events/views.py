@@ -143,6 +143,8 @@ class Events(BaseView):
                     setting=EventSetting(
                         order_limit=f.order_limit.data,
                         max_quantity_per_user=f.max_quantity_per_user.data,
+                        middle_stock_threshold=f.middle_stock_threshold.data,
+                        middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
                         performance_selector=f.get_performance_selector(),
                         performance_selector_label1_override=f.performance_selector_label1_override.data,
                         performance_selector_label2_override=f.performance_selector_label2_override.data,
@@ -180,6 +182,8 @@ class Events(BaseView):
         f = EventForm(organization_id=self.context.organization.id, obj=event)
         f.order_limit.data = event.setting and event.setting.order_limit
         f.max_quantity_per_user.data = event.setting and event.setting.max_quantity_per_user
+        f.middle_stock_threshold.data = event.setting and event.setting.middle_stock_threshold
+        f.middle_stock_threshold_percent.data = event.setting and event.setting.middle_stock_threshold_percent
         f.performance_selector.data = (event.setting.performance_selector or '') if event.setting else ''
         f.performance_selector_label1_override.data = event.setting.performance_selector_label1_override if event.setting else ''
         f.performance_selector_label2_override.data = event.setting.performance_selector_label2_override if event.setting else ''
@@ -216,6 +220,8 @@ class Events(BaseView):
                         setting=EventSetting(
                             order_limit=f.order_limit.data,
                             max_quantity_per_user=f.max_quantity_per_user.data,
+                            middle_stock_threshold=f.middle_stock_threshold.data,
+                            middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
                             performance_selector=f.get_performance_selector(),
                             performance_selector_label1_override=f.performance_selector_label1_override.data,
                             performance_selector_label2_override=f.performance_selector_label2_override.data,
@@ -238,6 +244,8 @@ class Events(BaseView):
                     event.setting = EventSetting()
                 event.setting.order_limit = f.order_limit.data
                 event.setting.max_quantity_per_user = f.max_quantity_per_user.data
+                event.setting.middle_stock_threshold = f.middle_stock_threshold.data
+                event.setting.middle_stock_threshold_percent = f.middle_stock_threshold_percent.data
                 event.setting.performance_selector=f.get_performance_selector(),
                 event.setting.performance_selector_label1_override=f.performance_selector_label1_override.data,
                 event.setting.performance_selector_label2_override=f.performance_selector_label2_override.data,

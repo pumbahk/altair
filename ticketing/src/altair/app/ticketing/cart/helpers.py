@@ -215,13 +215,21 @@ def product_name_with_unit(product_items):
             u"%s:%d枚" % (escape(product_item.stock_type.name), product_item.quantity)
             for product_item in product_items))
 
-def get_availability_text(quantity):
+def get_availability_text(quantity, all_quantity, middle_stock_threshold, middle_stock_threshold_percent):
+    if not middle_stock_threshold and not middle_stock_threshold_percent:
+        middle_stock_threshold_percent = 50
+
     if quantity <= 0:
         return u'×'
-    elif quantity < 20:
+
+    if quantity < all_quantity/100 * middle_stock_threshold_percent:
         return u'△'
-    else:
-        return u'◎'
+
+    if middle_stock_threshold:
+        if quantity < middle_stock_threshold:
+            return u'△'
+
+    return u'◎'
 
 def cart_url(request, event=None, performance=None, sales_segment=None):
     if sales_segment is not None:
