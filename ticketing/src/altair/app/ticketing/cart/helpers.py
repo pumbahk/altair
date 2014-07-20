@@ -222,8 +222,9 @@ def get_availability_text(quantity, all_quantity, middle_stock_threshold, middle
     if quantity <= 0:
         return u'×'
 
-    if quantity < all_quantity/100 * middle_stock_threshold_percent:
-        return u'△'
+    if middle_stock_threshold_percent:
+        if quantity < (all_quantity/100 * middle_stock_threshold_percent):
+            return u'△'
 
     if middle_stock_threshold:
         if quantity < middle_stock_threshold:
