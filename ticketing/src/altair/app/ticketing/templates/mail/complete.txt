@@ -70,8 +70,11 @@ ${get("total_amount").body}
 %endif
 
 %if get("extra_form_data").status:
+<% extra_form_data_body = get("extra_form_data").body %>
+% if extra_form_data_body:
 ■${get("extra_form_data").label}
-${get("extra_form_data").body}
+${extra_form_data_body}
+% endif
 %endif
 
 -----
