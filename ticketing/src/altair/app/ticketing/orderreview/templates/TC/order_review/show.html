@@ -59,7 +59,25 @@
       </tbody>
     </table>
   </div>
-  <% shipping =order.shipping_address %>
+
+  <% extra_form_data = order.get_order_attribute_pair_pairs() %>
+  % if extra_form_data: 
+  % for _, (display_name, display_value) in extra_form_data:
+  <div class="section">
+    <h3>追加情報</h3>
+    <table class="purchasedContents" summary="追加情報">
+      <tbody>
+        <tr>
+          <th scope="row">${display_name}</th>
+          <td>${h.sensible_coerce(request, display_value)}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  % endfor
+  % endif
+
+  <% shipping_address = order.shipping_address %>
   % if order.status == 'canceled' or order.payment_status == 'refunded':
   <div class="section">
     <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
@@ -86,25 +104,26 @@
     </div>
   </div>
   % endif
+
   <div class="section">
     <h3>購入者情報</h3>
     <table class="purchasedContents" summary="配送先情報">
       <tbody>
         <tr>
           <th scope="row"><span style="color: #000000">氏名（漢字）</span></th>
-          <td>${shipping.last_name} ${shipping.first_name}</td>
+          <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
         </tr>
         <tr>
           <th scope="row"><span style="color: #000000">氏名（カナ）</span></th>
-          <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
+          <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
         </tr>
         <tr>
           <th scope="row"><span style="color: #000000">電話番号</span></th>
-          <td>${shipping.tel_1}</td>
+          <td>${shipping_address.tel_1}</td>
         </tr>
         <tr>
             <th scope="row"><span style="color: #000000">住所</span></th>
-            <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
+            <td>${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
         </tr>
       </tbody>
     </table>

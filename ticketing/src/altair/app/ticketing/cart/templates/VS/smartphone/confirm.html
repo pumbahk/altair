@@ -190,10 +190,10 @@
         <%m:header>追加情報</%m:header>
         <div class="dispBoxInner">
           <table id="confirmDelivery" summary="配送先情報" class="methodArea">
-          % for field_name, display_name, field_value in extra_form_data:
+          % for _, (display_name, display_value) in extra_form_data:
             <tr>
               <th scope="row">${display_name}</th>
-              <td>${h.sensible_coerce(request, field_value)}</td>
+              <td>${h.sensible_coerce(request, display_value)}</td>
             </tr>
           % endfor
           </table>

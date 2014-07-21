@@ -52,7 +52,7 @@ from .view_support import (
     get_seat_type_dicts,
     assert_quantity_within_bounds,
     build_dynamic_form,
-    get_extra_form_data_triplets,
+    get_extra_form_data_pair_pairs,
     )
 from .exceptions import (
     NoSalesSegment,
@@ -1316,7 +1316,7 @@ class ConfirmView(object):
             mailmagazines_to_subscribe=magazines_to_subscribe,
             form=form,
             delegator=delegator,
-            extra_form_data=get_extra_form_data_triplets(
+            extra_form_data=get_extra_form_data_pair_pairs(
                 self.request,
                 self.request.context.sales_segment,
                 self.request.session.get('extra_form')
