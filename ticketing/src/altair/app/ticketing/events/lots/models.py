@@ -314,11 +314,6 @@ class LotEntryReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                       nullable=True)
     lot = orm.relationship('Lot', backref='lot_entry_report_settings')
 
-    operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=True)
-    operator = orm.relationship('Operator', backref='lot_entry_report_setting')
-
-    name = Column(String(255), nullable=True)
-    email = Column(String(255), nullable=True)
     frequency = Column(Integer, nullable=False)
     period = Column(Integer, nullable=False)
     time = Column(String(4), nullable=False)
