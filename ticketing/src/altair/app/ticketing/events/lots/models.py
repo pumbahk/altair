@@ -34,6 +34,7 @@ from altair.app.ticketing.core.models import (
     ShippingAddress,
     ReportFrequencyEnum,
     Organization,
+    ReportRecipient,
 )
 from altair.app.ticketing.orders.models import (
     Order,
@@ -293,6 +294,10 @@ class LotWishSummary(Base):
     def total_quantity(self):
         return sum([p.quantity for p in self.products])
 
+class LotEntryReportSetting_ReportRecipient(Base):
+    __tablename__   = 'LotEntryReportSetting_ReportRecipient'
+    lot_entry_report_setting_id = Column(Identifier, ForeignKey('LotEntryReportSetting.id', ondelete='CASCADE'), primary_key=True)
+    report_recipient_id = Column(Identifier, ForeignKey('ReportRecipient.id', ondelete='CASCADE'), primary_key=True)
 
 class LotEntryReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = 'LotEntryReportSetting'
@@ -320,13 +325,10 @@ class LotEntryReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     day_of_week = Column(Integer, nullable=True, default=None)
     start_on = Column(DateTime, nullable=True, default=None)
     end_on = Column(DateTime, nullable=True, default=None)
+    recipients = orm.relationship('ReportRecipient', secondary=LotEntryReportSetting_ReportRecipient.__table__, backref='lot_entry_report_settings')
 
-    @property
-    def recipient(self):
-        if self.operator:
-            return self.operator.email
-        else:
-            return self.email
+    def format_recipients(self):
+        return u', '.join([r.format_recipient() for r in self.recipients])
 
     @classmethod
     def in_term(cls, now):
