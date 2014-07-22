@@ -628,22 +628,32 @@ def add_booster_product_item_attributes(order, metadata_provider_registry):
 
     event_id = order.performance.event.id
     meta_data = None
+    other_attrs = None
     if event_id == 1:
         meta_data = metadata_provider_registry.queryProviderByName('booster.89ers').metadata
+        other_attrs = ['member_type','cont','sex','old_id_number','year','day','month']
     if event_id == 543:
         meta_data = metadata_provider_registry.queryProviderByName('booster.bigbulls').metadata
+        other_attrs = ['fax','product_delivery_method_name','member_type','cont','sex','old_id_number','year','day','month']
     if event_id == 1567:
         meta_data = metadata_provider_registry.queryProviderByName('booster.bambitious').metadata
+        other_attrs = ['extra.mail_permission','fax','member_type','cont','sex','old_id_number','year','day','month']
 
     target_ordered_product_item = None
     for element in (element for item in order.items for element in item.elements):
         target_ordered_product_item = element
         break
 
-    if not meta_data or not target_ordered_product_item:
+    add_attrs = []
+    if meta_data:
+        add_attrs = add_attrs + meta_data.keys()
+    if other_attrs:
+        add_attrs = add_attrs + other_attrs
+
+    if not add_attrs or not target_ordered_product_item:
         return
 
-    for key in meta_data.keys():
+    for key in add_attrs:
         attribute = OrderedProductAttribute()
         attribute.ordered_product_item_id = target_ordered_product_item.id
         attribute.name = key
