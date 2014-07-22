@@ -633,8 +633,8 @@ def add_booster_product_item_attributes(order, metadata_provider_registry):
         meta_data = metadata_provider_registry.queryProviderByName('booster.89ers').metadata
         other_attrs = ['member_type','cont','sex','old_id_number','year','day','month']
     if event_id == 543:
-        meta_data = metadata_provider_registry.queryProviderByName('booster.bigbulls').metadata
-        other_attrs = ['fax','product_delivery_method_name','member_type','cont','sex','old_id_number','year','day','month']
+        #bigbulls
+        other_attrs = ['extra.mail_permission','member_type','extra.parent_last_name_kana','extra.parent_first_name_kana','extra.parent_first_name','extra.parent_last_name','cont','sex','old_id_number','extra.relationship','year','day','month','extra.t_shirts_size']
     if event_id == 1567:
         meta_data = metadata_provider_registry.queryProviderByName('booster.bambitious').metadata
         other_attrs = ['extra.mail_permission','fax','member_type','cont','sex','old_id_number','year','day','month']
