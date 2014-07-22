@@ -12,6 +12,7 @@
         <th>オーガス会場コード</th>
         <th>オーガス会場名</th>
         <th>オーガス会場バージョン</th>
+        <th>オーガスアカウントID</th>
         <th>URL</th>
         <th>会場名</th>
       </tr>
@@ -22,6 +23,7 @@
         <td>${augus_venue.code}</td>
         <td>${augus_venue.name}</td>
         <td>${augus_venue.version}</td>
+        <td>${augus_venue.augus_account_id}</td>
         <%
            url = request.route_path('augus.augus_venue.show', augus_venue_code=augus_venue.code, augus_venue_version=augus_venue.version)
          %>
