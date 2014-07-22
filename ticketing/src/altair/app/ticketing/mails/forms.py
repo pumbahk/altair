@@ -50,7 +50,19 @@ class SubjectInfoDefaultMixin(object):
     mail = SubjectInfo(name="mail", label=u"メールアドレス", getval=lambda request, subject : subject.shipping_address.email_1 if subject.shipping_address else u"")
     order_datetime = SubjectInfo(name="order_datetime", label=u"受付日", getval=lambda request, order: ch.mail_date(order.created_at))
     bcc = SubjectInfoWithValue(name="bcc", label=u"bcc", getval=lambda request, order: None, value=None)
-    
+   
+
+def sensible_text_coerce(v):
+    if v is None:
+        return u'(回答なし)'
+    elif isinstance(v, list):
+        if len(v) == 0:
+            return u'(選択なし)'
+        else:
+            return u', '.join(v)
+    else:
+        return v
+
 class OrderInfoDefaultMixin(object):
     """ 
     以下の情報のデフォルトの値。ラベル名が変えられ、表示するかしないか選択できる。
@@ -87,6 +99,11 @@ class OrderInfoDefaultMixin(object):
                                                     op.quantity)
                            for op in order.items))
 
+    def get_extra_form_data(request, order):
+        return u"\n".join(
+            u"【{0}】{1}".format(pair[1][0], sensible_text_coerce(pair[1][1]))
+            for pair in order.get_order_attribute_pair_pairs()
+            )
 
     order_no = SubjectInfo(name="order_no", label=u"受付番号", getval=lambda request, subject : subject.order_no)
     event_name = SubjectInfo(name=u"event_name", label=u"公演タイトル", getval=get_event_title)
@@ -100,6 +117,7 @@ class OrderInfoDefaultMixin(object):
     transaction_fee = SubjectInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda request, order: ch.format_currency(order.transaction_fee))
     delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda request, order: ch.format_currency(order.delivery_fee))
     total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda request, order: ch.format_currency(order.total_amount))
+    extra_form_data = SubjectInfo(name=u"extra_form_data", label=u"追加情報", getval=get_extra_form_data)
 
 class SubjectInfoDefault(SubjectInfoDefaultBase, SubjectInfoDefaultMixin):
     pass

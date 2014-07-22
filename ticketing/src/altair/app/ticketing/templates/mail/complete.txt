@@ -69,6 +69,14 @@ ${get("delivery_fee").label}: ${get("delivery_fee").body}
 ${get("total_amount").body}
 %endif
 
+%if get("extra_form_data").status:
+<% extra_form_data_body = get("extra_form_data").body %>\
+% if extra_form_data_body:
+■${get("extra_form_data").label}
+${extra_form_data_body}
+% endif
+%endif
+
 -----
 ■お支払
 お支払方法： ${payment_method_name}

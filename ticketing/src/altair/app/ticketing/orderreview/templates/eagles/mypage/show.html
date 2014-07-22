@@ -9,24 +9,24 @@
   購入履歴がありません。
 % endif
 
-<%def name="render_shipping_address(shipping)">
+<%def name="render_shipping_address(shipping_address)">
   <table class="purchasedContents" summary="配送先情報">
     <tbody>
       <tr>
         <th scope="row"><span style="color: #000000">氏名（漢字）</span></th>
-        <td>${shipping.last_name} ${shipping.first_name}</td>
+        <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
       </tr>
       <tr>
         <th scope="row"><span style="color: #000000">氏名（カナ）</span></th>
-        <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
+        <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
       </tr>
       <tr>
         <th scope="row"><span style="color: #000000">電話番号</span></th>
-        <td>${shipping.tel_1}</td>
+        <td>${shipping_address.tel_1}</td>
       </tr>
       <tr>
         <th scope="row"><span style="color: #000000">住所</span></th>
-        <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
+        <td>${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
       </tr>
     </tbody>
   </table>
