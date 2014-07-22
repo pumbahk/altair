@@ -57,6 +57,10 @@
     <Reference Include="NLog.Targets.Fluentd">
       <HintPath>..\packages\NLog.Targets.Fluentd.1.0.4\lib\net45\NLog.Targets.Fluentd.dll</HintPath>
     </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="PresentationFramework.Aero2" />
     <Reference Include="ReachFramework" />
     <Reference Include="System" />
