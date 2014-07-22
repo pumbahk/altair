@@ -28,7 +28,8 @@ var extra_form_editor = (function () {
       'label': 'ラベル',
       'value': '値',
       'required': '必須',
-      'max_length': '最大入力文字数'
+      'max_length': '最大入力文字数',
+      'remove': '削除'
     }
   };
 
@@ -395,12 +396,29 @@ var extra_form_editor = (function () {
 
     render_index: function () {
       var self = this;
-      var $btn_remove = $('<button style="white-space: nowrap" class="action-remove btn btn-small btn-danger">削除</button>');
-      $btn_remove.on('click', function () {
-        self.trigger('remove');
-      });
+      var $btn_remove =
+        $('<button style="white-space: nowrap" class="action-remove btn btn-small btn-danger"></button>')
+        .text(translations['ja']['remove'])
+        .on('click', function () {
+          self.trigger('remove');
+        });
+      var $btn_move_up = 
+        $('<button style="white-space: nowrap" class="action-remove btn btn-small"><i class="icon-arrow-up"></i></button>')
+        .on('click', function () {
+          self.trigger('move_up');
+        });
+      var $btn_move_down = 
+        $('<button style="white-space: nowrap" class="action-remove btn btn-small"><i class="icon-arrow-down"></i></button>')
+        .on('click', function () {
+          self.trigger('move_down');
+        });
       return $('<div class="index"></div>').text(this.model.get('index'))
-        .add($('<div class="actions"></div>').append($btn_remove));
+        .add(
+          $('<div class="actions"></div>')
+          .append($btn_move_up)
+          .append($btn_move_down)
+          .append($btn_remove)
+        );
     },
 
     render_kind_label: function (label) {
@@ -668,6 +686,37 @@ var extra_form_editor = (function () {
           this.at(i).set('index', i);
         }
       }, this);
+    },
+
+    swap: function (a, b, options) {
+      var index_a = this.indexOf(a), index_b = this.indexOf(b);
+      if (index_a < 0 || index_b < 0 || index_a == index_b)
+        return false;
+      this.models[index_a] = b;
+      this.models[index_b] = a;
+      var options = options ? _.clone(options): {};
+      options.primary = true;
+      options.other = b;
+      options.index = index_b;
+      options.otherIndex = index_a;
+      a.trigger("swap", a, this, options);
+      options.primary = false;
+      options.other = a;
+      options.index = index_a;
+      options.otherIndex = index_b;
+      b.trigger("swap", b, this, options);
+      return true;
+    },
+
+    _onModelEvent: function (event, model, collection, options) {
+      if (event == 'swap') {
+        if (collection != this)
+          return;
+        if (options.primary)
+          this.trigger.apply(this, arguments);
+        return;
+      }
+      Backbone.Collection.prototype._onModelEvent.apply(this, arguments);
     }
   });
 
@@ -678,6 +727,7 @@ var extra_form_editor = (function () {
       this.model.on('add', this.get_field_view, this);
       this.model.on('remove', this.remove_field_view, this);
       this.model.on('reset', this.render, this);
+      this.model.on('swap', this.swap, this);
     },
 
     get_field_view: function (field) {
@@ -687,6 +737,20 @@ var extra_form_editor = (function () {
         this.fields[field.cid] = field_view;
         field_view.render().$el.insertBefore(this.$el.find('> tbody > tr.last'));
         field_view.on('remove', function () { this.model.remove(field); }, this);
+        field_view.on("move_up", function () {
+          var i = field.get('index');
+          if (i > 0) {
+            var prev_field = this.model.at(i - 1);
+            this.model.swap(prev_field, field);
+          }
+        }, this);
+        field_view.on("move_down", function () {
+          var i = field.get('index');
+          if (i < this.model.length - 1) {
+            var next_field = this.model.at(i + 1);
+            this.model.swap(next_field, field);
+          }
+        }, this);
       }
       return field_view;
     },
@@ -706,6 +770,31 @@ var extra_form_editor = (function () {
         v.$el.remove();
       });
       this.fields = {} 
+    },
+
+    swap: function (model, _, options) {
+      var other = options.other;
+      model.set('index', options.index);
+      other.set('index', options.otherIndex);
+
+      var anterior, posterior;
+      if (options.index > options.otherIndex) {
+        anterior = model;
+        posterior = options.other;
+      } else {
+        anterior = options.other;
+        posterior = model;
+      }
+
+      var anterior_view = this.get_field_view(anterior),
+          posterior_view = this.get_field_view(posterior);
+      var anterior_prev_sibling = anterior_view.$el.prev(),
+          posterior_next_sibling = posterior_view.$el.next();
+      if (anterior_prev_sibling.length != 0)
+        posterior_view.$el.insertAfter(anterior_prev_sibling);
+      else
+        posterior_view.$el.prependTo(posterior_view.$el.parent());
+      anterior_view.$el.insertBefore(posterior_next_sibling);
     },
 
     render: function () {
@@ -735,3 +824,6 @@ var extra_form_editor = (function () {
     return fields;
   };
 })();
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */

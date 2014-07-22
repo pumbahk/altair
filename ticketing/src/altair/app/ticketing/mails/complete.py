@@ -81,6 +81,7 @@ class PurchaseCompleteMail(object):
         info_renderder = SubjectInfoRenderer(request, order, traverser.data, default_impl=get_subject_info_default())
         value = dict(h=ch, 
                      order=order,
+                     extra_form_data=order.get_order_attribute_pair_pairs(),
                      get=info_renderder.get, 
                      name=u"{0} {1}".format(sa.last_name, sa.first_name),
                      payment_method_name=pair.payment_method.name, 

@@ -52,7 +52,7 @@ from .view_support import (
     get_seat_type_dicts,
     assert_quantity_within_bounds,
     build_dynamic_form,
-    get_extra_form_data_triplets,
+    get_extra_form_data_pair_pairs,
     )
 from .exceptions import (
     NoSalesSegment,
@@ -1196,6 +1196,7 @@ class ExtraFormView(object):
         return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
 
 
+@view_defaults(route_name='cart.point', decorator=with_jquery.not_when(mobile_request))
 class PointAccountEnteringView(object):
     def __init__(self, request):
         self.request = request
@@ -1208,9 +1209,9 @@ class PointAccountEnteringView(object):
             )
 
     @back(back_to_top, back_to_product_list_for_mobile)
-    @view_config(route_name='cart.point', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/point.html"))
-    @view_config(route_name='cart.point', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
-    @view_config(route_name='cart.point', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
+    @view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/pc/point.html"))
+    @view_config(request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
+    @view_config(request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
     def point(self):
         cart = self.request.context.cart
         if cart.payment_delivery_pair is None or cart.shipping_address is None:
@@ -1244,9 +1245,9 @@ class PointAccountEnteringView(object):
         )
 
     @back(back_to_top, back_to_product_list_for_mobile)
-    @view_config(route_name='cart.point', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/point.html"))
-    @view_config(route_name='cart.point', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
-    @view_config(route_name='cart.point', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
+    @view_config(request_method="POST", renderer=selectable_renderer("%(membership)s/pc/point.html"))
+    @view_config(request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
+    @view_config(request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
     def point_post(self):
         self.form = schemas.PointForm(formdata=self.request.params)
 
@@ -1315,7 +1316,7 @@ class ConfirmView(object):
             mailmagazines_to_subscribe=magazines_to_subscribe,
             form=form,
             delegator=delegator,
-            extra_form_data=get_extra_form_data_triplets(
+            extra_form_data=get_extra_form_data_pair_pairs(
                 self.request,
                 self.request.context.sales_segment,
                 self.request.session.get('extra_form')

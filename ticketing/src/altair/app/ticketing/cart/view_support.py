@@ -13,6 +13,7 @@ from altair.mobile.interfaces import IMobileRequest
 from altair.formhelpers.form import OurDynamicForm
 from altair.formhelpers import widgets
 from altair.formhelpers import fields
+from altair.formhelpers.filters import text_type_but_none_if_not_given
 from altair.formhelpers.validators import Required
 from wtforms.validators import Optional
 from altair.formhelpers.translations import Translations
@@ -397,7 +398,7 @@ class DynamicFormBuilder(object):
             choices=self._convert_choices(field_desc['choices'])
             )
 
-    def _build_select_multiple(self, field_desc):
+    def _build_multiple_select(self, field_desc):
         return fields.OurSelectMultipleField(
             label=field_desc['display_name'],
             validators=self._build_validators(field_desc),
@@ -408,7 +409,8 @@ class DynamicFormBuilder(object):
         return fields.OurRadioField(
             label=field_desc['display_name'],
             validators=self._build_validators(field_desc),
-            choices=self._convert_choices(field_desc['choices'])
+            choices=self._convert_choices(field_desc['choices']),
+            coerce=text_type_but_none_if_not_given
             )
 
     def _build_checkbox(self, field_desc):
@@ -428,7 +430,7 @@ class DynamicFormBuilder(object):
         u'text': _build_text,
         u'textarea': _build_textarea,
         u'select': _build_select,
-        u'select_multiple': _build_select_multiple,
+        u'multiple_select': _build_multiple_select,
         u'radio': _build_radio,
         u'checkbox': _build_checkbox,
         }
@@ -469,16 +471,47 @@ class DynamicFormBuilder(object):
 
 build_dynamic_form = DynamicFormBuilder()
 
-def get_extra_form_data_triplets(request, sales_segment, data):
+def get_extra_form_data_pair_pairs(request, sales_segment, data):
     extra_form_fields = sales_segment.setting.extra_form_fields
     if extra_form_fields is None:
         return []
-    return [
-        (
-            field_desc['name'],
-            field_desc['display_name'],
-            data.get(field_desc['name'])
+    retval = []
+    for field_desc in extra_form_fields:
+        if field_desc['kind'] == 'description_only':
+            continue
+        field_value = data.get(field_desc['name'])
+        display_value = None
+        if field_desc['kind'] in ('text', 'textarea'):
+            display_value = field_value
+        elif field_desc['kind'] in ('select', 'radio'):
+            v = [pair for pair in field_desc['choices'] if pair['value'] == field_value]
+            if len(v) > 0:
+                display_value = v[0]['label']
+            else:
+                display_value = field_value
+        elif field_desc['kind'] in ('multiple_select', 'checkbox'):
+            display_value = []
+            for c in field_value:
+                v = [pair for pair in field_desc['choices'] if pair['value'] == c]
+                if len(v) > 0:
+                    v = v[0]['label']
+                else:
+                    v = c
+                display_value.append(v)
+        else:
+            logger.warning('unsupported kind: %s' % field_desc['kind'])
+            display_value = field_value
+
+        retval.append(
+            (
+                (
+                    field_desc['name'],
+                    field_value
+                ),
+                (
+                    field_desc['display_name'],
+                    display_value
+                )
+                )
             )
-        for field_desc in extra_form_fields
-        if field_desc['kind'] != 'description_only'
-        ]
+    return retval
