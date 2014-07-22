@@ -647,6 +647,8 @@ class PerformanceReporter(object):
         # 公演合計のレポート
         self.form.sales_segment_group_id.data = None
         self.total = SalesDetailReporter(request, self.form)
+        if len([ss for ss in performance.sales_segments if ss.reporting]) == 0:
+            self.total.reports = {}
 
         # 販売区分別のレポート
         if self.form.is_detail_report():
