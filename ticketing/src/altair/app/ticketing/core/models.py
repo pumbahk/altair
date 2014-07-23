@@ -811,6 +811,7 @@ class ReportRecipient(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     name = Column(String(255), nullable=True)
     email = Column(String(255), nullable=False)
     organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=False)
+    organization = relationship('Organization', backref='report_recipients')
 
     def format_recipient(self):
         return u'{0} <{1}>'.format(self.name, self.email)
