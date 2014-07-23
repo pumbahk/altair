@@ -71,6 +71,7 @@
     <Compile Include="Configurator.cs" />
     <Compile Include="DynamicJson.cs" />
     <Compile Include="FlowDefinitionType.cs" />
+    <Compile Include="flow\CommonFlowDefinition.cs" />
     <Compile Include="IConfigurator.cs" />
     <Compile Include="models\TicketRefreshedAtUpdater2.cs" />
     <Compile Include="Program.cs" />

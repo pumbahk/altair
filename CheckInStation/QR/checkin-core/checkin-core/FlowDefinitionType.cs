@@ -9,6 +9,7 @@ namespace checkin.core
    public enum FlowDefinitionType
     {
         QRFront,
-        OrdernoFront
+        OrdernoFront,
+        CommonMode
     }
 }

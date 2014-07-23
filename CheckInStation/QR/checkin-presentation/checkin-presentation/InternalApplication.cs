@@ -28,6 +28,8 @@ namespace checkin.presentation
                     return new EaglesFlowDefinition();
                 case FlowDefinitionType.OrdernoFront:
                     return new VisselFlowDefinition();
+                case FlowDefinitionType.CommonMode:
+                    return new CommonFlowDefinition();
                 default:
                     throw new InvalidOperationException("anything is wrong");
             }         
