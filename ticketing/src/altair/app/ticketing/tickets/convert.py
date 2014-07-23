@@ -559,6 +559,7 @@ class Style(object):
         'font_weight',
         'text_anchor',
         'text_align',
+        'text_align_or_anchor',
         'line_height',
         ]
 
@@ -725,6 +726,7 @@ class Visitor(object):
             font_weight=font_weight,
             text_align=text_align,
             text_anchor=text_anchor,
+            text_align_or_anchor=text_anchor or text_align,
             line_height=line_height
             )
 
@@ -772,12 +774,12 @@ class Visitor(object):
                         html_styles.append((u'color', style.fill_color))
                 if self.current_style_ctx.style.font_weight != style.font_weight:
                     html_styles.append((u'font-weight', style.font_weight))
-                if self.current_style_ctx.style.text_align != style.text_align:
-                    text_align = self.text_align_map.get(style.text_align.lower())
+                if self.current_style_ctx.style.text_align_or_anchor != style.text_align_or_anchor:
+                    text_align = self.text_align_map.get(style.text_align_or_anchor.lower())
                     if text_align is not None:
                         html_styles.append((u'text-align', text_align))
                     else:
-                        logger.warning("unknown text-align value: %s" % style.text_align)
+                        logger.warning("unknown text-align value: %s" % style.text_align_or_anchor)
                 current_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
                 if current_font_family_class is None:
                     # silenty falls back to the default font
@@ -932,14 +934,15 @@ class Visitor(object):
                 if font_weight_class != old_font_weight_class:
                     classes_pushed['font_weight'] = font_weight_class
 
-        if new_style.text_align is not None:
-            text_align_class = self.text_align_classes.get(new_style.text_align)
-            old_text_align_class = self.text_align_classes.get(self.current_style_ctx.style.text_align)
-            if text_align_class is None:
-                logger.warning('Unsupported align type %s; falling back to start' % new_style.text_align)
-                text_align_class = u"l"
-            if text_align_class != old_text_align_class:
-                classes_pushed['text_align'] = text_align_class
+        if elem.tag not in (u'{%s}text' % SVG_NAMESPACE, u'{%s}tspan' % SVG_NAMESPACE):
+            if new_style.text_align_or_anchor is not None:
+                text_align_class = self.text_align_classes.get(new_style.text_align_or_anchor)
+                old_text_align_class = self.text_align_classes.get(self.current_style_ctx.style.text_align_or_anchor)
+                if text_align_class is None:
+                    logger.warning('Unsupported align type %s; falling back to start' % new_style.text_align_or_anchor)
+                    text_align_class = u"l"
+                if text_align_class != old_text_align_class:
+                    classes_pushed['text_align'] = text_align_class
 
         stack_level = None
         for k, l in self.overloaded_classes.items():
