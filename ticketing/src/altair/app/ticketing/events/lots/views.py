@@ -1177,9 +1177,17 @@ class LotReport(object):
 
     @view_config(route_name="lot.entries.delete_report_setting", request_method="POST")
     def delete(self):
-        self.context.report_setting.deleted_at = datetime.now()
-
-        self.request.session.flash(u'レポート送信設定を削除しました')
+        try:
+            remove_candidates = set(self.context.report_setting.recipients)
+            for c in remove_candidates:
+                if len(c.settings) == 0 and len([s for s in c.lot_entry_report_settings if s.id != self.context.report_setting.id]) == 0:
+                    logger.info(u'remove no reference recipient id={} name={} email={}'.format(c.id, c.name, c.email))
+                    c.delete()
+            self.context.report_setting.deleted_at = datetime.now()
+            self.request.session.flash(u'レポート送信設定を削除しました')
+        except Exception as e:
+            self.request.session.flash(e.message)
+            raise HTTPFound(self.index_url)
         return HTTPFound(self.index_url)
 
     @view_config(route_name="lot.entries.send_report_setting", request_method="POST")

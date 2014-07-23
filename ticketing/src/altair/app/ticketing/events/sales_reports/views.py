@@ -252,6 +252,11 @@ class ReportSettings(BaseView):
             location = route_path('sales_reports.event', self.request, event_id=report_setting.event.id)
 
         try:
+            remove_candidates = set(report_setting.recipients)
+            for c in remove_candidates:
+                if len(c.lot_entry_report_settings) == 0 and len([s for s in c.settings if s.id != report_setting.id]) == 0:
+                    logger.info(u'remove no reference recipient id={} name={} email={}'.format(c.id, c.name, c.email))
+                    c.delete()
             report_setting.delete()
             self.request.session.flash(u'選択したレポート送信設定を削除しました')
         except Exception as e:
