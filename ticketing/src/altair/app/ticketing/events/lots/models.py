@@ -330,6 +330,9 @@ class LotEntryReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def format_recipients(self):
         return u', '.join([r.format_recipient() for r in self.recipients])
 
+    def format_emails(self):
+        return u', '.join([r.email for r in self.recipients])
+
     @classmethod
     def in_term(cls, now):
         report_time = '{0:0>2}{1:0>2}'.format(now.hour, now.minute)[0:3] + '0'
