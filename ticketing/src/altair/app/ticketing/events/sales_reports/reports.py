@@ -157,7 +157,8 @@ class SalesTotalReporter(object):
             ))
 
             query = query.filter(
-                or_(event_rs.id!=None, performance_rs.id!=None)
+                or_(and_(event_rs.id!=None, event_rr.id!=None),
+                    and_(performance_rs.id!=None, performance_rr.id!=None))
             )
 
         query = self._create_range_where(query, self.form.event_from.data, self.form.event_to.data, \
