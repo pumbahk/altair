@@ -25,15 +25,20 @@ class LotEntryReportSettingFormTests(unittest.TestCase):
     def _organization(self):
         from altair.app.ticketing.core.models import (
             Organization,
-            Operator,
+            ReportRecipient,
         )
         organization = Organization(
-            short_name='testing',
-            operators=[
-                Operator(name="testing-operator"),
-            ]
+            short_name=u'testing',
         )
         self.session.add(organization)
+        self.session.flush()
+
+        recipient = ReportRecipient(
+            name=u"testing-recipient",
+            email=u"testing-recipient@example.com",
+            organization_id=organization.id
+        )
+        self.session.add(recipient)
         self.session.flush()
         return organization
 
@@ -41,25 +46,25 @@ class LotEntryReportSettingFormTests(unittest.TestCase):
         formdata = None
         obj = None
         organization = self._organization()
-        operator = organization.operators[0]
+        recipient = organization.report_recipients[0]
         context = testing.DummyResource(
             organization=testing.DummyModel(id=organization.id)
             )
         target = self._makeOne(formdata, obj, context=context)
 
-        self.assertEqual(target.operator_id.choices,
-                         [('', ''), (operator.id, operator.name)])
+        self.assertEqual(target.recipients.choices,
+                         [(recipient.id, u'{} <{}>'.format(recipient.name, recipient.email))])
         
 
-    def test_validate_operator_id_without_param(self):
+    def test_validate_recipients_without_param(self):
         formdata = None
         obj = None
         target = self._makeOne(formdata, obj)
 
         field = testing.DummyModel(data=False)
-        target.validate_operator_id(field)
+        target.validate_recipients(field)
 
-    def test_validate_operator_id_with_param_registered(self):
+    def test_validate_recipients_with_param_registered(self):
         from wtforms.validators import ValidationError
 
         from altair.app.ticketing.core.models import (
@@ -74,7 +79,7 @@ class LotEntryReportSettingFormTests(unittest.TestCase):
             LotEntryReportSetting,
         )
         organization = self._organization()
-        operator = organization.operators[0]
+        recipient = organization.report_recipients[0]
         event = Event()
         lot = Lot(event=event)
         time = "1000"
@@ -86,7 +91,7 @@ class LotEntryReportSettingFormTests(unittest.TestCase):
             frequency=ReportFrequencyEnum.Weekly.v[0],
             period=ReportPeriodEnum.Normal.v[0],
             day_of_week=day_of_week,
-            operator=operator,
+            recipients=[recipient],
         )
         self.session.add(setting)
         self.session.flush()
@@ -100,13 +105,13 @@ class LotEntryReportSettingFormTests(unittest.TestCase):
         target.report_minute.data = time[2:]
         target.frequency.data = ReportFrequencyEnum.Weekly.v[0]
         target.day_of_week.data = day_of_week
-        target.operator_id.data = operator.id
+        target.recipients.data = [recipient.id]
 
-        field = testing.DummyModel(data=True)
+        field = testing.DummyModel(data=[recipient.id])
         assert self.session.query(LotEntryReportSetting).count() == 1
 
         try:
-            target.validate_operator_id(field)
+            target.validate_recipients(field)
             self.fail()
         except ValidationError:
             pass
@@ -133,12 +138,13 @@ class LotEntryReportSettingFormTests(unittest.TestCase):
         from altair.app.ticketing.events.lots.models import (
             LotEntryReportSetting,
         )
-
+        organization = self._organization()
+        recipient = organization.report_recipients[0]
         event = Event()
         lot = Lot(event=event)
         time = "1000"
         day_of_week = 1
-        email = 'testing@example.com'
+        email = "testing-recipient@example.com"
 
         setting = LotEntryReportSetting(
             event=event,
@@ -147,7 +153,7 @@ class LotEntryReportSettingFormTests(unittest.TestCase):
             frequency=ReportFrequencyEnum.Weekly.v[0],
             period=ReportPeriodEnum.Normal.v[0],
             day_of_week=day_of_week,
-            email=email,
+            recipients=[recipient],
         )
         self.session.add(setting)
         self.session.flush()
@@ -163,7 +169,7 @@ class LotEntryReportSettingFormTests(unittest.TestCase):
         target.day_of_week.data = day_of_week
         target.email.data = email
 
-        field = testing.DummyModel(data=setting.email)
+        field = testing.DummyModel(data=email)
         assert self.session.query(LotEntryReportSetting).count() == 1
 
         try:
