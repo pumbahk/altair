@@ -22,7 +22,7 @@ def prepend_validator(field, x):
 
 class ExtraForm(Form):
     t_shirts_size = fields.SelectField(u"Tシャツサイズ", 
-                                       choices=[('L', u'L'),('3L', u'3L')], 
+                                       choices=[('L', u'L'),('3L', u'3L'),('5L', u'5L')],
                                        validators=[v.Optional()], 
                                        coerce=text_type_but_none_if_not_given)
 
