@@ -971,7 +971,7 @@ table.form input.submit:hover,
 }
 
 #mypageHistory dt {
-	padding-bottom: 5px;
+	padding-bottom: 0px;
 	font-size: 14px;
 	font-weight: bold;
 }
