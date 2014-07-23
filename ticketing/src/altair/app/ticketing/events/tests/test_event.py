@@ -4,22 +4,7 @@ import datetime
 import transaction
 from altair.app.ticketing.core.models import Event, Organization, DBSession
 from pyramid import testing
-
-def _setup_db():
-    import sqlahelper
-    from sqlalchemy import create_engine
-
-    engine = create_engine("sqlite:///")
-    engine.echo = False
-    sqlahelper.get_session().remove()
-    sqlahelper.add_engine(engine)
-    sqlahelper.get_base().metadata.drop_all()
-    sqlahelper.get_base().metadata.create_all()
-    return sqlahelper.get_session()
-
-def _teardown_db():
-    import transaction
-    transaction.abort()
+from altair.app.ticketing.testing import _setup_db, _teardown_db
 
 def setUpModule():
     DBSession.remove()
@@ -29,13 +14,15 @@ def tearDownModule():
 
 class EventBaseTest(unittest.TestCase):
     def setUp(self):
-        self.session = _setup_db()
+        self.session = _setup_db(modules=[
+            "altair.app.ticketing.lots.models",
+            "altair.app.ticketing.core.models",
+            "altair.app.ticketing.orders.models",
+            ])
 
     def tearDown(self):
         _teardown_db()
-        import sqlahelper
-        sqlahelper.get_base().metadata.drop_all()
-        
+
     def _createTestEvent(self):
         event = Event()
         event.start_on = datetime.datetime(2012, 2, 14, 15, 13, 26, 438062)

@@ -1,5 +1,6 @@
 from wtforms.widgets.core import HTMLString, html_params
 from cgi import escape
+from .list import first_last_iter, update_classes
 
 __all__ = (
     'CheckboxMultipleSelect',
@@ -27,8 +28,15 @@ def render_checkbox(input_type, id, name, val, label, selected, label_class, **k
     return HTMLString(''.join(html))
 
 class CheckboxMultipleSelect(object):
-    def __init__(self, multiple=False):
+    def __init__(self, multiple=False, outer_html_tag='div', inner_html_tag=None, inner_html_pre='', inner_html_post='', inner_tag_classes=None, first_inner_tag_classes=None, last_inner_tag_classes=None):
         self.multiple = multiple
+        self.outer_html_tag = outer_html_tag
+        self.inner_html_tag = inner_html_tag
+        self.inner_html_pre = inner_html_pre
+        self.inner_html_post = inner_html_post
+        self.inner_tag_classes = inner_tag_classes
+        self.first_inner_tag_classes = first_inner_tag_classes
+        self.last_inner_tag_classes = last_inner_tag_classes
 
     def __call__(self, field, **kwargs):
         from ..fields import PHPCompatibleSelectMultipleField
@@ -45,11 +53,33 @@ class CheckboxMultipleSelect(object):
 
         outer_box_id = kwargs.pop('id', field.id)
         id_prefix = kwargs.pop('id_prefix', outer_box_id)
-        html.append('<div %s>' % html_params(id=outer_box_id, class_='checkbox-set'))
-        for i, (val, label, selected) in enumerate(field.iter_choices()):
+        html.append(u'<%s %s>' % (self.outer_html_tag, html_params(id=outer_box_id, class_='checkbox-set')))
+        for i, (first, last, (val, label, selected)) in enumerate(first_last_iter(field.iter_choices())):
+            if self.inner_html_tag:
+                html.append('<%s' % self.inner_html_tag)
+                inner_tag_classes = []
+                update_classes(inner_tag_classes, self.inner_tag_classes)
+                if first:
+                    update_classes(inner_tag_classes, self.first_inner_tag_classes)
+                if last:
+                    update_classes(inner_tag_classes, self.last_inner_tag_classes)
+                if inner_tag_classes:
+                    params = html_params(class_=' '.join(inner_tag_classes))
+                else:
+                    params = None
+                if params:
+                    html.append(' ')
+                    html.append(params)
+                html.append('>')
+            if self.inner_html_pre:
+                html.append(self.inner_html_pre)
             id = id_prefix + '.' + str(i)
             html.append(render_checkbox('checkbox', id, name, val, label, selected, 'checkbox-set-item', **kwargs))
-        html.append('</div>')
+            if self.inner_html_post:
+                html.append(self.inner_html_post)
+            if self.inner_html_tag:
+                html.append('</%s>' % self.inner_html_tag)
+        html.append(u'</%s>' % self.outer_html_tag)
         return HTMLString(''.join(html))
 
 class LabelledCheckboxInputBase(object):

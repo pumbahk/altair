@@ -185,13 +185,9 @@ class PaymentDeliveryMethodPairForm(OurForm):
             # あんしん支払いサービスの場合は、決済手数料と特別手数料は設定不可
             payment_method = PaymentMethod.query.filter_by(id=form.payment_method_id.data).first()
             if payment_method and payment_method.payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID:
-                error_message = u'楽天あんしん支払いサービスでは、決済手数料および特別手数料は設定できません'
+                error_message = u'楽天あんしん支払いサービスでは、決済手数料は設定できません'
                 if form.transaction_fee.data > 0:
                     form.transaction_fee.errors.append(error_message)
-                    status = False
-                # Todo: 特別手数料は設定可能にする
-                if form.special_fee.data > 0:
-                    form.special_fee.errors.append(error_message)
                     status = False
 
             # コンビニ発券開始日時をチェックする

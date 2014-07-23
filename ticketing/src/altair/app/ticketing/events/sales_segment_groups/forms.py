@@ -1,19 +1,34 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from wtforms import Form
-from wtforms import TextField, TextAreaField, SelectField, HiddenField, IntegerField, BooleanField, SelectMultipleField
+from wtforms import HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, NumberRange
 from wtforms.widgets import CheckboxInput
 
 from altair.formhelpers import (
-    OurDateTimeField, Translations, Required, RequiredOnUpdate,
-    OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField,
-    OurTimeField, zero_as_none)
+    OurTextField,
+    OurTextAreaField,
+    OurDateTimeField,
+    Translations,
+    Required,
+    RequiredOnUpdate,
+    OurForm,
+    OurIntegerField,
+    OurBooleanField,
+    OurDecimalField,
+    OurSelectField,
+    OurSelectMultipleField,
+    OurTimeField,
+    JSONField,
+    zero_as_none,
+    blank_as_none
+    )
 from altair.formhelpers.fields.datetime import Min, Max
 from altair.formhelpers.widgets.datetime import OurTimeWidget
 from altair.app.ticketing.helpers import label_text_for
 from altair.app.ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder, Account, SalesSegmentGroup, SalesSegmentGroupSetting
+from ..sales_segments.forms import ExtraFormEditorWidget
+from ..sales_segments.forms import UPPER_LIMIT_OF_MAX_QUANTITY
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +42,6 @@ def append_error(field, error):
     if not hasattr(field.errors, 'append'):
         field.errors = list(field.errors)
     field.errors.append(error)
-
-UPPER_LIMIT_OF_MAX_QUANTITY = 99 # 購入数が大きすぎるとcartやlotでプルダウンが表示出来なくなる事があるため上限数を制限する
 
 class SalesSegmentGroupForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
@@ -91,7 +104,7 @@ class SalesSegmentGroupForm(OurForm):
           　当日券, 関係者, その他
         '''
     )
-    name = TextField(
+    name = OurTextField(
         label=u'表示名',
         validators=[
             Required(),
@@ -137,6 +150,7 @@ class SalesSegmentGroupForm(OurForm):
     seat_choice = OurBooleanField(
         label=u'座席選択可',
         widget=CheckboxInput(),
+        hide_on_new=True
     )
     display_seat_no = OurBooleanField(
         label=label_text_for(SalesSegmentGroupSetting.display_seat_no),
@@ -181,10 +195,12 @@ class SalesSegmentGroupForm(OurForm):
     )
     disp_agreement = OurBooleanField(
         label=u'規約の表示/非表示',
+        hide_on_new=True
     )
-    agreement_body = TextAreaField(
+    agreement_body = OurTextAreaField(
         label=u'規約内容',
         validators=[Optional()],
+        hide_on_new=True
     )
     reporting = OurBooleanField(
         label=u'レポート対象',
@@ -233,31 +249,39 @@ class SalesSegmentGroupForm(OurForm):
         validators=[Required()],
         hide_on_new=True
     )
-    copy = IntegerField(
+    copy = OurIntegerField(
         label='',
         default=0,
         widget=CheckboxInput(),
     )
-    copy_payment_delivery_method_pairs = IntegerField(
+    copy_payment_delivery_method_pairs = OurIntegerField(
         label=u'決済・引取方法をコピーする',
         default=0,
         widget=CheckboxInput(),
     )
-    copy_products = IntegerField(
+    copy_products = OurIntegerField(
         label=u'商品をコピーする',
         default=0,
         widget=CheckboxInput(),
     )
-    copy_to_stock_holder = SelectField(
+    copy_to_stock_holder = OurSelectField(
         label=u'商品在庫の配券先を一括設定する',
         validators=[Optional()],
         choices=[],
+        hide_on_new=True,
         coerce=str,
     )
-    auth3d_notice = TextAreaField(
+    auth3d_notice = OurTextAreaField(
         label=u'クレジットカード 3D認証フォーム 注記事項',
         validators=[Optional()],
+        hide_on_new=True
     )
+    extra_form_fields = JSONField(
+        label=u'追加フィールド',
+        filters=[blank_as_none],
+        validators=[Optional()],
+        widget=ExtraFormEditorWidget()
+        )
 
     def _validate_start(self, *args, **kwargs):
         msg1 = u"{0},{1}どちらかを指定してください".format(
@@ -366,7 +390,7 @@ class MemberGroupToSalesSegmentForm(OurForm):
         if obj:
             self.membergroups.data = [unicode(s.id) for s in obj.membergroups]
 
-    membergroups = SelectMultipleField(
+    membergroups = OurSelectMultipleField(
         label=u"membergroups",
         choices=[],
         coerce=unicode,

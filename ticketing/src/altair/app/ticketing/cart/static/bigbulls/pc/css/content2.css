@@ -2319,9 +2319,16 @@
 	background: url(../images/bg_confirm_bottom.gif) no-repeat left bottom;
 }
 
+.confirmBoxContent {
+  margin: 0 10px;
+}
+
 .confirmBox h2 {
 	position: static !important;
 	margin-bottom: 15px !important;
+	height: 30px;
+	font-weight: 500;
+	font-size: 18px;
 }
 
 .confirmBox h3 {

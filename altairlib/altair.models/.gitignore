@@ -2,4 +2,5 @@ build/
 temp/
 setup.cfg
 *.egg-info
+*.so
 **/*.egg-info

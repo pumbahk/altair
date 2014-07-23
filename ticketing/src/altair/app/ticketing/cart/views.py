@@ -10,6 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
 
 from markupsafe import Markup
+from zope.interface import provider, implementer
 
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPBadRequest
 from pyramid.response import Response
@@ -18,6 +19,7 @@ from pyramid.threadlocal import get_current_request
 from webob.multidict import MultiDict
 
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
+from altair.request.adapters import UnicodeMultiDictAdapter
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
@@ -44,7 +46,14 @@ from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
 from .selectable_renderer import selectable_renderer
-from .view_support import IndexViewMixin, get_amount_without_pdmp, get_seat_type_dicts, assert_quantity_within_bounds
+from .view_support import (
+    IndexViewMixin,
+    get_amount_without_pdmp,
+    get_seat_type_dicts,
+    assert_quantity_within_bounds,
+    build_dynamic_form,
+    get_extra_form_data_pair_pairs,
+    )
 from .exceptions import (
     NoSalesSegment,
     NoCartError, 
@@ -65,6 +74,8 @@ from .exceptions import (
 )
 from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource
 from .limiting import LimiterDecorators
+from . import flow
+from .interfaces import IPageFlowPredicate, IPageFlowAction
 
 logger = logging.getLogger(__name__)
 
@@ -138,6 +149,103 @@ def back(pc=back_to_top, mobile=None):
 def gzip_preferred(request, response):
     if 'gzip' in request.accept_encoding:
         response.encode_content('gzip')
+
+@provider(IPageFlowPredicate)
+def flow_predicate_extra_form(pe, flow_context, context, request):
+    return bool(context.sales_segment.setting.extra_form_fields)
+
+@provider(IPageFlowPredicate)
+def flow_predicate_point_input_organization(pe, flow_context, context, request):
+    return is_point_input_organization(context, request)
+
+
+@provider(IPageFlowPredicate)
+def flow_predicate_prepared(pe, flow_context, context, request):
+    return flow_context['prepared']
+
+@implementer(flow.IPageFlowAction)
+class PaymentAction(flow.PageFlowActionBase):
+    def __call__(self, flow_context, context, request):
+        response = Payment(context.cart, request).call_prepare()
+        if response is not None:
+            assert isinstance(response, HTTPFound)
+            flow_context['prepared'] = True 
+            return flow.Transition(context, request, url_or_path=response.location)
+        else:
+            flow_context['prepared'] = True 
+
+
+# 画面フローの定義
+flow_graph = flow.PageFlowGraph(
+    flow_context_factory=lambda context, request: { 'prepared': False },
+    actions=[
+        # 購入者情報 => ポイント入力
+        flow.SimpleTransitionAction(
+            # 遷移条件
+            predicates=[
+                flow.RouteIs('cart.payment'),
+                flow.Not(flow_predicate_extra_form),
+                flow_predicate_point_input_organization,
+                ],
+            route_name='cart.point'
+            ),
+        # 追加情報入力 => ポイント入力
+        flow.SimpleTransitionAction(
+            # 遷移条件
+            predicates=[
+                flow.RouteIs('cart.extra_form'),
+                flow_predicate_point_input_organization,
+                ],
+            route_name='cart.point'
+            ),
+        # 購入者情報 => 追加情報入力
+        flow.SimpleTransitionAction(
+            # 遷移条件
+            predicates=[
+                flow.RouteIs('cart.payment'),
+                flow_predicate_extra_form,
+                ],
+            route_name='cart.extra_form'
+            ),
+        # 購入者情報 => 決済情報入力
+        PaymentAction(
+            # 遷移条件
+            predicates=[
+                flow.RouteIs('cart.payment'),
+                flow.Not(flow_predicate_prepared),
+                flow.Not(flow_predicate_point_input_organization),
+                flow.Not(flow_predicate_extra_form),
+                ]
+            ),
+        # ポイント入力 => 決済情報入力
+        PaymentAction(
+            # 遷移条件
+            predicates=[
+                flow.RouteIs('cart.point'),
+                flow.Not(flow_predicate_prepared),
+                flow_predicate_point_input_organization,
+                ]
+            ),
+        # 追加情報入力 => 決済情報入力
+        PaymentAction(
+            # 遷移条件
+            predicates=[
+                flow.RouteIs('cart.extra_form'),
+                flow.Not(flow_predicate_prepared),
+                flow.Not(flow_predicate_point_input_organization),
+                ]
+            ),
+        # 決済情報入力 => 確認画面
+        flow.SimpleTransitionAction(
+            # 遷移条件
+            predicates=[
+                flow_predicate_prepared,
+                ],
+            route_name='payment.confirm'
+            ),
+        ]
+    )
+
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class IndexView(IndexViewMixin):
@@ -905,9 +1013,9 @@ class PaymentView(object):
             formdata = None
 
         form = schemas.ClientForm(formdata=formdata)
-        return dict(form=form,
-            payment_delivery_methods=payment_delivery_methods,
-            #user=user, user_profile=user.user_profile,
+        return dict(
+            form=form,
+            payment_delivery_methods=payment_delivery_methods
             )
 
     def get_validated_address_data(self):
@@ -934,12 +1042,6 @@ class PaymentView(object):
         else:
             return None
 
-    def get_point_data(self):
-        form = self.form
-        return dict(
-            accountno=form.data['accountno'],
-            )
-
     def _validate_extras(self, cart, payment_delivery_pair, shipping_address_params):
         if not payment_delivery_pair or shipping_address_params is None:
             if not payment_delivery_pair:
@@ -961,7 +1063,6 @@ class PaymentView(object):
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
-
 
         self.form = schemas.ClientForm(formdata=self.request.params)
         shipping_address_params = self.get_validated_address_data()
@@ -996,7 +1097,10 @@ class PaymentView(object):
         
             if 0 == len(payment_delivery_methods):
                 raise PaymentMethodEmptyError.from_resource(self.context, self.request)
-            return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
+            return dict(
+                form=self.form,
+                payment_delivery_methods=payment_delivery_methods
+                )
 
 
         order = api.new_order_session(
@@ -1012,15 +1116,16 @@ class PaymentView(object):
             if user:
                 api.get_or_create_user_profile(user, shipping_address_params)
 
-        if is_point_input_organization(context=self.context, request=self.request):
-            return HTTPFound(self.request.route_path('cart.point'))
-
-        payment = Payment(cart, self.request)
-        result = payment.call_prepare()
-        if callable(result):
-            return result
+        t = flow_graph(self.context, self.request)
+        if t is None:
+            logger.error('no flow action defined!')
+            response = Payment(cart, self.request).call_prepare()
+            if response is not None:
+                return response
+            else:
+                return HTTPFound(location=self.request.route_path('payment.confirm'))
         else:
-            return HTTPFound(self.request.route_url("payment.confirm"))
+            return HTTPFound(location=t(url_wanted=False))
 
     def get_client_name(self):
         return self.request.params['last_name'] + self.request.params['first_name']
@@ -1047,10 +1152,66 @@ class PaymentView(object):
             user=user
         )
 
+
+@view_defaults(route_name='cart.extra_form', decorator=with_jquery.not_when(mobile_request))
+class ExtraFormView(object):
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    @view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/pc/extra_form.html"))
+    @view_config(request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/extra_form.html"))
+    @view_config(request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/extra_form.html"), custom_predicates=(is_smartphone_organization, ))
+    def get(self):
+        extra_form_field_descs = self.context.sales_segment.setting.extra_form_fields
+        if extra_form_field_descs is None:
+            logger.error('no extra form is specified')
+            return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
+
+        form, form_fields = build_dynamic_form(
+            self.request,
+            extra_form_field_descs
+            )
+        return dict(form=form, form_fields=form_fields)
+
+    @view_config(request_method="POST", renderer=selectable_renderer("%(membership)s/pc/extra_form.html"))
+    @view_config(request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/extra_form.html"))
+    @view_config(request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/extra_form.html"), custom_predicates=(is_smartphone_organization, ))
+    def post(self):
+        form = form_fields = None
+        extra_form_field_descs = self.context.sales_segment.setting.extra_form_fields
+        if extra_form_field_descs is None:
+            logger.error('no extra form is specified')
+            return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
+
+        form, form_fields = build_dynamic_form(
+            self.request,
+            extra_form_field_descs,
+            UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace')
+            )
+        if not form.validate():
+            return dict(form=form, form_fields=form_fields)
+        self.request.session['extra_form'] = form.data
+
+        return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
+
+
+@view_defaults(route_name='cart.point', decorator=with_jquery.not_when(mobile_request))
+class PointAccountEnteringView(object):
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    def get_point_data(self):
+        form = self.form
+        return dict(
+            accountno=form.data['accountno'],
+            )
+
     @back(back_to_top, back_to_product_list_for_mobile)
-    @view_config(route_name='cart.point', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/point.html"))
-    @view_config(route_name='cart.point', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
-    @view_config(route_name='cart.point', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
+    @view_config(request_method="GET", renderer=selectable_renderer("%(membership)s/pc/point.html"))
+    @view_config(request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
+    @view_config(request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
     def point(self):
         cart = self.request.context.cart
         if cart.payment_delivery_pair is None or cart.shipping_address is None:
@@ -1084,9 +1245,9 @@ class PaymentView(object):
         )
 
     @back(back_to_top, back_to_product_list_for_mobile)
-    @view_config(route_name='cart.point', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/point.html"))
-    @view_config(route_name='cart.point', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
-    @view_config(route_name='cart.point', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
+    @view_config(request_method="POST", renderer=selectable_renderer("%(membership)s/pc/point.html"))
+    @view_config(request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/point.html"))
+    @view_config(request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/point.html"), custom_predicates=(is_smartphone_organization, ))
     def point_post(self):
         self.form = schemas.PointForm(formdata=self.request.params)
 
@@ -1122,13 +1283,7 @@ class PaymentView(object):
                     account_number=point
                     )
 
-        payment = Payment(cart, self.request)
-        result = payment.call_prepare()
-        if callable(result):
-            return result
-        else:
-            return HTTPFound(self.request.route_url("payment.confirm"))
-        return {}
+        return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
 
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
@@ -1161,6 +1316,11 @@ class ConfirmView(object):
             mailmagazines_to_subscribe=magazines_to_subscribe,
             form=form,
             delegator=delegator,
+            extra_form_data=get_extra_form_data_pair_pairs(
+                self.request,
+                self.request.context.sales_segment,
+                self.request.session.get('extra_form')
+                ),
             accountno=acc.account_number if acc else ""
         )
 
@@ -1217,6 +1377,15 @@ class CompleteView(object):
         order = payment.call_payment()
         order_id = order.id
         order_no = order.order_no
+
+        extra_form_data = self.request.session.get('extra_form')
+        if extra_form_data is not None:
+            attributes = {}
+            for k, v in extra_form_data.items():
+                if isinstance(v, list):
+                    v = ','.join(v)
+                attributes[k] = v
+            order.attributes = attributes
 
         notify_order_completed(self.request, order)
 

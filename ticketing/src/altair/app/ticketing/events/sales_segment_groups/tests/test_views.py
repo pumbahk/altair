@@ -12,6 +12,8 @@ class SalesSegmentGroupsTests(unittest.TestCase):
         self.session = _setup_db(
             [
                 'altair.app.ticketing.core.models',
+                'altair.app.ticketing.orders.models',
+                'altair.app.ticketing.lots.models',
             ])
         import sqlalchemy.orm
         sqlalchemy.orm.configure_mappers()

@@ -14,9 +14,8 @@ from datetime import date, timedelta
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import Account, Event, Mailer
 from altair.app.ticketing.core.models import StockType, StockHolder, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
-from altair.app.ticketing.core.models import ReportTypeEnum, ReportSetting, SalesReportTypeEnum
+from altair.app.ticketing.core.models import ReportTypeEnum, ReportSetting, ReportRecipient, ReportSetting_ReportRecipient, SalesReportTypeEnum
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
-from altair.app.ticketing.lots.models import Lot
 from altair.app.ticketing.events.sales_reports.forms import SalesReportForm
 
 logger = logging.getLogger(__name__)
@@ -102,14 +101,10 @@ class SalesTotalReporter(object):
     def add_sales_segment_filter(self, query):
         # performance_idがないSalesSegmentは[SalesSegmentGroupのデータ移行以前のレコード]なので、reportingがFalseでも含める
         # ただし、対象performance_idのSalesSegment.reportingがTrueであること
+        ss = aliased(SalesSegment, name='SalesSegment_alias')
         query = query.join(SalesSegment, SalesSegment.id==Product.sales_segment_id).filter(
             or_(SalesSegment.performance_id==None, SalesSegment.reporting==True)
         )
-        # 抽選のSalesSegmentもperformance_idがないので抽選の販売区分は除外する
-        stmt = exists().where(and_(Lot.sales_segment_id==SalesSegment.id, Lot.deleted_at==None))
-        query = query.filter(~stmt)
-
-        ss = aliased(SalesSegment, name='SalesSegment_alias')
         query = query.outerjoin(ss, and_(
             ss.sales_segment_group_id==SalesSegment.sales_segment_group_id,
             ss.performance_id==Performance.id,
@@ -131,18 +126,37 @@ class SalesTotalReporter(object):
             query = query.filter(Event.title.like('%' + self.form.event_title.data + '%'))
 
         if self.form.recipient.data:
-            email_pattern = '%{}%'.format(self.form.recipient.data)
+            email_pattern = u'%{}%'.format(self.form.recipient.data)
+
             event_rs = aliased(ReportSetting, name='ReportSetting_event')
-            performance_rs = aliased(ReportSetting, name='ReportSetting_performance')
+            event_rs_rr = aliased(ReportSetting_ReportRecipient, name='ReportSetting_ReportRecipient_event')
+            event_rr = aliased(ReportRecipient, name='ReportRecipient_event')
             query = query.outerjoin(event_rs, and_(
                 event_rs.event_id==Event.id,
-                event_rs.email.like(email_pattern),
                 event_rs.deleted_at==None
-            )).outerjoin(performance_rs, and_(
+            )).join(event_rs_rr,
+                event_rs_rr.report_setting_id==event_rs.id,
+            ).join(event_rr, and_(
+                event_rs_rr.report_recipient_id==event_rr.id,
+                event_rr.email.like(email_pattern),
+                event_rr.deleted_at==None
+            ))
+
+            performance_rs = aliased(ReportSetting, name='ReportSetting_performance')
+            performance_rs_rr = aliased(ReportSetting_ReportRecipient, name='ReportSetting_ReportRecipient_performance')
+            performance_rr = aliased(ReportRecipient, name='ReportRecipient_performance')
+            query = query.outerjoin(performance_rs, and_(
                 performance_rs.performance_id==Performance.id,
-                performance_rs.email.like(email_pattern),
                 performance_rs.deleted_at==None
-            )).filter(
+            )).join(performance_rs_rr,
+                performance_rs_rr.report_setting_id==performance_rs.id,
+            ).join(performance_rr, and_(
+                performance_rs_rr.report_recipient_id==performance_rr.id,
+                performance_rr.email.like(email_pattern),
+                performance_rr.deleted_at==None
+            ))
+
+            query = query.filter(
                 or_(event_rs.id!=None, performance_rs.id!=None)
             )
 
@@ -414,9 +428,6 @@ class SalesDetailReporter(object):
         query = query.join(SalesSegment, SalesSegment.id==Product.sales_segment_id).filter(
             or_(SalesSegment.performance_id==None, SalesSegment.reporting==True)
         )
-        # 抽選のSalesSegmentもperformance_idがないので抽選の販売区分は除外する
-        stmt = exists().where(and_(Lot.sales_segment_id==SalesSegment.id, Lot.deleted_at==None))
-        query = query.filter(~stmt)
 
         if form.sales_segment_group_id.data:
             query = query.join(SalesSegmentGroup).filter(and_(
@@ -636,6 +647,8 @@ class PerformanceReporter(object):
         # 公演合計のレポート
         self.form.sales_segment_group_id.data = None
         self.total = SalesDetailReporter(request, self.form)
+        if len([ss for ss in performance.sales_segments if ss.reporting]) == 0:
+            self.total.reports = {}
 
         # 販売区分別のレポート
         if self.form.is_detail_report():

@@ -228,8 +228,15 @@ class SalesSegmentAccessor(object):
             setting=True,
             has_use_default=True,
             use_default_default=True
+            ),
+        "extra_form_fields": dict(
+            setting=True,
+            has_use_default=True,
+            use_default_default=True
             )
         }
+
+    setting_attributes = set(k for k, desc in attributes.items() if desc.get('setting', False))
 
     def sync_attr(self, dest, src, attr):
         self.attr_set(dest, attr, self.attr_get(src, attr))

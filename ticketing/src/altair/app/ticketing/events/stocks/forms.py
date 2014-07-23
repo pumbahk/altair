@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 from wtforms import Form
 from wtforms import TextField, IntegerField, ValidationError
 from wtforms.validators import Length, NumberRange, Optional
@@ -7,7 +8,14 @@ from wtforms.validators import Length, NumberRange, Optional
 from altair.formhelpers import Translations, Required
 from altair.app.ticketing.core.models import Seat, Stock
 
+logger = logging.getLogger(__name__)
+
+
 class AllocateSeatForm(Form):
+
+    def __init__(self, formdata=None, obj=None, stocks=None, **kwargs):
+        self.stocks = stocks
+        super(AllocateSeatForm, self).__init__(formdata, obj, **kwargs)
 
     def _get_translations(self):
         return Translations()
@@ -18,6 +26,12 @@ class AllocateSeatForm(Form):
     stock_id = IntegerField(
         validators=[Required()],
     )
+
+    def validate_stock_id(form, field):
+        # Seatの更新時は該当のStockが更新リクエストに含まれること
+        if form.stocks is None or field.data not in [s['id'] for s in form.stocks]:
+            raise ValidationError(u'更新する座席に紐づく在庫が更新対象に含まれていません')
+
 
 class AllocateStockForm(Form):
 
@@ -52,6 +66,7 @@ class AllocateStockForm(Form):
                     allocated_seats = Seat.filter_by(stock_id=form.id.data).count()
                     if allocated_seats != int(form.quantity.data):
                         raise ValidationError(u'席種に割り当てられている在庫数合計が一致しません')
+
 
 class AllocateStockTypeForm(Form):
 

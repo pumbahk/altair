@@ -17,10 +17,11 @@ from wtforms.validators import Optional
 from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.core.models import Event, ReportSetting
+from altair.app.ticketing.core.models import Event, ReportSetting, ReportRecipient
 from altair.app.ticketing.core.models import Performance
 from altair.app.ticketing.events.sales_reports.forms import SalesReportForm, ReportSettingForm
 from altair.app.ticketing.events.sales_reports.reports import SalesTotalReporter, PerformanceReporter, EventReporter, sendmail
+from altair.app.ticketing.events.sales_reports.exceptions import ReportSettingValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +101,7 @@ class SalesReports(BaseView):
 
         form = SalesReportForm(self.request.params)
         if not form.recipient.data:
-            form.recipient.data = ', '.join([rs.recipient for rs in report_settings])
+            form.recipient.data = ', '.join([rs.format_recipients() for rs in report_settings])
         if not form.subject.data:
             form.subject.data = u'[売上レポート|%s] %s' % (self.context.user.organization.name, subject)
 
@@ -179,6 +180,31 @@ class SalesReports(BaseView):
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class ReportSettings(BaseView):
 
+    def _save_report_setting(self, report_setting=None):
+        f = ReportSettingForm(self.request.POST, context=self.context)
+        if not f.validate():
+            raise ReportSettingValidationError(form=f)
+        new_recipients = [
+            ReportRecipient.query.filter_by(id=report_recipient_id, organization_id=self.context.organization.id).one()
+            for report_recipient_id in f.recipients.data
+            ]
+        if f.email.data:
+            new_recipients.append(ReportRecipient(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id))
+        if report_setting is None:
+            report_setting = ReportSetting()
+
+        remove_candidates = set(report_setting.recipients) - set(new_recipients)
+        for c in remove_candidates:
+            if len(c.lot_entry_report_settings) == 0 and len([s for s in c.settings if s.id != report_setting.id]) == 0:
+                logger.info(u'remove no reference recipient id={} name={} email={}'.format(c.id, c.name, c.email))
+                c.delete()
+
+        report_setting = merge_session_with_post(report_setting, f.data, excludes={'name', 'email'})
+        report_setting.recipients[:] = []
+        report_setting.recipients.extend(new_recipients)
+        report_setting.save()
+        return
+
     @view_config(route_name='report_settings.new', request_method='GET', renderer='altair.app.ticketing:templates/sales_reports/_form.html', xhr=True)
     def new_xhr(self):
         return {
@@ -188,15 +214,13 @@ class ReportSettings(BaseView):
 
     @view_config(route_name='report_settings.new', request_method='POST', renderer='altair.app.ticketing:templates/sales_reports/_form.html', xhr=True)
     def new_post(self):
-        f = ReportSettingForm(self.request.POST, context=self.context)
-        if f.validate():
-            report_mail = merge_session_with_post(ReportSetting(), f.data)
-            report_mail.save()
+        try:
+            self._save_report_setting()
             self.request.session.flash(u'レポート送信設定を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
-        else:
+        except ReportSettingValidationError as e:
             return {
-                'form':f,
+                'form':e.form,
                 'action': self.request.path,
                 }
 
@@ -207,32 +231,21 @@ class ReportSettings(BaseView):
             'action': self.request.path,
             }
 
-    def _edit_post(self):
-        f = ReportSettingForm(self.request.POST, context=self.context)
-        if not f.validate():
-            return f
-        report_setting = self.context.report_setting
-        report_setting = merge_session_with_post(report_setting, f.data)
-        report_setting.save()
-
-        self.request.session.flash(u'レポート送信設定を保存しました')
-        return None
-
-    @view_config(route_name='report_settings.edit', request_method='POST', renderer='altair.app.ticketing:templates/sales_reports/_form.html')
+    @view_config(route_name='report_settings.edit', request_method='POST', renderer='altair.app.ticketing:templates/sales_reports/_form.html', xhr=True)
     def edit_post_xhr(self):
-        f = self._edit_post()
-        if f is None:
+        try:
+            self._save_report_setting(self.context.report_setting)
+            self.request.session.flash(u'レポート送信設定を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
-        else:
+        except ReportSettingValidationError as e:
             return {
-                'form': f,
+                'form':e.form,
                 'action': self.request.path,
                 }
 
     @view_config(route_name='report_settings.delete')
     def delete(self):
         report_setting = self.context.report_setting
-
         if report_setting.performance_id:
             location = route_path('sales_reports.performance', self.request, performance_id=report_setting.performance_id)
         else:

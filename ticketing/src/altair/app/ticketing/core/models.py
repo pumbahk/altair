@@ -800,6 +800,21 @@ class ReportTypeEnum(StandardEnum):
     Detail = (1, u'詳細 (販売区分別まで含む)')
     Summary = (2, u'合計 (公演合計のみ)')
 
+class ReportSetting_ReportRecipient(Base):
+    __tablename__   = 'ReportSetting_ReportRecipient'
+    report_setting_id = Column(Identifier, ForeignKey('ReportSetting.id', ondelete='CASCADE'), primary_key=True)
+    report_recipient_id = Column(Identifier, ForeignKey('ReportRecipient.id', ondelete='CASCADE'), primary_key=True)
+
+class ReportRecipient(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__   = 'ReportRecipient'
+    id = Column(Identifier(), primary_key=True)
+    name = Column(String(255), nullable=True)
+    email = Column(String(255), nullable=False)
+    organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=False)
+
+    def format_recipient(self):
+        return u'{0} <{1}>'.format(self.name, self.email)
+
 class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = 'ReportSetting'
     id = Column(Identifier, primary_key=True)
@@ -818,13 +833,10 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_on = Column(DateTime, nullable=True, default=None)
     end_on = Column(DateTime, nullable=True, default=None)
     report_type = Column(Integer, nullable=False, default=1, server_default='1')
+    recipients = relationship('ReportRecipient', secondary=ReportSetting_ReportRecipient.__table__, backref='settings')
 
-    @property
-    def recipient(self):
-        if self.operator:
-            return self.operator.email
-        else:
-            return self.email
+    def format_recipients(self):
+        return u', '.join([r.format_recipient() for r in self.recipients])
 
 def build_sales_segment_query(event_id=None, performance_id=None, sales_segment_group_id=None, sales_segment_id=None, user=None, now=None, type='available'):
     if all(not x for x in [event_id, performance_id, sales_segment_group_id, sales_segment_id]):
@@ -1297,7 +1309,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_at = AnnotatedColumn(DateTime, _a_label=_(u'販売開始日時'))
     end_at = AnnotatedColumn(DateTime, _a_label=_(u'販売終了日時'))
     max_quantity = AnnotatedColumn('upper_limit', Integer, _a_label=_(u'購入上限枚数'))
-    order_limit = association_proxy('setting', 'order_limit')
+    order_limit = association_proxy('setting', 'order_limit', creator=lambda order_limit: SalesSegmentGroupSetting(order_limit=order_limit))
     max_product_quatity = AnnotatedColumn('product_limit', Integer, _a_label=_(u'商品購入上限数'))
 
     seat_choice = AnnotatedColumn(Boolean, default=True, _a_label=_(u'座席選択可'))
@@ -3215,7 +3227,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     start_at = AnnotatedColumn(DateTime, _a_label=_(u'販売開始'))
     end_at = AnnotatedColumn(DateTime, _a_label=_(u'販売終了'))
     max_quantity = AnnotatedColumn('upper_limit', Integer, _a_label=_(u'購入上限枚数'))
-    order_limit = association_proxy('setting', 'order_limit')
+    order_limit = association_proxy('setting', 'order_limit', creator=lambda order_limit: SalesSegmentSetting(order_limit=order_limit))
     max_product_quatity = AnnotatedColumn('product_limit', Integer, _a_label=_(u'商品購入上限数'))
 
     seat_choice = AnnotatedColumn(Boolean, nullable=True, default=None,
@@ -3264,7 +3276,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     use_default_payment_delivery_method_pairs = Column(Boolean)
     use_default_start_at = Column(Boolean)
     use_default_end_at = Column(Boolean)
-    use_default_order_limit = association_proxy('setting', 'use_default_order_limit')
+    use_default_order_limit = association_proxy('setting', 'use_default_order_limit', creator=lambda use_default_order_limit: SalesSegmentSetting(use_default_order_limit=use_default_order_limit))
     use_default_max_quantity = Column('use_default_upper_limit', Boolean)
     use_default_max_product_quatity = Column('use_default_product_limit', Boolean)
     use_default_account_id = Column(Boolean)
@@ -3556,6 +3568,8 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixi
     performance_selector_label2_override = AnnotatedColumn(Unicode(255), nullable=True, _a_label=u'絞り込みラベル2', _a_visible_column=True)
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'), _a_visible_column=True)
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
+    middle_stock_threshold = AnnotatedColumn(Integer, default=None, _a_label=_(u'在庫閾値（この値以下は△）'), _a_visible_column=True)
+    middle_stock_threshold_percent = AnnotatedColumn(Integer, default=None, _a_label=_(u'在庫閾値％（未入力は50%）'), _a_visible_column=True)
 
     @property
     def super(self):
@@ -3586,6 +3600,7 @@ class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted,
     agreement_body = AnnotatedColumn(UnicodeText, _a_label=_(u"規約内容"), default=u"")
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
     sales_counter_selectable = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'窓口業務で閲覧可能'))
+    extra_form_fields = deferred(AnnotatedColumn(MutationDict.as_mutable(JSONEncodedDict(16384)), _a_label=_(u'追加フィールド')))
 
     @classmethod
     def create_from_template(cls, template, **kwargs):
@@ -3607,6 +3622,7 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     agreement_body = AnnotatedColumn(UnicodeText, _a_label=_(u"規約内容"), default=u"")
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
     sales_counter_selectable = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'窓口業務で閲覧可能'))
+    extra_form_fields = deferred(AnnotatedColumn(MutationDict.as_mutable(JSONEncodedDict(16384)), _a_label=_(u'追加フィールド')))
 
     use_default_order_limit = Column(Boolean)
     use_default_max_quantity_per_user = Column(Boolean)
@@ -3615,6 +3631,7 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, Sett
     use_default_disp_agreement = Column(Boolean)
     use_default_agreement_body = Column(Boolean)
     use_default_sales_counter_selectable = Column(Boolean)
+    use_default_extra_form_fields = Column(Boolean)
 
     @property
     def super(self):

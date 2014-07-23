@@ -880,6 +880,57 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             session = DBSession
         return session.query(cls).filter_by(order_no=order_no).one()
 
+    def get_order_attribute_pair_pairs(self):
+        if self.sales_segment is None:
+            return []
+        extra_form_fields = self.sales_segment.setting.extra_form_fields
+        if not extra_form_fields:
+            return []
+        retval = []
+        for field_desc in extra_form_fields:
+            if field_desc['kind'] == 'description_only':
+                continue
+            field_value = self.attributes.get(field_desc['name'])
+            display_value = None
+            if field_desc['kind'] in ('text', 'textarea'):
+                display_value = field_value
+            elif field_desc['kind'] in ('select', 'radio'):
+                v = [pair for pair in field_desc['choices'] if pair['value'] == field_value]
+                if len(v) > 0:
+                    display_value = v[0]['label']
+                else:
+                    display_value = field_value
+            elif field_desc['kind'] in ('multiple_select', 'checkbox'):
+                field_value = field_value.strip()
+                if len(field_value) > 0:
+                    field_value = [c.strip() for c in field_value.split(',')]
+                else:
+                    field_value = []
+                display_value = []
+                for c in field_value:
+                    v = [pair for pair in field_desc['choices'] if pair['value'] == c]
+                    if len(v) > 0:
+                        v = v[0]['label']
+                    else:
+                        v = c
+                    display_value.append(v)
+            else:
+                logger.warning('unsupported kind: %s' % field_desc['kind'])
+                display_value = field_value
+
+            retval.append(
+                (
+                    (
+                        field_desc['name'],
+                        field_value
+                    ),
+                    (
+                        field_desc['display_name'],
+                        display_value
+                    )
+                    )
+                )
+        return retval
 
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'
@@ -1423,6 +1474,11 @@ class OrderSummary(Base):
             )
 
     ordered_products = orm.relationship('OrderedProduct', primaryjoin=Order.id==OrderedProduct.order_id)
+    _attributes = orm.relationship('OrderAttribute', primaryjoin=((Order.id==OrderAttribute.order_id) & (OrderAttribute.deleted_at==None)))
+    @property
+    def attributes(self):
+        return dict((a.name, a.value) for a in self._attributes)
+
     items = orm.relationship('OrderedProduct', primaryjoin=Order.id==OrderedProduct.order_id)
     refund = orm.relationship('Refund', primaryjoin=Order.refund_id==Refund.id)
     created_from_lot_entry = orm.relationship('LotEntry', foreign_keys=[Order.order_no], primaryjoin=and_(LotEntry.entry_no==Order.order_no, LotEntry.deleted_at==None), uselist=False)

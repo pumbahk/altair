@@ -10,6 +10,13 @@ from sqlalchemy.orm import joinedload, aliased
 from altair.app.ticketing.core import models as c_models
 from altair.sqlahelper import get_db_session
 from altair.mobile.interfaces import IMobileRequest
+from altair.formhelpers.form import OurDynamicForm
+from altair.formhelpers import widgets
+from altair.formhelpers import fields
+from altair.formhelpers.filters import text_type_but_none_if_not_given
+from altair.formhelpers.validators import Required
+from wtforms.validators import Optional
+from altair.formhelpers.translations import Translations
 from . import helpers as h
 from collections import OrderedDict
 from .exceptions import (
@@ -168,6 +175,13 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
         max_product_quantity = stock_type.max_product_quantity
         min_quantity = stock_type.min_quantity
         max_quantity = stock_type.max_quantity
+
+        total_quantity_per_stock_type = 0
+        for target_stock in stock_type.stocks:
+            for target_item in target_stock.product_items:
+                if target_item.id in stock_for_product_item:
+                    total_quantity_per_stock_type = total_quantity_per_stock_type + stock_for_product_item[target_item.id].quantity
+
         # ユーザ毎の最大購入枚数があれば、それを加味する...
         if max_quantity_per_user is not None:
             max_quantity = max(max_quantity, max_quantity_per_user)
@@ -253,6 +267,8 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
                         )
                     )
                 )
+
+        event = sales_segment.performance.event
         retval.append(dict(
             id=stock_type.id,
             name=stock_type.name,
@@ -261,7 +277,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             stocks=stocks_for_stock_type[stock_type.id],
             availability=availability_for_stock_type,
             actual_availability=actual_availability_for_stock_type,
-            availability_text=h.get_availability_text(actual_availability_for_stock_type),
+            availability_text=h.get_availability_text(actual_availability_for_stock_type, total_quantity_per_stock_type, event.setting.middle_stock_threshold, event.setting.middle_stock_threshold_percent),
             quantity_only=stock_type.quantity_only,
             seat_choice=sales_segment.seat_choice,
             products=product_dicts,
@@ -357,3 +373,154 @@ def assert_quantity_within_bounds(sales_segment, order_items):
                 stock_type.min_product_quantity,
                 stock_type.max_product_quantity
                 )
+
+
+class DynamicFormBuilder(object):
+
+    def _convert_choices(self, choice_descs):
+        return [(choice_desc['value'], choice_desc['label']) for choice_desc in choice_descs]
+
+    def _build_validators(self, field_desc):
+        validators = []
+        if field_desc['required']:
+            validators.append(Required())
+        else:
+            validators.append(Optional())
+        return validators
+
+    def _build_text(self, field_desc):
+        return fields.OurTextField(
+            label=field_desc['display_name'],
+            validators=self._build_validators(field_desc)
+            )
+
+    def _build_textarea(self, field_desc):
+        return fields.OurTextAreaField(
+            label=field_desc['display_name'],
+            validators=self._build_validators(field_desc)
+            )
+
+    def _build_select(self, field_desc):
+        return fields.OurSelectField(
+            label=field_desc['display_name'],
+            validators=self._build_validators(field_desc),
+            choices=self._convert_choices(field_desc['choices'])
+            )
+
+    def _build_multiple_select(self, field_desc):
+        return fields.OurSelectMultipleField(
+            label=field_desc['display_name'],
+            validators=self._build_validators(field_desc),
+            choices=self._convert_choices(field_desc['choices'])
+            )
+
+    def _build_radio(self, field_desc):
+        return fields.OurRadioField(
+            label=field_desc['display_name'],
+            validators=self._build_validators(field_desc),
+            choices=self._convert_choices(field_desc['choices']),
+            coerce=text_type_but_none_if_not_given
+            )
+
+    def _build_checkbox(self, field_desc):
+        return fields.OurSelectMultipleField(
+            label=field_desc['display_name'],
+            validators=self._build_validators(field_desc),
+            choices=self._convert_choices(field_desc['choices']),
+            widget=widgets.CheckboxMultipleSelect(
+                multiple=True,
+                outer_html_tag='ul',
+                inner_html_tag='li'
+                )
+            )
+
+
+    field_factories = {
+        u'text': _build_text,
+        u'textarea': _build_textarea,
+        u'select': _build_select,
+        u'multiple_select': _build_multiple_select,
+        u'radio': _build_radio,
+        u'checkbox': _build_checkbox,
+        }
+
+    def __call__(self, request, extra_form_fields, formdata=None):
+        unbound_fields = []
+        for field_desc in extra_form_fields:
+            if field_desc['kind'] != 'description_only':
+                unbound_fields.append(
+                    (
+                        field_desc['name'],
+                        self.field_factories.get(
+                            field_desc['kind'],
+                            self.__class__._build_text
+                            )(self, field_desc)
+                        )
+                    )
+        form = OurDynamicForm(
+            formdata=formdata,
+            _fields=unbound_fields,
+            _translations=Translations(),
+            name_builder=lambda name: u'extra_field[%s]' % name
+            )
+        fields = []
+        for field_desc in extra_form_fields:
+            field = None
+            try:
+                field = form[field_desc['name']]
+            except KeyError:
+                pass
+            fields.append({
+                'description': field_desc['description'],
+                'note': field_desc['note'],
+                'required': field_desc['required'],
+                'field': field,
+                })
+        return form, fields
+
+build_dynamic_form = DynamicFormBuilder()
+
+def get_extra_form_data_pair_pairs(request, sales_segment, data):
+    extra_form_fields = sales_segment.setting.extra_form_fields
+    if extra_form_fields is None:
+        return []
+    retval = []
+    for field_desc in extra_form_fields:
+        if field_desc['kind'] == 'description_only':
+            continue
+        field_value = data.get(field_desc['name'])
+        display_value = None
+        if field_desc['kind'] in ('text', 'textarea'):
+            display_value = field_value
+        elif field_desc['kind'] in ('select', 'radio'):
+            v = [pair for pair in field_desc['choices'] if pair['value'] == field_value]
+            if len(v) > 0:
+                display_value = v[0]['label']
+            else:
+                display_value = field_value
+        elif field_desc['kind'] in ('multiple_select', 'checkbox'):
+            display_value = []
+            for c in field_value:
+                v = [pair for pair in field_desc['choices'] if pair['value'] == c]
+                if len(v) > 0:
+                    v = v[0]['label']
+                else:
+                    v = c
+                display_value.append(v)
+        else:
+            logger.warning('unsupported kind: %s' % field_desc['kind'])
+            display_value = field_value
+
+        retval.append(
+            (
+                (
+                    field_desc['name'],
+                    field_value
+                ),
+                (
+                    field_desc['display_name'],
+                    display_value
+                )
+                )
+            )
+    return retval

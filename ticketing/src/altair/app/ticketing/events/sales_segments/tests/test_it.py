@@ -10,15 +10,16 @@ from webob.multidict import MultiDict
 class SalesSegmentsTests(unittest.TestCase):
 
     def setUp(self):
-        self.config = testing.setUp()
-        self.config.include('altair.app.ticketing.renderers')
-
         self.session = _setup_db([
             "altair.app.ticketing.orders.models",
+            "altair.app.ticketing.cart.models",
+            "altair.app.ticketing.lots.models",
             "altair.app.ticketing.core.models",
         ])
-        import sqlalchemy
-        sqlalchemy.orm.configure_mappers()
+        self.config = testing.setUp()
+        self.config.include('altair.app.ticketing.renderers')
+        self.config.add_route('sales_segments.show', '/sales_segments/show/')
+        self.config.add_route('sales_segments.edit', '/sales_segments/edit/')
 
     def tearDown(self):
         _teardown_db()
@@ -201,31 +202,6 @@ class SalesSegmentsTests(unittest.TestCase):
         self.assertEqual(ss.event, event)
         self.assertEqual(ss.membergroups, [membergroup])
 
-
-class EditSalesSegmentTests(unittest.TestCase):
-
-    def setUp(self):
-        self.config = testing.setUp()
-        self.config.include('altair.app.ticketing.renderers')
-        self.config.add_route('sales_segments.show', '/sales_segments/show/')
-        self.config.add_route('sales_segments.edit', '/sales_segments/edit/')
-        self.session = _setup_db([
-            "altair.app.ticketing.orders.models",
-            "altair.app.ticketing.core.models",
-        ])
-
-
-    def tearDown(self):
-        _teardown_db()
-        testing.tearDown()
-
-    def _getTarget(self):
-        from ..views import EditSalesSegment
-        return EditSalesSegment
-
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
-
     def assert_data(self, form, name, actual):
         self.assertEqual(form[name].data, actual)
 
@@ -327,13 +303,13 @@ class EditSalesSegmentTests(unittest.TestCase):
         directlyProvides(context, ISalesSegmentAdminResource)
         return context
 
-    def test_get(self):
+    def test_edit_get(self):
         from datetime import datetime
         context = self._context()
         request = DummyRequest(context=context, matched_route=testing.DummyResource(name='sales_segments.edit'))
         target = self._makeOne(context, request)
 
-        result = target.get()
+        result = target.edit_get()
 
         self.assertIn('form', result)
         form = result['form']
@@ -342,7 +318,7 @@ class EditSalesSegmentTests(unittest.TestCase):
         self.assert_data(form, 'start_at', datetime(2013, 8, 31))
         self.assert_data(form, 'end_at', datetime(2013, 9, 30))
 
-    def test_post_invalid_form(self):
+    def test_edit_post_invalid_form(self):
         context = self._context()
         request = DummyRequest(context=context,
                                matched_route=testing.DummyResource(name='sales_segments.edit'),
@@ -353,12 +329,12 @@ class EditSalesSegmentTests(unittest.TestCase):
 
         target = self._makeOne(context, request)
 
-        result = target.post()
+        result = target.edit_post()
 
         self.assertIn('form', result)
         self.assertTrue(result['form'].errors)
 
-    def test_post_valid_form_with_using_group(self):
+    def test_edit_post_valid_form_with_using_group(self):
         from datetime import datetime
         context = self._context()
         request = DummyRequest(context=context,
@@ -381,7 +357,7 @@ class EditSalesSegmentTests(unittest.TestCase):
 
         target = self._makeOne(context, request)
 
-        result = target.post()
+        result = target.edit_post()
         if isinstance(result, dict):
             form = result['form']
             for name, errors in form.errors.items():
@@ -409,7 +385,7 @@ class EditSalesSegmentTests(unittest.TestCase):
         self.assert_attr_equal(sales_segment, sales_segment_group, "margin_ratio", 99)
 
 
-    def test_post_valid_form_without_using_group(self):
+    def test_edit_post_valid_form_without_using_group(self):
         from datetime import datetime
         context = self._context()
         request = DummyRequest(context=context,
@@ -432,7 +408,7 @@ class EditSalesSegmentTests(unittest.TestCase):
 
         target = self._makeOne(context, request)
 
-        result = target.post()
+        result = target.edit_post()
         if isinstance(result, dict):
             form = result['form']
             for name, errors in form.errors.items():
