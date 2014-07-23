@@ -134,9 +134,9 @@ class SalesTotalReporter(object):
             query = query.outerjoin(event_rs, and_(
                 event_rs.event_id==Event.id,
                 event_rs.deleted_at==None
-            )).join(event_rs_rr,
+            )).outerjoin(event_rs_rr,
                 event_rs_rr.report_setting_id==event_rs.id,
-            ).join(event_rr, and_(
+            ).outerjoin(event_rr, and_(
                 event_rs_rr.report_recipient_id==event_rr.id,
                 event_rr.email.like(email_pattern),
                 event_rr.deleted_at==None
@@ -148,9 +148,9 @@ class SalesTotalReporter(object):
             query = query.outerjoin(performance_rs, and_(
                 performance_rs.performance_id==Performance.id,
                 performance_rs.deleted_at==None
-            )).join(performance_rs_rr,
+            )).outerjoin(performance_rs_rr,
                 performance_rs_rr.report_setting_id==performance_rs.id,
-            ).join(performance_rr, and_(
+            ).outerjoin(performance_rr, and_(
                 performance_rs_rr.report_recipient_id==performance_rr.id,
                 performance_rr.email.like(email_pattern),
                 performance_rr.deleted_at==None
