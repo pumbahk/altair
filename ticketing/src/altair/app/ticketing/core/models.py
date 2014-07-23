@@ -839,6 +839,9 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def format_recipients(self):
         return u', '.join([r.format_recipient() for r in self.recipients])
 
+    def format_emails(self):
+        return u', '.join([r.email for r in self.recipients])
+
 def build_sales_segment_query(event_id=None, performance_id=None, sales_segment_group_id=None, sales_segment_id=None, user=None, now=None, type='available'):
     if all(not x for x in [event_id, performance_id, sales_segment_group_id, sales_segment_id]):
         raise ValueError("any of event_id, performance_id, sales_segment_group_id or sales_segment_id must be non-null value")
