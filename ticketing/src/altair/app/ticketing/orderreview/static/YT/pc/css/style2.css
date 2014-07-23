@@ -1162,25 +1162,6 @@ table.form input.submit:hover,
 }
 */
 
-<<<<<<< HEAD
-/* -- purchasedContents -- */
-.purchasedContents {
-	width: 100%;
-	margin: 0 auto 20px auto;
-	font-size: 14px;
-	border-collapse: collapse;
-	border-top: 1px solid #F2F2E5;
-	border-left: 1px solid #F2F2E5;
-}
-.purchasedContents tr th,
-.purchasedContents tr td {
-	border-bottom: 1px solid #F2F2E5;
-	border-right: 1px solid #F2F2E5;
-	padding: 10px;
-}
-.purchasedContents tr th {
-	background: #F9F9F2;
-}
 
 
 
