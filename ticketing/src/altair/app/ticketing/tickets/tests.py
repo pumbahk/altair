@@ -402,21 +402,6 @@ class TicketsUtilsTest(TestCase):
                 u"name": u"会場名",
                 u"sub_name": u"サブ会場名"
                 },
-            u"stock": {
-                u"quantity": 100
-                },
-            u"stockStatus": {
-                u"quantity": 98,
-                },
-            u"stockHolder": {
-                u"name": u"stock_holder"
-                },
-            u"stockType": {
-                u"name": u"S席",
-                u"type": 0,
-                u"display_order": 0,
-                u"quantity_only": 0
-                },
             u"seat": {
                 u"l0_id": u"l0_id",
                 u"name": u"seat_name",
@@ -433,7 +418,6 @@ class TicketsUtilsTest(TestCase):
             u"開始時刻": u"11時 03分",
             u"開始時刻s": u"11:03",
             u"終了時刻": u"",
-            u"席種名": u"S席",
             u"席番": u"seat_name",
             }
         for k in expected:

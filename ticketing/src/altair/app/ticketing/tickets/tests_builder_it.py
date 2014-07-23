@@ -369,8 +369,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
                      name=":name")
         model.attributes = {"key": "value"}
 
-        with mock.patch.object(target, "build_dict_from_stock") as m, mock.patch.object(target, "build_dict_from_venue") as n:
-            m.side_effect = lambda _, retval: retval
+        with mock.patch.object(target, "build_dict_from_venue") as n:
             n.side_effect = lambda _, retval: retval
             result = target.build_dict_from_seat(model, retval=data)
 
@@ -384,7 +383,6 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
 
             self.assertEqual(result[u"席番"], ":name")
 
-            m.assert_called_once_with(model.stock, retval=result)
             n.assert_called_once_with(model.venue, retval=result)
 
     def test_build_product__none(self):
