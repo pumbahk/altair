@@ -3556,8 +3556,8 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted, SettingMixi
     performance_selector_label2_override = AnnotatedColumn(Unicode(255), nullable=True, _a_label=u'絞り込みラベル2', _a_visible_column=True)
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'), _a_visible_column=True)
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
-    middle_stock_threshold = AnnotatedColumn(Integer, default=None, _a_label=_(u'在庫閾値（この値以下は△）'), _a_visible_column=True)
-    middle_stock_threshold_percent = AnnotatedColumn(Integer, default=None, _a_label=_(u'在庫閾値％（在庫閾値が優先）'), _a_visible_column=True)
+    middle_stock_threshold = AnnotatedColumn(Integer, default=None, _a_label=_(u'カート在庫閾値 (残席数)'), _a_visible_column=True)
+    middle_stock_threshold_percent = AnnotatedColumn(Integer, default=None, _a_label=_(u'カート在庫閾値 (%)'), _a_visible_column=True)
 
     @property
     def super(self):
