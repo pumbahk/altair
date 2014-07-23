@@ -31,9 +31,9 @@ class _IntegrationAssertionMixin(object):
         self.assertEquals(data[u"開始時刻s"], u"10:00")
         self.assertEquals(data[u"終了時刻s"], u"23:00")
 
-        self.assertEqual(data[u"公演名略称"], u":PerformanceSetting:abbreviated_title") 
+        self.assertEqual(data[u"公演名略称"], u":PerformanceSetting:abbreviated_title")
         self.assertEqual(data[u"公演名備考"], u":PerformanceSetting:note")
-        self.assertEqual(data[u"公演名副題"], u":PerformanceSetting:subtitle") 
+        self.assertEqual(data[u"公演名副題"], u":PerformanceSetting:subtitle")
 
         self.assertEquals(data[u"会場名"], u":Venue:name")
 
@@ -77,25 +77,25 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
 
     def test__build_user_profile(self):
         from altair.app.ticketing.users.models import UserProfile
-        model = UserProfile(email_1=":email_1", 
-                            email_2=":email_2", 
-                            nick_name=":nick_name", 
-                            first_name=":first_name", 
-                            last_name=":last_name", 
-                            first_name_kana=":first_name_kana", 
-                            last_name_kana=":last_name_kana", 
-                            birthday=datetime(2000, 1, 1), 
-                            sex=1, 
-                            zip=u":zip", 
-                            country=":country", 
-                            prefecture=u":prefecture", 
-                            city=u":city", 
-                            address_1=u":address_1", 
-                            tel_1=":tel_1", 
-                            address_2=u":address_2", 
-                            tel_2=":tel_2", 
-                            fax=":fax", 
-                            status=1, 
+        model = UserProfile(email_1=":email_1",
+                            email_2=":email_2",
+                            nick_name=":nick_name",
+                            first_name=":first_name",
+                            last_name=":last_name",
+                            first_name_kana=":first_name_kana",
+                            last_name_kana=":last_name_kana",
+                            birthday=datetime(2000, 1, 1),
+                            sex=1,
+                            zip=u":zip",
+                            country=":country",
+                            prefecture=u":prefecture",
+                            city=u":city",
+                            address_1=u":address_1",
+                            tel_1=":tel_1",
+                            address_2=u":address_2",
+                            tel_2=":tel_2",
+                            fax=":fax",
+                            status=1,
                             rakuten_point_account=":rakuten_point_account"
                             )
         target = self._makeOne()
@@ -173,7 +173,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         self.assertEqual(sub["tel_1"],  ":tel_1")
         self.assertEqual(sub["tel_2"],  ":tel_2")
         self.assertEqual(sub["fax"],  ":fax")
-        
+
     def test__build_stock__none(self):
         target = self._makeOne()
         data = {}
@@ -194,10 +194,10 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         model.stock_holder = StockHolder(name=":StockHolder:name")
         model.stock_status = StockStatus(quantity=10)
         result = target.build_dict_from_stock(model, retval=data)
-        
+
         sub = result["stock"]
         self.assertEqual(sub["quantity"], 10)
-        
+
         sub = result["stockStatus"]
         self.assertEqual(sub["quantity"], 10)
 
@@ -218,12 +218,12 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         model = None
         result = target.build_dict_from_organization(model, retval=data)
         self.assertEqual(result["organization"], {})
-        
+
     def test_build_organization(self):
         from altair.app.ticketing.core.models import Organization
         target = self._makeOne()
         data = {}
-        model = Organization(name=":name", 
+        model = Organization(name=":name",
                              code=":code")
         result = target.build_dict_from_organization(model, retval=data)
         sub = result["organization"]
@@ -236,7 +236,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         model = None
         result = target.build_dict_from_event(model, retval=data)
         self.assertEqual(result["event"], {})
-        self.assertEqual(result["organization"], {})        
+        self.assertEqual(result["organization"], {})
 
     def test_build_event(self):
         from altair.app.ticketing.core.models import Event
@@ -244,11 +244,11 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         target = self._makeOne()
         data = {}
         model = Event(title=":title",
-                      abbreviated_title=":abbreviated_title", 
+                      abbreviated_title=":abbreviated_title",
                       code=":Event:code")
-        model.organization = Organization(name=":name", 
+        model.organization = Organization(name=":name",
                                           code=":Organization:code")
-        
+
         result = target.build_dict_from_event(model, retval=data)
 
         sub = result["organization"]
@@ -262,7 +262,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
 
         self.assertEqual(result[u"イベント名"], ":title")
         self.assertEqual(result[u"イベント名略称"], ":abbreviated_title")
-        
+
     def test_build_performance__none(self):
         target = self._makeOne()
         data = {}
@@ -275,12 +275,12 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         target = self._makeOne()
         data = {}
         model = Performance(name=":name",
-                            code=":code", 
-                            open_on=datetime(2000, 1, 1), 
-                            start_on=datetime(2000, 1, 1, 10), 
-                            end_on=datetime(2000, 1, 1, 23), 
-                            abbreviated_title=":abbreviated_title", 
-                            subtitle=":subtitle", 
+                            code=":code",
+                            open_on=datetime(2000, 1, 1),
+                            start_on=datetime(2000, 1, 1, 10),
+                            end_on=datetime(2000, 1, 1, 23),
+                            abbreviated_title=":abbreviated_title",
+                            subtitle=":subtitle",
                             note=":note")
         with mock.patch.object(target, "build_dict_from_event") as m, mock.patch.object(target, "build_dict_from_performance_setting") as n:
             m.side_effect = lambda _, retval:retval
@@ -340,7 +340,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         from altair.app.ticketing.core.models import Venue
         target = self._makeOne()
         data = {}
-        model = Venue(name=":name", 
+        model = Venue(name=":name",
                       sub_name=":sub_name")
         with mock.patch.object(target, "build_dict_from_performance") as m:
             m.side_effect = lambda _, retval: retval
@@ -364,8 +364,8 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         from altair.app.ticketing.core.models import Seat
         target = self._makeOne()
         data = {}
-        model = Seat(l0_id=":l0_id", 
-                     seat_no=":seat_no", 
+        model = Seat(l0_id=":l0_id",
+                     seat_no=":seat_no",
                      name=":name")
         model.attributes = {"key": "value"}
 
@@ -398,7 +398,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         from altair.app.ticketing.core.models import Product
         target = self._makeOne()
         data = {}
-        model = Product(name=":name", 
+        model = Product(name=":name",
                         price=10000.0)
 
         with mock.patch.object(target, "build_dict_from_sales_segment") as m:
@@ -429,13 +429,13 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         from altair.app.ticketing.core.models import SalesSegmentGroup
         target = self._makeOne()
         data = {}
-        model = SalesSegment(start_at=datetime(2000, 1, 1), 
-                             end_at=datetime(2000, 1, 1, 23), 
-                             max_quantity=8, 
+        model = SalesSegment(start_at=datetime(2000, 1, 1),
+                             end_at=datetime(2000, 1, 1, 23),
+                             max_quantity=8,
                              seat_choice=True
                              )
         model.sales_segment_group = SalesSegmentGroup(
-            name=":name", 
+            name=":name",
             kind=":kind")
         result = target.build_dict_from_sales_segment(model, retval=data)
 
@@ -461,17 +461,17 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         from altair.app.ticketing.core.models import ProductItem
         target = self._makeOne()
         data = {}
-        model = ProductItem(name=":ProductItem:name", 
-                            price=12000, 
-                            quantity=8, 
+        model = ProductItem(name=":ProductItem:name",
+                            price=12000,
+                            quantity=8,
                             )
-        model.product = Product(name=":Product:name", 
+        model.product = Product(name=":Product:name",
                                 price=10000)
         model.performance = Performance()
-        with nested(mock.patch.object(target, "build_dict_from_product"), 
-                    mock.patch.object(target, "build_dict_from_ticket_bundle"), 
-                    mock.patch.object(target, "build_dict_from_stock"), 
-                    mock.patch.object(target, "build_dict_from_venue"), 
+        with nested(mock.patch.object(target, "build_dict_from_product"),
+                    mock.patch.object(target, "build_dict_from_ticket_bundle"),
+                    mock.patch.object(target, "build_dict_from_stock"),
+                    mock.patch.object(target, "build_dict_from_venue"),
                     ) as (m, n, o, p):
             m.side_effect = lambda _, retval: retval
             n.side_effect = lambda _, retval: retval
@@ -508,7 +508,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         data = {}
         model = TicketBundle()
         model.attributes = {"key": "value"}
-        
+
         result = target.build_dict_from_ticket_bundle(model, retval=data)
         sub = result["aux"]
         self.assertEqual(sub["key"], "value")
@@ -519,28 +519,28 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         data = {}
         result = target.build_dict_from_order(model, retval=data)
         self.assertEqual(result["order"], {})
-        
+
 
     def test_build_order(self):
         from altair.app.ticketing.orders.models import Order
         target = self._makeOne()
         data = {}
-        model = Order(total_amount=600, 
+        model = Order(total_amount=600,
                       system_fee=100,
                       special_fee=400,
                       special_fee_name=u'特別手数料',
-                      transaction_fee=200, 
-                      delivery_fee=300, 
-                      multicheckout_approval_no=":multicheckout_approval_no", 
-                      order_no=":order_no", 
-                      paid_at=datetime(2000, 1, 1, 1, 10), 
-                      delivered_at=None, 
-                      canceled_at=None, 
-                      created_at=datetime(2000, 1, 1, 1), 
-                      issued_at=datetime(2000, 1, 1, 1, 13),                       
+                      transaction_fee=200,
+                      delivery_fee=300,
+                      multicheckout_approval_no=":multicheckout_approval_no",
+                      order_no=":order_no",
+                      paid_at=datetime(2000, 1, 1, 1, 10),
+                      delivered_at=None,
+                      canceled_at=None,
+                      created_at=datetime(2000, 1, 1, 1),
+                      issued_at=datetime(2000, 1, 1, 1, 13),
                       )
-        with nested(mock.patch.object(target, "build_shipping_address_dict"), 
-                    mock.patch.object(target, "build_user_profile_dict"), 
+        with nested(mock.patch.object(target, "build_shipping_address_dict"),
+                    mock.patch.object(target, "build_user_profile_dict"),
                     mock.patch.object(target, "build_dict_from_payment_delivery_method_pair")) as (m, n, p):
             m.side_effect = lambda retval, _: retval
             n.side_effect = lambda retval, _: retval
@@ -595,7 +595,7 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         data = {}
         result = target.build_dict_from_payment_delivery_method_pair(model, retval=data)
         self.assertEqual(result, {})
-        
+
     def test_build_payment_delivery_method_pair(self):
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
         from altair.app.ticketing.core.models import FeeTypeEnum
@@ -604,21 +604,21 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
             system_fee=100,
             special_fee=400,
             special_fee_name=u'特別手数料',
-            special_fee_type=FeeTypeEnum.PerUnit.v[0],            
-            transaction_fee=200, 
+            special_fee_type=FeeTypeEnum.PerUnit.v[0],
+            transaction_fee=200,
             delivery_fee_per_order=0,
             delivery_fee_per_principal_ticket=300,
             delivery_fee_per_subticket=0
             )
         data = {}
-        with nested(mock.patch.object(target, "build_dict_from_payment_method"), 
+        with nested(mock.patch.object(target, "build_dict_from_payment_method"),
                     mock.patch.object(target, "build_dict_from_delivery_method")) as (m, n):
             m.side_effect = lambda _, retval: retval
             n.side_effect = lambda _, retval: retval
-            
+
             result = target.build_dict_from_payment_delivery_method_pair(model, retval=data)
             self.assertEqual(result, {})
-            
+
 
     def test_build_payment_method__none(self):
         target = self._makeOne()
@@ -626,17 +626,17 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         data = {}
         result = target.build_dict_from_payment_method(model, retval=data)
         self.assertEqual(result["paymentMethod"], {})
-        
+
     def test_build_payment_method(self):
         from altair.app.ticketing.core.models import PaymentMethod
         target = self._makeOne()
-        model = PaymentMethod(name=":name", 
-                              fee=300, 
-                              fee_type=1, 
+        model = PaymentMethod(name=":name",
+                              fee=300,
+                              fee_type=1,
                               payment_plugin_id=2)
         data = {}
         result = target.build_dict_from_payment_method(model, retval=data)
-        
+
         sub = result["paymentMethod"]
         self.assertEqual(sub[u'name'],  ":name")
         self.assertEqual(sub[u'fee'],  300)
@@ -650,14 +650,14 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         data = {}
         result = target.build_dict_from_delivery_method(model, retval=data)
         self.assertEqual(result["deliveryMethod"], {})
-        
+
     def test_build_delivery_method(self):
         from altair.app.ticketing.core.models import DeliveryMethod
         target = self._makeOne()
         model = DeliveryMethod(name=":name", fee_per_order=0, fee_per_principal_ticket=300, fee_per_subticket=0, delivery_plugin_id=2)
         data = {}
         result = target.build_dict_from_delivery_method(model, retval=data)
-        
+
         sub = result["deliveryMethod"]
         self.assertEqual(sub[u'name'],  ":name")
         self.assertEqual(sub[u'fee'],  300)
@@ -679,13 +679,13 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
             )
         target = self._makeOne()
         data = {}
-        model = OrderedProductItem(price=14000, 
+        model = OrderedProductItem(price=14000,
                                    )
-        model.ordered_product = OrderedProduct(price=12000, 
+        model.ordered_product = OrderedProduct(price=12000,
                                                quantity=8)
         model.attributes["key"] = "value"
-        with nested(mock.patch.object(target, "build_dict_from_order"), 
-                    mock.patch.object(target, "build_dict_from_product_item"), 
+        with nested(mock.patch.object(target, "build_dict_from_order"),
+                    mock.patch.object(target, "build_dict_from_product_item"),
                     ) as (m, n):
             m.side_effect = lambda _, user_profile, retval: retval
             n.side_effect = lambda _, retval: retval
@@ -714,8 +714,8 @@ ORGANIZATION_ID = 12345
 def setup_organization(organization_id=ORGANIZATION_ID):
     from altair.app.ticketing.core.models import Organization
     organization = Organization(name=":Organization:name",
-                                short_name=":Organization:short_name", 
-                                code=":Organization:code", 
+                                short_name=":Organization:short_name",
+                                code=":Organization:code",
                                 id=organization_id)
     return organization
 
@@ -789,13 +789,13 @@ def setup_product_item(quantity, quantity_only, organization):
             site=Site()
         )
     )
-    payment_method = payment_delivery_method_pair.payment_method = PaymentMethod(name=":PaymentMethod:name", 
-                          fee=300, 
-                          fee_type=1, 
+    payment_method = payment_delivery_method_pair.payment_method = PaymentMethod(name=":PaymentMethod:name",
+                          fee=300,
+                          fee_type=1,
                           payment_plugin_id=2)
     delivery_method = payment_delivery_method_pair.delivery_method = DeliveryMethod(name=":DeliveryMethod:name",
                           fee_per_order=0,
-                          fee_per_principal_ticket=300, 
+                          fee_per_principal_ticket=300,
                           fee_per_subticket=0,
                           delivery_plugin_id=2)
     performance.setting = PerformanceSetting()
@@ -899,17 +899,17 @@ def setup_carted_product_item(quantity, quantity_only, organization, product_ite
     sales_segment = product_item.product.sales_segment #xxx:
 
     cart = Cart(
-        shipping_address=shipping_address, 
-        _order_no=order_no, 
-        created_at=datetime(2000, 1, 1, 1), 
+        shipping_address=shipping_address,
+        _order_no=order_no,
+        created_at=datetime(2000, 1, 1, 1),
         sales_segment=sales_segment
     )
     carted_product_item = CartedProductItem(
-        quantity=quantity, 
-        product_item=product_item, 
+        quantity=quantity,
+        product_item=product_item,
         carted_product=CartedProduct(
-            cart=cart, 
-            quantity=quantity, 
+            cart=cart,
+            quantity=quantity,
             product=product_item.product
         )
     )
@@ -933,19 +933,19 @@ def setup_ordered_product_token_from_ordered_product_item(ordered_product_item):
     from altair.app.ticketing.core import api as core_api
     for i, seat in core_api.iterate_serial_and_seat(ordered_product_item):
         token = OrderedProductItemToken(
-            item = ordered_product_item, 
-            serial = i, 
-            seat = seat, 
+            item = ordered_product_item,
+            serial = i,
+            seat = seat,
             valid=True #valid=Falseの時は何時だろう？
         )
 
 
 def setup_seat_from_ordered_product_item(ordered_product_item):
     from altair.app.ticketing.core.models import Seat
-    seat = Seat(l0_id=":l0_id", 
-                seat_no=":seat_no", 
-                name=":Seat:name", 
-                stock = ordered_product_item.product_item.stock, 
+    seat = Seat(l0_id=":l0_id",
+                seat_no=":seat_no",
+                name=":Seat:name",
+                stock = ordered_product_item.product_item.stock,
                 venue = ordered_product_item.product_item.performance.venue)
     ordered_product_item.seats.append(seat)
     return seat
@@ -961,18 +961,18 @@ class BuilderItTicketCreateTest(_IntegrationAssertionMixin, unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         from altair.app.ticketing.formatter import Japanese_Japan_Formatter
         return self._getTarget()(Japanese_Japan_Formatter(), *args, **kwargs)
-    
+
     def _makeIssuer(self):
         return lambda x: "*NumberIssuer*"
 
     def test_build_ordered_product_item_token__without_seat(self):
         target = self._makeOne()
         ordered_product_item = get_ordered_product_item__full_relation(quantity=2, quantity_only=True)
-        setup_ordered_product_token_from_ordered_product_item(ordered_product_item)        
+        setup_ordered_product_token_from_ordered_product_item(ordered_product_item)
 
         model = ordered_product_item.tokens[0]
         result = target.build_dict_from_ordered_product_item_token(model, ticket_number_issuer=self._makeIssuer())
-        
+
         self.assertTrue(result)
         data = result
         # import json
@@ -993,11 +993,11 @@ class BuilderItTicketCreateTest(_IntegrationAssertionMixin, unittest.TestCase):
         target = self._makeOne()
         ordered_product_item = get_ordered_product_item__full_relation(quantity=2, quantity_only=False)
         seat = setup_seat_from_ordered_product_item(ordered_product_item)
-        setup_ordered_product_token_from_ordered_product_item(ordered_product_item)        
+        setup_ordered_product_token_from_ordered_product_item(ordered_product_item)
         model = ordered_product_item.tokens[0]
 
         result = target.build_dict_from_ordered_product_item_token(model, ticket_number_issuer=self._makeIssuer())
-        
+
         self.assertTrue(result)
         data = result
         # import json
@@ -1052,7 +1052,7 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
         target = self._makeOne()
         ordered_product_item = get_ordered_product_item__full_relation(quantity=1, quantity_only=False)
         setup_seat_from_ordered_product_item(ordered_product_item)
-        setup_ordered_product_token_from_ordered_product_item(ordered_product_item)        
+        setup_ordered_product_token_from_ordered_product_item(ordered_product_item)
 
         model = ordered_product_item
         result = target.build_dicts_from_ordered_product_item(model, ticket_number_issuer=self._makeIssuer())
@@ -1095,7 +1095,7 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
         target = self._makeOne()
         ordered_product_item = get_ordered_product_item__full_relation(quantity=1, quantity_only=False)
         setup_seat_from_ordered_product_item(ordered_product_item)
-        setup_ordered_product_token_from_ordered_product_item(ordered_product_item)        
+        setup_ordered_product_token_from_ordered_product_item(ordered_product_item)
 
         model = ordered_product_item
 
@@ -1131,18 +1131,18 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
             delivery_fee_per_order=0,
             delivery_fee_per_principal_ticket=300,
             delivery_fee_per_subticket=0,
-            transaction_fee=200, 
+            transaction_fee=200,
             system_fee=100,
             special_fee=300,
             special_fee_name=u'特別手数料',
             special_fee_type=FeeTypeEnum.PerUnit.v[0],
-            payment_method = PaymentMethod(name=":PaymentMethod:name", 
-                                           fee=300, 
-                                           fee_type=1, 
-                                           payment_plugin_id=2), 
-            delivery_method = DeliveryMethod(name=":DeliveryMethod:name", 
+            payment_method = PaymentMethod(name=":PaymentMethod:name",
+                                           fee=300,
+                                           fee_type=1,
+                                           payment_plugin_id=2),
+            delivery_method = DeliveryMethod(name=":DeliveryMethod:name",
                                              fee_per_order=0,
-                                             fee_per_principal_ticket=300, 
+                                             fee_per_principal_ticket=300,
                                              fee_per_subticket=0,
                                              delivery_plugin_id=2)
             )
@@ -1151,12 +1151,12 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
         model = carted_product_item
         with mock.patch("altair.app.ticketing.core.models.Product.num_principal_tickets") as m: #xxx
             m.return_value = 0
-            result = target.build_dicts_from_carted_product_item(model, 
-                                                                 payment_delivery_method_pair=payment_delivery_method_pair, 
-                                                                 now=datetime(2000, 1, 1, 1), 
+            result = target.build_dicts_from_carted_product_item(model,
+                                                                 payment_delivery_method_pair=payment_delivery_method_pair,
+                                                                 now=datetime(2000, 1, 1, 1),
                                                                  ticket_number_issuer=self._makeIssuer()
                                                                  ) #attribute, number issuer, now
-        
+
         self.assertEqual(len(result), 2)
         seat_result, data = result[0]
         # import json
@@ -1187,18 +1187,18 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
             delivery_fee_per_order=0,
             delivery_fee_per_principal_ticket=300,
             delivery_fee_per_subticket=0,
-            transaction_fee=200, 
+            transaction_fee=200,
             system_fee=100,
             special_fee=400,
             special_fee_name=u'特別手数料',
             special_fee_type=FeeTypeEnum.PerUnit.v[0],
-            payment_method = PaymentMethod(name=":PaymentMethod:name", 
-                                           fee=300, 
-                                           fee_type=1, 
-                                           payment_plugin_id=2), 
-            delivery_method = DeliveryMethod(name=":DeliveryMethod:name", 
+            payment_method = PaymentMethod(name=":PaymentMethod:name",
+                                           fee=300,
+                                           fee_type=1,
+                                           payment_plugin_id=2),
+            delivery_method = DeliveryMethod(name=":DeliveryMethod:name",
                                              fee_per_order=0,
-                                             fee_per_principal_ticket=300, 
+                                             fee_per_principal_ticket=300,
                                              fee_per_subticket=0,
                                              delivery_plugin_id=2)
             )
@@ -1207,12 +1207,12 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
         model = carted_product_item
         with mock.patch("altair.app.ticketing.core.models.Product.num_principal_tickets") as m: #xxx
             m.return_value = 0
-            result = target.build_dicts_from_carted_product_item(model, 
-                                                                 payment_delivery_method_pair=payment_delivery_method_pair, 
-                                                                 now=datetime(2000, 1, 1, 1), 
+            result = target.build_dicts_from_carted_product_item(model,
+                                                                 payment_delivery_method_pair=payment_delivery_method_pair,
+                                                                 now=datetime(2000, 1, 1, 1),
                                                                  ticket_number_issuer=self._makeIssuer()
                                                                  ) #attribute, number issuer, now
-        
+
         self.assertEqual(len(result), 1)
         seat_result, data = result[0]
         # import json
@@ -1234,9 +1234,9 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
         self.assertEquals(data[u"開始時刻s"], u"10:00")
         self.assertEquals(data[u"終了時刻s"], u"23:00")
 
-        self.assertEqual(data[u"公演名略称"], u":PerformanceSetting:abbreviated_title") 
+        self.assertEqual(data[u"公演名略称"], u":PerformanceSetting:abbreviated_title")
         self.assertEqual(data[u"公演名備考"], u":PerformanceSetting:note")
-        self.assertEqual(data[u"公演名副題"], u":PerformanceSetting:subtitle") 
+        self.assertEqual(data[u"公演名副題"], u":PerformanceSetting:subtitle")
 
         self.assertEquals(data[u"会場名"], u":Venue:name")
 
