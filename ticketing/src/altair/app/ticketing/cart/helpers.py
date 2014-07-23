@@ -4,6 +4,7 @@
 TODO: cart取得はリソースの役目
 """
 import functools
+from decimal import Decimal
 from pyramid.view import render_view_to_response
 from pyramid.compat import escape
 from markupsafe import Markup
@@ -223,7 +224,7 @@ def get_availability_text(quantity, all_quantity, middle_stock_threshold, middle
         return u'×'
 
     if middle_stock_threshold_percent:
-        if quantity < (all_quantity/100 * middle_stock_threshold_percent):
+        if quantity < (Decimal(all_quantity) / 100 * middle_stock_threshold_percent):
             return u'△'
 
     if middle_stock_threshold:
