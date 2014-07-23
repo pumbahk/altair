@@ -110,7 +110,7 @@ class LotEntryReporter(object):
                                   dict(lot=self.lot,
                                        lot_status=status))
         return Message(subject=subject,
-                       recipients=[x.emails() for x in self.report_setting.recipients],
+                       recipients=[x.email for x in self.report_setting.recipients],
                        html=body.text,
                        sender=self.sender)
 
