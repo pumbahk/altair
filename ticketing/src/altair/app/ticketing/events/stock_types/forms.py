@@ -74,7 +74,7 @@ class StockTypeForm(OurForm):
         label=u'表示順',
         hide_on_new=True,
         default=u'1',
-        raw_input_filters=[lambda valuelist: NFKC(valuelist[0])],
+        raw_input_filters=[lambda valuelist: [NFKC(valuelist[0])]],
         validators=[Optional()]
     )
     fill_color = OurTextField(
