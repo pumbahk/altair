@@ -234,7 +234,7 @@ class LotEntryReporterTests(unittest.TestCase):
         self.assertEqual(result.subject,
                          u"[testing抽選申込状況レポート] テスト抽選")
         self.assertEqual(result.recipients,
-                         [u" <testing-recipient@example.com>"])
+                         [u"testing-recipient@example.com"])
         self.assertEqual(result.sender,
                          u"sender@example.com")
         self.assertIn(u"S席", result.html)
